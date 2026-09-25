@@ -6,26 +6,40 @@
 acts it must hand down. It is the concept `architect` and `kino` are built around and the one thing
 about them nothing declares, nothing projects, and no gate can score.
 
+**`kino` IS an architect.** Read this document that way throughout. The two are separate agent cells
+mechanically, and `kino` is not a second rung: it is **the architect genus specialized to
+generative-video production**. Every law below about the architect's elevation — what it reserves,
+what it delegates, what the gate scores — is one law stated once and holding for both. Where the
+document names them separately it is naming two projections of one concept, never two concepts. That
+relation is currently carried by nothing but a comment (`agents/kino.ts:41-44`) and duplicated
+declarations, which is defect D3.
+
 ## 1. What is true today (census, 2026-09-25)
 
-| fact                                                                                                             | site                                                                                     |
-| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `role` is `{ axis: 'Persona', repertoire: 'open', arity: 'scalar' }`                                             | `packages/canon/src/manifest.ts:52`                                                      |
-| `architect` is the bare token `` `architect` `` — no definiens                                                   | `packages/canon/src/dimensions/role/architect.ts:3`                                      |
-| `review` is the bare token `` `review` `` — no definiens, composed by no agent                                   | `packages/canon/src/dimensions/role/review.ts:3`                                         |
-| roles carrying a definiens already exist (`build`, `plan`, `curate`, `test`, `operate`, …)                       | same directory                                                                           |
-| `kino` and `architect` both declare `skills: ['design','deliver']`, `role: architect`                            | `agents/kino.ts:45-46`, `agents/architect.ts:59-60`                                      |
-| both also declare `planning-decomposition` in `capabilities`                                                     | `agents/kino.ts:96`, `agents/architect.ts:99`                                            |
-| `software-engineering` is absent from both, deliberately, as the delegation boundary                             | `agents/architect.ts:94-95`, `agents/kino.ts:86-90`                                      |
-| `deliver.composition = [design, plan]` — the `plan` cell's text reaches every agent composing `deliver`          | `skills/deliver/skill.ts:101`                                                            |
-| skill cells deploy corpus-wide; `Agent.skills` projects as `autoloadSkills` and advertises rather than restricts | `packages/forge/src/project/index.ts:508-516`, `adapters/omp/render.ts:286-288`          |
-| `deliver` declares `validate ⊨ self ⟨¬ delegable⟩`                                                               | `skills/deliver/skill.ts:64-65`                                                          |
-| `deliver` declares `validate ⊨ artifact ⟨NEVER r⟩`                                                               | `skills/deliver/skill.ts:62-63`                                                          |
-| no `reviewer` agent cell exists                                                                                  | `packages/canon/src/agents/` holds six: architect, implementer, kino, mav, nico, planner |
-| the stance guard judges exactly one dimension — `autonomy` — by quoting `handoff ≜ …` verbatim                   | `targets/guardrail/stance-judge-prompt.md:212-215`                                       |
-| enrollment is `<scope>/stance/manifest.json`; `gates` is keyed by owning cell and is already plural              | `adapters/omp/render.ts:197,434-480`; `targets/guardrail/stance-guardrail.sh:165-185`    |
+| fact                                                                                                                                                                                                                  | site                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `role` is `{ axis: 'Persona', repertoire: 'open', arity: 'scalar' }`                                                                                                                                                  | `packages/canon/src/manifest.ts:52`                                                      |
+| `architect` is the bare token `` `architect` `` — no definiens                                                                                                                                                        | `packages/canon/src/dimensions/role/architect.ts:3`                                      |
+| `review` is the bare token `` `review` `` — no definiens, composed by no agent                                                                                                                                        | `packages/canon/src/dimensions/role/review.ts:3`                                         |
+| roles carrying a definiens already exist (`build`, `plan`, `curate`, `test`, `operate`, …)                                                                                                                            | same directory                                                                           |
+| `kino` and `architect` both declare `skills: ['design','deliver']`, `role: architect`                                                                                                                                 | `agents/kino.ts:45-46`, `agents/architect.ts:59-60`                                      |
+| both also declare `planning-decomposition` in `capabilities`                                                                                                                                                          | `agents/kino.ts:96`, `agents/architect.ts:99`                                            |
+| `software-engineering` is absent from both, deliberately, as the delegation boundary                                                                                                                                  | `agents/architect.ts:94-95`, `agents/kino.ts:86-90`                                      |
+| `deliver.composition = [design, plan]` — the `plan` cell's text reaches every agent composing `deliver`                                                                                                               | `skills/deliver/skill.ts:101`                                                            |
+| skill cells deploy corpus-wide; `Agent.skills` projects as `autoloadSkills` and advertises rather than restricts                                                                                                      | `packages/forge/src/project/index.ts:508-516`, `adapters/omp/render.ts:286-288`          |
+| `deliver` declares `validate ⊨ self ⟨¬ delegable⟩`                                                                                                                                                                    | `skills/deliver/skill.ts:64-65`                                                          |
+| `deliver` declares `validate ⊨ artifact ⟨NEVER r⟩`                                                                                                                                                                    | `skills/deliver/skill.ts:62-63`                                                          |
+| no `reviewer` agent cell exists                                                                                                                                                                                       | `packages/canon/src/agents/` holds six: architect, implementer, kino, mav, nico, planner |
+| the stance guard judges exactly one dimension — `autonomy` — by quoting `handoff ≜ …` verbatim                                                                                                                        | `targets/guardrail/stance-judge-prompt.md:212-215`                                       |
+| enrollment is `<scope>/stance/manifest.json`; `gates` is keyed by owning cell and is already plural                                                                                                                   | `adapters/omp/render.ts:197,434-480`; `targets/guardrail/stance-guardrail.sh:165-185`    |
+| `kino` is a specialization of `architect`, carried only by a comment and a copied declaration                                                                                                                         | `agents/kino.ts:41-44`                                                                   |
+| the two cells agree on **19 of 22** dimensions; they differ only on `transparency`, `framing`, and `capabilities` (kino = architect's four + two film), plus the non-dimension `archetype`/`description`/`provenance` | `agents/architect.ts:48-118` vs `agents/kino.ts:35-124`                                  |
+| `genus` already anchors "the block every agent Target carries" — a shared block, resolved at projection                                                                                                               | `packages/canon/src/genus/persona.md:9`                                                  |
+| `select : agent → (DimensionName ⇸ ℘(fragment))` — composition is already a per-dimension map                                                                                                                         | `ENGINE.md:24-25`                                                                        |
+| `arity` per dimension (`set` vs `scalar`) already lives in the manifest                                                                                                                                               | `packages/canon/src/manifest.ts:49-115`                                                  |
+| `provenance.mark` is instance-bound and never shared across agents                                                                                                                                                    | `skills/create-agent/skill.ts:21`                                                        |
 
-## 2. The two defects
+## 2. The three defects
 
 **D1 — elevation is declared only as an absence.** What keeps `architect` and `kino` at the conceptual
 rung is the _omission_ of `software-engineering` from `capabilities` plus prose in `archetype`. An
@@ -43,6 +57,17 @@ reading files — paths, identifiers, call sites — and that is precisely the m
 descend into the substrate on every wave, and by wave three the design-holder is a code reviewer with
 a lattice it no longer has the context to hold. The operator's instinct is correct: the acceptance
 step needs a delegate. What is _not_ correct is delegating the acceptance.
+
+**D3 — the specialization is prose, so every law is written twice.** `kino.ts:41-44` states the
+relation outright — "the same apparatus `architect` declares, because this IS that rung specialized to
+the film floor" — and then concludes "a specialization is a FULL cell, so the declaration is copied
+rather than inherited". The conclusion protects a real requirement at the wrong seam. What must be
+full is the **Target**: a harness reads a flat declaration, never a resolution chain. But `select`
+(`ENGINE.md:24`) runs before `compose` and `deploy`, so resolving a specialization there emits a
+Target every bit as flat as today's. Paying for the flat artifact with a duplicated source buys
+nothing and costs what duplication always costs: 19 of 22 dimensions restated, and a corpus where
+fixing the architect's elevation means remembering to fix it twice. This document was written into the
+same defect — every unit below said "`kino` and `architect`" where one genus would do.
 
 ## 3. The cut that resolves D2 — the adjoint of `plan`
 
@@ -87,9 +112,9 @@ which is the one language the principal can check without descending.
 1. **`role` acquires definientia; no new axis is minted.** A `delegation` dimension would fold the same
    concept twice: `role` already means what an agent is and therefore what it does and does not do.
    Roles with definientia already exist in the catalog, so this is precedent, not a new pattern.
-2. **`planning-decomposition` comes off `kino` and `architect`.** It is the declaration that contradicts
-   the rung. Both keep `system-design`, `research-investigation`, `review-critique`; `kino` keeps its two
-   minted film capabilities.
+2. **`planning-decomposition` comes off the architect genus,** which is one edit reaching both cells
+   once U0 lands. It is the declaration that contradicts the rung. The genus keeps `system-design`,
+   `research-investigation`, `review-critique`; `kino`'s delta keeps its two minted film capabilities.
 3. **The elevation gate binds `subagent.dispatch.pre` and a tool-use-pre moment — never `turn.end`.**
    Descending the rung is a mid-turn act: dispatching an implementer where a planner belongs, or editing
    a file at all. Stop fires after the text and is structurally blind to it. This is the same blind spot
@@ -101,16 +126,62 @@ which is the one language the principal can check without descending.
 5. **The witness is an agent cell composing `review`, and its return is concept-typed.** It performs
    the reverse translation of `plan`, reports unachieved concepts in `C`'s vocabulary, and never
    returns mechanical prose or a verdict.
+6. **Specialization is a first-class relation on the agent cell, resolved at `select`.** `kino`
+   declares its genus and its delta; nothing is copied. The relation reuses the corpus's existing
+   `genus` anchor rather than minting `extends`/`base`/`parent`, because `genus/persona.md` already
+   means exactly this — a block resolved into the Target at projection — and this is that concept with
+   a narrower extension: `persona` is the genus of every agent, `architect` the genus of `{architect,
+kino}`. The base stays a real dispatchable agent; no abstract cell nobody runs is minted.
 
 ## 5. Units
 
 Order matters only where stated. Each unit's acceptance criteria are mechanical.
 
+### U0 · The genus relation on the agent cell — DO THIS FIRST
+
+Every other unit below is stated against the genus and shrinks to one edit once this exists.
+
+`Agent` gains an optional `genus` naming another agent cell. `select`
+(`packages/forge/src/project/index.ts`, the vector-reading path feeding `agentBody`) resolves
+`select(species) = select(genus) ⊕ Δ(species)` **before** `compose`/`deploy`, so the emitted Target is
+as flat as it is today and `kino.ts:41-44`'s real requirement is met at the seam that actually holds
+it.
+
+`⊕` is governed by the `arity` the manifest already carries — no second table, no per-dimension
+special cases:
+
+```
+genus : agent ⇀ agent ⟨acyclic · the base is itself dispatchable⟩
+Δ : agent ⇀ (DimensionName ⇸ ℘(fragment)) ⟨what the species says for itself⟩
+select(a) = genus(a) = ∅ ? Δ(a) : select(genus(a)) ⊕ Δ(a)
+⊕ ⊨ arity @ manifest ⟨arity(d) = set ⇒ union · arity(d) = scalar ⇒ Δ overrides⟩
+∀ required d : d ∈ select(a) ⟨inherited satisfies required · an unconfined species is still unconfined⟩
+provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · a species MUST declare its own⟩
+```
+
+Non-dimension fields — `description`, `archetype`, `skills` — override when the species states them
+and inherit when it does not. `provenance.mark` is the one field that must **not** inherit: it is
+instance-bound by `skills/create-agent/skill.ts:21` and shared marks would make two agents
+indistinguishable in a transcript.
+
+Then rewrite `agents/kino.ts` as a delta: `genus: architect`, plus `framing: user-centered`,
+`transparency: provenance-attribution`, the two film capabilities, its own `archetype`, `description`
+and `mark`. Everything else — the autonomy set, the nine engineering principles, `role`, `objective`,
+`skills`, `self-evaluation`, `situation-awareness`, `learning` — is deleted from the file and
+inherited. Replace the `kino.ts:41-44` comment, which argued for the copy, with one naming the genus.
+
+**Acceptance.** `kino.ts` declares no dimension it shares with `architect`; `pnpm project` emits a
+`kino` Target **byte-identical** to today's except for the dimensions U1/U3 change — this is the
+unit's real proof and must be run as a before/after diff, not asserted; a cycle in `genus` fails the
+`accept()` gate with a named error; a species omitting `provenance.mark` fails rather than inheriting
+one.
+
 ### U1 · `role/architect` gains its definiens
 
 Rewrite `packages/canon/src/dimensions/role/architect.ts` so the value states the rung, what it
-reserves, and what it hands down. Shape (the builder signifies the final form; these are the concepts
-that must appear):
+reserves, and what it hands down. It is authored **once for the genus**: `kino` inherits it through
+U0 and states nothing of its own about elevation, because its elevation is not its own. Shape (the
+builder signifies the final form; these are the concepts that must appear):
 
 ```
 architect ≜ conceptual-rung ⟨holds C · ¬ substrate⟩
@@ -120,8 +191,9 @@ architect ≜ conceptual-rung ⟨holds C · ¬ substrate⟩
 ```
 
 **Acceptance.** `architect.ts` exports a `Role` whose text names all three delegated acts and the
-descent clause; `pnpm typecheck` and the corpus `accept()` gate pass; the projected `kino` and
-`architect` Targets carry the text verbatim in their Role section.
+descent clause; `pnpm typecheck` and the corpus `accept()` gate pass; the projected `architect` **and
+`kino`** Targets both carry the text verbatim in their Role section, with `kino` having gained it by
+inheritance and not by a second declaration.
 
 ### U2 · `role/review` gains its definiens
 
@@ -140,12 +212,15 @@ review ≜ lift ⟨artifact → C · the REVERSE of plan : C → spec⟩
 **Acceptance.** As U1, plus: the value names both the lift and the two prohibitions; no existing
 agent's projection changes (nothing composes `review` yet).
 
-### U3 · Capability correction
+### U3 · Capability correction — one edit on the genus
 
-Remove `planningDecomposition_capabilities` from `agents/kino.ts` and `agents/architect.ts`, including
-the import and the now-false comment fragment "the decomposition that hands work out" in `kino.ts:89`.
+Remove `planningDecomposition_capabilities` from `agents/architect.ts`, with its import. After U0 that
+is the whole unit: `kino` inherits the corrected set and its delta names only the two film
+capabilities. Delete the now-false comment fragment "the decomposition that hands work out" wherever
+U0 left it.
 
-**Acceptance.** Neither projected Target lists planning-decomposition; `pnpm typecheck` clean; no
+**Acceptance.** Neither projected Target lists planning-decomposition, and only ONE source file was
+touched to achieve that — the second is the mechanical proof U0 works; `pnpm typecheck` clean; no
 unused import.
 
 ### U4 · `deliver` names the witness and the lift
@@ -209,7 +284,10 @@ shape and the only one that can see a mid-turn descent.
 - Its rubric is a **separate file** deployed to the vendor-neutral `.agents/` root, reached by the same
   derivation the existing workers use (`stance-guardrail.sh:87-100`).
 - The rubric **quotes the `role` value verbatim**, exactly as the stance rubric quotes `handoff ≜ …`.
-  It scores the declared contract, never an authored opinion about good behaviour.
+  It scores the declared contract, never an authored opinion about good behaviour. One rubric serves
+  the whole genus: `architect` and `kino` resolve to the same role value, so the gate needs no
+  knowledge of either name — which is the same law the stance guard learned when its agent allowlist
+  drifted (`packages/canon/CHANGELOG.md:12-18`).
 - It BLOCKS: a dispatch to an implementer for a piece that was never decomposed by a planner; an edit
   or write to substrate by an agent whose role declares `delegates ⟨build⟩`; a dispatch whose prompt is
   the operator's literal words rather than a cut piece.
@@ -235,3 +313,11 @@ deployed artifact.
 - Do **not** try to enforce elevation by deleting capabilities alone. U3 is necessary and is not
   sufficient: an absence cannot be cited by a gate, which is defect D1.
 - Do **not** remove `deliver` from `kino`. Judgment stays with the design-holder; only the read moves.
+- Do **not** resolve the genus at deploy time or leave it unresolved in the Target. A harness reads a
+  flat declaration; resolution belongs at `select`, before `compose`.
+- Do **not** mint an abstract base cell nobody dispatches. `architect` is the genus **and** a working
+  agent, and a specialization hierarchy with an uninhabited root is structure carrying no load.
+- Do **not** let `provenance.mark` inherit. It is instance-bound, and two agents sharing a mark are
+  indistinguishable in the one place an operator reads them.
+- Do **not** treat `kino` as a second rung with its own elevation laws. It is one rung, specialized;
+  every law here is written once for the genus and that is the point of D3.
