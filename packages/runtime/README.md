@@ -51,6 +51,24 @@ what keeps the build DAG and the runtime DAG from reaching across.
 
 The `.` barrel is pure contracts plus one identity helper: no implementation.
 
+## The three domains
+
+Notes, design and plans are immutable records in the repository, folded when someone asks. Agents
+and users meet them only through three capabilities that ship inside the runtime, each routed by
+`runCli` ahead of the discovered dispatch and each with its port in the `.` barrel:
+
+| capability | port         | verbs                                                                       |
+| ---------- | ------------ | --------------------------------------------------------------------------- |
+| `design`   | `DesignHost` | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                  |
+| `plan`     | `PlanHost`   | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile` |
+| `note`     | `NoteHost`   | `show`, `capture`, `revise`, `retract`, `reconcile`                         |
+
+Every input names an entity by name, and every output is the domain's view. Where a merge left one
+name held by more than one entity, the view prints each holder's identity beside it as
+`name (identity <id>)`, and that form addresses one holder. A write refused by its domain's laws
+exits `1` naming the verb that would succeed. The plan lifecycle arrives as `configuration.plan` in
+the host runtime config, which deploy emits; without it `plan` refuses and names the deploy.
+
 ## Dispatch
 
 The dispatcher routes `<capability> <verb> [args]` to a bound port method. It is capability-agnostic
