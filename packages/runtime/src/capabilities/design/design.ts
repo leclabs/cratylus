@@ -348,7 +348,8 @@ export class Design {
 
   /** Refuses a write of `payload` (null: a retraction) to `entity` over `heads`
    *  that introduces a violation: one whose concepts no standing violation of
-   *  the same law already binds together. */
+   *  the same law already binds together. The refusal names concepts as they
+   *  stand now, never as the refused write would leave them. */
   #keep(
     read: Snapshot,
     refuse: (why: string) => never,
@@ -395,12 +396,12 @@ export class Design {
               .join('; ')}`;
           if (v.kind === 'retracted')
             return v.entity === entity
-              ? `its factor ${quote(after.name(v.reference))} is withdrawn`
-              : `${quote(after.name(v.entity))} factors on it; amend or retract it first`;
+              ? `its factor ${quote(read.name(v.reference))} is withdrawn`
+              : `${quote(read.name(v.entity))} factors on it; amend or retract it first`;
           return v.entities.length === 1
             ? 'a concept never factors itself'
             : `it would close a factor cycle through ${v.entities
-                .map((e) => quote(after.name(e)))
+                .map((e) => quote(read.name(e)))
                 .join(', ')}`;
         })
         .join('; '),
