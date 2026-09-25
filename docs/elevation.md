@@ -32,12 +32,14 @@ deletes role conflict outright: two roles can never demand different values of o
 agent, because there is only ever one role.
 
 **The relation is COMPOSITION, not inheritance.** `kino` does not derive from `architect`; both hold
-the architect role, and what differs is `kino`'s **residue** — the personification beyond the
-position, including its film-domain capabilities. Domain expertise is not a second role: a structural
-engineer and a production designer both hold the architect position and differ in what they know. An
-is-a lineage would make identity a chain and force the film domain to become a subclass; holding a
-role and adding residue does not. Today a role in this corpus is a bare scalar token, which is defect
-D3.
+the architect role, and what differs is what `kino` **declares for itself** over that role. A role is
+a **base, not a cap**: an agent may extend a set-valued aspect, override a default the role supplied,
+and introduce dimensions the role never touched. The self-declaration is not required to be small,
+and a specialized agent's may be substantial — `kino` adds a whole domain. Domain expertise is
+nonetheless not a second role: a structural engineer and a production designer both hold the
+architect position and differ in what they know. An is-a lineage would make identity a chain and
+force the film domain to become a subclass; holding a role and declaring over it does not. Today a
+role in this corpus is a bare scalar token, which is defect D3.
 
 ## 1. What is true today (census, 2026-09-25)
 
@@ -153,8 +155,7 @@ which is the one language the principal can check without descending.
    before.
 2. **`planning-decomposition` comes off the architect role,** which is one edit reaching every agent
    that holds it. It is the declaration that contradicts the rung. The role keeps `system-design`,
-   `research-investigation`, `review-critique`; `kino` keeps its two film capabilities in its
-   residue.
+   `research-investigation`, `review-critique`; `kino` declares its two film capabilities for itself.
 3. **The elevation gate binds `subagent.dispatch.pre` and a tool-use-pre moment — never `turn.end`.**
    Descending the rung is a mid-turn act: dispatching an implementer where a planner belongs, or editing
    a file at all. Stop fires after the text and is structurally blind to it. This is the same blind spot
@@ -166,13 +167,15 @@ which is the one language the principal can check without descending.
 5. **The witness is an agent holding a witness role whose elevation is `⟨artifact, C⟩`,** and its
    return is concept-typed. It performs the reverse translation of `plan`, reports unachieved
    concepts in `C`'s vocabulary, and never returns mechanical prose or a verdict.
-6. **An agent holds exactly ONE role plus a residue, and `select(a) = role(a) ⊕ residue(a)`.** No new
-   primitive is minted and no `composite`/`extends`/`base` anchor is coined: the word for a bundle of
-   expected aspects is **role**, and the corpus already has it — anemically. The reusable unit was
-   never missing, only never written down. Role aspects are marked **constitutive** or **default**:
-   residue may override a default and may never override a constitutive one, so the position keeps
-   the guarantees a peer dispatches against. `architect` the agent becomes the near-bare holder of
-   the architect role; `kino` is the same role with a film residue.
+6. **An agent holds exactly ONE role and declares its own values over it: `select(a) = role(a) ⊕
+own(a)`.** No new primitive is minted and no `composite`/`extends`/`base` anchor is coined: the
+   word for a bundle of expected aspects is **role**, and the corpus already has it — anemically. The
+   reusable unit was never missing, only never written down. (`own` is this document's handle for the
+   agent's self-declaration; the builder cold-decodes the final anchor, and it must **not** be
+   `residue`, which `HookCell.residue` already holds with an unrelated meaning.) The role is a base,
+   not a cap — `own` may extend, override or introduce. Role aspects are marked **constitutive** or
+   **default**: `own` may override a default and may never override a constitutive one, so the
+   position keeps the guarantees a peer dispatches against.
 
 ## 5. Units
 
@@ -185,12 +188,12 @@ Every other unit below is stated against a role and shrinks to one edit once thi
 Promote `role` out of `MANIFEST` — it is not a dimension, it is a structure over dimensions. A role
 is a named partial vector: the aspects expected of anyone holding the position, each marked
 **constitutive** (what makes the holder that thing) or **default** (typical, and the holder may
-differ). An agent declares one role and its own residue; `select` folds the two **before**
+differ). An agent declares one role and its own values; `select` folds the two **before**
 `compose`/`deploy`, so the emitted Target is as flat as it is today and `kino.ts:41-44`'s real
 requirement is met at the seam that actually holds it.
 
 The fold has exactly two operands and a defined precedence, so it needs no ordering rule and no
-conflict resolution — set-arity aspects union, scalar aspects take the residue's value when it states
+conflict resolution — set-arity aspects union, scalar aspects take the agent's value when it states
 one:
 
 ```
@@ -198,10 +201,11 @@ role ≜ (DimensionName ⇸ ℘(fragment)) × (DimensionName → {constitutive, 
        ⟨NAMED · partial · the EXPECTATIONS of anyone holding the position⟩
        ⟨∉ MANIFEST : a role is made OF dimension values ∴ ¬ one of them⟩
 role : agent → role ⟨SINGULAR · the contract a PEER dispatches against⟩
-residue : agent → (DimensionName ⇸ ℘(fragment)) ⟨the holder beyond the position⟩
-select(a) = role(a) ⊕ residue(a)
-⊕ ⊨ arity @ manifest ⟨set ⇒ role ∪ residue · scalar ⇒ residue if stated, else role⟩
-constitutive(role(a), d) ∧ d ∈ residue(a) ⇒ REFUSE @ accept
+own : agent → (DimensionName ⇸ ℘(fragment)) ⟨what the AGENT declares · ¬ bounded in size⟩
+select(a) = role(a) ⊕ own(a)
+⊕ ⊨ arity @ manifest ⟨set ⇒ role ∪ own ⟨EXTEND⟩ · scalar ⇒ own if stated ⟨OVERRIDE⟩, else role⟩
+d ∉ role(a) ∧ d ∈ own(a) ⇒ INTRODUCE ⟨a dimension the position never spoke to · legitimate⟩
+constitutive(role(a), d) ∧ d ∈ own(a) ⇒ REFUSE @ accept
     ⟨naming d, the role, and both values · a holder that may override what CONSTITUTES the position
      does not hold it, and every peer reasoning from the role has been misled⟩
 ∀ required d : d ∈ select(a) ⟨a role-supplied value satisfies required⟩
@@ -209,7 +213,7 @@ provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · the HOLDER, ¬ the p
 ```
 
 **Constitutive-versus-default is the load-bearing distinction, and it is what makes singular arity
-safe rather than merely simple.** If residue could override anything, the role would guarantee
+safe rather than merely simple.** If `own` could override anything, the role would guarantee
 nothing: `kino` could quietly restate its elevation and stop being an architect while still declaring
 the role, and the gate in U6 — which scores the role's elevation — would be scoring a claim the agent
 had already escaped. So `elevation` is constitutive on every role that has one. `framing` and
@@ -217,7 +221,7 @@ had already escaped. So `elevation` is constitutive on every role that has one. 
 architect.
 
 Non-dimension fields — `description`, `archetype`, `skills` — fold the same way, with `skills`
-set-like and the prose fields residue-stated over a role-supplied default. `provenance.mark` never
+set-like and the prose fields agent-stated over a role-supplied default. `provenance.mark` never
 folds: it belongs to the holder, not the position, and shared marks make two agents indistinguishable
 in a transcript.
 
@@ -226,14 +230,15 @@ Then write the **architect role** out in full from what `architect.ts` states to
 `self-evaluation`, `situation-awareness`, `learning`, `skills` — and rewrite **both**
 `agents/architect.ts` and `agents/kino.ts` as holders of it. `architect` becomes near-bare: the role,
 `framing: systems-thinking`, `transparency: decision-rationale` and its own prose. `kino` holds the
-same role with a residue of `film-production`, `generative-video`, `framing: user-centered`,
+same role and declares `film-production`, `generative-video`, `framing: user-centered`,
 `transparency: provenance-attribution`, its own prose and its mark. Neither file restates a shared
 expectation. Replace the `kino.ts:41-44` comment, which argued for the copy, with one naming the role
-and what the residue adds.
+and what `kino` declares over it.
 
-**Acceptance.** Neither `architect.ts` nor `kino.ts` states any dimension the other also states;
+**Acceptance.** Neither `architect.ts` nor `kino.ts` restates a value the role already supplies
+unchanged — an override or an introduction is expected, a copy is the defect being removed;
 `pnpm project` emits both Targets **byte-identical** to today's except for what U1/U3 deliberately
-change — run as a before/after diff, not asserted; a residue overriding a constitutive aspect fails
+change — run as a before/after diff, not asserted; an agent overriding a constitutive aspect fails
 `accept()` with a message naming the dimension, the role and both values; an agent omitting
 `provenance.mark` fails rather than receiving one; no agent declares more than one role.
 
@@ -286,8 +291,8 @@ projection changes (nothing carries this elevation until U5).
 ### U3 · Capability correction — one edit on the role
 
 Remove `planningDecomposition_capabilities` from the architect role, with its import.
-After U0 that is the whole unit: every agent holding it carries the corrected set, and `kino`'s
-residue names only the two film capabilities. Delete the now-false comment fragment "the
+After U0 that is the whole unit: every agent holding it carries the corrected set, and `kino` declares
+only the two film capabilities for itself. Delete the now-false comment fragment "the
 decomposition that hands work out" wherever U0 left it.
 
 **Acceptance.** Neither projected Target lists planning-decomposition, and only ONE source file was
@@ -388,11 +393,13 @@ deployed artifact.
 - Do **not** resolve a role at deploy time or leave one unresolved in the Target. A harness reads
   a flat declaration; the fold belongs at `select`, before `compose`.
 - Do **not** implement this as inheritance — no `extends`, no parent pointer, no single-base chain,
-  and no abstract cell nobody dispatches. An agent holds one role and a residue; `architect` is a
-  thin holder exactly as `kino` is.
-- Do **not** give an agent a second role to carry domain expertise. Domain lives in the residue; a
-  situational second position is a second AGENT, selected by dispatch.
-- Do **not** let a residue override a constitutive aspect. It fails at `accept()`, and the fix is
+  and no abstract cell nobody dispatches. An agent holds one role and declares over it; `architect`
+  is a thin holder exactly as `kino` is.
+- Do **not** give an agent a second role to carry domain expertise. Domain is declared by the agent;
+  a situational second position is a second AGENT, selected by dispatch.
+- Do **not** treat the role as a cap on what an agent may declare. It is a base: extending a set,
+  overriding a default, and introducing an untouched dimension are all legitimate.
+- Do **not** let an agent override a constitutive aspect. It fails at `accept()`, and the fix is
   either a different role or a role whose author marked that aspect a default.
 - Do **not** let `provenance.mark` compose. It is instance-bound, and two agents sharing a mark are
   indistinguishable in the one place an operator reads them.
