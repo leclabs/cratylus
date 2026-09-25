@@ -7,22 +7,22 @@
 // the one the store mints, and a reader addresses it by topic, and by kind within
 // a topic — that addressing is the interface's, not this module's.
 //
-// Anyone may capture a note, and capture has no admission bar: it refuses only a
-// malformed shape, never a judgement of content. A changed note is a supersession
-// of its current head; retracting a note writes a retraction that becomes its
-// head. Live notes are those whose one head is a version. A diverged note (two
-// versions, or a version and a retraction, left by merged branches) is reported,
-// never resolved by picking one.
+// Anyone may capture, revise, retract or reconcile a note. Capture has no
+// admission bar: it refuses only a malformed shape, never a judgement of content.
+// Revising a note supersedes its one head; retracting it writes a retraction that
+// becomes its head. Live notes are those whose one head is a version. A diverged
+// note (two versions, or a version and a retraction, left by merged branches) is
+// reported and never resolved by picking one: revise and retract refuse it and
+// point to reconcile, one whole-state version superseding every head.
 //
-// Kinds are opaque here: which kinds exist, and that only a question may block,
-// are the `note` skill's meaning. This module recognises an OWED RULING as a live
-// note that blocks a plan or unit, and names, for a caller, the plans and units
-// the owed rulings block. Closing an owed ruling is retracting its note. What a
-// note blocks are opaque entity references; resolving them from names is the
-// interface's.
+// A note's kind is a label this module never interprets. An OWED RULING is a live
+// note that blocks a plan or unit; it blocks what it names until it no longer
+// does, by being retracted or revised to block nothing. A diverged note blocks
+// whatever any of its heads blocks until it is reconciled. What a note blocks are
+// opaque entity references; resolving them from names is the interface's.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { fold } from '../../record-store/fold.js';
+import { type Fold, fold } from '../../record-store/fold.js';
 import type { Envelope } from '../../record-store/record.js';
 import type { RecordStore } from '../../record-store/store.js';
 
@@ -31,7 +31,7 @@ export const NOTEBOOK = 'notebook';
 
 /** A note's whole state: its payload. */
 export interface Note {
-  /** Opaque here; the `note` skill holds the kinds. */
+  /** A label, never interpreted here. */
   readonly kind: string;
   readonly topic: string;
   readonly body: string;
@@ -83,6 +83,18 @@ function shape(note: Note): Note {
   return { kind, topic, body, blocks: [...blocks] };
 }
 
+/** The one head of `entity` an ordinary write names. Refuses a note with no
+ *  records, and a diverged note, pointing to `reconcile`. */
+function settled(store: RecordStore, entity: string, verb: string): Fold<Note> {
+  const f = fold(store.read<Note>(NOTEBOOK)).get(entity);
+  if (!f) throw new Error(`notebook: ${verb} refused — no note ${entity}`);
+  if (f.heads.length > 1)
+    throw new Error(
+      `notebook: ${verb} refused — note ${entity} has diverged into ${f.heads.length} heads; reconcile it`,
+    );
+  return f;
+}
+
 /** The notebook in `store`, folded now. */
 export function notebook(store: RecordStore): Notebook {
   const live: LiveNote[] = [];
@@ -108,21 +120,17 @@ export function capture(store: RecordStore, note: Note, by: By): LiveNote {
   return { entity: record.envelope.entity, ...payload };
 }
 
-/** Change a note: a whole-state version superseding its one current head (a
- *  retraction included, which reinstates it). Refuses a note with no records,
- *  and a diverged note, which is reported and never resolved by picking one. */
-export function supersede(
+/** Revise a note: a whole-state version superseding its one head (a
+ *  retraction included, which reinstates it). Refuses a diverged note and
+ *  points to `reconcile`. */
+export function revise(
   store: RecordStore,
   entity: string,
   note: Note,
   by: By,
 ): LiveNote {
   const payload = shape(note);
-  const heads = fold(store.read(NOTEBOOK)).get(entity)?.heads ?? [];
-  if (heads.length !== 1)
-    throw new Error(
-      `notebook: supersede refused — note ${entity} has ${heads.length} heads, not one`,
-    );
+  const heads = settled(store, entity, 'revise').heads;
   store.supersede(
     NOTEBOOK,
     entity,
@@ -133,24 +141,45 @@ export function supersede(
   return { entity, ...payload };
 }
 
-/** Retract a note: a retraction naming its heads becomes its head. Retracting
- *  an owed ruling's note closes it. */
+/** Retract a note: a retraction naming its one head becomes its head.
+ *  Refuses a diverged note and points to `reconcile`. */
 export function retract(store: RecordStore, entity: string, by: By): void {
+  settled(store, entity, 'retract');
   store.retract(NOTEBOOK, entity, by);
 }
 
-/** The owed rulings: every plan or unit a live note blocks, keyed by its entity
- *  reference, with the live notes blocking it in record-id order. A note that
- *  blocks nothing is no owed ruling. */
+/** Reconcile a diverged note: one whole-state version superseding every head,
+ *  a retraction among them included. Refuses a note that has not diverged. */
+export function reconcile(
+  store: RecordStore,
+  entity: string,
+  note: Note,
+  by: By,
+): LiveNote {
+  const payload = shape(note);
+  store.reconcile(NOTEBOOK, entity, payload, by);
+  return { entity, ...payload };
+}
+
+/** The owed rulings: every plan or unit reference a live note blocks, or any
+ *  head of a diverged note blocks, mapped to the entities of the notes
+ *  blocking it. A note that blocks nothing is no owed ruling. */
 export function owedRulings(
   book: Notebook,
-): ReadonlyMap<string, readonly LiveNote[]> {
-  const named = new Map<string, LiveNote[]>();
-  for (const note of book.live)
-    for (const ref of new Set(note.blocks)) {
-      const rulings = named.get(ref);
-      if (rulings) rulings.push(note);
-      else named.set(ref, [note]);
+): ReadonlyMap<string, readonly string[]> {
+  const named = new Map<string, string[]>();
+  const owe = (entity: string, blocks: Iterable<string>): void => {
+    for (const ref of new Set(blocks)) {
+      const notes = named.get(ref);
+      if (notes) notes.push(entity);
+      else named.set(ref, [entity]);
     }
+  };
+  for (const note of book.live) owe(note.entity, note.blocks);
+  for (const note of book.diverged)
+    owe(
+      note.entity,
+      note.versions.flatMap((v) => v.blocks),
+    );
   return named;
 }
