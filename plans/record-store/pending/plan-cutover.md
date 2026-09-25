@@ -38,8 +38,12 @@ removed, not migrated." Every caller is migrated; nothing is captured as notes.
 6. **Live claims about the layout.** The `turbo.json` test comment, the `plans/` symlink notes in
    `.husky/pre-commit` and `.prettierignore`, the `gates.yml` `fetch-depth` rationale (the
    designator oracle is gone; the immutability gate's range diff is what needs history now), the
-   header of `docs/research/cold-decode-as-a-skill.md`, and the task-file path cited in
-   `fixtures/generated/delegation-prompt.md`. Measured-incident comments recording a past defect in
+   header of `docs/research/cold-decode-as-a-skill.md`, the task-file path cited in
+   `fixtures/generated/delegation-prompt.md`, and the claims that `deploy` writes
+   `<target>/plans/founding/` at `command-veracity.test.ts:108,427,772` (measured after
+   `scaffold-cutover` landed; false since it did). The consumer claim at `plan-states.ts:2-4` — that
+   the canon project template sources its `planStates` there — went false with `scaffold-cutover`
+   too, and dies with the file. Measured-incident comments recording a past defect in
    `plan-set.ts` (`positional-path.test.ts`, `packages/tooling/src/repo-root.ts`,
    `symbol-altitude.test.ts`) are history, not claims, and stay unless one reads as present tense.
 
@@ -87,18 +91,26 @@ and through them every other unit: this one deletes the plan's own files, so it 
 1. `git ls-files plans` prints nothing (at `c501e002`: 14 files besides this plan's own).
 2. `git grep -nE "PLAN_STATES|PLAN_FRONTIER|PLAN_MARKERS|SUPERSEDED_MARKER|from '[^']*(plan-set|plan-states)[^']*'|tooling/plan-set" -- . ':!*CHANGELOG.md' ':!<records root>'`
    prints nothing; the same command with `-c`, run at `c501e002`, printed a non-zero total (print
-   both).
-3. `carryOn` is gone: `git ls-files packages/runtime/src/capabilities/carry-on packages/runtime/src/ports/carry-on.ts`
+   both). And `git grep -n "plan-states" -- packages/canon/tooling` prints nothing — moved here from
+   `scaffold-cutover`, since it holds only once `plan-set.ts` (which hit at lines 2 and 44 when
+   `scaffold-cutover` landed) is deleted.
+3. The stale claims named in Intent step 6 are gone, each checked by itself:
+   (a) `git ls-files packages/canon/src/plan-states.ts` prints nothing, which removes the consumer
+   claim at its lines 2–4 (the canon project template no longer sources `planStates` there);
+   (b) `git grep -n "plans/founding" -- packages/canon/test/command-veracity.test.ts` prints nothing
+   (when `scaffold-cutover` landed it hit lines 108, 427 and 772), and
+   `git grep -n "plans/founding" -- packages` prints nothing.
+4. `carryOn` is gone: `git ls-files packages/runtime/src/capabilities/carry-on packages/runtime/src/ports/carry-on.ts`
    prints nothing; `git grep -n "carryOn" -- packages/runtime/src packages/canon/src/manifest.ts packages/cli`
    prints nothing (at `c501e002`: the capability, the manifest member, the CLI README); and
    `git grep -nE "PlanLayout|--plan-root|--states" -- packages` prints nothing. The `carry-on`
    skill's `carryOn` binding and its history comment are the cell, not the capability, and stay.
-4. Memory's plan-path handling is gone:
+5. Memory's plan-path handling is gone:
    `git grep -nE "plan-path|'PLAN\.md'|PLAN\.md" -- packages/memory/src packages/runtime/src/ports/memory.ts`
    prints nothing (at `c501e002`: `audit.ts`, `node.ts`, `cli.ts`, `ports/memory.ts`).
-5. `pnpm --filter @cratylus/canon test -- capability-keyspace gate-convicts command-veracity reader-reach`,
+6. `pnpm --filter @cratylus/canon test -- capability-keyspace gate-convicts command-veracity reader-reach`,
    `pnpm --filter @cratylus/memory test` and `pnpm --filter @cratylus/forge test -- signify-marker-class`
    pass.
-6. Sole: plan state has one home, the plan domain — criteria 1–4 together are its check.
-7. `pnpm verify` passes.
-8. `.changeset/plan-cutover.md` names every package this unit's paths changed.
+7. Sole: plan state has one home, the plan domain — criteria 1–5 together are its check.
+8. `pnpm verify` passes.
+9. `.changeset/plan-cutover.md` names every package this unit's paths changed.
