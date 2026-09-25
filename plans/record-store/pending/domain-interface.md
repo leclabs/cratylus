@@ -57,10 +57,36 @@ item refuses and points to `reconcile`. **Repair, one write at a time** (C's rec
 `96aa7ca3`, superseding N8's wording): a write is refused only when it introduces a violation, one
 whose entities were not already bound together in a standing violation of the same law. A write
 that shrinks a standing violation, or leaves it standing, is allowed, so every incoherence can be
-repaired by ordinary writes, one at a time. The laws themselves live in the W1 domain modules. This unit enforces
-the laws that span domains: a unit's pin and `realizes` name the same concept; an owed ruling naming
-a plan blocks binding it and every unit in it; a diverged note blocks whatever any of its heads
-blocks.
+repaired by ordinary writes, one at a time. The laws themselves live in the W1 domain modules. This
+unit enforces the laws that span domains: a unit's pin and `realizes` name the same concept; an owed
+ruling naming a plan blocks binding it and every unit in it; a diverged note blocks whatever any of
+its heads blocks.
+
+**The repair rule gets one home, in the record store.** Today it has four homes: `design.ts`,
+`plan.ts`, `unit.ts` and `notebook.ts` each implement "refuse a violation that no standing
+violation of the same kind binds". This unit replaces the four copies with one generic check in the
+record store. The check takes the violations before and after a write, each expressed as a kind
+plus its bound entities. It returns the introduced ones: those whose entities are not a subset of
+the entities of some standing violation of the same kind.
+
+Each domain keeps its own laws. It computes its violations in that shape and calls the check;
+it keeps its own refusal wording. The check knows no law and no domain, like the rest of the
+store. It stays internal to `runtime`: the domains import it relatively, so it gets no package
+subpath and the barrel stays untouched. Its identifiers are derived with `signify` and reported.
+
+**Residue from the accepted W1 units, settled here:**
+
+- The header of `pin.ts` (lines 21–22 at `85d02326`) says "`unit` reads only its `concept`".
+  That is stale: `unit.ts` types its stored pin as `Pin`, a type import from `pin.ts`. The header
+  is rewritten to say what `unit` actually takes from `pin.ts`.
+- `Concept` is declared twice, in `capabilities/design/design.ts` and `view/design.ts`. It gets one
+  home. The view keeps its structural input shapes, so the one declaration lives where the view may
+  import it without importing a capability, or the view's input shape is renamed for what it is.
+  The choice is made with `signify` and reported.
+- The lifecycle channel's two ends are unused. `RuntimeConfig.configuration` has no reader, and
+  `PlanLifecycle` and `UnitLifecycle` have no builder. The `plan` capability wires them: it reads
+  `configuration.plan` from `loadRuntimeConfig`, builds both lifecycles from it, and refuses
+  (naming the deploy) when the block is absent or malformed.
 
 Each capability composes the record store, its domain modules, `pin` and `view` (`PLAN.md`
 § Contract):
@@ -120,9 +146,18 @@ invented, so no test spells the `plan` skill's vocabulary.
 - `packages/runtime/src/ports/{design,plan,note}.ts` (new)
 - `packages/runtime/src/capabilities/{design,plan,note}/**`: a new `index.ts` and `dispatch.ts` in
   each; the W1 modules in these directories only where composition exposes a defect
-- `packages/runtime/src/view/**`, `packages/runtime/src/record-store/**`,
-  `packages/runtime/src/runtime-config.ts`: repairs that composition exposes, if any (this wave has
-  no other unit)
+- `packages/runtime/src/record-store/`: one new module holding the repair check. Also repairs that
+  composition exposes, if any (this wave has no other unit).
+- `packages/runtime/test/record-store.test.ts`: the repair check's legs
+- `packages/runtime/src/capabilities/design/design.ts`, `packages/runtime/src/capabilities/plan/plan.ts`,
+  `packages/runtime/src/capabilities/plan/unit.ts` and
+  `packages/runtime/src/capabilities/note/notebook.ts`: each calls the one repair check, and its own
+  copy is deleted
+- `packages/runtime/src/capabilities/plan/pin.ts`: the stale header lines
+- `packages/runtime/src/view/**`, including `view/design.ts`, whose `Concept` gets one home with
+  `design.ts`'s; plus repairs that composition exposes
+- `packages/runtime/src/runtime-config.ts`: only if reading the `plan` configuration exposes a defect
+  in the reader
 - `packages/runtime/src/{loader,plugin,main,index}.ts`
 - `packages/runtime/README.md`
 - `packages/runtime/package.json`, `packages/runtime/tsup.config.ts`: only if a subpath export is
@@ -216,5 +251,24 @@ invented, so no test spells the `plan` skill's vocabulary.
      `record-store/`:
      `git grep -nE "writeFileSync|appendFileSync|renameSync|rmSync" -- packages/runtime/src/capabilities/design packages/runtime/src/capabilities/plan packages/runtime/src/capabilities/note`
      prints nothing.
-7. `pnpm verify` passes.
-8. `.changeset/domain-interface.md` names `@cratylus/runtime` and `@cratylus/canon`.
+7. **The repair rule has one home.**
+   - The subset test that decides "introduced" appears in one record-store module only.
+     `git grep -nE "\.every\(\(?\w+\)? => [^;]*\.(includes|has)\(" -- packages/runtime/src/capabilities packages/runtime/src/view`
+     prints only `unit.ts`'s wave-placement line (`deps.every((dep) => placed.has(dep))`). At
+     `85d02326` it also printed `design.ts:384`, `notebook.ts:149`, `plan.ts:196` and `unit.ts:244`.
+   - The same pattern over `packages/runtime/src/record-store` hits exactly one module.
+   - The return names the check's function, and `git grep -l <it> -- packages/runtime/src/capabilities`
+     lists `design.ts`, `plan.ts`, `unit.ts` and `notebook.ts`.
+   - `pnpm --filter @cratylus/runtime test -- record-store` passes with legs covering these cases: a
+     violation whose entities are a subset of a standing one of the same kind is not introduced; the
+     same entities under another kind are introduced; a violation that grows beyond its standing
+     one is introduced; with no standing violations, every one is introduced.
+8. **The W1 residue is gone.**
+   - `git grep -n "reads only its" -- packages/runtime/src/capabilities/plan/pin.ts` prints nothing.
+   - `git grep -nE "(interface|type) Concept\b" -- packages/runtime/src` hits once. At `85d02326` it
+     hit `capabilities/design/design.ts:66` and `view/design.ts:34`.
+   - `git grep -n "configuration" -- packages/runtime/src/capabilities/plan` hits the reader that
+     builds `PlanLifecycle` and `UnitLifecycle` from `loadRuntimeConfig().configuration`. Accept 1's
+     absent-configuration refusal and its invented-state fixtures exercise that reader end to end.
+9. `pnpm verify` passes.
+10. `.changeset/domain-interface.md` names `@cratylus/runtime` and `@cratylus/canon`.
