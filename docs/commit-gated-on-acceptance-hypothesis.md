@@ -1,6 +1,6 @@
 # Hypothesis — orchestrators withhold lane commits because nothing they read defines a commit as durability
 
-Status: **RECTIFIED 2026-09-25.** The original hypothesis (H1: the canon's design/deliver skills
+Status: **RECTIFIED AND APPLIED 2026-09-25.** The original hypothesis (H1: the canon's design/deliver skills
 model a commit as the carrier of an acceptance, and orchestrators derive "no commit before
 acceptance" from that) is **falsified** as the cause. The session evidence and a controlled
 dispatch experiment both locate the cause elsewhere: in the boundary definition of the commit
@@ -115,25 +115,27 @@ It ratifies it, because a cutover is green only at its end.
   was stated twice, once in `design` ("two acts") and once in `deliver` ("two commits"), one law
   with two homes and two wordings. **Repaired 2026-09-25:** `deliver` no longer restates it or
   imports `commit`/`accepts`; it reaches the law through `amend(C) @ design`.
-- **R2 stands, with its content taken from `9a80d1f`.** Every agent that dispatches writers and
-  every agent that writes must carry the commit duty as durability: a commit is durability and
-  never acceptance; on an isolated branch or worktree a boundary is any coherent step, and the
-  message names what is still red; each writer stages and commits only its own paths by
-  pathspec and runs the formatter on those paths first; no dispatch withholds a writer's commit.
-  The natural home in the catalog is the existing `actions` value `file-ops ⟨filesystem vcs⟩`,
-  whose `vcs` factor is exactly where commit semantics belong. At present only `nico` holds it,
-  and neither the `implementer` role nor the dispatching roles do. The dispatcher side may also
-  need a clause on `delegation`. Keep cratylus's `AGENTS.md` convention (Conventional Commits,
-  push gated) as a repo rule, and have it cite the durability duty rather than restate it.
+- **R2 applied.** The durability duty lives in the existing `actions` value
+  `file-ops ⟨filesystem · vcs⟩`, whose `vcs` factor now states that a commit is durability and
+  never acceptance, that on an isolated branch or worktree every coherent step is committed with
+  the red named in the message, that a writer commits only its own paths by pathspec with the
+  formatter run on those paths first, and that no dispatch withholds a writer's commit. The
+  `architect`, `planner` and `implementer` roles now hold it, so `architect`, `kino`, `mav`,
+  `nico`, `planner` and `implementer` all project it; `nico` no longer declares it separately.
+  The `assayer` writes nothing and does not hold it. No `delegation` clause was needed: the
+  dispatcher reads the same value. Cratylus's `AGENTS.md` convention stays as it is, because it
+  binds every session in this repository, including agents the canon did not project, so it
+  cannot cite a dimension value.
 - **R3 (no omp change) stands.**
 
-## Acceptance for the fix
+## Acceptance for the fix (measured 2026-09-25)
 
-- Every projected agent that writes or dispatches writers carries the durability definition,
-  including the isolated-branch clause and the pathspec-formatter clause.
-- A re-run of arm E against the re-projected agents, with no repo commit rule, yields
-  dispatches in which every lane commits its own paths before the unit is green, and no dispatch
-  conditions a commit on green or on acceptance.
-- A re-run of arm H, where the repo's green-gated rule contradicts the projected duty, is
-  recorded as a precedence measurement, not as a pass or fail criterion. A repo rule that gates
-  commits on green is that repo's defect to repair, as cinematiclab did in `9a80d1f`.
+- `pnpm verify` is green, and every projected agent except `assayer` carries the `file-ops`
+  value.
+- Arm E re-run with the value in the `mav` body (no repo commit rule, six dispatches): in 6 of
+  6, every lane commits its own paths at coherent steps with the red named, against 0 of 6
+  before.
+- Arm H re-run with the value (cinematiclab's green-gated rule contradicting it, six
+  dispatches), as a precedence measurement: in 6 of 6, lanes commit before the unit is green,
+  and several dispatches add "never withhold a commit". A repo rule that gates commits on green
+  is still that repo's defect to repair, as cinematiclab did in `9a80d1f`.

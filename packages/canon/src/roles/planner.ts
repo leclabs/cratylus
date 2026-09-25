@@ -1,3 +1,4 @@
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
 import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
@@ -67,6 +68,7 @@ export const plannerRole: RoleCell = {
     framing: decompositional_framing,
     reasoningStrategy: planAndSolve_reasoningStrategy,
     satisficing: optimize_satisficing,
+    actions: [fileOps_actions],
     selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
   },
 };

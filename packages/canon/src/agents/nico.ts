@@ -1,6 +1,5 @@
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
-import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
 import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../dimensions/engineering-principles/cold-decode-oracle.js';
 import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../dimensions/engineering-principles/invoke-the-canonical.js';
@@ -60,7 +59,7 @@ export const nico: Agent = holds(architectRole, {
     helpfulness_guardrails,
     inputUntrusted_guardrails,
   ],
-  actions: [fileOps_actions, codeExecution_actions, delegation_actions],
+  actions: [codeExecution_actions, delegation_actions],
   framing: analytical_framing,
   reasoningStrategy: react_reasoningStrategy,
   satisficing: satisfice_satisficing,

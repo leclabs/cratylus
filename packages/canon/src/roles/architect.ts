@@ -1,3 +1,4 @@
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
@@ -90,6 +91,9 @@ export const architectRole: RoleCell = {
       systemDesign_capabilities,
       researchInvestigation_capabilities,
     ],
+    // `file-ops`: this position writes C and dispatches every writer below it, so it is
+    // where a lane's commit would be withheld; the `vcs` factor forbids that.
+    actions: [fileOps_actions],
     learning: correctionConsolidation_learning,
     situationAwareness: projection_situationAwareness,
     framing: systemsThinking_framing,

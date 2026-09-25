@@ -1,3 +1,4 @@
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
 import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
@@ -47,6 +48,7 @@ export const implementerRole: RoleCell = {
       softwareEngineering_capabilities,
       verificationTesting_capabilities,
     ],
+    actions: [fileOps_actions],
     learning: correctionConsolidation_learning,
     situationAwareness: perception_situationAwareness,
     framing: correctnessOriented_framing,
