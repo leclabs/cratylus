@@ -62,8 +62,8 @@ verbs. That is the accreted corpus carried forward as a constraint, which is the
 `green-field` names, and it was caught by the operator rather than by the work.
 
 A role is a POSITION, and a position is a WHO. The catalog is therefore `architect`, `planner`,
-`implementer`, `contractor`, `assayer`, and the unspecialized holder of each carries the position's
-own name — which `architect` already did, and which is what made it the odd one out.
+`implementer` and `assayer`, and the unspecialized holder of each carries the position's own name —
+which `architect` already did, and which is what made it the odd one out.
 
 The ACTS keep their verbs, and the distinction is the point rather than an inconsistency: `assay` is
 what the assayer does and it is declared as an act in `skills/deliver/skill.ts`, while `assayer` is
@@ -71,29 +71,29 @@ the position declared in `dimensions/role/`. `deliver` reads `assayer : unit ⇀
 beside `assay : artifact → ℘(C)`, and the two are different kinds of thing wearing the register each
 kind takes.
 
-### `build` became `contractor`, and what the two positions actually are
+### `build` is deleted, and `mav` holds `architect`
 
-`build` was the worst of the verbs, because it also failed to say what it named. Its contract is
-`reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩`: a party handed an objective, which
-works out how to reach it, self-performs the bulk, dispatches executors for the rest, integrates,
-ships, and answers for the delivered whole — and which may decide the design in the small but may
-NOT amend the durative design, which escalates. Against `implementer`
-(`reads⟨spec · artifact⟩ → writes⟨artifact⟩`, never sees the design, never redesigns, surfaces a bad
-spec rather than repairing it) the difference is not seniority but the arrow: one reads intent and
-the design and writes specs, the other reads a spec and writes only the artifact.
+`build` was the worst of the verbs because it also failed to say what it named, and chasing the
+right noun for it surfaced the real defect. Its contract was
+`reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩` — the ladder collapsed into one
+agent, which is exactly the pattern the architect arrow exists to forbid. Paired with
+`principal-self` and a human ON the loop it is the long-horizon case, precisely where an agent that
+also edits files spends its context on the cheapest act in the system, drifts into mechanical churn,
+and loses the conceptual objective it was dispatched to hold. An intermediate `contractor` position
+was authored and then deleted; renaming a position the design forbids does not rescue it.
 
-Cold decode over that contract returns `contractor` from every framing tried — the party engaged on
-an objective who subcontracts parts and is liable for the finished thing, and who may frame a wall
-but must go back to the architect to move a load-bearing one, which is the escalation clause
-arriving free with the word. `builder` was rejected for colliding head-on with the implementer,
-whose contract already says `writes⟨artifact⟩`; `developer` decodes as the one who types the code,
-the same collision; `engineer` decodes as a generic competence label naming no slice of the pipeline.
+The position had been written to preserve `mav` as it already was rather than derived from the
+design, which is the same grey-field move as the register defect above, one level up. `mav` now
+holds `architect` as the UNSPECIALIZED one: `kino` has film and `nico` has the corpus, while `mav`
+is pointed at whatever repository it is given, so its lattice is that project's rather than a
+standing domain of its own. It declares `maintenance` and `goal-directed` and nothing else.
 
-The residual is real and is recorded rather than talked away: in software `contract` independently
-means an interface specification, and this corpus additionally calls a role "the contract a peer
-dispatches against", so a minority reading of "the one who holds the contracts" is live. Measured
-cold at roughly 85/15 in favour of the trades sense, which arrives first because the catalog's own
-`architect` has already set the building frame.
+"End-to-end" survives and its meaning moves. Before the ladder, owning an outcome and performing
+every act were the same thing, so `mav`'s archetype fused them; they are separate now, and
+`architect` is the more powerful half — the only position carrying `principal-self`, the only one
+that may author and amend C, and the only one whose `judge` decides that anything advances. The
+cost is real and is the point rather than a side effect: under this contract, `mav` editing a file
+is a declared `descent`.
 
 ### The witness became the act `assay` and the position `assayer`
 
@@ -115,7 +115,7 @@ scalar is the holder's when the key is PRESENT (present-with-`null` is an explic
 the role's otherwise. `provenance.mark` never folds — `holds` copies `declared.provenance` and the
 role vector has no such field, so a holder cannot inherit a mark, and the key is required on the
 identity, so it cannot be dropped by accident. No agent can declare two roles: `holds` takes one
-`RoleCell` and `Declared` omits `role`. Five roles exist; seven agents hold one each.
+`RoleCell` and `Declared` omits `role`. Four roles exist; seven agents hold one each.
 
 Two acceptance criteria were not met as written. The promotion out of `MANIFEST` was rectified
 above. Byte-identical Targets were not achieved either, and the reason is the union rule: role

@@ -2,7 +2,7 @@
 "@cratylus/canon": minor
 ---
 
-A role is a bundle of expected aspects, and five positions now state their contract
+A role is a bundle of expected aspects, and four positions now state their contract
 
 `role` was `arity: 'scalar'` over bare tokens, so the corpus could _name_ a
 position and could not _state_ one. Everything the name should have carried was
@@ -52,12 +52,10 @@ architect of the corpus exactly as `kino` is of the film floor, and the
 domain's one peculiarity is what makes `output-format: code` sit beside that
 contract without contradicting it — here a canon cell IS a concept written
 down, so authoring `dimensions/<d>/<v>.ts` is writing C while the engine that
-projects it is handed out. `mav` holds `contractor`, the only contract in the corpus
-bounded from ABOVE rather than below: it writes spec and artifact, escalates
-anything whose codomain is C, and its characteristic defect is named `ascent`
-as the architect's is `descent`. An agent that quietly amends the design to fit
-what it built has manufactured its own evidence. `mav` declares nothing but its
-identity now, which is the honest reading — `mav` IS the contractor role.
+projects it is handed out. `mav` now holds `architect` too, as the
+UNSPECIALIZED one: it is pointed at whatever repository it is given, so its
+lattice is that project's rather than a standing domain of its own, and it
+declares only `maintenance` and `goal-directed` over the position.
 
 **`assay` is the arrow no role expressed**, and it closes a real contradiction
 rather than adding a position. `deliver` is right that
@@ -114,14 +112,27 @@ from the sibling: a block whose cited span is not literally in the payload is
 discarded, because a fabricated refusal is not a lesser error than a missed
 one.
 
-**`contractor` carries `plan` and refuses `deliver`**, and the split follows from
-the contract rather than from taste. The position reserves
-`decompose ⟨own-work⟩` and `dispatch(executor)`, and `plan` is the corpus's one
-statement of how a decomposition is done correctly, so a principal dispatching
-waves without it is the under-declared-footprint defect with nothing to catch
-it. `deliver` is refused for the same reason `plan` is granted: its spine is
-`validate` against C closing on `amend(C) ⇔ yield`, and `amend(C) ∉ remit` is
-this contract's defining clause.
+**A position that reinstated the defect the ladder removes was authored and
+then retired in the same change**, and it is recorded rather than quietly
+dropped because the reasoning is the instructive part. `mav` was re-seated
+first onto a `contractor` position —
+`reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩` — which is the
+ladder collapsed into one agent. Paired with `principal-self` and a human ON
+the loop, that is the long-horizon case: precisely where an agent that also
+edits files spends its context on the cheapest act in the system, drifts into
+mechanical churn, and loses the conceptual objective it was dispatched to hold.
+The position had been authored to preserve `mav` as it already was rather than
+derived from the design, which is the grey-field move one level up from the
+register defect below. It is deleted, and no role in the corpus writes two
+layers.
+
+**"End-to-end" survives and its meaning moves.** Before the ladder, owning an
+outcome and performing every act were the same thing, so `mav`'s archetype
+fused them. They are separate now, and `architect` is the more powerful half:
+the only position carrying `principal-self`, the only one that may author and
+amend C, and the only one whose `judge` decides that anything advances.
+Reaching the substrate adds nothing to that and costs the one thing no other
+rung can supply.
 
 **Every role is the NOUN for the one who holds it**, and this correction is the
 first pass of this same work catching its own relapse. D3 diagnosed the old
@@ -130,30 +141,17 @@ target (`operate`) — and the repair fixed the anemia while inheriting the
 register verbatim from the token set it replaced, leaving one noun beside four
 verbs. Carrying an accreted corpus forward as a constraint is the grey-field
 relapse, and it survived the whole build. A role is a POSITION and a position
-is a WHO, so the catalog is `architect`, `planner`, `implementer`,
-`contractor`, `assayer`. Acts keep their verbs: `deliver` declares
+is a WHO, so the catalog is `architect`, `planner`, `implementer` and
+`assayer`. Acts keep their verbs: `deliver` declares
 `assay : artifact → ℘(C)` beside `assayer : unit ⇀ agent`, because the two are
 different kinds of thing and each wears the register its kind takes.
 
-**`build` became `contractor`**, and it was the worst of the verbs because it
-also failed to say what it named. The contract is
-`reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩`: handed an
-objective, works out how to reach it, self-performs the bulk, dispatches
-executors for the rest, integrates, ships, answers for the whole — and may
-decide the design in the small while the durative design escalates. Against
-`implementer`, which reads a spec and never the design, the difference is the
-arrow rather than seniority. Cold decode over the contract returns `contractor`
-from every framing: the party engaged on an objective who subcontracts parts
-and is liable for the finished thing, and who may frame a wall but must return
-to the architect to move a load-bearing one — the escalation clause arriving
-free with the word. `builder` collides head-on with the implementer's own
-`writes⟨artifact⟩`; `developer` decodes as the one who types the code;
-`engineer` decodes as a generic competence label naming no slice of the
-pipeline. The residual is recorded rather than talked away: in software
-`contract` also means an interface spec, and this corpus calls a role the
-contract a peer dispatches against, so a minority reading is live — measured
-cold at roughly 85/15 in favour of the trades sense, which arrives first
-because `architect` has already set the building frame.
+**`build` is deleted rather than renamed.** It was the worst of the verbs
+because it also failed to say what it named, and the position it was reaching
+for turned out to be one the design forbids: an agent that reads intent and
+writes the artifact is the collapsed ladder, whatever noun is put on it. The
+function the word was protecting — end-to-end ownership — is the architect's
+loop, and the hands it also implied belong to the implementer.
 
 **The cost, stated plainly: projected order changed.** The set fold emits role
 members before the holder's own, so `kino`'s capabilities now read
