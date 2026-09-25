@@ -59,8 +59,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   converged and read as one. Divergence is state, not error: it is reported, never silently
   resolved. Factors: head.
 - **incoherence** — a domain law broken across entities by a merge, although each branch kept it:
-  a reference to a withdrawn entity, a cycle, one name held by two entities, or more than one bound
-  plan. A name is held by every live entity carrying it, by a withdrawn entity that keeps it, and
+  a reference to a withdrawn entity, a cycle, one name held by two entities, more than one bound
+  plan, or a unit realizing a concept its plan does not. A name is held by every live entity
+  carrying it, by a withdrawn entity that keeps it, and
   by a diverged entity for every name its heads carry. Reported like divergence. Factors: head,
   entity.
 - **reconciliation** — the act resolving divergence or incoherence by a write that restores the
@@ -118,7 +119,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 - **view** — a domain's current state computed at query time and rendered for its reader in three
   layers: a header naming the commit it was computed at, with counts, and saying when uncommitted
   records are included; everything that must be resolved before the rest is trusted (divergence,
-  incoherence, drift, suspect units, owed rulings); then the whole domain in its own structure, one
+  incoherence, drift, suspect units, owed rulings, each naming its cause and what moved, and only
+  what can still be resolved, so a closed plan's frozen units are shown but never asked of); then
+  the whole domain in its own structure, one
   line for every live or diverged item, a diverged one in its place and marked, including one the
   structure cannot yet place. The lattice runs root to primitive, ordered by
   the view from the factors it is given; the plan runs in wave order with the frontier marked in
@@ -135,7 +138,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
     Agents never see record ids, envelopes, heads, records or files; the interface speaks only the
-    domain's words. A payload names entities by name and
+    domain's words, and every name it prints addresses one entity, qualified as the domain does
+    (a unit by its plan). When the substrate itself fails (no repository, a damaged entry) it says
+    so plainly and names what a person must repair. A payload names entities by name and
     the interface resolves them. Where a name cannot address one entity, because a merge left it
     held by more than one, the interface shows and accepts each holder's identity beside the name,
     and only there; that is the one place an identity surfaces, and nothing else is invented to
