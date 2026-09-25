@@ -5,15 +5,17 @@
 // A note is an entity in the record store's `notebook` domain. Its payload is its
 // title, kind, topic, body and whatever it blocks. Its title is its name — a label
 // that can change, never its identity, which the store mints — and the interface
-// addresses a note by it. One live note per title: a write that would put a title
-// on a second live note is refused, while a duplicate a merge left standing is
-// incoherence, reported and never resolved by picking one. A write is refused only
-// for a violation it introduces, so the ordinary write that removes a standing
-// duplicate proceeds.
+// addresses a note by it. One live note per title. A title is held by the live
+// note carrying it, and by a diverged note for every title its heads carry; a
+// withdrawn note holds none. One title held by two notes is incoherence, which a
+// merge alone produces: it is reported, never resolved by picking one. A write is
+// refused only when it introduces a duplicate — one whose notes were not already
+// bound together in a standing duplicate — so a write that shrinks or leaves a
+// duplicate standing proceeds, and every duplicate repairs one write at a time.
 //
 // Anyone may capture, revise, retract or reconcile a note. Capture has no
-// admission bar: it refuses only a malformed shape or a title already live, never
-// a judgement of content. Revising a note supersedes its heads; retracting it
+// admission bar: it refuses only a malformed shape or an introduced duplicate,
+// never a judgement of content. Revising a note supersedes its heads; retracting it
 // writes a retraction that becomes its head. Heads carrying one payload have
 // converged and read as one note, so an ordinary write names every one of them. A
 // diverged note (heads carrying different payloads, left by merged branches) is
@@ -60,10 +62,10 @@ export interface DivergedNote {
   readonly retracted: boolean;
 }
 
-/** One title on more than one live note, left by a merge. */
+/** One title held by more than one note, left by a merge. */
 export interface DuplicateTitle {
   readonly title: string;
-  /** The live notes carrying it, in record-id order. */
+  /** The notes holding it, in record-id order. */
   readonly entities: readonly string[];
 }
 
@@ -98,23 +100,57 @@ function shape(note: Note): Note {
   return { title, kind, topic, body, blocks: [...blocks] };
 }
 
-/** Refuse writing `note` as `entity`'s next version when that puts its title
- *  on a second live note — unless `entity` already carried that title live, in
- *  which case the duplicate stood before the write and the write adds none. */
-function unique(
+/** The titles each note holds: a live note its title, a diverged note every
+ *  title its version heads carry. A withdrawn note holds none. */
+function titles(
   folds: ReadonlyMap<string, Fold<Note>>,
-  entity: string | undefined,
+): Map<string, ReadonlySet<string>> {
+  const held = new Map<string, ReadonlySet<string>>();
+  for (const f of folds.values()) {
+    const names = f.diverged
+      ? f.heads.flatMap((h) => (h.payload === null ? [] : [h.payload.title]))
+      : f.payload === undefined
+        ? []
+        : [f.payload.title];
+    if (names.length > 0) held.set(f.entity, new Set(names));
+  }
+  return held;
+}
+
+/** Every title more than one note holds. */
+function duplicates(
+  held: ReadonlyMap<string, ReadonlySet<string>>,
+): DuplicateTitle[] {
+  const byTitle = new Map<string, string[]>();
+  for (const [entity, names] of held)
+    for (const title of names) {
+      const entities = byTitle.get(title);
+      if (entities) entities.push(entity);
+      else byTitle.set(title, [entity]);
+    }
+  return [...byTitle]
+    .filter(([, entities]) => entities.length > 1)
+    .map(([title, entities]) => ({ title, entities }));
+}
+
+/** Refuse writing `note` as `entity`'s next version when that introduces a
+ *  duplicate: one whose notes are not a subset of a duplicate standing before
+ *  the write. A capture's entity is not minted yet: `''`, which no ULID is. */
+function admit(
+  folds: ReadonlyMap<string, Fold<Note>>,
+  entity: string,
   note: Note,
   verb: string,
 ): void {
-  const own = entity === undefined ? undefined : folds.get(entity)?.payload;
-  if (own?.title === note.title) return;
-  const other = [...folds.values()].find(
-    (f) => f.entity !== entity && f.payload?.title === note.title,
+  const before = titles(folds);
+  const standing = duplicates(before).map((d) => new Set(d.entities));
+  const after = new Map(before).set(entity, new Set([note.title]));
+  const introduced = duplicates(after).find(
+    (d) => !standing.some((s) => d.entities.every((e) => s.has(e))),
   );
-  if (other)
+  if (introduced)
     throw new Error(
-      `notebook: ${verb} refused — the title ${JSON.stringify(note.title)} is already live on note ${other.entity}, and one live note carries a title`,
+      `notebook: ${verb} refused — the title ${JSON.stringify(introduced.title)} is already held by note ${introduced.entities.filter((e) => e !== entity).join(', ')}, and one live note carries a title`,
     );
 }
 
@@ -136,10 +172,10 @@ function settled(
 
 /** The notebook in `store`, folded now. */
 export function notebook(store: RecordStore): Notebook {
+  const folds = fold(store.read<Note>(NOTEBOOK));
   const live: LiveNote[] = [];
   const diverged: DivergedNote[] = [];
-  const byTitle = new Map<string, string[]>();
-  for (const f of fold(store.read<Note>(NOTEBOOK)).values()) {
+  for (const f of folds.values()) {
     if (f.diverged)
       diverged.push({
         entity: f.entity,
@@ -148,31 +184,24 @@ export function notebook(store: RecordStore): Notebook {
         ),
         retracted: f.heads.some((h) => h.envelope.operation === 'retract'),
       });
-    else if (f.payload !== undefined) {
+    else if (f.payload !== undefined)
       live.push({ entity: f.entity, ...f.payload });
-      const entities = byTitle.get(f.payload.title);
-      if (entities) entities.push(f.entity);
-      else byTitle.set(f.payload.title, [f.entity]);
-    }
   }
-  const incoherence = [...byTitle]
-    .filter(([, entities]) => entities.length > 1)
-    .map(([title, entities]) => ({ title, entities }));
-  return { live, diverged, incoherence };
+  return { live, diverged, incoherence: duplicates(titles(folds)) };
 }
 
 /** Capture a note: write its first version, minting its identity. Refuses a
- *  title already live. */
+ *  title another note holds. */
 export function capture(store: RecordStore, note: Note, by: By): LiveNote {
   const payload = shape(note);
-  unique(fold(store.read<Note>(NOTEBOOK)), undefined, payload, 'capture');
+  admit(fold(store.read<Note>(NOTEBOOK)), '', payload, 'capture');
   const record = store.create(NOTEBOOK, payload, by);
   return { entity: record.envelope.entity, ...payload };
 }
 
 /** Revise a note: a whole-state version superseding every head of it (a
  *  withdrawn note included, which it reinstates). Refuses a diverged note and
- *  points to `reconcile`, and refuses a title live on another note. */
+ *  points to `reconcile`, and refuses to introduce a duplicate title. */
 export function revise(
   store: RecordStore,
   entity: string,
@@ -182,7 +211,7 @@ export function revise(
   const payload = shape(note);
   const folds = fold(store.read<Note>(NOTEBOOK));
   const { heads } = settled(folds, entity, 'revise');
-  unique(folds, entity, payload, 'revise');
+  admit(folds, entity, payload, 'revise');
   store.supersede(
     NOTEBOOK,
     entity,
@@ -202,7 +231,7 @@ export function retract(store: RecordStore, entity: string, by: By): void {
 
 /** Reconcile a diverged note: one whole-state version superseding every head,
  *  a retraction among them included. Refuses a note that has not diverged, and
- *  a title live on another note. */
+ *  refuses to introduce a duplicate title. */
 export function reconcile(
   store: RecordStore,
   entity: string,
@@ -210,7 +239,7 @@ export function reconcile(
   by: By,
 ): LiveNote {
   const payload = shape(note);
-  unique(fold(store.read<Note>(NOTEBOOK)), entity, payload, 'reconcile');
+  admit(fold(store.read<Note>(NOTEBOOK)), entity, payload, 'reconcile');
   store.reconcile(NOTEBOOK, entity, payload, by);
   return { entity, ...payload };
 }
