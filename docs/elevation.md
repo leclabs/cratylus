@@ -29,6 +29,9 @@ beside it. Today that composition has no home above the single dimension value, 
 | `architect` is the bare token `` `architect` `` — no definiens                                                                                                                                                        | `packages/canon/src/dimensions/role/architect.ts:3`                                      |
 | `review` is the bare token `` `review` `` — no definiens, composed by no agent                                                                                                                                        | `packages/canon/src/dimensions/role/review.ts:3`                                         |
 | roles carrying a definiens already exist (`build`, `plan`, `curate`, `test`, `operate`, …)                                                                                                                            | same directory                                                                           |
+| `mav` and `nico` declare the SAME role (`build`) and share almost nothing else — role does not separate them                                                                                                          | `agents/mav.ts:34`, `agents/nico.ts:45`                                                  |
+| `curate ≜ ⟨canonical-corpus⟩` is composed by NO agent, while the corpus's actual curator declares `build`                                                                                                             | `dimensions/role/curate.ts:3`, `agents/nico.ts:45`                                       |
+| the role catalog mixes registers — a job (`architect`), an act sequence (`build`), a target (`operate ≜ live-system`) — the tell of a folk category                                                                   | `dimensions/role/*.ts`                                                                   |
 | `kino` and `architect` both declare `skills: ['design','deliver']`, `role: architect`                                                                                                                                 | `agents/kino.ts:45-46`, `agents/architect.ts:59-60`                                      |
 | both also declare `planning-decomposition` in `capabilities`                                                                                                                                                          | `agents/kino.ts:96`, `agents/architect.ts:99`                                            |
 | `software-engineering` is absent from both, deliberately, as the delegation boundary                                                                                                                                  | `agents/architect.ts:94-95`, `agents/kino.ts:86-90`                                      |
@@ -69,8 +72,8 @@ step needs a delegate. What is _not_ correct is delegating the acceptance.
 **D3 — composition stops at the dimension value, so every shared concern is restated per agent.** The
 corpus composes fragments into an agent (`ENGINE.md:24`), skills into skills
 (`skills/deliver/skill.ts:101`), and hook cells into scopes — but it has no name for **a bundle of
-dimension values that travel together as one concern**. The architect elevation is such a bundle: a
-`role`, a `self-evaluation`, a capability set defined as much by what it excludes, and the principles
+dimension values that travel together as one concern**. The architect elevation is such a bundle: an
+elevation pair, a `self-evaluation`, a capability set defined as much by what it excludes, and the principles
 that hold it. Because that bundle is unnamed, the only way to give it to a second agent is to retype
 it, which `kino.ts:41-44` does deliberately — "a specialization is a FULL cell, so the declaration is
 copied rather than inherited". That conclusion protects a real requirement at the wrong seam: what
@@ -121,9 +124,15 @@ which is the one language the principal can check without descending.
 
 ## 4. Decided calls — implement these, do not relitigate
 
-1. **`role` acquires definientia; no new axis is minted.** A `delegation` dimension would fold the same
-   concept twice: `role` already means what an agent is and therefore what it does and does not do.
-   Roles with definientia already exist in the catalog, so this is precedent, not a new pattern.
+1. **The concept is a STRATUM, not a role, and it is minted as its own axis.** An agent is an arrow
+   between representational layers — it reads one and writes another — and `elevation` is the pair
+   ⟨reads, writes⟩ over the ladder `intent → C → spec → artifact`. `role` is the folk name for the
+   _product_ of that arrow with the agent's subject matter, which is why the catalog cannot separate
+   `mav` from `nico` (both `build`) and why `curate ≜ ⟨canonical-corpus⟩` sits unused while the actual
+   curator declares something else. Delegation is **not** a second axis and stays rejected for the
+   original reason — it is a theorem of the stratum: an act whose domain or codomain lies outside an
+   agent's declared pair is delegated, necessarily and without a second declaration. `role` survives
+   as the label it already is; nothing about elevation is homed in it.
 2. **`planning-decomposition` comes off the architect-elevation composite,** which is one edit
    reaching every agent that composes it. It is the declaration that contradicts the rung. The
    composite keeps `system-design`, `research-investigation`, `review-critique`; `kino` keeps its two
@@ -136,7 +145,7 @@ which is the one language the principal can check without descending.
    `gates` in the stance manifest is keyed by owning cell precisely so a second guarded dimension is a
    second entry. Appending to the 27 kB stance rubric would force every autonomy judgment to carry role
    text it must ignore.
-5. **The witness is an agent cell composing `review`, and its return is concept-typed.** It performs
+5. **The witness is an agent cell carrying the `⟨artifact, C⟩` elevation, and its return is concept-typed.** It performs
    the reverse translation of `plan`, reports unachieved concepts in `C`'s vocabulary, and never
    returns mechanical prose or a verdict.
 6. **The reusable unit is a named partial selection — a COMPOSITE — and an agent composes any number
@@ -196,7 +205,7 @@ set-like and the two prose fields agent-stated (a composite may supply a default
 supplying different ones is a collision). `provenance.mark` never composes: it is instance-bound by
 `skills/create-agent/skill.ts:21` and shared marks make two agents indistinguishable in a transcript.
 
-Then mint the **architect-elevation composite** from what `architect.ts` states today — its `role`,
+Then mint the **architect-elevation composite** from what `architect.ts` states today — its elevation,
 `objective`, `autonomy` set, engineering principles, `capabilities`, `self-evaluation`,
 `situation-awareness`, `learning`, `skills` — and rewrite **both** `agents/architect.ts` and
 `agents/kino.ts` as compositions of it. `architect` adds `framing: systems-thinking`,
@@ -212,42 +221,52 @@ change — run as a before/after diff, not asserted; a scalar collision fails `a
 naming the dimension, the composites and the conflicting values; reordering `composes` changes no
 emitted byte; an agent omitting `provenance.mark` fails rather than receiving one.
 
-### U1 · `role/architect` gains its definiens
+### U1 · The architect stratum, authored as its own value
 
-Rewrite `packages/canon/src/dimensions/role/architect.ts` so the value states the rung, what it
-reserves, and what it hands down. The value is authored **once** in the role catalog and named
-**once** by the architect-elevation composite, so `kino` states nothing of its own about elevation —
-its elevation is not its own. Shape (the builder signifies the final form; these are the concepts
-that must appear):
-
-```
-architect ≜ conceptual-rung ⟨holds C · ¬ substrate⟩
-  reserves ⟨author(C) · cut(C) · judge ⟨validate-as-decision⟩ · amend(C)⟩
-  delegates ⟨decompose ↦ planner@plan · build ↦ implementer · lift ↦ witness@review⟩
-  descent ≜ performing a delegated act itself ⟨defect · ¬ diligence⟩
-```
-
-**Acceptance.** `architect.ts` exports a `Role` whose text names all three delegated acts and the
-descent clause; `pnpm typecheck` and the corpus `accept()` gate pass; the projected `architect` **and
-`kino`** Targets both carry the text verbatim in their Role section, with `kino` having gained it by
-composition and not by a second declaration.
-
-### U2 · `role/review` gains its definiens
-
-`review` is composed by nothing today, so it is free to carry the witness's contract. It is the
-**adjoint of `plan`** and must be signified as such:
+Author the elevation value on the new axis (U0 decides its catalog home; it is **not**
+`dimensions/role/architect.ts`, which stays the bare job label it is). The value states the pair, the
+acts the pair reserves, and — as a consequence rather than a list — what falls outside it. It is
+authored **once** and named **once** by the architect-elevation composite, so `kino` states nothing
+of its own about elevation; its elevation is not its own. Shape (the builder signifies the final
+form; these are the concepts that must appear):
 
 ```
-review ≜ lift ⟨artifact → C · the REVERSE of plan : C → spec⟩
-  reads ⟨what LANDED⟩ ∧ holds ⟨C · realizes(unit)⟩ ∧ ∌ spec
+stratum ≜ ⟨intent ≺ C ≺ spec ≺ artifact⟩ ⟨the ladder · ≺ = more-abstract-than⟩
+elevation(a) ≜ ⟨reads(a), writes(a)⟩ ⟨an agent IS an arrow between layers⟩
+
+architect ≜ ⟨reads ⟨intent · C⟩, writes C⟩
+  reserves ⟨author(C) · cut(C) · amend(C) · judge ⟨the DECISION on a lifted return⟩⟩
+  ∀ act : domain(act) ⊀ reads ∨ codomain(act) ≠ writes ⇒ DELEGATED
+    ⟨∴ decompose ⟨C → spec⟩ ↦ planner · build ⟨spec → artifact⟩ ↦ implementer ·
+      lift ⟨artifact → C⟩ ↦ witness — DERIVED, ¬ enumerated⟩
+  descent ≜ performing an act outside the pair ⟨defect · ¬ diligence⟩
+```
+
+The delegation line is the reason this is a stratum and not a list: `planner`, `implementer` and
+`witness` appear as _consequences_ of the pair, so an act nobody anticipated is still correctly
+classified. A role value could only ever have enumerated them.
+
+**Acceptance.** The value names the pair and derives delegation from it rather than listing it;
+`pnpm typecheck` and the corpus `accept()` gate pass; the projected `architect` **and `kino`** Targets
+both carry the text verbatim, with `kino` having gained it by composition and not by a second
+declaration.
+
+### U2 · The witness stratum, the adjoint of `plan`
+
+The witness's elevation is the arrow no existing value expresses: `artifact → C`. Authored on the
+same axis as U1, it is the **adjoint of `plan`** (`C → spec`) and must be signified as such:
+
+```
+witness ≜ ⟨reads artifact, writes C⟩ ⟨the ADJOINT of plan : ⟨reads C, writes spec⟩⟩
+  holds ⟨C · realizes(unit)⟩ ∧ ∌ spec ⟨two descriptions @ deliver⟩
   answers ⟨spells · covers · sole⟩ @ deliver ↦ achieved : c → 𝔹
   emits ⟨c ∈ C · ¬achieved · uncovered-factor ⟨∈ factors(c)⟩ · locus ⟨address · ¬ excerpt⟩⟩
   ¬ emits ⟨verdict ⟨accept ∉ remit⟩ · mechanism-prose ⟨naming · structure · test-quality⟩⟩
-  mechanism-prose ⇒ defect ⟨the principal's elevation is the thing being protected⟩
+  mechanism-prose ⇒ defect ⟨writes ≠ C ∴ outside the pair · it descends the principal⟩
 ```
 
-**Acceptance.** As U1, plus: the value names both the lift and the two prohibitions; no existing
-agent's projection changes (nothing composes `review` yet).
+**Acceptance.** As U1, plus: the value names the arrow and both prohibitions; no existing agent's
+projection changes (nothing carries this elevation until U5).
 
 ### U3 · Capability correction — one edit on the composite
 
@@ -296,7 +315,7 @@ New `packages/canon/src/agents/<σ*>.ts`. **The builder names it** by cold decod
 it is not "reviewer" by default, and `reviewer` is already a harness built-in, so the name must not
 collide. Vector constraints that are decided:
 
-- `role: review` (U2).
+- elevation `⟨reads artifact, writes C⟩` (U2). Its `role` stays the plain job label it always was.
 - `capabilities`: substrate reading is its whole job, so `software-engineering` is **present** here —
   this is the agent that descends, so the principal does not.
 - `objective` / `self-evaluation`: its output is a concept-typed report; anything rewarding it for a
@@ -320,9 +339,9 @@ shape and the only one that can see a mid-turn descent.
 - `substrate: 'harness'`, `events: ['subagent.dispatch.pre', <tool-use-pre moment>]`.
 - Its rubric is a **separate file** deployed to the vendor-neutral `.agents/` root, reached by the same
   derivation the existing workers use (`stance-guardrail.sh:87-100`).
-- The rubric **quotes the `role` value verbatim**, exactly as the stance rubric quotes `handoff ≜ …`.
+- The rubric **quotes the elevation value verbatim**, exactly as the stance rubric quotes `handoff ≜ …`.
   It scores the declared contract, never an authored opinion about good behaviour. One rubric serves
-  every agent composing the elevation: `architect` and `kino` resolve to the same role value, so the
+  every agent composing the elevation: `architect` and `kino` resolve to the same value, so the
   gate needs no knowledge of either name — which is the same law the stance guard learned when its
   agent allowlist drifted (`packages/canon/CHANGELOG.md:12-18`).
 - It BLOCKS: a dispatch to an implementer for a piece that was never decomposed by a planner; an edit
@@ -341,7 +360,8 @@ deployed artifact.
 
 ## 6. Do not
 
-- Do **not** mint a `delegation` or `elevation` dimension. The concept's home is `role`.
+- Do **not** home elevation in `role`, and do **not** mint a `delegation` axis. Elevation is a
+  stratum pair; delegation is its theorem, never a second declaration.
 - Do **not** let the witness emit accept/reject, or prose about naming, structure or test quality.
   Either one re-descends the principal and defeats the cell's purpose (`skill.ts:9-12`).
 - Do **not** let the witness hold the executor's spec. Two descriptions is the whole mechanism.
