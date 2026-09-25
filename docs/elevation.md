@@ -6,20 +6,27 @@
 acts it must hand down. It is the concept `architect` and `kino` are built around and the one thing
 about them nothing declares, nothing projects, and no gate can score.
 
-**`kino` IS an architect.** Read this document that way throughout. The two are separate agent cells
-mechanically, and `kino` is not a second rung: it holds the **architect elevation** and adds the
-concerns of generative-video production. Every law below about that elevation — what it reserves,
-what it delegates, what the gate scores — is one law stated once and holding for every agent that
-composes it. Where the document names the two separately it is naming two compositions sharing a
-concern, never two concepts.
+**`kino` IS an architect — literally, not by analogy.** A **role is a bundle of expected aspects**:
+in the world, naming someone an architect tells you how they reason, what they are accountable for,
+what they may decide, what they must delegate, and what they are never asked to do. That is the
+standard sociological account — a role is the set of expectations attached to a position (Linton), a
+person holds a **role-set** rather than one role (Merton), and incompatible demands between two held
+roles are **role conflict**, a named phenomenon with named resolutions rather than an undefined
+state. This document adopts that account unreservedly, because it is what the word already means and
+because a corpus whose roles mean what roles mean needs no second vocabulary.
 
-**The relation is COMPOSITION, not inheritance.** `kino` does not derive from `architect`; both
-compose the same elevation. This is not a stylistic preference — an is-a lineage admits one parent
-and makes identity a chain, while the whole point is that a persona carries several **orthogonal**
-concerns at once and may compose a new one without being re-parented. Inheritance would also be an
-import: `compose` is already this corpus's only assembly operator, for agents, skills and hooks
-alike, and `first-principles ⟨¬inherit source-framing⟩` forbids borrowing an OOP relation to sit
-beside it. Today that composition has no home above the single dimension value, which is defect D3.
+It follows that `kino` and `architect` share a vast commonality **by construction**: anyone acting as
+an architect carries the architect bundle. `kino` holds that bundle and a second one — the
+generative-video production domain. `mav` and `nico` collide on `build` today for the same reason in
+reverse: `build` is a _label_, not a bundle, so it cannot separate two agents whose real expectations
+differ completely.
+
+**The relation is COMPOSITION, not inheritance.** `kino` does not derive from `architect`; both hold
+the architect role. An is-a lineage admits one parent and makes identity a chain, while a person or
+agent holds several roles at once — architect, bibliographer, priest, parent — and acquires a new one
+without being re-parented. The aspects union; where two roles demand different values of the same
+aspect, that is role conflict and must be declared, never silently merged. Today a role in this
+corpus is a bare scalar token, which is defect D3.
 
 ## 1. What is true today (census, 2026-09-25)
 
@@ -69,20 +76,20 @@ descend into the substrate on every wave, and by wave three the design-holder is
 a lattice it no longer has the context to hold. The operator's instinct is correct: the acceptance
 step needs a delegate. What is _not_ correct is delegating the acceptance.
 
-**D3 — composition stops at the dimension value, so every shared concern is restated per agent.** The
-corpus composes fragments into an agent (`ENGINE.md:24`), skills into skills
-(`skills/deliver/skill.ts:101`), and hook cells into scopes — but it has no name for **a bundle of
-dimension values that travel together as one concern**. The architect elevation is such a bundle: an
-elevation pair, a `self-evaluation`, a capability set defined as much by what it excludes, and the principles
-that hold it. Because that bundle is unnamed, the only way to give it to a second agent is to retype
-it, which `kino.ts:41-44` does deliberately — "a specialization is a FULL cell, so the declaration is
-copied rather than inherited". That conclusion protects a real requirement at the wrong seam: what
-must be full is the **Target**, since a harness reads a flat declaration and never a resolution
-chain, and `select` runs before `compose` and `deploy`, so a composite resolved there emits a Target
-every bit as flat as today's. The duplication bought nothing and cost 19 of 22 dimensions restated,
-with a corpus where fixing the architect's elevation means remembering to fix it twice. This document
-was written into the same defect — every unit below said "`kino` and `architect`" where one composite
-would do.
+**D3 — a role here is a label, not a bundle, so every shared expectation is restated per agent.**
+`role` is `arity: 'scalar'` and its values are single tokens (`architect`, `build`, `review`), so the
+corpus can _name_ a role and cannot _state_ one. Everything the name is supposed to carry — how the
+holder reasons, what it is accountable for, what it may decide, what it must delegate — has to be
+retyped on every agent that holds the role. `kino.ts:41-44` does exactly that, deliberately: "a
+specialization is a FULL cell, so the declaration is copied rather than inherited". That conclusion
+protects a real requirement at the wrong seam. What must be full is the **Target**, since a harness
+reads a flat declaration and never a resolution chain, and `select` runs before `compose` and
+`deploy`, so a role resolved there emits a Target every bit as flat as today's. The duplication
+bought nothing and cost 19 of 22 dimensions restated, with a corpus where fixing what it means to be
+an architect means remembering to fix it twice. The anemia is also why the catalog is incoherent:
+with no bundle to hold them, the tokens drifted into different registers — a job (`architect`), an
+act sequence (`build`), a target (`operate ≜ live-system`) — and `curate` ended up composed by
+nobody while the actual curator declares `build`.
 
 ## 3. The cut that resolves D2 — the adjoint of `plan`
 
@@ -124,19 +131,19 @@ which is the one language the principal can check without descending.
 
 ## 4. Decided calls — implement these, do not relitigate
 
-1. **The concept is a STRATUM, not a role, and it is minted as its own axis.** An agent is an arrow
-   between representational layers — it reads one and writes another — and `elevation` is the pair
-   ⟨reads, writes⟩ over the ladder `intent → C → spec → artifact`. `role` is the folk name for the
-   _product_ of that arrow with the agent's subject matter, which is why the catalog cannot separate
-   `mav` from `nico` (both `build`) and why `curate ≜ ⟨canonical-corpus⟩` sits unused while the actual
-   curator declares something else. Delegation is **not** a second axis and stays rejected for the
-   original reason — it is a theorem of the stratum: an act whose domain or codomain lies outside an
-   agent's declared pair is delegated, necessarily and without a second declaration. `role` survives
-   as the label it already is; nothing about elevation is homed in it.
-2. **`planning-decomposition` comes off the architect-elevation composite,** which is one edit
-   reaching every agent that composes it. It is the declaration that contradicts the rung. The
-   composite keeps `system-design`, `research-investigation`, `review-critique`; `kino` keeps its two
-   minted film capabilities in its own generative-video composite.
+1. **A role is a BUNDLE of expected aspects, and `role` stops being a scalar dimension.** It is
+   promoted out of the dimension catalog entirely: a role is a named partial vector _over_ dimensions,
+   one level above them. `elevation` — the pair ⟨reads, writes⟩ over the ladder
+   `intent → C → spec → artifact` — becomes one **dimension inside** the architect bundle, alongside
+   how the holder reasons, what it is accountable for, and what it may decide. It is the aspect the
+   gate scores, and it earns that position because delegation is its theorem: an act whose domain or
+   codomain falls outside an agent's declared pair is delegated, necessarily and without a second
+   declaration. `delegation` therefore stays rejected as an axis, now for a sharper reason than
+   before.
+2. **`planning-decomposition` comes off the architect role,** which is one edit reaching every agent
+   that holds it. It is the declaration that contradicts the rung. The role keeps `system-design`,
+   `research-investigation`, `review-critique`; `kino` keeps its two film capabilities in its
+   generative-video role.
 3. **The elevation gate binds `subagent.dispatch.pre` and a tool-use-pre moment — never `turn.end`.**
    Descending the rung is a mid-turn act: dispatching an implementer where a planner belongs, or editing
    a file at all. Stop fires after the text and is structurally blind to it. This is the same blind spot
@@ -145,88 +152,83 @@ which is the one language the principal can check without descending.
    `gates` in the stance manifest is keyed by owning cell precisely so a second guarded dimension is a
    second entry. Appending to the 27 kB stance rubric would force every autonomy judgment to carry role
    text it must ignore.
-5. **The witness is an agent cell carrying the `⟨artifact, C⟩` elevation, and its return is concept-typed.** It performs
-   the reverse translation of `plan`, reports unachieved concepts in `C`'s vocabulary, and never
-   returns mechanical prose or a verdict.
-6. **The reusable unit is a named partial selection — a COMPOSITE — and an agent composes any number
-   of them.** Not a parent, not an `extends`, not a base class. `select` already has the type
-   (`DimensionName ⇸ ℘(fragment)`, `ENGINE.md:24`), so a composite is a named partial value of that
-   same type and `select(a)` becomes the ⊕-fold of everything `a` composes plus what `a` says for
-   itself. The operation is associative and order-free, which is what makes orthogonal concerns
-   combinable: `kino` composes the architect elevation **and** a generative-video concern, and a
-   third concern later is a third entry, not a re-parenting. No abstract base cell is minted, and
-   `architect` the agent becomes exactly what `kino` is — a thin cell composing the elevation.
+5. **The witness is an agent holding a witness role whose elevation is `⟨artifact, C⟩`,** and its
+   return is concept-typed. It performs the reverse translation of `plan`, reports unachieved
+   concepts in `C`'s vocabulary, and never returns mechanical prose or a verdict.
+6. **An agent holds a ROLE-SET, and its vector is the union of its roles plus its own residue.** No
+   new primitive is minted for this and no `composite`/`extends`/`base` anchor is coined: the word
+   for a bundle of expected aspects is **role**, and the corpus already has it — anemically. The
+   reusable unit was never missing, only never written down. `architect` the agent becomes what
+   `kino` is: a thin cell holding roles.
 
 ## 5. Units
 
 Order matters only where stated. Each unit's acceptance criteria are mechanical.
 
-### U0 · Composites — DO THIS FIRST
+### U0 · Roles as bundles — DO THIS FIRST
 
-Every other unit below is stated against a composite and shrinks to one edit once this exists.
+Every other unit below is stated against a role and shrinks to one edit once this exists.
 
-A **composite** is a named partial selection: a bundle of dimension values that travel together as
-one concern, of the same type `select` already returns. An agent declares the composites it carries
-and the values it states for itself; `select` folds them **before** `compose`/`deploy`, so the
-emitted Target is as flat as it is today and `kino.ts:41-44`'s real requirement is met at the seam
-that actually holds it. (The builder cold-decodes the anchor for this concept; `composite` is this
-document's working handle, and it must not be `extends`, `base`, `parent` or `mixin`, each of which
-signifies a lineage this relation does not have.)
+Promote `role` out of `MANIFEST` — it is not a dimension, it is a structure over dimensions. A role
+is a named partial vector: the aspects expected of anyone holding it. An agent declares its
+**role-set** and the residue it states for itself; `select` folds them **before** `compose`/`deploy`,
+so the emitted Target is as flat as it is today and `kino.ts:41-44`'s real requirement is met at the
+seam that actually holds it.
 
 `⊕` is governed by the `arity` the manifest already carries — no second table, no per-dimension
 special cases:
 
 ```
-composite ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED · partial · the type select RETURNS⟩
-composes : agent → [composite] ⟨any number · orthogonal concerns⟩
-own : agent → (DimensionName ⇸ ℘(fragment)) ⟨what the agent states for itself⟩
-select(a) = (⊕ composes(a)) ⊕ own(a)
-⊕ ⊨ arity @ manifest ⟨arity(d) = set ⇒ ∪ · arity(d) = scalar ⇒ see collision⟩
-⊕ associative ∧ ⊕ order-free ⟨∄ precedence by position · a last-wins rule would make composition
-    ORDER-SENSITIVE and silently resolve a conflict the corpus should be told about⟩
-collision ⇔ ∃ scalar d : |⊕(d)| > 1 ∧ d ∉ own(a)
-collision ⇒ REFUSE @ accept ⟨naming d, the composites, and the values⟩
-    ⟨remedy : own(a)(d) states the value EXPLICITLY ⟨⊕σ* where the concept is genuinely combined⟩
-     ∨ arity(d) is wrong ∧ the CATALOG is amended ⟨a deliberate act, ¬ an implicit merge⟩⟩
-∀ required d : d ∈ select(a) ⟨a composed value satisfies required · an unconfined agent is still unconfined⟩
-provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · every agent declares its OWN⟩
+role ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED · partial · the EXPECTATIONS of anyone holding it⟩
+       ⟨∉ MANIFEST : a role is made OF dimension values ∴ ¬ one of them⟩
+role-set : agent → ℘(role) ⟨Merton · architect ∧ bibliographer ∧ priest ∧ parent⟩
+residue : agent → (DimensionName ⇸ ℘(fragment)) ⟨the holder beyond their roles⟩
+select(a) = (⊕ role-set(a)) ⊕ residue(a)
+⊕ ⊨ arity @ manifest ⟨arity(d) = set ⇒ ∪ · arity(d) = scalar ⇒ see role-conflict⟩
+⊕ associative ∧ ⊕ order-free ⟨∄ precedence by position · last-wins would make the vector
+    ORDER-SENSITIVE and silently settle a conflict the corpus should be told about⟩
+role-conflict ⇔ ∃ scalar d : |⊕(d)| > 1 ∧ d ∉ residue(a)
+role-conflict ⇒ REFUSE @ accept ⟨naming d, the roles, and the demanded values⟩
+    ⟨remedy : residue(a)(d) states the value EXPLICITLY ⟨⊕σ* where genuinely combined⟩
+     ∨ arity(d) is wrong ∧ the CATALOG is amended ⟨deliberate, ¬ an implicit merge⟩⟩
+∀ required d : d ∈ select(a) ⟨a role-supplied value satisfies required⟩
+provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · the PERSON, ¬ the role⟩
 ```
 
-**The scalar collision rule is the load-bearing part, and it is what makes "multiple roles" an
-answerable question rather than an undefined one.** Composing two composites that each name a `role`
-is not silently merged and not resolved by declaration order: it fails at `accept()` naming both
-values. Two concerns colliding on a scalar are, by definition, not orthogonal, and the corpus says so
-at build time. The agent then either states the combined value itself — authored as `⊕σ*`, which the
-prime principle already permits for a genuinely combined concept — or the collision is evidence that
-the dimension's `arity` is wrong and the catalog is amended deliberately.
+**Role conflict is the load-bearing rule, and it is why "multiple roles" is answerable here rather
+than undefined.** Hold architect and parent at once and the aspects union cleanly until two roles
+demand different values of one scalar aspect — `formality`, say. In the world that is resolved by
+situational salience, and situation is exactly what a static agent vector does not have. So the
+corpus refuses at `accept()`, naming both roles and both values, and the agent's holder settles it in
+its residue. Silence would be the one unacceptable answer: an agent whose formality was decided by
+import order is an agent nobody authored.
 
-Non-dimension fields — `description`, `archetype`, `skills` — compose the same way, with `skills`
-set-like and the two prose fields agent-stated (a composite may supply a default; two composites
-supplying different ones is a collision). `provenance.mark` never composes: it is instance-bound by
-`skills/create-agent/skill.ts:21` and shared marks make two agents indistinguishable in a transcript.
+Non-dimension fields — `description`, `archetype`, `skills` — fold the same way, with `skills`
+set-like and the prose fields holder-stated (a role may supply a default; two roles supplying
+different ones is a conflict). `provenance.mark` never folds: it belongs to the holder, not the role,
+and shared marks make two agents indistinguishable in a transcript.
 
-Then mint the **architect-elevation composite** from what `architect.ts` states today — its elevation,
+Then write the **architect role** out in full from what `architect.ts` states today — its elevation,
 `objective`, `autonomy` set, engineering principles, `capabilities`, `self-evaluation`,
 `situation-awareness`, `learning`, `skills` — and rewrite **both** `agents/architect.ts` and
-`agents/kino.ts` as compositions of it. `architect` adds `framing: systems-thinking`,
-`transparency: decision-rationale` and its own prose; `kino` composes the same elevation plus a
-generative-video composite carrying `film-production`, `generative-video`, `framing: user-centered`
-and `transparency: provenance-attribution`, and adds its own prose and mark. Neither file restates a
-shared value. Replace the `kino.ts:41-44` comment, which argued for the copy, with one naming the
-composites.
+`agents/kino.ts` as holders of it. `architect` adds `framing: systems-thinking`,
+`transparency: decision-rationale` and its own prose as residue; `kino` holds the same architect role
+plus a generative-video role carrying `film-production`, `generative-video`, `framing: user-centered`
+and `transparency: provenance-attribution`, with its own prose and mark as residue. Neither file
+restates a shared expectation. Replace the `kino.ts:41-44` comment, which argued for the copy, with
+one naming the role-set.
 
 **Acceptance.** Neither `architect.ts` nor `kino.ts` states any dimension the other also states;
 `pnpm project` emits both Targets **byte-identical** to today's except for what U1/U3 deliberately
-change — run as a before/after diff, not asserted; a scalar collision fails `accept()` with a message
-naming the dimension, the composites and the conflicting values; reordering `composes` changes no
+change — run as a before/after diff, not asserted; a role conflict fails `accept()` with a message
+naming the dimension, the roles and the conflicting values; reordering an agent's role-set changes no
 emitted byte; an agent omitting `provenance.mark` fails rather than receiving one.
 
-### U1 · The architect stratum, authored as its own value
+### U1 · The architect role's elevation aspect
 
-Author the elevation value on the new axis (U0 decides its catalog home; it is **not**
-`dimensions/role/architect.ts`, which stays the bare job label it is). The value states the pair, the
-acts the pair reserves, and — as a consequence rather than a list — what falls outside it. It is
-authored **once** and named **once** by the architect-elevation composite, so `kino` states nothing
+Author the `elevation` dimension value that the architect role carries. It states the pair, the acts
+the pair reserves, and — as a consequence rather than a list — what falls outside it. Authored
+**once** and named **once**, by the architect role, so `kino` states nothing
 of its own about elevation; its elevation is not its own. Shape (the builder signifies the final
 form; these are the concepts that must appear):
 
@@ -251,7 +253,7 @@ classified. A role value could only ever have enumerated them.
 both carry the text verbatim, with `kino` having gained it by composition and not by a second
 declaration.
 
-### U2 · The witness stratum, the adjoint of `plan`
+### U2 · The witness role's elevation aspect — the adjoint of `plan`
 
 The witness's elevation is the arrow no existing value expresses: `artifact → C`. Authored on the
 same axis as U1, it is the **adjoint of `plan`** (`C → spec`) and must be signified as such:
@@ -268,11 +270,11 @@ witness ≜ ⟨reads artifact, writes C⟩ ⟨the ADJOINT of plan : ⟨reads C, 
 **Acceptance.** As U1, plus: the value names the arrow and both prohibitions; no existing agent's
 projection changes (nothing carries this elevation until U5).
 
-### U3 · Capability correction — one edit on the composite
+### U3 · Capability correction — one edit on the role
 
-Remove `planningDecomposition_capabilities` from the architect-elevation composite, with its import.
-After U0 that is the whole unit: every agent composing it carries the corrected set, and `kino`'s own
-composite names only the two film capabilities. Delete the now-false comment fragment "the
+Remove `planningDecomposition_capabilities` from the architect role, with its import.
+After U0 that is the whole unit: every agent holding it carries the corrected set, and `kino`'s
+generative-video role names only the two film capabilities. Delete the now-false comment fragment "the
 decomposition that hands work out" wherever U0 left it.
 
 **Acceptance.** Neither projected Target lists planning-decomposition, and only ONE source file was
@@ -370,13 +372,13 @@ deployed artifact.
 - Do **not** try to enforce elevation by deleting capabilities alone. U3 is necessary and is not
   sufficient: an absence cannot be cited by a gate, which is defect D1.
 - Do **not** remove `deliver` from `kino`. Judgment stays with the design-holder; only the read moves.
-- Do **not** resolve composites at deploy time or leave one unresolved in the Target. A harness reads
+- Do **not** resolve a role-set at deploy time or leave one unresolved in the Target. A harness reads
   a flat declaration; the fold belongs at `select`, before `compose`.
 - Do **not** implement this as inheritance — no `extends`, no parent pointer, no single-base chain,
-  and no abstract cell nobody dispatches. An agent composes N orthogonal concerns; `architect` is a
+  and no abstract cell nobody dispatches. An agent holds N roles; `architect` is a
   thin composition exactly as `kino` is.
-- Do **not** resolve a scalar collision by declaration order or by last-wins. It fails at `accept()`,
-  and the fix is an explicit value or an arity the catalog amends deliberately.
+- Do **not** resolve a role conflict by declaration order or by last-wins. It fails at `accept()`,
+  and the fix is an explicit value in the holder's residue, or an arity the catalog amends deliberately.
 - Do **not** let `provenance.mark` compose. It is instance-bound, and two agents sharing a mark are
   indistinguishable in the one place an operator reads them.
 - Do **not** treat `kino` as a second rung with its own elevation laws. It is the same elevation
