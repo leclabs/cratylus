@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 import {
   changes,
   immutabilityGate,
+  pushed,
 } from '../src/record-store/immutability-gate.js';
 import { RECORDS_ROOT } from '../src/record-store/store.js';
 import { ulid } from '../src/ulid.js';
@@ -185,6 +186,8 @@ describe('immutability gate', () => {
     put(repo, added, '{"v":2}');
     git(repo, 'commit', '-q', '-am', 'edit');
     expect(immutabilityGate(changes(`${base}..HEAD`, repo))).toEqual([added]);
+    // a push reads its commits too
+    expect(immutabilityGate(pushed(base, 'HEAD', repo))).toEqual([added]);
   });
 
   it('a record edited then restored within one range REFUSES, naming its path', () => {
@@ -196,5 +199,28 @@ describe('immutability gate', () => {
     git(repo, 'commit', '-q', '-am', 'restore');
     expect(git(repo, 'diff', '--name-only', base, 'HEAD')).toBe('');
     expect(immutabilityGate(changes(`${base}..HEAD`, repo))).toEqual([record]);
+  });
+
+  it('a push that rewrites history to drop a record REFUSES, naming its path', () => {
+    const { repo } = repositoryWithRecord();
+    const fork = git(repo, 'rev-parse', 'HEAD');
+    const dropped = put(
+      repo,
+      `${RECORDS_ROOT}/concept/${ulid()}.json`,
+      '{"v":1}',
+    );
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'add');
+    const before = git(repo, 'rev-parse', 'HEAD');
+    // the control: a fast-forward push of an added record passes
+    expect(immutabilityGate(pushed(fork, before, repo))).toEqual([]);
+    git(repo, 'reset', '-q', '--hard', fork);
+    put(repo, `${RECORDS_ROOT}/concept/${ulid()}.json`, '{"v":1}');
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'rewritten');
+    const after = git(repo, 'rev-parse', 'HEAD');
+    // no commit of the rewritten range deletes it, so its commits alone pass
+    expect(immutabilityGate(changes(`${before}..${after}`, repo))).toEqual([]);
+    expect(immutabilityGate(pushed(before, after, repo))).toEqual([dropped]);
   });
 });

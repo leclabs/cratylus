@@ -42,14 +42,17 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # THE IMMUTABILITY GATE over the pushed range: every commit in it is judged against
-      # each of its parents, and any change under the records root that is not an addition
-      # is refused, naming its paths — so a later commit cannot mask an earlier edit. It
-      # runs from source, so it needs no build and runs before one. The range is the pull
-      # request's commits (base..head: those head holds and base does not, so records main
-      # gained since the fork are never read) or a push's `before` to `after`. A push with
-      # no `before` (the zero sha, a new branch) and any other event read the whole
-      # history of head. `fetch-depth: 0` above holds every commit the range names.
+      # THE IMMUTABILITY GATE: every commit in the range is judged against each of its
+      # parents, and any change under the records root that is not an addition is refused,
+      # naming its paths — so a later commit cannot mask an earlier edit. It runs from
+      # source, so it needs no build and runs before one. A pull request is read as its
+      # commits (base..head: those head holds and base does not, so records main gained
+      # since the fork are never read). A push is read as its commits `before..after` AND
+      # its endpoints: a record present at `before` and absent at `after` is refused, which
+      # is the only reading that sees a force-push drop a record. A force-push leaves
+      # `before` on no branch, so a full-history clone can still lack it; it is fetched by
+      # sha. A push with no `before` (the zero sha, a new branch) and any other event read
+      # the whole history of head.
       - name: immutability-gate
         env:
           EVENT: ${{ github.event_name }}
@@ -59,13 +62,18 @@ jobs:
           PUSH_AFTER: ${{ github.event.after }}
         run: |
           case "$EVENT" in
-            pull_request) range="$PR_BASE..$PR_HEAD" ;;
+            pull_request) set -- "$PR_BASE..$PR_HEAD" ;;
             push)
-              if [ -z "${PUSH_BEFORE//0/}" ]; then range=HEAD; else range="$PUSH_BEFORE..$PUSH_AFTER"; fi ;;
-            *) range=HEAD ;;
+              if [ -z "${PUSH_BEFORE//0/}" ]; then
+                set -- HEAD
+              else
+                git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null || git fetch --no-tags --quiet origin "$PUSH_BEFORE"
+                set -- --push "$PUSH_BEFORE" "$PUSH_AFTER"
+              fi ;;
+            *) set -- HEAD ;;
           esac
-          echo "immutability-gate over $range"
-          pnpm --silent --filter @cratylus/runtime immutability-gate "$range"
+          echo "immutability-gate $*"
+          pnpm --silent --filter @cratylus/runtime immutability-gate "$@"
 
       # Build ONCE, up front. The projection step used to build as well, so a run could interleave
       # two builds: tsup emits content-hashed chunks under `clean: true`, and a rebuild
