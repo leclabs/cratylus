@@ -27,8 +27,8 @@ It holds the notebook's own rules and no one else's:
 - A changed note is revised, never edited in place.
 
 It restates no other skill's rules, borrows nothing from `design`, `plan` or `deliver` (`PLAN.md`
-§ Contract, W3 isolation), composes nothing, and never mentions the record store, record ids,
-envelopes, heads or files.
+§ Contract, W3 isolation), composes nothing, and never mentions the record store, records, record
+ids, envelopes, heads or files: it speaks only the notebook's words (C at `a49ff769`).
 
 Hypothesis to rectify, not copy:
 `ssh upmav cat /Users/lcaraccioli/workspaces/WebappLiveSyncTechDemoNuxt/.agents/skills/note/SKILL.md`.
@@ -37,7 +37,7 @@ at the first census; if it still is, author from the design alone and say so in 
 
 ## Static
 
-- `git show 96aa7ca3:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
+- `git show a49ff769:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
   they are met (`domain interface`, `skill routing`).
 - `packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.
 - The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).

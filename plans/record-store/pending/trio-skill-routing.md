@@ -34,8 +34,8 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`, `factors` and `denotes` stay. Every
   borrower of a removed sign is migrated (at `4610c33f` none outside the cell:
   `git grep -nE "supersededBy|Phase" -- packages/canon/src ':!packages/canon/src/skills/design'`).
-- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, advance, retract, revise,
-  bind, close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units
+- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show (the bound plan, any plan named,
+  or one unit), add, advance, retract, revise, bind, close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units
   as the architect's alone. **It is the one home of the plan and unit lifecycle states**
   (§ Boundaries). The states are declared once in this module and carried on the `Skill`'s runtime
   face as the capability's configuration, in the shape `lifecycle-configuration` added. They are
@@ -45,22 +45,24 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   The block carries the plan and unit laws at `0c9da09c`:
   - binding a plan returns whichever plan was bound to proposed, so at most one is bound;
   - there is one live plan per name, and one live unit per name within its plan;
-  - a plan realizes a set of concepts; closed is final, and a closed plan keeps its name and is
-    never revised;
+  - a plan realizes a set of concepts; closed is final: a closed plan keeps its name, and neither
+    it nor any of its units is ever written again;
   - a plan that is not closed is revisable (its name and its set of concepts, never its state); its
     state moves only through bind and close, and `revise` routes to a unit or a plan;
   - a unit can be retracted (`plan retract`), unless another live unit depends on it;
-  - a unit realizes exactly the concept its pin names, and its lifecycle moves forward one step at
-    a time;
+  - a unit realizes exactly the concept its pin names, which is among the concepts its plan
+    realizes, and its lifecycle moves forward one step at a time;
   - a unit's dependencies are acyclic and name live units of the same plan;
   - a unit is ready when every dependency has reached completion or moved past it, and no owed
     ruling names the unit or its plan;
   - an owed ruling is any live note that blocks a plan or unit, whatever its kind, reached through
     the `note` capability's verbs; one naming a plan blocks binding it and every unit in it.
 
-  It pins and advances. `pin` is taken only when the concept and its whole closure are settled and
-  live. A unit is drifted when its pinned version is no longer the concept's only head (the concept
-  was amended, withdrawn or diverged), and otherwise suspect. A retraction in the design never
+  It pins and advances. `pin` is taken when the unit is authored, only when the concept and its
+  whole closure are settled and live, and is retaken only by a revise that says so with a reason,
+  never as a side effect of editing the spec. A unit is drifted when its pinned version is no longer
+  the concept's one current version (the concept was amended, withdrawn or diverged), and otherwise
+  suspect. A retraction in the design never
   breaks a plan's laws; it drifts the units pinned to that concept. Both readings are declared here, replacing `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign, `advance ⊨ mirror`
   and the `→ mirror →` step are deleted. `R`, the census, outputs, wave and acceptance laws stay
   (`boundary-binding.test.ts`'s fixture borrows `R`).
@@ -82,7 +84,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show 96aa7ca3:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show a49ff769:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
@@ -128,7 +130,10 @@ beside this unit leaves it true.
    nothing (at `4610c33f` it hits lines 36–38 and 54) — and
    `git grep -nE "retract.*define|define.*retract" -- packages/canon/src/skills/design/skill.ts`
    hits the law that a concept becoming another is a retraction plus a definition.
-7. `git grep -niE "record store|record id|envelope|records/" -- packages/canon/src/skills` prints
+7. The skills speak only their domain's words (C at `a49ff769`: no substrate word, records
+   included). `git grep -niwE "records?|heads?|envelopes?" -- packages/canon/src/skills/design/skill.ts packages/canon/src/skills/plan/skill.ts packages/canon/src/skills/deliver/skill.ts`
+   prints nothing; at `a49ff769` it hits `design/skill.ts:22` ("the project's durative record"),
+   which is reworded. `git grep -niE "record store|record id|envelope|records/" -- packages/canon/src/skills` prints
    nothing, and `git grep -nE "@ note\b" -- packages/canon/src/skills/design packages/canon/src/skills/plan packages/canon/src/skills/deliver`
    prints nothing.
 8. Sole: `git grep -l "capability: 'design'" -- packages/canon/src` and the same for `'plan'` each
