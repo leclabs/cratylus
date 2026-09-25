@@ -31,7 +31,7 @@ keys naming those roles are derived with `signify` and reported. Nothing in `run
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § Boundaries, § The three domains (`plan`, `unit`).
+- `git show 4610c33f:docs/design/record-store.md` § Boundaries, § The three domains (`plan`, `unit`).
 - `packages/schema/src/index.ts` (`SkillOf`, its `runtime` field) and `packages/schema/README.md`.
 - `packages/forge/src/deploy/runtime-config.ts`, `packages/forge/src/cli/commands/deploy.ts`
   (`emitHostRuntimeConfig`, `emitAndReport`).

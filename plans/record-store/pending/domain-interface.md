@@ -1,6 +1,6 @@
 # domain-interface
 
-**Wave 2.** Realizes `domain interface`. Factors at `c501e002`: `view`, `notebook`, `design`,
+**Wave 2.** Realizes `domain interface`. Factors at `4610c33f`: `view`, `notebook`, `design`,
 `plan`, `unit`.
 
 ## Intent
@@ -45,7 +45,7 @@ invented, so no test spells the `plan` skill's vocabulary.
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § How they are met, § Intent ("Agents and users
+- `git show 4610c33f:docs/design/record-store.md` § How they are met, § Intent ("Agents and users
   meet only the three domains, never the records"), § Boundaries.
 - `packages/runtime/src/{main,loader,plugin,index}.ts`, `packages/runtime/src/ports/event-tap.ts`,
   `packages/runtime/src/capabilities/event-tap/` — the shape of a capability shipped inside the

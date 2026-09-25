@@ -12,11 +12,11 @@ the concept naming it is defined. Then read it back against the pinned document,
 `docs/design/record-store.md`. From here on, C is read with `design`, never from a file (the
 design's own bootstrap note).
 
-The source is always `git show c501e002:docs/design/record-store.md`, never the working file.
+The source is always `git show 4610c33f:docs/design/record-store.md`, never the working file.
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § Lattice (22 concepts at `c501e002`; re-derive
+- `git show 4610c33f:docs/design/record-store.md` § Lattice (22 concepts at `4610c33f`; re-derive
   with the command in criterion 1).
 - The landed `design` capability (`domain-interface`) and the records root (`record-store`).
 
@@ -35,7 +35,7 @@ No package changes, so no changeset.
 ## Accept
 
 1. For every anchor listed by
-   `git show c501e002:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
+   `git show 4610c33f:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
    `pnpm exec cratylus design show <anchor>` (after `pnpm build`) exits 0, prints the gloss, and
    lists exactly the anchors on that concept's `Factors:` line in the document (none for a
    primitive). A script prints `matched n/22` with both numbers read, not typed.

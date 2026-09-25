@@ -28,7 +28,7 @@ Isolation (`PLAN.md` § Contract): imports only from `../../record-store/` (neve
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains (`plan`, `unit`, `notebook`),
+- `git show 4610c33f:docs/design/record-store.md` § The three domains (`plan`, `unit`, `notebook`),
   § How they are met (`domain interface`: bind, close), § Boundaries.
 - `git show c501e002:packages/canon/src/skills/deliver/skill.ts` — `bound`, the WIP law this entity
   now carries.

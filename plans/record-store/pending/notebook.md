@@ -12,8 +12,10 @@ and it blocks what it names until it is closed."
   A note has no name (`entity`: a name is a label "where the entity has one").
 - Capture writes a note's first version, with no admission bar: capture refuses only a malformed
   shape (a missing field), never a judgement of content; resolving what a note blocks is the
-  interface's. A changed note is a supersession, never an in-place edit; retract withdraws it; live
-  notes are those with a head no retraction withdrew.
+  interface's. A changed note is a supersession of its current head, never an in-place edit;
+  retract writes a retraction that becomes its head; live notes are those whose one head is a
+  version (a diverged note — two versions, or a version and a retraction, from merged branches —
+  is reported, never resolved by picking one).
 - **Kinds are opaque here.** Which kinds exist, and that only a question may block, are the `note`
   skill's meaning (`PLAN.md` finding N4). This module recognises an **owed ruling** as a live note
   that blocks a plan or unit, and exposes, for a caller, the plans and units the owed rulings name.
@@ -28,7 +30,7 @@ It references plans and units as opaque entity references; it imports no plan mo
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains (`notebook`, `unit`),
+- `git show 4610c33f:docs/design/record-store.md` § The three domains (`notebook`, `unit`),
   § Primitives (`entity`, `payload`).
 - The landed `packages/runtime/src/record-store/` and its return's reported signs.
 

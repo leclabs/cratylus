@@ -1,6 +1,6 @@
 # view
 
-**Wave 1.** Realizes `view`. Factors at `c501e002`: `fold`, `divergence`, `incoherence`, `unit`.
+**Wave 1.** Realizes `view`. Factors at `4610c33f`: `fold`, `divergence`, `incoherence`, `unit`.
 
 ## Intent
 
@@ -30,7 +30,7 @@ nothing from `record-store/` except read-only types if it needs them.
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § How they are met (`view`, `domain interface`).
+- `git show 4610c33f:docs/design/record-store.md` § How they are met (`view`, `domain interface`).
 - `packages/canon/test/reader-register.ts` — the register ρ = LLM artifacts are held to.
 
 ## Deps

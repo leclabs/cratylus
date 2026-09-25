@@ -30,7 +30,7 @@ Isolation (`PLAN.md` § Contract): imports only from `../../record-store/` (neve
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains (`unit`, `plan`, `notebook`,
+- `git show 4610c33f:docs/design/record-store.md` § The three domains (`unit`, `plan`, `notebook`,
   `pin`).
 - `git show c501e002:packages/canon/src/skills/plan/skill.ts` — `wave`, `frontier`, `blocked`,
   `spec(unit)`.

@@ -28,7 +28,7 @@ at the first census; if it still is, author from the design alone and say so in 
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
+- `git show 4610c33f:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
   they are met (`domain interface`, `skill routing`).
 - `packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.
 - The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).

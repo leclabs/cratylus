@@ -19,13 +19,18 @@ and § The record model say, as one module family:
 - a **payload** is the entity's whole state as of the record, never a delta;
 - an **envelope** carries the record id, the entity, the operation, the record ids it supersedes,
   author, time, reason and cause;
-- a **record** is an envelope and a whole-state payload, never edited, moved or deleted once
-  written: a write whose file exists refuses;
-- a **supersession** names one or more earlier versions of the same entity and refuses a version of
-  another entity or an unknown id; a **retraction** withdraws the entity, naming the versions it
-  withdraws, with no successor;
-- a **head** is a version nothing supersedes or retracts; one head means settled; more than one is
-  **divergence**, reported and never resolved here;
+- a **record** is one immutable entry in one entity's history — a version or a retraction — an
+  envelope and a whole-state payload, never edited, moved or deleted once written: a write whose
+  file exists refuses;
+- **writes name only current heads.** A **supersession** is a new version naming one or more of the
+  entity's current heads and replacing them; naming a record that is not a head, a record of
+  another entity, or an unknown id refuses, so one branch's history stays linear. Superseding a
+  retraction reinstates the entity. A **retraction** withdraws the entity with no successor
+  version, naming the heads it withdraws, and itself becomes the entity's head;
+- a **head** is a record, version or retraction, that no later record names. One head means
+  settled — live when it is a version, withdrawn when it is a retraction; more than one is
+  **divergence** (two versions, or a version and a retraction, written to one head on different
+  branches and merged), reported and never resolved here;
 - **incoherence** is a reference to a retracted entity or a cycle, over a reference relation the
   caller supplies (the store knows no domain's payload);
 - a **reconciliation** is one new whole-state version superseding every head of the entity, and its
@@ -45,7 +50,7 @@ exported through neither the `.` barrel nor a subpath. Only `ulid.ts` gains a su
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § Primitives, § The record model, § Boundaries
+- `git show 4610c33f:docs/design/record-store.md` § Primitives, § The record model, § Boundaries
   ("One ULID implementation").
 - `packages/memory/src/ulid.ts`, `packages/memory/test/ulid.test.ts`; the importers listed in
   `PLAN.md` § Census.
@@ -78,11 +83,14 @@ None.
 
 1. `pnpm --filter @cratylus/runtime test -- record-store ulid` passes. The record-store tests' names
    cover: a write refuses an existing record id; a supersession naming another entity's version
-   refuses; a retraction leaves the entity with no head; one head reads settled; two records
-   superseding the same version read as divergence and the fold picks neither; a reconciliation
-   leaves exactly one head; incoherence reports a reference to a retracted entity and a cycle in a
-   supplied relation; two domain directories written independently (simulated branches) union with
-   no file-name collision and fold to divergence; a read leaves the records root byte-identical.
+   refuses; a supersession or retraction naming a record that is no longer a head refuses; a
+   retraction becomes the entity's one head and reads settled-withdrawn; superseding that
+   retraction reinstates the entity as settled-live; two independently written record sets
+   (simulated branches) that each superseded the same head — and, separately, one that
+   superseded it and one that retracted it — union with no file-name collision and fold to
+   divergence, the fold picking neither; a reconciliation superseding every head (retraction
+   included) leaves exactly one head; incoherence reports a reference to a retracted entity and a
+   cycle in a supplied relation; a read leaves the records root byte-identical.
 2. One ULID: `git ls-files packages/memory/src/ulid.ts packages/memory/test/ulid.test.ts` prints
    nothing, and `git grep -lE "from '(\./|\.\./src/)ulid\.js'" -- packages/memory` prints nothing
    (at `c501e002`: 10 files); `git grep -l "@cratylus/runtime/ulid" -- packages/memory/src` lists

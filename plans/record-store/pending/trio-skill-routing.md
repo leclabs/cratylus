@@ -12,11 +12,17 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
 - **`design`** — `runtime: { capability: 'design' }`; intents reach show, define, amend, retract,
   reconcile and trace through `scripts/design.mjs <verb>`. It holds reconciliation as the
   architect's alone, and states that a planner, implementer or assayer meeting divergence reports it
-  and never picks a head. The lattice's supersession, retraction, divergence and reconciliation take
-  the place of `Phase`, `supersededBy` and the commit-keyed `amends`/`accepts` pair; the separation
-  law survives as "a reconciliation is an amendment and never shares a record with an acceptance".
-  The piece-level `pin`/`digest` pair leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`,
-  `factors` and `denotes` stay.
+  and never picks a head. **One sense of supersession** (§ Boundaries at `4610c33f`): the lattice law
+  `supersede(c, c') ⇒ phase(c) := superseded ∧ supersededBy(c) = c' ∧ c ∈ C`, with `Phase` and
+  `supersededBy : C ⇀ C`, reads a superseded concept as replaced by another concept; it is restated
+  in the design's sense — a supersession is a new version of the same concept, the prior version
+  stays resident as history, and `amend(C) ≜ supersede` keeps its no-overwrite gloss. A concept that
+  genuinely becomes another is a retraction plus a definition, and the block says so. The
+  commit-keyed `amends`/`accepts` pair goes too; the separation law survives as "a reconciliation is
+  an amendment and never shares a record with an acceptance". The piece-level `pin`/`digest` pair
+  leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`, `factors` and `denotes` stay. Every
+  borrower of a removed sign is migrated (at `4610c33f` none outside the cell:
+  `git grep -nE "supersededBy|Phase" -- packages/canon/src ':!packages/canon/src/skills/design'`).
 - **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, revise, advance, bind
   and close through `scripts/plan.mjs <verb>`. **It is the one home of the plan and unit lifecycle
   states** (§ Boundaries): the states are declared once in this module, carried on the `Skill`'s
@@ -44,7 +50,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show 4610c33f:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
@@ -84,8 +90,12 @@ beside this unit leaves it true.
    states the runtime reads back equal the `plan` skill's declaration.
 5. `deliver`'s formal block borrows `advance` from `plan`, names bind and close where it named
    retire, and `pnpm --filter @cratylus/canon test -- boundary-binding reader-reach` passes.
-6. `design`'s formal block contains `reconcile` with the architect-only authority over it, and
-   neither `Phase` nor `supersededBy`.
+6. `design`'s formal block contains `reconcile` with the architect-only authority over it; the
+   two-concept supersession is gone —
+   `git grep -nE "supersededBy|Phase|supersede\(c, c'\)" -- packages/canon/src/skills/design` prints
+   nothing (at `4610c33f` it hits lines 36–38 and 54) — and
+   `git grep -nE "retract.*define|define.*retract" -- packages/canon/src/skills/design/skill.ts`
+   hits the law that a concept becoming another is a retraction plus a definition.
 7. `git grep -niE "record store|record id|envelope|records/" -- packages/canon/src/skills` prints
    nothing, and `git grep -nE "@ note\b" -- packages/canon/src/skills/design packages/canon/src/skills/plan packages/canon/src/skills/deliver`
    prints nothing.

@@ -7,9 +7,11 @@
 A unit's reference to the concept version it realizes, taken automatically when the unit is
 authored, and the two readings over it:
 
-- **take** — the concept entity's one head at the moment of authoring; refuses a diverged,
-  retracted or unknown concept, since there is no single version to pin;
-- **drifted** — the pinned version is no longer a head;
+- **take** — the concept entity's one head at the moment of authoring, which must be a version;
+  refuses a diverged concept, a withdrawn one (its head a retraction) or an unknown one, since
+  there is no single version to pin;
+- **drifted** — the pinned version is no longer a head: a later version or a retraction now names
+  it;
 - **suspect** — the concept's closure holds a divergence, or a version newer than the one current
   when the pin was taken (a closure member amended since).
 
@@ -24,7 +26,7 @@ stores the pin as an opaque value; `unit` does not import this module either.
 
 ## Static
 
-- `git show c501e002:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The
+- `git show 4610c33f:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The
   record model (`head`, `divergence`).
 - `git show c501e002:packages/canon/src/skills/plan/skill.ts` — the piece-level
   `pin(s) ≠ digest(s) ⇒ REFUSE` law this per-unit pin replaces.
@@ -46,8 +48,9 @@ stores the pin as an opaque value; `unit` does not import this module either.
    `pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root, with
    concept records written directly through the store and a hand-written closure for the port; a
    re-run reproduces the output. With `B` factoring `A`: a pin taken on `B`; amend `B` → drifted;
-   a fresh pin on `B`, then amend `A` → suspect and not drifted; diverge `A` → suspect; taking a
-   pin on the diverged `A` refuses; taking a pin on a retracted concept refuses.
+   a fresh pin on `B`, then amend `A` → suspect and not drifted; retract `B` → drifted; diverge `A`
+   (two record sets written independently from its head and unioned) → suspect; taking a pin on the
+   diverged `A` refuses; taking a pin on a withdrawn concept refuses.
 3. `git grep -nE "from '\./(plan|unit)|from '\.\./(design|note)/|from '\.\./\.\./(view|runtime-config)|immutability-gate" -- packages/runtime/src/capabilities/plan/pin.ts`
    prints nothing.
 4. Sole: the return names the identifiers realizing take, drifted and suspect, and each is
