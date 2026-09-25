@@ -34,8 +34,10 @@
 // notebook's; this module receives the plans the owed rulings name.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { canonicalOrder } from '../../record-store/canonical-order.js';
 import { type Fold, fold } from '../../record-store/fold.js';
 import type { Envelope, Record } from '../../record-store/record.js';
+import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
 
 /** The records domain holding plans. */
@@ -71,8 +73,9 @@ type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
  *  diverged one. The gate compares two of these, before and after a write. */
 type Standing = ReadonlyMap<string, readonly Plan[]>;
 
-/** A broken law: the plans it binds together, and what it says. */
+/** A broken law: which law, the plans it binds together, and what it says. */
 interface Violation {
+  readonly kind: 'name' | 'exclusive';
   readonly entities: readonly string[];
   readonly says: string;
 }
@@ -150,22 +153,26 @@ export function holders(
   return bound(standing(folds), lifecycle);
 }
 
-/** Every broken law in `of`, by law. */
-function violations(
-  of: Standing,
-  lifecycle: PlanLifecycle,
-): readonly (readonly Violation[])[] {
+/** Every broken law in `of`. */
+function violations(of: Standing, lifecycle: PlanLifecycle): Violation[] {
   const both = bound(of, lifecycle);
   return [
-    [...held(of)]
+    ...[...held(of)]
       .filter(([, entities]) => entities.length > 1)
       .map(([name, entities]) => ({
+        kind: 'name' as const,
         entities,
         says: `another live plan is named ${name}`,
       })),
-    both.length > 1
-      ? [{ entities: both, says: `another plan is ${lifecycle.exclusive}` }]
-      : [],
+    ...(both.length > 1
+      ? [
+          {
+            kind: 'exclusive' as const,
+            entities: both,
+            says: `another plan is ${lifecycle.exclusive}`,
+          },
+        ]
+      : []),
   ];
 }
 
@@ -186,17 +193,10 @@ function admit(
     return `plan ${plan.name} names concept ${twice} twice, and it realizes a set`;
   const before = standing(folds);
   const after = new Map(before).set(entity, [plan]);
-  const [was, is] = [
+  return introduced(
     violations(before, lifecycle),
     violations(after, lifecycle),
-  ];
-  for (const [law, broken] of is.entries())
-    for (const v of broken)
-      if (
-        !was[law]?.some((w) => v.entities.every((e) => w.entities.includes(e)))
-      )
-        return v.says;
-  return undefined;
+  )[0]?.says;
 }
 
 /** The plan's name, read off its first head carrying one (a diverged plan's
@@ -286,7 +286,7 @@ export function propose(
   position(lifecycle, lifecycle.exclusive); // refuses a lifecycle bind and close cannot hold under
   const first: Plan = {
     name: plan.name,
-    realizes: [...plan.realizes],
+    realizes: canonicalOrder(plan.realizes),
     state: lifecycle.states[0] as string,
   };
   const refusal = admit(plans(store), lifecycle, PROPOSAL, first);
@@ -314,7 +314,7 @@ export function revise(
     throw new Error(
       `plan: revise refused — plan ${name} is ${state}, which is final, and a plan in it is never revised`,
     );
-  const changes = { name: plan.name, realizes: [...plan.realizes] };
+  const changes = { name: plan.name, realizes: canonicalOrder(plan.realizes) };
   return supersede(store, lifecycle, entity, changes, by, 'revise');
 }
 
@@ -404,7 +404,7 @@ export function reconcile(
     refuse(`an owed ruling names plan ${plan.name}`);
   const whole: Plan = {
     name: plan.name,
-    realizes: [...plan.realizes],
+    realizes: canonicalOrder(plan.realizes),
     state: plan.state,
   };
   const refusal = admit(folds, lifecycle, entity, whole);

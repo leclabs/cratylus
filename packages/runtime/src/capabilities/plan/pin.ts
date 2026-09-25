@@ -18,8 +18,9 @@
 // the caller supplies it through the `Closure` port below; `domain-interface`
 // wires the design domain's closure into it.
 //
-// A unit stores its pin as a plain JSON value; `unit` reads only its `concept`,
-// and everything else in it is read only here.
+// A unit stores its pin as a plain JSON value. `unit` takes one thing from this
+// module, the `Pin` type its stored pin is declared as, and reads no field of it;
+// everything in a pin is read only here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Fold } from '../../record-store/fold.js';

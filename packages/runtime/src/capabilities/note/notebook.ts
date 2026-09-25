@@ -29,8 +29,10 @@
 // opaque entity references; resolving them from names is the interface's.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { canonicalOrder } from '../../record-store/canonical-order.js';
 import { type Fold, fold } from '../../record-store/fold.js';
 import type { Envelope } from '../../record-store/record.js';
+import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
 
 /** The notebook's domain directory under the records root. */
@@ -80,8 +82,9 @@ export interface Notebook {
 /** Who writes a record, why, and what caused it. */
 type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
-/** Refuse a malformed shape — a field missing or of the wrong type — and
- *  never judge content. Returns exactly the payload's fields. */
+/** Refuse a malformed shape — a field missing or of the wrong type — and a
+ *  reference blocked twice, since what a note blocks is a set; never judge
+ *  content. Returns exactly the payload's fields, `blocks` in canonical order. */
 function shape(note: Note): Note {
   const malformed = [
     ...(['title', 'kind', 'topic', 'body'] as const).filter(
@@ -97,7 +100,12 @@ function shape(note: Note): Note {
       `notebook: a note is malformed — missing or ill-typed: ${malformed.join(', ')}`,
     );
   const { title, kind, topic, body, blocks } = note;
-  return { title, kind, topic, body, blocks: [...blocks] };
+  const twice = blocks.find((ref, i) => blocks.indexOf(ref) !== i);
+  if (twice !== undefined)
+    throw new Error(
+      `notebook: a note blocks ${twice} twice, and what a note blocks is a set`,
+    );
+  return { title, kind, topic, body, blocks: canonicalOrder(blocks) };
 }
 
 /** The titles each note holds: a live note its title, a diverged note every
@@ -143,14 +151,15 @@ function admit(
   verb: string,
 ): void {
   const before = titles(folds);
-  const standing = duplicates(before).map((d) => new Set(d.entities));
   const after = new Map(before).set(entity, new Set([note.title]));
-  const introduced = duplicates(after).find(
-    (d) => !standing.some((s) => d.entities.every((e) => s.has(e))),
+  const kind = (d: DuplicateTitle) => ({ ...d, kind: 'title' });
+  const [found] = introduced(
+    duplicates(before).map(kind),
+    duplicates(after).map(kind),
   );
-  if (introduced)
+  if (found)
     throw new Error(
-      `notebook: ${verb} refused — the title ${JSON.stringify(introduced.title)} is already held by note ${introduced.entities.filter((e) => e !== entity).join(', ')}, and one live note carries a title`,
+      `notebook: ${verb} refused — the title ${JSON.stringify(found.title)} is already held by note ${found.entities.filter((e) => e !== entity).join(', ')}, and one live note carries a title`,
     );
 }
 

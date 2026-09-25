@@ -39,6 +39,7 @@
 // there. Who may write the design is skill routing's rule, not this module's.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { canonicalOrder } from '../../record-store/canonical-order.js';
 import { type Fold, fold, incoherence } from '../../record-store/fold.js';
 import type {
   Envelope,
@@ -46,6 +47,7 @@ import type {
   Record,
   RecordId,
 } from '../../record-store/record.js';
+import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
 
 /** The record store domain holding the design records. */
@@ -139,12 +141,13 @@ export interface HistoryEntry {
 type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
 /** A violation of a relational law among entities, as the write rule compares
- *  them. */
+ *  them: its law and the entities it binds together. */
 type Violation =
   | {
       readonly kind: 'retracted';
       readonly entity: string;
       readonly reference: string;
+      readonly entities: readonly string[];
     }
   | { readonly kind: 'cycle'; readonly entities: readonly string[] }
   | {
@@ -152,11 +155,6 @@ type Violation =
       readonly anchor: string;
       readonly entities: readonly string[];
     };
-
-/** The entities a violation binds together. */
-function members(v: Violation): readonly string[] {
-  return v.kind === 'retracted' ? [v.entity, v.reference] : v.entities;
-}
 
 /** A name as a message quotes it. */
 function quote(name: Name): string {
@@ -297,7 +295,12 @@ class Snapshot {
 
   /** Every standing violation of the design's relational laws. */
   violations(): Violation[] {
-    const found: Violation[] = incoherence(this.folds, (p) => p.factors);
+    const found: Violation[] = incoherence(this.folds, (p) => p.factors).map(
+      (i) =>
+        i.kind === 'retracted'
+          ? { ...i, entities: [i.entity, i.reference] }
+          : i,
+    );
     for (const [anchor, entities] of this.holders)
       if (entities.length > 1) found.push({ kind: 'anchor', anchor, entities });
     return found;
@@ -374,20 +377,10 @@ export class Design {
         payload,
       },
     ]);
-    const standing = read.violations();
-    const introduced = after
-      .violations()
-      .filter(
-        (v) =>
-          !standing.some(
-            (u) =>
-              u.kind === v.kind &&
-              members(v).every((e) => members(u).includes(e)),
-          ),
-      );
-    if (introduced.length === 0) return;
+    const found = introduced(read.violations(), after.violations());
+    if (found.length === 0) return;
     refuse(
-      introduced
+      found
         .map((v) => {
           if (v.kind === 'anchor')
             return `the anchor ${JSON.stringify(v.anchor)} is held by ${v.entities
@@ -446,7 +439,7 @@ export class Design {
     const payload = {
       anchor: concept.anchor,
       gloss: concept.gloss,
-      factors: [...factors],
+      factors: canonicalOrder([...factors]),
     };
     this.#keep(read, refuse, entity ?? DEFINED, heads, payload, by);
     return payload;

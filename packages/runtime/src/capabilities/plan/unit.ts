@@ -27,6 +27,7 @@
 // structurally typed parameter; the domain interface composes them.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { canonicalOrder } from '../../record-store/canonical-order.js';
 import {
   type Fold,
   type Incoherence as ReferenceIncoherence,
@@ -39,6 +40,7 @@ import type {
   Record,
   RecordId,
 } from '../../record-store/record.js';
+import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
 import type { Pin } from './pin.js';
 
@@ -207,7 +209,8 @@ function bound(v: Violation): readonly string[] {
  * entities no standing violation of the same law already binds together. A
  * write that leaves a violation standing or shrinks it (fewer namesakes, a
  * shorter cycle, an edge removed) is allowed, so every incoherence can be
- * repaired one write at a time.
+ * repaired one write at a time. Deps form a set, which one write alone can
+ * break, so a dep named twice is refused outright.
  */
 function keepLaws(
   records: readonly Record<Unit>[],
@@ -218,10 +221,10 @@ function keepLaws(
   planWithdrawn: PlanWithdrawn,
   refuse: (why: string) => never,
 ): void {
-  const standing = violations(fold(records), planWithdrawn).map((v) => ({
-    kind: v.kind,
-    entities: new Set(bound(v)),
-  }));
+  const deps = payload?.spec.deps ?? [];
+  const twice = deps.find((dep, i) => deps.indexOf(dep) !== i);
+  if (twice !== undefined)
+    refuse(`it names its dep ${twice} twice, and deps form a set`);
   const pending: Record<Unit> = {
     envelope: {
       id: UNWRITTEN,
@@ -235,17 +238,17 @@ function keepLaws(
     },
     payload,
   };
-  const introduced = violations(
-    fold([...records, pending]),
-    planWithdrawn,
-  ).find(
-    (v) =>
-      !standing.some(
-        (s) => s.kind === v.kind && bound(v).every((x) => s.entities.has(x)),
-      ),
+  const binding = (v: Violation) => ({
+    kind: v.kind,
+    entities: bound(v),
+    violation: v,
+  });
+  const [found] = introduced(
+    violations(fold(records), planWithdrawn).map(binding),
+    violations(fold([...records, pending]), planWithdrawn).map(binding),
   );
-  if (introduced)
-    refuse(describe(introduced).replaceAll(UNWRITTEN, 'the new unit'));
+  if (found)
+    refuse(describe(found.violation).replaceAll(UNWRITTEN, 'the new unit'));
 }
 
 /** The heads and payload of a settled, live unit — one head, or several
@@ -284,7 +287,7 @@ export function add(
   const [first] = checked(lifecycle).states as [string];
   const next: Unit = {
     plan: unit.plan,
-    spec: unit.spec,
+    spec: { ...unit.spec, deps: canonicalOrder(unit.spec.deps) },
     state: first,
     pin: unit.pin,
   };
@@ -313,7 +316,7 @@ export function revise(
   const { heads, unit } = settled(fold(records), entity, refuse);
   const next: Unit = {
     plan: unit.plan,
-    spec: change.spec,
+    spec: { ...change.spec, deps: canonicalOrder(change.spec.deps) },
     state: unit.state,
     pin: change.pin,
   };
@@ -387,7 +390,7 @@ export function reconcile(
   if (plan === undefined) return refuse('no head of it is a version');
   const next: Unit = {
     plan,
-    spec: change.spec,
+    spec: { ...change.spec, deps: canonicalOrder(change.spec.deps) },
     state: change.state,
     pin: change.pin,
   };
