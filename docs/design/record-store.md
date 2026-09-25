@@ -31,8 +31,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 - **fold** — the pure function computing an entity's current state from its records at the moment
   of the read; nothing it computes is ever persisted. (Not "projection": in this corpus that sign
   already means canon → harness Targets.)
-- **immutability gate** — the one enforced law of the substrate: a change that modifies or
-  deletes an existing record is refused, at commit and in CI.
+- **immutability gate** — the one enforced law of the substrate: a change that modifies, moves or
+  deletes an existing record is refused at commit and in CI, where every commit is judged against
+  each parent and a push that rewrites history is judged by what it leaves at its end.
 
 ### The record model
 
@@ -118,8 +119,8 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   its own verbs, shipped with its skill:
   - `design` shows the whole design or one concept, and defines, amends, retracts, reconciles
     and traces a concept (how it came to be, what it stands on and what stands on it);
-  - `plan` shows the whole bound plan or one unit, adds, revises and advances units, binds and
-    closes a plan, and reconciles either;
+  - `plan` shows the whole bound plan or one unit, adds units, revises a unit or a plan, advances
+    units, binds and closes a plan, and reconciles either;
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
     Agents never see record ids, envelopes, heads or files. A payload names entities by name and
