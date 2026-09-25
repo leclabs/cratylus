@@ -59,13 +59,18 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   converged and read as one. Divergence is state, not error: it is reported, never silently
   resolved. Factors: head.
 - **incoherence** — a domain law broken across entities by a merge, although each branch kept it:
-  a reference to a withdrawn entity, a cycle, one name on two live entities, or more than one
-  bound plan. Reported like divergence. Factors: head, entity.
+  a reference to a withdrawn entity, a cycle, one name held by two entities, or more than one bound
+  plan. A name is held by every live entity carrying it, by a withdrawn entity that keeps it, and
+  by a diverged entity for every name its heads carry. Reported like divergence. Factors: head,
+  entity.
 - **reconciliation** — the act resolving divergence or incoherence by a write that restores the
   law: for divergence, one whole-state version superseding every head of the entity; for
-  incoherence, an ordinary write to one of the entities involved. It belongs to the domain's
-  authority (the architect for design and plans, anyone for notes), is an amendment, and never
-  shares a record with an acceptance. Factors: supersession, divergence, incoherence.
+  incoherence, ordinary writes to the entities involved, one at a time. A write is refused only
+  when it introduces a violation, meaning one whose entities were not already bound together in a
+  standing violation of the same law; a write that shrinks or leaves a violation standing is
+  allowed, so every incoherence can be repaired one write at a time. Reconciliation belongs to
+  the domain's authority (the architect for design and plans, anyone for notes), is an amendment,
+  and never shares a record with an acceptance. Factors: supersession, divergence, incoherence.
 - **record store** — the internal mechanism holding records as files in the repository (one
   directory per domain, one file per record, named by record id), writing new records, folding
   heads, detecting divergence and incoherence, and owning the immutability gate. A branch merge is
@@ -87,11 +92,12 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   be retracted; every gloss and every reason is non-empty. The design knows nothing of plans. Only
   the architect writes it; a planner, implementer or assayer that meets divergence or incoherence
   reports it and never resolves it. Factors: record store, reconciliation.
-- **plan** — an entity naming the concepts it realizes and its lifecycle: proposed, bound, then
-  closed. One live plan per name. Binding a plan returns whichever plan was bound to proposed, so at
-  most one plan is bound, and when a merge leaves two, binding the one to keep resolves it. An owed
-  ruling that names a plan blocks binding it and every unit in it. A closed plan stays readable
-  forever; closing replaces retiring by deletion. Factors: record store, notebook.
+- **plan** — an entity naming the set of concepts it realizes and its lifecycle: proposed, bound,
+  then closed, which is final. One live plan per name, and a closed plan keeps its name. Binding a
+  plan returns whichever plan was bound to proposed, so at most one plan is bound, and when a merge
+  leaves two, binding the one to keep resolves it. An owed ruling that names a plan blocks binding
+  it and every unit in it. A closed plan is never revised and stays readable forever; closing
+  replaces retiring by deletion. Factors: record store, notebook.
 - **unit** — one unit of work in a plan, realizing exactly one concept, the one its pin names, and
   carrying its full spec and lifecycle state, which moves forward one step at a time. One live unit
   per name within its plan. Its dependencies are acyclic and name live units of the same plan.
@@ -125,9 +131,10 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
     Agents never see record ids, envelopes, heads or files. A payload names entities by name and
-    the interface resolves them. Where a name cannot address one entity, because a merge left it on
-    two live entities, the interface shows and accepts each entity's identity beside the name; that
-    is the one place an identity surfaces, and nothing else is invented to stand for it. Every write
+    the interface resolves them. Where a name cannot address one entity, because a merge left it
+    held by more than one, the interface shows and accepts each holder's identity beside the name,
+    and only there; that is the one place an identity surfaces, and nothing else is invented to
+    stand for it. Every write
     keeps its domain's laws on the current branch: a write that would break one is refused, so
     incoherence, like divergence, arises only from merges. An ordinary write on a diverged item
     refuses and points to `reconcile`. Factors: view, notebook, design, plan, unit.
