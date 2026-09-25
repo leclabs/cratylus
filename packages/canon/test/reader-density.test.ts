@@ -342,7 +342,7 @@ function dimensionContradictions(agent: Agent): string[] {
 describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
   it('the 4 densified exemplars PASS (calibration anchors)', async () => {
     for (const rel of [
-      'dimensions/role/curate.ts',
+      'dimensions/role/architect.ts',
       'dimensions/objective/parsimony.ts',
       'dimensions/transparency/decision-rationale.ts',
       'dimensions/capabilities/research-investigation.ts',

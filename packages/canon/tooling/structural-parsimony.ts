@@ -28,8 +28,19 @@
 //                           not a reusable dimension value. The AND is load-bearing —
 //                           refCount≥2 is a genuine SHARED value (reusable, green),
 //                           a mark-less single-ref cell is a legit open-dimension
-//                           value (role/build, curate — green). Only mark ∧
-//                           refCount≤1 is "identity, not dimension value".
+//                           value (role/build — green). Only mark ∧ refCount≤1 is
+//                           "identity, not dimension value".
+//
+// A ROLE CELL IS NOT A GENUS FLOOR, and the distinction is worth stating because the
+// two look alike from a distance. `src/roles/<name>.ts` supplies a partial dimension
+// vector to every agent holding that position, which sounds exactly like the `base.ts`
+// class (a) refuses. Three things separate them, and (a) reads the first two directly:
+// a role lives OUTSIDE `agents/`, so it is not a module in the set (a) quantifies over
+// and its import is not a sibling edge; it SELECTS dimensions explicitly rather than
+// carrying none; and it is a SIGNIFIED position an agent declares it holds, where
+// `base.ts` was an anonymous spread of defaults with no concept behind it and a header
+// telling the reader to delete it. Accretion is a floor nobody named; a role is named,
+// and the name is the contract a peer dispatches against.
 //
 // GOVERNING INVARIANT (project's whole point): every deployed artifact the model
 // reads is formal σ* under ρ, never human prose — held here structurally: the

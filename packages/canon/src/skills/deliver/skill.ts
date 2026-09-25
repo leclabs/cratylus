@@ -19,6 +19,25 @@ import { plan } from '../plan/skill.js';
 // rather than convenient: a check costing more than redoing the work is skipped, and
 // no instruction survives that gradient. Naming discipline is what buys the cheapness —
 // if the artifact spells its concept, two of the three are reading a name.
+//
+// WHERE THE READ GOES, AND WHY THE VERDICT DOES NOT FOLLOW IT. `validate ⊨ artifact` is
+// right and it has a cost: reading artifacts is reading files — paths, identifiers, call
+// sites — which is exactly the mechanical work the architect's contract calls a descent.
+// Left there, the skill obliges the design-holder to descend on every wave, and by the
+// third wave the design-holder is a code reviewer holding a lattice it can no longer
+// carry. So `validate` is two operations under one name and they separate cleanly: the
+// ASSAY (read the landed artifact, re-derive which concepts it realizes) is mechanical,
+// substrate-bound and DELEGABLE; the JUDGMENT (what an unachieved concept means —
+// rejection, an `amend(C)` because execution established a yield, or a design that was
+// wrong) is keyed to C and is NOT.
+//
+// A THIRD PARTY DOES NOT REOPEN THE DEFECT THIS CELL CLOSES. The law forbids accepting
+// on a claim from the party that BUILT the thing: one description, a closed loop. There
+// are still two descriptions here and they are still held by different parties — the
+// executor holds the spec and not the design, the assayer holds the design and not the
+// spec. The artifact read the law demands still happens; it happens at the one site in
+// the loop where reading substrate is the work rather than a descent, and what reaches
+// the principal is in the only vocabulary the principal can check without descending.
 
 const FORMAL_BLOCK = `C      @ design
 c      ≜ a concept ⟨c ∈ C⟩
@@ -46,6 +65,10 @@ covers : path × ℘(C) → 𝔹 ⟨observable behaviour ≅ the factorization �
 sole   : path × anchor → 𝔹 ⟨∄ other artifact realizing the same concept⟩
 verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec⟩
 validate : P → 𝔹 ⟨the PRINCIPAL's · built-the-right-thing, against C⟩
+assay  : artifact → ℘(C) ⟨which concepts the artifact ACTUALLY realizes · the REVERSE of plan⟩
+assayer : unit ⇀ agent ⟨role = assay · holds C ∧ ¬ holds spec(unit)⟩
+achieved : unit → 𝔹 ⟨the three questions, answered against the assay⟩
+unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWARD⟩
 defect ≜ ⟨symptom, locus, provenance⟩
 impedes : defect × P → 𝔹
 cost   : act → effort
@@ -56,9 +79,22 @@ commit @ design
 accepts @ design
 
 ∀ unit, r : ¬conform(r) ⇒ ¬accept(unit)(r)
-validate(unit) ⇔ spells(artifact(unit), realizes(unit))
+achieved(unit) ⇔ realizes(unit) ∈ assay(artifact(unit))
+    ∧ spells(artifact(unit), realizes(unit))
     ∧ covers(artifact(unit), factors(denotes(realizes(unit))))
     ∧ sole(artifact(unit), realizes(unit))
+unachieved(unit) = ∅ ⇔ achieved(unit)
+unachieved ⊨ C-typed ⟨it crosses in C's OWN vocabulary · mechanism-prose ⟨naming · structure ·
+    test-quality⟩ ⇒ REFUSE ∵ it descends the principal it was dispatched to spare⟩
+locus ⊨ ROUTED ∧ ¬ read ⟨an ADDRESS so the redispatch has one · a citation is substrate, and
+    handing the principal substrate is the same defect in smaller pieces⟩
+assay ⊨ artifact ⟨the ASSAYER reads the files · the ONE site in the loop where
+    substrate-reading is ¬ a descent⟩
+assayer ⊥ executor ⟨TWO descriptions, two witnesses : executor holds spec ∧ ¬ holds C ·
+    assayer holds C ∧ ¬ holds spec⟩
+validate(unit) ≜ unachieved(unit) = ∅ ⟨the principal JUDGES the assay ∧ ¬ re-reads the
+    artifact · the READ is delegable · the VERDICT is ¬ delegable ∵ keyed to C, which the
+    principal alone amends⟩
 validate ⊨ artifact ⟨NEVER r · a summary is a CLAIM ∧ the file is EVIDENCE ·
     an acceptance that read only the return has accepted nothing⟩
 validate ⊨ self ⟨¬ delegable · the executor cannot judge its own conformance ∵ it
@@ -71,6 +107,8 @@ judge(unit) ≜ verify(unit, r) ∧ validate(unit) ⇒ advance(unit) ; ¬ ⇒ r 
      and it takes everything when a run dies mid-judgement⟩
     ⟨fan-in is as order-sensitive as fan-out : ∀ unit dispatched, confirm executor(unit)
      RETURNED · outputs(unit) exist ≠ executor(unit) returned⟩
+¬validate(unit) ⇒ redispatch(executor(unit), unachieved(unit)) ⟨the flaw handed down is
+    CONCEPTUAL ∧ ¬ a review⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
 ¬spells ⇒ REFUSE ≺ any behavioural read ⟨the traceability arrow breaks at the cheapest
@@ -91,8 +129,8 @@ cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearin
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic⟩
 terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP
     that is not work⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
-deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → validate ⟨self, on artifact⟩ →
-    judge → amend(C) ⇔ yield → advance → retire` as SkillExpression;
+deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → assay ⟨assayer, on artifact⟩ →
+    validate ⟨self, on the assay⟩ → judge → amend(C) ⇔ yield → advance → retire` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',

@@ -98,20 +98,20 @@ export const base = {
 
 /** a real agent that spreads the floor (\`...base\`) — supplies the graph edge. */
 const AGENT_SPREADING_BASE = `import type { Agent } from '@cratylus/schema';
-import { curate as curate_role } from '../dimensions/role/curate.js';
+import { build as build_role } from '../dimensions/role/build.js';
 import { base } from './base.js';
-export const nico: Agent = { ...base, name: 'nico', role: curate_role };
+export const nico: Agent = { ...base, name: 'nico', role: build_role };
 `;
 
 /** (b) the real \`nicoResolved: ResolvedAgent\` — a parallel rep of the Agent vector. */
 const AGENT_WITH_RESOLVED = `import type { ResolvedAgent } from '@cratylus/forge/adapters/claude';
 import type { Agent } from '../src/manifest.js';
-import { curate as curate_role } from '../dimensions/role/curate.js';
-export const nico: Agent = { name: 'nico', role: curate_role };
+import { build as build_role } from '../dimensions/role/build.js';
+export const nico: Agent = { name: 'nico', role: build_role };
 export const nicoResolved: ResolvedAgent = {
   name: 'nico',
   description: nico.archetype,
-  dimensions: [['Role', [curate_role]]],
+  dimensions: [['Role', [build_role]]],
 };
 `;
 
@@ -177,7 +177,7 @@ const SHARED_MARK_VALUE: StructuralCorpus = {
 };
 
 /** a mark-LESS value referenced by exactly ONE agent — a legit open-dimension value
- * (role/build, curate). Single-ref ALONE must not convict (¬mark ⇒ green). */
+ * (role/build). Single-ref ALONE must not convict (¬mark ⇒ green). */
 const SINGLE_REF_DIMENSION_VALUE: StructuralCorpus = {
   agents: [
     parseAgentModule(

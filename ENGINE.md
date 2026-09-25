@@ -20,7 +20,13 @@ verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
 signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned
 canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w)                 -- formal blocks ARE the symbolic-σ* regression suite
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
-select     : agent → (DimensionName ⇸ ℘(fragment))
+Role       ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED ∧ PARTIAL : the EXPECTATIONS attached to a position ; made OF dimension values ∴ ¬ itself a dimension — the `role` dimension carries its SIGN⟩
+holds      : agent → Role ⟨SINGULAR : a Role is the contract a PEER dispatches against ∧ ∄ dispatcher that can reason about a union of Roles⟩
+declares   : agent → (DimensionName ⇸ ℘(fragment)) ⟨what the HOLDER states over the position ; ¬ bounded in size⟩
+select     : agent → (DimensionName ⇸ ℘(fragment)) ; select(a) = holds(a) ⊕ declares(a)   -- the fold runs @ select ∴ the emitted Target is FLAT
+⊕ ⊨ arity @ manifest ⟨set ⇒ holds(a) ∪ declares(a) ⟨EXTEND⟩ ; scalar ⇒ declares(a) if the key is STATED ⟨OVERRIDE⟩, else holds(a)⟩
+role ∉ dom(declares) ⇒ contract(holds(a)) ¬ overridable ⟨∄ field a holder may state ∴ inviolable BY CONSTRUCTION, ¬ by a marking⟩
+provenance.mark ∉ dom(⊕) ⟨instance-bound @ create-agent : the HOLDER, ¬ the position⟩
 compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
 realize    : cell × harness-adapter ⇀ harness-mechanism ⟨realizes MODEL's `mechanism` ; keyed on the CELL, ¬ on ActivationMode alone⟩
              ⟨reads activation(c) ∧ — for an enforcing f — events(f) ∧ substrate(f) : a mode cannot see which Event fires⟩
