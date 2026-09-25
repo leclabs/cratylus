@@ -13,6 +13,10 @@
 // different plan still leaves two — an incoherence, reported by `holders` and
 // never resolved by picking one — and binding the one to keep resolves it.
 //
+// One live plan per name: propose and reconcile refuse a name another live plan
+// carries. A merge of two branches that each wrote a plan under one name still
+// leaves two — an incoherence, reported by `namesakes`.
+//
 // A diverged plan (more than one head) takes no ordinary write: bind and close
 // refuse it and point to `reconcile`, one version superseding every head.
 //
@@ -94,6 +98,42 @@ function named(folds: ReadonlyMap<string, Fold<Plan>>, entity: string): string {
   );
 }
 
+/**
+ * Every name more than one live plan carries, by name, each with those plans in
+ * entity order: incoherence, the state a merge of two branches that each wrote
+ * a plan under one name leaves. A diverged plan carries the name of each of its
+ * version heads. Reported here, never resolved by picking one.
+ */
+export function namesakes(
+  folds: ReadonlyMap<string, Fold<Plan>>,
+): { readonly name: string; readonly entities: readonly string[] }[] {
+  const carriers = new Map<string, Set<string>>();
+  for (const f of folds.values())
+    for (const head of f.heads)
+      if (head.payload) {
+        const own = carriers.get(head.payload.name) ?? new Set<string>();
+        own.add(f.entity);
+        carriers.set(head.payload.name, own);
+      }
+  return [...carriers]
+    .filter(([, entities]) => entities.size > 1)
+    .map(([name, entities]) => ({ name, entities: [...entities].sort() }))
+    .sort((a, b) => (a.name < b.name ? -1 : 1));
+}
+
+/** Why a version of `entity` (none yet, for a proposal) may not carry `name`,
+ *  or `undefined` when it may: one live plan per name. */
+function nameRefusal(
+  folds: ReadonlyMap<string, Fold<Plan>>,
+  name: string,
+  entity?: string,
+): string | undefined {
+  const taken = [...folds.values()].some(
+    (f) => f.entity !== entity && f.heads.some((h) => h.payload?.name === name),
+  );
+  return taken ? `another live plan is named ${name}` : undefined;
+}
+
 /** Why `entity` may take no ordinary write, or `undefined` when it may: it must
  *  be a settled, live plan. */
 function unsettled(
@@ -156,7 +196,8 @@ function move(
   );
 }
 
-/** Propose a plan: its first version, in the lifecycle's first state. */
+/** Propose a plan: its first version, in the lifecycle's first state. Refuses
+ *  a name another live plan carries. */
 export function propose(
   store: RecordStore,
   lifecycle: PlanLifecycle,
@@ -164,6 +205,8 @@ export function propose(
   by: By,
 ): Record<Plan> {
   position(lifecycle, lifecycle.exclusive); // refuses a lifecycle bind and close cannot hold under
+  const refusal = nameRefusal(plans(store), plan.name);
+  if (refusal) throw new Error(`plan: propose refused — ${refusal}`);
   return store.create<Plan>(
     DOMAIN,
     {
@@ -221,9 +264,10 @@ export function close(
 
 /**
  * Reconcile the diverged plan `entity`: one whole-state version `plan`
- * superseding every head; a plan that has not diverged refuses. A
- * `plan` in the exclusive state keeps the binding law: it refuses while another
- * plan holds that state (bind resolves that) or an owed ruling names the plan.
+ * superseding every head; a plan that has not diverged refuses, and so does a
+ * name another live plan carries. A `plan` in the exclusive state keeps the
+ * binding law: it refuses while another plan holds that state (bind resolves
+ * that) or an owed ruling names the plan.
  */
 export function reconcile(
   store: RecordStore,
@@ -243,6 +287,8 @@ export function reconcile(
     );
   if (position(lifecycle, plan.state) < 0)
     refuse(`${plan.state} is no state of the plan lifecycle`);
+  const refusal = nameRefusal(folds, plan.name, entity);
+  if (refusal) refuse(refusal);
   if (plan.state === lifecycle.exclusive) {
     const [other] = holders(folds, lifecycle).filter((e) => e !== entity);
     if (other !== undefined)
