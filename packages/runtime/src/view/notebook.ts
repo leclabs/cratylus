@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // THE NOTEBOOK VIEW — the notes grouped by kind, then by topic, behind the owed
-// rulings and open questions that must be resolved first.
+// rulings that must be resolved first.
 //
-// Kinds are the `note` skill's; they arrive as display text and group in the
-// order they first appear, as do topics within a kind. Which notes are owed
-// rulings and which are open questions arrives computed: this module recognises
-// neither.
+// Kinds are the `note` skill's; they arrive as display text, are never
+// interpreted, and group in the order they first appear, as do topics within a
+// kind. Which notes are owed rulings arrives computed: this module does not
+// recognise them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -30,7 +30,8 @@ export interface Note {
   readonly blocks: readonly string[];
 }
 
-/** A live note, with the entity identity that joins it and is never printed. */
+/** A live note, with the entity identity that joins and selects it; never
+ *  printed. */
 export interface LiveNote extends Note {
   readonly entity: string;
 }
@@ -42,9 +43,6 @@ export interface NotebookState {
   readonly notes: readonly LiveNote[];
   /** The live notes that block what they name. */
   readonly owed: readonly LiveNote[];
-  /** The open questions; one that is also an owed ruling prints once, as the
-   *  owed ruling. */
-  readonly open: readonly LiveNote[];
   readonly diverged: readonly Diverged<Note>[];
   readonly incoherent: readonly Incoherence[];
 }
@@ -77,13 +75,10 @@ function noteInFull(note: Note): string[] {
  * the resolve-first layer.
  */
 export function notebookView(state: NotebookState, entity?: string): string {
-  const owed = new Set(state.owed.map((note) => note.entity));
-  const open = state.open.filter((note) => !owed.has(note.entity));
   const lines = [
     header('notebook', state.commit, [
       count(state.notes.length, 'note', 'notes'),
       count(state.owed.length, 'owed ruling', 'owed rulings'),
-      count(open.length, 'open question', 'open questions'),
       `${state.diverged.length} diverged`,
       `${state.incoherent.length} incoherent`,
     ]),
@@ -91,7 +86,6 @@ export function notebookView(state: NotebookState, entity?: string): string {
       ...state.diverged.flatMap((d) => divergedLines(d, (v) => [noteLine(v)])),
       ...state.incoherent.map(incoherenceLine),
       ...state.owed.map((note) => `owed ruling: ${noteLine(note)}`),
-      ...open.map((note) => `open question: ${noteLine(note)}`),
     ]),
   ];
 

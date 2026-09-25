@@ -17,9 +17,10 @@
 // display text or as given; `domain-interface` maps each domain's fold onto
 // these shapes. Arranging the given items is the view's: the lattice root to
 // primitive from the factors it is given, units by the wave they are given,
-// notes by kind and topic. An entity identity in a shape only joins and selects
-// items and is never printed: no output carries a record id, an envelope, a
-// head as such or a file path.
+// notes by kind and topic. An entity identity in a shape joins and selects
+// items and is printed in one place only: beside a name a merge left on two or
+// more live entities, so the reader can address each. No output carries a
+// record id, an envelope, a head as such or a file path.
 //
 // This module holds what the three domains' views share; each domain's view is
 // its own module (`design.ts`, `plan.ts`, `notebook.ts`).
@@ -37,15 +38,30 @@ export interface Diverged<T> {
   readonly retracted: boolean;
 }
 
-/** A contradiction between entities, every entity named for its reader: a live
- *  entity referencing a withdrawn one, or a cycle among entities. */
+/** A domain law broken across entities by a merge, every entity named for its
+ *  reader: a live entity referencing a withdrawn one, a cycle, one name on two
+ *  or more live entities (which the name alone cannot address, so each prints
+ *  with its identity beside the name), or more than one plan holding the state
+ *  that admits one. */
 export type Incoherence =
   | {
       readonly kind: 'retracted';
       readonly name: string;
       readonly reference: string;
     }
-  | { readonly kind: 'cycle'; readonly names: readonly string[] };
+  | { readonly kind: 'cycle'; readonly names: readonly string[] }
+  | {
+      readonly kind: 'name';
+      readonly name: string;
+      /** The identities of the live entities carrying the name. */
+      readonly entities: readonly string[];
+    }
+  | {
+      readonly kind: 'exclusive';
+      /** The state admitting one plan, as display text. */
+      readonly state: string;
+      readonly names: readonly string[];
+    };
 
 /** One line of `text`: every run of whitespace collapsed to one space. */
 export function inline(text: string): string {
@@ -92,9 +108,16 @@ export function divergedLines<T>(
 }
 
 export function incoherenceLine(incoherence: Incoherence): string {
-  return incoherence.kind === 'retracted'
-    ? `incoherent: ${incoherence.name} references withdrawn ${incoherence.reference}`
-    : `incoherent: cycle among ${incoherence.names.join(', ')}`;
+  switch (incoherence.kind) {
+    case 'retracted':
+      return `incoherent: ${incoherence.name} references withdrawn ${incoherence.reference}`;
+    case 'cycle':
+      return `incoherent: cycle among ${incoherence.names.join(', ')}`;
+    case 'name':
+      return `incoherent: ${incoherence.entities.length} live items named ${incoherence.name}: ${incoherence.entities.map((entity) => `${incoherence.name} ${entity}`).join(', ')}`;
+    case 'exclusive':
+      return `incoherent: ${incoherence.names.length} plans in ${incoherence.state}, which admits one: ${incoherence.names.join(', ')}`;
+  }
 }
 
 /** A labelled field of an item in full: inline when `text` is one line, else

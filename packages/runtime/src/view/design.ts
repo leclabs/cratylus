@@ -34,7 +34,8 @@ export interface Concept {
 }
 
 /** A live concept, with the entity identity that joins it to the units
- *  realizing it and selects it for a drill; never printed. */
+ *  realizing it and selects it for a drill; printed only beside an anchor a
+ *  merge left on another live concept. */
 export interface LiveConcept extends Concept {
   readonly entity: string;
 }
@@ -74,21 +75,27 @@ function conceptInFull(concept: Concept): string[] {
 export function designView(state: DesignState, entity?: string): string {
   const { concepts } = state;
 
-  // How each plan stands on each concept: `plan (state): unit (marks), …`.
-  const realizing = new Map<string, Map<string, string[]>>();
+  // How each plan stands on each concept, keyed by concept entity, then by
+  // plan entity: `plan (state): unit (marks), …`.
+  const realizing = new Map<
+    string,
+    Map<string, { plan: string; units: string[] }>
+  >();
   for (const unit of state.units) {
     const plans =
-      realizing.get(unit.realizes.entity) ?? new Map<string, string[]>();
+      realizing.get(unit.realizes.entity) ??
+      new Map<string, { plan: string; units: string[] }>();
     realizing.set(unit.realizes.entity, plans);
-    const plan = planName(unit.plan);
-    plans.set(plan, [
-      ...(plans.get(plan) ?? []),
-      `${unit.name} (${standing(unit)})`,
-    ]);
+    const standingOn = plans.get(unit.plan.entity) ?? {
+      plan: planName(unit.plan),
+      units: [],
+    };
+    plans.set(unit.plan.entity, standingOn);
+    standingOn.units.push(`${unit.name} (${standing(unit)})`);
   }
   const realizedIn = (concept: string): string[] =>
-    [...(realizing.get(concept) ?? [])].map(
-      ([plan, units]) => `${plan}: ${units.join(', ')}`,
+    [...(realizing.get(concept)?.values() ?? [])].map(
+      ({ plan, units }) => `${plan}: ${units.join(', ')}`,
     );
 
   // Root to primitive: a concept is placed once every live concept factoring
