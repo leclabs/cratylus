@@ -27,9 +27,9 @@ Isolation (PLAN.md § Contract): imports only from `../../record-store/` (never
 
 ## Static
 
-- `git show 9cc32431:docs/design/record-store.md` § The three domains (`design`), § The record
+- `git show c501e002:docs/design/record-store.md` § The three domains (`design`), § The record
   model.
-- `git show 9cc32431:packages/canon/src/skills/design/skill.ts` — `anchor`, `gloss`, `factors`,
+- `git show c501e002:packages/canon/src/skills/design/skill.ts` — `anchor`, `gloss`, `factors`,
   `closure`, `blast`, `denotes`.
 - The landed `packages/runtime/src/record-store/` (from `record-store`), and its return's reported
   signs.

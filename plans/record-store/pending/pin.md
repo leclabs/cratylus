@@ -19,13 +19,14 @@ declares structurally; `domain-interface` wires `design-domain`'s closure into i
 § Contract — the lattice's `pin → design` edge is realized at that composition).
 
 Isolation: imports only from `../../record-store/` (never `immutability-gate.ts`), never
-`./plan.ts`, another capability directory or the view.
+`./plan.ts`, `./unit.ts`, another capability directory, the view or `runtime-config.ts`. The unit
+stores the pin as an opaque value; `unit` does not import this module either.
 
 ## Static
 
-- `git show 9cc32431:docs/design/record-store.md` § The three domains (`pin`, `plan`), § The
+- `git show c501e002:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The
   record model (`head`, `divergence`).
-- `git show 9cc32431:packages/canon/src/skills/plan/skill.ts` — the piece-level
+- `git show c501e002:packages/canon/src/skills/plan/skill.ts` — the piece-level
   `pin(s) ≠ digest(s) ⇒ REFUSE` law this per-unit pin replaces.
 - The landed `packages/runtime/src/record-store/` and its return's reported signs.
 
@@ -47,7 +48,7 @@ Isolation: imports only from `../../record-store/` (never `immutability-gate.ts`
    re-run reproduces the output. With `B` factoring `A`: a pin taken on `B`; amend `B` → drifted;
    a fresh pin on `B`, then amend `A` → suspect and not drifted; diverge `A` → suspect; taking a
    pin on the diverged `A` refuses; taking a pin on a retracted concept refuses.
-3. `git grep -nE "from '\./plan|from '\.\./(design|note)/|from '\.\./\.\./view|immutability-gate" -- packages/runtime/src/capabilities/plan/pin.ts`
+3. `git grep -nE "from '\./(plan|unit)|from '\.\./(design|note)/|from '\.\./\.\./(view|runtime-config)|immutability-gate" -- packages/runtime/src/capabilities/plan/pin.ts`
    prints nothing.
 4. Sole: the return names the identifiers realizing take, drifted and suspect, and each is
    declared nowhere else under `packages/runtime/src` (`git grep -n`).

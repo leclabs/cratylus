@@ -21,7 +21,7 @@ passes.
 
 ## Static
 
-- `git show 9cc32431:docs/design/record-store.md` § Primitives (`immutability gate`), § The record
+- `git show c501e002:docs/design/record-store.md` § Primitives (`immutability gate`), § The record
   model (`record store` owns it).
 - `.husky/pre-commit`, `.github/workflows/gates.yml` (a reusable workflow called by `verify.yml`
   and `release.yml`), `.github/workflows/verify.yml` (its triggers).

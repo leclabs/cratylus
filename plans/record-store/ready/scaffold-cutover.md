@@ -18,7 +18,7 @@ mapping: it gains no plan vocabulary in exchange.
 
 ## Static
 
-- `git show 9cc32431:docs/design/record-store.md` § The three domains (`plan`), § Boundaries.
+- `git show c501e002:docs/design/record-store.md` § The three domains (`plan`), § Boundaries.
 - `packages/forge/src/deploy/{init,project-template}.ts`; `packages/canon/tooling/{project-template,scaffold-cli}.ts`.
 - `packages/canon/tooling/project-template.ts` register note (consumer-repo prose may not cite
   cratylus-local paths; `cratylism.test.ts` pins it).
@@ -42,7 +42,7 @@ None.
 ## Accept
 
 1. `git grep -nE "planStates|planMd|planDir|layPlansScaffold|'plans', 'founding'" -- packages/forge packages/canon/tooling packages/canon/test/cratylism.test.ts`
-   prints nothing (at `9cc32431` it hits `forge/src/deploy/{init,project-template}.ts`,
+   prints nothing (at `c501e002` it hits `forge/src/deploy/{init,project-template}.ts`,
    `forge/test/deploy/{cli,init-harness-home}.test.ts`, `canon/tooling/project-template.ts`,
    `canon/test/cratylism.test.ts`).
 2. `git grep -n "plan-states" -- packages/canon/tooling` prints nothing.
