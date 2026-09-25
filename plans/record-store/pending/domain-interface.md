@@ -1,6 +1,6 @@
 # domain-interface
 
-**Wave 2.** Realizes `domain interface`. Factors at `0c9da09c`: `view`, `notebook`, `design`,
+**Wave 2.** Realizes `domain interface`. Factors at `b3b5a64c`: `view`, `notebook`, `design`,
 `plan`, `unit`.
 
 ## Intent
@@ -10,18 +10,32 @@ way agents and users meet notes, design and plans.
 
 - `design` shows the whole design or one concept. It defines, amends, retracts, reconciles and
   traces a concept. `trace` presents how the concept came to be (its versions with their reasons),
-  what it stands on (the design skill's `closure`), and what stands on it (`blast`, plus each plan
-  standing on it with that plan's state).
+  what it stands on (the design skill's `closure`), and what stands on it (`blast`). The design
+  knows nothing of plans, so `trace` reads the design alone. The plans standing on a concept, each
+  with its state, reach the design view only as the view's cross-reference, which this unit
+  composes from the plan fold.
 - `plan` shows the whole bound plan or one unit. It adds, revises and advances units, binds and
-  closes a plan, and reconciles either. No verb authors a plan (`PLAN.md` N6): the first `add` that
-  names a plan which does not exist proposes it, together with the concepts it realizes. `add`
-  resolves `realizes` by name and takes the pin automatically, which refuses unless the concept and
-  its whole closure are settled and live. `revise` re-pins. Binding a plan returns whichever plan was
-  bound to proposed; when a merge has left two plans bound, binding the one to keep resolves it.
+  closes a plan, and reconciles either.
+  - No verb authors a plan (`PLAN.md` N6). The first `add` that names a plan which does not exist
+    proposes it, together with the concepts it realizes.
+  - There is one live plan per name, and one live unit per name within its plan.
+  - `add` resolves `realizes` by name and takes the pin automatically. The pin refuses unless the
+    concept and its whole closure are settled and live. `revise` re-pins.
+  - `advance` moves a unit forward exactly one step; skipping or going back refuses.
+  - Binding a plan returns whichever plan was bound to proposed. When a merge has left two plans
+    bound, binding the one to keep resolves it.
+  - A retraction or divergence in the design never breaks a plan's laws; it drifts the units pinned
+    to that concept.
 - `note` shows the whole notebook or one note. It captures, revises, retracts and reconciles notes.
-  A note is addressed by its topic, and by its kind label within a topic; a reference matching
-  several live notes refuses and lists them (N3). What a note blocks is named by plan or unit name
-  and resolved here.
+  A note has no name. It is addressed by its topic and its kind label, narrowed by a fragment of its
+  body when several live notes share both (`PLAN.md` N9). A reference that still matches several
+  notes refuses and lists them. What a note blocks is named by plan or unit name and resolved here.
+
+**Identity only where a name fails.** When a merge leaves one name on two live entities, the
+interface shows each entity's identity beside the name and accepts that identity as input. This is
+the one place an identity surfaces, and nothing else is invented to stand for it. Converged heads,
+which carry the same payload, read as one head and are neither divergence nor a reason to show
+anything.
 
 **Every write keeps its domain's laws on the current branch.** A write that would break one is
 refused, so incoherence, like divergence, arises only from merges. An ordinary write on a diverged
@@ -36,8 +50,8 @@ Each capability composes the record store, its domain modules, `pin` and `view` 
 
 - it maps each fold onto the view's input shapes;
 - it wires `design-domain`'s closure into `pin`'s port;
-- it feeds `unit` its plan's liveness, its concepts' liveness and the owed rulings `notebook`
-  recognises;
+- it feeds `unit` its plan's liveness and the owed rulings `notebook` recognises. Concept liveness
+  is not a unit law at `b3b5a64c`: it reaches the unit only through the pin, as drift.
 - it feeds `plan-domain` and `unit` their lifecycle vocabularies from the runtime config
   (`lifecycle-configuration`).
 
@@ -71,7 +85,7 @@ invented, so no test spells the `plan` skill's vocabulary.
 
 ## Static
 
-- `git show 0c9da09c:docs/design/record-store.md` § The record model (`incoherence`,
+- `git show b3b5a64c:docs/design/record-store.md` § The record model (`incoherence`,
   `reconciliation`), § The three domains, § How they are met, § Intent ("Agents and users meet only
   the three domains, never the records"), § Boundaries.
 - `packages/runtime/src/{main,loader,plugin,index}.ts`, `packages/runtime/src/ports/event-tap.ts`
@@ -106,38 +120,57 @@ invented, so no test spells the `plan` skill's vocabulary.
 ## Accept
 
 1. `pnpm --filter @cratylus/runtime test -- design plan note` passes. The tests drive the verb
-   surface in a temporary git repository, and together they cover the following.
-   - **design**
-     - define → show (root to primitive) → amend → show one concept in full.
-     - Each of these writes refuses on one branch: a second live concept with an existing anchor
-       (including the anchor of a withdrawn concept); an empty gloss or reason; a factor naming a
-       withdrawn concept; a factor cycle; retracting a concept another concept factors on.
-     - `trace` prints the concept's versions with reasons, what it stands on, and what stands on it.
-     - Two branches amending one concept, merged: `design show` lists the divergence before the
-       body, `design amend` exits 1 naming `reconcile`, and `design reconcile` settles it.
-     - Two branches each defining one anchor, merged, lists an incoherence, and one branch
-       retracting a concept while the other factors on it, merged, lists another. An ordinary
-       write (retract, or amend) resolves each.
-   - **plan** - The first `plan add` naming a new plan proposes it with its concepts. Bind it, then bind a
-     second plan: the first returns to proposed. `close` keeps a plan readable. - Two branches binding different plans, merged: the incoherence is listed, and binding the one
-     to keep resolves it. - `plan add` pins, and refuses when the concept's closure is diverged or withdrawn. `plan show`
+   surface in a temporary git repository and cover the cases below.
+
+   **design**
+   - define → show (root to primitive) → amend → show one concept in full.
+   - Each of these writes refuses on one branch: a second live concept with an existing anchor
+     (including the anchor of a withdrawn concept); an empty gloss or reason; a factor naming a
+     withdrawn concept; a repeated factor; a factor cycle; retracting a concept another concept
+     factors on.
+   - `trace` prints the concept's versions with reasons, what it stands on, and what stands on it,
+     and names no plan.
+   - Two branches amend one concept differently and are merged: `design show` lists the divergence
+     before the body, `design amend` exits 1 naming `reconcile`, and `design reconcile` settles it.
+     Two branches making the same amendment and merged list no divergence.
+   - Two branches each define one anchor and are merged: an incoherence is listed, `design show`
+     prints each entity's identity beside the shared anchor, and `design retract` given one identity
+     resolves it. One branch retracting a concept while the other factors on it, merged, lists
+     another incoherence, which an ordinary write resolves.
+
+   **plan**
+   - The first `plan add` naming a new plan proposes it with its concepts. Bind it, then bind a
+     second plan: the first returns to proposed. `close` keeps a plan readable.
+   - A second live plan with an existing name, and a second live unit with an existing name in the
+     same plan, each refuse. The same unit name in another plan is accepted.
+   - Two branches binding different plans, merged: the incoherence is listed, and binding the one to
+     keep resolves it.
+   - `plan add` pins, and refuses when the concept's closure is diverged or withdrawn. `plan show`
      prints the bound plan in wave order with the frontier marked, and `design show` marks each
-     concept's standing plans with their state. - Amending the realized concept makes the unit drifted; amending another concept in its
-     closure makes it suspect, and never both. - A dependency on a unit of another plan, or one closing a cycle, refuses. A unit advanced past
-     completion still satisfies its dependents. `plan advance` refuses a skipped step. `plan
-reconcile` settles a diverged unit.
-   - **note**
-     - A note blocking a unit takes it off the frontier until `note retract`, or until `note revise`
-       makes it block nothing.
-     - A note blocking a plan makes `plan bind` refuse and takes all of that plan's units off the
-       frontier.
-     - A diverged note blocks what either head blocks: `note revise` refuses naming `reconcile`,
-       and `note reconcile` settles it.
-     - `note show` groups by kind label, then topic. An ambiguous note reference refuses and lists
-       the candidates.
-   - **everywhere**: every capability needing lifecycle configuration refuses when it is absent,
-     and every `show` output is asserted free of `[0-9A-HJKMNP-TV-Z]{26}` and of the records root's
-     path.
+     concept's standing plans with their state.
+   - Amending the realized concept makes the unit drifted, as do retracting it and diverging it.
+     Retracting it lists no plan incoherence. Amending another concept in its closure makes the unit
+     suspect, never both drifted and suspect.
+   - A dependency on a unit of another plan, or one closing a cycle, refuses. A unit advanced past
+     completion still satisfies its dependents. `plan advance` refuses a skipped step and a step
+     back. `plan reconcile` settles a diverged unit.
+
+   **note**
+   - A note blocking a unit takes it off the frontier until `note retract`, or until `note revise`
+     makes it block nothing.
+   - A note blocking a plan makes `plan bind` refuse and takes all of that plan's units off the
+     frontier.
+   - A diverged note blocks what either head blocks: `note revise` refuses naming `reconcile`, and
+     `note reconcile` settles it.
+   - `note show` groups by kind label, then topic. Two notes sharing a topic and kind are told apart
+     by a body fragment. A reference that stays ambiguous refuses and lists the candidates.
+
+   **everywhere**
+   - Every capability that needs lifecycle configuration refuses when it is absent.
+   - Every `show` output is free of the records root's path.
+   - Every `show` output matches `[0-9A-HJKMNP-TV-Z]{26}` only beside a name that a merge left on two
+     live entities. Every other fixture's output matches it nowhere.
+
 2. `pnpm --filter @cratylus/canon test -- capability-keyspace gate-convicts` passes.
 3. `git grep -nE "'(design|plan|note)'" -- packages/runtime/src/loader.ts packages/canon/src/manifest.ts`
    hits each of the three in both files (at `c501e002` it hit none).

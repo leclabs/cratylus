@@ -4,12 +4,13 @@
 > read time, met only through the three domains.
 
 **Piece.** The whole lattice of `docs/design/record-store.md` — one piece (the design's § Cut).
-**Pin.** `0c9da09c` (the commit carrying the revision; re-pinned from `4610c33f`, and before that
-from `c501e002` and `9cc32431`). **Digest.** blob `6f2dfb48085aaf90093ebc292dd817f9731c95d2` =
-`git rev-parse 0c9da09c:docs/design/record-store.md` = `git hash-object docs/design/record-store.md`
-at re-planning, so `pin = digest`. Every unit reads the design as
-`git show 0c9da09c:docs/design/record-store.md`, never the working file, because
-`design-migration` deletes it.
+**Pin.** `b3b5a64c` (the commit carrying the revision; re-pinned from `0c9da09c`, and before that
+from `4610c33f`, `c501e002` and `9cc32431`). **Digest.** blob
+`f371f7c0dca5e495d0929234bab9b6bba745e582` = `git rev-parse b3b5a64c:docs/design/record-store.md` =
+`git hash-object docs/design/record-store.md` at re-planning, so `pin = digest`. Every pending unit
+reads the design as `git show b3b5a64c:docs/design/record-store.md`, never the working file, because
+`design-migration` deletes it. The active W1 specs still cite `0c9da09c` in their Static; the
+design-holder is redispatching them with `b3b5a64c`.
 
 **Bootstrap.** This plan is written in the layout it deletes. It is one of "the existing plans under
 `plans/`" the design removes rather than migrates, so `plan-cutover` deletes it with the rest; the
@@ -17,25 +18,19 @@ last unit is accepted on its commit, since no plan record for this plan will exi
 
 ## Where this stands
 
-Re-pinned 2026-09-25 at `0c9da09c` (see § Decided in C at `0c9da09c`). No wave, dep or unit moved.
+Re-pinned 2026-09-25 at `b3b5a64c` (see § Decided in C at `b3b5a64c`). No wave, dep or unit moved.
 
-- **Pending specs.** The delta rewrote `domain-interface`, `note-skill` and `trio-skill-routing`.
-  `design-migration` gained the write-time design laws; `plan-cutover` was only re-pinned.
-- **Active W1 specs.** Their Accept changed only where it contradicted the new C: `design-domain`,
-  `plan-domain`, `unit`, `pin` and `view`. The design-holder redispatched their executors with the
-  fixes.
-- **`lifecycle-configuration`.** Its outputs are widened to `forge/src/cli/commands/install.ts`,
-  `forge/src/project/index.ts` and the new `forge/src/project/resolve-skills.ts`. The design-holder
-  authorized this; `DeployCmdOpts.events` is cut over to `plugins`. No pending unit declares or
-  compiles against those paths.
-- **State.** The plan is bound (`.bound`). W0 is completed, and all of W1 is active. No ruling is
-  owed.
+- **Pending specs.** The delta rewrote the relevant parts of `domain-interface`, `note-skill` and
+  `trio-skill-routing`. `design-migration` and `plan-cutover` were only re-pinned.
+- **Active specs.** They were left to the design-holder's redispatch: `record-store` is reopened
+  (moved back to active), and the W1 units are active.
+- **State.** The plan is bound (`.bound`), `scaffold-cutover` is completed, and no ruling is owed.
 
 ## Units
 
 | wave | state     | unit                      | realizes            | outputs (summary; the shard is the full array)                                                                                                                                | deps                                                                                         |
 | ---- | --------- | ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 0    | completed | `record-store`            | `record store`      | `runtime/src/record-store/**`; memory's `ulid.ts` moved to `runtime/src/ulid.ts` (subpath `./ulid`) and every importer; tests; registry; biome ignore                         | —                                                                                            |
+| 0    | active    | `record-store`            | `record store`      | `runtime/src/record-store/**`; memory's `ulid.ts` moved to `runtime/src/ulid.ts` (subpath `./ulid`) and every importer; tests; registry; biome ignore                         | —                                                                                            |
 | 0    | completed | `scaffold-cutover`        | `plan`              | forge `deploy/{project-template,init}.ts` + 2 tests; canon `tooling/{project-template,scaffold-cli}.ts` + 1 test                                                              | —                                                                                            |
 | 1    | active    | `lifecycle-configuration` | `plan`              | schema `Skill.runtime` shape; forge `deploy/runtime-config.ts`, `cli/commands/{deploy,install}.ts`, `project/{index,resolve-skills}.ts`; runtime `runtime-config.ts`; 2 tests | `scaffold-cutover` (contention)                                                              |
 | 1    | active    | `design-domain`           | `design`            | `runtime/src/capabilities/design/design.ts`                                                                                                                                   | `record-store`                                                                               |
@@ -85,7 +80,7 @@ check over the four slices finds no swap that lowers it.
 
 ## Lattice coverage
 
-22 anchors at `0c9da09c` (`git show 0c9da09c:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
+22 anchors at `b3b5a64c` (`git show b3b5a64c:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
 Ten are some unit's `realizes`. Twelve are **covered, not cited** — built inside `record-store`,
 whose acceptance requires the artifact to spell each — and are surfaced here as the design's law
 requires for a concept no unit cites.
@@ -207,7 +202,27 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   the lattice from the factors it is given. A concept shows each standing plan with that plan's
   state, and drilling into a diverged item shows every head (`view` Accept).
 
-## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`; none blocks)
+## Decided in C at `b3b5a64c`
+
+- **Convergence.** Heads that carry the same payload read as one head and are not divergence.
+  `domain-interface` tests both a converged merge and a diverged one.
+- **Design.** Factors form a set, and the design knows nothing of plans. `trace` reads the design
+  alone, and the plans standing on a concept reach its view only as the view's cross-reference
+  (`domain-interface`). The design skill drops its plan borrow (`trio-skill-routing`, N10).
+- **Names.** There is one live plan per name, and one live unit per name within its plan
+  (`domain-interface`, `trio-skill-routing`).
+- **Unit lifecycle.** It moves forward one step at a time, so a step back refuses as a skip does.
+- **Drift.** A unit is drifted when its pinned version is no longer the concept's only head. A
+  retraction in the design therefore drifts units instead of breaking a plan law, and concept
+  liveness is no longer fed to the unit as an incoherence relation (`domain-interface`,
+  `trio-skill-routing`).
+- **View.** Open questions leave the resolve-first layer. No pending spec restated that layer, so the
+  change reaches only the active `view` spec, through the redispatch.
+- **Identity where a name fails.** When a merge leaves one name on two live entities, the interface
+  shows each entity's identity beside the name and accepts it as input. `domain-interface` Accept 1
+  now allows the identity pattern there and only there.
+
+## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`, N9–N10 at `b3b5a64c`; none blocks)
 
 N1, N2 and N4 are now decided in C at `0c9da09c`. Their planned defaults below are superseded where
 that section says so, and are kept for the record.
@@ -246,6 +261,15 @@ that section says so, and are kept for the record.
   (`domain-interface`, and the W1 domain modules through their redispatch): a write is refused iff
   it introduces a violation the fold did not already hold. Writes to unrelated entities proceed, and
   an ordinary write that removes a standing violation is the reconciliation.
+- **N9 — addressing one note (new at `b3b5a64c`; supersedes N3's default).** Notes carry no name,
+  and identity surfaces only where a merge left one name on two entities. Nothing, then, addresses
+  one of several live notes that share a topic and a kind label. Planned (`domain-interface`,
+  `note-skill`): narrow the reference by a fragment of the note's body; a reference that stays
+  ambiguous refuses and lists the candidates. No identity and no invented sign is used.
+- **N10 — the design skill's plan-facing law (new at `b3b5a64c`).** "The design knows nothing of
+  plans", yet the `design` skill borrows `realizes @ plan` and states the unbuilt-concept law
+  (`∄ unit realizes c ⇒ SURFACE`). Planned (`trio-skill-routing`): the law moves to `deliver`, which
+  reads both domains and already borrows `realizes`. Its meaning is kept; only its home moves.
 
 ## Census (measured at `c501e002`; re-run for today's figure)
 

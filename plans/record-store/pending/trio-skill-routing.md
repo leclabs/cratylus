@@ -17,7 +17,12 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   and a withdrawn concept keeps its anchor until it is reinstated; factors are acyclic and name live
   concepts, so a concept that others factor on cannot be retracted; every gloss and every reason is
   non-empty. The block already states anchor uniqueness, acyclicity, a non-empty gloss and a
-  non-empty reason; the live-factor and anchor-retention laws are new to it. **One sense of
+  non-empty reason; the live-factor and anchor-retention laws are new to it. Factors form a set, which
+  `factors : C → ℘(C)` already states. **The design knows nothing of plans** (`b3b5a64c`), so the
+  block drops `realizes : unit ⇀ anchor @ plan` and the unbuilt-concept law
+  `∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE` (lines 42 and 71 at `b3b5a64c`). That law
+  moves to `deliver`, which reads both domains and already borrows `realizes @ plan` (`PLAN.md`
+  N10). **One sense of
   supersession** (§ Boundaries at `4610c33f`): the lattice law
   `supersede(c, c') ⇒ phase(c) := superseded ∧ supersededBy(c) = c' ∧ c ∈ C`, with `Phase` and
   `supersededBy : C ⇀ C`, reads a superseded concept as replaced by another concept; it is restated
@@ -39,7 +44,9 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
 
   The block carries the plan and unit laws at `0c9da09c`:
   - binding a plan returns whichever plan was bound to proposed, so at most one is bound;
-  - a unit realizes exactly the concept its pin names;
+  - there is one live plan per name, and one live unit per name within its plan;
+  - a unit realizes exactly the concept its pin names, and its lifecycle moves forward one step at
+    a time;
   - a unit's dependencies are acyclic and name live units of the same plan;
   - a unit is ready when every dependency has reached completion or moved past it, and no owed
     ruling names the unit or its plan;
@@ -47,8 +54,9 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
     the `note` capability's verbs; one naming a plan blocks binding it and every unit in it.
 
   It pins and advances. `pin` is taken only when the concept and its whole closure are settled and
-  live. Drifted and suspect are disjoint (a drifted unit is never also suspect), and both are
-  declared here, replacing `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign, `advance ⊨ mirror`
+  live. A unit is drifted when its pinned version is no longer the concept's only head (the concept
+  was amended, withdrawn or diverged), and otherwise suspect. A retraction in the design never
+  breaks a plan's laws; it drifts the units pinned to that concept. Both readings are declared here, replacing `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign, `advance ⊨ mirror`
   and the `→ mirror →` step are deleted. `R`, the census, outputs, wave and acceptance laws stay
   (`boundary-binding.test.ts`'s fixture borrows `R`).
 
@@ -56,7 +64,7 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   `bound(P)` is now the plan entity's state: binding and closing are `plan` verbs the architect uses
   at deliver. The WIP law `∃! P : bound(P)` is now held by binding, which returns the previous plan
   to proposed, and `terminal(P) ⇒ retire(P)` becomes closing, which keeps the plan readable instead
-  of deleting it. `file(d)` captures to the notebook through the `note` capability's verb, without
+  of deleting it. It gains the unbuilt-concept law from `design` (N10). `file(d)` captures to the notebook through the `note` capability's verb, without
   borrowing from the `note` skill (`PLAN.md` § Contract, W3 isolation).
 
 The canon half of the lifecycle round trip lands here: `event-vocabulary.test.ts` § (c) gains a leg
@@ -69,7 +77,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show 0c9da09c:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show b3b5a64c:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
@@ -125,5 +133,9 @@ beside this unit leaves it true.
    plan or unit, and name none of `idea`, `question` or `decision`. A blanket grep for `question`
    cannot serve: at `0c9da09c` it already hits `deliver`'s "three questions" and `plan`'s
    "unanswered question".
-10. `pnpm verify` passes.
-11. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
+10. The design skill knows nothing of plans:
+    `git grep -nE "@ plan|realizes" -- packages/canon/src/skills/design/skill.ts` prints nothing (at
+    `b3b5a64c` it hits lines 42 and 71). `deliver`'s block carries the unbuilt-concept law, which
+    the return quotes.
+11. `pnpm verify` passes.
+12. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
