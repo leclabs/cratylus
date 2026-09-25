@@ -409,8 +409,10 @@ export class Design {
   }
 
   /** A recordable payload for `concept`, written as `verb` to `entity` (none for a
-   *  definition) over `heads`; refuses what one write alone can break, and any
-   *  violation the write would introduce. */
+   *  definition) over `heads`; refuses what one write alone can break, a factor
+   *  newly naming a diverged concept (which is not live), and any violation the
+   *  write would introduce. A factor the concept already has is kept even when
+   *  its concept has since diverged: divergence reports that state. */
   #payload(
     read: Snapshot,
     verb: string,
@@ -428,12 +430,17 @@ export class Design {
     if (concept.anchor.trim() === '') refuse('a concept has an anchor');
     if (concept.gloss.trim() === '') refuse('a concept has a gloss');
     const factors = new Set<string>();
+    const current = entity === undefined ? undefined : read.factors.get(entity);
     for (const name of concept.factors) {
       if (entity === undefined && name === concept.anchor)
         refuse('a concept never factors itself');
       const factor = read.resolve(name);
       if (factors.has(factor))
         refuse(`it names its factor ${quote(name)} twice; factors form a set`);
+      if (read.diverged(factor) && !current?.has(factor))
+        refuse(
+          `its factor ${quote(read.name(factor))} has diverged, so is not live; reconcile ${quote(read.name(factor))} first`,
+        );
       factors.add(factor);
     }
     const payload = {
