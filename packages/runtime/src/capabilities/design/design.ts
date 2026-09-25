@@ -200,9 +200,10 @@ class Snapshot {
     return `${this.name(entity)} — ${glosses.join(' | ')}${this.withdrawn(entity) ? ' (withdrawn)' : ''}`;
   }
 
-  /** The entity `name` denotes, if any. An anchor several concepts carry denotes
-   *  the one of them not withdrawn, if there is exactly one, and otherwise
-   *  refuses, listing each concept under the name that addresses it. */
+  /** The entity `name` denotes, if any: every name this module emits resolves
+   *  back. An anchor several concepts carry denotes the one of them not
+   *  withdrawn, if there is exactly one, and otherwise refuses, listing each
+   *  concept under the name that addresses it. */
   denotes(name: string): string | undefined {
     const carriers = this.carriers(name);
     if (carriers.length === 1) return carriers[0];
@@ -214,6 +215,13 @@ class Snapshot {
           .map((e) => this.sign(e))
           .join('; ')}; name one of them`,
       );
+    }
+    const parts = name.split(' | ');
+    if (parts.length > 1) {
+      const [first, ...rest] = parts.map((part) => this.denotes(part));
+      return first !== undefined && rest.every((e) => e === first)
+        ? first
+        : undefined;
     }
     const numbered = /^(.+) #([1-9][0-9]*)$/.exec(name);
     if (!numbered) return undefined;
