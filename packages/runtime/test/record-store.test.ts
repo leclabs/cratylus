@@ -188,7 +188,51 @@ describe('record store', () => {
     expect(folded?.heads).toEqual([retraction]);
     expect(folded?.payload).toBeUndefined();
     expect(divergence(fold(store.read(DOMAIN)))).toEqual([]);
-    expect(() => store.retract(DOMAIN, entity, BY)).toThrow(/withdrawn/);
+    expect(() => store.retract(DOMAIN, entity, BY)).toThrow(
+      /withdraws nothing/,
+    );
+  });
+
+  it('a retraction naming only a retraction REFUSES; naming a version head beside it settles as withdrawn', () => {
+    const store = new RecordStore(repository());
+    const v1 = store.create(DOMAIN, { name: 'a' }, BY);
+    const { entity } = v1.envelope;
+    const retraction = store.retract(DOMAIN, entity, BY);
+    expect(() =>
+      store.write(DOMAIN, {
+        envelope: {
+          ...retraction.envelope,
+          id: '01ZZZZZZZZZZZZZZZZZZZZZZZZ',
+          supersedes: [retraction.envelope.id],
+        },
+        payload: null,
+      }),
+    ).toThrow(/no version/);
+    expect(store.read(DOMAIN)).toHaveLength(2);
+
+    const repo = repository();
+    const merged = new RecordStore(repo);
+    const base = merged.create(DOMAIN, { name: 'a' }, BY);
+    mergeBranches(
+      repo,
+      () => merged.retract(DOMAIN, base.envelope.entity, BY),
+      () =>
+        merged.supersede(
+          DOMAIN,
+          base.envelope.entity,
+          [base.envelope.id],
+          { name: 'r' },
+          BY,
+        ),
+    );
+    const heads = fold(merged.read(DOMAIN)).get(base.envelope.entity)?.heads;
+    const withdrawal = merged.retract(DOMAIN, base.envelope.entity, BY);
+    expect(ids(heads ?? [])).toEqual(
+      [...withdrawal.envelope.supersedes].sort(),
+    );
+    const folded = fold(merged.read(DOMAIN)).get(base.envelope.entity);
+    expect(folded?.heads).toEqual([withdrawal]);
+    expect(folded?.withdrawn).toBe(true);
   });
 
   it('retract then supersede on one branch reinstates the entity, naming the retraction', () => {

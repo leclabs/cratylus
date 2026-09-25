@@ -97,8 +97,9 @@ export class RecordStore {
   /**
    * Write one record into `domain`. Refuses a record id whose file exists; a
    * `create` that names anything, or whose entity already has records; an
-   * `amend` or `retract` naming nothing; and a named id that is unknown, belongs
-   * to another entity, or is not a current head of this one.
+   * `amend` or `retract` naming nothing; a named id that is unknown, belongs to
+   * another entity, or is not a current head of this one; and a `retract` naming
+   * no version, which would withdraw nothing.
    */
   write<P>(domain: string, record: Record<P>): void {
     const dir = this.#dir(domain);
@@ -129,6 +130,13 @@ export class RecordStore {
       else if (!heads?.includes(target))
         refuse(`${named} is not a head of entity ${entity}`);
     }
+    if (
+      operation === 'retract' &&
+      supersedes.every(
+        (named) => known.get(named)?.envelope.operation === 'retract',
+      )
+    )
+      refuse(`it names no version of entity ${entity}, so withdraws nothing`);
     mkdirSync(dir, { recursive: true });
     try {
       writeFileSync(
@@ -190,19 +198,14 @@ export class RecordStore {
   }
 
   /** A retraction: withdraw `entity` with no successor version, naming every
-   *  head it withdraws; the retraction becomes its head. Refuses an entity with
-   *  no records, or one already withdrawn. */
+   *  head it withdraws; the retraction becomes its head. `write` refuses an
+   *  entity with no records, or one already withdrawn. */
   retract(
     domain: string,
     entity: string,
     by: Pick<Envelope, 'author' | 'reason' | 'cause'>,
   ): Record<never> {
-    const folded = fold(this.read(domain)).get(entity);
-    if (!folded || folded.withdrawn)
-      throw new Error(
-        `record store: retract refused — entity ${entity} is ${folded ? 'already withdrawn' : 'unknown'} in ${domain}`,
-      );
-    const { heads } = folded;
+    const heads = fold(this.read(domain)).get(entity)?.heads ?? [];
     return this.#append<never>(
       domain,
       entity,
