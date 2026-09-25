@@ -7,14 +7,12 @@
 //      (every agent + skill, with staged companions) into
 //      `<target>/<harnessHome>/{agents,skills}`. Defs/skills are regenerated
 //      substance, overwritten freely (`substance-over-accident`).
-//   2. LAY THE PROJECT SCAFFOLD — the marker that makes the target a project:
-//      - `<target>/AGENTS.md` — the project conventions + the subject.
-//      - `<target>/plans/founding/` — a minimal sharded-plan-layout scaffold.
+//   2. LAY THE PROJECT MARKER — `<target>/AGENTS.md`, the project conventions +
+//      the subject.
 //
-// This module is DOCTRINE-AGNOSTIC: what the project documents SAY and which
-// state folders the plan scaffold materializes are injected as a
-// `ProjectTemplate` (engine declares the structure; corpus supplies the prose +
-// states). Forge ships `DEFAULT_PROJECT_TEMPLATE`; a doctrine-bearing corpus
+// This module is DOCTRINE-AGNOSTIC: what the project document SAYS is injected
+// as a `ProjectTemplate` (engine declares the structure; corpus supplies the
+// prose). Forge ships `DEFAULT_PROJECT_TEMPLATE`; a doctrine-bearing corpus
 // injects its own.
 //
 // Clobber-guarded: refuses an existing `<target>/AGENTS.md` unless `force`
@@ -40,7 +38,7 @@ export const DEFAULT_SUBJECT =
 export interface ScaffoldProjectOpts {
   target: string;
   tree: RenderTree;
-  /** The project doctrine to lay down — the prose + plan-layout states. */
+  /** The project doctrine to lay down — the project prose. */
   template: ProjectTemplate;
   /**
    * The dot-directory the target harness reads its artifacts from — the
@@ -61,7 +59,6 @@ export interface ScaffoldProjectResult {
   agents: number;
   skills: number;
   agentsMd: string;
-  planDir: string;
 }
 
 /** Recursively copy a dir tree (binary-safe). */
@@ -119,29 +116,6 @@ function projectCulture(
   return [nAgents, nSkills];
 }
 
-/** Create <target>/plans/founding/{PLAN.md, <state-folders>...} — a minimal
- *  sharded-plan-layout from the injected template. Returns the plan dir.
- *  .gitkeep markers keep the empty state folders materializable in git. */
-function layPlansScaffold(
-  target: string,
-  subject: string,
-  template: ProjectTemplate,
-): string {
-  const planDir = resolvePath(target, 'plans', 'founding');
-  mkdirSync(planDir, { recursive: true });
-  writeFileSync(
-    resolvePath(planDir, 'PLAN.md'),
-    template.planMd(subject),
-    'utf-8',
-  );
-  for (const state of template.planStates) {
-    const sd = resolvePath(planDir, state);
-    mkdirSync(sd, { recursive: true });
-    writeFileSync(resolvePath(sd, '.gitkeep'), '', 'utf-8');
-  }
-  return planDir;
-}
-
 /** Scaffold an agent project in `target` from the injected template. Returns the
  *  scaffold result (rc 0 ok). */
 export function scaffoldProject(
@@ -158,7 +132,7 @@ export function scaffoldProject(
     warn(
       `REFUSE  ${agentsMd} already exists -- this dir may already be a project; pass --force to overwrite the project marker`,
     );
-    return { rc: 1, agents: 0, skills: 0, agentsMd, planDir: '' };
+    return { rc: 1, agents: 0, skills: 0, agentsMd };
   }
 
   mkdirSync(target, { recursive: true });
@@ -172,11 +146,6 @@ export function scaffoldProject(
   writeFileSync(agentsMd, template.agentsMd(subject), 'utf-8');
   log(`  project marker:    ${agentsMd}`);
 
-  const planDir = layPlansScaffold(target, subject, template);
-  log(
-    `  plans scaffold:    ${planDir}/ (PLAN.md + ${template.planStates.join('/')})`,
-  );
-
   log(`=== scaffolded: ${nAgents} agents, culture projected ===`);
-  return { rc: 0, agents: nAgents, skills: nSkills, agentsMd, planDir };
+  return { rc: 0, agents: nAgents, skills: nSkills, agentsMd };
 }

@@ -274,10 +274,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const { canonProjectTemplate } = await import(
       '../tooling/project-template.js'
     );
-    const emitted = [
-      canonProjectTemplate.agentsMd('<subject>'),
-      canonProjectTemplate.planMd('<subject>'),
-    ].join('\n');
+    const emitted = canonProjectTemplate.agentsMd('<subject>');
     const local = [
       'packages/',
       'VISION.md',

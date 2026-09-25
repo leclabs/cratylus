@@ -8,15 +8,11 @@
 //
 // project-template.ts — canon's project DOCTRINE, the corpus DATA injected
 // into the doctrine-agnostic `scaffoldProject` ENGINE (`@cratylus/forge/deploy`).
-// The engine declares the `ProjectTemplate` SHAPE (project prose + plan-layout
-// states); THIS module supplies the canon substance: the project prose +
-// `planStates` sourced from the praxis plan-state CANON (`./plan-states.ts`
-// `PLAN_STATES`, the one home the praxis skill's formal block also derives from).
-// Injected by the canon scaffold path (`./scaffold-cli.ts`), never baked into the
-// engine.
+// The engine declares the `ProjectTemplate` SHAPE (the project prose); THIS module
+// supplies the canon substance. Injected by the canon scaffold path
+// (`./scaffold-cli.ts`), never baked into the engine.
 
 import type { ProjectTemplate } from '@cratylus/forge/deploy';
-import { PLAN_STATES } from '../src/plan-states.js';
 
 function projectAgentsMd(subject: string): string {
   return `# agent conventions
@@ -52,36 +48,14 @@ to this project's subject, not a path-scoped grant.
 
 ## Work-tracking
 
-\`plans/\` is a sharded-plan-layout: \`PLAN.md\` is the backlog + status mirror; task
-files move through state folders (\`pending/ -> ready/ -> active/ -> completed/\`) as
-dependencies clear.
-`;
-}
-
-function projectPlanMd(subject: string): string {
-  return `# project -- PLAN
-
-The initial backlog of this project. \`PLAN.md\` mirrors the state folders;
-task files move \`pending/ -> ready/ -> active/ -> completed/\` as deps clear.
-
-**Subject:** ${subject}
-
-## Backlog (pending)
-
-- **F1 -- state the subject** -- replace the placeholder in \`AGENTS.md\` and above
-  with this project's real subject (what this project is for).
-- **F2 -- adopt on a host** -- deploy the projected agents to a running client so the
-  built-in agents (nico, mav) wake with their identity-memory sidecars seeded.
+Work is planned with the \`plan\` skill.
 `;
 }
 
 /**
  * The canon project template — canon's project doctrine, injected into
- * the engine's `scaffoldProject`. `planStates` is the praxis CANON, not a local
- * literal.
+ * the engine's `scaffoldProject`.
  */
 export const canonProjectTemplate: ProjectTemplate = {
   agentsMd: projectAgentsMd,
-  planMd: projectPlanMd,
-  planStates: PLAN_STATES,
 };

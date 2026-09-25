@@ -57,9 +57,9 @@ describe('scaffoldProject harnessHome', () => {
     ).toBe(true);
     // and NOTHING was left in the claude home
     expect(existsSync(join(target, '.claude'))).toBe(false);
-    // the harness-agnostic half of the scaffold is unmoved
+    // the harness-agnostic half of the scaffold is unmoved, and lays no plans tree
     expect(existsSync(join(target, 'AGENTS.md'))).toBe(true);
-    expect(existsSync(join(target, 'plans', 'founding', 'PLAN.md'))).toBe(true);
+    expect(existsSync(join(target, 'plans'))).toBe(false);
   });
 
   it('reports the harness home it actually used in the log line', () => {

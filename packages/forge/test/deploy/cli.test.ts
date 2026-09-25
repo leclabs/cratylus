@@ -101,7 +101,7 @@ describe('runDeploy (local)', () => {
 });
 
 describe('scaffoldProject (greenfield scaffold)', () => {
-  it('projects the culture + lays AGENTS.md + plans scaffold', () => {
+  it('projects the culture + lays AGENTS.md, and lays no plans tree', () => {
     const { agentsDir, skillsDir } = buildRenderTree(tmp('forge-render-'));
     const target = tmp('forge-scaffold-');
     const r = scaffoldProject({
@@ -122,11 +122,8 @@ describe('scaffoldProject (greenfield scaffold)', () => {
     // project marker + subject woven in
     const agentsMd = readFileSync(join(target, 'AGENTS.md'), 'utf-8');
     expect(agentsMd).toMatch(/a test project/);
-    // plans scaffold
-    expect(existsSync(join(target, 'plans', 'founding', 'PLAN.md'))).toBe(true);
-    expect(
-      existsSync(join(target, 'plans', 'founding', 'pending', '.gitkeep')),
-    ).toBe(true);
+    // plan readiness is computed, never stored — the scaffold lays no plans tree
+    expect(existsSync(join(target, 'plans'))).toBe(false);
   });
 
   it('refuses to clobber an existing AGENTS.md without --force', () => {
