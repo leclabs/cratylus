@@ -4,36 +4,49 @@
 // the `unit` domain.
 //
 // A unit's payload is its plan (an entity reference), its full spec, its
-// lifecycle state and its pin (a value `pin` computes, read here only for the
-// concept it names). Add writes its first version, revise supersedes it,
-// advance moves it one step along its lifecycle and refuses any other move, and
-// reconcile writes one version over every head of a diverged unit.
+// lifecycle state and its pin (`pin.ts`), whose concept is the one the unit
+// realizes. Add writes its first version, revise supersedes it, advance moves
+// it one step forward along its lifecycle and refuses any other move, retract
+// withdraws it, and reconcile writes one version over every head of a diverged
+// unit.
 //
-// Every write keeps the unit's laws on the current branch: its dependencies
-// are acyclic and name live units of the same plan, and its plan is not
-// withdrawn. A write that would break one refuses, so incoherence, like
-// divergence, arises only from merges; `incoherence` reports it.
+// The unit laws: one live unit per name within its plan; dependencies acyclic,
+// naming live units of the same plan; a plan that is not withdrawn. A write is
+// refused iff it would introduce a violation the fold did not already hold, so
+// incoherence, like divergence, arises only from merges, the owner keeps
+// working while one stands, and an ordinary write removing it is its
+// reconciliation. `incoherence` reports what a merge left.
 //
 // Readiness is computed, never stored: `ready`, `frontier` and `waves` are pure
 // functions over the fold, and no record carries what they compute.
 //
-// What this module needs from elsewhere it RECEIVES, never spells or imports:
-// the unit lifecycle vocabulary (the runtime config), plan and concept
-// liveness (`plan`, `design`), and the entities owed rulings name (`notebook`).
-// Each is a structurally typed parameter; the domain interface composes them.
+// What this module needs from other domains it RECEIVES, never spells or
+// imports: the unit lifecycle vocabulary (the runtime config), plan liveness
+// (`plan`), and the entities owed rulings name (`notebook`). Each is a
+// structurally typed parameter; the domain interface composes them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
   type Fold,
-  type Incoherence,
+  type Incoherence as ReferenceIncoherence,
   fold,
   incoherence as referenceIncoherence,
 } from '../../record-store/fold.js';
-import type { Envelope, Record } from '../../record-store/record.js';
+import type {
+  Envelope,
+  Operation,
+  Record,
+  RecordId,
+} from '../../record-store/record.js';
 import type { RecordStore } from '../../record-store/store.js';
+import type { Pin } from './pin.js';
 
 /** The domain directory holding unit records. */
 const DOMAIN = 'unit';
+
+/** Stands in for the record id, and for a unit not yet minted its entity,
+ *  while a write is judged against the laws before it is written. */
+const UNWRITTEN = '(unwritten)';
 
 /** The unit lifecycle, received from the runtime config: its states in
  *  order (the first is a unit not yet started) and the state that satisfies
@@ -45,6 +58,7 @@ export interface UnitLifecycle {
 
 /** A unit's full spec, but for the concept it realizes, which is its pin's. */
 export interface Spec {
+  /** Unique among the live units of its plan. */
   readonly name: string;
   readonly intent: string;
   readonly static: readonly string[];
@@ -54,32 +68,43 @@ export interface Spec {
   readonly accept: readonly string[];
 }
 
-/** A unit's reference to the concept version it realizes, as `pin` computes
- *  it; this module reads only the concept, and keeps the rest as written. */
-export interface Pinned {
-  /** The concept the unit realizes: an entity reference. */
-  readonly concept: string;
-}
-
 /** A unit's payload: its whole state as of one record. */
 export interface Unit {
   /** The plan the unit belongs to: an entity reference. */
   readonly plan: string;
   readonly spec: Spec;
   readonly state: string;
-  readonly pin: Pinned;
+  readonly pin: Pin;
 }
 
 /** Who writes a record, and why. */
 export type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
-/** Plan and concept liveness, as their domains report it. */
-export interface Withdrawn {
-  /** True when the plan entity's one head is a retraction. */
-  readonly plan: (entity: string) => boolean;
-  /** True when the concept entity's one head is a retraction. */
-  readonly concept: (entity: string) => boolean;
-}
+/** Plan liveness, as the plan domain reports it: true when the plan entity's
+ *  one head is a retraction. */
+export type PlanWithdrawn = (plan: string) => boolean;
+
+/** A unit law broken across units by a merge: a dep on a withdrawn unit, a
+ *  unit of a withdrawn plan (`reference` is the plan), a dep cycle, or one
+ *  name on more than one live unit of a plan. */
+export type Incoherence =
+  | ReferenceIncoherence
+  | {
+      readonly kind: 'name';
+      readonly name: string;
+      readonly entities: readonly string[];
+    };
+
+/** A unit law broken: an incoherence, or a dep that names no unit, a
+ *  diverged unit or a unit of another plan, which no merge produces. */
+type Violation =
+  | Incoherence
+  | {
+      readonly kind: 'dep';
+      readonly entity: string;
+      readonly reference: string;
+      readonly why: string;
+    };
 
 type Units = ReadonlyMap<string, Fold<Unit>>;
 
@@ -109,71 +134,126 @@ function live(folds: Units): Map<string, Unit> {
   return out;
 }
 
-/** The one head of a settled, live unit; refuses a unit that is unknown or
- *  withdrawn, and points a diverged one to `reconcile`. */
-function head(
-  folds: Units,
-  entity: string,
-  verb: string,
-): { readonly id: string; readonly unit: Unit } {
-  const f = folds.get(entity);
-  const refuse = (why: string): never => {
-    throw new Error(`unit: ${verb} ${entity} refused — ${why}`);
-  };
-  if (!f) return refuse('no such unit');
-  if (f.heads.length > 1)
-    return refuse(
-      `it has diverged into ${f.heads.length} heads; reconcile it first`,
-    );
-  if (f.withdrawn || f.payload === undefined) return refuse('it is withdrawn');
-  const [only] = f.heads as [Record<Unit>];
-  return { id: only.envelope.id, unit: f.payload };
+/** Every unit law `folds` breaks. Every version head is read, so a diverged
+ *  unit contributes each head's plan, name and deps. */
+function violations(folds: Units, planWithdrawn: PlanWithdrawn): Violation[] {
+  const found: Violation[] = referenceIncoherence(
+    folds,
+    (unit) => unit.spec.deps,
+  );
+  const carriers = new Map<string, Set<string>>();
+  for (const f of folds.values()) {
+    const seen = new Set<string>();
+    for (const h of f.heads) {
+      if (h.payload === null) continue;
+      const { plan, spec } = h.payload;
+      const key = JSON.stringify([plan, spec.name]);
+      carriers.set(key, (carriers.get(key) ?? new Set()).add(f.entity));
+      if (planWithdrawn(plan) && !seen.has(plan)) {
+        seen.add(plan);
+        found.push({ kind: 'retracted', entity: f.entity, reference: plan });
+      }
+      for (const dep of spec.deps) {
+        const d = folds.get(dep);
+        const why = !d
+          ? 'names no unit'
+          : d.diverged
+            ? 'names a diverged unit'
+            : d.payload !== undefined && d.payload.plan !== plan
+              ? `names a unit of plan ${d.payload.plan}`
+              : undefined;
+        if (why !== undefined && !seen.has(dep)) {
+          seen.add(dep);
+          found.push({ kind: 'dep', entity: f.entity, reference: dep, why });
+        }
+      }
+    }
+  }
+  for (const [key, entities] of carriers)
+    if (entities.size > 1)
+      found.push({
+        kind: 'name',
+        name: (JSON.parse(key) as [string, string])[1],
+        entities: [...entities].sort(),
+      });
+  return found;
+}
+
+/** What a violation says, for a refusal. */
+function describe(v: Violation): string {
+  switch (v.kind) {
+    case 'retracted':
+      return `${v.entity} would reference withdrawn ${v.reference}`;
+    case 'cycle':
+      return `${v.entities.join(', ')} would form a dependency cycle`;
+    case 'name':
+      return `${v.entities.join(', ')} would share the name ${v.name} in one plan`;
+    case 'dep':
+      return `${v.entity}'s dep ${v.reference} ${v.why}`;
+  }
 }
 
 /**
- * Refuse a write of `unit` as a version of `entity` (`undefined` for a unit
- * not yet minted) that would break a unit law on this branch: its plan is
- * withdrawn; a dep reaches back to `entity`, closing a cycle; or a dep is not
- * a live unit of the same plan. Every version head is walked, so a cycle
- * through any head of a diverged unit counts.
+ * Refuse a record of `entity` (`UNWRITTEN` for a unit not yet minted) that
+ * would introduce a violation of a unit law the fold of `records` did not
+ * already hold. A violation standing before the write stays allowed.
  */
 function keepLaws(
-  folds: Units,
-  entity: string | undefined,
-  unit: Unit,
-  planWithdrawn: Withdrawn['plan'],
-  verb: string,
+  records: readonly Record<Unit>[],
+  entity: string,
+  operation: Operation,
+  supersedes: readonly RecordId[],
+  payload: Unit | null,
+  planWithdrawn: PlanWithdrawn,
+  refuse: (why: string) => never,
 ): void {
-  const refuse = (why: string): never => {
-    throw new Error(
-      `unit: ${verb} ${entity ?? unit.spec.name} refused — ${why}`,
-    );
+  const held = new Set(
+    violations(fold(records), planWithdrawn).map((v) => JSON.stringify(v)),
+  );
+  const pending: Record<Unit> = {
+    envelope: {
+      id: UNWRITTEN,
+      entity,
+      operation,
+      supersedes,
+      author: '',
+      time: '',
+      reason: '',
+      cause: '',
+    },
+    payload,
   };
-  if (planWithdrawn(unit.plan)) refuse(`its plan ${unit.plan} is withdrawn`);
-  if (entity !== undefined)
-    for (const dep of unit.spec.deps) {
-      const seen = new Set<string>();
-      const todo = [dep];
-      for (let v = todo.pop(); v !== undefined; v = todo.pop()) {
-        if (v === entity) refuse(`dep ${dep} closes a dependency cycle`);
-        if (seen.has(v)) continue;
-        seen.add(v);
-        for (const h of folds.get(v)?.heads ?? [])
-          if (h.payload !== null) todo.push(...h.payload.spec.deps);
-      }
-    }
-  for (const dep of unit.spec.deps) {
-    const f = folds.get(dep);
-    if (!f) refuse(`dep ${dep} is no unit`);
-    else if (f.heads.length > 1)
-      refuse(`dep ${dep} has diverged, so it is no live unit`);
-    else if (f.withdrawn || f.payload === undefined)
-      refuse(`dep ${dep} is withdrawn`);
-    else if (f.payload.plan !== unit.plan)
-      refuse(
-        `dep ${dep} is a unit of plan ${f.payload.plan}, not ${unit.plan}`,
-      );
-  }
+  const introduced = violations(
+    fold([...records, pending]),
+    planWithdrawn,
+  ).find((v) => !held.has(JSON.stringify(v)));
+  if (introduced)
+    refuse(describe(introduced).replaceAll(UNWRITTEN, 'the new unit'));
+}
+
+/** The heads and payload of a settled, live unit — one head, or several
+ *  converged on one payload, every one of which a write must name; refuses a
+ *  unit that is unknown or withdrawn, and points a diverged one to
+ *  `reconcile`. */
+function settled(
+  folds: Units,
+  entity: string,
+  refuse: (why: string) => never,
+): { readonly heads: readonly RecordId[]; readonly unit: Unit } {
+  const f = folds.get(entity);
+  if (!f) return refuse('no such unit');
+  if (f.diverged)
+    return refuse(
+      `it has diverged into ${f.heads.length} heads; reconcile it first`,
+    );
+  if (f.payload === undefined) return refuse('it is withdrawn');
+  return { heads: f.heads.map((h) => h.envelope.id), unit: f.payload };
+}
+
+function refusal(verb: string, who: string): (why: string) => never {
+  return (why) => {
+    throw new Error(`unit: ${verb} ${who} refused — ${why}`);
+  };
 }
 
 /** Write a unit's first version, in its lifecycle's first state. */
@@ -181,7 +261,7 @@ export function add(
   store: RecordStore,
   lifecycle: UnitLifecycle,
   unit: Omit<Unit, 'state'>,
-  planWithdrawn: Withdrawn['plan'],
+  planWithdrawn: PlanWithdrawn,
   by: By,
 ): Record<Unit> {
   const [first] = checked(lifecycle).states as [string];
@@ -191,7 +271,15 @@ export function add(
     state: first,
     pin: unit.pin,
   };
-  keepLaws(units(store), undefined, next, planWithdrawn, 'add');
+  keepLaws(
+    store.read<Unit>(DOMAIN),
+    UNWRITTEN,
+    'create',
+    [],
+    next,
+    planWithdrawn,
+    refusal('add', unit.spec.name),
+  );
   return store.create<Unit>(DOMAIN, next, by);
 }
 
@@ -200,23 +288,24 @@ export function revise(
   store: RecordStore,
   entity: string,
   change: Pick<Unit, 'spec' | 'pin'>,
-  planWithdrawn: Withdrawn['plan'],
+  planWithdrawn: PlanWithdrawn,
   by: By,
 ): Record<Unit> {
-  const folds = units(store);
-  const { id, unit } = head(folds, entity, 'revise');
+  const records = store.read<Unit>(DOMAIN);
+  const refuse = refusal('revise', entity);
+  const { heads, unit } = settled(fold(records), entity, refuse);
   const next: Unit = {
     plan: unit.plan,
     spec: change.spec,
     state: unit.state,
     pin: change.pin,
   };
-  keepLaws(folds, entity, next, planWithdrawn, 'revise');
-  return store.supersede<Unit>(DOMAIN, entity, [id], next, by);
+  keepLaws(records, entity, 'amend', heads, next, planWithdrawn, refuse);
+  return store.supersede<Unit>(DOMAIN, entity, heads, next, by);
 }
 
-/** Move a unit one step along its lifecycle, to `to`; refuses any other
- *  move. */
+/** Move a unit one step forward along its lifecycle, to `to`; refuses any
+ *  other move. No law reads a state, so none is judged. */
 export function advance(
   store: RecordStore,
   lifecycle: UnitLifecycle,
@@ -225,45 +314,56 @@ export function advance(
   by: By,
 ): Record<Unit> {
   const { states } = checked(lifecycle);
-  const { id, unit } = head(units(store), entity, 'advance');
+  const refuse = refusal('advance', entity);
+  const { heads, unit } = settled(units(store), entity, refuse);
   const at = states.indexOf(unit.state);
   if (at < 0)
-    throw new Error(
-      `unit: advance ${entity} refused — its state ${JSON.stringify(unit.state)} is not in the lifecycle`,
-    );
+    refuse(`its state ${JSON.stringify(unit.state)} is not in the lifecycle`);
   const step = states[at + 1];
   if (to !== step)
-    throw new Error(
-      `unit: advance ${entity} refused — from ${JSON.stringify(unit.state)} the one step is ${step === undefined ? 'none' : JSON.stringify(step)}, not ${JSON.stringify(to)}`,
+    refuse(
+      `from ${JSON.stringify(unit.state)} the one step is ${step === undefined ? 'none' : JSON.stringify(step)}, not ${JSON.stringify(to)}`,
     );
   return store.supersede<Unit>(
     DOMAIN,
     entity,
-    [id],
+    heads,
     { ...unit, state: to },
     by,
   );
 }
 
+/** Withdraw a unit with no successor version; refuses while a live unit
+ *  depends on it. */
+export function retract(
+  store: RecordStore,
+  entity: string,
+  planWithdrawn: PlanWithdrawn,
+  by: By,
+): Record<never> {
+  const records = store.read<Unit>(DOMAIN);
+  const refuse = refusal('retract', entity);
+  const { heads } = settled(fold(records), entity, refuse);
+  keepLaws(records, entity, 'retract', heads, null, planWithdrawn, refuse);
+  return store.retract(DOMAIN, entity, by);
+}
+
 /** Resolve a diverged unit: one whole-state version superseding every head.
  *  Its plan carries over; refuses a unit that has not diverged, a state
- *  outside the lifecycle, and a version breaking a unit law. */
+ *  outside the lifecycle, and a version introducing a law's violation. */
 export function reconcile(
   store: RecordStore,
   lifecycle: UnitLifecycle,
   entity: string,
   change: Pick<Unit, 'spec' | 'state' | 'pin'>,
-  planWithdrawn: Withdrawn['plan'],
+  planWithdrawn: PlanWithdrawn,
   by: By,
 ): Record<Unit> {
-  const folds = units(store);
-  const refuse = (why: string): never => {
-    throw new Error(`unit: reconcile ${entity} refused — ${why}`);
-  };
-  const f = folds.get(entity);
+  const records = store.read<Unit>(DOMAIN);
+  const refuse = refusal('reconcile', entity);
+  const f = fold(records).get(entity);
   if (!f) return refuse('no such unit');
-  if (f.heads.length < 2)
-    return refuse('it has not diverged; revise or advance it');
+  if (!f.diverged) return refuse('it has not diverged; revise or advance it');
   if (!checked(lifecycle).states.includes(change.state))
     refuse(`its state ${JSON.stringify(change.state)} is not in the lifecycle`);
   const plan = f.heads.find((h) => h.payload !== null)?.payload?.plan;
@@ -274,7 +374,15 @@ export function reconcile(
     state: change.state,
     pin: change.pin,
   };
-  keepLaws(folds, entity, next, planWithdrawn, 'reconcile');
+  keepLaws(
+    records,
+    entity,
+    'amend',
+    f.heads.map((h) => h.envelope.id),
+    next,
+    planWithdrawn,
+    refuse,
+  );
   return store.reconcile<Unit>(DOMAIN, entity, next, by);
 }
 
@@ -349,29 +457,14 @@ export function waves(folds: Units): string[][] {
   }
 }
 
-/**
- * Every incoherence among the units, which only a merge produces: a dep on a
- * withdrawn unit, a dep cycle, and — from the liveness the caller reports — a
- * unit of a withdrawn plan or realizing (by its pin) a withdrawn concept.
- * Every version head is read, so a diverged unit contributes the references
- * of each.
- */
-export function incoherence(folds: Units, withdrawn: Withdrawn): Incoherence[] {
-  const found = referenceIncoherence(folds, (unit) => unit.spec.deps);
-  for (const f of folds.values()) {
-    const seen = new Set<string>();
-    for (const h of f.heads) {
-      if (h.payload === null) continue;
-      const { plan, pin } = h.payload;
-      for (const reference of [
-        withdrawn.plan(plan) ? plan : undefined,
-        withdrawn.concept(pin.concept) ? pin.concept : undefined,
-      ])
-        if (reference !== undefined && !seen.has(reference)) {
-          seen.add(reference);
-          found.push({ kind: 'retracted', entity: f.entity, reference });
-        }
-    }
-  }
-  return found;
+/** Every incoherence a merge left among the units: a dep on a withdrawn unit,
+ *  a unit of a withdrawn plan, a dep cycle, one name on two live units of a
+ *  plan. A withdrawn concept is none: it drifts the pins naming it. */
+export function incoherence(
+  folds: Units,
+  planWithdrawn: PlanWithdrawn,
+): Incoherence[] {
+  return violations(folds, planWithdrawn).filter(
+    (v): v is Incoherence => v.kind !== 'dep',
+  );
 }
