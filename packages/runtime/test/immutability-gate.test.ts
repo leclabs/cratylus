@@ -161,11 +161,40 @@ describe('immutability gate', () => {
       git(repo, 'rev-list', '--parents', '-n', '1', 'HEAD').split(' '),
     ).toHaveLength(3);
     expect(immutabilityGate(changes(`${before}..HEAD`, repo))).toEqual([]);
-    expect(immutabilityGate(changes('main...HEAD', repo))).toEqual([]);
+    // every commit of the range against each of its parents: the two branch
+    // commits, and the merge against `left` (adds `right`) and `right` (adds `left`)
+    expect(changes('main..HEAD', repo)).toHaveLength(4);
+    expect(changes('main..HEAD', repo).filter((c) => c.status !== 'A')).toEqual(
+      [],
+    );
     expect(
-      changes('main...HEAD', repo)
-        .map((c) => c.path)
-        .sort(),
+      [...new Set(changes('main..HEAD', repo).map((c) => c.path))].sort(),
     ).toEqual([left, right].sort());
+  });
+
+  it('a record added then edited within one range REFUSES, naming its path', () => {
+    const { repo } = repositoryWithRecord();
+    const base = git(repo, 'rev-parse', 'HEAD');
+    const added = put(
+      repo,
+      `${RECORDS_ROOT}/concept/${ulid()}.json`,
+      '{"v":1}',
+    );
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'add');
+    put(repo, added, '{"v":2}');
+    git(repo, 'commit', '-q', '-am', 'edit');
+    expect(immutabilityGate(changes(`${base}..HEAD`, repo))).toEqual([added]);
+  });
+
+  it('a record edited then restored within one range REFUSES, naming its path', () => {
+    const { repo, record } = repositoryWithRecord();
+    const base = git(repo, 'rev-parse', 'HEAD');
+    put(repo, record, '{"v":2}');
+    git(repo, 'commit', '-q', '-am', 'edit');
+    put(repo, record, '{"v":1}');
+    git(repo, 'commit', '-q', '-am', 'restore');
+    expect(git(repo, 'diff', '--name-only', base, 'HEAD')).toBe('');
+    expect(immutabilityGate(changes(`${base}..HEAD`, repo))).toEqual([record]);
   });
 });

@@ -42,13 +42,14 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # THE IMMUTABILITY GATE over the pushed range: any change under the records root
-      # that is not an addition is refused, naming its paths. It runs from source, so it
-      # needs no build and runs before one. The range is the pull request's base to head
-      # (three dots: from their merge base, so records main gained since the fork are not
-      # read as deletions), or a push's `before` to `after`. A push with no `before` (the
-      # zero sha, a new branch) and any other event read the whole tree: the empty tree
-      # to head. `fetch-depth: 0` above holds every commit the range names.
+      # THE IMMUTABILITY GATE over the pushed range: every commit in it is judged against
+      # each of its parents, and any change under the records root that is not an addition
+      # is refused, naming its paths — so a later commit cannot mask an earlier edit. It
+      # runs from source, so it needs no build and runs before one. The range is the pull
+      # request's commits (base..head: those head holds and base does not, so records main
+      # gained since the fork are never read) or a push's `before` to `after`. A push with
+      # no `before` (the zero sha, a new branch) and any other event read the whole
+      # history of head. `fetch-depth: 0` above holds every commit the range names.
       - name: immutability-gate
         env:
           EVENT: ${{ github.event_name }}
@@ -57,12 +58,11 @@ jobs:
           PUSH_BEFORE: ${{ github.event.before }}
           PUSH_AFTER: ${{ github.event.after }}
         run: |
-          whole="$(git hash-object -t tree /dev/null)..HEAD"
           case "$EVENT" in
-            pull_request) range="$PR_BASE...$PR_HEAD" ;;
+            pull_request) range="$PR_BASE..$PR_HEAD" ;;
             push)
-              if [ -z "${PUSH_BEFORE//0/}" ]; then range="$whole"; else range="$PUSH_BEFORE..$PUSH_AFTER"; fi ;;
-            *) range="$whole" ;;
+              if [ -z "${PUSH_BEFORE//0/}" ]; then range=HEAD; else range="$PUSH_BEFORE..$PUSH_AFTER"; fi ;;
+            *) range=HEAD ;;
           esac
           echo "immutability-gate over $range"
           pnpm --silent --filter @cratylus/runtime immutability-gate "$range"

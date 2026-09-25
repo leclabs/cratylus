@@ -12,10 +12,17 @@
 // of its destination. A record renamed away is refused by its deletion; a file
 // renamed INTO the root from outside is an addition there.
 //
+// A change is one commit's: in a range, every commit is judged against its own
+// parent, and a merge against each of its parents, so a later commit in the same
+// range cannot mask an earlier one (a record added then edited, or edited then
+// restored, is refused although the range's endpoints differ by an addition or
+// not at all). A merge against each parent sees the other side's records as
+// additions, so it passes; a root commit is judged against the empty tree.
+//
 // Two callers, one module, run from source (pre-commit runs before any build):
 //   - `.husky/pre-commit` runs it with no argument, over the staged changes;
 //   - `.github/workflows/gates.yml` runs it over the pushed range, as one
-//     `git diff` range argument.
+//     `git rev-list` range argument.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { execFileSync } from 'node:child_process';
@@ -29,38 +36,50 @@ export interface Change {
 }
 
 /**
- * The paths the gate refuses: every change under the records root that is not an
- * addition. Empty means the changes pass.
+ * The paths the gate refuses, each once: every change under the records root that
+ * is not an addition. Empty means the changes pass.
  */
 export function immutabilityGate(changes: readonly Change[]): string[] {
-  return changes
+  const refused = changes
     .filter(
       ({ status, path }) =>
         status !== 'A' &&
         (path === RECORDS_ROOT || path.startsWith(`${RECORDS_ROOT}/`)),
     )
     .map(({ path }) => path);
+  return [...new Set(refused)];
 }
 
 /**
- * The changes of the repository at `cwd`: the staged ones when `range` is absent,
- * otherwise those of the `git diff` range `range` (`<base>..<head>`,
- * `<base>...<head>`).
+ * The changes of the repository at `cwd`: the staged ones when `range` is absent;
+ * otherwise every commit of the `git rev-list` range `range` (`<base>..<head>`,
+ * or `<head>` for its whole history) against each of its parents.
  */
 export function changes(range?: string, cwd: string = process.cwd()): Change[] {
-  const out = execFileSync(
-    'git',
-    [
-      'diff',
-      '--name-status',
-      '--no-renames',
-      '--no-relative',
-      '-z',
-      ...(range === undefined ? ['--cached'] : [range]),
-      '--',
-    ],
-    { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] },
-  );
+  const git = (args: string[], input?: string): string =>
+    execFileSync('git', args, {
+      cwd,
+      encoding: 'utf8',
+      input,
+      stdio: ['pipe', 'pipe', 'inherit'],
+      maxBuffer: Number.POSITIVE_INFINITY,
+    });
+  const listing = ['--name-status', '--no-renames', '--no-relative', '-z'];
+  const out =
+    range === undefined
+      ? git(['diff', '--cached', ...listing, '--'])
+      : git(
+          [
+            'diff-tree',
+            '--stdin',
+            '-r',
+            '-m',
+            '--root',
+            '--no-commit-id',
+            ...listing,
+          ],
+          git(['rev-list', range, '--']),
+        );
   const fields = out.split('\0');
   const found: Change[] = [];
   for (let i = 0; i + 1 < fields.length; i += 2)
