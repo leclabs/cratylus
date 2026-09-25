@@ -7,8 +7,8 @@
 // disjoint readings run over it, computed from the design records at the moment
 // of the read and never stored:
 //
-// - DRIFTED — the pinned version is no longer a head: a later version or a
-//   retraction of the concept now names it;
+// - DRIFTED — the pinned version is no longer the concept's only head: the
+//   concept was amended, withdrawn or has diverged;
 // - otherwise SUSPECT — another concept in the closure has diverged, been
 //   withdrawn or gained a newer version since the pin was taken.
 //
@@ -17,7 +17,8 @@
 // the caller supplies it through the `Closure` port below; `domain-interface`
 // wires the design domain's closure into it.
 //
-// A unit stores its pin as an opaque value: plain JSON, read only here.
+// A unit stores its pin as a plain JSON value; `unit` reads only its `concept`,
+// and everything else in it is read only here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Fold } from '../../record-store/fold.js';
@@ -68,11 +69,10 @@ export function take(design: Design, concept: string, closure: Closure): Pin {
   return { concept, version: version as RecordId, closure: others };
 }
 
-/** The pinned version is no longer a head of its concept. */
+/** The pinned version is no longer the concept's only head. */
 export function drifted(pin: Pin, design: Design): boolean {
-  return !design
-    .get(pin.concept)
-    ?.heads.some((head) => head.envelope.id === pin.version);
+  const heads = design.get(pin.concept)?.heads ?? [];
+  return heads.length !== 1 || heads[0]?.envelope.id !== pin.version;
 }
 
 /** Not drifted, and another concept in the closure has diverged, been
