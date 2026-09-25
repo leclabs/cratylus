@@ -5,13 +5,15 @@
 The runtime gains the pin: a unit's reference to the concept version it realizes
 
 `take` pins a concept only when the concept and its whole closure are settled and live. It holds
-the concept's one head, a version, together with the one head of every other concept in the
-closure at that moment. It refuses when the concept or any concept in its closure is unknown,
-diverged or withdrawn, since there is then no single version to pin. `drifted` reads a pin whose
-version is no longer the concept's only head: the concept was amended, withdrawn or has diverged,
-even when the pinned version is still one of its heads. A pin that has
-not drifted is `suspect` when any other concept in the closure has diverged, been withdrawn or
-gained a newer version since the pin was taken, so the two readings are disjoint. Both are
+a head of the concept, a version, together with a head of every other concept in the closure at
+that moment; heads carrying one payload have converged and read as one settled head. It refuses
+when the concept or any concept in its closure is unknown, diverged or withdrawn, since there is
+then no single version to pin. `drifted` reads a pin whose version is no longer the concept's
+only settled head: the concept was amended, withdrawn or has diverged, even when the pinned
+version is still one of its heads. A concept whose converged heads include the pinned version has
+not drifted. A pin that has not drifted is `suspect` when any other concept in the closure has
+diverged, been withdrawn or gained a newer version since the pin was taken, so the two readings
+are disjoint. Both are
 computed from the design domain's fold at the moment of the read. The caller supplies the closure
 through a port, so the pin imports nothing from the design domain. The pin is internal to the
 runtime and is exported through neither the `.` barrel nor a subpath.

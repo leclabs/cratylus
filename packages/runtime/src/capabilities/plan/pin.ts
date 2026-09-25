@@ -2,13 +2,14 @@
 // THE PIN — a unit's reference to the concept version it realizes.
 //
 // Taken when the unit is authored, and only when the concept and its whole
-// closure are settled and live: the pin holds the concept's one head, a version,
-// and the one head of every other concept in the closure at that moment. Two
-// disjoint readings run over it, computed from the design records at the moment
-// of the read and never stored:
+// closure are settled and live: the pin holds a version of the concept, and a
+// version of every other concept in the closure, each a head at that moment.
+// Heads carrying one payload have converged and read as one settled head, so any
+// of them serves. Two disjoint readings run over the pin, computed from the design
+// records at the moment of the read and never stored:
 //
-// - DRIFTED — the pinned version is no longer the concept's only head: the
-//   concept was amended, withdrawn or has diverged;
+// - DRIFTED — the pinned version is no longer the concept's only settled head:
+//   the concept was amended, withdrawn or has diverged;
 // - otherwise SUSPECT — another concept in the closure has diverged, been
 //   withdrawn or gained a newer version since the pin was taken.
 //
@@ -35,21 +36,30 @@ type Closure = (concept: string) => Iterable<string>;
 export interface Pin {
   /** The concept entity the unit realizes. */
   readonly concept: string;
-  /** Its one head when the pin was taken: a version. */
+  /** A head of it when the pin was taken: a version. */
   readonly version: RecordId;
   /** Every other concept entity in its closure when the pin was taken, with
-   *  that entity's one head then: a version. */
+   *  a head of that entity then: a version. */
   readonly closure: { readonly [entity: string]: RecordId };
 }
 
 /** Why `entity` is not settled and live in `design`, or `undefined` when its
- *  one head is a version. */
+ *  heads carry one version's payload. */
 function unsettled(design: Design, entity: string): string | undefined {
-  const heads = design.get(entity)?.heads ?? [];
-  if (heads.length === 0) return 'has no records';
-  if (heads.length > 1) return `has diverged into ${heads.length} heads`;
-  if (heads[0]?.envelope.operation === 'retract') return 'is withdrawn';
+  const folded = design.get(entity);
+  if (!folded) return 'has no records';
+  if (folded.diverged) return 'has diverged';
+  if (folded.withdrawn) return 'is withdrawn';
   return undefined;
+}
+
+/** `version` is still `entity`'s one settled head: the entity is settled and
+ *  live, and `version` is among its converged heads. */
+function holds(design: Design, entity: string, version: RecordId): boolean {
+  return (
+    !unsettled(design, entity) &&
+    !!design.get(entity)?.heads.some((head) => head.envelope.id === version)
+  );
 }
 
 /** Take a pin on `concept`. Refuses when the concept, or any other concept in
@@ -69,10 +79,9 @@ export function take(design: Design, concept: string, closure: Closure): Pin {
   return { concept, version: version as RecordId, closure: others };
 }
 
-/** The pinned version is no longer the concept's only head. */
+/** The pinned version is no longer the concept's only settled head. */
 export function drifted(pin: Pin, design: Design): boolean {
-  const heads = design.get(pin.concept)?.heads ?? [];
-  return heads.length !== 1 || heads[0]?.envelope.id !== pin.version;
+  return !holds(design, pin.concept, pin.version);
 }
 
 /** Not drifted, and another concept in the closure has diverged, been
@@ -81,9 +90,8 @@ export function suspect(pin: Pin, design: Design, closure: Closure): boolean {
   if (drifted(pin, design)) return false;
   for (const entity of closure(pin.concept)) {
     if (entity === pin.concept) continue;
-    if (unsettled(design, entity)) return true;
-    if (design.get(entity)?.heads[0]?.envelope.id !== pin.closure[entity])
-      return true;
+    const then = pin.closure[entity];
+    if (!then || !holds(design, entity, then)) return true;
   }
   return false;
 }
