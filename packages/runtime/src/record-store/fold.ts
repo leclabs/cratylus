@@ -5,11 +5,13 @@
 // persisted: a head, a divergence or an incoherence is recomputed on every read
 // from the records alone, so there is no derived state that could go stale.
 //
-// A head is a version nothing supersedes or retracts. One head is settled; no
-// head is a retracted entity; more than one head is DIVERGENCE — the state two
-// branches leave when each superseded the same version and the branches merged.
-// Divergence is state, not error: it is reported, and the fold never resolves it
-// by picking a head. Resolving it is a reconciliation, which the store writes.
+// A head is a record of an entity, version or retraction, that no later record
+// names. One head is settled: live when it is a version, withdrawn when it is a
+// retraction. More than one head is DIVERGENCE — the state two branches leave
+// when each wrote to the same head differently (two versions, or a version and a
+// retraction) and the branches merged. Divergence is state, not error: it is
+// reported, and the fold never resolves it by picking a head. Resolving it is a
+// reconciliation, which the store writes.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Record, RecordId } from './record.js';
@@ -17,36 +19,39 @@ import type { Record, RecordId } from './record.js';
 /** One entity folded from its records. */
 export interface Fold<P> {
   readonly entity: string;
-  /** Versions no record supersedes or retracts, in record-id order. */
+  /** Records, versions or retractions, that no record names, in record-id
+   *  order. */
   readonly heads: readonly Record<P>[];
-  /** The one head's payload when the entity is settled; `undefined` when it is
-   *  retracted (no head) or diverged (the fold picks neither). */
+  /** Settled on a retraction: the entity's one head withdraws it. */
+  readonly withdrawn: boolean;
+  /** The one head's payload when the entity is settled and live; `undefined`
+   *  when it is withdrawn or diverged (the fold picks neither head). */
   readonly payload: P | undefined;
 }
 
-/** Fold records into every entity they version, keyed by entity. */
+/** Fold records into every entity they belong to, keyed by entity. */
 export function fold<P>(
   records: Iterable<Record<P>>,
 ): ReadonlyMap<string, Fold<P>> {
   const byEntity = new Map<string, Record<P>[]>();
   for (const record of records) {
-    const versions = byEntity.get(record.envelope.entity);
-    if (versions) versions.push(record);
+    const own = byEntity.get(record.envelope.entity);
+    if (own) own.push(record);
     else byEntity.set(record.envelope.entity, [record]);
   }
   const folds = new Map<string, Fold<P>>();
   for (const [entity, own] of byEntity) {
     const named = new Set<RecordId>(own.flatMap((r) => r.envelope.supersedes));
     const heads = own
-      .filter(
-        (r) => r.envelope.operation !== 'retract' && !named.has(r.envelope.id),
-      )
+      .filter((r) => !named.has(r.envelope.id))
       .sort((a, b) => (a.envelope.id < b.envelope.id ? -1 : 1));
-    const [only] = heads;
+    const only = heads.length === 1 ? heads[0] : undefined;
+    const withdrawn = only?.envelope.operation === 'retract';
     folds.set(entity, {
       entity,
       heads,
-      payload: heads.length === 1 && only ? (only.payload as P) : undefined,
+      withdrawn,
+      payload: only && !withdrawn ? (only.payload as P) : undefined,
     });
   }
   return folds;
@@ -58,7 +63,7 @@ export function divergence<P>(folds: ReadonlyMap<string, Fold<P>>): Fold<P>[] {
 }
 
 /** A contradiction between entities, reported like divergence and never
- *  resolved here: a live entity's head referencing a retracted entity, or a
+ *  resolved here: an entity's version head referencing a withdrawn entity, or a
  *  cycle in the reference relation (its members, sorted). */
 export type Incoherence =
   | {
@@ -71,9 +76,10 @@ export type Incoherence =
 /**
  * Every incoherence among `folds` over the reference relation the caller
  * supplies — the store knows no domain's payload, so `references` reads one
- * payload and names the entities it references. Every head is read, so a
- * diverged entity contributes the references of each of its heads. A reference
- * to an entity absent from `folds` is outside this relation and ignored.
+ * payload and names the entities it references. Every version head is read, so
+ * a diverged entity contributes the references of each of them; a retraction
+ * has no payload and references nothing. A reference to an entity absent from
+ * `folds` is outside this relation and ignored.
  */
 export function incoherence<P>(
   folds: ReadonlyMap<string, Fold<P>>,
@@ -84,11 +90,12 @@ export function incoherence<P>(
   for (const f of folds.values()) {
     const out = new Set<string>();
     for (const head of f.heads)
-      for (const target of references(head.payload as P))
-        if (folds.has(target)) out.add(target);
+      if (head.envelope.operation !== 'retract')
+        for (const target of references(head.payload as P))
+          if (folds.has(target)) out.add(target);
     edges.set(f.entity, out);
     for (const target of out)
-      if (folds.get(target)?.heads.length === 0)
+      if (folds.get(target)?.withdrawn)
         found.push({ kind: 'retracted', entity: f.entity, reference: target });
   }
 

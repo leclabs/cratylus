@@ -1,10 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // THE RECORD MODEL — what one record is, before anything reads or writes it.
 //
-// A record is one immutable version of one entity: an envelope saying what the
-// record is, and a whole-state payload. Never a delta, never edited, moved or
-// deleted once written. Everything an entity "is now" is computed from its records
-// by the fold (`fold.ts`); nothing here or there is ever persisted but records.
+// A record is one immutable entry in one entity's history, either a version or a
+// retraction: an envelope saying what the record is, and a whole-state payload.
+// Never a delta, never edited, moved or deleted once written. Everything an entity
+// "is now" is computed from its records by the fold (`fold.ts`); nothing here or
+// there is ever persisted but records.
 //
 // The store knows no domain. A payload is opaque to it, and so is an entity's name:
 // a name, where the entity has one, is a label inside its payload and can change,
@@ -23,22 +24,24 @@ export type RecordId = string;
 /**
  * What a record does to its entity.
  *
- * - `create` writes the entity's first version and supersedes nothing;
- * - `amend` writes a new whole-state version superseding one or more earlier
- *   versions of the same entity — every supersession, a reconciliation included,
- *   is an amendment;
- * - `retract` withdraws the entity with no successor.
+ * - `create` writes the entity's first version and names nothing;
+ * - `amend` writes a new whole-state version replacing one or more of the
+ *   entity's current heads — every supersession, a reinstatement (naming a
+ *   retraction) and a reconciliation (naming several heads) included, is an
+ *   amendment;
+ * - `retract` withdraws the entity with no successor version, naming the heads
+ *   it withdraws; the retraction itself becomes the entity's head.
  */
 export type Operation = 'create' | 'amend' | 'retract';
 
 /** What a record says about itself. */
 export interface Envelope {
   readonly id: RecordId;
-  /** The minted identity of the entity this record is a version of. */
+  /** The minted identity of the entity this record belongs to. */
   readonly entity: string;
   readonly operation: Operation;
-  /** The versions this record replaces (`amend`) or withdraws (`retract`);
-   *  empty for `create`. */
+  /** The heads this record replaces (`amend`) or withdraws (`retract`), each a
+   *  head of the entity when the record was written; empty for `create`. */
   readonly supersedes: readonly RecordId[];
   readonly author: string;
   /** ISO-8601 instant the record was written. */
@@ -48,8 +51,8 @@ export interface Envelope {
   readonly cause: string;
 }
 
-/** One immutable version of one entity. A retraction carries no payload: the
- *  entity has no state after it. */
+/** One immutable entry in one entity's history. A retraction carries no
+ *  payload: the entity has no state after it. */
 export interface Record<P = unknown> {
   readonly envelope: Envelope;
   readonly payload: P | null;

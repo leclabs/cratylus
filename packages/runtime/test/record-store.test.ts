@@ -1,7 +1,7 @@
 // The record store, driven over temporary git repositories it builds itself: writes
-// that must refuse, the fold's heads (settled, retracted, diverged, reconciled),
-// incoherence over a supplied reference relation, a real branch merge, and a read
-// that must leave the records root untouched.
+// that must refuse, the fold's heads (settled, withdrawn, reinstated, diverged,
+// reconciled), incoherence over a supplied reference relation, real branch merges,
+// and a read that must leave the records root untouched.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -15,6 +15,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { divergence, fold, incoherence } from '../src/record-store/fold.js';
+import type { Record } from '../src/record-store/record.js';
 import { RECORDS_ROOT, RecordStore } from '../src/record-store/store.js';
 
 const DOMAIN = 'concept';
@@ -42,6 +43,32 @@ function repository(): string {
   return dir;
 }
 
+/**
+ * Commit what `main` holds, then run `left` and `right` each on its own branch
+ * forked from `main`, and merge `right` into `left`. Returns each branch's
+ * domain directory listing before the merge.
+ */
+function mergeBranches(
+  repo: string,
+  left: () => void,
+  right: () => void,
+): { left: string[]; right: string[] } {
+  const dir = join(repo, RECORDS_ROOT, DOMAIN);
+  git(repo, 'add', '-A');
+  git(repo, 'commit', '-q', '-m', 'base');
+  const on = (name: string, write: () => void): string[] => {
+    git(repo, 'checkout', '-q', '-b', name, 'main');
+    write();
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', name);
+    return readdirSync(dir).sort();
+  };
+  const listed = { left: on('left', left), right: on('right', right) };
+  git(repo, 'checkout', '-q', 'left');
+  git(repo, 'merge', '-q', '--no-edit', 'right');
+  return listed;
+}
+
 /** Every file under `dir` with its bytes, keyed by relative path. */
 function snapshot(dir: string): Map<string, string> {
   const out = new Map<string, string>();
@@ -55,6 +82,9 @@ function snapshot(dir: string): Map<string, string> {
   walk(dir);
   return out;
 }
+
+const ids = (records: readonly Record<unknown>[]): string[] =>
+  records.map((r) => r.envelope.id).sort();
 
 describe('record store', () => {
   it('lays each record out as <repository root>/records/<domain>/<record id>.json', () => {
@@ -91,7 +121,7 @@ describe('record store', () => {
         { name: 'a2' },
         BY,
       ),
-    ).toThrow(/version of entity/);
+    ).toThrow(/of entity/);
     expect(() =>
       store.supersede(
         DOMAIN,
@@ -102,6 +132,29 @@ describe('record store', () => {
       ),
     ).toThrow(/no record/);
     expect(store.read(DOMAIN)).toHaveLength(2);
+  });
+
+  it('superseding a non-head REFUSES, so one branch stays linear', () => {
+    const store = new RecordStore(repository());
+    const v1 = store.create(DOMAIN, { name: 'a' }, BY);
+    const { entity } = v1.envelope;
+    store.supersede(DOMAIN, entity, [v1.envelope.id], { name: 'b' }, BY);
+    expect(() =>
+      store.supersede(DOMAIN, entity, [v1.envelope.id], { name: 'c' }, BY),
+    ).toThrow(/not a head/);
+    expect(() =>
+      store.write(DOMAIN, {
+        envelope: {
+          ...v1.envelope,
+          id: '01ZZZZZZZZZZZZZZZZZZZZZZZZ',
+          operation: 'retract',
+          supersedes: [v1.envelope.id],
+        },
+        payload: null,
+      }),
+    ).toThrow(/not a head/);
+    expect(store.read(DOMAIN)).toHaveLength(2);
+    expect(divergence(fold(store.read(DOMAIN)))).toEqual([]);
   });
 
   it('one head reads settled, and a supersession moves the head', () => {
@@ -124,7 +177,7 @@ describe('record store', () => {
     expect(divergence(fold(store.read(DOMAIN)))).toEqual([]);
   });
 
-  it('a retraction leaves the entity with no head', () => {
+  it("a retraction becomes the entity's one head and withdraws it", () => {
     const store = new RecordStore(repository());
     const v1 = store.create(DOMAIN, { name: 'a' }, BY);
     const { entity } = v1.envelope;
@@ -132,64 +185,129 @@ describe('record store', () => {
     expect(retraction.envelope.supersedes).toEqual([v1.envelope.id]);
     expect(retraction.payload).toBeNull();
     const folded = fold(store.read(DOMAIN)).get(entity);
-    expect(folded?.heads).toEqual([]);
+    expect(folded?.heads).toEqual([retraction]);
     expect(folded?.payload).toBeUndefined();
-    expect(() => store.retract(DOMAIN, entity, BY)).toThrow(/no head/);
+    expect(divergence(fold(store.read(DOMAIN)))).toEqual([]);
+    expect(() => store.retract(DOMAIN, entity, BY)).toThrow(/withdrawn/);
   });
 
-  it('two records superseding the same version read as divergence and the fold picks neither', () => {
+  it('retract then supersede on one branch reinstates the entity, naming the retraction', () => {
     const store = new RecordStore(repository());
+    const v1 = store.create(DOMAIN, { name: 'a' }, BY);
+    const { entity } = v1.envelope;
+    const retraction = store.retract(DOMAIN, entity, BY);
+    const reinstated = store.supersede(
+      DOMAIN,
+      entity,
+      [retraction.envelope.id],
+      { name: 'back' },
+      BY,
+    );
+    expect(reinstated.envelope.supersedes).toEqual([retraction.envelope.id]);
+    const folded = fold(store.read(DOMAIN)).get(entity);
+    expect(folded?.heads).toEqual([reinstated]);
+    expect(folded?.payload).toEqual({ name: 'back' });
+  });
+
+  it('two versions superseding the same head on two branches read as divergence and the fold picks neither', () => {
+    const repo = repository();
+    const store = new RecordStore(repo);
     const base = store.create(DOMAIN, { name: 'a' }, BY);
     const { entity } = base.envelope;
-    const left = store.supersede(
-      DOMAIN,
-      entity,
-      [base.envelope.id],
-      { name: 'l' },
-      BY,
-    );
-    const right = store.supersede(
-      DOMAIN,
-      entity,
-      [base.envelope.id],
-      { name: 'r' },
-      BY,
+    const written: Record<unknown>[] = [];
+    mergeBranches(
+      repo,
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { name: 'l' },
+            BY,
+          ),
+        );
+      },
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { name: 'r' },
+            BY,
+          ),
+        );
+      },
     );
     const folds = fold(store.read(DOMAIN));
-    expect(folds.get(entity)?.heads).toEqual([left, right]);
+    expect(ids(folds.get(entity)?.heads ?? [])).toEqual(ids(written));
     expect(folds.get(entity)?.payload).toBeUndefined();
     expect(divergence(folds).map((f) => f.entity)).toEqual([entity]);
   });
 
-  it('a reconciliation leaves exactly one head, and its envelope marks it an amendment', () => {
-    const store = new RecordStore(repository());
+  it('a concurrent retraction and supersession merge into divergence with two heads', () => {
+    const repo = repository();
+    const store = new RecordStore(repo);
+    const base = store.create(DOMAIN, { name: 'a' }, BY);
+    const { entity } = base.envelope;
+    const written: Record<unknown>[] = [];
+    mergeBranches(
+      repo,
+      () => {
+        written.push(store.retract(DOMAIN, entity, BY));
+      },
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { name: 'r' },
+            BY,
+          ),
+        );
+      },
+    );
+    const folds = fold(store.read(DOMAIN));
+    expect(ids(folds.get(entity)?.heads ?? [])).toEqual(ids(written));
+    expect(folds.get(entity)?.payload).toBeUndefined();
+    expect(divergence(folds).map((f) => f.entity)).toEqual([entity]);
+  });
+
+  it('a reconciliation naming both heads settles it, and its envelope marks it an amendment', () => {
+    const repo = repository();
+    const store = new RecordStore(repo);
     const base = store.create(DOMAIN, { name: 'a' }, BY);
     const { entity } = base.envelope;
     expect(() => store.reconcile(DOMAIN, entity, { name: 'x' }, BY)).toThrow(
       /only divergence/,
     );
-    const left = store.supersede(
-      DOMAIN,
-      entity,
-      [base.envelope.id],
-      { name: 'l' },
-      BY,
-    );
-    const right = store.supersede(
-      DOMAIN,
-      entity,
-      [base.envelope.id],
-      { name: 'r' },
-      BY,
+    const written: Record<unknown>[] = [];
+    mergeBranches(
+      repo,
+      () => {
+        written.push(store.retract(DOMAIN, entity, BY));
+      },
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { name: 'r' },
+            BY,
+          ),
+        );
+      },
     );
     const merged = store.reconcile(DOMAIN, entity, { name: 'lr' }, BY);
     expect(merged.envelope.operation).toBe('amend');
-    expect([...merged.envelope.supersedes].sort()).toEqual(
-      [left.envelope.id, right.envelope.id].sort(),
-    );
-    const folded = fold(store.read(DOMAIN)).get(entity);
-    expect(folded?.heads).toEqual([merged]);
-    expect(folded?.payload).toEqual({ name: 'lr' });
+    expect([...merged.envelope.supersedes].sort()).toEqual(ids(written));
+    const folds = fold(store.read(DOMAIN));
+    expect(folds.get(entity)?.heads).toEqual([merged]);
+    expect(folds.get(entity)?.payload).toEqual({ name: 'lr' });
+    expect(divergence(folds)).toEqual([]);
   });
 
   it('incoherence reports a reference to a retracted entity and a cycle in a supplied relation', () => {
@@ -225,28 +343,20 @@ describe('record store', () => {
     const store = new RecordStore(repo);
     const base = store.create(DOMAIN, { name: 'a' }, BY);
     const { entity } = base.envelope;
-    git(repo, 'add', '-A');
-    git(repo, 'commit', '-q', '-m', 'base');
-    const dir = join(repo, RECORDS_ROOT, DOMAIN);
-    const branch = (name: string, payload: { name: string }): string[] => {
-      git(repo, 'checkout', '-q', '-b', name, 'main');
-      store.supersede(DOMAIN, entity, [base.envelope.id], payload, BY);
-      git(repo, 'add', '-A');
-      git(repo, 'commit', '-q', '-m', name);
-      return readdirSync(dir).sort();
-    };
-    const left = branch('left', { name: 'l' });
-    const right = branch('right', { name: 'r' });
+    const listed = mergeBranches(
+      repo,
+      () =>
+        store.supersede(DOMAIN, entity, [base.envelope.id], { name: 'l' }, BY),
+      () =>
+        store.supersede(DOMAIN, entity, [base.envelope.id], { name: 'r' }, BY),
+    );
     const added = (files: string[]) =>
       files.filter((f) => f !== `${base.envelope.id}.json`);
-    expect(added(left)).toHaveLength(1);
-    expect(added(right)).toHaveLength(1);
-    expect(added(left)).not.toEqual(added(right));
-
-    git(repo, 'checkout', '-q', 'left');
-    git(repo, 'merge', '-q', '--no-edit', 'right');
-    expect(readdirSync(dir).sort()).toEqual(
-      [...new Set([...left, ...right])].sort(),
+    expect(added(listed.left)).toHaveLength(1);
+    expect(added(listed.right)).toHaveLength(1);
+    expect(added(listed.left)).not.toEqual(added(listed.right));
+    expect(readdirSync(join(store.root, DOMAIN)).sort()).toEqual(
+      [...new Set([...listed.left, ...listed.right])].sort(),
     );
     const folds = fold(store.read(DOMAIN));
     expect(folds.get(entity)?.heads).toHaveLength(2);
@@ -264,13 +374,7 @@ describe('record store', () => {
       { refs: [] },
       BY,
     );
-    store.supersede(
-      DOMAIN,
-      base.envelope.entity,
-      [base.envelope.id],
-      { refs: [] },
-      BY,
-    );
+    store.create(DOMAIN, { refs: [base.envelope.entity] }, BY);
     store.retract(
       'note',
       store.create('note', { refs: [] }, BY).envelope.entity,

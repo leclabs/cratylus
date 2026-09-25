@@ -6,7 +6,9 @@
 // record id is a ULID, so two branches never mint the same file name, and a branch
 // merge is the union of two sets of files: it never conflicts. What a merge CAN
 // produce — two heads of one entity, a reference to an entity the other branch
-// retracted — is state the fold reports (`fold.ts`), never an error here.
+// withdrew — is state the fold reports (`fold.ts`), never an error here. On one
+// branch every write names only current heads, so its history stays linear and
+// divergence arises only from merges.
 //
 // A record is never edited, moved or deleted once written: `write` refuses a record
 // id whose file exists. The commit-time and CI half of that law is the immutability
@@ -93,9 +95,10 @@ export class RecordStore {
   }
 
   /**
-   * Write one record into `domain`. Refuses a record id whose file exists, a
-   * `create` that supersedes anything, an `amend` or `retract` naming no version,
-   * and a named id that is unknown, a retraction, or a version of another entity.
+   * Write one record into `domain`. Refuses a record id whose file exists; a
+   * `create` that names anything, or whose entity already has records; an
+   * `amend` or `retract` naming nothing; and a named id that is unknown, belongs
+   * to another entity, or is not a current head of this one.
    */
   write<P>(domain: string, record: Record<P>): void {
     const dir = this.#dir(domain);
@@ -103,26 +106,28 @@ export class RecordStore {
     const refuse = (why: string): never => {
       throw new Error(`record store: ${operation} ${id} refused — ${why}`);
     };
+    const rewrite = 'that record exists, and a record is never rewritten';
+    const records = readDomain<P>(dir);
+    const known = new Map(records.map((r) => [r.envelope.id, r] as const));
+    if (known.has(id)) refuse(rewrite);
     if (operation === 'create' && supersedes.length > 0)
-      refuse('a first version supersedes nothing');
+      refuse('a first version names nothing');
     if (operation !== 'create' && supersedes.length === 0)
-      refuse('it names no version');
+      refuse('it names no head');
     if ((operation === 'retract') !== (record.payload === null))
       refuse('a retraction, and only a retraction, carries no payload');
-    if (supersedes.length > 0) {
-      const known = new Map(
-        readDomain<P>(dir).map((r) => [r.envelope.id, r] as const),
-      );
-      for (const named of supersedes) {
-        const version = known.get(named);
-        if (!version) refuse(`${named} is no record of ${domain}`);
-        else if (version.envelope.operation === 'retract')
-          refuse(`${named} is a retraction, not a version`);
-        else if (version.envelope.entity !== entity)
-          refuse(
-            `${named} is a version of entity ${version.envelope.entity}, not ${entity}`,
-          );
-      }
+    const heads = fold(records).get(entity)?.heads;
+    if (operation === 'create' && heads)
+      refuse(`entity ${entity} already has records in ${domain}`);
+    for (const named of supersedes) {
+      const target = known.get(named);
+      if (!target) refuse(`${named} is no record of ${domain}`);
+      else if (target.envelope.entity !== entity)
+        refuse(
+          `${named} is a record of entity ${target.envelope.entity}, not ${entity}`,
+        );
+      else if (!heads?.includes(target))
+        refuse(`${named} is not a head of entity ${entity}`);
     }
     mkdirSync(dir, { recursive: true });
     try {
@@ -132,8 +137,8 @@ export class RecordStore {
         { flag: 'wx' },
       );
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST')
-        refuse('that record exists, and a record is never rewritten');
+      // A concurrent writer can land the same id between the read and here.
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') refuse(rewrite);
       throw error;
     }
   }
@@ -173,29 +178,31 @@ export class RecordStore {
   }
 
   /** A supersession: a new whole-state version of `entity` replacing the named
-   *  earlier `versions` of it. */
+   *  current `heads` of it. Naming a retraction reinstates the entity. */
   supersede<P>(
     domain: string,
     entity: string,
-    versions: readonly RecordId[],
+    heads: readonly RecordId[],
     payload: P,
     by: Pick<Envelope, 'author' | 'reason' | 'cause'>,
   ): Record<P> {
-    return this.#append(domain, entity, 'amend', versions, payload, by);
+    return this.#append(domain, entity, 'amend', heads, payload, by);
   }
 
-  /** A retraction: withdraw `entity` with no successor, naming every head it
-   *  withdraws. Refuses an entity with no head. */
+  /** A retraction: withdraw `entity` with no successor version, naming every
+   *  head it withdraws; the retraction becomes its head. Refuses an entity with
+   *  no records, or one already withdrawn. */
   retract(
     domain: string,
     entity: string,
     by: Pick<Envelope, 'author' | 'reason' | 'cause'>,
   ): Record<never> {
-    const heads = fold(this.read(domain)).get(entity)?.heads ?? [];
-    if (heads.length === 0)
+    const folded = fold(this.read(domain)).get(entity);
+    if (!folded || folded.withdrawn)
       throw new Error(
-        `record store: retract refused — entity ${entity} has no head in ${domain}`,
+        `record store: retract refused — entity ${entity} is ${folded ? 'already withdrawn' : 'unknown'} in ${domain}`,
       );
+    const { heads } = folded;
     return this.#append<never>(
       domain,
       entity,
@@ -207,8 +214,8 @@ export class RecordStore {
   }
 
   /** A reconciliation: one new whole-state version superseding every head of a
-   *  diverged `entity`. Its operation is `amend`. Refuses an entity that has not
-   *  diverged. */
+   *  diverged `entity`, a retraction among them included. Its operation is
+   *  `amend`. Refuses an entity that has not diverged. */
   reconcile<P>(
     domain: string,
     entity: string,
