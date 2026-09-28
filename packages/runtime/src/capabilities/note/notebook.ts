@@ -248,7 +248,14 @@ export function reconcile(
   by: By,
 ): LiveNote {
   const payload = shape(note);
-  admit(fold(store.read<Note>(NOTEBOOK)), entity, payload, 'reconcile');
+  const folds = fold(store.read<Note>(NOTEBOOK));
+  const f = folds.get(entity);
+  if (!f) throw new Error(`notebook: reconcile refused — no note ${entity}`);
+  if (!f.diverged)
+    throw new Error(
+      `notebook: reconcile refused — note ${entity} has not diverged; only competing versions are reconciled, and a settled note is revised`,
+    );
+  admit(folds, entity, payload, 'reconcile');
   store.reconcile(NOTEBOOK, entity, payload, by);
   return { entity, ...payload };
 }

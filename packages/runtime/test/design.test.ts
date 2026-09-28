@@ -330,6 +330,16 @@ describe('design — divergence and convergence across a merge', () => {
   });
 });
 
+describe('design — reconcile', () => {
+  it('REFUSES a concept that has not diverged in the design’s words, never as a concurrent change', () => {
+    const repo = repository();
+    design(repo, 'define', 'settled', '--gloss', 'one', ...BY);
+    const said = refused(repo, 'reconcile', 'settled', '--gloss', 'x', ...BY);
+    expect(said).toMatch(/has not diverged/);
+    expect(said).not.toMatch(/changed while this write was being made/);
+  });
+});
+
 describe('design — incoherence, repaired one write at a time', () => {
   it('two definitions of one anchor: listed, each identity beside the anchor, and the printed form addresses one', () => {
     const repo = repository();

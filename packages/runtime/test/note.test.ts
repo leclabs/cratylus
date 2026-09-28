@@ -234,6 +234,26 @@ describe('note — a blocked unit that is withdrawn', () => {
   });
 });
 
+describe('note — reconcile', () => {
+  it('REFUSES a note that has not diverged in the notebook’s words, never as a concurrent change', () => {
+    const repo = repository();
+    capture(repo, 'settled');
+    const said = refused(
+      note,
+      repo,
+      'reconcile',
+      'settled',
+      '--body',
+      'x',
+      ...BY,
+    );
+    expect(said).toMatch(
+      /has not diverged; only competing versions are reconciled/,
+    );
+    expect(said).not.toMatch(/changed while this write was being made/);
+  });
+});
+
 describe('note — the notebook by title', () => {
   it('show groups by kind then topic, addresses a note by title, and REFUSES a second live note under a title', () => {
     const repo = repository();

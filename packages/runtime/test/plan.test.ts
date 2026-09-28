@@ -364,6 +364,22 @@ describe('plan — the laws spanning plan and unit', () => {
   });
 });
 
+describe('plan — reconcile', () => {
+  it('REFUSES a plan or unit that has not diverged in the plan’s words, never as a concurrent change', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'pl');
+    for (const target of [
+      ['pl', '--name', 'x'],
+      ['a', '--plan', 'pl', '--intent', 'x'],
+    ]) {
+      const said = refused(repo, 'reconcile', ...target, ...BY);
+      expect(said).toMatch(/has not diverged/);
+      expect(said).not.toMatch(/changed while this write was being made/);
+    }
+  });
+});
+
 describe('plan — incoherence, repaired one write at a time', () => {
   it('a dependency cycle a merge left: unrelated and repairing writes pass, a new cycle REFUSES', () => {
     const repo = repository();
