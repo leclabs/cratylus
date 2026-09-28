@@ -29,9 +29,11 @@ live(n)      ≜ n captured ∧ ¬ retracted
 versions(n)  ≜ the competing versions of n a merge left standing
 diverged(n)  ⇔ versions(n) disagree
 owed(n)      ⇔ live(n) ∧ blocks(n) ≠ ∅ ⟨an owed ruling⟩
+holders(t)   ≜ the live notes titled t
+incoherent(t) ⇔ |holders(t)| > 1 ⟨a merge left title t held by more than one note ; show prints each holder with its identity beside t⟩
 by           ≜ \`--author <who> --reason <why> --cause <what caused it>\` ⟨every write carries it⟩
 
-show(n?)     ≜ \`scripts/note.mjs show [<title>]\` ↦ owed rulings ∧ diverged notes first, then the notebook by kind, then topic ∨ n in full ⟨every version of a diverged n⟩
+show(n?)     ≜ \`scripts/note.mjs show [<title>]\` ↦ owed rulings, diverged notes ∧ incoherent titles first, then the notebook by kind, then topic ∨ n in full ⟨every version of a diverged n · every holder of an incoherent title⟩
 capture(n)   ≜ \`scripts/note.mjs capture <title> --kind <k> --topic <t> --body <b> [--blocks <plan or unit>]… <by>\`
 revise(n)    ≜ \`scripts/note.mjs revise <title> [--title <new title>] [--kind <k>] [--topic <t>] [--body <b>] [--blocks <plan or unit>]… <by>\` ⟨a field left out carries over ; \`--blocks ''\` ↦ blocks(n) = ∅⟩
 retract(n)   ≜ \`scripts/note.mjs retract <title> <by>\`
@@ -41,14 +43,16 @@ a note's title is its name ⟨one live note per title⟩ ∴ n is addressed by t
 anyone ⊨ capture ∧ revise ∧ retract ∧ reconcile
 capture ⊨ ∄ admission bar ⟨the note's shape ∧ one live note per title suffice⟩
 changed(n) ⇒ revise(n) ⟨¬ edited in place ; \`--title\` retitles n⟩
-owed(n) ⇒ n blocks every t ∈ blocks(n) ⟨whatever its kind⟩ until retract(n) ∨ revise(n) ↦ blocks(n) = ∅
+owed(n) ⇒ n blocks every x ∈ blocks(n) ⟨whatever its kind⟩ until retract(n) ∨ revise(n) ↦ blocks(n) = ∅
 diverged(n) ⇒ n blocks ⋃ { blocks(v) | v ∈ versions(n) } until reconcile(n)
 diverged(n) ⇒ reconcile(n) ≺ every other write to n
+incoherent(t) ⇒ revise(h) with \`--title\` ∨ retract(h) for ONE h ∈ holders(t) ⟨h named exactly as show prints it, identity included⟩ until ¬ incoherent(t)
+reconcile ↾ diverged(n) ⟨one note's competing versions ; never a title held by more than one note⟩
 verb ∉ { show · capture · revise · retract · reconcile } ⇒ ⊥ ⟨loud⟩` as SkillExpression;
 
 export const note: Skill = {
   name: 'note',
-  description: `use this skill to keep the project's notebook of notes not yet canonical, whenever one surfaces in the work or to see what is still owed: show the whole notebook or one note, capture a note under its title with a kind, topic and body, revise it (retitle it too), retract it, or reconcile one a merge left in competing versions. Anyone may capture, with no admission bar, and any live note that names a plan or unit blocks it until it is retracted or revised to block nothing.`,
+  description: `use this skill to keep the project's notebook of notes not yet canonical, whenever one surfaces in the work or to see what is still owed: show the whole notebook or one note, capture a note under its title with a kind, topic and body, revise it (retitle it too), retract it, or reconcile one a merge left in competing versions; where a merge left one title held by two notes, retitle or retract one of them, named as show prints it. Anyone may capture, with no admission bar, and any live note that names a plan or unit blocks it until it is retracted or revised to block nothing.`,
   formalBlock: NOTE_BLOCK,
   runtime: { capability: 'note' },
   composition: () => [],
