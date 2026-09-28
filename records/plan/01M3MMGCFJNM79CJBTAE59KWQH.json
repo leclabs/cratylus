@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MMGCFJNM79CJBTAE59KWQH",
+    "entity": "01M3MMEPXNRCVD81JCB9XNQVH5",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MMEPXNRCVD81JCB9XNQVH6"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T18:30:17.842Z",
+    "reason": "One unit; user-level skill roots only, as the canon deploys there",
+    "cause": "deliver: bind"
+  },
+  "payload": {
+    "name": "main-session-skills",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "bound"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "envelope": {
+    "id": "01M3MMGCK4G5DZ1MX9B9QE81FZ",
+    "entity": "01M3MMEPXQT0A6XDTEEHWSYGM6",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MMEPXQT0A6XDTEEHWSYGM7"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T18:30:17.956Z",
+    "reason": "Dispatched to the implementer who built the closure",
+    "cause": "deliver: dispatch(frontier)"
+  },
+  "payload": {
+    "plan": "01M3MMEPXNRCVD81JCB9XNQVH5",
+    "spec": {
+      "name": "main-session-skill-bodies",
+      "intent": "A main session launched by `omp-agent <name>` starts with the bodies of its skill closure, as a dispatched subagent does, instead of their names. For each name in the definition's `autoloadSkills`, in listed order and in either spelling the launcher reads today (flow or block sequence), the launcher looks for `<name>/SKILL.md` under the user-level skill roots omp discovers, in omp's provider precedence: first its own agent directory's `skills/` (omp's native root, priority 100), then the root deploy places skills in (`ompSkillRel`: `../.agents/skills` from the harness home, omp's `agents` provider, priority 70, the only populated skill root on this host at ef78db59). Both roots are derived from the launcher's own resolved directory and spelled from the adapter's existing constants (`NEUTRAL_AGENT_ROOT`, `OMP_SESSION_DIR`), never a literal home or user path, so a launcher deployed under a sandboxed `--home` resolves inside that sandbox. The first hit is inlined after the definition's body as a section that opens with the line `# Skill: <name>`, a blank line, the line `Base directory: <absolute directory holding that SKILL.md>`, a blank line, and then the file's text after its closing front-matter `---` (leading blank lines dropped, front matter never reaching the model), so every `scripts/<capability>.mjs` a skill resolves against its base directory stays resolvable. A name found under neither root is never dropped silently: it degrades to the existing `## Required reading` list as `- `skill://<name>`` (that section appears only when some name degraded), and the launcher writes one stderr line per missing name, starting `omp-agent:` and naming the agent, the skill and the roots it searched, then launches. A definition without `autoloadSkills` gets no skill section and no warning. The composed prompt stays one `--append-system-prompt` argument, and the launcher doc corrects its size claim: the binding Linux limit is the per-argument `MAX_ARG_STRLEN` (128 KiB), not `ARG_MAX`, and the largest composed prompt measured at ef78db59 is about 34 KB (nico's 6.5 KB definition plus the 27.4 KB design, deliver, plan and note closure). Every claim that the launcher renders skills as required reading is corrected where it occurs: the launcher and `agentToOmpMd` docs in the omp render module, the forge README's preload table row and its omp launcher paragraph, the architect role's `skills` comment, and the canon projection-stability comment. A changeset records it for `@cratylus/forge` (minor).",
+      "static": [
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/src/adapters/codex/render.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        "~/.agents/skills/"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/canon/test/projection-stability.test.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/forge/README.md",
+        ".changeset/main-session-skills.md"
+      ],
+      "accept": [
+        "In a sandbox built by `pnpm build && pnpm project && T=$(mktemp -d) && HOME=\"$T\" pnpm exec cratylus deploy --harness omp --home \"$T\" && mkdir \"$T/bin\" && printf '#!/bin/sh\\nprintf \"%%s\\\\0\" \"$@\" > \"$0.argv\"\\n' > \"$T/bin/omp\" && chmod +x \"$T/bin/omp\"` (HOME is the sandbox, so the host's own `~/.cratylus.json` is untouched), `PATH=\"$T/bin:$PATH\" \"$T/.omp/agent/omp-agent\" planner -p hi` exits 0 with empty stderr, and in the NUL-separated argv recorded at `$T/bin/omp.argv` the argument after `--append-system-prompt` carries the lines `# Skill: plan`, `# Skill: design`, `# Skill: note` in that order, the line `Base directory: $T/.agents/skills/plan` two lines after `# Skill: plan`, and verbatim the text of `$T/.agents/skills/plan/SKILL.md` after its closing front-matter `---` (leading blank lines aside), including the line stating that `scripts/plan.mjs` resolves against the skill's base directory; it carries no line starting `description:` and no `skill://`, and `-p` and `hi` follow it as omp's own arguments. This stands in for a print-mode launch of `omp-agent planner`: the recording `omp` shows the exact appended prompt a real one would receive. At ef78db59 the same launch appends only `- `skill://plan``, `- `skill://design`` and `- `skill://note`` (measured).",
+        "In the same sandbox after `rm -r \"$T/.agents/skills/note\"`, the same launch exits 0 and writes exactly one stderr line, which starts `omp-agent:` and names `planner` and `note`; the appended prompt still inlines `# Skill: plan` and `# Skill: design`, carries no `# Skill: note`, and lists `- `skill://note`` under a `## Required reading` heading. At ef78db59 stderr is empty for this launch (measured).",
+        "`pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts` passes, and its launcher tests run the projected launcher against the recording `omp` stub in a sandboxed home whose skills sit exactly where `ompSkillRel` places them (inside the sandbox, never the temp dir's parent), pinning: bodies inlined in `autoloadSkills` order under `# Skill: <name>` with their `Base directory:` line and without front matter, for both the flow spelling `agentToOmpMd` emits and a hand-written block sequence; a same-name skill under the agent directory's own `skills/` winning over the `.agents/skills` copy; a missing skill degraded to its `skill://` reference with one stderr warning naming agent and skill; and no skill section and empty stderr for a definition without `autoloadSkills`. They fail when the launcher is reverted to rendering names only.",
+        "`grep -rnE 'required reading for a main session|names them as required reading|skill://<name>` required reading|appends any `autoloadSkills` as required reading|Naming the skills as required reading' packages/forge/src packages/forge/test packages/canon/src packages/canon/test packages/forge/README.md` prints nothing (at ef78db59 it prints five lines: architect.ts:54, projection-stability.test.ts:141, README.md:158, README.md:217, render.ts:1202).",
+        "`grep -c MAX_ARG_STRLEN packages/forge/src/adapters/omp/render.ts` prints a number greater than 0 (0 at ef78db59), and `grep -c 'multi-megabyte' packages/forge/src/adapters/omp/render.ts` prints 0.",
+        "`.changeset/main-session-skills.md` exists and its front matter contains exactly the line `\"@cratylus/forge\": minor`.",
+        "`pnpm verify` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHK6QA4SFYW73YXKASWM",
+      "version": "01M3MJDC7K710DKW7JCA18D190",
+      "closure": {
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3MEKHHB7HFK4FFQQG5C1Z0H",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3MFY79KKQ98Y2YM57Y01DEG",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3MEKHBZHW928YXW4STCFXQY",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}
