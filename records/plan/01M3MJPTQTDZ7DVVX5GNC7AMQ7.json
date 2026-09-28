@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MJPTQTDZ7DVVX5GNC7AMQ7",
+    "entity": "01M3MJNP2EZT3PR1E187K44XGR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MJNP2EZT3PR1E187K44XGS"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T17:58:51.898Z",
+    "reason": "Plan reviewed: one unit, closed on skill routing; codex degrades to a declaration plus warning, claude uses its native skills field",
+    "cause": "deliver: bind"
+  },
+  "payload": {
+    "name": "skill-closure",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "bound"
+  }
+}
