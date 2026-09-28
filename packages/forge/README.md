@@ -218,23 +218,16 @@ otherwise win, appends the body of each `autoloadSkills` skill, and hands the re
 `--append-system-prompt`. One definition, two readers, nothing to drift — and ONE launcher on the
 host rather than one per agent.
 
-A main session starts with the skills omp itself would resolve for it, as a dispatched subagent does.
-For each name in `autoloadSkills`, in order, the launcher inlines the first `<name>/SKILL.md` under
-the user-level roots omp's skill loader keeps, in omp's precedence: `~/.omp/agent/skills/` (native,
-100), `~/.claude/skills/` (claude, 80), `~/.agent/skills/` and `~/.agents/skills/` (agents, 70, where
-deploy places skills), `~/.codex/skills/` (codex, 70). A root counts only if omp's own gate keeps it:
-a provider in `disabledProviders` is off; otherwise its `skills.enable*User` toggle decides, and
-claude and codex, which omp makes opt-in (their toggles default to `false`), are also on when
-`enabledProviders` names them. The launcher reads those settings in one `omp config list` and falls back
-to omp's defaults when that prints nothing. Every root is resolved from the launcher's own directory, so
-a sandboxed `--home` stays inside itself. Each skill arrives as a `# Skill: <name>` section with a
-`Base directory:` line, so its `scripts/<capability>.mjs` resolves, and without its front matter. A
-skill under no kept root is named as `skill://<name>` under `## Required reading`, and the launcher
-prints one `omp-agent:` line to stderr per such skill before it launches. `skills.ignoredSkills`,
-`skills.includeSkills`, `skills.customDirectories`, plugin skills and project-level roots are not
-mirrored; the launcher prints one `omp-agent:` line for each of the first four that is set. The prompt
-stays one argument, bounded by Linux's per-argument `MAX_ARG_STRLEN` (128 KiB), not `ARG_MAX`; the
-largest measured today is about 34 KB (nico with its closure).
+A main session starts with the skills omp itself resolves, as a dispatched subagent does. For each name
+in `autoloadSkills`, in order, the launcher runs `omp read skill://<name>` from the launch directory and
+inlines what omp returns, front matter stripped: omp's own resolver, so every root it reads (user and
+project) and every setting that gates them apply, with no second copy of that logic in the launcher.
+omp exposes no skill's location, so there is no base directory; instead each `# Skill: <name>` section
+opens with one line per shim `omp read skill://<name>/scripts` lists (for plan: `scripts/plan.mjs <verb>`
+runs as `cratylus plan <verb>`), because every projected shim is a thin forwarder to the host CLI. A skill omp cannot resolve is named as `skill://<name>` under
+`## Required reading`, and the launcher prints one `omp-agent:` line to stderr per such skill before it
+launches. The prompt stays one argument, bounded by Linux's per-argument `MAX_ARG_STRLEN` (128 KiB),
+not `ARG_MAX`; the largest measured today is about 34 KB (nico with its closure).
 
 Identity used to be carried by projecting each persona INTO an omp `--profile`
 (`profiles/<name>/agent/APPEND_SYSTEM.md`), which conflated an agent's IDENTITY with the operator's

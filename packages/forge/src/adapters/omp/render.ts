@@ -155,58 +155,6 @@ export function ompAgentRel(name: string): string {
 }
 
 /**
- * The USER-level skill roots omp discovers, in its precedence, each with the
- * gate omp's skill loader applies to it — read off omp 18.3.1's loader and its
- * `omp config` defaults, and documented in omp's `skills.md`: `native` (100),
- * `claude` (80), then the priority-70 group in registration order, `agents`
- * (`.agent` before `.agents`) then `codex`. A provider in `disabledProviders`
- * is off; otherwise its `toggle` decides, and an OPT-IN provider is also on
- * when `enabledProviders` names it, `*` or `all`. `byDefault` is the toggle's
- * default, in force when omp answers nothing.
- *
- * Each `dirs` entry is a launcher shell expression: `$dir` is the launcher's
- * own resolved directory ({@link OMP_SESSION_DIR}, so the native root follows
- * a sandboxed `--home`), and `$home` the user home above the harness home. The
- * `.agents` entry is where {@link ompSkillRel} places skills.
- */
-export const OMP_USER_SKILL_ROOTS: readonly {
-  readonly provider: string;
-  readonly toggle: string;
-  readonly byDefault: boolean;
-  readonly optIn: boolean;
-  readonly dirs: readonly string[];
-}[] = [
-  {
-    provider: 'native',
-    toggle: 'skills.enablePiUser',
-    byDefault: true,
-    optIn: false,
-    dirs: ['$dir/skills'],
-  },
-  {
-    provider: 'claude',
-    toggle: 'skills.enableClaudeUser',
-    byDefault: false,
-    optIn: true,
-    dirs: ['$home/.claude/skills'],
-  },
-  {
-    provider: 'agents',
-    toggle: 'skills.enableAgentsUser',
-    byDefault: true,
-    optIn: false,
-    dirs: ['$home/.agent/skills', `$home/${NEUTRAL_AGENT_ROOT}/skills`],
-  },
-  {
-    provider: 'codex',
-    toggle: 'skills.enableCodexUser',
-    byDefault: false,
-    optIn: true,
-    dirs: ['$home/.codex/skills'],
-  },
-];
-
-/**
  * Where skill `<name>` lands, relative to the harness home — ONE path, at the
  * harness-neutral root omp reads NATIVELY on every launch.
  *
@@ -1258,27 +1206,21 @@ export function ompOverlayYaml(): string {
  * The field injects skills before a SUBAGENT's first prompt and has no
  * main-session path at all, so one definition would otherwise mean two
  * different things depending on how it was reached. So the launcher does what
- * a spawn does: for each listed skill, in order, it inlines the BODY of the
- * `<name>/SKILL.md` omp itself would resolve — the first found under the
- * user-level roots of {@link OMP_USER_SKILL_ROOTS}, in omp's precedence, with
- * each root kept only if omp's own gate keeps it. A spawn gets the parent
- * session's skill of that name, and omp's loader drops a user-level provider
- * its settings switch off before it dedups by name, so searching a root omp
- * ignores would inline a copy the session never loaded (`~/.claude/skills`
- * holds claude's copy, whose `scripts/` differ). The gates are read in ONE
- * `omp config list`, run only for a definition that names skills; a query
- * that answers nothing leaves omp's defaults in force. Each skill opens with
- * `# Skill: <name>` and a `Base directory:` line, because a skill's
- * `scripts/<capability>.mjs` resolves against that directory; its front
- * matter never reaches the model. A skill found under no kept root is not
- * dropped: it degrades to a `skill://` line under `## Required reading`, and
- * the launcher says so on stderr, once per skill, before it launches.
+ * a spawn does, through omp's OWN resolver: for each listed skill, in order,
+ * it runs `omp read skill://<name>` from the launch directory and inlines
+ * what omp returns — the same `SKILL.md` a session started there resolves,
+ * whichever root it came from (user or project) and whatever settings gate
+ * them — with its front matter stripped. There is no second copy of omp's
+ * discovery here to drift from the first.
  *
- * NOT MIRRORED, AND SAID SO: `skills.ignoredSkills`, `skills.includeSkills`,
- * `skills.customDirectories` and plugin skills (`~/.omp/plugins`), and every
- * PROJECT-level root. Each of the first four can change what omp resolves, so
- * the launcher writes one stderr line for each that is set rather than
- * diverge in silence.
+ * NO BASE DIRECTORY, BECAUSE NONE IS NEEDED. omp exposes a skill's body but
+ * not its location, and `skill://…` does not execute. Every projected
+ * `scripts/<capability>.mjs` is a thin forwarder to the host CLI (`CLI_BIN`)
+ * (`runtimeShimContent`), so each inlined skill opens, under `# Skill: <name>`,
+ * with one line per shim `omp read skill://<name>/scripts` lists, saying which
+ * CLI command that route runs as. A skill omp cannot resolve is not dropped:
+ * it degrades to a `skill://` line under `## Required reading`, and the
+ * launcher says so on stderr, once per skill, before it launches.
  *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
  * FLOW sequence from the skill closure projection hands it; an operator
@@ -1374,61 +1316,28 @@ export const OMP_LAUNCHER_SCRIPT = [
   '  }',
   `' "$def")`,
   '',
-  "# THE SKILL BODIES, as a spawn would have them — see this script's doc for",
-  '# which roots, in what order, and what is not mirrored. Every root hangs off',
-  "# this script's resolved directory, so a sandboxed home resolves inside itself.",
+  "# THE SKILL BODIES, as a spawn would have them, read through omp's OWN",
+  "# resolver from the launch directory — see this script's doc.",
   "nl='",
   "'",
-  'if [ -n "$skills" ]; then',
-  `  home=$(CDPATH= cd -- "$dir/${OMP_SESSION_DIR.replace(/[^/]+/g, '..')}/.." && pwd) || exit 1`,
-  '  # ONE query for every setting read below. A stub or an old omp that answers',
-  "  # nothing leaves each setting at omp's own default.",
-  '  cfg=$(omp config list 2>/dev/null)',
-  '  setting() {',
-  `    v=$(printf '%s\\n' "$cfg" | awk -v k="$1" 'index($0, "  " k " = ") == 1 { v = substr($0, length(k) + 6); sub(/ \\([^()]*\\)$/, "", v); print v; exit }')`,
-  `    if [ -n "$v" ]; then printf '%s\\n' "$v"; else printf '%s\\n' "$2"; fi`,
-  '  }',
-  `  enabled=,$(setting enabledProviders '[]' | tr -d '[]" '),`,
-  `  disabled=,$(setting disabledProviders '[]' | tr -d '[]" '),`,
-  "  # omp's gate for one user-level provider: never when disabled; else its own",
-  '  # toggle; else, for a provider omp makes opt-in, `enabledProviders`.',
-  '  gate() {',
-  '    case $disabled in *,$1,*) return 1 ;; esac',
-  '    [ "$(setting "$2" "$3")" = true ] && return 0',
-  '    [ "$4" = opt-in ] || return 1',
-  '    case $enabled in *,$1,*|*,\\*,*|*,all,*) return 0 ;; esac',
-  '    return 1',
-  '  }',
-  '  roots=',
-  ...OMP_USER_SKILL_ROOTS.map(
-    (r) =>
-      `  if gate ${r.provider} ${r.toggle} ${r.byDefault} ${r.optIn ? 'opt-in' : 'default'}; then roots="$roots${r.dirs.map((d) => `$nl${d}`).join('')}"; fi`,
-  ),
-  `  searched=$(printf '%s\\n' "$roots" | awk 'NF { printf "%s%s", sep, $0; sep = ", " }')`,
-  '  for key in skills.ignoredSkills skills.includeSkills skills.customDirectories; do',
-  `    v=$(setting "$key" '[]')`,
-  `    [ "$v" = '[]' ] || printf '${OMP_LAUNCHER_FILE}: agent %s: %s is set (%s), which this launcher does not apply; its inlined skills may differ from what omp resolves\\n' "$name" "$key" "$v" >&2`,
-  '  done',
-  `  plugins=$(CDPATH= cd -- "$dir/${OMP_SESSION_DIR.replace(/[^/]+/g, '..')}" && pwd)/plugins`,
-  '  if [ -n "$(ls -A "$plugins" 2>/dev/null)" ]; then',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: plugins are installed under %s, whose skills this launcher does not search; its inlined skills may differ from what omp resolves\\n' "$name" "$plugins" >&2`,
-  '  fi',
-  'fi',
   'missing=',
   'while IFS= read -r skill; do',
   '  [ -n "$skill" ] || continue',
-  '  base=',
-  '  set -f; IFS=$nl',
-  '  for root in $roots; do',
-  '    if [ -f "$root/$skill/SKILL.md" ]; then base=$root/$skill; break; fi',
-  '  done',
-  '  unset IFS; set +f',
-  '  if [ -z "$base" ]; then',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: skill %s is under none of the user-level roots omp reads (%s); naming it as required reading instead\\n' "$name" "$skill" "$searched" >&2`,
+  '  if ! text=$(omp read "skill://$skill" </dev/null 2>/dev/null); then',
+  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp resolves no skill %s from %s; naming it as required reading instead\\n' "$name" "$skill" "$PWD" >&2`,
   '    missing="$missing$nl- \\`skill://$skill\\`"',
   '    continue',
   '  fi',
-  '  composed="$composed$nl$nl# Skill: $skill$nl${nl}Base directory: $base$nl$nl$(awk "$after_fm" "$base/SKILL.md")"',
+  '  # Each shim forwards to the host CLI, so its route needs no location.',
+  '  routes=',
+  '  set -f',
+  '  for shim in $(omp read "skill://$skill/scripts" </dev/null 2>/dev/null); do',
+  '    case $shim in',
+  `      *.mjs) routes="$routes$nl\\\`scripts/$shim <verb>\\\` runs as \\\`${CLI_BIN} \${shim%.mjs} <verb>\\\`." ;;`,
+  '    esac',
+  '  done',
+  '  set +f',
+  `  composed="$composed$nl$nl# Skill: $skill\${routes:+$nl$routes}$nl$nl$(printf '%s\\n' "$text" | awk "$after_fm")"`,
   'done <<EOF',
   '$skills',
   'EOF',
