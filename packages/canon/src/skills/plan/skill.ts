@@ -1,7 +1,7 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
 
-import { PLAN_STATES } from '../../plan-states.js';
 import { design } from '../design/skill.js';
+import { note } from '../note/skill.js';
 
 // SUPERSEDES `praxis`, which carried three activities with three different ends —
 // capturing understanding, specifying work, and governing execution — and no seam
@@ -14,24 +14,51 @@ import { design } from '../design/skill.js';
 // the plan's own lifecycle. Understanding moved to `design`; dispatch, judgement and
 // triage moved to `deliver`.
 //
+// THE LIFECYCLE STATES LIVE HERE AND NOWHERE ELSE. They are meaning, so the corpus
+// holds them; the `plan` capability receives them as the configuration this cell's
+// runtime face carries, which deploy emits into the host runtime config, and acts on
+// the roles it names (which plan state at most one plan holds, which is final, which
+// unit state satisfies a dependency), never on a spelling of its own.
+//
 // The laws carried forward are the ones that were PAID FOR. The output-array law and
 // its measurement survive verbatim because the defect it names — a footprint read off
 // where a sign is DEFINED while the work is bounded by where it is USED — recurred six
 // times in one plan and voids every disjointness proof above it when it recurs.
 
+const LIFECYCLE = {
+  plan: {
+    states: ['proposed', 'bound', 'closed'],
+    exclusive: 'bound',
+    final: 'closed',
+  },
+  unit: { states: ['pending', 'active', 'completed'], satisfies: 'completed' },
+} as const;
+const { plan: PLAN, unit: UNIT } = LIFECYCLE;
+
 const FORMAL_BLOCK =
   `s      ≜ a cut piece ⟨closed · handed down · ¬ redrawable here⟩ @ design
 anchor @ design
 closure @ design
-pin    @ design
-digest @ design
+self   @ design
 P      ≜ a plan : the units cutting s into work
-unit      ≜ a unit of work ⟨unit ∈ P⟩
-States ≜ { ${PLAN_STATES.join(', ')} }
-state  : P → States
+unit   ≜ a unit of work ⟨unit ∈ P⟩
+name(x) ≜ the label x is addressed by ⟨x a P ∨ a unit · revisable⟩
+States(P) ≜ { ${PLAN.states.join(', ')} } ⟨in lifecycle order⟩
+States(unit) ≜ { ${UNIT.states.join(', ')} } ⟨in lifecycle order⟩
+state  : P → States(P) ∧ unit → States(unit)
+bound(P) ⇔ state(P) = ${PLAN.exclusive}
+closed(P) ⇔ state(P) = ${PLAN.final}
+satisfied(unit) ⇔ state(unit) ≽ ${UNIT.satisfies} ⟨reached completion ∨ moved past it⟩
+settled(x) ⇔ x has exactly one current version ⟨x a P ∨ a unit⟩
+live(x) ⇔ settled(x) ∧ that version ¬ a retraction
+diverged(x) ⇔ ¬settled(x) ⟨concurrent sessions wrote x differently ∧ merged · state, ¬ error⟩
+incoherent(P) ⇔ a law below broken across plans ∨ units by a merge ∧ kept on each branch
 R      ⊆ P × P ⟨dependency⟩
 deps(unit) ≜ { u | (unit, u) ∈ R }
-realizes : P → anchor ⟨TOTAL⟩
+realizes : P → ℘(anchor) ∧ unit → anchor ⟨TOTAL⟩
+pin    : unit → the version of denotes(realizes(unit)) the unit was authored against
+drifted(unit) ⇔ pin(unit) ≠ the one current version of denotes(realizes(unit)) ⟨amended · withdrawn · diverged⟩
+suspect(unit) ⇔ ¬drifted(unit) ∧ ∃ c ∈ closure(denotes(realizes(unit))) : c diverged ∨ withdrawn ∨ newer than pin(unit)
 static : P → ℘(path)
 refs   : P → ℘(path) ⟨what unit's outputs compile against⟩
 outputs : P → ℘(path)
@@ -46,19 +73,49 @@ cross(S) ≜ |R ∩ ⋃ { sᵢ × sⱼ | sᵢ, sⱼ ∈ S ∧ i ≠ j }|
 wave(0) ≜ { unit | ∄ u : (unit, u) ∈ R }
 wave(n+1) ≜ { unit | unit ∉ W(n) ∧ ∀ u : (unit, u) ∈ R ⇒ u ∈ W(n) }
 W(n)   ≜ ⋃ { wave(i) | i ≤ n }
-frontier(P) ≜ { unit | state(unit) ∈ { ready, active } } ⟨where the plan IS · ¬ only
-    what is dispatchable⟩
-blocked(unit) ⇔ ∃ u : (unit, u) ∈ R ∧ state(u) ≠ completed
-ruling-owed(unit) ⇔ a decision nobody has taken stands between unit and acceptance
-mirror : (state, R, spec) → document
+owed   @ note
+blocked(unit) ⇔ ∃ u ∈ deps(unit) : ¬satisfied(u)
+ready(unit) ⇔ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready
+    PROMISES an executor can FINISH · conflating a dep with a ruling stalls a fan-out⟩
+frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
+    the plan IS · ¬ only what is dispatchable⟩
 planner   ≜ the planner ⟨bounded to s⟩
 conform @ signify
+show(P) ≜ \`scripts/plan.mjs show [<plan>]\` ↦ the bound P in wave order ∨ any P named, whole
+show(unit) ≜ \`scripts/plan.mjs show <unit> --plan <p>\` ↦ one unit in full
+add(unit) ≜ \`scripts/plan.mjs add <unit> --plan <p> --realizes <concept> --intent <i> [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--plan-realizes <concept>]…\` ⟨pin(unit) taken · the first add naming an absent P proposes it, realizing each --plan-realizes⟩
+advance(unit) ≜ \`scripts/plan.mjs advance <unit> --plan <p> --to <state>\`
+retract(unit) ≜ \`scripts/plan.mjs retract <unit> --plan <p>\`
+revise(unit) ≜ \`scripts/plan.mjs revise <unit> --plan <p> [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]…\` ⟨spec(unit) · pin(unit) kept⟩
+revise(P) ≜ \`scripts/plan.mjs revise <plan> [--name <n>] [--realizes <concept>]…\` ⟨name(P) ∨ realizes(P)⟩
+bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P) ∧ the P bound before returns to ${PLAN.states[0]}⟩
+close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
+reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p>\` ∨ \`scripts/plan.mjs reconcile <plan>\` ↦ one version superseding every current version of x
 
+∀ add ∨ advance ∨ retract ∨ revise ∨ bind ∨ close ∨ reconcile : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
 ∀ unit : realizes(unit) ∈ { anchor(c) | c ∈ s } ⟨TOTALITY is the gate · a unit citing no
     concept is work whose purpose cannot be stated ∴ REFUSED at authoring, ¬ warned⟩
 ∀ unit : closure(denotes(realizes(unit))) ⊆ s ⟨a unit reaching outside its piece is a
     BOUNDARY finding · SURFACE it ; the planner may ¬ redraw the cut⟩
-pin(s) ≠ digest(s) ⇒ REFUSE ⟨the design moved under the plan · drift, ¬ staleness⟩
+∀ unit : realizes(unit) = the concept pin(unit) names ∧ realizes(unit) ∈ realizes(P) ⟨a merge
+    breaking it is incoherent(P), reported like the others⟩
+|{ P | bound(P) }| ≤ 1 ⟨held by bind(P), which returns the P bound before⟩
+∀ n : |{ P | live(P) ∧ name(P) = n }| ≤ 1 ∧ ∀ P : |{ unit ∈ P | live(unit) ∧ name(unit) = n }| ≤ 1
+closed(P) ⇒ name(P) kept ∧ ∄ write to P ∨ any unit ∈ P ⟨closed is final · readable forever⟩
+¬closed(P) ⇒ revise(P) admitted ⟨its name ∧ its concepts, never its state⟩
+state(P) moves by bind(P) ∨ close(P) alone
+revise routes to revise(unit) ∨ revise(P) by the name it is given ⟨--plan puts a unit's P in view⟩
+∃ u : live(u) ∧ unit ∈ deps(u) ⇒ ¬ retract(unit)
+advance(unit) ⊨ one step forward in States(unit) ⟨a skip ∨ a step back refuses⟩
+∀ unit : R acyclic ∧ ∀ u ∈ deps(unit) : live(u) ∧ u ∈ P
+an owed note blocking P ⇒ ¬ bind(P) ∧ ∀ unit ∈ P : ¬ready(unit)
+add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c settled ∧ live ⟨a pin is taken on settled ground alone⟩
+pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reason <why>\` ⟨the ONLY way · never a side effect of editing spec(unit)⟩
+realizes(unit) withdrawn in the design ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
+drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
+diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
+incoherent(P) ⇒ repaired by ordinary writes, one at a time
+reconcile ⊨ self ⟨reconciliation of plans ∧ units is the architect's alone⟩
 slices(P) cut on s ⟨¬ file-adjacency · files are a LAGGING proxy for modularity ∴
     file-cut ⇒ ∀ unit ⊇ fragments of several c ⇒ executor finishes ∧ system incoherent⟩
 ⋃ slices(P) = P ∧ ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
@@ -80,15 +137,13 @@ slices(P) cut on s ⟨¬ file-adjacency · files are a LAGGING proxy for modular
 ∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨timestamp⟩ ∴ re-derive ≺ cite
     ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree moves ∧ nothing reds⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
-state(unit) = ready ⇒ ¬blocked(unit) ∧ ¬ruling-owed(unit) ⟨ready PROMISES an executor can
-    FINISH · conflating a dep with a ruling stalls a fan-out on one unanswered question⟩
 ∀ unit : conform(spec(unit))
-advance ⊨ mirror ⟨state moves ∴ the document moves · drift is ¬ a later chore⟩
-plan ≜ take(s) → census ⟨delegable⟩ → slice(s) → author spec(∀ unit) → mirror → ratify @ planner` as SkillExpression;
+plan ≜ take(s) → census ⟨delegable⟩ → slice(s) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → advance` as SkillExpression;
 
 export const plan: Skill = {
   name: 'plan',
-  description: `use this skill to decompose ONE cut piece of a design into MECE units of work — each citing the single concept it realizes, with its inputs, dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a piece that cannot be planned as handed down is surfaced, never silently redrawn.`,
+  description: `use this skill to decompose ONE cut piece of a design into MECE units of work — each citing the single concept it realizes, with its inputs, dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a piece that cannot be planned as handed down is surfaced, never silently redrawn. Its verbs show a plan or a unit, add, advance, retract and revise units, revise, bind and close a plan, and reconcile either.`,
   formalBlock: FORMAL_BLOCK,
-  composition: () => [design],
+  runtime: { capability: 'plan', configuration: LIFECYCLE },
+  composition: () => [design, note],
 };

@@ -85,11 +85,8 @@ import { cellTargets } from '../tooling/project-targets.js';
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A corpus cell that declares a `runtime` capability — the shim carrier.
- *  `memory` had this role via the wake/dream/handoff triad and `carry-on` via
- *  `carryOn`; both are gone (the cells deleted, the elevation decoupled from the
- *  plan-bound runtime it used to drive), so `event-tap` is the last cell that
- *  projects a shim and the only witness this gate can read. */
+/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
+ *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
 const CELL = 'event-tap';
 const CAPABILITY = 'eventTap';
 

@@ -33,6 +33,7 @@ import {
   readdirSync,
   writeFileSync,
 } from 'node:fs';
+import { glob } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -66,8 +67,10 @@ import {
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { CANONICAL_EVENTS } from '../src/manifest.js';
+import { firstExport } from './support/cell-module.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const srcRoot = join(here, '..', 'src');
 const packagesDir = join(here, '..', '..');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -443,5 +446,22 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
         skills: [synthetic, rival],
       }),
     ).toThrow(/'synthetic' and 'rival' both configure capability 'synthetic'/);
+  });
+
+  // THE LIVE LEG. The same channel, fed by the corpus deploy projects rather than a
+  // synthetic cell: every live skill's runtime face, emitted into a host config and
+  // lifted by the runtime's reader. What arrives as `configuration.plan` must be the
+  // lifecycle the `plan` skill declares, member for member — its one home reaching the
+  // runtime unchanged, the runtime spelling none of it.
+  it("the live corpus's plan lifecycle arrives as the `plan` skill declares it", async () => {
+    const skills: Skill[] = [];
+    for await (const rel of glob('skills/*/skill.ts', { cwd: srcRoot }))
+      skills.push(await firstExport<Skill>(join(srcRoot, rel)));
+    const declared = skills.find((s) => s.name === 'plan')?.runtime;
+    expect(declared?.capability).toBe('plan');
+    expect(declared?.configuration).toBeDefined();
+    expect(configurationRoundTrip(skills).configuration?.plan).toEqual(
+      declared?.configuration,
+    );
   });
 });

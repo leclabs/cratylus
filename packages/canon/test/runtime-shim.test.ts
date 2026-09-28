@@ -44,9 +44,8 @@ import canonPlugin from '../src/index.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** A corpus cell that declares a `runtime` capability — the shim carrier.
- *  `memory` had this role via the wake/dream/handoff triad and `carry-on` via
- *  `carryOn`; both are gone, so `event-tap` is the corpus's last shim carrier. */
+/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
+ *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
 const CELL = 'event-tap';
 const CAPABILITY = 'eventTap';
 

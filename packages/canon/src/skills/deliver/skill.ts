@@ -52,6 +52,9 @@ unit      ≜ a unit of work
 wave   @ plan
 frontier @ plan
 realizes @ plan
+advance, bind, close, bound, ready @ plan
+show ⟨C⟩ @ design
+show ⟨P ∧ unit⟩ @ plan
 accept @ plan ⟨the MECHANICAL half⟩
 outputs @ plan
 artifact : P → ℘(path) ⟨what landed · the EVIDENCE⟩
@@ -72,7 +75,7 @@ unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWA
 defect ≜ ⟨symptom, locus, provenance⟩
 impedes : defect × P → 𝔹
 cost   : act → effort
-bound  : P → 𝔹 ⟨plan-level commitment · persists across sessions⟩
+file(d) ≜ \`scripts/note.mjs capture <title> --kind <k> --topic '<u> of plan <p>' --body <d> --author <who> --reason <why> --cause <what caused it>\` ⟨the note capability's verb · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
 terminal : P → 𝔹
 
@@ -99,8 +102,8 @@ validate ⊨ self ⟨¬ delegable · the executor cannot judge its own conforman
     holds the spec ∧ ¬ the design⟩
 verify ⊥ validate ⟨two checks, two witnesses · neither substitutes ; an executor's
     green suite proves the EXECUTOR's own assertion ∧ nothing about the design⟩
-judge(unit) ≜ verify(unit, r) ∧ validate(unit) ⇒ advance(unit) ; ¬ ⇒ r rejected back to
-    executor(unit) ∧ state(unit) stays active
+judge(unit) ≜ verify(unit, r) ∧ validate(unit) ⇒ advance(unit) ⟨the acceptance⟩ ; ¬ ⇒ r rejected
+    back to executor(unit) ∧ ¬advance(unit)
     ⟨r lands VERBATIM ≺ any verdict on it · the loss mode is read-reason-discard,
      and it takes everything when a run dies mid-judgement⟩
     ⟨fan-in is as order-sensitive as fan-out : ∀ unit dispatched, confirm executor(unit)
@@ -113,19 +116,22 @@ cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the ch
     place it will ever be visible⟩
 ¬covers ∧ extra ⇒ a second concept smuggled in unnamed ⇒ amend(C) ∨ REFUSE
 ¬sole ⇒ duplication ⟨the observable signature of a vision that fragmented⟩
-dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨state(unit) = ready⟩ concurrently ⟨state(unit) := active ∧
+dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨advance(unit) ∧
     executor(unit) runs spec(unit)⟩ ; pre bound(P) ∧ ⊨ disjoint-outputs
-yield ≠ ∅ ⇒ amend(C) @ design ⟨LIVE, ¬ at retirement⟩
+yield ≠ ∅ ⇒ amend(C) @ design ⟨LIVE, ¬ at closing⟩
+∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
+    unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
 impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
-∃ P : ¬terminal(P) ⇒ ∃! P : bound(P) ⟨WIP = 1 · finish before starting⟩
+∃ P : ¬terminal(P) ⇒ ∃ P : bound(P) ⟨WIP = 1, held by bind : it returns the plan bound before ·
+    finish before starting⟩
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic⟩
-terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP
-    that is not work⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
+terminal(P) ⇒ close(P) ⟨obligation ¬ permission · an unclosed terminal plan is WIP
+    that is not work · a closed plan stays readable⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
 deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → assay ⟨assayer, on artifact⟩ →
-    validate ⟨self, on the assay⟩ → judge → amend(C) ⇔ yield → advance → retire` as SkillExpression;
+    validate ⟨self, on the assay⟩ → judge → amend(C) ⇔ yield → advance → close` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',

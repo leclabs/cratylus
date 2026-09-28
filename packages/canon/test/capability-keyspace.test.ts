@@ -42,10 +42,10 @@
 //      list to add it to. The prefix must also be EARNED — see leg 1c.
 //   2. PLUGIN `name:` ≡ THE SIGN'S KEBAB REGISTER (2 controls). `memory`'s plugin
 //      is `name: 'memory'`; the event-tap capability's is `name: 'event-tap'`.
-//   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (2 controls:
-//      carry-on → `carryOn`, event-tap → `eventTap`). One-directional on
-//      purpose: a capability with no skill cell is legal — `memory` is now such a
-//      capability (dream/handoff/wake retired), and `heartbeat` always was one.
+//   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
+//      declaring a capability is a control). One-directional on purpose: a
+//      capability with no skill cell is legal — `memory` is now such a capability
+//      (dream/handoff/wake retired), and `heartbeat` always was one.
 //
 // HOW IT READS THE RUNTIME. By TEXT, over the source path — the precedent
 // `event-tap-cell.test.ts` and memory's `cell-verb-roster.test.ts` both set. canon
@@ -291,8 +291,8 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(SITES.map((s) => s.name)).toEqual(
       expect.arrayContaining(['event-tap', 'memory']),
     );
-    // carry-on → carryOn, event-tap → eventTap: the two controls the subset axis
-    // rests on now that memory's cells (dream/handoff/wake) are retired.
+    // The subset axis rests on the skill cells that declare a capability; two is
+    // the floor below which a dark read could pass it vacuously.
     expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(2);
   });
 
