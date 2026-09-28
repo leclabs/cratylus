@@ -32,9 +32,10 @@ import type { RoleCell } from './hold.js';
 
 export const plannerRole: RoleCell = {
   sign: planner_role,
-  // One skill, and only one. `design` and `deliver` belong to the rung ABOVE, which
-  // draws the boundary this rung plans inside; the rung BELOW declares none at all,
-  // because an implementer's decisions are made for it by its spec.
+  // The role declares one skill, `plan`, and is given plan's composition with it
+  // (`design`, `note`), so it reads the boundary it plans inside. `deliver` belongs
+  // to the rung ABOVE, which draws that boundary; the rung BELOW declares none at
+  // all, because an implementer's decisions are made for it by its spec.
   skills: ['plan'],
   vector: {
     formality: plain_formality,
