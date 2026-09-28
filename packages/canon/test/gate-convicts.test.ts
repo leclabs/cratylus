@@ -224,7 +224,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
   // enumerates the FIXTURE corpus, asserting a shape invariant over EVERY value.
   'forge/catalog/enumerate.test.ts': 'GATE',
-  // walks the LIVE tree outside `plans/` for owed-signification markers in ANY form.
+  // walks the LIVE tree outside the notebook's records for owed-signification markers in
+  // ANY form.
   // Built after a census anchored on one punctuation variant reported "exactly one" and
   // missed a second marker four lines away — so its two convicting fixtures plant BOTH
   // historical forms, and the em-dash one additionally asserts the census's own

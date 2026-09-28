@@ -796,7 +796,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
 //
-// The machine-check behind AC-RESIDUE (PLAN.md): MODEL PARSIMONIOUS
+// The machine-check behind AC-RESIDUE: MODEL PARSIMONIOUS
 // `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
 // every dimension VALUE residue · every skill `description` · every skill `body`
 // (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human

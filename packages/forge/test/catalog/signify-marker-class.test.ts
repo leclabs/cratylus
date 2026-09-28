@@ -28,7 +28,7 @@
 //     opening delimiter. `[<word>]` standing alone IS caught, by arm 1.
 //   - the token inside a longer identifier or word (a `signifyCell` member, a
 //     `SIGNIFYING` in prose): both arms are word-bounded.
-//   - `records/note/`, wholesale — the notebook's records. That is where this corpus
+//   - `records/notebook/`, wholesale — the notebook's records. That is where this corpus
 //     legitimately RECORDS debt; a marker there is the record working, not the debt
 //     shipping.
 //
@@ -102,10 +102,11 @@ const SKIP_DIRS: ReadonlySet<string> = new Set([
   '.cratylus',
 ]);
 
-/** The notebook's records, excluded for the opposite reason: they are authored, and
- *  they are the sanctioned home for recorded debt. A PATH from the scanned root, not a
- *  segment, because `note` alone names other directories too. */
-const RECORDED_DEBT = 'records/note';
+/** The notebook's records (the records root, then the notebook's domain directory),
+ *  excluded for the opposite reason: they are authored, and they are the sanctioned
+ *  home for recorded debt. A PATH from the scanned root, not a segment, so a directory
+ *  of that name anywhere else is still scanned. */
+const RECORDED_DEBT = 'records/notebook';
 
 /** Non-text payloads, skipped for speed only — a marker is a thing a person TYPES. */
 const BINARY = /\.(png|jpe?g|gif|ico|webp|pdf|zip|woff2?|ttf|otf|node)$/i;
