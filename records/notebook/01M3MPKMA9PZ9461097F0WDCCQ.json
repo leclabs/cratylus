@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MPKMA9PZ9461097F0WDCCQ",
+    "entity": "01M3MPKMA9PZ9461097F0WDCCP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T19:07:01.321Z",
+    "reason": "Residual from the assay of main-session-skill-bodies, beside the path",
+    "cause": "deliver: file(d)"
+  },
+  "payload": {
+    "title": "route line hides a session requirement",
+    "kind": "idea",
+    "topic": "launcher",
+    "body": "A main-session route line for a session-scoped capability would read 'runs as cratylus <cap> <verb>' without saying the shim needs a session id. No closure skill carries such a shim today; state the requirement before one does.",
+    "blocks": []
+  }
+}
