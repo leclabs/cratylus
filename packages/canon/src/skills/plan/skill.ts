@@ -37,8 +37,10 @@ const { plan: PLAN, unit: UNIT } = LIFECYCLE;
 
 const FORMAL_BLOCK =
   `s      ≜ a cut piece ⟨closed · handed down · ¬ redrawable here⟩ @ design
+c      @ design
 anchor @ design
 closure @ design
+withdrawn @ design
 self   @ design
 P      ≜ a plan : the units cutting s into work
 unit   ≜ a unit of work ⟨unit ∈ P⟩
@@ -57,8 +59,8 @@ R      ⊆ P × P ⟨dependency⟩
 deps(unit) ≜ { u | (unit, u) ∈ R }
 realizes : P → ℘(anchor) ∧ unit → anchor ⟨TOTAL⟩
 pin    : unit → the version of denotes(realizes(unit)) the unit was authored against
-drifted(unit) ⇔ pin(unit) ≠ the one current version of denotes(realizes(unit)) ⟨amended · withdrawn · diverged⟩
-suspect(unit) ⇔ ¬drifted(unit) ∧ ∃ c ∈ closure(denotes(realizes(unit))) : c diverged ∨ withdrawn ∨ newer than pin(unit)
+drifted(unit) ⇔ pin(unit) ≠ the one current version of denotes(realizes(unit)) ⟨amended · withdrawn · split into competing versions⟩
+suspect(unit) ⇔ ¬drifted(unit) ∧ ∃ c ∈ closure(denotes(realizes(unit))) : c has more than one current version ∨ withdrawn(c) ∨ c has a version newer than pin(unit)
 static : P → ℘(path)
 refs   : P → ℘(path) ⟨what unit's outputs compile against⟩
 outputs : P → ℘(path)
@@ -75,7 +77,7 @@ wave(n+1) ≜ { unit | unit ∉ W(n) ∧ ∀ u : (unit, u) ∈ R ⇒ u ∈ W(n) 
 W(n)   ≜ ⋃ { wave(i) | i ≤ n }
 owed   @ note
 blocked(unit) ⇔ ∃ u ∈ deps(unit) : ¬satisfied(u)
-ready(unit) ⇔ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready
+ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready
     PROMISES an executor can FINISH · conflating a dep with a ruling stalls a fan-out⟩
 frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
     the plan IS · ¬ only what is dispatchable⟩
@@ -90,7 +92,7 @@ revise(unit) ≜ \`scripts/plan.mjs revise <unit> --plan <p> [--intent <i>] [--s
 revise(P) ≜ \`scripts/plan.mjs revise <plan> [--name <n>] [--realizes <concept>]…\` ⟨name(P) ∨ realizes(P)⟩
 bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P) ∧ the P bound before returns to ${PLAN.states[0]}⟩
 close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
-reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p>\` ∨ \`scripts/plan.mjs reconcile <plan>\` ↦ one version superseding every current version of x
+reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p> [--name <n>] [--realizes <concept>] [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--state <state>] [--repin]\` ∨ \`scripts/plan.mjs reconcile <plan> [--name <n>] [--realizes <concept>]… [--state <state>]\` ↦ one version superseding every current version of x ⟨each field the versions disagree on is given · a unit whose versions pin differently takes --repin⟩
 
 ∀ add ∨ advance ∨ retract ∨ revise ∨ bind ∨ close ∨ reconcile : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
 ∀ unit : realizes(unit) ∈ { anchor(c) | c ∈ s } ⟨TOTALITY is the gate · a unit citing no
@@ -106,12 +108,12 @@ closed(P) ⇒ name(P) kept ∧ ∄ write to P ∨ any unit ∈ P ⟨closed is fi
 state(P) moves by bind(P) ∨ close(P) alone
 revise routes to revise(unit) ∨ revise(P) by the name it is given ⟨--plan puts a unit's P in view⟩
 ∃ u : live(u) ∧ unit ∈ deps(u) ⇒ ¬ retract(unit)
-advance(unit) ⊨ one step forward in States(unit) ⟨a skip ∨ a step back refuses⟩
+advance(unit) ⊨ bound(P) ∧ one step forward in States(unit) ⟨a skip ∨ a step back refuses · a unit of an unbound P is authored ∧ revised, ¬ worked⟩
 ∀ unit : R acyclic ∧ ∀ u ∈ deps(unit) : live(u) ∧ u ∈ P
 an owed note blocking P ⇒ ¬ bind(P) ∧ ∀ unit ∈ P : ¬ready(unit)
-add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c settled ∧ live ⟨a pin is taken on settled ground alone⟩
+add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one current version ∧ ¬withdrawn(c) ⟨a pin is taken on settled ground alone⟩
 pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reason <why>\` ⟨the ONLY way · never a side effect of editing spec(unit)⟩
-realizes(unit) withdrawn in the design ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
+withdrawn(denotes(realizes(unit))) ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
 drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time

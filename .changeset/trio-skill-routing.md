@@ -18,13 +18,15 @@ home of the plan and unit lifecycle states. They reach the runtime as the
 configuration deploy emits. `plan-states.ts` no longer feeds the formal block.
 Plan verbs are scripted through `scripts/plan.mjs`. The block states the plan
 and unit laws. At most one plan is bound, and closed is final. A unit realizes
-the concept its pin names. A unit is ready when its dependencies are satisfied
-and no owed note blocks it or its plan; the note skill defines `owed`, and plan
-borrows it. A pin is retaken only by `revise --repin --reason`, and a unit
+the concept its pin names. A unit is worked only while its plan is bound: it is
+ready when its plan is bound, its dependencies are satisfied and no owed note
+blocks it or its plan; the note skill defines `owed`, and plan borrows it.
+A reconcile gives each field the versions disagree on. A pin is retaken only by `revise --repin --reason`, and a unit
 whose pin has moved is drifted or suspect. The `mirror` law is deleted.
 
 `deliver` borrows `advance`, `bind`, `close`, `bound` and `ready` from `plan`.
 It records acceptance by advancing a unit, and it closes a finished plan where
 it used to retire one. It carries the law that a concept nothing builds is
-surfaced. It files a defect beside the path through the note capability, and
-names the unit `u of plan p`.
+surfaced. It files a defect beside the path with the note skill's `capture`,
+naming the unit `u of plan p`, and borrows `c`, `unit` and `self` from their
+homes.

@@ -60,13 +60,11 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   realize: 'REFERENCE', // exemplify carries `@ materialize`
   boundary: 'REFERENCE', // both: this cell's remit against its neighbour's
   // ── the design → plan → deliver trio ────────────────────────────────────────
-  // Six signs shared across the workflow cells, every one a REFERENCE: the trio is
+  // Four signs shared across the workflow cells, every one a REFERENCE: the trio is
   // one pipeline, so a downstream cell restating an upstream sign tersely is the
   // design working, not debt. Each borrower carries its `@ home` binding.
   anchor: 'REFERENCE', // design carries `@ signify`; materialize gives the emission form
   gloss: 'REFERENCE', // both: what a concept IS, one line
-  self: 'REFERENCE', // both design and deliver: the principal, i.e. the design-holder
-  unit: 'REFERENCE', // plan authors the unit of work, deliver dispatches and judges it
   verify: 'REFERENCE', // both: run the stated check against the stated criteria
   yield: 'REFERENCE', // both: what execution established and intent could not derive
   // `c` RECLASSIFIED, not renamed: probe gives it in INTENSION ("a target concept"), elicit in

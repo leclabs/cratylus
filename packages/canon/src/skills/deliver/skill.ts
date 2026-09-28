@@ -1,6 +1,7 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 import { design } from '../design/skill.js';
+import { note } from '../note/skill.js';
 import { plan } from '../plan/skill.js';
 
 // WHERE THE TRUST DEFECT IS CLOSED. Acceptance keyed to a unit's own criteria is a
@@ -40,7 +41,7 @@ import { plan } from '../plan/skill.js';
 // the principal is in the only vocabulary the principal can check without descending.
 
 const FORMAL_BLOCK = `C      @ design
-c      ≜ a concept ⟨c ∈ C⟩
+c      @ design
 anchor @ design
 gloss  @ design
 factors @ design
@@ -48,7 +49,7 @@ denotes @ design
 amend  @ design
 yield  ≜ what execution established ∧ ¬ derivable from C
 P      @ plan
-unit      ≜ a unit of work
+unit   @ plan
 wave   @ plan
 frontier @ plan
 realizes @ plan
@@ -61,7 +62,8 @@ artifact : P → ℘(path) ⟨what landed · the EVIDENCE⟩
 r      ≜ an executor's return
 conform @ signify
 executor : P ⇀ agent
-self   ≜ the principal ⟨the design-holder⟩
+self   @ design
+capture @ note
 spells : path × anchor → 𝔹 ⟨identifiers · path · public surface bear the sign⟩
 covers : path × ℘(C) → 𝔹 ⟨observable behaviour ≅ the factorization · nothing missing
          ∧ nothing extra⟩
@@ -75,7 +77,7 @@ unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWA
 defect ≜ ⟨symptom, locus, provenance⟩
 impedes : defect × P → 𝔹
 cost   : act → effort
-file(d) ≜ \`scripts/note.mjs capture <title> --kind <k> --topic '<u> of plan <p>' --body <d> --author <who> --reason <why> --cause <what caused it>\` ⟨the note capability's verb · beside the path ∴ it blocks nothing⟩
+file(d) ≜ capture(d) ⟨its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
 terminal : P → 𝔹
 
@@ -118,7 +120,6 @@ cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the ch
 ¬sole ⇒ duplication ⟨the observable signature of a vision that fragmented⟩
 dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨advance(unit) ∧
     executor(unit) runs spec(unit)⟩ ; pre bound(P) ∧ ⊨ disjoint-outputs
-yield ≠ ∅ ⇒ amend(C) @ design ⟨LIVE, ¬ at closing⟩
 ∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
     unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
@@ -137,5 +138,5 @@ export const deliver: Skill = {
   name: 'deliver',
   description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, then validate each landed artifact against the design rather than against the executor's report, and integrate. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it.`,
   formalBlock: FORMAL_BLOCK,
-  composition: () => [design, plan],
+  composition: () => [design, plan, note],
 };
