@@ -19,4 +19,7 @@ has no such field, so no key is emitted, the closure ends
 `developer_instructions` as a `## Required reading` section, and projection
 warns once per agent given any skills.
 
+The claude agent front matter now quotes `description`, so a description holding
+`: ` no longer makes the front matter invalid YAML.
+
 The `Agent.skills` documentation no longer claims that claude has no equivalent.

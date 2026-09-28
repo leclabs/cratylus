@@ -56,19 +56,26 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
  * identity body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the
  * mark's emoji drives `color` via `markToColor`, a separate axis.
  *
+ * `description` and every skill name are written as JSON strings, each a legal
+ * YAML double-quoted scalar whatever it holds. A plain scalar may not contain
+ * `: `, and real descriptions do (nico's, assayer's), which made the whole
+ * front matter invalid YAML — and Claude Code must parse it to read `skills`.
+ *
  * `skills` is Claude Code's subagent preload field
  * (<https://code.claude.com/docs/en/sub-agents>): each listed skill's full content
  * is injected into the subagent's context at startup. It carries `Agent.skills`,
  * the closure projection hands this adapter, in the order it arrives, and is
- * omitted when that list is empty. Each name is a JSON string, which is a legal
- * YAML double-quoted scalar whatever the name holds.
+ * omitted when that list is empty.
  */
 function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
   manifest: DimensionManifest,
 ): string[] {
-  const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
+  const fm: string[] = [
+    `name: ${a.name}`,
+    `description: ${JSON.stringify(a.description)}`,
+  ];
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
