@@ -644,7 +644,9 @@ describe('omp scope-activated surface', () => {
  * because `ompSkillRel` places skills one level ABOVE the harness home. A
  * harness home that was the temp dir itself would put them in the temp dir's
  * parent, shared by every run on the host. `skills` land where `ompSkillRel`
- * places them; `nativeSkills` in the session root's own `skills/`.
+ * places them. `homeSkills` maps a root relative to the sandbox (the user
+ * home) to skills placed there, and `configList` is what the fake `omp`
+ * prints for `omp config list`.
  */
 interface DeployedHome {
   sandbox: string;
@@ -657,7 +659,8 @@ interface DeployedHome {
 function deployedHome(
   defs: Record<string, string>,
   skills: Record<string, string> = {},
-  nativeSkills: Record<string, string> = {},
+  homeSkills: Record<string, Record<string, string>> = {},
+  configList: readonly string[] = [],
 ): DeployedHome {
   const sandbox = mkdtempSync(join(tmpdir(), 'omp-home-'));
   tmp.push(sandbox);
@@ -674,8 +677,12 @@ function deployedHome(
   for (const [name, md] of Object.entries(skills)) {
     for (const rel of ompSkillRel(name, [])) place(join(rel, 'SKILL.md'), md);
   }
-  for (const [name, md] of Object.entries(nativeSkills)) {
-    place(join(OMP_SESSION_DIR, 'skills', name, 'SKILL.md'), md);
+  for (const [root, byName] of Object.entries(homeSkills)) {
+    for (const [name, md] of Object.entries(byName)) {
+      const at = join(sandbox, root, name, 'SKILL.md');
+      mkdirSync(dirname(at), { recursive: true });
+      writeFileSync(at, md);
+    }
   }
   for (const f of ompLaunchSurface(Object.keys(defs))) {
     place(
@@ -691,9 +698,13 @@ function deployedHome(
   // prompt and it is MULTI-LINE. A newline-separated sink read the prompt back
   // as a dozen unrelated arguments, which is the shape that would let a
   // truncated prompt pass every assertion here.
+  // It answers `omp config list` with `configList`, the way the real one
+  // prints the settings the launcher reads, and records nothing for it.
+  const config = join(sandbox, 'config-list');
+  writeFileSync(config, configList.map((l) => `${l}\n`).join(''));
   writeFileSync(
     join(bin, 'omp'),
-    `#!/bin/sh\nprintf '%s\\0' "$@" > ${argv}\n`,
+    `#!/bin/sh\nif [ "$1" = config ]; then cat ${config}; exit 0; fi\nprintf '%s\\0' "$@" > ${argv}\n`,
     { mode: 0o755 },
   );
   return {
@@ -836,10 +847,10 @@ describe('omp launch spec', () => {
     const skillMd = (name: string, body: string) =>
       `---\nname: ${name}\ndescription: the ${name} skill\n---\n\n${body}\n`;
     const SKILLS = {
-      design: skillMd('design', '# Design\n\nDESIGN-BODY'),
-      deliver: skillMd('deliver', '# Deliver\n\nDELIVER-BODY'),
-      probe: skillMd('probe', '# Probe\n\nPROBE-BODY'),
-      signify: skillMd('signify', '# Signify\n\nSIGNIFY-BODY'),
+      design: skillMd('design', '# Design\n\nDESIGN_BODY'),
+      deliver: skillMd('deliver', '# Deliver\n\nDELIVER_BODY'),
+      probe: skillMd('probe', '# Probe\n\nPROBE_BODY'),
+      signify: skillMd('signify', '# Signify\n\nSIGNIFY_BODY'),
     };
     const SCRIBE = [
       '---',
@@ -857,6 +868,10 @@ describe('omp launch spec', () => {
       { ...(AGENT as object), skills: ['deliver', 'design'] } as never,
       CTX,
     );
+
+    /** The user-level roots, relative to the sandbox (the user home). */
+    const NATIVE = join('.omp', OMP_SESSION_DIR, 'skills');
+    const CLAUDE = join('.claude', 'skills');
 
     /** Launch `agent` in `home`; its exit, stderr and appended prompt. */
     const run = (home: DeployedHome, agent: string) => {
@@ -880,7 +895,7 @@ describe('omp launch spec', () => {
       const block = run(home, 'scribe');
       expect(block).toMatchObject({ status: 0, stderr: '' });
       expect(block.prompt).toContain(
-        `BODY${section('signify', join(root, 'signify'), '# Signify\n\nSIGNIFY-BODY')}${section('probe', join(root, 'probe'), '# Probe\n\nPROBE-BODY')}`,
+        `BODY${section('signify', join(root, 'signify'), '# Signify\n\nSIGNIFY_BODY')}${section('probe', join(root, 'probe'), '# Probe\n\nPROBE_BODY')}`,
       );
 
       // THE PROJECTOR'S OWN BYTES: what forge wrote out of an agent's
@@ -888,7 +903,7 @@ describe('omp launch spec', () => {
       const flow = run(home, 'mav');
       expect(flow).toMatchObject({ status: 0, stderr: '' });
       expect(flow.prompt).toContain(
-        `${section('deliver', join(root, 'deliver'), '# Deliver\n\nDELIVER-BODY')}${section('design', join(root, 'design'), '# Design\n\nDESIGN-BODY')}`,
+        `${section('deliver', join(root, 'deliver'), '# Deliver\n\nDELIVER_BODY')}${section('design', join(root, 'design'), '# Design\n\nDESIGN_BODY')}`,
       );
       expect(flow.prompt).toContain('Hero archetype of end-to-end delivery');
       // Neither the definition's front matter nor any skill's reaches the model.
@@ -904,17 +919,99 @@ describe('omp launch spec', () => {
       // omp's native root outranks the `.agents` provider (100 over 70), so a
       // same-name skill there is the one a spawn would get.
       const home = deployedHome({ scribe: SCRIBE }, SKILLS, {
-        probe: skillMd('probe', 'NATIVE-PROBE'),
+        [NATIVE]: { probe: skillMd('probe', 'NATIVE_PROBE') },
       });
       const { prompt } = run(home, 'scribe');
       expect(prompt).toContain(
         section(
           'probe',
           join(home.harness, OMP_SESSION_DIR, 'skills', 'probe'),
-          'NATIVE-PROBE',
+          'NATIVE_PROBE',
         ),
       );
-      expect(prompt).not.toContain('PROBE-BODY');
+      expect(prompt).not.toContain('PROBE_BODY');
+    });
+
+    it('reads a higher-ranked root only when omp’s own gate keeps it', () => {
+      // `~/.claude/skills` (priority 80) outranks `~/.agents/skills` (70), but
+      // omp's loader drops a user-level claude skill unless the operator opted
+      // in — and claude's deploy fills that root on the same host. Searched
+      // unconditionally, it would inline a copy omp never loaded.
+      const claudeOnly = {
+        [CLAUDE]: { signify: skillMd('signify', 'CLAUDE_SIGNIFY') },
+      };
+      const { signify: _, ...withoutSignify } = SKILLS;
+      const optedIn = [
+        ['  skills.enableClaudeUser = true (boolean)'],
+        ['  enabledProviders = ["claude"] (array)'],
+      ];
+      for (const config of optedIn) {
+        // Only the higher-ranked root holds it: found there once opted in…
+        const only = deployedHome(
+          { scribe: SCRIBE },
+          withoutSignify,
+          claudeOnly,
+          config,
+        );
+        const hit = run(only, 'scribe');
+        expect(hit.stderr).toBe('');
+        expect(hit.prompt).toContain(
+          section(
+            'signify',
+            join(only.sandbox, CLAUDE, 'signify'),
+            'CLAUDE_SIGNIFY',
+          ),
+        );
+        // …and it outranks the `.agents` copy of the same name.
+        const both = deployedHome(
+          { scribe: SCRIBE },
+          SKILLS,
+          claudeOnly,
+          config,
+        );
+        expect(run(both, 'scribe').prompt).toContain('CLAUDE_SIGNIFY');
+        expect(run(both, 'scribe').prompt).not.toContain('SIGNIFY_BODY');
+      }
+      // Not opted in (omp's default, and what a silent `omp config` leaves):
+      // the claude copy is invisible, as it is to omp.
+      const off = deployedHome({ scribe: SCRIBE }, SKILLS, claudeOnly);
+      expect(run(off, 'scribe').prompt).toContain('SIGNIFY_BODY');
+      expect(run(off, 'scribe').prompt).not.toContain('CLAUDE_SIGNIFY');
+      const offOnly = run(
+        deployedHome({ scribe: SCRIBE }, withoutSignify, claudeOnly),
+        'scribe',
+      );
+      expect(offOnly.prompt).not.toContain('# Skill: signify');
+      expect(offOnly.stderr).toContain('signify');
+      // A disabled provider is off whatever its toggle says.
+      const disabled = run(
+        deployedHome({ scribe: SCRIBE }, SKILLS, {}, [
+          '  disabledProviders = ["agents"] (array)',
+        ]),
+        'scribe',
+      );
+      expect(disabled.prompt).not.toContain('# Skill:');
+      expect(disabled.prompt).toContain('- `skill://signify`');
+    });
+
+    it('says so, once each, for the omp settings it does not mirror', () => {
+      const home = deployedHome({ scribe: SCRIBE }, SKILLS, {}, [
+        '  skills.ignoredSkills = ["a*"] (array)',
+        '  skills.customDirectories = ["/x"] (array)',
+      ]);
+      mkdirSync(join(home.harness, 'plugins', 'node_modules'), {
+        recursive: true,
+      });
+      const { status, stderr } = run(home, 'scribe');
+      expect(status).toBe(0);
+      const lines = stderr.split('\n').filter(Boolean);
+      expect(lines).toHaveLength(3);
+      expect(lines.every((l) => l.startsWith('omp-agent: agent scribe:'))).toBe(
+        true,
+      );
+      expect(lines[0]).toContain('skills.ignoredSkills');
+      expect(lines[1]).toContain('skills.customDirectories');
+      expect(lines[2]).toContain(join(home.harness, 'plugins'));
     });
 
     it('degrades a skill found nowhere to its reference, and says so', () => {
