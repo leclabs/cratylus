@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MKDE7PKC486NZZ2K38F5EB",
+    "entity": "01M3MJNP2EZT3PR1E187K44XGR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MJPTQTDZ7DVVX5GNC7AMQ7"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T18:11:12.758Z",
+    "reason": "Its one unit is accepted; the plan is terminal",
+    "cause": "deliver: terminal(P) ⇒ close(P)"
+  },
+  "payload": {
+    "name": "skill-closure",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "closed"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "envelope": {
+    "id": "01M3MKDE3YK0X27X9ZG19VAHT2",
+    "entity": "01M3MJNP2HJAJEAYVW7D92VKPY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MJPTVT8XMWXPCNMHGTJDV0"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T18:11:12.638Z",
+    "reason": "Accepted: verify green; assay found every deployed agent given exactly its skills' closure, codex a steer, one home",
+    "cause": "deliver: judge of agent-skill-closure"
+  },
+  "payload": {
+    "plan": "01M3MJNP2EZT3PR1E187K44XGR",
+    "spec": {
+      "name": "agent-skill-closure",
+      "intent": "Every projected agent is given the closure of its skills over `composition`: its skills as `holds` resolved them (the role's first, then the holder's declared), followed by every skill they transitively compose, breadth-first in each cell's declaration order, each name once. The closure resolves each composed name against the projection's resolved skill roster (`resolveSkills`), so a later plugin's same-name cell override changes it, a name absent from the roster is kept and not expanded, and a composition cycle terminates. It is computed once, in `projectPluginSet`, from that roster and before any `agentDef`, by a function beside `resolveSkills`; adapters render the list they are handed and compute nothing. `HarnessAdapter` gains one required member declaring whether an agent definition can name skills the harness preloads. omp says yes and emits `autoloadSkills` as today (its launcher already renders that key as required reading for a main session). claude says yes and emits a `skills` front-matter sequence, the field Claude Code's subagent schema preloads (https://code.claude.com/docs/en/sub-agents). codex says no, because its agent TOML has no such field (only `skills.config` enable/disable), so projection degrades it per the fidelity ladder, whose floor is a steer and never silence: no native field is emitted, the closure reaches the agent as a declaration (a required-reading section at the end of `developer_instructions` naming each skill in closure order), and one warning per skill-bearing agent names the agent, the harness and the skills. The claims that claude has no equivalent (the schema `Agent.skills` doc comment, the `agentToOmpMd` comments) and the canon test comment calling the omp list verbatim are corrected; forge's README documents the closure and each harness's rung; a changeset records it for `@cratylus/forge` (minor) and `@cratylus/schema` (patch).",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/forge/src/project/realization.ts",
+        "packages/forge/src/core/body.ts",
+        "packages/forge/src/core/exemplify/skill-cell.ts",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/cli/commands/project.ts",
+        "packages/forge/test/project/degradation.test.ts",
+        "packages/forge/test/project/fixtures-enforcing/"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/codex/render.ts",
+        "packages/schema/src/index.ts",
+        "packages/canon/test/projection-stability.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        "packages/forge/test/project/fixtures-closure/",
+        "packages/forge/README.md",
+        ".changeset/skill-closure.md"
+      ],
+      "accept": [
+        "After `pnpm project`, `grep -h '^autoloadSkills:' .cratylus/omp/agents/{architect,mav,kino,nico}.md` prints exactly four lines, each `autoloadSkills: [\"design\", \"deliver\", \"plan\", \"note\"]` (at 29799b5f each prints `[\"design\", \"deliver\"]`).",
+        "After `pnpm project`, `grep '^autoloadSkills:' .cratylus/omp/agents/planner.md` prints exactly `autoloadSkills: [\"plan\", \"design\", \"note\"]`.",
+        "After `pnpm project`, `grep '^autoloadSkills:' .cratylus/omp/agents/assayer.md` prints exactly `autoloadSkills: [\"design\"]`.",
+        "After `pnpm project`, `grep -c '^autoloadSkills' .cratylus/omp/agents/implementer.md` prints 0.",
+        "After `pnpm project`, the front matter of `.cratylus/claude/agents/<agent>.md`, parsed as YAML, has `skills` equal to [design, deliver, plan, note] for architect, mav, kino and nico, [plan, design, note] for planner, [design] for assayer, and no `skills` key for implementer.",
+        "After `pnpm project`, the `developer_instructions` of `.cratylus/codex/agents/<agent>.toml` ends with a required-reading section naming design, deliver, plan, note in that order for architect, mav, kino and nico, plan, design, note for planner, and design for assayer; implementer's carries no such section, and no codex agent TOML has a `skills` key.",
+        "`pnpm exec cratylus project --harness codex --out \"$(mktemp -d)\"` writes to stderr exactly one skill warning for each skill-bearing agent (architect, assayer, kino, mav, nico, planner: six, counted at 29799b5f), each naming the agent, `codex` and that agent's skills, and none naming implementer; the same command with `--harness claude` and with `--harness omp` writes no skill warning.",
+        "`pnpm --filter @cratylus/forge exec vitest run test/project/skill-closure.test.ts` passes, and fails if `projectPluginSet` hands adapters the declared list unexpanded: projecting its own fixture plugin it pins a transitive chain (a composes b, b composes c) emitted declared-first then breadth-first, a name reached twice emitted once, a composition cycle terminating, a later plugin's same-name skill cell changing the closure, the claude `skills` and omp `autoloadSkills` fields, and the codex warning plus required-reading declaration.",
+        "`grep -rnE 'claude and codex have no|neither claude nor codex' packages/*/src` prints nothing.",
+        "`pnpm verify` exits 0."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3MEKHK6QA4SFYW73YXKASWM",
+      "version": "01M3MJDC7K710DKW7JCA18D190",
+      "closure": {
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3MEKHHB7HFK4FFQQG5C1Z0H",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3MFY79KKQ98Y2YM57Y01DEG",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3MEKHBZHW928YXW4STCFXQY",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}
