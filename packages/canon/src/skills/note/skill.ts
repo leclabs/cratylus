@@ -29,7 +29,7 @@ live(n)      ≜ n captured ∧ ¬ retracted
 versions(n)  ≜ the competing versions of n a merge left standing
 diverged(n)  ⇔ versions(n) disagree
 owed(n)      ⇔ live(n) ∧ blocks(n) ≠ ∅ ⟨an owed ruling⟩
-holders(t)   ≜ the live notes titled t
+holders(t)   ≜ { n | live(n) ∧ title(n) = t } ∪ { n | diverged(n) ∧ ∃ v ∈ versions(n) : title(v) = t }
 incoherent(t) ⇔ |holders(t)| > 1 ⟨a merge left title t held by more than one note ; show prints each holder with its identity beside t⟩
 by           ≜ \`--author <who> --reason <why> --cause <what caused it>\` ⟨every write carries it⟩
 
@@ -46,13 +46,13 @@ changed(n) ⇒ revise(n) ⟨¬ edited in place ; \`--title\` retitles n⟩
 owed(n) ⇒ n blocks every x ∈ blocks(n) ⟨whatever its kind⟩ until retract(n) ∨ revise(n) ↦ blocks(n) = ∅
 diverged(n) ⇒ n blocks ⋃ { blocks(v) | v ∈ versions(n) } until reconcile(n)
 diverged(n) ⇒ reconcile(n) ≺ every other write to n
-incoherent(t) ⇒ revise(h) with \`--title\` ∨ retract(h) for ONE h ∈ holders(t) ⟨h named exactly as show prints it, identity included⟩ until ¬ incoherent(t)
-reconcile ↾ diverged(n) ⟨one note's competing versions ; never a title held by more than one note⟩
+incoherent(t) ⇒ for ONE h ∈ holders(t) ⟨h named exactly as show prints it, identity included⟩ : live(h) ⇒ revise(h) with \`--title\` ∨ retract(h) · diverged(h) ⇒ reconcile(h) ; until ¬ incoherent(t)
+reconcile ↾ diverged(n) ⟨one note's competing versions ; never a title merely held by more than one note⟩
 verb ∉ { show · capture · revise · retract · reconcile } ⇒ ⊥ ⟨loud⟩` as SkillExpression;
 
 export const note: Skill = {
   name: 'note',
-  description: `use this skill to keep the project's notebook of notes not yet canonical, whenever one surfaces in the work or to see what is still owed: show the whole notebook or one note, capture a note under its title with a kind, topic and body, revise it (retitle it too), retract it, or reconcile one a merge left in competing versions; where a merge left one title held by two notes, retitle or retract one of them, named as show prints it. Anyone may capture, with no admission bar, and any live note that names a plan or unit blocks it until it is retracted or revised to block nothing.`,
+  description: `use this skill to keep the project's notebook of notes not yet canonical, whenever one surfaces in the work or to see what is still owed: show the whole notebook or one note, capture a note under its title with a kind, topic and body, revise it (retitle it too), retract it, or reconcile one a merge left in competing versions; where a merge left one title held by two notes, repair one holder, named as show prints it: retitle or retract a live one, reconcile a diverged one. Anyone may capture, with no admission bar, and any live note that names a plan or unit blocks it until it is retracted or revised to block nothing.`,
   formalBlock: NOTE_BLOCK,
   runtime: { capability: 'note' },
   composition: () => [],
