@@ -1,0 +1,31 @@
+// An agent declaring no skills: it gets no field, no declaration, no warning.
+import type { FixtureAgent } from '../../../../fixture-manifest.js';
+
+export const bare: FixtureAgent = {
+  name: 'bare',
+  description: 'a fixture agent declaring no skills',
+  archetype: 'A fixture agent given no skills.',
+  autonomy: null,
+  role: null,
+  formality: null,
+  audienceAdaptation: null,
+  transparency: null,
+  provenance: null,
+  objective: null,
+  guardrails: [],
+  engineeringPrinciples: null,
+  heuristics: null,
+  capabilities: null,
+  learning: null,
+  situationAwareness: null,
+  actions: null,
+  modalities: null,
+  model: null,
+  memory: null,
+  trigger: null,
+  framing: null,
+  reasoningStrategy: null,
+  satisficing: null,
+  outputFormat: null,
+  selfEvaluation: null,
+};

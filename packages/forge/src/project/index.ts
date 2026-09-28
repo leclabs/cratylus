@@ -74,7 +74,7 @@ import {
   resolve as foldFragments,
 } from '../resolve/resolve.js';
 import { realizationOf } from './realization.js';
-import { resolveSkills } from './resolve-skills.js';
+import { resolveSkills, skillClosure } from './resolve-skills.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
 /**
@@ -488,6 +488,9 @@ export async function projectPluginSet(
     }
   }
   const contributedSkills = await resolveSkills(opts.plugins, log);
+  // The roster an agent's skill closure is read against: the cells that DEPLOY,
+  // so a later plugin's same-name override changes the closure too.
+  const roster = new Map(contributedSkills.map((s) => [s.name, s.skill]));
 
   let agents = 0;
   const agentNames: string[] = [];
@@ -502,9 +505,26 @@ export async function projectPluginSet(
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const agent = withResolvedBodies(await agentOf(modPath), subst, manifest);
+    const bodied = withResolvedBodies(await agentOf(modPath), subst, manifest);
+    // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
+    // with everything they compose, and every adapter renders the list it is
+    // handed rather than computing its own.
+    const skills = skillClosure(bodied.skills ?? [], roster);
+    const agent = skills.length > 0 ? { ...bodied, skills } : bodied;
     composed.push({ name, agent });
     pending.push({ name, ...(pre ? { pre } : {}) });
+  }
+
+  // A HARNESS THAT CANNOT PRELOAD A SKILL still gets the agent's skills, as a
+  // declaration its adapter renders into the definition: the floor is a steer,
+  // never silence. The shortfall is reported once per agent it costs.
+  if (!opts.adapter.preloadsSkills) {
+    for (const { name, agent } of composed) {
+      if (!agent.skills?.length) continue;
+      warn(
+        `agent '${name}' is given skills ${agent.skills.join(', ')}, but the '${opts.adapter.name}' adapter has no agent-definition field that preloads a skill. No native field is emitted; the skills reach the agent as a required-reading declaration in its definition — a steer, not a preload.`,
+      );
+    }
   }
 
   // THE SEAM. Decide the enforcement mode of every binding before a byte is

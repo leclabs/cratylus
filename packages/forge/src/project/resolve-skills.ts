@@ -55,6 +55,39 @@ export async function resolveSkills(
   return skills;
 }
 
+/**
+ * The CLOSURE of an agent's skills over `composition` — what the agent is given,
+ * as opposed to what it declared. A skill that relies on another composes it, so
+ * an agent handed only its declared skills starts with part of the system it
+ * works in; handed the closure, it starts with the whole.
+ *
+ * The declared names first, in their order, then every skill they transitively
+ * compose, breadth-first in each cell's declaration order, each name once — so a
+ * name reached twice keeps its first place and a composition cycle terminates.
+ *
+ * Each composed name is resolved against `roster`, the set's resolved skills,
+ * never against the object a cell's module happened to import: a later plugin's
+ * same-name cell is the one that deploys, so its composition is the one that
+ * counts. A name absent from the roster is kept, because the agent did name it,
+ * and not expanded, because there is no cell to read its composition off.
+ */
+export function skillClosure(
+  declared: readonly string[],
+  roster: ReadonlyMap<string, Skill>,
+): string[] {
+  const closure = [...new Set(declared)];
+  const seen = new Set(closure);
+  for (let i = 0; i < closure.length; i++) {
+    for (const composed of roster.get(closure[i] as string)?.composition() ??
+      []) {
+      if (seen.has(composed.name)) continue;
+      seen.add(composed.name);
+      closure.push(composed.name);
+    }
+  }
+  return closure;
+}
+
 /** The `Skill` export of a skill module (the object carrying `formalBlock`). */
 async function skillOf(modPath: string): Promise<Skill> {
   // Runtime-selected: the cell module is whatever the plugin's skill dir holds.

@@ -50,11 +50,18 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 // ── Agent projection (from the Agent vector directly) ────────────────────────
 
 /**
- * The Target front-matter: `name`, `description`, `color`. `description` is the
- * agent's σ_human* `description` field VERBATIM — the human-read selection line
- * the subagent-router surfaces. It is NOT `archetype` (σ*, the model-read identity
- * body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the mark's
- * emoji drives `color` via `markToColor`, a separate axis.
+ * The Target front-matter: `name`, `description`, `color`, `skills`. `description`
+ * is the agent's σ_human* `description` field VERBATIM — the human-read selection
+ * line the subagent-router surfaces. It is NOT `archetype` (σ*, the model-read
+ * identity body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the
+ * mark's emoji drives `color` via `markToColor`, a separate axis.
+ *
+ * `skills` is Claude Code's subagent preload field
+ * (<https://code.claude.com/docs/en/sub-agents>): each listed skill's full content
+ * is injected into the subagent's context at startup. It carries `Agent.skills`,
+ * the closure projection hands this adapter, in the order it arrives, and is
+ * omitted when that list is empty. Each name is a JSON string, which is a legal
+ * YAML double-quoted scalar whatever the name holds.
  */
 function agentFrontMatter(
   a: Agent,
@@ -64,6 +71,9 @@ function agentFrontMatter(
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
+  }
+  if (a.skills?.length) {
+    fm.push('skills:', ...a.skills.map((s) => `  - ${JSON.stringify(s)}`));
   }
   fm.push(...agentHooksFrontMatter(a, mechanisms, manifest));
   return fm;
@@ -240,6 +250,8 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   hooksFile: 'settings.json',
   // This harness's own headless CLI answers its own model questions.
   judgeBin: 'claude',
+  // The subagent `skills` field preloads each named skill into the agent.
+  preloadsSkills: true,
   skillRel: (name) => [claudeSkillRel(name)],
   // Claude Code's own names, declared where the vendor fact belongs.
   sessionEnvVars: CLAUDE_SESSION_ENV_VARS,

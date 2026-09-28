@@ -110,7 +110,7 @@ describe('omp agent definition', () => {
     // REST of what omp accepts here (`model`, `tools`, `spawns`,
     // `thinking-level`, …) routes a HOST's dispatch rather than describing the
     // composed agent, so forge asserts none of it. `autoloadSkills` is the one
-    // exception and the leg below owns it: this agent declares no skills, so
+    // exception and the leg below owns it: this agent is given no skills, so
     // the key is not here either.
     expect(frontMatter(agentToOmpMd(AGENT, CTX))).toEqual({
       name: 'mav',
@@ -118,12 +118,13 @@ describe('omp agent definition', () => {
     });
   });
 
-  it('emits `autoloadSkills` for a cell that declares skills, and only then', () => {
+  it('emits `autoloadSkills` for an agent given skills, and only then', () => {
     // The one front-matter key that describes the COMPOSED AGENT rather than a
-    // host's routing, and the only one forge asserts. omp honours it for a
-    // DISPATCHED subagent; `OMP_LAUNCHER_SCRIPT` reads the same key back out
-    // for a MAIN session, which has no native path for it — so the declaration
-    // reaching these bytes is what makes one definition mean one thing.
+    // host's routing, and the only one forge asserts. The list is the closure
+    // projection hands the adapter, rendered in the order it arrives. omp
+    // honours it for a DISPATCHED subagent; `OMP_LAUNCHER_SCRIPT` reads the same
+    // key back out for a MAIN session, which has no native path for it — so the
+    // list reaching these bytes is what makes one definition mean one thing.
     //
     // Read off the RENDERED STRING rather than through `frontMatter`: the claim
     // is about the bytes omp's own YAML reader will see, including the quoting
@@ -815,9 +816,9 @@ describe('omp launch spec', () => {
     //
     // BOTH SPELLINGS, because both arrive here. An operator hand-editing a
     // definition writes YAML's BLOCK sequence; `agentToOmpMd` emits the FLOW
-    // sequence from the cell's own `skills`. A launcher that read only one of
-    // them would drop the declaration silently, which is indistinguishable
-    // from the agent never having made it.
+    // sequence from the `skills` projection hands it. A launcher that read only
+    // one of them would drop the declaration silently, which is
+    // indistinguishable from the agent never having made it.
     const { bin, argv, launcher } = deployedHome({
       scribe: [
         '---',
@@ -848,7 +849,7 @@ describe('omp launch spec', () => {
     expect(blockPrompt).toContain('BODY');
 
     // THE PROJECTOR'S OWN BYTES, end to end: the producing half now exists, so
-    // what forge wrote out of a cell's `skills` is what the launcher must read
+    // what forge wrote out of an agent's `skills` is what the launcher must read
     // back in. Fed a hand-written sample only, this leg would still pass on the
     // day the two halves stopped agreeing on the spelling.
     launch(bin, launcher, ['mav']);

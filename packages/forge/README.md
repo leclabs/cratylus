@@ -141,6 +141,27 @@ the counts it wrote and the exact `deploy` invocation that ships them.
 cratylus project --out ./build --harness codex
 ```
 
+#### An agent is given its skills' closure
+
+An agent's `skills` are the names it declares; what projection gives it is their **closure** over
+`composition`: the declared names first, then every skill they transitively compose, breadth-first in
+each cell's declaration order, each name once. Each composed name is resolved against the set's
+resolved skills, so a later plugin's same-name cell changes the closure, a name no plugin ships is
+kept and not expanded, and a composition cycle terminates. The closure is computed once, before any
+agent is rendered; every adapter renders the list it is handed.
+
+Where it lands depends on whether the harness's agent definition can name skills it preloads
+(`HarnessAdapter.preloadsSkills`):
+
+| Harness | Preloads | The closure becomes                                                                                          |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------------ |
+| omp     | yes      | front-matter `autoloadSkills` (the launcher reads it back as required reading for a main session)            |
+| claude  | yes      | the subagent front-matter `skills` sequence                                                                  |
+| codex   | no       | a `## Required reading` section ending `developer_instructions`, plus one warning per agent given any skills |
+
+Codex's agent TOML has no preload field (only `skills.config` enable/disable), so its rung is the
+fidelity ladder's floor: a steer the agent reads, never silence.
+
 ### `cratylus deploy`
 
 Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill

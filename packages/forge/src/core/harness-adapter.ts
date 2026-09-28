@@ -294,6 +294,22 @@ export interface HarnessAdapter {
    */
   readonly judgeBin: string;
   /**
+   * Whether an agent definition on this harness can NAME skills the harness
+   * preloads into that agent — omp's `autoloadSkills`, claude's subagent
+   * `skills`. An answer about the harness, not about any agent.
+   *
+   * REQUIRED, because the answer decides what an agent's skills become here. Yes
+   * ⇒ `agentDef` emits the native field from `Agent.skills`. No ⇒ it emits none
+   * (codex's agent TOML has no such field, only `skills.config` enable/disable)
+   * and renders the skills as a required-reading declaration instead, and
+   * projection warns once per agent that has any: the fidelity ladder's floor is
+   * a steer, never silence.
+   *
+   * Either way the list `agentDef` receives is the CLOSURE projection computed
+   * (`skillClosure`), so an adapter renders it and computes nothing.
+   */
+  readonly preloadsSkills: boolean;
+  /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.
    *
    * The map `realizes`/`scopes` already answer FROM, declared on the port so a

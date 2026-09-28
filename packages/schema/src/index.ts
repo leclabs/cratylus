@@ -545,9 +545,13 @@ export interface Agent {
    * the dimension catalog would misrepresent it as a trait and hand every
    * agent in every corpus one more required key to spell `null`.
    *
-   * A HARNESS honours it only where it has a field for it. The omp adapter
-   * projects it as front-matter `autoloadSkills`; claude and codex have no
-   * equivalent and emit nothing, because a key the harness ignores is noise.
+   * WHAT A HARNESS RECEIVES IS THE CLOSURE, not this list: projection hands each
+   * adapter these names followed by every skill they transitively compose, so
+   * an agent starts with the whole of what its skills rely on. A HARNESS whose
+   * agent definition can name skills it preloads carries that closure natively
+   * — omp as front-matter `autoloadSkills`, claude as the subagent `skills`
+   * field. codex has no such field, so there the closure reaches the agent as a
+   * required-reading declaration in its instructions, and projection warns.
    */
   readonly skills?: readonly string[];
 }

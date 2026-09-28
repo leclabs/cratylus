@@ -252,14 +252,15 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  * policy.
  *
  * **`autoloadSkills` IS THE EXCEPTION, because it is not routing.** Which skills
- * an agent operates through is a fact about the COMPOSED AGENT, and the cell
- * declares it (`Agent.skills`). Emitted only when that declaration is non-empty,
- * so an agent that declares none still projects exactly the two required keys.
- * omp honours the field for a DISPATCHED subagent — the skills are injected
- * before the child's first prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the
- * same key back OUT of this file for a MAIN session, which has no native path
- * for it. One declaration, both ways of reaching the agent, nothing declared
- * twice.
+ * an agent operates through is a fact about the COMPOSED AGENT: the skills it
+ * declares together with every skill they compose, the closure projection
+ * computes and hands this adapter as `Agent.skills`, rendered here in the order
+ * it arrives. Emitted only when that list is non-empty, so an agent given none
+ * still projects exactly the two required keys. omp honours the field for a
+ * DISPATCHED subagent — the skills are injected before the child's first
+ * prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the same key back OUT of this
+ * file for a MAIN session, which has no native path for it. One list, both ways
+ * of reaching the agent, nothing listed twice.
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -281,8 +282,8 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  */
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
-  // omp-SPECIFIC, and emitted by this adapter alone: neither claude nor codex
-  // has a field that loads a skill from an agent definition.
+  // omp's own preload field. claude has one too (`skills`); codex has none and
+  // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
     fm.push(`autoloadSkills: [${a.skills.map(yamlString).join(', ')}]`);
   }
@@ -1204,10 +1205,10 @@ export function ompOverlayYaml(): string {
  * missing was the instruction to read them.
  *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
- * FLOW sequence from a cell's own `Agent.skills`; an operator hand-editing a
- * definition writes YAML's BLOCK sequence. Reading only one of them would drop
- * the declaration in silence, which is the same session as one that never made
- * it.
+ * FLOW sequence from the skill closure projection hands it; an operator
+ * hand-editing a definition writes YAML's BLOCK sequence. Reading only one of
+ * them would drop the declaration in silence, which is the same session as one
+ * that never made it.
  */
 export const OMP_LAUNCHER_SCRIPT = [
   '#!/bin/sh',
@@ -1383,6 +1384,8 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // the session's own model and runs the worker around a judgment it makes
   // itself, so there is no CLI to name and no second process to spawn.
   judgeBin: '',
+  // `autoloadSkills` names skills omp preloads into the agent it defines.
+  preloadsSkills: true,
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,

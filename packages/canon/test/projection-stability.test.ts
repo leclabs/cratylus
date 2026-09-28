@@ -136,9 +136,10 @@ describe('projection stability (.ts is the sole source)', () => {
   });
 
   // A DECLARATION THAT RESOLVES NOWHERE IS WORSE THAN NO DECLARATION. An agent's
-  // `skills` are NAMES, projected verbatim into omp's `autoloadSkills` and read
-  // back by the generic launcher as `skill://<name>` required reading. A skill
-  // renamed or retired out from under one leaves an agent that still LOOKS
+  // `skills` are NAMES; projection expands them to their closure over
+  // `composition` and hands that to every harness — omp's `autoloadSkills`, read
+  // back by the generic launcher as `skill://<name>` required reading, among them.
+  // A skill renamed or retired out from under one leaves an agent that still LOOKS
   // equipped: omp resolves the name against its skill roster, finds nothing, and
   // autoloads nothing — silently, with the definition still naming it. The names
   // are string literals precisely because the field is an ADDRESS into a host's

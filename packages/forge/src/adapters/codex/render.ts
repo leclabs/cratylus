@@ -59,6 +59,13 @@ export type { ResolvedSkill };
  * regenerate-don't-hand-edit banner + content-hash is build-provenance the running
  * agent never consumes (mirrors `skillToCodexMd`, which already omits it).
  * `_profile` is retained for API symmetry but no longer recorded.
+ *
+ * No `skills` key either: codex's agent TOML has no field that preloads a skill
+ * (its `skills.config` only enables or disables one). So `Agent.skills`, the
+ * closure projection hands this adapter, reaches the agent as a DECLARATION
+ * instead — a required-reading section at the end of `developer_instructions`
+ * naming each skill in the order it arrives. Projection warns about the
+ * shortfall; this renders what survives it.
  */
 export function agentToCodexTomlObject(
   a: Agent,
@@ -68,7 +75,7 @@ export function agentToCodexTomlObject(
   // The catalog travels because the Target body does: `developer_instructions` is
   // the same `agentBody` the claude `.md` carries, so it owes the same sections.
   const body = agentBody(a, ctx.manifest);
-  const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
+  const developerInstructions = `${body.replace(/\n+$/, '')}\n${requiredReading(a.skills ?? [])}`;
   const obj: Record<string, unknown> = {
     name: a.name,
     // σ_human* — the router-read one-line bound, NOT σ* (archetype stays the model-read
@@ -78,6 +85,25 @@ export function agentToCodexTomlObject(
     developer_instructions: developerInstructions,
   };
   return obj;
+}
+
+/**
+ * The required-reading section an agent's skills become on codex, or the empty
+ * string when it is given none. Each skill is named with the path it lands at
+ * under the codex home, the same `skills/<name>/SKILL.md` `AGENTS.md` points at.
+ */
+function requiredReading(skills: readonly string[]): string {
+  if (skills.length === 0) return '';
+  return [
+    '',
+    '## Required reading',
+    '',
+    'These skills are REQUIRED reading, not background: read each one in full',
+    'before you act.',
+    '',
+    ...skills.map((s) => `- \`${s}\` (\`${codexSkillRel(s)}/SKILL.md\`)`),
+    '',
+  ].join('\n');
 }
 
 /**
@@ -280,6 +306,9 @@ export const codexHarnessAdapter: HarnessAdapter = {
   hooksFile: 'hooks.json',
   // Its own CLI, never another vendor's — the default this replaces was `claude`.
   judgeBin: 'codex',
+  // Its agent TOML has no field that preloads a skill; the skills are declared
+  // in `developer_instructions` instead (`agentToCodexTomlObject`).
+  preloadsSkills: false,
   skillRel: (name) => [codexSkillRel(name)],
   sessionEnvVars: CODEX_SESSION_ENV_VARS,
   // The map, declared on the port so deploy can EMIT it into the host config the
