@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MEKHBZHW928YXW4STCFXQY",
+    "entity": "01M3MEKHBYF8EJN5TTVED2MTPA",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.695Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "pin",
+    "gloss": "a unit's reference to the concept version it realizes, taken when the unit is authored and retaken only by a revise that says so with a reason, never as a side effect of editing the spec; it is taken only when that concept and its whole closure are settled and live. A unit is **drifted** when its pinned version is no longer the concept's only head (the concept was amended, withdrawn or has diverged), and otherwise **suspect** when any other concept in the closure has diverged, been withdrawn or gained a newer version since the pin was taken. A retraction in the design never breaks a plan's laws; it drifts the units pinned to it.",
+    "factors": [
+      "01M3MEKGYAW8NGQQ1B25XJQ6KZ",
+      "01M3MEKGZW0N24X571C5XH281J",
+      "01M3MEKH8E3Q8R94A9EFNDE986"
+    ]
+  }
+}

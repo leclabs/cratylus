@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+    "entity": "01M3MEKGYAW8NGQQ1B25XJQ6KZ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.258Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "head",
+    "gloss": "a record of an entity, either a version or a retraction, that no later record names. An entity with exactly one head is settled: live when that head is a version, withdrawn when it is a retraction.",
+    "factors": [
+      "01M3MEKGTZBB6D2EE4Y0HKSS9R",
+      "01M3MEKGWMXGMJBQX7EJDW4295"
+    ]
+  }
+}

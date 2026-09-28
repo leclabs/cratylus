@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+    "entity": "01M3MEKH4WNSY2RE9VRTXZH9PT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.468Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "record store",
+    "gloss": "the internal mechanism holding records as files in the repository (one directory per domain, one file per record, named by record id), writing new records, folding heads, detecting divergence and incoherence, and owning the immutability gate. A branch merge is the union of records and never conflicts. It lives in `runtime`, and no agent or skill ever names it.",
+    "factors": [
+      "01M3MEKGMC8VSE3FNXVNWEQQ1N",
+      "01M3MEKGNZQ0P7T1JDXFN9AW41",
+      "01M3MEKGSBRWFZRBAK69X0J776",
+      "01M3MEKGYAW8NGQQ1B25XJQ6KZ",
+      "01M3MEKGZW0N24X571C5XH281J",
+      "01M3MEKH1HQA7YT43FBNSBXMWW",
+      "01M3MEKH37GZV0QAAPZTX6K86Y"
+    ]
+  }
+}

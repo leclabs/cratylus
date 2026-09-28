@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MEKGWMXGMJBQX7EJDW4296",
+    "entity": "01M3MEKGWMXGMJBQX7EJDW4295",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.204Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "retraction",
+    "gloss": "a record withdrawing an entity with no successor version, naming the heads it withdraws; the retraction itself becomes the entity's head, so the withdrawal is part of the history that later records must name.",
+    "factors": [
+      "01M3MEKGGY7GAEA7D6YKBAPJ1A",
+      "01M3MEKGQP6FWTCGZMRPVD7BN5",
+      "01M3MEKGSBRWFZRBAK69X0J776"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MEKGZW0N24X571C5XH281K",
+    "entity": "01M3MEKGZW0N24X571C5XH281J",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.308Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "divergence",
+    "gloss": "an entity with more than one head whose payloads differ, produced when concurrent sessions on different branches wrote to the same head differently (two versions, or a version and a retraction) and the branches merged. Heads that carry the same payload have converged and read as one. Divergence is state, not error: it is reported, never silently resolved.",
+    "factors": [
+      "01M3MEKGYAW8NGQQ1B25XJQ6KZ"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+    "entity": "01M3MEKGGY7GAEA7D6YKBAPJ1A",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:08.830Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "entity",
+    "gloss": "the thing a record is a version of (a concept, a plan, a unit, a note), with an identity that is neither its name nor its place in history; a name, where the entity has one, is a label on it and can change.",
+    "factors": []
+  }
+}

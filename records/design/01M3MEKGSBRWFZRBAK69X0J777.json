@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKGSBRWFZRBAK69X0J777",
+    "entity": "01M3MEKGSBRWFZRBAK69X0J776",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.099Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "record",
+    "gloss": "one immutable entry in one entity's history, either a version or a retraction: an envelope and a whole-state payload, never edited, moved or deleted once written.",
+    "factors": [
+      "01M3MEKGJNN7S61YZ8MF1JD16A",
+      "01M3MEKGQP6FWTCGZMRPVD7BN5"
+    ]
+  }
+}

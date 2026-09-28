@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MEKH382H9C2B3AXJTGXZRT",
+    "entity": "01M3MEKH37GZV0QAAPZTX6K86Y",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.416Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "reconciliation",
+    "gloss": "the act resolving divergence or incoherence by a write that restores the law: for divergence, one whole-state version superseding every head of the entity; for incoherence, ordinary writes to the entities involved, one at a time. A write is refused only when it introduces a violation, meaning one whose entities were not already bound together in a standing violation of the same law; a write that shrinks or leaves a violation standing is allowed, so every incoherence can be repaired one write at a time. Reconciliation belongs to the domain's authority (the architect for design and plans, anyone for notes), is an amendment, and never shares a record with an acceptance.",
+    "factors": [
+      "01M3MEKGTZBB6D2EE4Y0HKSS9R",
+      "01M3MEKGZW0N24X571C5XH281J",
+      "01M3MEKH1HQA7YT43FBNSBXMWW"
+    ]
+  }
+}

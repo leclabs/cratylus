@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MEKHK6QA4SFYW73YXKASWN",
+    "entity": "01M3MEKHK6QA4SFYW73YXKASWM",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.926Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "skill routing",
+    "gloss": "each skill routes its reader's intents to its own domain interface in its own vocabulary, and holds its domain's authority rules: reconciliation of design and plans is the architect's alone, and of notes anyone's. `plan` pins and advances. `deliver` reads both and records acceptance by advancing a unit. `note` captures without an admission bar. No skill restates another's rules or mentions the record store.",
+    "factors": [
+      "01M3MEKHHB7HFK4FFQQG5C1Z0G"
+    ]
+  }
+}

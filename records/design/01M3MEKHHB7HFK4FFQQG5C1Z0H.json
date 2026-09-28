@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3MEKHHB7HFK4FFQQG5C1Z0H",
+    "entity": "01M3MEKHHB7HFK4FFQQG5C1Z0G",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.867Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "domain interface",
+    "gloss": "one capability per domain, named for it (`design`, `plan`, `note`), in its own verbs, shipped with its skill: - `design` shows the whole design or one concept, and defines, amends, retracts, reconciles and traces a concept (how it came to be, what it stands on and what stands on it); - `plan` shows the whole bound plan, any plan named, or one unit, adds, advances and retracts units, revises a unit or a plan, binds and closes a plan, and reconciles either; - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles notes. Agents never see record ids, envelopes, heads, records or files; the interface speaks only the domain's words, and every name it prints addresses one entity, qualified as the domain does (a unit by its plan). When the substrate itself fails (no repository, a damaged entry) it says so plainly and names what a person must repair. A payload names entities by name and the interface resolves them. Where a name cannot address one entity, because a merge left it held by more than one, the interface shows and accepts each holder's identity beside the name, and only there; that is the one place an identity surfaces, and nothing else is invented to stand for it. Every write keeps its domain's laws on the current branch: a write that would break one is refused, so incoherence, like divergence, arises only from merges. An ordinary write on a diverged item refuses and points to `reconcile`.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKH8E3Q8R94A9EFNDE986",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3MEKHFKC1AW1P0T9Y7S21JK"
+    ]
+  }
+}

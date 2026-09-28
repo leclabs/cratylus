@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKH1HQA7YT43FBNSBXMWX",
+    "entity": "01M3MEKH1HQA7YT43FBNSBXMWW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.361Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "incoherence",
+    "gloss": "a domain law broken across entities by a merge, although each branch kept it: a reference to a withdrawn entity, a cycle, one name held by two entities, more than one bound plan, or a unit realizing a concept its plan does not. A name is held by every live entity carrying it, by a withdrawn entity that keeps it, and by a diverged entity for every name its heads carry. Reported like divergence.",
+    "factors": [
+      "01M3MEKGGY7GAEA7D6YKBAPJ1A",
+      "01M3MEKGYAW8NGQQ1B25XJQ6KZ"
+    ]
+  }
+}

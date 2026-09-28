@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+    "entity": "01M3MEKGQP6FWTCGZMRPVD7BN5",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.046Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "envelope",
+    "gloss": "what a record says about itself: its record id, its entity, the operation, the record ids it supersedes, author, time, reason, and what caused it.",
+    "factors": [
+      "01M3MEKGF71N1FBS899CQT6R1N",
+      "01M3MEKGGY7GAEA7D6YKBAPJ1A"
+    ]
+  }
+}

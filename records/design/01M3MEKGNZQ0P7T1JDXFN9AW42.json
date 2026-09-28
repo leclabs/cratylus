@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+    "entity": "01M3MEKGNZQ0P7T1JDXFN9AW41",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:08.991Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "immutability gate",
+    "gloss": "the one enforced law of the substrate: a change that modifies, moves or deletes an existing record is refused at commit and in CI, where every commit is judged against each parent and a push that rewrites history is judged by what it leaves at its end.",
+    "factors": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3MEKGJNN7S61YZ8MF1JD16B",
+    "entity": "01M3MEKGJNN7S61YZ8MF1JD16A",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:08.885Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "payload",
+    "gloss": "the whole state of the entity as of this record; never a delta. A concept's payload is its anchor, gloss and factors; a plan's is its name, the concepts it realizes and its lifecycle state; a unit's is its plan, full spec and lifecycle state; a note's is its title, kind, topic, body and whatever it blocks.",
+    "factors": []
+  }
+}

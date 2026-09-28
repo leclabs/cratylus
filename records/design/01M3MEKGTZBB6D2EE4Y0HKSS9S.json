@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+    "entity": "01M3MEKGTZBB6D2EE4Y0HKSS9R",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.151Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "supersession",
+    "gloss": "a new version of an entity that names one or more of its current heads and replaces them; naming a record that is not a head is refused, so a single branch's history stays linear and divergence arises only from merges. It is how an entity evolves, how a withdrawn entity is reinstated, and, naming several heads, how divergence is reconciled.",
+    "factors": [
+      "01M3MEKGF71N1FBS899CQT6R1N",
+      "01M3MEKGGY7GAEA7D6YKBAPJ1A",
+      "01M3MEKGJNN7S61YZ8MF1JD16A",
+      "01M3MEKGQP6FWTCGZMRPVD7BN5",
+      "01M3MEKGSBRWFZRBAK69X0J776"
+    ]
+  }
+}

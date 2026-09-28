@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKHA5W8RJBDX72X37FZVK",
+    "entity": "01M3MEKHA5W8RJBDX72X37FZVJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.637Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "plan",
+    "gloss": "an entity naming the set of concepts it realizes and its lifecycle: proposed, bound, then closed, which is final. One live plan per name, and a closed plan keeps its name. Binding a plan returns whichever plan was bound to proposed, so at most one plan is bound, and when a merge leaves two, binding the one to keep resolves it. An owed ruling that names a plan blocks binding it and every unit in it. A closed plan and its units are never written again, and stay readable forever; closing replaces retiring by deletion.",
+    "factors": [
+      "01M3MEKH4WNSY2RE9VRTXZH9PT",
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR"
+    ]
+  }
+}

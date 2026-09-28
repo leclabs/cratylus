@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3MEKGF71N1FBS899CQT6R1P",
+    "entity": "01M3MEKGF71N1FBS899CQT6R1N",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:08.775Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "record id",
+    "gloss": "a record's identity, a ULID minted without coordination, so records written on different branches or machines never collide.",
+    "factors": []
+  }
+}

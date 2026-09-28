@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+    "entity": "01M3MEKGMC8VSE3FNXVNWEQQ1N",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:08.940Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "fold",
+    "gloss": "the pure function computing an entity's current state from its records at the moment of the read; nothing it computes is ever persisted. (Not \"projection\": in this corpus that sign already means canon → harness Targets.)",
+    "factors": []
+  }
+}

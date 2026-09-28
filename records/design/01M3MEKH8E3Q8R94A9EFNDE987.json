@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3MEKH8E3Q8R94A9EFNDE987",
+    "entity": "01M3MEKH8E3Q8R94A9EFNDE986",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T16:47:09.582Z",
+    "reason": "Moving C from its bootstrap home into the design records, verbatim",
+    "cause": "docs/design/record-store.md at 9e7730da (plan record-store, unit design-migration)"
+  },
+  "payload": {
+    "anchor": "design",
+    "gloss": "the concept lattice C: every live concept with its anchor, gloss and factors. Its laws: one live concept per anchor, and a withdrawn concept keeps its anchor until reinstated; factors form a set, are acyclic and name live concepts, so a concept that others factor on cannot be retracted; every gloss and every reason is non-empty. The design knows nothing of plans. Only the architect writes it; a planner, implementer or assayer that meets divergence or incoherence reports it and never resolves it.",
+    "factors": [
+      "01M3MEKH37GZV0QAAPZTX6K86Y",
+      "01M3MEKH4WNSY2RE9VRTXZH9PT"
+    ]
+  }
+}
