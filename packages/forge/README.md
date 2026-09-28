@@ -155,7 +155,7 @@ Where it lands depends on whether the harness's agent definition can name skills
 
 | Harness | Preloads | The closure becomes                                                                                          |
 | ------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| omp     | yes      | front-matter `autoloadSkills` (the launcher reads it back as required reading for a main session)            |
+| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                   |
 | claude  | yes      | the subagent front-matter `skills` sequence                                                                  |
 | codex   | no       | a `## Required reading` section ending `developer_instructions`, plus one warning per agent given any skills |
 
@@ -214,9 +214,20 @@ task-agent root: YAML front-matter carrying the `name` and `description` omp req
 IS the system prompt. Dispatched as a subagent, omp reads it natively. Launched as a MAIN session —
 for which omp has no `--agent` flag at all — `omp-agent <name>` (or a symlink named after the agent,
 busybox-style) reads the same bytes, prepends the identity assertion omp's own base prompt would
-otherwise win, appends any `autoloadSkills` as required reading, and hands the result to
+otherwise win, appends the body of each `autoloadSkills` skill, and hands the result to
 `--append-system-prompt`. One definition, two readers, nothing to drift — and ONE launcher on the
 host rather than one per agent.
+
+A main session starts with its skills as a dispatched subagent does. For each name in
+`autoloadSkills`, in order, the launcher inlines the first `<name>/SKILL.md` it finds under the
+user-level roots omp discovers, in omp's precedence: `~/.omp/agent/skills/` (native, priority 100),
+then `~/.agents/skills/` (where deploy places skills, priority 70). Both are resolved from the
+launcher's own directory, so a sandboxed `--home` stays inside itself. Each skill arrives as a
+`# Skill: <name>` section with a `Base directory:` line, so its `scripts/<capability>.mjs` resolves,
+and without its front matter. A skill under neither root is named as `skill://<name>` under
+`## Required reading`, and the launcher prints one `omp-agent:` line to stderr per such skill before
+it launches. The prompt stays one argument, bounded by Linux's per-argument `MAX_ARG_STRLEN`
+(128 KiB), not `ARG_MAX`; the largest measured today is about 34 KB (nico with its closure).
 
 Identity used to be carried by projecting each persona INTO an omp `--profile`
 (`profiles/<name>/agent/APPEND_SYSTEM.md`), which conflated an agent's IDENTITY with the operator's

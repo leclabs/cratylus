@@ -154,6 +154,11 @@ export function ompAgentRel(name: string): string {
   return `${OMP_SESSION_DIR}/${OMP_AGENT_DEF_DIR}/${name}.md`;
 }
 
+/** The root skills land in, relative to the harness home: the harness-neutral
+ *  `.agents` provider's `skills/`, which omp reads natively at priority 70. The
+ *  launcher searches it from its own directory, so both spell it from here. */
+const OMP_SKILL_ROOT = `../${NEUTRAL_AGENT_ROOT}/skills`;
+
 /**
  * Where skill `<name>` lands, relative to the harness home — ONE path, at the
  * harness-neutral root omp reads NATIVELY on every launch.
@@ -170,7 +175,7 @@ export function ompSkillRel(
   name: string,
   _agents: readonly string[],
 ): readonly string[] {
-  return [`../${NEUTRAL_AGENT_ROOT}/skills/${name}`];
+  return [`${OMP_SKILL_ROOT}/${name}`];
 }
 
 /** The emitted enforcement module's filename — derived, never spelled. */
@@ -259,8 +264,9 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  * still projects exactly the two required keys. omp honours the field for a
  * DISPATCHED subagent — the skills are injected before the child's first
  * prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the same key back OUT of this
- * file for a MAIN session, which has no native path for it. One list, both ways
- * of reaching the agent, nothing listed twice.
+ * file for a MAIN session, which has no native path for it, and inlines each
+ * skill's body the same way. One list, both ways of reaching the agent, nothing
+ * listed twice.
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -1178,8 +1184,13 @@ export function ompOverlayYaml(): string {
  *
  * THE PROMPT IS AN ARGUMENT, NOT A FILE. `--append-system-prompt` takes either,
  * and a temp file is the shape that leaks: this script EXECs, so there would be
- * no process left to remove one. The composed text is a few kilobytes against a
- * multi-megabyte `ARG_MAX`.
+ * no process left to remove one. What binds an argument on Linux is not
+ * `ARG_MAX` (the whole argv plus environment) but the per-argument
+ * `MAX_ARG_STRLEN`, 32 pages — 128 KiB on 4 KiB pages. The largest composed
+ * prompt measured at ef78db59 is about 34 KB: nico's 6.5 KB definition plus
+ * the 27.4 KB of its design, deliver, plan and note bodies. No guard enforces
+ * the limit; a prompt past it fails the `exec` with `E2BIG` rather than
+ * starting a session.
  *
  * THE IDENTITY LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION. Every
  * adapter must carry the cell's `name` into whatever surface its harness reads
@@ -1198,11 +1209,18 @@ export function ompOverlayYaml(): string {
  *
  * `autoloadSkills` IS HONOURED HERE BECAUSE OMP HONOURS IT ONLY FOR A SPAWN.
  * The field injects skills before a SUBAGENT's first prompt and has no
- * main-session path at all, so one definition would otherwise mean two different
- * things depending on how it was reached. Naming the skills as required reading
- * is the nearest main-session equivalent that exists: the skills are already on
- * disk at `~/.agents/skills/` and already read natively, so the only thing
- * missing was the instruction to read them.
+ * main-session path at all, so one definition would otherwise mean two
+ * different things depending on how it was reached. So the launcher does what
+ * a spawn does: for each listed skill, in order, it inlines the BODY of the
+ * first `<name>/SKILL.md` found under the user-level skill roots omp discovers,
+ * in omp's own precedence — this directory's `skills/` (omp's native root,
+ * priority 100), then the root deploy places skills in ({@link ompSkillRel},
+ * the `.agents` provider, priority 70). Each opens with `# Skill: <name>` and a
+ * `Base directory:` line, because a skill's `scripts/<capability>.mjs` resolves
+ * against that directory; its front matter never reaches the model. A skill
+ * found under neither root is not dropped: it degrades to a `skill://` line
+ * under `## Required reading`, and the launcher says so on stderr, once per
+ * skill, before it launches.
  *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
  * FLOW sequence from the skill closure projection hands it; an operator
@@ -1257,19 +1275,34 @@ export const OMP_LAUNCHER_SCRIPT = [
   '  exit 1',
   'fi',
   '',
-  "# THE BODY IS THE SYSTEM PROMPT. The front-matter is omp's dispatch metadata",
-  '# and must never reach the model as literal text, so it is split off here and',
-  '# read for one field only. `\\047` spells the apostrophe the surrounding quotes',
-  '# cannot; awk unescapes it before the string is used as a regex.',
-  `composed=$(awk '`,
+  "# TEXT AFTER THE FRONT MATTER, leading blank lines dropped: a definition's body",
+  '# and a skill body alike. Front matter is dispatch metadata and must never reach',
+  '# the model as literal text.',
+  "after_fm='",
+  '  NR == 1 && $0 == "---" { fm = 1; next }',
+  '  fm { if ($0 == "---") fm = 0; next }',
+  '  !started && $0 ~ /^[ \\t]*$/ { next }',
+  '  { started = 1; print }',
+  "'",
+  '',
+  '# THE BODY IS THE SYSTEM PROMPT.',
+  'composed=$(awk "$after_fm" "$def")',
+  'if [ -z "$composed" ]; then',
+  `  printf '${OMP_LAUNCHER_FILE}: %s carries no system prompt\\n' "$def" >&2`,
+  '  exit 1',
+  'fi',
+  '',
+  '# The one front-matter field read here, in either YAML spelling: one name per',
+  '# line. `\\047` spells the apostrophe the surrounding quotes cannot; awk',
+  '# unescapes it before the string is used as a regex.',
+  `skills=$(awk '`,
   '  function clean(s) { gsub(strip, "", s); return s }',
   '  BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
-  '  NR == 1 { if ($0 == "---") { fm = 1; next } }',
-  '  fm && $0 == "---" { fm = 0; next }',
-  '  !fm { if (!started && $0 ~ /^[ \\t]*$/) next; started = 1; print; next }',
+  '  NR == 1 { if ($0 == "---") next; exit }',
+  '  $0 == "---" { exit }',
   '  list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
   '    s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
-  '    if (s != "") skill[++n] = s',
+  '    if (s != "") print s',
   '    next',
   '  }',
   '  { list = 0 }',
@@ -1279,19 +1312,37 @@ export const OMP_LAUNCHER_SCRIPT = [
   '    gsub(/^\\[|\\]$/, "", rest)',
   '    if (rest == "") { list = 1; next }',
   '    m = split(rest, part, ",")',
-  '    for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") skill[++n] = s }',
-  '  }',
-  '  END {',
-  '    if (n == 0) exit',
-  '    printf "\\n## Required reading\\n\\n"',
-  '    printf "These skills are REQUIRED reading for this session, not background:\\n"',
-  '    printf "read each one in full before you act.\\n\\n"',
-  '    for (i = 1; i <= n; i++) printf "- `skill://%s`\\n", skill[i]',
+  '    for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
   '  }',
   `' "$def")`,
-  'if [ -z "$composed" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: %s carries no system prompt\\n' "$def" >&2`,
-  '  exit 1',
+  '',
+  '# THE SKILL BODIES, as a spawn would have them. The user-level roots omp',
+  "# discovers, in its precedence: this directory's own `skills/` (native, 100),",
+  '# then the root deploy places skills in (`.agents`, 70). Both hang off this',
+  "# script's resolved directory, so a sandboxed home resolves inside itself.",
+  'native=$dir/skills',
+  `neutral=$dir/${OMP_SESSION_DIR.replace(/[^/]+/g, '..')}/${OMP_SKILL_ROOT}`,
+  'if [ -d "$neutral" ]; then neutral=$(CDPATH= cd -- "$neutral" && pwd) || exit 1; fi',
+  "nl='",
+  "'",
+  'missing=',
+  'while IFS= read -r skill; do',
+  '  [ -n "$skill" ] || continue',
+  '  base=',
+  '  for root in "$native" "$neutral"; do',
+  '    if [ -f "$root/$skill/SKILL.md" ]; then base=$root/$skill; break; fi',
+  '  done',
+  '  if [ -z "$base" ]; then',
+  `    printf '${OMP_LAUNCHER_FILE}: agent %s: skill %s is under neither %s nor %s; naming it as required reading instead\\n' "$name" "$skill" "$native" "$neutral" >&2`,
+  '    missing="$missing$nl- \\`skill://$skill\\`"',
+  '    continue',
+  '  fi',
+  '  composed="$composed$nl$nl# Skill: $skill$nl${nl}Base directory: $base$nl$nl$(awk "$after_fm" "$base/SKILL.md")"',
+  'done <<EOF',
+  '$skills',
+  'EOF',
+  'if [ -n "$missing" ]; then',
+  '  composed="$composed$nl$nl## Required reading$nl${nl}These skills are REQUIRED reading for this session, not background:${nl}read each one in full before you act.$nl$missing"',
   'fi',
   '',
   "# THE IDENTITY ASSERTION — see this script's own doc for the measurement that",

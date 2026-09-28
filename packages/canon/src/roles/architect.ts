@@ -51,8 +51,8 @@ export const architectRole: RoleCell = {
   sign: architect_role,
   // `design` holds the lattice, `deliver` closes the loop on what comes back. Declared
   // rather than described — omp injects them before a dispatched subagent's first
-  // prompt and the generic launcher names them as required reading for a main session,
-  // so a holder is the same agent either way it is reached.
+  // prompt and the generic launcher inlines their bodies for a main session, so a
+  // holder is the same agent either way it is reached.
   skills: ['design', 'deliver'],
   vector: {
     formality: plain_formality,

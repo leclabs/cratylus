@@ -6,7 +6,7 @@
 // wrong, the wrong thing is named — a fixture pinned to a law outlives the
 // incident that produced it, and one pinned to the incident is a museum piece.
 
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -636,18 +636,32 @@ describe('omp scope-activated surface', () => {
  * records the argv it was exec'd with, because what the launcher composes is
  * observable nowhere else.
  *
- * Built from `scopedRel`/`agentRel` rather than from written-out paths: a
- * layout change moves this fixture with it instead of leaving it pinned to a
- * directory nobody writes any more.
+ * Built from `scopedRel`/`agentRel`/`ompSkillRel` rather than from written-out
+ * paths: a layout change moves this fixture with it instead of leaving it
+ * pinned to a directory nobody writes any more.
+ *
+ * THE HARNESS HOME IS `.omp` INSIDE A SANDBOX, as it is under a real `$HOME`,
+ * because `ompSkillRel` places skills one level ABOVE the harness home. A
+ * harness home that was the temp dir itself would put them in the temp dir's
+ * parent, shared by every run on the host. `skills` land where `ompSkillRel`
+ * places them; `nativeSkills` in the session root's own `skills/`.
  */
-function deployedHome(defs: Record<string, string>): {
+interface DeployedHome {
+  sandbox: string;
   harness: string;
   bin: string;
   argv: string;
   launcher: string;
-} {
-  const harness = mkdtempSync(join(tmpdir(), 'omp-home-'));
-  tmp.push(harness);
+}
+
+function deployedHome(
+  defs: Record<string, string>,
+  skills: Record<string, string> = {},
+  nativeSkills: Record<string, string> = {},
+): DeployedHome {
+  const sandbox = mkdtempSync(join(tmpdir(), 'omp-home-'));
+  tmp.push(sandbox);
+  const harness = join(sandbox, '.omp');
   const place = (rel: string, content: string, mode?: number): string => {
     const at = join(harness, rel);
     mkdirSync(dirname(at), { recursive: true });
@@ -657,6 +671,12 @@ function deployedHome(defs: Record<string, string>): {
   for (const [name, def] of Object.entries(defs)) {
     place(ompAgentRel(name), def);
   }
+  for (const [name, md] of Object.entries(skills)) {
+    for (const rel of ompSkillRel(name, [])) place(join(rel, 'SKILL.md'), md);
+  }
+  for (const [name, md] of Object.entries(nativeSkills)) {
+    place(join(OMP_SESSION_DIR, 'skills', name, 'SKILL.md'), md);
+  }
   for (const f of ompLaunchSurface(Object.keys(defs))) {
     place(
       ompHarnessAdapter.scopedRel?.(f.filename, f.scope) as string,
@@ -664,9 +684,9 @@ function deployedHome(defs: Record<string, string>): {
       f.executable ? 0o755 : undefined,
     );
   }
-  const bin = join(harness, 'bin');
+  const bin = join(sandbox, 'bin');
   mkdirSync(bin, { recursive: true });
-  const argv = join(harness, 'argv');
+  const argv = join(sandbox, 'argv');
   // NUL-DELIMITED, because one of these arguments is the composed system
   // prompt and it is MULTI-LINE. A newline-separated sink read the prompt back
   // as a dozen unrelated arguments, which is the shape that would let a
@@ -677,6 +697,7 @@ function deployedHome(defs: Record<string, string>): {
     { mode: 0o755 },
   );
   return {
+    sandbox,
     harness,
     bin,
     argv,
@@ -692,22 +713,19 @@ function recordedArgv(at: string): string[] {
   return readFileSync(at, 'utf-8').split('\0').slice(0, -1);
 }
 
-/** Run the deployed launcher through `entry` and report what a shell saw. */
+/** Run the deployed launcher through `entry` and report what a shell saw —
+ *  stderr included on success, where a degraded skill is reported. */
 function launch(
   bin: string,
   entry: string,
   args: readonly string[] = [],
 ): { status: number; stderr: string } {
-  try {
-    execFileSync(entry, [...args], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH ?? ''}` },
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
-    return { status: 0, stderr: '' };
-  } catch (e) {
-    const err = e as { status?: number; stderr?: Buffer };
-    return { status: err.status ?? -1, stderr: String(err.stderr ?? '') };
-  }
+  const r = spawnSync(entry, [...args], {
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH ?? ''}` },
+    stdio: ['ignore', 'ignore', 'pipe'],
+    encoding: 'utf-8',
+  });
+  return { status: r.status ?? -1, stderr: r.stderr };
 }
 
 describe('omp launch spec', () => {
@@ -809,59 +827,122 @@ describe('omp launch spec', () => {
     expect(stderr).toContain(join(harness, ompAgentRel('ghost')));
   });
 
-  it('turns `autoloadSkills` into reading a MAIN session can act on', () => {
-    // omp honours the field ONLY for a spawned subagent, so one definition
-    // would otherwise mean two different things depending on how it was
-    // reached.
-    //
-    // BOTH SPELLINGS, because both arrive here. An operator hand-editing a
-    // definition writes YAML's BLOCK sequence; `agentToOmpMd` emits the FLOW
-    // sequence from the `skills` projection hands it. A launcher that read only
-    // one of them would drop the declaration silently, which is
-    // indistinguishable from the agent never having made it.
-    const { bin, argv, launcher } = deployedHome({
-      scribe: [
-        '---',
-        'name: scribe',
-        'description: "writes"',
-        'autoloadSkills:',
-        '  - probe',
-        '  - signify',
-        '---',
-        '',
-        'BODY',
-        '',
-      ].join('\n'),
-      mav: agentToOmpMd(
-        { ...(AGENT as object), skills: ['design', 'deliver'] } as never,
-        CTX,
-      ),
+  describe('a MAIN session starts with its skills’ bodies, as a spawn does', () => {
+    // omp honours `autoloadSkills` ONLY for a spawned subagent, which starts
+    // with each skill's body injected. The launcher gives a main session the
+    // same start, so one definition means one thing however it is reached.
+
+    /** A SKILL.md as projection writes one: front matter, then the body. */
+    const skillMd = (name: string, body: string) =>
+      `---\nname: ${name}\ndescription: the ${name} skill\n---\n\n${body}\n`;
+    const SKILLS = {
+      design: skillMd('design', '# Design\n\nDESIGN-BODY'),
+      deliver: skillMd('deliver', '# Deliver\n\nDELIVER-BODY'),
+      probe: skillMd('probe', '# Probe\n\nPROBE-BODY'),
+      signify: skillMd('signify', '# Signify\n\nSIGNIFY-BODY'),
+    };
+    const SCRIBE = [
+      '---',
+      'name: scribe',
+      'description: "writes"',
+      'autoloadSkills:',
+      '  - signify',
+      '  - probe',
+      '---',
+      '',
+      'BODY',
+      '',
+    ].join('\n');
+    const MAV = agentToOmpMd(
+      { ...(AGENT as object), skills: ['deliver', 'design'] } as never,
+      CTX,
+    );
+
+    /** Launch `agent` in `home`; its exit, stderr and appended prompt. */
+    const run = (home: DeployedHome, agent: string) => {
+      const { status, stderr } = launch(home.bin, home.launcher, [agent]);
+      const args = recordedArgv(home.argv);
+      const prompt = args[args.indexOf('--append-system-prompt') + 1] as string;
+      return { status, stderr, prompt };
+    };
+    /** The section `# Skill: <name>` must open, exactly. */
+    const section = (name: string, base: string, body: string) =>
+      `\n\n# Skill: ${name}\n\nBase directory: ${base}\n\n${body}`;
+
+    it('inlines each body in listed order, for BOTH spellings', () => {
+      // BOTH SPELLINGS, because both arrive here. An operator hand-editing a
+      // definition writes YAML's BLOCK sequence; `agentToOmpMd` emits the FLOW
+      // sequence from the `skills` projection hands it. A launcher that read
+      // only one of them would drop the list silently.
+      const home = deployedHome({ scribe: SCRIBE, mav: MAV }, SKILLS);
+      const root = join(home.sandbox, '.agents', 'skills');
+
+      const block = run(home, 'scribe');
+      expect(block).toMatchObject({ status: 0, stderr: '' });
+      expect(block.prompt).toContain(
+        `BODY${section('signify', join(root, 'signify'), '# Signify\n\nSIGNIFY-BODY')}${section('probe', join(root, 'probe'), '# Probe\n\nPROBE-BODY')}`,
+      );
+
+      // THE PROJECTOR'S OWN BYTES: what forge wrote out of an agent's
+      // `skills` is what the launcher must read back in.
+      const flow = run(home, 'mav');
+      expect(flow).toMatchObject({ status: 0, stderr: '' });
+      expect(flow.prompt).toContain(
+        `${section('deliver', join(root, 'deliver'), '# Deliver\n\nDELIVER-BODY')}${section('design', join(root, 'design'), '# Design\n\nDESIGN-BODY')}`,
+      );
+      expect(flow.prompt).toContain('Hero archetype of end-to-end delivery');
+      // Neither the definition's front matter nor any skill's reaches the model.
+      for (const { prompt } of [block, flow]) {
+        expect(prompt).not.toContain('autoloadSkills');
+        expect(prompt).not.toMatch(/^(name|description):/m);
+        expect(prompt).not.toContain('skill://');
+        expect(prompt).not.toContain('## Required reading');
+      }
     });
 
-    launch(bin, launcher, ['scribe']);
-    const block = recordedArgv(argv);
-    const blockPrompt = block[
-      block.indexOf('--append-system-prompt') + 1
-    ] as string;
-    expect(blockPrompt).toContain('- `skill://probe`');
-    expect(blockPrompt).toContain('- `skill://signify`');
-    // The body survives the extraction rather than being replaced by it.
-    expect(blockPrompt).toContain('BODY');
+    it('prefers omp’s own `skills/` over the `.agents` copy, as omp does', () => {
+      // omp's native root outranks the `.agents` provider (100 over 70), so a
+      // same-name skill there is the one a spawn would get.
+      const home = deployedHome({ scribe: SCRIBE }, SKILLS, {
+        probe: skillMd('probe', 'NATIVE-PROBE'),
+      });
+      const { prompt } = run(home, 'scribe');
+      expect(prompt).toContain(
+        section(
+          'probe',
+          join(home.harness, OMP_SESSION_DIR, 'skills', 'probe'),
+          'NATIVE-PROBE',
+        ),
+      );
+      expect(prompt).not.toContain('PROBE-BODY');
+    });
 
-    // THE PROJECTOR'S OWN BYTES, end to end: the producing half now exists, so
-    // what forge wrote out of an agent's `skills` is what the launcher must read
-    // back in. Fed a hand-written sample only, this leg would still pass on the
-    // day the two halves stopped agreeing on the spelling.
-    launch(bin, launcher, ['mav']);
-    const flow = recordedArgv(argv);
-    const flowPrompt = flow[
-      flow.indexOf('--append-system-prompt') + 1
-    ] as string;
-    expect(flowPrompt).toContain('- `skill://design`');
-    expect(flowPrompt).toContain('- `skill://deliver`');
-    expect(flowPrompt).toContain('Hero archetype of end-to-end delivery');
-    // …and the key itself never reaches the model as literal text.
-    expect(flowPrompt).not.toContain('autoloadSkills');
+    it('degrades a skill found nowhere to its reference, and says so', () => {
+      // Never dropped in silence: the name still reaches the model, and the
+      // operator is told which skill, for which agent, before omp starts.
+      const { probe: _, ...withoutProbe } = SKILLS;
+      const home = deployedHome({ scribe: SCRIBE }, withoutProbe);
+      const { status, stderr, prompt } = run(home, 'scribe');
+      expect(status).toBe(0);
+      const lines = stderr.split('\n').filter(Boolean);
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^omp-agent:/);
+      expect(lines[0]).toContain('scribe');
+      expect(lines[0]).toContain('probe');
+      expect(prompt).toContain('# Skill: signify');
+      expect(prompt).not.toContain('# Skill: probe');
+      expect(prompt).toMatch(
+        /\n## Required reading\n[\s\S]*\n- `skill:\/\/probe`$/,
+      );
+    });
+
+    it('adds nothing for a definition without `autoloadSkills`', () => {
+      const home = deployedHome({ mav: agentToOmpMd(AGENT, CTX) }, SKILLS);
+      const { status, stderr, prompt } = run(home, 'mav');
+      expect({ status, stderr }).toEqual({ status: 0, stderr: '' });
+      expect(prompt).not.toContain('# Skill:');
+      expect(prompt).not.toContain('## Required reading');
+    });
   });
 
   it('the overlay names the DIRECTORY, so it covers the guardrail module too', () => {
