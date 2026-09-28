@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MHEF3Y11JBV8HS85J1E97V",
+    "entity": "01M3MHEF3Y11JBV8HS85J1E97T",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T17:36:49.278Z",
+    "reason": "Residual from the final assay of plan record-store, beside the path, so filed rather than fixed",
+    "cause": "deliver: file(d) at the close of plan record-store"
+  },
+  "payload": {
+    "title": "domain interface code homed under plan",
+    "kind": "idea",
+    "topic": "structure",
+    "body": "The reading and argument parsing shared by design, plan and note live under the plan capability. They belong to the domain interface as a whole, not to one domain.",
+    "blocks": []
+  }
+}

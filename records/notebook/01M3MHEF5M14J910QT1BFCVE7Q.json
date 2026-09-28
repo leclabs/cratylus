@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MHEF5M14J910QT1BFCVE7Q",
+    "entity": "01M3MHEF5M14J910QT1BFCVE7P",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T17:36:49.332Z",
+    "reason": "Residual from the final assay of plan record-store, beside the path, so filed rather than fixed",
+    "cause": "deliver: file(d) at the close of plan record-store"
+  },
+  "payload": {
+    "title": "notebook directory stated twice",
+    "kind": "idea",
+    "topic": "structure",
+    "body": "The forge marker gate spells the notebook's records directory itself, because the store stays internal to the runtime; renaming the directory would leave the gate's exemption stale with nothing failing.",
+    "blocks": []
+  }
+}

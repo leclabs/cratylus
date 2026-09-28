@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MHEEYHGVXA4M0DZFWCG91K",
+    "entity": "01M3MHEEYHGVXA4M0DZFWCG91J",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T17:36:49.105Z",
+    "reason": "Residual from the final assay of plan record-store, beside the path, so filed rather than fixed",
+    "cause": "deliver: file(d) at the close of plan record-store"
+  },
+  "payload": {
+    "title": "plan-level contract has no home",
+    "kind": "question",
+    "topic": "plan",
+    "body": "A plan's payload is its name, the concepts it realizes and its state. The prose a planner writes for a whole plan (its contract, census and findings) has no home in the plan records, so unit specs that cite it point into git history. Should a plan carry a contract as part of its whole state?",
+    "blocks": []
+  }
+}

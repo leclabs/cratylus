@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3MHE1F5ZXMX61D1Z1ERCY1J",
+    "entity": "01M3MGEXKAT10TZDRDJ8BW5KXS",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGFAEHH8NREQKAQS5PDG60"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T17:36:35.301Z",
+    "reason": "Accepted: verified by its executor, validated against C on the assay at 954e7814 (unachieved set empty), pnpm verify green",
+    "cause": "deliver: judge of plan-cutover"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "plan-cutover",
+      "intent": "**Wave 4 (terminal).** Realizes `plan` — the clean cutover of the stored plan layout (§ Boundaries).\n\n\"The plan-state folders, the plan markers and the plan-set tooling the `plan` capability replaces\nare deleted, together with the plan skill's `mirror` law, the runtime `carryOn` capability that\nreads them, and memory's handling of plan paths. The existing plans under `plans/` are stale and are\nremoved, not migrated.\" Every caller is migrated; nothing is captured as notes.\n\n1. **The layout and its tooling.** Delete `packages/canon/src/plan-states.ts`,\n   `packages/canon/tooling/plan-set.ts`, `plan-set-cli.ts`, `plan-set/plan-set.sh`,\n   `packages/canon/test/plan-set.test.ts`; the `plan-set` and `plan` scripts of\n   `packages/canon/package.json` and the root `plan` script.\n2. **`plans/` entirely.** `plans/omp-harness/**` (with `.bound` and `.ruling-owed`), the two loose\n   plan-mode files at `plans/`'s root, and this plan, `plans/record-store/**` — removed, not moved,\n   not migrated (`PLAN.md` N5). This unit is accepted on its commit.\n3. **The runtime `carryOn` capability.** Its capability directory, port, test, keyspace and\n   `CapabilityPort` members, `RuntimePlugin` field, `main.ts` route, barrel export, README rows,\n   canon's `RUNTIME_CAPABILITIES` member, and the comments naming its gate.\n4. **Memory's handling of plan paths.** The `plan-path` class of `audit.ts`, `PLAN.md` among\n   `node.ts`'s `DEFAULT_MARKERS`, the prose naming them (`audit.ts`, `node.ts`, `cli.ts` help,\n   `seeds.ts`, `runtime/src/ports/memory.ts`), and the tests built on them: the `plan-path` legs of\n   `audit.test.ts`, the `PLAN.md` precedence leg of `node.test.ts`, and\n   `session-isolation-integration.test.ts`, whose whole scenario is the retired state folders and\n   `.owner` (delete it, or rebuild its session-isolation claim on a scenario that names no plan).\n   `cli.test.ts`'s `plan:demo/x` is an inert scope tag and stays.\n5. **Gates whose subject was the layout.** `command-veracity.test.ts` loses its PLAN-PATH and\n   DESIGNATOR legs, its `plan-set` import and its `plans/**` carve-outs, and gains an exemption for\n   the records root: records are immutable history, so a gate over their text could only be\n   satisfied by never recording (the reason `plans/*/completed/**` was exempt).\n   `signify-marker-class.test.ts`'s sanctioned home for recorded debt moves from `plans/` to the\n   notebook's records. `reader-register.ts` and `reader-reach.test.ts` retire the `task-file` and\n   `plan-mirror` artifact classes and their fixtures. `gate-convicts.test.ts` unregisters every\n   deleted test file and drops the orphan comment beside the `capability-keyspace` row that\n   describes a deleted carry-on cell test.\n6. **Live claims about the layout.** The `turbo.json` test comment, the `plans/` symlink notes in\n   `.husky/pre-commit` and `.prettierignore`, the `gates.yml` `fetch-depth` rationale (the\n   designator oracle is gone; the immutability gate's range diff is what needs history now), the\n   header of `docs/research/cold-decode-as-a-skill.md`, the task-file path cited in\n   `fixtures/generated/delegation-prompt.md`, and the claims that `deploy` writes\n   `<target>/plans/founding/` at `command-veracity.test.ts:108,427,772` (measured after\n   `scaffold-cutover` landed; false since it did). The consumer claim at `plan-states.ts:2-4` — that\n   the canon project template sources its `planStates` there — went false with `scaffold-cutover`\n   too, and dies with the file. Measured-incident comments recording a past defect in\n   `plan-set.ts` (`positional-path.test.ts`, `packages/tooling/src/repo-root.ts`,\n   `symbol-altitude.test.ts`) are history, not claims, and stay unless one reads as present tense.\n\nDeps: `note-skill`, `trio-skill-routing` (the `plan` skill no longer imports `plan-states.ts`; its\n`mirror` law is gone), `design-migration`, `scaffold-cutover` (the scaffold no longer imports it) —\nand through them every other unit: this one deletes the plan's own files, so it runs last.",
+      "static": [
+        "`git show 9e7730da:docs/design/record-store.md` § Boundaries.",
+        "`PLAN.md` § Census — the measured reference sets and their commands; re-run them at dispatch.",
+        "`.github/workflows/gates.yml`, `turbo.json`, `.husky/pre-commit`, `.prettierignore`.",
+        "`packages/canon/test/{command-veracity,gate-convicts,reader-reach}.test.ts`,\n`packages/canon/test/reader-register.ts`, `packages/forge/test/catalog/signify-marker-class.test.ts`."
+      ],
+      "deps": [
+        "01M3MGEWHWY3R35E34DE3VPNR0",
+        "01M3MGEXAR8NT41X52710AVA7M",
+        "01M3MGEXDMK3G31P8C0J2QPTHY",
+        "01M3MGEXGE9KYHC5P6J90H2FAG"
+      ],
+      "outputs": [
+        "Deleted: `packages/canon/src/plan-states.ts`, `packages/canon/tooling/plan-set.ts`,\n`packages/canon/tooling/plan-set-cli.ts`, `packages/canon/tooling/plan-set/**`,\n`packages/canon/test/plan-set.test.ts`,\n`packages/canon/test/fixtures/generated/{plan-mirror,task-file,task-file-dep}.md`,\n`packages/runtime/src/capabilities/carry-on/**`, `packages/runtime/src/ports/carry-on.ts`,\n`packages/runtime/test/carry-on.test.ts`, `plans/**`",
+        "Edited, canon: `packages/canon/src/manifest.ts`, `packages/canon/package.json`,\n`packages/canon/src/dimensions/autonomy/human-on-the-loop.ts` (its comment names the gate),\n`packages/canon/test/{command-veracity,gate-convicts,reader-reach,capability-keyspace,bin-name-single-home,runtime-shim}.test.ts`,\n`packages/canon/test/reader-register.ts`, `packages/canon/test/fixtures/generated/delegation-prompt.md`;\npermitted only where a line reads as a live claim: `packages/canon/test/positional-path.test.ts`,\n`packages/canon/test/symbol-altitude.test.ts`, `packages/tooling/src/repo-root.ts`",
+        "Edited, runtime: `packages/runtime/src/{loader,plugin,main,index,bin-name}.ts`,\n`packages/runtime/src/ports/memory.ts`, `packages/runtime/README.md`",
+        "Edited, memory: `packages/memory/src/{audit,node,cli,seeds}.ts`,\n`packages/memory/test/{audit,node}.test.ts`,\n`packages/memory/test/session-isolation-integration.test.ts` (deleted or rebuilt)",
+        "Edited, forge and cli: `packages/forge/test/catalog/signify-marker-class.test.ts`,\n`packages/cli/README.md`",
+        "Edited, root: `package.json`, `turbo.json`, `.husky/pre-commit`, `.prettierignore`,\n`.github/workflows/gates.yml`, `docs/research/cold-decode-as-a-skill.md`",
+        "`.changeset/plan-cutover.md`"
+      ],
+      "accept": [
+        "`git ls-files plans` prints nothing (at `c501e002`: 14 files besides this plan's own).",
+        "`git grep -nE \"PLAN_STATES|PLAN_FRONTIER|PLAN_MARKERS|SUPERSEDED_MARKER|from '[^']*(plan-set|plan-states)[^']*'|tooling/plan-set\" -- . ':!*CHANGELOG.md' ':!<records root>'`\nprints nothing; the same command with `-c`, run at `c501e002`, printed a non-zero total (print\nboth). And `git grep -n \"plan-states\" -- packages/canon/tooling` prints nothing — moved here from\n`scaffold-cutover`, since it holds only once `plan-set.ts` (which hit at lines 2 and 44 when\n`scaffold-cutover` landed) is deleted.",
+        "The stale claims named in Intent step 6 are gone, each checked by itself:\n(a) `git ls-files packages/canon/src/plan-states.ts` prints nothing, which removes the consumer\nclaim at its lines 2–4 (the canon project template no longer sources `planStates` there);\n(b) `git grep -n \"plans/founding\" -- packages/canon/test/command-veracity.test.ts` prints nothing\n(when `scaffold-cutover` landed it hit lines 108, 427 and 772), and\n`git grep -n \"plans/founding\" -- packages` prints nothing.",
+        "`carryOn` is gone: `git ls-files packages/runtime/src/capabilities/carry-on packages/runtime/src/ports/carry-on.ts`\nprints nothing; `git grep -n \"carryOn\" -- packages/runtime/src packages/canon/src/manifest.ts packages/cli`\nprints nothing (at `c501e002`: the capability, the manifest member, the CLI README); and\n`git grep -nE \"PlanLayout|--plan-root|--states\" -- packages` prints nothing. The `carry-on`\nskill's `carryOn` binding and its history comment are the cell, not the capability, and stay.",
+        "Memory's plan-path handling is gone:\n`git grep -nE \"plan-path|'PLAN\\.md'|PLAN\\.md\" -- packages/memory/src packages/runtime/src/ports/memory.ts`\nprints nothing (at `c501e002`: `audit.ts`, `node.ts`, `cli.ts`, `ports/memory.ts`).",
+        "`pnpm --filter @cratylus/canon test -- capability-keyspace gate-convicts command-veracity reader-reach`,\n`pnpm --filter @cratylus/memory test` and `pnpm --filter @cratylus/forge test -- signify-marker-class`\npass.",
+        "Sole: plan state has one home, the plan domain — criteria 1–5 together are its check.",
+        "`pnpm verify` passes.",
+        "`.changeset/plan-cutover.md` names every package this unit's paths changed."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3MEKHA5W8RJBDX72X37FZVK",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

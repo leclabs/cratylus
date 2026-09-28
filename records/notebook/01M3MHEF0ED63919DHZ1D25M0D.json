@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MHEF0ED63919DHZ1D25M0D",
+    "entity": "01M3MHEF0ED63919DHZ1D25M0C",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect",
+    "time": "2026-09-28T17:36:49.166Z",
+    "reason": "Residual from the final assay of plan record-store, beside the path, so filed rather than fixed",
+    "cause": "deliver: file(d) at the close of plan record-store"
+  },
+  "payload": {
+    "title": "unit-less closure concepts",
+    "kind": "question",
+    "topic": "deliver",
+    "body": "Twelve primitives of the records design have no unit of their own; the record-store unit realizes their closure. Deliver's rule that a concept nothing builds is surfaced should state whether a composite's unit covers its closure.",
+    "blocks": []
+  }
+}
