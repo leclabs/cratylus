@@ -1,5 +1,232 @@
 # @cratylus/canon
 
+## 0.5.0
+
+### Minor Changes
+
+- 43952d1: Every writing position now carries what a commit is: durability, never acceptance
+
+  `file-ops ⟨filesystem · vcs⟩` states the commit duty in its `vcs` factor. A commit
+  is durability and never acceptance; on an isolated branch or worktree every
+  coherent step is committed with the red named in the message; a writer commits
+  only its own paths by pathspec, formatter first on those paths; and no dispatch
+  withholds a writer's commit. The `architect`, `planner` and `implementer` roles
+  hold it, so every projected agent except `assayer` carries it.
+
+  Measured before the change: a dispatcher with no commit rule in reach withheld
+  every lane's commit until the unit was green in 18 of 18 dispatches, whether the
+  design/deliver skills were present, amended or absent. Measured after: 6 of 6
+  dispatches let every lane commit at coherent steps, and 6 of 6 still did when a
+  repository rule gated commits on a green suite.
+
+- 21e41e1: Add the `note` skill: the notebook's intents, routed to the `note` capability
+
+  The cell declares `runtime: { capability: 'note' }`, so projection emits its
+  `scripts/note.mjs` shim, and it scripts the landed verbs exactly: `show`,
+  `capture`, `revise`, `retract` and `reconcile`, each write with `--author`,
+  `--reason` and `--cause`. It is the one home of the three kinds (idea, question,
+  decision), which the runtime carries as labels it never interprets. A note is
+  addressed by its title, one live note per title, and a change is a revise,
+  never an edit in place. Anyone may write a note and capture has no admission bar.
+  Any live note naming a plan or a unit (`u of plan p`) is an owed ruling whatever
+  its kind, and a note a merge left in competing versions blocks whatever any of
+  them blocks until it is reconciled.
+
+- bf103d9: Plans live only in the plan records; the plan-folder layout is gone
+
+  The state folders, the plan markers and the tooling that read them are
+  deleted: canon's `plan-states.ts` (`PLAN_STATES`, `PLAN_FRONTIER`,
+  `PLAN_MARKERS`), `tooling/plan-set.ts` and its CLI and shell mechanism, and the
+  `plan-set` and `plan` scripts. Plan state has one home, the `plan` capability.
+
+  **Breaking.** The runtime `carryOn` capability is removed: its verb surface,
+  the `CarryOnHost` port, the `carryOn` member of `CAPABILITIES` and canon's
+  `RUNTIME_CAPABILITIES`, the `RuntimePlugin.carryOn` field and the `carryOn`
+  route. The `carry-on` skill is unchanged; it declares no capability.
+
+  **Breaking.** Memory no longer treats plans specially. `PLAN.md` is not a
+  boundary marker, so a directory holding one resolves like any other, and the
+  audit's `plan-path` marker class is gone.
+
+  `command-veracity` no longer carries the plan-path and designator laws, whose
+  subject was the layout. It exempts the records root and changelogs as history.
+  The owed-signification marker gate's sanctioned home for recorded debt is now
+  the notebook's records.
+
+- a12cf83: The project scaffold no longer lays down a `plans/` tree
+
+  A plan is an entity whose lifecycle (proposed, bound, closed) is recorded in and read
+  from the `plan` domain, so there is no folder layout to scaffold. `scaffoldProject`
+  now writes only the projected culture and `AGENTS.md`; it no longer creates
+  `<target>/plans/founding/{PLAN.md, pending, ready, active, completed}`.
+
+  Breaking for `@cratylus/forge`: `ProjectTemplate` loses `planMd` and `planStates`
+  and carries only `agentsMd`, and `ScaffoldProjectResult` loses `planDir`. A corpus
+  that supplied its own template drops those two fields.
+
+  In `@cratylus/canon`, the project template no longer imports the plan-state set, and
+  the Work-tracking section of the scaffolded `AGENTS.md` says work is planned with the
+  `plan` skill instead of describing a stored layout. The default template in
+  `@cratylus/forge` names no skill: its Work-tracking section is gone, since the engine
+  carries no corpus doctrine.
+
+- a66800e: The design, plan and deliver skills route to their domain capabilities
+
+  `design` declares `runtime: { capability: 'design' }` and scripts its verbs
+  through `scripts/design.mjs`: show, define, amend, retract, reconcile and trace.
+  It states the design's laws. There is one live concept per anchor, and a
+  withdrawn concept keeps its anchor. Factors are acyclic and name live concepts.
+  Every gloss and every reason is non-empty. A supersession is a new version of
+  the same concept, and a concept that becomes another is a retraction plus a
+  definition. Reconciling the design is the architect's alone. The design no
+  longer mentions plans, and its piece digest is gone.
+
+  `plan` declares `runtime: { capability: 'plan', configuration }` and is the one
+  home of the plan and unit lifecycle states. They reach the runtime as the
+  configuration deploy emits. `plan-states.ts` no longer feeds the formal block.
+  Plan verbs are scripted through `scripts/plan.mjs`. The block states the plan
+  and unit laws. At most one plan is bound, and closed is final. A unit realizes
+  the concept its pin names. A unit is worked only while its plan is bound: it is
+  ready when its plan is bound, its dependencies are satisfied and no owed note
+  blocks it or its plan; the note skill defines `owed`, and plan borrows it.
+  A reconcile gives each field the versions disagree on. A pin is retaken only by `revise --repin --reason`, and a unit
+  whose pin has moved is drifted or suspect. The `mirror` law is deleted.
+
+  `deliver` borrows `advance`, `bind`, `close`, `bound` and `ready` from `plan`.
+  It records acceptance by advancing a unit, and it closes a finished plan where
+  it used to retire one. It carries the law that a concept nothing builds is
+  surfaced. It files a defect beside the path with the note skill's `capture`,
+  naming the unit `u of plan p`, and borrows `c`, `unit` and `self` from their
+  homes.
+
+### Patch Changes
+
+- 844ef6b: `deliver` no longer restates the amendment/acceptance separation law. It was
+  stated in both `design` ("two acts") and `deliver` ("two commits"), one law with
+  two homes and two wordings. `design` is its home; `deliver` reaches it through
+  `amend(C) @ design` and drops its now-unused `commit` and `accepts` imports.
+- 52c73fd: The runtime gains the `design`, `plan` and `note` capabilities: the one way agents and users meet
+  notes, design and plans
+
+  `@cratylus/runtime` ships three capabilities, each named for its domain and speaking its verbs:
+  `design` shows the lattice or one concept, and defines, amends, retracts, reconciles and traces a
+  concept; `plan` shows the bound plan, any plan named, or one unit, adds, advances and retracts
+  units, revises a unit or a plan, binds and closes a plan, and reconciles either, the first `add`
+  naming a new plan proposing it with its concepts; `note` shows the notebook or one note, and
+  captures, revises, retracts and reconciles notes. `cratylus <capability> <verb>` routes each ahead
+  of the discovered dispatch, and their ports (`DesignHost`, `PlanHost`, `NoteHost`) join the `.`
+  barrel, the capability keyspace and `RuntimePlugin`. Every input names entities by name, and every
+  output is the domain's view. An identity is printed and accepted only beside a name a merge left
+  held by more than one entity, and the form printed is the form accepted; which holder a name
+  addresses is decided in one place, the record store's `names.ts`, for all three domains. Refusals
+  speak only the domains' words. A write is all or nothing: its writes are staged (`StagedStore`),
+  checked and rendered before any reaches disk. The plan lifecycle is read from `configuration.plan`
+  in the host runtime config; `plan` refuses without it, naming the deploy, while `design show` still
+  shows the lattice and says the plans standing on it wait for a deploy. Every view's header says when
+  it includes uncommitted writes.
+
+  The capabilities compose the domain modules. A unit is pinned on add, with the design's closure
+  wired into the pin, and re-pinned only by a revise or reconcile that says `--repin` with a reason,
+  so editing a spec never clears a drift. A unit realizes one of its plan's concepts, and a merge that
+  breaks this is listed as incoherence. A closed plan and its units are never written again and show
+  no frontier; a diverged plan takes no new unit. A unit's state moves forward only while its plan is
+  bound: `plan advance` refuses a unit of a proposed plan, which is still authored and revised. A unit
+  is ready, or on the frontier, only while its plan is bound, every dependency is done and live, and
+  no owed ruling names it or its plan; an owed ruling naming a plan refuses binding it. `plan show
+<plan>` shows any plan whole, with its units. The repair rule, by which a write is refused only when
+  it introduces a violation, now has one home in the record store, and so does the canonical order a
+  set-valued payload field is written in, so the same set written in two orders on two branches
+  converges. A unit's dependencies and a note's `blocks` now refuse a member named twice. The view
+  gives a diverged concept, unit or note a line in its place in the whole view, marked; names which
+  head of a diverged item is a retraction and what it withdrew; names a withdrawn reference's kind
+  (`factor` or `dependency`); counts each shown plan apart in the header; lists a plan standing on a
+  diverged concept once; and renders a concept's trace.
+
+  Every name a view prints addresses one entity: where no plan is in view a unit is printed with its
+  plan, `u of plan p`, and that form is accepted wherever a unit is named, so a note blocks a unit by
+  it (the note capability's `--plan` flag is gone). What must be resolved first names each item's
+  cause and what moved (`drifted: v — same diverged since pinned`, `suspect: u — beneath leaf, base
+amended since pinned`), lists a plan view's own items only, and never asks of a closed plan's frozen
+  units. A unit realizing a concept its plan does not is an incoherence a merge can leave and the
+  repair rule repairs. A diverged plan reads as diverged wherever it is named, a diverged unit is
+  joined in the design's cross-reference, and each diverged version shows who wrote it and when, drawn
+  in full where summaries would print alike. When the store itself fails the capability says so
+  plainly — the directory is outside a repository, or a stored entry is damaged, naming its path to
+  restore.
+
+  `@cratylus/canon`'s `RUNTIME_CAPABILITIES` gains `design`, `plan` and `note`.
+
+- 7b71bc8: The record store's immutability gate refuses a change that modifies or deletes a record, at commit and in CI
+
+  `@cratylus/runtime` gains the immutability gate, the one enforced law of the record store. A
+  change under the records root whose git status is not an addition (modified, deleted, renamed or
+  type-changed) is refused, and the refusal names every offending path. Additions pass, paths outside
+  the root are ignored, and a branch merge, which only adds records, passes. The gate reads the
+  records root from the store's one declaration and is internal like the store: it is exported
+  through neither the `.` barrel nor a subpath, and runs from source through the package's
+  `immutability-gate` script (`tsx` is a new dev dependency). The pre-commit hook runs it over the
+  staged changes. The gates workflow runs it over the pushed range (a pull request's commits, or a
+  push's `before` to `after`), judging every commit against each of its parents, so a later commit
+  cannot mask an earlier edit: a record added then edited, or edited then restored, is refused. A
+  push is also read at its endpoints: a record present at `before` that `after` does not hold
+  unchanged (bytes, mode, presence) is refused, so a force-push or an amend cannot drop or rewrite a
+  record that no commit of the new range modifies or deletes.
+
+  `@cratylus/canon`: the test registry classifies the new immutability-gate test under `runtime`.
+
+- 36a0511: Capability configuration travels to the runtime the way the event vocabulary does
+
+  A skill's runtime face (`SkillDeploy.runtime`) may now carry `configuration`, a
+  `JsonValue` the capability receives, with no opinion in `@cratylus/schema` about
+  any capability's keys. `cratylus deploy` and `cratylus install` gather it from
+  every skill of the resolved plugin set and emit it into the host runtime config
+  keyed by capability, beside `events`: regenerated on every run,
+  harness-independent, and refused when two skills configure one capability. The
+  operator-owned `capabilities` field keeps its preservation rule.
+
+  Deploy now derives the event vocabulary and the configuration from one plugin
+  set: `runDeploy`'s `events` option is replaced by `plugins`, which a caller that
+  already holds the corpus (as `install` does) passes instead of a config path. The
+  skills rendered by projection and the skills whose configuration is emitted come
+  from one resolution of the plugin set. `loadRuntimeConfig` lifts the
+  block as `RuntimeConfig.configuration`; a config carrying only configuration is a
+  real config, and a malformed block is ignored without wedging the load. A
+  capability whose entry is absent must refuse and say so, never fall back to a set
+  of its own.
+
+  `@cratylus/canon`'s event-vocabulary gate now holds the configuration's round
+  trip across schema, forge and runtime, including a leg that fails when a member
+  is dropped.
+
+- e2db96f: The runtime gains the record store, and the one ULID implementation moves into the runtime
+
+  `@cratylus/runtime` holds records as files in the repository: `records/<domain>/<record id>.json`,
+  one file per record, each an envelope (record id, entity, operation, the record ids it supersedes,
+  author, time, reason, cause) and a whole-state payload. A write whose file exists refuses, and a
+  supersession or retraction refuses to name anything but a current head of its own entity, so one
+  branch's history stays linear. The fold computes each entity's heads at the moment of the read and
+  persists nothing. A head is a version or a retraction that no later record names. Heads carrying
+  the same payload have converged and read as one, and a later write names every one of them. An
+  entity whose heads read as one is settled: live on versions, withdrawn on retractions, and a
+  supersession naming the retraction reinstates the entity. Heads whose payloads differ are
+  divergence, which only a merge produces (two versions, or a version and a retraction). It is
+  reported, never resolved by picking one, and a reconciliation writes one version superseding every
+  head. Incoherence (a reference to a withdrawn entity, or a
+  cycle) is reported over a reference relation the caller supplies. A branch merge is the union of
+  files and never conflicts. The store is internal: it is exported through neither the `.` barrel
+  nor a subpath.
+
+  `@cratylus/runtime/ulid` is a new subpath carrying `ulid`, `monotonicFactory`, `decodeTime` and
+  `isValidUlid`, moved unchanged from `@cratylus/memory`, which now imports it from there. The
+  record store mints every record id from it.
+
+  `@cratylus/canon`: the test registry classifies the moved `ulid` test and the new record-store
+  test under `runtime`.
+
+- Updated dependencies [36a0511]
+- Updated dependencies [859d0fa]
+  - @cratylus/schema@0.3.0
+
 ## 0.4.0
 
 ### Minor Changes
