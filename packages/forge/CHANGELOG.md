@@ -1,5 +1,136 @@
 # @cratylus/forge
 
+## 0.7.0
+
+### Minor Changes
+
+- b34b1c5: Session scope belongs to the capability, not to every runtime shim
+
+  `@cratylus/runtime/capability` declares every capability once with whether its
+  state belongs to one agent session (`SESSION_SCOPED`); `CAPABILITIES` is derived
+  from it. Only `memory` is session-scoped today. A projected shim bridges or
+  demands a session id only for a session-scoped capability, so the `design`,
+  `plan` and `note` shims now forward from any harness, omp included, with no
+  session id. Every generated shim carries a signature line,
+  `// cratylus-shim: <capability>`, and the omp launcher states a route only for a
+  script that carries it. `omp-agent` now inlines no skills under `--no-skills`
+  and warns once when a `--skills` filter is passed.
+
+- 36a0511: Capability configuration travels to the runtime the way the event vocabulary does
+
+  A skill's runtime face (`SkillDeploy.runtime`) may now carry `configuration`, a
+  `JsonValue` the capability receives, with no opinion in `@cratylus/schema` about
+  any capability's keys. `cratylus deploy` and `cratylus install` gather it from
+  every skill of the resolved plugin set and emit it into the host runtime config
+  keyed by capability, beside `events`: regenerated on every run,
+  harness-independent, and refused when two skills configure one capability. The
+  operator-owned `capabilities` field keeps its preservation rule.
+
+  Deploy now derives the event vocabulary and the configuration from one plugin
+  set: `runDeploy`'s `events` option is replaced by `plugins`, which a caller that
+  already holds the corpus (as `install` does) passes instead of a config path. The
+  skills rendered by projection and the skills whose configuration is emitted come
+  from one resolution of the plugin set. `loadRuntimeConfig` lifts the
+  block as `RuntimeConfig.configuration`; a config carrying only configuration is a
+  real config, and a malformed block is ignored without wedging the load. A
+  capability whose entry is absent must refuse and say so, never fall back to a set
+  of its own.
+
+  `@cratylus/canon`'s event-vocabulary gate now holds the configuration's round
+  trip across schema, forge and runtime, including a leg that fails when a member
+  is dropped.
+
+- 85ec0ce: An omp main session starts with its skills' bodies, as a dispatched subagent does
+
+  `omp-agent <name>` used to append only `skill://<name>` references for the
+  definition's `autoloadSkills`. It now asks omp for each, in listed order, with
+  `omp read skill://<name>` run from the launch directory, and inlines the
+  `SKILL.md` omp resolves without its front matter, so user and project roots and
+  omp's own settings all apply. Each skill arrives as a `# Skill: <name>` section
+  that opens with one line per shim, saying the CLI command its route runs as
+  (`scripts/plan.mjs <verb>` runs as `cratylus plan <verb>`), in place of a base
+  directory omp does not expose. A skill omp cannot resolve is named under
+  `## Required reading` instead, and the launcher prints one `omp-agent:` line to
+  stderr for each one. The launcher's doc now names the real size limit, the
+  per-argument `MAX_ARG_STRLEN` of 128 KiB.
+
+- a12cf83: The project scaffold no longer lays down a `plans/` tree
+
+  A plan is an entity whose lifecycle (proposed, bound, closed) is recorded in and read
+  from the `plan` domain, so there is no folder layout to scaffold. `scaffoldProject`
+  now writes only the projected culture and `AGENTS.md`; it no longer creates
+  `<target>/plans/founding/{PLAN.md, pending, ready, active, completed}`.
+
+  Breaking for `@cratylus/forge`: `ProjectTemplate` loses `planMd` and `planStates`
+  and carries only `agentsMd`, and `ScaffoldProjectResult` loses `planDir`. A corpus
+  that supplied its own template drops those two fields.
+
+  In `@cratylus/canon`, the project template no longer imports the plan-state set, and
+  the Work-tracking section of the scaffolded `AGENTS.md` says work is planned with the
+  `plan` skill instead of describing a stored layout. The default template in
+  `@cratylus/forge` names no skill: its Work-tracking section is gone, since the engine
+  carries no corpus doctrine.
+
+- 859d0fa: Every projected agent is given the closure of its skills over `composition`
+
+  Projection now hands each adapter an agent's declared skills followed by every
+  skill they transitively compose, breadth-first in each cell's declaration order,
+  each name once. `skillClosure`, beside `resolveSkills`, computes it once in
+  `projectPluginSet` against the set's resolved skills, so a later plugin's
+  same-name cell changes it, a name no plugin ships is kept and not expanded, and a
+  composition cycle terminates. Adapters render the list they are handed.
+
+  `HarnessAdapter` gains the required `preloadsSkills`. omp says yes and emits
+  `autoloadSkills` as before. claude says yes and now emits the subagent `skills`
+  front-matter sequence, which Claude Code preloads. codex says no: its agent TOML
+  has no such field, so no key is emitted, the closure ends
+  `developer_instructions` as a `## Required reading` section, and projection
+  warns once per agent given any skills.
+
+  The claude agent front matter now quotes `description`, so a description holding
+  `: ` no longer makes the front matter invalid YAML.
+
+  The `Agent.skills` documentation no longer claims that claude has no equivalent.
+
+### Patch Changes
+
+- bf103d9: Plans live only in the plan records; the plan-folder layout is gone
+
+  The state folders, the plan markers and the tooling that read them are
+  deleted: canon's `plan-states.ts` (`PLAN_STATES`, `PLAN_FRONTIER`,
+  `PLAN_MARKERS`), `tooling/plan-set.ts` and its CLI and shell mechanism, and the
+  `plan-set` and `plan` scripts. Plan state has one home, the `plan` capability.
+
+  **Breaking.** The runtime `carryOn` capability is removed: its verb surface,
+  the `CarryOnHost` port, the `carryOn` member of `CAPABILITIES` and canon's
+  `RUNTIME_CAPABILITIES`, the `RuntimePlugin.carryOn` field and the `carryOn`
+  route. The `carry-on` skill is unchanged; it declares no capability.
+
+  **Breaking.** Memory no longer treats plans specially. `PLAN.md` is not a
+  boundary marker, so a directory holding one resolves like any other, and the
+  audit's `plan-path` marker class is gone.
+
+  `command-veracity` no longer carries the plan-path and designator laws, whose
+  subject was the layout. It exempts the records root and changelogs as history.
+  The owed-signification marker gate's sanctioned home for recorded debt is now
+  the notebook's records.
+
+- Updated dependencies [b34b1c5]
+- Updated dependencies [fcf5db6]
+- Updated dependencies [52c73fd]
+- Updated dependencies [7b71bc8]
+- Updated dependencies [36a0511]
+- Updated dependencies [6f18d1c]
+- Updated dependencies [c5bc3d9]
+- Updated dependencies [bf103d9]
+- Updated dependencies [eeab4cc]
+- Updated dependencies [e2db96f]
+- Updated dependencies [859d0fa]
+- Updated dependencies [0dcbc9a]
+- Updated dependencies [235f77d]
+  - @cratylus/runtime@0.3.0
+  - @cratylus/schema@0.3.0
+
 ## 0.6.0
 
 ### Minor Changes

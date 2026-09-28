@@ -1,5 +1,62 @@
 # @cratylus/invoke
 
+## 0.3.0
+
+### Minor Changes
+
+- 8a906ae: `cratylus design`, `cratylus plan` and `cratylus note`: the design, plans and notebook as computed state
+
+  Three new commands reach the runtime's record capabilities. Each shows its whole domain by default and one item when named (`design show [<concept>]`, `plan show [<plan> | <unit> --plan <p>]`, `note show [<title>]`), and writes through its own verbs: `design define | amend | retract | reconcile | trace`, `plan add | advance | retract | revise | bind | close | reconcile`, and `note capture | revise | retract | reconcile`. Every write carries `--author`, `--reason` and `--cause`. The state is computed from immutable records in the repository at the moment it is read, and nothing is cached.
+
+  **Breaking.** `cratylus carryOn` is removed along with the runtime capability behind it.
+
+### Patch Changes
+
+- bf103d9: Plans live only in the plan records; the plan-folder layout is gone
+
+  The state folders, the plan markers and the tooling that read them are
+  deleted: canon's `plan-states.ts` (`PLAN_STATES`, `PLAN_FRONTIER`,
+  `PLAN_MARKERS`), `tooling/plan-set.ts` and its CLI and shell mechanism, and the
+  `plan-set` and `plan` scripts. Plan state has one home, the `plan` capability.
+
+  **Breaking.** The runtime `carryOn` capability is removed: its verb surface,
+  the `CarryOnHost` port, the `carryOn` member of `CAPABILITIES` and canon's
+  `RUNTIME_CAPABILITIES`, the `RuntimePlugin.carryOn` field and the `carryOn`
+  route. The `carry-on` skill is unchanged; it declares no capability.
+
+  **Breaking.** Memory no longer treats plans specially. `PLAN.md` is not a
+  boundary marker, so a directory holding one resolves like any other, and the
+  audit's `plan-path` marker class is gone.
+
+  `command-veracity` no longer carries the plan-path and designator laws, whose
+  subject was the layout. It exempts the records root and changelogs as history.
+  The owed-signification marker gate's sanctioned home for recorded debt is now
+  the notebook's records.
+
+- Updated dependencies [b34b1c5]
+- Updated dependencies [43952d1]
+- Updated dependencies [844ef6b]
+- Updated dependencies [fcf5db6]
+- Updated dependencies [52c73fd]
+- Updated dependencies [7b71bc8]
+- Updated dependencies [36a0511]
+- Updated dependencies [85ec0ce]
+- Updated dependencies [21e41e1]
+- Updated dependencies [6f18d1c]
+- Updated dependencies [c5bc3d9]
+- Updated dependencies [bf103d9]
+- Updated dependencies [eeab4cc]
+- Updated dependencies [e2db96f]
+- Updated dependencies [a12cf83]
+- Updated dependencies [859d0fa]
+- Updated dependencies [a66800e]
+- Updated dependencies [0dcbc9a]
+- Updated dependencies [235f77d]
+  - @cratylus/runtime@0.3.0
+  - @cratylus/forge@0.7.0
+  - @cratylus/canon@0.5.0
+  - @cratylus/memory@0.2.0
+
 ## 0.2.7
 
 ### Patch Changes
