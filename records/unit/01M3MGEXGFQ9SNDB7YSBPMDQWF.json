@@ -1,0 +1,61 @@
+{
+  "envelope": {
+    "id": "01M3MGEXGFQ9SNDB7YSBPMDQWF",
+    "entity": "01M3MGEXGE9KYHC5P6J90H2FAG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:35.439Z",
+    "reason": "transcribes the unit spec in plans/record-store/completed/design-migration.md into the plan records before plans/ is deleted",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "design-migration",
+      "intent": "**Wave 3.** Realizes `design` — moving C from its bootstrap home into the design records.\n**Executor: the architect.** Only the architect writes the design (`design`'s gloss); this is\ntranscription, but every `define` is a design write.\n\nDefine every concept of the lattice through the `design` capability, giving its anchor, its gloss\nverbatim and its factors by anchor. Define them in factor order, primitives first, because at\n`0c9da09c` every write keeps the design's laws: a factor naming a concept not yet defined (not\nlive) is refused. Every `define` carries a non-empty reason, citing the pinned document and its\ncommit, because an empty reason is refused too. Then read the lattice back against the pinned\ndocument and delete `docs/design/record-store.md`. From here on, C is read with `design`, never\nfrom a file (the design's own bootstrap note).\n\nThe source is always `git show 9e7730da:docs/design/record-store.md`, never the working file.\n\nEach concept is written with the landed surface, exactly:\n`pnpm exec cratylus design define <anchor> --gloss <gloss> [--factors <anchor>]… --author architect --reason <why> --cause <what caused it>`,\nwith `--factors` repeated once per factor and left out for a primitive. The reason and cause cite\n`docs/design/record-store.md` at `9e7730da`.\n\nDeps: `domain-interface`, `immutability-gate` (the records this unit writes are the first the\nrepository holds, and the gate must already guard them)",
+      "static": [
+        "`git show 9e7730da:docs/design/record-store.md` § Lattice (22 concepts at `9e7730da`; re-derive\nwith the command in criterion 1).",
+        "The landed `design` capability (`domain-interface`) and the records root (`record-store`)."
+      ],
+      "deps": [
+        "01M3MGEX58WM3KDS63FG3SSDK3",
+        "01M3MGEX80BAHPC0ZPHNJWJ2AF"
+      ],
+      "outputs": [
+        "the design records under the records root (new files only)",
+        "`docs/design/record-store.md` (deleted)",
+        "No package changes, so no changeset."
+      ],
+      "accept": [
+        "For every anchor listed by\n`git show 9e7730da:docs/design/record-store.md | grep -oE '^- \\*\\*[a-z ]+\\*\\*'`,\n`pnpm exec cratylus design show <anchor>` (after `pnpm build`) exits 0, prints the gloss, and\nlists exactly the anchors on that concept's `Factors:` line in the document (none for a\nprimitive). A script prints `matched n/22` with both numbers read, not typed.",
+        "`pnpm exec cratylus design show` counts 22 live concepts and lists no divergence and no\nincoherence.",
+        "`git ls-files docs/design` prints nothing, and `git grep -l \"^## Lattice\" -- docs` prints\nnothing (at `c501e002` it lists `docs/design/record-store.md`).",
+        "The commit adding the records passed the pre-commit gate, and\n`git show --name-status <that commit>` shows only `A` under the records root.",
+        "Sole: C has one home — criterion 3's second command is its check.",
+        "`pnpm verify` passes."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKH8E3Q8R94A9EFNDE986",
+      "version": "01M3MEKH8E3Q8R94A9EFNDE987",
+      "closure": {
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}

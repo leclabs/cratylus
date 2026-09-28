@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3MGF9740D3V7ABSG6B28GH8",
+    "entity": "01M3MGEX04C98BNFH92C8CG0EY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGEX04C98BNFH92C8CG0EZ"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:47.428Z",
+    "reason": "plans/record-store/completed/pin.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "pin",
+      "intent": "**Wave 1.** Realizes `pin`.\n\nA unit's reference to the concept version it realizes, taken automatically when the unit is\nauthored, and the two readings over it:\n\n- **take** — the concept entity's one head at the moment of authoring, which must be a version;\n  refuses a diverged concept, a withdrawn one (its head a retraction) or an unknown one, since\n  there is no single version to pin;\n- **drifted** — the pinned version is no longer a head: a later version or a retraction now names\n  it;\n- **suspect** — the concept's closure holds a divergence, or a version newer than the one current\n  when the pin was taken (a closure member amended since).\n\nHeads and divergence of design records come from the record store's generic fold over the design\ndomain. The closure is design-specific, so the caller supplies it through a port this module\ndeclares structurally; `domain-interface` wires `design-domain`'s closure into it (PLAN.md\n§ Contract — the lattice's `pin → design` edge is realized at that composition).\n\nIsolation: imports only from `../../record-store/` (never `immutability-gate.ts`), never\n`./plan.ts`, `./unit.ts`, another capability directory, the view or `runtime-config.ts`. The unit\nstores the pin as an opaque value; `unit` does not import this module either.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The\nrecord model (`head`, `divergence`).",
+        "`git show c501e002:packages/canon/src/skills/plan/skill.ts` — the piece-level\n`pin(s) ≠ digest(s) ⇒ REFUSE` law this per-unit pin replaces.",
+        "The landed `packages/runtime/src/record-store/` and its return's reported signs."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/capabilities/plan/pin.ts` (new)",
+        "`.changeset/pin.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime typecheck` passes.",
+        "The return carries a smoke script and its verbatim output, run as\n`pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root, with\nconcept records written directly through the store and a hand-written closure for the port; a\nre-run reproduces the output. With `B` factoring `A`, it shows:\n- a pin taken on `B`, then amend `B`: drifted;\n- a fresh pin on `B`, then amend `A`: suspect and not drifted;\n- diverge `A` (two record sets written independently from its head, unioned): still suspect and\n  not drifted, and taking a new pin on `B` refuses (its closure is not settled), as does a pin on\n  `A`;\n- reconcile `A`, then retract `B`: drifted and not suspect, although `A` changed since the pin\n  (drifted and suspect are disjoint);\n- taking a pin on the withdrawn `B` refuses.",
+        "`git grep -nE \"from '\\./(plan|unit)|from '\\.\\./(design|note)/|from '\\.\\./\\.\\./(view|runtime-config)|immutability-gate\" -- packages/runtime/src/capabilities/plan/pin.ts`\nprints nothing.",
+        "Sole: the return names the identifiers realizing take, drifted and suspect, and each is\ndeclared nowhere else under `packages/runtime/src` (`git grep -n`).",
+        "`.changeset/pin.md` names `@cratylus/runtime`."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHBYF8EJN5TTVED2MTPA",
+      "version": "01M3MEKHBZHW928YXW4STCFXQY",
+      "closure": {
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "envelope": {
+    "id": "01M3MGF85NM5BJAQPFNM4A94AD",
+    "entity": "01M3MGEWHWY3R35E34DE3VPNR0",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGF82YWPKV5RJRAAN0NM03"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:46.357Z",
+    "reason": "plans/record-store/completed/scaffold-cutover.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "scaffold-cutover",
+      "intent": "**Wave 0.** Realizes `plan` — the part of the clean cutover that lives in the project scaffold.\n\nA plan's readiness is computed from its dependencies and never stored, so nothing may lay down\nfolders whose placement is state. `scaffoldProject` (`@cratylus/forge/deploy`) still does: it\nwrites `<target>/plans/founding/{PLAN.md, pending, ready, active, completed}` into every consumer\nproject from a `ProjectTemplate`'s `planMd` and `planStates`, and canon's template sources those\nstates from `src/plan-states.ts`.\n\nAfter this unit the scaffold writes no `plans/` tree. `ProjectTemplate` loses `planMd` and\n`planStates`, the scaffold result loses `planDir`, canon's template stops importing\n`PLAN_STATES`, and the \"Work-tracking\" section of both templates' AGENTS.md prose says work is\nplanned with the `plan` skill, without describing a stored layout. Forge keeps carrying only the\nmapping: it gains no plan vocabulary in exchange.",
+      "static": [
+        "`git show c501e002:docs/design/record-store.md` § The three domains (`plan`), § Boundaries.",
+        "`packages/forge/src/deploy/{init,project-template}.ts`; `packages/canon/tooling/{project-template,scaffold-cli}.ts`.",
+        "`packages/canon/tooling/project-template.ts` register note (consumer-repo prose may not cite\ncratylus-local paths; `cratylism.test.ts` pins it)."
+      ],
+      "deps": [],
+      "outputs": [
+        "`packages/forge/src/deploy/project-template.ts`",
+        "`packages/forge/src/deploy/init.ts`",
+        "`packages/forge/src/deploy/index.ts`",
+        "`packages/forge/test/deploy/cli.test.ts`",
+        "`packages/forge/test/deploy/init-harness-home.test.ts`",
+        "`packages/canon/tooling/project-template.ts`",
+        "`packages/canon/tooling/scaffold-cli.ts`",
+        "`packages/canon/test/cratylism.test.ts`",
+        "`.changeset/scaffold-cutover.md`"
+      ],
+      "accept": [
+        "`git grep -nE \"planStates|planMd|planDir|layPlansScaffold|'plans', 'founding'\" -- packages/forge packages/canon/tooling packages/canon/test/cratylism.test.ts`\nprints nothing (at `c501e002` it hits `forge/src/deploy/{init,project-template}.ts`,\n`forge/test/deploy/{cli,init-harness-home}.test.ts`, `canon/tooling/project-template.ts`,\n`canon/test/cratylism.test.ts`).",
+        "`pnpm --filter @cratylus/forge test -- deploy/cli deploy/init-harness-home` passes, and both\nfiles assert that the scaffolded target has no `plans` directory.",
+        "`pnpm --filter @cratylus/canon test -- cratylism` passes.",
+        "Sole: no path in `packages/*/src` or `packages/canon/tooling` materializes a plan state folder\n— criterion 1 is its check, since the loop over `planStates` was the only such site.",
+        "`pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/canon typecheck` pass.",
+        "`.changeset/scaffold-cutover.md` names `@cratylus/forge` (the `ProjectTemplate` shape changes)\nand `@cratylus/canon`.",
+        "The absence of `plan-states` from `packages/canon/tooling` is not this unit's to prove: it holds only\nonce `plan-set.ts`, which imports it, is deleted, so it is `plan-cutover`'s criterion 2."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3MEKHA5W8RJBDX72X37FZVK",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

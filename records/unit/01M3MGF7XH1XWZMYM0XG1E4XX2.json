@@ -1,0 +1,71 @@
+{
+  "envelope": {
+    "id": "01M3MGF7XH1XWZMYM0XG1E4XX2",
+    "entity": "01M3MGETGJKPR3G2ERDTJGJSTV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGETGJKPR3G2ERDTJGJSTW"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:46.098Z",
+    "reason": "plans/record-store/completed/record-store.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "record-store",
+      "intent": "**Wave 0.** Realizes `record store`. Covers `record id`, `entity`, `payload`, `fold`, `envelope`,\n`record`, `supersession`, `retraction`, `head`, `divergence`, `incoherence`, `reconciliation`\n(surfaced in `PLAN.md` § Lattice coverage: no other unit cites them).\n\nThe internal mechanism of `runtime` that holds records as files in the repository, writes new\nones, folds heads, and detects divergence and incoherence — everything the design's § Primitives\nand § The record model say, as one module family:\n\n- a **record id** is a ULID minted without coordination. There is **one** ULID implementation: this\n  unit moves `packages/memory/src/ulid.ts` down to `packages/runtime/src/ulid.ts`, exports it as\n  `@cratylus/runtime/ulid`, and points every memory importer at it (§ Boundaries). Its test moves\n  with it;\n- an **entity** has a minted identity that is neither its name nor its place in history; a name,\n  where the entity has one, is a label in its payload and can change;\n- a **payload** is the entity's whole state as of the record, never a delta;\n- an **envelope** carries the record id, the entity, the operation, the record ids it supersedes,\n  author, time, reason and cause;\n- a **record** is one immutable entry in one entity's history — a version or a retraction — an\n  envelope and a whole-state payload, never edited, moved or deleted once written: a write whose\n  file exists refuses;\n- **writes name only current heads.** A **supersession** is a new version naming one or more of the\n  entity's current heads and replacing them; naming a record that is not a head, a record of\n  another entity, or an unknown id refuses, so one branch's history stays linear. Superseding a\n  retraction reinstates the entity. A **retraction** withdraws the entity with no successor\n  version, naming the heads it withdraws, and itself becomes the entity's head;\n- a **head** is a record, version or retraction, that no later record names. One head means\n  settled — live when it is a version, withdrawn when it is a retraction; more than one is\n  **divergence** (two versions, or a version and a retraction, written to one head on different\n  branches and merged), reported and never resolved here;\n- **incoherence** is a reference to a retracted entity or a cycle, over a reference relation the\n  caller supplies (the store knows no domain's payload);\n- a **reconciliation** is one new whole-state version superseding every head of the entity, and its\n  envelope marks it an amendment, never an acceptance;\n- the **fold** computes current state at the moment of the read and persists nothing;\n- the **store** lays records out as one directory per domain under one records root, one file per\n  record; a branch merge is the union of files and never conflicts; it resolves the repository root\n  itself.\n\nThe records root's sign is derived with `signify` and declared once here; the gate, the hook, CI and\nevery later unit take it from this module. Records are machine-written bytes, so the root joins\nbiome's ignore list: a formatter must never own them.\n\nMechanism only: `record-store/` imports no workspace package (ARCHITECTURE property 4) and is\nexported through neither the `.` barrel nor a subpath. Only `ulid.ts` gains a subpath, because\n`memory` must import it.",
+      "static": [
+        "`git show 4610c33f:docs/design/record-store.md` § Primitives, § The record model, § Boundaries\n(\"One ULID implementation\").",
+        "`packages/memory/src/ulid.ts`, `packages/memory/test/ulid.test.ts`; the importers listed in\n`PLAN.md` § Census.",
+        "`ARCHITECTURE.md` properties 1 and 4; `packages/runtime/README.md` § Subpaths;\n`packages/runtime/{package.json,tsup.config.ts}` (the event-tap subpath is the precedent).",
+        "`packages/canon/test/gate-convicts.test.ts` header — GATE versus BEHAVIORAL, and the convicting\nvocabulary."
+      ],
+      "deps": [],
+      "outputs": [
+        "`packages/runtime/src/record-store/**` (new) — every file except `immutability-gate.ts`, which\n`immutability-gate` owns",
+        "`packages/runtime/src/ulid.ts` (moved from `packages/memory/src/ulid.ts`)",
+        "`packages/runtime/package.json` (the `./ulid` export), `packages/runtime/tsup.config.ts` (its\nentry), `packages/runtime/README.md` (its § Subpaths row)",
+        "`packages/runtime/test/record-store.test.ts` (new), `packages/runtime/test/ulid.test.ts` (moved\nfrom `packages/memory/test/ulid.test.ts`)",
+        "`packages/memory/src/{migrate-memory,migrate,record,store}.ts` — import the runtime's ULID",
+        "`packages/memory/test/{dream,liveness-read-drain,migrate-memory,migrate,store}.test.ts` — the same",
+        "`packages/canon/test/gate-convicts.test.ts` — REGISTRY: `memory/ulid.test.ts` out;\n`runtime/ulid.test.ts`, `runtime/record-store.test.ts` in",
+        "`biome.jsonc` — `files.ignore` gains the records root",
+        "`.changeset/record-store.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime test -- record-store ulid` passes. The record-store tests' names\ncover: a write refuses an existing record id; a supersession naming another entity's version\nrefuses; a supersession or retraction naming a record that is no longer a head refuses; a\nretraction becomes the entity's one head and reads settled-withdrawn; superseding that\nretraction reinstates the entity as settled-live; two independently written record sets\n(simulated branches) that each superseded the same head — and, separately, one that\nsuperseded it and one that retracted it — union with no file-name collision and fold to\ndivergence, the fold picking neither; a reconciliation superseding every head (retraction\nincluded) leaves exactly one head; incoherence reports a reference to a retracted entity and a\ncycle in a supplied relation; a read leaves the records root byte-identical.",
+        "One ULID: `git ls-files packages/memory/src/ulid.ts packages/memory/test/ulid.test.ts` prints\nnothing, and `git grep -lE \"from '(\\./|\\.\\./src/)ulid\\.js'\" -- packages/memory` prints nothing\n(at `c501e002`: 10 files); `git grep -l \"@cratylus/runtime/ulid\" -- packages/memory/src` lists\nthe four `src` importers; `pnpm --filter @cratylus/memory test` passes.",
+        "`pnpm --filter @cratylus/runtime typecheck`, `typecheck:test`, and the same for\n`@cratylus/memory`, pass.",
+        "No dependency added: the `dependencies` block of `packages/runtime/package.json` is unchanged\nsince `c501e002`.",
+        "The store stays internal: `git grep -n \"record-store\" -- packages/runtime/src/index.ts packages/runtime/package.json packages/runtime/tsup.config.ts packages/canon packages/forge packages/memory`\nprints nothing except the `gate-convicts.test.ts` REGISTRY row.",
+        "Spells: the return names, for each of the thirteen anchors this unit realizes or covers, the\nidentifier realizing it, and `git grep -nw <identifier> -- packages/runtime/src/record-store packages/runtime/src/ulid.ts`\nhits for every one (print `n/13`).",
+        "Sole: `git grep -l supersed -- packages/runtime/src` lists at least one file and all of them are\nunder `packages/runtime/src/record-store/` (at `c501e002` the list is empty); and\n`git grep -ln \"ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'\" -- packages` lists only\n`packages/runtime/src/ulid.ts`.",
+        "`pnpm --filter @cratylus/canon test -- gate-convicts` passes.",
+        "`biome.jsonc` names the records root under `files.ignore`, and the return reports the root's sign\nwith its `signify` derivation.",
+        "`.changeset/record-store.md` names `@cratylus/runtime` and `@cratylus/memory`, and\n`@cratylus/canon` for its registry row."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKH4WNSY2RE9VRTXZH9PT",
+      "version": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+      "closure": {
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

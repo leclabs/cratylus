@@ -1,0 +1,54 @@
+{
+  "envelope": {
+    "id": "01M3MGF9JBV7AT1T94Y3DJY6R5",
+    "entity": "01M3MGEX58WM3KDS63FG3SSDK3",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGEX58WM3KDS63FG3SSDK4"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:47.787Z",
+    "reason": "plans/record-store/completed/immutability-gate.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "immutability-gate",
+      "intent": "**Wave 1.** Realizes `immutability gate`.\n\nThe one enforced law of the substrate: a change that modifies or deletes an existing record is\nrefused, at commit and in CI. Concretely, any change under the records root whose git status is\nnot an addition — modified, deleted, renamed, type-changed — is refused with the offending paths\nnamed; additions pass; paths outside the root are ignored. A branch merge adds records only, so it\npasses.\n\n- The rule reads the records root from `record-store`'s one declaration and edits no existing\n  file of that directory; it lives in one new module there (the store owns its gate).\n- **At commit:** `.husky/pre-commit` runs it over the staged changes. Pre-commit runs before any\n  build, so it runs from source: `runtime` gains `tsx` as a dev dependency and a package script\n  named for the anchor.\n- **In CI:** `.github/workflows/gates.yml` runs it over the pushed range (the pull request's base\n  to head; a push's `before` to `after`, falling back to the whole tree when `before` is the zero\n  sha). `fetch-depth: 0` already holds the history it needs.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § Primitives (`immutability gate`), § The record\nmodel (`record store` owns it).",
+        "`.husky/pre-commit`, `.github/workflows/gates.yml` (a reusable workflow called by `verify.yml`\nand `release.yml`), `.github/workflows/verify.yml` (its triggers).",
+        "The landed `packages/runtime/src/record-store/` — the records root's declaration."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/record-store/immutability-gate.ts` (new; the only file under\n`record-store/` this unit writes)",
+        "`packages/runtime/test/immutability-gate.test.ts` (new)",
+        "`packages/runtime/package.json` — `tsx` dev dependency, one script",
+        "`pnpm-lock.yaml`",
+        "`.husky/pre-commit`",
+        "`.github/workflows/gates.yml`",
+        "`packages/canon/test/gate-convicts.test.ts` — one REGISTRY row",
+        "`.changeset/immutability-gate.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime test -- immutability-gate` passes, with test names covering: a\nmodified record REFUSES naming its path; a deleted record REFUSES; a renamed record REFUSES; an\nadded record passes; a change outside the records root is ignored; a merge commit bringing\nrecords from two branches passes.",
+        "The bite at commit, shown by a transcript in the return from a throwaway clone of this\nrepository: a new record commits; then editing that record and `git commit` exits non-zero\nnaming its path; then deleting it and `git commit` exits non-zero; a second new record commits.",
+        "`grep -n \"immutability-gate\" .husky/pre-commit .github/workflows/gates.yml` hits both files,\nand the `gates.yml` step names both the pull-request and the push range.",
+        "`git diff <this unit's base> -- packages/runtime/src/record-store` shows only the added\n`immutability-gate.ts`.",
+        "Sole: the return names the function that decides refusal; `git grep -n <it> -- packages`\nfinds its declaration once, and no other module in the repository inspects git status under\nthe records root.",
+        "`pnpm --filter @cratylus/canon test -- gate-convicts` passes.",
+        "`.changeset/immutability-gate.md` names every package this unit's paths changed."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKGNZQ0P7T1JDXFN9AW41",
+      "version": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+      "closure": {}
+    }
+  }
+}

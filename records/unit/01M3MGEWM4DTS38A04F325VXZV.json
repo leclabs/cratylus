@@ -1,0 +1,72 @@
+{
+  "envelope": {
+    "id": "01M3MGEWM4DTS38A04F325VXZV",
+    "entity": "01M3MGEWM4DTS38A04F325VXZT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:34.532Z",
+    "reason": "transcribes the unit spec in plans/record-store/completed/lifecycle-configuration.md into the plan records before plans/ is deleted",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "lifecycle-configuration",
+      "intent": "**Wave 1.** Realizes `plan` — the part of it the design places on the seams: \"Lifecycle states of\nplans and units are meaning: the `plan` skill is their one home, and they reach the runtime as\nconfiguration the projection emits, as the event vocabulary does today. The runtime restates none\nof them.\" (§ Boundaries)\n\nBuild the channel, following the event vocabulary's route exactly (`PLAN.md` § Census, last row):\n\n- **schema** — a skill's runtime face (`SkillOf<C>['runtime']`, today `{ capability }`) may also\n  carry the configuration its capability receives: JSON-serializable data, a shape with no opinion\n  about any capability. The `plan` skill will put the lifecycle states there (`trio-skill-routing`);\n  this unit adds only the shape.\n- **forge** — `cratylus deploy` gathers the configuration every skill of the resolved plugin set\n  declares on its runtime face and emits it into the host runtime config beside the event\n  vocabulary, keyed by capability. Like the vocabulary, it is regenerated on every deploy and is\n  harness-independent (the one-harness `native` collision filed in\n  `docs/runtime-config-single-harness.md` does not touch it). The operator-owned `capabilities`\n  field keeps its current preservation rule.\n- **runtime** — `loadRuntimeConfig` lifts that block and exposes each capability's configuration; a\n  capability needing configuration that is absent must refuse and say so, never fall back to a set\n  of its own.\n\nWhat the plan capability's configuration must be able to convey, so `plan-domain` and `unit` can act\nwithout spelling a state (PLAN.md § Contract): each lifecycle's states in order; which unit state\nsatisfies a dependency; which plan state admits at most one holder; which plan state is final. The\nkeys naming those roles are derived with `signify` and reported. Nothing in `runtime`, `forge` or\n`schema` spells a lifecycle state.\n\nDeps: `scaffold-cutover` — contention, not meaning: `forge/test/deploy/cli.test.ts` exercises both\n`init` (whose assertions that unit rewrites) and `deploy` (whose emission this unit changes).",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § Boundaries, § The three domains (`plan`, `unit`).",
+        "`packages/schema/src/index.ts` (`SkillOf`, its `runtime` field) and `packages/schema/README.md`.",
+        "`packages/forge/src/deploy/runtime-config.ts`, `packages/forge/src/cli/commands/deploy.ts`\n(`emitHostRuntimeConfig`, `emitAndReport`).",
+        "`packages/runtime/src/runtime-config.ts`, `packages/runtime/test/runtime-config.test.ts`.",
+        "`packages/canon/test/event-vocabulary.test.ts` § (c) — the round trip this channel mirrors."
+      ],
+      "deps": [
+        "01M3MGEWHWY3R35E34DE3VPNR0"
+      ],
+      "outputs": [
+        "`packages/schema/src/index.ts`, `packages/schema/README.md`",
+        "`packages/forge/src/deploy/runtime-config.ts`, `packages/forge/src/cli/commands/deploy.ts`",
+        "`packages/forge/src/cli/commands/install.ts`, the only caller that passed\n`DeployCmdOpts.events`, and `packages/forge/src/project/index.ts`: both added by the widening the\ndesign-holder authorized on 2026-09-25",
+        "one new internal forge module resolving the deployed skills (same authorization; not exported\nfrom any forge barrel). It landed as `packages/forge/src/project/resolve-skills.ts` in `b31b47d1`.",
+        "`packages/runtime/src/runtime-config.ts`",
+        "`packages/runtime/test/runtime-config.test.ts`",
+        "`packages/canon/test/event-vocabulary.test.ts`: § (c) gains the configuration's round trip",
+        "`.changeset/lifecycle-configuration.md`",
+        "**Cutover recorded with the widening:** `DeployCmdOpts.events` is replaced by `plugins`. Deploy\nderives both the event vocabulary and the skills' capability configuration from the plugin set, and\n`install` passes its in-memory plugins instead of a flattened event list. No shim remains. At the\nwidening, `git grep -n \"events:\" -- packages/forge/src/cli/commands/install.ts` hit line 168 (the\nonly caller). No pending unit declares or compiles against these paths, so no other spec moved.",
+        "Apart from `packages/schema/src/index.ts`, where `SkillOf` is declared, no package barrel is edited:\nno wave-mate compiles against schema, and the forge and runtime barrels stay untouched."
+      ],
+      "accept": [
+        "The round trip crosses all three packages: `pnpm --filter @cratylus/canon test -- event-vocabulary`\npasses with a leg that builds a synthetic skill declaring runtime configuration, emits the host\nconfig as `deploy` does, reads it back with the runtime's own `loadRuntimeConfig`, and gets the\nsame data; and a leg named with `FAILS` or `REFUSES` convicts a dropped member.",
+        "`pnpm --filter @cratylus/runtime test -- runtime-config` passes with legs covering: a config\ncarrying only capability configuration is a real config (not `null`); a malformed block is\nignored without wedging the load, as the events block is.",
+        "`git grep -nE \"'(proposed|bound|closed|pending|active|completed)'\" -- packages/schema/src packages/forge/src/deploy/runtime-config.ts packages/forge/src/cli/commands/deploy.ts packages/runtime/src/runtime-config.ts`\nprints nothing.",
+        "`pnpm --filter @cratylus/schema typecheck`, `@cratylus/forge typecheck`, `@cratylus/runtime typecheck`\nand `@cratylus/canon typecheck` pass (`Skill` stays assignable for every existing cell).",
+        "Sole: one channel carries corpus configuration to the runtime — the return names the one\nemitting function and the one reading function; `git grep -n` finds each declared once.",
+        "`.changeset/lifecycle-configuration.md` names `@cratylus/schema`, `@cratylus/forge`,\n`@cratylus/runtime` and `@cratylus/canon`.",
+        "The `events` option is gone from `DeployCmdOpts`:\n`git grep -nF \"events?: readonly string\" -- packages/forge/src/cli/commands/deploy.ts` prints\nnothing (at `36a05113` it hit line 63). And `install.ts` hands `runDeploy` its `plugins`: the\nreturn quotes that call."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3MEKHA5W8RJBDX72X37FZVK",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

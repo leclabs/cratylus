@@ -1,0 +1,63 @@
+{
+  "envelope": {
+    "id": "01M3MGF8YT9M0EJFDVMK4G0Y0J",
+    "entity": "01M3MGEWV7RB0TF3ZPESPPKGKA",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGF8W1WA0ZQQCH7JRPEJHH"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:47.162Z",
+    "reason": "plans/record-store/completed/plan-domain.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "plan-domain",
+      "intent": "**Wave 1.** Realizes `plan`.\n\nA plan as an entity of its own over the record store: \"an entity naming the design it realizes and\nits lifecycle: proposed, then bound, then closed. At most one plan is bound at a time, and a closed\nplan stays readable forever; closing replaces retiring by deletion.\"\n\n- A plan's payload is its name, the design it realizes, and its lifecycle state. \"The design it\n  realizes\" is read as the concepts of the piece the plan realizes, referenced by entity and named\n  by anchor at the boundary (`PLAN.md` finding N1).\n- Propose writes a plan's first version; bind and close are supersessions moving it along its\n  lifecycle; no move goes backwards, and a closed plan stays in the fold as a readable plan.\n- **At most one bound.** Bind refuses while another plan is bound. After a merge two plans can both\n  be bound (two branches each bound one); the domain reports that state and never resolves it by\n  picking one, and bind refuses while it stands (`PLAN.md` finding N2).\n- **The lifecycle vocabulary is received, never spelled.** The module takes the plan lifecycle as a\n  parameter it declares structurally — the states in order, the one admitting at most one holder,\n  the final one — and `domain-interface` supplies it from the runtime config (`lifecycle-configuration`).\n- An owed ruling naming a plan blocks binding it: the module takes, as a parameter, the set of plans\n  an owed ruling names (`notebook` recognises them; `domain-interface` composes).\n\nIsolation (`PLAN.md` § Contract): imports only from `../../record-store/` (never\n`immutability-gate.ts`), never `./unit.ts`, `./pin.ts`, another capability directory, the view or\n`runtime-config.ts`.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § The three domains (`plan`, `unit`, `notebook`),\n§ How they are met (`domain interface`: bind, close), § Boundaries.",
+        "`git show c501e002:packages/canon/src/skills/deliver/skill.ts` — `bound`, the WIP law this entity\nnow carries.",
+        "The landed `packages/runtime/src/record-store/` and its return's reported signs."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/capabilities/plan/plan.ts` (new), plus any further new file in that\ndirectory other than `unit.ts`, `pin.ts` (their units') and `index.ts`, `dispatch.ts`\n(`domain-interface`'s)",
+        "`.changeset/plan-domain.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime typecheck` passes.",
+        "The return carries a smoke script and its verbatim output, run as\n`pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root with a\nlifecycle vocabulary built from invented names (`s0`, `s1`, `s2`); a re-run reproduces the\noutput. It shows:\n- `P` proposed, then bound;\n- binding `Q` while `P` is bound: `Q` bound and `P` returned to proposed;\n- `Q` closed, still listed as closed; binding or re-proposing a closed plan refuses;\n- two record sets in which different plans were each bound, unioned: the \"more than one bound\"\n  incoherence is reported, and binding the one to keep resolves it, returning the other to\n  proposed;\n- a plan named by an owed ruling refuses to bind.",
+        "`git grep -nE \"'(proposed|bound|closed)'\" -- packages/runtime/src` prints nothing.",
+        "`git grep -nE \"from '\\./(unit|pin)|from '\\.\\./(design|note)/|from '\\.\\./\\.\\./(view|runtime-config)|immutability-gate\" -- packages/runtime/src/capabilities/plan/plan.ts`\nprints nothing.",
+        "Sole: the return names the one module that decides whether a plan may be bound, and\n`git grep -n <its identifier> -- packages/runtime/src` finds it declared only there.",
+        "`.changeset/plan-domain.md` names `@cratylus/runtime`."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3MEKHA5W8RJBDX72X37FZVK",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

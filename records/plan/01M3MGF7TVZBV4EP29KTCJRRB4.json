@@ -1,0 +1,30 @@
+{
+  "envelope": {
+    "id": "01M3MGF7TVZBV4EP29KTCJRRB4",
+    "entity": "01M3MGETGHEX26FJDSKJE802HN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGETGHEX26FJDSKJE802HP"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:46.011Z",
+    "reason": "plans/record-store/.bound: the plan was bound in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "name": "record-store",
+    "realizes": [
+      "01M3MEKGNZQ0P7T1JDXFN9AW41",
+      "01M3MEKH4WNSY2RE9VRTXZH9PT",
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKH8E3Q8R94A9EFNDE986",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHBYF8EJN5TTVED2MTPA",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3MEKHFKC1AW1P0T9Y7S21JK",
+      "01M3MEKHHB7HFK4FFQQG5C1Z0G",
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "bound"
+  }
+}

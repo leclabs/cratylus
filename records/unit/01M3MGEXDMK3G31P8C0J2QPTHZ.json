@@ -1,0 +1,83 @@
+{
+  "envelope": {
+    "id": "01M3MGEXDMK3G31P8C0J2QPTHZ",
+    "entity": "01M3MGEXDMK3G31P8C0J2QPTHY",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:35.348Z",
+    "reason": "transcribes the unit spec in plans/record-store/completed/trio-skill-routing.md into the plan records before plans/ is deleted",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "trio-skill-routing",
+      "intent": "**Wave 3.** Realizes `skill routing` — for `design`, `plan` and `deliver`, the corpus's trio.\n\nEach skill routes its reader's intents to its own domain interface in its own vocabulary and holds\nits domain's authority rules; no skill restates another's rules or mentions the record store. One\nunit for the three because their formal blocks borrow from each other (`X @ design`, `X @ plan`),\nwhich `boundary-binding.test.ts` resolves; split, they would dangle each other's borrows mid-wave.\n\n- **`design`** — `runtime: { capability: 'design' }`; intents reach show, define, amend, retract,\n  reconcile and trace (how a concept came to be, what it stands on, what stands on it) through\n  `scripts/design.mjs <verb>`. It holds reconciliation of the design as the architect's alone,\n  and states that a planner, implementer or assayer meeting divergence or incoherence reports it\n  and never resolves it. It carries the design's laws at `0c9da09c`: one live concept per anchor,\n  and a withdrawn concept keeps its anchor until it is reinstated; factors are acyclic and name live\n  concepts, so a concept that others factor on cannot be retracted; every gloss and every reason is\n  non-empty. The block already states anchor uniqueness, acyclicity, a non-empty gloss and a\n  non-empty reason; the live-factor and anchor-retention laws are new to it. Factors form a set, which\n  `factors : C → ℘(C)` already states. **The design knows nothing of plans** (`b3b5a64c`), so the\n  block drops `realizes : unit ⇀ anchor @ plan` and the unbuilt-concept law\n  `∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE` (lines 42 and 71 at `b3b5a64c`). That law\n  moves to `deliver`, which reads both domains and already borrows `realizes @ plan` (`PLAN.md`\n  N10). **One sense of\n  supersession** (§ Boundaries at `4610c33f`): the lattice law\n  `supersede(c, c') ⇒ phase(c) := superseded ∧ supersededBy(c) = c' ∧ c ∈ C`, with `Phase` and\n  `supersededBy : C ⇀ C`, reads a superseded concept as replaced by another concept; it is restated\n  in the design's sense — a supersession is a new version of the same concept, the prior version\n  stays resident as history, and `amend(C) ≜ supersede` keeps its no-overwrite gloss. A concept that\n  genuinely becomes another is a retraction plus a definition, and the block says so. The\n  commit-keyed `amends`/`accepts` pair goes too; the separation law survives as \"a reconciliation is\n  an amendment and never shares a record with an acceptance\". The piece-level `pin`/`digest` pair\n  leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`, `factors` and `denotes` stay. Every\n  borrower of a removed sign is migrated (at `4610c33f` none outside the cell:\n  `git grep -nE \"supersededBy|Phase\" -- packages/canon/src ':!packages/canon/src/skills/design'`).\n- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show (the bound plan, any plan named,\n  or one unit), add, advance, retract, revise, bind, close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units\n  as the architect's alone. **It is the one home of the plan and unit lifecycle states**\n  (§ Boundaries). The states are declared once in this module and carried on the `Skill`'s runtime\n  face as the capability's configuration, in the shape `lifecycle-configuration` added. They are\n  interpolated into the formal block, which replaces `States ≜ { ${PLAN_STATES…} }` and the\n  `plan-states.ts` import.\n\n  The block carries the plan and unit laws at `0c9da09c`:\n  - binding a plan returns whichever plan was bound to proposed, so at most one is bound;\n  - there is one live plan per name, and one live unit per name within its plan;\n  - a plan realizes a set of concepts; closed is final: a closed plan keeps its name, and neither\n    it nor any of its units is ever written again;\n  - a plan that is not closed is revisable (its name and its set of concepts, never its state); its\n    state moves only through bind and close, and `revise` routes to a unit or a plan;\n  - a unit can be retracted (`plan retract`), unless another live unit depends on it;\n  - a unit realizes exactly the concept its pin names, which is among the concepts its plan\n    realizes (a merge that breaks this is an incoherence, reported like the others), and its\n    lifecycle moves forward one step at a time;\n  - a unit's dependencies are acyclic and name live units of the same plan;\n  - a unit is ready when every dependency has reached completion or moved past it, and no owed\n    ruling names the unit or its plan;\n  - an owed ruling is any live note that blocks a plan or unit, whatever its kind, reached through\n    the `note` capability's verbs; one naming a plan blocks binding it and every unit in it.\n\n  It pins and advances. `pin` is taken when the unit is authored, only when the concept and its\n  whole closure are settled and live, and is retaken only by a revise that says so with a reason,\n  never as a side effect of editing the spec. A unit is drifted when its pinned version is no longer\n  the concept's one current version (the concept was amended, withdrawn or diverged), and otherwise\n  suspect. A retraction in the design never\n  breaks a plan's laws; it drifts the units pinned to that concept. Both readings are declared here, replacing `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign, `advance ⊨ mirror`\n  and the `→ mirror →` step are deleted. `R`, the census, outputs, wave and acceptance laws stay\n  (`boundary-binding.test.ts`'s fixture borrows `R`).\n\n- **`deliver`** — reads both (show) and records acceptance by advancing a unit (`advance @ plan`).\n  `bound(P)` is now the plan entity's state: binding and closing are `plan` verbs the architect uses\n  at deliver. The WIP law `∃! P : bound(P)` is now held by binding, which returns the previous plan\n  to proposed, and `terminal(P) ⇒ retire(P)` becomes closing, which keeps the plan readable instead\n  of deleting it. It gains the unbuilt-concept law from `design` (N10). `file(d)` captures to the notebook through the `note` capability's verb, without\n  borrowing from the `note` skill (`PLAN.md` § Contract, W3 isolation); a note it files against a\n  unit names it `u of plan p`.\n\n**The surface the three skills script against is the one `domain-interface` landed, exactly:**\n\n- `design show [<concept>]`, `design define <anchor> --gloss <g> [--factors <anchor>]…`,\n  `design amend <concept> [--anchor <a>] [--gloss <g>] [--factors <anchor>]…`, `design retract`,\n  `design reconcile`, `design trace <concept>`.\n- `plan show` (the bound plan), `plan show <plan>` (any plan named, whole), and\n  `plan show <unit> --plan <p>` (one unit). `plan add <unit> --plan <p> --realizes <concept>`, with\n  the spec fields `--intent`, `--static`, `--deps`, `--outputs` and `--accept`, and\n  `--plan-realizes <concept>`… when the add proposes the plan. `plan advance <unit> --plan <p> --to <state>`\n  and `plan retract <unit> --plan <p>`.\n- `plan revise <unit> --plan <p>` edits the spec and keeps the pin. `plan revise … --repin --reason <why>`\n  retakes it, and is the only way to retake it; `plan revise <plan>` changes a plan's name or\n  concepts. `plan bind <plan>`, `plan close <plan>`, `plan reconcile`.\n- Within plan verbs, `--plan` puts the plan in view. Wherever no plan is in view (a note's\n  `--blocks`, a unit named in `deliver`'s or `design`'s prose), a unit is named `u of plan p`.\n- Every write takes `--author`, `--reason` and `--cause`. Set-valued flags are repeated, one member\n  each.\n\nThe canon half of the lifecycle round trip lands here: `event-vocabulary.test.ts` § (c) gains a leg\nthat emits the host config from the live corpus (so the `plan` skill's declared states), reads it\nback with the runtime's reader, and compares it with the `plan` skill's declaration.\n\nEvery test comment calling `event-tap` \"the last\" shim carrier becomes false when `design` and\n`plan` declare capabilities; rewrite each without enumerating the carriers, so `note-skill` landing\nbeside this unit leaves it true.",
+      "static": [
+        "`git show 9e7730da:docs/design/record-store.md` § The three domains, § How they are met,\n§ Boundaries.",
+        "`packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.",
+        "`packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s\nblock), `event-vocabulary.test.ts` § (c).",
+        "The landed `design` and `plan` capabilities and the configuration shape; `skill://create-skill`\nand `signify` for every sign changed."
+      ],
+      "deps": [
+        "01M3MGEX80BAHPC0ZPHNJWJ2AF"
+      ],
+      "outputs": [
+        "`packages/canon/src/skills/design/skill.ts`",
+        "`packages/canon/src/skills/plan/skill.ts`",
+        "`packages/canon/src/skills/deliver/skill.ts`",
+        "`packages/canon/test/boundary-binding.test.ts`",
+        "`packages/canon/test/reader-reach.test.ts`",
+        "`packages/canon/test/event-vocabulary.test.ts`",
+        "`packages/canon/test/bin-name-single-home.test.ts`",
+        "`packages/canon/test/runtime-shim.test.ts`",
+        "`packages/canon/test/capability-keyspace.test.ts`",
+        "`.changeset/trio-skill-routing.md`"
+      ],
+      "accept": [
+        "`git grep -nE \"mirror|plan-states|PLAN_STATES|digest\" -- packages/canon/src/skills/plan packages/canon/src/skills/design`\nprints nothing (at `c501e002` both files hit).",
+        "`git grep -n \"capability: 'design'\" -- packages/canon/src/skills/design/skill.ts` and\n`git grep -n \"capability: 'plan'\" -- packages/canon/src/skills/plan/skill.ts` each hit once.",
+        "The lifecycle states are declared once, in the `plan` skill:\n`git grep -lE \"'(proposed|bound|closed|pending|active|completed)'\" -- 'packages/*/src'` lists\n`packages/canon/src/skills/plan/skill.ts`, plus only files `plan-cutover` deletes\n(`packages/canon/src/plan-states.ts`, `packages/runtime/src/capabilities/carry-on/**`) and\n`packages/runtime/src/ports/memory.ts` (`SessionState`, a different concept).",
+        "`pnpm --filter @cratylus/canon test -- event-vocabulary` passes, including the live leg: the\nstates the runtime reads back equal the `plan` skill's declaration.",
+        "`deliver`'s formal block borrows `advance` from `plan`, names bind and close where it named\nretire, and `pnpm --filter @cratylus/canon test -- boundary-binding reader-reach` passes.",
+        "`design`'s formal block contains `reconcile` with the architect-only authority over it; the\ntwo-concept supersession is gone —\n`git grep -nE \"supersededBy|Phase|supersede\\(c, c'\\)\" -- packages/canon/src/skills/design` prints\nnothing (at `4610c33f` it hits lines 36–38 and 54) — and\n`git grep -nE \"retract.*define|define.*retract\" -- packages/canon/src/skills/design/skill.ts`\nhits the law that a concept becoming another is a retraction plus a definition.",
+        "The skills speak only their domain's words (C at `a49ff769`: no substrate word, records\nincluded). `git grep -niwE \"records?|heads?|envelopes?\" -- packages/canon/src/skills/design/skill.ts packages/canon/src/skills/plan/skill.ts packages/canon/src/skills/deliver/skill.ts`\nprints nothing; at `a49ff769` it hits `design/skill.ts:22` (\"the project's durative record\"),\nwhich is reworded. `git grep -niE \"record store|record id|envelope|records/\" -- packages/canon/src/skills` prints\nnothing, and `git grep -nE \"@ note\\b\" -- packages/canon/src/skills/design packages/canon/src/skills/plan packages/canon/src/skills/deliver`\nprints nothing.",
+        "Sole: `git grep -l \"capability: 'design'\" -- packages/canon/src` and the same for `'plan'` each\nlist exactly one file.",
+        "`plan`'s formal block names `reconcile` with the architect-only authority over it. The return\nquotes the block's one line defining an owed ruling. That line must say a live note blocking a\nplan or unit, and name none of `idea`, `question` or `decision`. A blanket grep for `question`\ncannot serve: at `0c9da09c` it already hits `deliver`'s \"three questions\" and `plan`'s\n\"unanswered question\".",
+        "The design skill knows nothing of plans:\n`git grep -nE \"@ plan|realizes\" -- packages/canon/src/skills/design/skill.ts` prints nothing (at\n`b3b5a64c` it hits lines 42 and 71). `deliver`'s block carries the unbuilt-concept law, which\nthe return quotes.",
+        "The skills script exactly the landed surface:\n- `git grep -n -- \"--repin\" -- packages/canon/src/skills/plan/skill.ts` hits the re-pin law, and\n  that line also names `--reason`.\n- `git grep -n \"of plan\" -- packages/canon/src/skills/deliver/skill.ts` hits `file(d)`'s unit form.\n- `git grep -nE \"note\\.mjs.*--plan\\b\" -- packages/canon/src/skills` prints nothing:\n  no skill scripts the retired note `--plan` flag.\n- The return runs each command form the three blocks quote against a built `cratylus` in a\n  scratch repository (with a lifecycle config) and shows that none is refused as an unknown verb\n  or flag.",
+        "`pnpm verify` passes.",
+        "`.changeset/trio-skill-routing.md` names `@cratylus/canon`."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHK6QA4SFYW73YXKASWM",
+      "version": "01M3MEKHK6QA4SFYW73YXKASWN",
+      "closure": {
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3MEKHHB7HFK4FFQQG5C1Z0H",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3MFY79KKQ98Y2YM57Y01DEG",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3MEKHBZHW928YXW4STCFXQY",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

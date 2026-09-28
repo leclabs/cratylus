@@ -1,0 +1,71 @@
+{
+  "envelope": {
+    "id": "01M3MGEXAR8NT41X52710AVA7N",
+    "entity": "01M3MGEXAR8NT41X52710AVA7M",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:35.256Z",
+    "reason": "transcribes the unit spec in plans/record-store/completed/note-skill.md into the plan records before plans/ is deleted",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "note-skill",
+      "intent": "**Wave 3.** Realizes `skill routing` — for the notebook. Authored new: the corpus has no `note`\nskill.\n\nCanon's `note` skill routes the reader's intents to the `note` capability, in the notebook's own\nvocabulary: show the whole notebook or one note, capture, revise, retract and reconcile. It routes\nthem through `scripts/note.mjs <verb>`, the shim forge projects for a cell declaring\n`runtime: { capability: 'note' }` (the `event-tap` cell is the precedent).\n\nIt holds the notebook's own rules and no one else's:\n\n- Anyone may capture, revise, retract or reconcile a note, and capture has no admission bar.\n- A note's kind (idea, question or decision) is a label the runtime never interprets, so this cell\n  is the one home of the kinds.\n- Any live note that blocks a plan or unit is an owed ruling, whatever its kind. It blocks what it\n  names until it is retracted, or revised to block nothing. The earlier rule that only a question\n  may block is dropped: `0c9da09c` no longer makes it.\n- A diverged note blocks whatever any of its competing versions blocks, until someone reconciles\n  it. The cell says \"versions\", never \"heads\" (criterion 4).\n- A note's title is its name, and there is one live note per title. A note is addressed by its\n  title; there is no body-fragment matching (N9 is superseded at `9e3e1a6f`). The cell never tells the\n  reader to use an identity. The interface surfaces one only where a merge has left a title held by\n  more than one note.\n- A changed note is revised, never edited in place; `--title` on a revise retitles it.\n- The cell scripts the landed surface exactly: `note show [<title>]`,\n  `note capture <title> --kind <k> --topic <t> --body <b> [--blocks <plan or unit>]…`,\n  `note revise <title> [...]`, `note retract <title>`, `note reconcile <title>`, each write with\n  `--author`, `--reason` and `--cause`. What a note blocks is named by plan name, or by a unit\n  qualified by its plan, `u of plan p` (bare only where the unit's name is its own). There is no\n  `--plan` flag on `note`.\n\nIt restates no other skill's rules, borrows nothing from `design`, `plan` or `deliver` (`PLAN.md`\n§ Contract, W3 isolation), composes nothing, and never mentions the record store, records, record\nids, envelopes, heads or files: it speaks only the notebook's words (C at `a49ff769`).\n\nHypothesis to rectify, not copy:\n`ssh upmav cat /Users/lcaraccioli/workspaces/WebappLiveSyncTechDemoNuxt/.agents/skills/note/SKILL.md`.\nIts sequential ids and its in-place \"extend derived\" are known defects. The host was unreachable\nat the first census; if it still is, author from the design alone and say so in the return.",
+      "static": [
+        "`git show 9e7730da:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How\nthey are met (`domain interface`, `skill routing`).",
+        "`packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.",
+        "The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).",
+        "`skill://create-skill` — how a cell is authored in this corpus; `signify` for every sign the block\ndeclares."
+      ],
+      "deps": [
+        "01M3MGEX80BAHPC0ZPHNJWJ2AF"
+      ],
+      "outputs": [
+        "`packages/canon/src/skills/note/skill.ts` (new)",
+        "`packages/canon/test/formal-block-self-sufficiency.test.ts` — its header's skill count",
+        "`.changeset/note-skill.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/canon test` passes (among them `symbols`, `symbol-probe-gate`,\n`reader-density`, `skill-shape`, `boundary-binding`, `formal-block-self-sufficiency`,\n`capability-keyspace`).",
+        "`pnpm canon:project` emits `.cratylus/claude/skills/note/scripts/note.mjs`, which spawns the bin\nwith `['note', …]`, and `.cratylus/claude/skills/note/SKILL.md` contains\n`scripts/note.mjs <verb>` for each of `show`, `capture`, `revise`, `retract` and `reconcile`.",
+        "The three kinds appear in the cell as labels:\n`git grep -nE \"idea|question|decision\" -- packages/canon/src/skills/note/skill.ts` hits all\nthree. No line makes blocking depend on a kind:\n`git grep -nE \"question.*(block|owed)|(block|owed).*question\" -- packages/canon/src/skills/note/skill.ts`\nprints nothing. The title law is present:\n`git grep -n \"title\" -- packages/canon/src/skills/note/skill.ts` hits the line saying a note's\ntitle is its name, one live note per title.",
+        "The cell names a blocked unit as `u of plan p`, and scripts no `--plan` flag:\n`git grep -n \"of plan\" -- packages/canon/src/skills/note/skill.ts` hits, and\n`git grep -nE -- \"--plan\\b\" -- packages/canon/src/skills/note` prints nothing. The return runs the\ncell's `capture … --blocks '<u> of plan <p>'` form against a built `cratylus` and shows it accepted.\n`git grep -niE \"record|envelope|\\bheads?\\b|ulid|\\.json\" -- packages/canon/src/skills/note` prints\nnothing.",
+        "`git grep -nE \" @ (design|plan|deliver)\\b\" -- packages/canon/src/skills/note` prints nothing.",
+        "Sole: `git grep -l \"capability: 'note'\" -- packages/canon/src` lists only\n`packages/canon/src/skills/note/skill.ts`, and\n`git grep -lE \"'(idea|question|decision)'\" -- 'packages/*/src' ':!packages/canon/src/skills/note'`\nprints nothing: no second home spells the kinds.",
+        "The formal-block header's skill count matches `ls packages/canon/src/skills/*/skill.ts | wc -l`\nat the unit's commit.",
+        "`.changeset/note-skill.md` names `@cratylus/canon`."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHK6QA4SFYW73YXKASWM",
+      "version": "01M3MEKHK6QA4SFYW73YXKASWN",
+      "closure": {
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3MEKHHB7HFK4FFQQG5C1Z0H",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3MFY79KKQ98Y2YM57Y01DEG",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3MEKHBZHW928YXW4STCFXQY",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

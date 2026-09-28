@@ -1,0 +1,59 @@
+{
+  "envelope": {
+    "id": "01M3MGEWPFYQER2FPETBHREP7R",
+    "entity": "01M3MGEWPFYQER2FPETBHREP7Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:34.607Z",
+    "reason": "transcribes the unit spec in plans/record-store/completed/design-domain.md into the plan records before plans/ is deleted",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "design-domain",
+      "intent": "**Wave 1.** Realizes `design`.\n\nThe concept lattice C as a domain over the record store: every live concept with its anchor,\ngloss and factors, computed from the design records at the moment of the read.\n\n- A concept's payload is its anchor, gloss and factors. Factors are stored as entity references,\n  so relabelling an anchor never breaks a reference; anchors are resolved to entities and back at\n  the domain's boundary (\"a payload names entities by anchor and the interface resolves them\").\n- A concept is live when its one head is a version, withdrawn when its one head is a retraction\n  (the store's settled states); it is diverged when it has more than one head. `closure` and\n  `blast` are the `design` skill's existing signs and mean what they mean there.\n- Define (an entity's first version), amend (a supersession of the one current head — refused on a\n  diverged concept, and the refusal names reconciliation), retract (a retraction of the one current\n  head, which becomes the head), reconcile (the store's reconciliation, superseding every head,\n  retraction heads included) and the lookups a trace needs (closure, blast, version history with\n  reasons). Amending a withdrawn concept supersedes its retraction and reinstates it (`PLAN.md` N7).\n  Every write names the current head; the domain never lets a caller name a record.\n- A new version is always the same concept. A concept that becomes another is a retraction plus a\n  definition; nothing here relates two concept entities as predecessor and successor.\n- The domain hands the store its reference relation — a factor pointing at a withdrawn concept, a\n  factor cycle — so both surface as incoherence; a diverged concept (two versions, or a version\n  and a retraction, from merged branches) surfaces as divergence and is never resolved by picking\n  one.\n\nThe authority rule — only the architect writes the design — is skill routing's\n(`trio-skill-routing`); this module neither knows nor checks who is writing.\n\nIsolation (PLAN.md § Contract): imports only from `../../record-store/` (never\n`immutability-gate.ts`), never from another capability directory or the view.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § The three domains (`design`), § The record\nmodel.",
+        "`git show c501e002:packages/canon/src/skills/design/skill.ts` — `anchor`, `gloss`, `factors`,\n`closure`, `blast`, `denotes`.",
+        "The landed `packages/runtime/src/record-store/` (from `record-store`), and its return's reported\nsigns."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/capabilities/design/design.ts` (new), plus any further new file in that\ndirectory other than `index.ts` and `dispatch.ts`, which are `domain-interface`'s",
+        "`.changeset/design-domain.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime typecheck` passes.",
+        "The return carries a smoke script and its verbatim output, run as\n`pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root; a\nre-run reproduces the output. It shows:\n- define `A`, then define `B` factoring `A`: `closure(B) = {B, A}` and `blast(A) = {A, B}`;\n- relabel `A`: `B` still resolves its factor to the same entity;\n- each of these writes refuses on one branch: retract `A` while `B` factors on it; define a\n  second live `B`; define with an empty gloss or reason; a factor naming a withdrawn concept; an\n  amend closing a factor cycle;\n- retract `B`, then `A`: `A` reads withdrawn, and defining a new concept named `A` refuses (a\n  withdrawn concept keeps its anchor); amend `A`, and it is reinstated;\n- two record sets written independently from one head of `B` (one amending, one retracting),\n  unioned: divergence reported, a further amend refuses naming reconciliation, and reconciling\n  `B` leaves it settled and live;\n- two record sets unioned where one retracted `A` and the other defined `C` factoring `A`, and two\n  unioned sets that each defined a live `D`: incoherence reported for both, each resolved by an\n  ordinary write.",
+        "`git grep -nE \"from '\\.\\./(plan|note)/|from '\\.\\./\\.\\./view|immutability-gate\" -- packages/runtime/src/capabilities/design`\nprints nothing.",
+        "Sole: the return names the one module computing `closure`, and\n`git grep -ln closure -- packages/runtime/src` lists only that module.",
+        "`.changeset/design-domain.md` names `@cratylus/runtime`."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKH8E3Q8R94A9EFNDE986",
+      "version": "01M3MEKH8E3Q8R94A9EFNDE987",
+      "closure": {
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}

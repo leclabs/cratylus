@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3MGF91N38F9HXGYK81VTNJK",
+    "entity": "01M3MGEWXN5C7KT51FZ90N0NGB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGEWXN5C7KT51FZ90N0NGC"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:47.253Z",
+    "reason": "plans/record-store/completed/unit.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "unit",
+      "intent": "**Wave 1.** Realizes `unit`.\n\n\"One unit of work in a plan, realizing exactly one concept and carrying its full spec and\nlifecycle state. Readiness is computed, never stored: a unit is ready when every dependency is\ncompleted and no owed ruling names it.\" Factors: `plan`, `pin`, `notebook`.\n\n- A unit's payload is its plan (an entity reference), its full spec — its name, the concept it\n  realizes (an entity reference), intent, static inputs, deps (unit references), outputs, acceptance\n  criteria — its lifecycle state, and its pin (an opaque value `pin` computes).\n- Add writes a unit's first version; revise supersedes it; advance moves it one step along its\n  lifecycle and refuses any other move.\n- Computed, never written into a record: **ready** (every dep in the state that satisfies a\n  dependency, and no owed ruling names the unit or its plan), the **frontier** (ready and in-flight\n  units), **waves** as the `plan` skill defines them (`wave(0)` = no deps).\n- The domain hands the store its reference relation — a dep on a retracted unit, a dep cycle, a unit\n  of a retracted plan, a unit realizing a concept its caller reports retracted — so each surfaces as\n  incoherence.\n- **Received, never spelled or imported:** the unit lifecycle vocabulary (states in order, and\n  which one satisfies a dependency) from the runtime config; plan liveness from `plan-domain`; the\n  owed rulings naming units or plans from `notebook`; concept liveness from `design-domain`. Each is\n  a parameter this module declares structurally; `domain-interface` composes them.\n\nIsolation (`PLAN.md` § Contract): imports only from `../../record-store/` (never\n`immutability-gate.ts`), never `./plan.ts`, `./pin.ts`, another capability directory, the view or\n`runtime-config.ts`.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § The three domains (`unit`, `plan`, `notebook`,\n`pin`).",
+        "`git show c501e002:packages/canon/src/skills/plan/skill.ts` — `wave`, `frontier`, `blocked`,\n`spec(unit)`.",
+        "The landed `packages/runtime/src/record-store/` and its return's reported signs."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/capabilities/plan/unit.ts` (new)",
+        "`.changeset/unit.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime typecheck` passes.",
+        "The return carries a smoke script and its verbatim output, run as\n`pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root with a\nunit lifecycle built from invented names `u0`, `u1`, `u2` and `u3`, where `u2` is completion and\n`u3` lies beyond it; a re-run reproduces the output. With units `A`, `B` (dep `A`), `C` (dep `A`)\nand `D`, it shows:\n- waves `[A, D]`, `[B, C]`, and ready `{A, D}`;\n- advancing `A` to `u2` makes `B` and `C` ready, and advancing `A` on to `u3` keeps them ready;\n- an owed ruling naming `D` takes it out of ready, and one naming the plan takes all four out;\n- each of these writes refuses on one branch: skipping a lifecycle step; a dep closing a cycle; a\n  dep on a unit of another plan; a dep on a withdrawn unit; retracting a unit another unit\n  depends on;\n- two record sets unioned that each add a dep closing one cycle: incoherence reported;\n- the payload keys of every record written, printed, include no readiness, frontier or wave\n  field.",
+        "`git grep -nE \"'(pending|ready|active|completed)'\" -- packages/runtime/src/capabilities/plan packages/runtime/src/capabilities/design packages/runtime/src/capabilities/note`\nprints nothing (the flag-fed `carry-on` hits are `plan-cutover`'s to delete).",
+        "`git grep -nE \"from '\\./(plan|pin)|from '\\.\\./(design|note)/|from '\\.\\./\\.\\./(view|runtime-config)|immutability-gate\" -- packages/runtime/src/capabilities/plan/unit.ts`\nprints nothing.",
+        "Sole: the return names the one function computing readiness, and `git grep -n <it> -- packages/runtime/src`\nfinds it declared only in `unit.ts` (the carry-on terminus, deleted by `plan-cutover`, reads\nfolders and is not a fold).",
+        "`.changeset/unit.md` names `@cratylus/runtime`."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "version": "01M3MFY79KKQ98Y2YM57Y01DEG",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3MF3WGBA8DAQFR5SB9539BJ",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3MEKHBZHW928YXW4STCFXQY",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

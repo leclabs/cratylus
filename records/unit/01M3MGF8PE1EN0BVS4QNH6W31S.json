@@ -1,0 +1,61 @@
+{
+  "envelope": {
+    "id": "01M3MGF8PE1EN0BVS4QNH6W31S",
+    "entity": "01M3MGEWRTZE49Z1RX2CSJV7PT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MGEWRTZE49Z1RX2CSJV7PV"
+    ],
+    "author": "implementer",
+    "time": "2026-09-28T17:19:46.894Z",
+    "reason": "plans/record-store/completed/notebook.md sits in completed/ in the layout it is transcribed from",
+    "cause": "plan-cutover transcription"
+  },
+  "payload": {
+    "plan": "01M3MGETGHEX26FJDSKJE802HN",
+    "spec": {
+      "name": "notebook",
+      "intent": "**Wave 1.** Realizes `notebook`.\n\n\"The set of notes: ideas, questions and decisions not yet canonical, the intake that design\ncanonizes. Anyone may capture a note. An open question that names a plan or unit is an owed ruling,\nand it blocks what it names until it is closed.\"\n\n- A note's payload is its kind, topic, body, and whatever it blocks (references to plans or units).\n  A note has no name (`entity`: a name is a label \"where the entity has one\").\n- Capture writes a note's first version, with no admission bar: capture refuses only a malformed\n  shape (a missing field), never a judgement of content; resolving what a note blocks is the\n  interface's. A changed note is a supersession of its current head, never an in-place edit;\n  retract writes a retraction that becomes its head; live notes are those whose one head is a\n  version (a diverged note — two versions, or a version and a retraction, from merged branches —\n  is reported, never resolved by picking one).\n- **Kinds are opaque here.** Which kinds exist, and that only a question may block, are the `note`\n  skill's meaning (`PLAN.md` finding N4). This module recognises an **owed ruling** as a live note\n  that blocks a plan or unit, and exposes, for a caller, the plans and units the owed rulings name.\n  Closing an owed ruling is retracting its note.\n- Two defects of the hypothesis `note` skill are not reproduced: sequential ids (identity is the\n  store's minted one, and readers address a note by topic and kind — N3) and in-place \"extend\n  derived\" (records are immutable).\n\nIsolation (`PLAN.md` § Contract): imports only from `../../record-store/` (never\n`immutability-gate.ts`), never from another capability directory, the view or `runtime-config.ts`.\nIt references plans and units as opaque entity references; it imports no plan module.",
+      "static": [
+        "`git show 0c9da09c:docs/design/record-store.md` § The three domains (`notebook`, `unit`),\n§ Primitives (`entity`, `payload`).",
+        "The landed `packages/runtime/src/record-store/` and its return's reported signs."
+      ],
+      "deps": [
+        "01M3MGETGJKPR3G2ERDTJGJSTV"
+      ],
+      "outputs": [
+        "`packages/runtime/src/capabilities/note/notebook.ts` (new), plus any further new file in that\ndirectory other than `index.ts` and `dispatch.ts`, which are `domain-interface`'s",
+        "`.changeset/notebook.md`"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime typecheck` passes.",
+        "The return carries a smoke script and its verbatim output, run as\n`pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root; a\nre-run reproduces the output. It shows: notes of three different kinds over two topics captured\nand listed live with kind and topic; a one-word body captured without refusal; a note blocking a\nunit reference is reported as an owed ruling naming that unit, and retracting it removes the\nowed ruling; a note blocking nothing is no owed ruling; one note superseded (two records, one\nlive version); no identifier the module exposes is a sequence number.",
+        "`git grep -nE \"'(idea|question|decision)'\" -- packages/runtime/src` prints nothing.",
+        "`git grep -nE \"from '\\.\\./(design|plan)/|from '\\.\\./\\.\\./(view|runtime-config)|immutability-gate\" -- packages/runtime/src/capabilities/note`\nprints nothing.",
+        "Sole: the return names the one function yielding owed rulings, and `git grep -n <it> -- packages/runtime/src`\nfinds it declared only under `packages/runtime/src/capabilities/note/`.",
+        "`.changeset/notebook.md` names `@cratylus/runtime`."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "version": "01M3MF3WGBA8DAQFR5SB9539BJ",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}
