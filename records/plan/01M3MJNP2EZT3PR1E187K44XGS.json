@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MJNP2EZT3PR1E187K44XGS",
+    "entity": "01M3MJNP2EZT3PR1E187K44XGR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-28T17:58:14.350Z",
+    "reason": "Decompose the amended `skill routing` concept (29799b5f) into its one unit of work: the projector gives every agent its skills' closure over composition, on every harness at the rung it can carry.",
+    "cause": "design amendment 29799b5f to `skill routing`: every agent is given its role's skills together with everything they compose"
+  },
+  "payload": {
+    "name": "skill-closure",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "proposed"
+  }
+}
