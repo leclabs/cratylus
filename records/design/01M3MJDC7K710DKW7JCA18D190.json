@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MJDC7K710DKW7JCA18D190",
+    "entity": "01M3MEKHK6QA4SFYW73YXKASWM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MEKHK6QA4SFYW73YXKASWN"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T17:53:42.131Z",
+    "reason": "Architects loaded design and deliver but reached plan and note only by following a footer, so whole-system use was a steer; composition already names what belongs together, so what an agent is given must follow it.",
+    "cause": "operator question on whole-system use, after plan record-store closed"
+  },
+  "payload": {
+    "anchor": "skill routing",
+    "gloss": "each skill routes its reader's intents to its own domain interface in its own vocabulary, and holds its domain's authority rules: reconciliation of design and plans is the architect's alone, and of notes anyone's. `plan` pins and advances. `deliver` reads both and records acceptance by advancing a unit. `note` captures without an admission bar. No skill restates another's rules or mentions the record store; a skill that relies on another composes it, and every agent is given its role's skills together with everything they compose, so it starts with the whole of the system it works in, never a part.",
+    "factors": [
+      "01M3MEKHHB7HFK4FFQQG5C1Z0G"
+    ]
+  }
+}
