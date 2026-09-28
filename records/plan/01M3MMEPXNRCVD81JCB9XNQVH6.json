@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3MMEPXNRCVD81JCB9XNQVH6",
+    "entity": "01M3MMEPXNRCVD81JCB9XNQVH5",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-28T18:29:22.997Z",
+    "reason": "A main session launched with omp-agent starts with its skills' names and an instruction to read them, not with the skills, so it starts with part of the system it works in rather than the whole.",
+    "cause": "Design-holder finding: the omp launcher turns autoloadSkills into a skill:// required-reading list for a main session while a dispatched subagent gets the bodies injected natively."
+  },
+  "payload": {
+    "name": "main-session-skills",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM"
+    ],
+    "state": "proposed"
+  }
+}
