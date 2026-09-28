@@ -79,8 +79,8 @@ owed   @ note
 blocked(unit) ⇔ ∃ u ∈ deps(unit) : ¬satisfied(u)
 ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready
     PROMISES an executor can FINISH · conflating a dep with a ruling stalls a fan-out⟩
-frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
-    the plan IS · ¬ only what is dispatchable⟩
+frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | bound(P) ∧ ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
+    the plan IS · ¬ only what is dispatchable · ¬bound(P) ⇒ frontier(P) = ∅⟩
 planner   ≜ the planner ⟨bounded to s⟩
 conform @ signify
 show(P) ≜ \`scripts/plan.mjs show [<plan>]\` ↦ the bound P in wave order ∨ any P named, whole
