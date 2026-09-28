@@ -116,7 +116,7 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
     );
     expect(first.split('\n')[0]).toMatch(/^plan alpha \(p-draft\) at /);
     expect(show(repo, [], 'alpha')).toContain(
-      'plan alpha (p-draft) · realizes c1, c2 — units in wave order:\n  wave 0:\n    u1 — u-new, frontier · realizes c1',
+      'plan alpha (p-draft) · realizes c1, c2 — units in wave order:\n  wave 0:\n    u1 — u-new · realizes c1',
     );
     expect(plan(repo, 'bind', 'alpha', ...BY).split('\n')[0]).toMatch(
       /^plan alpha \(p-held\) at /,
@@ -129,7 +129,8 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
     expect(show(repo, [], 'alpha').split('\n')[0]).toMatch(
       /^plan alpha \(p-draft\) at /,
     );
-    expect(show(repo, [], 'u1')).toContain('unit: u1 — u-new, frontier');
+    // alpha is proposed again, so its unit is not on a frontier.
+    expect(show(repo, [], 'u1')).toContain('unit: u1 — u-new\n');
   });
 
   it('close is final: the plan stays readable, its units show no frontier and are never written again', () => {
@@ -137,6 +138,7 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
     concepts(repo);
     add(repo, 'a', 'done');
     add(repo, 'b', 'done', 'c1', '--deps', 'a');
+    plan(repo, 'bind', 'done', ...BY);
     plan(repo, 'advance', 'a', '--to', 'u-mid', ...BY);
     const closed = plan(repo, 'close', 'done', ...BY);
     expect(closed).toContain('plan done (p-over) · realizes');
@@ -364,6 +366,51 @@ describe('plan — the laws spanning plan and unit', () => {
   });
 });
 
+describe('plan — units are worked only while their plan is bound', () => {
+  it('advance REFUSES a unit of a plan that is not bound, writing nothing; add and revise stand; only the bound plan has a frontier', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'draft');
+    add(repo, 'b', 'draft', 'c1', '--deps', 'a');
+    plan(repo, 'revise', 'a', '--intent', 'still authored', ...BY);
+    expect(refused(repo, 'advance', 'a', '--to', 'u-mid', ...BY)).toMatch(
+      /plan "draft" is p-draft, not p-held, and a unit is worked only while its plan is p-held; `plan bind draft` first/,
+    );
+    expect(show(repo, [], 'draft')).toMatch(/0 frontier/);
+    add(repo, 'x', 'held');
+    plan(repo, 'bind', 'held', ...BY);
+    expect(marks(repo, 'held', 'x')).toBe('u-new, frontier');
+    plan(repo, 'advance', 'x', '--to', 'u-mid', ...BY);
+    // Binding another plan returns this one to proposed: its started unit
+    // keeps its state, is shown as it stands, and is no longer on a frontier.
+    plan(repo, 'bind', 'draft', ...BY);
+    expect(marks(repo, 'held', 'x')).toBe('u-mid');
+    expect(marks(repo, 'draft', 'a')).toBe('u-new, frontier');
+    plan(repo, 'revise', 'x', '--intent', 'kept', ...BY);
+    expect(refused(repo, 'advance', 'x', '--to', 'u-done', ...BY)).toMatch(
+      /a unit is worked only while its plan is p-held/,
+    );
+  });
+
+  it('a merge leaving units advanced in a plan no longer bound is reported state: writes to them still pass', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'one');
+    add(repo, 'b', 'two');
+    plan(repo, 'bind', 'one', ...BY);
+    merge(
+      repo,
+      'unit',
+      () => plan(repo, 'bind', 'two', ...BY),
+      () => plan(repo, 'advance', 'a', '--to', 'u-mid', ...BY),
+    );
+    expect(marks(repo, 'one', 'a')).toBe('u-mid');
+    expect(show(repo, [], 'one')).toMatch(/0 frontier/);
+    plan(repo, 'revise', 'a', '--intent', 'reported, not refused', ...BY);
+    plan(repo, 'retract', 'a', ...BY);
+  });
+});
+
 describe('plan — reconcile', () => {
   it('REFUSES a plan or unit that has not diverged in the plan’s words, never as a concurrent change', () => {
     const repo = repository();
@@ -439,6 +486,7 @@ describe('plan — incoherence, repaired one write at a time', () => {
     concepts(repo);
     add(repo, 'A', 'pl');
     add(repo, 'B', 'pl');
+    plan(repo, 'bind', 'pl', ...BY);
     plan(repo, 'advance', 'B', '--to', 'u-mid', ...BY);
     plan(repo, 'advance', 'B', '--to', 'u-done', ...BY);
     merge(
@@ -674,6 +722,7 @@ describe('plan — pins, drift and suspicion', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'u', 'pl', 'leaf');
+    plan(repo, 'bind', 'pl', ...BY);
     const repin = () => plan(repo, 'revise', 'u', '--repin', ...BY);
     expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier');
     design(repo, 'amend', 'base', '--gloss', 'beneath, amended', ...BY);
@@ -701,6 +750,7 @@ describe('plan — pins, drift and suspicion', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'u', 'pl', 'c1');
+    plan(repo, 'bind', 'pl', ...BY);
     design(repo, 'amend', 'c1', '--gloss', 'one, amended', ...BY);
     plan(repo, 'revise', 'u', '--intent', 'edited', ...BY);
     expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
@@ -733,6 +783,7 @@ describe('plan — dependencies and the lifecycle', () => {
     add(repo, 'a', 'pl');
     add(repo, 'b', 'pl', 'c1', '--deps', 'a');
     add(repo, 'o', 'other');
+    plan(repo, 'bind', 'pl', ...BY);
     expect(
       refused(
         repo,

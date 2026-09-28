@@ -27,16 +27,18 @@ The capabilities compose the domain modules. A unit is pinned on add, with the d
 wired into the pin, and re-pinned only by a revise or reconcile that says `--repin` with a reason,
 so editing a spec never clears a drift. A unit realizes one of its plan's concepts, and a merge that
 breaks this is listed as incoherence. A closed plan and its units are never written again and show
-no frontier; a diverged plan takes no new unit. A unit is ready, or on the frontier, only while
-every dependency is done and live and no owed ruling names it or its plan; an owed ruling naming a
-plan refuses binding it. `plan show <plan>` shows any plan whole, with its units. The repair rule,
-by which a write is refused only when it introduces a violation, now has one home in the record
-store, and so does the canonical order a set-valued payload field is written in, so the same set
-written in two orders on two branches converges. A unit's dependencies and a note's `blocks` now
-refuse a member named twice. The view gives a diverged concept, unit or note a line in its place in
-the whole view, marked; names which head of a diverged item is a retraction and what it withdrew;
-names a withdrawn reference's kind (`factor` or `dependency`); counts each shown plan apart in the
-header; lists a plan standing on a diverged concept once; and renders a concept's trace.
+no frontier; a diverged plan takes no new unit. A unit's state moves forward only while its plan is
+bound: `plan advance` refuses a unit of a proposed plan, which is still authored and revised. A unit
+is ready, or on the frontier, only while its plan is bound, every dependency is done and live, and
+no owed ruling names it or its plan; an owed ruling naming a plan refuses binding it. `plan show
+<plan>` shows any plan whole, with its units. The repair rule, by which a write is refused only when
+it introduces a violation, now has one home in the record store, and so does the canonical order a
+set-valued payload field is written in, so the same set written in two orders on two branches
+converges. A unit's dependencies and a note's `blocks` now refuse a member named twice. The view
+gives a diverged concept, unit or note a line in its place in the whole view, marked; names which
+head of a diverged item is a retraction and what it withdrew; names a withdrawn reference's kind
+(`factor` or `dependency`); counts each shown plan apart in the header; lists a plan standing on a
+diverged concept once; and renders a concept's trace.
 
 Every name a view prints addresses one entity: where no plan is in view a unit is printed with its
 plan, `u of plan p`, and that form is accepted wherever a unit is named, so a note blocks a unit by

@@ -87,9 +87,10 @@ export type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
  *  one head is a retraction. */
 export type PlanWithdrawn = (plan: string) => boolean;
 
-/** Whether a plan is in its final state, as the plan domain reports it: its
- *  units are never written again, and none of them is on the frontier. */
-export type PlanClosed = (plan: string) => boolean;
+/** Whether a plan is bound, as the plan domain reports it: settled in the
+ *  state that admits one plan. Only a bound plan's units are worked, so only
+ *  they are ready or on the frontier. */
+export type PlanBound = (plan: string) => boolean;
 
 /** A unit law broken across units by a merge: a dep on a withdrawn unit, a
  *  unit of a withdrawn plan (`reference` is the plan), a dep cycle, or one
@@ -410,7 +411,7 @@ export function reconcile(
 
 /**
  * The units readiness admits, in entity order: live units not yet in the state
- * satisfying a dependency, whose plan is not closed, which no owed ruling names
+ * satisfying a dependency, whose plan is bound, which no owed ruling names
  * (neither the unit nor its plan; `owed` is the set of entities the owed
  * rulings name), and whose every dep is a live unit that has reached the state
  * satisfying a dependency or moved past it. A dep withdrawn, diverged or not
@@ -420,7 +421,7 @@ function admitted(
   folds: Units,
   lifecycle: UnitLifecycle,
   owed: ReadonlySet<string>,
-  closed: PlanClosed,
+  bound: PlanBound,
 ): [string, Unit][] {
   const { states, satisfies } = checked(lifecycle);
   const done = states.indexOf(satisfies);
@@ -429,7 +430,7 @@ function admitted(
     .filter(
       ([entity, unit]) =>
         states.indexOf(unit.state) < done &&
-        !closed(unit.plan) &&
+        bound(unit.plan) &&
         !owed.has(entity) &&
         !owed.has(unit.plan) &&
         unit.spec.deps.every((dep) => {
@@ -446,10 +447,10 @@ export function ready(
   folds: Units,
   lifecycle: UnitLifecycle,
   owed: ReadonlySet<string>,
-  closed: PlanClosed,
+  bound: PlanBound,
 ): string[] {
   const [first] = lifecycle.states;
-  return admitted(folds, lifecycle, owed, closed)
+  return admitted(folds, lifecycle, owed, bound)
     .filter(([, unit]) => unit.state === first)
     .map(([entity]) => entity);
 }
@@ -460,9 +461,9 @@ export function frontier(
   folds: Units,
   lifecycle: UnitLifecycle,
   owed: ReadonlySet<string>,
-  closed: PlanClosed,
+  bound: PlanBound,
 ): string[] {
-  return admitted(folds, lifecycle, owed, closed).map(([entity]) => entity);
+  return admitted(folds, lifecycle, owed, bound).map(([entity]) => entity);
 }
 
 /**

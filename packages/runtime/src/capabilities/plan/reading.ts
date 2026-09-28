@@ -632,6 +632,11 @@ export class Reading {
     return f !== undefined && versions(f).some((p) => p.state === final);
   };
 
+  /** Whether plan `entity` is bound: settled in the state that admits one
+   *  plan. Only its units are worked, so only they are ready. */
+  planBound = (entity: string): boolean =>
+    this.plans.get(entity)?.payload?.state === this.lifecycle.plan.exclusive;
+
   /** The entities the owed rulings name. */
   get owed(): ReadonlySet<string> {
     return new Set(owedRulings(this.book).keys());
@@ -644,7 +649,9 @@ export class Reading {
   }
 
   /** Refuses a write to a unit of plan `plan` when that plan is closed or
-   *  withdrawn, or, for `add`, diverged. */
+   *  withdrawn; for `add`, diverged; and for `advance`, not bound, since a
+   *  unit's state moves forward only while its plan is bound. Adding to and
+   *  revising a unit of a proposed plan stand. */
   unitWritable(plan: string, verb: string): void {
     const f = this.plans.get(plan);
     const name = JSON.stringify(printed(this.planName(plan)));
@@ -654,9 +661,14 @@ export class Reading {
       throw new Error(
         `plan ${verb}: plan ${name} is ${this.lifecycle.plan.final}, which is final, and its units are never written again`,
       );
-    if (verb === 'add' && f.diverged)
+    if ((verb === 'add' || verb === 'advance') && f.diverged)
       throw new Error(
-        `plan add: plan ${name} has diverged; \`plan reconcile ${printed(this.planName(plan))}\` settles it first`,
+        `plan ${verb}: plan ${name} has diverged; \`plan reconcile ${printed(this.planName(plan))}\` settles it first`,
+      );
+    const { exclusive } = this.lifecycle.plan;
+    if (verb === 'advance' && !this.planBound(plan))
+      throw new Error(
+        `plan advance: plan ${name} is ${f.payload?.state}, not ${exclusive}, and a unit is worked only while its plan is ${exclusive}; \`plan bind ${printed(this.planName(plan))}\` first`,
       );
   }
 
@@ -811,7 +823,7 @@ export class Reading {
         this.units,
         this.lifecycle.unit,
         this.owed,
-        this.planClosed,
+        this.planBound,
       ),
     );
     this.#live = [...this.units.values()]

@@ -44,7 +44,8 @@ const show = (
   ...argv: string[]
 ) => spoken(repo, note(repo, 'show', ...argv), shared);
 
-/** A plan `pl` of units `a` and `b`, and a plan `other` of unit `o`. */
+/** A plan `pl` of units `a` and `b`, bound so its units are worked, and a
+ *  plan `other` of unit `o`. */
 function plans(repo: string): void {
   dispatchDesign(['define', 'c', '--gloss', 'a concept', ...BY], {
     from: repo,
@@ -54,6 +55,7 @@ function plans(repo: string): void {
   add('a', 'pl', '--plan-realizes', 'c');
   add('b', 'pl');
   add('o', 'other', '--plan-realizes', 'c');
+  plan(repo, 'bind', 'pl', ...BY);
 }
 
 /** The frontier of plan `of`, by unit name. */
@@ -97,13 +99,13 @@ describe('note — owed rulings', () => {
   it('a note blocking a plan REFUSES binding it and takes every unit of it off the frontier', () => {
     const repo = repository();
     plans(repo);
+    expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
     capture(repo, 'hold the plan', '--blocks', 'pl');
     expect(frontier(repo, 'pl')).toEqual([]);
-    expect(frontier(repo, 'other')).toEqual(['o']);
+    plan(repo, 'bind', 'other', ...BY);
     expect(refused(plan, repo, 'bind', 'pl', ...BY)).toMatch(
       /an owed ruling names plan pl/,
     );
-    plan(repo, 'bind', 'other', ...BY);
   });
 
   it('a diverged note blocks what either version blocks: revise REFUSES naming reconcile, and reconcile settles it', () => {
@@ -162,7 +164,6 @@ describe('note — what a note blocks, named so it addresses one', () => {
     ).toMatch(/name it with its plan, as "a of plan pl" or "a of plan other"/);
     capture(repo, 'hold', '--blocks', 'a of plan other');
     expect(show(repo)).toContain('hold — about hold · blocks a of plan other');
-    expect(frontier(repo, 'other')).toEqual(['o']);
     expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
     note(
       repo,
