@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3MF3WGBA8DAQFR5SB9539BJ",
+    "entity": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVS"
+    ],
+    "author": "architect",
+    "time": "2026-09-28T16:56:05.388Z",
+    "reason": "The note skill closed the kind set, a decision C could not derive; C now states where the kinds live. 'Owed ruling' is reserved to the notebook, so no other skill defines it.",
+    "cause": "assay of note-skill at 21e41e1e"
+  },
+  "payload": {
+    "anchor": "notebook",
+    "gloss": "the set of notes: ideas, questions and decisions not yet canonical, the intake that design canonizes. Anyone may capture, revise or retract a note. A note's title is its name, one live note per title. Its kind is one of the note skill's labels (idea, question, decision), which the runtime never interprets. A live note that blocks a plan or unit is an **owed ruling**, the one sense of that sign; it blocks what it names until it no longer does, by being retracted or revised to block nothing, and a diverged note blocks whatever any of its versions blocks until it is reconciled.",
+    "factors": [
+      "01M3MEKH4WNSY2RE9VRTXZH9PT"
+    ]
+  }
+}
