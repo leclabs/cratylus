@@ -38,7 +38,6 @@
     "prepare": "husky",
     "stance-guard:test": "pnpm --filter @cratylus/canon run stance-guard:test",
     "dev": "turbo run dev --parallel",
-    "plan": "pnpm --filter @cratylus/canon run plan",
     "project": "pnpm canon:project && pnpm canon:project:codex && pnpm canon:project:omp",
     "verify": "pnpm build && pnpm lint && pnpm project && pnpm test",
     "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"

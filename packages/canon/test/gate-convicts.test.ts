@@ -142,10 +142,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // corpora — including the un-prefixed port module a second hand-written
   // exception would be, which the biconditional has no allowlist to absorb.
   'canon/capability-keyspace.test.ts': 'GATE',
-  // crosses the LIVE cell against the runtime's `CarryOnVerb` union and canon's
-  // `PLAN_STATES`/`PLAN_MARKERS` home, and asserts the projected shim exists; its
-  // convicting fixtures drive the same three readers over a drifted verb set on
-  // either side, a forked layout line, and a cell that declares neither.
   // censuses the LIVE `*Cell` interfaces in `@cratylus/schema` for one-gloss-one-sign;
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
@@ -189,7 +185,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/null-dimension.test.ts': 'GATE',
-  'canon/plan-set.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   // BEHAVIORAL, on the same reading as `stance-guardrail-dark`: it drives the worker
   // with verdicts it supplies itself and carries its own negative controls (a read is
@@ -301,7 +296,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'memory/migrate-memory.test.ts': 'BEHAVIORAL',
   'memory/migrate.test.ts': 'BEHAVIORAL',
   'memory/node.test.ts': 'BEHAVIORAL',
-  'memory/session-isolation-integration.test.ts': 'BEHAVIORAL',
   'memory/session.test.ts': 'BEHAVIORAL',
   // pins a ceiling calibrated against the live store corpus — the reading that
   // makes it vacuously green if the calibration ever stops biting.
@@ -312,11 +306,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── runtime ──────────────────────────────────────────────────────────
   'runtime/brand-derived-literals.test.ts': 'GATE',
-  // two GATE legs scan every carry-on capability source — one for a sibling-package
-  // import (the DAG guard), one for any read of turn text; its convicting fixtures
-  // drive both predicates over planted sources, and the elevate legs drive the real
-  // verb surface with a host whose `install` does nothing.
-  'runtime/carry-on.test.ts': 'GATE',
   // drives the `design` verb surface over temporary git repositories it builds and
   // merges itself; its refusals ARE its fixtures.
   'runtime/design.test.ts': 'BEHAVIORAL',

@@ -2,7 +2,7 @@
 // The design runtime CAPABILITY — the concept lattice, met in the design's own
 // verbs, reached via `cratylus design <verb>`.
 //
-// Ships INSIDE the runtime, as the event-tap and carry-on capabilities do: the
+// Ships INSIDE the runtime, as the event-tap capability does: the
 // kernel routes `design <verb>` to {@link dispatchDesign} ahead of the discovered
 // dispatch. It composes the design records (`design.ts`) with the view, and joins
 // the plans standing on each concept through the plan capability's reading.

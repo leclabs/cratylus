@@ -170,7 +170,9 @@ function sourcesUnder(dir: string): string[] {
   return out;
 }
 
-/** Every capability a canon skill cell declares, as `<skill> → <capability>`. */
+/** Every capability a canon skill cell declares, as `<skill> → <capability>`. A
+ *  comment is not a declaration: a cell may record the capability it once bound
+ *  (`carry-on` does), so comment lines are dropped before the match. */
 function skillCapabilities(
   dir: string,
 ): { skill: string; capability: string }[] {
@@ -183,7 +185,11 @@ function skillCapabilities(
     } catch {
       continue; // not a cell dir
     }
-    const m = src.match(/runtime:\s*\{\s*capability:\s*'([^']+)'/);
+    const code = src
+      .split('\n')
+      .filter((line) => !/^\s*\/\//.test(line))
+      .join('\n');
+    const m = code.match(/runtime:\s*\{\s*capability:\s*'([^']+)'/);
     if (m?.[1] !== undefined) out.push({ skill: entry.name, capability: m[1] });
   }
   return out.sort((a, b) => a.skill.localeCompare(b.skill));

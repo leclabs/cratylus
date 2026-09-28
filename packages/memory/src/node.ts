@@ -27,8 +27,8 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  *
  * Default markers: `.git` (project; a `.git` FILE — worktree/submodule —
  * resolves through to the primary checkout's node) · a package manifest
- * (package) · `PLAN.md` (plan) · `$HOME` (user). The set extends via
- * `memory.scopeMarkers` (glob list) in `.cratylus.memory.json`.
+ * (package) · `$HOME` (user). The set extends via `memory.scopeMarkers` (glob
+ * list) in `.cratylus.memory.json`.
  *
  * Foreign-host records (host ≠ current) cannot be resolved against this
  * filesystem — a path that happens to exist locally proves nothing about the
@@ -53,7 +53,6 @@ export const DEFAULT_MARKERS: readonly string[] = [
   'pyproject.toml',
   'Cargo.toml',
   'go.mod',
-  'PLAN.md',
 ];
 
 /** Everything `resolveNode` needs about the world — injectable for tests. */
@@ -73,7 +72,7 @@ export interface NodeResolution {
   /** Absolute path of the boundary directory, or `legacy` when unmeasurable. */
   node: string;
   /**
-   * The marker basis: a marker pattern (`.git`, `PLAN.md`, a config glob),
+   * The marker basis: a marker pattern (`.git`, a manifest, a config glob),
    * `.git-file` (worktree/submodule resolved to primary), `$HOME`,
    * `markerless` (cwd is its own boundary), `foreign-cwd` (foreign host, no
    * config home covers the cwd), or `vanished-cwd` (the cwd is gone and the

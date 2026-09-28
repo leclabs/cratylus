@@ -81,21 +81,14 @@ describe('resolveNode — marker lattice (SPEC D3)', () => {
     expect(resolveNode(deep, 'testhost', cfg()).node).toBe(repo);
   });
 
-  it('marker precedence is NEAREST-wins: PLAN.md in a package in a repo', () => {
+  it('marker precedence is NEAREST-wins: a package in a repo', () => {
     const repo = join(root, 'repo');
     const pkg = join(repo, 'packages', 'p');
-    const plan = join(pkg, 'plans', 'x');
     mkdirSync(join(repo, '.git'), { recursive: true });
-    mkdirSync(plan, { recursive: true });
+    mkdirSync(pkg, { recursive: true });
     writeFileSync(join(pkg, 'package.json'), '{}', 'utf8');
-    writeFileSync(join(plan, 'PLAN.md'), '# plan', 'utf8');
 
-    // cwd in the plan dir → the plan node (nearest), not package, not repo.
-    expect(resolveNode(plan, 'testhost', cfg())).toEqual({
-      node: plan,
-      basis: 'PLAN.md',
-    });
-    // cwd in the package (below the plan) → the package node.
+    // cwd in the package → the package node (nearest), not the repo.
     const src = join(pkg, 'src');
     mkdirSync(src, { recursive: true });
     expect(resolveNode(src, 'testhost', cfg())).toEqual({

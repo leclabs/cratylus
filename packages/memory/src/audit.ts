@@ -10,7 +10,7 @@ import { DEFAULT_MARKERS, canonical } from './node.js';
  * The scope-pollution auditor: a deterministic detector over an agent home's
  * resident stores — `SEMANTIC.md` and `PROCEDURAL.md`, the two shared-home
  * partitions of the route target set in `route.ts` — for markers that belong at
- * a project or plan node rather than in an agent's home. The post-dream
+ * a project node rather than in an agent's home. The post-dream
  * invariant is that both files load whole AND audit clean; this module is the
  * falsifier and dream's exit gate.
  *
@@ -31,7 +31,6 @@ import { DEFAULT_MARKERS, canonical } from './node.js';
 /** The marker classes the detector recognizes. */
 export type MarkerClass =
   | 'workspace-path'
-  | 'plan-path'
   | 'branch-ref'
   | 'issue-ref'
   | 'repo-key';
@@ -181,8 +180,6 @@ const DETECTORS: ReadonlyArray<{ cls: MarkerClass; re: RegExp }> = [
     cls: 'workspace-path',
     re: /(?:~|\/(?:Users|home)\/[A-Za-z0-9._-]+)\/workspaces\/[A-Za-z0-9._-]+/g,
   },
-  // A plan directory reference: `plans/<x>` (with or without trailing slash).
-  { cls: 'plan-path', re: /\bplans\/[A-Za-z0-9._-]+/g },
   // Explicit git ref forms.
   { cls: 'branch-ref', re: /\b(?:refs\/heads|origin)\/[A-Za-z0-9./_-]+/g },
   // An issue/PR number (`#42`) or URL tail (`pull/42`, `issues/42`). The
@@ -201,7 +198,7 @@ const DETECTORS: ReadonlyArray<{ cls: MarkerClass; re: RegExp }> = [
  * commit-sha-shaped token ({@link SHA_RE}). Explicit `refs/heads/…` /
  * `origin/…` forms carry their context lexically and stay in {@link DETECTORS}.
  * {@link BRANCH_DENY} still excludes ordinary repo-tree prefixes (those are
- * path mentions, and `plans/<x>` is already its own class).
+ * path mentions).
  */
 const GIT_KEYWORD_RE =
   /^(?:branch(?:es)?|checkout|merge[ds]?|rebase[ds]?|push(?:e[ds])?|pull|prs?|mrs?)$/i;
@@ -357,8 +354,8 @@ export function loadLines(file: string): string[] {
 }
 
 /**
- * Is `dir` a repo root? A BOUNDARY MARKER says so — `.git`, a package manifest,
- * `PLAN.md` ({@link DEFAULT_MARKERS}) — never the presence of some other file
+ * Is `dir` a repo root? A BOUNDARY MARKER says so — `.git` or a package
+ * manifest ({@link DEFAULT_MARKERS}) — never the presence of some other file
  * that merely happens to sit there. `$HOME` is excluded outright: it is the
  * USER boundary, and `resolveNode` already ranks it above every marker (it
  * returns at `currentHome` before `markerIn` is ever consulted), so a stray

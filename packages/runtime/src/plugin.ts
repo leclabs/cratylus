@@ -17,7 +17,6 @@
 // CONTRACT ONLY — no loader logic. The runtime loader lands in a later shard.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { CarryOnHost } from './ports/carry-on.js';
 import type { DesignHost } from './ports/design.js';
 import type { EventTapHost } from './ports/event-tap.js';
 import type { HeartbeatHost } from './ports/heartbeat.js';
@@ -39,9 +38,6 @@ export interface RuntimePlugin {
   readonly memory?: MemoryStrategy;
   /** The event-tap capability this package provides, as an {@link EventTapHost}. */
   readonly eventTap?: EventTapHost;
-  /** The carry-on capability this package provides, as a {@link CarryOnHost} — the
-   *  turn-end gate an elevation installs and a release removes. */
-  readonly carryOn?: CarryOnHost;
   /** The heartbeat capability this package provides, as a {@link HeartbeatHost} — the
    *  endogenous pulse whose emissions SAMPLE a pressure gate rather than clock a cycle. */
   readonly heartbeat?: HeartbeatHost;

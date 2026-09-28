@@ -215,7 +215,6 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'memory',
   'eventTap',
-  'carryOn',
   'heartbeat',
   'design',
   'plan',

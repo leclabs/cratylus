@@ -292,7 +292,7 @@ with "--", use --body=<text> or pipe via --body -.
 
 node resolves a path to its boundary node: the nearest ancestor (reflexive)
 holding a marker — .git (a .git FILE resolves through to the primary
-checkout), a package manifest, PLAN.md, or $HOME; extend via
+checkout), a package manifest, or $HOME; extend via
 memory.scopeMarkers globs in .cratylus.memory.json. Markerless => the path is
 its own boundary; nonexistent => nearest existing ancestor. Prints the BARE
 node path so it composes: read --under "$(memory node <cwd>)". --json

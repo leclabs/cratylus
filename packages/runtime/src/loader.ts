@@ -20,7 +20,6 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { RuntimePlugin } from './plugin.js';
-import type { CarryOnHost } from './ports/carry-on.js';
 import type { DesignHost } from './ports/design.js';
 import type { EventTapHost } from './ports/event-tap.js';
 import type { HeartbeatHost } from './ports/heartbeat.js';
@@ -38,7 +37,6 @@ import { loadRuntimeConfig } from './runtime-config.js';
 export const CAPABILITIES = [
   'memory',
   'eventTap',
-  'carryOn',
   'heartbeat',
   'design',
   'plan',
@@ -52,7 +50,6 @@ export type Capability = (typeof CAPABILITIES)[number];
 export type CapabilityPort =
   | MemoryStrategy
   | EventTapHost
-  | CarryOnHost
   | HeartbeatHost
   | DesignHost
   | PlanHost

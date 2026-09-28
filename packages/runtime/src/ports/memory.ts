@@ -111,7 +111,7 @@ export interface ReadQuery {
 export interface NodeResolution {
   /** The boundary node — the nearest marker-holding ancestor (reflexive). */
   node: string;
-  /** Which marker (`.git`, a manifest, `PLAN.md`, `$HOME`, …) decided the node. */
+  /** Which marker (`.git`, a manifest, `$HOME`, …) decided the node. */
   basis: string;
 }
 
@@ -370,7 +370,7 @@ export interface MemoryStrategy {
 
   /**
    * Resolve a path to its boundary node: the nearest ancestor (reflexive)
-   * holding a marker (`.git`, a package manifest, `PLAN.md`, or `$HOME`;
+   * holding a marker (`.git`, a package manifest, or `$HOME`;
    * extensible via node config). Markerless ⇒ the path is its own boundary.
    */
   node(path: string): NodeResolution;

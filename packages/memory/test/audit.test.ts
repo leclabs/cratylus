@@ -19,7 +19,6 @@ afterEach(() => {
 const POLLUTED_SEMANTIC = [
   '# some-agent — semantic',
   'Daily driver checkout lives at ~/workspaces/polis for now.',
-  'Open thread: plans/scoped-memory wave 1 is mine.',
   'Stale branch to prune: mav/B9-toolkit-hardening.',
   'Landed the fix in PR #42.',
   '',
@@ -45,15 +44,14 @@ describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
     expect(r.out).toMatch(
       /SEMANTIC\.md:2: \[workspace-path\] ~\/workspaces\/polis/,
     );
-    expect(r.out).toMatch(/SEMANTIC\.md:3: \[plan-path\] plans\/scoped-memory/);
     expect(r.out).toMatch(
-      /SEMANTIC\.md:4: \[branch-ref\] mav\/B9-toolkit-hardening/,
+      /SEMANTIC\.md:3: \[branch-ref\] mav\/B9-toolkit-hardening/,
     );
-    expect(r.out).toMatch(/SEMANTIC\.md:5: \[issue-ref\] #42/);
+    expect(r.out).toMatch(/SEMANTIC\.md:4: \[issue-ref\] #42/);
     expect(r.out).toMatch(
       /PROCEDURAL\.md:2: \[workspace-path\] ~\/workspaces\/other-repo/,
     );
-    expect(r.out).toMatch(/audit: 5 finding\(s\)/);
+    expect(r.out).toMatch(/audit: 4 finding\(s\)/);
   });
 
   it('the retired v1 files are OUT of the scan set: a polluted SELF.md/MEMORY.md no longer scans', () => {
@@ -142,14 +140,12 @@ describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
     // A NEW unpinned marker appears → the audit still bites.
     writeFileSync(
       join(home, 'PROCEDURAL.md'),
-      '# procedural\n- new pollution: plans/fleet-cutover is blocked\n',
+      '# procedural\n- new pollution: PR #77 is blocked\n',
       'utf8',
     );
     const withNew = main(['audit', '--home', home, '--allow', allow]);
     expect(withNew.code).toBe(1);
-    expect(withNew.out).toMatch(
-      /PROCEDURAL\.md:2: \[plan-path\] plans\/fleet-cutover/,
-    );
+    expect(withNew.out).toMatch(/PROCEDURAL\.md:2: \[issue-ref\] #77/);
     expect(withNew.out).not.toMatch(/workspaces\/obsidian/);
   });
 

@@ -35,7 +35,6 @@ Capability verbs route to the runtime and are what deployed skills invoke:
 ```sh
 cratylus memory encode --name mav --body '…'
 cratylus eventTap status
-cratylus carryOn status
 cratylus design show
 cratylus design define 'record id' --gloss '…' --author … --reason … --cause …
 cratylus plan show

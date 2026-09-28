@@ -5,7 +5,7 @@ Task-file = dispatch prompt (reader-llm-default: ρ = LLM; blind-dispatchable �
 ## Bindings
 
 - repo root: `/tmp/reach-consumer-a`
-- task-file: `plans/healthz/ready/add-endpoint.md` (content inlined below; state → active at dispatch)
+- unit: `add-endpoint of plan healthz` (spec inlined below; advanced to active at dispatch)
 - branch: work on `healthz/add-endpoint` off `main`; no push, no commit to `main`.
 - gates before return: `npm test -w services/gateway` green; diff confined to `services/gateway/`.
 - judge: plan lead; rejection returns the failed criterion verbatim — resubmit against it, no scope drift.

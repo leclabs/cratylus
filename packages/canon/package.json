@@ -19,8 +19,6 @@
     "clean": "rm -rf dist",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "pack:smoke": "tsx tooling/pack-smoke/pack-smoke-cli.ts",
-    "plan-set": "tsx tooling/plan-set-cli.ts",
-    "plan": "sh tooling/plan-set/plan-set.sh",
     "prepack": "pnpm run build",
     "project:targets": "tsx tooling/project-targets-cli.ts",
     "scaffold": "tsx tooling/scaffold-cli.ts",

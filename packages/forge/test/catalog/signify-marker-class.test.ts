@@ -1,4 +1,4 @@
-// THE GATE FOR THE CLASS — zero owed-signification markers outside `plans/`.
+// THE GATE FOR THE CLASS — zero owed-signification markers outside the notebook's records.
 //
 // WHY THIS EXISTS, precisely. A census counted the owed-signification markers in this
 // repo and reported exactly one. It measured with a pattern anchored on the marker word
@@ -21,15 +21,16 @@
 // WHAT IT DELIBERATELY DOES NOT MATCH, and why each is a decision rather than an
 // oversight:
 //   - the bare lower-case word in running prose, and the `signify` SKILL's own name and
-//     path. Roughly forty files outside `plans/` use it legitimately; a case-insensitive
+//     path. Roughly forty files use it legitimately; a case-insensitive
 //     bare-token pattern would flag every one and the gate would be turned off within a
 //     day. Arm 1 requires caps; arm 2 requires a bracket AND a delimiter.
 //   - a markdown link to that skill — `[signify](./skill.ts)` — because `]` is not an
 //     opening delimiter. `[<word>]` standing alone IS caught, by arm 1.
 //   - the token inside a longer identifier or word (a `signifyCell` member, a
 //     `SIGNIFYING` in prose): both arms are word-bounded.
-//   - `plans/`, wholesale. That directory is where this corpus legitimately RECORDS
-//     debt; a marker there is the record working, not the debt shipping.
+//   - `records/note/`, wholesale — the notebook's records. That is where this corpus
+//     legitimately RECORDS debt; a marker there is the record working, not the debt
+//     shipping.
 //
 // SELF-EXEMPTION: NONE — the literal is built from parts instead.
 // This file necessarily discusses marker-shaped text, so it would convict itself. The
@@ -81,8 +82,7 @@ function hasMarker(text: string): boolean {
 }
 
 /** Derived, ephemeral, or vendored trees — none of them an AUTHORED surface, so a hit
- *  there is a copy of a hit elsewhere. `plans/` is excluded for the opposite reason:
- *  it is authored, and it is the sanctioned home for recorded debt. */
+ *  there is a copy of a hit elsewhere. */
 const SKIP_DIRS: ReadonlySet<string> = new Set([
   '.git',
   '.turbo',
@@ -100,8 +100,12 @@ const SKIP_DIRS: ReadonlySet<string> = new Set([
   // entry each and silently tolerated a third that was already dead; a parent needs one
   // and cannot go stale per-harness. Adding a harness now costs nothing here.
   '.cratylus',
-  'plans',
 ]);
+
+/** The notebook's records, excluded for the opposite reason: they are authored, and
+ *  they are the sanctioned home for recorded debt. A PATH from the scanned root, not a
+ *  segment, because `note` alone names other directories too. */
+const RECORDED_DEBT = 'records/note';
 
 /** Non-text payloads, skipped for speed only — a marker is a thing a person TYPES. */
 const BINARY = /\.(png|jpe?g|gif|ico|webp|pdf|zip|woff2?|ttf|otf|node)$/i;
@@ -112,7 +116,9 @@ function filesUnder(root: string): string[] {
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.isDirectory()) {
-        if (!SKIP_DIRS.has(entry.name)) walk(join(dir, entry.name));
+        const rel = relative(root, join(dir, entry.name)).split(sep).join('/');
+        if (!SKIP_DIRS.has(entry.name) && rel !== RECORDED_DEBT)
+          walk(join(dir, entry.name));
       } else if (entry.isFile() && !BINARY.test(entry.name)) {
         out.push(relative(root, join(dir, entry.name)).split(sep).join('/'));
       }
@@ -152,11 +158,11 @@ describe('owed-signification markers — the gate is for the CLASS, not one punc
     );
   });
 
-  it('the live tree carries ZERO owed-signification markers outside plans/', () => {
+  it("the live tree carries ZERO owed-signification markers outside the notebook's records", () => {
     const carrying = scan(repoRoot);
     expect(
       carrying,
-      `owed-signification markers ship in these files — record the debt under plans/ or discharge it:\n${carrying.join('\n')}`,
+      `owed-signification markers ship in these files — record the debt as a note or discharge it:\n${carrying.join('\n')}`,
     ).toEqual([]);
   });
 

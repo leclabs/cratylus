@@ -42,9 +42,6 @@ const fixturesRoot = join(
 
 /** fixture file → its artifact class (ρ per the READER BINDING lists). */
 const FIXTURES: Record<string, ArtClass> = {
-  'task-file.md': 'task-file',
-  'task-file-dep.md': 'task-file',
-  'plan-mirror.md': 'plan-mirror',
   'delegation-prompt.md': 'delegation-prompt',
   'subagent-return.md': 'subagent-return',
   'agent-vector.md': 'generated-agent-artifact',

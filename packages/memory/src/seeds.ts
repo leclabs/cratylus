@@ -36,8 +36,8 @@ export function semanticSeed(name: string): string {
 
 *My semantic store (\`memory\`) — identity facts + durable agent-intrinsic knowledge; the hot
 index (the vault carries the cold corpus). Self-authored, grown at dream; seeded once, never
-overwritten. Read whole at wake. Agent-intrinsic ONLY: a project- or plan-scoped fact lives
-in that node's AGENTS.md, never here.*
+overwritten. Read whole at wake. Agent-intrinsic ONLY: a project-scoped fact lives in that
+node's AGENTS.md, never here.*
 
 <!-- Seeded ${d}. Empty on purpose. Dream promotes durable facts here from EPISODIC. -->
 
