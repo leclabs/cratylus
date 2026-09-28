@@ -45,10 +45,10 @@
     },
     // test — NOT CACHED, deliberately.
     //
-    // Six canon gates scan by `git ls-files` from the repo ROOT: architecture,
-    // command-veracity, hook-rule-boundary, plan-set, bin-name-single-home and
-    // gate-convicts reach plans/, AGENTS.md, the root ground docs, and other
-    // packages' manifests. Turbo's cache key is a package's own inputs plus its
+    // Five canon gates scan by `git ls-files` from the repo ROOT: architecture,
+    // command-veracity, hook-rule-boundary, bin-name-single-home and
+    // gate-convicts reach AGENTS.md, the root ground docs, and other packages'
+    // manifests. Turbo's cache key is a package's own inputs plus its
     // dependencies' outputs — provably NARROWER than that scan domain. A commit
     // touching only the scanned corpus produces a HIT and REPLAYS the previous
     // green log without running the gate, so cached-green becomes

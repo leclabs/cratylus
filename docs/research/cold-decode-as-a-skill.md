@@ -1,9 +1,6 @@
 > **STATUS — a superseded proposal, retained for the part that still stands.**
-> Authored in plan mode 2026-08-05; never executed. It sat loose at `plans/` root, which is
-> not a place a plan can live: `plan-set.ts` enforces folder-as-state, so a plan is a
-> DIRECTORY bearing `PLAN.md`. A bare file there is invisible to `list` and unreachable by
-> `retire`. Moved here, which also subjects it to `command-veracity` — `plans/` is exempt
-> from the plan-path gate so a retirement plan can name what it retires, and this is not one.
+> Authored in plan mode 2026-08-05; never executed. It sat loose beside the plans of the
+> time, where no plan could live, and was moved here.
 >
 > **CLOSED since it was written.** Its §5 ("the evidence base has rotted") is discharged:
 > `README.md` and `docs/research/candidates.md` no longer cite a deleted plan, and
