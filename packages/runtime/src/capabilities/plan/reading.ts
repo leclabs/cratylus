@@ -47,6 +47,7 @@ import {
 import { loadRuntimeConfig } from '../../runtime-config.js';
 import type { DesignState, ShownConcept } from '../../view/design.js';
 import type {
+  Computed,
   Diverged,
   Holder,
   Incoherence,
@@ -298,12 +299,12 @@ export class Reading {
 
   /** Where the reading was computed: the commit, and whether writes not yet
    *  committed are in it — on disk and uncommitted, or held by this act. */
-  get computed(): { readonly commit: string; readonly uncommitted: boolean } {
-    let commit: string;
+  get computed(): Computed {
+    let commit: string | undefined;
     try {
       commit = this.#git('rev-parse', '--short', 'HEAD');
     } catch {
-      commit = `${this.#git('symbolic-ref', '--short', 'HEAD')} (no commit yet)`;
+      // Nothing is committed yet: the header names no commit.
     }
     const held = this.store instanceof StagedStore && this.store.holding;
     const onDisk =

@@ -330,6 +330,22 @@ describe('design — divergence and convergence across a merge', () => {
   });
 });
 
+describe('design — the header of a repository with nothing committed', () => {
+  it('names no commit, and says nothing is committed yet', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'unborn-'));
+    git(repo, 'init', '-q', '-b', 'main');
+    expect(show(repo).split('\n')[0]).toBe(
+      'design with nothing committed yet: 0 concepts · 0 unplaced · 0 diverged · 0 incoherent',
+    );
+    design(repo, 'define', 'alpha', '--gloss', 'first', ...BY);
+    const head = show(repo).split('\n')[0] as string;
+    expect(head).toBe(
+      'design with nothing committed yet: 1 concept · 0 unplaced · 0 diverged · 0 incoherent',
+    );
+    expect(head).not.toMatch(/since|no commit yet/);
+  });
+});
+
 describe('design — reconcile', () => {
   it('REFUSES a concept that has not diverged in the design’s words, never as a concurrent change', () => {
     const repo = repository();

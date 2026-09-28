@@ -118,7 +118,8 @@ export function count(n: number, one: string, many: string): string {
 /** Where a view's state was computed: the commit, and whether writes not yet
  *  committed are included in it. */
 export interface Computed {
-  readonly commit: string;
+  /** The commit; `undefined` when nothing is committed yet. */
+  readonly commit: string | undefined;
   readonly uncommitted: boolean;
 }
 
@@ -129,6 +130,8 @@ export function header(
   at: Computed,
   counts: readonly string[],
 ): string {
+  if (at.commit === undefined)
+    return `${subject} with nothing committed yet: ${counts.join(' · ')}`;
   const also = at.uncommitted
     ? ` (this state includes writes made since ${at.commit} and not yet committed)`
     : '';
