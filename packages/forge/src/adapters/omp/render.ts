@@ -105,6 +105,7 @@ import {
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
+import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
   OMP_ENVELOPE_KIND,
   OMP_REFUSAL_SHAPE,
@@ -1217,10 +1218,16 @@ export function ompOverlayYaml(): string {
  * not its location, and `skill://…` does not execute. Every projected
  * `scripts/<capability>.mjs` is a thin forwarder to the host CLI (`CLI_BIN`)
  * (`runtimeShimContent`), so each inlined skill opens, under `# Skill: <name>`,
- * with one line per shim `omp read skill://<name>/scripts` lists, saying which
- * CLI command that route runs as. A skill omp cannot resolve is not dropped:
- * it degrades to a `skill://` line under `## Required reading`, and the
- * launcher says so on stderr, once per skill, before it launches.
+ * with one line per GENERATED shim among its `scripts/`, saying which CLI
+ * command that route runs as. A shim is known by its signature line
+ * (`SHIM_SIGNATURE`), which also names the capability it forwards to; a script
+ * the skill's author wrote gets no line. A skill omp cannot resolve is not
+ * dropped: it degrades to a `skill://` line under `## Required reading`, and
+ * the launcher says so on stderr, once per skill, before it launches.
+ *
+ * omp's own skill flags are read off the arguments passed through to it:
+ * `--no-skills` inlines none, and a `--skills` filter, which is not mirrored,
+ * earns one stderr line.
  *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
  * FLOW sequence from the skill closure projection hands it; an operator
@@ -1320,6 +1327,19 @@ export const OMP_LAUNCHER_SCRIPT = [
   "# resolver from the launch directory — see this script's doc.",
   "nl='",
   "'",
+  "# omp's own skill flags, read off the arguments it is about to receive.",
+  '# `--no-skills` means omp loads none, so none are inlined; a `--skills`',
+  '# filter is not mirrored, and saying so is the alternative to diverging quietly.',
+  'filtered=',
+  'for arg in "$@"; do',
+  '  case $arg in',
+  '    --no-skills) skills= ;;',
+  '    --skills | --skills=*) filtered=1 ;;',
+  '  esac',
+  'done',
+  'if [ -n "$filtered" ] && [ -n "$skills" ]; then',
+  `  printf '${OMP_LAUNCHER_FILE}: agent %s: --skills filters which skills omp loads, which this launcher does not apply; its inlined skills may differ from what omp loads\\n' "$name" >&2`,
+  'fi',
   'missing=',
   'while IFS= read -r skill; do',
   '  [ -n "$skill" ] || continue',
@@ -1331,10 +1351,11 @@ export const OMP_LAUNCHER_SCRIPT = [
   '  # Each shim forwards to the host CLI, so its route needs no location.',
   '  routes=',
   '  set -f',
-  '  for shim in $(omp read "skill://$skill/scripts" </dev/null 2>/dev/null); do',
-  '    case $shim in',
-  `      *.mjs) routes="$routes$nl\\\`scripts/$shim <verb>\\\` runs as \\\`${CLI_BIN} \${shim%.mjs} <verb>\\\`." ;;`,
-  '    esac',
+  '  for script in $(omp read "skill://$skill/scripts" </dev/null 2>/dev/null); do',
+  '    # A route line only for a shim forge generated, named by its signature:',
+  "    # any other script is the skill author's, and its route is not ours to state.",
+  `    cap=$(omp read "skill://$skill/scripts/$script" </dev/null 2>/dev/null | awk -v sig='${SHIM_SIGNATURE}' 'NR <= 3 && index($0, sig) == 1 { print substr($0, length(sig) + 1); exit }')`,
+  `    [ -n "$cap" ] && routes="$routes$nl\\\`scripts/$script <verb>\\\` runs as \\\`${CLI_BIN} $cap <verb>\\\`."`,
   '  done',
   '  set +f',
   `  composed="$composed$nl$nl# Skill: $skill\${routes:+$nl$routes}$nl$nl$(printf '%s\\n' "$text" | awk "$after_fm")"`,

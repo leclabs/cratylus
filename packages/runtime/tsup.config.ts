@@ -14,6 +14,7 @@ export default defineConfig([
       dispatch: 'src/dispatch.ts',
       main: 'src/main.ts',
       'bin-name': 'src/bin-name.ts',
+      capability: 'src/capability.ts',
       'runtime-config': 'src/runtime-config.ts',
       ulid: 'src/ulid.ts',
       events: 'src/events.ts',

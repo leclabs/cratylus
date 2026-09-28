@@ -25,6 +25,7 @@
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
+import { SESSION_SCOPED } from '@cratylus/runtime/capability';
 
 /**
  * THE VENDOR NAMES LIVE ON THE ADAPTERS, NOT HERE.
@@ -51,11 +52,34 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 const SESSION_ID_ENV = 'AGENT_SESSION_ID';
 const SESSION_ID_FROM_ENV = 'AGENT_SESSION_ID_FROM';
 
+/**
+ * The line every generated shim carries, naming the capability it forwards to:
+ * `// <CLI_BIN>-shim: <capability>`. It is what identifies a script as a
+ * forge-generated forwarder rather than one a skill author wrote, and the omp
+ * launcher reads it back to say which CLI command a shim's route runs as.
+ */
+export const SHIM_SIGNATURE = `// ${CLI_BIN}-shim: `;
+
+/** Whether `capability`'s state belongs to one agent session. A capability the
+ *  runtime does not declare is treated as session-scoped: that keeps the
+ *  refusal for whatever is unknown rather than dropping it. */
+function sessionScoped(capability: string): boolean {
+  return (
+    (SESSION_SCOPED as Readonly<Record<string, boolean>>)[capability] !== false
+  );
+}
+
 /** The thin-shim source for a capability — a self-contained node forwarder to the
  *  host `<CLI_BIN> <capability>` CLI. Pure `f(capability, sessionEnvVars)`; no
  *  impl, no deps.
  *
- *  `sessionEnvVars` is the projecting harness's own list
+ *  SESSION SCOPE IS THE CAPABILITY'S, declared once in the runtime
+ *  (`SESSION_SCOPED`). A capability that names no session — `design`, `plan`,
+ *  `note` — gets a plain forwarder that bridges nothing and refuses nothing, so
+ *  it runs from any harness. Only a session-scoped one gets the session
+ *  handling below.
+ *
+ *  For those, `sessionEnvVars` is the projecting harness's own list
  *  (`HarnessAdapter.sessionEnvVars`). EMPTY IS A REAL ANSWER: a harness that
  *  exposes no session id to a child process gets a shim that REFUSES instead of
  *  one that proceeds sessionless. Proceeding is what produced the phantom-sibling
@@ -68,8 +92,12 @@ export function runtimeShimContent(
   sessionEnvVars: readonly string[],
 ): string {
   const vendors = sessionEnvVars.map((v) => `'${v}'`).join(', ');
-  const bridge =
-    sessionEnvVars.length > 0
+  const bridge = !sessionScoped(capability)
+    ? `//
+// \`${capability}\` names no session, so this shim bridges none and refuses nothing.
+import { spawnSync } from 'node:child_process';
+const env = process.env;`
+    : sessionEnvVars.length > 0
       ? `//
 // It also BRIDGES this harness to the runtime's session contract: the runtime reads
 // \$${SESSION_ID_ENV} and knows no vendor names, so the adapter belongs here, at the
@@ -99,6 +127,7 @@ if (!env.${SESSION_ID_ENV} && !env.${SESSION_ID_FROM_ENV}) {
   process.exit(3);
 }`;
   return `#!/usr/bin/env node
+${SHIM_SIGNATURE}${capability}
 // THIN SHIM — projected by canon for a skill declaring runtime:{capability:'${capability}'}.
 // Forwards to the host-installed \`${CLI_BIN}\` CLI (installed per host, never bundled).
 // NOT a bundle of the capability impl — the impl lives host-side behind the runtime

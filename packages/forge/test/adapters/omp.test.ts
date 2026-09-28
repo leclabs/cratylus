@@ -641,9 +641,9 @@ describe('omp scope-activated surface', () => {
  * directory nobody writes any more.
  *
  * THE FAKE `omp` IS ALSO THE SKILL RESOLVER, as the real one is for the
- * launcher: `omp read skill://<name>` answers with `skills[name].md` and
- * `omp read skill://<name>/scripts` with its `scripts` listing, and an unknown
- * name exits 1 as omp does. Every `read` appends the directory it ran in to
+ * launcher: `omp read skill://<name>` answers with `skills[name].md`,
+ * `skill://<name>/scripts` lists its `scripts`, `skill://<name>/scripts/<f>`
+ * prints one, and an unknown name exits 1 as omp does. Every `read` appends the directory it ran in to
  * `reads`, so a test can see WHERE the launcher asked from.
  */
 interface DeployedHome {
@@ -655,10 +655,11 @@ interface DeployedHome {
   launcher: string;
 }
 
-/** A skill as the fake `omp` resolves it: its SKILL.md, and its `scripts/`. */
+/** A skill as the fake `omp` resolves it: its SKILL.md, and its `scripts/`
+ *  files by name. */
 interface ResolvedFixture {
   md: string;
-  scripts?: readonly string[];
+  scripts?: Readonly<Record<string, string>>;
 }
 
 function deployedHome(
@@ -678,11 +679,9 @@ function deployedHome(
   const resolved = join(sandbox, 'resolved');
   for (const [name, { md, scripts }] of Object.entries(skills)) {
     place(join(resolved, name, 'SKILL.md'), md);
-    if (scripts)
-      place(
-        join(resolved, name, 'scripts'),
-        scripts.map((f) => `${f}\n`).join(''),
-      );
+    for (const [file, content] of Object.entries(scripts ?? {})) {
+      place(join(resolved, name, 'scripts', file), content);
+    }
   }
   for (const f of ompLaunchSurface(Object.keys(defs))) {
     place(
@@ -709,7 +708,8 @@ function deployedHome(
       'if [ "$1" = read ]; then',
       `  printf '%s\\n' "$PWD" >> ${reads}`,
       '  case $2 in',
-      `    skill://*/scripts) f=${resolved}/\${2#skill://} ;;`,
+      `    skill://*/scripts) d=${resolved}/\${2#skill://}; [ -d "$d" ] || exit 1; ls "$d"; exit 0 ;;`,
+      `    skill://*/*) f=${resolved}/\${2#skill://} ;;`,
       `    skill://*) f=${resolved}/\${2#skill://}/SKILL.md ;;`,
       '  esac',
       '  [ -f "$f" ] || { echo "Unknown skill" >&2; exit 1; }',
@@ -865,7 +865,7 @@ describe('omp launch spec', () => {
     const SKILLS: Record<string, ResolvedFixture> = {
       design: {
         md: skillMd('design', '# Design\n\nDESIGN_BODY'),
-        scripts: ['design.mjs'],
+        scripts: { 'design.mjs': runtimeShimContent('design', []) },
       },
       deliver: { md: skillMd('deliver', '# Deliver\n\nDELIVER_BODY') },
       probe: { md: skillMd('probe', '# Probe\n\nPROBE_BODY') },
@@ -928,6 +928,58 @@ describe('omp launch spec', () => {
         expect(prompt).not.toContain('skill://');
         expect(prompt).not.toContain('Base directory');
       }
+    });
+
+    it('states a route only for a shim forge generated, from its signature', () => {
+      // The file name says nothing about what a script is: a generated shim is
+      // named by its signature line, whatever its file is called, and a script
+      // the skill's author wrote gets no line at all.
+      const home = deployedHome(
+        { scribe: SCRIBE },
+        {
+          ...SKILLS,
+          probe: {
+            ...(SKILLS.probe as ResolvedFixture),
+            scripts: {
+              'design.mjs':
+                '#!/usr/bin/env node\nconsole.log("hand-written")\n',
+              'tool.mjs': runtimeShimContent('note', []),
+            },
+          },
+        },
+      );
+      const { prompt } = run(home, 'scribe');
+      expect(prompt).toContain(
+        '# Skill: probe\n\n`scripts/tool.mjs <verb>` runs as `cratylus note <verb>`.\n\n# Probe',
+      );
+      expect(prompt).not.toContain('scripts/design.mjs');
+    });
+
+    it('inlines none under `--no-skills`, and warns once under `--skills`', () => {
+      // `--no-skills` is omp's own "load none", so the session starts with none
+      // — not with bodies it would never have loaded, nor with references to them.
+      const none = deployedHome({ scribe: SCRIBE }, SKILLS);
+      const off = launch(none.bin, none.launcher, ['scribe', '--no-skills']);
+      expect(off).toEqual({ status: 0, stderr: '' });
+      const offArgs = recordedArgv(none.argv);
+      const offPrompt = offArgs[offArgs.indexOf('--append-system-prompt') + 1];
+      expect(offPrompt).not.toContain('# Skill:');
+      expect(offPrompt).not.toContain('## Required reading');
+      expect(offArgs).toContain('--no-skills');
+      expect(() => readFileSync(none.reads)).toThrow();
+
+      // A `--skills` filter is not mirrored; the launcher says so once, and the
+      // flag still reaches omp.
+      const filtered = deployedHome({ scribe: SCRIBE }, SKILLS);
+      const { status, stderr } = launch(filtered.bin, filtered.launcher, [
+        'scribe',
+        '--skills=sig*',
+      ]);
+      expect(status).toBe(0);
+      const lines = stderr.split('\n').filter(Boolean);
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^omp-agent: agent scribe: --skills/);
+      expect(recordedArgv(filtered.argv)).toContain('--skills=sig*');
     });
 
     it('asks omp from the launch directory, where project skills resolve', () => {
@@ -1010,6 +1062,41 @@ describe('omp names no session, and the projected shim says so', () => {
     // anywhere in omp's coding-agent source. The emitter used to stamp claude's two
     // names into this harness's shims, asserting a bridge with no far end.
     expect(ompHarnessAdapter.sessionEnvVars).toEqual([]);
+  });
+
+  it('refuses only for a SESSION-SCOPED capability; a record capability runs', () => {
+    // Session scope is the capability's: `plan` names no session, so its omp
+    // shim forwards with none, while `memory`'s still refuses. RUN, against a
+    // `cratylus` on PATH that records what it was handed.
+    const dir = mkdtempSync(join(tmpdir(), 'omp-shim-'));
+    tmp.push(dir);
+    const bin = join(dir, 'bin');
+    mkdirSync(bin);
+    writeFileSync(
+      join(bin, 'cratylus'),
+      `#!/bin/sh\nprintf '%s\\n' "$@" > ${join(dir, 'called')}\n`,
+      { mode: 0o755 },
+    );
+    const env: Record<string, string> = {
+      PATH: `${bin}:${process.env.PATH ?? ''}`,
+    };
+    const runShim = (capability: string) => {
+      const shim = join(dir, `${capability}.mjs`);
+      writeFileSync(
+        shim,
+        runtimeShimContent(capability, ompHarnessAdapter.sessionEnvVars),
+      );
+      return spawnSync(process.execPath, [shim, 'show', 'x'], {
+        env,
+        encoding: 'utf-8',
+      });
+    };
+    const plan = runShim('plan');
+    expect(plan.status).toBe(0);
+    expect(readFileSync(join(dir, 'called'), 'utf-8')).toBe('plan\nshow\nx\n');
+    const memory = runShim('memory');
+    expect(memory.status).toBe(3);
+    expect(memory.stderr).toContain('no session id');
   });
 
   it('REFUSES instead of running sessionless, and names the way out', () => {

@@ -61,7 +61,7 @@ import { RUNTIME_CAPABILITIES } from '../src/manifest.js';
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const packages = join(canonRoot, '..');
 
-const LOADER_SRC = join(packages, 'runtime', 'src', 'loader.ts');
+const KEYSPACE_SRC = join(packages, 'runtime', 'src', 'capability.ts');
 const PORTS_DIR = join(packages, 'runtime', 'src', 'ports');
 const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
 
@@ -96,17 +96,20 @@ const PROVISIONAL = /^provisional-/;
 
 // ── Corpus readers ──────────────────────────────────────────────────────────────
 
-/** The runtime's `CAPABILITIES` tuple, parsed from `loader.ts` as text. Throws
- *  rather than returning `[]`, so a moved declaration is a LOUD failure and never
- *  a gate that silently quantifies over nothing. */
+/** The runtime's capability keyspace — the keys of `SESSION_SCOPED`, where each
+ *  capability is declared once with its scope — parsed from `capability.ts` as
+ *  text. Throws rather than returning `[]`, so a moved declaration is a LOUD
+ *  failure and never a gate that silently quantifies over nothing. */
 function keyspace(src: string): string[] {
-  const m = src.match(/export const CAPABILITIES = \[([^\]]+)\] as const;/);
+  const m = src.match(/export const SESSION_SCOPED = \{([^}]+)\} as const/);
   if (m?.[1] === undefined) {
     throw new Error(
-      'capability-keyspace: no `CAPABILITIES` tuple found in the runtime loader',
+      'capability-keyspace: no `SESSION_SCOPED` keyspace found in the runtime',
     );
   }
-  return [...m[1].matchAll(/'([^']+)'/g)].map((g) => g[1] as string).sort();
+  return [...m[1].matchAll(/^\s*([A-Za-z]+):/gm)]
+    .map((g) => g[1] as string)
+    .sort();
 }
 
 /** Every `ports/*.ts` basename, sans extension. */
@@ -256,7 +259,7 @@ function subsetViolations(
 
 // ── The live corpus ─────────────────────────────────────────────────────────────
 
-const CAPABILITIES = keyspace(readFileSync(LOADER_SRC, 'utf-8'));
+const CAPABILITIES = keyspace(readFileSync(KEYSPACE_SRC, 'utf-8'));
 const BASENAMES = portBasenames(PORTS_DIR);
 const SITES = PLUGIN_SRC_ROOTS.flatMap((root) =>
   sourcesUnder(root).flatMap((f) =>
@@ -435,7 +438,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.
     expect(() => keyspace('export const SOMETHING = [] as const;')).toThrow(
-      /no `CAPABILITIES` tuple/,
+      /no `SESSION_SCOPED` keyspace/,
     );
   });
 });

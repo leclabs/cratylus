@@ -28,23 +28,10 @@ import type { NoteHost } from './ports/note.js';
 import type { PlanHost } from './ports/plan.js';
 import { loadRuntimeConfig } from './runtime-config.js';
 
-/**
- * The capability keyspace — the dispatch `<capability>` axis. One entry per
- * capability port a {@link RuntimePlugin} may provide, mirroring the plugin's
- * optional port fields one-for-one. Iterable so a plugin's provided set is a
- * `filter` over it (DRY: the port fields and this tuple never drift by hand).
- */
-export const CAPABILITIES = [
-  'memory',
-  'eventTap',
-  'heartbeat',
-  'design',
-  'plan',
-  'note',
-] as const;
-
-/** A capability name — one of {@link CAPABILITIES}. The dispatch `<capability>`. */
-export type Capability = (typeof CAPABILITIES)[number];
+// The keyspace is declared once, with each capability's scope, in the
+// `capability` leaf; the loader dispatches over it.
+import { CAPABILITIES, type Capability } from './capability.js';
+export { CAPABILITIES, type Capability };
 
 /** The typed port a capability resolves to: the contract for that capability. */
 export type CapabilityPort =

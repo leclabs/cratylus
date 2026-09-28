@@ -200,13 +200,18 @@ describe('runtime shim has ONE home across harnesses', () => {
     expect(codexShim).toBe(claudeShim);
   });
 
-  it('every projected shim bridges the harness session id to AGENT_SESSION_ID', () => {
-    // The concrete cost of the fork this gate retires: without the bridge the
-    // runtime sees no `$AGENT_SESSION_ID`, mints a fresh session per invocation, and
-    // the lock/liveness machinery reports a phantom sibling on the next call.
+  it('only a SESSION-SCOPED capability bridges the harness session id', () => {
+    // Session scope is the capability's, declared once in the runtime. The
+    // bridge exists because a session-scoped runtime that sees no
+    // `$AGENT_SESSION_ID` mints a fresh session per invocation, and the
+    // lock/liveness machinery reports a phantom sibling on the next call. A
+    // capability that names no session has nothing to bridge.
+    const memory = emitted('memory');
+    expect(memory).toContain('CLAUDE_CODE_SESSION_ID');
+    expect(memory).toContain('AGENT_SESSION_ID');
     for (const shim of [claudeShim, codexShim]) {
-      expect(shim).toContain('CLAUDE_CODE_SESSION_ID');
-      expect(shim).toContain('AGENT_SESSION_ID');
+      expect(shim).not.toContain('AGENT_SESSION_ID');
+      expect(shim).toContain('names no session');
     }
   });
 

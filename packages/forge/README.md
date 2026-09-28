@@ -128,7 +128,9 @@ cratylus compose --config ./other.config.ts
 
 Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
 carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
-them.
+them. A shim bridges or demands a session id only when its capability is session-scoped, as the
+runtime declares it (`SESSION_SCOPED` in `@cratylus/runtime/capability`; today only `memory`); the
+record capabilities `design`, `plan` and `note` forward from any harness with no session at all.
 
 ```
 cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
@@ -223,8 +225,11 @@ in `autoloadSkills`, in order, the launcher runs `omp read skill://<name>` from 
 inlines what omp returns, front matter stripped: omp's own resolver, so every root it reads (user and
 project) and every setting that gates them apply, with no second copy of that logic in the launcher.
 omp exposes no skill's location, so there is no base directory; instead each `# Skill: <name>` section
-opens with one line per shim `omp read skill://<name>/scripts` lists (for plan: `scripts/plan.mjs <verb>`
-runs as `cratylus plan <verb>`), because every projected shim is a thin forwarder to the host CLI. A skill omp cannot resolve is named as `skill://<name>` under
+opens with one line per generated shim among its `scripts/` (for plan: `scripts/plan.mjs <verb>` runs
+as `cratylus plan <verb>`), because every generated shim is a thin forwarder to the host CLI. A shim is
+known by its signature line (`// cratylus-shim: <capability>`), which names the capability it forwards
+to; a script the skill's author wrote gets no line. `--no-skills` passed to the launcher inlines none,
+and a `--skills` filter, which the launcher does not mirror, earns one stderr line. A skill omp cannot resolve is named as `skill://<name>` under
 `## Required reading`, and the launcher prints one `omp-agent:` line to stderr per such skill before it
 launches. The prompt stays one argument, bounded by Linux's per-argument `MAX_ARG_STRLEN` (128 KiB),
 not `ARG_MAX`; the largest measured today is about 34 KB (nico with its closure).
