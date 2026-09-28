@@ -3,7 +3,7 @@
 // longer classifies carriers (law vs declaration) or forks (redundant vs load-bearing) — a
 // comment is simply a finding. The lint proper lives in
 // `/forge/validate`; this file wires it over the live corpus and
-// asserts every one of the 15 skills scans to zero findings. Companion to the SYMBOLS gate
+// asserts every one of the 16 skills scans to zero findings. Companion to the SYMBOLS gate
 // (`symbols.test.ts`): that binds decodability, this binds the no-explanatory-prose clause.
 
 import { glob } from 'node:fs/promises';
