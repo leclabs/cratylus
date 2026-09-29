@@ -20,6 +20,11 @@
 
 export { EventTapHostClaude, EVENT_TAP_ID } from './claude.js';
 export {
+  EVENT_TAP_HARNESSES,
+  hasEventTapStrategy,
+  invokingHarness,
+} from './harness.js';
+export {
   dispatchEventTap,
   type EventTapDispatchOpts,
   type EventTapResult,

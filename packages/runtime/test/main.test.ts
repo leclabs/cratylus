@@ -46,6 +46,16 @@ afterAll(() => {
   else process.env[RUNTIME_CONFIG_ENV] = prior;
 });
 
+// This suite drives the CLAUDE tap. The event tap reads which harness invoked it
+// from the environment, so a run launched from inside an omp session would be
+// refused; the run states the harness it means instead of inheriting the runner's.
+beforeAll(() => {
+  vi.stubEnv('OMPCODE', '');
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+});
+
 /** Run `runCli(argv)` in the scratch repository; what it printed and its code. */
 async function run(
   argv: readonly string[],

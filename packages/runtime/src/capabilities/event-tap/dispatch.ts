@@ -10,6 +10,8 @@
 // no-op — and every refusal opens with the routing word, `eventTap`. A flag the
 // verb does not take is refused as the arguments are read, before anything else:
 // before the host config is read, and before any settings file or sink is touched.
+// Next, and on the same terms, the INVOKING HARNESS is resolved (`./harness.ts`) and
+// refused if it has no tap strategy — only Claude Code has one today.
 //
 // WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
 // config the projection emitted (`RuntimeConfig.events`) — ARCHITECTURE property 4.
@@ -39,6 +41,11 @@ import {
 } from '../../runtime-config.js';
 import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
+import {
+  hasEventTapStrategy,
+  invokingHarness,
+  noEventTapStrategy,
+} from './harness.js';
 
 /** The verbs the event-tap capability exposes, each routing to one port method. */
 export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status';
@@ -120,6 +127,13 @@ export interface EventTapDispatchOpts {
    * does rather than a second one.
    */
   readonly config?: RuntimeConfig | null;
+  /**
+   * The harness this call runs inside. Defaults to the one the environment names
+   * ({@link invokingHarness}), else Claude Code.
+   */
+  readonly harness?: string;
+  /** The environment the invoking harness is read from; defaults to `process.env`. */
+  readonly env?: NodeJS.ProcessEnv;
 }
 
 /**
@@ -143,6 +157,20 @@ export function dispatchEventTap(
     VERBS[verb as EventTapVerb],
   );
   const flag = (name: string) => flags.get(name)?.at(-1);
+  // WHO IS CALLING is settled before the host config is read or anything is
+  // touched: a harness with no tap strategy is refused as the arguments are read,
+  // so the operator is told THAT — not that the vocabulary is missing — and no
+  // settings file is written on behalf of a harness that never reads it. An
+  // injected `host` is itself the strategy, so it is not second-guessed.
+  if (opts.host === undefined) {
+    const harness =
+      opts.harness ??
+      invokingHarness(opts.env ?? process.env) ??
+      EventTapHostClaude.harness;
+    if (!hasEventTapStrategy(harness)) {
+      throw new Error(noEventTapStrategy(verb, harness));
+    }
+  }
   const config = opts.config ?? loadRuntimeConfig();
   const configured = configuredEvents(config);
   const tap =
