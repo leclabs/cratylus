@@ -428,7 +428,12 @@ mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the 
 # The elevation arrives as a SLASH INVOCATION — the wrapped form the operator slot filters out.
 {
 	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
-	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>\n## Prime Principle\ncratylism"}}')"
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>"}}')"
+	# The harness then injects a SKILL BODY as its own user message: a verb H1 over the fenced
+	# formal block, with no Prime Principle (a cell that does not apply it carries none). The
+	# stand-in avoids the re-dispatch words the standing-directive scan reads, so it can only
+	# reach the payload through the operator slot.
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"# Design\n\n```text\nSKILL-BODY-SENTINEL ≜ the formal block\n```\n"}}')"
 	printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
 } > "$SD_ELEV"
 
@@ -456,7 +461,7 @@ case "$p" in
 	*) bad "the grant's utterance did not reach the payload" ;;
 esac
 case "$p" in
-	*"Prime Principle"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
+	*"SKILL-BODY-SENTINEL"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
 	*) pass "the skill body stayed out; only the utterance crossed" ;;
 esac
 

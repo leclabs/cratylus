@@ -289,8 +289,9 @@ asst_close="$(jq -rs '
 # whether an irreversible act was authorized.
 #
 # Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
-# message> tags, and they carry the skill's own formal preamble. Fall back to the most recent
-# message that survives the filter.
+# message> tags, and every projected SKILL.md body is a verb H1 over a fenced ```text formal
+# block — a marker the body carries whether or not its cell sets a preamble. Fall back to the most
+# recent message that survives the filter.
 operator="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -304,7 +305,7 @@ operator="$(jq -rs '
 	      (test("<command-name>") | not)
 	      and (test("<command-message>") | not)
 	      and (test("Base directory for this skill:") | not)
-	      and (test("## Prime Principle") | not)
+	      and (test("^# [^\\n]+\\n\\n[\\s\\S]*```text\\n") | not)
 	      and (test("^\\s*<system-reminder>") | not)
 	      and (test("\\[SYSTEM NOTIFICATION - NOT USER INPUT\\]") | not)
 	      and (test("<task-notification>") | not)

@@ -6,7 +6,7 @@
 // entire dimension type-system from any manifest obeying that shape
 // (`DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `DimensionFieldsOf`
 // · `AgentOf`). It does NOT state WHICH dimensions exist. That is the corpus's,
-// and it rides the PLUGIN (`AgentPlugin.manifest`) exactly as `preamble` does — a
+// and it rides the PLUGIN (`AgentPlugin.manifest`) — a
 // projector holding the manifest is a projector containing a design rather than
 // projecting one, and a corpus could not then discover a dimension without
 // editing the projector.
@@ -365,7 +365,7 @@ export interface DimensionMeta {
  * This is the parameter type of every function that reads one, and no projector
  * ships an instance: a projector that can only ever read the one it contains is
  * not projecting a design. The instance rides the PLUGIN
- * (`AgentPlugin.manifest`), exactly as `preamble` does.
+ * (`AgentPlugin.manifest`).
  *
  * A corpus declares its manifest `as const satisfies Record<string, DimensionMeta>`
  * — the `satisfies` is LOAD-BEARING. A plain annotation widens the keys to
@@ -519,10 +519,8 @@ export interface Agent {
    *  the skill `description`. */
   readonly description: string;
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM above `## Archetype`
-   *  by `agentBody`. The engine knows only "a leading block"; a consumer fills it
-   *  (canon injects its founding doctrine so the axiom rides every Target,
-   *  intrinsic to the projected bytes rather than ambient repo context). Absent ⇒
-   *  omitted. */
+   *  by `agentBody`. The engine knows only "a leading block"; an agent whose
+   *  identity needs one declares it on its own module. Absent ⇒ omitted. */
   readonly preamble?: string;
   /** σ* — the model-read identity body → Target body. A plain string, not a branded
    *  fragment-dimension, but σ* content nonetheless. */
@@ -661,6 +659,13 @@ export interface Skill<C extends CapabilityName = CapabilityName>
    *  so eager sibling `const` references would TDZ-crash at ESM load. The generator
    *  CALLS it (`skill.composition()`) only when emitting "Composed from …". */
   readonly composition: () => readonly Skill[];
+  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
+   *  first section (above the fenced formal block). The engine knows only "a
+   *  leading block"; a cell whose laws apply a principle fills it (canon sets its
+   *  founding doctrine on the skills that name concepts by anchor), so the
+   *  principle rides the projected bytes of exactly those cells. Absent ⇒ omitted.
+   *  The same shape as `Agent.preamble`. */
+  readonly preamble?: string;
 }
 
 // ── Projection helpers ──────────────────────────────────────────────────────
@@ -738,41 +743,23 @@ export interface Layout {
 /**
  * A package's plugin declaration: its {@link Layout}, plus what it contributes.
  *
- * `preamble` AND `manifest` ARE DELIBERATELY NOT GROUPED, and that is a finding
- * rather than an omission. The census that motivated this cut proposed a second
- * interface over the two of them; a blind decode returned **⊥** and gave the test
- * that settles it: they are one concept only if the preamble is the informal face
- * of the vocabulary the manifest formalizes. Inspection says it is not —
- * `foundingDoctrine` is the cratylism naming axiom and says nothing about which
- * dimensions exist.
+ * `name` stays on the wrapper because uniqueness is a registry-level property no
+ * single plugin can enforce, and a corpus with the same doctrine under a
+ * different label is the same corpus. The label is not constitutive.
  *
- * So the only thing the two share is that both must TRAVEL with the plugin. That
- * is a lifecycle property, not a concept, and grouping by it yields non-concepts
- * (`payload`, `carried`, `bundle`). The group would also have been defined
- * negatively — "the fields that aren't paths" — which is exactly how the retired
- * `anatomy` sign became a palimpsest over four concepts. One generation later,
- * the same defect was available and was declined.
- *
- * `name` stays on the wrapper for the same reason: uniqueness is a registry-level
- * property no single plugin can enforce, and a corpus with the same doctrine under
- * a different label is the same corpus. The label is not constitutive.
+ * The plugin carries no leading doctrine block. The prime principle rides only
+ * the cells whose laws apply it (`Skill.preamble`, and an agent's own held
+ * engineering-principles), so a cell that does not use it never holds a host's
+ * authored surfaces to this corpus's naming axiom.
  */
 export interface AgentPlugin extends Layout {
   /** The namespace segment — reporting + per-plugin σ* uniqueness. NOT an address. */
   readonly name: string;
   /**
-   * A doctrine-agnostic leading block stamped into every cell this plugin
-   * contributes. It must travel WITH the plugin: a consumer projecting an extended
-   * plugin has no access to the plugin's own repo context, so an axiom left behind
-   * in the corpus's build script would silently vanish from consumer-projected
-   * cells — exactly the ambient-dependence the doctrine forbids.
-   */
-  readonly preamble?: string;
-  /**
    * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
    * against the meta-model (that a dimension has an axis/repertoire/arity) above.
    *
-   * It rides the plugin for the same reason `preamble` does: a consumer projecting
+   * It rides the plugin for a plain reason: a consumer projecting
    * an extended plugin has no access to the plugin's repo, so a manifest left behind
    * there would make the design unprojectable by anyone but its author. A corpus
    * that must edit the projector to declare a dimension does not own its own design.
@@ -787,8 +774,7 @@ export interface AgentPlugin extends Layout {
    * WHICH lifecycle events exist — the corpus's harness-agnostic event vocabulary
    * (`MODEL.md:22`: `names @ corpus`).
    *
-   * It rides the plugin for the third time and the same reason `preamble` and
-   * `manifest` do, and here it also serves ARCHITECTURE property 3 exactly: the
+   * It rides the plugin for the same reason `manifest` does, and here it also serves ARCHITECTURE property 3 exactly: the
    * corpus reaches the projector as DATA, never as an import. The projector needs
    * the members to EMIT the host's runtime configuration; it must not contain them,
    * or a corpus could not name a moment without editing the projector.

@@ -1,3 +1,4 @@
+import { foundingDoctrine } from '../../genus/founding-doctrine.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
@@ -54,4 +55,5 @@ export const exemplify: Skill = {
   description: `optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
+  preamble: foundingDoctrine,
 };

@@ -131,8 +131,6 @@ export interface ProjectablePlugin {
    * COMPOSED value rather than the authored one (see `composedBodies`).
    */
   readonly fragments?: string;
-  /** Leading block stamped into this plugin's cells; travels with the plugin. */
-  readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
   /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
@@ -153,12 +151,6 @@ export interface ProjectOpts {
    * discovery already minted — see `discoverFragments`.
    */
   readonly resolvedBodies?: ReadonlyMap<string, string>;
-  /**
-   * A doctrine-agnostic leading block stamped into every projected cell. The corpus
-   * passes its founding doctrine so the axiom rides the projected bytes rather than
-   * ambient repo context; a consumer may pass nothing.
-   */
-  readonly preamble?: string;
   /**
    * `anchor → HarnessMechanism` — the realization payloads for this corpus's
    * enforcing values, INJECTED.
@@ -186,7 +178,6 @@ export interface ProjectOpts {
 interface Src {
   readonly dir: string;
   readonly plugin: string;
-  readonly preamble?: string;
 }
 
 export interface ProjectReport {
@@ -483,11 +474,7 @@ export async function projectPluginSet(
       for (const n of await scanModuleNames(p.agents, ['base'])) {
         const prev = agentSrc.get(n);
         if (prev) log(`  override agent ${n}: ${prev.plugin} → ${p.name}`);
-        agentSrc.set(n, {
-          dir: p.agents,
-          plugin: p.name,
-          preamble: p.preamble,
-        });
+        agentSrc.set(n, { dir: p.agents, plugin: p.name });
       }
     }
   }
@@ -507,8 +494,8 @@ export async function projectPluginSet(
   // agents compose (scope is derived from composition), so every vector must exist
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
-  const pending: { name: string; pre?: string }[] = [];
-  for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
+  const pending: string[] = [];
+  for (const [name, { dir }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const bodied = withResolvedBodies(await agentOf(modPath), subst, manifest);
@@ -518,7 +505,7 @@ export async function projectPluginSet(
     const skills = skillClosure(bodied.skills ?? [], roster);
     const agent = skills.length > 0 ? { ...bodied, skills } : bodied;
     composed.push({ name, agent });
-    pending.push({ name, ...(pre ? { pre } : {}) });
+    pending.push(name);
   }
 
   // A HARNESS THAT CANNOT PRELOAD A SKILL still gets the agent's skills, as a
@@ -560,15 +547,12 @@ export async function projectPluginSet(
     ? new Map([...opts.mechanisms].filter(([anchor]) => !degraded.has(anchor)))
     : opts.mechanisms;
 
-  for (const { name, pre } of pending) {
+  for (const name of pending) {
     const agent = composed.find((c) => c.name === name)?.agent as Agent;
-    const { filename, content } = opts.adapter.agentDef(
-      {
-        ...agent,
-        ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
-      },
-      { manifest, ...(mechanisms ? { mechanisms } : {}) },
-    );
+    const { filename, content } = opts.adapter.agentDef(agent, {
+      manifest,
+      ...(mechanisms ? { mechanisms } : {}),
+    });
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
@@ -677,14 +661,14 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  for (const { name, skill: cell, preamble: pre } of contributedSkills) {
+  for (const { name, skill: cell } of contributedSkills) {
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,
       description: cell.description,
       formalBlock: cell.formalBlock,
       composedFrom: cell.composition().map((c) => `/${c.name}`),
-      ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
+      ...(cell.preamble ? { preamble: cell.preamble } : {}),
       runtime: cell.runtime,
     };
     const cellOut = join('skills', name);

@@ -20,8 +20,6 @@ export interface ContributedSkill {
   /** The cell's directory name — the name it deploys under. */
   readonly name: string;
   readonly skill: Skill;
-  /** The contributing plugin's preamble, stamped into the rendered cell. */
-  readonly preamble?: string;
 }
 
 /**
@@ -31,26 +29,23 @@ export interface ContributedSkill {
  * discovered as a clobbered file.
  */
 export async function resolveSkills(
-  plugins: readonly Pick<ProjectablePlugin, 'name' | 'skills' | 'preamble'>[],
+  plugins: readonly Pick<ProjectablePlugin, 'name' | 'skills'>[],
   log: (line: string) => void = () => {},
 ): Promise<ContributedSkill[]> {
-  const src = new Map<
-    string,
-    { dir: string; plugin: string; preamble?: string }
-  >();
+  const src = new Map<string, { dir: string; plugin: string }>();
   for (const p of plugins) {
     if (!p.skills) continue;
     for (const n of await scanCellDirNames(p.skills, 'skill')) {
       const prev = src.get(n);
       if (prev) log(`  override skill ${n}: ${prev.plugin} → ${p.name}`);
-      src.set(n, { dir: p.skills, plugin: p.name, preamble: p.preamble });
+      src.set(n, { dir: p.skills, plugin: p.name });
     }
   }
   const skills: ContributedSkill[] = [];
-  for (const [name, { dir, preamble }] of [...src].sort()) {
+  for (const [name, { dir }] of [...src].sort()) {
     const modPath = await resolveModulePath(join(dir, name), 'skill');
     if (!modPath) throw new Error(`skill module not found: ${name}/skill`);
-    skills.push({ name, skill: await skillOf(modPath), preamble });
+    skills.push({ name, skill: await skillOf(modPath) });
   }
   return skills;
 }
