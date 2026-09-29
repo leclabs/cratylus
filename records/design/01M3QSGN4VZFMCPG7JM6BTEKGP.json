@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QSGN4VZFMCPG7JM6BTEKGP",
+    "entity": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QRZYAQ4KRZJKS8MX0CNA3A"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T23:55:32.891Z",
+    "reason": "three lines: integrate early onto the plan's line and assay the integrated candidate (continuous delivery's commit and acceptance stages); main receives only a closed, fully accepted plan, because main is the release line",
+    "cause": "operator question on integrate-vs-assay order, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "integrator position",
+    "gloss": "the role that makes each accepted-or-pending landing durable on the shared line, one per bound plan and warm across its waves: it merges each unit's commits into the bound plan's integration line (never the release line) and runs the project's whole check once on that combined tree, so the assay reads exactly what will ship; only when the architect has accepted every unit and closed the plan does it open the promotion of that line to main, the release line, which the operator signs off; commits the plan and design records carrying the state moves the architect decided, and reports the gate's result to the architect in one line (green, or red with the failing check and its owner). It never decides: it does not accept, reject, amend the design or choose what is dispatched, and it never builds or repairs a unit; a red gate goes back to the architect, who routes it to the implementer that owns it. A merge is durability, not acceptance. Releasing and pushing stay the operator's sign-off.",
+    "factors": []
+  }
+}
