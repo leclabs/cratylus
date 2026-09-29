@@ -100,7 +100,7 @@ describe('persona commands — the placement API', () => {
     ).toBeUndefined();
   });
 
-  it('plans a regular file, a foreign link and an unrecorded identical link as blocked, and changes nothing', () => {
+  it('plans a regular file and a foreign link as blocked and a hand-made link to the launcher as adopt, and changes nothing', () => {
     mkdirSync(bin, { recursive: true });
     writeFileSync(join(bin, 'mav'), 'host');
     symlinkSync('/bin/true', join(bin, 'nico'));
@@ -113,40 +113,67 @@ describe('persona commands — the placement API', () => {
       current: 'a regular file',
     });
     expect(by.nico).toMatchObject({ state: 'blocked', current: '/bin/true' });
-    expect(by.kino).toMatchObject({
-      state: 'blocked',
-      current: opts.self.launcher,
-      unrecorded: true,
-    });
+    expect(by.kino).toMatchObject({ state: 'adopt' });
     expect(by.planner).toMatchObject({ state: 'place' });
     // A plan is a question: nothing was created, nothing was recorded.
     expect(names(bin)).toEqual(['kino', 'mav', 'nico']);
     expect(readManifest(opts.harnessDir).personaLinks).toEqual([]);
   });
 
-  it('places the free names and never touches an occupied one', () => {
+  it('places the free names, adopts the hand-made link, and never touches an occupied one', () => {
     mkdirSync(bin, { recursive: true });
     writeFileSync(join(bin, 'mav'), 'host');
     symlinkSync('/bin/true', join(bin, 'nico'));
     symlinkSync(opts.self.launcher, join(bin, 'kino'));
+    const kinoInode = lstatSync(join(bin, 'kino')).ino;
 
     const report = placePersonaCommands(opts);
 
     expect(readFileSync(join(bin, 'mav'), 'utf8')).toBe('host');
     expect(lstatSync(join(bin, 'mav')).isSymbolicLink()).toBe(false);
     expect(readlinkSync(join(bin, 'nico'))).toBe('/bin/true');
-    expect(readlinkSync(join(bin, 'kino'))).toBe(opts.self.launcher);
     expect(readlinkSync(join(bin, 'planner'))).toBe(opts.self.launcher);
+    // Adopted, not re-created: the very same link, now recorded.
+    expect(readlinkSync(join(bin, 'kino'))).toBe(opts.self.launcher);
+    expect(lstatSync(join(bin, 'kino')).ino).toBe(kinoInode);
     expect(report.links.map((l) => [l.persona, l.state])).toEqual([
-      ['kino', 'blocked'],
+      ['kino', 'adopted'],
       ['mav', 'blocked'],
       ['nico', 'blocked'],
       ['planner', 'placed'],
     ]);
-    // Only what was placed is recorded — a blocked name is never claimed.
+    // Only what was placed or adopted is recorded — a blocked name is never claimed.
     expect(readManifest(opts.harnessDir).personaLinks).toEqual([
+      `${PERSONA_BIN_REL}/kino`,
       `${PERSONA_BIN_REL}/planner`,
     ]);
+    // An adopted link is one this install placed, as far as removal is concerned.
+    expect(
+      removePersonaCommands(opts).links.map((l) => [
+        l.link.split('/').pop(),
+        l.state,
+      ]),
+    ).toEqual([
+      ['kino', 'removed'],
+      ['mav', 'kept'],
+      ['nico', 'kept'],
+      ['planner', 'removed'],
+    ]);
+    expect(names(bin)).toEqual(['mav', 'nico']);
+  });
+
+  it('leaves a hand-made link to the other harness’s launcher blocked, never adopted', () => {
+    mkdirSync(bin, { recursive: true });
+    symlinkSync(ompLauncher(), join(bin, 'kino'));
+    const report = placePersonaCommands(opts);
+    expect(report.links.find((l) => l.persona === 'kino')).toMatchObject({
+      state: 'blocked',
+      heldBy: 'omp',
+    });
+    expect(readlinkSync(join(bin, 'kino'))).toBe(ompLauncher());
+    expect(readManifest(opts.harnessDir).personaLinks).not.toContain(
+      `${PERSONA_BIN_REL}/kino`,
+    );
   });
 
   it('is idempotent: a second placement creates nothing and reports each link present', () => {
@@ -360,17 +387,17 @@ describe('install — persona commands', () => {
       expect(names(bin)).toEqual([]);
       expect(out).toContain('would place alpha');
       expect(out).toContain('would place beta');
-      expect(out).toContain('--link-personas');
+      expect(out).toContain('--link-persona-commands');
       expect(out).toContain(`${bin} is not on PATH`);
     },
   );
 
   it.each(['claude', 'omp'] as const)(
-    '%s: --link-personas links every persona to the launcher, and says nothing of PATH when the bin dir is on it',
+    '%s: --link-persona-commands links every persona to the launcher, and says nothing of PATH when the bin dir is on it',
     async (harness) => {
       expect(
         await install(harness, {
-          linkPersonas: true,
+          linkPersonaCommands: true,
           pathEnv: `/usr/bin${delimiter}${bin}`,
         }),
       ).toBe(0);
@@ -385,10 +412,37 @@ describe('install — persona commands', () => {
     },
   );
 
+  it.each(['claude', 'omp'] as const)(
+    '%s: adopts links made by hand to its launcher — not re-created, and recorded',
+    async (harness) => {
+      // What an operator has after following the interim recipe by hand: the launcher
+      // does not exist yet, and `alpha` already leads to where it will land.
+      mkdirSync(bin, { recursive: true });
+      symlinkSync(launcher(harness), join(bin, 'alpha'));
+      const inode = lstatSync(join(bin, 'alpha')).ino;
+
+      expect(await install(harness, { linkPersonaCommands: true })).toBe(0);
+
+      expect(lstatSync(join(bin, 'alpha')).ino).toBe(inode);
+      expect(out).toContain('adopted alpha');
+      expect(out).toContain('placed beta');
+      const home_ = join(home, adapterByName(harness).home);
+      expect(readManifest(home_).personaLinks).toEqual([
+        `${PERSONA_BIN_REL}/alpha`,
+        `${PERSONA_BIN_REL}/beta`,
+      ]);
+      // A second install finds both recorded.
+      out = '';
+      await install(harness, { linkPersonaCommands: true });
+      expect(out).toContain('present alpha');
+      expect(out).not.toContain('adopted');
+    },
+  );
+
   it('places nothing under --dry-run even when asked to link', async () => {
-    expect(await install('claude', { linkPersonas: true, dryRun: true })).toBe(
-      0,
-    );
+    expect(
+      await install('claude', { linkPersonaCommands: true, dryRun: true }),
+    ).toBe(0);
     expect(names(bin)).toEqual([]);
     expect(out).toContain('would place alpha');
   });
@@ -411,18 +465,18 @@ describe('install — persona commands', () => {
   });
 
   it('does not ask when there is nothing free to link', async () => {
-    await install('omp', { linkPersonas: true });
+    await install('omp', { linkPersonaCommands: true });
     const confirm = vi.fn(async () => true);
     await install('omp', { confirm });
     expect(confirm).not.toHaveBeenCalled();
   });
 
   it('a second harness never replaces the first one’s links, and reports each as blocked by it', async () => {
-    await install('omp', { linkPersonas: true });
+    await install('omp', { linkPersonaCommands: true });
     const before = names(bin).map((n) => [n, readlinkSync(join(bin, n))]);
     out = '';
 
-    expect(await install('claude', { linkPersonas: true })).toBe(0);
+    expect(await install('claude', { linkPersonaCommands: true })).toBe(0);
 
     expect(names(bin).map((n) => [n, readlinkSync(join(bin, n))])).toEqual(
       before,

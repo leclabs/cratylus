@@ -282,11 +282,12 @@ reporting success.
 **Persona commands.** `launcherFile` on the port names the launcher the adapter's `launchSurface`
 emits in the SESSION scope: `omp-agent` on omp, `claude-agent` on Claude Code
 (`personas/_session/claude-agent`, which starts `claude --agent <persona>` and refuses a name that
-is no persona with one stderr line, exit 2). `cratylus install --link-personas` links
+is no persona with one stderr line, exit 2). `cratylus install --link-persona-commands` links
 `~/.local/bin/<persona>` to it, through `placePersonaCommands` in `deploy/persona-commands.ts`: it
 plans first (`planPersonaCommands`), places only the names that are free, and never unlinks before
-it links, so a regular file, another program's link, a link to the launcher that no record names, and
-the other harness's launcher are all left as they were and reported as blocked. The links it placed are
+it links, so a regular file, another program's link, and the other harness's launcher are all left as
+they were and reported as blocked. A hand-made link that resolves exactly to this launcher is adopted:
+recorded and reported, never re-created. The links it placed or adopted are
 recorded as `personaLinks` in the deploy manifest, and `removePersonaCommands` removes exactly the
 recorded links that still resolve to the launcher. Without the flag, install prints what it would place
 and asks on a terminal.

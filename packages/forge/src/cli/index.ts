@@ -194,7 +194,7 @@ export async function runCli(
     )
     .option('--dry-run', 'print what would change; write nothing')
     .option(
-      '--link-personas',
+      '--link-persona-commands',
       'link a command named after each installed persona into ~/.local/bin, without asking',
     )
     .action(
@@ -202,7 +202,7 @@ export async function runCli(
         harness?: string;
         plugin?: string;
         dryRun?: boolean;
-        linkPersonas?: boolean;
+        linkPersonaCommands?: boolean;
       }) => {
         process.exit(
           await runInstall({
@@ -210,7 +210,7 @@ export async function runCli(
             plugin: opts.plugin,
             corpus: cliOpts.defaultCorpus,
             dryRun: opts.dryRun,
-            linkPersonas: opts.linkPersonas,
+            linkPersonaCommands: opts.linkPersonaCommands,
             home: homedir(),
           }),
         );

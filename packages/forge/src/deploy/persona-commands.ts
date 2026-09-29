@@ -15,8 +15,12 @@
 //     and reported with what is there. No path in this module unlinks before it links.
 //   - A LINK IS OURS ONLY IF IT IS RECORDED. The harness's deploy manifest lists the
 //     links this install placed (`DeployManifest.personaLinks`). A link that merely
-//     points at our launcher is indistinguishable from one the operator made by hand,
-//     and by the same argument the record is what `remove` obeys.
+//     points at our launcher is not thereby ours, and `remove` obeys the record. One
+//     that resolves EXACTLY to this launcher and that no record lists — made by hand,
+//     say from the recipe an operator followed before install could link — is ADOPTED
+//     when the operator asks to link: recorded, so removal takes it, and never
+//     re-created. It is the operator's own act, in the shape this install would have
+//     made; anything else at the name, the other harness's launcher included, is blocked.
 //   - ONE COMMAND PER PERSONA NAME ACROSS HARNESSES. Two harnesses install the same
 //     persona names, and each would place `~/.local/bin/<persona>`. Whichever install
 //     is asked first owns the name; the other finds it taken, is blocked, and the
@@ -92,10 +96,20 @@ export interface PersonaCommandsOpts {
  * What a command name's state is.
  *   - `place`   — free; a placement WOULD create it.
  *   - `placed`  — this call created it.
+ *   - `adopt`   — already a link to THIS launcher that no record lists, made by hand;
+ *                 a placement WOULD record it, and creates nothing.
+ *   - `adopted` — this call recorded it. The link itself was never touched.
  *   - `present` — recorded as ours and still linked to the launcher.
- *   - `blocked` — taken by something this install did not place, left as it is.
+ *   - `blocked` — taken by anything else, the other harness's launcher included; left
+ *                 as it is.
  */
-export type PersonaLinkState = 'place' | 'placed' | 'present' | 'blocked';
+export type PersonaLinkState =
+  | 'place'
+  | 'placed'
+  | 'adopt'
+  | 'adopted'
+  | 'present'
+  | 'blocked';
 
 export interface PersonaLink {
   readonly persona: string;
@@ -108,9 +122,6 @@ export interface PersonaLink {
   readonly current?: string;
   /** Blocked only: the peer harness whose launcher the occupant is linked to. */
   readonly heldBy?: string;
-  /** Blocked only: the occupant already leads to THIS launcher, but this install's
-   *  record does not list it — a link someone else made, or one it lost track of. */
-  readonly unrecorded?: true;
 }
 
 export interface PersonaCommandsReport {
@@ -197,9 +208,11 @@ function classify(
     exists = false;
   }
   if (!exists) return { ...base, state: 'place' };
-  const leadsToSelf = leadsTo(link, target);
-  if (leadsToSelf && recorded.has(relToHome(opts.home, link))) {
-    return { ...base, state: 'present' };
+  if (leadsTo(link, target)) {
+    return {
+      ...base,
+      state: recorded.has(relToHome(opts.home, link)) ? 'present' : 'adopt',
+    };
   }
   const heldBy = (opts.peers ?? []).find((p) => leadsTo(link, p.launcher));
   return {
@@ -207,7 +220,6 @@ function classify(
     state: 'blocked',
     current: occupant(link),
     ...(heldBy ? { heldBy: heldBy.harness } : {}),
-    ...(leadsToSelf ? { unrecorded: true } : {}),
   };
 }
 
@@ -233,7 +245,8 @@ export function planPersonaCommands(
 }
 
 /**
- * Create the commands the plan finds free, and record them.
+ * Create the commands the plan finds free, record them, and adopt the hand-made links
+ * to this launcher that no record lists — recorded, never re-created.
  *
  * NEVER OVERWRITES, and not by the plan's say-so alone: `symlinkSync` refuses a name
  * that exists, so a name taken between the plan and the link — by another process, or
@@ -246,27 +259,35 @@ export function placePersonaCommands(
   const plan = planPersonaCommands(opts);
   if (opts.dry) return plan;
   const links: PersonaLink[] = [];
-  const placed: string[] = [];
-  for (const entry of plan.links) {
-    if (entry.state !== 'place') {
-      links.push(entry);
-      continue;
+  const recorded: string[] = [];
+  for (const planned of plan.links) {
+    let entry = planned;
+    if (entry.state === 'place') {
+      try {
+        mkdirSync(plan.binDir, { recursive: true });
+        symlinkSync(entry.target, entry.link);
+        links.push({ ...entry, state: 'placed' });
+        recorded.push(relToHome(opts.home, entry.link));
+        continue;
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
+        entry = classify(opts, new Set(), entry.persona);
+      }
     }
-    try {
-      mkdirSync(plan.binDir, { recursive: true });
-      symlinkSync(entry.target, entry.link);
-      links.push({ ...entry, state: 'placed' });
-      placed.push(relToHome(opts.home, entry.link));
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
-      links.push(classify(opts, new Set(), entry.persona));
+    if (entry.state === 'adopt') {
+      links.push({ ...entry, state: 'adopted' });
+      recorded.push(relToHome(opts.home, entry.link));
+    } else {
+      links.push(entry);
     }
   }
-  if (placed.length > 0) {
+  if (recorded.length > 0) {
     const manifest = readManifest(opts.harnessDir);
     writeManifest(opts.harnessDir, {
       ...manifest,
-      personaLinks: [...new Set([...manifest.personaLinks, ...placed])].sort(),
+      personaLinks: [
+        ...new Set([...manifest.personaLinks, ...recorded]),
+      ].sort(),
     });
   }
   return { ...plan, links };
@@ -360,6 +381,16 @@ export function describePersonaCommands(
       case 'placed':
         lines.push(`  placed ${l.persona} -> ${l.target}`);
         break;
+      case 'adopt':
+        lines.push(
+          `  ${would ? 'would adopt' : 'adopt'} ${l.persona} -> ${l.target} (already linked by hand; would be recorded, not re-created)`,
+        );
+        break;
+      case 'adopted':
+        lines.push(
+          `  adopted ${l.persona} -> ${l.target} (already linked by hand; now recorded, not re-created)`,
+        );
+        break;
       case 'present':
         lines.push(`  present ${l.persona} -> ${l.target}`);
         break;
@@ -367,9 +398,7 @@ export function describePersonaCommands(
         lines.push(
           l.heldBy
             ? `  blocked ${l.persona}: ${l.link} is linked to the ${l.heldBy} launcher (${l.current}) — left alone, not replaced by ${l.target}`
-            : l.unrecorded
-              ? `  blocked ${l.persona}: ${l.link} already leads to ${l.target}, but this install did not place it — left alone`
-              : `  blocked ${l.persona}: ${l.link} is ${l.current} — left alone, not replaced by ${l.target}`,
+            : `  blocked ${l.persona}: ${l.link} is ${l.current} — left alone, not replaced by ${l.target}`,
         );
         break;
     }

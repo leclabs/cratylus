@@ -136,7 +136,7 @@ never touches `config.yml`.
 
 ## Running a persona by its name
 
-`cratylus install` can make each installed persona a command. With `--link-personas` it links
+`cratylus install` can make each installed persona a command. With `--link-persona-commands` it links
 `~/.local/bin/<persona>` to the harness's launcher (`~/.omp/agent/omp-agent` on omp,
 `~/.claude/personas/_session/claude-agent` on Claude Code), so `planner -p 'hi'` starts a session as
 the planner persona with the persona's identity as its system prompt. Every other word on the command
@@ -146,8 +146,10 @@ Without the flag, install prints one `would place` line per persona and how to a
 it asks first, and answers no by default; a piped or scripted install places none. It says when
 `~/.local/bin` is not on `PATH`. `--dry-run` places nothing either way.
 
-Install never overwrites. A name that is taken by a file, by another program's link, or by a link to
-the launcher that nothing recorded is left as it is and reported as `blocked`, with what is there. A
+Install never overwrites. A name that is taken by a file, by another program's link, or by the other
+harness's launcher is left as it is and reported as `blocked`, with what is there. A link you made by
+hand to this harness's own launcher, say from the interim recipe, is adopted rather than re-created:
+install records it, reports it as `adopted`, and leaves the link itself untouched. A
 persona has ONE command across harnesses: whichever install links a name first owns it, the other
 harness's install reports it as blocked by the first harness's launcher, and no suffixed name is made.
 The links an install placed are recorded in the harness's deploy manifest

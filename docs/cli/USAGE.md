@@ -194,18 +194,19 @@ package — see §8, item 3.
 ### 4.9 "Run a persona by its name"
 
 ```sh
-cratylus install --harness claude --link-personas
+cratylus install --harness claude --link-persona-commands
 planner -p 'draft the plan'
 ```
 
 `install` can put a command named after each installed persona in `~/.local/bin`, linked to the
 harness's launcher, so `planner` starts a session as the planner persona. Without
-`--link-personas` a terminal install shows the links it would make and asks first; a piped or
+`--link-persona-commands` a terminal install shows the links it would make and asks first; a piped or
 scripted one makes none and says to pass the flag. It reports when `~/.local/bin` is not on
 `PATH`. It never overwrites: a name that is taken (a file of yours, another program's link, or the
-other harness's launcher) is left alone and reported with what is there. A persona has one command
-across harnesses, so whichever install links a name first owns it. The links it placed are recorded
-in the harness's deploy manifest, and only recorded links are ever removed.
+other harness's launcher) is left alone and reported with what is there. A link you made by hand to
+this harness's own launcher is adopted: recorded and reported, not re-created. A persona has one
+command across harnesses, so whichever install links a name first owns it. The links it placed or
+adopted are recorded in the harness's deploy manifest, and only recorded links are ever removed.
 
 ---
 

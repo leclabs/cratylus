@@ -63,10 +63,10 @@ export interface InstallCmdOpts {
   dryRun?: boolean;
   cwd?: string;
   /** Link a command named after each installed persona into `~/.local/bin` without
-   *  asking (`--link-personas`). Without it, an interactive install asks first and
+   *  asking (`--link-persona-commands`). Without it, an interactive install asks first and
    *  a non-interactive one places none and says how to. */
-  linkPersonas?: boolean;
-  /** Asked before linking, when `linkPersonas` is absent. Default: a yes/no prompt
+  linkPersonaCommands?: boolean;
+  /** Asked before linking, when `linkPersonaCommands` is absent. Default: a yes/no prompt
    *  on a terminal, and `false` where stdin or stdout is not one. */
   confirm?: (question: string) => Promise<boolean>;
   /** `PATH`, for the on-PATH report. Default: the process's. */
@@ -226,7 +226,7 @@ export async function runInstall(
 
 /**
  * Say what commands named after the installed personas would be placed in the user's
- * bin dir, and place them when asked — by `--link-personas`, or by the operator at a
+ * bin dir, and place them when asked — by `--link-persona-commands`, or by the operator at a
  * terminal. Anywhere else nothing is placed and the report says how to.
  *
  * The launcher a command links to is the harness's, and every OTHER harness's is
@@ -255,13 +255,15 @@ async function linkPersonaCommands(
     for (const line of lines) process.stdout.write(`${line}\n`);
   };
 
-  if (opts.linkPersonas) {
+  if (opts.linkPersonaCommands) {
     say(describePersonaCommands(placePersonaCommands({ ...common, dry }), dry));
     return;
   }
   const plan = planPersonaCommands(common);
   say(describePersonaCommands(plan, true));
-  const free = plan.links.filter((l) => l.state === 'place').length;
+  const free = plan.links.filter(
+    (l) => l.state === 'place' || l.state === 'adopt',
+  ).length;
   if (free === 0) return;
   const confirm = opts.confirm ?? askOnTerminal;
   if (
@@ -271,7 +273,7 @@ async function linkPersonaCommands(
     say(describePersonaCommands(placePersonaCommands(common), false));
     return;
   }
-  say(['  none placed — pass --link-personas to link them']);
+  say(['  none placed — pass --link-persona-commands to link them']);
 }
 
 /** A yes/no question on the terminal; `false` — no answer given — where stdin or
