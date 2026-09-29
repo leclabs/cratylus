@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NDC1KKC8K2901DHA7ATG8E",
+    "entity": "01M3NDC1KKC8K2901DHA7ATG8D",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:44:50.035Z",
+    "reason": "planner boundary finding on verb-flags-runtime-config; filed beside the path rather than chased",
+    "cause": "FlagsConfigPlanner 2026-09-28"
+  },
+  "payload": {
+    "title": "skill prose restates verb flags",
+    "kind": "idea",
+    "topic": "structure",
+    "body": "The design, plan and note skill cells spell each verb's flags in prose (the '≜ scripts/<cap>.mjs <verb> --flag …' lines), a second hand-kept spelling beside the runtime's declared verb flags, and nothing ties the two. Once undeclared flags are refused with the accepted list, a drifted skill line corrects itself at the first call, so this is a residual, not a gate owed; a canon test comparing each skill's flags with the runtime declaration would close it.",
+    "blocks": []
+  }
+}
