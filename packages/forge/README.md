@@ -179,7 +179,7 @@ cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 | `--harness <name>`   | `claude` \| `omp` (default `claude`): whose root and layout                 |
 | `--agents-dir <dir>` | render tree `agents/` — the projected definitions                           |
 | `--skills-dir <dir>` | render tree `skills/` — the projected skill directories                     |
-| `--hooks-dir <dir>`  | render tree hooks root (`settings.json` + `hooks/<id>/`)                    |
+| `--hooks-dir <dir>`  | hooks: claude `settings.json`, omp `enforcing/<scope>/`, both `hooks/<id>/` |
 | `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)                      |
 | `--scope <scope>`    | `user` \| `project` (default `user`)                                        |
 | `--home <dir>`       | user-scope parent of the harness home (`.claude` or `.omp`), instead of `~` |

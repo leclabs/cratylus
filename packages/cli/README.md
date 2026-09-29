@@ -77,7 +77,10 @@ degrades and warns where it falls short; they are not the same, and this is what
 
 - **Lifecycle events.** The corpus names 31 canonical events. Claude Code realizes 19 of them
   by a native event of its own, omp 9. The rest have no native peer on that harness and are
-  refused or skipped with a warning rather than faked. Two more events on Claude Code and
+  refused or skipped with a warning rather than faked. `eventTap install` follows the same
+  rule on Claude Code: it taps the requested events that have a native peer, lists and warns
+  about each one that has none as skipped, and refuses, writing nothing, when none can be
+  tapped. Two more events on Claude Code and
   three on omp are acts — `operator.consult.pre` and `subagent.dispatch.pre`, plus
   `subagent.end` on omp — which each harness carries on its tool event, narrowed to the one
   tool.

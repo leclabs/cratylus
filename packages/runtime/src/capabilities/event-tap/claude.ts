@@ -81,6 +81,16 @@ function safeJson(line: string): unknown {
   }
 }
 
+/**
+ * What an install attached, against what was asked. Every requested event lands in
+ * exactly one list: `tapped` are the ones the tap now observes, `skipped` are the
+ * ones Claude Code fires no native event for.
+ */
+export interface EventTapInstall {
+  readonly tapped: EventName[];
+  readonly skipped: EventName[];
+}
+
 export class EventTapHostClaude implements EventTapHost {
   /**
    * The harness this strategy realizes the port for — the name its native event
@@ -117,16 +127,30 @@ export class EventTapHostClaude implements EventTapHost {
     return resolveSettingsPath(this.#settingsPathOverride);
   }
 
-  install(events: EventName[], sink: CaptureSink): void {
-    this.#sinkPath = sink.path;
-    if (events.length === 0) return; // nothing to observe
+  /**
+   * Attach the tap to every event in `events` that Claude Code fires, and REPORT
+   * which those were and which it does not fire — the port's `install` returns
+   * nothing, and a strategy that dropped the second list on the floor let an
+   * install that tapped nothing (or less than was asked) read as success. When NONE
+   * of the requested events has a native peer it REFUSES, writing nothing: an
+   * empty `hooks` block is a tap that is attached to nothing.
+   */
+  install(events: EventName[], sink: CaptureSink): EventTapInstall {
+    if (events.length === 0) return { tapped: [], skipped: [] }; // nothing to observe
 
-    const { block: tapBlock } = buildEventTapBlock(
+    const { block: tapBlock, skipped } = buildEventTapBlock(
       events,
       this.#native,
       loggerCommand(sink.path),
       EVENT_TAP_ID,
     );
+    const tapped = events.filter((e) => !skipped.includes(e));
+    if (tapped.length === 0) {
+      throw new Error(
+        `eventTap install: Claude Code fires no native event for ${skipped.join(', ')} — there is nothing to tap; nothing was written.`,
+      );
+    }
+    this.#sinkPath = sink.path;
 
     const settingsPath = this.#settingsPath;
     const existing = existsSync(settingsPath)
@@ -150,6 +174,7 @@ export class EventTapHostClaude implements EventTapHost {
       mergeJsonKeys(existing, { hooks: mergedHooks }),
       'utf8',
     );
+    return { tapped, skipped };
   }
 
   remove(): void {

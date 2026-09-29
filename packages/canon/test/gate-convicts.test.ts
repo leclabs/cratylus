@@ -298,6 +298,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drives the verb surface under injected omp / Claude Code / bare environments and
   // scratch settings paths it builds itself; polices no live artifact.
   'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
+  // drives `install` over requests it builds itself — all mapped, some, none — against
+  // a host config it supplies; polices no live artifact.
+  'runtime/event-tap-skipped.test.ts': 'BEHAVIORAL',
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',

@@ -42,6 +42,7 @@ import {
 import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
 import {
+  EVENT_TAP_HARNESSES,
   hasEventTapStrategy,
   invokingHarness,
   noEventTapStrategy,
@@ -52,7 +53,14 @@ export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status';
 
 /** A verb's outcome, discriminated by verb — the value `main.ts` prints as JSON. */
 export type EventTapResult =
-  | { verb: 'install'; events: EventName[]; sink: string }
+  | {
+      verb: 'install';
+      /** The events the tap now observes — those requested that the harness fires. */
+      events: EventName[];
+      /** Requested events that were NOT tapped, each with why. Absent when none. */
+      skipped?: { event: EventName; reason: string }[];
+      sink: string;
+    }
   | { verb: 'uninstall' }
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
@@ -134,6 +142,8 @@ export interface EventTapDispatchOpts {
   readonly harness?: string;
   /** The environment the invoking harness is read from; defaults to `process.env`. */
   readonly env?: NodeJS.ProcessEnv;
+  /** Where a degradation warning goes; defaults to stderr as `WARNING: <line>`. */
+  readonly warn?: (line: string) => void;
 }
 
 /**
@@ -187,8 +197,32 @@ export function dispatchEventTap(
       if (sink === undefined || sink.trim() === '') {
         throw new Error('eventTap install: --sink <path> is required');
       }
-      tap.install(events, { path: sink });
-      return { verb: 'install', events, sink };
+      // The result reports what is ACTUALLY tapped, and the skipped ones with why —
+      // `events` used to echo the request, so an event Claude Code never fires was
+      // listed as tapped. An injected host is the port, which reports nothing back:
+      // it is taken to have tapped what was asked.
+      let tapped = events;
+      let skipped: EventName[] = [];
+      if (tap instanceof EventTapHostClaude) {
+        ({ tapped, skipped } = tap.install(events, { path: sink }));
+      } else {
+        tap.install(events, { path: sink });
+      }
+      const warn =
+        opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
+      const label = EVENT_TAP_HARNESSES[EventTapHostClaude.harness];
+      const reason = `${label} fires no native event for it`;
+      for (const event of skipped) {
+        warn(`eventTap install: '${event}' is not tapped — ${reason}.`);
+      }
+      return {
+        verb: 'install',
+        events: tapped,
+        ...(skipped.length > 0
+          ? { skipped: skipped.map((event) => ({ event, reason })) }
+          : {}),
+        sink,
+      };
     }
     case 'uninstall':
       tap.remove();
