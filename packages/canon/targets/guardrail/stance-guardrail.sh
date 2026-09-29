@@ -288,10 +288,12 @@ asst_close="$(jq -rs '
 # context: it is confidently wrong context, and the rubric leans on this slot to decide
 # whether an irreversible act was authorized.
 #
-# Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
-# message> tags, and every projected SKILL.md body is a verb H1 over a fenced ```text formal
-# block — a marker the body carries whether or not its cell sets a preamble. Fall back to the most
-# recent message that survives the filter.
+# Skill bodies are recognizable by the wrapper the HARNESS puts on them, never by their prose:
+# claude injects one as a meta user message opening "Base directory for this skill: <dir>", after
+# a <command-name>/<command-message> invocation message; omp's `skill-prompt` message closes with
+# a "---" rule and "Skill: <path>/SKILL.md". An operator message that merely looks like a skill
+# (an H1 over a fenced block) carries neither, and stays. Fall back to the most recent message
+# that survives the filter.
 operator="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -304,8 +306,8 @@ operator="$(jq -rs '
 	| map(select(
 	      (test("<command-name>") | not)
 	      and (test("<command-message>") | not)
-	      and (test("Base directory for this skill:") | not)
-	      and (test("^# [^\\n]+\\n\\n[\\s\\S]*```text\\n") | not)
+	      and (test("^\\s*Base directory for this skill:") | not)
+	      and (test("\\n---\\n\\nSkill: [^\\n]*SKILL\\.md\\s*$") | not)
 	      and (test("^\\s*<system-reminder>") | not)
 	      and (test("\\[SYSTEM NOTIFICATION - NOT USER INPUT\\]") | not)
 	      and (test("<task-notification>") | not)

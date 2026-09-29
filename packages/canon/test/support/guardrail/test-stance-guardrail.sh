@@ -429,11 +429,11 @@ mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the 
 {
 	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
 	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>"}}')"
-	# The harness then injects a SKILL BODY as its own user message: a verb H1 over the fenced
-	# formal block, with no Prime Principle (a cell that does not apply it carries none). The
-	# stand-in avoids the re-dispatch words the standing-directive scan reads, so it can only
-	# reach the payload through the operator slot.
-	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"# Design\n\n```text\nSKILL-BODY-SENTINEL ≜ the formal block\n```\n"}}')"
+	# The harness then injects the SKILL BODY as its own meta user message, opening with the
+	# wrapper claude emits and carrying no Prime Principle (a cell that does not apply it carries
+	# none). The stand-in avoids the re-dispatch words the standing-directive scan reads, so it
+	# can only reach the payload through the operator slot.
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,isMeta:true,message:{role:"user",content:"Base directory for this skill: /home/u/.claude/skills/design\n\n# Design\n\n```text\nSKILL-BODY-SENTINEL ≜ the formal block\n```\n"}}')"
 	printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
 } > "$SD_ELEV"
 
@@ -463,6 +463,73 @@ esac
 case "$p" in
 	*"SKILL-BODY-SENTINEL"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
 	*) pass "the skill body stayed out; only the utterance crossed" ;;
+esac
+
+# THE OPERATOR SLOT KEYS ON THE HARNESS'S WRAPPER, NOT ON PROSE SHAPE. A projected skill body is
+# a verb H1 over a fenced block, and so is a perfectly ordinary operator message that pastes a
+# spec; a filter keyed on that shape drops real operator turns from the judge. Each injected
+# body below wears the wrapper its harness really emits — claude: a meta user message opening
+# "Base directory for this skill:"; omp: a `skill-prompt` message closing with a `---` rule and
+# "Skill: <path>/SKILL.md" — and the operator-shaped message wears neither.
+slot_payload() {  # $1=the message injected after the operator's "look at the loader"
+	_t="$WORK/slot.jsonl"
+	{
+		printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
+		printf '%s\n' "$(jq -cn --arg t "$1" '{type:"user",isSidechain:false,message:{role:"user",content:$t}}')"
+		printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
+	} > "$_t"
+	sd_payload "$_t"
+}
+BT='```'; DASH='---'
+p="$(slot_payload "Base directory for this skill: /home/u/.claude/skills/design
+
+# Design
+
+${BT}text
+CLAUDE-BODY-SENTINEL ≜ the formal block
+${BT}")"
+case "$p" in
+	*CLAUDE-BODY-SENTINEL*) bad "a claude-injected skill body (no Prime Principle) reached the operator slot" ;;
+	*) pass "claude-injected skill body without a Prime Principle → filtered" ;;
+esac
+p="$(slot_payload "Base directory for this skill: /home/u/.claude/skills/plan
+
+# Plan
+
+## Prime Principle
+
+cratylism
+
+${BT}text
+CLAUDE-PP-BODY-SENTINEL ≜ the formal block
+${BT}")"
+case "$p" in
+	*CLAUDE-PP-BODY-SENTINEL*) bad "a claude-injected skill body (with a Prime Principle) reached the operator slot" ;;
+	*) pass "claude-injected skill body with a Prime Principle → filtered" ;;
+esac
+p="$(slot_payload "# Design
+
+${BT}text
+OMP-BODY-SENTINEL ≜ the formal block
+${BT}
+
+${DASH}
+
+Skill: /home/u/.agents/skills/design/SKILL.md")"
+case "$p" in
+	*OMP-BODY-SENTINEL*) bad "an omp skill-prompt body reached the operator slot" ;;
+	*) pass "omp skill-prompt body → filtered" ;;
+esac
+p="$(slot_payload "# Target
+
+the loader in packages/x
+
+${BT}text
+OPERATOR-SHAPE-SENTINEL ≜ what I want changed
+${BT}")"
+case "$p" in
+	*OPERATOR-SHAPE-SENTINEL*) pass "an operator message shaped like a skill body (H1 over a fenced block) stays in the operator slot" ;;
+	*) bad "a genuine operator message was dropped because it looked like a skill body" ;;
 esac
 
 # ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
