@@ -41,7 +41,7 @@
 //     task-agent root, merged first-wins by exact name with a project
 //     `.omp/agents` (which wins) and the bundled defs (which lose).
 //   - a SKILL is `skills/<name>/SKILL.md` under `~/.agents` (the AgentSkills
-//     spec, shared with claude and codex) — omp's vendor-neutral `.agent[s]`
+//     spec, shared with claude) — omp's vendor-neutral `.agent[s]`
 //     provider reads that root NATIVELY, at priority 70, no flag and no
 //     profile (confirmed in the installed package's resource loader:
 //     `join(getHomeDir(), ".agents", "skills")` is scanned unconditionally,
@@ -58,8 +58,7 @@
 // THE SCOPE IS STILL A DIRECTORY — `agent/personas/<name>/extensions/` under
 // `~/.omp` — and that is still the whole reason this adapter exists. Claude
 // attaches a hook inside a subagent's own front-matter, so attachment is the
-// scope. Codex declares hooks globally and must re-express per-agent intent as a
-// generated `matcher` regex. omp needs neither: a module sitting where only the
+// scope. omp needs no selector: a module sitting where only the
 // composing persona's OWN `--config` overlay names it loads under that persona
 // and no other.
 //
@@ -160,8 +159,8 @@ export function ompAgentRel(name: string): string {
  * Where skill `<name>` lands, relative to the harness home — ONE path, at the
  * harness-neutral root omp reads NATIVELY on every launch.
  *
- * `agents` goes UNUSED: the fan-out this signature still carries for claude and
- * codex existed here only because a persona WAS a profile, and a profile's
+ * `agents` goes UNUSED: the fan-out this signature still carries
+ * existed here only because a persona WAS a profile, and a profile's
  * native config root is isolated from every other — so a skill reachable from
  * every persona needed N+1 copies. It no longer is: omp reads `~/.agents/skills`
  * NATIVELY, at provider priority 70, for every launch — personaed, bare, or
@@ -331,7 +330,7 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
       `model: [${[`@${a.holds}`, `@${OMP_DEFAULT_ROLE}`].map(yamlString).join(', ')}]`,
     );
   }
-  // omp's own preload field. claude has one too (`skills`); codex has none and
+  // omp's own preload field. claude has one too (`skills`); a harness without one
   // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
     fm.push(`autoloadSkills: [${a.skills.map(yamlString).join(', ')}]`);
@@ -351,7 +350,7 @@ function yamlString(s: string): string {
 
 /**
  * The omp SKILL.md for a resolved skill — the AgentSkills front-matter pair plus
- * the harness-neutral body, identical in shape to the codex projection because
+ * the harness-neutral body, identical in shape to claude's projection because
  * both consume the same spec.
  */
 export function skillToOmpMd(s: ResolvedSkill): string {
@@ -1240,8 +1239,8 @@ export function ompOverlayYaml(): string {
  *
  * THE IDENTITY LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION. Every
  * adapter must carry the cell's `name` into whatever surface its harness reads
- * an identity from: claude has a front-matter `name:` field, codex has a TOML
- * `name`. A MAIN omp session has neither — `--append-system-prompt` is a TRUE
+ * an identity from: claude has a front-matter `name:` field. A MAIN omp session
+ * has none — `--append-system-prompt` is a TRUE
  * augment, so omp's base prompt survives underneath and asserts its OWN identity
  * ("Oh My Pi coding assistant"). Appending a body headed `# ✈️ mav` therefore
  * leaves TWO identities in one prompt, and which one answers depends on the
@@ -1554,7 +1553,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   agentExt: '.md',
   // Declared because the port requires it, and truthful: it is the artifact omp's
   // enforcement lands in. It is never merged into a host config the way claude's
-  // `settings.json` and codex's `hooks.json` are, because `hooks()` is absent and
+  // `settings.json` is, because `hooks()` is absent and
   // deploy therefore has no fragment to merge.
   hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
   // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds

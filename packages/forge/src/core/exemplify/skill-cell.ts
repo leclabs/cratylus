@@ -67,7 +67,7 @@ export function renderBody(spec: SkillCellSpec): string {
 }
 
 /**
- * THE ONE skill-cell body generator — the single home both the claude/codex
+ * THE ONE skill-cell body generator — the single home both the claude/omp
  * adapter skill projection (`@cratylus/forge/adapters/claude` `skillBody`)
  * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
  * from parts to markdown: a verb H1, optional intro prose, the fenced `text`

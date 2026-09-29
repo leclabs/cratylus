@@ -180,7 +180,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // projects the LIVE `stance-guardrail-pre` cell through BOTH shipped adapters and
   // asserts the cell declares an act while the adapter computes the selector; its
   // convicting fixture drives the SAME projector over the pre-repair shape (a plain
-  // `tool.use.pre` binding) and shows codex emitting it in total silence.
+  // `tool.use.pre` binding) and shows claude emitting it in total silence.
   'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/null-dimension.test.ts': 'GATE',
@@ -210,7 +210,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── forge ────────────────────────────────────────────────────────────
   'forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
-  'forge/adapters/codex-hooks.test.ts': 'BEHAVIORAL',
   // Drives the omp adapter with bindings and agents it supplies itself; its
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).

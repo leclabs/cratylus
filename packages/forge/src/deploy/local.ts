@@ -80,7 +80,7 @@ export function placeAgentsLocal(
   const warn = opts.warn ?? (() => {});
   const agentExt = opts.agentExt ?? '.md';
   // SOURCE is the render tree's staging layout; DESTINATION is the harness's own.
-  // They coincide for claude and codex and do not for omp, which is why the
+  // They coincide for claude and do not for omp, which is why the
   // destination is asked for rather than assumed.
   const agentRel =
     opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
@@ -126,8 +126,8 @@ export function placeAgentsLocal(
  *
  *  MANY DESTINATIONS, because a harness may scope a reader by directory: omp's
  *  native config root is per-profile, so a skill every projected persona can load
- *  is one copy per profile plus one in the session root. claude and codex return a
- *  single path and behave exactly as before. */
+ *  is one copy per profile plus one in the session root. claude returns a
+ *  single path and behaves exactly as before. */
 export function placeSkillsLocal(
   harnessDir: string,
   tree: RenderTree,

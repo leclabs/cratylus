@@ -21,7 +21,7 @@
 // about any of them; a projector that decided would be containing a design.
 //
 // WHY IT LANDS OUTSIDE THE HARNESS HOME. Every other deploy target is a file inside
-// `.claude/` or `.codex/`. This one is not a harness artifact at all: it configures
+// `.claude/` or `.omp/`. This one is not a harness artifact at all: it configures
 // the runtime, which is harness-independent and installed globally, so it lands
 // where the runtime looks (`$AGENT_RUNTIME_CONFIG`, else `~/.<bin>.json`). The
 // placers own the harness home; this owns exactly one file beside it.

@@ -1,6 +1,6 @@
 // The by-name HarnessAdapter registry: the ONE selection point a projection
 // consumer uses to obtain a harness adapter WITHOUT importing a concrete
-// `adapters/<harness>` module. `adapterByName('claude' | 'codex')` returns the
+// `adapters/<harness>` module. `adapterByName('claude' | 'omp')` returns the
 // wired `HarnessAdapter`; an unknown name throws.
 //
 // This is the only module that names the concrete harness adapters; a consumer
@@ -19,7 +19,6 @@
 // so no future barrel can silently re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { claudeHarnessAdapter } from '../claude/render.js';
-import { codexHarnessAdapter } from '../codex/render.js';
 import { ompHarnessAdapter } from '../omp/render.js';
 
 export type {
@@ -32,11 +31,10 @@ export type {
 export type { ResolvedSkill } from '../../core/body.js';
 
 /** The canonical harness names with a registered `HarnessAdapter`. */
-export type HarnessName = 'claude' | 'codex' | 'omp';
+export type HarnessName = 'claude' | 'omp';
 
 const REGISTRY: Record<HarnessName, HarnessAdapter> = {
   claude: claudeHarnessAdapter,
-  codex: codexHarnessAdapter,
   omp: ompHarnessAdapter,
 };
 

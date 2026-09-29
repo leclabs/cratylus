@@ -94,9 +94,9 @@ export function writeManifest(harnessDir: string, m: DeployManifest): void {
 /** The kind's top-level dir under the deploy root, and how a name reads out of
  *  an entry there. An agent entry is `<name><agentExt>`, and the extension is the
  *  HARNESS's — it is not a constant of this table, so the table only records THAT
- *  the entry is extended, never with what. Naming `.md` here is what made codex
- *  prune blind: a `.toml` tree filtered by `.md` matches nothing, and nothing
- *  reads as "no orphans". */
+ *  the entry is extended, never with what. Naming `.md` here would make prune
+ *  blind to a harness whose agents carry another extension: a tree filtered by
+ *  `.md` matches nothing, and nothing reads as "no orphans". */
 const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
   agent: { dir: 'agents', extended: true },
   skill: { dir: 'skills' },

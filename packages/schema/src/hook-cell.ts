@@ -45,8 +45,8 @@
 //
 // WHAT IT MUST NEVER CARRY IS THE INVOCATION. `command` lived here and every cell
 // spelled out `sh "$HOME/.claude/hooks/<id>/<file>"` — a claude path in the generic
-// design. The whole codex projection was consequently dropped rather than
-// translated, so codex agents ran with no governance at all. The cell now names its
+// design. A second harness's projection was consequently dropped rather than
+// translated, so its agents ran with no governance at all. The cell now names its
 // `entry` worker and the ADAPTER derives the invocation
 // (`HarnessAdapter.hookCommand`), per MODEL's `mechanism : fragment ×
 // harness-adapter ⇀ harness-mechanism`.
@@ -112,7 +112,7 @@ export type ProjectionFact =
    *
    * A fact rather than a literal for the reason every fact here is one, and this
    * is the sharpest instance of it: the judge backend defaulted to `claude` on
-   * EVERY harness, so codex's stance guard and omp's both depended on a third
+   * EVERY harness, so omp's stance guard depended on a second
    * vendor's CLI being installed and separately authenticated. When that OAuth
    * lapsed, every verdict on every harness failed open in silence. A harness's
    * own name for its own model is a projection fact, never a cell's constant.

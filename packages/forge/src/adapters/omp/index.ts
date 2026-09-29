@@ -4,7 +4,7 @@
 // persona is a NATIVE artifact of the harness: one `agent/agents/<name>.md`
 // definition that omp discovers itself, read back by ONE generic launcher for a
 // main session. The composed Target body is harness-neutral, so the
-// `ResolvedSkill` shape is shared with the claude and codex adapters.
+// `ResolvedSkill` shape is shared with the claude adapter.
 export {
   OMP_AGENT_DEF_DIR,
   OMP_GUARDRAIL_MODULE,

@@ -63,8 +63,8 @@ export interface PlaceOpts {
   /**
    * The harness's agent-definition extension (`HarnessAdapter.agentExt`).
    * Defaults to `.md` for callers that predate it — a default, not an
-   * assumption. A placer that guessed here placed zero codex agents and
-   * reported success, because "no matching file" is indistinguishable from
+   * assumption. A placer that guessed here could place zero agents and
+   * report success, because "no matching file" is indistinguishable from
    * "nothing to do".
    */
   agentExt?: string;
@@ -85,7 +85,7 @@ export interface PlaceOpts {
    * every destination, harnessDir-relative, POSIX.
    *
    * Defaults to `[skills/<name>]`, the render tree's staging layout, which is
-   * claude's and codex's destination and is NOT omp's: omp scans
+   * claude's destination and is NOT omp's: omp scans
    * `~/.agents/skills`, so `~/.omp/skills` was a directory the harness never
    * read and a whole corpus of deployed skills was inert.
    *

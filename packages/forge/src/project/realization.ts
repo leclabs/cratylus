@@ -30,15 +30,15 @@
 //
 // DEGRADE IS NOT WIDEN, and the distinction is the one thing here that must not
 // blur. Degrading changes HOW STRONGLY the composed agents are bound. Widening
-// changes WHICH agents are bound — codex can only declare hooks globally, so
-// emitting an unscopable one would govern every agent on the host, a different
+// changes WHICH agents are bound — a harness that can only declare hooks globally would,
+// by emitting an unscopable one, govern every agent on the host, a different
 // constraint wearing this one's name. Degrading is always available; widening is
 // never permitted.
 //
 // FIRE-ABILITY IS NOT SCOPABILITY. `realizable` answers "can the adapter fire `e`
 // at all"; a constraint composed into an agent needs the strictly stronger "can it
-// fire `e` FOR THAT AGENT". Codex's `Stop` fires and names nobody. Because MODEL
-// once had no word for the second question, the codex adapter grew a private
+// fire `e` FOR THAT AGENT". A global `Stop` fires and names nobody. Because MODEL
+// once had no word for the second question, an adapter grew a private
 // `throw` to ask it — a second decision site, invisible because it was never a
 // missing string, only a missing distinction. Adapters DECLARE capability
 // (`realizes`, `scopes`); this module alone decides what a "cannot" means.

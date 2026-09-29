@@ -84,10 +84,8 @@ const OMP_ACT_TOOL: Readonly<Record<EventName, string>> = {
 /**
  * Canonical ACT → the omp ⟨native event, native selector⟩ pair.
  *
- * **EVERY BINDING HERE IS NARROWED, AND THAT IS THE DIFFERENCE FROM CODEX.** Codex
- * spends its only `PreToolUse` selector on `agent_type` and therefore fires these
- * acts unnarrowed, which its adapter has to report as a loss. omp has no such
- * shortage — and the reason is structural rather than lucky:
+ * **EVERY BINDING HERE IS NARROWED.** omp has no shortage of selectors — and the
+ * reason is structural rather than lucky:
  *
  * **an omp hook is CODE, so the selector is an `if`.** The handler receives the
  * event with `toolName` on it (`ToolCallEvent`/`ToolResultEvent`,
@@ -116,8 +114,7 @@ export const canonicalActToOmp: Readonly<Record<EventName, NativeBinding>> =
  * native name. `undefined` ⇔ unrealizable here.
  *
  * The single question every omp emission site asks, so no site can consult one
- * table and miss the other. Mirrors `codexBindingOf` deliberately: two harnesses
- * with the same two-table shape should answer it the same way.
+ * table and miss the other.
  */
 export function ompBindingOf(event: EventName): NativeBinding | undefined {
   const act = canonicalActToOmp[event];

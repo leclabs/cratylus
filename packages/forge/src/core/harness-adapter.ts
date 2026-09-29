@@ -2,24 +2,20 @@
 // captures the projection operations a consumer (canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
 // on-disk ARTIFACTS — WITHOUT naming a concrete adapter module. A consumer selects
-// an implementation strictly BY NAME (`adapterByName('claude' | 'codex')`), so no
+// an implementation strictly BY NAME (`adapterByName('claude' | 'omp')`), so no
 // `adapters/<harness>` subpath import leaks into the consumer.
 //
 // Each projection op returns `{ filename, content }` — the harness owns its own
-// file naming (`<name>.md` vs `<name>.toml`; `SKILL.md`), the consumer owns only
-// the parent directory it writes under. Optional ops (`scopeOrientation`, `hooks`)
-// are present only on harnesses that have that artifact (codex has an `AGENTS.md`
-// index; claude serializes hooks → a `settings.json` fragment).
+// file naming (`<name>.md`; `SKILL.md`), the consumer owns only
+// the parent directory it writes under. Optional ops (`hooks`, `enforcingSurface`)
+// are present only on harnesses that have that artifact (claude serializes hooks →
+// a `settings.json` fragment).
 //
 // VOCABULARY — the GENUS is `artifact`: one projected file, `⟨filename, content⟩`,
-// which is what every op below returns. This file used to spell the genus `surface`
-// in its prose while binding `surface?()` to ONE species (codex's `AGENTS.md`), so
-// the field and the prose disagreed about the extension of the same sign and a
-// reader who trusted either was wrong about the other. The species is now
-// `scopeOrientation`, and `surface` is left to the sense the rest of the corpus
-// already gives it — a module's exposed API extent (`resolve/`'s public surface, a
-// port's INTERFACE surface). `enforcingSurface` below keeps the word in exactly
-// that sense: the global config extent a harness offers, not a file.
+// which is what every op below returns. `surface` is kept for the sense the rest
+// of the corpus gives it — a module's exposed API extent (`resolve/`'s public
+// surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
+// exactly that sense: the global config extent a harness offers, not a file.
 
 import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
 import type {
@@ -114,15 +110,15 @@ export const SCOPE_DIR_TOKEN = '{{scopeDir}}';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
-  /** The harness-owned filename (with extension), e.g. `mav.md` / `mav.toml` / `SKILL.md`. */
+  /** The harness-owned filename (with extension), e.g. `mav.md` / `SKILL.md`. */
   readonly filename: string;
   readonly content: string;
   /**
    * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
    *
    * Absent ⇒ the artifact is global to the harness home, which is every harness
-   * whose enforcement is a config FILE (claude's `settings.json`, codex's
-   * `hooks.json`): one artifact, one place, no scope to name. Present ⇒ the
+   * whose enforcement is a config FILE (claude's `settings.json`): one artifact,
+   * one place, no scope to name. Present ⇒ the
    * artifact is one of MANY, and its scope decides where deploy lands it
    * (`HarnessAdapter.scopedRel`). omp is the harness that needs this: its
    * scope is a DIRECTORY, so the same registrations are emitted once per scope
@@ -144,9 +140,8 @@ export interface HarnessProjection {
 export interface HarnessHooksProjection {
   /**
    * WHERE this harness keeps its scope-activated hook config — `settings.json`
-   * for claude, `hooks.json` for codex. The projector used to hardcode the claude
-   * name, which made a second harness's artifact unnameable and is why codex's was
-   * assumed not to exist.
+   * for claude. The projector used to hardcode the claude name, which made a
+   * second harness's artifact unnameable.
    */
   readonly filename: string;
   readonly settings: Record<string, unknown>;
@@ -175,14 +170,14 @@ export interface AgentDefContext {
    * values — INJECTED, because MODEL makes `mechanism` a function of (fragment,
    * adapter) that deploy emits, not a field the source cell carries. A harness
    * that attaches per-agent (claude: front-matter hooks) renders them; one that
-   * declares globally (codex) ignores it and uses `enforcingSurface` instead.
+   * declares globally ignores it and uses `enforcingSurface` instead.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
 }
 
 /** The projection port a harness adapter implements. */
 export interface HarnessAdapter {
-  /** The canonical harness name this adapter projects for (`claude`, `codex`, …). */
+  /** The canonical harness name this adapter projects for (`claude`, `omp`). */
   readonly name: string;
   /**
    * The substrate this adapter realizes constraints on.
@@ -194,23 +189,22 @@ export interface HarnessAdapter {
   readonly substrate: Substrate;
   /**
    * The dot-directory this harness reads its deployed artifacts from — `.claude`,
-   * `.codex`. Relative to `$HOME` at user scope, to the project root at project
+   * `.omp`. Relative to `$HOME` at user scope, to the project root at project
    * scope.
    *
-   * REQUIRED, and the reason the whole deploy half existed only for claude: every
-   * scope, manifest and prune path spelled `.claude` directly, with no adapter in
-   * scope to ask. `deploy --harness codex` could be typed and could not be
-   * honoured, so a correct codex render had nowhere to land.
+   * REQUIRED, and the reason the whole deploy half once existed only for claude:
+   * every scope, manifest and prune path spelled `.claude` directly, with no
+   * adapter in scope to ask.
    */
   readonly home: string;
   /**
-   * The file EXTENSION this harness's agent definitions carry — `.md`, `.toml`.
+   * The file EXTENSION this harness's agent definitions carry — `.md`.
    *
    * `agentDef` already returns a full filename, but DEPLOY reads a render tree
    * off disk and has no vector to ask, so it needs the extension on its own. It
-   * assumed `.md`, which is why a codex deploy placed zero agents: it looked for
-   * `<name>.md` in a directory of `<name>.toml`, found nothing, and reported
-   * success.
+   * once assumed `.md` outright, so a harness whose agents carry another extension
+   * would have placed zero agents: it looked for `<name>.md`, found nothing, and
+   * reported success.
    */
   readonly agentExt: string;
   /**
@@ -225,8 +219,8 @@ export interface HarnessAdapter {
    * between them. It used to be the identity map, which silently assumed every
    * harness stages the way forge does.
    *
-   * Claude and codex do (`agents/<name>.md`, `agents/<name>.toml`), so the
-   * assumption held for two harnesses and was invisible. **omp does not**: its
+   * Claude does (`agents/<name>.md`), so the
+   * assumption held for one harness and was invisible. **omp does not**: its
    * definition lands at `<home>/agent/agents/<name>.md` — inside omp's own
    * config root, two levels down, because that is the USER-level task-agent
    * root omp discovers from and forge's flat `agents/<name>.md` staging is not
@@ -242,8 +236,8 @@ export interface HarnessAdapter {
    *
    * PLURAL because how many destinations a skill needs depends on how the
    * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
-   * and codex read skills from one user-level dir, so `agents` goes unused for
-   * either. **omp used to be the exception** — its native config root was
+   * reads skills from one user-level dir, so `agents` goes unused for it.
+   * **omp used to be the exception** — its native config root was
    * profile-scoped, so a skill reachable from every projected persona needed
    * N+1 copies (see `git blame` for the incident: `~/.omp/skills` is a
    * directory omp never scans, so a byte-perfect render once deployed 16
@@ -259,8 +253,8 @@ export interface HarnessAdapter {
    */
   skillRel(name: string, agents: readonly string[]): readonly string[];
   /**
-   * The filename of this harness's hook-config artifact — `settings.json`,
-   * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
+   * The filename of this harness's hook-config artifact — `settings.json`.
+   * Mirrors `HarnessHooksProjection.filename`; deploy needs it to
    * find the fragment in the render tree and to merge into the host's copy.
    */
   readonly hooksFile: string;
@@ -269,8 +263,8 @@ export interface HarnessAdapter {
    * where it judges in-process and needs no subprocess.
    *
    * Declared on the port because it is the fact that made every harness's guard
-   * depend on one vendor: the judge backend hardcoded `claude`, so codex's stance
-   * guard and omp's both required a third CLI installed and separately
+   * depend on one vendor: the judge backend hardcoded `claude`, so omp's stance
+   * guard required a second CLI installed and separately
    * authenticated, and a lapsed session in that CLI failed every verdict open,
    * silently, everywhere at once. A harness answers with its OWN model or it says
    * it cannot, and neither answer belongs in a cell.
@@ -283,8 +277,8 @@ export interface HarnessAdapter {
    *
    * REQUIRED, because the answer decides what an agent's skills become here. Yes
    * ⇒ `agentDef` emits the native field from `Agent.skills`. No ⇒ it emits none
-   * (codex's agent TOML has no such field, only `skills.config` enable/disable)
-   * and renders the skills as a required-reading declaration instead, and
+   * (a harness whose agent definition has no such field) and renders the skills
+   * as a required-reading declaration instead, and
    * projection warns once per agent that has any: the fidelity ladder's floor is
    * a steer, never silence.
    *
@@ -319,7 +313,7 @@ export interface HarnessAdapter {
    * The predicate behind `¬scopable(e, adapter)`, and a STRICTLY stronger demand
    * than `realizes`: firing is not scoping. An adapter may fire an event globally
    * and still be unable to say WHICH agent it fired for, because the harness gives
-   * the hook no agent identifier to match on. Codex's `Stop` is exactly that —
+   * the hook no agent identifier to match on. Such an event is
    * realizable, unscopable.
    *
    * Only asked of a constraint some agent's `ir(a)` composes. A session-wide hook
@@ -337,8 +331,8 @@ export interface HarnessAdapter {
    * a worker DOES (`content`, harness-agnostic behaviour); the harness owns WHERE
    * it lands and HOW it is invoked. `$HOME/.claude/hooks/<anchor>/<file>` is a
    * claude FACE, and a canon cell that spelled it out would have chosen a harness
-   * — which is precisely what it did, and why the codex projection carried no
-   * governance at all: every cell's command named a claude path, so codex's whole
+   * — which is precisely what it did, and why a second harness's projection carried no
+   * governance at all: every cell's command named a claude path, so that harness's whole
    * hooks dir was dropped rather than translated.
    *
    * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
@@ -350,22 +344,6 @@ export interface HarnessAdapter {
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
-  /**
-   * The one artifact this harness loads because the reader is IN THIS SCOPE rather
-   * than because anything was selected — codex's `AGENTS.md`; claude projects none.
-   * It orients whoever reads it: what this workspace is, and an index of the agents
-   * and skills available here.
-   *
-   * SCOPE-ACTIVATED, and that is the whole differentia. `agentDef` and `skillDef`
-   * are selection-activated — their bytes are read only once a reader picks that
-   * agent or invokes that skill. This one is read first and unconditionally, which
-   * is why it takes the WHOLE agent-name set and no single vector.
-   *
-   * It was called `surface`, a sign this file's own prose simultaneously used for
-   * the genus (any projected artifact). Same sign, two extensions, one file — see
-   * the VOCABULARY note at the top.
-   */
-  scopeOrientation?(agentNames: readonly string[]): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports
    *  hooks (claude → `settings.json` `hooks` block). */
   hooks?(hooks: readonly Hook[]): HarnessHooksProjection;
@@ -377,7 +355,7 @@ export interface HarnessAdapter {
    * THE ADAPTER'S JOB IS TO ADAPT. The canon authors the ideal shape: a constraint
    * composed into the agents it governs. What varies is how much of that a given
    * harness can express. Claude attaches hooks to a subagent directly, so it needs
-   * nothing here and omits this. Codex declares hooks globally, so its adapter must
+   * nothing here and omits this. A harness that declares hooks globally must
    * map per-agent down onto a global surface plus a matcher — the mapping lives in
    * the adapter, never in the canon, and never in a hand-written filter inside the
    * mechanism.
@@ -389,14 +367,14 @@ export interface HarnessAdapter {
    * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
    * never a field the source cell carries.
    *
-   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** Codex's implementation already
-   * took a `mechanisms` parameter and defaulted it to an empty map; the adapter
-   * wired `(bindings) => codexHooksJson(bindings)` and never passed one, so every
-   * binding hit `if (!m) continue` and the function returned `null` for every input
-   * — measured, not inferred. Codex's per-agent enforcing constraints reached the
-   * host as nothing at all, while the unit tests stayed green because they call the
-   * function DIRECTLY with a mechanism map the production path never supplies.
-   * Threading it through the port is what makes the two paths the same path.
+   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** An implementation took a
+   * `mechanisms` parameter and defaulted it to an empty map, and the adapter never
+   * passed one, so every binding hit `if (!m) continue` and the function returned
+   * `null` for every input — measured, not inferred. Per-agent enforcing
+   * constraints reached the host as nothing at all, while the unit tests stayed
+   * green because they called the function DIRECTLY with a mechanism map the
+   * production path never supplied. Threading it through the port is what makes
+   * the two paths the same path.
    *
    * Returns one projection, MANY, or null. Plural because a harness may scope by
    * per-agent DIRECTORY rather than by a selector: omp writes one module per
@@ -495,7 +473,7 @@ export interface HarnessAdapter {
    * pass `--profile work` on the launcher's own command line and get both.
    *
    * Absent ⇒ this harness carries identity in its own native field (claude's
-   * front-matter `name`, codex's TOML `name`) and composes no launch spec.
+   * front-matter `name`) and composes no launch spec.
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
   /**

@@ -695,7 +695,7 @@ turn="$(cat)"
 # Resolve the judge model CLI — THIS HARNESS'S OWN, carried as a projection fact.
 #
 # It read \`\${STANCE_JUDGE_BIN:-claude}\`, and that one literal made every harness
-# depend on one vendor: codex's stance guard and omp's both needed \`claude\`
+# depend on one vendor: omp's stance guard needed \`claude\`
 # installed and separately authenticated, and when that OAuth lapsed every verdict
 # on every harness failed open in silence. A harness answers with its own model.
 #

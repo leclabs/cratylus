@@ -43,7 +43,7 @@ export interface DeployOpts {
   tree: RenderTree;
   /**
    * WHICH harness's home the tree lands in — `HarnessAdapter.home` (`.claude`,
-   * `.codex`). Omitted ⇒ `.claude`, the historical behaviour.
+   * `.omp`). Omitted ⇒ `.claude`, the historical behaviour.
    *
    * Passed as the dot-dir rather than the whole adapter deliberately: deploy is a
    * FILE PLACER and needs exactly one fact from the adapter. Handing it the
@@ -76,8 +76,8 @@ export interface DeployOpts {
 
 /** Names available to deploy for a kind, read from the render tree. Agents are
  *  the `<name><agentExt>` files in agentsDir; skills are the `<name>/` dirs (with
- *  a SKILL.md) in skillsDir. `agentExt` is the ADAPTER's — reading a codex tree
- *  with claude's `.md` returns an empty list, which is indistinguishable from an
+ *  a SKILL.md) in skillsDir. `agentExt` is the ADAPTER's — reading a tree with the
+ *  wrong extension returns an empty list, which is indistinguishable from an
  *  empty tree and deploys nothing while reporting success. */
 export function treeNames(
   kind: DeployKind,
@@ -140,7 +140,7 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
   return {
     dry: opts.dry ?? false,
     // The harness's artifact shapes, forwarded from the adapter. Omitting these
-    // is how a codex deploy silently placed nothing: the placers' `.md` /
+    // is how a deploy could silently place nothing: the placers' `.md` /
     // `settings.json` defaults are correct for claude and wrong everywhere else,
     // and a wrong default here fails by finding no files, which reads as success.
     ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),

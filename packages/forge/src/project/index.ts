@@ -603,22 +603,22 @@ export async function projectPluginSet(
   );
   if (boundBindings.length > 0 && opts.adapter.enforcingSurface) {
     // `mechanisms` THREADED. Passing only the bindings left every implementation
-    // with an empty map, so codex's returned `null` for every input and its
-    // per-agent enforcing constraints reached the host as nothing — green the whole
+    // with an empty map, so an implementation returned `null` for every input and
+    // its per-agent enforcing constraints reached the host as nothing — green the whole
     // time, because the unit tests call the function directly with a map the
     // production path never supplied.
     const surface = opts.adapter.enforcingSurface(boundBindings, mechanisms);
     // One projection or MANY: a harness scoping by per-agent directory emits one
     // artifact per composing agent (omp), and one scoping by selector emits a
-    // single global artifact (codex).
+    // single global artifact.
     for (const s of surface
       ? Array.isArray(surface)
         ? surface
         : [surface]
       : []) {
       // A SCOPED artifact is staged by scope and mapped at deploy; an unscoped one
-      // is the harness's single global artifact and stays at the tree root, where
-      // codex's `hooks.json` has always been.
+      // is the harness's single global artifact and stays at the tree root, as a
+      // hook-config file does.
       const path =
         s.scope === undefined
           ? s.filename
@@ -640,8 +640,8 @@ export async function projectPluginSet(
   // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
   // scopes appear here: an artifact that NAMES one persona is that persona's
   // (omp's overlay), and one that resolves a persona at RUN time belongs to the
-  // session and is emitted once (omp's launcher). Optional: claude and codex
-  // carry identity in their own agent def and compose nothing here.
+  // session and is emitted once (omp's launcher). Optional: claude
+  // carries identity in its own agent def and composes nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(rendered)) {
@@ -714,7 +714,7 @@ export async function projectPluginSet(
   if (hookCells.length > 0) {
     const renderHooks = opts.adapter.hooks;
     // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
-    // only the first. `hooks` returns a settings fragment (claude, codex);
+    // only the first. `hooks` returns a settings fragment (claude);
     // `scopeActivatedSurface` returns modules placed per scope (omp, whose loader
     // scans a dir and whose config root is profile-scoped). Reading the absence of
     // the FORMER as "no surface at all" is what dropped all five of canon's
@@ -725,9 +725,8 @@ export async function projectPluginSet(
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
       // surface loses these cells' MECHANISM, not the build — and the operator is
       // told, because an absent guardrail that announced nothing is the failure this
-      // whole design removes. Refusing here is what drove the codex CLI to delete
-      // canon's hooks dir from its plugin set, so codex agents ran ungoverned and
-      // silent.
+      // whole design removes. Refusing here would delete canon's hooks dir from a
+      // plugin set, so agents ran ungoverned and silent.
       for (const cell of hookCells) {
         warn(
           `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The cell is not deployed here.`,
@@ -822,23 +821,6 @@ export async function projectPluginSet(
         }
       }
     }
-  }
-
-  // The SCOPE-ACTIVATED ORIENTATION — codex's `AGENTS.md`, the artifact a workspace
-  // reads before any agent is selected. OPTIONAL on the port
-  // (`HarnessAdapter.scopeOrientation`) because it is a harness property, not a cell
-  // kind: codex has one, claude has none, and a harness without one must project the
-  // same tree it always did — hence the guard, and hence NO throw on absence.
-  //
-  // It is emitted LAST because it indexes the projected agent names, and it goes
-  // into `files` like every other artifact: it used to be the codex CLI's own direct
-  // disk write, which is precisely the fork that let that path drift. Rendering it
-  // here keeps this module's no-file-descriptor property intact.
-  const renderOrientation = opts.adapter.scopeOrientation;
-  if (renderOrientation) {
-    const { filename, content } = renderOrientation(agentNames);
-    files.push({ path: filename, content });
-    log(`EMIT orientation ${filename}`);
   }
 
   const heldRoles = [

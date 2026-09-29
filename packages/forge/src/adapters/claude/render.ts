@@ -137,7 +137,7 @@ function agentHooksFrontMatter(
       if (!binding) continue;
       const native = binding.event;
       // The ACT's selector is COMPUTED (the adapter knows which tool performs it);
-      // a mechanism's own `matcher` — codex's generated `agent_type` regex, or a
+      // a mechanism's own `matcher` — a
       // selector round-tripped off a host — answers only when the act does not.
       const matcher = binding.matcher ?? m.matcher;
       const lines: string[] = [];
@@ -190,7 +190,7 @@ export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
 
 // ── Skill projection ────────────────────────────────────────────────────────
 // The `ResolvedSkill` shape and its `skillBody` generator live in
-// `core/body` (harness-neutral, shared with codex) and are imported +
+// `core/body` (harness-neutral, shared with omp) and are imported +
 // re-exported at the top of this module. Only the claude FRAMING is local.
 
 /** The skill SKILL.md front-matter: `name / description / trigger`. */
@@ -211,8 +211,8 @@ export function skillToClaudeMd(s: ResolvedSkill): string {
 
 /**
  * The claude realization of the `HarnessAdapter` port: agent → `<name>.md`,
- * skill → `SKILL.md`, hooks → the `settings.json` `hooks` block fragment. No
- * `scopeOrientation` (claude has no `AGENTS.md` index). Wraps the concrete functions
+ * skill → `SKILL.md`, hooks → the `settings.json` `hooks` block fragment. Wraps
+ * the concrete functions
  * above — projection output is byte-identical to calling them directly.
  */
 /** Where agent `<name>`'s definition lives, relative to `.claude` — the ONE home
@@ -253,7 +253,7 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // agent's own front-matter, so ATTACHMENT IS THE SCOPE. There is no selector to
   // express and therefore no event Claude can fire but not narrow — the two
   // predicates coincide here, which is precisely why the distinction stayed
-  // invisible until codex, whose only surface is global, forced it.
+  // invisible until a harness whose only surface is global forced it.
   //
   // Coincidence, NOT identity: this is an alias of `realizes` by argument, not a
   // definition of `scopes`. An adapter added later that attaches globally must
