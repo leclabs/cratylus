@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3NCQZNYGWQJJBY9E36C9PSM",
+    "entity": "01M3NCQZNYGWQJJBY9E36C9PSK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:33:52.702Z",
+    "reason": "the file held one native event map that the last deploy overwrote, so installing the Claude event tap after an omp deploy wrote omp's event names into Claude's settings",
+    "cause": "operator directive 2026-09-28 after the 0.3.0 verification"
+  },
+  "payload": {
+    "anchor": "runtime config",
+    "gloss": "the one per-host file through which deploy hands the runtime what it does not know on its own: the corpus's event vocabulary and each capability's configuration (the plan lifecycle among them), which are the corpus's, and each harness's native names for those events, which are that harness's alone and held in one stanza per harness. A deploy writes its own harness's stanza and the corpus's parts and leaves every other harness's stanza as it found it; a reader needing native names asks for one harness's by name and, when that harness has none, refuses and names the deploy to run.",
+    "factors": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NCQZSM2CAWX1H4FHNQJGSV",
+    "entity": "01M3NCQZSM2CAWX1H4FHNQJGST",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:33:52.820Z",
+    "reason": "operator set codex aside for now and asked for it to be kept as a follow-up",
+    "cause": "0.3.0 verification, 2026-09-28"
+  },
+  "payload": {
+    "title": "codex parity",
+    "kind": "idea",
+    "topic": "codex",
+    "body": "Bring the codex projection to parity with claude and omp. Seen in the 0.3.0 verification: codex has no preload field, so skills reach its agents only as a required-reading list with relative paths (skills/<name>/SKILL.md, no anchor to ~/.codex); its session variables for the memory shim are inherited from claude's, marked unmeasured in forge, and a memory call with none set mints a fresh session instead of refusing; and this host's codex deployment predates 0.3.0 (no note skill, no design or plan scripts). A follow-up for later, not now.",
+    "blocks": []
+  }
+}

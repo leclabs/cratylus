@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3NCQZF141ZRXKZF7HEZC9N3",
+    "entity": "01M3NCQZF0FH8FXX88A0GE6BV7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:33:52.481Z",
+    "reason": "an unsupported flag was silently ignored and the write still landed (--factor for --factors dropped the factor); an agent must be told at once and asked to correct the call",
+    "cause": "operator directive 2026-09-28 after the 0.3.0 verification"
+  },
+  "payload": {
+    "anchor": "verb flags",
+    "gloss": "the flags each capability verb takes, declared once beside the verb, for every capability the CLI routes. A flag the verb does not take is refused before the verb acts, so nothing is written: the refusal names the flag, the verb's nearest flag when one is close, and every flag the verb takes, and asks the caller to correct the call and run it again.",
+    "factors": []
+  }
+}
