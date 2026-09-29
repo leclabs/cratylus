@@ -412,18 +412,11 @@ export function ompGuardrailExtensions(
 
   const out: HarnessProjection[] = [];
   for (const [agent, regs] of [...byAgent].sort()) {
-    // ⟨native event, tool, command⟩ already registered for this agent. Two acts can
-    // land on one native event (`operator.consult.pre` and `subagent.dispatch.pre`
-    // are both `tool_call`), and registering the same command twice would run the
-    // worker twice per call.
-    const seen = new Set<string>();
-    const lines: string[] = [];
-    for (const r of regs) {
-      const key = JSON.stringify([r.native, r.tool ?? '', r.command]);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      lines.push(renderRegistration(r));
-    }
+    // Deduped, and one judgment per act, in `renderRegistrations`: two acts can land
+    // on one native event (`operator.consult.pre` and `subagent.dispatch.pre` are both
+    // `tool_call`), and registering the same command twice would run the worker twice
+    // per call.
+    const lines = renderRegistrations(regs);
     if (lines.length === 0) continue;
     out.push({
       filename: OMP_GUARDRAIL_MODULE,
@@ -461,8 +454,7 @@ export function ompScopeActivatedExtensions(
   hooks: readonly Hook[],
   agentNames: readonly string[],
 ): HarnessProjection[] {
-  const seen = new Set<string>();
-  const lines: string[] = [];
+  const regs: OmpRegistration[] = [];
   for (const hook of hooks) {
     for (const event of hook.events) {
       const binding = ompBindingOf(event);
@@ -470,20 +462,16 @@ export function ompScopeActivatedExtensions(
       // projection seam; registering a handler for an event omp never fires would
       // read as coverage and deliver none.
       if (!binding) continue;
-      const id = hook.id ?? event;
-      const reg: OmpRegistration = {
-        anchor: id,
+      regs.push({
+        anchor: hook.id ?? event,
         native: binding.event,
         tool: binding.matcher,
         workerTool: OMP_WORKER_TOOL[event],
         command: hook.command,
-      };
-      const key = JSON.stringify([reg.native, reg.tool ?? '', reg.command]);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      lines.push(renderRegistration(reg));
+      });
     }
   }
+  const lines = renderRegistrations(regs);
   if (lines.length === 0) return [];
   const scopes = [SESSION_SCOPE, ...[...agentNames].sort()];
   // Enrollment is not emitted here: the persona's manifest is the projector's, one
@@ -501,12 +489,55 @@ export function ompScopeActivatedExtensions(
   }));
 }
 
-/** One `pi.on(...)` block — narrowed by an `if` when the act names a tool. */
-function renderRegistration(r: OmpRegistration): string {
+/**
+ * Every registration of one module, deduped, each rendered once.
+ *
+ * ONE ACT, ONE JUDGMENT. Two registrations of a cell can land on one native event and
+ * one command — purview binds the act `subagent.dispatch.pre` (`tool_call`, tool
+ * `task`) AND the unnarrowed `tool.use.pre` (`tool_call`, any tool) — and a `task` call
+ * then matches both, so the same dispatch was judged twice. Claude collapses identical
+ * commands; omp registers code, so nothing collapses them unless this does. The
+ * unnarrowed handler therefore skips the tools a narrowed registration of the same
+ * command already covers. The rule lives here, once, for every module this adapter
+ * emits, and not in any worker.
+ */
+function renderRegistrations(regs: readonly OmpRegistration[]): string[] {
+  const seen = new Set<string>();
+  const unique: OmpRegistration[] = [];
+  for (const r of regs) {
+    const key = JSON.stringify([r.native, r.tool ?? '', r.command]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(r);
+  }
+  return unique.map((r) =>
+    renderRegistration(
+      r,
+      r.tool !== undefined
+        ? []
+        : unique.flatMap((o) =>
+            o.native === r.native &&
+            o.command === r.command &&
+            o.tool !== undefined
+              ? [o.tool]
+              : [],
+          ),
+    ),
+  );
+}
+
+/** One `pi.on(...)` block — narrowed by an `if` when the act names a tool, and
+ *  skipping the tools in `covered` when it does not. */
+function renderRegistration(
+  r: OmpRegistration,
+  covered: readonly string[],
+): string {
   const refusal = OMP_REFUSAL_SHAPE[r.native];
   const guard = r.tool
     ? `\n    if (event.toolName !== ${JSON.stringify(r.tool)}) return;`
-    : '';
+    : covered.length > 0
+      ? `\n    if (${JSON.stringify(covered)}.includes(event.toolName)) return;`
+      : '';
   const kind = OMP_ENVELOPE_KIND[r.native];
   // THE VERDICT IS ON STDOUT, NEVER IN THE EXIT CODE, and reading it from the
   // wrong place is how this gate came to refuse work it had never judged. The

@@ -430,7 +430,7 @@ export interface HarnessAdapter {
    * start one persona has a launch spec whether or not this port generates it
    * for them.
    *
-   * EVERY HARNESS THAT DECLARES IT PLACES THE ENROLLMENT MANIFEST, mechanism or
+   * EVERY HARNESS THAT DECLARES IT PLACES THE STANCE MANIFEST, mechanism or
    * not: the projector stages one per persona (`core/enrollment.ts`) and this map
    * says where it lands. omp's scope carries modules beside it; claude's carries
    * nothing else, because claude registers in `settings.json` and its workers find

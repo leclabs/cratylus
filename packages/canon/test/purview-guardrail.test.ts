@@ -485,6 +485,18 @@ describe('purview guardrail — omp’s tool.use.pre reaches the worker with the
     expect(judged[0]).toContain('/repo/src/a.ts');
   });
 
+  it('judges one dispatch once, though two of the cell’s registrations match a task call', async () => {
+    // `subagent.dispatch.pre` narrows `task`, and `tool.use.pre` matches every tool,
+    // `task` included: one act must not be two judgments.
+    const judged = await fire('task', {
+      context: 'build the fold',
+      tasks: [{ task: 'exactly as written' }],
+    });
+    expect(judged).toHaveLength(1);
+    expect(judged[0]).toContain('DISPATCH to');
+    expect(judged[0]).toContain('exactly as written');
+  });
+
   it('never judges a read', async () => {
     expect(await fire('read', { path: '/repo/src/a.ts' })).toEqual([]);
   });
