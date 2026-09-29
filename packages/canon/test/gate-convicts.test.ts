@@ -245,6 +245,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
   'forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
   'forge/deploy/hooks.test.ts': 'BEHAVIORAL',
+  // drives `addModelRoles` and `runInstall` over host configs and a corpus it builds
+  // itself, and asserts the negatives (an existing entry, a flow mapping, a dry run
+  // leave the bytes untouched) — it polices no corpus.
+  'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
   // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
   // negative (`.claude` absent) so the old hardcode cannot pass it.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
