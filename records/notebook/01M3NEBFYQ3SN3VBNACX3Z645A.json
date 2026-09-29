@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NEBFYQ3SN3VBNACX3Z645A",
+    "entity": "01M3NEBFYQ3SN3VBNACX3Z6459",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T02:02:00.535Z",
+    "reason": "assay of unit runtime-config surfaced it beside the concept",
+    "cause": "RuntimeConfigAssay 2026-09-28"
+  },
+  "payload": {
+    "title": "runtime config path spelled twice",
+    "kind": "idea",
+    "topic": "structure",
+    "body": "The host runtime config's path rule ($AGENT_RUNTIME_CONFIG, else ~/.cratylus.json) is declared in both forge (deploy/runtime-config.ts) and runtime (runtime-config.ts), and refusal messages in event-tap/dispatch.ts and plan/reading.ts spell it again as literal text. forge may depend on runtime, so the rule can have one home the others import. Predates the per-harness stanza work.",
+    "blocks": []
+  }
+}
