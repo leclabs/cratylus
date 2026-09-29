@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3PP4DR18TPQTTXXNYKES251",
+    "entity": "01M3PP4DR18TPQTTXXNYKES250",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T13:37:11.937Z",
+    "reason": "one unit carries the whole of pin's amended gloss: drift and suspicion share movement() and #moved, so any split along them is a chain over the same two files",
+    "cause": "pin amended at d68c8d54: drift and suspicion say what moved"
+  },
+  "payload": {
+    "name": "drift-says-what-moved",
+    "realizes": [
+      "01M3MEKHBYF8EJN5TTVED2MTPA"
+    ],
+    "state": "proposed"
+  }
+}
