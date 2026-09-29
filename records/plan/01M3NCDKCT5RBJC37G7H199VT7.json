@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NCDKCT5RBJC37G7H199VT7",
+    "entity": "01M3NBSXNN2BPTS79WH0D66DBP",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NBT2C7R607RM0QMZJ557H6"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T01:28:12.442Z",
+    "reason": "sole unit completed; plan terminal",
+    "cause": "acceptance of omp-persona-badge"
+  },
+  "payload": {
+    "name": "persona-badge",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR"
+    ],
+    "state": "closed"
+  }
+}
