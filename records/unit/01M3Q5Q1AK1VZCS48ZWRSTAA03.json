@@ -1,0 +1,44 @@
+{
+  "envelope": {
+    "id": "01M3Q5Q1AK1VZCS48ZWRSTAA03",
+    "entity": "01M3Q57NE2X9BGM8789TH37QP8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q59SHQR86N8JC3Z9XF50CH"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:09:30.452Z",
+    "reason": "accepted on verify: spec criteria met (remaining codex lines and the event-vocabulary red are owned by codex-adapter-removed); supported harness is a primitive file-cut across units, so it is assayed once on the whole after wave 1",
+    "cause": "wave 0 returns"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "docs-off-codex",
+      "intent": "Remove every codex support claim from the documentation. census @ 8753f969 (local://what-ships-census.md): 23 lines in 6 files. In packages/forge/README.md, `--harness claude|codex` becomes claude|omp. Remove the codex rows of the preload table and the artifact table, and make adapterByName name claude or omp. docs/cli/USAGE.md names Claude Code and omp, and its registry becomes 'claude' | 'omp'. In docs/cli/AUDIT.md, rewrite rows 13 and 3 without codex. docs/release-audit-checklist.md drops the codex row and the codex mention. In docs/research/harness-reach-matrix.md and cold-decode-as-a-skill.md, remove the codex claims and paths. This removes claims only; it is not a docs rewrite. CHANGELOGs are history and are left alone.",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        "docs/cli/AUDIT.md",
+        "docs/release-audit-checklist.md",
+        "docs/research/harness-reach-matrix.md",
+        "docs/research/cold-decode-as-a-skill.md"
+      ],
+      "accept": [
+        "`git grep -n -i codex -- <the 6 outputs>` prints nothing. At 8753f969 it prints 23.",
+        "`git grep -n -i codex -- '*.md' ':!**/CHANGELOG.md' ':!records' ':!.changeset'` prints nothing.",
+        "`pnpm exec prettier --check <the 6 outputs>` passes."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}

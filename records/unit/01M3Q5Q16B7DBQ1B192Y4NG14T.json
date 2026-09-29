@@ -1,0 +1,49 @@
+{
+  "envelope": {
+    "id": "01M3Q5Q16B7DBQ1B192Y4NG14T",
+    "entity": "01M3Q57N3JRXRKWF99AE21S6HZ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q59SDBE01T4ZNWJF4XHBFF"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:09:30.316Z",
+    "reason": "accepted on verify: spec criteria met (remaining codex lines and the event-vocabulary red are owned by codex-adapter-removed); supported harness is a primitive file-cut across units, so it is assayed once on the whole after wave 1",
+    "cause": "wave 0 returns"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "deploy-tests-off-codex",
+      "intent": "Re-prove the deploy and adapter tests that use codex as the second harness. census @ 8753f969 (local://what-ships-census.md): 33 lines. harness-shape.test.ts becomes claude vs omp, keeping the property that harnesses differ in home and hook file. init-harness-home.test.ts uses a supported or synthetic home. prune.test.ts proves that the orphan report reads the adapter's agentExt with a synthetic non-.md extension, not a codex tree. omp.test.ts drops the codex roleRouting and unnarrowed comparisons, and KEEPS its verbatim quote of omp's own 'Claude/Codex-compatible' doc comment. signify-marker-class.test.ts drops the codex dir-name history. runtime-config.test.ts uses a non-harness name for the unconfigured case. Do not touch the codex adapter.",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/runtime/src/runtime-config.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "packages/forge/test/deploy/init-harness-home.test.ts",
+        "packages/forge/test/deploy/prune.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/catalog/signify-marker-class.test.ts",
+        "packages/runtime/test/runtime-config.test.ts"
+      ],
+      "accept": [
+        "`git grep -n -i codex -- <the 6 outputs>` prints exactly one line: omp.test.ts quoting omp's 'Claude/Codex-compatible' doc comment. At 8753f969 it prints 33.",
+        "`pnpm --filter @cratylus/forge exec vitest run test/deploy test/adapters/omp.test.ts test/catalog/signify-marker-class.test.ts` and `pnpm --filter @cratylus/runtime exec vitest run test/runtime-config.test.ts` are green.",
+        "harness-shape.test.ts still fails if two registered harnesses shared home, extension and hook file. Prove this by the return citing the assertion.",
+        "`pnpm exec biome check` passes on the outputs."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}
