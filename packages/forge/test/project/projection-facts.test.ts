@@ -148,6 +148,7 @@ describe('projectionFacts is adapter-relative', () => {
       'harness-hooks-file',
       'harness-judge-bin',
       'harness-name',
+      'harness-persona-root',
       'runtime-bin',
     ]);
     // EVERY FACT BUT ONE IS NON-EMPTY, and the exception is load-bearing rather
@@ -175,6 +176,7 @@ describe('projectionFacts is adapter-relative', () => {
       'harness-hooks-file',
       'harness-judge-bin',
       'harness-name',
+      'harness-persona-root',
     ]);
   });
 
@@ -184,6 +186,11 @@ describe('projectionFacts is adapter-relative', () => {
     expect(omp['harness-name']).toBe('omp');
     expect(omp['harness-hooks-file']).toBe(adapterByName('omp').hooksFile);
     expect(omp['harness-hooks-file']).not.toBe(claude['harness-hooks-file']);
+  });
+
+  it('carries each adapter’s persona root, read back from its own scopedRel', () => {
+    expect(claude['harness-persona-root']).toBe('personas');
+    expect(omp['harness-persona-root']).toBe('agent/personas');
   });
 
   it('carries the drift exit code as the string a shell compares', () => {
@@ -233,6 +240,10 @@ describe('the projector hands its adapter to the worker templates', () => {
     expect(declared(omp.probe, 'HARNESS_HOOKS_FILE')).toBe(
       adapterByName('omp').hooksFile,
     );
+    // The persona root is read back from each adapter's own `scopedRel`, so the
+    // bytes a worker joins to the harness home name the directory deploy writes.
+    expect(declared(claude.probe, 'PERSONA_ROOT')).toBe('personas');
+    expect(declared(omp.probe, 'PERSONA_ROOT')).toBe('agent/personas');
     expect(omp.probe).not.toBe(claude.probe);
   });
 

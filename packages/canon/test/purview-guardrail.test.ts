@@ -20,6 +20,9 @@ import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectionFacts } from '@cratylus/forge/project';
+import { resolveWorker } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { mav } from '../src/agents/mav.js';
@@ -243,5 +246,113 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     });
     expect(once.stdout).toContain('deny');
     expect(twice.stdout).toBe('');
+  });
+});
+
+// THE CLAUDE FORM OF THE SCOPE. Claude Code places no dispatcher, so the payload carries
+// no `stance_scope`; it NAMES the running agent as `agent_type` (on the main thread of a
+// `claude --agent` session and inside a subagent, and on neither for a bare session). The
+// worker derives the persona's scope from that name under its own harness home, and a
+// manifest there is enrollment. The layout is the one the claude adapter deploys:
+// `<home>/.claude/{hooks/<id>/, agents/, personas/<name>/stance/manifest.json}`.
+//
+// THE CONTROLS ARE THE POINT. Without them a worker that judged every agent_type — or
+// one that read `.stance_scope` only, as this cell did — would each pass a suite that only
+// asserts the enrolled persona is judged.
+describe('purview guardrail — the claude form of the scope (agent_type only)', () => {
+  let claudeRoot: string;
+  let claudeWorker: string;
+
+  beforeAll(() => {
+    claudeRoot = mkdtempSync(join(tmpdir(), 'purview-claude-'));
+    const hooks = join(claudeRoot, '.claude', 'hooks', 'purview-guardrail');
+    mkdirSync(hooks, { recursive: true });
+    claudeWorker = join(hooks, 'purview-guardrail.sh');
+    const template = purviewGuardrail.workers?.find(
+      (x) => x.filename === 'purview-guardrail.sh',
+    );
+    if (!template)
+      throw new Error('purview-guardrail.sh not found on the cell');
+    writeFileSync(
+      claudeWorker,
+      resolveWorker(
+        template,
+        projectionFacts(adapterByName('claude')),
+        purviewGuardrail.speech,
+      ).content,
+      'utf8',
+    );
+    chmodSync(claudeWorker, 0o755);
+
+    const agents = join(claudeRoot, '.claude', 'agents');
+    mkdirSync(agents, { recursive: true });
+    for (const a of [architect, mav]) {
+      writeFileSync(
+        join(agents, `${a.name}.md`),
+        `# ${a.name}\n\n## Role\n\n${a.role}\n\n## Formality\n\nplain\n`,
+        'utf8',
+      );
+    }
+    // Only `architect` is ENROLLED. `mav` has a Target and no manifest: projected,
+    // dispatched to, and not carrying the guard.
+    const scope = join(
+      claudeRoot,
+      '.claude',
+      'personas',
+      architect.name,
+      'stance',
+    );
+    mkdirSync(scope, { recursive: true });
+    writeFileSync(
+      join(scope, 'manifest.json'),
+      JSON.stringify({ agent: architect.name, gates: {} }),
+      'utf8',
+    );
+  });
+
+  const runClaude = (payload: Record<string, unknown>) =>
+    spawnSync('sh', [claudeWorker], {
+      input: JSON.stringify({
+        tool_name: 'Task',
+        tool_input: DISPATCH,
+        session_id: `c-${Math.random()}`,
+        cwd: claudeRoot,
+        ...payload,
+      }),
+      encoding: 'utf8',
+      env: { ...process.env, PURVIEW_EMIT_PAYLOAD: '1' },
+    });
+
+  it('judges the enrolled persona the payload names, with its own projected contract', () => {
+    const { stdout, status } = runClaude({ agent_type: architect.name });
+    expect(status).toBe(0);
+    const { payload } = JSON.parse(stdout) as { payload: string };
+    expect(payload).toContain(architect.role);
+  });
+
+  it('is silent on a bare session — the payload names no agent', () => {
+    expect(runClaude({}).stdout).toBe('');
+    expect(runClaude({ agent_type: '' }).stdout).toBe('');
+  });
+
+  it('is silent for a named agent that carries no manifest (a built-in, a host’s, an unenrolled persona)', () => {
+    expect(runClaude({ agent_type: 'general-purpose' }).stdout).toBe('');
+    expect(runClaude({ agent_type: mav.name }).stdout).toBe('');
+  });
+
+  it('never builds a scope path out of a name that is not one directory', () => {
+    // `../personas/architect` would resolve to the enrolled scope from a name that is
+    // not the agent's own.
+    expect(
+      runClaude({ agent_type: `../personas/${architect.name}` }).stdout,
+    ).toBe('');
+  });
+
+  it('lets a dispatcher-supplied scope win over the name (omp keeps its form)', () => {
+    const { stdout } = runClaude({
+      agent_type: 'general-purpose',
+      stance_scope: join(claudeRoot, '.claude', 'personas', architect.name),
+    });
+    expect(stdout).not.toBe('');
   });
 });

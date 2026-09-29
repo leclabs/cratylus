@@ -210,6 +210,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── forge ────────────────────────────────────────────────────────────
   'forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
+  // Drives the claude adapter and the enrollment builder with cells and adapters it
+  // supplies itself; its negative cases are its own fixtures (an unrealizable event,
+  // an adapter realizing nothing, the session scope that must stay unenrolled).
+  'forge/adapters/claude.test.ts': 'BEHAVIORAL',
   // Drives the omp adapter with bindings and agents it supplies itself; its
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).

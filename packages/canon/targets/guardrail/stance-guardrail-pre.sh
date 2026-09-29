@@ -73,9 +73,16 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # The twin of the turn-end guard's gate, and inverted for the same reason: an allowlist here was
 # a runtime self-filter over an enrollment the corpus already derives, and it had drifted the way
 # such a list always drifts. Presence of a manifest in this persona's own scope IS enrollment.
-# Absent → silence, never an error, so an unenrolled launch is untouched.
+# Absent → silence, never an error, so an unenrolled launch is untouched. The scope is the one
+# the harness hands over: `stance_scope` where a dispatcher sits in the persona's own scope (omp),
+# else the persona directory of the agent the payload NAMES (`agent_type`, Claude Code — none on a
+# bare session) under this harness's home, one hop above the hooks root. No agent list here.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow ;; esac
+	stance_scope="$(dirname -- "$HOOKS_ROOT")/personas/$named"
+fi
 manifest="$stance_scope/stance/manifest.json"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"

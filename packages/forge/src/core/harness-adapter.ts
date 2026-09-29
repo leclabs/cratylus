@@ -115,13 +115,12 @@ export interface HarnessProjection {
   /**
    * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
    *
-   * Absent ⇒ the artifact is global to the harness home, which is every harness
-   * whose enforcement is a config FILE (claude's `settings.json`): one artifact,
-   * one place, no scope to name. Present ⇒ the
-   * artifact is one of MANY, and its scope decides where deploy lands it
-   * (`HarnessAdapter.scopedRel`). omp is the harness that needs this: its
-   * scope is a DIRECTORY, so the same registrations are emitted once per scope
-   * and each copy is correct by placement rather than by a runtime filter.
+   * Absent ⇒ the artifact is global to the harness home: one artifact, one place,
+   * no scope to name (claude's `settings.json`). Present ⇒ the artifact is one of
+   * MANY, and its scope decides where deploy lands it (`HarnessAdapter.scopedRel`).
+   * omp's scope is a DIRECTORY, so the same registrations are emitted once per
+   * scope and each copy is correct by placement rather than by a runtime filter;
+   * claude's persona scope holds only the enrollment manifest its workers look for.
    */
   readonly scope?: string;
   /**
@@ -430,6 +429,15 @@ export interface HarnessAdapter {
    * the SESSION scope, because an operator who has to combine flags by hand to
    * start one persona has a launch spec whether or not this port generates it
    * for them.
+   *
+   * EVERY HARNESS THAT DECLARES IT PLACES THE ENROLLMENT MANIFEST, mechanism or
+   * not: the projector stages one per persona (`core/enrollment.ts`) and this map
+   * says where it lands. omp's scope carries modules beside it; claude's carries
+   * nothing else, because claude registers in `settings.json` and its workers find
+   * the persona by the `agent_type` the hook payload names. The map must place a
+   * persona's manifest directly under `<root>/<persona>/`, keeping its
+   * scope-relative path (`STANCE_MANIFEST`), because the workers derive that root
+   * from it (`personaRootOf`).
    *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is

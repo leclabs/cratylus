@@ -54,6 +54,7 @@ import {
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
+import { enrollmentManifests, personaRootOf } from '../core/enrollment.js';
 import {
   dimensionFieldsOf,
   enforcingValuesOf,
@@ -116,6 +117,8 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     // judges in-process names no CLI, and the backend must fail open rather than
     // fall back to somebody else's.
     'harness-judge-bin': adapter.judgeBin,
+    // Read back from `scopedRel`, so a worker names no layout of its own.
+    'harness-persona-root': personaRootOf(adapter),
   };
 }
 
@@ -812,6 +815,23 @@ export async function projectPluginSet(
       // code surface would have shipped registrations pointing at workers that were
       // never staged.
       if (registered) {
+        // ONE ENROLLMENT, EMITTED ONCE, for every harness that places a scoped
+        // artifact: a manifest per persona, gated by the cells whose events this
+        // adapter realizes. It sits past the branch that registered the cells
+        // because enrollment is not a property of HOW a harness registers — omp's
+        // module per scope and claude's one settings file both hand the workers the
+        // same manifest to find. The session scope gets none.
+        if (opts.adapter.scopedRel) {
+          for (const m of enrollmentManifests(
+            sources.map((s) => s.hook),
+            opts.adapter,
+            agentNames,
+          )) {
+            const path = join(ENFORCING_STAGE_DIR, m.scope, m.filename);
+            files.push({ path, content: m.content });
+            log(`EMIT enrollment ${path}`);
+          }
+        }
         for (const src of sources) {
           const id = src.hook.id ?? 'unnamed';
           for (const worker of src.workers) {

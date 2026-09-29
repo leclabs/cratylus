@@ -197,21 +197,27 @@ own model routing — omp's `modelRoles` — is host configuration, not a deploy
 writes it, and only `cratylus install` seeds the missing entries for the roles the installed agents
 hold.
 
+Every adapter that declares `scopedRel` also receives one enrollment manifest per persona, staged at
+`enforcing/<persona>/stance/manifest.json` by the projector (`core/enrollment.ts`, one builder for both
+harnesses). On omp it lands beside the persona's modules; on claude, whose hooks stay in `settings.json`,
+it is the only scoped artifact, and lands under `.claude/personas/<name>/`.
+
 #### The destinations are the adapter's, not the render tree's
 
 A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<name>/`,
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude               | omp                                                          |
-| -------------------------- | ------------------------ | -------------------- | ------------------------------------------------------------ |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>` | `agent/agents/<name>.md`                                     |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`      | `../.agents/skills/<name>` (one copy — read natively)        |
-| hook registration          | `hooksFile` (merged)     | `settings.json`      | — (no hook config exists)                                    |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                    | `<scope>/extensions/<file>`                                  |
-| persona badge module       | `scopedRel(file, scope)` | —                    | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
-| `--config` overlay         | `scopedRel(file, scope)` | —                    | `<scope>/omp.yml` (per persona)                              |
-| launcher                   | `scopedRel(file, scope)` | —                    | `agent/omp-agent` (0755, ONE for every persona)              |
+| Artifact                   | Port op                  | claude                                  | omp                                                          |
+| -------------------------- | ------------------------ | --------------------------------------- | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                    | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                         | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json`                         | — (no hook config exists)                                    |
+| persona enrollment         | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json` | `<scope>/stance/manifest.json` (per persona)                 |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/<file>`                                  |
+| persona badge module       | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                                       | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | —                                       | `agent/omp-agent` (0755, ONE for every persona)              |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands

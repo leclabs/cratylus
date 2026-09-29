@@ -156,14 +156,23 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # written in different languages in different files.
 #
 # Enrollment is now PRESENCE. Each bound persona's projection lands a manifest in that persona's
-# own scope, and the dispatcher — which lives in that same scope and therefore already knows it
-# — passes it in the envelope. A manifest means enrolled, and carries THIS agent's contract: its
-# rubric, its moments, its handoff laws. No manifest means not enrolled, which is silence rather
-# than an error, so a plain session that never declared itself anything stays untouched exactly
-# as it was. Adding a persona enrolls it; adding a gated dimension edits one persona's manifest;
-# neither is a line in this file.
+# own scope, and the scope reaches this worker in the one form its harness offers. omp's dispatcher
+# lives in that same scope and therefore already knows it — it passes it in the envelope as
+# `stance_scope`. Claude Code places no dispatcher; its hook payload NAMES the running agent as
+# `agent_type` (on the main thread of a `--agent` session and inside a subagent, and on neither for a
+# bare session), so the scope is the persona's directory under this harness's own home, one hop
+# above the hooks root this worker was deployed into. Either way the scope is then read the same:
+# A manifest means enrolled, and carries THIS agent's contract: its rubric, its moments, its
+# handoff laws. No manifest means not enrolled, which is silence rather than an error, so a plain
+# session, a built-in agent or a host's own agent — none of which declared itself anything — stays
+# untouched exactly as it was. Adding a persona enrolls it; adding a gated dimension edits one
+# persona's manifest; neither is a line in this file, and this file carries no agent list.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow_stop
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow_stop ;; esac
+	stance_scope="$(dirname -- "$(dirname -- "$SELF_DIR")")/personas/$named"
+fi
 manifest="$stance_scope/stance/manifest.json"
 [ -f "$manifest" ] || allow_stop
 

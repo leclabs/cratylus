@@ -117,7 +117,17 @@ export type ProjectionFact =
    * lapsed, every verdict on every harness failed open in silence. A harness's
    * own name for its own model is a projection fact, never a cell's constant.
    */
-  | 'harness-judge-bin';
+  | 'harness-judge-bin'
+  /**
+   * Where this harness keeps its persona scopes, relative to the harness home —
+   * the directory holding `<persona>/stance/manifest.json`, or EMPTY where the
+   * harness places no scoped artifact.
+   *
+   * A worker that runs on a harness naming the running agent (`agent_type`) finds
+   * that agent's scope at `<harness home>/<this>/<agent_type>`. It is the adapter's
+   * own `scopedRel` read back, so the layout has one home and no worker spells it.
+   */
+  | 'harness-persona-root';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 

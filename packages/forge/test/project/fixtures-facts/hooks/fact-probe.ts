@@ -28,6 +28,7 @@ export const factProbe: HookCell = {
         'HARNESS={{fact:harness-name}}',
         'HARNESS_HOOKS_FILE={{fact:harness-hooks-file}}',
         'DRIFT_RC={{fact:deploy-check-drift-code}}',
+        'PERSONA_ROOT={{fact:harness-persona-root}}',
         'exit 0',
         '',
       ].join('\n'),

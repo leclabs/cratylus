@@ -36,9 +36,10 @@ import { enforcingValuesOf } from '../../core/exemplify/dimension-fields.js';
 // consumer's closure — invisible to a substring grep. The barrel and the lineage
 // are both gone; naming the defining module stays the rule, so no future barrel
 // can quietly re-create the edge.
-import type {
-  AgentDefContext,
-  HarnessAdapter,
+import {
+  type AgentDefContext,
+  type HarnessAdapter,
+  SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
 import { canonicalToClaude, claudeBindingOf } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
@@ -228,6 +229,12 @@ export function claudeSkillRel(name: string): string {
   return `skills/${name}`;
 }
 
+/** Where claude keeps its persona scopes, relative to `.claude` — the ONE home of
+ *  that directory, read by `scopedRel` and, through it, by every worker. It is a
+ *  sibling of `agents/` on purpose: purview reaches a persona's own definition by
+ *  going two directories above the scope and down into `agents/<name>.md`. */
+export const CLAUDE_PERSONA_DIR = 'personas';
+
 export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
   substrate: 'harness',
@@ -266,6 +273,12 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   hookCommand: (anchor, workerFilename) =>
     `sh "$HOME/.claude/hooks/${anchor}/${workerFilename}"`,
   agentRel: claudeAgentRel,
+  // A PERSONA'S SCOPE is a directory beside `agents/`, and it holds the persona's
+  // enrollment manifest. Claude registers its mechanism once, in `settings.json`,
+  // so the scope is not where the hook LIVES — it is what a worker looks for when
+  // the payload names the running agent (`agent_type`). Presence is enrollment.
+  scopedRel: (filename, agent) =>
+    `${CLAUDE_PERSONA_DIR}/${agent ?? SESSION_SCOPE}/${filename}`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToClaudeMd(a, ctx),

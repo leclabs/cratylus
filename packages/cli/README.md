@@ -89,6 +89,12 @@ degrades and warns where it falls short; they are not the same, and this is what
 - **Persona badge and launcher.** Both are omp's. A projected omp persona gets a status-line
   badge module and is launched as a main session by the single `omp-agent` launcher, since
   omp has no `--agent` flag. Claude Code has neither.
+- **Enforcement scope.** A guard binds exactly the personas whose composition includes it, on
+  both harnesses, and a persona is enrolled by the presence of `stance/manifest.json` in its own
+  scope. omp carries the scope in a dispatcher per persona (`agent/personas/<name>/`); Claude
+  Code has no dispatcher, so `install` places the manifest under `.claude/personas/<name>/` and
+  the guards find it from the `agent_type` the hook payload names. A bare Claude Code session
+  and an agent that is not a projected persona are not enrolled and stay silent.
 - **Role routing.** An agent names the role it holds, never a model. On omp the role becomes
   `model: ["@<role>", "@default"]` and the model behind it is the host's `modelRoles` entry
   (next section). Claude Code's agent definitions carry no route.

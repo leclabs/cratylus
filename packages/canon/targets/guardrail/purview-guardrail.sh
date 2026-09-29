@@ -53,17 +53,25 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
 
 # --- scope gate: the persona's OWN stance manifest -------------------------------------------
+# The scope is the one the harness hands over: `stance_scope` where a dispatcher sits in the
+# persona's own scope (omp), else the persona directory of the agent the payload NAMES
+# (`agent_type`, Claude Code — none on a bare session) under this harness's home, one hop above
+# the hooks root. Presence of the manifest is enrollment; no agent list lives here.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow ;; esac
+	stance_scope="$(dirname -- "$HOOKS_ROOT")/personas/$named"
+fi
 manifest="$stance_scope/stance/manifest.json"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 [ -n "$agent_type" ] || allow
 
 # --- the LAW: this persona's own projected role contract -------------------------------------
-# A persona scope is `<root>/agent/personas/<name>` and the Target it was projected
-# from is `<root>/agent/agents/<name>.md` — two levels out and back down, the same
-# shape of derivation the judge path above uses. Overridable for test rigs.
+# A persona scope is `<root>/personas/<name>` (claude) or `<root>/agent/personas/<name>` (omp), and
+# the Target it was projected from is `agents/<name>.md` beside `personas/` — two levels out and
+# back down, the same shape of derivation the judge path above uses. Overridable for test rigs.
 AGENT_ROOT="$(dirname -- "$(dirname -- "$stance_scope")")"
 AGENT_MD="${PURVIEW_AGENT_MD:-$AGENT_ROOT/agents/$agent_type.md}"
 [ -f "$AGENT_MD" ] || allow

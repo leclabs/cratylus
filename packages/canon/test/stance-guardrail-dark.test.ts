@@ -25,9 +25,18 @@
 // stderr is empty by design and an assertion on it would itself be a dark check.
 
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectionFacts } from '@cratylus/forge/project';
+import { resolveWorker } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { handoff } from '../src/dimensions/autonomy/handoff.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
@@ -290,5 +299,90 @@ describe('STANCE RUBRIC — the transcribed dimension value tracks its cell', ()
     expect(rubric, 'rubric worker not found on the cell').toBeTruthy();
     // The single source: the dimension cell itself.
     expect(rubric).toContain(handoff);
+  });
+});
+
+// THE CLAUDE FORM OF THE SCOPE — a guard that fires and can never judge.
+//
+// Claude Code places no dispatcher, so its payload carries no `stance_scope`; it names the
+// running agent as `agent_type`. This worker used to read `.stance_scope` alone, so on
+// claude it fired from the global settings on every turn and exited at its scope gate
+// with nothing on stdout — observationally identical to a clean turn, forever. The
+// worker now derives the persona's scope from the name under its own harness home
+// (`<home>/hooks/<id>/` two hops up, then the persona root), and a manifest there is
+// enrollment. The layout is the one the claude adapter deploys.
+describe('STANCE GUARDRAIL — the claude form of the scope (agent_type only)', () => {
+  let claudeWorker: string;
+  let claudeTranscript: string;
+  let broken: string;
+  let home: string;
+
+  beforeAll(() => {
+    home = mkdtempSync(join(tmpdir(), 'stance-claude-'));
+    const dir = join(home, '.claude', 'hooks', 'stance-guardrail');
+    mkdirSync(dir, { recursive: true });
+    claudeWorker = join(dir, 'stance-guardrail.sh');
+    const template = stanceGuardrail.workers?.find(
+      (x) => x.filename === 'stance-guardrail.sh',
+    );
+    if (!template) throw new Error('stance-guardrail.sh not found on the cell');
+    writeFileSync(
+      claudeWorker,
+      resolveWorker(
+        template,
+        projectionFacts(adapterByName('claude')),
+        stanceGuardrail.speech,
+      ).content,
+      'utf8',
+    );
+    chmodSync(claudeWorker, 0o755);
+    // ONLY `nico` is enrolled: a manifest under the persona root is the whole of it.
+    const scope = join(home, '.claude', 'personas', 'nico', 'stance');
+    mkdirSync(scope, { recursive: true });
+    writeFileSync(
+      join(scope, 'manifest.json'),
+      JSON.stringify({
+        agent: 'nico',
+        gates: { 'stance-guardrail': { moments: ['turn.end'] } },
+      }),
+      'utf8',
+    );
+    claudeTranscript = join(home, 'transcript.jsonl');
+    writeFileSync(claudeTranscript, readFileSync(transcript), 'utf8');
+    broken = join(home, 'broken-judge.sh');
+    writeFileSync(broken, '#!/bin/sh\necho "boom" >&2\nexit 5\n');
+    chmodSync(broken, 0o755);
+  });
+
+  const runClaude = (payload: Record<string, unknown>) =>
+    spawnSync('sh', [claudeWorker], {
+      input: JSON.stringify({
+        session_id: `dark-claude-${Math.random()}`,
+        cwd: home,
+        transcript_path: claudeTranscript,
+        ...payload,
+      }),
+      encoding: 'utf8',
+      env: { ...process.env, STANCE_JUDGE_CMD: `sh ${broken}`, HOME: home },
+    });
+
+  it('reaches the judge for the enrolled persona the payload names — a dead judge announces itself', () => {
+    const res = runClaude({ agent_type: 'nico' });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toMatch(/DARK/);
+    expect(res.stdout).toMatch(/NOT judged/);
+  });
+
+  it('is silent on a bare session — the payload names no agent', () => {
+    expect(runClaude({}).stdout).toBe('');
+    expect(runClaude({ agent_type: '' }).stdout).toBe('');
+  });
+
+  it('is silent for a named agent that carries no manifest', () => {
+    expect(runClaude({ agent_type: 'general-purpose' }).stdout).toBe('');
+  });
+
+  it('never builds a scope path out of a name that is not one directory', () => {
+    expect(runClaude({ agent_type: '../personas/nico' }).stdout).toBe('');
   });
 });
