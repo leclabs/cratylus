@@ -5,7 +5,7 @@ import { implementerRole } from '../roles/implementer.js';
 // The unspecialized holder of the implement role, and the only agent on the ladder
 // whose write layer is the substrate. It verifies — did I build what the spec said,
 // proven against the spec's own criteria — and it does NOT validate: validation is
-// conformance to a design this position does not hold, and an executor judging its own
+// conformance to a design this position does not hold, and an implementer judging its own
 // conformance is the closed loop the ladder exists to open.
 
 export const implementer: Agent = holds(implementerRole, {
