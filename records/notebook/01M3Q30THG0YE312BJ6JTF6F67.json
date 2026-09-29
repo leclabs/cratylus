@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q30THG0YE312BJ6JTF6F67",
+    "entity": "01M3Q30THG0YE312BJ6JTF6F66",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:22:25.456Z",
+    "reason": "rectified item 4",
+    "cause": "operator's first-share hypothesis, 2026-09-29"
+  },
+  "payload": {
+    "title": "claude code and omp only",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Drop the codex adapter, its projections and every doc claim of codex support; the codex parity note is retired by this. Then audit claude code against omp for parity of what each practice delivers (personas, skills, hooks, guardrails, role routing, badge) and state the real differences, degrade-and-warn per ARCHITECTURE's fidelity ladder, rather than claim sameness. Docs are rewritten last, from the tree as it stands after these changes.",
+    "blocks": []
+  }
+}

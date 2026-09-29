@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q30TEXFQVB9WW88BE4GJYV",
+    "entity": "01M3Q30TEXFQVB9WW88BE4GJYT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:22:25.373Z",
+    "reason": "rectified item 3",
+    "cause": "operator's first-share hypothesis, 2026-09-29"
+  },
+  "payload": {
+    "title": "the prime principle rides every cell",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Every projected skill and agent opens with '## Prime Principle' (cratylism + 'intrinsic ⟨¬ ambient⟩'), prepended by canon's genus/founding-doctrine.ts. It names no project file (checked: no deployed asset cites CANON/VISION/MODEL/ENGINE), so the defect is not project context. It is ambient doctrine: '∀ authored-surface ⟨σ* ∨ ⊕σ*⟩' instructs an end user's agent to hold THEIR code to this corpus's naming axiom, and cells that never use it repeat it (restates-existing-home). Carry cratylism only where a cell's laws use it (the naming skills, and agents that declare it as an engineering principle); this repo's own sessions already load it through AGENTS.md. Reverses a deliberate genus decision, so it is a design amendment, not a cleanup.",
+    "blocks": []
+  }
+}

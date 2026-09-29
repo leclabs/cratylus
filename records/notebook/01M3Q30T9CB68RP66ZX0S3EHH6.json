@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q30T9CB68RP66ZX0S3EHH6",
+    "entity": "01M3Q30T9CB68RP66ZX0S3EHH5",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:22:25.196Z",
+    "reason": "rectified item 1",
+    "cause": "operator's first-share hypothesis, 2026-09-29"
+  },
+  "payload": {
+    "title": "install offers practices, not the whole corpus",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Default install becomes an interactive choice of practices, each a set of agents, skills and hooks installed together; --all keeps today's whole-corpus install. Rectified: a practice must be CLOSED under both skill composition and agent dispatch, or it ships a broken agent (mav alone dispatches planner, implementer and assayer, so 'mav + design, plan, deliver' is not closed). Which practices exist is meaning, so canon declares them and the CLI only renders them. 'LLM archeology' is rejected by VISION (archaeology smuggles decay); the discipline's sign is latent lexicography. event-tap is plumbing, installed as a dependency, never offered. Non-TTY runs must never hang on a prompt: require --all or a named practice. The name of the grouping concept itself is owed to signify, not coined here.",
+    "blocks": []
+  }
+}
