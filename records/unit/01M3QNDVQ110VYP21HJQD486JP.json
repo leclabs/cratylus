@@ -1,0 +1,55 @@
+{
+  "envelope": {
+    "id": "01M3QNDVQ110VYP21HJQD486JP",
+    "entity": "01M3QCEAF8D4B5R1DM3DBD4ASC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QGS26A789N6T42FR1E7BH9"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T22:44:07.009Z",
+    "reason": "wave 3 dispatched",
+    "cause": "final assay of persona badge at 741cd578"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-main-session-skills",
+      "intent": "Census @4c2b0d55 (code identical to ab8892a3: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the clause of `persona launch` that carries a persona's composed skills into a Claude Code `--agent` main session, which Claude preloads only for subagents (assay: 0 `<command-message>` injections in a mav main session, while a dispatched planner got plan, design and note). FACTS OBSERVED LIVE BY THE PLANNER AT CENSUS (2.1.285, probe agents in an isolated HOME): (a) an agent definition's front-matter `hooks.SessionStart` FIRES for that agent run as the `--agent` main session, and its payload carries `agent_type`. (b) It does NOT fire when the same agent is dispatched as a subagent, so there is no double load. (c) Its plain stdout reached the model's context: the probe answered with a secret word present only in the hook's output. (d) `initialPrompt`, the alternative, processes only its first slash command (`/alpha\\n/beta` loaded alpha alone) and is prepended to the user's prompt, so it cannot carry several skills. Skill sizes at census: design 6234, deliver 9085, plan 11622 and note 4033 bytes (mav's closure 30974). No hook-output cap was found in the binary, but it is unverified. The size criterion below decides it.\nCHANGE. For every agent whose `skills` (the closure projection hands the adapter) is non-empty, agentFrontMatter (packages/forge/src/adapters/claude/render.ts) emits, inside the same single `hooks:` block agentHooksFrontMatter writes (one YAML key, merged with any enforcing entries in their order), a `SessionStart` entry with matcher `startup|clear|compact` (resume already holds them) whose command prints each skill in the agent's `skills` order. For each skill it prints the line `Base directory for this skill: <skills root>/<name>`, then that SKILL.md with its front matter stripped. That is the form Claude's own subagent preload uses. The skills root is claudeSkillRel under the same `$HOME/.claude` expression hookCommand uses. A skill whose SKILL.md is absent is named under a `## Required reading` heading, with one stderr line naming agent and skill, and exit stays 0 (parity with omp's launcher). The command is built by a pure function in a new packages/forge/src/adapters/claude/persona-launch.ts, with no worker file and no placement. An agent with no skills gets no SessionStart entry. Docs: packages/forge/README.md's preload table claude row (:160-163) becomes 'subagent `skills`; for a main session, a SessionStart hook in the definition prints each skill's body'. packages/cli/README.md's differences list says a `claude --agent` main session starts with its skills. Changeset .changeset/claude-main-session-skills.md (@cratylus/forge minor). Tests: cases in packages/forge/test/adapters/claude.test.ts, and packages/forge/test/adapters/agent-hooks.test.ts where it pins the hooks block. Known difference to document: a project-level `.claude/skills/<name>` that shadows the user-level copy is not consulted.",
+      "static": [
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/core/body.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        "packages/forge/src/adapters/omp/render.ts"
+      ],
+      "deps": [
+        "01M3QCD3RRV1EVW9K19NCECT7X"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/persona-launch.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/agent-hooks.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/forge/README.md",
+        "packages/cli/README.md",
+        ".changeset/claude-main-session-skills.md"
+      ],
+      "accept": [
+        "RIG (every live leg): T=$(mktemp -d); mkdir -p $T/.claude $T/proj; cp ~/.claude/.credentials.json $T/.claude/; git -C $T/proj init -q; `pnpm build` in /home/lex/workspaces/cratylus-share, then from cwd /home/lex/workspaces/cratylus-share (its cratylus.config.ts supplies the corpus) `HOME=$T node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; sessions run as `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude -p <prompt> --model haiku --output-format stream-json --verbose --include-hook-events` (Claude Code 2.1.285 at census). Run `claude -p 'Without using any tool, reply with the exact last non-empty line of the note skill, or ABSENT.' --agent mav`. The stream-json has a SessionStart hook event with exit_code 0 whose stdout contains, in this order, `Base directory for this skill: $T/.claude/skills/design`, `…/deliver`, `…/plan`, `…/note` (mav's closure order as in $T/.claude/agents/mav.md). The session transcript under $T/.claude/projects/ contains the byte-exact last non-empty line of $T/.claude/skills/note/SKILL.md. The run shows 0 `Skill` tool_use. The result carries that line. At 4c2b0d55 no such hook event exists (assay: mav answered 'note: not present').",
+        "SIZE. Same run for the largest closure, nico (print its closure's total SKILL.md bytes; 30974 for mav at census). The transcript contains the last non-empty line of the LAST skill in nico's `skills`, so nothing was truncated. If this fails, the executor surfaces the cap instead of trimming bodies.",
+        "SUBAGENT UNCHANGED, NO DOUBLE LOAD. In a bare session (no --agent), run `claude -p \"Use the Agent tool once with subagent_type planner and prompt 'Reply PONG'.\" --allowedTools Agent`. No SessionStart hook event's stdout contains `Base directory for this skill`, and the planner subagent's transcript still carries its preloaded plan skill (`<command-message>plan</command-message>`).",
+        "DEGRADE. After `rm -r $T/.claude/skills/note`, `--agent planner` exits 0. The SessionStart stdout carries plan and design bodies and names `note` under `## Required reading`, and implementer (no skills) has no SessionStart entry: `grep -c SessionStart $T/.claude/agents/implementer.md` prints 0.",
+        "Render: of the N projected agents/*.md (7 at census; print N), the ones with a `skills:` list (6 at census: every agent but implementer) carry exactly one `SessionStart:` key inside their single `hooks:` block with matcher `startup|clear|compact`. Each front matter parses as YAML (`node -e` with the `yaml` package already in the workspace, or `python3 -c 'import yaml'`).",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/adapters test/project/skill-closure.test.ts`, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts`, and `pnpm typecheck` exit 0. The claude.test.ts case executes the generated command with sh against a temp skills root and fails if the front-matter strip or the order is broken."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBG00Z13RG3P9110NBW9X8",
+      "version": "01M3QGRTXMM9D6BHQAWR4YVGFY",
+      "closure": {}
+    }
+  }
+}
