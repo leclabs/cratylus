@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q44XEPFKB4YFT3M623S6FH",
+    "entity": "01M3Q44XEPFKB4YFT3M623S6FG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:42:08.086Z",
+    "reason": "operator steer: badge as a claude status-line segment",
+    "cause": "operator steer on claude parity, 2026-09-29"
+  },
+  "payload": {
+    "title": "persona badge on claude",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Claude Code's status line is ONE command (settings.statusLine), with no segments to inject into, so the badge cannot be added beside a host's own status line. Two faces: when the host has no status line, install sets one that shows the running persona's mark; when it has one, install never replaces it and instead offers (wizard, or a flag) to wrap it, running the host's command and prefixing the badge. Whether the status line input names the running agent under --agent is unverified and decides whether this is possible at all without a per-persona settings file.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q44X9GTCWATKKKMGMSZDFX",
+    "entity": "01M3Q44X9GTCWATKKKMGMSZDFW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:42:07.920Z",
+    "reason": "operator steer: claude --agent(s) is native",
+    "cause": "operator steer on claude parity, 2026-09-29"
+  },
+  "payload": {
+    "title": "claude launches a persona with --agent",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Claude Code 2.1 has a native persona launch: 'claude --agent <name>' runs the main session as that agent (also the 'agent' setting). It is the claude face of what omp's generated launcher does, so claude needs no launcher script: the projected agent file already is the persona. Open question for the build: whether the main-session agent receives the agent's 'skills' the way a dispatched one does, which omp's launcher had to inline by hand (not yet observed on claude).",
+    "blocks": []
+  }
+}

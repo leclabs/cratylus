@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q44XC6W7N3Z046PETDXM76",
+    "entity": "01M3Q44XC6W7N3Z046PETDXM75",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:42:08.006Z",
+    "reason": "operator steer: claude subagent model defaults by role",
+    "cause": "operator steer on claude parity, 2026-09-29"
+  },
+  "payload": {
+    "title": "role routing on claude",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "Claude Code has no host-configurable role aliases; an agent's 'model' accepts only an id, a tier alias (opus, sonnet, haiku) or inherit. So the claude face of role routing maps each held role to a tier alias in the claude adapter: implementer to sonnet; planner, assayer and architect to opus. A tier alias still names no model version, so it degrades the concept rather than breaking it. Rectified: the table is justified by the role (spec-bounded unit work on the middle tier), matching the operator's omp config today, not copied from it; a host's override (e.g. CLAUDE_CODE_SUBAGENT_MODEL, or an install-time choice) stays the host's. Amends the role routing gloss, which today speaks only of alias entries.",
+    "blocks": []
+  }
+}
