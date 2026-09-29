@@ -1,0 +1,51 @@
+{
+  "envelope": {
+    "id": "01M3Q57N76VT7Q16AQKSRZJV36",
+    "entity": "01M3Q57N76VT7Q16AQKSRZJV35",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T18:01:06.534Z",
+    "reason": "cut supported harness into dispatchable work per the census at 8753f969",
+    "cause": "operator assignment: plan what-ships realizing prime principle and supported harness"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "canon-gates-off-codex",
+      "intent": "Move canon's harness gates and the repository's projection scripts to the supported harnesses. census @ 8753f969 (local://what-ships-census.md): 73 lines. harness-parity.test.ts compares claude and omp and reads .cratylus/{claude,omp}. Remove the canon:project:codex script, drop it from `project`, and remove it from gates.yml's 'project every harness' step. event-vocabulary.test.ts drops the codex maps, and its unconfigured-harness refusal uses a non-harness name. hook-act-selector.test.ts keeps the claude selector law and drops the codex loss half. It either re-targets its convicting fixture to a supported harness or deletes it. runtime-shim.test.ts proves byte-identical shims across claude and omp. authored-source-is-text.test.ts re-targets its fixture file off packages/forge/src/adapters/codex/render.ts, because that file is deleted later. pack-smoke, architecture and command-veracity drop their codex mentions. Reword the codex history in .gitignore and cratylus.config.ts.",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/forge/src/adapters/omp/events.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/test/event-vocabulary.test.ts",
+        "packages/canon/test/hook-act-selector.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/canon/test/runtime-shim.test.ts",
+        "packages/canon/test/pack-smoke.test.ts",
+        "packages/canon/test/architecture.test.ts",
+        "packages/canon/test/command-veracity.test.ts",
+        "packages/canon/test/authored-source-is-text.test.ts",
+        "package.json",
+        ".github/workflows/gates.yml",
+        ".gitignore",
+        "cratylus.config.ts"
+      ],
+      "accept": [
+        "`git grep -n -i codex -- <the 12 outputs>` prints nothing. At 8753f969 it prints 73.",
+        "`rm -rf .cratylus && pnpm project && ls .cratylus` prints exactly `claude omp`. At 8753f969 it prints claude codex omp.",
+        "`git grep -n 'packages/forge/src/adapters/codex' -- packages/canon/test` prints nothing.",
+        "`pnpm build && pnpm project && pnpm --filter @cratylus/canon exec vitest run test/event-vocabulary.test.ts test/hook-act-selector.test.ts test/harness-parity.test.ts test/runtime-shim.test.ts test/pack-smoke.test.ts test/architecture.test.ts test/command-veracity.test.ts test/authored-source-is-text.test.ts` is green, and `pnpm exec biome check` passes on the outputs."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}
