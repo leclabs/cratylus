@@ -46,7 +46,10 @@ import { join } from 'node:path';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { canonicalToClaude } from '../../src/adapters/claude/index.js';
+import {
+  canonicalToClaude,
+  claudeHarnessAdapter,
+} from '../../src/adapters/claude/index.js';
 import { emitRuntimeConfig, placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
@@ -143,6 +146,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     emitRuntimeConfig({
       path: runtimeConfig,
       events: Object.keys(canonicalToClaude),
+      harness: claudeHarnessAdapter.name,
       nativeEvents: canonicalToClaude,
     });
     // A CONSUMER INSTALL, BUILT BY THE WORKSPACE THAT ALREADY KNOWS HOW.

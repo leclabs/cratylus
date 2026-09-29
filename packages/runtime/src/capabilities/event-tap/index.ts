@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type RuntimePlugin, defineRuntimePlugin } from '../../plugin.js';
-import { loadRuntimeConfig } from '../../runtime-config.js';
+import { loadRuntimeConfig, nativeEventsOf } from '../../runtime-config.js';
 import { EventTapHostClaude } from './claude.js';
 
 export { EventTapHostClaude, EVENT_TAP_ID } from './claude.js';
@@ -36,22 +36,35 @@ export {
   reverseNativeEvents,
 } from './claude-serialize.js';
 
+/** The Claude realization, built on first use and kept — see {@link runtimePlugin}. */
+let claude: EventTapHostClaude | undefined;
+function claudeHost(): EventTapHostClaude {
+  claude ??= new EventTapHostClaude(
+    undefined,
+    nativeEventsOf(loadRuntimeConfig(), EventTapHostClaude.harness),
+  );
+  return claude;
+}
+
 /**
  * The event-tap capability's runtime face. `eventTap` is the Claude realization,
  * bound with no settings override so it is host-portable (the path resolves from
  * `$CLAUDE_SETTINGS_PATH` or the cwd default at call time). The kernel binds this
  * `RuntimePlugin` and dispatches `eventTap <verb>` to {@link dispatchEventTap}.
  *
- * Its native event map comes from the host config the projection emitted, and is
- * `{}` on a host that has never been deployed to — an empty map attaches nothing,
- * which is the correct floor for a PASSIVE observer with no vocabulary to observe.
- * The verb surface refuses out loud before reaching this instance, so an operator
- * gets the diagnosis rather than the silence.
+ * Its native event map is Claude's stanza of the host config the projection
+ * emitted, asked for by name; a host with no Claude stanza is refused, naming the
+ * install and deploy that write one. The realization is built on the port's first
+ * call, not when this module loads: the kernel imports this module for every
+ * command, and a host that never deployed for Claude must still run every command
+ * that is not the tap.
  */
 export const runtimePlugin: RuntimePlugin = defineRuntimePlugin({
   name: 'event-tap',
-  eventTap: new EventTapHostClaude(
-    undefined,
-    loadRuntimeConfig()?.events?.native ?? {},
-  ),
+  eventTap: {
+    install: (events, sink) => claudeHost().install(events, sink),
+    remove: () => claudeHost().remove(),
+    readCapture: () => claudeHost().readCapture(),
+    status: () => claudeHost().status(),
+  },
 });

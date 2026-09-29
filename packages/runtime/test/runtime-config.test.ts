@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { discoverConfigured } from '../src/loader.js';
-import { loadRuntimeConfig } from '../src/runtime-config.js';
+import { loadRuntimeConfig, nativeEventsOf } from '../src/runtime-config.js';
 
 const ENV = 'AGENT_RUNTIME_CONFIG';
 afterEach(() => {
@@ -66,6 +66,39 @@ describe('configured capability providers', () => {
 
     // …and the provider half falls back rather than binding nothing.
     expect(await discoverConfigured()).toBeNull();
+  });
+
+  it("each harness's native names arrive under its own stanza, asked for by name", () => {
+    // Two harnesses' stanzas in one host file, the shape deploy now writes: each is
+    // read back as its own. A harness that HAS NONE — no stanza, a stanza whose map
+    // is empty, or one whose every name is stripped as non-string — is refused
+    // alike, naming the commands that write one: never handed an empty map, and
+    // never another's.
+    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const cfg = join(root, 'runtime.json');
+    writeFileSync(
+      cfg,
+      JSON.stringify({
+        events: { vocabulary: ['turn.end'] },
+        harnesses: {
+          claude: { native: { 'turn.end': 'Stop' } },
+          omp: { native: { 'turn.end': 'agent_end' } },
+          empty: { native: {} },
+          stripped: { native: { 'turn.end': 7 } },
+        },
+      }),
+    );
+    process.env[ENV] = cfg;
+
+    const loaded = loadRuntimeConfig();
+    expect(nativeEventsOf(loaded, 'claude')).toEqual({ 'turn.end': 'Stop' });
+    expect(nativeEventsOf(loaded, 'omp')).toEqual({ 'turn.end': 'agent_end' });
+    for (const none of ['codex', 'empty', 'stripped'])
+      expect(() => nativeEventsOf(loaded, none)).toThrow(
+        new RegExp(
+          `install --harness ${none}[\\s\\S]*deploy --harness ${none}`,
+        ),
+      );
   });
 
   it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {

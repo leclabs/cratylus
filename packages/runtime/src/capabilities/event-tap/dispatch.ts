@@ -32,6 +32,7 @@ import {
   type RuntimeConfig,
   type RuntimeEvents,
   loadRuntimeConfig,
+  nativeEventsOf,
 } from '../../runtime-config.js';
 import { EventTapHostClaude } from './claude.js';
 
@@ -71,12 +72,13 @@ function parseFlags(argv: string[]): Map<string, string> {
 }
 
 /**
- * The host's event vocabulary + harness map, or a LOUD refusal.
+ * The host's event vocabulary, or a LOUD refusal.
  *
  * Absence is not a degradation to route around: with no vocabulary this capability
- * cannot tell an unknown word from an event this harness does not fire, and with no
- * native map it would install a tap that observes nothing while reporting success.
- * The error names the file and the command that writes it.
+ * cannot tell an unknown word from an event this harness does not fire. The error
+ * names the file and the command that writes it. The harness's native names are a
+ * separate ask, made by harness name through `nativeEventsOf`, which refuses on its
+ * own terms when that harness has no stanza.
  */
 function configuredEvents(config: RuntimeConfig | null): RuntimeEvents {
   const events = config?.events;
@@ -150,12 +152,13 @@ export function dispatchEventTap(
     );
   }
   const flags = parseFlags(rest);
-  const configured = configuredEvents(opts.config ?? loadRuntimeConfig());
+  const config = opts.config ?? loadRuntimeConfig();
+  const configured = configuredEvents(config);
   const tap =
     opts.host ??
     new EventTapHostClaude(
       flags.get('settings') || undefined,
-      configured.native,
+      nativeEventsOf(config, EventTapHostClaude.harness),
     );
 
   switch (verb as EventTapVerb) {

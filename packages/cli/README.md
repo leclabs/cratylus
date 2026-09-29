@@ -43,6 +43,31 @@ cratylus note show
 cratylus note capture 'a title' --kind … --topic … --body '…' --blocks 'u1 of plan p' --author … --reason … --cause …
 ```
 
+## The host runtime config
+
+`cratylus` reads one per-host file, `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`.
+`cratylus deploy --harness <h>` (and `cratylus install`, which deploys) writes into it
+the corpus's parts — the event vocabulary under `events` and each capability's
+`configuration` — and its own harness's stanza, `harnesses.<h>.native`: that harness's
+name for each event it can fire. It leaves the operator's keys (`capabilities`,
+`resolveFrom`) and every other harness's stanza as it found them, so deploying for
+Claude and then for omp leaves both harnesses' names in the same file:
+
+```jsonc
+{
+  "events": { "vocabulary": ["session.start", "turn.end", …] },
+  "harnesses": {
+    "claude": { "native": { "turn.end": "Stop", … } },
+    "omp": { "native": { "turn.end": "session_stop", … } },
+  },
+}
+```
+
+A command that needs a harness's native names asks for that harness's stanza and
+refuses when it has none, naming `cratylus install --harness <h>` (works on a bare
+host) and `cratylus deploy --harness <h>` (from a project). `cratylus eventTap` asks
+for `claude`'s.
+
 ## Choosing different capability providers
 
 The bundled set is `@cratylus/memory`. To use another, declare it in

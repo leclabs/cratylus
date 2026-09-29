@@ -12,6 +12,7 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -23,26 +24,31 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
-import type { RuntimeConfig } from '../src/runtime-config.js';
+import {
+  type RuntimeConfig,
+  loadRuntimeConfig,
+} from '../src/runtime-config.js';
 
 /**
- * The host config a deployed host would carry — the vocabulary + native map the
- * projection emits. Injected rather than written to a real `~/.cratylus.json`,
- * and injected rather than defaulted inside the capability: a bundled default set
- * is exactly what this suite's subject stopped carrying, so a test that supplied
- * one would be exercising a path no host has.
+ * The host config a deployed host would carry — the corpus's vocabulary, and
+ * Claude's stanza of native names. Injected rather than written to a real
+ * `~/.cratylus.json`, and injected rather than defaulted inside the capability: a
+ * bundled default set is exactly what this suite's subject stopped carrying, so a
+ * test that supplied one would be exercising a path no host has.
  *
  * Only the events this suite drives are declared, which also makes the vocabulary
  * check below non-trivial — `not.an.event` is rejected against THIS list.
  */
 const CONFIG: RuntimeConfig = {
   capabilities: [],
-  events: {
-    vocabulary: ['session.start', 'turn.end', 'tool.use.pre'],
-    native: {
-      'session.start': 'SessionStart',
-      'turn.end': 'Stop',
-      'tool.use.pre': 'PreToolUse',
+  events: { vocabulary: ['session.start', 'turn.end', 'tool.use.pre'] },
+  harnesses: {
+    claude: {
+      native: {
+        'session.start': 'SessionStart',
+        'turn.end': 'Stop',
+        'tool.use.pre': 'PreToolUse',
+      },
     },
   },
 };
@@ -277,6 +283,55 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
     expect(() =>
       tap(['install', '--events', 'not.an.event', '--sink', '/x']),
     ).toThrow(/unknown lifecycle event/);
+  });
+  it('refuses a host whose config holds no claude names, naming the install and the deploy', () => {
+    // The old flat shape: one `native` map under `events`, for every harness. It is
+    // not read, so this host has a vocabulary and no stanza for claude, and the tap
+    // refuses rather than attaching through a map that may be another harness's.
+    const path = join(
+      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
+      'config.json',
+    );
+    writeFileSync(
+      path,
+      JSON.stringify({
+        events: {
+          vocabulary: ['turn.end'],
+          native: { 'turn.end': 'Stop' },
+        },
+      }),
+    );
+    const config = loadRuntimeConfig(path);
+    expect(config?.events?.vocabulary).toEqual(['turn.end']);
+    expect(() => dispatchEventTap(['status'], { config })).toThrow(
+      /install --harness claude[\s\S]*deploy --harness claude/,
+    );
+
+    // A claude stanza holding no names is the same fact: an install through it
+    // would write a tap that observes nothing while reporting success.
+    writeFileSync(
+      path,
+      JSON.stringify({
+        events: { vocabulary: ['turn.end'] },
+        harnesses: { claude: { native: {} } },
+      }),
+    );
+    const { settingsPath, sinkPath } = fixture();
+    expect(() =>
+      dispatchEventTap(
+        [
+          'install',
+          '--events',
+          'turn.end',
+          '--sink',
+          sinkPath,
+          '--settings',
+          settingsPath,
+        ],
+        { config: loadRuntimeConfig(path) },
+      ),
+    ).toThrow(/install --harness claude[\s\S]*deploy --harness claude/);
+    expect(existsSync(settingsPath)).toBe(false);
   });
 });
 

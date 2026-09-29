@@ -41,6 +41,7 @@ import {
   canonicalActToClaude,
   canonicalToClaude,
   claudeBindingOf,
+  claudeHarnessAdapter,
   claudeToCanonical,
 } from '@cratylus/forge/adapters/claude';
 // The two sibling halves of the round trip, by PACKAGE SPECIFIER — the form every other
@@ -55,14 +56,18 @@ import {
 import {
   canonicalActToCodex,
   canonicalToCodex,
+  codexHarnessAdapter,
 } from '@cratylus/forge/adapters/codex';
+import { ompHarnessAdapter } from '@cratylus/forge/adapters/omp';
 import {
+  emitRuntimeConfig,
   runtimeConfigDocument,
   serializeRuntimeConfig,
 } from '@cratylus/forge/deploy';
 import {
   type RuntimeConfig,
   loadRuntimeConfig,
+  nativeEventsOf,
 } from '@cratylus/runtime/runtime-config';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
@@ -313,18 +318,30 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("(c) the config deploy emits, parsed back by the runtime's own reader", () => {
+  /** One adapter's emission inputs, by its own `name` and map. */
+  const harness = (adapter: typeof claudeHarnessAdapter) =>
+    ({ harness: adapter.name, nativeEvents: adapter.nativeEvents }) as const;
+  const CLAUDE = harness(claudeHarnessAdapter);
+
+  /** An adapter's map, filtered to the vocabulary — what its stanza must hold. */
+  const filtered = (
+    map: Readonly<Record<string, string>>,
+    vocabulary: readonly string[],
+  ): Record<string, string> =>
+    Object.fromEntries(
+      Object.entries(map).filter(([event]) => vocabulary.includes(event)),
+    );
+
+  /** A fresh host config path in a temp dir — never a real home. */
+  const freshPath = (prefix: string): string =>
+    join(mkdtempSync(join(tmpdir(), prefix)), 'config.json');
+
   /** Emit exactly as `cratylus deploy` does, to a real file, and read it back
    *  with the RUNTIME's parser — not a hand-rolled one. Three packages and a
    *  filesystem in between, which is precisely the span nothing else covers. */
-  function roundTrip(): NonNullable<ReturnType<typeof loadRuntimeConfig>> {
-    const doc = runtimeConfigDocument({
-      events: CANONICAL_EVENTS,
-      nativeEvents: canonicalToClaude,
-    });
-    const path = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-event-vocab-')),
-      'config.json',
-    );
+  function roundTrip(): RuntimeConfig {
+    const doc = runtimeConfigDocument({ events: CANONICAL_EVENTS, ...CLAUDE });
+    const path = freshPath('cratylus-event-vocab-');
     writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
     const parsed = loadRuntimeConfig(path);
     expect(
@@ -338,8 +355,10 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     expect(roundTrip().events?.vocabulary).toEqual([...CANONICAL_EVENTS]);
   });
 
-  it("the native map that arrives is forge's map, pair for pair", () => {
-    expect(roundTrip().events?.native).toEqual({ ...canonicalToClaude });
+  it("the native map that arrives is forge's map, pair for pair, under its harness's name", () => {
+    expect(nativeEventsOf(roundTrip(), CLAUDE.harness)).toEqual({
+      ...canonicalToClaude,
+    });
   });
 
   it('the emission FILTERS to the vocabulary — a stray map key never reaches a host', () => {
@@ -347,28 +366,66 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     // which the type system does not constrain.
     const doc = runtimeConfigDocument({
       events: CANONICAL_EVENTS,
+      ...CLAUDE,
       nativeEvents: { ...canonicalToClaude, 'not.an.event': 'Bogus' },
     });
-    expect(doc.events.native['not.an.event']).toBeUndefined();
-    expect(Object.keys(doc.events.native)).toHaveLength(19);
+    const native = doc.harnesses[CLAUDE.harness]?.native;
+    expect(native?.['not.an.event']).toBeUndefined();
+    expect(Object.keys(native ?? {})).toHaveLength(19);
+  });
+
+  it('two harnesses deployed into one host file each keep their own stanza', () => {
+    // The defect this shape repairs: one flat map, so the last deploy's harness won
+    // and the first harness read the second's names. Emitted as deploy emits, in
+    // sequence, into ONE file; each stanza is its adapter's map filtered to the
+    // vocabulary, and re-deploying one leaves the other exactly as it was.
+    const path = freshPath('cratylus-two-harnesses-');
+    const OMP = harness(ompHarnessAdapter);
+    emitRuntimeConfig({ path, events: CANONICAL_EVENTS, ...CLAUDE });
+    emitRuntimeConfig({ path, events: CANONICAL_EVENTS, ...OMP });
+
+    const onDisk = (): {
+      harnesses: Record<string, { native: Record<string, string> }>;
+    } => JSON.parse(readFileSync(path, 'utf8'));
+    const both = onDisk();
+    expect(both.harnesses[CLAUDE.harness]?.native).toEqual(
+      filtered(CLAUDE.nativeEvents, CANONICAL_EVENTS),
+    );
+    expect(both.harnesses[OMP.harness]?.native).toEqual(
+      filtered(OMP.nativeEvents, CANONICAL_EVENTS),
+    );
+    // Non-vacuous: the two maps differ, so a stanza holding the other's would fail.
+    expect(OMP.nativeEvents).not.toEqual(CLAUDE.nativeEvents);
+
+    emitRuntimeConfig({ path, events: CANONICAL_EVENTS, ...CLAUDE });
+    expect(onDisk().harnesses[OMP.harness]).toEqual(
+      both.harnesses[OMP.harness],
+    );
+
+    // The runtime reads each by name, and refuses a harness with no stanza, naming
+    // both the zero-config install and the project deploy that would write one.
+    const parsed = loadRuntimeConfig(path);
+    expect(nativeEventsOf(parsed, OMP.harness)).toEqual(
+      filtered(OMP.nativeEvents, CANONICAL_EVENTS),
+    );
+    const codex = codexHarnessAdapter.name;
+    expect(() => nativeEventsOf(parsed, codex)).toThrow(
+      new RegExp(
+        `install --harness ${codex}[\\s\\S]*deploy --harness ${codex}`,
+      ),
+    );
   });
 
   it('REFUSES to emit an empty vocabulary — a host that cannot validate is not configured', () => {
-    expect(() =>
-      runtimeConfigDocument({ events: [], nativeEvents: canonicalToClaude }),
-    ).toThrow(/no lifecycle events/);
+    expect(() => runtimeConfigDocument({ events: [], ...CLAUDE })).toThrow(
+      /no lifecycle events/,
+    );
   });
 
   it('is non-vacuous — the round trip FAILS when the emitted config drops a member', () => {
     const short = CANONICAL_EVENTS.slice(0, -1);
-    const doc = runtimeConfigDocument({
-      events: short,
-      nativeEvents: canonicalToClaude,
-    });
-    const path = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-event-vocab-')),
-      'config.json',
-    );
+    const doc = runtimeConfigDocument({ events: short, ...CLAUDE });
+    const path = freshPath('cratylus-event-vocab-');
     writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
     const parsed = loadRuntimeConfig(path);
     // The defect is PRESENT (the injection landed) …
@@ -399,13 +456,10 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
   ): RuntimeConfig {
     const doc = runtimeConfigDocument({
       events: CANONICAL_EVENTS,
-      nativeEvents: canonicalToClaude,
+      ...CLAUDE,
       skills,
     });
-    const path = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-configuration-')),
-      'config.json',
-    );
+    const path = freshPath('cratylus-configuration-');
     writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
     const parsed = loadRuntimeConfig(path);
     expect(
@@ -442,7 +496,7 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     expect(() =>
       runtimeConfigDocument({
         events: CANONICAL_EVENTS,
-        nativeEvents: canonicalToClaude,
+        ...CLAUDE,
         skills: [synthetic, rival],
       }),
     ).toThrow(/'synthetic' and 'rival' both configure capability 'synthetic'/);

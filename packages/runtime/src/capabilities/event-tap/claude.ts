@@ -83,6 +83,13 @@ function safeJson(line: string): unknown {
 }
 
 export class EventTapHostClaude implements EventTapHost {
+  /**
+   * The harness this strategy realizes the port for — the name its native event
+   * names are asked for by (`nativeEventsOf(config, EventTapHostClaude.harness)`),
+   * matching the adapter's `name` that deploy wrote the stanza under.
+   */
+  static readonly harness = 'claude';
+
   readonly #settingsPathOverride: string | undefined;
   readonly #native: Readonly<Record<EventName, string>>;
   readonly #toEvent: Readonly<Record<string, EventName>>;
@@ -93,10 +100,10 @@ export class EventTapHostClaude implements EventTapHost {
    *  the path is resolved lazily from `$CLAUDE_SETTINGS_PATH` or the cwd's
    *  `.claude/settings.json` (so a plugin singleton is host-portable).
    * @param nativeEvents canonical event → claude native name, from the host config
-   *  the projection emitted (`RuntimeConfig.events.native`). REQUIRED, and injected
-   *  rather than known: this class held a private copy of forge's map, which is the
-   *  duplication the vocabulary repair closed. A strategy that defaulted it would
-   *  reopen the copy behind an optional parameter.
+   *  the projection emitted (`harnesses.claude.native`, read by `nativeEventsOf`).
+   *  REQUIRED, and injected rather than known: this class held a private copy of
+   *  forge's map, which is the duplication the vocabulary repair closed. A strategy
+   *  that defaulted it would reopen the copy behind an optional parameter.
    */
   constructor(
     settingsPath: string | undefined,
