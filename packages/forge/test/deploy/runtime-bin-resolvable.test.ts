@@ -25,7 +25,6 @@
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { claudeHarnessAdapter } from '../../src/adapters/claude/index.js';
 import {
   assertShimsResolvable,
   placeSkillsLocal,
@@ -92,7 +91,7 @@ function emptyHost(): { env: NodeJS.ProcessEnv } {
 
 /** A render tree carrying the REAL projected thin shim — the emitter's own
  *  bytes, not a lookalike, so the gate is tested against what actually ships. */
-function treeWithShim(capability = 'memory'): {
+function treeWithShim(capability = 'note'): {
   skillsDir: string;
   agentsDir: string;
   srcDir: string;
@@ -100,14 +99,12 @@ function treeWithShim(capability = 'memory'): {
 } {
   const src = tmp('forge-render-');
   const tree = buildRenderTree(src);
-  const srcDir = join(tree.skillsDir, 'memory');
+  const srcDir = join(tree.skillsDir, capability);
   mkdirSync(join(srcDir, 'scripts'), { recursive: true });
+  writeFileSync(join(srcDir, 'SKILL.md'), `# ${capability}\n`, 'utf-8');
   writeFileSync(
     join(srcDir, 'scripts', `${capability}.mjs`),
-    // The shim is projected FOR a harness, so its session-var list comes from one.
-    // claude's is the bridging case; the gate under test is about the BIN, and it
-    // must hold on the shim shape a real projection emits.
-    runtimeShimContent(capability, claudeHarnessAdapter.sessionEnvVars),
+    runtimeShimContent(capability),
     'utf-8',
   );
   return {
@@ -155,14 +152,14 @@ describe('what counts as a placed CALL', () => {
     const { srcDir, files } = treeWithShim();
     writeFileSync(
       join(srcDir, 'SKILL.md'),
-      `# memory\n\nRuns via \`${BIN} memory read\`.\n`,
+      `# note\n\nRuns via \`${BIN} note show\`.\n`,
       'utf-8',
     );
     // THE DETECTOR IS NAME-AGNOSTIC and reports WHAT each shim spawns. It used to
     // take the current bin and grep for it, which meant a shim spawning a RETIRED
     // name matched nothing and the gate passed for having found nothing.
     expect(shimsSpawningRuntimeBin(srcDir, files)).toEqual([
-      { rel: 'scripts/memory.mjs', spawns: BIN },
+      { rel: 'scripts/note.mjs', spawns: BIN },
     ]);
   });
 
@@ -172,8 +169,8 @@ describe('what counts as a placed CALL', () => {
     // searched for the current name would go green on exactly this input.
     const { srcDir, files } = treeWithShim();
     writeFileSync(
-      join(srcDir, 'scripts', 'memory.mjs'),
-      `import { spawnSync } from 'node:child_process';\nspawnSync('${FOREIGN}', ['memory']);\n`,
+      join(srcDir, 'scripts', 'note.mjs'),
+      `import { spawnSync } from 'node:child_process';\nspawnSync('${FOREIGN}', ['note']);\n`,
       'utf-8',
     );
     const msg = assertShimsResolvable(srcDir, files, {});
@@ -232,7 +229,7 @@ describe('assertShimsResolvable', () => {
     expect(text).not.toBeNull();
     const msg = text as string;
     // what was placed, and that it is inert
-    expect(msg).toMatch(/scripts\/memory\.mjs/);
+    expect(msg).toMatch(/scripts\/note\.mjs/);
     expect(msg).toMatch(/INERT/);
     // the probe that was actually run
     expect(msg).toMatch(new RegExp(`${BIN} --version`));
@@ -276,7 +273,7 @@ describe('assertShimsResolvable', () => {
   it('the stranded host is reported with the file `which` would have found', () => {
     const host = strandedHost();
     const probe = probeRuntimeBin({ env: host.env, fresh: true });
-    const msg = runtimeBinRefusal(probe, ['scripts/memory.mjs']);
+    const msg = runtimeBinRefusal(probe, ['scripts/note.mjs']);
     expect(msg).toContain(host.bin);
   });
 });
@@ -304,7 +301,7 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     const warns: string[] = [];
 
     const r = withHost(strandedHost().env, () =>
-      placeSkillsLocal(claude, tree, ['memory'], {
+      placeSkillsLocal(claude, tree, ['note'], {
         dry: false,
         log: () => {},
         warn: (l) => warns.push(l),
@@ -316,9 +313,7 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     expect(r.report.warnings.join('\n')).toMatch(/deployed shims are inert/);
     // Testimony is still complete: the placer records what it laid down so the
     // next deploy can converge. A refusal must not cost attributability.
-    expect(r.report.written.memory).toContain(
-      'skills/memory/scripts/memory.mjs',
-    );
+    expect(r.report.written.note).toContain('skills/note/scripts/note.mjs');
   });
 
   it('rc 0 and silence on the LIVE host — same tree, same shim', () => {
@@ -327,7 +322,7 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     const warns: string[] = [];
 
     const r = withHost(liveHost().env, () =>
-      placeSkillsLocal(claude, tree, ['memory'], {
+      placeSkillsLocal(claude, tree, ['note'], {
         dry: false,
         log: () => {},
         warn: (l) => warns.push(l),

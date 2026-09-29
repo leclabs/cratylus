@@ -259,23 +259,6 @@ export interface HarnessAdapter {
    */
   skillRel(name: string, agents: readonly string[]): readonly string[];
   /**
-   * The vendor environment variables this harness sets a session id in, most
-   * specific first — what the projected runtime shim bridges into the runtime's
-   * own `$AGENT_SESSION_ID` contract.
-   *
-   * A FACT OF THE HARNESS, so it is declared by the adapter rather than baked into
-   * the shim emitter. The emitter used to carry claude's two names for every
-   * harness, which made the omp-projected shim assert a bridge that harness has
-   * no end for.
-   *
-   * EMPTY IS A REAL ANSWER, not a missing one: omp exposes no session id to a
-   * child process (measured across `packages/coding-agent/src` on
-   * `oh-my-pi@5964a0f`), so its shim has nothing to read and must say so instead
-   * of proceeding sessionless. See `project/runtime-shim.ts` for the refusal that
-   * an empty list emits.
-   */
-  readonly sessionEnvVars: readonly string[];
-  /**
    * The filename of this harness's hook-config artifact — `settings.json`,
    * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
    * find the fragment in the render tree and to merge into the host's copy.

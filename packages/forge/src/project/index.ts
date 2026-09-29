@@ -689,10 +689,7 @@ export async function projectPluginSet(
     if (cell.runtime) {
       files.push({
         path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
-        content: runtimeShimContent(
-          cell.runtime.capability,
-          opts.adapter.sessionEnvVars,
-        ),
+        content: runtimeShimContent(cell.runtime.capability),
         executable: true,
       });
       log(

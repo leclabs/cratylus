@@ -70,7 +70,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
       'hooks/ping/ping.sh',
       'settings.json',
       'skills/greet/SKILL.md',
-      'skills/greet/scripts/memory.mjs',
+      'skills/greet/scripts/note.mjs',
     ]);
     // Bytes, not paths-on-disk: every entry carries its own content.
     for (const f of t.files) expect(typeof f.content).toBe('string');
@@ -91,10 +91,10 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const skill = t.files.find((f) => f.path === 'skills/greet/SKILL.md');
     expect(skill?.content).toContain('G ≜ ⟨greeting⟩');
     const shim = t.files.find(
-      (f) => f.path === 'skills/greet/scripts/memory.mjs',
+      (f) => f.path === 'skills/greet/scripts/note.mjs',
     );
     expect(shim?.executable).toBe(true);
-    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['memory'`);
+    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['note'`);
   });
 
   it('carries the hooks settings fragment and the worker byte-anchor', async () => {

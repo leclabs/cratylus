@@ -6,10 +6,8 @@
 //   absent: a committed asset missing is a corpus mistake to surface, not a
 //   deploy-blocking build gap).
 //
-// (The former `bundle:` build-artifact staging — the memory build artifact — is
-// retired: memory is now the standalone `memory` PATH tool, installed via its
-// package `bin`, not staged into a skill dir. `assets:` is the surviving,
-// live mechanism.)
+// (The former `bundle:` build-artifact staging is retired. `assets:` is the
+// surviving, live mechanism.)
 //
 // Faithful port of `resolve._stage_assets`.
 //

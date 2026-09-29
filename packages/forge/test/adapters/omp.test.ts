@@ -866,7 +866,7 @@ describe('omp launch spec', () => {
     const SKILLS: Record<string, ResolvedFixture> = {
       design: {
         md: skillMd('design', '# Design\n\nDESIGN_BODY'),
-        scripts: { 'design.mjs': runtimeShimContent('design', []) },
+        scripts: { 'design.mjs': runtimeShimContent('design') },
       },
       deliver: { md: skillMd('deliver', '# Deliver\n\nDELIVER_BODY') },
       probe: { md: skillMd('probe', '# Probe\n\nPROBE_BODY') },
@@ -944,7 +944,7 @@ describe('omp launch spec', () => {
             scripts: {
               'design.mjs':
                 '#!/usr/bin/env node\nconsole.log("hand-written")\n',
-              'tool.mjs': runtimeShimContent('note', []),
+              'tool.mjs': runtimeShimContent('note'),
             },
           },
         },
@@ -1148,18 +1148,10 @@ describe('omp persona badge', () => {
   });
 });
 
-describe('omp names no session, and the projected shim says so', () => {
-  it('declares an EMPTY session-var list', () => {
-    // Measured, not assumed: no `*_SESSION_ID` variable is set for a child process
-    // anywhere in omp's coding-agent source. The emitter used to stamp claude's two
-    // names into this harness's shims, asserting a bridge with no far end.
-    expect(ompHarnessAdapter.sessionEnvVars).toEqual([]);
-  });
-
-  it('refuses only for a SESSION-SCOPED capability; a record capability runs', () => {
-    // Session scope is the capability's: `plan` names no session, so its omp
-    // shim forwards with none, while `memory`'s still refuses. RUN, against a
-    // `cratylus` on PATH that records what it was handed.
+describe('omp shim', () => {
+  it('forwards a shipped capability with no session variable set', () => {
+    // RUN, against a `cratylus` on PATH that records what it was handed, in an
+    // environment that carries PATH alone.
     const dir = mkdtempSync(join(tmpdir(), 'omp-shim-'));
     tmp.push(dir);
     const bin = join(dir, 'bin');
@@ -1169,34 +1161,13 @@ describe('omp names no session, and the projected shim says so', () => {
       `#!/bin/sh\nprintf '%s\\n' "$@" > ${join(dir, 'called')}\n`,
       { mode: 0o755 },
     );
-    const env: Record<string, string> = {
-      PATH: `${bin}:${process.env.PATH ?? ''}`,
-    };
-    const runShim = (capability: string) => {
-      const shim = join(dir, `${capability}.mjs`);
-      writeFileSync(
-        shim,
-        runtimeShimContent(capability, ompHarnessAdapter.sessionEnvVars),
-      );
-      return spawnSync(process.execPath, [shim, 'show', 'x'], {
-        env,
-        encoding: 'utf-8',
-      });
-    };
-    const plan = runShim('plan');
-    expect(plan.status).toBe(0);
+    const shim = join(dir, 'plan.mjs');
+    writeFileSync(shim, runtimeShimContent('plan'));
+    const r = spawnSync(process.execPath, [shim, 'show', 'x'], {
+      env: { PATH: `${bin}:${process.env.PATH ?? ''}` },
+      encoding: 'utf-8',
+    });
+    expect(r.status).toBe(0);
     expect(readFileSync(join(dir, 'called'), 'utf-8')).toBe('plan\nshow\nx\n');
-    const memory = runShim('memory');
-    expect(memory.status).toBe(3);
-    expect(memory.stderr).toContain('no session id');
-  });
-
-  it('REFUSES instead of running sessionless, and names the way out', () => {
-    const shim = runtimeShimContent('memory', ompHarnessAdapter.sessionEnvVars);
-    expect(shim).not.toMatch(/CLAUDE/);
-    expect(shim).toContain('process.exit(3)');
-    // The refusal has to be actionable: a sessionless invocation mints a fresh id
-    // per call, and the lock it takes is held against a pid that already exited.
-    expect(shim).toContain('AGENT_SESSION_ID_FROM');
   });
 });

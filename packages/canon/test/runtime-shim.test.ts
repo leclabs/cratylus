@@ -18,19 +18,21 @@
 //
 // It ALSO pins the shim's SINGLE HOME. There is exactly one emitter,
 // `@cratylus/forge/project`; every harness projection rides it. A second copy
-// beside a harness CLI is not a variant, it is a fork: the canon fork missed the
-// `CLAUDE_CODE_SESSION_ID → AGENT_SESSION_ID` bridge for the whole life of its
-// divergence, so every codex-projected skill script ran sessionless, minting a fresh
-// id per call and showing the lock machinery a phantom sibling. The identity gate
-// below is what makes a re-fork impossible to land quietly: project the SAME cell
-// down BOTH harness paths and compare the emitted bytes.
+// beside a harness CLI is not a variant, it is a fork: the canon fork missed a
+// change the single emitter carried for the whole life of its divergence, so every
+// codex-projected skill script ran a shim that no longer matched the others. The
+// identity gate below is what makes a re-fork impossible to land quietly: project
+// the SAME cell down BOTH harness paths and compare the emitted bytes.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { adapterByName } from '@cratylus/forge/adapters/registry';
+import {
+  HARNESS_NAMES,
+  adapterByName,
+} from '@cratylus/forge/adapters/registry';
 import {
   emitRuntimeShim,
   projectPluginSet,
@@ -41,6 +43,7 @@ import type { Skill } from '@cratylus/schema';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
+import { RUNTIME_CAPABILITIES } from '../src/manifest.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -55,16 +58,10 @@ const shimOf = (out: string): string =>
     'utf-8',
   );
 
-/** The emitted shim for `capability` on `harness`, straight from the single
- *  emitter. The session-var list is the HARNESS's — the emitter takes no default,
- *  so a caller cannot silently stamp one harness's vendor names into another's
- *  projection. */
-function emitted(capability: string, harness = 'claude'): string {
+/** The emitted shim for `capability`, straight from the single emitter. */
+function emitted(capability: string): string {
   const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-  return readFileSync(
-    emitRuntimeShim(dir, capability, adapterByName(harness).sessionEnvVars),
-    'utf-8',
-  );
+  return readFileSync(emitRuntimeShim(dir, capability), 'utf-8');
 }
 
 let claudeShim = '';
@@ -168,11 +165,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
 
   it('emits scripts/<capability>.mjs executable', () => {
     const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-    const dest = emitRuntimeShim(
-      dir,
-      CAPABILITY,
-      adapterByName('claude').sessionEnvVars,
-    );
+    const dest = emitRuntimeShim(dir, CAPABILITY);
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
     expect(readFileSync(dest, 'utf-8')).toBe(emitted(CAPABILITY));
@@ -200,24 +193,35 @@ describe('runtime shim has ONE home across harnesses', () => {
     expect(codexShim).toBe(claudeShim);
   });
 
-  it('only a SESSION-SCOPED capability bridges the harness session id', () => {
-    // Session scope is the capability's, declared once in the runtime. The
-    // bridge exists because a session-scoped runtime that sees no
-    // `$AGENT_SESSION_ID` mints a fresh session per invocation, and the
-    // lock/liveness machinery reports a phantom sibling on the next call. A
-    // capability that names no session has nothing to bridge.
-    const memory = emitted('memory');
-    expect(memory).toContain('CLAUDE_CODE_SESSION_ID');
-    expect(memory).toContain('AGENT_SESSION_ID');
-    for (const shim of [claudeShim, codexShim]) {
-      expect(shim).not.toContain('AGENT_SESSION_ID');
-      expect(shim).toContain('names no session');
+  it('no shim names a session: every capability, every harness, one plain forwarder', async () => {
+    for (const harness of HARNESS_NAMES) {
+      const { files } = await projectPluginSet({
+        plugins: [canonPlugin],
+        adapter: adapterByName(harness),
+      });
+      // What THIS harness's projection emits, keyed by the capability it forwards to.
+      const projected = new Map(
+        files
+          .filter((f) => /^skills\/[^/]+\/scripts\/[^/]+\.mjs$/.test(f.path))
+          .map((f) => [basename(f.path, '.mjs'), f.content]),
+      );
+      expect(projected.size, harness).toBeGreaterThan(0);
+      for (const [capability, shim] of projected) {
+        expect(shim, `${harness} ${capability}`).toBe(emitted(capability));
+      }
+      for (const capability of RUNTIME_CAPABILITIES) {
+        const shim = projected.get(capability) ?? emitted(capability);
+        expect(shim, `${harness} ${capability}`).not.toMatch(/session/i);
+        expect(shim, `${harness} ${capability}`).toMatch(
+          new RegExp(`spawnSync\\('${CLI_BIN}', \\['${capability}',`),
+        );
+      }
     }
   });
 
   it('the projected shim IS the single emitter output, verbatim', () => {
-    // No harness-local post-processing: what the emitter returns for THAT harness
-    // is what lands in that harness's tree.
-    expect(codexShim).toBe(emitted(CAPABILITY, 'codex'));
+    // No harness-local post-processing: what the emitter returns is what lands in
+    // the harness's tree.
+    expect(codexShim).toBe(emitted(CAPABILITY));
   });
 });
