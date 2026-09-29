@@ -554,6 +554,19 @@ export interface Agent {
    * required-reading declaration in its instructions, and projection warns.
    */
   readonly skills?: readonly string[];
+  /**
+   * OPTIONAL — the anchor of the role this agent HOLDS. Absent ⇒ the agent holds
+   * none. Modelled on `skills` above: optional, carried on the identity face, and
+   * projected by whichever adapter has somewhere to put it.
+   *
+   * NOT A DIMENSION READ, and that is the reason it is a field. A corpus may state
+   * a role as one of its dimensions, but the projector is contractually blind to
+   * dimension identity (see `dimensionValueOf`), so the held role could not reach
+   * an adapter at all unless the corpus's own fold copies its anchor here. The
+   * value is that anchor — a string the HARNESS keys its model routing by — and
+   * carries no model: which model fills the role is the host's choice.
+   */
+  readonly holds?: string;
 }
 
 /**

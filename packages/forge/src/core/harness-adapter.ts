@@ -498,4 +498,30 @@ export interface HarnessAdapter {
    * front-matter `name`, codex's TOML `name`) and composes no launch spec.
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
+  /**
+   * How this harness routes a MODEL by the ROLE an agent holds — the table that
+   * lets a projected definition name its position ({@link Agent.holds}) and leaves
+   * the host to choose the model. The projection names no model, ever.
+   *
+   * Three facts, all the harness's own: the ROLE it falls back to when the host
+   * never configured the held one (`defaultRole`), the built-in role each held role
+   * is NEAREST to (`nearest`, which seeds the host entry install adds), and WHERE
+   * the host keeps the mapping (`configRel`, harness-home relative). Install reads
+   * this by harness name through the registry, so it never imports an adapter.
+   *
+   * Absent ⇒ this harness has no role-keyed model routing: definitions carry no
+   * route and install touches no host config.
+   */
+  roleRouting?: RoleRouting;
+}
+
+/** A harness's role → model routing table. See {@link HarnessAdapter.roleRouting}. */
+export interface RoleRouting {
+  /** The role the host routes by when it has no entry for the held one. */
+  readonly defaultRole: string;
+  /** The harness's own built-in role nearest to a held role; `defaultRole` for a
+   *  role it has no closer peer for. */
+  nearest(heldRole: string): string;
+  /** The host config file that maps roles to models, relative to the harness home. */
+  readonly configRel: string;
 }

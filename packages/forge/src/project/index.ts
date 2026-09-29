@@ -220,6 +220,10 @@ export interface ProjectedFile {
  */
 export interface ProjectedTree extends ProjectReport {
   readonly files: readonly ProjectedFile[];
+  /** The sorted, distinct roles the rendered agents hold ({@link Agent.holds}), so
+   *  a consumer that routes by role — install — knows them without re-reading a
+   *  definition. Empty when no rendered agent holds one. */
+  readonly heldRoles: readonly string[];
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -853,7 +857,13 @@ export async function projectPluginSet(
     log(`EMIT orientation ${filename}`);
   }
 
-  return { files, agents, skills, shims, hooks };
+  const heldRoles = [
+    ...new Set(
+      rendered.flatMap((a) => (a.holds === undefined ? [] : [a.holds])),
+    ),
+  ].sort();
+
+  return { files, agents, skills, shims, hooks, heldRoles };
 }
 
 export { emitRuntimeShim } from './runtime-shim.js';

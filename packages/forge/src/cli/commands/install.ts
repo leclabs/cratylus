@@ -23,10 +23,15 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import pc from 'picocolors';
-import { HARNESS_NAMES, adapterByName } from '../../adapters/registry/index.js';
+import {
+  HARNESS_NAMES,
+  type HarnessAdapter,
+  adapterByName,
+} from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import { addModelRoles, modelRoleLine } from '../../deploy/index.js';
 import {
   type ProjectablePlugin,
   discoverFragments,
@@ -149,7 +154,7 @@ export async function runInstall(
     });
     writeRenderTree(stage, report.files);
 
-    return await runDeploy({
+    const rc = await runDeploy({
       agentsDir: resolve(stage, 'agents'),
       skillsDir: resolve(stage, 'skills'),
       hooksDir: stage,
@@ -170,7 +175,57 @@ export async function runInstall(
       dryRun: opts.dryRun,
       check: false,
     });
+    // The routes the definitions just placed name roles; the host maps a role to a
+    // model. Deploy is unchanged — this is install's own step, and a deploy that
+    // failed places no routes to back.
+    if (rc === 0) {
+      seedModelRoles(
+        adapter,
+        report.heldRoles,
+        opts.home,
+        opts.dryRun ?? false,
+      );
+    }
+    return rc;
   } finally {
     rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Give every held role the host has not mapped an entry aliasing the harness's
+ * nearest built-in role, and say what was added. An entry the host already has is
+ * never changed; a `modelRoles` that cannot be safely extended is reported and
+ * left as it is — the install itself still succeeds.
+ */
+function seedModelRoles(
+  adapter: HarnessAdapter,
+  heldRoles: readonly string[],
+  home: string,
+  dry: boolean,
+): void {
+  const routing = adapter.roleRouting;
+  if (routing === undefined || heldRoles.length === 0) return;
+  const path = join(home, adapter.home, routing.configRel);
+  const result = addModelRoles(
+    path,
+    heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),
+    { dry },
+  );
+  if (result.refused !== undefined) {
+    process.stderr.write(
+      `${pc.yellow('!')} ${CLI_BIN} install: did not edit ${path} — ${result.refused}. Held roles ${heldRoles.join(', ')} fall back to \`${routing.defaultRole}\`.\n`,
+    );
+    return;
+  }
+  if (result.added.length === 0) {
+    process.stdout.write(`  modelRoles: ${path} — no entry was missing\n`);
+    return;
+  }
+  process.stdout.write(
+    `  modelRoles${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'added' : 'would add'}\n`,
+  );
+  for (const entry of result.added) {
+    process.stdout.write(`    ${modelRoleLine(entry, '')}\n`);
   }
 }

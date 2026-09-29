@@ -26,6 +26,7 @@ export type {
   HarnessAdapter,
   HarnessProjection,
   HarnessHooksProjection,
+  RoleRouting,
 } from '../../core/harness-adapter.js';
 // The harness-neutral resolved-skill shape a consumer builds to feed `skillDef`.
 export type { ResolvedSkill } from '../../core/body.js';
