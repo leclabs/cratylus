@@ -91,7 +91,7 @@ jobs:
           # reported ALL SIX packages unpublished while every one was on the registry. A
           # probe that cannot tell "absent" from "I was refused" is not a probe.
           missing=''
-          for p in cratylus @cratylus/canon @cratylus/forge @cratylus/memory @cratylus/runtime @cratylus/schema; do
+          for p in cratylus @cratylus/canon @cratylus/forge @cratylus/runtime @cratylus/schema; do
             if ! err=$(pnpm view "$p" version 2>&1); then
               echo "pnpm view $p failed: $err" >&2
               missing="$missing $p"

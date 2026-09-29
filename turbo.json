@@ -77,33 +77,34 @@
       "dependsOn": ["^build", "typecheck:test"],
       "cache": false
     },
-    // canon's suite drives BUILT ARTIFACTS of packages it does not depend on.
+    // canon's suite drives the BUILT `cratylus` bin, a package it does not depend on.
     //
-    // `memory-nudge.test.ts` execs `invoke/dist/bin.js` — the real run-time
-    // dispatcher, deliberately, because the gate's whole point is that the bin is
-    // REAL rather than a mock. But canon depends on forge, runtime and schema, not
-    // on `invoke`, so `^build` never built it and the file did not exist on a cold
-    // tree. It passed locally only because a previous run had left the artifact
-    // behind; a genuine cold clone — checkout, install, build, test — failed.
+    // `version-single-home.test.ts` execs `packages/cli/dist/cratylus.js --version`,
+    // because a version is a claim about the ARTIFACT and only the emitted bin can be
+    // asked it. `deploy-drift-notice.test.ts` points its fixture shims at the same
+    // file, so the worker under test runs the real command rather than a mock. canon
+    // depends on forge, runtime and schema, not on `cratylus`, so `^build` never
+    // builds that file: on a cold tree it does not exist, and a suite that passes
+    // only because a previous run left `dist` behind is not passing.
     //
     // Declared as an explicit cross-package task edge rather than by adding a
     // devDependency: the fact is "this suite needs that artifact built", which is a
     // statement about the TASK GRAPH. Making it a package dependency would put a
-    // canon → invoke edge in the manifest to satisfy a test fixture, which is a
+    // canon → cratylus edge in the manifest to satisfy a test fixture, which is a
     // worse lie than the one it fixes.
     "@cratylus/canon#test": {
       "dependsOn": ["^build", "build", "typecheck:test", "cratylus#build"],
       "cache": false
     },
-    // forge's integrate-smoke drives the SAME built bin, and had the same gap.
+    // forge's suite drives the SAME built bin, and has the same gap.
     //
-    // `integrate-smoke.test.ts` deploys a thin shim and then RUNS it, and the shim
-    // forwards to `cratylus <capability>` off PATH — the whole point of the gate is
-    // that the bin is the real one. forge does not depend on the `cratylus` package,
-    // so nothing ordered that build against this suite: run alone it passed (a prior
-    // build had left `dist` behind), and run as part of `turbo run build … test` it
-    // failed three legs with `Command failed: node …/scripts/memory.mjs encode` and
-    // `expected 2 to be +0` — the bin being relinked underneath a test that was
+    // `integrate-smoke.test.ts` materializes the `cratylus` package with `pnpm deploy`
+    // — which copies its `dist`, so the bin must already be built — then deploys a
+    // thin shim and RUNS it, and the shim forwards to `cratylus <capability>` off
+    // PATH. The whole point of the gate is that the bin is the real one. forge does
+    // not depend on the `cratylus` package, so without this edge nothing orders that
+    // build against this suite: it passes alone on a `dist` a prior build left
+    // behind, and fails in the pipeline when the bin is rebuilt underneath a test
     // already spawning it. Green when run alone, red in the pipeline, on identical
     // input: the shape this file already refuses one entry up.
     "@cratylus/forge#test": {

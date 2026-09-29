@@ -30,11 +30,10 @@
 //
 // SPECIFIERS ARE PARSED, NOT GREPPED. Comments and template literals in this repo are
 // full of import-shaped text that is not an import: `config/scaffold.ts` holds a
-// scaffold TEMPLATE containing `import canon from '@cratylus/canon'`, and
-// `deploy/seeds.ts` has a TODO discussing an `@cratylus/memory` import that does
-// not exist. A text scan convicts both. Neither is an edge. Comments and template
-// literals are therefore stripped before matching — the same use/mention line that
-// governs `command-veracity` and the density gate.
+// scaffold TEMPLATE containing `import canon from '@cratylus/canon'`. A text scan
+// convicts it. It is not an edge. Comments and template literals are therefore
+// stripped before matching — the same use/mention line that governs
+// `command-veracity` and the density gate.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -49,14 +48,7 @@ const repoRoot = join(
   '..',
 );
 
-type Pkg =
-  | 'canon'
-  | 'forge'
-  | 'runtime'
-  | 'memory'
-  | 'cli'
-  | 'schema'
-  | 'tooling';
+type Pkg = 'canon' | 'forge' | 'runtime' | 'cli' | 'schema' | 'tooling';
 
 /**
  * Canon's file ROLES. The distinction property 2 turns on: canon's BUILD SCRIPTS using
@@ -70,9 +62,7 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
   ['canon', 'schema'],
   ['forge', 'schema'],
   ['forge', 'runtime'],
-  ['memory', 'runtime'],
   ['cli', 'runtime'],
-  ['cli', 'memory'],
   // `['cli','forge']` WAS DELETED AND IS BACK, on exactly the condition its deletion
   // set. It was retired at `3710c4bf` because it licensed an import nobody had, and a
   // dead PERMITTED entry is silent and WIDENS — unlike a dead ratchet pin, which the
@@ -139,8 +129,8 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // assigns to `runtime` — so the move would have traded a ratcheted edge for a
   // fused concern. The detection was right; the remedy was not.
   //
-  // What schema actually wanted was never `RuntimePlugin`. It wanted the KEY SET
-  // `'memory' | 'eventTap'`, and it was obtaining a VOCABULARY by reaching into a
+  // What schema actually wanted was never `RuntimePlugin`. It wanted the capability
+  // KEY SET, and it was obtaining a VOCABULARY by reaching into a
   // SHAPE. `shape ⊥ vocabulary` (`MODEL.md:22`). Schema now states only that a
   // capability has a name; `canon/manifest.ts` declares the members and narrows its
   // own `Skill` against them, which is the `DimensionManifest`/`MANIFEST` pattern
@@ -172,7 +162,6 @@ const PACKAGES = [
   'canon',
   'forge',
   'runtime',
-  'memory',
   'cli',
   'schema',
 ] as const;
@@ -299,7 +288,7 @@ function pkgOf(spec: string): Pkg | null {
   // in `bd88ef9b` and the name now exists only on the registry, deprecated. `Pkg`
   // never carried it either, so the branch mapped a specifier onto a value the union
   // refuses.
-  const m = spec.match(/^@cratylus\/(canon|forge|runtime|memory|schema)/);
+  const m = spec.match(/^@cratylus\/(canon|forge|runtime|schema)/);
   return m ? (m[1] as Pkg) : null;
 }
 
@@ -412,7 +401,6 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     const ks = new Set(es.map(key));
     // Known-live edges, one permitted and one violating, so neither a collapsed nor a
     // saturated scan can pass.
-    expect(ks).toContain('memory/plugin.ts → runtime');
     // Was `canon/skills/wake/skill.ts → forge`, retired by the shapes extraction. The
     // violating anchor is now canon's root plugin declaration; the permitted one is
     // a build script using the projector as a tool. Was `toolkit/project-cli.ts`
@@ -429,9 +417,8 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // The corpus→shapes edge itself is very much alive — it just has one anchor now,
     // which is the manifest module, and that is the right place for it.
     expect(ks).toContain('canon/manifest.ts → schema');
-    // Known NON-edges: import-shaped text in a template and in a comment.
+    // Known NON-edge: import-shaped text in a template.
     expect(ks).not.toContain('forge/config/scaffold.ts → canon');
-    expect(ks).not.toContain('forge/deploy/seeds.ts → memory');
   });
 
   // COMPLETENESS, and it is separate from reach for a reason. The first scanner

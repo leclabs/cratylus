@@ -88,9 +88,9 @@
 // matching. Every test file must appear here, so a new one cannot slip in
 // unclassified, and a GATE without a fixture is visible DEBT rather than silence.
 //
-// ONE META-GATE, FIVE TEST DIRS. This file lived in canon and enumerated
-// canon's test dir alone, so every gate in memory, runtime and
-// forge was unpoliced — the three that already carried convicting fixtures
+// ONE META-GATE, FOUR TEST DIRS. This file lived in canon and enumerated
+// canon's test dir alone, so every gate in runtime and forge was
+// unpoliced — the ones that already carried convicting fixtures
 // did so because their authors were told to, not because anything checked. The
 // sibling dirs are now read BY PATH, the precedent this corpus already set for a
 // cross-package test (`event-tap-cell.test.ts` reads the runtime's `TapVerb` union
@@ -112,7 +112,6 @@ const packages = join(requireRepoRoot(testDir), 'packages');
 const TEST_ROOTS: Readonly<Record<string, string>> = {
   canon: testDir,
   forge: join(packages, 'forge', 'test'),
-  memory: join(packages, 'memory', 'test'),
   runtime: join(packages, 'runtime', 'test'),
   schema: join(packages, 'schema', 'test'),
 };
@@ -283,28 +282,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/stories/E6/S4.elicit-markers.test.ts': 'BEHAVIORAL',
   'forge/stories/E6/S5.idempotence.test.ts': 'BEHAVIORAL',
   'forge/stories/E6/S7.opt-in-lossless.test.ts': 'BEHAVIORAL',
-
-  // ── memory ───────────────────────────────────────────────────────────
-  'memory/audit.test.ts': 'BEHAVIORAL',
-  // BEHAVIORAL, not GATE: it plants a `$HOME` config itself and drives `audit`/`node`/
-  // `resolveConfigPath` over it, so its negative cases ARE its fixtures. Its control is
-  // external and was run at authoring — removing the sentinel reddens all five legs — but
-  // a control that lives outside the file cannot be what classifies it.
-  'memory/hermetic-config.test.ts': 'BEHAVIORAL',
-  'memory/cli.test.ts': 'BEHAVIORAL',
-  'memory/dream.test.ts': 'BEHAVIORAL',
-  'memory/liveness-read-drain.test.ts': 'BEHAVIORAL',
-  'memory/lock.test.ts': 'BEHAVIORAL',
-  'memory/migrate-memory.test.ts': 'BEHAVIORAL',
-  'memory/migrate.test.ts': 'BEHAVIORAL',
-  'memory/node.test.ts': 'BEHAVIORAL',
-  'memory/session.test.ts': 'BEHAVIORAL',
-  // pins a ceiling calibrated against the live store corpus — the reading that
-  // makes it vacuously green if the calibration ever stops biting.
-  'memory/store-ceiling.test.ts': 'GATE',
-  'memory/store.test.ts': 'BEHAVIORAL',
-  'memory/strategy.test.ts': 'BEHAVIORAL',
-  'memory/verb-roster.test.ts': 'GATE',
 
   // ── runtime ──────────────────────────────────────────────────────────
   'runtime/brand-derived-literals.test.ts': 'GATE',

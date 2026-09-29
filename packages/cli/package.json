@@ -21,7 +21,6 @@
   "dependencies": {
     "@cratylus/canon": "workspace:*",
     "@cratylus/forge": "workspace:*",
-    "@cratylus/memory": "workspace:*",
     "@cratylus/runtime": "workspace:*"
   },
   "devDependencies": {

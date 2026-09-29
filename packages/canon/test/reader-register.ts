@@ -31,7 +31,6 @@ export const RHO = {
   // prose addressed to an agent, so it is the one `content` that must score.
   'rule-target-content': 'LLM',
   // runtime frontiers (reader-reach.test.ts)
-  memory: 'LLM', // dream/handoff/wake (since retired): SELF · MEMORY · EPISODIC · routed AGENTS.md
   'generated-agent-artifact': 'LLM', // create-agent vectors · exemplify cells/manifests on consumer hosts
   'delegation-prompt': 'LLM', // agent↔agent dispatch
   'subagent-return': 'LLM', // agent↔agent return

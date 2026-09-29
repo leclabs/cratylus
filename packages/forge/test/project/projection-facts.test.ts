@@ -118,7 +118,7 @@ describe('the command name has exactly one home, and there is one command', () =
   });
 
   it('no other package declares a bin — one command, one home', () => {
-    for (const pkg of ['forge', 'runtime', 'memory', 'schema', 'canon']) {
+    for (const pkg of ['forge', 'runtime', 'schema', 'canon']) {
       const m = JSON.parse(
         readFileSync(join(repoRoot, 'packages', pkg, 'package.json'), 'utf8'),
       ) as { bin?: unknown };
