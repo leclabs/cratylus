@@ -72,10 +72,11 @@ export interface LiveUnit extends Unit {
   readonly wave: number | undefined;
   readonly frontier: boolean;
   /** DRIFTED: how the concept it realizes moved since pinned, e.g.
-   *  `c diverged`; `undefined` when it has not. */
+   *  `c diverged` or `c amended in gloss and factors (added a; removed b)`;
+   *  `undefined` when it has not. */
   readonly drift: string | undefined;
   /** SUSPECT: each concept beneath the one it realizes that moved since pinned,
-   *  and how, e.g. `base amended`; empty when none did or it drifted. */
+   *  and how, e.g. `base amended in gloss`; empty when none did or it drifted. */
   readonly suspicion: readonly string[];
   /** Its plan is closed, so it is never written again: it is shown, and no
    *  drift or suspicion on it is asked to be resolved. */

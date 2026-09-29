@@ -630,7 +630,7 @@ describe('plan — what must be resolved first', () => {
     const p = show(repo, [], 'p');
     expect(p).toContain('  drifted: v — same diverged since pinned');
     expect(p).toContain(
-      '  suspect: u — beneath leaf, base amended since pinned',
+      '  suspect: u — beneath leaf, base amended in gloss since pinned',
     );
     expect(p).not.toContain('w —');
     expect(p).not.toContain('drifted: w');
@@ -745,6 +745,106 @@ describe('plan — pins, drift and suspicion', () => {
     design(repo, 'retract', 'leaf', ...BY);
     expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
     expect(show(repo, [], 'pl')).toMatch(/0 incoherent/);
+  });
+
+  describe('drift and suspicion say what moved, as facts', () => {
+    /** Unit `u` of bound plan `pl` pinned on `leaf`, which factors `base`;
+     *  `moved` then writes to the design, and the whole view of `pl` returns. */
+    const shownAfter = (moved: (repo: string) => void): string => {
+      const repo = repository();
+      concepts(repo);
+      add(repo, 'u', 'pl', 'leaf');
+      plan(repo, 'bind', 'pl', ...BY);
+      moved(repo);
+      return show(repo, [], 'pl');
+    };
+    /** The view's drifted and suspect lines, each held to state a fact and
+     *  never spell a response to it. */
+    const told = (view: string): string[] => {
+      const lines = view
+        .split('\n')
+        .filter((l) => /^ {2}(drifted|suspect): /.test(l));
+      for (const line of lines) expect(line).not.toMatch(/repin|revise|re-cut/);
+      return lines;
+    };
+
+    it('an amended gloss is named', () => {
+      const view = shownAfter((repo) =>
+        design(repo, 'amend', 'leaf', '--gloss', 'above2', ...BY),
+      );
+      expect(told(view)).toEqual([
+        '  drifted: u — leaf amended in gloss since pinned',
+      ]);
+    });
+
+    it('amended factors are named as those added and those removed', () => {
+      const view = shownAfter((repo) =>
+        design(repo, 'amend', 'leaf', '--factors', 'c1', ...BY),
+      );
+      expect(told(view)).toEqual([
+        '  drifted: u — leaf amended in factors (added c1; removed base) since pinned',
+      ]);
+    });
+
+    it('several fields join as a list, and an empty side of the factors is omitted', () => {
+      const view = shownAfter((repo) =>
+        design(
+          repo,
+          'amend',
+          'leaf',
+          '--gloss',
+          'above2',
+          '--factors',
+          'base',
+          '--factors',
+          'c1',
+          ...BY,
+        ),
+      );
+      expect(told(view)).toEqual([
+        '  drifted: u — leaf amended in gloss and factors (added c1) since pinned',
+      ]);
+    });
+
+    it('an amended anchor is named, the concept printed as it is now', () => {
+      const view = shownAfter((repo) =>
+        design(repo, 'amend', 'leaf', '--anchor', 'leaf2', ...BY),
+      );
+      expect(told(view)).toEqual([
+        '  drifted: u — leaf2 amended in anchor since pinned',
+      ]);
+    });
+
+    it('an amendment changing no field says nothing differs', () => {
+      const view = shownAfter((repo) => design(repo, 'amend', 'leaf', ...BY));
+      expect(told(view)).toEqual([
+        '  drifted: u — leaf amended, nothing differs since pinned',
+      ]);
+    });
+
+    it('suspicion carries the same detail for each concept beneath', () => {
+      const view = shownAfter((repo) =>
+        design(repo, 'amend', 'base', '--gloss', 'moved', ...BY),
+      );
+      expect(told(view)).toEqual([
+        '  suspect: u — beneath leaf, base amended in gloss since pinned',
+      ]);
+    });
+
+    it('withdrawn and joined read as before, and no line spells a response', () => {
+      const withdrawn = shownAfter((repo) =>
+        design(repo, 'retract', 'leaf', ...BY),
+      );
+      expect(told(withdrawn)).toEqual([
+        '  drifted: u — leaf withdrawn since pinned',
+      ]);
+      const joined = shownAfter((repo) =>
+        design(repo, 'amend', 'base', '--factors', 'c1', ...BY),
+      );
+      expect(told(joined)).toEqual([
+        '  suspect: u — beneath leaf, base amended in factors (added c1), c1 joined its closure since pinned',
+      ]);
+    });
   });
 
   it('a revise keeps the pin, so editing a spec never clears a drift; only --repin with a reason retakes it', () => {

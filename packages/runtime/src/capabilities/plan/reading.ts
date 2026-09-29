@@ -37,7 +37,7 @@ import {
   parsed,
   printed,
 } from '../../record-store/names.js';
-import type { Record } from '../../record-store/record.js';
+import type { Record, RecordId } from '../../record-store/record.js';
 import { introduced } from '../../record-store/repair.js';
 import {
   RecordStore,
@@ -74,7 +74,7 @@ import {
   notebook,
   owedRulings,
 } from '../note/notebook.js';
-import { type Pin, drift, suspicion, take } from './pin.js';
+import { type Movement, type Pin, drift, suspicion, take } from './pin.js';
 import * as planDomain from './plan.js';
 import * as unitDomain from './unit.js';
 
@@ -799,17 +799,37 @@ export class Reading {
     );
   }
 
-  /** How a pin moved, in words: what drifted it, and what beneath it moved. */
+  /** How a pin moved, in words: what drifted it, and what beneath it moved.
+   *  An amendment names the fields that differ in the order anchor, gloss,
+   *  factors, the factors by those added and removed, each as printed now. */
   #moved(pin: Pin): { drift: string | undefined; suspicion: string[] } {
-    const how = drift(pin, this.concepts);
+    const version = (id: RecordId) =>
+      this.#conceptRecords.get(id)?.payload as ConceptPayload;
+    const names = (entities: readonly string[]) =>
+      entities.map((e) => printed(this.concept(e))).join(', ');
+    const said = (entity: string, moved: Movement): string => {
+      const name = printed(this.concept(entity));
+      if (moved.how === 'joined') return `${name} joined its closure`;
+      if (moved.how !== 'amended') return `${name} ${moved.how}`;
+      const { added, removed } = moved;
+      const detail = [
+        ...(added.length ? [`added ${names(added)}`] : []),
+        ...(removed.length ? [`removed ${names(removed)}`] : []),
+      ].join('; ');
+      const fields = [
+        ...(moved.anchor ? ['anchor'] : []),
+        ...(moved.gloss ? ['gloss'] : []),
+        ...(detail ? [`factors (${detail})`] : []),
+      ];
+      return fields.length === 0
+        ? `${name} amended, nothing differs`
+        : `${name} amended in ${fields.length < 2 ? fields[0] : `${fields.slice(0, -1).join(', ')} and ${fields.at(-1)}`}`;
+    };
+    const drifted = drift(pin, this.concepts, version);
     return {
-      drift:
-        how === undefined
-          ? undefined
-          : `${printed(this.concept(pin.concept))} ${how}`,
-      suspicion: suspicion(pin, this.concepts, this.closure).map(
-        ({ entity, how }) =>
-          `${printed(this.concept(entity))} ${how === 'joined' ? 'joined its closure' : how}`,
+      drift: drifted && said(pin.concept, drifted),
+      suspicion: suspicion(pin, this.concepts, this.closure, version).map(
+        (moved) => said(moved.entity, moved),
       ),
     };
   }
