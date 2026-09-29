@@ -1,0 +1,82 @@
+{
+  "envelope": {
+    "id": "01M3QFCRXVTTKGMRRMK2XZ83BB",
+    "entity": "01M3QCB2C4JGATZG18SWXS9G9M",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QDZ66Q2Q4DCGKVD80QS56A"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:58:39.931Z",
+    "reason": "accepted: live re-assay achieved every factor; residues (omp double purview judgment, stray enrollment wording) fixed in 9ad2b401 with a convicting control; whole gate green",
+    "cause": "live re-assay of enforcement scope and residue fix 9ad2b401"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-enforcement-scope",
+      "intent": " ASSAY FOLLOW-UP (8f1abc6b, agent://AssayEnforcementScope): (a) SubagentStop judges the text of the agent its scope names: read agent_transcript_path when present, never the parent's transcript_path. (b) On Claude Code the final assistant message is not yet in the transcript at Stop: judge Stop from the payload's last_assistant_message when present, so a text-only turn is judged and a tool turn is judged on its close. (c) Scope is fixed by composition: a persona's manifest enrolls exactly the enforcing cells its composition includes, taken from the composed agent, never every cell for every persona; non-guard cells (deploy-drift-notice) are never listed. (d) A harness that registers enforcing hooks but cannot name the running agent (no scopedRel) degrades to a steer and warns once per cell at projection and install. (e) omp purview on tool.use.pre receives an empty tool_name and always allows: fix the omp dispatch so the arm judges. (f) One sign for the artifact: 'stance manifest' (the gloss's word and the path's); rename EnrollmentManifest/enrollment wording, label it 'stance manifest' in the install log instead of 'mechanism', and have the three workers take the manifest path from the one constant instead of spelling it.",
+      "static": [
+        "packages/forge/src/adapters/claude/hooks.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/canon/src/hook-cells.ts",
+        "packages/canon/test/hook-rule-boundary.test.ts",
+        "packages/canon/test/harness-independence.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "MODEL.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/hook-cell.ts",
+        "packages/forge/src/core/enrollment.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/project/projection-facts.test.ts",
+        "packages/forge/test/project/fixtures-facts/hooks/fact-probe.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/claude-enforcement-scope.md",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/test/deploy/**",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/canon/src/manifest.ts"
+      ],
+      "accept": [
+        "live claude: a bare session dispatching planner is not judged, and planner's own close is (quote the judged payload)",
+        "live claude: a text-only --agent mav turn is judged at Stop, and a tool turn's judged payload contains its closing text",
+        "a fixture persona composing no guard gets no stance manifest entry for any guard and is not judged; no manifest lists deploy-drift-notice",
+        "projecting through an adapter with enforcing hooks and no scopedRel prints one warning per guard naming the cell and the harness",
+        "omp: a mav tool.use.pre envelope reaches purview with the real tool_name and is judged (stand-in judge)",
+        "git grep -n 'EnrollmentManifest\\|enrollment manifest' -- packages prints nothing, and the workers contain no literal stance/manifest.json"
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3QBFZX8JMA6VHK12AEAN8KW",
+      "closure": {}
+    }
+  }
+}
