@@ -3,9 +3,8 @@
 //
 // PURE INTERFACE — no implementation. `capabilities/note/` realizes it over the
 // notebook records. A note's title is its name and addresses it; what a note
-// blocks is named by plan, unit or concept name, a unit as the view prints it,
-// `u of plan p`, or bare where its name is its own, a concept as `concept c`, or
-// bare where no plan or unit holds its anchor. Every output is the notebook's
+// blocks is named by plan or unit name, a unit as the view prints it,
+// `u of plan p`, or bare where its name is its own. Every output is the notebook's
 // view, rendered text. Where a merge left one title held by more than one note,
 // the view prints each holder's identity beside it as `title (identity <id>)`,
 // and that printed form is the one input addressing one holder.
@@ -21,7 +20,7 @@ export interface NoteInput {
   readonly kind: string;
   readonly topic: string;
   readonly body: string;
-  /** The plans, units and concepts it blocks, by name. */
+  /** The plans and units it blocks, by name. */
   readonly blocks: readonly string[];
 }
 

@@ -217,7 +217,6 @@ export function planHost(from: string = process.cwd()): PlanHost {
           throw new Error(
             'plan add: a unit is pinned as it is added, in its lifecycle’s first state; `plan advance` moves it and `plan revise --repin` re-pins it',
           );
-        read.unruled(concept, 'add');
         const pin = read.pin(concept);
         let proposed: readonly [string, planDomain.Plan] | undefined;
         if (entity === undefined) {
@@ -333,14 +332,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
     bind: (plan, by) =>
       write((read) => {
         const entity = read.resolvePlan(plan);
-        planDomain.bind(
-          read.store,
-          read.lifecycle.plan,
-          entity,
-          read.owed,
-          read.closure,
-          by,
-        );
+        planDomain.bind(read.store, read.lifecycle.plan, entity, read.owed, by);
         return { plans: [] };
       }),
 

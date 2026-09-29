@@ -124,21 +124,3 @@ export function suspicion(
   }
   return found;
 }
-
-/** Why a unit realizing any of `concepts` may not be authored: an owed ruling
- *  (`owed`, each entity an owed ruling names with the notes naming it) names a
- *  concept of their closure — the first note and concept, by identity, to be
- *  spoken by name — or `undefined` when none does. */
-export function owedInClosure(
-  concepts: Iterable<string>,
-  closure: Closure,
-  owed: ReadonlyMap<string, readonly string[]>,
-): string | undefined {
-  for (const concept of concepts)
-    for (const entity of closure(concept)) {
-      const note = owed.get(entity)?.[0];
-      if (note !== undefined)
-        return `note ${note} blocks concept ${entity}, in the closure of concept ${concept}`;
-    }
-  return undefined;
-}

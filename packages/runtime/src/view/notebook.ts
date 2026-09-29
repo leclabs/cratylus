@@ -35,7 +35,7 @@ export interface Note {
   readonly kind: string;
   readonly topic: string;
   readonly body: string;
-  /** The plans, units and concepts the note blocks. */
+  /** The plans and units the note blocks. */
   readonly blocks: readonly Name[];
 }
 
