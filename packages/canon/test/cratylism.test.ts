@@ -218,6 +218,14 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const { cratylism } = await import(
       '../src/dimensions/engineering-principles/cratylism.js'
     );
+    // Narrow the `Value<O>` union to its bare σ* arm with the corpus's own predicate
+    // (as the leg above does), so the count reads a string without a cast.
+    const { enforcing } = await import('@cratylus/schema');
+    if (enforcing(cratylism)) {
+      throw new Error(
+        'cratylism is declared ENFORCING — this leg counts its bare σ* body',
+      );
+    }
     for (const harness of ['claude', 'omp'] as const) {
       const { files } = await projectPluginSet({
         plugins: [canonPlugin],
