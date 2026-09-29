@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3PZWKYW3MRAYPWA1H1279NE",
+    "entity": "01M3PZT16KYZZ1BJPXNPATN4NZ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3PZT16KYZZ1BJPXNPATN4P0"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T16:27:41.916Z",
+    "reason": "ruled: the identity-face carrier stands; field holds (ENGINE's sign for agent to Role, reused, not coined), port member roleRouting (spells the concept); the unit's intent now names both",
+    "cause": "planner's boundary finding"
+  },
+  "payload": null
+}
