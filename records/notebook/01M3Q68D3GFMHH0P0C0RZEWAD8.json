@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q68D3GFMHH0P0C0RZEWAD8",
+    "entity": "01M3Q68D3GFMHH0P0C0RZEWAD7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T18:18:59.568Z",
+    "reason": "filed beside the path, not chased",
+    "cause": "prime-principle-where-applied assays"
+  },
+  "payload": {
+    "title": "drift-notice shell test resolves a stale bin",
+    "kind": "idea",
+    "topic": "tests",
+    "body": "packages/canon/test/support/guardrail/test-deploy-drift-notice.sh reads Object.values(p.bin)[0] from packages/forge/package.json, which has had no bin since the command moved to the unscoped cratylus package, so the script fails before any assertion and nothing runs it in the gate.",
+    "blocks": []
+  }
+}
