@@ -5,11 +5,10 @@ version-packages` consumes them all into version bumps and CHANGELOGs.
 
 ## What is actually configured
 
-- **6 workspace packages carry the `@cratylus` scope; 5 of them publish.**
-  `@cratylus/canon` is listed in `ignore` — it is this repository's own corpus rather than a
-  library, nothing depends on it, and it depends on `forge`, so publishing it would drag the
-  projector into every consumer's tree. `@cratylus/tooling` is `private: true` and a different
-  scope entirely, so changesets never sees it.
+- **5 workspace packages carry the `@cratylus` scope, and 5 packages publish.** The scoped
+  five are `canon`, `forge`, `runtime`, `schema` and `tooling`. The published five are the
+  unscoped `cratylus` (the command) and every scoped package but `@cratylus/tooling`, which is
+  `private: true`. `ignore` is empty.
 - **`linked` and `fixed` are both empty.** Nothing forces the five to move in lockstep;
   each bumps only when a changeset names it. Note that every inter-package dependency is
   `workspace:*`, which publishes as an EXACT pin — so a package that does not bump keeps

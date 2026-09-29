@@ -261,9 +261,6 @@ importers:
       '@cratylus/forge':
         specifier: workspace:*
         version: link:../forge
-      '@cratylus/memory':
-        specifier: workspace:*
-        version: link:../memory
       '@cratylus/runtime':
         specifier: workspace:*
         version: link:../runtime
@@ -311,28 +308,6 @@ importers:
       tsx:
         specifier: ^4.19.0
         version: 4.22.4
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vitest:
-        specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.19.21)
-
-  packages/memory:
-    dependencies:
-      '@cratylus/runtime':
-        specifier: workspace:*
-        version: link:../runtime
-    devDependencies:
-      '@cratylus/tooling':
-        specifier: workspace:*
-        version: link:../tooling
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.21
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

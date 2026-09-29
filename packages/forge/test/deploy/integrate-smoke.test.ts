@@ -4,13 +4,13 @@
 // Proves the whole loop end-to-end on a clean, hermetic fixture — NON-VACUOUS at
 // every leg (a capability provably RAN, not merely that a process spawned):
 //
-//   project → deploy → a DEPLOYED thin-shim invokes `cratylus memory <verb>`
+//   project → deploy → a DEPLOYED thin-shim invokes `cratylus note <verb>`
 //   AND `cratylus tap <verb>` on the target, and the capability's effect is
 //   READ BACK.
 //
-//   L0 project : a skill declaring runtime:{capability:'memory'} emits a THIN SHIM
-//                `scripts/memory.mjs` (a forwarder to the host `cratylus
-//                memory` CLI — the canonical shape canon's runtime-shim gate
+//   L0 project : a skill declaring runtime:{capability:'note'} emits a THIN SHIM
+//                `scripts/note.mjs` (a forwarder to the host `cratylus
+//                note` CLI — the canonical shape canon's runtime-shim gate
 //                pins; here the shim is consumed + PROVEN to drive the real bin).
 //   L1 deploy  : `placeSkillsLocal` copies the skill dir mode-preserving into a
 //                TEMP target `.claude/` — the shim's exec bit survives.
@@ -18,14 +18,15 @@
 //                is a PRECONDITION, not a stage — installing packages on a host is
 //                npm's job, never deploy's — so it is plain test setup here, and
 //                nothing about it is an assertion on forge.
-//   L3 memory  : the DEPLOYED shim `… memory encode`→`read` round-trips a record —
-//                the store file on disk carries the body, the read returns the id.
+//   L3 note    : the DEPLOYED shim `… note capture`→`show` round-trips a note in a
+//                scratch git repository — the notebook on disk carries the body,
+//                and the show returns it by title.
 //   L4 tap     : `cratylus tap install`→`status`(attached)→`uninstall` merges a
 //                passive logger into a temp settings.json and removes it with ZERO
 //                RESIDUE (the target file restored, our tap id gone).
 //
-// HERMETIC: a scoped temp target/host-root/home, `GIT_CONFIG_GLOBAL=/dev/null`, and
-// `--home`/`--settings` passed explicitly — the operator's real `~/.agents`,
+// HERMETIC: a scoped temp target/host-root/repository, `GIT_CONFIG_GLOBAL=/dev/null`,
+// and `--settings` passed explicitly — the operator's real `~/.agents`,
 // `~/.claude`, and every global prefix are NEVER touched — nothing here runs npm.
 //
 // This test does the REAL pack+install, so it is heavier than the unit suites;
@@ -38,6 +39,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   statSync,
   symlinkSync,
   writeFileSync,
@@ -83,8 +85,8 @@ const root = tmp('s10-integrate-smoke-');
 const projectSkills = join(root, 'project', 'skills');
 const targetClaude = join(root, 'target', '.claude');
 const hostRoot = join(root, 'installed');
-const agentHome = join(root, 'agent-home');
-const SKILL = 'memory-face';
+const scratchRepo = join(root, 'scratch-repo');
+const SKILL = 'note-face';
 const TAP_SKILL = 'event-tap-face';
 const NONCE = `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -121,7 +123,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     'skills',
     SKILL,
     'scripts',
-    'memory.mjs',
+    'note.mjs',
   );
   // The tap leg's counterpart. The capability word is `eventTap` (the runtime's
   // own `CAPABILITIES` key, which canon's `event-tap` cell declares), so the
@@ -193,24 +195,22 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     process.env.PATH = `${binDir}:${process.env.PATH ?? ''}`;
   }, 180_000);
 
-  it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → cratylus memory', () => {
+  it('L0 project: a runtime:{capability:note} skill emits an executable thin shim → cratylus note', () => {
     const skillDir = join(projectSkills, SKILL);
     const scriptsDir = join(skillDir, 'scripts');
     mkdirSync(scriptsDir, { recursive: true });
     writeFileSync(
       join(skillDir, 'SKILL.md'),
-      '# memory\nA runtime-capability skill (memory), projected with a thin shim.\n',
+      '# note\nA runtime-capability skill (note), projected with a thin shim.\n',
       'utf-8',
     );
-    const shimSrc = join(scriptsDir, 'memory.mjs');
-    writeFileSync(shimSrc, thinShim('memory'));
+    const shimSrc = join(scriptsDir, 'note.mjs');
+    writeFileSync(shimSrc, thinShim('note'));
     chmodSync(shimSrc, 0o755);
 
     const emitted = readFileSync(shimSrc, 'utf-8');
-    // Falsifier: the shim drives the host `<CLI_BIN> memory` CLI, forwarding argv.
-    expect(emitted).toMatch(
-      new RegExp(`spawnSync\\('${CLI_BIN}', \\['memory',`),
-    );
+    // Falsifier: the shim drives the host `<CLI_BIN> note` CLI, forwarding argv.
+    expect(emitted).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['note',`));
     expect(emitted).toContain('...process.argv.slice(2)');
     // THIN — no bundled impl, no cross-package import.
     expect(emitted).not.toContain('@cratylus/');
@@ -257,45 +257,64 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     }
   });
 
-  it('L3 memory leg: the DEPLOYED shim round-trips a record (encode→read), proven on disk', () => {
-    // encode via the deployed shim → the shim spawns `cratylus memory encode`.
-    const id = execFileSync(
-      'node',
-      [
-        deployedShim,
-        'encode',
-        '--home',
-        agentHome,
-        '--session',
-        's10-smoke',
-        '--body',
-        NONCE,
-      ],
-      { env: hermeticEnv, encoding: 'utf-8' },
-    ).trim();
-    // A ULID (Crockford base32, 26 chars) — proves encode actually minted + ran.
-    expect(id).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
+  it('L3 note leg: the DEPLOYED shim round-trips a note (capture→show), proven on disk', () => {
+    // A scratch repository with one commit — the note capability is
+    // repository-scoped, and the repository is the working directory.
+    mkdirSync(scratchRepo, { recursive: true });
+    const git = (...args: string[]): string =>
+      execFileSync(
+        'git',
+        [
+          '-c',
+          'user.name=smoke',
+          '-c',
+          'user.email=smoke@example.com',
+          '-c',
+          'commit.gpgsign=false',
+          ...args,
+        ],
+        { cwd: scratchRepo, env: hermeticEnv, encoding: 'utf-8' },
+      );
+    git('init', '-q', '-b', 'main');
+    git('commit', '-q', '--allow-empty', '-m', 'root');
 
-    // NON-VACUOUS: the record persisted to the on-disk EPISODIC store.
-    const store = join(agentHome, 'EPISODIC.jsonl');
-    expect(existsSync(store)).toBe(true);
-    const persisted = readFileSync(store, 'utf-8');
-    expect(persisted).toContain(NONCE);
-    expect(persisted).toContain(id);
+    const runNote = (...args: string[]): string =>
+      execFileSync('node', [deployedShim, ...args], {
+        cwd: scratchRepo,
+        env: hermeticEnv,
+        encoding: 'utf-8',
+      });
 
-    // read back via the deployed shim → the same record surfaces with our id+body.
-    const out = execFileSync(
-      'node',
-      [deployedShim, 'read', '--home', agentHome, '--json'],
-      { env: hermeticEnv, encoding: 'utf-8' },
+    // capture via the deployed shim → the shim spawns `cratylus note capture`.
+    runNote(
+      'capture',
+      NONCE,
+      '--kind',
+      'ask',
+      '--topic',
+      'smoke',
+      '--body',
+      `body of ${NONCE}`,
+      '--author',
+      'smoke',
+      '--reason',
+      'integrate-smoke',
+      '--cause',
+      'integrate-smoke',
     );
-    const record = out
-      .trim()
-      .split('\n')
-      .map((l) => JSON.parse(l) as { id: string; body: string })
-      .find((r) => r.id === id);
-    expect(record).toBeDefined();
-    expect(record?.body).toBe(NONCE);
+
+    // NON-VACUOUS: the note persisted to the repository's notebook on disk.
+    const notebook = join(scratchRepo, 'records', 'notebook');
+    const stored = readdirSync(notebook).map((f) =>
+      readFileSync(join(notebook, f), 'utf-8'),
+    );
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toContain(`body of ${NONCE}`);
+
+    // show back via the deployed shim → the same note surfaces by its title.
+    const shown = runNote('show', NONCE);
+    expect(shown).toContain(`note: ${NONCE}`);
+    expect(shown).toContain(`body: body of ${NONCE}`);
   }, 60_000);
 
   it('L4 event-tap leg: the DEPLOYED shim drives install→status(attached)→uninstall with ZERO RESIDUE', () => {

@@ -15,8 +15,7 @@
 
 import { createRequire } from 'node:module';
 import { runCli as runProjector } from '@cratylus/forge/cli';
-import { runtimePlugin as memory } from '@cratylus/memory';
-import { CAPABILITIES } from '@cratylus/runtime/loader';
+import { CAPABILITIES } from '@cratylus/runtime/capability';
 import { runCli as runCapability } from '@cratylus/runtime/main';
 
 // The corpus is imported, not resolved. It is a declared dependency of this package
@@ -48,7 +47,7 @@ const verb = argv[2];
 // keyspace is the runtime's own, so a capability added there is routed here without
 // this file learning its name.
 if (verb !== undefined && (CAPABILITIES as readonly string[]).includes(verb)) {
-  await runCapability(argv.slice(2), { plugins: [memory] });
+  await runCapability(argv.slice(2));
 } else {
   await runProjector(argv, { defaultCorpus: canon, version: VERSION });
 }

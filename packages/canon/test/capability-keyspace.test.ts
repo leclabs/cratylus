@@ -40,8 +40,8 @@
 //      tomorrow as `ports/foo.ts` is convicted until it joins the keyspace, and a
 //      second hand-written exception cannot be quietly added, because there is no
 //      list to add it to. The prefix must also be EARNED — see leg 1c.
-//   2. PLUGIN `name:` ≡ THE SIGN'S KEBAB REGISTER (2 controls). `memory`'s plugin
-//      is `name: 'memory'`; the event-tap capability's is `name: 'event-tap'`.
+//   2. PLUGIN `name:` ≡ THE SIGN'S KEBAB REGISTER (1 control). The event-tap
+//      capability's plugin is `name: 'event-tap'`.
 //   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
 //      declaring a capability is a control). One-directional on purpose: a
 //      capability with no skill cell is legal — `memory` is now such a capability
@@ -68,9 +68,7 @@ const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
 /** The dirs whose `src/**` may declare a `runtimePlugin`. `test/` is EXCLUDED: a
  *  test double naming itself `fake-tap` is MENTIONING a plugin, not shipping one —
  *  the same use/mention line `command-veracity.test.ts` draws. */
-const PLUGIN_SRC_ROOTS = ['memory', 'runtime'].map((p) =>
-  join(packages, p, 'src'),
-);
+const PLUGIN_SRC_ROOTS = ['runtime'].map((p) => join(packages, p, 'src'));
 
 // ── The two registers of one sign ───────────────────────────────────────────────
 // The map is NOT minted here. `forge/src/core/anatomy-body.ts`'s `dimensionField`
@@ -298,7 +296,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
       ]),
     );
     expect(SITES.map((s) => s.name)).toEqual(
-      expect.arrayContaining(['event-tap', 'memory']),
+      expect.arrayContaining(['event-tap']),
     );
     // The subset axis rests on the skill cells that declare a capability; two is
     // the floor below which a dark read could pass it vacuously.
@@ -341,10 +339,10 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── AXIS 2 — plugin `name:` ≡ the sign's kebab register ────────────────────────
   it("a runtime plugin's `name:` is the kebab register of the capability it provides", () => {
-    // Non-vacuous: both sites really do claim a capability (a site claiming none
+    // Non-vacuous: the site really does claim a capability (a site claiming none
     // would satisfy the loop by having nothing to iterate).
     expect(SITES.flatMap((s) => s.provides)).toEqual(
-      expect.arrayContaining(['eventTap', 'memory']),
+      expect.arrayContaining(['eventTap']),
     );
     expect(pluginNameViolations(SITES)).toEqual([]);
   });

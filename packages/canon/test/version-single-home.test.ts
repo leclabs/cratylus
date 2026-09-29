@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
 
 /** Every package whose source declares a `VERSION`, and the manifest that defines it. */
-const DECLARERS = ['runtime', 'memory', 'forge'] as const;
+const DECLARERS = ['runtime', 'forge'] as const;
 
 function manifestVersion(pkg: string): string {
   return JSON.parse(
@@ -38,7 +38,6 @@ function hardcodesVersion(src: string): boolean {
 function sourceOf(pkg: string): string {
   const rel = {
     runtime: 'src/main.ts',
-    memory: 'src/cli.ts',
     forge: 'src/cli/index.ts',
   }[pkg] as string;
   return readFileSync(join(repoRoot, 'packages', pkg, rel), 'utf8');

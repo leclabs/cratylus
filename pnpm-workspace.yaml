@@ -1,9 +1,10 @@
 # Node workspace members live directly under packages/ (one dir = one package). The
 # scope carries the mark (@cratylus) so package names carry only the concern:
-# forge (projection), runtime (mechanism), memory (a runtime strategy), schema
-# (the shapes), invoke (the run-time entry), and canon (@cratylus/canon) — the
-# culture corpus, itself a TS workspace
-# member: TS modules under src/ are the source, markdown is a projection.
+# forge (projection), runtime (mechanism), schema (the shapes), tooling (this
+# repository's own dev helpers), and canon (@cratylus/canon) — the culture corpus,
+# itself a TS workspace member: TS modules under src/ are the source, markdown is a
+# projection.
+# The one unscoped member is cli, published as `cratylus` — the command.
 packages:
   - "packages/*"
 
