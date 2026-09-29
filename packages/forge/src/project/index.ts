@@ -494,6 +494,8 @@ export async function projectPluginSet(
 
   let agents = 0;
   const agentNames: string[] = [];
+  // Each RENDERED agent, once — what a launch spec composes from.
+  const rendered: Agent[] = [];
   // Composed vectors, kept so the BINDINGS can be derived from what the agents
   // actually compose — after the fold, since a folded body is the real one.
   const composed: { name: string; agent: Agent }[] = [];
@@ -566,7 +568,7 @@ export async function projectPluginSet(
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
-    composed.push({ name, agent });
+    rendered.push(agent);
     agents++;
   }
 
@@ -654,7 +656,7 @@ export async function projectPluginSet(
   // carry identity in their own agent def and compose nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
-    for (const s of renderLaunchSurface(agentNames)) {
+    for (const s of renderLaunchSurface(rendered)) {
       const path = join(
         ENFORCING_STAGE_DIR,
         s.scope ?? SESSION_SCOPE,

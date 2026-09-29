@@ -198,14 +198,15 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude / codex                 | omp                                                   |
-| -------------------------- | ------------------------ | ------------------------------ | ----------------------------------------------------- |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`           | `agent/agents/<name>.md`                              |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively) |
-| hook registration          | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                             |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                           |
-| `--config` overlay         | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml` (per persona)                       |
-| launcher                   | `scopedRel(file, scope)` | —                              | `agent/omp-agent` (0755, ONE for every persona)       |
+| Artifact                   | Port op                  | claude / codex                 | omp                                                          |
+| -------------------------- | ------------------------ | ------------------------------ | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`           | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                                    |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                                  |
+| persona badge module       | `scopedRel(file, scope)` | —                              | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | —                              | `agent/omp-agent` (0755, ONE for every persona)              |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
@@ -252,6 +253,14 @@ a directory of their own. A harness whose hook surface is a PROGRAM rather than 
 loader scans an `extensions/` dir, or a directory named in a launch spec's `--config` overlay) has no
 fragment to merge, so its adapter implements `scopeActivatedSurface` and `launchSurface`, and the
 projection stages one artifact per scope for deploy to place.
+
+`launchSurface` takes the composed agents, each once, because on omp the identity a launch carries
+includes what the operator sees of it: the **persona badge**, one `cratylus-persona-badge.ts` module
+per persona in that persona's own `extensions/`. On `session_start`, in a top-level interactive
+session only (`ctx.hasUI` and `ctx.agent.kind === "main"`, never a subagent), it sets the status line
+to the persona's mark emoji and name, or the name alone for an agent with no provenance. The text is
+baked at projection, because omp calls a launched persona `main` and the module cannot ask; it carries
+no hue, because omp strips color from an extension's status text.
 
 ### `cratylus explain [agent]`
 
