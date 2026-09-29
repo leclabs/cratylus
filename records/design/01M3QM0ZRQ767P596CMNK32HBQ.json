@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QM0ZRQ767P596CMNK32HBQ",
+    "entity": "01M3NBKGAEMWHE61KYRA703KGR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QEZJ5DBE4G7XJ98JPVT6V1"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T22:19:36.599Z",
+    "reason": "assay: dormant layout keys were activated and replaced the visible layout; the one-badge key was unnamed; the named-preset advice lost the layout",
+    "cause": "live assay of persona badge at 5e9dc1c5"
+  },
+  "payload": {
+    "anchor": "persona badge",
+    "gloss": "the running persona's name and mark emoji shown in the harness status line so the operator sees which persona a session runs; projected from the agent cell into that persona's own launch scope, so placement names the persona and nothing asks at runtime; shown only in the top-level interactive session, never a subagent's; its own module, apart from guardrails and session hooks; carries no hue where the harness strips color (omp strips it from extension status text) On Claude Code the status line is one host-owned command with no segments: install sets a badge status line only where the host has none, and otherwise offers to wrap the host's command, never replacing it. On Claude Code, placement still decides which personas have a badge, and the harness's own status-line input names the persona running (agent.name); the status line asks nothing else. On omp an extension's status appears inside the status line only where the host's layout includes omp's 'status' segment (absent from omp's default layout; otherwise it renders beneath the status line), so install adds 'status' to the host's statusLine.leftSegments, writing omp's default left list plus 'status' when the host has none, appending it to the host's own list otherwise, never reordering or removing a segment, and reporting what it changed. On omp, where install makes 'status' live it also turns off omp's separate row of extension statuses beneath the editor (showHookStatus: false) unless the host set it, since the status segment then draws every extension's status inline, so the badge renders once. Install changes the layout only where the host's visible layout would look exactly as before plus the badge: a host that set its own layout keys under a preset that ignores them, or chose any preset by name (default included), is left as it is and told what to write, including that a custom layout must list that preset's own segments too.",
+    "factors": []
+  }
+}
