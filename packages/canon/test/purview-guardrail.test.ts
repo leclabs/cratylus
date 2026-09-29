@@ -350,6 +350,12 @@ describe('purview guardrail — the claude form of the scope (agent_type only)',
   });
 });
 
+// The stubbed model client below records into this global, because the emitted module is
+// loaded from disk and can share nothing with the test but the process.
+declare global {
+  var __purviewOmpJudged: string[] | undefined;
+}
+
 // THE OMP FORM OF THE EVERY-TOOL ARM. `tool.use.pre` binds omp's `tool_call` with no tool
 // name, so the module the adapter emits has to read the name off the event. It wrote an
 // EMPTY `tool_name` instead, which the worker reads as "nothing to judge" and allows — so
@@ -431,9 +437,8 @@ describe('purview guardrail — omp’s tool.use.pre reaches the worker with the
   return { content: [{ type: 'text', text: 'VERDICT: PASS' }] };
 }\n`,
     );
-    (globalThis as { __purviewOmpJudged?: string[] }).__purviewOmpJudged = [];
-    stubbed = (globalThis as { __purviewOmpJudged: string[] })
-      .__purviewOmpJudged;
+    globalThis.__purviewOmpJudged = [];
+    stubbed = globalThis.__purviewOmpJudged;
 
     const loaded = (await import(file)) as {
       default: (pi: unknown) => void;
