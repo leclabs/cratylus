@@ -64,11 +64,12 @@ directory fields are resolved against `import.meta.url` at definition time and c
 `defineAgentPlugin`. Canon reaches the projector as **data** — the corpus is passed to it as a
 plugin — and no cell imports it.
 
-One cell does import the runtime: `hooks/memory-consolidation-nudge.ts` takes `CLI_BIN` from
-`@cratylus/runtime/bin-name`, because it emits shell that invokes that binary and the alternative is
-repeating the literal inside a compiler-invisible string. This breaches the architecture's
-highest-ranked property — meaning and mechanism never referencing each other — and a test currently
-requires the breach. It is recorded in [ARCHITECTURE.md](../../ARCHITECTURE.md), not explained away.
+No cell imports the runtime either. A skill names the capability it routes to — one of `eventTap`,
+`design`, `plan` and `note`, the four built into the runtime — as `runtime: { capability: … }`,
+never its implementation, and a cell that emits shell invoking the binary carries it as a fact the
+projector substitutes at emission. That is the architecture's highest-ranked property — meaning
+and mechanism never referencing each other — and [ARCHITECTURE.md](../../ARCHITECTURE.md) records
+how it came to hold.
 
 ## Tests
 

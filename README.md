@@ -53,7 +53,7 @@ behavior, which would be a lie. Only one of those two uncertainties is reducible
 | package                                   | concern                                                          |
 | ----------------------------------------- | ---------------------------------------------------------------- |
 | [`@cratylus/canon`](./packages/canon)     | **meaning** — the corpus of signified agents, skills and rules   |
-| [`@cratylus/runtime`](./packages/runtime) | **mechanism** — capability ports and the runtime plugin contract |
+| [`@cratylus/runtime`](./packages/runtime) | **mechanism** — four built-in capabilities, each behind its port |
 | [`@cratylus/forge`](./packages/forge)     | **projection** — the deterministic map onto one harness          |
 | [`@cratylus/schema`](./packages/schema)   | the shapes a corpus authors against                              |
 | [`cratylus`](./packages/cli)              | **the CLI** — composes the three above; the one command          |

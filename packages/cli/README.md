@@ -30,10 +30,11 @@ cratylus deploy --check       # is the deployed tree still what the corpus says?
 cratylus explain <filter>     # where each resolved value came from
 ```
 
-Capability verbs route to the runtime and are what deployed skills invoke:
+Capability verbs route to the runtime and are what deployed skills invoke. Its four
+capabilities — `eventTap`, `design`, `plan` and `note` — are built into it, so there
+is no provider to install or declare:
 
 ```sh
-cratylus memory encode --name mav --body '…'
 cratylus eventTap status
 cratylus design show
 cratylus design define 'record id' --gloss '…' --author … --reason … --cause …
@@ -49,9 +50,9 @@ cratylus note capture 'a title' --kind … --topic … --body '…' --blocks 'u1
 `cratylus deploy --harness <h>` (and `cratylus install`, which deploys) writes into it
 the corpus's parts — the event vocabulary under `events` and each capability's
 `configuration` — and its own harness's stanza, `harnesses.<h>.native`: that harness's
-name for each event it can fire. It leaves the operator's keys (`capabilities`,
-`resolveFrom`) and every other harness's stanza as it found them, so deploying for
-Claude and then for omp leaves both harnesses' names in the same file:
+name for each event it can fire. It leaves every other harness's stanza as it found
+it, so deploying for Claude and then for omp leaves both harnesses' names in the same
+file:
 
 ```jsonc
 {
@@ -67,23 +68,3 @@ A command that needs a harness's native names asks for that harness's stanza and
 refuses when it has none, naming `cratylus install --harness <h>` (works on a bare
 host) and `cratylus deploy --harness <h>` (from a project). `cratylus eventTap` asks
 for `claude`'s.
-
-## Choosing different capability providers
-
-The bundled set is `@cratylus/memory`. To use another, declare it in
-`~/.cratylus.json`:
-
-```jsonc
-{
-  "resolveFrom": "/path/to/the/install/site",
-  "capabilities": ["@acme/my-memory"],
-}
-```
-
-A provider is an ordinary package exporting `runtimePlugin`. `resolveFrom` names
-the directory whose `node_modules` the specifiers resolve against — under an
-isolated store a globally installed bin cannot see a package it does not declare,
-so resolving from the install site is what lets a third-party strategy load.
-
-**Declaring any capability replaces the bundled set** rather than merging with it.
-List `@cratylus/memory` alongside yours if you want both.
