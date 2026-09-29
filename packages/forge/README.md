@@ -212,16 +212,16 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude                                  | omp                                                          |
-| -------------------------- | ------------------------ | --------------------------------------- | ------------------------------------------------------------ |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                    | `agent/agents/<name>.md`                                     |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`                         | `../.agents/skills/<name>` (one copy — read natively)        |
-| hook registration          | `hooksFile` (merged)     | `settings.json`                         | — (no hook config exists)                                    |
-| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json` | `<scope>/stance/manifest.json` (per persona)                 |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/<file>`                                  |
-| persona badge module       | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
-| `--config` overlay         | `scopedRel(file, scope)` | —                                       | `<scope>/omp.yml` (per persona)                              |
-| launcher                   | `scopedRel(file, scope)` | —                                       | `agent/omp-agent` (0755, ONE for every persona)              |
+| Artifact                   | Port op                  | claude                                       | omp                                                          |
+| -------------------------- | ------------------------ | -------------------------------------------- | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                         | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                              | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json`                              | — (no hook config exists)                                    |
+| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json`      | `<scope>/stance/manifest.json` (per persona)                 |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                                            | `<scope>/extensions/<file>`                                  |
+| persona badge module       | `scopedRel(file, scope)` | —                                            | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                                            | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | `personas/_session/claude-agent` (0755, ONE) | `agent/omp-agent` (0755, ONE for every persona)              |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
@@ -278,6 +278,18 @@ NATIVELY, for every launch, so the N+1 fan-out the old profile carrier required 
 persona stopped being a profile. Assuming the staging layout was every harness's destination is what
 once deployed 16 omp skills into `~/.omp/skills` — a directory that harness never scans — while
 reporting success.
+
+**Persona commands.** `launcherFile` on the port names the launcher the adapter's `launchSurface`
+emits in the SESSION scope: `omp-agent` on omp, `claude-agent` on Claude Code
+(`personas/_session/claude-agent`, which starts `claude --agent <persona>` and refuses a name that
+is no persona with one stderr line, exit 2). `cratylus install --link-personas` links
+`~/.local/bin/<persona>` to it, through `placePersonaCommands` in `deploy/persona-commands.ts`: it
+plans first (`planPersonaCommands`), places only the names that are free, and never unlinks before
+it links, so a regular file, another program's link, a link to the launcher that no record names, and
+the other harness's launcher are all left as they were and reported as blocked. The links it placed are
+recorded as `personaLinks` in the deploy manifest, and `removePersonaCommands` removes exactly the
+recorded links that still resolve to the launcher. Without the flag, install prints what it would place
+and asks on a terminal.
 
 `scopedRel` (renamed from `enforcingRel`) places more than mechanism now: the SAME per-scope map also
 places the launch spec's overlay and launcher, because both belong beside the modules they wire, not in

@@ -129,3 +129,24 @@ export {
   type ModelRoleEntry,
   modelRoleLine,
 } from './model-roles.js';
+
+// The persona commands: a command named after each installed persona, linked into the
+// user's bin dir to the harness's launcher — never over anything this install did not
+// place, and removed only as recorded.
+export {
+  describePersonaCommands,
+  describePersonaRemoval,
+  PERSONA_BIN_REL,
+  type PersonaCommandsOpts,
+  type PersonaCommandsReport,
+  type PersonaLauncher,
+  type PersonaLink,
+  type PersonaLinkState,
+  type PersonaRemoval,
+  type PersonaRemovalReport,
+  type PersonaRemovalState,
+  personaLauncherOf,
+  placePersonaCommands,
+  planPersonaCommands,
+  removePersonaCommands,
+} from './persona-commands.js';

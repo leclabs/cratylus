@@ -252,6 +252,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // itself, and asserts the negatives (an existing entry, a flow mapping, a dry run
   // leave the bytes untouched) — it polices no corpus.
   'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
+  // drives the persona-command placement API and `runInstall` over a tmp HOME whose bin
+  // dir it fills itself with a regular file, a foreign link, an unrecorded identical link
+  // and the other harness's launcher, and asserts every one is left as it was — the
+  // never-overwrite negatives are its fixtures, and it polices no corpus.
+  'forge/deploy/persona-commands.test.ts': 'BEHAVIORAL',
   // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
   // negative (`.claude` absent) so the old hardcode cannot pass it.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',

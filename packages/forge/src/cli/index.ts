@@ -193,11 +193,16 @@ export async function runCli(
       'corpus package to install (default: the bundled one)',
     )
     .option('--dry-run', 'print what would change; write nothing')
+    .option(
+      '--link-personas',
+      'link a command named after each installed persona into ~/.local/bin, without asking',
+    )
     .action(
       async (opts: {
         harness?: string;
         plugin?: string;
         dryRun?: boolean;
+        linkPersonas?: boolean;
       }) => {
         process.exit(
           await runInstall({
@@ -205,6 +210,7 @@ export async function runCli(
             plugin: opts.plugin,
             corpus: cliOpts.defaultCorpus,
             dryRun: opts.dryRun,
+            linkPersonas: opts.linkPersonas,
             home: homedir(),
           }),
         );

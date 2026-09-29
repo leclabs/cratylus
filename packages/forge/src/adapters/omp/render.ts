@@ -1587,6 +1587,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
     ...ompLaunchSurface(agents.map((a) => a.name)),
     ...ompPersonaBadgeExtensions(agents),
   ],
+  launcherFile: OMP_LAUNCHER_FILE,
   // The SESSION scope reads as itself OR as omission, so a caller may pass a
   // projection's `scope` field straight through. Requiring the translation put the
   // same `=== SESSION_SCOPE` conditional at every call site, and a call site that

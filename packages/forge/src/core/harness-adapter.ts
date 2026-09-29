@@ -484,6 +484,18 @@ export interface HarnessAdapter {
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
   /**
+   * The filename of this harness's GENERIC PERSONA LAUNCHER — the file
+   * {@link launchSurface} emits at the {@link SESSION_SCOPE}, one for every persona,
+   * which resolves the persona to launch from its own invoked name.
+   *
+   * Declared on the port because install's persona commands link to it: a command
+   * named after a persona is a symlink to this file, and where it landed is the
+   * adapter's own answer (`scopedRel(launcherFile, SESSION_SCOPE)`), never a path
+   * install spells. Absent ⇒ this harness has no launcher, so no persona command
+   * can be linked to it.
+   */
+  readonly launcherFile?: string;
+  /**
    * How this harness routes a MODEL by the ROLE an agent holds — the table that
    * lets a projected definition name its position ({@link Agent.holds}) and leaves
    * the host to choose the model. The projection names no model, ever.

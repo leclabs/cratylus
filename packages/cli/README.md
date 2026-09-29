@@ -133,3 +133,24 @@ a flow mapping (`{…}`), a scalar, or carries an anchor or alias, install says 
 edit the file and still succeeds; an agent whose role has no entry then runs on the
 `default` role (`modelRoles.default`). `cratylus deploy`
 never touches `config.yml`.
+
+## Running a persona by its name
+
+`cratylus install` can make each installed persona a command. With `--link-personas` it links
+`~/.local/bin/<persona>` to the harness's launcher (`~/.omp/agent/omp-agent` on omp,
+`~/.claude/personas/_session/claude-agent` on Claude Code), so `planner -p 'hi'` starts a session as
+the planner persona with the persona's identity as its system prompt. Every other word on the command
+line is the harness's own flag.
+
+Without the flag, install prints one `would place` line per persona and how to add them. On a terminal
+it asks first, and answers no by default; a piped or scripted install places none. It says when
+`~/.local/bin` is not on `PATH`. `--dry-run` places nothing either way.
+
+Install never overwrites. A name that is taken by a file, by another program's link, or by a link to
+the launcher that nothing recorded is left as it is and reported as `blocked`, with what is there. A
+persona has ONE command across harnesses: whichever install links a name first owns it, the other
+harness's install reports it as blocked by the first harness's launcher, and no suffixed name is made.
+The links an install placed are recorded in the harness's deploy manifest
+(`.forge/deploy-manifest.json`, `personaLinks`); a second install reports them as `present` and
+changes nothing. There is no `cratylus uninstall` yet, so a host that wants them gone removes the
+links by hand.

@@ -48,10 +48,20 @@ export interface DeployManifest {
   kinds: Record<string, KindRecord>;
   // settings.json hook commands this tool registered (the `hooks` kind).
   hookCommands: string[];
+  // The persona commands this harness's install linked into the user's bin dir,
+  // as paths relative to the user's HOME (`.local/bin/<persona>`). The bin dir is
+  // shared with every other program on the host, so a link is ours only if it is
+  // written here — never because it happens to point at our launcher.
+  personaLinks: string[];
 }
 
 export function emptyManifest(): DeployManifest {
-  return { version: MANIFEST_VERSION, kinds: {}, hookCommands: [] };
+  return {
+    version: MANIFEST_VERSION,
+    kinds: {},
+    hookCommands: [],
+    personaLinks: [],
+  };
 }
 
 /** Read the record for a deploy root. A missing, unreadable, or malformed
@@ -73,6 +83,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       version: MANIFEST_VERSION,
       kinds: parsed.kinds ?? {},
       hookCommands: parsed.hookCommands ?? [],
+      personaLinks: parsed.personaLinks ?? [],
     };
   } catch {
     return emptyManifest();

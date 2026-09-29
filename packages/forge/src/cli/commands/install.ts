@@ -22,6 +22,7 @@
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { createInterface } from 'node:readline/promises';
 import pc from 'picocolors';
 import {
   HARNESS_NAMES,
@@ -31,7 +32,15 @@ import {
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import { addModelRoles, modelRoleLine } from '../../deploy/index.js';
+import {
+  addModelRoles,
+  describePersonaCommands,
+  modelRoleLine,
+  personaLauncherOf,
+  placePersonaCommands,
+  planPersonaCommands,
+  treeNames,
+} from '../../deploy/index.js';
 import {
   type ProjectablePlugin,
   discoverFragments,
@@ -53,6 +62,15 @@ export interface InstallCmdOpts {
   corpus?: AgentPlugin;
   dryRun?: boolean;
   cwd?: string;
+  /** Link a command named after each installed persona into `~/.local/bin` without
+   *  asking (`--link-personas`). Without it, an interactive install asks first and
+   *  a non-interactive one places none and says how to. */
+  linkPersonas?: boolean;
+  /** Asked before linking, when `linkPersonas` is absent. Default: a yes/no prompt
+   *  on a terminal, and `false` where stdin or stdout is not one. */
+  confirm?: (question: string) => Promise<boolean>;
+  /** `PATH`, for the on-PATH report. Default: the process's. */
+  pathEnv?: string;
 }
 
 /** Which harnesses this host actually has, by the home each adapter declares.
@@ -185,10 +203,87 @@ export async function runInstall(
         opts.home,
         opts.dryRun ?? false,
       );
+      // Then the persona commands: install's own step too, after the launcher they
+      // link to has been placed.
+      await linkPersonaCommands(
+        adapter,
+        treeNames(
+          'agent',
+          {
+            agentsDir: resolve(stage, 'agents'),
+            skillsDir: resolve(stage, 'skills'),
+          },
+          adapter.agentExt,
+        ),
+        opts,
+      );
     }
     return rc;
   } finally {
     rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Say what commands named after the installed personas would be placed in the user's
+ * bin dir, and place them when asked — by `--link-personas`, or by the operator at a
+ * terminal. Anywhere else nothing is placed and the report says how to.
+ *
+ * The launcher a command links to is the harness's, and every OTHER harness's is
+ * passed along so a name already taken by one is reported as held by it.
+ */
+async function linkPersonaCommands(
+  adapter: HarnessAdapter,
+  personas: readonly string[],
+  opts: InstallCmdOpts & { home: string },
+): Promise<void> {
+  const self = personaLauncherOf(opts.home, adapter);
+  if (self === undefined || personas.length === 0) return;
+  const common = {
+    home: opts.home,
+    harnessDir: join(opts.home, adapter.home),
+    self,
+    personas,
+    peers: HARNESS_NAMES.filter((n) => n !== adapter.name).flatMap((n) => {
+      const peer = personaLauncherOf(opts.home, adapterByName(n));
+      return peer ? [peer] : [];
+    }),
+    ...(opts.pathEnv !== undefined ? { pathEnv: opts.pathEnv } : {}),
+  };
+  const dry = opts.dryRun ?? false;
+  const say = (lines: readonly string[]): void => {
+    for (const line of lines) process.stdout.write(`${line}\n`);
+  };
+
+  if (opts.linkPersonas) {
+    say(describePersonaCommands(placePersonaCommands({ ...common, dry }), dry));
+    return;
+  }
+  const plan = planPersonaCommands(common);
+  say(describePersonaCommands(plan, true));
+  const free = plan.links.filter((l) => l.state === 'place').length;
+  if (free === 0) return;
+  const confirm = opts.confirm ?? askOnTerminal;
+  if (
+    !dry &&
+    (await confirm(`Link ${free} persona command(s) into ${plan.binDir}?`))
+  ) {
+    say(describePersonaCommands(placePersonaCommands(common), false));
+    return;
+  }
+  say(['  none placed — pass --link-personas to link them']);
+}
+
+/** A yes/no question on the terminal; `false` — no answer given — where stdin or
+ *  stdout is not one, which is what keeps a piped or scripted install from
+ *  placing anything it was not told to. */
+async function askOnTerminal(question: string): Promise<boolean> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) return false;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    return /^y(es)?$/i.test((await rl.question(`${question} [y/N] `)).trim());
+  } finally {
+    rl.close();
   }
 }
 

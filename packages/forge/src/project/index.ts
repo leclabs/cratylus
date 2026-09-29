@@ -649,8 +649,9 @@ export async function projectPluginSet(
   // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
   // scopes appear here: an artifact that NAMES one persona is that persona's
   // (omp's overlay), and one that resolves a persona at RUN time belongs to the
-  // session and is emitted once (omp's launcher). Optional: claude
-  // carries identity in its own agent def and composes nothing here.
+  // session and is emitted once (omp's launcher, and claude's — which starts
+  // `claude --agent <persona>` so a persona has a command by its own name).
+  // Optional: an adapter with no launcher composes nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(rendered)) {

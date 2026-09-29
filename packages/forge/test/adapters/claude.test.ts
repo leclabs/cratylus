@@ -10,11 +10,25 @@
 // matter of COMPOSITION: a guard is listed for exactly the personas composing what it
 // binds, and a cell that binds nothing is never listed.
 
-import { join, posix } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
 import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, posix } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  CLAUDE_LAUNCHER_FILE,
+  CLAUDE_LAUNCHER_SCRIPT,
   claudeAgentRel,
   claudeHarnessAdapter,
+  claudeLaunchSurface,
 } from '../../src/adapters/claude/render.js';
 import {
   STANCE_MANIFEST,
@@ -173,8 +187,10 @@ describe('the claude projection emits the stance manifests', () => {
 
   it('stages a stance manifest for the bound persona alone, beside the settings it complements', async () => {
     const { tree } = await project(claudeHarnessAdapter);
-    const staged = tree.files.filter((f) =>
-      f.path.startsWith(`${ENFORCING_STAGE_DIR}/`),
+    const staged = tree.files.filter(
+      (f) =>
+        f.path.startsWith(`${ENFORCING_STAGE_DIR}/`) &&
+        !f.path.endsWith(`/${CLAUDE_LAUNCHER_FILE}`),
     );
     expect(staged.map((f) => f.path)).toEqual([
       join(ENFORCING_STAGE_DIR, 'bound', STANCE_MANIFEST),
@@ -209,12 +225,120 @@ describe('the claude projection emits the stance manifests', () => {
     const paths = tree.files.map((f) => f.path);
     expect(paths).toContain('hooks/fixture-notice/notice.sh');
     expect(paths.some((p) => p.startsWith('hooks/fixture-guard/'))).toBe(false);
-    expect(paths.some((p) => p.startsWith(`${ENFORCING_STAGE_DIR}/`))).toBe(
-      false,
-    );
+    expect(
+      paths.filter(
+        (p) =>
+          p.startsWith(`${ENFORCING_STAGE_DIR}/`) &&
+          !p.endsWith(`/${CLAUDE_LAUNCHER_FILE}`),
+      ),
+    ).toEqual([]);
     const settings = JSON.parse(
       tree.files.find((f) => f.path === 'settings.json')?.content ?? '{}',
     );
     expect(Object.keys(settings.hooks)).toEqual(['SessionStart']);
+  });
+});
+
+describe('the claude persona launcher', () => {
+  const plugin: ProjectablePlugin = {
+    name: 'fixture-stance',
+    manifest: FIXTURE_MANIFEST,
+    hooks: join(here, 'fixtures-stance', 'hooks'),
+    agents: join(here, 'fixtures-stance', 'agents'),
+  };
+
+  it('is staged once, in the session scope and executable, when the set has agents', async () => {
+    const tree = await projectPluginSet({
+      plugins: [plugin],
+      adapter: claudeHarnessAdapter,
+    });
+    const staged = tree.files.filter((f) =>
+      f.path.endsWith(`/${CLAUDE_LAUNCHER_FILE}`),
+    );
+    expect(staged.map((f) => [f.path, f.executable])).toEqual([
+      [join(ENFORCING_STAGE_DIR, SESSION_SCOPE, CLAUDE_LAUNCHER_FILE), true],
+    ]);
+    expect(claudeLaunchSurface([])).toEqual([]);
+  });
+
+  // Runs the shipped bytes: the launcher is shell, and what matters is what it hands
+  // `claude`, so a stub `claude` records its argv and the launcher is invoked the two
+  // ways it is documented — by a link named after the persona, and by name as `$1`.
+  describe('run under a stub claude', () => {
+    let home: string;
+    beforeEach(() => {
+      home = mkdtempSync(join(tmpdir(), 'claude-launcher-'));
+      const launcher = join(
+        home,
+        '.claude',
+        claudeHarnessAdapter.scopedRel?.(CLAUDE_LAUNCHER_FILE, SESSION_SCOPE) ??
+          '',
+      );
+      mkdirSync(dirname(launcher), { recursive: true });
+      writeFileSync(launcher, CLAUDE_LAUNCHER_SCRIPT, { mode: 0o755 });
+      mkdirSync(join(home, '.claude', 'agents'), { recursive: true });
+      writeFileSync(join(home, '.claude', claudeAgentRel('mav')), '# mav\n');
+      mkdirSync(join(home, 'bin'), { recursive: true });
+      writeFileSync(
+        join(home, 'bin', 'claude'),
+        '#!/bin/sh\nprintf "%s\\n" "$@" > "$(dirname "$0")/argv"\n',
+        { mode: 0o755 },
+      );
+      for (const name of ['mav', 'nosuch']) {
+        symlinkSync(launcher, join(home, 'bin', name));
+      }
+      symlinkSync(launcher, join(home, 'bin', CLAUDE_LAUNCHER_FILE));
+    });
+    afterEach(() => rmSync(home, { recursive: true, force: true }));
+
+    const run = (command: string, ...args: string[]) =>
+      spawnSync(join(home, 'bin', command), args, {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PATH: `${join(home, 'bin')}:${process.env.PATH}`,
+        },
+      });
+    const argv = () =>
+      readFileSync(join(home, 'bin', 'argv'), 'utf8')
+        .trimEnd()
+        .split('\n');
+
+    it('starts the persona a link is named after, passing every other word to claude', () => {
+      const r = run('mav', '-p', 'hi', '--model', 'haiku');
+      expect(r.status).toBe(0);
+      expect(argv()).toEqual([
+        '--agent',
+        'mav',
+        '-p',
+        'hi',
+        '--model',
+        'haiku',
+      ]);
+    });
+
+    it('starts the persona named as its first argument when invoked by its own name', () => {
+      const r = run(CLAUDE_LAUNCHER_FILE, 'mav', '-p', 'hi');
+      expect(r.status).toBe(0);
+      expect(argv()).toEqual(['--agent', 'mav', '-p', 'hi']);
+    });
+
+    it('refuses a name that is no persona with one stderr line naming it, exit 2', () => {
+      const r = run('nosuch', '-p', 'hi');
+      expect(r.status).toBe(2);
+      expect(r.stderr.trimEnd().split('\n')).toHaveLength(1);
+      expect(r.stderr).toContain('nosuch');
+      expect(existsSync(join(home, 'bin', 'argv'))).toBe(false);
+    });
+
+    it('refuses a persona named with a path, and a bare invocation, exit 2', () => {
+      const traversal = run(CLAUDE_LAUNCHER_FILE, '../agents/mav');
+      expect(traversal.status).toBe(2);
+      expect(traversal.stderr).toContain('../agents/mav');
+      const bare = run(CLAUDE_LAUNCHER_FILE);
+      expect(bare.status).toBe(2);
+      expect(bare.stderr).toContain('usage');
+      expect(existsSync(join(home, 'bin', 'argv'))).toBe(false);
+    });
   });
 });

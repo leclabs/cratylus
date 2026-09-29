@@ -11,7 +11,10 @@ export {
 } from './events.js';
 // The anatomy→claude-code Target/SKILL projection.
 export {
+  CLAUDE_LAUNCHER_FILE,
+  CLAUDE_LAUNCHER_SCRIPT,
   type ResolvedSkill,
+  claudeLaunchSurface,
   agentToClaudeMd,
   skillToClaudeMd,
   agentBody,
