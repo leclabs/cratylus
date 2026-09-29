@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3NNXJ2637FPK7WZHK4MWF2C",
+    "entity": "01M3MPKMA9PZ9461097F0WDCCP",
+    "operation": "retract",
+    "supersedes": [
+      "01M3MPKMA9PZ9461097F0WDCCQ"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T04:14:12.550Z",
+    "reason": "no capability needs a session any more (capability-set), so no route line can hide one",
+    "cause": "capability-set closed"
+  },
+  "payload": null
+}

@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NNXJ4DGX0KB7YMBXE3G75W",
+    "entity": "01M3NCQZSM2CAWX1H4FHNQJGST",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NCQZSM2CAWX1H4FHNQJGSV"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T04:14:12.621Z",
+    "reason": "its memory-session clause is moot: the memory capability and session scope are removed",
+    "cause": "capability-set closed"
+  },
+  "payload": {
+    "title": "codex parity",
+    "kind": "idea",
+    "topic": "codex",
+    "body": "Bring the codex projection to parity with claude and omp. Seen in the 0.3.0 verification: codex has no preload field, so skills reach its agents only as a required-reading list with relative paths (skills/<name>/SKILL.md, no anchor to ~/.codex); and this host's codex deployment predates the current release (no note skill, no design or plan scripts). A follow-up for later, not now.",
+    "blocks": []
+  }
+}

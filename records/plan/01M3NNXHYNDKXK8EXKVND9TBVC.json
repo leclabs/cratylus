@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NNXHYNDKXK8EXKVND9TBVC",
+    "entity": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NM90WYYFZV1YDCV9TE3C0D"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T04:14:12.437Z",
+    "reason": "every unit completed and accepted against capability",
+    "cause": "capability-set terminal"
+  },
+  "payload": {
+    "name": "capability-set",
+    "realizes": [
+      "01M3NK67ET848PWDE5M474EV55"
+    ],
+    "state": "closed"
+  }
+}
