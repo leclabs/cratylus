@@ -1,0 +1,58 @@
+{
+  "envelope": {
+    "id": "01M3NF607Z3DG819PDHW9PZ8H9",
+    "entity": "01M3NF2G34MBJDYS3F78HBMW4D",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NF2G34MBJDYS3F78HBMW4E"
+    ],
+    "author": "planner",
+    "time": "2026-09-29T02:16:29.183Z",
+    "reason": "memory is removed, not fixed: the reader is scoped to design, plan, note and eventTap",
+    "cause": "nico re-cut 2026-09-28 via Main: memory removed, not fixed; kernel held for ruling"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "flag-reader",
+      "intent": "**Wave 2.** Realizes `verb flags`. The declaration the concept names must say, for each flag a verb takes, whether that flag takes a value, and one reader in the verb-flags home reads every capability's arguments against that declaration. This unit depends on `event-tap-verb-flags` because it rewrites the files that unit left: `capabilities/event-tap/dispatch.ts` and its test.\n\nThe defect: no declaration says whether a flag takes a value, so each parser guesses. A flag followed by a token that does not begin with `--` takes that token as its value, so a switch swallows the next token. `cratylus plan revise u --plan p --repin -x …` reads `-x` as `--repin`'s value, and the attempted flag is never refused. The memory assay of 2026-09-28 found the same class there: `memory drain --completed-only -x` drained the log. Memory is being removed, so it is out of scope here.\n\nCensus at f3e50565 (re-derive before citing):\n- Declarations. `VerbFlags` (`packages/runtime/src/verb-flags.ts`) maps each verb to a list of flag names. It is declared at `VERBS` in `capabilities/{design,plan,note,event-tap}/dispatch.ts`, and at `INVOCATION` in `capabilities/plan/argv.ts`.\n- Parsers. `parseArgv` (`capabilities/plan/argv.ts:32`) serves design, plan and note; `parseFlags` (`capabilities/event-tap/dispatch.ts:66`) serves eventTap.\n- Switches, the flags whose value is never read, measured by their readers: `plan`'s `repin`, read as `args.flags.has('repin')`. Every other declared flag of these four capabilities takes a value.\n\nChange:\n1. `VerbFlags` states, for each flag a verb takes, whether it takes a value. It is still declared once beside the verb, and the refusal still lists every flag the verb takes.\n2. The home owns one reader of an argv tail against one verb's declaration. It returns the positionals and each flag's values in order, and refuses in one refusal, through the home, every flag the verb does not take, single-dash tokens included as today. The reader's rules:\n   - A flag that takes a value is given as `--flag value` or `--flag=value`. It takes the next token unless that token begins with `--`, so `-` and `-5` are values. Given bare, it holds `''`, as the domain reader does today. It may be repeated.\n   - A flag that takes no value never takes the next token, so a following `-x` is read as the attempted flag it is and refused. Given with `=value`, it is refused through the home rather than having its value dropped.\n3. design, plan, note and eventTap read their arguments through the reader, and `parseArgv` and `parseFlags` are deleted. `one`, `many`, `subject`, `invocation` and `verbOf` may stay, reading the reader's result.\n4. Tests go in existing files, with no new file. In `plan.test.ts`, `revise … --repin -x` is refused with the home's text and nothing is written. The `design`, `note` and `event-tap` tests pass with their declarations in the new shape.\n5. `packages/runtime/README.md`, in its verb-flags paragraph and its `./verb-flags` row, says a verb declares whether each flag takes a value and that a flag taking none never takes the next token. `.changeset/flag-reader.md` names `@cratylus/runtime` and `cratylus`.\n\nNot in this unit:\n- the kernel's `parseArgs` in `packages/runtime/src/dispatch.ts`, held for the operator's ruling on the kernel;\n- `packages/memory`, which is to be removed.",
+      "static": [
+        "`cratylus design show 'verb flags'` at f3e50565, and the operator's re-cut of 2026-09-28 (via Main): memory is removed, and the kernel is held.",
+        "`packages/runtime/src/verb-flags.ts` and `packages/runtime/src/capabilities/plan/argv.ts` at f3e50565: the home and the domain reader.",
+        "`packages/runtime/src/capabilities/event-tap/dispatch.ts` at f3e50565 (`parseFlags`, `VERBS`).",
+        "`packages/runtime/test/verb-surface.ts`: `refusal`, the contract a refused write keeps."
+      ],
+      "deps": [
+        "01M3ND9SCFG8EB5T1RK3T05ZDQ"
+      ],
+      "outputs": [
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/test/design.test.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/flag-reader.md"
+      ],
+      "accept": [
+        "`git grep -nE \"function (parseArgv|parseFlags)\\b\" -- packages/runtime/src/capabilities` prints nothing (measured at f3e50565: capabilities/plan/argv.ts:32 and capabilities/event-tap/dispatch.ts:66).",
+        "`pnpm --filter @cratylus/runtime test -- design plan note event-tap` passes, with a `plan.test.ts` leg in which `revise <unit> --plan <p> --repin -x`, with `--author`, `--reason` and `--cause`, is refused with the home's text for `plan`, `revise` and `['-x']`, and nothing is written.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `R=$PWD; d=$(mktemp -d); git -C \"$d\" init -q; cd \"$d\"; node \"$R/packages/cli/dist/cratylus.js\" plan revise u --plan p --repin -x --author a --reason r --cause c` exits 1; its stderr contains `does not take -x`; and `git -C \"$d\" status --porcelain` prints nothing.",
+        "`pnpm --filter @cratylus/runtime typecheck` and `pnpm --filter @cratylus/runtime typecheck:test` pass.",
+        "`grep -q \"takes no value\" packages/runtime/README.md` exits 0.",
+        "`grep -q '\"@cratylus/runtime\":' .changeset/flag-reader.md && grep -q '\"cratylus\":' .changeset/flag-reader.md` exits 0, and `grep -q '@cratylus/memory' .changeset/flag-reader.md` exits 1."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "version": "01M3NCQZF141ZRXKZF7HEZC9N3",
+      "closure": {}
+    }
+  }
+}

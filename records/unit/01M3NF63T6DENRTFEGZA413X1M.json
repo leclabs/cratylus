@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3NF63T6DENRTFEGZA413X1M",
+    "entity": "01M3NDFZMDD1GHWXV99D0TMJ1Q",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NF3A720RQQ90K1YHYRABQS"
+    ],
+    "author": "planner",
+    "time": "2026-09-29T02:16:32.838Z",
+    "reason": "held for the operator's ruling on the plugin kernel",
+    "cause": "nico re-cut 2026-09-28 via Main: memory removed, not fixed; kernel held for ruling"
+  },
+  "payload": null
+}

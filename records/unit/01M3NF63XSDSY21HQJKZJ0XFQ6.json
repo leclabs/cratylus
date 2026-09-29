@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3NF63XSDSY21HQJKZJ0XFQ6",
+    "entity": "01M3ND9S9NG1VAGFRTTSW3EM80",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NED1ADJEAAK9MCV5MA2F9A"
+    ],
+    "author": "planner",
+    "time": "2026-09-29T02:16:32.953Z",
+    "reason": "memory is removed, not fixed; its work is discarded",
+    "cause": "nico re-cut 2026-09-28 via Main: memory removed, not fixed; kernel held for ruling"
+  },
+  "payload": null
+}
