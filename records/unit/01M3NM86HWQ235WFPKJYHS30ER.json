@@ -1,0 +1,93 @@
+{
+  "envelope": {
+    "id": "01M3NM86HWQ235WFPKJYHS30ER",
+    "entity": "01M3NM43S7VH6R0WESVRZ223EZ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NM5EX5S1M3TKG57T3ZSHNE"
+    ],
+    "author": "planner",
+    "time": "2026-09-29T03:45:04.060Z",
+    "reason": "apply nico's ruling: no rule about when ports are kept; every remaining port stays",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "plan": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "spec": {
+      "name": "built-in-capabilities",
+      "intent": "**Wave 1.** Realizes `capability` in the runtime. The four capabilities are built in and known when the runtime is built: nothing is discovered, registered or loaded, and nothing is scoped to a session. It depends on `sessionless-shims`, after which forge no longer imports `SESSION_SCOPED`, and on `memory-removal`, after which the memory package and the CLI's `plugins` argument are gone, so the memory port and the plugin kernel have no user left.\n\nCensus at 63c5d9c3 (re-derive before citing):\n- `packages/runtime/src/capability.ts` declares `SESSION_SCOPED` over `{memory, eventTap, heartbeat, design, plan, note}` and derives `CAPABILITIES` from it.\n- `loader.ts` holds `RuntimeHost`, `capabilitiesOf`, `isCapability`, `UnknownCapabilityError`, `CapabilityPort`, `KNOWN_CAPABILITY_PACKAGES = ['@cratylus/memory']`, `discoverConfigured`, `discover` and `bootstrap`. `dispatch.ts` holds `dispatch`, `parseArgs`, `verbsOf`, `VerbArgs` and `DispatchResult`. `plugin.ts` holds `RuntimePlugin` and `defineRuntimePlugin`.\n- `ports/memory.ts` is `MemoryStrategy`. `ports/heartbeat.ts` and `capabilities/heartbeat/{index,period}.ts` are routed, and nothing binds them.\n- `main.ts` routes `eventTap`, `design`, `plan` and `note` directly, then falls to `bootstrap()` + `dispatch()` through `RunCliOpts.plugins`. `capabilities/event-tap/index.ts` exports a `runtimePlugin` that nothing registers.\n- Provider keys: `runtime-config.ts` reads `capabilities` and `resolveFrom` only for `discoverConfigured`. `packages/forge/src/deploy/runtime-config.ts` writes them and carries the operator's values over, and `.changeset/runtime-config.md` says so. `bin-name.ts` reads neither key; its only residue is the comment at :46.\n- Packaging: `package.json` exports `./loader`, `./dispatch` and `./ports/memory` (tsup has entries for `loader`, `dispatch` and `ports/memory`); its description names the RuntimePlugin face and its keywords include `plugin`. README: the RuntimePlugin section, the subpath rows, and 'ahead of the discovered dispatch'.\n- Tests: `test/kernel.test.ts`; the provider legs of `test/runtime-config.test.ts`; `capabilities: []` in `test/event-tap.test.ts:50`. In canon, `src/manifest.ts` has `RUNTIME_CAPABILITIES` with 6 members, `test/capability-keyspace.test.ts` parses `SESSION_SCOPED` and has the plugin-name leg (`PLUGIN_SRC_ROOTS` memory and runtime, `pluginSites`) and memory/heartbeat controls, and `test/gate-convicts.test.ts` has the row `runtime/kernel.test.ts`.\n- Comments naming deleted things: `bin-name.ts:46`; `ulid.ts:6,12`; the provisional-mailbox port, store and test (`ports/heartbeat.ts`, `loader.ts`, `plugin.ts`, `heartbeat.test.ts`); `capabilities/event-tap/{claude,dispatch}.ts` (kernel, plugin); `capabilities/{design,plan,note}/index.ts` ('discovered dispatch', `runtimePlugin`); `ports/event-tap.ts:9`; `runtime-config.ts:1-21`; `tsup.config.ts:3-8`.\n\nBuild:\n1. `capability.ts`: `CAPABILITIES = ['eventTap', 'design', 'plan', 'note'] as const`, with `Capability` its member type, and no scope table. `@cratylus/runtime/capability` keeps exporting both names, because the CLI reads `CAPABILITIES` from it.\n2. `main.ts` routes each member of `CAPABILITIES` to its own verb surface through one table typed over `Capability`, so a member without a route does not compile. `eventTap` prints its JSON result; `design`, `plan` and `note` print their view; a refusal exits 1 with `cratylus: <message>`. A first word that is not a member exits 1 with a refusal naming the four. `runCli(argv)` takes no options, and there is no host, bootstrap or generic dispatch. The help line says capability, not plugin.\n3. Delete `loader.ts`, `dispatch.ts`, `plugin.ts`, `ports/memory.ts`, `ports/heartbeat.ts`, `capabilities/heartbeat/` and `test/kernel.test.ts`; the exports `./loader`, `./dispatch` and `./ports/memory` and their tsup entries; and `runtimePlugin` and `claudeHost` in `event-tap/index.ts`. The `.` barrel becomes the events plus the event-tap, design, plan and note ports.\n4. Provider keys: `RuntimeConfig` loses `capabilities` and `resolveFrom`, and liveness is `events`, `harnesses` or `configuration`. Forge's emitter neither writes nor carries them. `.changeset/runtime-config.md` drops its clause about leaving them.\n5. Every remaining port stays: `event-tap` (the Claude strategy), `design`, `plan`, `note` and `provisional-mailbox`. Only `ports/memory.ts` and `ports/heartbeat.ts` go (ruled). The provisional mailbox stays outside the keyspace, and only its comments change. Neither the README nor any comment states a rule about when ports are kept.\n6. Comments, `package.json` description and keywords, `tsup.config.ts` and the runtime README describe what is. The subpath table matches `exports`. The domain section says the three ship inside the runtime, without any discovered dispatch.\n7. Tests:\n   - A new `test/main.test.ts`, BEHAVIORAL in gate-convicts: `runCli` routes each member to its surface (for example `design show` in a scratch repository exits 0), and refuses a non-member with exit 1 and stderr naming `eventTap`, `design`, `plan` and `note`.\n   - `runtime-config.test.ts` loses the provider legs and keeps the vocabulary, harness and configuration legs.\n   - The `event-tap.test.ts` fixture loses `capabilities`.\n   - `capability-keyspace.test.ts` reads `CAPABILITIES` from `capability.ts` and drops the plugin-name leg, which has no subject once plugins are gone. It keeps the port⇄keyspace biconditional and the subset and same-set legs over the four.\n   - The canon manifest's `RUNTIME_CAPABILITIES` is the four.\n   - gate-convicts swaps the `kernel` row for the `main` row.\n8. `.changeset/built-in-capabilities.md` names `@cratylus/runtime`, `@cratylus/forge`, `@cratylus/canon` and `cratylus`. It is breaking: the removed subpaths, `RuntimePlugin`, the provider keys and the `heartbeat` capability. It names no `@cratylus/memory`.",
+      "static": [
+        "`cratylus design show capability` and `cratylus design show 'runtime config'` at 63c5d9c3: the runtime config keeps the corpus's parts and each harness's stanza.",
+        "`packages/runtime/src/{capability,loader,dispatch,plugin,main,index,runtime-config}.ts` and `packages/runtime/src/capabilities/event-tap/index.ts`: the kernel and the route.",
+        "`packages/runtime/package.json` `exports`, `packages/runtime/tsup.config.ts` `entry`, `packages/runtime/README.md` § Subpaths and § The three domains.",
+        "`packages/forge/src/deploy/runtime-config.ts:75-280` and `.changeset/runtime-config.md`: the writer of the provider keys.",
+        "`packages/canon/test/capability-keyspace.test.ts` (whole file), `packages/canon/src/manifest.ts:195-228`, `packages/canon/test/gate-convicts.test.ts` REGISTRY.",
+        "`packages/runtime/test/verb-surface.ts` and `packages/runtime/test/design.test.ts`: how a surface is driven in a scratch repository."
+      ],
+      "deps": [
+        "01M3NM43GH37MFK75G8DNY1N4W",
+        "01M3NM43KD9C46QNGM89MRDE08"
+      ],
+      "outputs": [
+        "packages/runtime/src/capability.ts",
+        "packages/runtime/src/loader.ts",
+        "packages/runtime/src/dispatch.ts",
+        "packages/runtime/src/plugin.ts",
+        "packages/runtime/src/ports/memory.ts",
+        "packages/runtime/src/ports/heartbeat.ts",
+        "packages/runtime/src/capabilities/heartbeat/index.ts",
+        "packages/runtime/src/capabilities/heartbeat/period.ts",
+        "packages/runtime/src/main.ts",
+        "packages/runtime/src/index.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/bin-name.ts",
+        "packages/runtime/src/ulid.ts",
+        "packages/runtime/src/ports/event-tap.ts",
+        "packages/runtime/src/ports/provisional-mailbox.ts",
+        "packages/runtime/src/capabilities/provisional-mailbox/store.ts",
+        "packages/runtime/src/capabilities/event-tap/index.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/claude.ts",
+        "packages/runtime/src/capabilities/design/index.ts",
+        "packages/runtime/src/capabilities/plan/index.ts",
+        "packages/runtime/src/capabilities/note/index.ts",
+        "packages/runtime/test/kernel.test.ts",
+        "packages/runtime/test/main.test.ts",
+        "packages/runtime/test/runtime-config.test.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        "packages/runtime/test/provisional-mailbox.test.ts",
+        "packages/runtime/package.json",
+        "packages/runtime/tsup.config.ts",
+        "packages/runtime/README.md",
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/test/capability-keyspace.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        ".changeset/runtime-config.md",
+        ".changeset/built-in-capabilities.md"
+      ],
+      "accept": [
+        "`git ls-files packages/runtime/src/loader.ts packages/runtime/src/dispatch.ts packages/runtime/src/plugin.ts packages/runtime/src/ports/memory.ts packages/runtime/src/ports/heartbeat.ts packages/runtime/src/capabilities/heartbeat packages/runtime/test/kernel.test.ts` prints nothing (measured at 63c5d9c3: 8 paths).",
+        "`git grep -n -E \"RuntimeHost|RuntimePlugin|defineRuntimePlugin|runtimePlugin|KNOWN_CAPABILITY_PACKAGES|discoverConfigured|bootstrap|UnknownCapabilityError|verbsOf|CapabilityPort|SESSION_SCOPED|AGENT_SESSION_ID|MemoryStrategy|HeartbeatHost|resolveFrom|@cratylus/memory\" -- packages/runtime ':!packages/runtime/CHANGELOG.md'` prints nothing (measured: 162 lines).",
+        "`git grep -n -i -E \"heartbeat|kernel|discovered dispatch|plugin\" -- packages/runtime ':!packages/runtime/CHANGELOG.md'` prints nothing (measured: 200 lines), and `git grep -n -i -w memory -- packages/runtime ':!packages/runtime/CHANGELOG.md' | grep -v -E 'muscle memory|in-memory'` prints nothing.",
+        "`jq -r '.exports | keys[]' packages/runtime/package.json | grep -c -E '^\\./(loader|dispatch|ports/memory)$'` prints 0 (measured: 3).",
+        "`git grep -n -E 'resolveFrom|\\bcapabilities\\??:|\\.capabilities\\b|`capabilities`' -- packages/runtime/src/runtime-config.ts packages/runtime/test/runtime-config.test.ts packages/runtime/test/event-tap.test.ts packages/forge/src/deploy/runtime-config.ts .changeset/runtime-config.md` prints nothing (measured at 63c5d9c3: 35 lines).",
+        "`git grep -n -E \"^\\s+'(memory|heartbeat)',$\" -- packages/canon/src/manifest.ts` prints nothing (measured: lines 216, 218), and `git grep -n -E \"SESSION_SCOPED|defineRuntimePlugin|PLUGIN_SRC_ROOTS|heartbeat|'memory'\" -- packages/canon/test/capability-keyspace.test.ts` prints nothing (measured: 32 lines).",
+        "After `pnpm --filter \"cratylus...\" build`, running `node --input-type=module -e \"const m = await import('@cratylus/runtime/capability'); console.log(m.CAPABILITIES.join(','))\"` from `packages/cli` prints `eventTap,design,plan,note` (measured: `memory,eventTap,heartbeat,design,plan,note`). With the same build, `node packages/cli/dist/cratylus.js heartbeat status 2>&1 | grep -c 'bound on this host'` prints 0 (measured: 1, `runtime: unknown capability 'heartbeat'; bound on this host: memory`), and `node packages/cli/dist/cratylus.js design show` exits 0.",
+        "`pnpm --filter @cratylus/runtime test` passes, including `test/main.test.ts` legs that route each member of `CAPABILITIES` to its surface and refuse a non-member with exit code 1 and stderr naming `eventTap`, `design`, `plan` and `note`.",
+        "`pnpm --filter @cratylus/runtime typecheck`, `pnpm --filter @cratylus/runtime typecheck:test`, `pnpm --filter @cratylus/forge typecheck` and `pnpm --filter cratylus typecheck` pass.",
+        "`pnpm --filter @cratylus/canon test -- capability-keyspace gate-convicts architecture event-vocabulary event-tap-cell bin-name-single-home` passes.",
+        "`pnpm verify` passes.",
+        "`grep -q '\"@cratylus/runtime\":' .changeset/built-in-capabilities.md && grep -q '\"@cratylus/forge\":' .changeset/built-in-capabilities.md && grep -q '\"@cratylus/canon\":' .changeset/built-in-capabilities.md && grep -q '\"cratylus\":' .changeset/built-in-capabilities.md && ! grep -q '@cratylus/memory' .changeset/built-in-capabilities.md` exits 0."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NK67ET848PWDE5M474EV55",
+      "version": "01M3NK67ET848PWDE5M474EV56",
+      "closure": {
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3"
+      }
+    }
+  }
+}
