@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NK67ET848PWDE5M474EV56",
+    "entity": "01M3NK67ET848PWDE5M474EV55",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T03:26:30.874Z",
+    "reason": "the operator ruled memory a palimpsest to be removed, and with it the plugin kernel it alone used, heartbeat (routed, bound by nothing) and per-capability session scope",
+    "cause": "operator ruling 2026-09-28"
+  },
+  "payload": {
+    "anchor": "capability",
+    "gloss": "a programmatic thing the runtime ships and the CLI routes by its name to that capability's own verb surface, whose verbs declare their verb flags: `eventTap`, `design`, `plan` and `note`, each built into the runtime. The set is known when the runtime is built: the runtime discovers no capability providers and loads no plugins, and no capability needs a session.",
+    "factors": [
+      "01M3NCQZF0FH8FXX88A0GE6BV7"
+    ]
+  }
+}

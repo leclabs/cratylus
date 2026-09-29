@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NK67MCGYZGZS3G9PX5HWMW",
+    "entity": "01M3NDJF1H3HY4T6V7FSKTTK06",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NDJF1H3HY4T6V7FSKTTK07"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T03:26:31.052Z",
+    "reason": "operator concurred with the reassessment and split the gate into its own effort",
+    "cause": "operator ruling 2026-09-28"
+  },
+  "payload": {
+    "title": "where the immutability gate binds",
+    "kind": "decision",
+    "topic": "record store",
+    "body": "Ruled by the operator 2026-09-28, for a later effort. The gate binds in the runtime, at every read and write of every domain, by comparing each record with the bytes git history holds for it since it was written; a record altered or removed is reported first in the domain's words and blocks writes until restored. A harness pre-tool refusal of edits to the records is the gate's bound face where a harness can refuse a tool call, a steer elsewhere. The husky pre-commit leg and the CI leg retire as enforcement. Build the runtime check first. Residuals stated, not hidden: a record edited before its first commit has no history to compare; a history rewrite that drops a record is invisible to its own history, and branch protection on the host covers it. The concept 'immutability gate' is amended when that effort starts; its current gloss ('refused at commit and in CI') names a mechanism, which is how the gate came to be repo-local.",
+    "blocks": []
+  }
+}

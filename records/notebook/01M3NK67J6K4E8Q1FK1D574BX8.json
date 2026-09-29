@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3NK67J6K4E8Q1FK1D574BX8",
+    "entity": "01M3NF57BTTEFBNAWWBDM75H5G",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NF57BTTEFBNAWWBDM75H5H"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T03:26:30.982Z",
+    "reason": "answered: the operator ruled the kernel removed with memory and heartbeat; the design's capability concept carries the ruling",
+    "cause": "operator ruling 2026-09-28"
+  },
+  "payload": null
+}
