@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3PP4DR52FF97H5V18MR3CHH",
+    "entity": "01M3PP4DR52FF97H5V18MR3CHG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T13:37:11.941Z",
+    "reason": "one unit carries the whole of pin's amended gloss: drift and suspicion share movement() and #moved, so any split along them is a chain over the same two files",
+    "cause": "pin amended at d68c8d54: drift and suspicion say what moved"
+  },
+  "payload": {
+    "plan": "01M3PP4DR18TPQTTXXNYKES250",
+    "spec": {
+      "name": "what-moved",
+      "intent": "Drift and suspicion say how the concept moved, as the amended pin gloss requires: withdrawn, diverged or amended, and for an amendment which of anchor, gloss and factors differ between the pinned version and the one head, factors named as those added and those removed, or that none differ. pin.ts reports this as a FACT (no response is ever spelled): the Movement for an amendment carries the differing fields, compared between the payload of the pinned version (pin.version, or pin.closure[entity] for a concept beneath) and the payload of the entity's one settled head; factors compare as sets of entities. pin.ts may take the pinned version's payload through a port the caller supplies (reading.ts holds every concept record by id) or any equivalent; diverged, withdrawn and joined are unchanged. reading.ts #moved spells it: fields in the fixed order anchor, gloss, factors joined as an English list ('gloss', 'gloss and factors', 'anchor, gloss and factors'), after 'amended in'; factors followed by their detail in parentheses '(added a, b; removed c)', either part omitted when empty; factors named as the concept is printed now; an amendment with no differing field reads 'amended, nothing differs'. So: 'drifted: u — leaf amended in gloss since pinned', 'leaf amended in factors (added c1; removed base)', 'leaf amended, nothing differs'; suspicion items carry the same detail per concept and stay joined by ', ' ('beneath leaf, base amended in gloss since pinned'). view/plan.ts keeps rendering the given strings; update the LiveUnit.drift/suspicion doc examples. README's 'names its cause and what moved' sentence says an amendment names which of anchor, gloss and factors differ. plan.test.ts: update the existing 'base amended since pinned' expectation and add the cases in accept. Changeset .changeset/drift-says-what-moved.md, '@cratylus/runtime': minor. Census at d68c8d54: computed only in pin.ts (Movement, movement, drift, suspicion), consumed only by reading.ts #moved (the one importer of drift/suspicion), rendered in view/plan.ts lines 258 and 263 and marked via standing() (read by view/design.ts, which reads only presence and is unaffected); literals asserted only in test/plan.test.ts 631-638. dispatch.ts, unit.ts, plan/index.ts, ports/plan.ts and canon skills/plan/skill.ts spell pin (occurs) and are declared outputs for contention only: nothing in them needs to change, and the canon plan skill is outside closure(pin) — do not edit it.",
+      "static": [
+        "packages/runtime/src/capabilities/design/design.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/record-store/fold.ts",
+        "packages/runtime/src/record-store/record.ts",
+        "packages/runtime/src/view/design.ts",
+        ".changeset/delegation-laws.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/plan/pin.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/view/plan.ts",
+        "packages/runtime/README.md",
+        "packages/runtime/test/plan.test.ts",
+        ".changeset/drift-says-what-moved.md",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/unit.ts",
+        "packages/runtime/src/capabilities/plan/index.ts",
+        "packages/runtime/src/ports/plan.ts",
+        "packages/canon/src/skills/plan/skill.ts"
+      ],
+      "accept": [
+        "With the plan.test.ts fixture (u realizes leaf, leaf factors base), after `design amend leaf --gloss above2`, `plan show` prints `drifted: u — leaf amended in gloss since pinned` (u as the unit is printed)",
+        "After `design amend leaf --factors c1` (gloss and anchor carried over), `plan show` prints `leaf amended in factors (added c1; removed base) since pinned`",
+        "After `design amend leaf --gloss above2 --factors base --factors c1`, `plan show` prints `leaf amended in gloss and factors (added c1) since pinned`",
+        "After `design amend leaf --anchor leaf2`, `plan show` prints `leaf2 amended in anchor since pinned`",
+        "After `design amend leaf` changing no field (reason given), `plan show` prints `leaf amended, nothing differs since pinned`",
+        "After `design amend base --gloss moved` under u pinned on leaf, `plan show` prints `suspect: u — beneath leaf, base amended in gloss since pinned` (the existing plan.test.ts assertion of `base amended since pinned` is updated to this)",
+        "Unchanged: a merged divergence still prints `drifted: v — same diverged since pinned`, a retraction of leaf prints `leaf withdrawn since pinned`, a concept new to the closure prints `joined its closure`, and no printed drift or suspicion line carries a response word (repin, revise, re-cut)",
+        "`.changeset/drift-says-what-moved.md` exists with front matter `\"@cratylus/runtime\": minor`",
+        "`grep -n 'anchor, gloss and factors' packages/runtime/README.md` matches",
+        "`pnpm --filter @cratylus/runtime exec vitest run test/plan.test.ts` and `pnpm --filter @cratylus/runtime run typecheck` exit 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHBYF8EJN5TTVED2MTPA",
+      "version": "01M3PNXA20D1FAWFAKJJTE4SY6",
+      "closure": {
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42"
+      }
+    }
+  }
+}

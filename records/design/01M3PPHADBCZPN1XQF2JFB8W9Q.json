@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+    "entity": "01M3MEKHBYF8EJN5TTVED2MTPA",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PNXA20D1FAWFAKJJTE4SY6"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:44:14.507Z",
+    "reason": "the closure a unit stands on can grow by concepts it never pinned; 'added c1' names only the direct factor, never what c1 brings with it, so joining is a movement in its own right. The class predates unit what-moved; this amends the concept, not the artifact's grade",
+    "cause": "assay of what-moved (67b10c43) found suspicion's 'joined' class unnamed by the gloss"
+  },
+  "payload": {
+    "anchor": "pin",
+    "gloss": "a unit's reference to the concept version it realizes, taken when the unit is authored and retaken only by a revise that says so with a reason, never as a side effect of editing the spec; it is taken only when that concept and its whole closure are settled and live. A unit is **drifted** when its pinned version is no longer the concept's only head (the concept was amended, withdrawn or has diverged), and otherwise **suspect** when any other concept in the closure has diverged, been withdrawn or gained a newer version since the pin was taken. Drift and suspicion each say how the concept moved: withdrawn, diverged, or amended, and for an amendment which of its anchor, gloss and factors differ between the pinned version and the one head, factors named as those added and those removed, or that none differ;and suspicion names a concept that joined the closure since the pin, reached through a factor added above it. A retraction in the design never breaks a plan's laws; it drifts the units pinned to it.",
+    "factors": [
+      "01M3MEKGYAW8NGQQ1B25XJQ6KZ",
+      "01M3MEKGZW0N24X571C5XH281J",
+      "01M3MEKH8E3Q8R94A9EFNDE986"
+    ]
+  }
+}

@@ -120,6 +120,9 @@ drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan �
 drifted(unit) ⇒ response ↾ what moved ⟨nothing ⇒ repin · gloss ⇒ repin ∨ revise(unit) ∧ repin, by what the
     new gloss adds ∨ drops · anchor ∨ factors ⇒ revise(unit) ∧ repin · re-cut ⇔ s itself moved ;
     measured : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
+suspect(unit) ⇒ the same response ↾ what moved beneath ⟨the concept that moved is a factor, ¬ the one
+    unit spells ∴ its anchor moving alone ⇒ repin · a factor dropped beneath shows as the concept
+    above it amended in factors⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
 reconcile ⊨ self ⟨reconciliation of plans ∧ units is the architect's alone⟩

@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PPHJ678580MQD3GA7NX27A",
+    "entity": "01M3PP4DR18TPQTTXXNYKES250",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PP6G09BS7W8RDWV4FR6SGZ"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:44:22.471Z",
+    "reason": "its only unit is accepted",
+    "cause": "what-moved completed"
+  },
+  "payload": {
+    "name": "drift-says-what-moved",
+    "realizes": [
+      "01M3MEKHBYF8EJN5TTVED2MTPA"
+    ],
+    "state": "closed"
+  }
+}

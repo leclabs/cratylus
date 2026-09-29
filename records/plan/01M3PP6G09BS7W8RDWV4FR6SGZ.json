@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PP6G09BS7W8RDWV4FR6SGZ",
+    "entity": "01M3PP4DR18TPQTTXXNYKES250",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PP4DR18TPQTTXXNYKES251"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:38:19.785Z",
+    "reason": "planner's single unit judged sound; boundary findings settled (suspect response added to plan skill; a factor leaving the closure shows as the concept above amended in factors)",
+    "cause": "operator approved the follow-up"
+  },
+  "payload": {
+    "name": "drift-says-what-moved",
+    "realizes": [
+      "01M3MEKHBYF8EJN5TTVED2MTPA"
+    ],
+    "state": "bound"
+  }
+}

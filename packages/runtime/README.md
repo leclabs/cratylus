@@ -60,7 +60,9 @@ addresses one holder. A write is all or nothing: it is checked and its view rend
 reaches the repository, so a refusal writes nothing and exits `1` naming the verb that would succeed.
 A view's header says when it includes writes not yet committed. Where no plan is in view, a unit is
 printed with its plan, `u of plan p`, and that form is accepted wherever a unit is named. What
-must be resolved first names its cause and what moved, lists a plan view's own items only, and
+must be resolved first names its cause and what moved — withdrawn, diverged or amended, and for an
+amendment which of anchor, gloss and factors differ from the pinned version, factors named as those
+added and removed, or that none differ — lists a plan view's own items only, and
 never asks of a closed plan's frozen units. When the store itself fails — no repository, a damaged
 stored entry — the capability says so plainly and names what to repair. `plan show <plan>` shows any plan
 whole; a unit's pin is kept by every revise until one says `--repin` with a reason. The plan lifecycle
