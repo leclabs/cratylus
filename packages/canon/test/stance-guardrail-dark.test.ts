@@ -27,9 +27,11 @@
 import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -46,12 +48,16 @@ let worker: string;
 let transcript: string;
 
 /** The guardrail cell projects several files; the worker is the hook entrypoint. */
-function workerSource(): string {
+function workerSource(harness = 'omp'): string {
   const f = stanceGuardrail.workers?.find(
     (x) => x.filename === 'stance-guardrail.sh',
   );
   if (!f) throw new Error('stance-guardrail.sh not found on the cell');
-  return f.content;
+  return resolveWorker(
+    f,
+    projectionFacts(adapterByName(harness)),
+    stanceGuardrail.speech,
+  ).content;
 }
 
 beforeAll(() => {
@@ -322,19 +328,7 @@ describe('STANCE GUARDRAIL — the claude form of the scope (agent_type only)', 
     const dir = join(home, '.claude', 'hooks', 'stance-guardrail');
     mkdirSync(dir, { recursive: true });
     claudeWorker = join(dir, 'stance-guardrail.sh');
-    const template = stanceGuardrail.workers?.find(
-      (x) => x.filename === 'stance-guardrail.sh',
-    );
-    if (!template) throw new Error('stance-guardrail.sh not found on the cell');
-    writeFileSync(
-      claudeWorker,
-      resolveWorker(
-        template,
-        projectionFacts(adapterByName('claude')),
-        stanceGuardrail.speech,
-      ).content,
-      'utf8',
-    );
+    writeFileSync(claudeWorker, workerSource('claude'), 'utf8');
     chmodSync(claudeWorker, 0o755);
     // ONLY `nico` is enrolled: a manifest under the persona root is the whole of it.
     const scope = join(home, '.claude', 'personas', 'nico', 'stance');
@@ -384,5 +378,131 @@ describe('STANCE GUARDRAIL — the claude form of the scope (agent_type only)', 
 
   it('never builds a scope path out of a name that is not one directory', () => {
     expect(runClaude({ agent_type: '../personas/nico' }).stdout).toBe('');
+  });
+});
+
+// WHOSE TEXT, AND WHICH MESSAGE. Two payload facts the claude form depends on, each
+// observed live on Claude Code 2.1.285. A SubagentStop payload names the PARENT's
+// transcript (`transcript_path`) and the subagent's own (`agent_transcript_path`), and the
+// scope it resolves is the subagent's, so the turn judged must be the subagent's. And a Stop
+// payload fires BEFORE the final assistant message reaches the transcript: that message is
+// only in `last_assistant_message`, so a turn that is only text had nothing to judge.
+describe('STANCE GUARDRAIL — what the claude form judges', () => {
+  let claudeWorker: string;
+  let recorded: string;
+  let home: string;
+  const line = (o: unknown) => `${JSON.stringify(o)}\n`;
+  const user = (text: string) =>
+    line({ type: 'user', message: { content: text } });
+  const said = (text: string) =>
+    line({ type: 'assistant', message: { content: [{ type: 'text', text }] } });
+  const tooled = line({
+    type: 'assistant',
+    message: { content: [{ type: 'tool_use', name: 'Agent' }] },
+  });
+
+  const write = (name: string, body: string): string => {
+    const p = join(home, name);
+    writeFileSync(p, body, 'utf8');
+    return p;
+  };
+
+  beforeAll(() => {
+    home = mkdtempSync(join(tmpdir(), 'stance-claude-turn-'));
+    const dir = join(home, '.claude', 'hooks', 'stance-guardrail');
+    mkdirSync(dir, { recursive: true });
+    claudeWorker = join(dir, 'stance-guardrail.sh');
+    writeFileSync(claudeWorker, workerSource('claude'), 'utf8');
+    chmodSync(claudeWorker, 0o755);
+    const scope = join(home, '.claude', 'personas', 'nico', 'stance');
+    mkdirSync(scope, { recursive: true });
+    writeFileSync(
+      join(scope, 'manifest.json'),
+      JSON.stringify({ agent: 'nico', gates: {} }),
+      'utf8',
+    );
+    // A judge that records exactly what it was handed, and passes.
+    recorded = join(home, 'recorded');
+    const judge = join(home, 'recording-judge.sh');
+    writeFileSync(
+      judge,
+      `#!/bin/sh\ncat > ${recorded}\nprintf 'VERDICT: PASS\\n'\n`,
+    );
+    chmodSync(judge, 0o755);
+  });
+
+  const judgedBy = (payload: Record<string, unknown>): string | null => {
+    rmSync(recorded, { force: true });
+    spawnSync('sh', [claudeWorker], {
+      input: JSON.stringify({
+        session_id: `turn-${Math.random()}`,
+        cwd: home,
+        agent_type: 'nico',
+        ...payload,
+      }),
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        STANCE_JUDGE_CMD: `sh ${join(home, 'recording-judge.sh')}`,
+        HOME: home,
+      },
+    });
+    return existsSync(recorded) ? readFileSync(recorded, 'utf8') : null;
+  };
+
+  it('judges a turn that is only text, from the payload, before the transcript holds it', () => {
+    const seen = judgedBy({
+      transcript_path: write('t1.jsonl', user('do it')),
+      last_assistant_message: 'CLOSING-TEXT-ONLY-TURN',
+    });
+    expect(seen).toContain('CLOSING-TEXT-ONLY-TURN');
+  });
+
+  it('judges a tool turn on its close, not on the tools alone', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        't2.jsonl',
+        user('do it') + said('preamble') + tooled,
+      ),
+      last_assistant_message: 'CLOSE-AFTER-THE-TOOLS',
+    });
+    expect(seen).toContain('CLOSE-AFTER-THE-TOOLS');
+  });
+
+  it('does not count the close twice when the transcript already holds it', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        't3.jsonl',
+        user('do it') + said('ALREADY-WRITTEN'),
+      ),
+      last_assistant_message: 'ALREADY-WRITTEN',
+    });
+    expect(seen?.match(/ALREADY-WRITTEN/g)).toHaveLength(1);
+  });
+
+  it('judges the subagent’s transcript, never the parent’s', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        'parent.jsonl',
+        user('op') + said('PARENT-MARKER-TEXT'),
+      ),
+      agent_transcript_path: write(
+        'agent.jsonl',
+        user('dispatch prompt') + said('SUBAGENT-OWN-TEXT'),
+      ),
+    });
+    expect(seen).toContain('SUBAGENT-OWN-TEXT');
+    expect(seen).not.toContain('PARENT-MARKER-TEXT');
+  });
+
+  it('goes dark, rather than falling back to the parent, when the subagent’s transcript is unreadable', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        'parent2.jsonl',
+        user('op') + said('PARENT-MARKER-TEXT'),
+      ),
+      agent_transcript_path: join(home, 'no-such-agent-transcript.jsonl'),
+    });
+    expect(seen).toBeNull();
   });
 });

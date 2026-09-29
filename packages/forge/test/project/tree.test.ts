@@ -67,7 +67,6 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const paths = t.files.map((f) => f.path).sort();
     expect(paths).toEqual([
       'agents/probe.md',
-      'enforcing/probe/stance/manifest.json',
       'hooks/ping/ping.sh',
       'settings.json',
       'skills/greet/SKILL.md',

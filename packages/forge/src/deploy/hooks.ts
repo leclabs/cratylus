@@ -24,6 +24,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
+import { STANCE_MANIFEST } from '../core/enrollment.js';
 // The DEFINING module, never the `core/` surface at large: two tokens are
 // wanted here — the staging dir the projection writes, and the deploy-time
 // self-reference substitution — and both must be the same constant every
@@ -254,6 +255,7 @@ export function placeHooksLocal(
     for (const scope of scopes) {
       const scopeDir = resolvePath(stageRoot, scope);
       const written: string[] = [];
+      const manifests: string[] = [];
       // A scope's artifacts are a TREE, not a flat list. This skipped any
       // directory outright, which silently dropped a persona's `stance/`
       // manifest — the file that says which cells gate that persona. The
@@ -291,13 +293,20 @@ export function placeHooksLocal(
           chmodSync(dest, statSync(src).mode);
         }
         written.push(rel);
+        if (file === STANCE_MANIFEST) manifests.push(rel);
       }
       if (written.length === 0) continue;
       // Testimony under the SCOPE, not under a hook id: one module carries every
       // cell's registrations, so no single cell owns it and a per-cell record would
       // claim the same file many times. Recorded so it retires with the scope.
       report.written[`${ENFORCING_STAGE_DIR}:${scope}`] = written;
-      log(`  mechanism ${scope} -> ${written.join(', ')}`);
+      // ONE SIGN PER ARTIFACT: the stance manifest is not "mechanism" — on claude it is
+      // the only thing a scope carries — so the log names it as what it is.
+      const modules = written.filter((rel) => !manifests.includes(rel));
+      if (modules.length > 0)
+        log(`  mechanism ${scope} -> ${modules.join(', ')}`);
+      if (manifests.length > 0)
+        log(`  stance manifest ${scope} -> ${manifests.join(', ')}`);
     }
   }
   log(`  hooks copied: ${report.copied}`);

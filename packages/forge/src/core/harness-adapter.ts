@@ -120,7 +120,7 @@ export interface HarnessProjection {
    * MANY, and its scope decides where deploy lands it (`HarnessAdapter.scopedRel`).
    * omp's scope is a DIRECTORY, so the same registrations are emitted once per
    * scope and each copy is correct by placement rather than by a runtime filter;
-   * claude's persona scope holds only the enrollment manifest its workers look for.
+   * claude's persona scope holds only the stance manifest its workers look for.
    */
   readonly scope?: string;
   /**

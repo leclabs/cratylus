@@ -1,3 +1,5 @@
+import { anchorOf } from '@cratylus/schema';
+import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
 
 // stance-guardrail-pre — the BEFORE-THE-CALL twin of `stance-guardrail` (the turn-end
@@ -28,6 +30,9 @@ export const stanceGuardrailPre: HookCell = {
   residue:
     'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
   substrate: 'harness',
+  // Bound by the same composition as its turn-end twin: the stance it enforces is the
+  // one `handoff` declares.
+  binds: { dimension: 'autonomy', value: anchorOf(handoff) },
   order: 1,
   events: ['operator.consult.pre', 'subagent.dispatch.pre'],
   entry: 'stance-guardrail-pre.sh',
@@ -123,7 +128,7 @@ if [ -z "$stance_scope" ]; then
 	case "$named" in '' | */* | . | ..) allow ;; esac
 	stance_scope="$(dirname -- "$HOOKS_ROOT")/{{fact:harness-persona-root}}/$named"
 fi
-manifest="$stance_scope/stance/manifest.json"
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 

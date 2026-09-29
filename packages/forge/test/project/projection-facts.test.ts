@@ -34,6 +34,7 @@ import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
+import { STANCE_MANIFEST } from '../../src/core/enrollment.js';
 import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
@@ -150,6 +151,7 @@ describe('projectionFacts is adapter-relative', () => {
       'harness-name',
       'harness-persona-root',
       'runtime-bin',
+      'stance-manifest',
     ]);
     // EVERY FACT BUT ONE IS NON-EMPTY, and the exception is load-bearing rather
     // than missing: `harness-judge-bin` is EMPTY for a harness that judges
@@ -191,6 +193,11 @@ describe('projectionFacts is adapter-relative', () => {
   it('carries each adapter’s persona root, read back from its own scopedRel', () => {
     expect(claude['harness-persona-root']).toBe('personas');
     expect(omp['harness-persona-root']).toBe('agent/personas');
+  });
+
+  it('carries the stance manifest’s one spelling, the same on both harnesses', () => {
+    expect(claude['stance-manifest']).toBe(STANCE_MANIFEST);
+    expect(omp['stance-manifest']).toBe(STANCE_MANIFEST);
   });
 
   it('carries the drift exit code as the string a shell compares', () => {
@@ -244,6 +251,9 @@ describe('the projector hands its adapter to the worker templates', () => {
     // bytes a worker joins to the harness home name the directory deploy writes.
     expect(declared(claude.probe, 'PERSONA_ROOT')).toBe('personas');
     expect(declared(omp.probe, 'PERSONA_ROOT')).toBe('agent/personas');
+    // One sign for the manifest, on both harnesses, from the one constant.
+    expect(declared(claude.probe, 'STANCE_MANIFEST')).toBe(STANCE_MANIFEST);
+    expect(declared(omp.probe, 'STANCE_MANIFEST')).toBe(STANCE_MANIFEST);
     expect(omp.probe).not.toBe(claude.probe);
   });
 

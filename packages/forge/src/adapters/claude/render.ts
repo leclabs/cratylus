@@ -274,7 +274,7 @@ export const claudeHarnessAdapter: HarnessAdapter = {
     `sh "$HOME/.claude/hooks/${anchor}/${workerFilename}"`,
   agentRel: claudeAgentRel,
   // A PERSONA'S SCOPE is a directory beside `agents/`, and it holds the persona's
-  // enrollment manifest. Claude registers its mechanism once, in `settings.json`,
+  // stance manifest. Claude registers its mechanism once, in `settings.json`,
   // so the scope is not where the hook LIVES — it is what a worker looks for when
   // the payload names the running agent (`agent_type`). Presence is enrollment.
   scopedRel: (filename, agent) =>

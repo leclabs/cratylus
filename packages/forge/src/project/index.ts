@@ -54,7 +54,11 @@ import {
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
-import { enrollmentManifests, personaRootOf } from '../core/enrollment.js';
+import {
+  STANCE_MANIFEST,
+  personaRootOf,
+  stanceManifests,
+} from '../core/enrollment.js';
 import {
   dimensionFieldsOf,
   enforcingValuesOf,
@@ -119,6 +123,7 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     'harness-judge-bin': adapter.judgeBin,
     // Read back from `scopedRel`, so a worker names no layout of its own.
     'harness-persona-root': personaRootOf(adapter),
+    'stance-manifest': STANCE_MANIFEST,
   };
 }
 
@@ -729,8 +734,25 @@ export async function projectPluginSet(
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
 
+  // A GUARD NEEDS A SCOPE, AND A HARNESS THAT CANNOT NAME THE RUNNING AGENT HAS NONE.
+  // A cell that binds a composition is a guard, and a guard registered where no
+  // manifest can be found fires on every session and enrolls nobody — the defect
+  // this projection exists to rule out, and one that reads as coverage. A harness
+  // with no `scopedRel` therefore carries such a cell as a STEER only: its rule is
+  // already declared in the agent bodies that compose it, its mechanism is withheld,
+  // and the operator is told once per cell, here and again at install.
+  const unscopable = opts.adapter.scopedRel
+    ? []
+    : hookCells.filter((cell) => cell.binds);
+  for (const cell of unscopable) {
+    warn(
+      `guard '${cell.id}' cannot be scoped on '${opts.adapter.name}': this harness cannot name the running agent, so a hook registered for it would fire for every session and judge none. It is carried as a steer (the rule stays declared in the agents that compose it) and its mechanism is not deployed here.`,
+    );
+  }
+  const carried = hookCells.filter((cell) => !unscopable.includes(cell));
+
   let hooks = 0;
-  if (hookCells.length > 0) {
+  if (carried.length > 0) {
     const renderHooks = opts.adapter.hooks;
     // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
     // only the first. `hooks` returns a settings fragment (claude);
@@ -746,7 +768,7 @@ export async function projectPluginSet(
       // told, because an absent guardrail that announced nothing is the failure this
       // whole design removes. Refusing here would delete canon's hooks dir from a
       // plugin set, so agents ran ungoverned and silent.
-      for (const cell of hookCells) {
+      for (const cell of carried) {
         warn(
           `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The cell is not deployed here.`,
         );
@@ -755,8 +777,9 @@ export async function projectPluginSet(
       // RESOLVE HERE, at the emission boundary. `cell.workers` are TEMPLATES; the
       // deployed bytes are `resolveWorker(w, facts, cell.speech)`, and an unknown
       // placeholder throws rather than shipping `{{…}}` to a host.
-      const sources = hookCells.map((cell) => ({
+      const sources = carried.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
+        ...(cell.binds ? { binds: cell.binds } : {}),
         workers: cell.workers.map((w) =>
           resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
@@ -802,7 +825,7 @@ export async function projectPluginSet(
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {
-          for (const cell of hookCells) {
+          for (const cell of carried) {
             warn(
               `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': none of its events are realizable here. The cell is not deployed here.`,
             );
@@ -815,21 +838,22 @@ export async function projectPluginSet(
       // code surface would have shipped registrations pointing at workers that were
       // never staged.
       if (registered) {
-        // ONE ENROLLMENT, EMITTED ONCE, for every harness that places a scoped
-        // artifact: a manifest per persona, gated by the cells whose events this
-        // adapter realizes. It sits past the branch that registered the cells
-        // because enrollment is not a property of HOW a harness registers — omp's
-        // module per scope and claude's one settings file both hand the workers the
-        // same manifest to find. The session scope gets none.
+        // ONE STANCE MANIFEST PER BOUND PERSONA, emitted once, for every harness that
+        // places a scoped artifact: each lists exactly the guards its composed agent
+        // includes, at the moments this adapter realizes. It sits past the branch that
+        // registered the cells because enrollment is not a property of HOW a harness
+        // registers — omp's module per scope and claude's one settings file both hand
+        // the workers the same manifest to find. The session scope gets none.
         if (opts.adapter.scopedRel) {
-          for (const m of enrollmentManifests(
-            sources.map((s) => s.hook),
+          for (const m of stanceManifests(
+            sources,
             opts.adapter,
-            agentNames,
+            rendered,
+            manifest,
           )) {
             const path = join(ENFORCING_STAGE_DIR, m.scope, m.filename);
             files.push({ path, content: m.content });
-            log(`EMIT enrollment ${path}`);
+            log(`EMIT stance manifest ${path}`);
           }
         }
         for (const src of sources) {

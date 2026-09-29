@@ -197,10 +197,14 @@ own model routing — omp's `modelRoles` — is host configuration, not a deploy
 writes it, and only `cratylus install` seeds the missing entries for the roles the installed agents
 hold.
 
-Every adapter that declares `scopedRel` also receives one enrollment manifest per persona, staged at
-`enforcing/<persona>/stance/manifest.json` by the projector (`core/enrollment.ts`, one builder for both
-harnesses). On omp it lands beside the persona's modules; on claude, whose hooks stay in `settings.json`,
-it is the only scoped artifact, and lands under `.claude/personas/<name>/`.
+Every adapter that declares `scopedRel` also receives one stance manifest per persona that composes a
+guard, staged at `enforcing/<persona>/stance/manifest.json` by the projector (`core/enrollment.ts`, one
+builder for both harnesses). A cell is a guard when it declares `binds`, the composition that binds an
+agent to it; a persona's manifest lists exactly the guards its composed agent includes, and a cell that
+binds nothing (a notice) is never listed. On omp the manifest lands beside the persona's modules; on
+claude, whose hooks stay in `settings.json`, it is the only scoped artifact, and lands under
+`.claude/personas/<name>/`. A harness with no `scopedRel` cannot name the running agent, so projection
+warns once per guard and carries it as a steer, deploying no mechanism for it.
 
 #### The destinations are the adapter's, not the render tree's
 
@@ -213,7 +217,7 @@ adapter where each artifact belongs:
 | agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                    | `agent/agents/<name>.md`                                     |
 | skill directory            | `skillRel(name, agents)` | `skills/<name>`                         | `../.agents/skills/<name>` (one copy — read natively)        |
 | hook registration          | `hooksFile` (merged)     | `settings.json`                         | — (no hook config exists)                                    |
-| persona enrollment         | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json` | `<scope>/stance/manifest.json` (per persona)                 |
+| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json` | `<scope>/stance/manifest.json` (per persona)                 |
 | scoped mechanism module    | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/<file>`                                  |
 | persona badge module       | `scopedRel(file, scope)` | —                                       | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
 | `--config` overlay         | `scopedRel(file, scope)` | —                                       | `<scope>/omp.yml` (per persona)                              |

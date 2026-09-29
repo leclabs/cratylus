@@ -1,3 +1,4 @@
+import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
 
@@ -13,6 +14,9 @@ export const stanceGuardrail: HookCell = {
   residue:
     'structural-refusal ↾ turn-end · block ⟨intent-driven-expert-collapse⟩ ⟨permission-seeking · own-judgment-deferral · order-taking⟩ · pass ⟨reserved · irreversible-outward ↦ consent · intent-ambiguity ↦ elicit · ∄ mandate ↦ surface ⟨electing the objective ∉ in-remit⟩⟩ · harness-invariant ⟨prompt-identity erodes ↾ RLHF-corrigibility⟩',
   substrate: 'harness',
+  // The composition that binds an agent: it carries `handoff`, whose laws the rubric
+  // judges. Composing it enrolls the persona; nothing else does.
+  binds: { dimension: 'autonomy', value: anchorOf(handoff) },
   order: 0,
   events: ['turn.end', 'subagent.end'],
   entry: 'stance-guardrail.sh',
@@ -100,7 +104,7 @@ NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
 RUBRIC="\${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
 # A Stop hook must never break a session. Trap any unexpected error → allow the stop.
-trap 'exit 0' EXIT
+trap '[ -z "\${view:-}" ] || rm -f "$view" 2>/dev/null; exit 0' EXIT
 
 allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
 
@@ -198,7 +202,7 @@ if [ -z "$stance_scope" ]; then
 	case "$named" in '' | */* | . | ..) allow_stop ;; esac
 	stance_scope="$(dirname -- "$(dirname -- "$SELF_DIR")")/{{fact:harness-persona-root}}/$named"
 fi
-manifest="$stance_scope/stance/manifest.json"
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow_stop
 
 # The persona's own contract, each field falling back to the shipped default. A manifest that
@@ -213,14 +217,46 @@ manifest_rubric="$(jq -r '.rubric // empty' "$manifest" 2>/dev/null || true)"
 case "$manifest_rubric" in
 	'') ;;
 	/*) RUBRIC="$manifest_rubric" ;;
-	*) RUBRIC="$stance_scope/stance/$manifest_rubric" ;;
+	*) RUBRIC="$(dirname -- "$manifest")/$manifest_rubric" ;;
 esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \\
 	dark "the rubric named by $manifest is not readable at '\$RUBRIC'"
 
 # --- extract the last assistant turn from the transcript ------------------------------------
-transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
+# WHICH TRANSCRIPT, AND WHOSE TURN. A SubagentStop payload names TWO: \`transcript_path\` is the
+# PARENT session's, \`agent_transcript_path\` is the subagent's own. The scope above is the subagent's
+# (\`agent_type\`), so the text it is judged on must be the subagent's too. This read
+# \`transcript_path\` alone, so a subagent's enrollment judged the PARENT's words — observed live: a
+# bare session's own text was judged under a subagent's scope. A Stop payload carries no
+# \`agent_transcript_path\`, so the main thread's transcript is the only one there is. The operator
+# session is still the parent's, and the standing directive below reads it from there.
+session_transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
+transcript="$(printf '%s' "$input" | jq -r '.agent_transcript_path // empty' 2>/dev/null || true)"
+[ -n "$transcript" ] || transcript="$session_transcript"
 [ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '\$transcript'"
+[ -n "$session_transcript" ] && [ -f "$session_transcript" ] || session_transcript="$transcript"
+
+# THE CLOSE IS IN THE PAYLOAD, NOT YET IN THE TRANSCRIPT. On Claude Code a Stop hook fires before the
+# final assistant message is written, so the transcript ends one message short: a turn that is only
+# text had NO assistant text to judge (fired, and passed in silence), and a tool turn was judged
+# without its close. The payload carries that message as \`last_assistant_message\`. It is appended
+# to a private copy as the last assistant record — unless the transcript already ends with exactly
+# that text — so every extraction below sees the whole turn and the original file is never touched.
+last="$(printf '%s' "$input" | jq -r '.last_assistant_message // empty' 2>/dev/null || true)"
+if [ -n "$last" ]; then
+	present="$(jq -rs --arg t "$last" '
+		[ .[] | select(.type == "assistant") ] | last
+		| ((.message.content // []) | map(select(.type == "text") | .text) | join("\\n")) == $t
+	' "$transcript" 2>/dev/null || echo false)"
+	if [ "$present" != true ]; then
+		view="$state_dir/$session.turn.$$"
+		{
+			cat "$transcript"
+			printf '\\n'
+			jq -cn --arg t "$last" '{type:"assistant", isSidechain:false, message:{role:"assistant", content:[{type:"text", text:$t}]}}'
+		} > "$view" 2>/dev/null && transcript="$view"
+	fi
+fi
 
 # The transcript is JSONL: each line has top-level .type ("assistant"/"user"), .isSidechain
 # (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use)
@@ -401,7 +437,7 @@ standing="$(jq -rs '
 	       else . end
 	     | gsub("\\\\s+"; " ")) as $said
 	    | "\\($n - 1 - $hit.key)\\n\\($said)" end
-' "$transcript" 2>/dev/null || true)"
+' "\${session_transcript:-$transcript}" 2>/dev/null || true)"
 
 if [ -n "$standing" ]; then
 	since="$(printf '%s\\n' "$standing" | head -1)"

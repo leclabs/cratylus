@@ -127,7 +127,14 @@ export type ProjectionFact =
    * that agent's scope at `<harness home>/<this>/<agent_type>`. It is the adapter's
    * own `scopedRel` read back, so the layout has one home and no worker spells it.
    */
-  | 'harness-persona-root';
+  | 'harness-persona-root'
+  /**
+   * The persona's stance manifest, relative to the persona's own scope — the one
+   * file whose presence enrolls the persona, and whose spelling forge owns
+   * (`STANCE_MANIFEST`). A worker joins it to the scope it resolved and names no
+   * path of its own, so the artifact has one sign and one home.
+   */
+  | 'stance-manifest';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 
@@ -195,11 +202,35 @@ export interface HookWorker {
 /**
  * A `hook` source cell (source grain), carrying its verbatim worker payloads.
  *
- * `E` is the CORPUS'S event vocabulary. Left at its default this cell accepts any
- * `EventName`, which is all this package can say; a corpus aliases it against its
- * own declared tuple and gets the compile error back.
+ * `E` is the CORPUS'S event vocabulary and `D` its dimension vocabulary. Left at
+ * their defaults this cell accepts any `EventName` and any dimension name, which
+ * is all this package can say; a corpus aliases both against its own declared
+ * tuples and gets the compile error back.
  */
-export interface HookCell<E extends EventName = EventName> {
+export interface HookCell<
+  E extends EventName = EventName,
+  D extends string = string,
+> {
+  /**
+   * THE COMPOSITION THAT BINDS AN AGENT TO THIS CELL — what makes it a GUARD.
+   *
+   * A guard fires for exactly the agents whose composition includes what it
+   * enforces (`enforcement scope`), and this is where the cell says what that is:
+   * a dimension and, optionally, the ANCHOR of one value of it (`anchorOf`). An
+   * agent is bound when it composes a value with that anchor — never compared by
+   * body, which a fold may rewrite — or, with `value` absent, when it composes any
+   * value of the dimension.
+   *
+   * ABSENT ⇒ the cell is no guard: it binds no agent and enrolls none. A notice
+   * that only has to FIRE (a drift advisory, a resume note) is such a cell, and
+   * naming an agent list beside it would be the runtime self-filter the model
+   * forbids.
+   *
+   * `D` is the CORPUS'S dimension vocabulary, exactly as `E` is its events: a
+   * corpus that aliases it against its own manifest gets a misspelled dimension
+   * back as a compile error.
+   */
+  readonly binds?: { readonly dimension: D; readonly value?: string };
   /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
   readonly id: string;
   /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */

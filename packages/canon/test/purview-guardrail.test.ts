@@ -22,8 +22,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
-import { resolveWorker } from '@cratylus/schema';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { hookIrOf, resolveWorker } from '@cratylus/schema';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { mav } from '../src/agents/mav.js';
 import { purviewGuardrail } from '../src/hooks/purview-guardrail.js';
@@ -31,12 +31,18 @@ import { purviewGuardrail } from '../src/hooks/purview-guardrail.js';
 let root: string;
 let worker: string;
 
-function workerSource(): string {
+/** The worker as a HARNESS receives it: the template resolved against that harness's
+ *  own projection facts, exactly as projection emits it. */
+function workerSource(harness: string): string {
   const f = purviewGuardrail.workers?.find(
     (x) => x.filename === 'purview-guardrail.sh',
   );
   if (!f) throw new Error('purview-guardrail.sh not found on the cell');
-  return f.content;
+  return resolveWorker(
+    f,
+    projectionFacts(adapterByName(harness)),
+    purviewGuardrail.speech,
+  ).content;
 }
 
 /**
@@ -51,7 +57,7 @@ beforeAll(() => {
   const hooks = join(root, '.omp', 'hooks', 'purview-guardrail');
   mkdirSync(hooks, { recursive: true });
   worker = join(hooks, 'purview-guardrail.sh');
-  writeFileSync(worker, workerSource(), 'utf8');
+  writeFileSync(worker, workerSource('omp'), 'utf8');
   chmodSync(worker, 0o755);
 
   const agents = join(root, '.omp', 'agent', 'agents');
@@ -113,7 +119,7 @@ const DISPATCH = {
 describe('purview guardrail — the holder’s own arrow is the law', () => {
   it('hands the judge the agent’s OWN projected contract, verbatim', () => {
     const { stdout } = run(architect.name, 'Task', DISPATCH, {
-      PURVIEW_EMIT_PAYLOAD: '1',
+      STANCE_EMIT_PAYLOAD: '1',
     });
     const { payload, rubric } = JSON.parse(stdout) as {
       payload: string;
@@ -131,7 +137,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
 
   it('classifies the act by codomain — a dispatch writes spec, a write writes artifact', () => {
     const dispatch = JSON.parse(
-      run(architect.name, 'Task', DISPATCH, { PURVIEW_EMIT_PAYLOAD: '1' })
+      run(architect.name, 'Task', DISPATCH, { STANCE_EMIT_PAYLOAD: '1' })
         .stdout,
     ) as { payload: string };
     expect(dispatch.payload).toContain('DISPATCH to');
@@ -143,7 +149,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
         'Write',
         { file_path: '/repo/src/a.ts' },
         {
-          PURVIEW_EMIT_PAYLOAD: '1',
+          STANCE_EMIT_PAYLOAD: '1',
         },
       ).stdout,
     ) as { payload: string };
@@ -156,7 +162,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
       architect.name,
       'Read',
       { file_path: '/repo/src/a.ts' },
-      { PURVIEW_EMIT_PAYLOAD: '1' },
+      { STANCE_EMIT_PAYLOAD: '1' },
     );
     expect(stdout).toBe('');
     expect(status).toBe(0);
@@ -164,7 +170,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
 
   it('DENIES a BLOCK whose cited span is in the payload', () => {
     const { stdout, status } = run(architect.name, 'Task', DISPATCH, {
-      PURVIEW_VERDICT_FILE: verdictFile(
+      STANCE_VERDICT_FILE: verdictFile(
         'VERDICT: BLOCK\nREASON: the dispatch writes spec, which this arrow excludes\nSPAN: build the fold exactly as written\n',
       ),
     });
@@ -183,7 +189,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
 
   it('DISCARDS a BLOCK citing a span the payload does not contain', () => {
     const { stdout } = run(architect.name, 'Task', DISPATCH, {
-      PURVIEW_VERDICT_FILE: verdictFile(
+      STANCE_VERDICT_FILE: verdictFile(
         'VERDICT: BLOCK\nREASON: fabricated\nSPAN: this text never appeared anywhere\n',
       ),
     });
@@ -196,7 +202,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
       'Task',
       { subagent_type: 'planner', prompt: 'decompose piece three' },
       {
-        PURVIEW_VERDICT_FILE: verdictFile(
+        STANCE_VERDICT_FILE: verdictFile(
           'VERDICT: PASS\nREASON: the contract routes C→spec to plan\n',
         ),
       },
@@ -206,7 +212,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
 
   it('fails OPEN when the judge returns nothing', () => {
     const { stdout, status } = run(architect.name, 'Task', DISPATCH, {
-      PURVIEW_VERDICT_FILE: join(root, 'no-such-verdict'),
+      STANCE_VERDICT_FILE: join(root, 'no-such-verdict'),
     });
     expect(stdout).toBe('');
     expect(status).toBe(0);
@@ -214,7 +220,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
 
   it('is silent for a scope carrying no stance manifest (presence is enrollment)', () => {
     const { stdout } = run('nobody', 'Task', DISPATCH, {
-      PURVIEW_EMIT_PAYLOAD: '1',
+      STANCE_EMIT_PAYLOAD: '1',
     });
     expect(stdout).toBe('');
   });
@@ -237,12 +243,12 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     const once = spawnSync('sh', [worker], {
       input,
       encoding: 'utf8',
-      env: { ...process.env, PURVIEW_VERDICT_FILE: file },
+      env: { ...process.env, STANCE_VERDICT_FILE: file },
     });
     const twice = spawnSync('sh', [worker], {
       input,
       encoding: 'utf8',
-      env: { ...process.env, PURVIEW_VERDICT_FILE: file },
+      env: { ...process.env, STANCE_VERDICT_FILE: file },
     });
     expect(once.stdout).toContain('deny');
     expect(twice.stdout).toBe('');
@@ -268,20 +274,7 @@ describe('purview guardrail — the claude form of the scope (agent_type only)',
     const hooks = join(claudeRoot, '.claude', 'hooks', 'purview-guardrail');
     mkdirSync(hooks, { recursive: true });
     claudeWorker = join(hooks, 'purview-guardrail.sh');
-    const template = purviewGuardrail.workers?.find(
-      (x) => x.filename === 'purview-guardrail.sh',
-    );
-    if (!template)
-      throw new Error('purview-guardrail.sh not found on the cell');
-    writeFileSync(
-      claudeWorker,
-      resolveWorker(
-        template,
-        projectionFacts(adapterByName('claude')),
-        purviewGuardrail.speech,
-      ).content,
-      'utf8',
-    );
+    writeFileSync(claudeWorker, workerSource('claude'), 'utf8');
     chmodSync(claudeWorker, 0o755);
 
     const agents = join(claudeRoot, '.claude', 'agents');
@@ -320,7 +313,7 @@ describe('purview guardrail — the claude form of the scope (agent_type only)',
         ...payload,
       }),
       encoding: 'utf8',
-      env: { ...process.env, PURVIEW_EMIT_PAYLOAD: '1' },
+      env: { ...process.env, STANCE_EMIT_PAYLOAD: '1' },
     });
 
   it('judges the enrolled persona the payload names, with its own projected contract', () => {
@@ -354,5 +347,140 @@ describe('purview guardrail — the claude form of the scope (agent_type only)',
       stance_scope: join(claudeRoot, '.claude', 'personas', architect.name),
     });
     expect(stdout).not.toBe('');
+  });
+});
+
+// THE OMP FORM OF THE EVERY-TOOL ARM. `tool.use.pre` binds omp's `tool_call` with no tool
+// name, so the module the adapter emits has to read the name off the event. It wrote an
+// EMPTY `tool_name` instead, which the worker reads as "nothing to judge" and allows — so
+// purview fired on every omp call and could never judge one. This RUNS the emitted module
+// against the deployed worker, because the two halves only meet at the envelope between
+// them: a test of either alone is green while the arm judges nothing.
+describe('purview guardrail — omp’s tool.use.pre reaches the worker with the real tool name', () => {
+  let stubbed: string[];
+  let handlers: Array<(event: unknown, ctx: unknown) => Promise<unknown>>;
+  const homeWas = process.env.HOME;
+
+  beforeAll(async () => {
+    const home = mkdtempSync(join(tmpdir(), 'purview-omp-'));
+    const omp = adapterByName('omp');
+    // The deployed layout, from the adapter's OWN destination map.
+    const hooks = join(home, '.omp', 'hooks', 'purview-guardrail');
+    mkdirSync(hooks, { recursive: true });
+    writeFileSync(
+      join(hooks, 'purview-guardrail.sh'),
+      workerSource('omp'),
+      'utf8',
+    );
+    mkdirSync(join(home, '.agents', 'purview-guardrail'), { recursive: true });
+    writeFileSync(
+      join(home, '.agents', 'purview-guardrail', 'purview-judge-prompt.md'),
+      'RUBRIC',
+      'utf8',
+    );
+    const agents = join(home, '.omp', 'agent', 'agents');
+    mkdirSync(agents, { recursive: true });
+    writeFileSync(
+      join(agents, 'mav.md'),
+      `# mav\n\n## Role\n\n${mav.role}\n\n## Formality\n\nplain\n`,
+      'utf8',
+    );
+    const scopeRel = (file: string) => omp.scopedRel?.(file, 'mav') ?? '';
+    const manifest = join(home, '.omp', scopeRel('stance/manifest.json'));
+    mkdirSync(join(manifest, '..'), { recursive: true });
+    writeFileSync(
+      manifest,
+      JSON.stringify({ agent: 'mav', gates: {} }),
+      'utf8',
+    );
+
+    const surface =
+      omp.scopeActivatedSurface?.(
+        [hookIrOf(purviewGuardrail, omp.hookCommand)],
+        ['mav'],
+      ) ?? [];
+    const module = surface.find((s) => s.scope === 'mav');
+    if (!module) throw new Error('omp emitted no purview module for mav');
+    const file = join(home, '.omp', scopeRel(module.filename));
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, module.content, 'utf8');
+
+    // omp bundles `@oh-my-pi/pi-ai` for its extensions; the model call is the one
+    // thing stubbed, and it records what the judge was asked.
+    const stub = join(
+      home,
+      '.omp',
+      'agent',
+      'node_modules',
+      '@oh-my-pi',
+      'pi-ai',
+    );
+    mkdirSync(stub, { recursive: true });
+    writeFileSync(
+      join(stub, 'package.json'),
+      JSON.stringify({
+        name: '@oh-my-pi/pi-ai',
+        type: 'module',
+        main: 'index.js',
+      }),
+    );
+    writeFileSync(
+      join(stub, 'index.js'),
+      `export async function completeSimple(_m, req) {
+  (globalThis.__purviewOmpJudged ??= []).push(req.messages[0].content);
+  return { content: [{ type: 'text', text: 'VERDICT: PASS' }] };
+}\n`,
+    );
+    (globalThis as { __purviewOmpJudged?: string[] }).__purviewOmpJudged = [];
+    stubbed = (globalThis as { __purviewOmpJudged: string[] })
+      .__purviewOmpJudged;
+
+    const loaded = (await import(file)) as {
+      default: (pi: unknown) => void;
+    };
+    handlers = [];
+    process.env.HOME = home;
+    loaded.default({
+      cwd: home,
+      exec: async (cmd: string, args: string[]) => {
+        const r = spawnSync(cmd, args, { encoding: 'utf8', env: process.env });
+        return {
+          stdout: r.stdout ?? '',
+          stderr: r.stderr ?? '',
+          code: r.status,
+          killed: false,
+        };
+      },
+      sendUserMessage: () => {},
+      on: (
+        event: string,
+        h: (event: unknown, ctx: unknown) => Promise<unknown>,
+      ) => {
+        if (event === 'tool_call') handlers.push(h);
+      },
+    });
+  });
+
+  afterAll(() => {
+    if (homeWas === undefined) Reflect.deleteProperty(process.env, 'HOME');
+    else process.env.HOME = homeWas;
+  });
+
+  const fire = async (toolName: string, input: Record<string, unknown>) => {
+    const before = stubbed.length;
+    for (const h of handlers) await h({ toolName, input }, { model: {} });
+    return stubbed.slice(before);
+  };
+
+  it('judges a write — the act the arrow reserves — with the contract of the persona whose scope holds the module', async () => {
+    const judged = await fire('write', { path: '/repo/src/a.ts' });
+    expect(judged).toHaveLength(1);
+    expect(judged[0]).toContain('agent: mav');
+    expect(judged[0]).toContain('codomain: artifact');
+    expect(judged[0]).toContain('/repo/src/a.ts');
+  });
+
+  it('never judges a read', async () => {
+    expect(await fire('read', { path: '/repo/src/a.ts' })).toEqual([]);
   });
 });

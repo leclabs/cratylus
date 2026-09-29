@@ -109,6 +109,7 @@ import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
   OMP_ENVELOPE_KIND,
   OMP_REFUSAL_SHAPE,
+  OMP_WIRE_TOOL,
   OMP_WORKER_TOOL,
   canonicalToOmp,
   ompBindingOf,
@@ -533,7 +534,10 @@ function renderRegistration(r: OmpRegistration): string {
         ? `judged(${cmd}, ctx, {}, dispatchTurn(event))`
         : kind === 'tool'
           ? (() => {
-              const wt = JSON.stringify(r.workerTool ?? r.tool ?? '');
+              const named = r.workerTool ?? r.tool;
+              if (named === undefined)
+                return `judged(${cmd}, ctx, toolEnvelope(event))`;
+              const wt = JSON.stringify(named);
               return `judged(${cmd}, ctx, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
             })()
           : `exec(${cmd})`;
@@ -719,6 +723,23 @@ const TURN_BRIDGE: readonly string[] = [
   '    .filter((s) => s.trim() !== "")',
   '    .join("\\n\\n");',
   '  return prompt ? { ...input, prompt } : input;',
+  '}',
+  '',
+  '// THE ENVELOPE OF A TOOL CALL NO SELECTOR NARROWED. `tool.use.pre` binds `tool_call`',
+  '// with no tool name, so nothing at registration says which tool this fire is, and',
+  '// the envelope carried an EMPTY `tool_name` — which the worker reads as "nothing to',
+  '// judge" and allows, on every call it was registered to judge. The name is on the',
+  "// event; it is spelled here in the workers' wire contract (`OMP_WIRE_TOOL`), and a",
+  "// tool the table does not name passes through under omp's own spelling, which the",
+  "// worker's `*)` branch allows.",
+  `const WIRE_TOOL: Record<string, string> = ${JSON.stringify(OMP_WIRE_TOOL)};`,
+  'function toolEnvelope(event: {',
+  '  toolName?: string;',
+  '  input?: Record<string, unknown>;',
+  '}): Record<string, unknown> {',
+  '  const raw = event.toolName ?? "";',
+  '  const tool = WIRE_TOOL[raw] ?? raw;',
+  '  return { tool_name: tool, tool_input: workerInput(tool, event.input ?? {}) };',
   '}',
   '',
   '// A FINISHED DELEGATION IS A JUDGEABLE TURN, and this is the translation that',

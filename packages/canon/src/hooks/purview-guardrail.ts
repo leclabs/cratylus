@@ -46,6 +46,8 @@ export const purviewGuardrail: HookCell = {
   residue:
     'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(build) ∄ decomposition⟩ · dispatch-echo ⟨literal-words ≠ cut-piece⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ assay⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
   substrate: 'harness',
+  // Bound by holding a role at all: the arrow it judges against is the role's own.
+  binds: { dimension: 'role' },
   order: 1,
   events: ['subagent.dispatch.pre', 'tool.use.pre'],
   entry: 'purview-guardrail.sh',
@@ -121,7 +123,7 @@ if [ -z "$stance_scope" ]; then
 	case "$named" in '' | */* | . | ..) allow ;; esac
 	stance_scope="$(dirname -- "$HOOKS_ROOT")/{{fact:harness-persona-root}}/$named"
 fi
-manifest="$stance_scope/stance/manifest.json"
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 [ -n "$agent_type" ] || allow
@@ -175,12 +177,18 @@ seen="\${TMPDIR:-/tmp}/.purview-pre-$session_id-$sig"
 [ -f "$seen" ] && allow
 
 # --- judge (SHARED backend, OWN rubric) -----------------------------------------------------
-if [ -n "\${PURVIEW_EMIT_PAYLOAD:-}" ]; then
+# THE SAME SEAM, UNDER THE SAME NAMES, as the two stance workers: a host that holds a model
+# runs this worker twice around a judgment it makes itself (\`STANCE_EMIT_PAYLOAD\` to receive
+# the payload and rubric, \`STANCE_VERDICT_FILE\` naming the answer). This one read
+# \`PURVIEW_\`-prefixed names of its own, so the omp bridge — which speaks the shared names —
+# got no payload back and purview judged nothing there, on every call, while reading as a
+# guard that had found nothing.
+if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
 	jq -cn --arg r "$RUBRIC" --arg p "$payload" '{rubric:$r, payload:$p}'
 	exit 0
 fi
-if [ -n "\${PURVIEW_VERDICT_FILE:-}" ]; then
-	verdict="$(cat "\${PURVIEW_VERDICT_FILE}" 2>/dev/null || true)"
+if [ -n "\${STANCE_VERDICT_FILE:-}" ]; then
+	verdict="$(cat "\${STANCE_VERDICT_FILE}" 2>/dev/null || true)"
 	[ -n "$verdict" ] || {
 		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-empty tool=$tool_name agent=$agent_type"
 		allow

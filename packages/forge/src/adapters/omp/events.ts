@@ -201,3 +201,22 @@ export const OMP_WORKER_TOOL: Readonly<Record<EventName, string>> = {
   'operator.consult.pre': 'AskUserQuestion',
   'subagent.dispatch.pre': 'Agent',
 };
+
+/**
+ * The wire-contract spelling of each omp tool an UNNARROWED `tool_call` may carry.
+ *
+ * `OMP_WORKER_TOOL` is keyed by the canonical ACT, which is enough where a selector
+ * narrowed the registration to one tool. `tool.use.pre` names no tool, so which one
+ * fired is only on the event, in omp's spelling, and the workers' contract spells the
+ * same acts otherwise: `write` is `Write` there, `task` is `Agent`. A tool absent from
+ * this table (a read, a search) passes through unmapped, and the worker's default
+ * branch allows it — which is what a gate that judges dispatches and writes only wants.
+ * The worker reads a write's target from `file_path`, `path` or `notebook_path`; a call
+ * carrying none of them gives it nothing to judge, and it allows.
+ */
+export const OMP_WIRE_TOOL: Readonly<Record<string, string>> = {
+  ask: 'AskUserQuestion',
+  task: 'Agent',
+  write: 'Write',
+  edit: 'Edit',
+};

@@ -336,5 +336,6 @@ export const CANONICAL_EVENTS = [
 /** One moment this corpus has a name for — the pivot every adapter maps FROM. */
 export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
 
-/** This corpus's `HookCell`: schema's shape, narrowed to the events above. */
-export type HookCell = HookCellOf<CanonicalEvent>;
+/** This corpus's `HookCell`: schema's shape, narrowed to the events above and to
+ *  this manifest's dimensions, so a guard binding a misspelled one is a compile error. */
+export type HookCell = HookCellOf<CanonicalEvent, Dimension>;

@@ -69,8 +69,19 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
     A bare session, a built-in agent and a host's own agent have no manifest there and stay silent.
     An `agent_type` that is not a single directory name is refused, never joined into a path.
 
-  The manifest is staged once for both harnesses by forge's `core/enrollment.ts`, and the persona
-  root is read back from the adapter's own `scopedRel`, so no worker carries an agent list.
+  The stance manifest is staged once for both harnesses by forge's `core/enrollment.ts`, and the
+  persona root is read back from the adapter's own `scopedRel`, so no worker carries an agent list
+  or spells the manifest's path. **Scope is fixed by composition**: a manifest lists exactly the
+  guards its composed agent includes (a cell declares `binds`, the composition that binds an
+  agent to it), and a cell that binds nothing, such as the drift notice, is never listed. A
+  harness that cannot name the running agent carries a guard as a steer and warns once per cell
+  at projection and install.
+
+- **WHAT THE STOP WORKER JUDGES.** A SubagentStop payload names the parent's `transcript_path` and
+  the subagent's own `agent_transcript_path`; the subagent's is judged, never the parent's. A
+  Claude Code Stop fires before the final assistant message reaches the transcript, so that
+  message is taken from the payload's `last_assistant_message`. A turn that is only text is
+  judged, and a tool turn is judged on its close.
 
 - **NO REPO OPT-IN, NO ALLOWLIST.** Both are gone. The opt-in asked whether a guard may run in a
   DIRECTORY, which is a category error — a stance belongs to the agent, not the checkout — and it
