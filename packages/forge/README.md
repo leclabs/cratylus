@@ -128,9 +128,8 @@ cratylus compose --config ./other.config.ts
 
 Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
 carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
-them. A shim bridges or demands a session id only when its capability is session-scoped, as the
-runtime declares it (`SESSION_SCOPED` in `@cratylus/runtime/capability`; today only `memory`); the
-record capabilities `design`, `plan` and `note` forward from any harness with no session at all.
+them. A shim forwards its arguments to `cratylus <capability>` with the caller's environment, and it
+needs no session from any harness.
 
 ```
 cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
@@ -168,8 +167,7 @@ fidelity ladder's floor: a steer the agent reads, never silence.
 
 Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill
 directories are copied; `settings.json` hook registrations are merged into any existing file rather
-than replacing it. Each deployed agent also gets its memory layers seeded, and existing layers are left
-untouched.
+than replacing it.
 
 ```
 cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>

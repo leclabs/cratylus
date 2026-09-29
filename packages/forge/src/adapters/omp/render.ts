@@ -1550,13 +1550,6 @@ export const ompHarnessAdapter: HarnessAdapter = {
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
   skillRel: ompSkillRel,
-  // NONE. omp exposes no session id to a child process: no `*_SESSION_ID` variable
-  // is set anywhere in `packages/coding-agent/src` (`oh-my-pi@5964a0f`), and the
-  // bash tool's env comes from settings alone. Its extensions DO receive
-  // `event.sessionId`, but a skill's shim is spawned by the agent, not by a hook.
-  // So there is nothing to bridge, and the projected shim says so instead of
-  // running sessionless — see `project/runtime-shim.ts`.
-  sessionEnvVars: [],
   enforcingSurface: (bindings, mechanisms) =>
     ompGuardrailExtensions(bindings, mechanisms),
   scopeActivatedSurface: (hooks, agentNames) =>

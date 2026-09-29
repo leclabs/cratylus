@@ -24,10 +24,6 @@ export interface RenderTree {
 export interface PlaceReport {
   // Agent defs (or skills) copied — generated substance, overwritten freely.
   copied: number;
-  // Sidecar layers freshly seeded (agent placer only): "<name>/<file>".
-  seeded: string[];
-  // Sidecar layers found present and left UNTOUCHED (never clobbered).
-  present: string[];
   // Non-fatal warnings (missing def / SKILL.md / asset).
   warnings: string[];
   // The placer's TESTIMONY for the prune manifest: harnessDir-relative POSIX
@@ -47,8 +43,6 @@ export interface PlaceReport {
 export function emptyReport(): PlaceReport {
   return {
     copied: 0,
-    seeded: [],
-    present: [],
     warnings: [],
     written: {},
     skipped: [],

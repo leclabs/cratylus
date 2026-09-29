@@ -282,22 +282,6 @@ export function codexSkillRel(name: string): string {
   return `skills/${name}`;
 }
 
-/**
- * The session-id variables the codex-projected shim consults.
- *
- * INHERITED, NOT MEASURED, and labelled so rather than left to look verified.
- * These are the two names the shim emitter stamped into EVERY harness's shim
- * before `sessionEnvVars` existed; keeping them here preserves the codex
- * projection byte-for-byte while the fact is unknown. Reading codex's own
- * session variable off a codex build is owed — and if the answer is "it sets
- * none", this becomes `[]` and the shim refuses like omp's, which is the whole
- * point of the field.
- */
-export const CODEX_SESSION_ENV_VARS = [
-  'CLAUDE_CODE_SESSION_ID',
-  'CLAUDE_SESSION_ID',
-] as const;
-
 export const codexHarnessAdapter: HarnessAdapter = {
   name: 'codex',
   substrate: 'harness',
@@ -310,7 +294,6 @@ export const codexHarnessAdapter: HarnessAdapter = {
   // in `developer_instructions` instead (`agentToCodexTomlObject`).
   preloadsSkills: false,
   skillRel: (name) => [codexSkillRel(name)],
-  sessionEnvVars: CODEX_SESSION_ENV_VARS,
   // The map, declared on the port so deploy can EMIT it into the host config the
   // runtime reads. Both predicates below already answer from it.
   nativeEvents: canonicalToCodex,

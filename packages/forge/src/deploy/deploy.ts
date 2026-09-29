@@ -1,12 +1,5 @@
 // Deploy orchestrator — resolve a SCOPE to the LOCAL `.claude/` root, then run
-// the placer that ships the generated defs (the Target) and seeds each agent's
-// `{SEMANTIC,PROCEDURAL,EPISODIC}` sidecars ONLY IF ABSENT (`memory`).
-// Governed oppositely to the def (`substance-over-accident`): the def is
-// regenerated substance (overwritten freely); the sidecars are the
-// self-authored individual (never clobbered).
-//
-// Join key is the agent NAME (`named-marker-as-index-key`):
-//   <name>.md (def) <-> <name>/SEMANTIC.md (the individual).
+// the placer that ships the generated defs (the Target).
 //
 // STAGE BOUNDARY — deploy places a render tree into the LOCAL `.claude/` root
 // and nothing else. Getting the packages onto a host is npm's job (a
