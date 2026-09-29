@@ -388,6 +388,42 @@ describe('a flag the verb does not take is refused before the verb acts', () => 
       });
     }
   }
+
+  it('reads a declared --flag=value as that flag, and installs', () => {
+    const { settingsPath, sinkPath } = fixture();
+    expect(
+      tap([
+        'install',
+        '--events=turn.end',
+        `--sink=${sinkPath}`,
+        `--settings=${settingsPath}`,
+      ]),
+    ).toEqual({ verb: 'install', events: ['turn.end'], sink: sinkPath });
+    const ours = read(settingsPath).hooks?.Stop?.[0]?.hooks[0];
+    expect(ours?.id).toBe('cratylus-event-tap');
+    expect(ours?.command).toContain(sinkPath);
+  });
+
+  it('refuses an undeclared --flag=value as --flag, suggesting the nearest', () => {
+    const { settingsPath, sinkPath } = fixture();
+    expect(verbFlags.nearest('--evnets', VERBS.install)).toBe('events');
+    expect(() =>
+      tap([
+        'install',
+        '--evnets=turn.end',
+        '--sink',
+        sinkPath,
+        '--settings',
+        settingsPath,
+      ]),
+    ).toThrow(
+      new Error(
+        verbFlags.refused('eventTap', 'install', ['--evnets'], VERBS.install),
+      ),
+    );
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(existsSync(sinkPath)).toBe(false);
+  });
 });
 
 /**

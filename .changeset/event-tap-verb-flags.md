@@ -16,3 +16,7 @@ read, and before any settings file or sink is touched, so the call exits `1`
 whether or not the host is configured. The refusal names every such flag as
 given, the verb's nearest flag to each when one is close, and every flag the
 verb takes.
+
+`eventTap` now reads `--flag=value` as `--flag value`, as `design`, `plan` and
+`note` do: `install --events=turn.end` used to fail for want of `--events`, and
+now installs. An undeclared `--evnets=turn.end` is refused as `--evnets`.

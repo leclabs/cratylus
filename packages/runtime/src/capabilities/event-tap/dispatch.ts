@@ -59,9 +59,9 @@ export const VERBS = {
 } as const satisfies VerbFlags<EventTapVerb>;
 
 /**
- * Extract `--flag value` pairs (and bare flags) from the argv tail of `verb`,
- * refusing every flag it does not take — a single-dash token (`-x`), a lone `-`
- * aside, among them.
+ * Extract `--flag value` and `--flag=value` pairs (and bare flags) from the argv
+ * tail of `verb`, refusing every flag it does not take — a single-dash token
+ * (`-x`), a lone `-` aside, among them.
  */
 function parseFlags(verb: EventTapVerb, argv: string[]): Map<string, string> {
   const flags = new Map<string, string>();
@@ -74,15 +74,18 @@ function parseFlags(verb: EventTapVerb, argv: string[]): Map<string, string> {
         given.push(tok.split('=')[0] as string);
       continue;
     }
-    given.push(tok);
-    const key = tok.slice(2);
-    const next = argv[i + 1];
-    if (next !== undefined && !next.startsWith('--')) {
-      flags.set(key, next);
-      i++;
-    } else {
-      flags.set(key, '');
+    const body = tok.slice(2);
+    const eq = body.indexOf('=');
+    let key = body;
+    let value = '';
+    if (eq !== -1) {
+      key = body.slice(0, eq);
+      value = body.slice(eq + 1);
+    } else if (argv[i + 1] !== undefined && !argv[i + 1]?.startsWith('--')) {
+      value = argv[++i] as string;
     }
+    given.push(`--${key}`);
+    flags.set(key, value);
   }
   refuseUnknown('eventTap', verb, given, VERBS[verb]);
   return flags;
