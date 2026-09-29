@@ -1,0 +1,49 @@
+{
+  "envelope": {
+    "id": "01M3NED1ADJEAAK9MCV5MA2F9A",
+    "entity": "01M3ND9S9NG1VAGFRTTSW3EM80",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NDGBP7TRQ5KR54AF91T8MN"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T02:02:51.085Z",
+    "reason": "dispatched to an implementer",
+    "cause": "wave 1 of verb-flags-runtime-config; verb-flags accepted"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "memory-verb-flags",
+      "intent": "**Wave 1.** Realizes `verb flags` for the `memory` capability. It depends on `verb-flags`, which builds the refusal home at `@cratylus/runtime/verb-flags`.\n\nCensus at 63a012ce (re-derive before citing): `cratylus memory <verb>` reaches the kernel's generic `dispatch` (`packages/runtime/src/dispatch.ts`). There `memoryVerbPort` (`packages/memory/src/verb-port.ts`) re-serializes the flags and calls memory's `main` (`packages/memory/src/cli.ts`). `main` already keeps its per-verb table `VERB_FLAGS` beside its verbs, and refuses a flag not in it (code 2) in its own wording: `<verb>: unknown flag(s): --x` followed by the verb's usage lines. It suggests no nearest flag and does not say nothing was written.\n\nChange: `VERB_FLAGS` stays memory's one declaration, and `cli.ts` exports it so that `kernel-verb-flags` (wave 2) can have memory's runtime port carry it to the kernel. `main` refuses through the runtime home instead of its own wording, before any verb runs. `--help` and `-h` keep printing usage, since that is how a verb's usage is asked for. The test leg goes in `packages/memory/test/cli.test.ts`, with no new test file. For every verb in the table, given a flag it does not take, `main` returns a non-zero code whose `err` equals the home's refusal for `memory`, that verb, that flag and the verb's declared flags, and the agent home is left byte-identical. `.changeset/memory-verb-flags.md` names `@cratylus/memory` and `cratylus`.",
+      "static": [
+        "`cratylus design show 'verb flags'` at 63a012ce.",
+        "`packages/runtime/src/verb-flags.ts` as `verb-flags` lands it: the declaration shape and the refusal.",
+        "`packages/memory/src/verb-port.ts` and `packages/runtime/src/dispatch.ts`: the route a memory verb takes from the CLI.",
+        "`packages/memory/test/verb-roster.test.ts`: pins `MEMORY_VERBS` to the table's verbs."
+      ],
+      "deps": [
+        "01M3ND9S473408PDSHQBWGZS3C"
+      ],
+      "outputs": [
+        "packages/memory/src/cli.ts",
+        "packages/memory/test/cli.test.ts",
+        ".changeset/memory-verb-flags.md"
+      ],
+      "accept": [
+        "`git grep -n \"unknown flag\" -- packages/memory/src` prints nothing (measured at 63a012ce: `packages/memory/src/cli.ts:1282`).",
+        "`git grep -nE \"^export const VERB_FLAGS\" -- packages/memory/src/cli.ts` prints one line.",
+        "`pnpm --filter @cratylus/memory test -- cli` passes, with a leg that, for every verb in memory's flag table, calls `main` with one flag that verb does not take and asserts a non-zero code, an `err` equal to what `@cratylus/runtime/verb-flags` produces for `memory`, that verb, that flag and the verb's declared flags, and the agent home unchanged.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `d=$(mktemp -d); AGENT_HOME=\"$d\" AGENT_SESSION_ID=smoke node packages/cli/dist/cratylus.js memory encode --bodyy hi` exits non-zero; its stderr contains `--bodyy`, `--body`, `--tags` and `--session`; and `ls -A \"$d\"` prints nothing.",
+        "`pnpm --filter @cratylus/memory typecheck` passes.",
+        "`grep -q '\"@cratylus/memory\":' .changeset/memory-verb-flags.md && grep -q '\"cratylus\":' .changeset/memory-verb-flags.md` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "version": "01M3NCQZF141ZRXKZF7HEZC9N3",
+      "closure": {}
+    }
+  }
+}
