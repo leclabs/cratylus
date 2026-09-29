@@ -412,15 +412,15 @@ export function reconcile(
 /**
  * The units readiness admits, in entity order: live units not yet in the state
  * satisfying a dependency, whose plan is bound, which no owed ruling names
- * (neither the unit nor its plan; `owed` is the set of entities the owed
- * rulings name), and whose every dep is a live unit that has reached the state
+ * (neither the unit nor its plan; `owed` holds the entities the owed rulings
+ * name), and whose every dep is a live unit that has reached the state
  * satisfying a dependency or moved past it. A dep withdrawn, diverged or not
  * yet done keeps a unit out, whatever its state.
  */
 function admitted(
   folds: Units,
   lifecycle: UnitLifecycle,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
   bound: PlanBound,
 ): [string, Unit][] {
   const { states, satisfies } = checked(lifecycle);
@@ -446,7 +446,7 @@ function admitted(
 export function ready(
   folds: Units,
   lifecycle: UnitLifecycle,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
   bound: PlanBound,
 ): string[] {
   const [first] = lifecycle.states;
@@ -460,7 +460,7 @@ export function ready(
 export function frontier(
   folds: Units,
   lifecycle: UnitLifecycle,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
   bound: PlanBound,
 ): string[] {
   return admitted(folds, lifecycle, owed, bound).map(([entity]) => entity);

@@ -31,7 +31,8 @@
 // The lifecycle's states are meaning, and their one home is the `plan` skill.
 // This module spells none of them: it receives the vocabulary as a parameter
 // (`PlanLifecycle`) and acts only on the roles it conveys. An owed ruling is the
-// notebook's; this module receives the plans the owed rulings name.
+// notebook's; this module receives the entities the owed rulings name, and
+// the closure its concepts reach, from the caller.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { canonicalOrder } from '../../record-store/canonical-order.js';
@@ -39,6 +40,7 @@ import { type Fold, fold } from '../../record-store/fold.js';
 import type { Envelope, Record } from '../../record-store/record.js';
 import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
+import { owedInClosure } from './pin.js';
 
 /** The records domain holding plans. */
 const DOMAIN = 'plan';
@@ -225,18 +227,22 @@ function unsettled(
  * Whether the plan `entity` may be bound: the one decision, and the reason it
  * refuses (`undefined` when it may). It refuses a plan that is not settled and
  * live, a plan past the exclusive state, a plan already its one holder, a plan
- * an owed ruling names (`owed`, the plans the owed rulings name), and a bind
- * that would return a diverged plan to the first state.
+ * an owed ruling names or whose concepts' closure (`closure`) holds a concept
+ * an owed ruling names (`owed`, each entity the owed rulings name with the
+ * notes naming it), and a bind that would return a diverged plan to the first
+ * state.
  */
 export function bindRefusal(
   folds: ReadonlyMap<string, Fold<Plan>>,
   lifecycle: PlanLifecycle,
   entity: string,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
+  closure: (concept: string) => Iterable<string>,
 ): string | undefined {
   const refusal = unsettled(folds, entity);
   if (refusal) return refusal;
-  const { name, state } = (folds.get(entity) as Fold<Plan>).payload as Plan;
+  const { name, state, realizes } = (folds.get(entity) as Fold<Plan>)
+    .payload as Plan;
   const { exclusive } = lifecycle;
   if (position(lifecycle, state) > position(lifecycle, exclusive))
     return `plan ${name} is ${state}, and ${exclusive} is a move backwards from it`;
@@ -244,6 +250,8 @@ export function bindRefusal(
   if (state === exclusive && others.length === 0)
     return `plan ${name} is already ${exclusive}`;
   if (owed.has(entity)) return `an owed ruling names plan ${name}`;
+  const ruled = owedInClosure(realizes, closure, owed);
+  if (ruled) return ruled;
   for (const other of others)
     if ((folds.get(other) as Fold<Plan>).diverged)
       return `binding ${name} returns plan ${named(folds, other)} to ${lifecycle.states[0]}, and it has diverged; reconcile it first`;
@@ -327,11 +335,12 @@ export function bind(
   store: RecordStore,
   lifecycle: PlanLifecycle,
   entity: string,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
+  closure: (concept: string) => Iterable<string>,
   by: By,
 ): Record<Plan>[] {
   const folds = plans(store);
-  const refusal = bindRefusal(folds, lifecycle, entity, owed);
+  const refusal = bindRefusal(folds, lifecycle, entity, owed, closure);
   if (refusal) throw new Error(`plan: bind refused — ${refusal}`);
   const release = { state: lifecycle.states[0] as string };
   const written = holders(folds, lifecycle)
@@ -376,7 +385,7 @@ export function reconcile(
   lifecycle: PlanLifecycle,
   entity: string,
   plan: Plan,
-  owed: ReadonlySet<string>,
+  owed: ReadonlyMap<string, readonly string[]>,
   by: By,
 ): Record<Plan> {
   const folds = plans(store);

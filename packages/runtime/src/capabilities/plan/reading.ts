@@ -74,7 +74,7 @@ import {
   notebook,
   owedRulings,
 } from '../note/notebook.js';
-import { type Pin, drift, suspicion, take } from './pin.js';
+import { type Pin, drift, owedInClosure, suspicion, take } from './pin.js';
 import * as planDomain from './plan.js';
 import * as unitDomain from './unit.js';
 
@@ -209,6 +209,9 @@ const OF_PLAN = ' of plan ';
 
 /** What marks a withdrawn unit named where no plan is in view. */
 export const WITHDRAWN = ' (withdrawn)';
+
+/** What names a concept among what a note blocks: `concept c`. */
+const CONCEPT = 'concept ';
 
 /** Stands for a unit not yet minted while its write is judged. */
 export const UNWRITTEN = '(new)';
@@ -390,12 +393,14 @@ export class Reading {
     return this.#label(this.#noteHolders.get(title), title, entity);
   }
 
-  /** What a note blocks, a plan or a unit, as the view names it: a unit
-   *  qualified by its plan, `u of plan p`, and a withdrawn one marked,
-   *  `u of plan p (withdrawn)` — the forms `resolveBlocked` and `plan show`
-   *  take. */
+  /** What a note blocks, a plan, a unit or a concept, as the view names it: a
+   *  unit qualified by its plan, `u of plan p`, and a withdrawn one marked,
+   *  `u of plan p (withdrawn)`; a concept always qualified, `concept c` — the
+   *  forms `resolveBlocked` and `plan show` take. */
   blocked(ref: string): Name {
     if (this.plans.has(ref)) return this.planName(ref);
+    if (this.concepts.has(ref))
+      return `${CONCEPT}${printed(this.concept(ref))}`;
     const plan = this.unitVersion(ref)?.plan;
     if (plan === undefined) return this.unitName(ref);
     const qualified = `${OF_PLAN}${printed(this.planName(plan))}`;
@@ -587,9 +592,13 @@ export class Reading {
     return addressed('note', name, this.#noteHolders.get(bare(name)) ?? []);
   }
 
-  /** What a note blocks: the plan `input` names, or the unit — written
-   *  `u of plan p` as `blocked` prints it, or bare where its name is its own. */
+  /** What a note blocks: the concept `input` names when written `concept c`;
+   *  else the plan it names, or the unit — written `u of plan p` as `blocked`
+   *  prints it, or bare where its name is its own; else the concept whose
+   *  anchor it is, bare where no plan or unit holds that name. */
   resolveBlocked(input: string): string {
+    if (input.startsWith(CONCEPT))
+      return this.resolveConcept(input.slice(CONCEPT.length));
     const name = parsed(input);
     const plans = this.#planHolders.get(bare(name)) ?? [];
     if (plans.length > 0 && this.#unitsHolding(name).length > 0)
@@ -599,10 +608,12 @@ export class Reading {
     const entity =
       plans.length > 0
         ? addressed('plan', name, plans)
-        : (this.findWithdrawnUnit(input) ?? this.findUnit(input));
+        : (this.findWithdrawnUnit(input) ??
+          this.findUnit(input) ??
+          this.design.denotes(name));
     if (entity === undefined)
       throw new Error(
-        `no plan or unit is named ${JSON.stringify(input)}; a note blocks a plan or a unit`,
+        `no plan, unit or concept is named ${JSON.stringify(input)}; a note blocks a plan, a unit or a concept, a concept written ${JSON.stringify(`${CONCEPT}<anchor>`)} where a plan or unit holds its name`,
       );
     return entity;
   }
@@ -638,9 +649,16 @@ export class Reading {
   planBound = (entity: string): boolean =>
     this.plans.get(entity)?.payload?.state === this.lifecycle.plan.exclusive;
 
-  /** The entities the owed rulings name. */
-  get owed(): ReadonlySet<string> {
-    return new Set(owedRulings(this.book).keys());
+  /** The entities the owed rulings name, each with the notes naming it. */
+  get owed(): ReadonlyMap<string, readonly string[]> {
+    return owedRulings(this.book);
+  }
+
+  /** Refuses `plan <verb>` of a unit realizing concept `entity` while an owed
+   *  ruling names a concept of its closure. */
+  unruled(entity: string, verb: string): void {
+    const refusal = owedInClosure([entity], this.closure, this.owed);
+    if (refusal) throw new Error(`plan ${verb} refused — ${refusal}`);
   }
 
   /** A pin on concept `entity`, refusing a closure that is not settled and
@@ -985,8 +1003,23 @@ export class Reading {
         const plan = planOfUnit(u);
         return plan !== undefined && this.planClosed(plan);
       });
+    /** A concept is its own plans' when no plan is shown, or some plan shown
+     *  realizes a concept whose closure holds it. */
+    const ownConcept = (concept: string): boolean =>
+      shown.length === 0 ||
+      [...this.plans].some(
+        ([plan, f]) =>
+          own(plan) &&
+          (f.payload?.realizes ?? []).some((c) =>
+            this.closure(c).includes(concept),
+          ),
+      );
     const blocksOwn = (note: Note): boolean =>
-      note.blocks.some((b) => own(this.plans.has(b) ? b : planOfUnit(b)));
+      note.blocks.some((b) =>
+        this.concepts.has(b)
+          ? ownConcept(b)
+          : own(this.plans.has(b) ? b : planOfUnit(b)),
+      );
     const shownNames = new Set(shown.map((p) => printed(this.planOf(p).name)));
     return {
       ...this.computed,

@@ -3,14 +3,15 @@
 //
 //   show       the notebook by kind, then topic, or one note in full
 //   capture    a note: `<title> --kind <k> --topic <t> --body <b>
-//              [--blocks <plan or unit>]…`
+//              [--blocks <plan, unit or concept>]…`
 //   revise     a new version of a note (`--title` retitles it)
 //   retract    a note
 //   reconcile  a diverged note: one version over every version
 //
 // A note's title is its name and addresses it. What a note blocks is named by
-// plan or unit name and resolved here: a unit as the view prints it,
-// `u of plan p`, or bare where its name is its own. Anyone may write a note, and
+// plan, unit or concept name and resolved here: a unit as the view prints it,
+// `u of plan p`, or bare where its name is its own; a concept as `concept c`,
+// or bare where no plan or unit holds its anchor. Anyone may write a note, and
 // capture has no admission bar beyond the note's shape and its title law.
 //
 // Arguments, names and identities are read as the plan surface reads them

@@ -23,7 +23,7 @@
 // point to reconcile, one whole-state version superseding every head.
 //
 // A note's kind is a label this module never interprets. An OWED RULING is a live
-// note that blocks a plan or unit; it blocks what it names until it no longer
+// note that blocks a plan, a unit or a concept; it blocks what it names until it no longer
 // does, by being retracted or revised to block nothing. A diverged note blocks
 // whatever any of its heads blocks until it is reconciled. What a note blocks are
 // opaque entity references; resolving them from names is the interface's.
@@ -46,7 +46,7 @@ export interface Note {
   readonly kind: string;
   readonly topic: string;
   readonly body: string;
-  /** Entity references of the plans and units this note blocks. */
+  /** Entity references of the plans, units and concepts this note blocks. */
   readonly blocks: readonly string[];
 }
 
