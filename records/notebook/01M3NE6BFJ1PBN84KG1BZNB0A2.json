@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NE6BFJ1PBN84KG1BZNB0A2",
+    "entity": "01M3NE6BFJ1PBN84KG1BZNB0A1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:59:12.114Z",
+    "reason": "assay of unit verb-flags surfaced it beside the concept",
+    "cause": "VerbFlagsAssay 2026-09-28"
+  },
+  "payload": {
+    "title": "surplus positionals are ignored",
+    "kind": "idea",
+    "topic": "domain interface",
+    "body": "A domain verb reads its first positional as its subject and silently ignores any further positional, so 'design define eps --gloss e foo' writes eps and drops foo. The same fail-fast reasoning as verb flags applies to a verb's arity, but it is a different concept (how many arguments a verb takes), not a flag.",
+    "blocks": []
+  }
+}
