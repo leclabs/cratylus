@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NBSXNN2BPTS79WH0D66DBQ",
+    "entity": "01M3NBSXNN2BPTS79WH0D66DBP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T01:17:27.605Z",
+    "reason": "decompose the persona badge piece into its one unit of work",
+    "cause": "architect handed the persona badge piece to the planner for planning"
+  },
+  "payload": {
+    "name": "persona-badge",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR"
+    ],
+    "state": "proposed"
+  }
+}

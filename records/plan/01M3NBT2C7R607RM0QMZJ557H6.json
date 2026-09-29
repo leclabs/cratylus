@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NBT2C7R607RM0QMZJ557H6",
+    "entity": "01M3NBSXNN2BPTS79WH0D66DBP",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NBSXNN2BPTS79WH0D66DBQ"
+    ],
+    "author": "planner",
+    "time": "2026-09-29T01:17:32.423Z",
+    "reason": "the one unit covers the whole piece with outputs resolved by usage; ready for delivery",
+    "cause": "census complete and unit authored"
+  },
+  "payload": {
+    "name": "persona-badge",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR"
+    ],
+    "state": "bound"
+  }
+}
