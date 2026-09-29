@@ -1,0 +1,49 @@
+{
+  "envelope": {
+    "id": "01M3NEZZ9Q6QMNRF0518RNHZCS",
+    "entity": "01M3ND9SCFG8EB5T1RK3T05ZDQ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NEGSJDNM9VV5346NP93YYV"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T02:13:11.607Z",
+    "reason": "verified by the executor (accept criteria, pnpm verify) and validated against verb flags by assay; the --flag=value refusal sent back was fixed before assay",
+    "cause": "acceptance of unit event-tap-verb-flags"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "event-tap-verb-flags",
+      "intent": "**Wave 1.** Realizes `verb flags` for the `eventTap` capability. It depends on `verb-flags`, which builds the refusal home. It also depends on `runtime-config`, because both units rewrite `event-tap/dispatch.ts` and `event-tap.test.ts`; that dependency comes from the shared output, not from the concepts.\n\nCensus at 63a012ce (re-derive before citing): `dispatchEventTap` (`packages/runtime/src/capabilities/event-tap/dispatch.ts`) parses with its own `parseFlags`. It reads `--settings`, `--events` and `--sink` and ignores everything else, and it does not understand `--flag=value`.\n\nChange: declare beside `VERBS` the flags each verb takes. At 63a012ce, `install` takes `--events`, `--sink` and `--settings`, and `uninstall`, `read` and `status` take `--settings`. Refuse through the home before anything else: before the host-config refusal, and before any settings file or sink is touched. The test leg goes in `packages/runtime/test/event-tap.test.ts`, with no new test file. Every verb, given a flag it does not take, throws the home's refusal text, with a host config and without one, and the settings file does not exist afterwards. `.changeset/event-tap-verb-flags.md` names `@cratylus/runtime` and `cratylus`.",
+      "static": [
+        "`cratylus design show 'verb flags'` at 63a012ce.",
+        "`packages/runtime/src/verb-flags.ts` as `verb-flags` lands it.",
+        "`packages/runtime/src/capabilities/event-tap/dispatch.ts` as `runtime-config` leaves it (the harness-named reader).",
+        "`packages/runtime/src/main.ts:119-131`: how an event-tap refusal reaches stderr."
+      ],
+      "deps": [
+        "01M3ND9S473408PDSHQBWGZS3C",
+        "01M3ND9S6Y57RT0PZ3MEK8D8P2"
+      ],
+      "outputs": [
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        ".changeset/event-tap-verb-flags.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime test -- event-tap` passes, with a leg that drives each of `install`, `uninstall`, `read` and `status` with one flag it does not take, with a host config and without one, and asserts the thrown message equals what `src/verb-flags.ts` produces for `eventTap`, that verb, that flag and the verb's declared flags, and that the settings file does not exist afterwards.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `d=$(mktemp -d); AGENT_RUNTIME_CONFIG=\"$d/none.json\" CLAUDE_SETTINGS_PATH=\"$d/settings.json\" node packages/cli/dist/cratylus.js eventTap install --evnets turn.end --sink \"$d/sink\"` exits 1; its stderr contains `--evnets`, `--events`, `--sink` and `--settings`; and `test ! -e \"$d/settings.json\" && test ! -e \"$d/sink\"` exits 0.",
+        "With the same build and variables, `node packages/cli/dist/cratylus.js eventTap status --bogus` exits 1 and its stderr contains `--bogus` and `--settings`.",
+        "`pnpm --filter @cratylus/runtime typecheck:test` passes.",
+        "`grep -q '\"@cratylus/runtime\":' .changeset/event-tap-verb-flags.md && grep -q '\"cratylus\":' .changeset/event-tap-verb-flags.md` exits 0."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "version": "01M3NCQZF141ZRXKZF7HEZC9N3",
+      "closure": {}
+    }
+  }
+}
