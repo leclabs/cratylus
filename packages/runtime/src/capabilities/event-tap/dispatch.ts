@@ -1,14 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The event-tap capability's VERB SURFACE — `eventTap <verb> [args]`.
 //
-// The runtime kernel routes `cratylus eventTap <verb>` here: the tap owns
-// the arg-parse for its own flags (`--events`, `--sink`, `--settings`) that a
-// generic method-reflecting dispatcher cannot know, declared beside its verbs.
-// Verb → port method:
+// The runtime kernel routes `cratylus eventTap <verb>` here: the tap declares,
+// beside its verbs, its own flags (`--events`, `--sink`, `--settings`, each
+// taking a value) that a generic method-reflecting dispatcher cannot know, and
+// reads them through `../../verb-flags.ts`; a flag given twice keeps its last
+// value. Verb → port method:
 //   install → install · uninstall → remove · read → readCapture · status → status
 // Unknown verb / unknown lifecycle event fails LOUD (throws) — never a silent
 // no-op (matches the kernel's fail-loud contract). A flag the verb does not take
-// is refused through `../../verb-flags.ts` before anything else: before the host
+// is refused as the arguments are read, before anything else: before the host
 // config is read, and before any settings file or sink is touched.
 //
 // WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
@@ -37,7 +38,7 @@ import {
   loadRuntimeConfig,
   nativeEventsOf,
 } from '../../runtime-config.js';
-import { type VerbFlags, refuseUnknown } from '../../verb-flags.js';
+import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
 
 /** The verbs the event-tap capability exposes, each routing to one port method. */
@@ -52,44 +53,11 @@ export type EventTapResult =
 
 /** The event-tap's verbs, and the flags each takes. */
 export const VERBS = {
-  install: ['events', 'sink', 'settings'],
-  uninstall: ['settings'],
-  read: ['settings'],
-  status: ['settings'],
+  install: { events: 'value', sink: 'value', settings: 'value' },
+  uninstall: { settings: 'value' },
+  read: { settings: 'value' },
+  status: { settings: 'value' },
 } as const satisfies VerbFlags<EventTapVerb>;
-
-/**
- * Extract `--flag value` and `--flag=value` pairs (and bare flags) from the argv
- * tail of `verb`, refusing every flag it does not take — a single-dash token
- * (`-x`), a lone `-` aside, among them.
- */
-function parseFlags(verb: EventTapVerb, argv: string[]): Map<string, string> {
-  const flags = new Map<string, string>();
-  const given: string[] = [];
-  for (let i = 0; i < argv.length; i++) {
-    const tok = argv[i];
-    if (tok === undefined) continue;
-    if (!tok.startsWith('--')) {
-      if (tok.startsWith('-') && tok !== '-')
-        given.push(tok.split('=')[0] as string);
-      continue;
-    }
-    const body = tok.slice(2);
-    const eq = body.indexOf('=');
-    let key = body;
-    let value = '';
-    if (eq !== -1) {
-      key = body.slice(0, eq);
-      value = body.slice(eq + 1);
-    } else if (argv[i + 1] !== undefined && !argv[i + 1]?.startsWith('--')) {
-      value = argv[++i] as string;
-    }
-    given.push(`--${key}`);
-    flags.set(key, value);
-  }
-  refuseUnknown('eventTap', verb, given, VERBS[verb]);
-  return flags;
-}
 
 /**
  * The host's event vocabulary, or a LOUD refusal.
@@ -171,20 +139,26 @@ export function dispatchEventTap(
       `event-tap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
     );
   }
-  const flags = parseFlags(verb as EventTapVerb, rest);
+  const { flags } = readArgv(
+    rest,
+    'eventTap',
+    verb,
+    VERBS[verb as EventTapVerb],
+  );
+  const flag = (name: string) => flags.get(name)?.at(-1);
   const config = opts.config ?? loadRuntimeConfig();
   const configured = configuredEvents(config);
   const tap =
     opts.host ??
     new EventTapHostClaude(
-      flags.get('settings') || undefined,
+      flag('settings') || undefined,
       nativeEventsOf(config, EventTapHostClaude.harness),
     );
 
   switch (verb as EventTapVerb) {
     case 'install': {
-      const events = parseEvents(flags.get('events'), configured.vocabulary);
-      const sink = flags.get('sink');
+      const events = parseEvents(flag('events'), configured.vocabulary);
+      const sink = flag('sink');
       if (sink === undefined || sink.trim() === '') {
         throw new Error('event-tap install: --sink <path> is required');
       }

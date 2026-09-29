@@ -25,14 +25,13 @@ import type {
   DesignHost,
 } from '../../ports/design.js';
 import { type Name, parsed } from '../../record-store/names.js';
-import type { VerbFlags } from '../../verb-flags.js';
+import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { designView, traceView } from '../../view/design.js';
 import {
   INVOCATION,
   invocation,
   many,
   one,
-  parseArgv,
   subject,
   verbOf,
 } from '../plan/argv.js';
@@ -163,12 +162,17 @@ export function designHost(from: string = process.cwd()): DesignHost {
 /** The design's verbs, in the order its header lists them, and the flags each
  *  takes. */
 export const VERBS = {
-  show: [],
-  define: ['gloss', 'factors', ...INVOCATION],
-  amend: ['anchor', 'gloss', 'factors', ...INVOCATION],
-  retract: [...INVOCATION],
-  reconcile: ['anchor', 'gloss', 'factors', ...INVOCATION],
-  trace: [],
+  show: {},
+  define: { gloss: 'value', factors: 'value', ...INVOCATION },
+  amend: { anchor: 'value', gloss: 'value', factors: 'value', ...INVOCATION },
+  retract: { ...INVOCATION },
+  reconcile: {
+    anchor: 'value',
+    gloss: 'value',
+    factors: 'value',
+    ...INVOCATION,
+  },
+  trace: {},
 } as const satisfies VerbFlags;
 
 /** Route `design <verb> [args]` to the design capability over the repository
@@ -178,7 +182,7 @@ export function dispatchDesign(
   opts: { readonly from?: string } = {},
 ): string {
   const verb = verbOf(argv, 'design', VERBS);
-  const args = parseArgv(argv.slice(1), 'design', verb, VERBS[verb]);
+  const args = readArgv(argv.slice(1), 'design', verb, VERBS[verb]);
   const host = designHost(opts.from);
   const change = (): ConceptChange => {
     const [anchor, gloss, factors] = [

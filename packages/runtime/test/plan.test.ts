@@ -944,4 +944,16 @@ describe('plan — the flags each verb takes', () => {
       );
     }
   });
+
+  it('a switch never takes the next token: `revise --repin -x` REFUSES -x, and `--repin=x` is refused whole, writing nothing', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u1', 'alpha');
+    expect(
+      refused(repo, 'revise', 'u1', '--plan', 'alpha', '--repin', '-x', ...BY),
+    ).toBe(verbFlags.refused('plan', 'revise', ['-x'], VERBS.revise));
+    expect(
+      refused(repo, 'revise', 'u1', '--plan', 'alpha', '--repin=x', ...BY),
+    ).toBe(verbFlags.refused('plan', 'revise', ['--repin=x'], VERBS.revise));
+  });
 });
