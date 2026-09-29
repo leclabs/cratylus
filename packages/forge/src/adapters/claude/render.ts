@@ -47,8 +47,11 @@ import {
 import { canonicalToClaude, claudeBindingOf } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 import {
+  CLAUDE_HOOK_OUTPUT_CAP,
   PERSONA_LAUNCH_MATCHER,
   personaSkillCommand,
+  personaSkillOutputSize,
+  requiredReadingSection,
 } from './persona-launch.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
@@ -81,6 +84,7 @@ function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
   manifest: DimensionManifest,
+  hooked: readonly string[],
 ): string[] {
   const fm: string[] = [
     `name: ${a.name}`,
@@ -92,7 +96,7 @@ function agentFrontMatter(
   if (a.skills?.length) {
     fm.push('skills:', ...a.skills.map((s) => `  - ${JSON.stringify(s)}`));
   }
-  fm.push(...agentHooksFrontMatter(a, mechanisms, manifest));
+  fm.push(...agentHooksFrontMatter(a, mechanisms, manifest, hooked));
   return fm;
 }
 
@@ -123,6 +127,7 @@ function agentHooksFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
   manifest: DimensionManifest,
+  hooked: readonly string[],
 ): string[] {
   // Which fields hold values at all is a fact of the CATALOG, so an agent's
   // enforcing set is read against the set's catalog — there is no other catalog
@@ -141,7 +146,7 @@ function agentHooksFrontMatter(
   // The persona's composed skills reach a `--agent` MAIN session through this same
   // block: Claude preloads `skills` only for a dispatched subagent. The entry is the
   // FIRST of its event, so the skills are in context before any enforcing hook runs.
-  const launch = personaLaunchEntry(a);
+  const launch = personaLaunchEntry(a.name, hooked);
   if (enforcing.length === 0 && launch.length === 0) return [];
 
   // native claude event → the entries firing on it, in `order`.
@@ -187,20 +192,23 @@ function agentHooksFrontMatter(
 
 /**
  * The `SessionStart` entry that loads an agent's composed skills into a `--agent`
- * main session (see `persona-launch.ts`): empty for an agent with no skills. The
+ * main session (see `persona-launch.ts`): empty when no skill is to be hooked. The
  * hook does not fire when the agent is dispatched as a subagent, where `skills`
  * already preloads them, so no skill loads twice. One handler per skill, in the
  * agent's `skills` order, because Claude caps each handler's output on its own.
  */
-function personaLaunchEntry(a: Agent): string[] {
-  if (!a.skills?.length) return [];
+function personaLaunchEntry(
+  agent: string,
+  hooked: readonly string[],
+): string[] {
+  if (hooked.length === 0) return [];
   const roots = { home: CLAUDE_HOME_EXPR, skillRel: claudeSkillRel };
   return [
     `    - matcher: ${JSON.stringify(PERSONA_LAUNCH_MATCHER)}`,
     '      hooks:',
-    ...a.skills.flatMap((skill) => [
+    ...hooked.flatMap((skill) => [
       '        - type: command',
-      `          command: ${JSON.stringify(personaSkillCommand(a.name, skill, roots))}`,
+      `          command: ${JSON.stringify(personaSkillCommand(agent, skill, roots))}`,
     ]),
   ];
 }
@@ -218,11 +226,21 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
  * — which is why `mechanisms` may be absent. `manifest` may NOT: a Target projected
  * without one has no dimension sections at all, and that renders as a
  * plausible, well-formed, empty agent rather than as an error.
+ *
+ * A skill the set's projection found too large for the launch hook
+ * (`ctx.oversizedSkills`) gets no hook command, and closes the body as
+ * `## Required reading` instead. It stays in `skills`: a dispatched subagent
+ * preloads a skill of any size.
  */
 export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
+  const unhooked = (a.skills ?? []).filter((s) => ctx.oversizedSkills?.has(s));
+  const hooked = (a.skills ?? []).filter((s) => !ctx.oversizedSkills?.has(s));
+  const body = agentBody(a, ctx.manifest);
   return frameClaudeMd(
-    agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.manifest),
-    agentBody(a, ctx.manifest),
+    agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.manifest, hooked),
+    unhooked.length > 0
+      ? `${body.replace(/\n+$/, '')}\n\n${requiredReadingSection(unhooked)}`
+      : body,
   );
 }
 
@@ -501,6 +519,17 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   judgeBin: 'claude',
   // The subagent `skills` field preloads each named skill into the agent.
   preloadsSkills: true,
+  // A `--agent` MAIN session preloads none of them, so a hook prints each skill; the
+  // cap on what one hook may print is Claude Code's, and the size is measured with the
+  // `$HOME` expression as the definition will spell it.
+  mainSessionSkillHook: {
+    cap: CLAUDE_HOOK_OUTPUT_CAP,
+    size: (name, skillMd) =>
+      personaSkillOutputSize(
+        `${CLAUDE_HOME_EXPR}/${claudeSkillRel(name)}`,
+        skillMd,
+      ),
+  },
   skillRel: (name) => [claudeSkillRel(name)],
   // The 1:1 map, declared on the port so deploy can EMIT it into the host config the
   // runtime reads. It stays 1:1 deliberately: the runtime REVERSES it (native →

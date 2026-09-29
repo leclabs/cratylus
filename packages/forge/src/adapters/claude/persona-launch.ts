@@ -17,8 +17,10 @@
 // printing a four-skill closure of 25,603 characters reached the model as that
 // preview, and the model answered as if the skills were absent). Each hook's output
 // is measured on its own, so one command per skill keeps every body whole — as long
-// as no single skill body and its base-directory line exceed the cap. Nothing here
-// trims a body to fit; a skill over the cap arrives as Claude's preview.
+// as that skill's output fits the cap. Nothing here trims a body to fit. A skill
+// whose output would not fit is not hooked at all: projection weighs it against the
+// cap (`personaSkillOutputSize`), warns, and the definition names it under
+// `## Required reading` (`requiredReadingSection`) for the Skill tool to load.
 //
 // Each command is a PURE function of (agent, skill name, where skills live). It
 // reads the `SKILL.md` at RUN time, off the host's disk, exactly as the subagent
@@ -28,6 +30,16 @@
 /** The `SessionStart` sources that start a context without the skills in it.
  *  `resume` is left out on purpose: a resumed session already holds them. */
 export const PERSONA_LAUNCH_MATCHER = 'startup|clear|compact';
+
+/** The most characters one hook's plain stdout may hold on Claude Code before it is
+ *  replaced by a 2,000-character preview and a file path. Documented at
+ *  <https://code.claude.com/docs/en/hooks.md> (hook output limits) and measured on
+ *  2.1.285. The cap has no setting. */
+export const CLAUDE_HOOK_OUTPUT_CAP = 10_000;
+
+/** The line that opens each skill's output, the form Claude's own subagent preload
+ *  uses. */
+const BASE_DIRECTORY_LABEL = 'Base directory for this skill: ';
 
 /** Where the skills are, as SHELL text read at run time on the host the definition
  *  lands on (so `home` is `$HOME/.claude`, never the projecting machine's path). */
@@ -79,12 +91,65 @@ export function personaSkillCommand(
     `dir="${roots.home}"/${shellQuote(roots.skillRel(skill))}`,
     // The body is read, never sourced or evaluated.
     'if [ -f "$dir/SKILL.md" ]; then',
-    `  printf 'Base directory for this skill: %s\\n\\n' "$dir"`,
+    `  printf '${BASE_DIRECTORY_LABEL}%s\\n\\n' "$dir"`,
     `  awk ${shellQuote(AFTER_FRONT_MATTER)} "$dir/SKILL.md"`,
     'else',
     `  printf '%s: no skill %s at %s; naming it as required reading instead\\n' ${shellQuote(agent)} ${shellQuote(skill)} "$dir" >&2`,
     `  printf '## Required reading\\n\\nThis skill is REQUIRED reading for this session, not background:\\nload it with the Skill tool and read it in full before you act.\\n\\n- \`%s\`\\n' ${shellQuote(skill)}`,
     'fi',
     'exit 0',
+  ].join('\n');
+}
+
+/** What the launch hook prints for a skill, minus the base-directory line: `text`
+ *  after a leading front-matter fence, leading blank lines dropped, every line
+ *  newline-terminated. The TypeScript twin of `AFTER_FRONT_MATTER`, kept so
+ *  projection can weigh a skill against the cap without running a shell; the
+ *  claude tests run both on the same text and require the same bytes. */
+function afterFrontMatter(text: string): string {
+  const lines = text.split('\n');
+  if (lines[lines.length - 1] === '') lines.pop();
+  let from = 0;
+  if (lines[0] === '---') {
+    from = lines.indexOf('---', 1) + 1;
+    if (from === 0) from = lines.length;
+  }
+  while (from < lines.length && /^[ \t]*$/.test(lines[from] as string)) from++;
+  return lines
+    .slice(from)
+    .map((l) => `${l}\n`)
+    .join('');
+}
+
+/**
+ * How many characters the launch hook prints for a skill whose projected `SKILL.md`
+ * is `skillMd` and whose directory is `dir`: the base-directory line, the blank line
+ * after it, and the body. Claude counts characters, not bytes.
+ *
+ * `dir` is the path as the hook will spell it. The adapter passes the `$HOME`
+ * expression unexpanded, because the host's home is unknown at projection: a host
+ * whose home is longer than `$HOME` adds the difference to every skill.
+ */
+export function personaSkillOutputSize(dir: string, skillMd: string): number {
+  return (
+    BASE_DIRECTORY_LABEL.length +
+    dir.length +
+    '\n\n'.length +
+    afterFrontMatter(skillMd).length
+  );
+}
+
+/**
+ * The closing section of an agent definition that names skills the launch hook
+ * cannot carry — the same heading omp's launcher uses for a skill it cannot inline.
+ * The Skill tool loads each on demand, so the skill is in reach and not in context.
+ */
+export function requiredReadingSection(skills: readonly string[]): string {
+  return [
+    '## Required reading',
+    '',
+    'These skills are REQUIRED reading for this session, not background: load each one with the Skill tool and read it in full before you act.',
+    '',
+    ...skills.map((s) => `- \`${s}\``),
   ].join('\n');
 }

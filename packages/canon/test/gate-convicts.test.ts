@@ -199,6 +199,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // this plan still owes, and it is a different file.
   'canon/repo-root.test.ts': 'BEHAVIORAL',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
+  // projects the live corpus under claude and asserts every skill's launch-hook output
+  // fits claude's per-hook cap; its convicting fixture feeds the same predicate a skill
+  // one character over it.
+  'canon/skill-hook-cap.test.ts': 'GATE',
   'canon/skill-shape.test.ts': 'GATE',
   // drives the guardrail worker with a broken judge it supplies itself, and
   // carries its own negative control (opted-out ⇒ silent).
@@ -278,6 +282,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // projects a fixture plugin it owns under both adapters and reads the warnings.
   'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
+  // projects a fixture plugin it owns whose skills straddle the claude hook cap, and
+  // asserts the oversized one is unhooked, named as required reading and warned once;
+  // its boundary cases (exactly the cap, one over) ARE its fixtures.
+  'forge/project/skill-hook-cap.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
   // asserts the live `src/project/index.ts` source performs no writes.

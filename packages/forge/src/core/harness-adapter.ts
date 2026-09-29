@@ -171,6 +171,14 @@ export interface AgentDefContext {
    * declares globally ignores it and uses `enforcingSurface` instead.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
+  /**
+   * The composed skills this adapter must NOT hook into a main session, because
+   * what the hook would print exceeds `mainSessionSkillHook.cap`: projection
+   * measures each composed skill and hands the ones over the cap down by name. The
+   * adapter names them as required reading in the definition instead, so the harness's
+   * own skill tool loads them on demand. Absent or empty: every skill fits.
+   */
+  readonly oversizedSkills?: ReadonlySet<string>;
 }
 
 /** The projection port a harness adapter implements. */
@@ -284,6 +292,21 @@ export interface HarnessAdapter {
    * (`skillClosure`), so an adapter renders it and computes nothing.
    */
   readonly preloadsSkills: boolean;
+  /**
+   * How this harness carries a persona's composed skills into a MAIN session, where
+   * its native preload (`preloadsSkills`) does not reach — by a hook that prints each
+   * skill. Absent for a harness whose main session already has them.
+   *
+   * `cap` is a fact of the harness: the most characters one such hook's output may
+   * hold before the harness replaces it with a preview the model does not have to
+   * read. `size` is what that hook prints for a skill, given the skill's projected
+   * `SKILL.md` text — the number projection weighs against `cap`, to decide which
+   * skills the adapter cannot hook and to warn once per skill that it cannot.
+   */
+  readonly mainSessionSkillHook?: {
+    readonly cap: number;
+    size(skillName: string, skillMd: string): number;
+  };
   /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.
    *

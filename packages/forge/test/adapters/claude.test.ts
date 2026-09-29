@@ -23,6 +23,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { personaSkillOutputSize } from '../../src/adapters/claude/persona-launch.js';
 import {
   CLAUDE_LAUNCHER_FILE,
   CLAUDE_LAUNCHER_SCRIPT,
@@ -645,6 +646,34 @@ describe('the claude persona launch — skills into a --agent main session', () 
     it('prints no Required reading when every skill is there', () => {
       install('plan', '---\nname: plan\n---\n# Plan\n');
       expect(runAll(['plan']).stdout).not.toContain('Required reading');
+    });
+
+    // The cap is weighed at projection, without a shell, so the size it weighs must be
+    // the size the shell prints — for every shape a SKILL.md takes.
+    it.each([
+      [
+        'a front matter and a blank line before the body',
+        '---\nn: x\n---\n\n\n# T\n\nbody\n',
+      ],
+      ['no trailing newline', '---\nn: x\n---\nbody'],
+      ['no front matter', '\n  \n# T\n'],
+      ['a rule inside the body', '---\nn: x\n---\na\n---\nb\n'],
+      ['an unclosed front matter', '---\nn: x\nbody\n'],
+      [
+        'multibyte text',
+        '---\nn: x\n---\n⟨names natural ¬conventional⟩ · σ*\n',
+      ],
+    ])('weighs what the shell prints: %s', (_, md) => {
+      install('probe', md);
+      const printed = runAll(['probe']).stdout;
+      expect(personaSkillOutputSize(skillDir('probe'), md)).toBe(
+        printed.length,
+      );
+      const hook = claudeHarnessAdapter.mainSessionSkillHook;
+      const expr = `$HOME/.claude/${claudeSkillRel('probe')}`;
+      expect(hook?.size('probe', md)).toBe(
+        printed.length - skillDir('probe').length + expr.length,
+      );
     });
   });
 });

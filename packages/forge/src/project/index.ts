@@ -38,6 +38,7 @@ import {
   type Enforcing,
   type HookCell,
   type ProjectionFacts,
+  type Skill,
   type Value,
   anchorOf,
   bodyOf,
@@ -428,6 +429,19 @@ function withResolvedBodies(
   return folded as unknown as Agent;
 }
 
+/** A skill cell as the adapters render it. */
+function resolvedSkillOf(cell: Skill): ResolvedSkill {
+  return {
+    name: cell.name,
+    trigger: `/${cell.name}`,
+    description: cell.description,
+    formalBlock: cell.formalBlock,
+    composedFrom: cell.composition().map((c) => `/${c.name}`),
+    ...(cell.preamble ? { preamble: cell.preamble } : {}),
+    runtime: cell.runtime,
+  };
+}
+
 /**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
@@ -529,6 +543,30 @@ export async function projectPluginSet(
     }
   }
 
+  // A SKILL THE MAIN-SESSION HOOK CANNOT CARRY. Where a harness carries a persona's
+  // skills into its main session by a hook that prints each one, the harness caps
+  // what one hook may print — and a body over the cap arrives as a preview the
+  // model is not asked to read, in silence. So each skill an agent is given is
+  // weighed here against the cap, once, and one over it is handed to the adapter to
+  // name as required reading instead of hooking. It is never trimmed to fit.
+  const oversizedSkills = new Set<string>();
+  const mainSessionHook = opts.adapter.mainSessionSkillHook;
+  if (mainSessionHook) {
+    const given = new Set(composed.flatMap((c) => c.agent.skills ?? []));
+    for (const { name, skill: cell } of contributedSkills) {
+      if (!given.has(name)) continue;
+      const size = mainSessionHook.size(
+        name,
+        opts.adapter.skillDef(resolvedSkillOf(cell)).content,
+      );
+      if (size <= mainSessionHook.cap) continue;
+      oversizedSkills.add(name);
+      warn(
+        `skill '${name}' prints ${size} characters into a '${opts.adapter.name}' main session, over the harness's per-hook output cap of ${mainSessionHook.cap}. It gets no hook command and is named under '## Required reading' in each agent composing it, so the Skill tool loads it on demand.`,
+      );
+    }
+  }
+
   // THE SEAM. Decide the enforcement mode of every binding before a byte is
   // written, and withhold the mechanism of any that degraded. The DECLARATION
   // face needs no decision — `agentBody` publishes it for every composed value on
@@ -561,6 +599,7 @@ export async function projectPluginSet(
     const { filename, content } = opts.adapter.agentDef(agent, {
       manifest,
       ...(mechanisms ? { mechanisms } : {}),
+      ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
     });
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
@@ -673,15 +712,7 @@ export async function projectPluginSet(
   let shims = 0;
   let warnedTaplessHarness = false;
   for (const { name, skill: cell } of contributedSkills) {
-    const resolved: ResolvedSkill = {
-      name: cell.name,
-      trigger: `/${cell.name}`,
-      description: cell.description,
-      formalBlock: cell.formalBlock,
-      composedFrom: cell.composition().map((c) => `/${c.name}`),
-      ...(cell.preamble ? { preamble: cell.preamble } : {}),
-      runtime: cell.runtime,
-    };
+    const resolved = resolvedSkillOf(cell);
     const cellOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
     files.push({ path: join(cellOut, filename), content });
