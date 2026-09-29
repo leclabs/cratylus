@@ -46,7 +46,7 @@ adapter realizes the **highest fidelity available**:
 
 | fidelity    | when                                  | example                                            |
 | ----------- | ------------------------------------- | -------------------------------------------------- |
-| **proxy**   | the harness has the facility natively | a memory strategy that delegates to the host's own |
+| **proxy**   | the harness has the facility natively | an event tap that installs into Claude's own hooks |
 | **provide** | the harness lacks it                  | our implementation behind the same port            |
 | **declare** | neither is possible                   | the rule reaches the agent as prose — a steer      |
 
@@ -88,9 +88,11 @@ The generic platform beneath the two things that need programmatic support:
 2. **lifecycle guardrails** — enforcement of stances the agent would otherwise drift out of, the same
    species as a harness's own goal check.
 
-Structured as **ports** (the abstraction) and **strategies** (the interchangeable implementations).
-Every capability is pluggable, so a rich harness gets a proxying strategy and a poor one gets ours,
-selected by configuration rather than by code.
+Its capabilities — `eventTap`, `design`, `plan` and `note` — are **built into the runtime** and known
+when it is built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider.
+Each is reached through its **port**. The event tap's Claude strategy is the case with
+interchangeable implementations: it proxies Claude's own hooks from behind the event tap's port,
+where another harness's strategy would stand in its place.
 
 It ships **with** the agent and runs on the host. It knows no harness and no corpus.
 
@@ -119,11 +121,6 @@ recovered from the name alone.** It replaces a working title of `anatomy`, which
 used: `anatomy` was a metaphor binding four distinct concepts, and `anatomy` was already
 `canon`'s own package name before `2f9bd6e5`.
 
-### `memory` — a runtime strategy
-
-One implementation behind the memory port, not a peer of the three concerns. Named here only because
-its package sits alongside them.
-
 ### `cli` — the one consumer entry
 
 A consumer installs one package and types one command.
@@ -145,7 +142,7 @@ projector.
 **One command, not two.** `cratylus` and `cratylus-run` were separate bins because the two surfaces
 lived in two packages and each built its own `cac`. The two DAGs that split defended are a fact
 about **imports** — which the bundler and the package manager already handle — not a fact that has
-to surface as two names a consumer must learn. A capability verb is `cratylus memory encode`, and
+to surface as two names a consumer must learn. A capability verb is `cratylus design show`, and
 the generated shims that invoke it spell one name.
 
 **What the merge costs, stated because it is a cost.** A host that only runs agents now installs the
@@ -162,15 +159,12 @@ graph BT
     canon["canon<br/><b>meaning</b>"]
     runtime["runtime<br/><b>mechanism</b>"]
     forge["forge<br/><b>projection</b>"]
-    memory["memory<br/><i>a strategy</i>"]
     cli["cratylus<br/><i>the one entry</i>"]
 
     canon --> schema
     forge --> schema
     forge --> runtime
-    memory --> runtime
     cli --> runtime
-    cli --> memory
     cli --> forge
     cli --> canon
 
@@ -179,7 +173,7 @@ graph BT
     classDef concern fill:#1f6feb22,stroke:#1f6feb,stroke-width:2px
     classDef support fill:#8b949e22,stroke:#8b949e
     class canon,runtime,forge concern
-    class schema,memory,cli support
+    class schema,cli support
 ```
 
 The load-bearing properties, in order of how much they matter:

@@ -5,9 +5,9 @@ Dev helpers shared by this repository's own build steps and test suites.
 **Private by construction.** The scope is `@repo`, not `@cratylus`, and `private: true` is
 set — so it cannot reach the registry by accident, and it is invisible to the publish
 pipeline's package inventory. That is the whole reason it exists as a package rather than as
-a directory inside one: `packages/canon/tooling/` is canon's, and forge and memory cannot
-import from it without inverting the dependency direction (canon depends on forge, never the
-reverse) or reaching across a package boundary by relative path, which breaks `typecheck:test`.
+a directory inside one: `packages/canon/tooling/` is canon's, and forge cannot import from it
+without inverting the dependency direction (canon depends on forge, never the reverse) or
+reaching across a package boundary by relative path, which breaks `typecheck:test`.
 
 **No build.** `exports` point at TypeScript source. Every consumer is either `vitest` or a
 `tsx`-driven script, both of which read `.ts` directly, so a `dist/` here would be a build
