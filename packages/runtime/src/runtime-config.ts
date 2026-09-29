@@ -1,12 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The HOST RUNTIME CONFIG — which capability providers this host uses.
+// The HOST RUNTIME CONFIG — what the projection told this host about the corpus.
 //
-// WHY THIS EXISTS. A capability was a "plugin" in SHAPE only: the provider was
-// hardcoded in three places (a static import in the CLI, a KNOWN_CAPABILITY_PACKAGES
-// literal in the loader, a direct constructor in the memory CLI). Nothing could
-// select a different MemoryStrategy, so the port's whole reason for existing —
-// swappable strategies — was unreachable. A plugin architecture with no
-// configuration surface is a shape, not a mechanism.
+// It carries the corpus's parts the capabilities act on — the lifecycle-event
+// vocabulary and each capability's configuration — and each harness's stanza of
+// native event names. Which capabilities exist is not among them: the four ship
+// inside the runtime and are known when it is built.
 //
 // WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
 // runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd (a
@@ -14,11 +12,6 @@
 // resolve from. The declaration still lives in config-is-code at the consumer's
 // site; DEPLOY realizes it into a host config, and the runtime reads that. Same
 // direction of authority as every other artifact here: declare → project → consume.
-//
-// RESOLUTION. `resolveFrom` is the directory whose `node_modules` the specifiers
-// resolve against — normally the site that installed them. This matters under an
-// isolated store, where a globally-installed bin cannot see a package it does not
-// declare: resolving from the site is what lets a THIRD-PARTY strategy load at all.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -67,12 +60,8 @@ export interface RuntimeHarness {
   readonly native: Readonly<Record<string, string>>;
 }
 
-/** The host's declared capability providers, and the vocabulary they speak. */
+/** The host's config: the corpus's parts and each harness's native names. */
 export interface RuntimeConfig {
-  /** Dir whose `node_modules` the specifiers resolve against. */
-  readonly resolveFrom?: string;
-  /** Capability provider package specifiers, in registration order. */
-  readonly capabilities: readonly string[];
   /**
    * The corpus's lifecycle vocabulary. Absent on a config written before deploy
    * emitted one; a capability that needs it must then REFUSE and say so, never fall
@@ -105,15 +94,12 @@ export function runtimeConfigPath(): string {
 }
 
 /**
- * Read the host config, or `null` when absent/unreadable. Absence is NOT an error:
- * a bare install with no config falls back to the CLI's bundled default set, so
- * configuring is opt-in and the zero-config path keeps working.
+ * Read the host config, or `null` when absent/unreadable. Absence is NOT an error
+ * here: a capability that needs a part of the config refuses on its own terms,
+ * naming the command that writes it.
  *
  * A config carrying ONLY a vocabulary, ONLY harness stanzas, or ONLY capability
- * configuration, is a real config. The `capabilities.length` test used to be the
- * whole liveness check, and it silently discarded a document whose entire payload
- * was the corpus's event names — the deploy-emitted case, where the operator
- * declared no provider override at all.
+ * configuration, is a real config; one carrying none of the three says nothing.
  */
 export function loadRuntimeConfig(
   path = runtimeConfigPath(),
@@ -123,30 +109,22 @@ export function loadRuntimeConfig(
     const raw = JSON.parse(
       readFileSync(path, 'utf-8'),
     ) as Partial<RuntimeConfig>;
-    const capabilities = Array.isArray(raw.capabilities)
-      ? raw.capabilities.filter((s): s is string => typeof s === 'string')
-      : [];
     const events = parseEvents(raw.events);
     const harnesses = parseHarnesses(raw.harnesses);
     const configuration = parseConfiguration(raw.configuration);
     if (
-      capabilities.length === 0 &&
       events === undefined &&
       harnesses === undefined &&
       configuration === undefined
     )
       return null;
     return {
-      capabilities,
       ...(events !== undefined ? { events } : {}),
       ...(harnesses !== undefined ? { harnesses } : {}),
       ...(configuration !== undefined ? { configuration } : {}),
-      ...(typeof raw.resolveFrom === 'string'
-        ? { resolveFrom: raw.resolveFrom }
-        : {}),
     };
   } catch {
-    // A malformed config must not wedge the runtime; the default set still loads.
+    // A malformed config must not wedge the runtime; it reads as none.
     return null;
   }
 }

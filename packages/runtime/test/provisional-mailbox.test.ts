@@ -1,31 +1,10 @@
-// ⚠ PROVISIONAL PATH — see `src/ports/provisional-mailbox.ts`.
-//
-// WHAT THIS FILE LOST, and why. It was `heartbeat.test.ts` and it tested a FUSED capability:
-// a period that drained a mailbox and sampled a pressure gate on every emission. The gate was
-// a subscriber's policy, the drain was a subscriber's inbox, and the two host adapters
-// realized a port that no longer exists. All of it is gone from the source, so all of it is
-// gone from here — a suite kept alive against deleted behaviour is a suite that reads green
-// for testing nothing.
-//
-// What survives is the one law that was always about the STORE rather than the pulse: a claim
-// is atomic under concurrent producers. `tmp → rename → ready`, because `rename(2)` is atomic
-// within a filesystem and an append is not.
-
-// ⚠ PROVISIONAL PATH — `heartbeat` is a PLACEHOLDER, not a name. See
-// `src/ports/heartbeat.ts` for the full notice: the capability's anchor is
+// ⚠ PROVISIONAL PATH — see `src/ports/provisional-mailbox.ts`: the mailbox's anchor is
 // undiscovered and is /signify's to derive, so nothing here coins one.
 //
-// The V9 falsifier gate:
-//   (1) the port is realized by TWO independent host adapters (push · stream),
-//       each exercised end-to-end with an injected clock and no live harness;
-//   (2) FALSIFIER — the drain is ATOMIC under concurrent producers: a
-//       read-then-delete claim DESTROYS deposits that land in its gap, and this
-//       test fails on exactly that;
-//   (3) FALSIFIER — the gate is SAMPLED, never CLOCKED: no number of emissions
-//       triggers consolidation while pressure sits below threshold (with the
-//       non-vacuous complement: above threshold it does fire);
-//   (4) the capability is UNREGISTERED — `loader.ts` and `plugin.ts` carry no
-//       reference to it, which is what keeps the post-derivation rename cheap.
+// The one law this file holds the store to: a claim is atomic under concurrent producers.
+// `tmp → rename → ready`, because `rename(2)` is atomic within a filesystem and an append
+// is not. FALSIFIER — a read-then-delete claim DESTROYS deposits that land in its gap, and
+// duplicates what two drainers read at once; this file fails on exactly that.
 
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -38,7 +17,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'cratylus-heartbeat-'));
+  return mkdtempSync(join(tmpdir(), 'cratylus-mailbox-'));
 }
 
 describe('accept 2: the drain is atomic under concurrent producers', () => {
@@ -135,5 +114,3 @@ describe('accept 2: the drain is atomic under concurrent producers', () => {
     expect(await store.claim()).toEqual([]);
   });
 });
-
-// ── (3) FALSIFIER · the gate is sampled, never clocked ───────────────────────

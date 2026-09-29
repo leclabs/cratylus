@@ -293,7 +293,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
-  'runtime/kernel.test.ts': 'BEHAVIORAL',
+  // drives `runCli` in a temporary git repository it builds itself; its refusals (a
+  // capability's, a first word that is no capability) ARE its fixtures.
+  'runtime/main.test.ts': 'BEHAVIORAL',
   // drives the `note` verb surface over temporary git repositories it builds and
   // merges itself; its refusals ARE its fixtures.
   'runtime/note.test.ts': 'BEHAVIORAL',
@@ -301,7 +303,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // merges itself, under a lifecycle configuration it writes; its refusals ARE its
   // fixtures.
   'runtime/plan.test.ts': 'BEHAVIORAL',
-  // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
+  // races producers and drainers against a store in temp dirs it makes itself.
   'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',
   // writes, folds and merges records in temp repositories it builds itself; its
   // refusals (an existing record id, another entity's version) ARE its fixtures.

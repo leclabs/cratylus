@@ -1,17 +1,13 @@
 import { defineConfig } from 'tsup';
 
-// runtime is a library AND (as of S3) a thin bin. The LIBRARY pass emits .d.ts
-// for every entry and exposes one entry per `exports` subpath — the S1 contracts
-// (`.`, `./events`, `./ports/*`) plus the S3 kernel (`./loader`, `./dispatch`) — so a
-// consumer imports the contract, a port, or the runtime kernel with types intact.
-// The BIN pass is separate (no dts, shebang banner) so `cratylus` runs as an
-// executable; the bin name is a placeholder S9 rebrands.
+// runtime is a library: one entry per `exports` subpath, each with its .d.ts, so a
+// consumer imports the contracts (`.`, `./events`, `./ports/event-tap`), a
+// capability module, the capability keyspace, or `runCli` (`./main`) with types
+// intact. The executable is the installable CLI package's; this one ships no bin.
 export default defineConfig([
   {
     entry: {
       index: 'src/index.ts',
-      loader: 'src/loader.ts',
-      dispatch: 'src/dispatch.ts',
       main: 'src/main.ts',
       'bin-name': 'src/bin-name.ts',
       capability: 'src/capability.ts',
@@ -19,7 +15,6 @@ export default defineConfig([
       ulid: 'src/ulid.ts',
       'verb-flags': 'src/verb-flags.ts',
       events: 'src/events.ts',
-      'ports/memory': 'src/ports/memory.ts',
       'ports/event-tap': 'src/ports/event-tap.ts',
       'capabilities/event-tap': 'src/capabilities/event-tap/index.ts',
     },

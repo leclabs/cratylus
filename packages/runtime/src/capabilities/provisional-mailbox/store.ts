@@ -1,14 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
-// name. See `ports/heartbeat.ts` for the full notice: the anchor for this
-// capability is undiscovered and is /signify's to derive; `heartbeat`
-// encodes only the shard that produced these files.
+// ⚠ PROVISIONAL PATH — `provisional-mailbox` is a PLACEHOLDER, not a name.
+// See `ports/provisional-mailbox.ts` for the full notice: the anchor for this
+// mechanism is undiscovered and is /signify's to derive.
 //
-// THE INBOUND STORE — the afferent side, claimed on each emission.
+// THE INBOUND STORE — the afferent side, drained by whoever claims it.
 //
 // EXACTLY-ONCE UNDER CONCURRENCY, and the design is entirely about that word.
 // The obvious implementation — one append-log, claimed by read-then-delete — is
-// wrong twice over, and the falsifier in `test/heartbeat.test.ts` measures
+// wrong twice over, and the falsifier in `test/provisional-mailbox.test.ts` measures
 // both: a deposit landing between the read and the unlink is DESTROYED, and two
 // claims racing each other both read the file and each returns every envelope,
 // so the same inbound message is delivered twice. Measured on that naive

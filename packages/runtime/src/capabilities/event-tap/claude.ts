@@ -40,10 +40,9 @@ import {
 export const EVENT_TAP_ID = `${CLI_BIN}-event-tap`;
 
 /**
- * Resolve the target `settings.json` path, override-first (mirrors the memory
- * strategy's home resolution): explicit ctor arg ▸ `$CLAUDE_SETTINGS_PATH` env ▸
- * `<cwd>/.claude/settings.json`. Lazy (read per call) so a singleton plugin
- * instance honours the environment of each invocation.
+ * Resolve the target `settings.json` path, override-first: explicit ctor arg ▸
+ * `$CLAUDE_SETTINGS_PATH` env ▸ `<cwd>/.claude/settings.json`. Lazy (read per
+ * call) so an instance honours the environment of each invocation.
  */
 function resolveSettingsPath(override: string | undefined): string {
   if (override !== undefined) return override;
@@ -98,7 +97,7 @@ export class EventTapHostClaude implements EventTapHost {
   /**
    * @param settingsPath absolute path to the target `settings.json`; when omitted
    *  the path is resolved lazily from `$CLAUDE_SETTINGS_PATH` or the cwd's
-   *  `.claude/settings.json` (so a plugin singleton is host-portable).
+   *  `.claude/settings.json` (so an instance is host-portable).
    * @param nativeEvents canonical event → claude native name, from the host config
    *  the projection emitted (`harnesses.claude.native`, read by `nativeEventsOf`).
    *  REQUIRED, and injected rather than known: this class held a private copy of

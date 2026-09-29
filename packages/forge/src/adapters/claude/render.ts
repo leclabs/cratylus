@@ -193,21 +193,13 @@ export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
 // `core/body` (harness-neutral, shared with codex) and are imported +
 // re-exported at the top of this module. Only the claude FRAMING is local.
 
-/**
- * The skill SKILL.md front-matter. A composed `kind: skill` cell carries
- * `name / description / trigger`; a `deploy: skill-dir` cell (the `toolSection`
- * path, e.g. `memory`) carries only `name / description` — no `trigger` line
- * (no command affordance).
- */
+/** The skill SKILL.md front-matter: `name / description / trigger`. */
 function skillFrontMatter(s: ResolvedSkill): string[] {
-  const fm = [
+  return [
     `name: ${s.name}`,
-    `description: ${s.skillDescription ?? s.description}`,
+    `description: ${s.description}`,
+    `trigger: ${s.trigger}`,
   ];
-  if (s.toolSection === undefined) {
-    fm.push(`trigger: ${s.trigger}`);
-  }
-  return fm;
 }
 
 /** The full SKILL.md for a skill: front-matter + generated body. */

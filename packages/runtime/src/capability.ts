@@ -1,37 +1,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE CAPABILITY KEYSPACE — each capability declared once, with its scope.
+// THE CAPABILITY KEYSPACE — every capability the runtime ships, each named once.
 //
-// A capability is SESSION-SCOPED when its state belongs to one agent session,
-// so an invocation that names no session is wrong rather than merely anonymous:
-// `memory` binds every write to `$AGENT_SESSION_ID`, and a sessionless call
-// mints a fresh session and leaves a lock held against a pid that has exited.
-// The others name no session at all: `design`, `plan` and `note` are
-// repository-scoped (attribution rides `--author`, the repository is the
-// working directory), and `eventTap` and `heartbeat` read no session either.
-// Census at this writing: `memory` is the only capability whose implementation
-// reads a session id.
+// The four are built in: each is a module of this package, known when the
+// runtime is built, and `main.ts` routes each to its own verb surface. Nothing is
+// discovered, registered or loaded, and none is scoped to an agent session —
+// `design`, `plan` and `note` are repository-scoped (attribution rides
+// `--author`, the repository is the working directory), and `eventTap` reads the
+// host's harness settings.
 //
-// A LEAF, like `bin-name`: the projector reads this to decide what a projected
-// shim demands, and must not drag the loader's lineage in to learn it.
+// A LEAF, like `bin-name`: the CLI reads this to decide which first words are
+// capability verbs, and must not drag the capabilities' lineage in to learn it.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Every capability, and whether its state belongs to one agent session. */
-export const SESSION_SCOPED = {
-  memory: true,
-  eventTap: false,
-  heartbeat: false,
-  design: false,
-  plan: false,
-  note: false,
-} as const satisfies Record<string, boolean>;
-
-/** A capability name — the dispatch `<capability>`. */
-export type Capability = keyof typeof SESSION_SCOPED;
-
 /**
- * The capability keyspace, in declaration order — the dispatch `<capability>`
- * axis, one entry per capability port a `RuntimePlugin` may provide.
+ * The capability keyspace, in declaration order — the `<capability>` axis of
+ * `cratylus <capability> <verb>`.
  */
-export const CAPABILITIES = Object.keys(
-  SESSION_SCOPED,
-) as readonly Capability[];
+export const CAPABILITIES = ['eventTap', 'design', 'plan', 'note'] as const;
+
+/** A capability name — one member of {@link CAPABILITIES}. */
+export type Capability = (typeof CAPABILITIES)[number];

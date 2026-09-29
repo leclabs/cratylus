@@ -10,53 +10,42 @@ It **depends on nothing** in this system — zero `@cratylus/*` dependencies —
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
+## Capabilities
+
+The runtime ships exactly four capabilities, each a module of this package and each known when the
+runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
+names them: `eventTap`, `design`, `plan` and `note`.
+
 ## Ports and strategies
 
-The abstraction is a **port**; the interchangeable implementations are **strategies**. A capability
-package declares which ports it provides as its runtime face:
-
-```ts
-import { defineRuntimePlugin } from '@cratylus/runtime';
-import { myMemory } from './strategy.js';
-
-export const runtimePlugin = defineRuntimePlugin({
-  name: 'my-memory',
-  memory: myMemory,
-});
-```
-
-`defineRuntimePlugin` is an identity factory: it returns its argument unchanged, so a consumer
-addresses the plugin and its ports by the **imported binding**, never a string id. `name` is only a
-namespace segment for reporting and uniqueness.
-
-`RuntimePlugin` is standalone and distinct from the build host's `AgentPlugin`. A capability package
-exposes two named exports — `buildPlugin` and `runtimePlugin` — never one dual-hook object, which is
-what keeps the build DAG and the runtime DAG from reaching across.
+The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
+against its port: `EventTapHost` (whose Claude strategy is `EventTapHostClaude`), `DesignHost`,
+`PlanHost` and `NoteHost`. `MailboxHost` is a port too, under a provisional path, and is no
+capability.
 
 ## Subpaths
 
 | subpath                    | what it carries                                                                                                                                                                                                             |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`                        | `RuntimePlugin`, `defineRuntimePlugin`, the ports, the event taxonomy                                                                                                                                                       |
-| `./ports/memory`           | `MemoryStrategy` — the memory protocol's verb surface as one typed contract                                                                                                                                                 |
+| `.`                        | `EventName` and the `EventTapHost`, `DesignHost`, `PlanHost` and `NoteHost` ports                                                                                                                                           |
+| `./events`                 | `EventName` — an event is a name; which names are valid is the corpus's, read from the host runtime config                                                                                                                  |
 | `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                |
-| `./events`                 | `LIFECYCLE_EVENTS` (28, in canonical order) and the derived `LifecycleEvent` union                                                                                                                                          |
-| `./loader`                 | `RuntimeHost`, `bootstrap`, `discoverConfigured`, `CAPABILITIES`                                                                                                                                                            |
-| `./dispatch`               | `dispatch`, `parseArgs`, `verbsOf`, `VerbArgs`, `DispatchResult`                                                                                                                                                            |
-| `./main`                   | `runCli` — the thin `cac` CLI over loader + dispatch                                                                                                                                                                        |
-| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                                                                                   |
+| `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                          |
+| `./capability`             | `CAPABILITIES`, `Capability` — the four capabilities the runtime ships                                                                                                                                                      |
+| `./main`                   | `runCli` — the thin `cac` CLI that routes each capability to its verb surface                                                                                                                                               |
+| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `RuntimeConfig`                                                                                                                                                 |
 | `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                  |
 | `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                      |
 | `./verb-flags`             | `VerbFlags`, `Flags`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's flags and whether each takes a value, the one reader (a flag that takes no value never takes the next token), and the one unknown-flag refusal |
-| `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin                                                                                                                                            |
+| `./package.json`           | the manifest                                                                                                                                                                                                                |
 
-The `.` barrel is pure contracts plus one identity helper: no implementation.
+The `.` barrel is pure contracts: no implementation.
 
 ## The three domains
 
 Notes, design and plans are immutable records in the repository, folded when someone asks. Agents
 and users meet them only through three capabilities that ship inside the runtime, each routed by
-`runCli` ahead of the discovered dispatch and each with its port in the `.` barrel:
+`runCli` to its own verb surface and each with its port in the `.` barrel:
 
 | capability | port         | verbs                                                                       |
 | ---------- | ------------ | --------------------------------------------------------------------------- |
@@ -90,26 +79,24 @@ homed in `./verb-flags`, names every such flag as given, the verb's nearest flag
 within an edit for every three letters (`--glose` and `-gloss` get `--gloss`), and every flag the
 verb takes, and asks for the call to be corrected and run again.
 
-## Dispatch
+## Routing
 
-The dispatcher routes `<capability> <verb> [args]` to a bound port method. It is capability-agnostic
-— a port is an opaque bag of verb handlers, and per-verb argv marshalling belongs to the capability
-package. It is also pure: it returns a `DispatchResult` and does no process IO, so the bin maps it to
-stdio and an exit code.
+`runCli` routes `<capability> <verb> [args]` through one table typed over `Capability`, so a
+capability without a route does not compile. Each capability's verb surface owns its verbs' flag
+grammar: `eventTap` prints its JSON result, and `design`, `plan` and `note` print their view.
+A refusal exits `1` as `cratylus: <message>`; a first word that is no capability exits `1` naming
+the four. Never a silent no-op.
 
-Unknown fails loud. An unknown capability or verb is code `2` with a message listing what _is_
-available; a verb that throws is code `1`; success is `0`. Never a silent no-op.
+`runCli` exports but does not invoke. The invoking bin lives in [`cratylus`](../cli/README.md),
+which hands the runtime every command whose first word is a member of `CAPABILITIES`.
 
-## Which providers a host uses
+## The host runtime config
 
-`runCli` accepts declared plugins directly. Absent that, `discoverConfigured` reads the host config
-— `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json` — and resolves the named capability package
-specifiers against `resolveFrom`'s `node_modules`. An absent or malformed config is not an error: the
-caller's bundled default set still loads, so configuring is opt-in.
-
-`runCli` exports but does not invoke. The invoking bin lives in
-[`cratylus`](../invoke/README.md), which declares its capability packages as real
-dependencies and passes them in.
+`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`, which deploy and
+install write: the corpus's lifecycle-event vocabulary (`events`), each harness's native event
+names (`harnesses.<harness>.native`) and each capability's configuration (`configuration`). Any one
+of the three is a live config. A capability that needs a part the host lacks refuses and names the
+command that writes it.
 
 ## The bin name
 
@@ -119,5 +106,5 @@ can see it. A rename that missed one produced a script that failed on a host rat
 
 Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus.json`) and
 the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
-irreducible second copy is [`cratylus`](../invoke/README.md)'s `bin` key, which npm reads with
+irreducible second copy is [`cratylus`](../cli/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.

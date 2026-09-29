@@ -4,7 +4,7 @@
 // The mechanism is real and tested; its ANCHOR is not derived. Under `cratylism` a name is
 // found by cold verification, never coined, so the prefix stands until a derivation lands —
 // and `capability-keyspace.test.ts` reads that prefix as "no anchor yet", which is why this
-// port is deliberately absent from `CAPABILITIES` and from `RuntimePlugin`.
+// port is deliberately absent from `CAPABILITIES`.
 //
 // WHAT IT IS: a durable single-consumer inbox. A producer DEPOSITS an envelope; a consumer
 // CLAIMS everything waiting, atomically. Publication is `tmp → rename → ready`, because
@@ -12,11 +12,6 @@
 // non-interleaved writes for PIPES only, and declines to specify them for regular files.
 // (macOS `PIPE_BUF` is 512 bytes, so even the folklore version of that guarantee is
 // smaller than people assume.)
-//
-// IT WAS EXTRACTED FROM `heartbeat`, where it did not belong. The period used to CLAIM this
-// store on every emission and hand the result out as `Tick.claimed` — which made a periodic
-// event responsible for someone else's mail. A heartbeat emits; whoever wants an inbox
-// drains one, on whatever schedule it likes, including on a tick.
 //
 // ⚠ SECURITY — `body` is UNTRUSTED CONTENT and may reach a model's context verbatim: an
 // inbound store read into a live session is a prompt-injection surface. Producers MUST be

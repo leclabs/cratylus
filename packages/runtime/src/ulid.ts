@@ -3,13 +3,11 @@
  *
  * 128 bits, Crockford base32, 26 chars: 10 chars of 48-bit millisecond
  * timestamp + 16 chars of 80-bit randomness. Encoded MSB-first so the string
- * sorts lexicographically by time — the property memory's EPISODIC store relies
- * on to order events within a `(scope, path)` group. The record store mints
- * every record id from it: 80 random bits need no coordination between
- * branches or machines.
+ * sorts lexicographically by time. The record store mints every record id from
+ * it: 80 random bits need no coordination between branches or machines.
  *
- * The one ULID implementation: it lives in the runtime so both the record store
- * and `@cratylus/memory` (through `@cratylus/runtime/ulid`) import it.
+ * The one ULID implementation: it lives in the runtime, beside the record store,
+ * and is exported at `@cratylus/runtime/ulid`.
  *
  * Monotonic within a millisecond: if two ULIDs are minted in the same ms, the
  * randomness of the second is the first's incremented by one, preserving total
