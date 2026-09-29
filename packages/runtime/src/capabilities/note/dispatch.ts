@@ -20,14 +20,13 @@
 
 import type { NoteChange, NoteHost, NoteInput } from '../../ports/note.js';
 import { bare, parsed } from '../../record-store/names.js';
-import type { VerbFlags } from '../../verb-flags.js';
+import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { notebookView } from '../../view/notebook.js';
 import {
   INVOCATION,
   invocation,
   many,
   one,
-  parseArgv,
   subject,
   verbOf,
 } from '../plan/argv.js';
@@ -131,11 +130,31 @@ export function noteHost(from: string = process.cwd()): NoteHost {
 /** The notebook's verbs, in the order its header lists them, and the flags
  *  each takes. */
 export const VERBS = {
-  show: [],
-  capture: ['kind', 'topic', 'body', 'blocks', ...INVOCATION],
-  revise: ['title', 'kind', 'topic', 'body', 'blocks', ...INVOCATION],
-  retract: [...INVOCATION],
-  reconcile: ['title', 'kind', 'topic', 'body', 'blocks', ...INVOCATION],
+  show: {},
+  capture: {
+    kind: 'value',
+    topic: 'value',
+    body: 'value',
+    blocks: 'value',
+    ...INVOCATION,
+  },
+  revise: {
+    title: 'value',
+    kind: 'value',
+    topic: 'value',
+    body: 'value',
+    blocks: 'value',
+    ...INVOCATION,
+  },
+  retract: { ...INVOCATION },
+  reconcile: {
+    title: 'value',
+    kind: 'value',
+    topic: 'value',
+    body: 'value',
+    blocks: 'value',
+    ...INVOCATION,
+  },
 } as const satisfies VerbFlags;
 
 /** Route `note <verb> [args]` to the note capability over the repository
@@ -145,7 +164,7 @@ export function dispatchNote(
   opts: { readonly from?: string } = {},
 ): string {
   const verb = verbOf(argv, 'note', VERBS);
-  const args = parseArgv(argv.slice(1), 'note', verb, VERBS[verb]);
+  const args = readArgv(argv.slice(1), 'note', verb, VERBS[verb]);
   const host = noteHost(opts.from);
   const title = () => subject(args, 'note', verb, 'note');
   const change = (): NoteChange => {

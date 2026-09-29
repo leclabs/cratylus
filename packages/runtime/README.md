@@ -35,20 +35,20 @@ what keeps the build DAG and the runtime DAG from reaching across.
 
 ## Subpaths
 
-| subpath                    | what it carries                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------- |
-| `.`                        | `RuntimePlugin`, `defineRuntimePlugin`, the ports, the event taxonomy              |
-| `./ports/memory`           | `MemoryStrategy` — the memory protocol's verb surface as one typed contract        |
-| `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                       |
-| `./events`                 | `LIFECYCLE_EVENTS` (28, in canonical order) and the derived `LifecycleEvent` union |
-| `./loader`                 | `RuntimeHost`, `bootstrap`, `discoverConfigured`, `CAPABILITIES`                   |
-| `./dispatch`               | `dispatch`, `parseArgs`, `verbsOf`, `VerbArgs`, `DispatchResult`                   |
-| `./main`                   | `runCli` — the thin `cac` CLI over loader + dispatch                               |
-| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                          |
-| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                         |
-| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID             |
-| `./verb-flags`             | `VerbFlags`, `refuseUnknown`, `refused`, `nearest` — the one unknown-flag refusal  |
-| `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin   |
+| subpath                    | what it carries                                                                                                                                                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                        | `RuntimePlugin`, `defineRuntimePlugin`, the ports, the event taxonomy                                                                                                                                                       |
+| `./ports/memory`           | `MemoryStrategy` — the memory protocol's verb surface as one typed contract                                                                                                                                                 |
+| `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                |
+| `./events`                 | `LIFECYCLE_EVENTS` (28, in canonical order) and the derived `LifecycleEvent` union                                                                                                                                          |
+| `./loader`                 | `RuntimeHost`, `bootstrap`, `discoverConfigured`, `CAPABILITIES`                                                                                                                                                            |
+| `./dispatch`               | `dispatch`, `parseArgs`, `verbsOf`, `VerbArgs`, `DispatchResult`                                                                                                                                                            |
+| `./main`                   | `runCli` — the thin `cac` CLI over loader + dispatch                                                                                                                                                                        |
+| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                                                                                   |
+| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                  |
+| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                      |
+| `./verb-flags`             | `VerbFlags`, `Flags`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's flags and whether each takes a value, the one reader (a flag that takes no value never takes the next token), and the one unknown-flag refusal |
+| `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin                                                                                                                                            |
 
 The `.` barrel is pure contracts plus one identity helper: no implementation.
 
@@ -79,11 +79,16 @@ arrives as `configuration.plan` in the host runtime config, which deploy emits; 
 refuses and names the deploy, and `design show` shows the lattice and says the plans standing on it
 wait for that deploy.
 
-Each verb declares, beside it, the flags it takes, and an unknown flag is refused before the verb
-acts: nothing is written, and the call exits `1`. A single-dash token (`-x`) is an attempted flag
-and is refused too. One refusal, homed in `./verb-flags`, names every such flag as given, the verb's
-nearest flag to each when one is within an edit for every three letters (`--glose` and `-gloss` get
-`--gloss`), and every flag the verb takes, and asks for the call to be corrected and run again.
+Each verb declares, beside it, the flags it takes and whether each takes a value, and one reader in
+`./verb-flags` reads the verb's arguments against that declaration. A flag that takes a value is
+given as `--flag value` or `--flag=value`, taking the next token unless it begins with `--`; a flag
+that takes no value (`plan`'s `--repin`) is given alone and never takes the next token, so in
+`--repin -x` the `-x` is read as the attempted flag it is. An unknown flag is refused before the
+verb acts: nothing is written, and the call exits `1`. A single-dash token (`-x`) is an attempted
+flag and is refused too, as is a flag that takes no value given one (`--repin=x`). One refusal,
+homed in `./verb-flags`, names every such flag as given, the verb's nearest flag to each when one is
+within an edit for every three letters (`--glose` and `-gloss` get `--gloss`), and every flag the
+verb takes, and asks for the call to be corrected and run again.
 
 ## Dispatch
 

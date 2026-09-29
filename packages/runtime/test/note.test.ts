@@ -396,7 +396,7 @@ describe('note — the flags each verb takes', () => {
     ];
     expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
     for (const [verb, flag, ...rest] of calls) {
-      expect(refused(note, repo, verb, ...rest, `--${flag}`, 'x')).toBe(
+      expect(refused(note, repo, verb, ...rest, `--${flag}`, '- a list')).toBe(
         verbFlags.refused('note', verb, [`--${flag}`], VERBS[verb]),
       );
       expect(
