@@ -23,11 +23,18 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import {
+  type EventTapResult,
+  type EventTapVerb,
+  VERBS,
+} from '../src/capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 import {
+  RUNTIME_CONFIG_ENV,
   type RuntimeConfig,
   loadRuntimeConfig,
 } from '../src/runtime-config.js';
+import * as verbFlags from '../src/verb-flags.js';
 
 /**
  * The host config a deployed host would carry — the corpus's vocabulary, and
@@ -332,6 +339,90 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
       ),
     ).toThrow(/install --harness claude[\s\S]*deploy --harness claude/);
     expect(existsSync(settingsPath)).toBe(false);
+  });
+});
+
+describe('a flag the verb does not take is refused before the verb acts', () => {
+  /** Each verb, and one flag it does not take. */
+  const UNTAKEN: Record<EventTapVerb, string> = {
+    install: '--evnets',
+    uninstall: '--sink',
+    read: '--events',
+    status: '--bogus',
+  };
+
+  /** `argv` driven with no host config: `$AGENT_RUNTIME_CONFIG` at a path
+   *  that holds none. */
+  function unconfigured(argv: string[]): EventTapResult {
+    const prior = process.env[RUNTIME_CONFIG_ENV];
+    process.env[RUNTIME_CONFIG_ENV] = join(
+      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
+      'none.json',
+    );
+    try {
+      return dispatchEventTap(argv);
+    } finally {
+      if (prior === undefined) delete process.env[RUNTIME_CONFIG_ENV];
+      else process.env[RUNTIME_CONFIG_ENV] = prior;
+    }
+  }
+
+  for (const [verb, flag] of Object.entries(UNTAKEN) as [
+    EventTapVerb,
+    string,
+  ][]) {
+    for (const [host, drive] of [
+      ['with a host config', tap],
+      ['without one', unconfigured],
+    ] as const) {
+      it(`${verb} ${flag}, ${host}`, () => {
+        const { settingsPath, sinkPath } = fixture();
+        const argv = [verb, '--settings', settingsPath, flag, 'x'];
+        if (verb === 'install')
+          argv.push('--events', 'turn.end', '--sink', sinkPath);
+        expect(() => drive(argv)).toThrow(
+          new Error(verbFlags.refused('eventTap', verb, [flag], VERBS[verb])),
+        );
+        expect(existsSync(settingsPath)).toBe(false);
+        expect(existsSync(sinkPath)).toBe(false);
+      });
+    }
+  }
+
+  it('reads a declared --flag=value as that flag, and installs', () => {
+    const { settingsPath, sinkPath } = fixture();
+    expect(
+      tap([
+        'install',
+        '--events=turn.end',
+        `--sink=${sinkPath}`,
+        `--settings=${settingsPath}`,
+      ]),
+    ).toEqual({ verb: 'install', events: ['turn.end'], sink: sinkPath });
+    const ours = read(settingsPath).hooks?.Stop?.[0]?.hooks[0];
+    expect(ours?.id).toBe('cratylus-event-tap');
+    expect(ours?.command).toContain(sinkPath);
+  });
+
+  it('refuses an undeclared --flag=value as --flag, suggesting the nearest', () => {
+    const { settingsPath, sinkPath } = fixture();
+    expect(verbFlags.nearest('--evnets', VERBS.install)).toBe('events');
+    expect(() =>
+      tap([
+        'install',
+        '--evnets=turn.end',
+        '--sink',
+        sinkPath,
+        '--settings',
+        settingsPath,
+      ]),
+    ).toThrow(
+      new Error(
+        verbFlags.refused('eventTap', 'install', ['--evnets'], VERBS.install),
+      ),
+    );
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(existsSync(sinkPath)).toBe(false);
   });
 });
 
