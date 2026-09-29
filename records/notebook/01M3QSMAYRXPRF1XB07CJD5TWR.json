@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QSMAYRXPRF1XB07CJD5TWR",
+    "entity": "01M3QSMAYRXPRF1XB07CJD5TWQ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:57:33.528Z",
+    "reason": "the mechanics shape the role contract and its live acceptance; defaults are encoded so the unit stays buildable",
+    "cause": "design amend of integrator position at 2709be8e"
+  },
+  "payload": {
+    "title": "integration line mechanics",
+    "kind": "question",
+    "topic": "integrator",
+    "body": "The amended integrator position (2709be8e) leaves three mechanics open, and plan integrator-position encodes a default for each. (1) The line's name and birth: the plan recommends `plan/<plan name>`, cut from main when the integrator is first dispatched for a bound plan, with the dispatch naming it. (2) Red on the combined tree: the gloss no longer says 'only when green'. The unit keeps deliver's prior law, so a unit whose combined tree is red does not stay on the line, the line is left unchanged, and the red goes to the architect. The alternative is that the line carries the red merge until a fix lands. (3) The promotion's form: the unit opens a pull request when the repository has a forge remote and `gh`, and otherwise it hands the operator the exact git command, never moving main itself.",
+    "blocks": []
+  }
+}
