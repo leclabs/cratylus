@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QSFFWZMY05FT54VAC0Y0QV",
+    "entity": "01M3QSFFWZMY05FT54VAC0Y0QT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:54:54.751Z",
+    "reason": "assay boundary, ruled; docs owed",
+    "cause": "assay of role routing on claude at 406cd7d0"
+  },
+  "payload": {
+    "title": "claude tiers displace host model defaults",
+    "kind": "idea",
+    "topic": "docs",
+    "body": "Since claude definitions carry a role tier, a host's settings `model`, ANTHROPIC_MODEL, and CLAUDE_CODE_SUBAGENT_MODEL without FORCE no longer move cratylus agents (Claude's own precedence: a definition's model beats defaults). Ruled within role routing: a default is not an override; --model and CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 with CLAUDE_CODE_SUBAGENT_MODEL still win. The READMEs must say this plainly (docs rewrite, piece 4).",
+    "blocks": []
+  }
+}

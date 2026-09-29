@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QSFG2X10SYBHA1CXG145V7",
+    "entity": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QS44E2VW0E67DPB3C1SM0W"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T23:54:54.941Z",
+    "reason": "claude-parity closed; objective sign ruled (conceptual-integrity)",
+    "cause": "assay of role routing on claude at 406cd7d0"
+  },
+  "payload": {
+    "name": "architect-position",
+    "realizes": [
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "bound"
+  }
+}
