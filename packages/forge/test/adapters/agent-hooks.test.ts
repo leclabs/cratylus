@@ -123,6 +123,40 @@ describe('per-agent hooks — composition becomes attachment', () => {
   });
 });
 
+describe('an agent with skills and an enforcing guardrail has ONE hooks block', () => {
+  const onStart: Guardrails = {
+    body: 'greeter ≜ greet at start',
+    substrate: 'harness',
+    events: ['session.start'],
+  };
+  const mechs = new Map<string, HarnessMechanism>([
+    ...MECHANISMS,
+    ['greeter', mech('sh greet.sh', { order: 0 })],
+  ]);
+  const md = (guardrails: readonly Guardrails[]) =>
+    agentToClaudeMd(
+      { ...mk('nico', guardrails), skills: ['design', 'note'] } as Agent,
+      { manifest: FIXTURE_MANIFEST, mechanisms: mechs },
+    );
+
+  it('adds the skill-loading SessionStart beside the enforcing events under one key', () => {
+    const out = md([stance]);
+    expect(out.match(/^hooks:$/gm)).toHaveLength(1);
+    expect(out.match(/^ {2}SessionStart:$/gm)).toHaveLength(1);
+    expect(out).toContain('Stop:');
+    expect(out).toContain('stance.sh');
+  });
+
+  it('puts the skill-loading entry before an enforcing entry on the same event', () => {
+    const out = md([onStart]);
+    expect(out.match(/^ {2}SessionStart:$/gm)).toHaveLength(1);
+    expect(out.match(/^ {4}- (matcher|hooks):/gm)).toHaveLength(2);
+    expect(out.indexOf('matcher: "startup|clear|compact"')).toBeLessThan(
+      out.indexOf('greet.sh'),
+    );
+  });
+});
+
 describe('an unresolved mechanism emits nothing — the source cell is innocent', () => {
   it('omits a value whose mechanism was not injected', () => {
     // The value still DECLARES its bound; this adapter simply has no realization

@@ -46,6 +46,10 @@ import {
 } from '../../core/harness-adapter.js';
 import { canonicalToClaude, claudeBindingOf } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
+import {
+  PERSONA_LAUNCH_MATCHER,
+  personaSkillCommand,
+} from './persona-launch.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
 // consumers keep importing them from here (byte-identical projection).
@@ -69,7 +73,9 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
  * (<https://code.claude.com/docs/en/sub-agents>): each listed skill's full content
  * is injected into the subagent's context at startup. It carries `Agent.skills`,
  * the closure projection hands this adapter, in the order it arrives, and is
- * omitted when that list is empty.
+ * omitted when that list is empty. A `--agent` MAIN session preloads none of it, so
+ * an agent with skills also carries a `SessionStart` hook printing them
+ * (`personaLaunchEntry`).
  */
 function agentFrontMatter(
   a: Agent,
@@ -109,6 +115,9 @@ function agentFrontMatter(
  * `order` is honoured explicitly. A dir-scan or object-key order would impose
  * something alphabetical, and these sequences are semantic — a blocking gate must
  * evaluate before a non-blocking nudge.
+ *
+ * The same block carries the agent's persona-launch `SessionStart` entry, so one
+ * agent has one `hooks:` key however many reasons it has for a hook.
  */
 function agentHooksFrontMatter(
   a: Agent,
@@ -129,10 +138,15 @@ function agentHooksFrontMatter(
       (x.m.order ?? Number.MAX_SAFE_INTEGER) -
       (y.m.order ?? Number.MAX_SAFE_INTEGER),
   );
-  if (enforcing.length === 0) return [];
+  // The persona's composed skills reach a `--agent` MAIN session through this same
+  // block: Claude preloads `skills` only for a dispatched subagent. The entry is the
+  // FIRST of its event, so the skills are in context before any enforcing hook runs.
+  const launch = personaLaunchEntry(a);
+  if (enforcing.length === 0 && launch.length === 0) return [];
 
   // native claude event → the entries firing on it, in `order`.
   const byEvent = new Map<string, string[]>();
+  if (launch.length > 0) byEvent.set('SessionStart', launch);
   for (const { f, m } of enforcing) {
     for (const event of f.events) {
       const binding = claudeBindingOf(event);
@@ -169,6 +183,26 @@ function agentHooksFrontMatter(
     out.push(...lines);
   }
   return out;
+}
+
+/**
+ * The `SessionStart` entry that loads an agent's composed skills into a `--agent`
+ * main session (see `persona-launch.ts`): empty for an agent with no skills. The
+ * hook does not fire when the agent is dispatched as a subagent, where `skills`
+ * already preloads them, so no skill loads twice. One handler per skill, in the
+ * agent's `skills` order, because Claude caps each handler's output on its own.
+ */
+function personaLaunchEntry(a: Agent): string[] {
+  if (!a.skills?.length) return [];
+  const roots = { home: CLAUDE_HOME_EXPR, skillRel: claudeSkillRel };
+  return [
+    `    - matcher: ${JSON.stringify(PERSONA_LAUNCH_MATCHER)}`,
+    '      hooks:',
+    ...a.skills.flatMap((skill) => [
+      '        - type: command',
+      `          command: ${JSON.stringify(personaSkillCommand(a.name, skill, roots))}`,
+    ]),
+  ];
 }
 
 /** Frame a body as a claude artifact: front-matter fence + body. */

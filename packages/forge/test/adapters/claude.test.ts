@@ -28,9 +28,11 @@ import {
   CLAUDE_LAUNCHER_SCRIPT,
   CLAUDE_PERSONA_BADGE_FILE,
   CLAUDE_STATUS_LINE_FILE,
+  agentToClaudeMd,
   claudeAgentRel,
   claudeHarnessAdapter,
   claudeLaunchSurface,
+  claudeSkillRel,
 } from '../../src/adapters/claude/render.js';
 import {
   STANCE_MANIFEST,
@@ -518,6 +520,131 @@ describe('the claude persona badge', () => {
       expect(r.status).toBe(0);
       expect(r.stdout).toBe('HOST');
       expect(run(agent('nico'), undefined, env).stdout).toBe('');
+    });
+  });
+});
+
+// A `--agent` MAIN session preloads none of an agent's `skills` (Claude does that for a
+// dispatched subagent only), so the definition carries a `SessionStart` hook that prints
+// them. What matters is what those commands emit on a host: each skill's body, in the
+// agent's order, its front matter never reaching the model — and a skill that is not
+// there degrading to a named requirement, not to a session that will not start. Claude
+// caps each hook's output on its own at 10,000 characters, so each skill is its own hook.
+describe('the claude persona launch — skills into a --agent main session', () => {
+  const agentDef = (skills?: readonly string[]) =>
+    agentToClaudeMd(
+      {
+        name: 'mav',
+        description: 'd',
+        archetype: 'a',
+        guardrails: ['honesty ≜ assert from evidence'],
+        ...(skills ? { skills } : {}),
+      } as never,
+      { manifest: FIXTURE_MANIFEST },
+    );
+  const commandsOf = (md: string) =>
+    md
+      .split('\n')
+      .filter((l) => /^ +command: /.test(l))
+      .map((l) => JSON.parse(l.replace(/^ +command: /, '')) as string);
+
+  it('carries one SessionStart entry, on the sources that start a context without the skills', () => {
+    const md = agentDef(['design', 'note']);
+    expect(md.match(/^hooks:$/gm)).toHaveLength(1);
+    expect(md.match(/^ {2}SessionStart:$/gm)).toHaveLength(1);
+    expect(md.match(/^ {4}- /gm)).toHaveLength(1);
+    expect(md).toContain('    - matcher: "startup|clear|compact"\n');
+    expect(md).toContain('\nskills:\n  - "design"\n  - "note"\n');
+  });
+
+  it('gives each skill its own hook, since Claude caps a hook’s output and not the event’s', () => {
+    expect(commandsOf(agentDef(['design', 'deliver', 'plan']))).toHaveLength(3);
+  });
+
+  it('keeps the front matter closing where it should: no command holds a `---` to cut it early', () => {
+    const md = agentDef(['design']);
+    for (const c of commandsOf(md)) expect(c).not.toContain('---');
+    expect(md.split('---')[1]).toContain('SessionStart:');
+  });
+
+  it('gives an agent with no skills no SessionStart entry and no hooks block', () => {
+    expect(agentDef()).not.toContain('SessionStart');
+    expect(agentDef([])).not.toContain('hooks:');
+  });
+
+  describe('run against a skills root', () => {
+    let home: string;
+    beforeEach(() => {
+      home = mkdtempSync(join(tmpdir(), 'claude-persona-skills-'));
+    });
+    afterEach(() => rmSync(home, { recursive: true, force: true }));
+
+    const install = (name: string, text: string) => {
+      const dir = join(home, '.claude', claudeSkillRel(name));
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, 'SKILL.md'), text);
+    };
+    // The handlers of one entry, in the order Claude lists them.
+    const runAll = (skills: readonly string[]) => {
+      const runs = commandsOf(agentDef(skills)).map((command) =>
+        spawnSync('sh', ['-c', command], {
+          encoding: 'utf8',
+          env: { ...process.env, HOME: home },
+        }),
+      );
+      return {
+        statuses: runs.map((r) => r.status),
+        stdout: runs.map((r) => r.stdout).join(''),
+        stderr: runs.map((r) => r.stderr).join(''),
+      };
+    };
+    const skillDir = (name: string) =>
+      join(home, '.claude', claudeSkillRel(name));
+
+    it('prints each skill in the agent’s order: its base directory, then its body without front matter', () => {
+      install(
+        'note',
+        '---\nname: note\ndescription: n\n---\n\n# Note\n\nlast\n',
+      );
+      install('design', '---\nname: design\n---\n# Design\n\nfirst\n');
+      const r = runAll(['design', 'note']);
+      expect(r.statuses).toEqual([0, 0]);
+      expect(r.stderr).toBe('');
+      expect(r.stdout).toBe(
+        `Base directory for this skill: ${skillDir('design')}\n\n# Design\n\nfirst\n` +
+          `Base directory for this skill: ${skillDir('note')}\n\n# Note\n\nlast\n`,
+      );
+      expect(runAll(['note', 'design']).stdout).toMatch(
+        /^Base directory for this skill: [^\n]+\/note\n/,
+      );
+    });
+
+    it('keeps a body that holds its own `---` rule, and a skill with no front matter whole', () => {
+      install('rule', '---\nname: rule\n---\nabove\n---\nbelow\n');
+      install('bare', '# Bare\n');
+      const r = runAll(['rule', 'bare']);
+      expect(r.stdout).toContain('\n\nabove\n---\nbelow\n');
+      expect(r.stdout).toContain(
+        `Base directory for this skill: ${skillDir('bare')}\n\n# Bare\n`,
+      );
+    });
+
+    it('names an absent skill under Required reading, says so once on stderr, and still exits 0', () => {
+      install('plan', '---\nname: plan\n---\n# Plan\n');
+      const r = runAll(['plan', 'note', 'design']);
+      expect(r.statuses).toEqual([0, 0, 0]);
+      expect(r.stdout).toContain('# Plan\n');
+      expect(r.stdout).toMatch(/\n## Required reading\n[\s\S]*\n- `note`\n/);
+      expect(r.stdout).toMatch(/\n## Required reading\n[\s\S]*\n- `design`\n$/);
+      expect(r.stderr.trimEnd().split('\n')).toEqual([
+        `mav: no skill note at ${skillDir('note')}; naming it as required reading instead`,
+        `mav: no skill design at ${skillDir('design')}; naming it as required reading instead`,
+      ]);
+    });
+
+    it('prints no Required reading when every skill is there', () => {
+      install('plan', '---\nname: plan\n---\n# Plan\n');
+      expect(runAll(['plan']).stdout).not.toContain('Required reading');
     });
   });
 });

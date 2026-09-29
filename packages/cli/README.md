@@ -90,7 +90,13 @@ degrades and warns where it falls short; they are not the same, and this is what
   persona gets a status-line badge module and is launched as a main session by the single
   `omp-agent` launcher, since omp has no `--agent` flag. On Claude Code the persona is launched
   by `claude-agent`, and its badge is one status-line worker that reads the running persona from
-  the status line's own input. See "The persona badge on the status line" below.
+  the status line's own input. See "The persona badge on the status line" below. A
+  `claude --agent` main session starts with the persona's skills: Claude Code preloads an
+  agent's `skills` only for a dispatched subagent, so the definition carries a `SessionStart`
+  hook per skill that prints its body, and omp's launcher inlines them. Claude Code caps one
+  hook's output at 10,000 characters and runs an event's hooks in parallel, so a skill over the
+  cap reaches the model as a preview, and the order the bodies arrive in is not guaranteed. A
+  project-level `.claude/skills/<name>` that shadows the user-level copy is not consulted.
 - **Enforcement scope.** A guard binds exactly the personas whose composition includes it, on
   both harnesses, and a persona is enrolled by the presence of its stance manifest,
   `stance/manifest.json`, in its own scope. omp carries the scope in a dispatcher per persona
