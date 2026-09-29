@@ -387,6 +387,34 @@ describe('install — the host modelRoles', () => {
     for (const line of ADDED_LINES('')) expect(out).toContain(line);
   });
 
+  it('edits config.yaml when that is the only config the host has, and creates no config.yml', async () => {
+    // omp reads config.yml, and config.yaml only when config.yml is absent. A
+    // config.yml created here would shadow every setting the host keeps in config.yaml.
+    const yaml = join(home, '.omp', 'agent', 'config.yaml');
+    const host =
+      '# host\nmodelRoles:\n implementer: openai/gpt-5:high\n default: x\ntheme: dark\n';
+    writeFileSync(yaml, host);
+    expect(await install()).toBe(0);
+    expect(existsSync(config())).toBe(false);
+    const after = readFileSync(yaml, 'utf8');
+    expect(after).toBe(
+      '# host\nmodelRoles:\n implementer: openai/gpt-5:high\n default: x\n architect: "@default"\n assayer: "@default"\n planner: "@plan"\ntheme: dark\n',
+    );
+    expect(out).toContain(yaml);
+    expect(out).not.toMatch(/implementer: "@/);
+  });
+
+  it('prefers config.yml when both exist, and leaves config.yaml alone', async () => {
+    const yaml = join(home, '.omp', 'agent', 'config.yaml');
+    writeFileSync(yaml, 'modelRoles:\n  default: x\n');
+    writeFileSync(config(), 'theme: dark\n');
+    expect(await install()).toBe(0);
+    expect(readFileSync(yaml, 'utf8')).toBe('modelRoles:\n  default: x\n');
+    expect(readFileSync(config(), 'utf8')).toBe(
+      `theme: dark\nmodelRoles:\n${ADDED_LINES('  ').join('\n')}\n`,
+    );
+  });
+
   it('reports a modelRoles it cannot extend, leaves the file, and still succeeds', async () => {
     writeFileSync(config(), 'modelRoles: {default: x}\n');
     expect(await install()).toBe(0);

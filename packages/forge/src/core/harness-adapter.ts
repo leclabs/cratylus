@@ -504,10 +504,13 @@ export interface HarnessAdapter {
    * the host to choose the model. The projection names no model, ever.
    *
    * Three facts, all the harness's own: the ROLE it falls back to when the host
-   * never configured the held one (`defaultRole`), the built-in role each held role
-   * is NEAREST to (`nearest`, which seeds the host entry install adds), and WHERE
-   * the host keeps the mapping (`configRel`, harness-home relative). Install reads
-   * this by harness name through the registry, so it never imports an adapter.
+   * never configured the held one (`defaultRole`, the role such an agent then runs
+   * on), the built-in role each held role is NEAREST to (`nearest`, which seeds the
+   * host entry install adds), and WHERE the host keeps the mapping (`configRels`,
+   * harness-home relative, in the order the harness READS them — it reads the first
+   * that exists, so install edits that one and creates the first only when none
+   * does). Install reads this by harness name through the registry, so it never
+   * imports an adapter.
    *
    * Absent ⇒ this harness has no role-keyed model routing: definitions carry no
    * route and install touches no host config.
@@ -522,6 +525,8 @@ export interface RoleRouting {
   /** The harness's own built-in role nearest to a held role; `defaultRole` for a
    *  role it has no closer peer for. */
   nearest(heldRole: string): string;
-  /** The host config file that maps roles to models, relative to the harness home. */
-  readonly configRel: string;
+  /** The host config files that map roles to models, relative to the harness home,
+   *  in the harness's read order: it reads the first that exists and ignores the
+   *  rest, so a file created beside an existing later one would shadow it. */
+  readonly configRels: readonly string[];
 }

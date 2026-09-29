@@ -263,11 +263,13 @@ const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
 };
 
 /** omp's role → model routing: the table {@link HarnessAdapter.roleRouting} exposes.
- *  The host keeps the mapping in `agent/config.yml` under its `modelRoles` key. */
+ *  The host keeps the mapping in `agent/config.yml` under its `modelRoles` key, or
+ *  in `agent/config.yaml` when config.yml is absent — omp reads the first that
+ *  exists and never merges the two. */
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
   nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
-  configRel: 'agent/config.yml',
+  configRels: ['agent/config.yml', 'agent/config.yaml'],
 };
 
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
@@ -286,8 +288,8 @@ export const ompRoleRouting: RoleRouting = {
  * **`model` NAMES THE ROLE, NEVER A MODEL.** An agent that holds a role
  * ({@link Agent.holds}) emits `model: ["@<role>", "@default"]`: omp's own
  * model-role alias for the held role, then the harness's default role as the
- * fallback, so a host that never configured the role runs the agent exactly as
- * before. Which model fills a role is the host's `modelRoles` entry — the
+ * fallback, so a host that never configured the role runs the agent on the
+ * default role (`modelRoles.default`). Which model fills a role is the host's `modelRoles` entry — the
  * definition carries no model id. Both aliases are quoted, because a YAML value
  * starting with `@` is a scanner error unquoted. An agent holding no role emits
  * no `model` key.

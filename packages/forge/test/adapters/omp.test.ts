@@ -1235,8 +1235,11 @@ describe('omp role routing', () => {
     });
   });
 
-  it('keeps the host mapping in agent/config.yml under the harness home', () => {
-    expect(routing?.configRel).toBe('agent/config.yml');
+  it('names the host config files in the order omp reads them: config.yml, then config.yaml', () => {
+    expect(routing?.configRels).toEqual([
+      'agent/config.yml',
+      'agent/config.yaml',
+    ]);
   });
 
   it('is omp alone — claude and codex leave the member absent', () => {

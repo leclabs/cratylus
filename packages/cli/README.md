@@ -74,7 +74,7 @@ for `claude`'s.
 An omp agent definition names the role it holds and never a model:
 `model: ["@architect", "@default"]` reads "route by `architect`, else by `default`". Which
 model fills a role is the host's choice, and omp keeps that choice in
-`~/.omp/agent/config.yml` under `modelRoles`:
+`~/.omp/agent/config.yml` (or `config.yaml`, read only when `config.yml` is absent) under `modelRoles`:
 
 ```yaml
 modelRoles:
@@ -93,8 +93,11 @@ nothing.
 An entry the host already has is never changed, whether it is an alias or a concrete
 model id, quoted or plain, so pointing a role at a model is done in that file and
 survives every later install. The file is the host's: install inserts lines and never
-re-serializes it, so its comments, key order and quoting stay as they were. It creates
-the file, or appends a `modelRoles:` block, when either is missing. When `modelRoles` is
+re-serializes it, so its comments, key order and quoting stay as they were. It edits the
+file omp reads: `config.yml`, else `config.yaml`. It creates `config.yml` only when the host has
+neither, so it never shadows a `config.yaml` that holds the host's own settings, and it
+appends a `modelRoles:` block when the file has none. When `modelRoles` is
 a flow mapping (`{…}`), a scalar, or carries an anchor or alias, install says it did not
-edit the file and still succeeds; the agents then route by `default`. `cratylus deploy`
+edit the file and still succeeds; an agent whose role has no entry then runs on the
+`default` role (`modelRoles.default`). `cratylus deploy`
 never touches `config.yml`.

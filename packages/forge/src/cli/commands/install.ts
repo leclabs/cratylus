@@ -206,7 +206,14 @@ function seedModelRoles(
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
-  const path = join(home, adapter.home, routing.configRel);
+  // omp reads the FIRST config file that exists and ignores the rest, so that is the
+  // one to edit; a host with none gets the first, and never a file that would
+  // shadow one it already has.
+  const candidates = routing.configRels.map((rel) =>
+    join(home, adapter.home, rel),
+  );
+  const path =
+    candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
   const result = addModelRoles(
     path,
     heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),
