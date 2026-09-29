@@ -53,7 +53,7 @@ unit   @ plan
 wave   @ plan
 frontier @ plan
 realizes @ plan
-advance, bind, close, bound, ready, satisfied, capacity @ plan
+advance, bind, close, bound, ready, capacity @ plan
 show ⟨C⟩ @ design
 show ⟨P ∧ unit⟩ @ plan
 accept @ plan ⟨the MECHANICAL half⟩
@@ -70,7 +70,8 @@ covers : path × ℘(C) → 𝔹 ⟨observable behaviour ≅ the factorization �
 sole   : path × anchor → 𝔹 ⟨∄ other artifact realizing the same concept⟩
 verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec · ↾ accept(unit), ¬ gate⟩
 gate   ≜ the project's whole check ⟨every suite · typecheck · build : what a green main demands⟩
-integrate(unit) ≜ merge artifact(unit) into main ⟨pre gate green⟩
+integrate(unit) ≜ merge artifact(unit) into main ⟨pre gate green on the MERGED tree · a branch's
+    green says nothing about main after other landings⟩
 integrator : P ⇀ agent ⟨one per P · runs gate ∧ integrate ∧ carries the state moves self decided, ¬ decides them⟩
 validate : P → 𝔹 ⟨the PRINCIPAL's · built-the-right-thing, against C⟩
 assay  : artifact → ℘(C) ⟨which concepts the artifact ACTUALLY realizes · the REVERSE of plan⟩
@@ -79,9 +80,8 @@ achieved : unit → 𝔹 ⟨the three questions, answered against the assay⟩
 unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWARD⟩
 defect ≜ ⟨symptom, locus, provenance⟩
 finding ≜ a yield ∨ an operator steer bearing on C ∧ ¬ yet in C
-bears : finding → ℘(C) ⟨the concepts it would amend⟩
-impedes : (defect ∨ finding) × P → 𝔹
-fold   ≜ one amend(C) taking every held finding ∧ retracting the notes that held them
+impedes : defect × P → 𝔹
+fold   ≜ one amend(C) taking every finding in hand
 cost   : act → effort
 file(d) ≜ capture(d) ⟨its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
@@ -123,7 +123,8 @@ gate ⊨ integrate ∧ ¬ verify ⟨the whole check runs ONCE per landing, by th
     executor ∨ assayer re-running it proves nothing new on nearly the same tree⟩
 integrate ⊥ judge ⟨a merge is DURABILITY ∧ ¬ acceptance · acceptance is advance(unit) after the
     assay⟩ ∴ integrate ≺ assay admitted ∧ the next ready unit dispatches while the assay runs
-    ⟨ready waits on satisfied deps ∴ ¬ a dependent builds on an unaccepted unit⟩
+    ⟨ready waits on satisfied deps ∴ ¬ a dependent builds on an unaccepted unit · the assay reads
+     artifact(unit) at its landing commit ∵ main moves under a pipelined assay⟩
 integrator ⊨ ¬ validate ⟨it carries a verdict ∧ ¬ reaches one⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
@@ -136,13 +137,13 @@ dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨advan
 ∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
     unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
-impedes(f, unit) ⇔ ¬satisfied(unit) ∧ ∃ c ∈ bears(f) : c ∈ closure(denotes(realizes(unit)))
-    ⟨DERIVED, ¬ judged · standing, unit is built ∨ accepted against a concept known false⟩
-bound(P) ∧ ∃ unit ∈ P : impedes(f, unit) ⇒ fold ≺ the next dispatch(unit) ∨ judge(unit)
-bound(P) ∧ ∄ unit ∈ P : impedes(f, unit) ⇒ capture(f) blocking each c ∈ bears(f) ∧ ¬ amend(C)
-    ⟨the finding waits · the work does not · the note holds the next bind ∧ pin on c @ plan⟩
-fold ⊨ every held finding at once ⟨a WINDOW : P pays one drift pass per fold, ¬ one per finding ·
-    measured : ~12 serial amendments under bound plans re-cut one plan ~10×⟩
+finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close ⟨findings BATCH between two of self's acts ∧
+    never outlive one⟩
+    ⟨held past a judge, a unit is accepted against a concept known false · held past close(P), the
+     drift it causes lands on units never asked again · a hold keyed to a LATER act is a lock only
+     that act checks ∴ a branch merge ∨ a concurrent session walks past it⟩
+fold ⊨ drifted(unit) answered ↾ what moved @ plan ⟨the measured cost was the RESPONSE to amending,
+    ¬ amending : ~12 serial amendments re-cut one plan ~10× where a repin sufficed⟩
 impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
@@ -157,7 +158,7 @@ deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → integrate ⟨i
 
 export const deliver: Skill = {
   name: 'deliver',
-  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design rather than against the executor's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it, send a gap back to the agent that built it, and hold a design finding as a note until one fold takes them all unless it bears on work not yet accepted.`,
+  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design rather than against the executor's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it, send a gap back to the agent that built it, and fold what execution or the operator teaches about the design into it before the next dispatch, judgement or close, several findings in one amendment when they arrive together.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
 };

@@ -113,10 +113,7 @@ revise routes to revise(unit) ∨ revise(P) by the name it is given ⟨--plan pu
 advance(unit) ⊨ bound(P) ∧ one step forward in States(unit) ⟨a skip ∨ a step back refuses · a unit of an unbound P is authored ∧ revised, ¬ worked⟩
 ∀ unit : R acyclic ∧ ∀ u ∈ deps(unit) : live(u) ∧ u ∈ P
 an owed note blocking P ⇒ ¬ bind(P) ∧ ∀ unit ∈ P : ¬ready(unit)
-an owed note blocking c ∧ ∃ a ∈ realizes(P) : c ∈ closure(denotes(a)) ⇒ ¬ bind(P) ⟨a held finding waits
-    for the fold · ready ∧ frontier untouched : the work in flight runs on⟩
-add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one current version ∧ ¬withdrawn(c) ∧
-    ∄ owed note blocking c ⟨a pin is taken on settled ground alone⟩
+add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one current version ∧ ¬withdrawn(c) ⟨a pin is taken on settled ground alone⟩
 pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reason <why>\` ⟨the ONLY way · never a side effect of editing spec(unit)⟩
 withdrawn(denotes(realizes(unit))) ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
 drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
