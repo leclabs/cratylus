@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3PMCV006HXDR9C8EJNS7849",
+    "entity": "01M3PMCV006HXDR9C8EJNS7848",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T13:06:50.496Z",
+    "reason": "carries the amended notebook concept: a design finding held as a note must gate the next bind and pin on its concept",
+    "cause": "kino's delegation hypothesis; notebook amended in this session"
+  },
+  "payload": {
+    "plan": "01M3PMCTZW2M942KSRWEZFVS9Q",
+    "spec": {
+      "name": "concept-owed-rulings",
+      "intent": "A note may block a concept as well as a plan or unit. A live note blocking a concept is an owed ruling that refuses binding any plan, and adding any unit, whose realized concepts' closure contains that concept; it never takes an already-authored unit off the frontier. A concept is named for the blocks flag bare by its anchor where the anchor is its own (no plan or unit holds that name), else qualified as 'concept <anchor>'; the views print it qualified. Refusals name the note and the concept.",
+      "static": [
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/capabilities/plan/plan.ts",
+        "packages/runtime/src/capabilities/plan/pin.ts",
+        "packages/runtime/src/capabilities/plan/unit.ts",
+        "packages/runtime/src/capabilities/note/notebook.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/test/note.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/note/**",
+        "packages/runtime/src/capabilities/plan/**",
+        "packages/runtime/src/ports/note.ts",
+        "packages/runtime/src/view/**",
+        "packages/runtime/test/**",
+        ".changeset/concept-owed-rulings.md"
+      ],
+      "accept": [
+        "a live note blocking concept c refuses 'plan bind' of a plan realizing a concept whose closure contains c, naming the note and c; the same bind succeeds once the note is retracted or revised to block nothing",
+        "a live note blocking concept c refuses 'plan add' of a unit realizing a concept whose closure contains c; a unit authored before the note stays ready and on the frontier",
+        "a note blocking a concept outside a plan's closure neither refuses binding it nor adding to it",
+        "the blocks flag resolves a bare anchor held by no plan or unit, and 'concept <anchor>' always; an unknown name is refused naming all three kinds; note show and plan show print the concept as 'concept <anchor>' among owed rulings",
+        "pnpm --filter @cratylus/runtime test and typecheck green; biome check clean on the unit's outputs"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "version": "01M3PMC47ZGXJZBBVNZZKFF57G",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3MEKH8E3Q8R94A9EFNDE987",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

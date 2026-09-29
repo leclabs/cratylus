@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PMCV3HMD7TC28JYHGC661S",
+    "entity": "01M3PMCTZW2M942KSRWEZFVS9Q",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PMCTZW2M942KSRWEZFVS9R"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:06:50.609Z",
+    "reason": "one-unit plan, piece is closure(notebook)",
+    "cause": "kino's delegation hypothesis"
+  },
+  "payload": {
+    "name": "concept-rulings",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR"
+    ],
+    "state": "bound"
+  }
+}
