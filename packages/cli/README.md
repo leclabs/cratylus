@@ -109,7 +109,13 @@ degrades and warns where it falls short; they are not the same, and this is what
   steer and warns once per guard at projection and install.
 - **Role routing.** An agent names the role it holds, never a model. On omp the role becomes
   `model: ["@<role>", "@default"]` and the model behind it is the host's `modelRoles` entry
-  (next section). Claude Code's agent definitions carry no route.
+  (next section). Claude Code has no host-configurable roles, so a definition there names a model
+  tier alias: `model: sonnet` for an implementer, `model: opus` for a planner, assayer or
+  architect; an agent holding any other role, or none, has no `model` and runs on the session's
+  model. The host's own choice outranks the definition: `--model` for a `claude --agent` main
+  session, and for a dispatched subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with
+  `CLAUDE_CODE_SUBAGENT_MODEL=<model>` (`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's
+  tier standing).
 
 ## The host's model routing on omp
 

@@ -568,7 +568,7 @@ export interface HarnessAdapter {
   /**
    * How this harness routes a MODEL by the ROLE an agent holds — the table that
    * lets a projected definition name its position ({@link Agent.holds}) and leaves
-   * the host to choose the model. The projection names no model, ever.
+   * the host to choose the model. The projection names no model id, ever.
    *
    * Three facts, all the harness's own: the ROLE it falls back to when the host
    * never configured the held one (`defaultRole`, the role such an agent then runs
@@ -579,8 +579,11 @@ export interface HarnessAdapter {
    * does). Install reads this by harness name through the registry, so it never
    * imports an adapter.
    *
-   * Absent ⇒ this harness has no role-keyed model routing: definitions carry no
-   * route and install touches no host config.
+   * Absent ⇒ this harness has no host-configured role → model table: install
+   * touches no host config. That is not "definitions name no model route": a
+   * harness may route by a tier of its own in the definitions it projects, keyed
+   * by the held role and owned by that adapter alone (claude emits a tier alias
+   * per role), and the host's choice still outranks it.
    */
   roleRouting?: RoleRouting;
 }

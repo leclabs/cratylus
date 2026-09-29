@@ -61,7 +61,25 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 // ── Agent projection (from the Agent vector directly) ────────────────────────
 
 /**
- * The Target front-matter: `name`, `description`, `color`, `skills`. `description`
+ * The Claude model tier each held role runs on: `Agent.holds` (a role's anchor) keyed
+ * to a tier ALIAS, never a model id, so the projection names no model version and
+ * Claude resolves the alias to whatever it currently serves for that tier. Claude
+ * Code has no host-configurable role aliases — a definition's `model` takes an id, a
+ * tier alias or `inherit` — so the table lives here, in the one adapter that needs
+ * it, and canon names no tier. Implementer work is spec-bounded, so it sits on the
+ * middle tier; the roles that hold the design, the plan or the audit sit on the top.
+ * A role absent from this table emits no `model`, and neither does an agent holding
+ * none: both run on the session's model.
+ */
+const CLAUDE_ROLE_TIERS: Readonly<Record<string, string>> = {
+  implementer: 'sonnet',
+  planner: 'opus',
+  assayer: 'opus',
+  architect: 'opus',
+};
+
+/**
+ * The Target front-matter: `name`, `description`, `model`, `color`, `skills`. `description`
  * is the agent's σ_human* `description` field VERBATIM — the human-read selection
  * line the subagent-router surfaces. It is NOT `archetype` (σ*, the model-read
  * identity body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the
@@ -79,6 +97,13 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
  * omitted when that list is empty. A `--agent` MAIN session preloads none of it, so
  * an agent with skills also carries a `SessionStart` hook printing them
  * (`personaLaunchEntry`).
+ *
+ * `model` is the tier alias {@link CLAUDE_ROLE_TIERS} gives the role the agent holds
+ * (`Agent.holds`), right after `description`, and is omitted for a role the table
+ * lacks and for an agent holding none. It is a definition's default, and the host's
+ * own choice outranks it: `--model` for a `--agent` main session, and for a subagent
+ * `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with `CLAUDE_CODE_SUBAGENT_MODEL` (the
+ * variable alone does not displace a definition's `model`).
  */
 function agentFrontMatter(
   a: Agent,
@@ -90,6 +115,11 @@ function agentFrontMatter(
     `name: ${a.name}`,
     `description: ${JSON.stringify(a.description)}`,
   ];
+  const tier =
+    a.holds !== undefined && Object.hasOwn(CLAUDE_ROLE_TIERS, a.holds)
+      ? CLAUDE_ROLE_TIERS[a.holds]
+      : undefined;
+  if (tier !== undefined) fm.push(`model: ${tier}`);
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }

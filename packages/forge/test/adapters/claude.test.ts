@@ -677,3 +677,52 @@ describe('the claude persona launch — skills into a --agent main session', () 
     });
   });
 });
+
+describe('the claude model tier — the role an agent holds, as a tier alias', () => {
+  const def = (holds?: string) =>
+    agentToClaudeMd(
+      {
+        name: 'mav',
+        description: 'd',
+        archetype: 'a',
+        guardrails: ['honesty ≜ assert from evidence'],
+        ...(holds === undefined ? {} : { holds }),
+      } as never,
+      { manifest: FIXTURE_MANIFEST },
+    );
+  const frontMatter = (md: string) => md.split('---')[1] ?? '';
+
+  it.each([
+    ['implementer', 'sonnet'],
+    ['planner', 'opus'],
+    ['assayer', 'opus'],
+    ['architect', 'opus'],
+  ])('runs %s on %s, right after the description', (role, tier) => {
+    expect(frontMatter(def(role)).split('\n').slice(0, 4)).toEqual([
+      '',
+      'name: mav',
+      'description: "d"',
+      `model: ${tier}`,
+    ]);
+  });
+
+  it('gives a role the table lacks no model, so it runs on the session’s', () => {
+    for (const role of ['reviewer', 'constructor', 'toString']) {
+      expect(frontMatter(def(role))).not.toMatch(/^model:/m);
+    }
+  });
+
+  it('gives an agent holding no role no model', () => {
+    expect(frontMatter(def())).not.toMatch(/^model:/m);
+  });
+
+  it('names a tier alias and never a model id or version', () => {
+    for (const role of ['implementer', 'planner', 'assayer', 'architect']) {
+      expect(frontMatter(def(role))).toMatch(/^model: (opus|sonnet|haiku)$/m);
+    }
+  });
+
+  it('declares no host role table: install seeds no claude config', () => {
+    expect(claudeHarnessAdapter.roleRouting).toBeUndefined();
+  });
+});
