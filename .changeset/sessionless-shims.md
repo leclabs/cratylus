@@ -14,5 +14,5 @@ shim no longer exits `3` asking for `$AGENT_SESSION_ID` or
 
 **Breaking for `@cratylus/forge`.** `HarnessAdapter.sessionEnvVars` is removed,
 so an out-of-tree adapter drops the field. `emitRuntimeShim(skillDir, capability)`
-takes no session-variable list. `PlaceReport` loses `seeded`, which deploy
-initialized and never wrote.
+takes no session-variable list. `PlaceReport` loses `seeded` and `present`, which
+deploy initialized and never wrote.
