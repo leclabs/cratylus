@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PMNZCN59V1QACFEHGQXXYB",
+    "entity": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PMC47ZGXJZBBVNZZKFF57G"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:11:49.909Z",
+    "reason": "restores the prior version: a note blocking a concept overloaded 'blocks' (work held vs future acts refused), was enforceable only at the act and so escaped by merges, and served a deferral that must not outlive the principal's next act",
+    "cause": "operator review: a note gating a concept is an edge-triggered hold on future acts, racy across merges, and holding a finding past a judge or close lets accepted units escape drift"
+  },
+  "payload": {
+    "anchor": "notebook",
+    "gloss": "the set of notes: ideas, questions and decisions not yet canonical, the intake that design canonizes. Anyone may capture, revise or retract a note. A note's title is its name, one live note per title. Its kind is one of the note skill's labels (idea, question, decision), which the runtime never interprets. A live note that blocks a plan or unit is an **owed ruling**, the one sense of that sign; it blocks what it names until it no longer does, by being retracted or revised to block nothing, and a diverged note blocks whatever any of its versions blocks until it is reconciled.",
+    "factors": [
+      "01M3MEKH4WNSY2RE9VRTXZH9PT"
+    ]
+  }
+}

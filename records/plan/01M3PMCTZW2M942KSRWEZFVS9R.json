@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3PMCTZW2M942KSRWEZFVS9R",
+    "entity": "01M3PMCTZW2M942KSRWEZFVS9Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T13:06:50.492Z",
+    "reason": "carries the amended notebook concept: a design finding held as a note must gate the next bind and pin on its concept",
+    "cause": "kino's delegation hypothesis; notebook amended in this session"
+  },
+  "payload": {
+    "name": "concept-rulings",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR"
+    ],
+    "state": "proposed"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3PMNZ5VMVPKKBV62ZNRXHB2",
+    "entity": "01M3PMCV006HXDR9C8EJNS7848",
+    "operation": "retract",
+    "supersedes": [
+      "01M3PMCYGDQ5V3SJ7C7DPJSFWD"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:11:49.691Z",
+    "reason": "the concept it realized was mis-amended; its runtime commit is reverted (78cf4d56)",
+    "cause": "operator review: a note gating a concept is an edge-triggered hold on future acts, racy across merges, and holding a finding past a judge or close lets accepted units escape drift"
+  },
+  "payload": null
+}
