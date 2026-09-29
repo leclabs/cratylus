@@ -1,5 +1,6 @@
 ---
 "@cratylus/forge": minor
+"cratylus": minor
 ---
 
 omp: the persona badge — the running persona's mark emoji and name in the status line
