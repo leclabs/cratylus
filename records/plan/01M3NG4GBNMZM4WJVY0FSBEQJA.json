@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3NG4GBNMZM4WJVY0FSBEQJA",
+    "entity": "01M3ND9S44PF0HBP33APJVSNV3",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NDHAF1DZ61H0DXKXS92KQN"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T02:33:08.725Z",
+    "reason": "every live unit completed and accepted against its concept; memory-verb-flags and kernel-verb-flags withdrawn by the operator's memory ruling",
+    "cause": "verb-flags-runtime-config terminal"
+  },
+  "payload": {
+    "name": "verb-flags-runtime-config",
+    "realizes": [
+      "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "01M3NCQZNYGWQJJBY9E36C9PSK"
+    ],
+    "state": "closed"
+  }
+}
