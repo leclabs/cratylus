@@ -1,0 +1,72 @@
+{
+  "envelope": {
+    "id": "01M3NMWMMV43VA20MHGX6FWCZW",
+    "entity": "01M3NM43KD9C46QNGM89MRDE08",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NMJE8DSK78S3DDC730NSPX"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T03:56:13.851Z",
+    "reason": "verified by the executor (criteria, pnpm verify) and validated against capability by assay; the README residual it reported is covered on main by capability-docs; keyspace residuals are built-in-capabilities' slice",
+    "cause": "acceptance of unit memory-removal"
+  },
+  "payload": {
+    "plan": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "spec": {
+      "name": "memory-removal",
+      "intent": "**Wave 0.** Realizes `capability`'s set. The runtime ships `eventTap`, `design`, `plan` and `note`, so the memory capability's package goes, along with the CLI's dependency on it and every test, fixture and release list that names it. By the operator's ruling of 2026-09-28, memory is a palimpsest to be removed, not migrated.\n\nCensus at 63c5d9c3 (re-derive before citing):\n- `packages/memory/`: 40 tracked files, `@cratylus/memory@0.2.0`, published to npm.\n- CLI: `packages/cli/package.json:24` declares the dependency. `packages/cli/src/cratylus.ts:18-19,51` imports `runtimePlugin as memory`, imports `CAPABILITIES` from `@cratylus/runtime/loader`, and calls `runCapability(argv.slice(2), { plugins: [memory] })`. The built CLI exits 0 on `memory encode --help`.\n- Lockfile and release plumbing: `pnpm-lock.yaml` (the importer `packages/memory` and cli's dependency, 2 lines); `.github/workflows/release-next.yml:94` (publish check list); `.gitignore:45-49` (memory's per-repo config `.cratylus.memory.json`, citing `packages/memory/src/node.ts`); `pnpm-workspace.yaml:3` and `turbo.json:82,105` (comments naming memory, a `memory-nudge.test.ts` that no longer exists, and `scripts/memory.mjs`); `.changeset/README.md`'s first bullet (says 6 `@cratylus`-scoped packages with 5 publishing; measured 6 and 6; also names `canon` in `ignore`, which `config.json` does not, and gives tooling a scope it no longer has). `.changeset/config.json` names no package. No pending `.changeset/*.md` names `@cratylus/memory`.\n- canon tests: `architecture.test.ts` (the `'memory'` package member, edges `memory→runtime` and `cli→memory`, the scope regex, and pins at :415 and :434); `version-single-home.test.ts` (the declarer `memory → src/cli.ts`); `gate-convicts.test.ts` (`TEST_ROOTS.memory`, 14 memory rows, and the header clause); `reader-reach.test.ts`, `reader-register.ts` and `fixtures/generated/memory.md` (pinned because 'the memory runtime that produced it survives as a dormant library').\n- forge tests: `project/projection-facts.test.ts:121` reads `packages/memory/package.json`. `deploy/integrate-smoke.test.ts` legs L0 and L3 drive `cratylus memory` through a deployed thin shim (15 `memory` lines).\n\nBuild:\n1. Delete `packages/memory/` entirely.\n2. `cratylus.ts` imports no memory, takes `CAPABILITIES` from `@cratylus/runtime/capability` (which exports it today), and calls `runCapability(argv.slice(2))` with no options. `cli/package.json` drops the dependency. `pnpm install` regenerates the lockfile.\n3. Tests follow the tree:\n   - `architecture.test` drops the memory member, its edges, the regex member and both pins, and every other assertion stands.\n   - `version-single-home` drops the memory declarer.\n   - `gate-convicts` drops the memory root and its rows.\n   - `capability-keyspace` stops listing `memory` as a plugin source root (`PLUGIN_SRC_ROOTS`) and drops the plugin-site `memory` witnesses in the non-vacuity pin and the plugin-name leg; deleting `packages/memory` would otherwise break its scan. It changes nothing else (ruled): the keyspace parse, the port controls and the subset legs are `built-in-capabilities`' to change in wave 1.\n   - `reader-reach` drops `memory.md`, its row and the header clause, and `reader-register` drops the `memory` class.\n   - The library loop in `projection-facts` drops memory.\n   - `integrate-smoke`'s memory legs become legs that drive a shipped capability through a deployed thin shim and read its effect back, for example `note capture` then `note show` in a scratch git repository under the hermetic env. The `eventTap` leg stays.\n4. Release plumbing:\n   - Drop memory from the `release-next.yml` list.\n   - Drop memory's config lines from `.gitignore`.\n   - Rewrite the `pnpm-workspace.yaml` comment.\n   - The `turbo.json` comments give the real reason each `cratylus#build` edge exists: canon's `deploy-drift-notice` and `version-single-home` tests, and forge's `integrate-smoke` and `runtime-bin-resolvable` tests, drive the built bin.\n   - `.changeset/README.md`'s inventory bullet is true of the tree it leaves.\n5. `.changeset/memory-removal.md` names `cratylus` and says `cratylus memory` is gone; it names no `@cratylus/memory`.\n\nRefs checked at the symbol level against the wave-0 siblings: this unit's files do not spell `sessionEnvVars`, `seeded`, `SESSION_SCOPED` or `CLAUDE_SESSION_ENV_VARS`, and `integrate-smoke`'s own `thinShim` does not go through `runtimeShimContent`. The route this unit leaves (`runCapability(argv)`) compiles against the runtime both before and after `built-in-capabilities`.\n\nNot here: the runtime's memory port, `KNOWN_CAPABILITY_PACKAGES`, `ulid.ts` comment and README (`built-in-capabilities`); the cli README and ARCHITECTURE (`capability-docs`); MODEL.md's memory-home and canon `dimensions/memory/*` (the agent-self concept, not the capability); historical CHANGELOG entries; `docs/cli/*` and `docs/research/*` (dated reports); forge's deploy-test skill fixtures named `memory`.",
+      "static": [
+        "`cratylus design show capability` at 63c5d9c3, and the operator ruling of 2026-09-28 (the design record's reason).",
+        "`packages/cli/src/cratylus.ts` and `packages/runtime/src/capability.ts`: the route and the keyspace export it switches to.",
+        "`packages/canon/test/{architecture,version-single-home,gate-convicts,reader-reach}.test.ts`, `packages/canon/test/reader-register.ts`: the gates that read the memory package.",
+        "`packages/forge/test/deploy/integrate-smoke.test.ts` (whole file) and `packages/runtime/test/note.test.ts`: the smoke's shape and how the note capability is driven in a scratch repository.",
+        "`.github/workflows/release-next.yml:85-100`, `turbo.json:60-115`, `pnpm-workspace.yaml`, `.gitignore:38-56`, `.changeset/README.md`, `.changeset/config.json`."
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/memory/**",
+        "packages/cli/package.json",
+        "packages/cli/src/cratylus.ts",
+        "pnpm-lock.yaml",
+        ".github/workflows/release-next.yml",
+        ".gitignore",
+        "pnpm-workspace.yaml",
+        "turbo.json",
+        ".changeset/README.md",
+        "packages/canon/test/architecture.test.ts",
+        "packages/canon/test/version-single-home.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/test/reader-register.ts",
+        "packages/canon/test/capability-keyspace.test.ts",
+        "packages/canon/test/fixtures/generated/memory.md",
+        "packages/forge/test/project/projection-facts.test.ts",
+        "packages/forge/test/deploy/integrate-smoke.test.ts",
+        ".changeset/memory-removal.md"
+      ],
+      "accept": [
+        "`git ls-files packages/memory | wc -l` prints 0 (measured at 63c5d9c3: 40).",
+        "`git grep -l -E \"@cratylus/memory|packages/memory\" -- . ':!records' ':!**/CHANGELOG.md' ':!docs' ':!packages/runtime' ':!packages/cli/README.md'` prints nothing (measured: `.github/workflows/release-next.yml`, `.gitignore`, `packages/canon/test/architecture.test.ts`, `packages/cli/package.json`, `packages/cli/src/cratylus.ts`, `pnpm-lock.yaml`, and `packages/memory/**`).",
+        "`git grep -n -E \"@cratylus/memory|runtime/loader|plugins\" -- packages/cli/src` prints nothing (measured: `cratylus.ts:18,19,51`).",
+        "`git grep -n -E \"memory'|'memory|memory\\|\" -- packages/canon/test/architecture.test.ts packages/canon/test/version-single-home.test.ts packages/forge/test/project/projection-facts.test.ts` prints nothing (measured: 10 lines).",
+        "`git ls-files packages/canon/test/fixtures/generated/memory.md` prints nothing, and `git grep -n -w memory -- packages/canon/test/reader-reach.test.ts packages/canon/test/reader-register.ts packages/canon/test/gate-convicts.test.ts packages/forge/test/deploy/integrate-smoke.test.ts` prints nothing (measured: 21 lines in the first three, 15 in integrate-smoke).",
+        "`git grep -n -E \"\\['(design|plan|note)'\" -- packages/forge/test/deploy/integrate-smoke.test.ts` prints at least one line (measured: none), and `pnpm --filter @cratylus/forge exec vitest run test/deploy/integrate-smoke.test.ts test/project/projection-facts.test.ts` passes.",
+        "`git grep -n -i memory -- .github turbo.json pnpm-workspace.yaml` prints nothing (measured: 4 lines); `git grep -n -E 'cratylus\\.memory|packages/memory' -- .gitignore` prints nothing (measured: 4 lines); `git grep -n -E \"packages/memory|'@cratylus/memory'\" -- pnpm-lock.yaml` prints nothing (measured: 2 lines); and `pnpm install --frozen-lockfile` exits 0.",
+        "The package counts that `.changeset/README.md`'s inventory bullet states equal `for p in packages/*/package.json; do jq -r .name \"$p\"; done | grep -c '^@cratylus/'` and `for p in packages/*/package.json; do jq -r 'select(.private != true) | .name' \"$p\"; done | wc -l` (measured at 63c5d9c3: the bullet says 6 and 5 against measured 6 and 6).",
+        "After `pnpm --filter \"cratylus...\" build`, `AGENT_HOME=\"$(mktemp -d)\" node packages/cli/dist/cratylus.js memory encode --help` exits non-zero (measured at 63c5d9c3: exit 0), and `node packages/cli/dist/cratylus.js design show` exits 0.",
+        "`git grep -n -E \"\\['memory', 'runtime'\\]|\\['event-tap', 'memory'\\]|\\['eventTap', 'memory'\\]\" -- packages/canon/test/capability-keyspace.test.ts` prints nothing (measured at 63c5d9c3: lines 71, 301, 347). This unit drops only memory as a plugin source root and the plugin-site `memory` witnesses. The runtime keyspace, the port controls and the subset legs, which still hold `memory` until `built-in-capabilities`, stay as they are.",
+        "`pnpm --filter @cratylus/canon exec vitest run test/architecture.test.ts test/version-single-home.test.ts test/gate-convicts.test.ts test/reader-reach.test.ts test/reader-density.test.ts test/capability-keyspace.test.ts` passes, and `pnpm --filter cratylus typecheck` passes.",
+        "`grep -q '\"cratylus\":' .changeset/memory-removal.md && ! grep -q '@cratylus/memory' .changeset/memory-removal.md` exits 0, and `git grep -l '@cratylus/memory' -- .changeset` prints nothing."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3NK67ET848PWDE5M474EV55",
+      "version": "01M3NK67ET848PWDE5M474EV56",
+      "closure": {
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3"
+      }
+    }
+  }
+}
