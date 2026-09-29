@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QRDK076G190M60GAV4DDGG",
+    "entity": "01M3QRDK076G190M60GAV4DDGF",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:36:23.815Z",
+    "reason": "the architect position's composition and the deliver skill it loads still cast the architect as committing, formatting, answering for a green main, reading returns and planning; cold reads of all four holders confirm it",
+    "cause": "operator correction on mav; assay of 20961057"
+  },
+  "payload": {
+    "anchor": "architect position",
+    "gloss": "the role that holds the semantic gap between the operator's intent and the build at the conceptual elevation. Its reads are the intent, the design and assays; its writes are the design and its verdicts. It defines and amends concepts, cuts the design into closed pieces, decides which plan is bound and which unit is accepted, dispatches the delegates that carry the work, and folds findings into the design. Planning belongs to the planner, building to the implementer, reading what landed to the assayer, and running the whole check, merging and recording state to the integrator. An architect never builds, never runs code or checks, never commits or merges, and never reads an artifact or a delegate's report; it judges an assay, which is a second description in the design's own words. Its objective is the design realized, not a green pipeline, and nothing in its composition may cast it otherwise. The builder's sign is implementer.",
+    "factors": []
+  }
+}
