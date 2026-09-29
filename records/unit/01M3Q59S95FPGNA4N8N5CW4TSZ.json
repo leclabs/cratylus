@@ -1,0 +1,49 @@
+{
+  "envelope": {
+    "id": "01M3Q59S95FPGNA4N8N5CW4TSZ",
+    "entity": "01M3Q57MZST5PX6D2QY1MY0KHC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q57MZST5PX6D2QY1MY0KHD"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:02:16.229Z",
+    "reason": "wave 0 dispatched",
+    "cause": "what-ships plan returned"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "degradation-off-codex",
+      "intent": "Re-prove forge's degrade-and-warn laws without codex. census @ 8753f969 (local://what-ships-census.md): 62 codex lines across these 5 files use codex as the only witness. The laws: bound on one harness and steer on one that falls short (degradation.test.ts); the unrealizable and unscopable losses (realization.test.ts); a closure declared plus one warning when a harness has no preload field (skill-closure.test.ts); per-harness projection facts that differ (projection-facts.test.ts); and the warden fixture comment. Use claude or omp wherever a supported harness exhibits the path. An event claude or omp does not realize gives steer via 'unrealizable'. Where no supported harness exhibits the path (realizes ∧ ¬scopes; preloadsSkills=false), use one test-local adapter in packages/forge/test/project/shortfall-adapter.ts. Add no new *.test.ts file, because gate-convicts lists every test file. Do not touch the codex adapter itself.",
+      "static": [
+        "packages/forge/src/project/realization.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/omp/render.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/test/project/degradation.test.ts",
+        "packages/forge/test/project/realization.test.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        "packages/forge/test/project/projection-facts.test.ts",
+        "packages/forge/test/project/fixtures-enforcing/agents/warden.ts",
+        "packages/forge/test/project/shortfall-adapter.ts"
+      ],
+      "accept": [
+        "`git grep -n -i codex -- packages/forge/test/project` prints nothing. At 8753f969 it prints 62 lines.",
+        "Each of these laws keeps at least one assertion, and the return lists each by test name: bound vs steer for one vector; an 'unrealizable' loss; an 'unscopable' loss; a closure degraded to a declaration plus exactly one warning; differing projection facts per harness.",
+        "`pnpm --filter @cratylus/forge exec vitest run test/project` is green, and `pnpm exec biome check` passes on the outputs."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3Q59S0RVKEA3799Y9J0AKHY",
+    "entity": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q57EVJ2FSHF2VBZ4PRG9KD"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:02:15.960Z",
+    "reason": "census and slicing judged sound; borderline cells ruled non-applying (conceptualize decides nothing about names; create-agent only borrows human-project)",
+    "cause": "what-ships plan returned"
+  },
+  "payload": {
+    "name": "what-ships",
+    "realizes": [
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N"
+    ],
+    "state": "bound"
+  }
+}

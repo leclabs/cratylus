@@ -1,0 +1,49 @@
+{
+  "envelope": {
+    "id": "01M3Q59SP2V8ZGY3B52QQVATF0",
+    "entity": "01M3Q57NAMXCAQDRJFM9YYP8X1",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q57NAMXCAQDRJFM9YYP8X2"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:02:16.642Z",
+    "reason": "wave 0 dispatched",
+    "cause": "what-ships plan returned"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "hook-workers-off-codex",
+      "intent": "Move canon's hook workers and their tests off codex. census @ 8753f969 (local://what-ships-census.md): 62 lines. deploy-drift-notice.test.ts proves the two-harness worker law ('a session reports on its own deployment; the other worker stays silent; a sibling tree is rejected by shape') with claude and omp instead of claude and codex. harness-independence.test.ts lists the supported homes and CLIs. Reword the codex comments in hooks/deploy-drift-notice.ts, hooks/stance-guardrail-pre.ts, manifest.ts, tooling/project-targets.ts and tooling/project.ts. Regenerate targets with `pnpm canon:project:targets` and commit only deploy-drift-notice.sh and stance-guardrail-pre.sh. Do not touch hooks/stance-guardrail.ts, because other units own it.",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/canon/test/support/guardrail/test-deploy-drift-notice.sh"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/test/deploy-drift-notice.test.ts",
+        "packages/canon/test/harness-independence.test.ts",
+        "packages/canon/src/hooks/deploy-drift-notice.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/targets/guardrail/deploy-drift-notice.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/canon/tooling/project.ts"
+      ],
+      "accept": [
+        "`git grep -n -i codex -- <the 9 outputs>` prints nothing. At 8753f969 it prints 62.",
+        "deploy-drift-notice.test.ts still has a case where the second harness's drift wakes only its own worker, and one where that worker rejects the claude tree. Both run against omp.",
+        "After `pnpm canon:project:targets`, `git status --short packages/canon/targets` shows no change outside the two declared .sh outputs.",
+        "`pnpm build && pnpm --filter @cratylus/canon exec vitest run test/deploy-drift-notice.test.ts test/harness-independence.test.ts` is green, and `pnpm exec biome check` passes on the outputs."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}
