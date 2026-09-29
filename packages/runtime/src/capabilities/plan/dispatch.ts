@@ -30,9 +30,11 @@ import type { Invocation } from '../../ports/design.js';
 import type { Fields, PlanHost } from '../../ports/plan.js';
 import type { Fold } from '../../record-store/fold.js';
 import { type Name, bare, parsed, printed } from '../../record-store/names.js';
+import type { VerbFlags } from '../../verb-flags.js';
 import { planView } from '../../view/plan.js';
 import {
   type Argv,
+  INVOCATION,
   invocation,
   many,
   one,
@@ -459,17 +461,22 @@ export function planHost(from: string = process.cwd()): PlanHost {
   };
 }
 
-/** The plan's verbs, in the order its header lists them. */
-const VERBS = [
-  'show',
-  'add',
-  'advance',
-  'retract',
-  'revise',
-  'bind',
-  'close',
-  'reconcile',
-] as const;
+/** The flags a unit write takes for its fields: the concept it realizes, and
+ *  what a plan does not have. */
+const UNIT_FIELDS = ['realizes', ...UNIT_ONLY] as const;
+
+/** The plan's verbs, in the order its header lists them, and the flags each
+ *  takes. */
+export const VERBS = {
+  show: ['plan'],
+  add: ['plan', 'plan-realizes', ...UNIT_FIELDS, ...INVOCATION],
+  advance: ['plan', 'to', ...INVOCATION],
+  retract: ['plan', ...INVOCATION],
+  revise: ['plan', 'name', ...UNIT_FIELDS, 'repin', ...INVOCATION],
+  bind: [...INVOCATION],
+  close: [...INVOCATION],
+  reconcile: ['plan', 'name', ...UNIT_FIELDS, 'state', 'repin', ...INVOCATION],
+} as const satisfies VerbFlags;
 
 /** A plan or unit write's fields, as its flags give them. */
 function fieldsOf(args: Argv): Fields {
@@ -501,7 +508,7 @@ export function dispatchPlan(
   opts: { readonly from?: string } = {},
 ): string {
   const verb = verbOf(argv, 'plan', VERBS);
-  const args = parseArgv(argv.slice(1));
+  const args = parseArgv(argv.slice(1), 'plan', verb, VERBS[verb]);
   const host = planHost(opts.from);
   const plan = one(args, 'plan');
   const by = () => invocation(args, 'plan', verb);

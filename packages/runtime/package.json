@@ -58,6 +58,10 @@
     "./ulid": {
       "types": "./dist/ulid.d.ts",
       "import": "./dist/ulid.js"
+    },
+    "./verb-flags": {
+      "types": "./dist/verb-flags.d.ts",
+      "import": "./dist/verb-flags.js"
     }
   },
   "files": ["dist"],

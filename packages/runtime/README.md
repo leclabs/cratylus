@@ -47,6 +47,7 @@ what keeps the build DAG and the runtime DAG from reaching across.
 | `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                          |
 | `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                         |
 | `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID             |
+| `./verb-flags`             | `VerbFlags`, `refuseUnknown`, `refused`, `nearest` — the one unknown-flag refusal  |
 | `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin   |
 
 The `.` barrel is pure contracts plus one identity helper: no implementation.
@@ -77,6 +78,11 @@ whole; a unit's pin is kept by every revise until one says `--repin` with a reas
 arrives as `configuration.plan` in the host runtime config, which deploy emits; without it `plan`
 refuses and names the deploy, and `design show` shows the lattice and says the plans standing on it
 wait for that deploy.
+
+Each verb declares, beside it, the flags it takes, and an unknown flag is refused before the verb
+acts: nothing is written, and the call exits `1`. The refusal, homed in `./verb-flags`, names the
+flag, the verb's nearest flag when one is within an edit for every three letters (`--glose` gets
+`--gloss`), and every flag the verb takes, and asks for the call to be corrected and run again.
 
 ## Dispatch
 
