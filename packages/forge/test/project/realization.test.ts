@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { claudeHarnessAdapter } from '../../src/adapters/claude/render.js';
-import { codexHarnessAdapter } from '../../src/adapters/codex/render.js';
+import { ompHarnessAdapter } from '../../src/adapters/omp/render.js';
 import { realizationOf, routes } from '../../src/project/realization.js';
+import { SHORTFALL, shortfallAdapter } from './shortfall-adapter.js';
 
 // FOUR OUTCOMES, NOT TWO. Each is exercised and OBSERVED below, and a decision
 // never seen to go both ways is not a decision.
@@ -9,26 +10,36 @@ import { realizationOf, routes } from '../../src/project/realization.js';
 // The law as first written conflated the rest and would have REFUSED a perfectly
 // correct git-substrate constraint on claude. A later revision found `steer`
 // hiding inside `bound` — an adapter that FIRES an event but cannot narrow it to
-// an agent was passing, and the codex adapter had grown a private `throw` to
-// catch it, a second decision site.
+// an agent was passing, and an adapter had grown a private `throw` to catch it,
+// a second decision site.
 //
 // Both revisions still assumed a shortfall was a BUILD FAILURE. It is not. The
 // DECLARATION face is projected unconditionally by `agentBody`, so a constraint
 // the harness cannot mechanize still reaches the agent and still governs it — as
 // a steer rather than a bound. The floor is never silence, which is why these are
 // warnings and the projection completes.
+//
+// WHICH HARNESS WITNESSES WHICH LOSS. `unrealizable` is exhibited by both
+// supported harnesses. `unscopable` is not: claude and omp scope everything they
+// realize, so that path is witnessed by the test-local `shortfallAdapter` — claude
+// with its `scopes` withdrawn — and by nothing that ships.
 
 describe('bound — the harness realizes every event at the composed scope', () => {
+  const constraint = {
+    anchor: 'stance',
+    substrate: 'harness',
+    events: ['tool.use.pre'],
+    agents: ['nico'],
+  } as const;
+
   it('claude carries a natively-mapped event with no loss', () => {
-    const r = realizationOf(
-      {
-        anchor: 'stance',
-        substrate: 'harness',
-        events: ['tool.use.pre'],
-        agents: ['nico'],
-      },
-      claudeHarnessAdapter,
-    );
+    const r = realizationOf(constraint, claudeHarnessAdapter);
+    expect(r.mode).toBe('bound');
+    expect(r.losses).toEqual([]);
+  });
+
+  it('omp carries the same event with no loss', () => {
+    const r = realizationOf(constraint, ompHarnessAdapter);
     expect(r.mode).toBe('bound');
     expect(r.losses).toEqual([]);
   });
@@ -44,24 +55,35 @@ describe('steer — no peer for the event at all: degrade, do not fail', () => {
   } as const;
 
   it('degrades to a steer rather than throwing', () => {
-    expect(() => realizationOf(orphan, codexHarnessAdapter)).not.toThrow();
-    expect(realizationOf(orphan, codexHarnessAdapter).mode).toBe('steer');
+    for (const adapter of [claudeHarnessAdapter, ompHarnessAdapter]) {
+      expect(() => realizationOf(orphan, adapter)).not.toThrow();
+      expect(realizationOf(orphan, adapter).mode).toBe('steer');
+    }
   });
 
   it('reports the loss as unrealizable, naming f · e · adapter', () => {
-    const [loss, ...rest] = realizationOf(orphan, codexHarnessAdapter).losses;
+    const [loss, ...rest] = realizationOf(orphan, ompHarnessAdapter).losses;
     expect(rest).toEqual([]);
     expect(loss?.reason).toBe('unrealizable');
     expect(loss?.warning).toContain('stance'); // f
     expect(loss?.warning).toContain('file.read.pre'); // e
-    expect(loss?.warning).toContain('codex'); // adapter
+    expect(loss?.warning).toContain('omp'); // adapter
+  });
+
+  it('is asked of each harness by what IT realizes — an event one has and the other lacks', () => {
+    // `turn.fail` is claude's `StopFailure`; omp has no peer for it.
+    const failing = { ...orphan, events: ['turn.fail'] } as const;
+    expect(realizationOf(failing, claudeHarnessAdapter).mode).toBe('bound');
+    const r = realizationOf(failing, ompHarnessAdapter);
+    expect(r.mode).toBe('steer');
+    expect(r.losses[0]?.reason).toBe('unrealizable');
   });
 });
 
 describe('steer — fires it but cannot NAME the agent: degrade, do not widen', () => {
-  // Codex declares hooks in one global `hooks.json`. `turn.end → Stop` is
-  // realizable there, and its hook input carries no agent identifier — so a
-  // constraint composed into nico+mav could only be emitted for EVERYONE.
+  // `turn.end` is realizable on the shortfall adapter, and it can give that hook
+  // no agent to match on — so a constraint composed into nico+mav could only be
+  // emitted for EVERYONE.
   const composed = {
     anchor: 'stance-guardrail',
     substrate: 'harness',
@@ -70,18 +92,18 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
   } as const;
 
   it('asserts the two predicates genuinely diverge — else this tests nothing', () => {
-    expect(codexHarnessAdapter.realizes('turn.end')).toBe(true);
-    expect(codexHarnessAdapter.scopes('turn.end')).toBe(false);
+    expect(shortfallAdapter.realizes('turn.end')).toBe(true);
+    expect(shortfallAdapter.scopes('turn.end')).toBe(false);
   });
 
   it('degrades to a steer, reporting unscopable and naming f · e · adapter · a', () => {
-    const r = realizationOf(composed, codexHarnessAdapter);
+    const r = realizationOf(composed, shortfallAdapter);
     expect(r.mode).toBe('steer');
     const [loss] = r.losses;
     expect(loss?.reason).toBe('unscopable');
     expect(loss?.warning).toContain('stance-guardrail'); // f
     expect(loss?.warning).toContain('turn.end'); // e
-    expect(loss?.warning).toContain('codex'); // adapter
+    expect(loss?.warning).toContain(SHORTFALL); // adapter
     expect(loss?.warning).toContain('nico'); // a
     expect(loss?.warning).toContain('mav'); // a
   });
@@ -90,28 +112,29 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
     // A warning that only announced a loss would read as silent non-enforcement.
     // What makes it safe to continue is that the declaration still governs, and
     // the message has to say so or the operator cannot judge the risk.
-    const [loss] = realizationOf(composed, codexHarnessAdapter).losses;
+    const [loss] = realizationOf(composed, shortfallAdapter).losses;
     expect(loss?.warning).toMatch(/declaration/i);
     expect(loss?.warning).toMatch(/steer, not a bound/i);
   });
 
   it('is distinguishable from unrealizable — the two have different remedies', () => {
-    const unscopable = realizationOf(composed, codexHarnessAdapter).losses[0];
+    const unscopable = realizationOf(composed, shortfallAdapter).losses[0];
     const unrealizable = realizationOf(
       { ...composed, events: ['file.read.pre'] },
-      codexHarnessAdapter,
+      shortfallAdapter,
     ).losses[0];
     expect(unscopable?.reason).not.toBe(unrealizable?.reason);
   });
 
-  it('does not degrade on claude, which scopes by attachment', () => {
+  it('does not degrade on claude or omp, which scope what they realize', () => {
     expect(realizationOf(composed, claudeHarnessAdapter).mode).toBe('bound');
+    expect(realizationOf(composed, ompHarnessAdapter).mode).toBe('bound');
   });
 
   it('is not asked when no agent composes the constraint', () => {
     // A session-wide hook has nothing to narrow to. Silence here is a different
     // question answered, not this question skipped.
-    const r = realizationOf({ ...composed, agents: [] }, codexHarnessAdapter);
+    const r = realizationOf({ ...composed, agents: [] }, shortfallAdapter);
     expect(r.mode).toBe('bound');
     expect(r.losses).toEqual([]);
   });
@@ -119,23 +142,23 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
 
 describe('one loss degrades the WHOLE constraint, never a subset of its events', () => {
   it('a mixed event set steers rather than half-mechanizing', () => {
-    // subagent.end IS scopable on codex; turn.end is not. Emitting the mechanism
-    // for only the scopable half would enforce a constraint nobody authored —
-    // binding on some occasions, silent on others, with no declaration saying
-    // which. The declaration already covers every occasion.
+    // tool.use.pre is realizable on claude; file.read.pre is not. Emitting the
+    // mechanism for only the realizable half would enforce a constraint nobody
+    // authored — binding on some occasions, silent on others, with no declaration
+    // saying which. The declaration already covers every occasion.
     const r = realizationOf(
       {
         anchor: 'stance-guardrail',
         substrate: 'harness',
-        events: ['subagent.end', 'turn.end'],
+        events: ['tool.use.pre', 'file.read.pre'],
         agents: ['nico'],
       },
-      codexHarnessAdapter,
+      claudeHarnessAdapter,
     );
-    expect(codexHarnessAdapter.scopes('subagent.end')).toBe(true);
+    expect(claudeHarnessAdapter.realizes('tool.use.pre')).toBe(true);
     expect(r.mode).toBe('steer');
     expect(r.losses).toHaveLength(1);
-    expect(r.losses[0]?.event).toBe('turn.end');
+    expect(r.losses[0]?.event).toBe('file.read.pre');
   });
 });
 
@@ -191,36 +214,23 @@ describe('what the corpus actually faces — measured per predicate, not assumed
   it('every harness event the canon cells declare is realizable on BOTH', () => {
     for (const event of CANON_EVENTS) {
       expect(claudeHarnessAdapter.realizes(event)).toBe(true);
-      // Codex has a full hook surface, contrary to what this adapter used to
-      // claim about itself.
-      expect(codexHarnessAdapter.realizes(event)).toBe(true);
+      expect(ompHarnessAdapter.realizes(event)).toBe(true);
     }
   });
 
-  it('claude scopes all four — attachment is the scope', () => {
+  it('both scope all four — attachment is the scope', () => {
     for (const event of CANON_EVENTS) {
       expect(claudeHarnessAdapter.scopes(event)).toBe(true);
-    }
-  });
-
-  it('codex scopes ONLY the subagent pair — this is the live consequence', () => {
-    // Recorded so the next reader inherits the measurement rather than the
-    // surprise. Once an agent-composed constraint carries session.start,
-    // tool.use.pre or turn.end, deploying it to codex degrades that constraint
-    // to a declaration and warns. The projection still completes.
-    expect(codexHarnessAdapter.scopes('subagent.end')).toBe(true);
-    expect(codexHarnessAdapter.scopes('subagent.start')).toBe(true);
-    for (const event of [
-      'session.start',
-      'tool.use.pre',
-      'turn.end',
-    ] as const) {
-      expect(codexHarnessAdapter.scopes(event)).toBe(false);
+      expect(ompHarnessAdapter.scopes(event)).toBe(true);
     }
   });
 
   it('honours MODEL `scopable ⇒ realizable` on every adapter and event', () => {
-    for (const adapter of [claudeHarnessAdapter, codexHarnessAdapter]) {
+    for (const adapter of [
+      claudeHarnessAdapter,
+      ompHarnessAdapter,
+      shortfallAdapter,
+    ]) {
       for (const event of CANON_EVENTS) {
         if (adapter.scopes(event)) expect(adapter.realizes(event)).toBe(true);
       }

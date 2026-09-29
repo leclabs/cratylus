@@ -34,6 +34,7 @@ import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
+import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
   type ProjectablePlugin,
@@ -134,7 +135,7 @@ describe('the command name has exactly one home, and there is one command', () =
 
 describe('projectionFacts is adapter-relative', () => {
   const claude = projectionFacts(adapterByName('claude'));
-  const codex = projectionFacts(adapterByName('codex'));
+  const omp = projectionFacts(adapterByName('omp'));
 
   it('binds every fact the schema declares', () => {
     // `ProjectionFact` is a closed set of NAMES; this table is the only place they
@@ -167,8 +168,7 @@ describe('projectionFacts is adapter-relative', () => {
     // different one. Both are red here.
     const differing = Object.keys(claude)
       .filter(
-        (k) =>
-          claude[k as keyof typeof claude] !== codex[k as keyof typeof codex],
+        (k) => claude[k as keyof typeof claude] !== omp[k as keyof typeof omp],
       )
       .sort();
     expect(differing).toEqual([
@@ -181,8 +181,9 @@ describe('projectionFacts is adapter-relative', () => {
   it('carries each adapter’s own name and hooks file', () => {
     expect(claude['harness-name']).toBe('claude');
     expect(claude['harness-hooks-file']).toBe('settings.json');
-    expect(codex['harness-name']).toBe('codex');
-    expect(codex['harness-hooks-file']).toBe('hooks.json');
+    expect(omp['harness-name']).toBe('omp');
+    expect(omp['harness-hooks-file']).toBe(adapterByName('omp').hooksFile);
+    expect(omp['harness-hooks-file']).not.toBe(claude['harness-hooks-file']);
   });
 
   it('carries the drift exit code as the string a shell compares', () => {
@@ -220,17 +221,19 @@ const declared = (sh: string, key: string): string | undefined =>
 describe('the projector hands its adapter to the worker templates', () => {
   it('resolves a hook cell’s workers against the harness being rendered', async () => {
     const claude = await projectFixture('claude');
-    const codex = await projectFixture('codex');
+    const omp = await projectFixture('omp');
     expect(claude.probe, 'no probe worker was emitted').not.toBe('');
-    expect(codex.probe, 'no probe worker was emitted').not.toBe('');
+    expect(omp.probe, 'no probe worker was emitted').not.toBe('');
 
     // The SAME cell, two harnesses, two answers — captured off the bytes rather
     // than asserted about the table, because the bytes are what lands on a host.
     expect(declared(claude.probe, 'HARNESS')).toBe('claude');
     expect(declared(claude.probe, 'HARNESS_HOOKS_FILE')).toBe('settings.json');
-    expect(declared(codex.probe, 'HARNESS')).toBe('codex');
-    expect(declared(codex.probe, 'HARNESS_HOOKS_FILE')).toBe('hooks.json');
-    expect(codex.probe).not.toBe(claude.probe);
+    expect(declared(omp.probe, 'HARNESS')).toBe('omp');
+    expect(declared(omp.probe, 'HARNESS_HOOKS_FILE')).toBe(
+      adapterByName('omp').hooksFile,
+    );
+    expect(omp.probe).not.toBe(claude.probe);
   });
 
   it('resolves an ENFORCING mechanism’s workers the same way', async () => {
@@ -245,12 +248,14 @@ describe('the projector hands its adapter to the worker templates', () => {
     expect(declared(claude, 'HOOKS_FILE')).toBe('settings.json');
   });
 
-  it('emits no unresolved placeholder on either harness', async () => {
-    for (const harness of ['claude', 'codex']) {
+  it('emits no unresolved fact placeholder on either harness', async () => {
+    // `{{scopeDir}}` is the one placeholder a scoped artifact ships on purpose —
+    // deploy resolves it to the artifact's own directory — so it is not a fact.
+    for (const harness of ['claude', 'omp']) {
       const { tree } = await projectFixture(harness);
       for (const f of tree.files) {
         expect(
-          f.content.includes('{{'),
+          f.content.replaceAll(SCOPE_DIR_TOKEN, '').includes('{{'),
           `${harness}: ${f.path} ships an unresolved placeholder`,
         ).toBe(false);
       }
