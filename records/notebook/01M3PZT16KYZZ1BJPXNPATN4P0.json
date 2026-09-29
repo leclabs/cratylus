@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PZT16KYZZ1BJPXNPATN4P0",
+    "entity": "01M3PZT16KYZZ1BJPXNPATN4NZ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T16:26:17.172Z",
+    "reason": "the carrier of the held role and the port member are public signs a planner may not coin; the unit cannot be built without them",
+    "cause": "census of role routing at 46d24202: forge is blind to dimension identity"
+  },
+  "payload": {
+    "title": "role routing carrier signs",
+    "kind": "question",
+    "topic": "role routing",
+    "body": "Role routing needs the held role at projection time. At 46d24202 it is reachable only as canon's `role` dimension value, `anchorOf(agent.role)`. Forge's contract is that it never names a dimension (packages/schema/src/index.ts:504-507, `dimensionValueOf`), so reading `role` in forge would breach it. The plan instead carries the role on the `Agent` identity face, modelled on `skills`. That means an optional field on @cratylus/schema's `Agent`, set by canon's `holds` fold. Install reaches omp's routing table (default role, nearest built-in per role, config.yml path) through one optional `HarnessAdapter` member. Both are new public signs, one in the published schema and one in forge's exported port, and they are the architect's to name. Ruling owed: confirm the identity-face carrier over any manifest-level alternative, and name the Agent field and the HarnessAdapter member. Once ruled, revise unit role-routing's intent to spell both names, then clear this note's blocks.",
+    "blocks": [
+      "01M3PZSGMHGEP7W9KZY1P1CH4X"
+    ]
+  }
+}
