@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3PZWM17FZ41C5WKBXWAMZT3",
+    "entity": "01M3PZWM17FZ41C5WKBXWAMZT2",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T16:27:41.991Z",
+    "reason": "out-of-gloss finding filed, not chased",
+    "cause": "role-routing planner"
+  },
+  "payload": {
+    "title": "persona launch ignores its role's model",
+    "kind": "idea",
+    "topic": "role routing",
+    "body": "The omp-agent launcher starts a persona's MAIN session on the session default and never reads the definition's model, so a launched nico runs on default while a dispatched architect routes by @architect. Same one-definition-two-readers shape closed for autoloadSkills. Outside the role routing gloss; harmless while architect maps to default.",
+    "blocks": []
+  }
+}

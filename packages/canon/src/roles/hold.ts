@@ -43,7 +43,7 @@ import type {
   Agent as AgentIdentity,
   DimensionFieldsOf,
 } from '@cratylus/schema';
-import { kebabToCamel } from '@cratylus/schema';
+import { anchorOf, kebabToCamel } from '@cratylus/schema';
 import { DIMENSION_NAMES, MANIFEST } from '../manifest.js';
 import type { Agent, Role } from '../manifest.js';
 
@@ -81,7 +81,8 @@ export interface RoleCell {
  * bounded in exactly one way: `role` is absent, because the contract is the position's.
  * An aspect stated here OVERRIDES a scalar the role supplies and EXTENDS a set.
  */
-export type Declared = AgentIdentity & Partial<Omit<DimensionFields, 'role'>>;
+export type Declared = Omit<AgentIdentity, 'holds'> &
+  Partial<Omit<DimensionFields, 'role'>>;
 
 /**
  * `select(a) = hold(a) ⊕ declare(a)` — the two-operand fold, run at authoring time so
@@ -110,6 +111,9 @@ export function holds(role: RoleCell, declared: Declared): Agent {
     description: declared.description,
     archetype: declared.archetype,
     provenance: declared.provenance,
+    // The held role's anchor, on the identity face: forge is blind to the `role`
+    // dimension, so this is the one place the position reaches a harness.
+    holds: anchorOf(role.sign),
   };
   if (declared.preamble !== undefined) {
     resolved.preamble = declared.preamble;

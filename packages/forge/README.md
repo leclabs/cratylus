@@ -190,6 +190,11 @@ Which directories are required depends on `--kind`: `all` requires all three, `h
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
 refusal, not a partial run.
 
+Deploy stops at the harness's agent, skill and hook destinations (and the runtime config). A harness's
+own model routing — omp's `modelRoles` — is host configuration, not a deployed artifact: `deploy` never
+writes it, and only `cratylus install` seeds the missing entries for the roles the installed agents
+hold.
+
 #### The destinations are the adapter's, not the render tree's
 
 A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<name>/`,
@@ -218,6 +223,23 @@ busybox-style) reads the same bytes, prepends the identity assertion omp's own b
 otherwise win, appends the body of each `autoloadSkills` skill, and hands the result to
 `--append-system-prompt`. One definition, two readers, nothing to drift — and ONE launcher on the
 host rather than one per agent.
+
+**The definition names a role, never a model.** An agent that holds a role (`Agent.holds`, the held
+role's anchor, which the corpus's own fold sets) carries `model: ["@<role>", "@default"]` after its
+`description`: omp's model-role alias for the held role, then omp's default role as the fallback, so a
+host that never configured the role runs the agent on the default role (`modelRoles.default`). An agent
+holding no role has no `model` key. Which model fills a role is the host's `modelRoles` entry in
+`~/.omp/agent/config.yml` (or `config.yaml`, which omp reads only when config.yml is absent). The table
+behind this is the adapter's optional `roleRouting` member (its default role, the built-in role nearest
+each held role, and the config paths in read order); claude and codex leave it absent and their definitions carry no
+route. `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
+`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer to `task`, planner to `plan`,
+assayer and architect to `default`. It edits the config file omp reads — `config.yml`, else `config.yaml` —
+by inserting lines, so every other byte survives; it never changes an entry the host already has, creates
+`config.yml` only when the host has neither file, and, when `modelRoles` is
+a flow mapping, a scalar or carries an anchor or alias, reports that it left the file alone and still
+succeeds. `--dry-run` reports what it would add and writes nothing. `cratylus deploy` places
+definitions only and never touches `config.yml`.
 
 A main session starts with the skills omp itself resolves, as a dispatched subagent does. For each name
 in `autoloadSkills`, in order, the launcher runs `omp read skill://<name>` from the launch directory and

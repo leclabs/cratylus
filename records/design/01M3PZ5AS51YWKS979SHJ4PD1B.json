@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3PZ5AS51YWKS979SHJ4PD1B",
+    "entity": "01M3PZ5AS51YWKS979SHJ4PD1A",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T16:14:58.853Z",
+    "reason": "every agent already holds a role in canon; the omp projection dropped it, so every subagent inherited the parent's model and no position could be routed",
+    "cause": "operator asked why subagents don't use omp roles; approved projecting held roles with a @default fallback and seeding missing roles at install"
+  },
+  "payload": {
+    "anchor": "role routing",
+    "gloss": "the position an agent holds, carried to a harness as the key its host routes a model by. Each agent's projected definition names the role it holds as a model-role alias, followed by the harness's default role as the fallback, so a host that never configured the role runs the agent as before. Install adds, for every held role the host lacks, an entry aliasing the harness's nearest built-in role (on omp: implementer to task, planner to plan, assayer and architect to default), never changes an entry the host has set, and reports what it added. Which model fills a role is the host's choice; the projection names no model.",
+    "factors": []
+  }
+}

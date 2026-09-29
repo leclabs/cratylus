@@ -1,0 +1,77 @@
+{
+  "envelope": {
+    "id": "01M3Q0QYBKAQF90HXTFN6HJD05",
+    "entity": "01M3PZSGMHGEP7W9KZY1P1CH4X",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PZWM6XK3QRWQV79GN3Q84W"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T16:42:37.299Z",
+    "reason": "role routing amended: the gloss adds the read-file rule the artifact misses and corrects the fallback wording; per the drift law a gloss that adds behaviour is revised and repinned",
+    "cause": "design amendment after assay"
+  },
+  "payload": {
+    "plan": "01M3PZSGMCQQSR4A220PFRY97V",
+    "spec": {
+      "name": "role-routing",
+      "intent": "Realize `role routing` on omp. Census @46d24202 (git 46d24202; no path below changed since). CARRIER. At projection forge receives @cratylus/schema's `Agent`. The held role exists there only as canon's `role` dimension value, whose anchor `anchorOf(agent.role)` is architect | planner | implementer | assayer. All 7 of 7 canon agents are built by `holds`: nico, kino, mav and architect hold architect; implementer, planner and assayer hold their own. Forge is contractually blind to dimension identity (packages/schema/src/index.ts:504-507; `dimensionValueOf` 'never names one'), so forge must not read `role`. Add ONE optional field to schema's `Agent` identity face, modelled on `skills` (identity face, not a dimension; absent means the agent holds no role), carrying the held role's anchor. Canon's `holds` fold (packages/canon/src/roles/hold.ts) sets it from `anchorOf(role.sign)`. Forge reads that field only. The field's sign, and the sign of the port member below, are the ones ruled in the note 'role routing carrier signs'. OMP ROUTING TABLE. This lives in forge's omp adapter alone, never in canon. It holds: the harness default role `default`; each held role's nearest built-in role (implementer to task, planner to plan, assayer to default, architect to default, and any other role to default); and the host config `agent/config.yml` under the harness home (`~/.omp/agent/config.yml`). It is exposed through ONE optional `HarnessAdapter` member (packages/forge/src/core/harness-adapter.ts), so install reaches it by harness name through the registry. Claude and codex leave the member absent, and their adapters are not edited. DEFINITION. For an agent holding a role, `agentToOmpMd` (packages/forge/src/adapters/omp/render.ts:296) emits `model: [\"@<role>\", \"@default\"]`. The value is a flow sequence of double-quoted strings built with `yamlString`, because a YAML value starting with `@` must be quoted. The line goes after `description` and before `autoloadSkills`. An agent holding no role emits no `model` key. The definition names roles and never a model. Rewrite the doc at render.ts:258-264, which says `model` is host routing that forge never asserts. Also rewrite the comments at packages/forge/test/adapters/omp.test.ts:108-115 and :123-124. Both should say that the definition names the ROLE the host routes by, and the host chooses the model. HELD ROLES. `projectPluginSet`'s `ProjectedTree` (packages/forge/src/project/index.ts:221) also reports the sorted, distinct held roles of the agents it rendered, so install knows them without re-reading definitions. INSTALL. After deploy, when the adapter carries the member, `runInstall` (packages/forge/src/cli/commands/install.ts) reads the top-level `modelRoles` mapping of `<home>/<adapter.home>/agent/config.yml`. For each held role with no key there, it adds `<role>: \"@<nearest>\"`. An entry already present is never changed, whatever its value: quoted or plain, an alias or a concrete model id. The file is HOST-OWNED, so install edits it by surgical text insertion and never uses a YAML library or reserializes. New entries go after the last entry of a block-style `modelRoles:` mapping, at that mapping's indentation (two spaces when it has no entries). When the key is absent, install appends a `modelRoles:` block at end of file. When the file is absent, install creates it. Every other byte therefore survives: comments, key order, quoting and unrelated keys. If `modelRoles` has a value the insertion cannot safely extend (a flow mapping `{...}`, a scalar, or an anchor/alias), install reports that and leaves the file untouched, and install still succeeds. The write logic lives in a new packages/forge/src/deploy/model-roles.ts. It takes the file path and the wanted entries as data, never imports an adapter, and is exported through packages/forge/src/deploy/index.ts. Install reports one line per added entry (`<role>: \"@<nearest>\"`) together with the file path, or that no entry was missing. With `--dry-run` it writes nothing and reports the same entries as would-add. `cratylus deploy` and the omp-agent launcher do not change. DOCS. In packages/forge/README.md, update the omp definition paragraph (:213-220) and the install/deploy wording. In packages/cli/README.md, add a section beside 'The host runtime config' that covers config.yml's `modelRoles`, what install adds, and the fact that install never changes a host entry. Add a changeset `.changeset/role-routing.md` bumping @cratylus/schema, @cratylus/canon and @cratylus/forge minor. TESTS. Put the insertion and install cases in the new packages/forge/test/deploy/model-roles.test.ts. For a fixture plugin, write agent modules into a tmp dir at run time, as packages/forge/test/project/resolver-parity.test.ts does; no committed fixture directory. Put the emission legs in omp.test.ts. CONFIG FILE (added after assay). omp reads `agent/config.yml` and falls back to `agent/config.yaml` only when config.yml is absent. `roleRouting` therefore carries the host config files in omp's read order (config.yml, then config.yaml). Install edits the FIRST ONE THAT EXISTS; only when neither exists does it create config.yml. It never creates config.yml beside an existing config.yaml, which would shadow every host setting. Test: a host with only config.yaml gets its entries added there, no config.yml appears, and its own `implementer` entry is untouched. FALLBACK WORDING. Docs and comments must say an unconfigured role runs on the harness's default role (omp's `modelRoles.default`), not 'as before'.",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/codex/render.ts",
+        "packages/forge/test/project/resolver-parity.test.ts",
+        "packages/forge/test/project/skill-closure.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/README.md",
+        "packages/cli/README.md",
+        ".changeset/role-routing.md"
+      ],
+      "accept": [
+        "After `pnpm turbo run build --filter='cratylus...'`, `T=$(mktemp -d) && pnpm exec cratylus project --harness omp --out $T` (cwd = worktree): `grep -lFx 'model: [\"@architect\", \"@default\"]' $T/agents/*.md` lists exactly architect.md, kino.md, mav.md, nico.md; implementer.md, planner.md, assayer.md each carry exactly one line `model: [\"@implementer\", \"@default\"]`, `model: [\"@planner\", \"@default\"]`, `model: [\"@assayer\", \"@default\"]` respectively, inside the front-matter fence after `description:` (pre @46d24202: 0 of 7 definitions carry a `model:` line)",
+        "In each of those 7 definitions the `model:` value parses with `JSON.parse` to a 2-element array of strings, each starting with `@`, the second `@default` — no concrete model id is emitted",
+        "`grep -n \"HOST's routing\\|routes a HOST's dispatch\" packages/forge/src/adapters/omp/render.ts packages/forge/test/adapters/omp.test.ts` prints nothing (pre: render.ts:262, omp.test.ts:112)",
+        "Setup: T=$(mktemp -d); mkdir -p $T/.omp/agent $T/cwd; config.yml = `# host config\\nmodelRoles:\\n  default: anthropic/claude-opus-5-5:high  # main\\n  task: \"@default\"\\ntheme: dark\\n`. Then from $T/cwd (no cratylus.config.ts), `env AGENT_RUNTIME_CONFIG=$T/rc.json HOME=$T node /home/lex/workspaces/cratylus-roles/packages/cli/dist/cratylus.js install --harness omp` exits 0, its output names implementer, planner, assayer and architect each with its alias and the config.yml path, and afterwards config.yml's modelRoles block holds `  implementer: \"@task\"`, `  planner: \"@plan\"`, `  assayer: \"@default\"`, `  architect: \"@default\"` exactly once each, before `theme: dark` (pre @46d24202: the file is byte-identical after install and no entry is reported)",
+        "In that same run, deleting the four added lines from the resulting config.yml yields bytes identical (`cmp`) to the original: the leading comment, `default` with its trailing comment, `task: \"@default\"` and `theme: dark` survive byte-for-byte",
+        "With config.yml `# host\\nmodelRoles:\\n  implementer: \"@task\"\\n  planner: openai/gpt-5:high\\n`, the same install adds exactly `assayer: \"@default\"` and `architect: \"@default\"`, reports neither implementer nor planner as added, and the `implementer` and `planner` lines are byte-identical afterwards",
+        "With config.yml `theme: dark\\n` (no modelRoles), install appends a `modelRoles:` block holding the four entries and `theme: dark` stays line 1; with no config.yml at all, install creates one whose modelRoles holds the four entries",
+        "`... install --harness omp --dry-run` on the config of the first install criterion exits 0, prints the four entries as would-add, and config.yml is byte-identical afterwards (`cmp`)",
+        "With config.yml `modelRoles: {default: x}\\n` (flow mapping), install exits 0, reports that it did not edit config.yml, and the file is byte-identical afterwards",
+        "A second install after the first install criterion adds nothing, reports that no entry was missing, and leaves config.yml byte-identical",
+        "Guard (passes at 46d24202 and must stay so): `git diff --stat 46d24202 -- packages/forge/src/adapters/claude packages/forge/src/adapters/codex` prints nothing, and in a `pnpm exec cratylus project --harness claude --out $C` render no agents/*.md carries a `model:` line (0 of 7, as measured at 46d24202)",
+        "`pnpm --filter @cratylus/schema --filter @cratylus/canon --filter @cratylus/forge run typecheck` and `pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts test/deploy/model-roles.test.ts test/project/skill-closure.test.ts` exit 0 (pre: model-roles.test.ts does not exist)",
+        "`grep -c modelRoles packages/cli/README.md packages/forge/README.md` is ≥1 for each (pre: 0 and 0), and `.changeset/role-routing.md` exists with front matter `\"@cratylus/schema\": minor`, `\"@cratylus/canon\": minor`, `\"@cratylus/forge\": minor`"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "version": "01M3Q0QXQ3C1M3SH1K10T5MQXZ",
+      "closure": {}
+    }
+  }
+}

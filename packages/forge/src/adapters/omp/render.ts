@@ -102,6 +102,7 @@ import {
   type HarnessAdapter,
   type HarnessProjection,
   NEUTRAL_AGENT_ROOT,
+  type RoleRouting,
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
@@ -249,26 +250,56 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
   [OMP_PERSONA_BADGE_MODULE]: true,
 };
 
+// ── Role routing: the roles omp routes a model by ────────────────────────────
+
+/** omp's own default model role — the fallback every definition's `model` ends in. */
+const OMP_DEFAULT_ROLE = 'default';
+
+/** The built-in omp role nearest to each role an agent may hold. A held role with
+ *  no entry is nearest the default role. */
+const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
+  implementer: 'task',
+  planner: 'plan',
+};
+
+/** omp's role → model routing: the table {@link HarnessAdapter.roleRouting} exposes.
+ *  The host keeps the mapping in `agent/config.yml` under its `modelRoles` key, or
+ *  in `agent/config.yaml` when config.yml is absent — omp reads the first that
+ *  exists and never merges the two. */
+export const ompRoleRouting: RoleRouting = {
+  defaultRole: OMP_DEFAULT_ROLE,
+  nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
+  configRels: ['agent/config.yml', 'agent/config.yaml'],
+};
+
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
 
 /**
  * The omp agent definition: the front-matter omp reads, then the composed Target
  * body, which IS the system prompt.
  *
- * **FRONT-MATTER: the two fields omp REQUIRES, plus the one the CELL declares.**
+ * **FRONT-MATTER: the two fields omp REQUIRES, plus the ones the CELL declares.**
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
  * and SKIPS the file — a persona that silently does not exist. The rest of what
- * omp accepts here (`model`, `tools`, `spawns`, `thinking-level`, …) is a
- * property of a HOST's routing rather than of the composed agent, so forge
- * asserts none of it: an operator who adds one is editing their own dispatch
- * policy.
+ * omp accepts here (`tools`, `spawns`, `thinking-level`, …) is a property of a
+ * HOST's dispatch policy rather than of the composed agent, so forge asserts none
+ * of it: an operator who adds one is editing their own dispatch policy.
+ *
+ * **`model` NAMES THE ROLE, NEVER A MODEL.** An agent that holds a role
+ * ({@link Agent.holds}) emits `model: ["@<role>", "@default"]`: omp's own
+ * model-role alias for the held role, then the harness's default role as the
+ * fallback, so a host that never configured the role runs the agent on the
+ * default role (`modelRoles.default`). Which model fills a role is the host's `modelRoles` entry — the
+ * definition carries no model id. Both aliases are quoted, because a YAML value
+ * starting with `@` is a scanner error unquoted. An agent holding no role emits
+ * no `model` key.
  *
  * **`autoloadSkills` IS THE EXCEPTION, because it is not routing.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
  * declares together with every skill they compose, the closure projection
  * computes and hands this adapter as `Agent.skills`, rendered here in the order
  * it arrives. Emitted only when that list is non-empty, so an agent given none
- * still projects exactly the two required keys. omp honours the field for a
+ * carries no such key. omp honours the field for a
  * DISPATCHED subagent — the skills are injected before the child's first
  * prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the same key back OUT of this
  * file for a MAIN session, which has no native path for it, and inlines each
@@ -295,6 +326,11 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  */
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
+  if (a.holds !== undefined) {
+    fm.push(
+      `model: [${[`@${a.holds}`, `@${OMP_DEFAULT_ROLE}`].map(yamlString).join(', ')}]`,
+    );
+  }
   // omp's own preload field. claude has one too (`skills`); codex has none and
   // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
@@ -1527,6 +1563,9 @@ export const ompHarnessAdapter: HarnessAdapter = {
   judgeBin: '',
   // `autoloadSkills` names skills omp preloads into the agent it defines.
   preloadsSkills: true,
+  // The role → model table: the definition names the role, install seeds the
+  // host's `modelRoles` entry for it.
+  roleRouting: ompRoleRouting,
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,

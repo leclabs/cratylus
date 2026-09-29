@@ -119,3 +119,13 @@ export {
   type ScaffoldProjectResult,
   scaffoldProject,
 } from './init.js';
+
+// The host's `modelRoles` mapping: entries a held role needs, added by text
+// insertion so every other byte of the host-owned config survives.
+export {
+  type AddModelRolesOpts,
+  type AddModelRolesResult,
+  addModelRoles,
+  type ModelRoleEntry,
+  modelRoleLine,
+} from './model-roles.js';

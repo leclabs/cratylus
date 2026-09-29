@@ -68,3 +68,36 @@ A command that needs a harness's native names asks for that harness's stanza and
 refuses when it has none, naming `cratylus install --harness <h>` (works on a bare
 host) and `cratylus deploy --harness <h>` (from a project). `cratylus eventTap` asks
 for `claude`'s.
+
+## The host's model routing on omp
+
+An omp agent definition names the role it holds and never a model:
+`model: ["@architect", "@default"]` reads "route by `architect`, else by `default`". Which
+model fills a role is the host's choice, and omp keeps that choice in
+`~/.omp/agent/config.yml` (or `config.yaml`, read only when `config.yml` is absent) under `modelRoles`:
+
+```yaml
+modelRoles:
+  default: anthropic/claude-opus-5-5:high
+  task: "@default"
+  architect: "@default"
+```
+
+`cratylus install --harness omp` reads the roles the installed agents hold and, for each
+one `modelRoles` has no key for, adds an entry aliasing the nearest built-in omp role:
+implementer to `@task`, planner to `@plan`, assayer and architect to `@default`. It
+prints one `<role>: "@<alias>"` line per entry it added, with the file's path, or says
+that no entry was missing. `--dry-run` prints the same entries as would-add and writes
+nothing.
+
+An entry the host already has is never changed, whether it is an alias or a concrete
+model id, quoted or plain, so pointing a role at a model is done in that file and
+survives every later install. The file is the host's: install inserts lines and never
+re-serializes it, so its comments, key order and quoting stay as they were. It edits the
+file omp reads: `config.yml`, else `config.yaml`. It creates `config.yml` only when the host has
+neither, so it never shadows a `config.yaml` that holds the host's own settings, and it
+appends a `modelRoles:` block when the file has none. When `modelRoles` is
+a flow mapping (`{…}`), a scalar, or carries an anchor or alias, install says it did not
+edit the file and still succeeds; an agent whose role has no entry then runs on the
+`default` role (`modelRoles.default`). `cratylus deploy`
+never touches `config.yml`.

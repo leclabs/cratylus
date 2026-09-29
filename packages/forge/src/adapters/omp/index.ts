@@ -24,6 +24,7 @@ export {
   ompLaunchSurface,
   ompOverlayYaml,
   ompPersonaBadgeExtensions,
+  ompRoleRouting,
   ompScopeActivatedExtensions,
   ompSkillRel,
   skillToOmpMd,

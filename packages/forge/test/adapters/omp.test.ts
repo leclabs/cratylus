@@ -40,6 +40,7 @@ import {
   ompScopeActivatedExtensions,
   ompSkillRel,
 } from '../../src/adapters/omp/index.js';
+import { adapterByName } from '../../src/adapters/registry/index.js';
 import {
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
@@ -105,23 +106,64 @@ function frontMatter(md: string): Record<string, string> {
 }
 
 describe('omp agent definition', () => {
-  it('carries the two fields omp REQUIRES, and nothing a HOST routes with', () => {
+  it('carries the two fields omp REQUIRES, and nothing else for an agent holding no role', () => {
     // `parseAgentFields` treats a missing `name` or `description` as a parse
     // failure and SKIPS the file — a persona that silently does not exist. The
-    // REST of what omp accepts here (`model`, `tools`, `spawns`,
-    // `thinking-level`, …) routes a HOST's dispatch rather than describing the
-    // composed agent, so forge asserts none of it. `autoloadSkills` is the one
-    // exception and the leg below owns it: this agent is given no skills, so
-    // the key is not here either.
+    // REST of what omp accepts here (`tools`, `spawns`, `thinking-level`, …) is
+    // the host's own dispatch policy, so forge asserts none of it. `model` names
+    // the ROLE the host routes by and is emitted only for an agent that holds
+    // one, and `autoloadSkills` only for one given skills; this agent has
+    // neither, so neither key is here.
     expect(frontMatter(agentToOmpMd(AGENT, CTX))).toEqual({
       name: 'mav',
       description: 'the builder: ships things',
     });
   });
 
+  it('names the held role as its model route — the role, then the default, never a model', () => {
+    // The definition names the ROLE the host routes by; which MODEL fills that
+    // role is the host's `modelRoles` entry. Both aliases start with `@`, which
+    // YAML forbids unquoted, so they ride as double-quoted strings, and the
+    // position matters to whoever reads the file: after `description`, before
+    // `autoloadSkills`. Read off the RENDERED STRING for that reason.
+    const md = agentToOmpMd(
+      {
+        ...(AGENT as object),
+        holds: 'implementer',
+        skills: ['design'],
+      } as never,
+      CTX,
+    );
+    const fence = (/^---\n([\s\S]*?)\n---\n/.exec(md)?.[1] as string).split(
+      '\n',
+    );
+    expect(fence.map((l) => l.split(':')[0])).toEqual([
+      'name',
+      'description',
+      'model',
+      'autoloadSkills',
+    ]);
+    expect(fence[2]).toBe('model: ["@implementer", "@default"]');
+    // No concrete model id: two `@` aliases and nothing else survives a JSON read.
+    const route = JSON.parse((fence[2] as string).slice('model: '.length));
+    expect(route).toEqual(['@implementer', '@default']);
+  });
+
+  it('escapes a held role the way it escapes any other YAML string', () => {
+    const md = agentToOmpMd(
+      { ...(AGENT as object), holds: 'a "b" \\c' } as never,
+      CTX,
+    );
+    const line = md.split('\n').find((l) => l.startsWith('model: ')) as string;
+    expect(JSON.parse(line.slice('model: '.length))).toEqual([
+      '@a "b" \\c',
+      '@default',
+    ]);
+  });
+
   it('emits `autoloadSkills` for an agent given skills, and only then', () => {
-    // The one front-matter key that describes the COMPOSED AGENT rather than a
-    // host's routing, and the only one forge asserts. The list is the closure
+    // The front-matter key that describes the COMPOSED AGENT rather than the
+    // host's dispatch policy — with `model`, which names its role. The list is the closure
     // projection hands the adapter, rendered in the order it arrives. omp
     // honours it for a DISPATCHED subagent; `OMP_LAUNCHER_SCRIPT` reads the same
     // key back out for a MAIN session, which has no native path for it — so the
@@ -1169,5 +1211,39 @@ describe('omp shim', () => {
     });
     expect(r.status).toBe(0);
     expect(readFileSync(join(dir, 'called'), 'utf-8')).toBe('plan\nshow\nx\n');
+  });
+});
+
+describe('omp role routing', () => {
+  const routing = ompHarnessAdapter.roleRouting;
+
+  it('routes each held role to its nearest built-in role, and everything else to `default`', () => {
+    if (routing === undefined) throw new Error('omp declares no roleRouting');
+    expect(routing.defaultRole).toBe('default');
+    expect(
+      Object.fromEntries(
+        ['implementer', 'planner', 'assayer', 'architect', 'unheard-of'].map(
+          (r) => [r, routing.nearest(r)],
+        ),
+      ),
+    ).toEqual({
+      implementer: 'task',
+      planner: 'plan',
+      assayer: 'default',
+      architect: 'default',
+      'unheard-of': 'default',
+    });
+  });
+
+  it('names the host config files in the order omp reads them: config.yml, then config.yaml', () => {
+    expect(routing?.configRels).toEqual([
+      'agent/config.yml',
+      'agent/config.yaml',
+    ]);
+  });
+
+  it('is omp alone — claude and codex leave the member absent', () => {
+    expect(adapterByName('claude').roleRouting).toBeUndefined();
+    expect(adapterByName('codex').roleRouting).toBeUndefined();
   });
 });
