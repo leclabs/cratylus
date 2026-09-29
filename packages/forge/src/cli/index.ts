@@ -197,12 +197,17 @@ export async function runCli(
       '--link-persona-commands',
       'link a command named after each installed persona into ~/.local/bin, without asking',
     )
+    .option(
+      '--wrap-status-line',
+      "wrap the host's own Claude Code status line in the persona badge (never replaced without it)",
+    )
     .action(
       async (opts: {
         harness?: string;
         plugin?: string;
         dryRun?: boolean;
         linkPersonaCommands?: boolean;
+        wrapStatusLine?: boolean;
       }) => {
         process.exit(
           await runInstall({
@@ -211,6 +216,7 @@ export async function runCli(
             corpus: cliOpts.defaultCorpus,
             dryRun: opts.dryRun,
             linkPersonaCommands: opts.linkPersonaCommands,
+            wrapStatusLine: opts.wrapStatusLine,
             home: homedir(),
           }),
         );

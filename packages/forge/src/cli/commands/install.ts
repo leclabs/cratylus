@@ -27,6 +27,7 @@ import pc from 'picocolors';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
+  type RoleRouting,
   adapterByName,
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
@@ -35,6 +36,8 @@ import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   addModelRoles,
   describePersonaCommands,
+  ensureBadgeStatusLine,
+  ensureStatusSegment,
   modelRoleLine,
   personaLauncherOf,
   placePersonaCommands,
@@ -66,6 +69,10 @@ export interface InstallCmdOpts {
    *  asking (`--link-persona-commands`). Without it, an interactive install asks first and
    *  a non-interactive one places none and says how to. */
   linkPersonaCommands?: boolean;
+  /** Wrap the host's own Claude Code status line in the persona badge instead of only
+   *  offering to (`--wrap-status-line`). Without it, a status line the host already
+   *  has is left exactly as it is. */
+  wrapStatusLine?: boolean;
   /** Asked before linking, when `linkPersonaCommands` is absent. Default: a yes/no prompt
    *  on a terminal, and `false` where stdin or stdout is not one. */
   confirm?: (question: string) => Promise<boolean>;
@@ -203,20 +210,20 @@ export async function runInstall(
         opts.home,
         opts.dryRun ?? false,
       );
+      const personas = treeNames(
+        'agent',
+        {
+          agentsDir: resolve(stage, 'agents'),
+          skillsDir: resolve(stage, 'skills'),
+        },
+        adapter.agentExt,
+      );
+      // Then the badge, which is what the operator sees of those personas: the host's
+      // own status line, made to show it.
+      showPersonaBadge(adapter, personas, opts);
       // Then the persona commands: install's own step too, after the launcher they
       // link to has been placed.
-      await linkPersonaCommands(
-        adapter,
-        treeNames(
-          'agent',
-          {
-            agentsDir: resolve(stage, 'agents'),
-            skillsDir: resolve(stage, 'skills'),
-          },
-          adapter.agentExt,
-        ),
-        opts,
-      );
+      await linkPersonaCommands(adapter, personas, opts);
     }
     return rc;
   } finally {
@@ -261,15 +268,20 @@ async function linkPersonaCommands(
   }
   const plan = planPersonaCommands(common);
   say(describePersonaCommands(plan, true));
-  const free = plan.links.filter(
-    (l) => l.state === 'place' || l.state === 'adopt',
-  ).length;
-  if (free === 0) return;
+  const count = (state: 'place' | 'adopt') =>
+    plan.links.filter((l) => l.state === state).length;
+  const link = count('place');
+  const adopt = count('adopt');
+  if (link + adopt === 0) return;
+  const commands = (n: number) => `${n} persona command${n === 1 ? '' : 's'}`;
+  // What YES does, in the two ways it acts: a free name is linked, and a hand-made
+  // link to this launcher is only recorded — so the two are counted apart.
+  const question =
+    link === 0
+      ? `Adopt ${commands(adopt)} already linked in ${plan.binDir}?`
+      : `Link ${commands(link)} into ${plan.binDir}${adopt > 0 ? `, and adopt ${adopt} already linked there` : ''}?`;
   const confirm = opts.confirm ?? askOnTerminal;
-  if (
-    !dry &&
-    (await confirm(`Link ${free} persona command(s) into ${plan.binDir}?`))
-  ) {
+  if (!dry && (await confirm(question))) {
     say(describePersonaCommands(placePersonaCommands(common), false));
     return;
   }
@@ -289,6 +301,108 @@ async function askOnTerminal(question: string): Promise<boolean> {
   }
 }
 
+/** The host config file omp reads its settings from, and so the one to edit: the
+ *  FIRST that exists, because omp ignores the rest; a host with none gets the first,
+ *  and never a file that would shadow one it already has. */
+function hostConfigPath(
+  adapter: HarnessAdapter,
+  routing: RoleRouting,
+  home: string,
+): string {
+  const candidates = routing.configRels.map((rel) =>
+    join(home, adapter.home, rel),
+  );
+  return candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
+}
+
+/**
+ * Make the host's status line show the persona badge the projection just placed, and
+ * say what was done. Nothing is placed when no persona was installed, so there is no
+ * badge to show.
+ *
+ * The two harnesses' status lines differ in kind. Claude Code's is ONE command
+ * (`adapter.statusLine` declares the worker that fills it): set where the host has
+ * none, and never replaced where it has one — only offered a wrap, done under
+ * `--wrap-status-line`. omp's is a list of segments, which shows an extension's
+ * status only where it lists `status`: install adds it to the config file omp reads.
+ * Either failure to edit is reported and the install itself still succeeds.
+ */
+function showPersonaBadge(
+  adapter: HarnessAdapter,
+  personas: readonly string[],
+  opts: InstallCmdOpts & { home: string },
+): void {
+  if (personas.length === 0) return;
+  const dry = opts.dryRun ?? false;
+  const say = (line: string): void => {
+    process.stdout.write(`${line}\n`);
+  };
+  const refused = (path: string, why: string, leftAs: string): void => {
+    process.stderr.write(
+      `${pc.yellow('!')} ${CLI_BIN} install: did not edit ${path} — ${why}. ${leftAs}\n`,
+    );
+  };
+
+  const worker = adapter.statusLine;
+  if (worker !== undefined) {
+    const path = join(opts.home, adapter.home, adapter.hooksFile);
+    const result = ensureBadgeStatusLine(path, worker.command, {
+      dry,
+      wrap: opts.wrapStatusLine ?? false,
+    });
+    const tag = `statusLine${dry ? ' (dry-run)' : ''}: ${path}`;
+    switch (result.state) {
+      case 'set':
+        say(
+          `  ${tag} — ${dry ? 'would set' : 'set'} to the persona badge (${worker.command})`,
+        );
+        return;
+      case 'wrapped':
+        say(
+          `  ${tag} — ${dry ? 'would wrap' : 'wrapped'} the host's status line command in the persona badge`,
+        );
+        return;
+      case 'kept':
+        say(`  statusLine: ${path} — already shows the persona badge`);
+        return;
+      case 'offer':
+        say(
+          `  statusLine: ${path} — the host's own status line, left as it is; pass --wrap-status-line to show the persona badge in front of its output`,
+        );
+        return;
+      case 'refused':
+        refused(
+          path,
+          result.refused as string,
+          'The persona badge is not on the status line.',
+        );
+        return;
+    }
+  }
+
+  // The one harness whose status line takes segments. Its config file is the one its
+  // role routing already names, because that is the file omp reads settings from.
+  if (adapter.name === 'omp' && adapter.roleRouting !== undefined) {
+    const path = hostConfigPath(adapter, adapter.roleRouting, opts.home);
+    const result = ensureStatusSegment(path, { dry });
+    if (result.state === 'refused') {
+      refused(
+        path,
+        result.refused as string,
+        'The persona badge renders beneath the status line, not in it.',
+      );
+      return;
+    }
+    if (result.state === 'present') {
+      say(`  statusLine.leftSegments: ${path} — \`status\` already listed`);
+      return;
+    }
+    say(
+      `  statusLine.leftSegments${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join(', ')}`,
+    );
+  }
+}
+
 /**
  * Give every held role the host has not mapped an entry aliasing the harness's
  * nearest built-in role, and say what was added. An entry the host already has is
@@ -303,14 +417,7 @@ function seedModelRoles(
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
-  // omp reads the FIRST config file that exists and ignores the rest, so that is the
-  // one to edit; a host with none gets the first, and never a file that would
-  // shadow one it already has.
-  const candidates = routing.configRels.map((rel) =>
-    join(home, adapter.home, rel),
-  );
-  const path =
-    candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
+  const path = hostConfigPath(adapter, routing, home);
   const result = addModelRoles(
     path,
     heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),

@@ -327,11 +327,19 @@ describe('install — the host modelRoles', () => {
   const HOST =
     '# host config\nmodelRoles:\n default: anthropic/claude-opus-5-5:high # main\n task: "@default"\ntheme: dark\n';
 
+  // Install also makes omp's status line list the `status` segment the persona badge
+  // renders in (status-line.test.ts owns that). These cases are about `modelRoles`, so
+  // they read the config without the block a host with no `statusLine` gets.
+  const STATUS_BLOCK =
+    'statusLine:\n  leftSegments:\n    - vim\n    - model\n    - mode\n    - path\n    - git\n    - pr\n    - status\n';
+  const withoutStatusLine = (path: string) =>
+    readFileSync(path, 'utf8').replace(STATUS_BLOCK, '');
+
   it('adds the four held roles, reports each with its alias and the path, and changes nothing else', async () => {
     writeFileSync(config(), HOST);
     expect(await install()).toBe(0);
 
-    const after = readFileSync(config(), 'utf8');
+    const after = withoutStatusLine(config());
     for (const line of ADDED_LINES(' ')) {
       expect(after.split('\n').filter((l) => l === line)).toHaveLength(1);
       expect(out).toContain(line.trim());
@@ -353,7 +361,7 @@ describe('install — the host modelRoles', () => {
       '# host\nmodelRoles:\n implementer: "@task"\n planner: openai/gpt-5:high\n';
     writeFileSync(config(), host);
     expect(await install()).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toBe(
+    expect(withoutStatusLine(config())).toBe(
       `${host} architect: "@default"\n assayer: "@default"\n`,
     );
     expect(out).toContain('assayer: "@default"');
@@ -365,7 +373,7 @@ describe('install — the host modelRoles', () => {
   it('appends a modelRoles block to a config that has none', async () => {
     writeFileSync(config(), 'theme: dark\n');
     expect(await install()).toBe(0);
-    const after = readFileSync(config(), 'utf8');
+    const after = withoutStatusLine(config());
     expect(after.split('\n')[0]).toBe('theme: dark');
     expect(after).toBe(
       `theme: dark\nmodelRoles:\n${ADDED_LINES('  ').join('\n')}\n`,
@@ -374,7 +382,7 @@ describe('install — the host modelRoles', () => {
 
   it('creates the config when the host has none', async () => {
     expect(await install()).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toBe(
+    expect(withoutStatusLine(config())).toBe(
       `modelRoles:\n${ADDED_LINES('  ').join('\n')}\n`,
     );
   });
@@ -396,7 +404,7 @@ describe('install — the host modelRoles', () => {
     writeFileSync(yaml, host);
     expect(await install()).toBe(0);
     expect(existsSync(config())).toBe(false);
-    const after = readFileSync(yaml, 'utf8');
+    const after = withoutStatusLine(yaml);
     expect(after).toBe(
       '# host\nmodelRoles:\n implementer: openai/gpt-5:high\n default: x\n architect: "@default"\n assayer: "@default"\n planner: "@plan"\ntheme: dark\n',
     );
@@ -410,7 +418,7 @@ describe('install — the host modelRoles', () => {
     writeFileSync(config(), 'theme: dark\n');
     expect(await install()).toBe(0);
     expect(readFileSync(yaml, 'utf8')).toBe('modelRoles:\n  default: x\n');
-    expect(readFileSync(config(), 'utf8')).toBe(
+    expect(withoutStatusLine(config())).toBe(
       `theme: dark\nmodelRoles:\n${ADDED_LINES('  ').join('\n')}\n`,
     );
   });
@@ -418,7 +426,7 @@ describe('install — the host modelRoles', () => {
   it('reports a modelRoles it cannot extend, leaves the file, and still succeeds', async () => {
     writeFileSync(config(), 'modelRoles: {default: x}\n');
     expect(await install()).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toBe('modelRoles: {default: x}\n');
+    expect(withoutStatusLine(config())).toBe('modelRoles: {default: x}\n');
     expect(err).toContain('did not edit');
     expect(err).toContain(config());
   });

@@ -26,6 +26,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   CLAUDE_LAUNCHER_FILE,
   CLAUDE_LAUNCHER_SCRIPT,
+  CLAUDE_PERSONA_BADGE_FILE,
+  CLAUDE_STATUS_LINE_FILE,
   claudeAgentRel,
   claudeHarnessAdapter,
   claudeLaunchSurface,
@@ -184,13 +186,20 @@ describe('the claude projection emits the stance manifests', () => {
       warn: (line) => warnings.push(line),
     }).then((tree) => ({ tree, warnings }));
   };
+  // The launch spec — launcher, status-line worker, badges — stages beside the stance
+  // manifests; these cases are about the manifests.
+  const isLaunchSpec = (path: string) =>
+    [
+      CLAUDE_LAUNCHER_FILE,
+      CLAUDE_STATUS_LINE_FILE,
+      CLAUDE_PERSONA_BADGE_FILE,
+    ].some((file) => path.endsWith(`/${file}`));
 
   it('stages a stance manifest for the bound persona alone, beside the settings it complements', async () => {
     const { tree } = await project(claudeHarnessAdapter);
     const staged = tree.files.filter(
       (f) =>
-        f.path.startsWith(`${ENFORCING_STAGE_DIR}/`) &&
-        !f.path.endsWith(`/${CLAUDE_LAUNCHER_FILE}`),
+        f.path.startsWith(`${ENFORCING_STAGE_DIR}/`) && !isLaunchSpec(f.path),
     );
     expect(staged.map((f) => f.path)).toEqual([
       join(ENFORCING_STAGE_DIR, 'bound', STANCE_MANIFEST),
@@ -227,9 +236,7 @@ describe('the claude projection emits the stance manifests', () => {
     expect(paths.some((p) => p.startsWith('hooks/fixture-guard/'))).toBe(false);
     expect(
       paths.filter(
-        (p) =>
-          p.startsWith(`${ENFORCING_STAGE_DIR}/`) &&
-          !p.endsWith(`/${CLAUDE_LAUNCHER_FILE}`),
+        (p) => p.startsWith(`${ENFORCING_STAGE_DIR}/`) && !isLaunchSpec(p),
       ),
     ).toEqual([]);
     const settings = JSON.parse(
@@ -339,6 +346,178 @@ describe('the claude persona launcher', () => {
       expect(bare.status).toBe(2);
       expect(bare.stderr).toContain('usage');
       expect(existsSync(join(home, 'bin', 'argv'))).toBe(false);
+    });
+  });
+});
+
+describe('the claude persona badge', () => {
+  const NICO = {
+    name: 'nico',
+    provenance: { mark: { emoji: '📐', hue: 'blue' } },
+  } as never;
+  const MAV = {
+    name: 'mav',
+    provenance: { mark: { emoji: '✈️', hue: 'green' } },
+  } as never;
+  const NAMELESS = { name: 'plain', provenance: null } as never;
+
+  const surface = claudeLaunchSurface([NICO, MAV, NAMELESS]);
+  const badgeOf = (scope: string) =>
+    surface.find(
+      (f) => f.filename === CLAUDE_PERSONA_BADGE_FILE && f.scope === scope,
+    )?.content;
+
+  it('emits one badge per persona in that persona’s own scope, and one executable worker in the session', () => {
+    expect(
+      surface
+        .filter((f) => f.filename === CLAUDE_PERSONA_BADGE_FILE)
+        .map((f) => f.scope),
+    ).toEqual(['mav', 'nico', 'plain']);
+    const workers = surface.filter(
+      (f) => f.filename === CLAUDE_STATUS_LINE_FILE,
+    );
+    expect(workers.map((f) => [f.scope, f.executable])).toEqual([
+      [SESSION_SCOPE, true],
+    ]);
+    expect(
+      claudeHarnessAdapter.scopedRel?.(CLAUDE_PERSONA_BADGE_FILE, 'nico'),
+    ).toBe(`personas/nico/${CLAUDE_PERSONA_BADGE_FILE}`);
+    expect(claudeHarnessAdapter.statusLine).toEqual({
+      file: CLAUDE_STATUS_LINE_FILE,
+      command: `sh "$HOME/.claude/personas/${SESSION_SCOPE}/${CLAUDE_STATUS_LINE_FILE}"`,
+    });
+  });
+
+  it('bakes the mark emoji and name, the name alone with no provenance, and never a hue or an escape', () => {
+    expect(badgeOf('nico')).toBe('📐 nico');
+    expect(badgeOf('mav')).toBe('✈️ mav');
+    expect(badgeOf('plain')).toBe('plain');
+    for (const f of surface.filter(
+      (s) => s.filename === CLAUDE_PERSONA_BADGE_FILE,
+    )) {
+      expect(f.content).not.toMatch(
+        /\b(blue|red|white|magenta|green|cyan|yellow)\b/i,
+      );
+      expect(f.content).not.toContain('\u001b');
+    }
+  });
+
+  it('stages them through a projection, worker and badges alike, from the composed agents only', async () => {
+    const tree = await projectPluginSet({
+      plugins: [
+        {
+          name: 'fixture-stance',
+          manifest: FIXTURE_MANIFEST,
+          hooks: join(here, 'fixtures-stance', 'hooks'),
+          agents: join(here, 'fixtures-stance', 'agents'),
+        },
+      ],
+      adapter: claudeHarnessAdapter,
+    });
+    const staged = tree.files
+      .filter((f) => f.path.startsWith(`${ENFORCING_STAGE_DIR}/`))
+      .map((f) => f.path)
+      .filter(
+        (p) =>
+          p.endsWith(`/${CLAUDE_PERSONA_BADGE_FILE}`) ||
+          p.endsWith(`/${CLAUDE_STATUS_LINE_FILE}`),
+      )
+      .sort();
+    expect(staged).toEqual(
+      [
+        join(ENFORCING_STAGE_DIR, SESSION_SCOPE, CLAUDE_STATUS_LINE_FILE),
+        join(ENFORCING_STAGE_DIR, 'bound', CLAUDE_PERSONA_BADGE_FILE),
+        join(ENFORCING_STAGE_DIR, 'unbound', CLAUDE_PERSONA_BADGE_FILE),
+      ].sort(),
+    );
+  });
+
+  const hasJq = spawnSync('jq', ['--version']).status === 0;
+
+  // Runs the shipped bytes. The worker is shell, and what matters is what it prints
+  // for the input the harness hands it, so it is placed where deploy would put it and
+  // run as install's own command runs it — `sh <worker>` with the input on stdin.
+  describe.skipIf(!hasJq)('run as the status line command', () => {
+    let claudeDir: string;
+    let worker: string;
+    beforeEach(() => {
+      claudeDir = mkdtempSync(join(tmpdir(), 'claude-badge-'));
+      for (const f of surface) {
+        const dest = join(
+          claudeDir,
+          claudeHarnessAdapter.scopedRel?.(f.filename, f.scope) as string,
+        );
+        mkdirSync(dirname(dest), { recursive: true });
+        writeFileSync(dest, f.content, { mode: 0o755 });
+      }
+      worker = join(
+        claudeDir,
+        claudeHarnessAdapter.scopedRel?.(CLAUDE_STATUS_LINE_FILE) as string,
+      );
+    });
+    afterEach(() => rmSync(claudeDir, { recursive: true, force: true }));
+
+    const run = (
+      input: string,
+      host?: string,
+      env: NodeJS.ProcessEnv = process.env,
+    ) =>
+      spawnSync('sh', host === undefined ? [worker] : [worker, host], {
+        input,
+        encoding: 'utf8',
+        env,
+      });
+    const agent = (name: string) => JSON.stringify({ agent: { name } });
+
+    it('prints exactly the running persona’s badge file, and nothing for a bare session or a stranger', () => {
+      expect(run(agent('nico')).stdout).toBe('📐 nico');
+      expect(run(agent('mav')).stdout).toBe('✈️ mav');
+      expect(run('{}').stdout).toBe('');
+      expect(run(agent('Explore')).stdout).toBe('');
+      expect(run(agent('nico')).status).toBe(0);
+    });
+
+    it('lets no name that is a path reach the filesystem', () => {
+      expect(run(agent('a/../nico')).stdout).toBe('');
+      expect(run(agent('..')).stdout).toBe('');
+      expect(run(agent('')).stdout).toBe('');
+    });
+
+    it('puts the badge and one space before the first line of the host’s output, the rest untouched', () => {
+      const r = run(agent('mav'), "printf 'HOST\\nsecond\\n'");
+      expect(r.stdout).toBe('✈️ mav HOST\nsecond\n');
+    });
+
+    it('passes the host’s output through byte for byte where no badge applies', () => {
+      const host = "printf 'HOST\\n\\n  x '";
+      expect(run('{}', host).stdout).toBe('HOST\n\n  x ');
+      expect(run(agent('Explore'), host).stdout).toBe('HOST\n\n  x ');
+    });
+
+    it('shows the badge alone when the host prints nothing, and hands the host the same input', () => {
+      expect(run(agent('nico'), 'true').stdout).toBe('📐 nico');
+      const input = `${agent('nico')}\n`;
+      expect(run(input, 'cat').stdout).toBe(`📐 nico ${input}`);
+    });
+
+    it('carries the host’s exit status', () => {
+      expect(run(agent('nico'), 'exit 3').status).toBe(3);
+    });
+
+    it('fails open without jq: the host’s output and no badge, or nothing', () => {
+      const bin = join(claudeDir, 'bin');
+      mkdirSync(bin);
+      for (const tool of ['sh', 'cat', 'mktemp', 'rm', 'dirname', 'printf']) {
+        const found = spawnSync('sh', ['-c', `command -v ${tool}`], {
+          encoding: 'utf8',
+        }).stdout.trim();
+        if (found.startsWith('/')) symlinkSync(found, join(bin, tool));
+      }
+      const env = { ...process.env, PATH: bin };
+      const r = run(agent('nico'), "printf 'HOST'", env);
+      expect(r.status).toBe(0);
+      expect(r.stdout).toBe('HOST');
+      expect(run(agent('nico'), undefined, env).stdout).toBe('');
     });
   });
 });

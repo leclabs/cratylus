@@ -212,16 +212,17 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude                                       | omp                                                          |
-| -------------------------- | ------------------------ | -------------------------------------------- | ------------------------------------------------------------ |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                         | `agent/agents/<name>.md`                                     |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`                              | `../.agents/skills/<name>` (one copy — read natively)        |
-| hook registration          | `hooksFile` (merged)     | `settings.json`                              | — (no hook config exists)                                    |
-| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json`      | `<scope>/stance/manifest.json` (per persona)                 |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                                            | `<scope>/extensions/<file>`                                  |
-| persona badge module       | `scopedRel(file, scope)` | —                                            | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
-| `--config` overlay         | `scopedRel(file, scope)` | —                                            | `<scope>/omp.yml` (per persona)                              |
-| launcher                   | `scopedRel(file, scope)` | `personas/_session/claude-agent` (0755, ONE) | `agent/omp-agent` (0755, ONE for every persona)              |
+| Artifact                   | Port op                  | claude                                                      | omp                                                          |
+| -------------------------- | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                                        | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                                             | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json`                                             | — (no hook config exists)                                    |
+| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json`                     | `<scope>/stance/manifest.json` (per persona)                 |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                                                           | `<scope>/extensions/<file>`                                  |
+| persona badge              | `scopedRel(file, scope)` | `personas/<agent>/cratylus-persona-badge.txt` (per persona) | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                                                           | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | `personas/_session/claude-agent` (0755, ONE)                | `agent/omp-agent` (0755, ONE for every persona)              |
+| status-line worker         | `scopedRel(file, scope)` | `personas/_session/cratylus-status-line.sh` (0755, ONE)     | —                                                            |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
@@ -306,6 +307,27 @@ session only (`ctx.hasUI` and `ctx.agent.kind === "main"`, never a subagent), it
 to the persona's mark emoji and name, or the name alone for an agent with no provenance. The text is
 baked at projection, because omp calls a launched persona `main` and the module cannot ask; it carries
 no hue, because omp strips color from an extension's status text.
+
+On Claude Code the badge is a text file per persona, `personas/<agent>/cratylus-persona-badge.txt`,
+with the same baked text (`<mark emoji> <name>`, or the name alone, no hue), and ONE session-scoped
+status-line worker beside the launcher. Claude's status line is a single `settings.json` command
+with no segments, and its input carries `agent.name` only under `--agent`, so the worker reads the
+running persona there, prints that persona's badge file when one was placed (placement decides who
+has a badge; the worker holds no persona list) and prints nothing otherwise. Given the host's own
+command as its one argument it runs that on the same input and puts the badge and a space before the
+first line of its output. It fails open without `jq`. The port declares the worker as `statusLine`
+(`file`, and the `command` that runs it, written against `$HOME`); a harness without it takes segments
+instead.
+
+Making the host's status line show the badge is install's, in `deploy/status-line.ts`, after a
+successful deploy and only when personas were installed. `ensureBadgeStatusLine` sets the worker as
+`statusLine` where the host has none, keeps a status line that already is the worker, and leaves any
+other byte-identical, offering `--wrap-status-line`; with the flag it rewrites `command` to the worker
+with the host's command as one single-quoted argument and keeps every other key, and a second run
+wraps nothing twice. `ensureStatusSegment` edits omp's config as text, as `addModelRoles` does: no
+`statusLine` appends omp's default left list plus `status`, a list without `status` gets it appended
+after its last item, and a list that has it is untouched; a shape it cannot extend is reported and
+left. omp applies `leftSegments` only under `statusLine.preset: custom`. Both honour `--dry-run`.
 
 ### `cratylus explain [agent]`
 

@@ -496,6 +496,26 @@ export interface HarnessAdapter {
    */
   readonly launcherFile?: string;
   /**
+   * The harness's ONE host-owned status-line command, and the worker this port
+   * ships to fill it — declared by a harness whose status line is a single command
+   * with no segments to add a badge to (claude's `settings.statusLine`), so the
+   * persona badge cannot sit beside the host's own line and must BE the line, or
+   * wrap it.
+   *
+   * `file` is the worker {@link launchSurface} emits at the {@link SESSION_SCOPE}:
+   * one for every persona, which asks the harness's status-line input which persona
+   * runs and prints that persona's baked badge file, or nothing where none was
+   * placed. `command` is the shell command that runs the placed worker, written
+   * against `$HOME` and not a resolved path, for the reason `hookCommand` is: it is
+   * read at RUN time on whatever host it lands on. Install sets it as the host's
+   * status line where the host has none, and appends the host's own command to it,
+   * as one quoted argument, to wrap it.
+   *
+   * Absent ⇒ this harness's status line takes segments (omp's does; install adds the
+   * `status` segment the badge renders in) or has no status line install could set.
+   */
+  readonly statusLine?: StatusLineWorker;
+  /**
    * How this harness routes a MODEL by the ROLE an agent holds — the table that
    * lets a projected definition name its position ({@link Agent.holds}) and leaves
    * the host to choose the model. The projection names no model, ever.
@@ -513,6 +533,14 @@ export interface HarnessAdapter {
    * route and install touches no host config.
    */
   roleRouting?: RoleRouting;
+}
+
+/** The status-line worker a harness ships. See {@link HarnessAdapter.statusLine}. */
+export interface StatusLineWorker {
+  /** The worker's filename, at the {@link SESSION_SCOPE}. */
+  readonly file: string;
+  /** The shell command that runs the placed worker, host command not yet appended. */
+  readonly command: string;
 }
 
 /** A harness's role → model routing table. See {@link HarnessAdapter.roleRouting}. */

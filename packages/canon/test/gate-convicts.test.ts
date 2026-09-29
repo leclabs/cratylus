@@ -257,6 +257,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and the other harness's launcher, and asserts every one is left as it was — the
   // never-overwrite negatives are its fixtures, and it polices no corpus.
   'forge/deploy/persona-commands.test.ts': 'BEHAVIORAL',
+  // drives `ensureBadgeStatusLine`, `ensureStatusSegment` and `runInstall` over host
+  // settings and configs it writes itself — a host's own status line, a list that
+  // already has `status`, shapes it cannot extend, a dry run — and asserts each is left
+  // as the bytes were: the never-replace negatives are its fixtures, and it polices no
+  // corpus.
+  'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
   // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
   // negative (`.claude` absent) so the old hardcode cannot pass it.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',

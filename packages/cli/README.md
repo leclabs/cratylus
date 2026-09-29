@@ -86,9 +86,11 @@ degrades and warns where it falls short; they are not the same, and this is what
   tool.
 - **`eventTap`.** It works on Claude Code only: it attaches to Claude Code's hook settings
   (`.claude/settings.json`), and omp has no such file. Read the tap as absent on omp.
-- **Persona badge and launcher.** Both are omp's. A projected omp persona gets a status-line
-  badge module and is launched as a main session by the single `omp-agent` launcher, since
-  omp has no `--agent` flag. Claude Code has neither.
+- **Persona badge and launcher.** Both harnesses have a badge and a launcher. A projected omp
+  persona gets a status-line badge module and is launched as a main session by the single
+  `omp-agent` launcher, since omp has no `--agent` flag. On Claude Code the persona is launched
+  by `claude-agent`, and its badge is one status-line worker that reads the running persona from
+  the status line's own input. See "The persona badge on the status line" below.
 - **Enforcement scope.** A guard binds exactly the personas whose composition includes it, on
   both harnesses, and a persona is enrolled by the presence of its stance manifest,
   `stance/manifest.json`, in its own scope. omp carries the scope in a dispatcher per persona
@@ -134,6 +136,38 @@ edit the file and still succeeds; an agent whose role has no entry then runs on 
 `default` role (`modelRoles.default`). `cratylus deploy`
 never touches `config.yml`.
 
+## The persona badge on the status line
+
+A persona's badge is its mark emoji and name, or the name alone when it has no mark, in the status
+line of a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in
+a subagent's, and it carries no color. `cratylus install` places the badge for each persona it
+installs and then makes the host's status line show it. What that takes differs by harness, and the
+host's own configuration is only ever added to.
+
+**On Claude Code** the status line is one command, `statusLine` in `settings.json`, with no segments
+to add to. Where the host has none, install sets the badge worker as that command
+(`sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
+own, install leaves it byte-identical and prints one line offering `--wrap-status-line`. With that
+flag the command becomes the worker with the host's command as its one argument, so the worker runs
+it and puts the badge and a space in front of the first line it prints; every other key of
+`statusLine`, `padding` included, is kept, and a second `--wrap-status-line` install changes no
+byte. Without the flag install never replaces or wraps a status line the host has. The worker asks
+the status line's input which persona runs (`agent.name`, present only under `--agent`), so a bare
+`claude` session and an agent that is no installed persona show no badge, and it needs `jq`: without
+it the worker prints the host's output and no badge. `claude -p` runs no status line at all.
+`--dry-run` says what would be set or wrapped and writes nothing.
+
+**On omp** an extension's status shows inside the status line only where the host's layout lists
+omp's `status` segment. Install adds it to `statusLine.leftSegments` in the config file omp reads
+(`config.yml`, else `config.yaml`). A file with no `statusLine` gets omp's default custom left list
+plus `status` (`vim`, `model`, `mode`, `path`, `git`, `pr`, `status`); a list without `status` gets
+`status` appended after its last item, no other byte changing; a list that has it is not touched.
+A `statusLine` or `leftSegments` that cannot be extended by inserting lines (a flow mapping, an
+alias, a list split across lines in flow style) is reported and left as it is, and the install still
+succeeds. `--dry-run` writes nothing. omp reads `leftSegments` only under `statusLine.preset:
+custom`; under its other presets, the default included, the list is ignored and the badge renders
+beneath the status line.
+
 ## Running a persona by its name
 
 `cratylus install` can make each installed persona a command. With `--link-persona-commands` it links
@@ -145,6 +179,7 @@ line is the harness's own flag.
 Without the flag, install prints one `would place` line per persona and how to add them. On a terminal
 it asks first, and answers no by default; a piped or scripted install places none. It says when
 `~/.local/bin` is not on `PATH`. `--dry-run` places nothing either way.
+The question it asks says how many commands it will link and how many it will adopt.
 
 Install never overwrites. A name that is taken by a file, by another program's link, or by the other
 harness's launcher is left as it is and reported as `blocked`, with what is there. A link you made by

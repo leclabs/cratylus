@@ -13,6 +13,9 @@ export {
 export {
   CLAUDE_LAUNCHER_FILE,
   CLAUDE_LAUNCHER_SCRIPT,
+  CLAUDE_PERSONA_BADGE_FILE,
+  CLAUDE_STATUS_LINE_FILE,
+  CLAUDE_STATUS_LINE_SCRIPT,
   type ResolvedSkill,
   claudeLaunchSurface,
   agentToClaudeMd,

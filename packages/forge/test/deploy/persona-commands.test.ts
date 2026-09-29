@@ -456,12 +456,32 @@ describe('install — persona commands', () => {
       },
     });
     expect(asked).toHaveLength(1);
-    expect(asked[0]).toContain('2 persona command');
+    expect(asked[0]).toContain('Link 2 persona commands into');
+    expect(asked[0]).not.toContain('adopt');
     expect(names(bin)).toEqual([]);
     expect(out).toContain('none placed');
 
     await install('omp', { confirm: async () => true });
     expect(names(bin)).toEqual(['alpha', 'beta']);
+  });
+
+  it('says how many it will link and how many it will adopt, apart', async () => {
+    const asked: string[] = [];
+    const confirm = async (q: string) => {
+      asked.push(q);
+      return false;
+    };
+    // `alpha` is a hand-made link to the launcher; `beta` is free.
+    mkdirSync(bin, { recursive: true });
+    symlinkSync(launcher('omp'), join(bin, 'alpha'));
+    await install('omp', { confirm });
+    expect(asked[0]).toContain(
+      `Link 1 persona command into ${bin}, and adopt 1 already linked there?`,
+    );
+    // Every free name taken, only the adoption is left to ask about.
+    symlinkSync(launcher('omp'), join(bin, 'beta'));
+    await install('omp', { confirm });
+    expect(asked[1]).toBe(`Adopt 2 persona commands already linked in ${bin}?`);
   });
 
   it('does not ask when there is nothing free to link', async () => {
