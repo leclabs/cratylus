@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QBG08GT88N98JXNHHGMPXB",
+    "entity": "01M3PZ5AS51YWKS979SHJ4PD1A",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q0QXQ3C1M3SH1K10T5MQXZ"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T19:50:31.440Z",
+    "reason": "live assay: claude subagents inherit the parent model; operator steer to route by role on claude tiers",
+    "cause": "live Claude Code assay, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "role routing",
+    "gloss": "the position an agent holds, carried to a harness as the key its host routes a model by. Each agent's projected definition names the role it holds as a model-role alias, followed by the harness's default role as the fallback, so a host that never configured the role runs the agent on the harness's default role. Install adds, in the configuration file the harness actually reads (never a new file that would shadow one it already reads), for every held role the host lacks, an entry aliasing the harness's nearest built-in role (on omp: implementer to task, planner to plan, assayer and architect to default), never changes an entry the host has set, and reports what it added. Which model fills a role is the host's choice; the projection names no model. On a harness with no host-configurable role aliases (Claude Code), the projection maps each held role to the harness's model tier instead (implementer to sonnet; planner, assayer and architect to opus), still naming no model version, and a host's own override stays the host's.",
+    "factors": []
+  }
+}

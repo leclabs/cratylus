@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QBFZX8JMA6VHK12AEAN8KW",
+    "entity": "01M3QBFZX8JMA6VHK12AEAN8KV",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T19:50:31.080Z",
+    "reason": "live assay: on Claude Code the stance and purview guards fire and exit at their scope gate on every call, because the claude projection deploys no stance scope and the payload's agent_type is not read; nothing warns",
+    "cause": "live Claude Code assay, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "enforcement scope",
+    "gloss": "the agents an enforcing cell binds, fixed by composition: a guard fires for exactly the agents whose composition includes it, on every supported harness. Each harness carries the scope in the form it offers (omp: a stance manifest per persona; Claude Code: the agent_type its hook payload names), and a harness that cannot name the running agent degrades the guard to a steer and warns at projection and install. A guard that fires but can never judge is neither bound nor warned, and is the defect this concept rules out.",
+    "factors": []
+  }
+}

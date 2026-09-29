@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QBG00Z13RG3P9110NBW9X9",
+    "entity": "01M3QBG00Z13RG3P9110NBW9X8",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T19:50:31.199Z",
+    "reason": "live assay: --agent mav ran as mav but did not preload design, plan, deliver or note",
+    "cause": "live Claude Code assay, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "persona launch",
+    "gloss": "running a harness's main session as a projected persona, with the persona's identity as its system prompt and its composed skills loaded before the first turn, exactly as a dispatched holder of the same position receives them. omp reaches it through the generated launcher; Claude Code through claude --agent, which applies the identity but preloads skills only for subagents, so the projection must carry the skills into the main session itself.",
+    "factors": []
+  }
+}
