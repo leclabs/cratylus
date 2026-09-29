@@ -63,7 +63,6 @@
   "dependencies": {
     "@cratylus/runtime": "workspace:*",
     "@cratylus/schema": "workspace:*",
-    "@iarna/toml": "catalog:",
     "cac": "catalog:",
     "picocolors": "catalog:",
     "zod": "catalog:"

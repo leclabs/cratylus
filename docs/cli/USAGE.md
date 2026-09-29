@@ -13,7 +13,7 @@
 
 ## 1. What cratylus is
 
-**Author agent semantics once; realize them on any harness.**
+**Author agent semantics once; realize them on Claude Code and omp.**
 
 You describe agents, skills and rules as a **corpus** of signified primitives. Cratylus projects
 that corpus onto whatever harness you actually run — Claude Code and omp — deterministically.
@@ -196,7 +196,7 @@ package — see §8, item 3.
 ## 5. Proposed root `--help`
 
 ```
-cratylus/1.0.0 — author agent semantics once, realize them on any harness
+cratylus/1.0.0 — author agent semantics once, realize them on Claude Code and omp
 
 Usage
   $ cratylus <command> [options]
@@ -236,15 +236,12 @@ Six verbs, MECE across **configure / discover / inspect / gate / emit / place**.
 
 ## 6. What this does not fix, and must
 
-Three closures block the plugin thesis. None is a CLI question; all outrank one.
+Two closures block the plugin thesis. Neither is a CLI question; both outrank one.
 
-1. **The harness registry is closed.** `HarnessName = 'claude' | 'omp'` — a third party cannot
-   ship an adapter without editing forge. That contradicts VISION's headline, _"realize behavior
-   everywhere."_ Adapters should ride the **config** (projection), not the corpus plugin (meaning).
-2. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its
+1. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its
    members one is a real plugin, two are hardcoded string intercepts, one has no implementation.
    Canon already solved this one axis over with an open, corpus-owned vocabulary.
-3. **`buildPlugin` does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts` describe a
+2. **`buildPlugin` does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts` describe a
    two-named-export plugin contract; `git grep` returns four hits, all prose. The real contract is
    an unnamed `default` export — and the two-bin argument cites that contract as precedent.
 

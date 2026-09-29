@@ -69,6 +69,27 @@ refuses when it has none, naming `cratylus install --harness <h>` (works on a ba
 host) and `cratylus deploy --harness <h>` (from a project). `cratylus eventTap` asks
 for `claude`'s.
 
+## Where Claude Code and omp differ
+
+`cratylus` projects for two harnesses, Claude Code (`--harness claude`) and omp
+(`--harness omp`). Each receives every shipped cell at the highest fidelity it offers, and
+degrades and warns where it falls short; they are not the same, and this is what a user meets:
+
+- **Lifecycle events.** The corpus names 31 canonical events. Claude Code realizes 19 of them
+  by a native event of its own, omp 9. The rest have no native peer on that harness and are
+  refused or skipped with a warning rather than faked. Two more events on Claude Code and
+  three on omp are acts — `operator.consult.pre` and `subagent.dispatch.pre`, plus
+  `subagent.end` on omp — which each harness carries on its tool event, narrowed to the one
+  tool.
+- **`eventTap`.** It works on Claude Code only: it attaches to Claude Code's hook settings
+  (`.claude/settings.json`), and omp has no such file. Read the tap as absent on omp.
+- **Persona badge and launcher.** Both are omp's. A projected omp persona gets a status-line
+  badge module and is launched as a main session by the single `omp-agent` launcher, since
+  omp has no `--agent` flag. Claude Code has neither.
+- **Role routing.** An agent names the role it holds, never a model. On omp the role becomes
+  `model: ["@<role>", "@default"]` and the model behind it is the host's `modelRoles` entry
+  (next section). Claude Code's agent definitions carry no route.
+
 ## The host's model routing on omp
 
 An omp agent definition names the role it holds and never a model:

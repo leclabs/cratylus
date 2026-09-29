@@ -1,5 +1,5 @@
-// The OMP (Oh My Pi) projection of the agent anatomy — the third harness, and
-// the only one whose persona is a NATIVE artifact of the harness rather than a
+// The OMP (Oh My Pi) projection of the agent anatomy — the only one of the two harnesses
+// whose persona is a NATIVE artifact of the harness rather than a
 // launch-time argument.
 //
 // THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers USER-level

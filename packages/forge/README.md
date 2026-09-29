@@ -6,8 +6,9 @@ Agents, skills, and hooks are **authored** as typed TypeScript cells inside plug
 declares which plugins it extends; `forge` resolves that set into one merged canon and projects it
 into harness artifacts on the local machine.
 
-The direction matters. The canon is the source; `~/.claude/` is a projection of it. Nothing in this
-pipeline reads a harness's existing configuration and treats it as truth.
+The direction matters. The canon is the source; a harness's home (`~/.claude/`, `~/.omp/`) is a
+projection of it. Nothing in this pipeline reads a harness's existing configuration and treats it as
+truth.
 
 ## The pipeline
 
@@ -15,13 +16,13 @@ pipeline reads a harness's existing configuration and treats it as truth.
 init → add → compose → project → deploy
 ```
 
-| Stage     | What it does                                                                   |
-| --------- | ------------------------------------------------------------------------------ |
-| `init`    | scaffolds `cratylus.config.ts` in the project root, extending the canon plugin |
-| `add`     | wires another plugin package into that config's `extends`                      |
-| `compose` | resolves the plugin set into one merged fragment set, and prints it            |
-| `project` | renders the resolved set into a render tree (`.render/`)                       |
-| `deploy`  | places the render tree into the local `.claude/` root                          |
+| Stage     | What it does                                                                        |
+| --------- | ----------------------------------------------------------------------------------- |
+| `init`    | scaffolds `cratylus.config.ts` in the project root, extending the canon plugin      |
+| `add`     | wires another plugin package into that config's `extends`                           |
+| `compose` | resolves the plugin set into one merged fragment set, and prints it                 |
+| `project` | renders the resolved set into a render tree (`.render/`)                            |
+| `deploy`  | places the render tree into the chosen harness's local root (`.claude/` or `.omp/`) |
 
 Projection goes from composed cells to harness artifacts **directly**. The claude and omp harness
 adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
@@ -59,7 +60,7 @@ cratylus project         # render into ./.render
 cratylus deploy \
   --agents-dir .render/agents \
   --skills-dir .render/skills \
-  --hooks-dir  .render       # place into ~/.claude
+  --hooks-dir  .render       # place into ~/.claude (add --harness omp for ~/.omp)
 ```
 
 `init` writes a config that already extends the canon, so the shortest useful path skips `add`
@@ -126,10 +127,12 @@ cratylus compose --config ./other.config.ts
 
 ### `cratylus project`
 
-Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
-carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
-them. A shim forwards its arguments to `cratylus <capability>` with the caller's environment, and it
-needs no session from any harness.
+Materializes the resolved set into a render tree: `agents/`, `skills/`, and the harness's hook surface.
+On claude that includes a `settings.json` carrying the hook registrations. omp has no hook
+config, so its hooks are emitted as `enforcing/<scope>/` modules and there is no `settings.json`.
+Skills that need a runtime companion get their shim emitted alongside them. A shim forwards its
+arguments to `cratylus <capability>` with the caller's environment, and it needs no session from any
+harness.
 
 ```
 cratylus project [--config <path>] [--out <dir>] [--harness claude|omp]
@@ -161,26 +164,29 @@ Where it lands depends on whether the harness's agent definition can name skills
 
 ### `cratylus deploy`
 
-Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill
-directories are copied; `settings.json` hook registrations are merged into any existing file rather
-than replacing it.
+Places an already-projected render tree into the **local** root of the harness named by `--harness`
+(`claude` or `omp`, default `claude`): `.claude/` or `.omp/`. Agent definitions and skill
+directories are copied. On claude, `settings.json` hook registrations are merged into any existing
+file rather than replacing it; on omp, the `enforcing/<scope>/` modules are placed instead, since omp has no
+hook config to merge.
 
 ```
 cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 ```
 
-| Option               | Effect                                                   |
-| -------------------- | -------------------------------------------------------- |
-| `--agents-dir <dir>` | render tree `agents/` — the projected definitions        |
-| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories  |
-| `--hooks-dir <dir>`  | render tree hooks root (`settings.json` + `hooks/<id>/`) |
-| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)   |
-| `--scope <scope>`    | `user` \| `project` (default `user`)                     |
-| `--home <dir>`       | user-scope `.claude` parent, instead of `~`              |
-| `--project <dir>`    | project root for `--scope project` (default cwd)         |
-| `--only <names>`     | comma-separated names to deploy                          |
-| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`         |
-| `--dry-run`          | print the actions and change nothing                     |
+| Option               | Effect                                                                      |
+| -------------------- | --------------------------------------------------------------------------- |
+| `--harness <name>`   | `claude` \| `omp` (default `claude`): whose root and layout                 |
+| `--agents-dir <dir>` | render tree `agents/` — the projected definitions                           |
+| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories                     |
+| `--hooks-dir <dir>`  | render tree hooks root (`settings.json` + `hooks/<id>/`)                    |
+| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)                      |
+| `--scope <scope>`    | `user` \| `project` (default `user`)                                        |
+| `--home <dir>`       | user-scope parent of the harness home (`.claude` or `.omp`), instead of `~` |
+| `--project <dir>`    | project root for `--scope project` (default cwd)                            |
+| `--only <names>`     | comma-separated names to deploy                                             |
+| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`                            |
+| `--dry-run`          | print the actions and change nothing                                        |
 
 Which directories are required depends on `--kind`: `all` requires all three, `hooks` requires only
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
@@ -309,7 +315,7 @@ Three concerns look adjacent to this pipeline and are deliberately outside it.
 ordinary package install. It is a _precondition_ of the pipeline, not a stage of it — `init` cannot run
 before the CLI exists.
 
-**Projection is local.** `deploy` writes to a `.claude/` root on the machine it runs on, resolved from
+**Projection is local.** `deploy` writes to a harness root (`.claude/` or `.omp/`) on the machine it runs on, resolved from
 `--scope`, `--home`, and `--project`. It has no transport, no host list, and no remote mode.
 
 **Running it across many hosts is yours.** Iterating a fleet is an outer loop _around_ the whole

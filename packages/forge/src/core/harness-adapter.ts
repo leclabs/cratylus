@@ -71,9 +71,8 @@ export const SHARED_STAGE_DIR = 'shared';
  *
  * NOT this project's invention, which is exactly why it is worth targeting: omp
  * reads `~/.agent[s]/{skills,rules,prompts,commands,AGENTS.md,SYSTEM.md}` through a
- * vendor-neutral provider at discovery priority 70, and Cursor reads
- * `~/.agents/skills/` and `.agents/skills/`. A corpus that lands here is loaded by
- * two harnesses with no flag, no copy and no per-profile fan-out.
+ * vendor-neutral provider at discovery priority 70. A corpus that lands here is
+ * loaded by omp with no flag, no copy and no per-profile fan-out.
  *
  * It is a SIBLING of every harness home (`.omp`, `.claude`, …), so an adapter
  * addresses it as `../<this>/…` from its own home and deploy must be told it is a
