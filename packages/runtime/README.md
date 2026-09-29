@@ -80,8 +80,9 @@ refuses and names the deploy, and `design show` shows the lattice and says the p
 wait for that deploy.
 
 Each verb declares, beside it, the flags it takes, and an unknown flag is refused before the verb
-acts: nothing is written, and the call exits `1`. The refusal, homed in `./verb-flags`, names the
-flag, the verb's nearest flag when one is within an edit for every three letters (`--glose` gets
+acts: nothing is written, and the call exits `1`. A single-dash token (`-x`) is an attempted flag
+and is refused too. One refusal, homed in `./verb-flags`, names every such flag as given, the verb's
+nearest flag to each when one is within an edit for every three letters (`--glose` and `-gloss` get
 `--gloss`), and every flag the verb takes, and asks for the call to be corrected and run again.
 
 ## Dispatch

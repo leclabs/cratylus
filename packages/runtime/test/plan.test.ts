@@ -208,7 +208,7 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
     );
     expect(revised).toContain('plan delta (p-draft) · realizes c1, c2 — units');
     expect(refused(repo, 'revise', 'delta', '--state', 'p-held', ...BY)).toBe(
-      verbFlags.refused('plan', 'revise', 'state', VERBS.revise),
+      verbFlags.refused('plan', 'revise', ['--state'], VERBS.revise),
     );
     add(repo, 'x1', 'closed-one');
     plan(repo, 'close', 'closed-one', ...BY);
@@ -913,7 +913,7 @@ describe('plan — dependencies and the lifecycle', () => {
 });
 
 describe('plan — the flags each verb takes', () => {
-  it('REFUSES, on every verb, a flag it does not take, naming its nearest and every flag it takes, and writes nothing', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'u1', 'alpha');
@@ -928,9 +928,20 @@ describe('plan — the flags each verb takes', () => {
       ['reconcile', 'to', 'u1', ...BY],
     ];
     expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
-    for (const [verb, flag, ...rest] of calls)
+    for (const [verb, flag, ...rest] of calls) {
       expect(refused(repo, verb, ...rest, `--${flag}`, 'x')).toBe(
-        verbFlags.refused('plan', verb, flag, VERBS[verb]),
+        verbFlags.refused('plan', verb, [`--${flag}`], VERBS[verb]),
       );
+      expect(
+        refused(repo, verb, ...rest, `-${flag}`, '--zzzz', 'x', `--${flag}`),
+      ).toBe(
+        verbFlags.refused(
+          'plan',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
   });
 });

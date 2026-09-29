@@ -373,7 +373,7 @@ describe('note — the notebook by title', () => {
 });
 
 describe('note — the flags each verb takes', () => {
-  it('REFUSES, on every verb, a flag it does not take, naming its nearest and every flag it takes, and writes nothing', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
     const repo = repository();
     capture(repo, 'n1');
     const calls: [keyof typeof VERBS, string, ...string[]][] = [
@@ -395,9 +395,29 @@ describe('note — the flags each verb takes', () => {
       ['reconcile', 'topics', 'n1', ...BY],
     ];
     expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
-    for (const [verb, flag, ...rest] of calls)
+    for (const [verb, flag, ...rest] of calls) {
       expect(refused(note, repo, verb, ...rest, `--${flag}`, 'x')).toBe(
-        verbFlags.refused('note', verb, flag, VERBS[verb]),
+        verbFlags.refused('note', verb, [`--${flag}`], VERBS[verb]),
       );
+      expect(
+        refused(
+          note,
+          repo,
+          verb,
+          ...rest,
+          `-${flag}`,
+          '--zzzz',
+          'x',
+          `--${flag}`,
+        ),
+      ).toBe(
+        verbFlags.refused(
+          'note',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
   });
 });

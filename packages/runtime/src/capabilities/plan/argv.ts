@@ -8,8 +8,10 @@
 // `--reason` and `--cause`: who wrote it, why, and what caused it.
 //
 // Each capability declares beside its verbs the flags each verb takes
-// (`../../verb-flags.ts`); a flag the verb does not take is refused as the
-// arguments are read, before the verb reads anything else or writes.
+// (`../../verb-flags.ts`); every flag the verb does not take is refused as the
+// arguments are read, before the verb reads anything else or writes. A token
+// spelled with a single dash (`-x`), a lone `-` aside, is an attempted flag,
+// and is refused with them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Invocation } from '../../ports/design.js';
@@ -25,8 +27,8 @@ export interface Argv {
 }
 
 /** Read the argv tail of `verb` of `capability` into its positionals and
- *  flags, refusing a flag the verb does not take, `takes` being every flag it
- *  does. */
+ *  flags, refusing every flag the verb does not take, `takes` being every flag
+ *  it does. */
 export function parseArgv(
   argv: readonly string[],
   capability: string,
@@ -35,10 +37,13 @@ export function parseArgv(
 ): Argv {
   const positionals: string[] = [];
   const flags = new Map<string, string[]>();
+  const given: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i] as string;
     if (!token.startsWith('--')) {
-      positionals.push(token);
+      if (token.startsWith('-') && token !== '-')
+        given.push(token.split('=')[0] as string);
+      else positionals.push(token);
       continue;
     }
     const body = token.slice(2);
@@ -51,9 +56,10 @@ export function parseArgv(
     } else if (argv[i + 1] !== undefined && !argv[i + 1]?.startsWith('--')) {
       value = argv[++i] as string;
     }
+    given.push(`--${key}`);
     flags.set(key, [...(flags.get(key) ?? []), value]);
   }
-  refuseUnknown(capability, verb, flags.keys(), takes);
+  refuseUnknown(capability, verb, given, takes);
   return { positionals, flags };
 }
 

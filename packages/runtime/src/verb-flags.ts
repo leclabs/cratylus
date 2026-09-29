@@ -3,12 +3,15 @@
 // verb, and the one refusal of a flag the verb does not take.
 //
 // A capability declares, for each of its verbs, the flags it takes (named
-// without their leading `--`). A flag given that the verb does not take is
-// refused before the verb acts, so nothing is written. The refusal names the
-// flag, the verb's nearest flag when one is close, and every flag the verb
-// takes, and asks the caller to correct the call and run it again.
+// without their leading `--`). A verb takes a flag only as `--name`; one
+// spelled with a single dash (`-x`, `-gloss`) is an attempted flag no verb
+// takes. Every flag given that the verb does not take is refused, in one
+// refusal, before the verb acts, so nothing is written. The refusal names each
+// such flag as it was given, the verb's nearest flag to each when one is close,
+// and every flag the verb takes, and asks the caller to correct the call and
+// run it again.
 //
-// Close means within one edit for every three letters of the flag given, and
+// Close means within one edit for every three letters of the flag's name, and
 // at least one; an edit inserts, deletes or changes a letter, or swaps two
 // neighbours. A flag farther than that from every flag the verb takes gets no
 // suggestion.
@@ -46,58 +49,68 @@ function edits(a: string, b: string): number {
   return (d[a.length] as number[])[b.length] as number;
 }
 
-/** The flag of `takes` nearest `flag`, when one is close; the first declared
- *  wins a tie. */
+/** The flag of `takes` nearest `flag`, spelled as given, when one is close;
+ *  the first declared wins a tie. */
 export function nearest(
   flag: string,
   takes: readonly string[],
 ): string | undefined {
-  const within = Math.max(1, Math.floor(flag.length / 3));
+  const name = flag.replace(/^-+/, '');
+  const within = Math.max(1, Math.floor(name.length / 3));
   let best: { flag: string; edits: number } | undefined;
   for (const taken of takes) {
-    const n = edits(flag, taken);
+    const n = edits(name, taken);
     if (n <= within && (best === undefined || n < best.edits))
       best = { flag: taken, edits: n };
   }
   return best?.flag;
 }
 
-/** `flags` as a reader lists them: `--a`, `--a and --b`, `--a, --b and --c`. */
-function listed(flags: readonly string[]): string {
-  const shown = flags.map((f) => `--${f}`);
-  return shown.length < 2
-    ? shown.join('')
-    : `${shown.slice(0, -1).join(', ')} and ${shown.at(-1)}`;
+/** `items` as a reader lists them, the last joined by `last`: `a`,
+ *  `a and b`, `a, b and c`. */
+function listed(items: readonly string[], last: 'and' | 'or'): string {
+  return items.length < 2
+    ? items.join('')
+    : `${items.slice(0, -1).join(', ')} ${last} ${items.at(-1)}`;
 }
 
-/** The refusal of `flag`, which `verb` of `capability` does not take, `takes`
- *  being every flag it does. */
+/** The refusal of `flags`, spelled as given, which `verb` of `capability`
+ *  does not take, `takes` being every flag it does. */
 export function refused(
   capability: string,
   verb: string,
-  flag: string,
+  flags: readonly string[],
   takes: readonly string[],
 ): string {
-  const near = nearest(flag, takes);
+  const named = flags.map((flag) => {
+    const near = nearest(flag, takes);
+    return near === undefined
+      ? flag
+      : `${flag} (the nearest flag it takes is --${near})`;
+  });
   return [
-    `${capability} ${verb}: it does not take --${flag}`,
-    near === undefined ? '' : `; the nearest flag it takes is --${near}`,
+    `${capability} ${verb}: it does not take ${listed(named, 'or')}.`,
     takes.length === 0
-      ? '. It takes no flags.'
-      : `. It takes ${listed(takes)}.`,
+      ? ' It takes no flags.'
+      : ` It takes ${listed(
+          takes.map((f) => `--${f}`),
+          'and',
+        )}.`,
     ' Nothing was written; correct the call and run it again.',
   ].join('');
 }
 
-/** Refuse the first of `given` that `verb` of `capability` does not take,
- *  `takes` being every flag it does. */
+/** Refuse, in one refusal, every one of `given`, spelled as given, that
+ *  `verb` of `capability` does not take, `takes` being every flag it does. */
 export function refuseUnknown(
   capability: string,
   verb: string,
   given: Iterable<string>,
   takes: readonly string[],
 ): void {
-  for (const flag of given)
-    if (!takes.includes(flag))
-      throw new Error(refused(capability, verb, flag, takes));
+  const unknown = [...new Set(given)].filter(
+    (flag) => !(flag.startsWith('--') && takes.includes(flag.slice(2))),
+  );
+  if (unknown.length > 0)
+    throw new Error(refused(capability, verb, unknown, takes));
 }

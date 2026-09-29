@@ -521,7 +521,7 @@ describe('design — on a host without the plan lifecycle', () => {
 });
 
 describe('design — the flags each verb takes', () => {
-  it('REFUSES, on every verb, a flag it does not take, naming its nearest and every flag it takes, and writes nothing', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
     const repo = repository();
     lattice(repo);
     const calls: [keyof typeof VERBS, string, ...string[]][] = [
@@ -533,9 +533,27 @@ describe('design — the flags each verb takes', () => {
       ['trace', 'factors', 'top'],
     ];
     expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
-    for (const [verb, flag, ...rest] of calls)
+    for (const [verb, flag, ...rest] of calls) {
       expect(refused(repo, verb, ...rest, `--${flag}`, 'x')).toBe(
-        verbFlags.refused('design', verb, flag, VERBS[verb]),
+        verbFlags.refused('design', verb, [`--${flag}`], VERBS[verb]),
       );
+      expect(
+        refused(repo, verb, ...rest, `-${flag}`, '--zzzz', 'x', `--${flag}`),
+      ).toBe(
+        verbFlags.refused(
+          'design',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
+    expect(
+      refused(repo, 'define', 'eps', '--gloss', 'e', '-x', 'foo', ...BY),
+    ).toBe(verbFlags.refused('design', 'define', ['-x'], VERBS.define));
+    expect(refused(repo, 'define', 'eps', '-gloss', 'e', ...BY)).toBe(
+      verbFlags.refused('design', 'define', ['-gloss'], VERBS.define),
+    );
+    expect(verbFlags.nearest('-gloss', VERBS.define)).toBe('gloss');
   });
 });
