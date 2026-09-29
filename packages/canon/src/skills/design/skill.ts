@@ -74,8 +74,9 @@ churn(primitive) high ⇒ conceptualization wrong ⟨primitives near-stable · c
 ∀ s ∈ cut(C) : ∀ c ∈ s : closure(c) ⊆ s ⟨a piece is CLOSED ∴ plannable alone⟩
 cut ⊨ self ⟨the ASSIGNMENT of concepts to pieces is the design-holder's ; a planner
     receiving a piece may ¬ redraw it · a boundary it cannot plan is SURFACED⟩
-yield ≠ ∅ ⇒ amend(C) ⟨intake at INCEPTION ∧ live, never at retirement : an obligation
-    standing between an agent and closing its work always loses · measured 0 of 25⟩
+yield ≠ ∅ ⇒ intake LIVE ⟨amend(C) ∨ a note blocking each concept it bears on @ note⟩ ⟨never at
+    retirement : an obligation standing between an agent and closing its work always loses ·
+    measured 0 of 25 ∴ a held yield gates the next bind ∧ pin on its concepts, ¬ the close⟩
 design ⊨ ¬ delegable ⟨a subagent starts blank ∧ a design authored by several
     fragments BY CONSTRUCTION⟩
 design ≜ conceptualize(intent) → signify(·) → materialize(·) → define(c) ∨ supersede(c) → C → cut(C)` as SkillExpression;

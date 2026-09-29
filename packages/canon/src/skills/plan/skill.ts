@@ -70,6 +70,8 @@ accept : P → (return → 𝔹) ⟨MECHANICAL only · the semantic half is @ de
 pre    : P → return
 spec(unit) ≜ ⟨ realizes(unit), intent(unit), static(unit), deps(unit), outputs(unit), accept(unit) ⟩
 census : intent → ⟨scope, static, deps, occurs⟩ ⟨delegable-to agent⟩
+capacity ≜ the effort one executor finishes in one dispatch ⟨DECLARED by the executor's harness · ¬ a constant here⟩
+effort(unit) ≜ what building ∧ proving unit costs ⟨reading included⟩
 slices : P → ℘(℘(P))
 cross(S) ≜ |R ∩ ⋃ { sᵢ × sⱼ | sᵢ, sⱼ ∈ S ∧ i ≠ j }|
 wave(0) ≜ { unit | ∄ u : (unit, u) ∈ R }
@@ -111,10 +113,15 @@ revise routes to revise(unit) ∨ revise(P) by the name it is given ⟨--plan pu
 advance(unit) ⊨ bound(P) ∧ one step forward in States(unit) ⟨a skip ∨ a step back refuses · a unit of an unbound P is authored ∧ revised, ¬ worked⟩
 ∀ unit : R acyclic ∧ ∀ u ∈ deps(unit) : live(u) ∧ u ∈ P
 an owed note blocking P ⇒ ¬ bind(P) ∧ ∀ unit ∈ P : ¬ready(unit)
-add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one current version ∧ ¬withdrawn(c) ⟨a pin is taken on settled ground alone⟩
+an owed note blocking c ∧ ∃ a ∈ realizes(P) : c ∈ closure(denotes(a)) ⇒ ¬ bind(P) ⟨a held finding waits
+    for the fold · ready ∧ frontier untouched : the work in flight runs on⟩
+add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one current version ∧ ¬withdrawn(c) ∧
+    ∄ owed note blocking c ⟨a pin is taken on settled ground alone⟩
 pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reason <why>\` ⟨the ONLY way · never a side effect of editing spec(unit)⟩
 withdrawn(denotes(realizes(unit))) ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
 drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
+drifted(unit) ⇒ response ↾ what moved ⟨gloss ⇒ repin · factors ⇒ revise(unit) ∧ repin · s itself ⇒ re-cut ;
+    a gloss never re-cuts P · measured : ~12 serial amendments re-cut one plan ~10×⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
 reconcile ⊨ self ⟨reconciliation of plans ∧ units is the architect's alone⟩
@@ -128,6 +135,12 @@ slices(P) cut on s ⟨¬ file-adjacency · files are a LAGGING proxy for modular
 ∀ unit, u ∈ wave(n) : unit ≠ u ⇒ outputs(unit) ∩ refs(u) = ∅ ⟨disjoint outputs is NECESSARY
     ¬ sufficient : a deletion in unit dangles a reference in u⟩
 ⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation
+∀ unit : effort(unit) ≤ capacity ⟨ready PROMISES an executor can FINISH · a unit past capacity
+    hands its successor a re-read, ¬ progress⟩
+effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) ⟨each part realizes a factor ·
+    ¬ a file-cut⟩ ; factors = ∅ ⇒ SURFACE ⟨a primitive no executor finishes is ¬ primitive @ design⟩
+an executor exhausted mid-unit ⇒ effort(unit) mis-estimated ⇒ split ∨ SURFACE ≺ redispatch
+    ⟨¬ a chain of cold successors⟩
 ∀ unit : footprint(unit) ⊆ outputs(unit) ⟨outputs IS the contention set ∴ an under-declared
     array silently voids every disjointness proof above⟩
 ∀ unit : occurs(realizes(unit)) ⊆ outputs(unit) ⟨a unit's footprint is its REFERENCE set, ¬ its
@@ -136,8 +149,10 @@ slices(P) cut on s ⟨¬ file-adjacency · files are a LAGGING proxy for modular
      wrote 15 paths · 1 and 12 · 8 and 20⟩
 ∀ unit : ∃ r : ¬accept(unit)(r) ∧ ¬accept(unit)(pre(unit)) ⟨criteria that cannot FAIL, ∧ that
     already pass before the work, test nothing⟩
-∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨timestamp⟩ ∴ re-derive ≺ cite
-    ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree moves ∧ nothing reds⟩
+census(P) ⊨ once ∧ pinned⟨commit⟩ ∧ cited by every unit ⟨¬ re-derived per executor⟩
+∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨commit⟩ ∴ cite ⇔ ∄ change to its paths since
+    that commit ; else re-derive ≺ cite ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree
+    moves ∧ nothing reds · within P it moves only by landed outputs, each declared before dispatch⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 ∀ unit : conform(spec(unit))
 plan ≜ take(s) → census ⟨delegable⟩ → slice(s) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → advance` as SkillExpression;

@@ -53,7 +53,7 @@ unit   @ plan
 wave   @ plan
 frontier @ plan
 realizes @ plan
-advance, bind, close, bound, ready @ plan
+advance, bind, close, bound, ready, satisfied, capacity @ plan
 show ⟨C⟩ @ design
 show ⟨P ∧ unit⟩ @ plan
 accept @ plan ⟨the MECHANICAL half⟩
@@ -68,14 +68,20 @@ spells : path × anchor → 𝔹 ⟨identifiers · path · public surface bear t
 covers : path × ℘(C) → 𝔹 ⟨observable behaviour ≅ the factorization · nothing missing
          ∧ nothing extra⟩
 sole   : path × anchor → 𝔹 ⟨∄ other artifact realizing the same concept⟩
-verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec⟩
+verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec · ↾ accept(unit), ¬ gate⟩
+gate   ≜ the project's whole check ⟨every suite · typecheck · build : what a green main demands⟩
+integrate(unit) ≜ merge artifact(unit) into main ⟨pre gate green⟩
+integrator : P ⇀ agent ⟨one per P · runs gate ∧ integrate ∧ carries the state moves self decided, ¬ decides them⟩
 validate : P → 𝔹 ⟨the PRINCIPAL's · built-the-right-thing, against C⟩
 assay  : artifact → ℘(C) ⟨which concepts the artifact ACTUALLY realizes · the REVERSE of plan⟩
 assayer : unit ⇀ agent ⟨role = assayer · holds C ∧ ¬ holds spec(unit)⟩
 achieved : unit → 𝔹 ⟨the three questions, answered against the assay⟩
 unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWARD⟩
 defect ≜ ⟨symptom, locus, provenance⟩
-impedes : defect × P → 𝔹
+finding ≜ a yield ∨ an operator steer bearing on C ∧ ¬ yet in C
+bears : finding → ℘(C) ⟨the concepts it would amend⟩
+impedes : (defect ∨ finding) × P → 𝔹
+fold   ≜ one amend(C) taking every held finding ∧ retracting the notes that held them
 cost   : act → effort
 file(d) ≜ capture(d) ⟨its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
@@ -111,7 +117,14 @@ judge(unit) ≜ verify(unit, r) ∧ validate(unit) ⇒ advance(unit) ⟨the acce
     ⟨fan-in is as order-sensitive as fan-out : ∀ unit dispatched, confirm executor(unit)
      RETURNED · outputs(unit) exist ≠ executor(unit) returned⟩
 ¬validate(unit) ⇒ redispatch(executor(unit), unachieved(unit)) ⟨the flaw handed down is
-    CONCEPTUAL ∧ ¬ a review⟩
+    CONCEPTUAL ∧ ¬ a review · executor(unit) is the SAME agent that built it while it has
+    capacity ; a cold successor re-reads what it built⟩
+gate ⊨ integrate ∧ ¬ verify ⟨the whole check runs ONCE per landing, by the integrator · an
+    executor ∨ assayer re-running it proves nothing new on nearly the same tree⟩
+integrate ⊥ judge ⟨a merge is DURABILITY ∧ ¬ acceptance · acceptance is advance(unit) after the
+    assay⟩ ∴ integrate ≺ assay admitted ∧ the next ready unit dispatches while the assay runs
+    ⟨ready waits on satisfied deps ∴ ¬ a dependent builds on an unaccepted unit⟩
+integrator ⊨ ¬ validate ⟨it carries a verdict ∧ ¬ reaches one⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
 ¬spells ⇒ REFUSE ≺ any behavioural read ⟨the traceability arrow breaks at the cheapest
@@ -123,6 +136,13 @@ dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨advan
 ∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
     unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
+impedes(f, unit) ⇔ ¬satisfied(unit) ∧ ∃ c ∈ bears(f) : c ∈ closure(denotes(realizes(unit)))
+    ⟨DERIVED, ¬ judged · standing, unit is built ∨ accepted against a concept known false⟩
+bound(P) ∧ ∃ unit ∈ P : impedes(f, unit) ⇒ fold ≺ the next dispatch(unit) ∨ judge(unit)
+bound(P) ∧ ∄ unit ∈ P : impedes(f, unit) ⇒ capture(f) blocking each c ∈ bears(f) ∧ ¬ amend(C)
+    ⟨the finding waits · the work does not · the note holds the next bind ∧ pin on c @ plan⟩
+fold ⊨ every held finding at once ⟨a WINDOW : P pays one drift pass per fold, ¬ one per finding ·
+    measured : ~12 serial amendments under bound plans re-cut one plan ~10×⟩
 impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
@@ -131,12 +151,13 @@ cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearin
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic⟩
 terminal(P) ⇒ close(P) ⟨obligation ¬ permission · an unclosed terminal plan is WIP
     that is not work · a closed plan stays readable⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
-deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → assay ⟨assayer, on artifact⟩ →
-    validate ⟨self, on the assay⟩ → judge → amend(C) ⇔ yield → advance → close` as SkillExpression;
+deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → integrate ⟨integrator, on gate⟩ →
+    assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → fold ⇔ finding →
+    advance → close` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',
-  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, then validate each landed artifact against the design rather than against the executor's report, and integrate. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it.`,
+  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design rather than against the executor's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it, send a gap back to the agent that built it, and hold a design finding as a note until one fold takes them all unless it bears on work not yet accepted.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
 };
