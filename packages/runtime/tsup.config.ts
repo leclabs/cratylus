@@ -17,6 +17,7 @@ export default defineConfig([
       capability: 'src/capability.ts',
       'runtime-config': 'src/runtime-config.ts',
       ulid: 'src/ulid.ts',
+      'verb-flags': 'src/verb-flags.ts',
       events: 'src/events.ts',
       'ports/memory': 'src/ports/memory.ts',
       'ports/event-tap': 'src/ports/event-tap.ts',

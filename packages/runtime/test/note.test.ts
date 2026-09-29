@@ -7,8 +7,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
-import { dispatchNote } from '../src/capabilities/note/dispatch.js';
+import { VERBS, dispatchNote } from '../src/capabilities/note/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
+import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
   IDENTITY,
@@ -368,5 +369,55 @@ describe('note — the notebook by title', () => {
     expect(written.left).toEqual(written.right);
     expect(show(repo)).not.toContain('diverged:');
     note(repo, 'revise', 'both', '--body', 'onward', ...BY);
+  });
+});
+
+describe('note — the flags each verb takes', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
+    const repo = repository();
+    capture(repo, 'n1');
+    const calls: [keyof typeof VERBS, string, ...string[]][] = [
+      ['show', 'kind', 'n1'],
+      [
+        'capture',
+        'title',
+        'n2',
+        '--kind',
+        'ask',
+        '--topic',
+        'scope',
+        '--body',
+        'b',
+        ...BY,
+      ],
+      ['revise', 'bdy', 'n1', '--body', 'more', ...BY],
+      ['retract', 'body', 'n1', ...BY],
+      ['reconcile', 'topics', 'n1', ...BY],
+    ];
+    expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
+    for (const [verb, flag, ...rest] of calls) {
+      expect(refused(note, repo, verb, ...rest, `--${flag}`, 'x')).toBe(
+        verbFlags.refused('note', verb, [`--${flag}`], VERBS[verb]),
+      );
+      expect(
+        refused(
+          note,
+          repo,
+          verb,
+          ...rest,
+          `-${flag}`,
+          '--zzzz',
+          'x',
+          `--${flag}`,
+        ),
+      ).toBe(
+        verbFlags.refused(
+          'note',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
   });
 });

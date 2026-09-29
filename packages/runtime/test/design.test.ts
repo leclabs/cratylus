@@ -10,8 +10,9 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
+import { VERBS, dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
+import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
   IDENTITY,
@@ -516,5 +517,43 @@ describe('design — on a host without the plan lifecycle', () => {
       expect(design(repo, 'trace', 'alpha')).toContain('trace: alpha');
     });
     expect(show(repo)).toContain('realized in pl (p-draft): u1');
+  });
+});
+
+describe('design — the flags each verb takes', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
+    const repo = repository();
+    lattice(repo);
+    const calls: [keyof typeof VERBS, string, ...string[]][] = [
+      ['show', 'factors', 'prim'],
+      ['define', 'glose', 'c', '--gloss', 'g', ...BY],
+      ['amend', 'factor', 'top', '--gloss', 'the root, amended', ...BY],
+      ['retract', 'gloss', 'top', ...BY],
+      ['reconcile', 'anchr', 'top', ...BY],
+      ['trace', 'factors', 'top'],
+    ];
+    expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
+    for (const [verb, flag, ...rest] of calls) {
+      expect(refused(repo, verb, ...rest, `--${flag}`, 'x')).toBe(
+        verbFlags.refused('design', verb, [`--${flag}`], VERBS[verb]),
+      );
+      expect(
+        refused(repo, verb, ...rest, `-${flag}`, '--zzzz', 'x', `--${flag}`),
+      ).toBe(
+        verbFlags.refused(
+          'design',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
+    expect(
+      refused(repo, 'define', 'eps', '--gloss', 'e', '-x', 'foo', ...BY),
+    ).toBe(verbFlags.refused('design', 'define', ['-x'], VERBS.define));
+    expect(refused(repo, 'define', 'eps', '-gloss', 'e', ...BY)).toBe(
+      verbFlags.refused('design', 'define', ['-gloss'], VERBS.define),
+    );
+    expect(verbFlags.nearest('-gloss', VERBS.define)).toBe('gloss');
   });
 });

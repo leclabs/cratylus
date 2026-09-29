@@ -9,7 +9,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
-import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
+import { VERBS, dispatchPlan } from '../src/capabilities/plan/dispatch.js';
+import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
   IDENTITY,
@@ -206,9 +207,9 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
       ...BY,
     );
     expect(revised).toContain('plan delta (p-draft) · realizes c1, c2 — units');
-    expect(
-      refused(repo, 'revise', 'delta', '--state', 'p-held', ...BY),
-    ).toMatch(/revise never sets a state — `plan bind` and `plan close`/);
+    expect(refused(repo, 'revise', 'delta', '--state', 'p-held', ...BY)).toBe(
+      verbFlags.refused('plan', 'revise', ['--state'], VERBS.revise),
+    );
     add(repo, 'x1', 'closed-one');
     plan(repo, 'close', 'closed-one', ...BY);
     expect(
@@ -908,5 +909,39 @@ describe('plan — dependencies and the lifecycle', () => {
       ),
     ).toMatch(/plan lifecycle is malformed: .*`cratylus deploy`/);
     expect(records(repo, 'plan')).toEqual([]);
+  });
+});
+
+describe('plan — the flags each verb takes', () => {
+  it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u1', 'alpha');
+    const calls: [keyof typeof VERBS, string, ...string[]][] = [
+      ['show', 'pln', 'alpha'],
+      ['add', 'intnet', 'u2', '--plan', 'alpha', '--realizes', 'c1', ...BY],
+      ['advance', 'state', 'u1', '--to', 'u-mid', ...BY],
+      ['retract', 'name', 'u1', ...BY],
+      ['revise', 'dep', 'u1', '--intent', 'more', ...BY],
+      ['bind', 'plan', 'alpha', ...BY],
+      ['close', 'repin', 'alpha', ...BY],
+      ['reconcile', 'to', 'u1', ...BY],
+    ];
+    expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
+    for (const [verb, flag, ...rest] of calls) {
+      expect(refused(repo, verb, ...rest, `--${flag}`, 'x')).toBe(
+        verbFlags.refused('plan', verb, [`--${flag}`], VERBS[verb]),
+      );
+      expect(
+        refused(repo, verb, ...rest, `-${flag}`, '--zzzz', 'x', `--${flag}`),
+      ).toBe(
+        verbFlags.refused(
+          'plan',
+          verb,
+          [`-${flag}`, '--zzzz', `--${flag}`],
+          VERBS[verb],
+        ),
+      );
+    }
   });
 });

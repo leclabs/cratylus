@@ -6,9 +6,19 @@
 // each, and `--flag ''` gives the empty one. A bare `--flag` holds `''`. The
 // first positional names what the verb acts on. Every write takes `--author`,
 // `--reason` and `--cause`: who wrote it, why, and what caused it.
+//
+// Each capability declares beside its verbs the flags each verb takes
+// (`../../verb-flags.ts`); every flag the verb does not take is refused as the
+// arguments are read, before the verb reads anything else or writes. A token
+// spelled with a single dash (`-x`), a lone `-` aside, is an attempted flag,
+// and is refused with them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Invocation } from '../../ports/design.js';
+import { type VerbFlags, refuseUnknown } from '../../verb-flags.js';
+
+/** The flags every write takes: who wrote it, why, and what caused it. */
+export const INVOCATION = ['author', 'reason', 'cause'] as const;
 
 /** An argv tail: its positionals, and each flag's values in the order given. */
 export interface Argv {
@@ -16,14 +26,24 @@ export interface Argv {
   readonly flags: ReadonlyMap<string, readonly string[]>;
 }
 
-/** Read an argv tail into its positionals and flags. */
-export function parseArgv(argv: readonly string[]): Argv {
+/** Read the argv tail of `verb` of `capability` into its positionals and
+ *  flags, refusing every flag the verb does not take, `takes` being every flag
+ *  it does. */
+export function parseArgv(
+  argv: readonly string[],
+  capability: string,
+  verb: string,
+  takes: readonly string[],
+): Argv {
   const positionals: string[] = [];
   const flags = new Map<string, string[]>();
+  const given: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i] as string;
     if (!token.startsWith('--')) {
-      positionals.push(token);
+      if (token.startsWith('-') && token !== '-')
+        given.push(token.split('=')[0] as string);
+      else positionals.push(token);
       continue;
     }
     const body = token.slice(2);
@@ -36,8 +56,10 @@ export function parseArgv(argv: readonly string[]): Argv {
     } else if (argv[i + 1] !== undefined && !argv[i + 1]?.startsWith('--')) {
       value = argv[++i] as string;
     }
+    given.push(`--${key}`);
     flags.set(key, [...(flags.get(key) ?? []), value]);
   }
+  refuseUnknown(capability, verb, given, takes);
   return { positionals, flags };
 }
 
@@ -72,9 +94,7 @@ export function invocation(
   capability: string,
   verb: string,
 ): Invocation {
-  const [author, reason, cause] = ['author', 'reason', 'cause'].map((f) =>
-    one(args, f),
-  );
+  const [author, reason, cause] = INVOCATION.map((f) => one(args, f));
   if (author === undefined || reason === undefined || cause === undefined)
     throw new Error(
       `${capability} ${verb}: give --author, --reason and --cause — every write says who made it, why, and what caused it`,
@@ -82,16 +102,17 @@ export function invocation(
   return { author, reason, cause };
 }
 
-/** The verb `argv` opens with, refusing one `verbs` does not hold. */
+/** The verb `argv` opens with, refusing one `verbs` does not declare. */
 export function verbOf<V extends string>(
   argv: readonly string[],
   capability: string,
-  verbs: readonly V[],
+  verbs: VerbFlags<V>,
 ): V {
   const verb = argv[0];
-  if (verb === undefined || !(verbs as readonly string[]).includes(verb))
+  const declared = Object.keys(verbs);
+  if (verb === undefined || !declared.includes(verb))
     throw new Error(
-      `${capability}: unknown verb '${verb ?? ''}' (expected ${verbs.join('|')})`,
+      `${capability}: unknown verb '${verb ?? ''}' (expected ${declared.join('|')})`,
     );
   return verb as V;
 }
