@@ -143,7 +143,7 @@ finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close ⟨findings BATCH 
      drift it causes lands on units never asked again · a hold keyed to a LATER act is a lock only
      that act checks ∴ a branch merge ∨ a concurrent session walks past it⟩
 fold ⊨ drifted(unit) answered ↾ what moved @ plan ⟨the measured cost was the RESPONSE to amending,
-    ¬ amending : ~12 serial amendments re-cut one plan ~10× where a repin sufficed⟩
+    ¬ amending : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
 impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩

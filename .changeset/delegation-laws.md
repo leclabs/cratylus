@@ -21,8 +21,10 @@ finding is never held past one of those acts. Held past a judgement, a unit is
 accepted against a concept known to be false. Held past a close, the drift it
 causes lands on units that are never asked again.
 
-`plan` bounds the response to drift by what moved: a gloss is repinned, a factor
-change is revised, and only a change to the piece re-cuts the plan. It adds
+`plan` bounds the response to drift by what moved. A version that changed nothing
+is repinned. A gloss change is repinned, or revised first when the new gloss adds
+or drops behaviour. An anchor or factor change is revised and repinned, and only
+a change to the piece re-cuts the plan. It adds
 `capacity`, the effort one executor finishes in one dispatch, which the harness
 declares. A unit fits it, and a unit that does not is split on its concept's
 factors. The census is taken once, pinned to a commit and cited by every unit,

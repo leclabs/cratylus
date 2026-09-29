@@ -117,8 +117,9 @@ add(unit) ⊨ ∀ c ∈ closure(denotes(realizes(unit))) : c has exactly one cur
 pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reason <why>\` ⟨the ONLY way · never a side effect of editing spec(unit)⟩
 withdrawn(denotes(realizes(unit))) ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
 drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
-drifted(unit) ⇒ response ↾ what moved ⟨gloss ⇒ repin · factors ⇒ revise(unit) ∧ repin · s itself ⇒ re-cut ;
-    a gloss never re-cuts P · measured : ~12 serial amendments re-cut one plan ~10×⟩
+drifted(unit) ⇒ response ↾ what moved ⟨nothing ⇒ repin · gloss ⇒ repin ∨ revise(unit) ∧ repin, by what the
+    new gloss adds ∨ drops · anchor ∨ factors ⇒ revise(unit) ∧ repin · re-cut ⇔ s itself moved ;
+    measured : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
 reconcile ⊨ self ⟨reconciliation of plans ∧ units is the architect's alone⟩
