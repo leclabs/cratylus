@@ -257,9 +257,9 @@ export type { SkillExpression };
 // TWO MEMBERS NAME AN ACT RATHER THAN A HARNESS CALLBACK, and they are the reason
 // there is no tool vocabulary. `stance-guardrail-pre` bound `tool.use.pre` and then
 // narrowed it with `matcher: 'AskUserQuestion|Agent|SendMessage'` — three claude tool
-// names, on a cell whose whole claim is harness-neutrality, silently dropped by the
-// codex adapter (so the hook fired on every tool call there). The obvious repair — a
-// canonical TOOL vocabulary beside this one — is a category error: harnesses share a
+// names, on a cell whose whole claim is harness-neutrality, silently dropped by an
+// adapter that could not narrow it (so the hook fired on every tool call there). The
+// obvious repair — a canonical TOOL vocabulary beside this one — is a category error: harnesses share a
 // LIFECYCLE, which is closed, but their TOOL SETS are open-world (MCP servers add
 // tools at run time, users add their own), so a closed enum over them is permanently
 // incomplete and every adapter map would be near-empty.
@@ -282,7 +282,7 @@ export type { SkillExpression };
 // TWO, and no third: a third act has no site in this corpus. An adapter maps each to
 // its native ⟨event, selector⟩ pair (`NativeBinding`); a harness that can fire the
 // act but not narrow it DECLARES that loss and the projection warns, which is what
-// closed the codex divergence. `matcher` no longer exists on any cell or IR shape.
+// closed that divergence. `matcher` no longer exists on any cell or IR shape.
 //
 // `vcs.commit.post` IS AN ORDINARY MEMBER. It was `SubstrateEvent = CanonicalEvent |
 // 'vcs.commit.post'` — a union that existed only because the enum was closed and a

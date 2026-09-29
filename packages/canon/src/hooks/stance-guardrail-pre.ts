@@ -12,13 +12,14 @@ import type { HookCell } from '../manifest.js';
 //
 // IT BINDS TWO ACTS, NOT ONE EVENT PLUS A REGEX. This cell used to read
 // `events: ['tool.use.pre']` + `matcher: 'AskUserQuestion|Agent|SendMessage'` — three
-// claude tool names on a harness-agnostic shape, which the codex adapter dropped
-// without a word, so the hook there fired on EVERY tool call and only the worker's
-// own `*) allow ;;` branch kept it correct. The two acts below were already latent in
-// the residue (`permission-menu` · `dispatch-echo`); naming them moves the narrowing
-// to the adapter, which alone knows which of its tools performs the act. Each adapter
-// computes its own ⟨native event, native selector⟩ pair, and one that can fire an act
-// but not narrow it now SAYS SO through the projection's warnings.
+// claude tool names on a harness-agnostic shape, which an adapter that could not
+// narrow by tool name dropped without a word, so the hook there fired on EVERY tool
+// call and only the worker's own `*) allow ;;` branch kept it correct. The two acts
+// below were already latent in the residue (`permission-menu` · `dispatch-echo`);
+// naming them moves the narrowing to the adapter, which alone knows which of its
+// tools performs the act. Each adapter computes its own ⟨native event, native
+// selector⟩ pair, and one that can fire an act but not narrow it now SAYS SO through
+// the projection's warnings.
 // `test/hook-rule-boundary.test.ts` byte-locks the worker;
 // `test/hook-act-selector.test.ts` holds the seam.
 
@@ -138,10 +139,10 @@ case "$tool_name" in
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
 	*)
-		allow ;;  # DEFENCE IN DEPTH, and on some harnesses the only narrowing there is:
-		          # claude's adapter computes a selector from the act and this never fires;
-		          # codex has no subject selector, so its projection WARNS and this branch
-		          # is what keeps the guard off every other tool call.
+		allow ;;  # DEFENCE IN DEPTH: every supported adapter computes a selector from the
+		          # act, so this never fires there. A harness that could fire the act but
+		          # not narrow it would WARN in projection, and this branch is what would
+		          # keep the guard off every other tool call.
 esac
 
 [ -n "\${body:-}" ] || allow  # nothing judgeable -> allow

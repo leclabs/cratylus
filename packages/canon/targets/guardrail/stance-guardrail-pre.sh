@@ -99,10 +99,10 @@ case "$tool_name" in
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
 	*)
-		allow ;;  # DEFENCE IN DEPTH, and on some harnesses the only narrowing there is:
-		          # claude's adapter computes a selector from the act and this never fires;
-		          # codex has no subject selector, so its projection WARNS and this branch
-		          # is what keeps the guard off every other tool call.
+		allow ;;  # DEFENCE IN DEPTH: every supported adapter computes a selector from the
+		          # act, so this never fires there. A harness that could fire the act but
+		          # not narrow it would WARN in projection, and this branch is what would
+		          # keep the guard off every other tool call.
 esac
 
 [ -n "${body:-}" ] || allow  # nothing judgeable -> allow

@@ -18,7 +18,7 @@
 //
 // THE WORKER IS NOW ONE PER HARNESS, and the suite reflects it. The cell's
 // `workers[].content` is a TEMPLATE naming its harness by fact, so `resolveWorker`
-// over `projectionFacts(adapter)` produces a claude worker and a codex worker from
+// over `projectionFacts(adapter)` produces a claude worker and an omp worker from
 // the one cell. The committed `.sh` this file drives is the claude resolution; the
 // two-harness section below resolves both and runs them against the SAME corpus
 // carrying BOTH render trees and BOTH deployed homes. Cross-silence is what proves
@@ -60,6 +60,9 @@ const worker = join(
  *  the command. It is a library export now — running that file does nothing — so
  *  the fixture shims what a real host actually runs. */
 const forgeCli = join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js');
+
+/** omp's hook-config artifact, read off its adapter — a nested path, unlike claude's. */
+const OMP_HOOKS_FILE = adapterByName('omp').hooksFile;
 
 /** The cell's one worker, RESOLVED for `harness` — the bytes that harness deploys. */
 function workerFor(harness: string): string {
@@ -266,19 +269,20 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     expect(stdout).toBe('');
   });
 
-  it('picks the render tree by SHAPE — a codex tree beside it is not the claude one', () => {
+  it('picks the render tree by SHAPE — an omp tree beside it is not the claude one', () => {
     // The tree is discovered, never named: `--out` is an operator's choice. What
-    // identifies THIS harness's tree is its hooks file. A sibling codex render tree
-    // sorts first by name and must still not be chosen — if it were, the comparator
-    // would read a tree that carries no `settings.json` and report the whole host.
-    const codex = join(corpus, '.render-codex');
-    put(join(codex, 'hooks.json'), '{}\n');
-    put(join(codex, 'agents', 'nico.md'), 'name: nico\nCODEX PROJECTION\n');
-    mkdirSync(join(codex, 'skills'), { recursive: true });
+    // identifies THIS harness's tree is its hooks file. A sibling omp render tree
+    // is tried first by the discovery glob and must still not be chosen — if it
+    // were, the comparator would read a tree that carries no `settings.json` and
+    // report the whole host.
+    const omp = join(corpus, '.render-omp');
+    put(join(omp, OMP_HOOKS_FILE), '// omp extension\n');
+    put(join(omp, 'agents', 'nico.md'), 'name: nico\nOMP PROJECTION\n');
+    mkdirSync(join(omp, 'skills'), { recursive: true });
     supersedeHost();
     const { stdout } = run();
     expect(stdout).toContain(RENDERED_AXIOM); // the claude tree was the subject
-    expect(stdout).not.toContain('CODEX PROJECTION');
+    expect(stdout).not.toContain('OMP PROJECTION');
   });
 
   it('honours the explicit render-tree declaration over its own discovery', () => {
@@ -389,19 +393,19 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
 //
 // The worker identified the render tree by SHAPE, which is right — `--out` is an
 // operator's choice and must never be assumed — but the shape it matched was the
-// CLAUDE adapter's, and the home the comparator audited was claude's default. So a
-// codex session was told about the claude deployment: never a false report (the
-// relayed header names the root it read) but about someone else's host, and a
-// codex session with a stale codex tree and a fresh claude one was told nothing.
+// CLAUDE adapter's, and the home the comparator audited was claude's default. So an
+// omp session was told about the claude deployment: never a false report (the
+// relayed header names the root it read) but about someone else's host, and an
+// omp session with a stale omp tree and a fresh claude one was told nothing.
 //
 // THE FIXTURE IS ONE CORPUS WITH BOTH TREES AND BOTH HOMES, and the conviction is
 // CROSS-SILENCE. A leg where each worker merely spoke about its own harness's
 // drift would pass if both were reading claude's root — so drift is planted in
 // exactly one deployment at a time and the OTHER worker is required to stay silent.
-// The claude tree also sorts FIRST in the discovery glob, so the codex worker has
+// The claude tree also sorts FIRST in the discovery glob, so the omp worker has
 // to reject it rather than fall through to it.
 
-describe('deploy-drift-notice — a codex session reports on the codex deployment', () => {
+describe('deploy-drift-notice — an omp session reports on the omp deployment', () => {
   const AXIOM = 'FIRST PRINCIPLE: names are natural, never conventional';
   const STALE = 'FIRST PRINCIPLE: a name is whatever we agreed to call it';
 
@@ -410,14 +414,12 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
     claude: {
       tree: '.render-1-claude',
       hooksFile: 'settings.json',
-      home: '.claude',
-      ext: '.md',
+      agents: '.claude/agents',
     },
-    codex: {
-      tree: '.render-2-codex',
-      hooksFile: 'hooks.json',
-      home: '.codex',
-      ext: '.toml',
+    omp: {
+      tree: '.render-2-omp',
+      hooksFile: OMP_HOOKS_FILE,
+      agents: '.omp/agent/agents',
     },
   } as const;
   type Harness = keyof typeof HARNESSES;
@@ -439,16 +441,13 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
       0o755,
     );
     for (const h of BOTH) {
-      const { tree, hooksFile, home, ext } = HARNESSES[h];
+      const { tree, hooksFile, agents } = HARNESSES[h];
       // the render tree, in the shape THAT harness's projection produces
       put(join(biCorpus, tree, hooksFile), '{}\n');
-      put(
-        join(biCorpus, tree, 'agents', `nico${ext}`),
-        `name: nico\n${AXIOM}\n`,
-      );
+      put(join(biCorpus, tree, 'agents', 'nico.md'), `name: nico\n${AXIOM}\n`);
       mkdirSync(join(biCorpus, tree, 'skills'), { recursive: true });
       // …and a host deployed from it, in sync to start with
-      put(join(biHome, home, 'agents', `nico${ext}`), `name: nico\n${AXIOM}\n`);
+      put(join(biHome, agents, 'nico.md'), `name: nico\n${AXIOM}\n`);
       // the worker THAT harness's projection ships — one cell, two resolutions
       workerPath[h] = join(bi, `${h}.sh`);
       put(workerPath[h] as string, workerFor(h), 0o755);
@@ -458,8 +457,8 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
 
   /** Make one harness's DEPLOYED copy carry doctrine its tree no longer renders. */
   function supersede(h: Harness): void {
-    const { home, ext } = HARNESSES[h];
-    put(join(biHome, home, 'agents', `nico${ext}`), `name: nico\n${STALE}\n`);
+    const { agents } = HARNESSES[h];
+    put(join(biHome, agents, 'nico.md'), `name: nico\n${STALE}\n`);
   }
 
   /** Run one harness's worker against the shared corpus. */
@@ -488,14 +487,14 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
     // projector handed both resolutions the same facts, every behavioural leg in
     // this block would be about one worker run twice.
     expect(declared(workerFor('claude'), 'HARNESS')).toBe('claude');
-    expect(declared(workerFor('codex'), 'HARNESS')).toBe('codex');
+    expect(declared(workerFor('omp'), 'HARNESS')).toBe('omp');
     expect(declared(workerFor('claude'), 'HARNESS_HOOKS_FILE')).toBe(
       'settings.json',
     );
-    expect(declared(workerFor('codex'), 'HARNESS_HOOKS_FILE')).toBe(
-      'hooks.json',
+    expect(declared(workerFor('omp'), 'HARNESS_HOOKS_FILE')).toBe(
+      OMP_HOOKS_FILE,
     );
-    expect(workerFor('codex')).not.toBe(workerFor('claude'));
+    expect(workerFor('omp')).not.toBe(workerFor('claude'));
   });
 
   it('both are silent when both hosts are in sync', () => {
@@ -504,22 +503,22 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
     for (const h of BOTH) expect(speak(h), `${h} spoke`).toBe('');
   });
 
-  it('CODEX drift wakes the codex worker and the claude worker stays silent', () => {
-    supersede('codex');
-    const codex = speak('codex');
-    expect(codex).toMatch(/DEPLOY DRIFT/);
-    expect(codex).toContain(STALE);
-    // it audited the CODEX home, and says so in the header it relays
-    expect(codex).toMatch(/\.codex/);
-    expect(codex).not.toMatch(/-> \S*\.claude/);
-    expect(comparedCount(codex)).toBeGreaterThan(0);
+  it('OMP drift wakes the omp worker and the claude worker stays silent', () => {
+    supersede('omp');
+    const omp = speak('omp');
+    expect(omp).toMatch(/DEPLOY DRIFT/);
+    expect(omp).toContain(STALE);
+    // it audited the OMP home, and says so in the header it relays
+    expect(omp).toMatch(/\.omp/);
+    expect(omp).not.toMatch(/-> \S*\.claude/);
+    expect(comparedCount(omp)).toBeGreaterThan(0);
     // THE CONVICTION. The claude deployment was not touched, so a claude worker
     // reading its own root has nothing to say. If it spoke, both workers are
     // reading one tree and the fix is cosmetic.
-    expect(speak('claude'), 'the claude worker reported codex drift').toBe('');
+    expect(speak('claude'), 'the claude worker reported omp drift').toBe('');
   });
 
-  it('CLAUDE drift wakes the claude worker and the codex worker stays silent', () => {
+  it('CLAUDE drift wakes the claude worker and the omp worker stays silent', () => {
     // The same claim in the other direction, which is not redundant: the failure
     // being retired was ONE root winning always, and a fixture that only ever
     // planted drift in the loser could not tell that apart from a fixed winner.
@@ -529,26 +528,25 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
     expect(claude).toContain(STALE);
     expect(claude).toMatch(/\.claude/);
     expect(comparedCount(claude)).toBeGreaterThan(0);
-    expect(speak('codex'), 'the codex worker reported claude drift').toBe('');
+    expect(speak('omp'), 'the omp worker reported claude drift').toBe('');
   });
 
-  it('the codex worker REJECTS the claude tree even though it sorts first', () => {
+  it('the omp worker REJECTS the claude tree even though it sorts first', () => {
     // The discovery glob walks `.render*` in name order and `.render-1-claude`
     // comes first. A worker that took the first tree with `agents/` + `skills/`
-    // would land on it, compare `.md` files against a `.codex` host, and report
+    // would land on it, compare its files against the omp host, and report
     // the whole deployment absent. Its own hooks file is what it holds out for.
-    rmSync(join(biCorpus, HARNESSES.codex.tree), {
+    rmSync(join(biCorpus, HARNESSES.omp.tree), {
       recursive: true,
       force: true,
     });
-    // With no codex tree left, the codex worker must find NOTHING rather than
+    // With no omp tree left, the omp worker must find NOTHING rather than
     // settle for the claude one — proven by planting drift it would otherwise see.
-    supersede('codex');
+    supersede('omp');
     supersede('claude');
-    expect(
-      speak('codex'),
-      'the codex worker fell through to the claude tree',
-    ).toBe('');
+    expect(speak('omp'), 'the omp worker fell through to the claude tree').toBe(
+      '',
+    );
     // control: the claude worker, same corpus, same instant, is not silent
     expect(speak('claude')).toMatch(/DEPLOY DRIFT/);
   });
