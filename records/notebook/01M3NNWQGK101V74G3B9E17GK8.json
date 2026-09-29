@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NNWQGK101V74G3B9E17GK8",
+    "entity": "01M3NNWQGK101V74G3B9E17GK7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T04:13:45.363Z",
+    "reason": "first seen verifying 0.3.0; confirmed by the capability assay",
+    "cause": "CapabilityAssay 2026-09-28"
+  },
+  "payload": {
+    "title": "cratylus help omits the capabilities",
+    "kind": "idea",
+    "topic": "cli",
+    "body": "cratylus --help lists only the projector's commands (init, add, compose, project, …), and an unknown first word is refused with that list; eventTap, design, plan and note route and work but are never offered. Agents reach them through their skills, so this is discoverability for a person at a shell, not a routing defect.",
+    "blocks": []
+  }
+}
