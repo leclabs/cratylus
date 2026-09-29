@@ -158,15 +158,28 @@ it the worker prints the host's output and no badge. `claude -p` runs no status 
 `--dry-run` says what would be set or wrapped and writes nothing.
 
 **On omp** an extension's status shows inside the status line only where the host's layout lists
-omp's `status` segment. Install adds it to `statusLine.leftSegments` in the config file omp reads
-(`config.yml`, else `config.yaml`). A file with no `statusLine` gets omp's default custom left list
-plus `status` (`vim`, `model`, `mode`, `path`, `git`, `pr`, `status`); a list without `status` gets
-`status` appended after its last item, no other byte changing; a list that has it is not touched.
-A `statusLine` or `leftSegments` that cannot be extended by inserting lines (a flow mapping, an
-alias, a list split across lines in flow style) is reported and left as it is, and the install still
-succeeds. `--dry-run` writes nothing. omp reads `leftSegments` only under `statusLine.preset:
-custom`; under its other presets, the default included, the list is ignored and the badge renders
-beneath the status line.
+omp's `status` segment, and omp reads a segment list (`statusLine.leftSegments`) only under
+`statusLine.preset: custom`; under any other preset, the default one included, the list is ignored and
+the badge renders beneath the status line. Install edits the config file omp reads (`config.yml`, else
+`config.yaml`) according to the preset the host is on:
+
+- **No preset set** (a file with no `statusLine` included): install writes `preset: custom` with the
+  default preset's own left segments plus `status`, its right segments and its segment options, so the
+  status line looks as it did with the badge added. A `leftSegments`, `rightSegments` or
+  `segmentOptions` you already wrote is kept as it is (`status` is appended to a list without it), and
+  only what is missing is filled in.
+- **`preset: custom`**: `status` is appended after the last item of your `leftSegments`, no other byte
+  changing, or, where you list none, omp's custom left list plus `status` is written. A list that has
+  `status` is not touched.
+- **Any other named preset** (`minimal`, `compact`, `full`, `nerd`, `ascii`, or `default` written out):
+  your choice stands. The file is left byte-identical, and install prints the one addition that would
+  show the badge in the line: set `preset: custom` and list `status` in `leftSegments`.
+
+A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow mapping,
+an alias, a list split across lines in flow style) is reported and left as it is, and the install still
+succeeds. `--dry-run` writes nothing. With `status` listed, omp still prints the badge on its own row
+beneath the editor as well, because `statusLine.showHookStatus` defaults to true; set it to `false` to
+show the badge in the line alone.
 
 ## Running a persona by its name
 

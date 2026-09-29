@@ -153,7 +153,8 @@ export {
 
 // The host's status line, where the persona badge becomes visible: Claude Code's one
 // `settings.statusLine` command (set where the host has none, wrapped only on request,
-// never replaced) and omp's `statusLine.leftSegments` (the `status` segment added).
+// never replaced) and omp's `statusLine` layout (the `status` segment listed, under
+// the `custom` preset that reads a list at all).
 export {
   type BadgeStatusLineResult,
   type BadgeStatusLineState,
@@ -161,8 +162,6 @@ export {
   type EnsureStatusSegmentOpts,
   ensureBadgeStatusLine,
   ensureStatusSegment,
-  OMP_DEFAULT_LEFT_SEGMENTS,
-  OMP_STATUS_SEGMENT,
   type StatusSegmentResult,
   type StatusSegmentState,
 } from './status-line.js';

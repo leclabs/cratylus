@@ -24,8 +24,8 @@ import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
+import type { StatusSegmentHost } from '../../src/core/harness-adapter.js';
 import {
-  OMP_DEFAULT_LEFT_SEGMENTS,
   ensureBadgeStatusLine,
   ensureStatusSegment,
 } from '../../src/deploy/status-line.js';
@@ -164,152 +164,291 @@ describe('ensureBadgeStatusLine', () => {
     expect(f.read()).toBe(content);
   });
 });
-
 // ── omp: config.yml ──────────────────────────────────────────────────────────
 
-describe('ensureStatusSegment', () => {
-  const DEFAULTS = [...OMP_DEFAULT_LEFT_SEGMENTS, 'status'];
-  const block = (indent: string, itemIndent: string) =>
-    [
-      `${indent}leftSegments:`,
-      ...DEFAULTS.map((s) => `${itemIndent}- ${s}`),
-    ].join('\n');
+// The default preset's own layout, written out the way install writes it — literal, so
+// a drift in what the adapter declares is red here and not merely mirrored.
+const DEFAULT_LEFT = [
+  'pi',
+  'vim',
+  'model',
+  'mode',
+  'collab',
+  'stream',
+  'path',
+  'git',
+  'pr',
+  'context_pct',
+  'cost',
+  'status',
+];
+const PRESET = (i: string) => [`${i}preset: custom`];
+const LEFT_OF = (i: string, items: readonly string[]) => [
+  `${i}leftSegments:`,
+  ...items.map((s) => `${i}  - ${s}`),
+];
+const LEFT = (i: string) => LEFT_OF(i, DEFAULT_LEFT);
+const RIGHT = (i: string) => [`${i}rightSegments:`, `${i}  - session_name`];
+const OPTIONS = (i: string) => [
+  `${i}segmentOptions:`,
+  `${i}  model:`,
+  `${i}    showThinkingLevel: true`,
+  `${i}  path:`,
+  `${i}    abbreviate: true`,
+  `${i}    maxLength: 40`,
+  `${i}    stripWorkPrefix: true`,
+  `${i}  git:`,
+  `${i}    showBranch: true`,
+  `${i}    showStaged: true`,
+  `${i}    showUnstaged: true`,
+  `${i}    showUntracked: true`,
+];
+const FULL = (i: string) =>
+  [...PRESET(i), ...LEFT(i), ...RIGHT(i), ...OPTIONS(i)].join('\n');
 
-  it('writes omp’s default left list plus status where the host has no statusLine', () => {
+describe('ensureStatusSegment', () => {
+  const OMP = adapterByName('omp').statusSegment as StatusSegmentHost;
+  const ensure = (path: string, dry = false) =>
+    ensureStatusSegment(path, OMP, { dry });
+  const CUSTOM_LEFT = ['vim', 'model', 'mode', 'path', 'git', 'pr'];
+
+  it('appends the default preset’s whole layout under custom where the host has no statusLine', () => {
     const host = '# host config\ntheme: dark\nmodelRoles:\n  default: "@x"\n';
     const f = file('config.yml', host);
-    const r = ensureStatusSegment(f.path);
-    expect(r).toMatchObject({ state: 'added', wrote: true, written: DEFAULTS });
-    expect(f.read()).toBe(`${host}statusLine:\n${block('  ', '    ')}\n`);
-    expect(DEFAULTS).toEqual([
-      'vim',
-      'model',
-      'mode',
-      'path',
-      'git',
-      'pr',
-      'status',
+    const r = ensure(f.path);
+    expect(r).toMatchObject({ state: 'added', wrote: true });
+    expect(r.written).toEqual([
+      'preset: custom',
+      `leftSegments: ${DEFAULT_LEFT.join(', ')}`,
+      'rightSegments: session_name',
+      'segmentOptions: model, path, git',
     ]);
+    expect(f.read()).toBe(`${host}statusLine:\n${FULL('  ')}\n`);
   });
 
   it('creates the file where the host has no config, and appends after an unterminated last line', () => {
     const absent = file('agent/config.yml', null);
-    ensureStatusSegment(absent.path);
-    expect(absent.read()).toBe(`statusLine:\n${block('  ', '    ')}\n`);
+    ensure(absent.path);
+    expect(absent.read()).toBe(`statusLine:\n${FULL('  ')}\n`);
 
     const cut = file('config.yml', 'theme: dark');
-    ensureStatusSegment(cut.path);
-    expect(cut.read()).toBe(
-      `theme: dark\nstatusLine:\n${block('  ', '    ')}\n`,
-    );
+    ensure(cut.path);
+    expect(cut.read()).toBe(`theme: dark\nstatusLine:\n${FULL('  ')}\n`);
   });
 
-  it('inserts the list into a statusLine that has none, at that mapping’s own indentation', () => {
+  it('fills in a statusLine with no preset after its last entry, at its own indentation, keeping every key the host set', () => {
     const f = file(
       'config.yml',
-      'statusLine:\n   preset: custom # mine\n   separator: pipe\ntheme: dark\n',
+      'statusLine:\n   separator: pipe # mine\n   transparent: true\ntheme: dark\n',
     );
-    ensureStatusSegment(f.path);
+    expect(ensure(f.path).state).toBe('added');
     expect(f.read()).toBe(
-      `statusLine:\n   preset: custom # mine\n   separator: pipe\n${block('   ', '     ')}\ntheme: dark\n`,
+      `statusLine:\n   separator: pipe # mine\n   transparent: true\n${FULL('   ')}\ntheme: dark\n`,
     );
   });
 
-  it('appends status to the host’s own block list, changing no other byte', () => {
+  it('keeps a leftSegments, rightSegments and segmentOptions the host wrote under no preset, adding only the preset and the segment', () => {
+    // The host wrote these under the default preset, which ignored them; under custom
+    // they are what the host said, so they stay exactly as written.
     const host =
-      '# top\nstatusLine:\n  preset: custom\n  leftSegments:\n    - pi # brand\n    - "model"\n    - path\n  rightSegments:\n    - cost\ntheme: dark\n';
+      'statusLine:\n  leftSegments:\n    - model\n  rightSegments:\n    - cost\n  segmentOptions:\n    path:\n      maxLength: 10\n';
     const f = file('config.yml', host);
-    const r = ensureStatusSegment(f.path);
-    expect(r).toMatchObject({ state: 'added', written: ['status'] });
+    expect(ensure(f.path).written).toEqual([
+      'preset: custom',
+      'leftSegments: + status',
+    ]);
     expect(f.read()).toBe(
-      host.replace('    - path\n', '    - path\n    - status\n'),
+      `${host.replace('    - model\n', '    - model\n    - status\n')}  preset: custom\n`,
     );
   });
 
-  it('reads a list whose items sit at the key’s own indentation, and keeps the file’s line ending', () => {
+  it('puts the appended segment straight after a list that closes the block, then the rest', () => {
     const f = file(
       'config.yml',
-      'statusLine:\r\n  leftSegments:\r\n  - vim\r\n  - model\r\ntheme: dark\r\n',
+      'statusLine:\n  leftSegments:\n    - vim\ntheme: dark\n',
     );
-    ensureStatusSegment(f.path);
+    ensure(f.path);
     expect(f.read()).toBe(
-      'statusLine:\r\n  leftSegments:\r\n  - vim\r\n  - model\r\n  - status\r\ntheme: dark\r\n',
+      `statusLine:\n  leftSegments:\n    - vim\n    - status\n${[
+        ...PRESET('  '),
+        ...RIGHT('  '),
+        ...OPTIONS('  '),
+      ].join('\n')}\ntheme: dark\n`,
+    );
+    // The same with a flow list on the file's unterminated last line.
+    const flow = file('config.yml', 'statusLine:\n  leftSegments: [vim]');
+    ensure(flow.path);
+    expect(flow.read()).toBe(
+      `statusLine:\n  leftSegments: [vim, status]\n${[
+        ...PRESET('  '),
+        ...RIGHT('  '),
+        ...OPTIONS('  '),
+      ].join('\n')}`,
     );
   });
 
-  it.each([
-    ['[vim, model]', '[vim, model, status]'],
-    ['[vim, model ] # mine', '[vim, model, status ] # mine'],
-    ['[vim,]', '[vim, status]'],
-    ['[]', '[status]'],
-    ['["vim"]', '["vim", status]'],
-  ])('appends status to a one-line flow list %s', (before, after) => {
-    const f = file('config.yml', `statusLine:\n  leftSegments: ${before}\n`);
-    expect(ensureStatusSegment(f.path).state).toBe('added');
-    expect(f.read()).toBe(`statusLine:\n  leftSegments: ${after}\n`);
+  it('writes only the preset for a host whose no-preset layout already lists status', () => {
+    const host =
+      'statusLine:\n  leftSegments: [vim, status]\n  rightSegments: []\n  segmentOptions: {}\n';
+    const f = file('config.yml', host);
+    expect(ensure(f.path).written).toEqual(['preset: custom']);
+    expect(f.read()).toBe(`${host}  preset: custom\n`);
+  });
+
+  describe('on the custom preset', () => {
+    const custom = (rest: string) => `statusLine:\n  preset: custom\n${rest}`;
+
+    it('inserts omp’s custom left list plus status where the host lists none, and nothing else', () => {
+      const f = file('config.yml', custom('  separator: pipe\ntheme: dark\n'));
+      const r = ensure(f.path);
+      expect(r.written).toEqual([
+        `leftSegments: ${[...CUSTOM_LEFT, 'status'].join(', ')}`,
+      ]);
+      expect(f.read()).toBe(
+        custom(
+          `  separator: pipe\n${LEFT_OF('  ', [...CUSTOM_LEFT, 'status']).join('\n')}\ntheme: dark\n`,
+        ),
+      );
+    });
+
+    it('appends status to the host’s own block list, changing no other byte', () => {
+      const host = custom(
+        '  leftSegments:\n    - pi # brand\n    - "model"\n    - path\n  rightSegments:\n    - cost\ntheme: dark\n',
+      );
+      const f = file('config.yml', `# top\n${host}`);
+      const r = ensure(f.path);
+      expect(r).toMatchObject({
+        state: 'added',
+        written: ['leftSegments: + status'],
+      });
+      expect(f.read()).toBe(
+        `# top\n${host.replace('    - path\n', '    - path\n    - status\n')}`,
+      );
+    });
+
+    it('reads a list whose items sit at the key’s own indentation, and keeps the file’s line ending', () => {
+      const f = file(
+        'config.yml',
+        'statusLine:\r\n  preset: custom\r\n  leftSegments:\r\n  - vim\r\n  - model\r\ntheme: dark\r\n',
+      );
+      ensure(f.path);
+      expect(f.read()).toBe(
+        'statusLine:\r\n  preset: custom\r\n  leftSegments:\r\n  - vim\r\n  - model\r\n  - status\r\ntheme: dark\r\n',
+      );
+    });
+
+    it.each([
+      ['[vim, model]', '[vim, model, status]'],
+      ['[vim, model ] # mine', '[vim, model, status ] # mine'],
+      ['[vim,]', '[vim, status]'],
+      ['[]', '[status]'],
+      ['["vim"]', '["vim", status]'],
+    ])('appends status to a one-line flow list %s', (before, after) => {
+      const f = file('config.yml', custom(`  leftSegments: ${before}\n`));
+      expect(ensure(f.path).state).toBe('added');
+      expect(f.read()).toBe(custom(`  leftSegments: ${after}\n`));
+    });
+
+    it.each([
+      ['a block list', '  leftSegments:\n    - vim\n    - status\n    - pr\n'],
+      ['a quoted item', '  leftSegments:\n    - vim\n    - "status" # here\n'],
+      ['a flow list', '  leftSegments: [vim, status, pr]\n'],
+      ['a quoted flow item', "  leftSegments: ['status']\n"],
+    ])(
+      'leaves a host that already lists status (%s) byte-identical',
+      (_n, rest) => {
+        const host = custom(rest);
+        const f = file('config.yml', host);
+        expect(ensure(f.path)).toMatchObject({
+          state: 'present',
+          wrote: false,
+        });
+        expect(f.read()).toBe(host);
+      },
+    );
+
+    it('does not mistake a longer segment name for status', () => {
+      const f = file(
+        'config.yml',
+        custom('  leftSegments:\n    - status_bar\n'),
+      );
+      expect(ensure(f.path).state).toBe('added');
+      expect(f.read()).toBe(
+        custom('  leftSegments:\n    - status_bar\n    - status\n'),
+      );
+    });
+
+    it('accepts the preset quoted', () => {
+      const f = file(
+        'config.yml',
+        'statusLine:\n  preset: "custom" # mine\n  leftSegments: [vim]\n',
+      );
+      expect(ensure(f.path).state).toBe('added');
+      expect(f.read()).toBe(
+        'statusLine:\n  preset: "custom" # mine\n  leftSegments: [vim, status]\n',
+      );
+    });
   });
 
   it.each([
-    [
-      'a block list',
-      'statusLine:\n  leftSegments:\n    - vim\n    - status\n    - pr\n',
-    ],
-    [
-      'a quoted item',
-      'statusLine:\n  leftSegments:\n    - vim\n    - "status" # here\n',
-    ],
-    ['a flow list', 'statusLine:\n  leftSegments: [vim, status, pr]\n'],
-    ['a quoted flow item', "statusLine:\n  leftSegments: ['status']\n"],
+    ['minimal', 'minimal', 'minimal'],
+    ['a quoted name', '"compact" # mine', 'compact'],
+    ['default written out', 'default', 'default'],
+    ['a name omp does not know', 'nonesuch', 'nonesuch'],
   ])(
-    'leaves a host that already lists status (%s) byte-identical',
-    (_n, host) => {
+    'leaves a host on another preset (%s) byte-identical and names it',
+    (_n, value, name) => {
+      const host = `statusLine:\n  preset: ${value}\n  leftSegments:\n    - vim\n`;
       const f = file('config.yml', host);
-      const r = ensureStatusSegment(f.path);
-      expect(r).toMatchObject({ state: 'present', wrote: false });
+      const r = ensure(f.path);
+      expect(r).toMatchObject({ state: 'other-preset', wrote: false });
+      expect(r.preset).toBe(name);
       expect(f.read()).toBe(host);
     },
   );
 
-  it('does not mistake a longer segment name for status', () => {
-    const f = file(
-      'config.yml',
-      'statusLine:\n  leftSegments:\n    - status_bar\n',
-    );
-    expect(ensureStatusSegment(f.path).state).toBe('added');
-    expect(f.read()).toBe(
-      'statusLine:\n  leftSegments:\n    - status_bar\n    - status\n',
-    );
-  });
-
   it('reports what it would add and writes nothing under dry-run', () => {
-    const host = 'statusLine:\n  leftSegments: [vim]\n';
+    const host = 'statusLine:\n  preset: custom\n  leftSegments: [vim]\n';
     const f = file('config.yml', host);
-    expect(ensureStatusSegment(f.path, { dry: true })).toMatchObject({
+    expect(ensure(f.path, true)).toMatchObject({
       state: 'added',
       wrote: false,
-      written: ['status'],
+      written: ['leftSegments: + status'],
     });
     expect(f.read()).toBe(host);
+    const none = file('config.yml', 'theme: dark\n');
+    expect(ensure(none.path, true).written).toContain('preset: custom');
+    expect(none.read()).toBe('theme: dark\n');
     const absent = file('config.yml', null);
-    expect(ensureStatusSegment(absent.path, { dry: true }).written).toEqual(
-      DEFAULTS,
-    );
+    expect(ensure(absent.path, true).state).toBe('added');
     expect(absent.read()).toBeNull();
   });
 
   it.each([
     ['a flow mapping', 'statusLine: {preset: custom}\n'],
     ['an alias', 'statusLine: *shared\n'],
-    ['a scalar leftSegments', 'statusLine:\n  leftSegments: vim\n'],
-    ['a null leftSegments', 'statusLine:\n  leftSegments:\nother: 1\n'],
+    ['a null statusLine', 'statusLine: ~\n'],
+    [
+      'a scalar leftSegments',
+      'statusLine:\n  preset: custom\n  leftSegments: vim\n',
+    ],
+    [
+      'a null leftSegments',
+      'statusLine:\n  preset: custom\n  leftSegments:\nother: 1\n',
+    ],
     [
       'a multi-line flow list',
-      'statusLine:\n  leftSegments: [vim,\n    model]\n',
+      'statusLine:\n  preset: custom\n  leftSegments: [vim,\n    model]\n',
+    ],
+    ['a preset that is a list', 'statusLine:\n  preset: [custom]\n'],
+    [
+      'a preset with no value',
+      'statusLine:\n  preset:\n  leftSegments: [vim]\n',
     ],
     ['a document that is not a mapping', '- a\n- b\n'],
   ])('refuses %s, leaving the file as it was', (_name, host) => {
     const f = file('config.yml', host);
-    const r = ensureStatusSegment(f.path);
+    const r = ensure(f.path);
     expect(r.state).toBe('refused');
     expect(r.refused).toBeTruthy();
     expect(f.read()).toBe(host);
@@ -459,45 +598,53 @@ describe('install — the status line', () => {
   });
 
   describe('omp', () => {
-    it('writes omp’s default left list plus status where the host has no statusLine', async () => {
-      expect(await install('omp')).toBe(0);
-      const text = readFileSync(ompConfig(), 'utf8');
-      expect(text).toContain(
-        'statusLine:\n  leftSegments:\n    - vim\n    - model\n    - mode\n    - path\n    - git\n    - pr\n    - status\n',
-      );
-      expect(out).toContain('added vim, model, mode, path, git, pr, status');
-    });
-
-    it('appends status to a host list without it, changing no other byte, and a second install changes none', async () => {
-      const host =
-        '# mine\nstatusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n';
+    const seed = (host: string) => {
       mkdirSync(dirname(ompConfig()), { recursive: true });
       writeFileSync(ompConfig(), host);
+      return () => readFileSync(ompConfig(), 'utf8');
+    };
+    // The entries install also seeds in `modelRoles` are its own; a host that has them
+    // already sees the status line and nothing else change.
+    const ROLES =
+      'modelRoles:\n  default: "@default"\n  implementer: "@task"\n  planner: "@plan"\n  architect: "@default"\n  assayer: "@default"\n';
+
+    it('moves a host with no statusLine to custom with the default preset’s own layout plus status', async () => {
       expect(await install('omp')).toBe(0);
-      const after = readFileSync(ompConfig(), 'utf8');
-      // The role entries install also adds are its own; the status line is the host's
-      // list plus one line.
-      expect(after).toContain(
-        '  leftSegments:\n    - pi\n    - model\n    - status\ntheme: dark\n',
+      expect(readFileSync(ompConfig(), 'utf8')).toContain(
+        `statusLine:\n${FULL('  ')}\n`,
       );
-      expect(after.replace('    - status\n', '')).not.toContain('- status');
+      expect(out).toContain('added preset: custom; leftSegments: pi, vim');
+    });
+
+    it('appends status to a host already on custom, changing no other byte, and a second install changes none', async () => {
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n`;
+      const read = seed(host);
       expect(await install('omp')).toBe(0);
-      expect(readFileSync(ompConfig(), 'utf8')).toBe(after);
+      expect(read()).toBe(
+        host.replace('    - model\n', '    - model\n    - status\n'),
+      );
+      const after = read();
+      out = '';
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(after);
       expect(out).toContain('`status` already listed');
     });
 
-    it('leaves a host that already lists status byte-identical, and writes nothing under --dry-run', async () => {
-      const host =
-        'modelRoles:\n  default: "@default"\n  implementer: "@task"\n  planner: "@plan"\n  architect: "@default"\n  assayer: "@default"\nstatusLine:\n  leftSegments: [pi, status]\n';
-      mkdirSync(dirname(ompConfig()), { recursive: true });
-      writeFileSync(ompConfig(), host);
+    it('leaves a host on another named preset byte-identical and says what would show the badge', async () => {
+      const host = `${ROLES}statusLine:\n  preset: minimal\n`;
+      const read = seed(host);
       expect(await install('omp')).toBe(0);
-      expect(readFileSync(ompConfig(), 'utf8')).toBe(host);
+      expect(read()).toBe(host);
+      expect(out).toContain('preset `minimal`');
+      expect(out).toContain('`preset: custom`');
+    });
 
+    it('writes nothing under --dry-run, and says what it would add', async () => {
       const bare = 'theme: dark\n';
-      writeFileSync(ompConfig(), bare);
+      const read = seed(bare);
       expect(await install('omp', { dryRun: true })).toBe(0);
-      expect(readFileSync(ompConfig(), 'utf8')).toBe(bare);
+      expect(read()).toBe(bare);
+      expect(out).toContain('would add preset: custom');
     });
   });
 });

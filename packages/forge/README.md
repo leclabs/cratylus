@@ -316,18 +316,23 @@ running persona there, prints that persona's badge file when one was placed (pla
 has a badge; the worker holds no persona list) and prints nothing otherwise. Given the host's own
 command as its one argument it runs that on the same input and puts the badge and a space before the
 first line of its output. It fails open without `jq`. The port declares the worker as `statusLine`
-(`file`, and the `command` that runs it, written against `$HOME`); a harness without it takes segments
-instead.
+(`file`, and the `command` that runs it, written against `$HOME`). A harness whose status line is a
+list of segments declares `statusSegment` instead (omp's): the host config files that hold the layout,
+the segment an extension's status renders in, the layout in effect when the host names no preset, and
+the left list the `custom` preset falls back to.
 
 Making the host's status line show the badge is install's, in `deploy/status-line.ts`, after a
 successful deploy and only when personas were installed. `ensureBadgeStatusLine` sets the worker as
 `statusLine` where the host has none, keeps a status line that already is the worker, and leaves any
 other byte-identical, offering `--wrap-status-line`; with the flag it rewrites `command` to the worker
 with the host's command as one single-quoted argument and keeps every other key, and a second run
-wraps nothing twice. `ensureStatusSegment` edits omp's config as text, as `addModelRoles` does: no
-`statusLine` appends omp's default left list plus `status`, a list without `status` gets it appended
-after its last item, and a list that has it is untouched; a shape it cannot extend is reported and
-left. omp applies `leftSegments` only under `statusLine.preset: custom`. Both honour `--dry-run`.
+wraps nothing twice. `ensureStatusSegment` edits omp's config as text, as `addModelRoles` does, and
+shares its line helpers (`deploy/yaml-lines.ts`). omp reads a segment list only under
+`statusLine.preset: custom`, so a host with no preset gets `preset: custom` with the default preset's
+layout written out (left plus `status`, right, segment options; a key the host set is kept), a host on
+`custom` gets `status` appended to its list, and a host on any other named preset is left
+byte-identical and told the addition. A shape it cannot extend is reported and left. Both honour
+`--dry-run`.
 
 ### `cratylus explain [agent]`
 

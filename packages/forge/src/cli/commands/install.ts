@@ -27,7 +27,6 @@ import pc from 'picocolors';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
-  type RoleRouting,
   adapterByName,
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
@@ -301,17 +300,15 @@ async function askOnTerminal(question: string): Promise<boolean> {
   }
 }
 
-/** The host config file omp reads its settings from, and so the one to edit: the
- *  FIRST that exists, because omp ignores the rest; a host with none gets the first,
- *  and never a file that would shadow one it already has. */
+/** The host config file a harness reads its settings from, and so the one to edit: the
+ *  FIRST that exists, because the harness ignores the rest; a host with none gets the
+ *  first, and never a file that would shadow one it already has. */
 function hostConfigPath(
   adapter: HarnessAdapter,
-  routing: RoleRouting,
+  configRels: readonly string[],
   home: string,
 ): string {
-  const candidates = routing.configRels.map((rel) =>
-    join(home, adapter.home, rel),
-  );
+  const candidates = configRels.map((rel) => join(home, adapter.home, rel));
   return candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
 }
 
@@ -320,12 +317,15 @@ function hostConfigPath(
  * say what was done. Nothing is placed when no persona was installed, so there is no
  * badge to show.
  *
- * The two harnesses' status lines differ in kind. Claude Code's is ONE command
- * (`adapter.statusLine` declares the worker that fills it): set where the host has
- * none, and never replaced where it has one — only offered a wrap, done under
- * `--wrap-status-line`. omp's is a list of segments, which shows an extension's
- * status only where it lists `status`: install adds it to the config file omp reads.
- * Either failure to edit is reported and the install itself still succeeds.
+ * The two harnesses' status lines differ in kind, and each declares its own on the
+ * port. Claude Code's is ONE command (`adapter.statusLine` names the worker that
+ * fills it): set where the host has none, and never replaced where it has one — only
+ * offered a wrap, done under `--wrap-status-line`. omp's is a list of segments
+ * (`adapter.statusSegment`), which shows an extension's status only where it lists
+ * `status`: install adds it to the layout in the config file the harness reads, moving
+ * a host on the default preset to the `custom` one that reads a list at all, and
+ * leaving a host on any other named preset as it is. Either failure to edit is
+ * reported and the install itself still succeeds.
  */
 function showPersonaBadge(
   adapter: HarnessAdapter,
@@ -380,26 +380,36 @@ function showPersonaBadge(
     }
   }
 
-  // The one harness whose status line takes segments. Its config file is the one its
-  // role routing already names, because that is the file omp reads settings from.
-  if (adapter.name === 'omp' && adapter.roleRouting !== undefined) {
-    const path = hostConfigPath(adapter, adapter.roleRouting, opts.home);
-    const result = ensureStatusSegment(path, { dry });
-    if (result.state === 'refused') {
-      refused(
-        path,
-        result.refused as string,
-        'The persona badge renders beneath the status line, not in it.',
-      );
-      return;
+  // A harness whose status line is a list of segments: list the one the badge renders
+  // in, in the file the harness reads its layout from.
+  const host = adapter.statusSegment;
+  if (host !== undefined) {
+    const path = hostConfigPath(adapter, host.configRels, opts.home);
+    const result = ensureStatusSegment(path, host, { dry });
+    switch (result.state) {
+      case 'refused':
+        refused(
+          path,
+          result.refused as string,
+          'The persona badge renders beneath the status line, not in it.',
+        );
+        return;
+      case 'present':
+        say(
+          `  statusLine: ${path} — \`${host.segment}\` already listed in leftSegments`,
+        );
+        return;
+      case 'other-preset':
+        say(
+          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is. To show it in the line, set \`preset: custom\` and list \`${host.segment}\` in \`leftSegments\``,
+        );
+        return;
+      case 'added':
+        say(
+          `  statusLine${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join('; ')}`,
+        );
+        return;
     }
-    if (result.state === 'present') {
-      say(`  statusLine.leftSegments: ${path} — \`status\` already listed`);
-      return;
-    }
-    say(
-      `  statusLine.leftSegments${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join(', ')}`,
-    );
   }
 }
 
@@ -417,7 +427,7 @@ function seedModelRoles(
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
-  const path = hostConfigPath(adapter, routing, home);
+  const path = hostConfigPath(adapter, routing.configRels, home);
   const result = addModelRoles(
     path,
     heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),

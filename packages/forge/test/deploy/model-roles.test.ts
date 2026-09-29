@@ -329,11 +329,9 @@ describe('install — the host modelRoles', () => {
 
   // Install also makes omp's status line list the `status` segment the persona badge
   // renders in (status-line.test.ts owns that). These cases are about `modelRoles`, so
-  // they read the config without the block a host with no `statusLine` gets.
-  const STATUS_BLOCK =
-    'statusLine:\n  leftSegments:\n    - vim\n    - model\n    - mode\n    - path\n    - git\n    - pr\n    - status\n';
+  // they read the config without the `statusLine:` block a host with none gets.
   const withoutStatusLine = (path: string) =>
-    readFileSync(path, 'utf8').replace(STATUS_BLOCK, '');
+    readFileSync(path, 'utf8').replace(/^statusLine:\n(?: {2}.*\n)+/m, '');
 
   it('adds the four held roles, reports each with its alias and the path, and changes nothing else', async () => {
     writeFileSync(config(), HOST);

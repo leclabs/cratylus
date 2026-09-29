@@ -19,6 +19,12 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import {
+  inlineValue,
+  isBlankOrComment,
+  keyOf,
+  splitLines,
+} from './yaml-lines.js';
 
 /** One mapping the host should have: the role, and the alias or model it routes to. */
 export interface ModelRoleEntry {
@@ -45,11 +51,6 @@ export interface AddModelRolesResult {
 }
 
 const PLAIN_KEY = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
-// One `key:` at the head of a line — quoted or plain. A plain key may not open with
-// a YAML indicator, which is what keeps `- item`, `[a]`, `{a: b}` and `&a x: y`
-// from reading as keys.
-const TOP_LEVEL_KEY =
-  /^(?:"([^"]*)"|'([^']*)'|((?!-(?:[ \t]|$))[^\s#'"[\]{}?&*!|>%@`,][^:#]*?))[ \t]*:(?:[ \t]|$)/;
 
 /** The whole line an entry occupies, without its terminator. */
 export function modelRoleLine(entry: ModelRoleEntry, indent: string): string {
@@ -57,36 +58,6 @@ export function modelRoleLine(entry: ModelRoleEntry, indent: string): string {
     ? entry.role
     : JSON.stringify(entry.role);
   return `${indent}${key}: ${JSON.stringify(entry.value)}`;
-}
-
-/** `[text, terminator]` for each line, so the file's own line endings are kept. */
-function splitLines(text: string): [string, string][] {
-  const lines: [string, string][] = [];
-  const re = /([^\r\n]*)(\r\n|\n|\r|$)/gy;
-  let m: RegExpExecArray | null = re.exec(text);
-  while (m !== null && m.index < text.length) {
-    lines.push([m[1] as string, m[2] as string]);
-    m = re.exec(text);
-  }
-  return lines;
-}
-
-/** Whether a line carries nothing a YAML reader would take as content. */
-function isBlankOrComment(line: string): boolean {
-  const t = line.trim();
-  return t === '' || t.startsWith('#');
-}
-
-/** The key a `key: value` line names, or `undefined` when it is not one. */
-function keyOf(content: string): string | undefined {
-  const m = TOP_LEVEL_KEY.exec(content);
-  if (m === null) return undefined;
-  return (m[1] ?? m[2] ?? m[3] ?? '').trim();
-}
-
-/** The value text on a line after its key's colon, comment removed. */
-function inlineValue(afterColon: string): string {
-  return afterColon.replace(/(^|[ \t])#.*$/, '').trim();
 }
 
 /**

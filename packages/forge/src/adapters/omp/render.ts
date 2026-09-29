@@ -104,6 +104,7 @@ import {
   type RoleRouting,
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
+  type StatusSegmentHost,
 } from '../../core/harness-adapter.js';
 import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
@@ -251,14 +252,62 @@ const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
   planner: 'plan',
 };
 
+/** The host config files omp reads its settings from — the ONE spelling, shared by
+ *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
+ *  config.yml is absent: omp reads the first that exists and never merges the two. */
+const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
+
 /** omp's role → model routing: the table {@link HarnessAdapter.roleRouting} exposes.
- *  The host keeps the mapping in `agent/config.yml` under its `modelRoles` key, or
- *  in `agent/config.yaml` when config.yml is absent — omp reads the first that
- *  exists and never merges the two. */
+ *  The host keeps the mapping in its config file under its `modelRoles` key. */
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
   nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
-  configRels: ['agent/config.yml', 'agent/config.yaml'],
+  configRels: OMP_CONFIG_RELS,
+};
+
+// ── Status line: where the persona badge renders ─────────────────────────────
+
+/** omp's status line, as {@link HarnessAdapter.statusSegment} exposes it. An extension's
+ *  status (`ctx.ui.setStatus`, which is how the persona badge speaks) renders inside
+ *  the line only where the layout lists `status`; omp's own layouts never do. The
+ *  layout is read from `statusLine.leftSegments` only under `statusLine.preset:
+ *  custom`, so a host that never chose a preset is on `default` — whose layout is what
+ *  `defaultLayout` copies, so a host moved to `custom` sees the line it already had.
+ *
+ *  These are omp's own defaults, copied and not imported: `STATUS_LINE_PRESETS.default`
+ *  (packages/tui/src/status-line/presets.ts) and `CUSTOM_STATUS_LINE_DEFAULTS.left`
+ *  (schema.ts). The `custom` preset's own separator is the default preset's, so no
+ *  separator is carried. */
+export const ompStatusSegment: StatusSegmentHost = {
+  configRels: OMP_CONFIG_RELS,
+  segment: 'status',
+  defaultLayout: {
+    left: [
+      'pi',
+      'vim',
+      'model',
+      'mode',
+      'collab',
+      'stream',
+      'path',
+      'git',
+      'pr',
+      'context_pct',
+      'cost',
+    ],
+    right: ['session_name'],
+    segmentOptions: {
+      model: { showThinkingLevel: true },
+      path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
+      git: {
+        showBranch: true,
+        showStaged: true,
+        showUnstaged: true,
+        showUntracked: true,
+      },
+    },
+  },
+  customLeft: ['vim', 'model', 'mode', 'path', 'git', 'pr'],
 };
 
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
@@ -1557,6 +1606,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // The role → model table: the definition names the role, install seeds the
   // host's `modelRoles` entry for it.
   roleRouting: ompRoleRouting,
+  statusSegment: ompStatusSegment,
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,

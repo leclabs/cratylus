@@ -511,10 +511,30 @@ export interface HarnessAdapter {
    * status line where the host has none, and appends the host's own command to it,
    * as one quoted argument, to wrap it.
    *
-   * Absent ⇒ this harness's status line takes segments (omp's does; install adds the
-   * `status` segment the badge renders in) or has no status line install could set.
+   * Absent ⇒ this harness's status line takes segments (omp's does: see
+   * {@link statusSegment}) or has no status line install could set.
    */
   readonly statusLine?: StatusLineWorker;
+  /**
+   * Where an extension's status appears in this harness's status line, for a harness
+   * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
+   * persona badge is an extension status, and it renders INSIDE the line only where
+   * the host's layout lists `segment` — otherwise beneath it. Install adds it, to the
+   * host's own layout and never over it.
+   *
+   * Four facts, all the harness's own. `configRels` is where the host keeps the
+   * layout, harness-home relative in the order the harness READS them (the first that
+   * exists, as {@link RoleRouting.configRels}). `segment` is the segment's id.
+   * `defaultLayout` is what the harness lays out when the host names no preset — the
+   * layout in effect on a host that never chose one, which has no `segment`, and
+   * which the harness reads segment lists from ONLY under its `custom` preset: so a
+   * host with no preset can show the badge only by choosing `custom`, and install
+   * then writes this layout under it so the line looks as it did. `customLeft` is
+   * the left list the `custom` preset falls back to when the host lists none.
+   *
+   * Absent ⇒ this harness has no segment list to add to.
+   */
+  readonly statusSegment?: StatusSegmentHost;
   /**
    * How this harness routes a MODEL by the ROLE an agent holds — the table that
    * lets a projected definition name its position ({@link Agent.holds}) and leaves
@@ -541,6 +561,29 @@ export interface StatusLineWorker {
   readonly file: string;
   /** The shell command that runs the placed worker, host command not yet appended. */
   readonly command: string;
+}
+
+/** A status-line layout: the segments each side lists, and the options they carry. */
+export interface StatusLayout {
+  readonly left: readonly string[];
+  readonly right: readonly string[];
+  /** Options per segment id, each a plain scalar. */
+  readonly segmentOptions: Readonly<
+    Record<string, Readonly<Record<string, string | number | boolean>>>
+  >;
+}
+
+/** Where an extension's status appears in a harness's status line. See
+ *  {@link HarnessAdapter.statusSegment}. */
+export interface StatusSegmentHost {
+  /** The host config files that hold the layout, harness-home relative, in read order. */
+  readonly configRels: readonly string[];
+  /** The segment an extension's status renders in. */
+  readonly segment: string;
+  /** The layout in effect when the host names no preset. */
+  readonly defaultLayout: StatusLayout;
+  /** The left segments the `custom` preset falls back to when the host lists none. */
+  readonly customLeft: readonly string[];
 }
 
 /** A harness's role → model routing table. See {@link HarnessAdapter.roleRouting}. */

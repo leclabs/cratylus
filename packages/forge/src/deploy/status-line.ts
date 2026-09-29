@@ -12,8 +12,11 @@
 //
 //   · OMP's status line is a list of segments, and an extension's status renders only
 //     where the host's layout lists the `status` segment (absent from omp's own
-//     layout; without it the status renders beneath the line). Install adds `status`
-//     to the host's `statusLine.leftSegments`. `ensureStatusSegment`.
+//     layouts; without it the status renders beneath the line). omp reads a segment
+//     list only under `statusLine.preset: custom`, so install lists `status` in the
+//     host's own `custom` layout, moves a host on the default preset to `custom` with
+//     that preset's layout written out, and leaves a host on any other named preset
+//     as it is. `ensureStatusSegment`.
 //
 // BOTH FILES ARE HOST-OWNED, so both are added to and never re-emitted. The YAML is
 // edited as text — whole lines inserted, no library reading it and none writing it —
@@ -28,6 +31,16 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import type {
+  StatusLayout,
+  StatusSegmentHost,
+} from '../core/harness-adapter.js';
+import {
+  inlineValue,
+  isBlankOrComment,
+  keyOf,
+  splitLines,
+} from './yaml-lines.js';
 
 // ── Claude Code: settings.json `statusLine` ─────────────────────────────────
 
@@ -162,40 +175,38 @@ export function ensureBadgeStatusLine(
   );
 }
 
-// ── omp: config.yml `statusLine.leftSegments` ───────────────────────────────
+// ── omp: config.yml `statusLine` ────────────────────────────────────────────
 
-/** The segment omp renders an extension's status in. */
-export const OMP_STATUS_SEGMENT = 'status';
-
-/** omp's own left segments for a custom layout (`CUSTOM_STATUS_LINE_DEFAULTS.left`):
- *  what the host has when it names none, so what a host with no list gets — plus
- *  {@link OMP_STATUS_SEGMENT}. */
-export const OMP_DEFAULT_LEFT_SEGMENTS: readonly string[] = [
-  'vim',
-  'model',
-  'mode',
-  'path',
-  'git',
-  'pr',
-];
+/** omp's own name for the preset that reads its segment lists from the host's config.
+ *  Under any other preset — the default one included — omp lays out the preset's own
+ *  segments and ignores `leftSegments` altogether. */
+const CUSTOM_PRESET = 'custom';
 
 /**
- *   - `added`   — `status` is now in `statusLine.leftSegments` (written, or under
- *                 `dry` would be): `wrote`d as omp's default list plus `status` when
- *                 the host had no list, and appended to the host's own list otherwise.
- *   - `present` — the list already has it; the file is as it was.
- *   - `refused` — a `statusLine` this cannot safely extend; the file is as it was.
+ *   - `added`        — the host's status line now lists the segment (written, or under
+ *                      `dry` would be); `written` says what went in.
+ *   - `present`      — the host is on `custom` and already lists it; the file is as it was.
+ *   - `other-preset` — the host chose a named preset other than `custom`, whose layout
+ *                      is the preset's own and has no such segment. Its choice is not
+ *                      ours to change: the file is as it was, and `preset` names it.
+ *   - `refused`      — a `statusLine` this cannot safely extend; the file is as it was.
  */
-export type StatusSegmentState = 'added' | 'present' | 'refused';
+export type StatusSegmentState =
+  | 'added'
+  | 'present'
+  | 'other-preset'
+  | 'refused';
 
 export interface StatusSegmentResult {
   readonly path: string;
   readonly state: StatusSegmentState;
   /** Whether the file was written. */
   readonly wrote: boolean;
-  /** The segment ids this put in the file — the whole default list when the host had
-   *  none, just `status` when it appended. Empty unless `added`. */
+  /** What this put in the file, one short description per key (`preset: custom`,
+   *  `leftSegments: …`). Empty unless `added`. */
   readonly written: readonly string[];
+  /** The preset the host is on, when `other-preset`. */
+  readonly preset?: string;
   /** Why the file was left untouched, when `refused`. */
   readonly refused?: string;
 }
@@ -205,48 +216,16 @@ export interface EnsureStatusSegmentOpts {
   readonly dry?: boolean;
 }
 
-// One `key:` at the head of a line, quoted or plain. A plain key may not open with a
-// YAML indicator, which is what keeps `- item`, `[a]`, `{a: b}` and `&a x: y` from
-// reading as keys.
-const KEY_LINE =
-  /^(?:"([^"]*)"|'([^']*)'|((?!-(?:[ \t]|$))[^\s#'"[\]{}?&*!|>%@`,][^:#]*?))[ \t]*:(?:[ \t]|$)/;
+/** An insertion after line `at`, or the replacement of line `at`'s text. */
+type Edit =
+  | { readonly at: number; readonly replace: string }
+  | { readonly at: number; readonly insert: readonly string[] };
+
 // A sequence entry: `-` alone, or `-` and a blank.
 const SEQ_ITEM = /^-(?:[ \t]|$)/;
 
-/** `[text, terminator]` for each line, so the file's own line endings are kept. */
-function splitLines(text: string): [string, string][] {
-  const lines: [string, string][] = [];
-  const re = /([^\r\n]*)(\r\n|\n|\r|$)/gy;
-  let m: RegExpExecArray | null = re.exec(text);
-  while (m !== null && m.index < text.length) {
-    lines.push([m[1] as string, m[2] as string]);
-    m = re.exec(text);
-  }
-  return lines;
-}
-
-const isBlankOrComment = (line: string): boolean => {
-  const t = line.trim();
-  return t === '' || t.startsWith('#');
-};
-
 const indentOf = (line: string): string =>
   (/^[ \t]*/.exec(line) as RegExpExecArray)[0];
-
-/** The key a line names, or `undefined` when it is not a `key:` line. */
-function keyOf(content: string): string | undefined {
-  const m = KEY_LINE.exec(content);
-  if (m === null) return undefined;
-  return (m[1] ?? m[2] ?? m[3] ?? '').trim();
-}
-
-/** What follows a key's colon, comment removed. */
-function inlineValue(content: string): string {
-  return content
-    .slice(content.indexOf(':') + 1)
-    .replace(/(^|[ \t])#.*$/, '')
-    .trim();
-}
 
 /** A scalar as YAML reads it: quotes removed, nothing else interpreted. `undefined`
  *  for anything that is not one — a flow collection, an anchor, an alias, a tag or a
@@ -258,37 +237,198 @@ function scalarOf(text: string): string | undefined {
   return q ? (q[1] ?? q[2] ?? '') : t;
 }
 
-/** The lines omp's default list plus `status` occupies, at `indent`. */
-function defaultListLines(indent: string, itemIndent: string): string[] {
+/** The value text of the `key: value` line `content` — what follows its colon. */
+const inlineOf = (content: string): string =>
+  inlineValue(content.slice(content.indexOf(':') + 1));
+
+/** `key:` and one `- item` line per item, the items one step in from `indent`. */
+function listLines(
+  key: string,
+  items: readonly string[],
+  indent: string,
+): string[] {
+  return [`${indent}${key}:`, ...items.map((item) => `${indent}  - ${item}`)];
+}
+
+/** `segmentOptions:` and its nested mapping, one step in per level. */
+function optionLines(options: StatusLayout['segmentOptions'], indent: string) {
   return [
-    `${indent}leftSegments:`,
-    ...[...OMP_DEFAULT_LEFT_SEGMENTS, OMP_STATUS_SEGMENT].map(
-      (id) => `${itemIndent}- ${id}`,
-    ),
+    `${indent}segmentOptions:`,
+    ...Object.entries(options).flatMap(([segment, opts]) => [
+      `${indent}  ${segment}:`,
+      ...Object.entries(opts).map(([k, v]) => `${indent}    ${k}: ${v}`),
+    ]),
   ];
 }
 
+/** What appending the segment to the block or one-line flow list at `listAt` takes:
+ *  nothing (already listed), a reason it cannot be done, or the edit. */
+function planListEdit(
+  lines: readonly (readonly [string, string])[],
+  listAt: number,
+  indent: string,
+  segment: string,
+):
+  | { readonly kind: 'present' }
+  | { readonly kind: 'refused'; readonly why: string }
+  | { readonly kind: 'edit'; readonly edit: Edit } {
+  const keyLine = (lines[listAt] as readonly [string, string])[0];
+  const value = inlineOf(keyLine.slice(indent.length));
+
+  // A one-line flow sequence: `[vim, model]`.
+  if (value !== '') {
+    const flow = /^\[(.*)\]$/.exec(value);
+    if (flow === null) {
+      return {
+        kind: 'refused',
+        why: '`leftSegments` is not a list this can extend (a scalar, anchor, alias, tag, or a flow list that is not on one line)',
+      };
+    }
+    const flowItems = (flow[1] as string)
+      .split(',')
+      .filter((s) => s.trim() !== '')
+      .map(scalarOf);
+    if (flowItems.includes(undefined)) {
+      return {
+        kind: 'refused',
+        why: '`leftSegments` holds an item this cannot read',
+      };
+    }
+    if (flowItems.includes(segment)) return { kind: 'present' };
+    // The segment goes before the closing bracket — the last one ahead of any comment.
+    const colon = keyLine.indexOf(':');
+    const comment = /[ \t]#/.exec(keyLine.slice(colon));
+    const close = keyLine.lastIndexOf(
+      ']',
+      comment ? colon + comment.index : keyLine.length,
+    );
+    const before = keyLine.slice(0, close);
+    const kept = before.trimEnd();
+    const sep = kept.endsWith('[') ? '' : kept.endsWith(',') ? ' ' : ', ';
+    return {
+      kind: 'edit',
+      edit: {
+        at: listAt,
+        replace: `${kept}${sep}${segment}${before.slice(kept.length)}${keyLine.slice(close)}`,
+      },
+    };
+  }
+
+  // A block sequence: the `- item` lines after the key.
+  let seqIndent: string | undefined;
+  let lastItem = -1;
+  const items: (string | undefined)[] = [];
+  for (let i = listAt + 1; i < lines.length; i++) {
+    const line = (lines[i] as readonly [string, string])[0];
+    if (isBlankOrComment(line)) continue;
+    const ind = indentOf(line);
+    const body = line.slice(ind.length);
+    const inList =
+      ind.length > indent.length ||
+      (ind.length === indent.length && SEQ_ITEM.test(body));
+    if (!inList) break;
+    if (seqIndent === undefined) {
+      if (!SEQ_ITEM.test(body)) {
+        return {
+          kind: 'refused',
+          why: '`leftSegments` is not a list of `- item` lines, so a segment cannot be added safely',
+        };
+      }
+      seqIndent = ind;
+    }
+    lastItem = i;
+    if (ind === seqIndent && SEQ_ITEM.test(body)) {
+      items.push(scalarOf(body.replace(/^-[ \t]*/, '')));
+    }
+  }
+  if (seqIndent === undefined) {
+    return {
+      kind: 'refused',
+      why: '`leftSegments` holds no list (null or empty), so a segment cannot be added safely',
+    };
+  }
+  if (items.some((s) => s === undefined || s === '')) {
+    return {
+      kind: 'refused',
+      why: '`leftSegments` holds an item this cannot read',
+    };
+  }
+  if (items.includes(segment)) return { kind: 'present' };
+  return {
+    kind: 'edit',
+    edit: { at: lastItem, insert: [`${seqIndent}- ${segment}`] },
+  };
+}
+
+/** The file's text with `edits` applied. Inserts that share a line are one insert, in
+ *  the order given. An insert after the file's last line, which carries no terminator,
+ *  gives that line one and leaves the new last line without — as the file ended. */
+function applyEdits(
+  lines: readonly (readonly [string, string])[],
+  edits: readonly Edit[],
+  eol: string,
+): string {
+  const out = lines.map(([t, e]) => [t, e] as [string, string]);
+  const inserts = new Map<number, string[]>();
+  for (const edit of edits) {
+    if ('replace' in edit) (out[edit.at] as [string, string])[0] = edit.replace;
+    else
+      inserts.set(edit.at, [...(inserts.get(edit.at) ?? []), ...edit.insert]);
+  }
+  // Bottom-up, so an insert never moves the line another is anchored to.
+  for (const [at, added] of [...inserts].sort((a, b) => b[0] - a[0])) {
+    const anchor = out[at] as [string, string];
+    const unterminated = anchor[1] === '';
+    if (unterminated) anchor[1] = eol;
+    out.splice(
+      at + 1,
+      0,
+      ...added.map(
+        (t, i) =>
+          [t, unterminated && i === added.length - 1 ? '' : eol] as [
+            string,
+            string,
+          ],
+      ),
+    );
+  }
+  return out.map(([t, e]) => t + e).join('');
+}
+
 /**
- * Make sure omp's `status` segment is in the host's `statusLine.leftSegments` in the
- * YAML file at `path`.
+ * Make the host's omp status line show an extension's status inline: list the harness's
+ * status segment (`host.segment`) in the layout, in the YAML file at `path`.
  *
- *  - the file has no `statusLine` ⇒ a `statusLine:` block holding omp's default left
- *    list plus `status` is appended at the end; the file is created when absent.
- *  - `statusLine` is a block mapping with no `leftSegments` ⇒ that list is inserted
- *    after the mapping's last entry, at the indentation its entries use.
- *  - `leftSegments` is a block sequence, or a one-line flow sequence, without `status`
- *    ⇒ `status` is appended to it, after the last item. Nothing is reordered,
- *    removed or requoted.
- *  - it already lists `status` ⇒ the file is not touched.
- *  - anything this cannot extend safely (a `statusLine` that is a flow mapping, a
- *    scalar, anchored or tagged; a `leftSegments` that is not a list; a list split
- *    across lines in flow style) ⇒ nothing is written and `refused` says why.
+ * omp reads a segment list only under `statusLine.preset: custom`, so what has to be
+ * written depends on the preset the host is on:
+ *
+ *  - NO PRESET SET — the harness's default preset is in effect, and its layout has no
+ *    such segment. `preset: custom` is added together with the default layout's own
+ *    left segments plus the segment, its right segments and its segment options, so
+ *    the line looks as it did with the badge added. A `leftSegments`, `rightSegments`
+ *    or `segmentOptions` the host already wrote is kept as it is (the segment is
+ *    appended to a list without it) and only the missing ones are filled in.
+ *  - `preset: custom` — the segment is appended to the host's `leftSegments` after its
+ *    last item, or, where the host lists none, `host.customLeft` plus the segment is
+ *    written. Nothing is reordered, removed or requoted. A list that has it is left.
+ *  - ANY OTHER PRESET (`default` written out included) — the host's choice; nothing is
+ *    written and `other-preset` names it.
+ *
+ * A file with no `statusLine` is the no-preset case, and is created when absent.
+ * Anything this cannot extend safely (a `statusLine` that is a flow mapping, a scalar,
+ * anchored or tagged; a `preset` that is not a plain scalar; a `leftSegments` that is
+ * not a list, or a flow list split across lines) is left, and `refused` says why.
+ * Every key the host set keeps its value, and every byte outside the inserted lines
+ * survives.
  */
 export function ensureStatusSegment(
   path: string,
+  host: StatusSegmentHost,
   opts: EnsureStatusSegmentOpts = {},
 ): StatusSegmentResult {
   const dry = opts.dry ?? false;
+  const segment = host.segment;
+  const layout = host.defaultLayout;
   const text = existsSync(path) ? readFileSync(path, 'utf8') : '';
   const lines = splitLines(text);
   const eol = lines.find(([, t]) => t !== '')?.[1] || '\n';
@@ -300,42 +440,15 @@ export function ensureStatusSegment(
     written: [],
     refused,
   });
-  const present: StatusSegmentResult = {
-    path,
-    state: 'present',
-    wrote: false,
-    written: [],
-  };
-  const finish = (next: string, written: string[]): StatusSegmentResult => {
+  const finish = (
+    next: string,
+    written: readonly string[],
+  ): StatusSegmentResult => {
     if (!dry) {
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, next);
     }
     return { path, state: 'added', wrote: !dry, written };
-  };
-  /** `inserted` lines go after line `last`; the anchor may be the file's last line and
-   *  carry no terminator, in which case it gains one and the new lines end the way the
-   *  file did — without. */
-  const insertAfter = (
-    last: number,
-    inserted: readonly string[],
-    written: string[],
-  ): StatusSegmentResult => {
-    const [anchorText, anchorEol] = lines[last] as [string, string];
-    const head = lines
-      .slice(0, last)
-      .map(([t, e]) => t + e)
-      .join('');
-    const tail = lines
-      .slice(last + 1)
-      .map(([t, e]) => t + e)
-      .join('');
-    return finish(
-      anchorEol === ''
-        ? `${head}${anchorText}${eol}${inserted.join(eol)}`
-        : `${head}${anchorText}${anchorEol}${inserted.join(eol)}${eol}${tail}`,
-      written,
-    );
   };
 
   // The top-level `statusLine` key — and, while looking, whether the document is a
@@ -362,17 +475,33 @@ export function ensureStatusSegment(
     }
   }
 
-  const written = [...OMP_DEFAULT_LEFT_SEGMENTS, OMP_STATUS_SEGMENT];
+  // What the default layout is, said key by key — for the file, and for the report.
+  const defaultLeft = [...layout.left, segment];
+  const layoutWritten = {
+    preset: `preset: ${CUSTOM_PRESET}`,
+    left: `leftSegments: ${defaultLeft.join(', ')}`,
+    right: `rightSegments: ${layout.right.join(', ')}`,
+    options: `segmentOptions: ${Object.keys(layout.segmentOptions).join(', ')}`,
+  };
 
-  // ── NO `statusLine`: append a block ───────────────────────────────────────────
+  // ── NO `statusLine`: append the default layout under `custom` ────────────────
   if (at === -1) {
     const lead = text === '' || /[\r\n]$/.test(text) ? '' : eol;
-    const block = ['statusLine:', ...defaultListLines('  ', '    ')];
-    return finish(`${text}${lead}${block.join(eol)}${eol}`, written);
+    const block = [
+      'statusLine:',
+      `  preset: ${CUSTOM_PRESET}`,
+      ...listLines('leftSegments', defaultLeft, '  '),
+      ...listLines('rightSegments', layout.right, '  '),
+      ...optionLines(layout.segmentOptions, '  '),
+    ];
+    return finish(
+      `${text}${lead}${block.join(eol)}${eol}`,
+      Object.values(layoutWritten),
+    );
   }
 
   // ── `statusLine` IS PRESENT ───────────────────────────────────────────────────
-  if (inlineValue((lines[at] as [string, string])[0]) !== '') {
+  if (inlineOf((lines[at] as [string, string])[0]) !== '') {
     return refuse(
       '`statusLine` holds an inline value (a flow mapping, scalar, anchor, alias or tag), which cannot be extended by inserting lines',
     );
@@ -381,7 +510,7 @@ export function ensureStatusSegment(
   // The block's own lines: every following line until one back at column 0.
   let entryIndent: string | undefined;
   let last = at; // the last line of the block that carries content
-  let listAt = -1; // the `leftSegments` line, when there is one
+  const keyAt = new Map<string, number>(); // each first-level key's first line
   for (let i = at + 1; i < lines.length; i++) {
     const line = (lines[i] as [string, string])[0];
     if (isBlankOrComment(line)) continue;
@@ -391,107 +520,78 @@ export function ensureStatusSegment(
       entryIndent = indent;
       if (keyOf(line.slice(indent.length)) === undefined) {
         return refuse(
-          '`statusLine` is not a mapping of `key: value` lines, so a list cannot be added safely',
+          '`statusLine` is not a mapping of `key: value` lines, so a layout cannot be added safely',
         );
       }
     }
     last = i;
     if (indent.length < entryIndent.length) {
       return refuse(
-        '`statusLine` has entries at inconsistent indentation, so a list cannot be added safely',
+        '`statusLine` has entries at inconsistent indentation, so a layout cannot be added safely',
       );
     }
-    if (
-      indent === entryIndent &&
-      keyOf(line.slice(indent.length)) === 'leftSegments' &&
-      listAt === -1
-    ) {
-      listAt = i;
-    }
+    const key =
+      indent === entryIndent ? keyOf(line.slice(indent.length)) : undefined;
+    if (key !== undefined && !keyAt.has(key)) keyAt.set(key, i);
   }
-
   const indent = entryIndent ?? '  ';
 
-  // ── NO `leftSegments`: insert omp's default list plus `status` ────────────────
-  if (listAt === -1) {
-    return insertAfter(last, defaultListLines(indent, `${indent}  `), written);
-  }
-
-  // ── `leftSegments` IS PRESENT ────────────────────────────────────────────────
-  const keyLine = (lines[listAt] as [string, string])[0];
-  const value = inlineValue(keyLine.slice(indent.length));
-
-  // A one-line flow sequence: `[vim, model]`.
-  if (value !== '') {
-    const flow = /^\[(.*)\]$/.exec(value);
-    if (flow === null) {
+  // WHICH PRESET the host is on decides what a segment list means.
+  const presetAt = keyAt.get('preset');
+  let preset: string | undefined;
+  if (presetAt !== undefined) {
+    const raw = inlineOf(
+      (lines[presetAt] as [string, string])[0].slice(indent.length),
+    );
+    preset = raw === '' ? undefined : scalarOf(raw);
+    if (preset === undefined) {
       return refuse(
-        '`leftSegments` is not a list this can extend (a scalar, anchor, alias, tag, or a flow list that is not on one line)',
+        '`preset` holds no plain value (a null, flow collection, anchor, alias or tag), so the layout in effect cannot be told',
       );
     }
-    const flowItems = (flow[1] as string)
-      .split(',')
-      .filter((s) => s.trim() !== '')
-      .map(scalarOf);
-    if (flowItems.includes(undefined)) {
-      return refuse('`leftSegments` holds an item this cannot read');
-    }
-    if (flowItems.includes(OMP_STATUS_SEGMENT)) return present;
-    // `status` goes before the closing bracket — the last one ahead of any comment.
-    const colon = keyLine.indexOf(':');
-    const comment = /[ \t]#/.exec(keyLine.slice(colon));
-    const close = keyLine.lastIndexOf(
-      ']',
-      comment ? colon + comment.index : keyLine.length,
-    );
-    const before = keyLine.slice(0, close);
-    const kept = before.trimEnd();
-    const sep = kept.endsWith('[') ? '' : kept.endsWith(',') ? ' ' : ', ';
-    const edited = `${kept}${sep}${OMP_STATUS_SEGMENT}${before.slice(kept.length)}${keyLine.slice(close)}`;
-    return finish(
-      lines.map(([t, e], i) => (i === listAt ? edited + e : t + e)).join(''),
-      [OMP_STATUS_SEGMENT],
-    );
+  }
+  if (preset !== undefined && preset !== CUSTOM_PRESET) {
+    return { path, state: 'other-preset', wrote: false, written: [], preset };
+  }
+  const onCustom = preset === CUSTOM_PRESET;
+
+  const edits: Edit[] = [];
+  const inserted: string[] = [];
+  const written: string[] = [];
+  if (!onCustom) {
+    inserted.push(`${indent}preset: ${CUSTOM_PRESET}`);
+    written.push(layoutWritten.preset);
   }
 
-  // A block sequence: the `- item` lines after the key.
-  let seqIndent: string | undefined;
-  let lastItem = -1;
-  const items: (string | undefined)[] = [];
-  for (let i = listAt + 1; i < lines.length; i++) {
-    const line = (lines[i] as [string, string])[0];
-    if (isBlankOrComment(line)) continue;
-    const ind = indentOf(line);
-    const body = line.slice(ind.length);
-    const inList =
-      ind.length > indent.length ||
-      (ind.length === indent.length && SEQ_ITEM.test(body));
-    if (!inList) break;
-    if (seqIndent === undefined) {
-      if (!SEQ_ITEM.test(body)) {
-        return refuse(
-          '`leftSegments` is not a list of `- item` lines, so a segment cannot be added safely',
-        );
-      }
-      seqIndent = ind;
-    }
-    lastItem = i;
-    if (ind === seqIndent && SEQ_ITEM.test(body)) {
-      items.push(scalarOf(body.replace(/^-[ \t]*/, '')));
+  const leftAt = keyAt.get('leftSegments');
+  if (leftAt === undefined) {
+    const left = onCustom ? [...host.customLeft, segment] : defaultLeft;
+    inserted.push(...listLines('leftSegments', left, indent));
+    written.push(`leftSegments: ${left.join(', ')}`);
+  } else {
+    const plan = planListEdit(lines, leftAt, indent, segment);
+    if (plan.kind === 'refused') return refuse(plan.why);
+    if (plan.kind === 'edit') {
+      edits.push(plan.edit);
+      written.push(`leftSegments: + ${segment}`);
     }
   }
-  if (seqIndent === undefined) {
-    return refuse(
-      '`leftSegments` holds no list (null or empty), so a segment cannot be added safely',
-    );
+  // The rest of the default layout is written only where the host lacks it, and only
+  // when the host is moving off the default preset: on `custom` the host's own choice
+  // — an absent key included — is what it has.
+  if (!onCustom) {
+    if (!keyAt.has('rightSegments')) {
+      inserted.push(...listLines('rightSegments', layout.right, indent));
+      written.push(layoutWritten.right);
+    }
+    if (!keyAt.has('segmentOptions')) {
+      inserted.push(...optionLines(layout.segmentOptions, indent));
+      written.push(layoutWritten.options);
+    }
   }
-  if (items.some((s) => s === undefined || s === '')) {
-    return refuse('`leftSegments` holds an item this cannot read');
+  if (inserted.length > 0) edits.push({ at: last, insert: inserted });
+  if (edits.length === 0) {
+    return { path, state: 'present', wrote: false, written: [] };
   }
-  if (items.includes(OMP_STATUS_SEGMENT)) return present;
-  return insertAfter(
-    lastItem,
-    [`${seqIndent}- ${OMP_STATUS_SEGMENT}`],
-    [OMP_STATUS_SEGMENT],
-  );
+  return finish(applyEdits(lines, edits, eol), written);
 }
