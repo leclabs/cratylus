@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NMF45T3ZE0GPVXZJB5AYYK",
+    "entity": "01M3NMF45T3ZE0GPVXZJB5AYYJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T03:48:51.002Z",
+    "reason": "surfaced reading the capability-docs diff",
+    "cause": "acceptance of unit capability-docs"
+  },
+  "payload": {
+    "title": "runtime knows no harness, yet ships a Claude strategy",
+    "kind": "question",
+    "topic": "architecture",
+    "body": "ARCHITECTURE's runtime section says the runtime 'knows no harness and no corpus', and the same section now names the event tap's Claude strategy, which writes Claude's settings format. The tension predates the capability-set wording (claude.ts and claude-serialize.ts have long lived in runtime); the new sentence only makes it visible. Either the strategy's harness knowledge belongs in forge's projection, or the ground sentence means 'knows no harness beyond a strategy's own target' and should say so.",
+    "blocks": []
+  }
+}
