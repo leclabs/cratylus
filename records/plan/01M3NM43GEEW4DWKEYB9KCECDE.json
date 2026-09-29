@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NM43GEEW4DWKEYB9KCECDE",
+    "entity": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T03:42:49.870Z",
+    "reason": "realize capability: no capability needs a session, so forge projects one plain shim for every capability and harness",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "name": "capability-set",
+    "realizes": [
+      "01M3NK67ET848PWDE5M474EV55"
+    ],
+    "state": "proposed"
+  }
+}

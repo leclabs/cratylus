@@ -1,0 +1,50 @@
+{
+  "envelope": {
+    "id": "01M3NM43P91JCEFPPY7P0AX37Y",
+    "entity": "01M3NM43P91JCEFPPY7P0AX37X",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T03:42:50.057Z",
+    "reason": "realize capability in the hand-authored docs, per the operator ruling of 2026-09-28",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "plan": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "spec": {
+      "name": "capability-docs",
+      "intent": "**Wave 0.** Realizes `capability` in the hand-authored docs, as the operator ruled on 2026-09-28.\n\nARCHITECTURE.md is ground and changes in four places only (line numbers at 63c5d9c3):\n- (a) Delete the section `### \\`memory\\` — a runtime strategy` (:122-125).\n- (b) Remove from the north-star graph the memory node (:165), its edges `memory --> runtime` (:171) and `cli --> memory` (:173), and its membership in the `support` class (:182).\n- (c) In `### \\`runtime\\` — mechanism`, replace the paragraph at :91-93, which says ports and strategies make every capability pluggable and selected by configuration. The new paragraph says the capabilities are built into the runtime and known when it is built, with no discovery and no plugins. Ports and strategies remain only where a capability's mechanism has interchangeable implementations: the event tap's Claude strategy.\n- (d) The fidelity ladder's `proxy` row (:49) cites a memory strategy. Give it a real proxy, such as the event tap installing into Claude's own hooks, or drop the example.\n\nNothing else in ARCHITECTURE.md changes: not any other paragraph, not the four properties, and not the divergence table, including the struck row at :210 that names `memory`. :148 keeps `cratylus memory encode`, because the ruling forbids touching it (a boundary finding). MODEL.md's BEING/FACE memory-home and canon's `dimensions/memory/*` are the agent-self concept, not the capability, and are not touched.\n\nOther docs that describe the capability set as it stood at 63c5d9c3:\n- `README.md:56`: the runtime row says 'capability ports and the runtime plugin contract'.\n- `packages/cli/README.md`: `cratylus memory encode` at :36; the operator's `capabilities`/`resolveFrom` keys at :52-53; the bundled set `@cratylus/memory` and how to declare a provider at :72-89.\n- `packages/canon/README.md:67-71`: says a `memory-consolidation-nudge` cell imports the runtime, but no file under `packages/canon/src` imports `@cratylus/runtime` at 63c5d9c3.\n- `packages/tooling/README.md:8`: 'forge and memory'.\n\nEach is rewritten to the four built-in capabilities. Describe the runtime config as it stands after `built-in-capabilities`: the corpus's parts and one stanza per harness, with no provider keys.\n\nNot here: the runtime README (`built-in-capabilities`), the forge README (`sessionless-shims`), CHANGELOGs, and `docs/cli/*` and `docs/research/*` (dated reports).",
+      "static": [
+        "`cratylus design show capability` at 63c5d9c3, and the operator ruling of 2026-09-28 as relayed in the dispatch.",
+        "`ARCHITECTURE.md` (whole file): what is ground and what is report.",
+        "`packages/cli/README.md`, `README.md`, `packages/canon/README.md:55-72`, `packages/tooling/README.md`.",
+        "`packages/runtime/src/capabilities/event-tap/claude.ts` header: what the Claude strategy of the event tap does, for the proxy example."
+      ],
+      "deps": [],
+      "outputs": [
+        "ARCHITECTURE.md",
+        "README.md",
+        "packages/cli/README.md",
+        "packages/canon/README.md",
+        "packages/tooling/README.md"
+      ],
+      "accept": [
+        "`git grep -n -E '^### `memory`|memory\\[|--> memory|memory -->|a memory strategy|pluggable|selected by configuration|schema,memory' -- ARCHITECTURE.md` prints nothing (measured at 63c5d9c3: lines 49, 92, 93, 122, 165, 171, 173, 182).",
+        "`awk '/^### `runtime` — mechanism/{f=1;next} /^### `forge`/{f=0} f' ARCHITECTURE.md | grep -c -E 'built into the runtime|Claude'` prints at least 2 (measured: 0).",
+        "Every hunk of `git diff -U0 63c5d9c3 -- ARCHITECTURE.md` has its old-file range inside line 49, lines 83–96, lines 121–126 or lines 159–183.",
+        "`git diff --quiet 63c5d9c3 -- MODEL.md packages/canon/src/dimensions/memory` exits 0.",
+        "`git grep -n -i 'plugin contract' -- README.md` prints nothing (measured: line 56).",
+        "`git grep -n -E \"memory|resolveFrom|runtimePlugin|operator.s keys\" -- packages/cli/README.md` prints nothing (measured at 63c5d9c3: lines 36, 52, 53, 73, 78, 79, 83, 89).",
+        "`git grep -n 'memory-consolidation-nudge' -- packages/canon/README.md` and `git grep -n -w memory -- packages/tooling/README.md` print nothing (measured: `canon/README.md:67`, `tooling/README.md:8`)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NK67ET848PWDE5M474EV55",
+      "version": "01M3NK67ET848PWDE5M474EV56",
+      "closure": {
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3"
+      }
+    }
+  }
+}
