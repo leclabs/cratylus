@@ -1,0 +1,61 @@
+{
+  "envelope": {
+    "id": "01M3NDHG90F11WFBV0XZ9NN40H",
+    "entity": "01M3ND9S473408PDSHQBWGZS3C",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ND9S473408PDSHQBWGZS3D"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T01:47:48.896Z",
+    "reason": "dispatched to an implementer",
+    "cause": "wave 0 of verb-flags-runtime-config"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "verb-flags",
+      "intent": "**Wave 0.** Realizes `verb flags` for the three domain capabilities, and builds the one refusal home every capability uses.\n\nThe concept (design at 63a012ce): the flags each capability verb takes, declared once beside the verb, for every capability the CLI routes. A flag the verb does not take is refused before the verb acts, so nothing is written. The refusal names the flag, the verb's nearest flag when one is close, and every flag the verb takes, and asks the caller to correct the call and run it again.\n\nCensus at 63a012ce (re-derive before citing):\n- The CLI routes every member of `CAPABILITIES` (`packages/runtime/src/capability.ts`: memory, eventTap, heartbeat, design, plan, note) to `runCli` (`packages/runtime/src/main.ts`). `design`, `plan` and `note` reach `dispatchDesign`, `dispatchPlan` and `dispatchNote`, which read flags through `parseArgv` (`packages/runtime/src/capabilities/plan/argv.ts`). None of them checks a flag against the verb, so an unknown flag is dropped without a word; `plan`'s `fieldsOf` also reads `--name`, `--state` and `--repin` for every verb that takes fields.\n- The only refusal today is memory's (`packages/memory/src/cli.ts`, `VERB_FLAGS` and `main`). It names the flags and prints usage lines, suggests no nearest flag, and its wording is its own. The `memory` and `eventTap` surfaces are adopted by the two wave-1 units; this unit builds what they import.\n\nBuild:\n1. `packages/runtime/src/verb-flags.ts`, the one home: the shape in which a capability declares its verbs' flags, and the refusal. Given a capability, a verb, the flags given and the flags the verb takes, it refuses a flag the verb does not take in one wording: the flag named; the nearest declared flag when one is close (closeness is this module's one rule, such as a small edit distance, and a flag far from every declared flag gets no suggestion); every flag the verb takes (saying so when it takes none); that nothing was written; and a request to correct the call and run it again. The wording speaks only domain words, because the verb-surface contract (`packages/runtime/test/verb-surface.ts`, `SUBSTRATE`) refuses substrate words such as `record`, `file` and `entity`. Export it as the subpath `@cratylus/runtime/verb-flags` (`package.json` `exports` and a `tsup.config.ts` entry) so `@cratylus/memory` can import it.\n2. `design`, `plan` and `note` each declare, once and beside their `VERBS`, the flags each verb takes, and refuse through the home before the verb reads anything else or writes. The flags a verb reads and the flags it declares are one set, and the declaration is where a flag is added. `--author`, `--reason` and `--cause` are declared on the verbs that write.\n3. Tests go in `design.test.ts`, `plan.test.ts` and `note.test.ts`. There is no new test file, because a new one must be classified in `packages/canon/test/gate-convicts.test.ts`, which no unit here owns. A leg per capability drives every verb with a flag it does not take through the `refusal` helper and asserts the refusal equals the home's text. An existing test that passes a flag its verb does not take is corrected; the declaration is never widened to admit it.\n4. `packages/runtime/README.md` gains the `./verb-flags` subpath row and one paragraph saying an unknown flag is refused, and how.\n5. `.changeset/verb-flags.md` names `@cratylus/runtime` and `cratylus`, since the CLI surface changes: an unknown flag on `design`, `plan` or `note` now refuses.\n\nNot here: the `memory` and `eventTap` surfaces (wave-1 units); the kernel's generic `dispatch.ts` `parseArgs`, which through the CLI reaches only `memory`, whose own `main` refuses; and moving `argv.ts` out of `plan/`, which is a note and not this concept.",
+      "static": [
+        "`cratylus design show 'verb flags'` at 63a012ce.",
+        "`packages/runtime/src/capabilities/plan/argv.ts`, `packages/runtime/src/capabilities/{design,plan,note}/dispatch.ts`: the parser and the three verb surfaces.",
+        "`packages/memory/src/cli.ts:141-201,1262-1287`: the one per-verb flag table and refusal that exists today, as precedent.",
+        "`packages/runtime/test/verb-surface.ts`: `refusal`, `SUBSTRATE`, `BY`, the contract every refusal keeps.",
+        "`packages/runtime/src/main.ts:133-156`: how a domain refusal reaches stderr (exit 1, `cratylus: <message>`).",
+        "`packages/runtime/package.json` `exports` and `packages/runtime/tsup.config.ts` `entry`: the subpath pattern (e.g. `./runtime-config`).",
+        "`cratylus note show 'domain interface code homed under plan'`: why the home is not placed under `plan/`."
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/test/design.test.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/test/verb-surface.ts",
+        "packages/runtime/package.json",
+        "packages/runtime/tsup.config.ts",
+        "packages/runtime/README.md",
+        ".changeset/verb-flags.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime test -- design plan note` passes, and each of `design.test.ts`, `plan.test.ts` and `note.test.ts` has a leg that drives every verb of its capability with one flag that verb does not take through the `refusal` helper (refused, nothing written) and asserts the refusal text equals what `src/verb-flags.ts` produces for that capability, verb, flag and the verb's declared flags.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `R=$PWD; d=$(mktemp -d); git -C \"$d\" init -q; cd \"$d\"; node \"$R/packages/cli/dist/cratylus.js\" design define c --glose g --author a --reason r --cause c` exits 1; its stderr contains `--glose`, `--gloss`, `--factors`, `--author`, `--reason` and `--cause`; and `git -C \"$d\" status --porcelain` prints nothing.",
+        "In the same kind of fresh scratch repository, `node \"$R/packages/cli/dist/cratylus.js\" note show --zzzz` exits 1 and `grep -o -- '--[a-z-]*'` over its stderr prints `--zzzz` and no other flag (`note show` takes none, and nothing is close).",
+        "In the same kind of fresh scratch repository, `node \"$R/packages/cli/dist/cratylus.js\" plan add u --plan p --realizes c --intnet x --author a --reason r --cause c` exits 1, its stderr contains `--intnet` and `--intent`, and `git -C \"$d\" status --porcelain` prints nothing.",
+        "After `pnpm --filter @cratylus/runtime build`, `cd packages/memory && node --input-type=module -e \"await import('@cratylus/runtime/verb-flags')\"` exits 0.",
+        "`pnpm --filter @cratylus/runtime typecheck` and `pnpm --filter @cratylus/runtime typecheck:test` pass.",
+        "`grep -q 'verb-flags' packages/runtime/README.md && grep -q '\"@cratylus/runtime\":' .changeset/verb-flags.md && grep -q '\"cratylus\":' .changeset/verb-flags.md` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "version": "01M3NCQZF141ZRXKZF7HEZC9N3",
+      "closure": {}
+    }
+  }
+}
