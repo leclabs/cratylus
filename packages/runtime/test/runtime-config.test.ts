@@ -70,8 +70,10 @@ describe('configured capability providers', () => {
 
   it("each harness's native names arrive under its own stanza, asked for by name", () => {
     // Two harnesses' stanzas in one host file, the shape deploy now writes: each is
-    // read back as its own, and a harness with no stanza is refused, naming the
-    // commands that write one — never handed an empty map, and never another's.
+    // read back as its own. A harness that HAS NONE — no stanza, a stanza whose map
+    // is empty, or one whose every name is stripped as non-string — is refused
+    // alike, naming the commands that write one: never handed an empty map, and
+    // never another's.
     const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
     const cfg = join(root, 'runtime.json');
     writeFileSync(
@@ -81,6 +83,8 @@ describe('configured capability providers', () => {
         harnesses: {
           claude: { native: { 'turn.end': 'Stop' } },
           omp: { native: { 'turn.end': 'agent_end' } },
+          empty: { native: {} },
+          stripped: { native: { 'turn.end': 7 } },
         },
       }),
     );
@@ -89,9 +93,12 @@ describe('configured capability providers', () => {
     const loaded = loadRuntimeConfig();
     expect(nativeEventsOf(loaded, 'claude')).toEqual({ 'turn.end': 'Stop' });
     expect(nativeEventsOf(loaded, 'omp')).toEqual({ 'turn.end': 'agent_end' });
-    expect(() => nativeEventsOf(loaded, 'codex')).toThrow(
-      /install --harness codex[\s\S]*deploy --harness codex/,
-    );
+    for (const none of ['codex', 'empty', 'stripped'])
+      expect(() => nativeEventsOf(loaded, none)).toThrow(
+        new RegExp(
+          `install --harness ${none}[\\s\\S]*deploy --harness ${none}`,
+        ),
+      );
   });
 
   it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {

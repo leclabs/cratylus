@@ -82,7 +82,7 @@ export interface RuntimeConfig {
   readonly events?: RuntimeEvents;
   /**
    * Each harness's native event names, keyed by harness name. Read through
-   * {@link nativeEventsOf}, which refuses for a harness with no stanza.
+   * {@link nativeEventsOf}, which refuses for a harness whose stanza holds no names.
    */
   readonly harnesses?: Readonly<Record<string, RuntimeHarness>>;
   /**
@@ -157,26 +157,27 @@ export function loadRuntimeConfig(
  *
  * The only way a capability reads native names, and it asks for ONE harness by
  * name: the names are that harness's alone, so there is no answer to "the native
- * names" without saying whose. A harness with no stanza is refused rather than
- * handed an empty map — a map with nothing in it attaches nothing while reporting
- * success. `install` is named first because it works on a bare host with no
- * project; `deploy` is the same write from inside one.
+ * names" without saying whose. A harness with no stanza, or a stanza holding no
+ * names, HAS NONE and is refused rather than handed an empty map — a map with
+ * nothing in it attaches nothing while reporting success. `install` is named first
+ * because it works on a bare host with no project; `deploy` is the same write from
+ * inside one.
  */
 export function nativeEventsOf(
   config: RuntimeConfig | null,
   harness: string,
 ): Readonly<Record<string, string>> {
-  const stanza = config?.harnesses?.[harness];
-  if (stanza === undefined) {
+  const native = config?.harnesses?.[harness]?.native;
+  if (native === undefined || Object.keys(native).length === 0) {
     throw new Error(
       `this host has no native event names for harness '${harness}' — the host ` +
-        `runtime config ($${RUNTIME_CONFIG_ENV}, else ~/${RUNTIME_CONFIG_NAME}) has no ` +
-        `\`harnesses.${harness}\` stanza. Run \`${CLI_BIN} install --harness ${harness}\` ` +
+        `runtime config ($${RUNTIME_CONFIG_ENV}, else ~/${RUNTIME_CONFIG_NAME}) holds none ` +
+        `under \`harnesses.${harness}.native\`. Run \`${CLI_BIN} install --harness ${harness}\` ` +
         `(zero-config, works on a bare host) or, from a project, \`${CLI_BIN} deploy ` +
         `--harness ${harness}\`; either writes the ${harness} stanza and leaves every other harness's as it found it.`,
     );
   }
-  return stanza.native;
+  return native;
 }
 
 /**
@@ -200,9 +201,9 @@ function parseEvents(raw: unknown): RuntimeEvents | undefined {
  * Lift the `harnesses` block, or `undefined` when it holds no stanza.
  *
  * A stanza is `{ native: { <event>: <native name> } }`; an entry without a `native`
- * object is no stanza at all, so the reader refuses for that harness exactly as it
- * does for one never deployed. Non-string names are dropped, as `events` drops
- * non-string words.
+ * object is no stanza at all. Non-string names are dropped, as `events` drops
+ * non-string words, so a stanza may lift with an empty map — the reader refuses
+ * that harness exactly as it does one never deployed.
  */
 function parseHarnesses(
   raw: unknown,

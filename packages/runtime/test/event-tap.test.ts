@@ -12,6 +12,7 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -283,7 +284,7 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
       tap(['install', '--events', 'not.an.event', '--sink', '/x']),
     ).toThrow(/unknown lifecycle event/);
   });
-  it('refuses a host whose config holds no claude stanza, naming the install and the deploy', () => {
+  it('refuses a host whose config holds no claude names, naming the install and the deploy', () => {
     // The old flat shape: one `native` map under `events`, for every harness. It is
     // not read, so this host has a vocabulary and no stanza for claude, and the tap
     // refuses rather than attaching through a map that may be another harness's.
@@ -305,6 +306,32 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
     expect(() => dispatchEventTap(['status'], { config })).toThrow(
       /install --harness claude[\s\S]*deploy --harness claude/,
     );
+
+    // A claude stanza holding no names is the same fact: an install through it
+    // would write a tap that observes nothing while reporting success.
+    writeFileSync(
+      path,
+      JSON.stringify({
+        events: { vocabulary: ['turn.end'] },
+        harnesses: { claude: { native: {} } },
+      }),
+    );
+    const { settingsPath, sinkPath } = fixture();
+    expect(() =>
+      dispatchEventTap(
+        [
+          'install',
+          '--events',
+          'turn.end',
+          '--sink',
+          sinkPath,
+          '--settings',
+          settingsPath,
+        ],
+        { config: loadRuntimeConfig(path) },
+      ),
+    ).toThrow(/install --harness claude[\s\S]*deploy --harness claude/);
+    expect(existsSync(settingsPath)).toBe(false);
   });
 });
 
