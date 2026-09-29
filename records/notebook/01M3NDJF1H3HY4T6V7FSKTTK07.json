@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NDJF1H3HY4T6V7FSKTTK07",
+    "entity": "01M3NDJF1H3HY4T6V7FSKTTK06",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T01:48:20.401Z",
+    "reason": "operator asked for a first-principles reassessment of the gate before any change",
+    "cause": "0.3.0 verification finding: gate absent in consumer repositories"
+  },
+  "payload": {
+    "title": "where the immutability gate binds",
+    "kind": "question",
+    "topic": "record store",
+    "body": "The gate is realized as this repository's own tooling (a husky pre-commit hook and a CI step running runtime source through tsx), because the concept's gloss names where it binds: 'refused at commit and in CI'. Nothing ships it: forge deploys to harnesses, not repositories, and the runtime package omits src. Commit time is also the wrong moment: the view folds the working tree, so a hand-edited record is believed by every reader at once (shown as mere uncommitted writes) and, once committed, with no sign at all. Proposal: the gate binds in the runtime, at every read and write, by comparing the records with git's own history (a record whose bytes differ from what was written, or which is gone, is a violation reported first in the domain's words and refused for writes until restored); harnesses add a pre-tool refusal as the bound face where they can (steer elsewhere); the git hook and CI leg retire as enforcement. Residuals: a record edited before its first commit has no history to compare; a history rewrite that drops a record is invisible to its own history. Awaiting the operator's ruling.",
+    "blocks": []
+  }
+}
