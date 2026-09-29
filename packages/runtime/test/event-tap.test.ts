@@ -377,7 +377,7 @@ describe('a flag the verb does not take is refused before the verb acts', () => 
     ] as const) {
       it(`${verb} ${flag}, ${host}`, () => {
         const { settingsPath, sinkPath } = fixture();
-        const argv = [verb, '--settings', settingsPath, flag, 'x'];
+        const argv = [verb, '--settings', settingsPath, flag, '-s.jsonl'];
         if (verb === 'install')
           argv.push('--events', 'turn.end', '--sink', sinkPath);
         expect(() => drive(argv)).toThrow(

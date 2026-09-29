@@ -14,12 +14,16 @@
 //
 // A verb takes a flag only as `--name`; one spelled with a single dash (`-x`,
 // `-gloss`) is an attempted flag no verb takes, and a switch given a value
-// (`--repin=x`) is one its verb does not take. Every flag given that the verb
-// does not take is refused, in one refusal, as the arguments are read and so
-// before the verb acts: nothing is written. The refusal names each such flag
-// as it was given, the verb's nearest flag to each when one is close, and
-// every flag the verb takes, and asks the caller to correct the call and run
-// it again.
+// (`--repin=x`) is one its verb does not take. A flag the verb does not take,
+// given without `=value`, takes the next token as its value unless that token
+// is flag-shaped: `--` anything, or a single dash, a letter, then letters,
+// digits and dashes, with an optional `=value`. So `--bdy '- a list'` and
+// `--snk -s.jsonl` name one flag each, and `--bdy -x` names two. Every flag
+// given that the verb does not take is refused, in one refusal, as the
+// arguments are read and so before the verb acts: nothing is written. The
+// refusal names each such flag as it was given, the verb's nearest flag to
+// each when one is close, and every flag the verb takes, and asks the caller
+// to correct the call and run it again.
 //
 // Close means within one edit for every three letters of the flag's name, and
 // at least one; an edit inserts, deletes or changes a letter, or swaps two
@@ -70,10 +74,10 @@ function edits(a: string, b: string): number {
   return (d[a.length] as number[])[b.length] as number;
 }
 
-/** The flag of `takes` nearest `flag`, spelled as given, when one is close;
- *  the first declared wins a tie. */
+/** The flag of `takes` nearest `flag`, spelled as given, when one is close,
+ *  measured on its name without any `=value`; the first declared wins a tie. */
 export function nearest(flag: string, takes: Flags): string | undefined {
-  const name = flag.replace(/^-+/, '');
+  const name = flag.replace(/^-+/, '').split('=')[0] as string;
   const within = Math.max(1, Math.floor(name.length / 3));
   let best: { flag: string; edits: number } | undefined;
   for (const taken of Object.keys(takes)) {
@@ -119,6 +123,11 @@ export function refused(
   ].join('');
 }
 
+/** A token read as an attempted flag even after a flag the verb does not
+ *  take: `--` anything, or a single dash, a letter, then letters, digits and
+ *  dashes, with an optional `=value`. */
+const FLAG_SHAPED = /^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/;
+
 /** Read `argv`, the tail of `verb` of `capability`, against `takes`, every
  *  flag it takes: its positionals and each flag's values in the order given.
  *  Refuses, in one refusal, every flag given that the verb does not take. */
@@ -133,25 +142,30 @@ export function readArgv(
   const untaken = new Set<string>();
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i] as string;
-    if (!token.startsWith('--')) {
-      if (token.startsWith('-') && token !== '-')
-        untaken.add(token.split('=')[0] as string);
-      else positionals.push(token);
+    if (!token.startsWith('-') || token === '-') {
+      positionals.push(token);
       continue;
     }
     const eq = token.indexOf('=');
     const flag = eq === -1 ? token : token.slice(0, eq);
-    const name = flag.slice(2);
-    const kind = Object.hasOwn(takes, name) ? takes[name] : undefined;
-    if (kind === undefined || (kind === 'switch' && eq !== -1)) {
-      untaken.add(kind === undefined ? flag : token);
-      continue;
+    const name = token.startsWith('--') ? flag.slice(2) : undefined;
+    const kind =
+      name !== undefined && Object.hasOwn(takes, name)
+        ? takes[name]
+        : undefined;
+    if (name !== undefined && kind === 'value') {
+      let value = '';
+      if (eq !== -1) value = token.slice(eq + 1);
+      else if (!(argv[i + 1] ?? '--').startsWith('--'))
+        value = argv[++i] as string;
+      flags.set(name, [...(flags.get(name) ?? []), value]);
+    } else if (name !== undefined && kind === 'switch') {
+      if (eq === -1) flags.set(name, [...(flags.get(name) ?? []), '']);
+      else untaken.add(token);
+    } else {
+      untaken.add(flag);
+      if (eq === -1 && !FLAG_SHAPED.test(argv[i + 1] ?? '--')) i++;
     }
-    let value = '';
-    if (eq !== -1) value = token.slice(eq + 1);
-    else if (kind === 'value' && !(argv[i + 1] ?? '--').startsWith('--'))
-      value = argv[++i] as string;
-    flags.set(name, [...(flags.get(name) ?? []), value]);
   }
   if (untaken.size > 0)
     throw new Error(refused(capability, verb, [...untaken], takes));
