@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q73ND59K9DW53TSPF50CJS",
+    "entity": "01M3Q73ND59K9DW53TSPF50CJR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T18:33:52.805Z",
+    "reason": "a recurring integration red with one cause",
+    "cause": "what-ships integration"
+  },
+  "payload": {
+    "title": "new test files miss the meta-gate registry",
+    "kind": "idea",
+    "topic": "plan",
+    "body": "Twice in one day (role-routing, what-ships) a unit added a test file and the whole gate went red on canon's META-GATE, which requires every test file to be classified in packages/canon/test/gate-convicts.test.ts. The planner's occurs law resolves where a concept is SPELLED, and the registry spells no concept, so it never enters outputs. Either the plan census should list the registry whenever a unit may add tests, or the meta-gate's registry should be derived rather than hand-kept.",
+    "blocks": []
+  }
+}
