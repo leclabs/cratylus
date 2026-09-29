@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q7HB7QMTTZBPNF525CEVJ8",
+    "entity": "01M3Q7HB7QMTTZBPNF525CEVJ7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T18:41:21.143Z",
+    "reason": "found by the supported-harness assay; outside that concept",
+    "cause": "final assay of supported harness at b2daebb2"
+  },
+  "payload": {
+    "title": "event-tap cannot reach claude's act events",
+    "kind": "idea",
+    "topic": "event-tap",
+    "body": "On Claude Code the tap refuses operator.consult.pre and subagent.dispatch.pre, saying 'Claude Code fires no native event', though the projection binds both as PreToolUse narrowed by tool matcher (claude/events.ts). The host runtime config's claude stanza carries 19 name-only natives and no act bindings, so the tap has no matcher (forge deploy/runtime-config.ts harnessStanza; runtime claude-serialize.ts buildEventTapBlock). Also: install then uninstall in a cwd with no .claude leaves .claude/settings.json holding {}, breaking the skill's law that uninstall restores the target to its prior state.",
+    "blocks": []
+  }
+}

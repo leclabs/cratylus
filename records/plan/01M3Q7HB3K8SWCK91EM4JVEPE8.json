@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3Q7HB3K8SWCK91EM4JVEPE8",
+    "entity": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q59S0RVKEA3799Y9J0AKHY"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:41:21.011Z",
+    "reason": "all nine units accepted",
+    "cause": "final assay of supported harness at b2daebb2"
+  },
+  "payload": {
+    "name": "what-ships",
+    "realizes": [
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N"
+    ],
+    "state": "closed"
+  }
+}
