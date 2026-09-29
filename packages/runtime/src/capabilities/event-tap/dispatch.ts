@@ -3,10 +3,13 @@
 //
 // The runtime kernel routes `cratylus eventTap <verb>` here: the tap owns
 // the arg-parse for its own flags (`--events`, `--sink`, `--settings`) that a
-// generic method-reflecting dispatcher cannot know. Verb → port method:
+// generic method-reflecting dispatcher cannot know, declared beside its verbs.
+// Verb → port method:
 //   install → install · uninstall → remove · read → readCapture · status → status
 // Unknown verb / unknown lifecycle event fails LOUD (throws) — never a silent
-// no-op (matches the kernel's fail-loud contract).
+// no-op (matches the kernel's fail-loud contract). A flag the verb does not take
+// is refused through `../../verb-flags.ts` before anything else: before the host
+// config is read, and before any settings file or sink is touched.
 //
 // WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
 // config the projection emitted (`RuntimeConfig.events`) — ARCHITECTURE property 4.
@@ -34,6 +37,7 @@ import {
   loadRuntimeConfig,
   nativeEventsOf,
 } from '../../runtime-config.js';
+import { type VerbFlags, refuseUnknown } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
 
 /** The verbs the event-tap capability exposes, each routing to one port method. */
@@ -46,19 +50,31 @@ export type EventTapResult =
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
 
-const VERBS: ReadonlySet<string> = new Set([
-  'install',
-  'uninstall',
-  'read',
-  'status',
-]);
+/** The event-tap's verbs, and the flags each takes. */
+export const VERBS = {
+  install: ['events', 'sink', 'settings'],
+  uninstall: ['settings'],
+  read: ['settings'],
+  status: ['settings'],
+} as const satisfies VerbFlags<EventTapVerb>;
 
-/** Extract `--flag value` pairs (and bare flags) from an argv tail. */
-function parseFlags(argv: string[]): Map<string, string> {
+/**
+ * Extract `--flag value` pairs (and bare flags) from the argv tail of `verb`,
+ * refusing every flag it does not take — a single-dash token (`-x`), a lone `-`
+ * aside, among them.
+ */
+function parseFlags(verb: EventTapVerb, argv: string[]): Map<string, string> {
   const flags = new Map<string, string>();
+  const given: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const tok = argv[i];
-    if (tok === undefined || !tok.startsWith('--')) continue;
+    if (tok === undefined) continue;
+    if (!tok.startsWith('--')) {
+      if (tok.startsWith('-') && tok !== '-')
+        given.push(tok.split('=')[0] as string);
+      continue;
+    }
+    given.push(tok);
     const key = tok.slice(2);
     const next = argv[i + 1];
     if (next !== undefined && !next.startsWith('--')) {
@@ -68,6 +84,7 @@ function parseFlags(argv: string[]): Map<string, string> {
       flags.set(key, '');
     }
   }
+  refuseUnknown('eventTap', verb, given, VERBS[verb]);
   return flags;
 }
 
@@ -146,12 +163,12 @@ export function dispatchEventTap(
   opts: EventTapDispatchOpts = {},
 ): EventTapResult {
   const [verb, ...rest] = argv;
-  if (verb === undefined || !VERBS.has(verb)) {
+  if (verb === undefined || !Object.hasOwn(VERBS, verb)) {
     throw new Error(
       `event-tap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
     );
   }
-  const flags = parseFlags(rest);
+  const flags = parseFlags(verb as EventTapVerb, rest);
   const config = opts.config ?? loadRuntimeConfig();
   const configured = configuredEvents(config);
   const tap =
