@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QS6QW3EFWD8C2FEGG2P1GA",
+    "entity": "01M3QS6QW3EFWD8C2FEGG2P1G9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:50:08.003Z",
+    "reason": "the plan must not choose the sign that replaces delivery; it is owed to signify",
+    "cause": "architect contract for plan architect-position"
+  },
+  "payload": {
+    "title": "the architect objective's sign",
+    "kind": "question",
+    "topic": "architect position",
+    "body": "The architect position's gloss says its objective is the design realized, not a green pipeline, yet the architect role (roles/architect.ts) projects `objective: delivery ⟨end-to-end integrated green⟩` into architect, kino and mav (nico overrides it with parsimony); every cold read of the assay of 20961057 takes it as answering for integration and a green main. Which objective value replaces it is owed to signify: a new sign for 'the design realized', an existing catalog value (insight, correctness, thoroughness, parsimony …), or none (the role states no objective). Unit architect-role waits on the ruling and is revised to declare the chosen value's file.",
+    "blocks": [
+      "01M3QS44E762G7NS212AQK8S9Z"
+    ]
+  }
+}

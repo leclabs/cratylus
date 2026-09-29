@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QS6QY5120EQQHQM7B0JX28",
+    "entity": "01M3QS6QY5120EQQHQM7B0JX27",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:50:08.069Z",
+    "reason": "surfaced by the architect contract for plan architect-position; outside the cut piece",
+    "cause": "assay of 20961057 (plan skill arrives through deliver)"
+  },
+  "payload": {
+    "title": "plan reaches architects through deliver",
+    "kind": "question",
+    "topic": "skill routing",
+    "body": "deliver composes [design, plan, note], so every architect holder loads the whole plan skill (census, slice, add, ratify) as required reading, while the architect position gives planning to the planner. Stopping plan from reaching architects through deliver's composition collides with the `skill routing` concept (every agent gets its skills together with everything they compose). Plan architect-position leaves the composition as it is and makes the plan skill say whose procedure it is; whether the composition or the concept should change is the architect's ruling.",
+    "blocks": []
+  }
+}
