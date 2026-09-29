@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QRZYAQ4KRZJKS8MX0CNA3A",
+    "entity": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:46:25.239Z",
+    "reason": "deliver names an integrator no role holds, so the architect session did integration itself; operator approved the position",
+    "cause": "operator approval, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "integrator position",
+    "gloss": "the role that makes each accepted-or-pending landing durable on the shared line, one per bound plan and warm across its waves: it runs the project's whole check once on the merged tree, merges a unit's commits into main only when that check is green, commits the plan and design records carrying the state moves the architect decided, and reports the gate's result to the architect in one line (green, or red with the failing check and its owner). It never decides: it does not accept, reject, amend the design or choose what is dispatched, and it never builds or repairs a unit; a red gate goes back to the architect, who routes it to the implementer that owns it. A merge is durability, not acceptance. Releasing and pushing stay the operator's sign-off.",
+    "factors": []
+  }
+}
