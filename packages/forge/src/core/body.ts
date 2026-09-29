@@ -76,28 +76,16 @@ export interface ResolvedSkill {
   readonly trigger: string;
   /** Front-matter `description` (the SKILL.md `description`). */
   readonly description: string;
-  /**
-   * Optional host-discovery copy (`skill_description:`). When present it is the
-   * SKILL.md `description` instead of `description` (the `deploy: skill-dir` path).
-   */
-  readonly skillDescription?: string;
   /** The σ* set-builder block (declarations-above / laws-below), emitted verbatim
    *  inside the fence. Sourced from the `Skill.formalBlock` IR field. */
   readonly formalBlock: string;
   /** The composed-anchor provenance names, already harness-projected (or []). */
   readonly composedFrom: readonly string[];
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
-   *  first section (above the fenced formal block, or above the `## Tool` section for
-   *  a `deploy: skill-dir` cell). The engine knows only "a leading block"; a consumer
-   *  fills it (canon injects its founding doctrine so a FOREIGN agent invoking
-   *  the skill still holds the axiom). Absent ⇒ omitted. */
+   *  first section (above the fenced formal block). The engine knows only "a
+   *  leading block"; a consumer fills it (canon injects its founding doctrine so a
+   *  FOREIGN agent invoking the skill still holds the axiom). Absent ⇒ omitted. */
   readonly preamble?: string;
-  /**
-   * A `deploy: skill-dir` cell (e.g. `memory`) emits its `## Tool` section body
-   * VERBATIM as the SKILL.md body, NOT a generated composed body. When set, this
-   * is that section text and the generator path is bypassed.
-   */
-  readonly toolSection?: string;
   /**
    * The RUNTIME capability this skill is a face of (mirrors `Skill.runtime`). When
    * set, the projection emits a thin shim beside the SKILL.md and the body BINDS it
@@ -116,18 +104,11 @@ function deriveVerb(name: string): string {
 }
 
 /**
- * The SKILL.md body for a resolved skill. A `deploy: skill-dir` cell (the
- * `toolSection` path, e.g. `memory`) emits that section VERBATIM; every other
- * cell renders through the ONE generator `renderSkillCellBody` as
- * `# <verb>` + fenced `formalBlock` + "Composed from …". Shared by the claude and
- * codex adapters. Returns `rstrip() + "\n"`.
+ * The SKILL.md body for a resolved skill, rendered through the ONE generator
+ * `renderSkillCellBody` as `# <verb>` + fenced `formalBlock` + "Composed from …".
+ * Shared by the claude and codex adapters. Returns `rstrip() + "\n"`.
  */
 export function skillBody(s: ResolvedSkill): string {
-  // `deploy: skill-dir` (memory): the `## Tool` section verbatim, no composition.
-  if (s.toolSection !== undefined) {
-    const pre = s.preamble ? `${s.preamble}\n\n` : '';
-    return `${pre}${s.toolSection.replace(/\n+$/, '')}\n`;
-  }
   return renderSkillCellBody({
     verb: deriveVerb(s.name),
     block: s.formalBlock,

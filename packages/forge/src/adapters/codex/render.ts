@@ -127,14 +127,14 @@ export function agentToCodexToml(
  * The codex SKILL.md for a resolved skill. Codex consumes the AgentSkills spec
  * (frontmatter `name` + `description`, then the body), the same surface claude
  * uses — so the body is the SAME thin `skillBody` generator (`# <verb>` + fenced
- * `formalBlock` + "Composed from …", or the `deploy: skill-dir` verbatim section).
+ * `formalBlock` + "Composed from …").
  * The framing differs from `skillToClaudeMd` only in the front-matter: the codex
  * AgentSkills pair (`name` + `description`, no `trigger`).
  */
 export function skillToCodexMd(s: ResolvedSkill): string {
   const fm: Record<string, unknown> = {
     name: s.name,
-    description: s.skillDescription ?? s.description,
+    description: s.description,
   };
   const body = skillBody(s);
   const lines = ['---', ...frontMatterLines(fm), '---', ''];

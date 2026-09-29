@@ -319,10 +319,7 @@ function yamlString(s: string): string {
  * both consume the same spec.
  */
 export function skillToOmpMd(s: ResolvedSkill): string {
-  const fm = [
-    `name: ${s.name}`,
-    `description: ${s.skillDescription ?? s.description}`,
-  ];
+  const fm = [`name: ${s.name}`, `description: ${s.description}`];
   return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
 }
 

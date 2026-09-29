@@ -592,8 +592,6 @@ export type JsonValue =
 
 /** How a skill cell deploys, beyond the default agent-resident projection. */
 export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
-  /** Deploy as a host `skills/<name>/` directory (the `memory`-style cell). */
-  readonly deployAs?: 'skill-dir';
   /**
    * Committed companion assets, staged by `deploy --assets` ONLY.
    *

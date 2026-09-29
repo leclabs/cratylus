@@ -159,7 +159,6 @@ const composed: Skill = {
   description: 'composes leaf',
   formalBlock: 'composed ≜ …',
   composition: () => [leaf], // lazy thunk of imported sibling Skills
-  deployAs: 'skill-dir',
   assets: ['SKILL.md'],
 };
 void composed;

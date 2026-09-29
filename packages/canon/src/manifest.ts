@@ -213,9 +213,7 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 // agent-design axis, which is a different concept. Bare `Capability` beside it
 // would be one root over two concepts.
 export const RUNTIME_CAPABILITIES = [
-  'memory',
   'eventTap',
-  'heartbeat',
   'design',
   'plan',
   'note',

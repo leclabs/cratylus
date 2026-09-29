@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.3.0",
-  "description": "The per-host runtime contract leaf: capability port interfaces, the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types plus one identity helper, zero dependencies.",
+  "description": "The per-host runtime: the built-in capabilities (eventTap, design, plan, note) and their port interfaces, the host runtime config, and the runtime-owned lifecycle-event taxonomy.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -15,21 +15,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./loader": {
-      "types": "./dist/loader.d.ts",
-      "import": "./dist/loader.js"
-    },
-    "./dispatch": {
-      "types": "./dist/dispatch.d.ts",
-      "import": "./dist/dispatch.js"
-    },
     "./events": {
       "types": "./dist/events.d.ts",
       "import": "./dist/events.js"
-    },
-    "./ports/memory": {
-      "types": "./dist/ports/memory.d.ts",
-      "import": "./dist/ports/memory.js"
     },
     "./ports/event-tap": {
       "types": "./dist/ports/event-tap.d.ts",
@@ -94,7 +82,6 @@
     "runtime",
     "agent",
     "capability",
-    "plugin",
     "ports"
   ],
   "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",

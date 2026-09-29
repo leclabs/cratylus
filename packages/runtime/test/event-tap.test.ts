@@ -47,7 +47,6 @@ import * as verbFlags from '../src/verb-flags.js';
  * check below non-trivial — `not.an.event` is rejected against THIS list.
  */
 const CONFIG: RuntimeConfig = {
-  capabilities: [],
   events: { vocabulary: ['session.start', 'turn.end', 'tool.use.pre'] },
   harnesses: {
     claude: {
@@ -284,7 +283,7 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
 
 describe('unknown input fails LOUD (no silent no-op)', () => {
   it('throws on an unknown verb', () => {
-    expect(() => tap(['frobnicate'])).toThrow(/unknown verb/);
+    expect(() => tap(['frobnicate'])).toThrow(/^eventTap: unknown verb/);
   });
   it('throws on an unknown lifecycle event', () => {
     expect(() =>

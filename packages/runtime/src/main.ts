@@ -1,17 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The runtime MAIN — the thin cac CLI over the loader+dispatch node app.
+// The runtime MAIN — the thin cac CLI over the capabilities the runtime ships.
 //
 // This module EXPORTS runCli; it does not invoke it. The invoking bin lives in
-// the installable CLI package, which DECLARES its capability packages as real
-// dependencies and passes them in — so capability resolution succeeds because the
-// dependency is declared, not because a flat co-install happened to co-locate a
-// sibling (the ambient-resolution defect this replaces).
+// the installable CLI package, which hands the runtime every argv whose first
+// word is a member of `CAPABILITIES`.
 //
 // Mirrors forge's `cac`-based thin-CLI: cac owns branding + `--help` /
-// `--version`; the dynamic `<capability> <verb> [args]` stream is routed by the
-// dispatcher (the verb space is plugin-driven, so it is NOT a fixed cac command
-// table). `runCli` bootstraps the host from host-installed capability packages,
-// dispatches, and maps the pure {@link DispatchResult} to stdio + exit code.
+// `--version`. The `<capability> <verb> [args]` stream is routed through ONE
+// table typed over `Capability`, so a capability without a route does not
+// compile: each member reaches its own verb surface, which owns its verbs' flag
+// grammar. `eventTap` prints its JSON result; `design`, `plan` and `note` print
+// their view. A refusal is a loud code-1 failure, printed as `cratylus: <message>`.
 //
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
 // not written here: its one home is `./bin-name.ts`. See that module for why the
@@ -26,12 +25,8 @@ import { dispatchDesign } from './capabilities/design/index.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { dispatchNote } from './capabilities/note/index.js';
 import { dispatchPlan } from './capabilities/plan/index.js';
-import { dispatch } from './dispatch.js';
-import { RuntimeHost, bootstrap } from './loader.js';
-import type { RuntimePlugin } from './plugin.js';
+import { CAPABILITIES, type Capability } from './capability.js';
 
-/** The runtime bin version. A constant (not read from package.json): the bundled
- *  bin ships without its manifest, so a runtime package.json read is unsafe. */
 /**
  * This package's version, read from the manifest that DEFINES it.
  *
@@ -50,12 +45,25 @@ export const VERSION: string = createRequire(import.meta.url)(
   '@cratylus/runtime/package.json',
 ).version;
 
-/** Bin entrypoint: brand + help/version via cac, else bootstrap → dispatch → stdio. */
-/** Options for {@link runCli}. `plugins` are DECLARED capability plugins supplied
- *  by the installable CLI package; when present they are registered directly and
- *  ambient discovery is skipped, which is what makes an isolated install work. */
-export interface RunCliOpts {
-  readonly plugins?: readonly RuntimePlugin[];
+/**
+ * Each capability's verb surface: its verb and arguments in, the text it prints
+ * out. A refusal throws.
+ *
+ * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
+ * `eventTap`, never the kebab dir name nor an abbreviation. That is the word the
+ * grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED THIN
+ * SHIM spawns (the emitter is `f(capability)`, so an `eventTap` cell yields
+ * `spawnSync(CLI_BIN, ['eventTap', …])`).
+ */
+const ROUTES: { readonly [C in Capability]: (argv: string[]) => string } = {
+  eventTap: (argv) => JSON.stringify(dispatchEventTap(argv), null, 2),
+  design: dispatchDesign,
+  plan: dispatchPlan,
+  note: dispatchNote,
+};
+
+function isCapability(word: string): word is Capability {
+  return (CAPABILITIES as readonly string[]).includes(word);
 }
 
 /**
@@ -68,16 +76,19 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
   process.exit();
 }
 
-export async function runCli(
-  argv: readonly string[],
-  opts: RunCliOpts = {},
-): Promise<void> {
+function refuse(message: string): void {
+  process.stderr.write(`${CLI_BIN}: ${message}\n`);
+  process.exitCode = 1;
+}
+
+/** Bin entrypoint: brand + help/version via cac, else route → stdio + exit code. */
+export async function runCli(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
   const cli = cac(CLI_BIN);
   cli.command(
     '[capability] [verb]',
-    'Dispatch <verb> to the <capability> plugin registered on this host',
+    `Run <verb> of <capability>, one of ${CAPABILITIES.join(', ')}`,
   );
   cli.help();
   cli.version(VERSION);
@@ -93,74 +104,16 @@ export async function runCli(
     process.exitCode = 0;
     return;
   }
-
-  // The event-tap capability ships INSIDE the runtime (a subpath module, not a
-  // discovered `@cratylus/*` plugin), and its verbs carry their own flag grammar
-  // (`--events`, `--sink`, `--settings`) a generic method-reflecting dispatcher
-  // cannot know. So the tap routes to its dedicated verb surface directly, ahead of
-  // the install-discovered dispatch — no host bootstrap needed. A throw (unknown
-  // verb / unknown event / missing flag) is a loud code-1 failure.
-  //
-  // ONE WORD ROUTES HERE, and it is the capability's own: `eventTap`, its member in
-  // `CAPABILITIES`. That is the word the dispatch grammar `<capability> <verb>`
-  // speaks, and therefore the word a PROJECTED THIN SHIM spawns (the emitter is
-  // `f(capability)`, so an `eventTap` cell yields
-  // `spawnSync(CLI_BIN, ['eventTap', …])`). Routing only the `tap` shorthand once
-  // made the tap reachable by an operator typing at a shell but DEAD to every agent
-  // coming through its own skill's shim: `eventTap` fell through to the discovered
-  // dispatch, where no plugin binds it, and died `unknown capability`.
-  //
-  // The `tap` shorthand is now GONE rather than merely un-preferred. It was never a
-  // third name for this capability — it fails to circumscribe one (a passive siphon
-  // on WHICH stream?), and a second accepted word is a second thing an operator can
-  // learn, cite, and be wrong about. Typing `tap` now falls to the discovered
-  // dispatch and raises `UnknownCapabilityError`, naming the bound set — the
-  // kernel's own fail-loud contract, applied to its own vocabulary.
-  if (first === 'eventTap') {
-    try {
-      const result = dispatchEventTap([...argv.slice(1)]);
-      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-      process.exitCode = 0;
-    } catch (err) {
-      process.stderr.write(
-        `${CLI_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
-      );
-      process.exitCode = 1;
-    }
+  if (!isCapability(first)) {
+    refuse(
+      `unknown capability '${first}' — the capabilities are ${CAPABILITIES.join(', ')}`,
+    );
     return;
   }
-
-  // The three domain capabilities ship INSIDE the runtime on the same terms: each
-  // owns its verbs' flag grammar, so each routes to its own verb surface ahead of
-  // the discovered dispatch. A verb renders its domain's view, printed as text; a
-  // refusal is a code-1 failure whose message names the verb that would succeed.
-  const domain =
-    first === 'design'
-      ? dispatchDesign
-      : first === 'plan'
-        ? dispatchPlan
-        : first === 'note'
-          ? dispatchNote
-          : undefined;
-  if (domain !== undefined) {
-    try {
-      process.stdout.write(`${domain(argv.slice(1))}\n`);
-      process.exitCode = 0;
-    } catch (err) {
-      process.stderr.write(
-        `${CLI_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
-      );
-      process.exitCode = 1;
-    }
-    return;
+  try {
+    process.stdout.write(`${ROUTES[first](argv.slice(1))}\n`);
+    process.exitCode = 0;
+  } catch (err) {
+    refuse(err instanceof Error ? err.message : String(err));
   }
-
-  const host =
-    opts.plugins && opts.plugins.length > 0
-      ? opts.plugins.reduce((h, p) => h.register(p), new RuntimeHost())
-      : await bootstrap();
-  const { code, out, err } = await dispatch(host, argv);
-  if (out) process.stdout.write(out);
-  if (err) process.stderr.write(err);
-  process.exitCode = code;
 }

@@ -79,8 +79,6 @@ export interface EmittedHarness {
 
 /** What `deploy` writes, and `loadRuntimeConfig` reads back. */
 export interface EmittedRuntimeConfig {
-  readonly resolveFrom?: string;
-  readonly capabilities: readonly string[];
   readonly events: EmittedEvents;
   /**
    * One stanza per harness, keyed by the adapter's `name`. A deploy writes its own
@@ -109,10 +107,6 @@ export interface EmitRuntimeConfigOpts {
   readonly harnesses?: Readonly<Record<string, EmittedHarness>>;
   /** The resolved plugin set's skills; their runtime faces carry the configuration. */
   readonly skills?: readonly Pick<Skill, 'name' | 'runtime'>[];
-  /** Capability provider specifiers the host should register. */
-  readonly capabilities?: readonly string[];
-  /** Dir whose `node_modules` those specifiers resolve against. */
-  readonly resolveFrom?: string;
 }
 
 /**
@@ -132,10 +126,6 @@ export function runtimeConfigDocument(
   }
   const configuration = configurationOf(opts.skills ?? []);
   return {
-    ...(opts.resolveFrom !== undefined
-      ? { resolveFrom: opts.resolveFrom }
-      : {}),
-    capabilities: [...(opts.capabilities ?? [])],
     events: { vocabulary: [...opts.events] },
     harnesses: {
       ...opts.harnesses,
@@ -207,12 +197,9 @@ export interface EmitRuntimeConfigResult {
  * Emit the host config.
  *
  * The corpus's parts (`events`, `configuration`) and this harness's stanza are
- * regenerated; everything else is carried over from an existing config as found.
- * `capabilities` and `resolveFrom` are the OPERATOR's declaration, made once and
- * kept: overwriting them to deliver the vocabulary would make every deploy silently
- * reset which memory strategy that host runs — a behaviour change wearing a
- * projection. Every OTHER harness's stanza is that harness's deploy's to write:
- * replacing it here is how a claude deploy used to erase omp's native names.
+ * regenerated. Every OTHER harness's stanza is carried over as found: it is that
+ * harness's deploy's to write, and replacing it here is how a claude deploy used to
+ * erase omp's native names. Nothing else in an existing config is carried.
  */
 export function emitRuntimeConfig(
   opts: EmitRuntimeConfigOpts & {
@@ -222,14 +209,9 @@ export function emitRuntimeConfig(
   },
 ): EmitRuntimeConfigResult {
   const path = opts.path ?? runtimeConfigTarget(opts.env);
-  const prior = readPrior(path);
   const doc = runtimeConfigDocument({
     ...opts,
-    capabilities: opts.capabilities ?? prior.capabilities,
-    harnesses: opts.harnesses ?? prior.harnesses,
-    ...(opts.resolveFrom === undefined && prior.resolveFrom !== undefined
-      ? { resolveFrom: prior.resolveFrom }
-      : {}),
+    harnesses: opts.harnesses ?? priorHarnesses(path),
   });
   const stanza = harnessStanza(opts.events, opts.nativeEvents);
   if (opts.dry === true) return { path, wrote: false, doc, stanza };
@@ -239,40 +221,25 @@ export function emitRuntimeConfig(
 }
 
 /**
- * The parts of an existing config this emission does not own — the operator's
- * `capabilities` and `resolveFrom`, and every harness's stanza — empty when absent
- * or corrupt. Stanzas are carried as found, not re-read: they are other deploys'
- * output, and this one has no business normalizing them.
+ * Every harness's stanza in an existing config, empty when absent or corrupt.
+ * Stanzas are carried as found, not re-read: they are other deploys' output, and
+ * this one has no business normalizing them.
  */
-function readPrior(path: string): {
-  capabilities: readonly string[];
-  harnesses: Readonly<Record<string, EmittedHarness>>;
-  resolveFrom?: string;
-} {
-  if (!existsSync(path)) return { capabilities: [], harnesses: {} };
+function priorHarnesses(
+  path: string,
+): Readonly<Record<string, EmittedHarness>> {
+  if (!existsSync(path)) return {};
   try {
-    const raw = JSON.parse(readFileSync(path, 'utf8')) as {
-      capabilities?: unknown;
+    const { harnesses } = JSON.parse(readFileSync(path, 'utf8')) as {
       harnesses?: unknown;
-      resolveFrom?: unknown;
     };
-    return {
-      capabilities: Array.isArray(raw.capabilities)
-        ? raw.capabilities.filter((s): s is string => typeof s === 'string')
-        : [],
-      harnesses:
-        raw.harnesses !== null &&
-        typeof raw.harnesses === 'object' &&
-        !Array.isArray(raw.harnesses)
-          ? (raw.harnesses as Record<string, EmittedHarness>)
-          : {},
-      ...(typeof raw.resolveFrom === 'string'
-        ? { resolveFrom: raw.resolveFrom }
-        : {}),
-    };
+    return harnesses !== null &&
+      typeof harnesses === 'object' &&
+      !Array.isArray(harnesses)
+      ? (harnesses as Record<string, EmittedHarness>)
+      : {};
   } catch {
-    // A corrupt config must not wedge a deploy; the vocabulary is re-emitted and
-    // the operator's unreadable selection is not silently invented.
-    return { capabilities: [], harnesses: {} };
+    // A corrupt config must not wedge a deploy; the vocabulary is re-emitted.
+    return {};
   }
 }

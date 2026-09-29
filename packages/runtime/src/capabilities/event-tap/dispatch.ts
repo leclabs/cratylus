@@ -1,16 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The event-tap capability's VERB SURFACE — `eventTap <verb> [args]`.
 //
-// The runtime kernel routes `cratylus eventTap <verb>` here: the tap declares,
-// beside its verbs, its own flags (`--events`, `--sink`, `--settings`, each
-// taking a value) that a generic method-reflecting dispatcher cannot know, and
-// reads them through `../../verb-flags.ts`; a flag given twice keeps its last
+// `main.ts` routes `cratylus eventTap <verb>` here: the tap declares, beside its
+// verbs, its own flags (`--events`, `--sink`, `--settings`, each taking a value),
+// and reads them through `../../verb-flags.ts`; a flag given twice keeps its last
 // value. Verb → port method:
 //   install → install · uninstall → remove · read → readCapture · status → status
 // Unknown verb / unknown lifecycle event fails LOUD (throws) — never a silent
-// no-op (matches the kernel's fail-loud contract). A flag the verb does not take
-// is refused as the arguments are read, before anything else: before the host
-// config is read, and before any settings file or sink is touched.
+// no-op — and every refusal opens with the routing word, `eventTap`. A flag the
+// verb does not take is refused as the arguments are read, before anything else:
+// before the host config is read, and before any settings file or sink is touched.
 //
 // WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
 // config the projection emitted (`RuntimeConfig.events`) — ARCHITECTURE property 4.
@@ -44,7 +43,7 @@ import { EventTapHostClaude } from './claude.js';
 /** The verbs the event-tap capability exposes, each routing to one port method. */
 export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status';
 
-/** A verb's outcome, discriminated by verb — the value the kernel serializes. */
+/** A verb's outcome, discriminated by verb — the value `main.ts` prints as JSON. */
 export type EventTapResult =
   | { verb: 'install'; events: EventName[]; sink: string }
   | { verb: 'uninstall' }
@@ -72,7 +71,7 @@ function configuredEvents(config: RuntimeConfig | null): RuntimeEvents {
   const events = config?.events;
   if (events === undefined || events.vocabulary.length === 0) {
     throw new Error(
-      'event-tap: this host has no lifecycle-event vocabulary — the corpus declares ' +
+      'eventTap: this host has no lifecycle-event vocabulary — the corpus declares ' +
         'it and `cratylus deploy` emits it into the host runtime config ' +
         '($AGENT_RUNTIME_CONFIG, else ~/.cratylus.json). Run a deploy for this ' +
         'harness; the runtime does not carry a vocabulary of its own.',
@@ -87,9 +86,7 @@ function parseEvents(
   vocabulary: readonly EventName[],
 ): EventName[] {
   if (raw === undefined || raw.trim() === '') {
-    throw new Error(
-      'event-tap install: --events is required (comma-separated)',
-    );
+    throw new Error('eventTap install: --events is required (comma-separated)');
   }
   const declared = new Set(vocabulary);
   const events: EventName[] = [];
@@ -98,14 +95,14 @@ function parseEvents(
     if (e === '') continue;
     if (!declared.has(e)) {
       throw new Error(
-        `event-tap install: unknown lifecycle event '${e}' — this host's vocabulary is ` +
+        `eventTap install: unknown lifecycle event '${e}' — this host's vocabulary is ` +
           `[${[...declared].join(', ')}]`,
       );
     }
     events.push(e);
   }
   if (events.length === 0) {
-    throw new Error('event-tap install: --events resolved to an empty set');
+    throw new Error('eventTap install: --events resolved to an empty set');
   }
   return events;
 }
@@ -114,7 +111,7 @@ function parseEvents(
 export interface EventTapDispatchOpts {
   /**
    * The port realization. Defaults to the Claude one targeting `--settings` (or the
-   * env/cwd default); the kernel may inject the loaded plugin's `eventTap` instead.
+   * env/cwd default); a test may inject its own.
    */
   readonly host?: EventTapHost;
   /**
@@ -136,7 +133,7 @@ export function dispatchEventTap(
   const [verb, ...rest] = argv;
   if (verb === undefined || !Object.hasOwn(VERBS, verb)) {
     throw new Error(
-      `event-tap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
+      `eventTap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
     );
   }
   const { flags } = readArgv(
@@ -160,7 +157,7 @@ export function dispatchEventTap(
       const events = parseEvents(flag('events'), configured.vocabulary);
       const sink = flag('sink');
       if (sink === undefined || sink.trim() === '') {
-        throw new Error('event-tap install: --sink <path> is required');
+        throw new Error('eventTap install: --sink <path> is required');
       }
       tap.install(events, { path: sink });
       return { verb: 'install', events, sink };

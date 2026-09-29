@@ -17,38 +17,33 @@
 // always `${CLI_BIN}-event-tap`; only the identifier had been abbreviated.
 //
 // ── WHAT THIS GATE DOES *NOT* CHECK, AND WHY ────────────────────────────────────
-// Two equalities were proposed for this gate and both are FALSE OF THE LIVE CORPUS.
-// They are recorded here rather than deleted, because a dropped axis with no record
-// is an axis someone re-proposes next quarter.
+// Two equalities were proposed for this gate and both were FALSE OF THE CORPUS they
+// were proposed against. They are recorded here rather than deleted, because a
+// dropped axis with no record is an axis someone re-proposes next quarter.
 //
-//   · `dir ≡ keyspace` — DROPPED, 1-for-2 in BOTH directions. `memory` is in
-//     `CAPABILITIES` and has no `capabilities/memory/` dir (it is a whole package);
-//     `capabilities/heartbeat/` is a dir with no keyspace member. An equality
-//     with one witness and one counter-example in each direction is not an
-//     invariant, it is a coincidence with a sample size of two.
-//   · `≡ canon skill name` — DROPPED, the relation is 1→N in principle: `memory`
-//     was claimed by THREE skills (`dream`, `handoff`, `wake`, since retired) and
-//     none of them was named `memory`. Replaced by the SUBSET direction below,
-//     which is the true statement; `memory` itself now has zero cells, the same
-//     shape as `heartbeat`.
+//   · `dir ≡ keyspace` — DROPPED, false in BOTH directions when proposed: a
+//     capability then shipped as a whole package, with no `capabilities/` dir, and
+//     a `capabilities/` dir existed with no keyspace member.
+//   · `≡ canon skill name` — DROPPED, the relation is 1→N in principle: one
+//     capability was once claimed by THREE skills, none of them named after it.
+//     Replaced by the SUBSET direction below, which is the true statement.
 //
 // ── THE AXES THIS GATE DOES CHECK, each with its positive-control count ──────────
-//   1. PORT MODULE ⇄ KEYSPACE, as a BICONDITIONAL (2 in-keyspace controls, 1
+//   1. PORT MODULE ⇄ KEYSPACE, as a BICONDITIONAL (4 in-keyspace controls, 1
 //      exempt control). A `ports/*.ts` module is outside the keyspace IFF its
 //      basename carries the `provisional-` prefix. Stated as a biconditional, and
-//      not as "…except heartbeat", so that it SELF-ARMS: a capability landing
+//      not as "…except the mailbox", so that it SELF-ARMS: a capability landing
 //      tomorrow as `ports/foo.ts` is convicted until it joins the keyspace, and a
 //      second hand-written exception cannot be quietly added, because there is no
 //      list to add it to. The prefix must also be EARNED — see leg 1c.
-//   2. PLUGIN `name:` ≡ THE SIGN'S KEBAB REGISTER (1 control). The event-tap
-//      capability's plugin is `name: 'event-tap'`.
-//   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
+//   2. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
 //      declaring a capability is a control). One-directional on purpose: a
-//      capability with no skill cell is legal — `memory` is now such a capability
-//      (dream/handoff/wake retired), and `heartbeat` always was one.
+//      capability with no skill cell is legal.
+//   3. SAME SET — canon's `RUNTIME_CAPABILITIES` and the runtime's `CAPABILITIES`
+//      name the same capabilities.
 //
 // HOW IT READS THE RUNTIME. By TEXT, over the source path — the precedent
-// `event-tap-cell.test.ts` and memory's `cell-verb-roster.test.ts` both set. canon
+// `event-tap-cell.test.ts` set. canon
 // depends on runtime, but a textual read needs no build output, so this gate is
 // live on a cold tree and cannot be quietly satisfied by a stale `dist/`.
 
@@ -64,11 +59,6 @@ const packages = join(canonRoot, '..');
 const KEYSPACE_SRC = join(packages, 'runtime', 'src', 'capability.ts');
 const PORTS_DIR = join(packages, 'runtime', 'src', 'ports');
 const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
-
-/** The dirs whose `src/**` may declare a `runtimePlugin`. `test/` is EXCLUDED: a
- *  test double naming itself `fake-tap` is MENTIONING a plugin, not shipping one —
- *  the same use/mention line `command-veracity.test.ts` draws. */
-const PLUGIN_SRC_ROOTS = ['runtime'].map((p) => join(packages, p, 'src'));
 
 // ── The two registers of one sign ───────────────────────────────────────────────
 // The map is NOT minted here. `forge/src/core/anatomy-body.ts`'s `dimensionField`
@@ -94,20 +84,18 @@ const PROVISIONAL = /^provisional-/;
 
 // ── Corpus readers ──────────────────────────────────────────────────────────────
 
-/** The runtime's capability keyspace — the keys of `SESSION_SCOPED`, where each
- *  capability is declared once with its scope — parsed from `capability.ts` as
- *  text. Throws rather than returning `[]`, so a moved declaration is a LOUD
- *  failure and never a gate that silently quantifies over nothing. */
+/** The runtime's capability keyspace — the members of `CAPABILITIES`, parsed from
+ *  `capability.ts` as text. Throws rather than returning `[]`, so a moved
+ *  declaration is a LOUD failure and never a gate that silently quantifies over
+ *  nothing. */
 function keyspace(src: string): string[] {
-  const m = src.match(/export const SESSION_SCOPED = \{([^}]+)\} as const/);
+  const m = src.match(/export const CAPABILITIES = \[([^\]]+)\] as const/);
   if (m?.[1] === undefined) {
     throw new Error(
-      'capability-keyspace: no `SESSION_SCOPED` keyspace found in the runtime',
+      'capability-keyspace: no `CAPABILITIES` keyspace found in the runtime',
     );
   }
-  return [...m[1].matchAll(/^\s*([A-Za-z]+):/gm)]
-    .map((g) => g[1] as string)
-    .sort();
+  return [...m[1].matchAll(/'([A-Za-z]+)'/g)].map((g) => g[1] as string).sort();
 }
 
 /** Every `ports/*.ts` basename, sans extension. */
@@ -116,59 +104,6 @@ function portBasenames(dir: string): string[] {
     .filter((f) => f.endsWith('.ts'))
     .map((f) => f.slice(0, -'.ts'.length))
     .sort();
-}
-
-/** One `defineRuntimePlugin({…})` site: the file, its `name:`, and the capability
- *  fields it assigns. */
-interface PluginSite {
-  file: string;
-  name: string;
-  provides: string[];
-}
-
-/** Slice the balanced `(…)` argument text of the call starting at `open`. */
-function balanced(src: string, open: number): string {
-  let depth = 0;
-  for (let i = open; i < src.length; i++) {
-    const c = src[i];
-    if (c === '(') depth++;
-    else if (c === ')' && --depth === 0) return src.slice(open + 1, i);
-  }
-  throw new Error('capability-keyspace: unbalanced defineRuntimePlugin(');
-}
-
-/** Every `defineRuntimePlugin({…})` site in `src`, with the capabilities it claims. */
-function pluginSites(
-  file: string,
-  src: string,
-  capabilities: readonly string[],
-): PluginSite[] {
-  const out: PluginSite[] = [];
-  for (const m of src.matchAll(/defineRuntimePlugin\(/g)) {
-    const open = (m.index ?? 0) + m[0].length - 1;
-    const arg = balanced(src, open);
-    const name = arg.match(/\bname:\s*'([^']+)'/)?.[1];
-    if (name === undefined) continue; // a re-export or a type position, not a site
-    const provides = capabilities.filter((c) =>
-      new RegExp(`(^|[{,\\s])${c}\\s*:`).test(arg),
-    );
-    out.push({ file, name, provides });
-  }
-  return out;
-}
-
-/** Every `.ts` file under `dir`, recursively. */
-function sourcesUnder(dir: string): string[] {
-  const out: string[] = [];
-  const walk = (d: string): void => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = join(d, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.ts')) out.push(p);
-    }
-  };
-  walk(dir);
-  return out;
 }
 
 /** Every capability a canon skill cell declares, as `<skill> → <capability>`. A
@@ -229,19 +164,7 @@ function portKeyspaceViolations(
   return out.sort();
 }
 
-/** AXIS 2 — a plugin's `name:` is the kebab register of every capability it provides. */
-function pluginNameViolations(sites: readonly PluginSite[]): string[] {
-  const out: string[] = [];
-  for (const s of sites)
-    for (const c of s.provides)
-      if (s.name !== kebab(c))
-        out.push(
-          `${s.file}: plugin name '${s.name}' provides '${c}', whose kebab register is '${kebab(c)}'`,
-        );
-  return out.sort();
-}
-
-/** AXIS 3 — every skill-declared capability is a member of the runtime keyspace. */
+/** AXIS 2 — every skill-declared capability is a member of the runtime keyspace. */
 function subsetViolations(
   capabilities: readonly string[],
   declared: readonly { skill: string; capability: string }[],
@@ -259,15 +182,6 @@ function subsetViolations(
 
 const CAPABILITIES = keyspace(readFileSync(KEYSPACE_SRC, 'utf-8'));
 const BASENAMES = portBasenames(PORTS_DIR);
-const SITES = PLUGIN_SRC_ROOTS.flatMap((root) =>
-  sourcesUnder(root).flatMap((f) =>
-    pluginSites(
-      f.slice(packages.length + 1),
-      readFileSync(f, 'utf-8'),
-      CAPABILITIES,
-    ),
-  ),
-);
 const SKILL_CAPS = skillCapabilities(CANON_SKILLS_DIR);
 
 describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothing else', () => {
@@ -283,20 +197,10 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['eventTap', 'memory', 'design', 'plan', 'note']),
+      expect.arrayContaining(['eventTap', 'design', 'plan', 'note']),
     );
     expect(BASENAMES).toEqual(
-      expect.arrayContaining([
-        'event-tap',
-        'memory',
-        'heartbeat',
-        'design',
-        'plan',
-        'note',
-      ]),
-    );
-    expect(SITES.map((s) => s.name)).toEqual(
-      expect.arrayContaining(['event-tap']),
+      expect.arrayContaining(['event-tap', 'design', 'plan', 'note']),
     );
     // The subset axis rests on the skill cells that declare a capability; two is
     // the floor below which a dark read could pass it vacuously.
@@ -316,12 +220,9 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     // Without this the exemption is spelling: anyone could park a real capability behind the
     // prefix and skip the keyspace. The module must SAY the prefix is a placeholder.
     //
-    // DELETED AND REBUILT IN ONE DAY, which is the mechanism working rather than churn. When
-    // `provisional-v9` became `heartbeat` the exemption had zero members, and an exemption
-    // with no subject iterates nothing and reads green for having looked at nothing — so it
-    // went. `provisional-mailbox` then arrived with a real anchor still undiscovered, which
-    // is exactly the state the prefix exists to mark, and the leg returned with a subject to
-    // protect.
+    // An exemption with no subject iterates nothing and reads green for having looked at
+    // nothing, so this leg holds only while a module carries the prefix: today that is
+    // `provisional-mailbox`, whose anchor is still undiscovered.
     const exempt = BASENAMES.filter((b) => PROVISIONAL.test(b));
     expect(exempt, 'no exempt module found — this leg is DARK').not.toEqual([]);
     for (const b of exempt) {
@@ -337,29 +238,12 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(portKeyspaceViolations(CAPABILITIES, BASENAMES)).toEqual([]);
   });
 
-  // ── AXIS 2 — plugin `name:` ≡ the sign's kebab register ────────────────────────
-  it("a runtime plugin's `name:` is the kebab register of the capability it provides", () => {
-    // Non-vacuous: the site really does claim a capability (a site claiming none
-    // would satisfy the loop by having nothing to iterate).
-    expect(SITES.flatMap((s) => s.provides)).toEqual(
-      expect.arrayContaining(['eventTap']),
-    );
-    expect(pluginNameViolations(SITES)).toEqual([]);
-  });
-
-  // ── AXIS 3 — the subset direction, which is the true one ───────────────────────
+  // ── AXIS 2 — the subset direction, which is the true one ───────────────────────
   it('every capability a skill cell declares is a member of the runtime keyspace', () => {
     expect(subsetViolations(CAPABILITIES, SKILL_CAPS)).toEqual([]);
-    // AXIS 3 is one-directional on purpose: a capability with no skill cell is
-    // legal. `memory` is now such a capability (its three cells — dream, handoff,
-    // wake — are retired) and `heartbeat` always was one; neither breaks the
-    // subset check.
-    const capsWithNoCell = ['memory', 'heartbeat'].filter(
-      (c) => !SKILL_CAPS.some((d) => d.capability === c),
-    );
-    expect(capsWithNoCell).toEqual(['memory', 'heartbeat']);
   });
 
+  // ── AXIS 3 — one set, declared in two homes ────────────────────────────────────
   it('the corpus vocabulary and the runtime keyspace name the same set', () => {
     // canon narrows `Skill` against its OWN `RUNTIME_CAPABILITIES`, so the compile
     // error a cell gets for an unknown capability is checked against this list, not
@@ -370,63 +254,38 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic corpus that violates it', () => {
-    const caps = ['memory', 'eventTap'];
+    const caps = ['design', 'eventTap'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
     // allowlist for it to be added to, so it is convicted by construction.
     expect(
-      portKeyspaceViolations(caps, ['memory', 'event-tap', 'experimental-x']),
+      portKeyspaceViolations(caps, ['design', 'event-tap', 'experimental-x']),
     ).toHaveLength(1);
 
     // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the keyspace —
     // the prefix says "no anchor yet", so it cannot be a member.
     //
-    // THE FIXTURE IS SYNTHETIC AND MUST STAY SO. It read `provisionalV9` /
-    // `provisional-v9`, naming the one real provisional port this corpus had — and when
-    // that port was renamed to `heartbeat`, the identifier sweep rewrote this fixture too,
-    // silently turning a synthetic VIOLATION into a legitimate member and taking the axis
-    // dark. A control whose subject is a shape must not be spelled with a live instance of
-    // that shape; the haystack must not contain the needle.
+    // THE FIXTURE IS SYNTHETIC AND MUST STAY SO. It once named the one real provisional
+    // port this corpus had — and when that port was renamed, the identifier sweep rewrote
+    // this fixture too, silently turning a synthetic VIOLATION into a legitimate member and
+    // taking the axis dark. A control whose subject is a shape must not be spelled with a
+    // live instance of that shape; the haystack must not contain the needle.
     expect(
       portKeyspaceViolations(
         [...caps, 'provisionalX'],
-        ['memory', 'event-tap', 'provisional-x'],
+        ['design', 'event-tap', 'provisional-x'],
       ),
     ).toHaveLength(1);
 
     // AXIS 1, the other direction: a capability with no port module at all.
-    expect(portKeyspaceViolations(caps, ['memory'])).toHaveLength(1);
+    expect(portKeyspaceViolations(caps, ['design'])).toHaveLength(1);
 
     // …and the clean corpus really is clean through the same function, so the three
     // convictions above are the predicate biting, not the predicate always firing.
-    //
-    // SECOND SITE THE SWEEP CORRUPTED. This read `['memory', 'event-tap', 'provisional-v9']`
-    // and was clean BECAUSE the third member was exempt by prefix. The rename left
-    // `heartbeat` in its place — in neither the keyspace nor the exemption — so the leg
-    // asserting cleanliness was asserting a violation. Synthetic now, and holding only what
-    // it means to hold.
-    expect(portKeyspaceViolations(caps, ['memory', 'event-tap'])).toEqual([]);
+    expect(portKeyspaceViolations(caps, ['design', 'event-tap'])).toEqual([]);
 
-    // AXIS 2: the plugin that names its capability in the WRONG register.
-    expect(
-      pluginNameViolations([
-        { file: 'x.ts', name: 'eventTap', provides: ['eventTap'] },
-      ]),
-    ).toHaveLength(1);
-    // …and the rejected third sign, which is what this whole gate was written for.
-    expect(
-      pluginNameViolations([
-        { file: 'x.ts', name: 'tap', provides: ['eventTap'] },
-      ]),
-    ).toHaveLength(1);
-    expect(
-      pluginNameViolations([
-        { file: 'x.ts', name: 'event-tap', provides: ['eventTap'] },
-      ]),
-    ).toEqual([]);
-
-    // AXIS 3: a cell forwarding to a capability no host binds.
+    // AXIS 2: a cell forwarding to a capability no host binds.
     expect(
       subsetViolations(caps, [{ skill: 'ghost', capability: 'tap' }]),
     ).toHaveLength(1);
@@ -436,7 +295,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.
     expect(() => keyspace('export const SOMETHING = [] as const;')).toThrow(
-      /no `SESSION_SCOPED` keyspace/,
+      /no `CAPABILITIES` keyspace/,
     );
   });
 });

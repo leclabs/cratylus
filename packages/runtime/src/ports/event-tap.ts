@@ -4,9 +4,9 @@
 // Lifted verbatim from the build host's runtime port (forge's
 // `runtime/event-tap/port.ts`). An event is named by {@link EventName} — a NAME,
 // with no taxonomy behind it here: which names are valid is a corpus fact this host
-// reads from its config. This file is a pure INTERFACE surface — no implementation. Each runtime
-// target (a claude host, a codex host, …) supplies exactly one implementation as
-// a runtime plugin's `eventTap`; a runtime domain module codes against this port.
+// reads from its config. This file is a pure INTERFACE surface — no implementation. Each
+// harness the tap attaches to supplies one implementation (Claude's is
+// `capabilities/event-tap/claude.ts`); a runtime domain module codes against this port.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { EventName } from '../events.js';
