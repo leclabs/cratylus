@@ -260,6 +260,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/project/bindings.test.ts': 'BEHAVIORAL',
   'forge/project/realization.test.ts': 'BEHAVIORAL',
   'forge/project/degradation.test.ts': 'BEHAVIORAL',
+  // projects a fixture plugin it owns under both adapters and reads the warnings.
+  'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
@@ -293,6 +295,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/design.test.ts': 'BEHAVIORAL',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
+  // drives the verb surface under injected omp / Claude Code / bare environments and
+  // scratch settings paths it builds itself; polices no live artifact.
+  'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
