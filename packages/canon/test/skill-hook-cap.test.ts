@@ -10,8 +10,9 @@
 // It prints every skill's size beside the cap, so the headroom is read off the run
 // and not guessed: the largest skill sits within a few dozen characters of the cap.
 //
-// The size is what the hook prints with `$HOME` unexpanded; a host whose home is
-// longer than that adds the difference to each skill (see `personaSkillOutputSize`).
+// The size counted here is with `$HOME` unexpanded — the lower bound. `install` knows the
+// host's real home and weighs against that, so a longer home degrades a skill at
+// install with a warning rather than silently at run time (see `personaSkillOutputSize`).
 
 import { claudeHarnessAdapter } from '@cratylus/forge/adapters/claude';
 import { projectPluginSet } from '@cratylus/forge/project';
@@ -70,7 +71,7 @@ describe('every shipped skill fits claude’s per-hook output cap', () => {
         `claude per-hook output cap: ${cap} characters`,
         ...shipped.map(
           (s) =>
-            `  ${s.name.padEnd(14)} ${String(s.size).padStart(6)}  (${cap - s.size} to spare)`,
+            `  ${s.name.padEnd(14)} ${String(s.size).padStart(6)}  (${cap - s.size} to spare: a home path up to ${'$HOME'.length + cap - s.size} characters)`,
         ),
       ].join('\n'),
     );

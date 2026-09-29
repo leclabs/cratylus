@@ -157,10 +157,10 @@ agent is rendered; every adapter renders the list it is handed.
 Where it lands depends on whether the harness's agent definition can name skills it preloads
 (`HarnessAdapter.preloadsSkills`):
 
-| Harness | Preloads | The closure becomes                                                                                                                                                                                                      |
-| ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                                                                                                                               |
-| claude  | yes      | subagent: front-matter `skills`; for a main session, a `SessionStart` hook per skill in the definition prints its body (a skill over the hook's output cap is named under `## Required reading` instead, with a warning) |
+| Harness | Preloads | The closure becomes                                                                                                                                                                                                                  |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                                                                                                                                           |
+| claude  | yes      | subagent: front-matter `skills`; for a main session, a `SessionStart` hook per skill in the definition prints its body (a skill over the hook's output cap is named under `## Required reading` by the hook instead, with a warning) |
 
 ### `cratylus deploy`
 

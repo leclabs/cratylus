@@ -172,11 +172,12 @@ export interface AgentDefContext {
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
   /**
-   * The composed skills this adapter must NOT hook into a main session, because
+   * The composed skills this adapter must NOT print into a main session, because
    * what the hook would print exceeds `mainSessionSkillHook.cap`: projection
    * measures each composed skill and hands the ones over the cap down by name. The
-   * adapter names them as required reading in the definition instead, so the harness's
-   * own skill tool loads them on demand. Absent or empty: every skill fits.
+   * adapter names each as required reading — in what reaches the MAIN session only,
+   * never the definition's body, which a dispatched holder reads too — so the
+   * harness's own skill tool loads it on demand. Absent or empty: every skill fits.
    */
   readonly oversizedSkills?: ReadonlySet<string>;
 }
@@ -302,10 +303,16 @@ export interface HarnessAdapter {
    * read. `size` is what that hook prints for a skill, given the skill's projected
    * `SKILL.md` text — the number projection weighs against `cap`, to decide which
    * skills the adapter cannot hook and to warn once per skill that it cannot.
+   *
+   * `hostHome` is the home the definitions will be installed under, when the caller
+   * knows it (`install` does; `project` does not). The hook prints each skill's
+   * directory, and that path is part of its output, so a longer home is a longer
+   * output. Absent, the size counts the path as the definition spells it, which is a
+   * LOWER BOUND: a host with a longer home prints more.
    */
   readonly mainSessionSkillHook?: {
     readonly cap: number;
-    size(skillName: string, skillMd: string): number;
+    size(skillName: string, skillMd: string, hostHome?: string): number;
   };
   /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.

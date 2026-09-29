@@ -175,6 +175,9 @@ export async function runInstall(
       adapter,
       resolvedBodies,
       log: () => {},
+      // The hooks print each skill's directory, so what fits the harness's output cap
+      // depends on this path; the projection cannot know it, install does.
+      hostHome: opts.home,
     });
     writeRenderTree(stage, report.files);
 

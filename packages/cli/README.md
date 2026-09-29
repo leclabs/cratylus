@@ -95,8 +95,9 @@ degrades and warns where it falls short; they are not the same, and this is what
   agent's `skills` only for a dispatched subagent, so the definition carries a `SessionStart`
   hook per skill that prints its body, and omp's launcher inlines them. Claude Code caps one
   hook's output at 10,000 characters and runs an event's hooks in parallel, so a skill over the
-  cap is not hooked but named under `## Required reading` (projection and install warn once per
-  such skill), and the order the bodies arrive in is not guaranteed. A
+  cap is named under `## Required reading` by its hook instead of printed (projection and install
+  warn once per such skill; install weighs against the home it installs under, since the path is
+  part of the output), and the order the bodies arrive in is not guaranteed. A
   project-level `.claude/skills/<name>` that shadows the user-level copy is not consulted.
 - **Enforcement scope.** A guard binds exactly the personas whose composition includes it, on
   both harnesses, and a persona is enrolled by the presence of its stance manifest,

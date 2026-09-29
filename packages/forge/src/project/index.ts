@@ -183,6 +183,14 @@ export interface ProjectOpts {
    * default here is therefore LOUD: silence must be chosen, never inherited.
    */
   readonly warn?: (line: string) => void;
+  /**
+   * The home directory these definitions will be installed under, when the caller
+   * knows it — `install` does, `project` does not. A harness whose main-session
+   * hook prints each skill's directory (`mainSessionSkillHook`) weighs a skill
+   * against its cap with this path, since a longer home is a longer output. Absent,
+   * the weighing is a lower bound.
+   */
+  readonly hostHome?: string;
 }
 
 interface Src {
@@ -558,11 +566,12 @@ export async function projectPluginSet(
       const size = mainSessionHook.size(
         name,
         opts.adapter.skillDef(resolvedSkillOf(cell)).content,
+        opts.hostHome,
       );
       if (size <= mainSessionHook.cap) continue;
       oversizedSkills.add(name);
       warn(
-        `skill '${name}' prints ${size} characters into a '${opts.adapter.name}' main session, over the harness's per-hook output cap of ${mainSessionHook.cap}. It gets no hook command and is named under '## Required reading' in each agent composing it, so the Skill tool loads it on demand.`,
+        `skill '${name}' prints ${size} characters into a '${opts.adapter.name}' main session, over the harness's per-hook output cap of ${mainSessionHook.cap}. ${opts.hostHome === undefined ? '' : `Measured with the host home '${opts.hostHome}'. `}The hook names it as required reading in place of printing it, for each agent composing it, so the Skill tool loads it on demand.`,
       );
     }
   }

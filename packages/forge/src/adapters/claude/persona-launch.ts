@@ -41,6 +41,14 @@ export const CLAUDE_HOOK_OUTPUT_CAP = 10_000;
  *  uses. */
 const BASE_DIRECTORY_LABEL = 'Base directory for this skill: ';
 
+/** The notice a skill the hook cannot carry is named in, as a `printf` — one shared
+ *  spelling for a skill that is missing from the host and for one too large to print.
+ *  It goes to the session and not into the definition's body: a dispatched holder of
+ *  the same position has the skill preloaded, and must not be told to fetch it. */
+function requiredReadingPrintf(skill: string): string {
+  return `printf '## Required reading\\n\\nThis skill is REQUIRED reading for this session, not background:\\nload it with the Skill tool and read it in full before you act.\\n\\n- \`%s\`\\n' ${shellQuote(skill)}`;
+}
+
 /** Where the skills are, as SHELL text read at run time on the host the definition
  *  lands on (so `home` is `$HOME/.claude`, never the projecting machine's path). */
 export interface PersonaSkillRoots {
@@ -95,7 +103,7 @@ export function personaSkillCommand(
     `  awk ${shellQuote(AFTER_FRONT_MATTER)} "$dir/SKILL.md"`,
     'else',
     `  printf '%s: no skill %s at %s; naming it as required reading instead\\n' ${shellQuote(agent)} ${shellQuote(skill)} "$dir" >&2`,
-    `  printf '## Required reading\\n\\nThis skill is REQUIRED reading for this session, not background:\\nload it with the Skill tool and read it in full before you act.\\n\\n- \`%s\`\\n' ${shellQuote(skill)}`,
+    `  ${requiredReadingPrintf(skill)}`,
     'fi',
     'exit 0',
   ].join('\n');
@@ -140,16 +148,15 @@ export function personaSkillOutputSize(dir: string, skillMd: string): number {
 }
 
 /**
- * The closing section of an agent definition that names skills the launch hook
- * cannot carry — the same heading omp's launcher uses for a skill it cannot inline.
- * The Skill tool loads each on demand, so the skill is in reach and not in context.
+ * The shell command a `SessionStart` hook runs for a skill the launch hook cannot
+ * carry because its output would exceed the harness's cap: it names the skill under
+ * `## Required reading`, so the Skill tool loads it on demand.
+ *
+ * It is a HOOK and not a section of the definition on purpose. The hook fires only
+ * for a `--agent` main session; a dispatched holder of the same position preloads
+ * the skill through `skills` at any size, and a notice in the definition body would
+ * tell that holder to load what it already holds.
  */
-export function requiredReadingSection(skills: readonly string[]): string {
-  return [
-    '## Required reading',
-    '',
-    'These skills are REQUIRED reading for this session, not background: load each one with the Skill tool and read it in full before you act.',
-    '',
-    ...skills.map((s) => `- \`${s}\``),
-  ].join('\n');
+export function personaRequiredReadingCommand(skill: string): string {
+  return [requiredReadingPrintf(skill), 'exit 0'].join('\n');
 }
