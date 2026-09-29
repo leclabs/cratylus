@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NN20YRQ99GZ4EY5K4P6DDM",
+    "entity": "01M3NN20YRQ99GZ4EY5K4P6DDK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T03:59:10.296Z",
+    "reason": "found by the capability-docs implementer outside its allowed lines",
+    "cause": "capability-set wave 0"
+  },
+  "payload": {
+    "title": "two stale package README sentences",
+    "kind": "idea",
+    "topic": "docs",
+    "body": "packages/canon/README.md (~63-64) says canon depends on @cratylus/forge for defineAgentPlugin, which ARCHITECTURE records moved to @cratylus/schema; packages/tooling/README.md (~5) says the package's scope is @repo, while it is named @cratylus/tooling.",
+    "blocks": []
+  }
+}
