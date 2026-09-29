@@ -182,6 +182,16 @@ export const OMP_GUARDRAIL_MODULE = `${CLI_BIN}-guardrails.ts`;
  *  guardrails follow the agents that compose them, these follow the cells. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
+/** The persona badge's status key — the slot `ctx.ui.setStatus` fills, derived
+ *  from the bin so a rename carries it. The module is named after the same slot. */
+const OMP_PERSONA_BADGE_KEY = `${CLI_BIN}-persona-badge`;
+
+/** The emitted PERSONA BADGE module's filename. A third file rather than one
+ *  more registration in either sibling, because it retires with neither: the
+ *  guardrails follow composed constraints, the session module follows the cells,
+ *  and the badge follows the persona alone. */
+export const OMP_PERSONA_BADGE_MODULE = `${OMP_PERSONA_BADGE_KEY}.ts`;
+
 /** The `--config` overlay filename — the launcher's one argument for reaching a
  *  persona's own extensions. */
 export const OMP_OVERLAY_FILE = 'omp.yml';
@@ -229,13 +239,14 @@ export const OMP_LAUNCHER_FILE = 'omp-agent';
  *  deploy cannot know they exist. */
 export const OMP_PERSONA_DIR = 'personas';
 
-// The two filenames that must resolve inside a scope's `extensions/`
-// subdirectory rather than at the scope's own top level — the overlay and the
-// launcher are the operator's entry points and are never themselves scanned as
-// extensions, so they stay one level up from what they name.
+// The filenames that must resolve inside a scope's `extensions/` subdirectory
+// rather than at the scope's own top level — the overlay and the launcher are
+// the operator's entry points and are never themselves scanned as extensions,
+// so they stay one level up from what they name.
 const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
   [OMP_GUARDRAIL_MODULE]: true,
   [OMP_SESSION_MODULE]: true,
+  [OMP_PERSONA_BADGE_MODULE]: true,
 };
 
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
@@ -1026,14 +1037,7 @@ function ompExtensionModule(
           "// with no persona's launch spec — scans NATIVELY, with no `--config` entry",
           '// required. A persona launch reads its own copy instead and never this one.',
         ]
-      : [
-          '// SCOPED BY LOCATION, NAMED BY THE LAUNCH SPEC. This module sits in this',
-          `// persona's own \`${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}/extensions/\` dir, which`,
-          `// omp never scans on its own — the \`${OMP_LAUNCHER_FILE}\` launcher is what passes`,
-          `// \`--config ${OMP_OVERLAY_FILE}\` once it has resolved this persona by name, and that`,
-          '// overlay is what names this directory. A launch that never resolves this',
-          "// persona's overlay — including a bare `omp` — never loads this copy.",
-        ];
+      : personaPlacement(agent);
   // The payload bridge is emitted only where a registration reads one, so a module
   // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
   // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever
@@ -1092,6 +1096,19 @@ function ompExtensionModule(
     '}',
     '',
   ].join('\n');
+}
+
+/** The placement note of a module in persona `agent`'s own scope — shared by
+ *  every per-persona module, because the placement is one fact about them all. */
+function personaPlacement(agent: string): string[] {
+  return [
+    '// SCOPED BY LOCATION, NAMED BY THE LAUNCH SPEC. This module sits in this',
+    `// persona's own \`${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}/extensions/\` dir, which`,
+    `// omp never scans on its own — the \`${OMP_LAUNCHER_FILE}\` launcher is what passes`,
+    `// \`--config ${OMP_OVERLAY_FILE}\` once it has resolved this persona by name, and that`,
+    '// overlay is what names this directory. A launch that never resolves this',
+    "// persona's overlay — including a bare `omp` — never loads this copy.",
+  ];
 }
 
 // ── Launch spec → <persona>/omp.yml, <session>/omp-agent ─────────────────────
@@ -1425,6 +1442,61 @@ export function ompLaunchSurface(
   return out;
 }
 
+// ── Persona badge → <persona>/extensions/<bin>-persona-badge.ts ─────────────
+
+/**
+ * The persona badge: ONE module per projected agent, in that persona's own
+ * scope, that puts the persona's mark emoji and name in the status line of a
+ * session it runs. Never the SESSION scope — a bare launch runs no persona, so
+ * there is nothing to badge.
+ *
+ * THE NAME IS BAKED AT PROJECTION. omp calls a launched persona `main`
+ * (`ctx.agent.name`), so the running session cannot say which persona it is;
+ * placement already does, and the badge text is written from the agent cell
+ * here. A null provenance carries no mark, and the badge is the name alone.
+ *
+ * THE HUE IS NEVER READ: omp strips ANSI from an extension's status text, so a
+ * hue could reach the status line only as a word nobody asked for.
+ *
+ * Shown only where `ctx.hasUI` and `ctx.agent.kind === "main"` — the top-level
+ * interactive session, never a dispatched subagent's.
+ */
+export function ompPersonaBadgeExtensions(
+  agents: readonly Agent[],
+): HarnessProjection[] {
+  return [...agents]
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    .map((a) => {
+      const text = a.provenance
+        ? `${a.provenance.mark.emoji} ${a.name}`
+        : a.name;
+      return {
+        filename: OMP_PERSONA_BADGE_MODULE,
+        scope: a.name,
+        content: [
+          `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
+          `// The persona badge of \`${a.name}\`: its mark and name in the status line.`,
+          '//',
+          ...personaPlacement(a.name),
+          '// The name is baked in below, never asked for: omp calls a launched persona',
+          '// `main`, so what this badge shows is known only at projection. It shows only',
+          "// in a top-level interactive session, never in a subagent's.",
+          '',
+          "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+          '',
+          'export default function (pi: ExtensionAPI) {',
+          '  pi.on("session_start", (_event, ctx) => {',
+          '    if (ctx.hasUI && ctx.agent.kind === "main") {',
+          `      ctx.ui.setStatus(${JSON.stringify(OMP_PERSONA_BADGE_KEY)}, ${JSON.stringify(text)});`,
+          '    }',
+          '  });',
+          '}',
+          '',
+        ].join('\n'),
+      };
+    });
+}
+
 // ── HarnessAdapter port ──────────────────────────────────────────────────────
 
 /**
@@ -1489,14 +1561,19 @@ export const ompHarnessAdapter: HarnessAdapter = {
     ompGuardrailExtensions(bindings, mechanisms),
   scopeActivatedSurface: (hooks, agentNames) =>
     ompScopeActivatedExtensions(hooks, agentNames),
-  launchSurface: (agentNames) => ompLaunchSurface(agentNames),
+  // The launch spec, then each persona's badge: the identity a launch carries on
+  // a harness with no native identity field includes what the operator SEES.
+  launchSurface: (agents) => [
+    ...ompLaunchSurface(agents.map((a) => a.name)),
+    ...ompPersonaBadgeExtensions(agents),
+  ],
   // The SESSION scope reads as itself OR as omission, so a caller may pass a
   // projection's `scope` field straight through. Requiring the translation put the
   // same `=== SESSION_SCOPE` conditional at every call site, and a call site that
   // forgot it asked for a persona named `_session`.
   //
-  // The overlay and the launcher sit at the scope's OWN top level; the guardrail
-  // and session modules sit one level down, in `extensions/`, because that is the
+  // The overlay and the launcher sit at the scope's OWN top level; the guardrail,
+  // session and persona badge modules sit one level down, in `extensions/`, because that is the
   // subdirectory omp's loader (native scan, or a directory named in `--config`)
   // actually reads — see `OMP_EXTENSION_FILES`.
   //

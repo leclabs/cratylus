@@ -23,6 +23,7 @@ import {
   OMP_GUARDRAIL_MODULE,
   OMP_LAUNCHER_FILE,
   OMP_OVERLAY_FILE,
+  OMP_PERSONA_BADGE_MODULE,
   OMP_PERSONA_DIR,
   OMP_REFUSAL_SHAPE,
   OMP_SESSION_DIR,
@@ -1053,6 +1054,97 @@ describe('omp launch spec', () => {
     expect(`${posix.dirname(overlayRel)}/extensions`).toBe(
       posix.dirname(moduleRel),
     );
+  });
+});
+
+describe('omp persona badge', () => {
+  const NICO = {
+    name: 'nico',
+    provenance: { mark: { emoji: '📐', hue: 'blue' } },
+  } as never;
+  const MAV = {
+    name: 'mav',
+    provenance: { mark: { emoji: '🔧', hue: 'green' } },
+  } as never;
+
+  const badges = (agents: never[]) =>
+    (ompHarnessAdapter.launchSurface?.(agents) ?? []).filter(
+      (f) => f.filename === OMP_PERSONA_BADGE_MODULE,
+    );
+
+  /**
+   * Load an emitted badge module and fire its `session_start` under `ctx`,
+   * returning the text of every status it set. RUN, not read: the guard and
+   * the baked text are observed the way omp would observe them.
+   */
+  async function statusesSet(
+    content: string,
+    ctx: { hasUI: boolean; kind: string },
+  ): Promise<string[]> {
+    const dir = mkdtempSync(join(tmpdir(), 'omp-badge-'));
+    tmp.push(dir);
+    const file = join(dir, OMP_PERSONA_BADGE_MODULE);
+    writeFileSync(file, content);
+    type Handler = (event: unknown, ctx: unknown) => void;
+    // Dynamic by necessity: the module is the projection's OUTPUT, written above.
+    const mod = (await import(file)) as {
+      default: (pi: { on: (event: string, h: Handler) => void }) => void;
+    };
+    const handlers = new Map<string, Handler>();
+    mod.default({ on: (event, h) => handlers.set(event, h) });
+    const set: string[] = [];
+    handlers.get('session_start')?.(
+      {},
+      {
+        hasUI: ctx.hasUI,
+        // omp names a LAUNCHED persona `main` — which is why the module cannot
+        // read its own name and must carry it baked in.
+        agent: { kind: ctx.kind, name: 'main' },
+        ui: { setStatus: (_key: string, text: string) => set.push(text) },
+      },
+    );
+    return set;
+  }
+
+  it('lands ONE badge per persona in its own extensions dir, none in the session', () => {
+    const out = badges([NICO, MAV]);
+    expect(out.map((f) => f.scope)).toEqual(['mav', 'nico']);
+    expect(
+      ompHarnessAdapter.scopedRel?.(OMP_PERSONA_BADGE_MODULE, 'nico'),
+    ).toBe(
+      `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/nico/extensions/${OMP_PERSONA_BADGE_MODULE}`,
+    );
+  });
+
+  it('shows the mark emoji and the name — and never the hue', async () => {
+    const [nico] = badges([NICO]);
+    expect(
+      await statusesSet(nico?.content as string, { hasUI: true, kind: 'main' }),
+    ).toEqual(['📐 nico']);
+  });
+
+  it('shows the name ALONE for an agent with no provenance', async () => {
+    const out = badges([{ name: 'x', provenance: null } as never]);
+    expect(out.map((f) => [f.filename, f.scope])).toEqual([
+      [OMP_PERSONA_BADGE_MODULE, 'x'],
+    ]);
+    expect(
+      await statusesSet(out[0]?.content as string, {
+        hasUI: true,
+        kind: 'main',
+      }),
+    ).toEqual(['x']);
+  });
+
+  it("shows only in a top-level interactive session, never a subagent's", async () => {
+    const [nico] = badges([NICO]);
+    const content = nico?.content as string;
+    expect(await statusesSet(content, { hasUI: false, kind: 'main' })).toEqual(
+      [],
+    );
+    expect(
+      await statusesSet(content, { hasUI: true, kind: 'subagent' }),
+    ).toEqual([]);
   });
 });
 

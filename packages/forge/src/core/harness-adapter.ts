@@ -486,10 +486,16 @@ export interface HarnessAdapter {
   /**
    * Emit the LAUNCH SPEC — the artifacts an operator combines to start a
    * session AS one composed persona, on a harness with no native identity
-   * field to put a persona in. Staged the same way `enforcingSurface`'s output
+   * field to put a persona in — and the IDENTITY that launch carries, which
+   * includes what the operator sees of it: omp's persona badge, the mark emoji
+   * and name in the status line. Staged the same way `enforcingSurface`'s output
    * is (`scope` = the agent name, or {@link SESSION_SCOPE}), because the spec
    * belongs beside the mechanism modules it wires, not in a directory of its
    * own.
+   *
+   * `agents` is the COMPOSED set, each projected agent once — not its names —
+   * because the badge is written from the agent cell (its `provenance` mark) at
+   * projection: a launched persona cannot name itself at run time.
    *
    * PER-AGENT AND SESSION-WIDE BOTH, and the split is the implementation's to
    * make. An artifact that NAMES one persona is scoped to it (omp's `--config`
@@ -508,5 +514,5 @@ export interface HarnessAdapter {
    * Absent ⇒ this harness carries identity in its own native field (claude's
    * front-matter `name`, codex's TOML `name`) and composes no launch spec.
    */
-  launchSurface?(agentNames: readonly string[]): readonly HarnessProjection[];
+  launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
 }
