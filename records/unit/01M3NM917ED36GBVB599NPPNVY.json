@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3NM917ED36GBVB599NPPNVY",
+    "entity": "01M3NM43GH37MFK75G8DNY1N4W",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NM5ET8290R1RM7T6WZW7A8"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T03:45:31.374Z",
+    "reason": "dispatched to an implementer",
+    "cause": "wave 0 of capability-set"
+  },
+  "payload": {
+    "plan": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "spec": {
+      "name": "sessionless-shims",
+      "intent": "**Wave 0.** Realizes `capability`'s clause *no capability needs a session* where shims are made: every shim forge projects is one plain forwarder, whatever the capability and whatever the harness. It also removes the memory store's residue from forge's projection and deploy code.\n\nCensus at 63c5d9c3 (re-derive before citing):\n- `packages/forge/src/project/runtime-shim.ts` imports `SESSION_SCOPED` from `@cratylus/runtime/capability` and emits three shapes: a plain forwarder for a capability declared `false`; a bridge that copies the harness's vendor variable into `$AGENT_SESSION_ID`; and, where the harness names none, a shim that exits 3 asking for `$AGENT_SESSION_ID` / `$AGENT_SESSION_ID_FROM`. The vendor list is `HarnessAdapter.sessionEnvVars` (`core/harness-adapter.ts:262-277`), set by claude (`CLAUDE_SESSION_ENV_VARS`), codex (`CODEX_SESSION_ENV_VARS`) and omp (`[]`), and threaded by `project/index.ts:692-694`.\n- Tests pinning it: `packages/canon/test/runtime-shim.test.ts` (the leg 'only a SESSION-SCOPED capability bridges the harness session id', its header, and `emitRuntimeShim(dir, capability, adapterByName(harness).sessionEnvVars)`); `packages/forge/test/adapters/omp.test.ts` (describe 'omp names no session…', which runs a `memory` shim and expects exit 3); `packages/forge/test/deploy/runtime-bin-resolvable.test.ts` (`claudeHarnessAdapter.sessionEnvVars`).\n- Projection fixtures that name `memory` as the capability a shim forwards to: `packages/forge/test/core/runtime-shim-binding.test.ts`; `packages/forge/test/project/fixtures/skills/greet/skill.ts` with `packages/forge/test/project/tree.test.ts`; the `treeWithShim` default in `runtime-bin-resolvable.test.ts`; and `runShim('memory')` / `runtimeShimContent('memory', …)` in `omp.test.ts`.\n- Memory-store residue: `packages/forge/src/deploy/types.ts:27-28,50` (`seeded`, initialized and never written); the header of `deploy/deploy.ts:1-9` (seeds `{SEMANTIC,PROCEDURAL,EPISODIC}` sidecars, `(memory)`); `deploy/bundle.ts:9-10` (memory as a standalone PATH tool); `packages/forge/README.md:171` (each deployed agent gets its memory layers seeded). `packages/forge/CHANGELOG.md` already records that these files are no longer written.\n- `packages/forge/README.md:130-133` states the session rule.\n\nBuild:\n1. `runtimeShimContent(capability)` and `emitRuntimeShim(skillDir, capability)` emit one shape: the signature line, a header, and `spawnSync(CLI_BIN, [capability, …argv])` with the caller's environment. Delete the `SESSION_SCOPED` import, `sessionScoped`, `SESSION_ID_ENV`, `SESSION_ID_FROM_ENV` and both session branches. The header and the emitted comment say nothing about sessions.\n2. Delete `HarnessAdapter.sessionEnvVars`, the claude and codex constants, and omp's `sessionEnvVars: []` with its comment. `project/index.ts` calls the one-argument emitter.\n3. Tests. The canon session leg becomes a leg asserting that, for every member of `RUNTIME_CAPABILITIES` and every registered harness adapter, the emitted shim contains no `session` (case-insensitive) and forwards to `<CLI_BIN> <capability>`. omp's 'names no session' describe becomes one leg that runs a shipped capability's omp shim with no session variable set and sees it forward. Every fixture that names `memory` as a capability names a shipped one (`note`, `design`, `plan` or `eventTap`), and paths and expectations follow.\n4. Remove `seeded` from the deploy report, and remove the `deploy.ts` and `bundle.ts` header sentences about memory's sidecars and PATH tool. The agent's self-authored home (`deploy/local.ts`, `test/deploy/local.test.ts`) is MODEL.md's memory-home, not the capability, and is not touched.\n5. `packages/forge/README.md` says a projected shim forwards with no session from any harness, and drops the memory-layers sentence.\n6. `.changeset/sessionless-shims.md` names `@cratylus/forge` and `cratylus`.\n\nRefs checked at the symbol level against the wave-0 siblings: no file `memory-removal` or `capability-docs` writes spells `sessionEnvVars`, `CLAUDE_SESSION_ENV_VARS`, `CODEX_SESSION_ENV_VARS`, `SESSION_SCOPED` or `seeded` (0 hits at 63c5d9c3 in `integrate-smoke.test.ts` and `projection-facts.test.ts`).\n\nNot here: the runtime's `SESSION_SCOPED` and `CAPABILITIES` (`built-in-capabilities`, which depends on this unit), the memory package, `integrate-smoke.test.ts`, and forge's deploy-test skill fixtures named `memory` (`deploy/{check,cli,local,prune}.test.ts`, `helpers.ts`), which name a skill directory and not a capability.",
+      "static": [
+        "`cratylus design show capability` at 63c5d9c3.",
+        "`packages/forge/src/project/runtime-shim.ts` (whole file) and `packages/forge/src/project/index.ts:680-700`: the emitter and its one caller.",
+        "`packages/forge/src/core/harness-adapter.ts:255-280`, `packages/forge/src/adapters/claude/render.ts:238-266`, `packages/forge/src/adapters/codex/render.ts:285-315`, `packages/forge/src/adapters/omp/render.ts:1235-1245,1550-1560`: the adapter field and its three values.",
+        "`packages/canon/test/runtime-shim.test.ts`, `packages/forge/test/adapters/omp.test.ts:1150-1202`, `packages/forge/test/deploy/runtime-bin-resolvable.test.ts:90-115`: the tests that pin session handling.",
+        "`packages/forge/src/deploy/{types,deploy,bundle}.ts` headers and `packages/forge/CHANGELOG.md:546`: the memory sidecars forge no longer writes."
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/project/runtime-shim.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/codex/render.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/bundle.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/deploy/runtime-bin-resolvable.test.ts",
+        "packages/forge/test/core/runtime-shim-binding.test.ts",
+        "packages/forge/test/project/fixtures/skills/greet/skill.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/canon/test/runtime-shim.test.ts",
+        "packages/forge/README.md",
+        ".changeset/sessionless-shims.md"
+      ],
+      "accept": [
+        "`git grep -n -E \"SESSION_SCOPED|AGENT_SESSION_ID|sessionEnvVars|SESSION_ENV_VARS|sessionScoped\" -- packages/forge packages/canon ':!**/CHANGELOG.md' ':!packages/canon/test/capability-keyspace.test.ts'` prints nothing (measured at 63c5d9c3: 43 lines; `capability-keyspace.test.ts` belongs to `built-in-capabilities`).",
+        "`git grep -n -w memory -- packages/forge/src/project/runtime-shim.ts packages/forge/test/core/runtime-shim-binding.test.ts packages/forge/test/project/fixtures/skills/greet/skill.ts packages/forge/test/project/tree.test.ts packages/forge/test/deploy/runtime-bin-resolvable.test.ts` prints nothing (measured: 27 lines), and `git grep -n -E \"runShim\\('memory'\\)|runtimeShimContent\\('memory'\" -- packages/forge/test/adapters/omp.test.ts` prints nothing (measured: 2 lines).",
+        "`git grep -n -w seeded -- packages/forge/src` prints nothing (measured at 63c5d9c3: 3 lines); `git grep -n -E '\\(`memory`\\)|standalone `memory`' -- packages/forge/src` prints nothing (measured: `deploy/deploy.ts:3`, `deploy/bundle.ts:10`); and `git grep -n -E 'memory layers|session id|session-scoped|SESSION_SCOPED' -- packages/forge/README.md` prints nothing (measured: lines 131, 132, 171).",
+        "After `pnpm project`, which builds and projects claude, codex and omp into `.cratylus/`, `find .cratylus -path '*/skills/*/scripts/*.mjs' -exec grep -liI session {} +` prints nothing (measured on the working copy's projection at 63c5d9c3: 12 files), and `find .cratylus -path '*/skills/*/scripts/*.mjs' | wc -l` prints 12 (three harnesses, four capabilities).",
+        "`pnpm --filter @cratylus/canon test -- runtime-shim` passes, including a leg asserting that for every member of `RUNTIME_CAPABILITIES` and every registered harness adapter the emitted shim contains no `session` (case-insensitive) and spawns `<CLI_BIN>` with that capability as its first argument.",
+        "`pnpm --filter @cratylus/forge test -- omp runtime-bin-resolvable runtime-shim-binding tree` passes.",
+        "`pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/forge typecheck:test` pass.",
+        "`grep -q '\"@cratylus/forge\":' .changeset/sessionless-shims.md && grep -q '\"cratylus\":' .changeset/sessionless-shims.md && ! grep -q '@cratylus/memory' .changeset/sessionless-shims.md` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3NK67ET848PWDE5M474EV55",
+      "version": "01M3NK67ET848PWDE5M474EV56",
+      "closure": {
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3"
+      }
+    }
+  }
+}

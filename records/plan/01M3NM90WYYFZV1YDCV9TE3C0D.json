@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3NM90WYYFZV1YDCV9TE3C0D",
+    "entity": "01M3NM43GEEW4DWKEYB9KCECDD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3NM43GEEW4DWKEYB9KCECDE"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T03:45:31.038Z",
+    "reason": "plan judged against capability; four units, two waves, disjoint outputs; rulings on docs and ports applied",
+    "cause": "operator ruling 2026-09-28: remove memory, the plugin kernel, heartbeat and session scope"
+  },
+  "payload": {
+    "name": "capability-set",
+    "realizes": [
+      "01M3NK67ET848PWDE5M474EV55"
+    ],
+    "state": "bound"
+  }
+}
