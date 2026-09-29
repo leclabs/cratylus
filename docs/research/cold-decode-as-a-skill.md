@@ -198,7 +198,7 @@ tmp=$(mktemp -d); cd $tmp; claude -p "`$ARGUMENTS`" --safe-mode
 | `packages/canon/src/skills/{probe,signify,exemplify,introspect}/skill.ts`         | **delegate**, boundary-bound `@ cold-decode`, instead of re-describing isolation |
 | `packages/canon/src/manifest.ts`                                                  | `RUNTIME_CAPABILITIES` += `'coldDecode'`                                         |
 | `packages/runtime/src/ports/cold-decode.ts`, `capabilities/cold-decode/claude.ts` | port + strategy                                                                  |
-| `packages/forge/src/core/harness-adapter.ts`, `adapters/{claude,codex}/render.ts` | optional member + declaration                                                    |
+| `packages/forge/src/core/harness-adapter.ts`, `adapters/{claude,omp}/render.ts`   | optional member + declaration                                                    |
 | `packages/forge/src/project/realization.ts`                                       | degrade/warn decision                                                            |
 | `packages/forge/src/validate/accept.ts:256`                                       | `coldBlindStatic()` → real oracle call                                           |
 | `README.md:14`, `docs/research/candidates.md:7`                                   | repoint at the restored record                                                   |

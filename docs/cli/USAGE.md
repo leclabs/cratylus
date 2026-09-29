@@ -16,7 +16,7 @@
 **Author agent semantics once; realize them on any harness.**
 
 You describe agents, skills and rules as a **corpus** of signified primitives. Cratylus projects
-that corpus onto whatever harness you actually run — Claude Code, Codex, others — deterministically.
+that corpus onto whatever harness you actually run — Claude Code and omp — deterministically.
 The corpus is data; the projector is a pure function of it; the harness is a target, never the
 source of truth.
 
@@ -238,7 +238,7 @@ Six verbs, MECE across **configure / discover / inspect / gate / emit / place**.
 
 Three closures block the plugin thesis. None is a CLI question; all outrank one.
 
-1. **The harness registry is closed.** `HarnessName = 'claude' | 'codex'` — a third party cannot
+1. **The harness registry is closed.** `HarnessName = 'claude' | 'omp'` — a third party cannot
    ship an adapter without editing forge. That contradicts VISION's headline, _"realize behavior
    everywhere."_ Adapters should ride the **config** (projection), not the corpus plugin (meaning).
 2. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its

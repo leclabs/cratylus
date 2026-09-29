@@ -23,7 +23,7 @@ init → add → compose → project → deploy
 | `project` | renders the resolved set into a render tree (`.render/`)                       |
 | `deploy`  | places the render tree into the local `.claude/` root                          |
 
-Projection goes from composed cells to harness artifacts **directly**. The claude and codex harness
+Projection goes from composed cells to harness artifacts **directly**. The claude and omp harness
 adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
 no intermediate exchange format between the two, and no stage of this pipeline reads or writes one.
 
@@ -132,14 +132,14 @@ them. A shim forwards its arguments to `cratylus <capability>` with the caller's
 needs no session from any harness.
 
 ```
-cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
+cratylus project [--config <path>] [--out <dir>] [--harness claude|omp]
 ```
 
 Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
 the counts it wrote and the exact `deploy` invocation that ships them.
 
 ```
-cratylus project --out ./build --harness codex
+cratylus project --out ./build --harness omp
 ```
 
 #### An agent is given its skills' closure
@@ -154,14 +154,10 @@ agent is rendered; every adapter renders the list it is handed.
 Where it lands depends on whether the harness's agent definition can name skills it preloads
 (`HarnessAdapter.preloadsSkills`):
 
-| Harness | Preloads | The closure becomes                                                                                          |
-| ------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                   |
-| claude  | yes      | the subagent front-matter `skills` sequence                                                                  |
-| codex   | no       | a `## Required reading` section ending `developer_instructions`, plus one warning per agent given any skills |
-
-Codex's agent TOML has no preload field (only `skills.config` enable/disable), so its rung is the
-fidelity ladder's floor: a steer the agent reads, never silence.
+| Harness | Preloads | The closure becomes                                                                        |
+| ------- | -------- | ------------------------------------------------------------------------------------------ |
+| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body) |
+| claude  | yes      | the subagent front-matter `skills` sequence                                                |
 
 ### `cratylus deploy`
 
@@ -201,15 +197,15 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude / codex                 | omp                                                          |
-| -------------------------- | ------------------------ | ------------------------------ | ------------------------------------------------------------ |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`           | `agent/agents/<name>.md`                                     |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively)        |
-| hook registration          | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                                    |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                                  |
-| persona badge module       | `scopedRel(file, scope)` | —                              | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
-| `--config` overlay         | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml` (per persona)                              |
-| launcher                   | `scopedRel(file, scope)` | —                              | `agent/omp-agent` (0755, ONE for every persona)              |
+| Artifact                   | Port op                  | claude               | omp                                                          |
+| -------------------------- | ------------------------ | -------------------- | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>` | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`      | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json`      | — (no hook config exists)                                    |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                    | `<scope>/extensions/<file>`                                  |
+| persona badge module       | `scopedRel(file, scope)` | —                    | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                    | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | —                    | `agent/omp-agent` (0755, ONE for every persona)              |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
@@ -231,7 +227,7 @@ host that never configured the role runs the agent on the default role (`modelRo
 holding no role has no `model` key. Which model fills a role is the host's `modelRoles` entry in
 `~/.omp/agent/config.yml` (or `config.yaml`, which omp reads only when config.yml is absent). The table
 behind this is the adapter's optional `roleRouting` member (its default role, the built-in role nearest
-each held role, and the config paths in read order); claude and codex leave it absent and their definitions carry no
+each held role, and the config paths in read order); claude leaves it absent and its definitions carry no
 route. `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
 `modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer to `task`, planner to `plan`,
 assayer and architect to `default`. It edits the config file omp reads — `config.yml`, else `config.yaml` —
@@ -333,7 +329,7 @@ import { deploySingle, userScope, projectScope } from '@cratylus/forge/deploy';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 ```
 
-`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'codex'` — so a
+`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'omp'` — so a
 consumer depends on the adapter port and this selector rather than on a concrete harness module.
 Plugin authors also want `@cratylus/schema` for the cell types — they are no longer forge's, and
 importing them from the projector was the inversion `schema` exists to end.
