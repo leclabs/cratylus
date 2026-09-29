@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3ND9S6Y57RT0PZ3MEK8D8P3",
+    "entity": "01M3ND9S6Y57RT0PZ3MEK8D8P2",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T01:43:35.902Z",
+    "reason": "the host config holds one flat native map, so the last deploy overwrites every other harness's names",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "runtime-config",
+      "intent": "**Wave 0.** Realizes `runtime config`.\n\nThe concept (design at 63a012ce): the one per-host file through which deploy hands the runtime what it does not know on its own. The corpus's event vocabulary and each capability's configuration (the plan lifecycle among them) are the corpus's. Each harness's native names for those events are that harness's alone, held in one stanza per harness. A deploy writes its own harness's stanza and the corpus's parts, and leaves every other harness's stanza as it found it. A reader needing native names asks for one harness's by name and, when that harness has none, refuses and names the deploy to run.\n\nCensus at 63a012ce (re-derive before citing):\n- The file is `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`. Its native names live in one flat `events.native` map, so the last deploy wins. `docs/runtime-config-single-harness.md` files the defect; by its own account (2026-09-25), a claude deploy reported 19 events with a native peer and a following omp deploy 9, into the same file.\n- Producer: `packages/forge/src/deploy/runtime-config.ts` (`runtimeConfigDocument`, `emitRuntimeConfig`). It rewrites the whole file, preserving only `capabilities` and `resolveFrom`. It is called once per deploy by `emitHostRuntimeConfig` in `packages/forge/src/cli/commands/deploy.ts` with `harnessAdapter.nativeEvents`; the adapter's `name` is in hand there, and `install` reaches it through `runDeploy`.\n- Reader: `packages/runtime/src/runtime-config.ts` (`RuntimeEvents.native`, `parseEvents`). The only consumer of native names is the event-tap capability's Claude strategy: `capabilities/event-tap/dispatch.ts` (`configured.native`) and `index.ts` (`loadRuntimeConfig()?.events?.native ?? {}`, a silent empty fallback). `claude.ts` names the old field in its doc comment.\n\nBuild:\n1. The document. The corpus's parts, `events.vocabulary` and `configuration`, stay where they are, as do the operator's `capabilities` and `resolveFrom`. Native names move to one stanza per harness, `harnesses.<harness>.native` (canonical event to native name, filtered to the vocabulary as today). No flat `events.native` is written or read. This is green field with no compatibility reading: a host with only the old shape is a host whose harness has no stanza.\n2. Emission takes the harness's name (the adapter's `name`) with its map. It writes the corpus's parts and that harness's stanza, and carries every other harness's stanza over exactly as found, along with the operator's parts as today. `emitHostRuntimeConfig` passes `harnessAdapter.name`, and its log line reports the stanza it wrote.\n3. The runtime reader is one function in `runtime-config.ts`. Given the config and a harness name, it returns that harness's native names, or throws a refusal naming the deploy to run: `<CLI_BIN> deploy --harness <name>`, with the bin name taken from `bin-name.ts` and never written as a literal. `RuntimeEvents` loses `native`, and `loadRuntimeConfig` lifts `harnesses`. `loadRuntimeConfig`'s signature and `RuntimeConfig.configuration` and `capabilities` are unchanged, because `plan/reading.ts` and `loader.ts` read them and are not this unit's.\n4. The event tap asks for `claude`'s names by name through that reader, in `dispatch.ts` and in `index.ts`, with no `?? {}` default. The Claude strategy names its own harness once, in `claude.ts`.\n5. Tests, with no new test file:\n   - `packages/canon/test/event-vocabulary.test.ts`: the round trip is rewritten to the stanza shape. A new leg emits claude then omp into one file and checks that both stanzas are present, each equal to its adapter's map filtered to the vocabulary, and that re-emitting claude leaves omp's stanza deep-equal. The reader, asked for a harness with no stanza, refuses and names the deploy.\n   - `packages/runtime/test/runtime-config.test.ts` and `event-tap.test.ts` move to the new shape, with a leg in which an old flat-shape config makes the tap refuse, naming `deploy --harness claude`.\n   - `packages/forge/test/deploy/integrate-smoke.test.ts` passes its harness to the emitter.\n6. Docs and changeset:\n   - `packages/cli/README.md` is where an operator reads about the file. It says deploy writes the corpus's parts and its harness's stanza into the same file, and leaves the operator's keys and other harnesses' stanzas as found.\n   - `docs/runtime-config-single-harness.md` is deleted, because the defect it files is the one this unit fixes.\n   - `.changeset/runtime-config.md` names `@cratylus/runtime`, `@cratylus/forge` and `cratylus`.",
+      "static": [
+        "`cratylus design show 'runtime config'` at 63a012ce.",
+        "`docs/runtime-config-single-harness.md`: the filed defect and its acceptance.",
+        "`packages/forge/src/core/harness-adapter.ts` (`name`, `nativeEvents`) and `packages/forge/src/adapters/{claude,omp,codex}/render.ts` (each adapter's `name` and map).",
+        "`packages/forge/src/cli/commands/install.ts`: reaches emission through `runDeploy` with its detected harness.",
+        "`packages/runtime/src/bin-name.ts`: `CLI_BIN`, the one home of the bin name a refusal speaks.",
+        "`packages/runtime/src/loader.ts` (`discoverConfigured`) and `packages/runtime/src/capabilities/plan/reading.ts` (`configuration.plan`): readers of the parts that do not move.",
+        "`packages/runtime/src/capabilities/event-tap/claude-serialize.ts`: consumes the map the strategy is handed."
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/index.ts",
+        "packages/runtime/src/capabilities/event-tap/claude.ts",
+        "packages/runtime/test/runtime-config.test.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/test/deploy/integrate-smoke.test.ts",
+        "packages/canon/test/event-vocabulary.test.ts",
+        "packages/cli/README.md",
+        "docs/runtime-config-single-harness.md",
+        ".changeset/runtime-config.md"
+      ],
+      "accept": [
+        "`git grep -nE \"events\\??\\.native\" -- packages docs` prints nothing (measured at 63a012ce: 7 lines in 5 files).",
+        "`pnpm --filter @cratylus/canon test -- event-vocabulary` passes, with a leg that emits claude then omp into one file through `emitRuntimeConfig` and asserts both `harnesses.claude.native` and `harnesses.omp.native` equal their adapter's map filtered to the vocabulary, that re-emitting claude leaves `harnesses.omp` deep-equal, and that the runtime reader asked for `codex` throws a message containing `deploy --harness codex`.",
+        "`pnpm --filter @cratylus/runtime test -- runtime-config event-tap` passes, with a leg in which a config of the old shape `{\"events\":{\"vocabulary\":[...],\"native\":{...}}}` makes `dispatchEventTap(['status'], { config })` throw a message containing `deploy --harness claude`.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `d=$(mktemp -d); printf '%s' '{\"events\":{\"vocabulary\":[\"turn.end\"],\"native\":{\"turn.end\":\"Stop\"}}}' > \"$d/rc.json\"; AGENT_RUNTIME_CONFIG=\"$d/rc.json\" CLAUDE_SETTINGS_PATH=\"$d/settings.json\" node packages/cli/dist/cratylus.js eventTap status` exits 1 and its stderr contains `deploy --harness claude`.",
+        "With the same build, the same command against `{\"events\":{\"vocabulary\":[\"turn.end\"]},\"harnesses\":{\"claude\":{\"native\":{\"turn.end\":\"Stop\"}},\"omp\":{\"native\":{\"turn.end\":\"agent_end\"}}}}` exits 0.",
+        "`pnpm --filter @cratylus/forge test -- integrate-smoke` passes.",
+        "`pnpm --filter @cratylus/runtime typecheck`, `pnpm --filter @cratylus/runtime typecheck:test`, `pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/canon typecheck` pass.",
+        "`git ls-files docs/runtime-config-single-harness.md` prints nothing, and `grep -q harnesses packages/cli/README.md` exits 0.",
+        "`grep -q '\"@cratylus/runtime\":' .changeset/runtime-config.md && grep -q '\"@cratylus/forge\":' .changeset/runtime-config.md && grep -q '\"cratylus\":' .changeset/runtime-config.md` exits 0."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NCQZNYGWQJJBY9E36C9PSK",
+      "version": "01M3NCQZNYGWQJJBY9E36C9PSM",
+      "closure": {}
+    }
+  }
+}

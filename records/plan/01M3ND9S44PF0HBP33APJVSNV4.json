@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3ND9S44PF0HBP33APJVSNV4",
+    "entity": "01M3ND9S44PF0HBP33APJVSNV3",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T01:43:35.812Z",
+    "reason": "the refusal home and the three domain capabilities: design, plan and note drop an unknown flag silently today",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "name": "verb-flags-runtime-config",
+    "realizes": [
+      "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "01M3NCQZNYGWQJJBY9E36C9PSK"
+    ],
+    "state": "proposed"
+  }
+}
