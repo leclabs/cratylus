@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+    "entity": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:48:49.621Z",
+    "reason": "codex support is dropped; the product ships for Claude Code and omp",
+    "cause": "first-share piece 1: what ships"
+  },
+  "payload": {
+    "anchor": "supported harness",
+    "gloss": "a harness cratylus projects to and ships for: Claude Code and omp. Each receives every shipped cell at the highest fidelity it offers, degrading and warning where it falls short, and the documentation states each one's real differences rather than claiming sameness. A harness not supported has no adapter, projection, test, script or documentation claim.",
+    "factors": []
+  }
+}
