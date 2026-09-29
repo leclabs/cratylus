@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QAX4SAW917WKDHH6W31F05",
+    "entity": "01M3Q30TM4NVVP938Z6GYM8GGT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q30TM4NVVP938Z6GYM8GGV"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T19:40:13.482Z",
+    "reason": "operator: they should just be extra optional installs",
+    "cause": "operator reply"
+  },
+  "payload": {
+    "title": "kino and nico are optional installs",
+    "kind": "decision",
+    "topic": "first share",
+    "body": "Operator ruling: kino and nico stay in the corpus package and become optional installs, offered but not preselected, rather than moving to separate plugins. A stranger's default install gets the general positions (mav, architect, planner, implementer, assayer); nico is offered with the corpus-authoring practice, kino as an example of a domain-specialized architect. A separate plugin package stays available later if kino's domain vocabulary grows beyond what a general corpus should carry.",
+    "blocks": []
+  }
+}
