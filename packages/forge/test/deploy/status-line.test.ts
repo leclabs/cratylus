@@ -258,39 +258,94 @@ describe('ensureStatusSegment', () => {
     ['leftSegments', '  leftSegments:\n    - model\n', ['leftSegments']],
     ['rightSegments', '  rightSegments: [cost]\n', ['rightSegments']],
     [
-      'segmentOptions',
-      '  segmentOptions:\n    path:\n      maxLength: 10\n',
-      ['segmentOptions'],
-    ],
-    [
-      'all of them, with a separator',
-      '  leftSegments: [model]\n  rightSegments: [cost]\n  separator: ascii\n  segmentOptions: {}\n',
-      ['leftSegments', 'rightSegments', 'segmentOptions'],
-    ],
-    [
       'a leftSegments that already lists status',
-      '  leftSegments: [vim, status]\n  rightSegments: []\n  segmentOptions: {}\n',
-      ['leftSegments', 'rightSegments', 'segmentOptions'],
+      '  leftSegments: [vim, status]\n  rightSegments: []\n',
+      ['leftSegments', 'rightSegments'],
     ],
   ])(
-    'leaves a no-preset host with its own %s byte-identical and tells it what to write',
+    'leaves a no-preset host with its own %s byte-identical and gives the whole default block, segment options and all',
     (_n, rest, keys) => {
-      // Under the default preset omp ignores the lists (and merges segmentOptions over
-      // the preset's own), and custom would make them the whole line: not ours to do.
+      // Under the default preset omp ignores the lists, and custom would make them the
+      // whole line: not ours to do.
       const host = `statusLine:\n${rest}theme: dark\n`;
       const f = file('config.yml', host);
       const r = ensure(f.path);
       expect(r).toMatchObject({ state: 'own-layout', wrote: false, keys });
       expect(f.read()).toBe(host);
       const advice = (r.advice ?? []).join('\n');
-      // Either: the exact default block, or the host's own layout made live.
       expect(advice).toContain(
         `statusLine:\n${FULL('  ')}`.replace(/\n/g, '\n      '),
       );
-      expect(advice).toContain('put `status` last in your `leftSegments`');
+      expect(advice).not.toContain('KEEP your `segmentOptions`');
       expect(advice).toContain('would change the line');
     },
   );
+
+  it('offers a host with its own leftSegments the way to make its own layout live, and one with only rightSegments not', () => {
+    const f = file('config.yml', 'statusLine:\n  leftSegments: [model]\n');
+    expect((ensure(f.path).advice ?? []).join('\n')).toContain(
+      'put `status` last in your `leftSegments`',
+    );
+    const right = file('config.yml', 'statusLine:\n  rightSegments: [cost]\n');
+    expect((ensure(right.path).advice ?? []).join('\n')).not.toContain(
+      'or use your own layout',
+    );
+  });
+
+  it.each([
+    [
+      'segmentOptions alone',
+      '  segmentOptions:\n    path:\n      maxLength: 12\n',
+      ['segmentOptions'],
+    ],
+    [
+      'all of them, with a separator',
+      '  leftSegments: [model]\n  rightSegments: [cost]\n  separator: ascii\n  segmentOptions:\n    path:\n      maxLength: 12\n',
+      ['leftSegments', 'rightSegments', 'segmentOptions'],
+    ],
+  ])(
+    'keeps a no-preset host’s own segmentOptions in the advice (%s): it never says to replace them',
+    (_n, rest, keys) => {
+      const host = `statusLine:\n${rest}theme: dark\n`;
+      const f = file('config.yml', host);
+      const r = ensure(f.path);
+      expect(r).toMatchObject({ state: 'own-layout', wrote: false, keys });
+      expect(f.read()).toBe(host);
+      const lines = r.advice ?? [];
+      const advice = lines.join('\n');
+      // The block to write has the preset, the two lists and the hook switch, and NO
+      // segmentOptions between them: the host's own stay where they are.
+      const start = lines.indexOf('      statusLine:');
+      const end = lines.indexOf('        showHookStatus: false');
+      expect(lines.slice(start, end + 1)).toEqual([
+        '      statusLine:',
+        ...PRESET('        '),
+        ...LEFT('        '),
+        ...RIGHT('        '),
+        ...HOOKS('        '),
+      ]);
+      expect(advice).toContain('KEEP your `segmentOptions` as they are');
+      // What custom no longer supplies is offered for whatever the host did not set.
+      expect(advice).toContain(
+        'for any you did not set, keeping the value of each you did',
+      );
+      expect(advice).toContain(OPTIONS('        ').join('\n'));
+    },
+  );
+
+  it('keeps the host’s own segmentOptions in the advice under `preset: default` written out', () => {
+    const f = file(
+      'config.yml',
+      'statusLine:\n  preset: default\n  segmentOptions:\n    path:\n      maxLength: 12\n',
+    );
+    const lines = ensure(f.path).advice ?? [];
+    expect(lines.join('\n')).toContain(
+      'KEEP your `segmentOptions` as they are',
+    );
+    const start = lines.indexOf('  statusLine:');
+    const end = lines.indexOf('    showHookStatus: false');
+    expect(lines.slice(start, end + 1)).not.toContain('    segmentOptions:');
+  });
 
   it('does not treat a separator alone as a layout of its own: it applies under every preset', () => {
     const f = file('config.yml', 'statusLine:\n  separator: ascii\n');
@@ -458,6 +513,12 @@ describe('ensureStatusSegment', () => {
         `<each of ${name}'s own right segments, in order>`,
       );
       expect(advice).not.toContain('- pi\n');
+      // The separator is the host's own setting under every preset: never told to write it.
+      expect(advice).not.toMatch(/write them too/);
+      expect(advice).toContain(
+        '`separator` setting applies under every preset',
+      );
+      expect(advice).toContain(`write \`${name}\`'s segment options there`);
     },
   );
 

@@ -188,8 +188,9 @@ const HOOK_STATUS_KEY = 'showHookStatus';
 
 /** The keys under which the host lays out its own line. Under the default preset the
  *  two lists are ignored and `segmentOptions` is merged over the preset's own options,
- *  and `custom` reads all three as the WHOLE layout. `separator` is not among them: it
- *  applies under every preset, and `custom`'s own equals the default preset's. */
+ *  and `custom` reads all three as the WHOLE layout. `separator` is not among them: the
+ *  host's own separator setting (omp's schema gives it a default, powerline-thin) wins
+ *  under every preset, so moving to `custom` does not change it. */
 const LAYOUT_KEYS = [
   'leftSegments',
   'rightSegments',
@@ -432,24 +433,51 @@ function layoutLines(host: StatusSegmentHost, indent: string): string[] {
   ];
 }
 
-/** The whole block that keeps the default preset's line and adds the badge. */
-function defaultBlock(host: StatusSegmentHost, indent = ''): string[] {
+/** The block that keeps the default preset's line and adds the badge, as advice lines at
+ *  `indent`. `keys` are the layout keys the host already wrote.
+ *
+ *  Only the two LISTS are dormant under the default preset, so only they are written.
+ *  `segmentOptions` is live under every preset — merged over the preset's own — so a
+ *  host's own stays exactly as it is; `custom` has no options of its own to merge
+ *  under it, so the default preset's are offered for whatever the host did not set,
+ *  and written whole only where the host has none. */
+function keepLineBlock(
+  host: StatusSegmentHost,
+  keys: readonly string[],
+  indent: string,
+): string[] {
+  const layout = host.defaultLayout;
+  const keepsOptions = keys.includes('segmentOptions');
+  const inner = `${indent}  `;
   return [
-    'statusLine:',
-    ...layoutLines(host, '  '),
-    `  ${HOOK_STATUS_KEY}: false`,
-  ].map((line) => `${indent}${line}`);
+    `${indent}statusLine:`,
+    `${inner}preset: ${CUSTOM_PRESET}`,
+    ...listLines('leftSegments', [...layout.left, host.segment], inner),
+    ...listLines('rightSegments', layout.right, inner),
+    ...(keepsOptions ? [] : optionLines(layout.segmentOptions, inner)),
+    `${inner}${HOOK_STATUS_KEY}: false`,
+    ...(keepsOptions
+      ? [
+          `${indent}and KEEP your \`segmentOptions\` as they are. \`custom\` has no segment options of its own, so under it yours are all there is: add to them the ${host.defaultPreset} preset's options for any you did not set, keeping the value of each you did:`,
+          ...optionLines(layout.segmentOptions, inner),
+        ]
+      : []),
+  ];
 }
 
 /** What to write to show the badge inline on a host's chosen named preset. `custom`
  *  REPLACES the preset's layout, so the advice says so and gives the whole block: the
  *  exact lists for the default preset, and for any other the preset's own segments
  *  followed by the segment, which are the harness's to name and not declared here. */
-function presetAdvice(host: StatusSegmentHost, preset: string): string[] {
+function presetAdvice(
+  host: StatusSegmentHost,
+  preset: string,
+  keys: readonly string[],
+): string[] {
   if (preset === host.defaultPreset) {
     return [
       `\`preset: custom\` REPLACES the \`${preset}\` preset's layout with the one you list, so write the whole block, which keeps the line as it is and adds the badge:`,
-      ...defaultBlock(host, '  '),
+      ...keepLineBlock(host, keys, '  '),
     ];
   }
   return [
@@ -462,20 +490,32 @@ function presetAdvice(host: StatusSegmentHost, preset: string): string[] {
     '    rightSegments:',
     `      - <each of ${preset}'s own right segments, in order>`,
     `    ${HOOK_STATUS_KEY}: false`,
-    `Under \`custom\` the separator and segment options also come from your own \`separator\` and \`segmentOptions\` keys; write them too to keep \`${preset}\`'s.`,
+    `Under \`custom\` the preset's segment options no longer apply, so your own \`segmentOptions\` are all there is: write \`${preset}\`'s segment options there to keep them. Your \`separator\` setting applies under every preset and needs no change.`,
   ];
 }
 
-/** What to write on a host with no preset that laid out its own line. */
+/** What to write on a host with no preset that laid out its own line: keep the line as
+ *  it is with the badge added, or make the host's own layout live. */
 function ownLayoutAdvice(
   host: StatusSegmentHost,
   keys: readonly string[],
 ): string[] {
+  const lists = keys.filter((k) => k !== 'segmentOptions');
+  const quoted = (ks: readonly string[]) =>
+    ks.map((k) => `\`${k}\``).join(', ');
   return [
     `With no preset omp ignores \`leftSegments\` and \`rightSegments\` and merges \`segmentOptions\` over the ${host.defaultPreset} preset's own, and \`preset: custom\` makes what you wrote the WHOLE layout, which would change the line. To show the badge inline, choose one:`,
-    `  - keep the line as it is: replace your ${keys.map((k) => `\`${k}\``).join(', ')} with the ${host.defaultPreset} preset's layout and the badge:`,
-    ...defaultBlock(host, '      '),
-    `  - or use your own layout: add \`preset: custom\`, put \`${host.segment}\` last in your \`leftSegments\`, and add \`${HOOK_STATUS_KEY}: false\`.`,
+    `  - keep the line as it is: ${
+      lists.length > 0
+        ? `replace your ${quoted(lists)} with`
+        : 'add, beside your own `segmentOptions`,'
+    } the ${host.defaultPreset} preset's lists and the badge:`,
+    ...keepLineBlock(host, keys, '      '),
+    ...(keys.includes('leftSegments')
+      ? [
+          `  - or use your own layout: add \`preset: custom\`, put \`${host.segment}\` last in your \`leftSegments\`, and add \`${HOOK_STATUS_KEY}: false\`.`,
+        ]
+      : []),
   ];
 }
 
@@ -640,6 +680,7 @@ export function ensureStatusSegment(
       );
     }
   }
+  const ownLayout = LAYOUT_KEYS.filter((key) => keyAt.has(key));
   if (preset !== undefined && preset !== CUSTOM_PRESET) {
     return {
       path,
@@ -647,7 +688,7 @@ export function ensureStatusSegment(
       wrote: false,
       written: [],
       preset,
-      advice: presetAdvice(host, preset),
+      advice: presetAdvice(host, preset, ownLayout),
     };
   }
   const onCustom = preset === CUSTOM_PRESET;
@@ -658,7 +699,6 @@ export function ensureStatusSegment(
   // would light up a list it wrote for some other day — or drop the default preset's
   // options from under its own — and change the line it sees. That is the host's
   // decision to make, so nothing is written and the way to make it is told.
-  const ownLayout = LAYOUT_KEYS.filter((key) => keyAt.has(key));
   if (!onCustom && ownLayout.length > 0) {
     return {
       path,

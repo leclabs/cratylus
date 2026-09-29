@@ -170,7 +170,9 @@ the badge renders beneath the status line. Install edits the config file omp rea
   lists under the default preset and merges `segmentOptions` over that preset's own, and `custom`
   would make what you wrote the whole line, lighting up a list written for another day. It prints
   the block that keeps the line as it is with the badge added, and the way to use your own layout
-  instead. A `separator` alone does not count; it applies under every preset.
+  instead. Only the two lists are replaced there: your own `segmentOptions` are live under every
+  preset and the advice keeps them, adding the default preset's options for any you did not set. A
+  `separator` alone does not count; your setting applies under every preset.
 - **`preset: custom`**: `status` is appended after the last item of your `leftSegments`, no other byte
   changing, or, where you list none, omp's custom left list plus `status` is written. A list that has
   `status` is not touched.
@@ -178,8 +180,9 @@ the badge renders beneath the status line. Install edits the config file omp rea
   out): your choice stands. The file is left byte-identical. `preset: custom` REPLACES that preset's
   layout with the one you list, so install prints the whole block to write: the exact lists for
   `default`, and for any other preset `leftSegments` as that preset's own segments followed by
-  `status`, `rightSegments` as its own, and `showHookStatus: false`. Under `custom` the separator and
-  segment options also come from your own keys, so write those too to keep the preset's.
+  `status`, `rightSegments` as its own, and `showHookStatus: false`. Under `custom` the preset's
+  segment options no longer apply, so your own `segmentOptions` are all there is: write that preset's
+  there to keep them. Your `separator` setting applies under every preset and needs no change.
 
 Wherever install leaves `status` in the live layout, that is, where it wrote `preset: custom` or listed
 `status` in a `custom` list, it also writes `showHookStatus: false` unless you set that key. omp prints
