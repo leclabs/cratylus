@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QGCVKXJ3NKRYP6J4NVGK6Y",
+    "entity": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T21:16:11.261Z",
+    "reason": "persona launch names uninstall, and no concept defined it; the verb belongs to the consumer-surface piece",
+    "cause": "assay of persona launch at 6e6986b5"
+  },
+  "payload": {
+    "anchor": "uninstall",
+    "gloss": "removing from a host everything a cratylus install placed for one harness, as recorded in its deploy manifest (agents, skills, hooks and their registrations, extensions, launchers, persona commands, and host config entries it added), and nothing the host placed itself: a file or entry it did not place, or one the host changed since, is left and reported. It is the consumer surface's verb; each placing concept owns the removal of what it places.",
+    "factors": []
+  }
+}
