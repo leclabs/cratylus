@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3PMNZ9A4939XAAZREYP5P6Q",
+    "entity": "01M3PMCTZW2M942KSRWEZFVS9Q",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PMCV3HMD7TC28JYHGC661S"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T13:11:49.802Z",
+    "reason": "withdrawn design: its only unit is retracted",
+    "cause": "operator review: a note gating a concept is an edge-triggered hold on future acts, racy across merges, and holding a finding past a judge or close lets accepted units escape drift"
+  },
+  "payload": {
+    "name": "concept-rulings",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR"
+    ],
+    "state": "closed"
+  }
+}
