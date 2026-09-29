@@ -251,8 +251,8 @@ describe('omp event map', () => {
   });
 
   it('declares NO unnarrowed loss on any act, because a hook here is CODE', () => {
-    // Codex must report every act unnarrowed: its only selector is a regex over
-    // `agent_type`. omp's hook is a TypeScript module that receives `toolName`, so
+    // A harness whose only selector is a regex over `agent_type` must report every
+    // act unnarrowed. omp's hook is a TypeScript module that receives `toolName`, so
     // narrowing is an `if`. If this ever gains an `unnarrowed`, the adapter has
     // silently lost the ability to filter and the report must say so.
     for (const [act, binding] of Object.entries(canonicalActToOmp)) {
@@ -587,12 +587,12 @@ describe('omp enforcing surface', () => {
     expect(budget).toBeGreaterThan(15_000);
   });
 
-  it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
+  it('emits nothing when the mechanism is absent — and that is the arity bug', () => {
     // EXONERATING FIXTURE. Without a mechanism there is no command to wire, so
     // emitting nothing is correct. What was NOT correct was reaching this state
-    // because the port dropped `mechanisms` on the floor: codex's adapter wired
-    // `enforcingSurface` at arity 1, so every call took this branch and its
-    // per-agent guardrails reached the host as nothing at all — green throughout,
+    // because a port dropped `mechanisms` on the floor: an adapter that wires
+    // `enforcingSurface` at arity 1 takes this branch on every call, and its
+    // per-agent guardrails reach the host as nothing at all — green throughout,
     // because the unit tests call the function DIRECTLY with a mechanism map the
     // production path never supplies.
     expect(
@@ -1242,8 +1242,8 @@ describe('omp role routing', () => {
     ]);
   });
 
-  it('is omp alone — claude and codex leave the member absent', () => {
+  it('is omp alone — claude leaves the member absent', () => {
     expect(adapterByName('claude').roleRouting).toBeUndefined();
-    expect(adapterByName('codex').roleRouting).toBeUndefined();
+    expect(adapterByName('omp').roleRouting).toBeDefined();
   });
 });

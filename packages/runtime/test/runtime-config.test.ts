@@ -59,7 +59,7 @@ describe('the host runtime config', () => {
     const loaded = loadRuntimeConfig();
     expect(nativeEventsOf(loaded, 'claude')).toEqual({ 'turn.end': 'Stop' });
     expect(nativeEventsOf(loaded, 'omp')).toEqual({ 'turn.end': 'agent_end' });
-    for (const none of ['codex', 'empty', 'stripped'])
+    for (const none of ['unconfigured', 'empty', 'stripped'])
       expect(() => nativeEventsOf(loaded, none)).toThrow(
         new RegExp(
           `install --harness ${none}[\\s\\S]*deploy --harness ${none}`,

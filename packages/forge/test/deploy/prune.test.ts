@@ -383,28 +383,29 @@ describe('deploy prune — convergence to the render tree', () => {
   });
 
   // The orphan report reads a directory off disk, so it needs to know what an
-  // agent def LOOKS like — and that is the HARNESS's fact (`HarnessAdapter.agentExt`:
-  // claude `.md`, codex `.toml`), not a constant. Hardcoding `.md` did not make the
-  // report wrong-ish on codex; it made it EMPTY, always, which is indistinguishable
-  // from a clean target. Both harnesses are fixtured deliberately: a checker with
-  // only the claude fixture convicts only what it already knew.
-  const codex = (names: string[]) => ({
-    ...renderTreeExt(names, '.toml'),
-    harnessHome: '.codex',
-    agentExt: '.toml',
+  // agent def LOOKS like — and that is the HARNESS's fact (`HarnessAdapter.agentExt`,
+  // `.md` for every supported harness), not a constant. Hardcoding `.md` did not
+  // make the report wrong-ish for a harness with another extension; it made it
+  // EMPTY, always, which is indistinguishable from a clean target. A synthetic
+  // `.agent` extension is fixtured deliberately: a checker with only the `.md`
+  // fixture convicts only what it already knew.
+  const synthetic = (names: string[]) => ({
+    ...renderTreeExt(names, '.agent'),
+    harnessHome: '.synthetic',
+    agentExt: '.agent',
   });
 
-  it('CODEX: an unattributable `.toml` agent is REPORTED (and a stray `.md` is not)', () => {
+  it('SYNTHETIC: an unattributable `.agent` def is REPORTED (and a stray `.md` is not)', () => {
     const home = tmp('v4-host-');
-    const dir = join(home, '.codex');
-    // An orphan from a pre-manifest codex deploy — it must be SHOWN. Beside it, a
-    // file that is not a codex agent def at all: reading this tree with claude's
+    const dir = join(home, '.synthetic');
+    // An orphan from a pre-manifest deploy — it must be SHOWN. Beside it, a file
+    // that is not an agent def of this extension at all: reading this tree with
     // `.md` both misses the orphan and invents `NOTES` in its place.
     mkdirSync(join(dir, 'agents'), { recursive: true });
-    writeFileSync(join(dir, 'agents', 'legacy-orphan.toml'), '# orphan\n');
+    writeFileSync(join(dir, 'agents', 'legacy-orphan.agent'), '# orphan\n');
     writeFileSync(join(dir, 'agents', 'NOTES.md'), 'FOREIGN\n');
 
-    const { harnessHome, agentExt, ...tree } = codex(['mav']);
+    const { harnessHome, agentExt, ...tree } = synthetic(['mav']);
     const lines: string[] = [];
     deploySingle({
       kind: 'agent',
@@ -422,7 +423,7 @@ describe('deploy prune — convergence to the render tree', () => {
     expect(out).toMatch(/\? legacy-orphan$/m);
     expect(out).not.toMatch(/\? NOTES$/m);
     // reported, never taken
-    expect(existsSync(join(dir, 'agents', 'legacy-orphan.toml'))).toBe(true);
+    expect(existsSync(join(dir, 'agents', 'legacy-orphan.agent'))).toBe(true);
   });
 
   it('CLAUDE: an unattributable `.md` agent is still REPORTED (and a stray `.toml` is not)', () => {

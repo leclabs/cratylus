@@ -35,26 +35,26 @@ describe('scaffoldProject harnessHome', () => {
 
   it('puts a non-claude harness’s dirs where THAT harness reads them', () => {
     const { agentsDir, skillsDir } = buildRenderTree(tmp('forge-render-'));
-    const target = tmp('forge-scaffold-codex-');
+    const target = tmp('forge-scaffold-omp-');
     const r = scaffoldProject({
       target,
       tree: { agentsDir, skillsDir },
       template: DEFAULT_PROJECT_TEMPLATE,
-      harnessHome: '.codex',
+      harnessHome: '.omp',
       subject: 'a test project',
     });
     expect(r.rc).toBe(0);
     expect(r.agents).toBe(2);
     expect(r.skills).toBe(2);
-    // culture landed under the codex home
-    expect(existsSync(join(target, '.codex', 'agents', 'mav.md'))).toBe(true);
-    expect(existsSync(join(target, '.codex', 'agents', 'nico.md'))).toBe(true);
+    // culture landed under the omp home
+    expect(existsSync(join(target, '.omp', 'agents', 'mav.md'))).toBe(true);
+    expect(existsSync(join(target, '.omp', 'agents', 'nico.md'))).toBe(true);
     expect(
-      existsSync(join(target, '.codex', 'skills', 'memory', 'SKILL.md')),
+      existsSync(join(target, '.omp', 'skills', 'memory', 'SKILL.md')),
     ).toBe(true);
-    expect(
-      existsSync(join(target, '.codex', 'skills', 'wake', 'SKILL.md')),
-    ).toBe(true);
+    expect(existsSync(join(target, '.omp', 'skills', 'wake', 'SKILL.md'))).toBe(
+      true,
+    );
     // and NOTHING was left in the claude home
     expect(existsSync(join(target, '.claude'))).toBe(false);
     // the harness-agnostic half of the scaffold is unmoved, and lays no plans tree
@@ -70,10 +70,10 @@ describe('scaffoldProject harnessHome', () => {
       target,
       tree: { agentsDir, skillsDir },
       template: DEFAULT_PROJECT_TEMPLATE,
-      harnessHome: '.codex',
+      harnessHome: '.omp',
       log: (l) => lines.push(l),
     });
-    expect(lines.join('\n')).toMatch(/culture projected: .* -> .*\/\.codex\//);
+    expect(lines.join('\n')).toMatch(/culture projected: .* -> .*\/\.omp\//);
     expect(lines.join('\n')).not.toMatch(/\.claude/);
   });
 });
