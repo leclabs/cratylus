@@ -99,8 +99,8 @@ import type { HookCell } from '../manifest.js';
 // is held by a test rather than remembered.
 //
 // A FULL BYTE COMPARISON of every rendered artifact is therefore what runs — no
-// digest, and above all NO SAMPLE. A sampled check that misses the founding doctrine
-// reports "in sync", which is the exact failure this cell exists to end. The
+// digest, and above all NO SAMPLE. A sample that skips the ten skills carrying the
+// prime principle reports "in sync", which is the exact failure this cell exists to end. The
 // `deploy-drift-notice` suite re-measures the clean path and fails on a regression, so
 // the number above is a held bound rather than a remembered one.
 //
@@ -200,7 +200,7 @@ export const deployDriftNotice: HookCell = {
 #   - ADVISORY ONLY. Prints to stdout and exits 0. It never emits
 #     {"decision":"block"} — a stale deployment must not block a session.
 #   - NEVER SAMPLES. The comparison is the tool's own: whole tree, byte for byte.
-#     A sampled check that misses the founding doctrine reports "in sync".
+#     A sample that skips the ten skills carrying the prime principle reports "in sync".
 #   - NOT A COUNT. It relays the tool's report, which carries the superseded lines
 #     still running and the rendered lines missing.
 #

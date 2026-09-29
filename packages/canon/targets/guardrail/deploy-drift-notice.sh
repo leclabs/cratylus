@@ -24,7 +24,7 @@
 #   - ADVISORY ONLY. Prints to stdout and exits 0. It never emits
 #     {"decision":"block"} — a stale deployment must not block a session.
 #   - NEVER SAMPLES. The comparison is the tool's own: whole tree, byte for byte.
-#     A sampled check that misses the founding doctrine reports "in sync".
+#     A sample that skips the ten skills carrying the prime principle reports "in sync".
 #   - NOT A COUNT. It relays the tool's report, which carries the superseded lines
 #     still running and the rendered lines missing.
 #
