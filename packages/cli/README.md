@@ -175,11 +175,16 @@ the badge renders beneath the status line. Install edits the config file omp rea
   your choice stands. The file is left byte-identical, and install prints the one addition that would
   show the badge in the line: set `preset: custom` and list `status` in `leftSegments`.
 
+Wherever install leaves `status` in the live layout, that is, where it wrote `preset: custom` or listed
+`status` in a `custom` list, it also writes `showHookStatus: false` unless you set that key. omp prints
+every extension's status on a row beneath the editor by default (`statusLine.showHookStatus`), and the
+`status` segment already draws every one of them inline, so leaving the row on shows the badge twice and
+hides nothing. A host left on another named preset has no `status` in its layout and keeps that row, so
+install writes neither there.
+
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow mapping,
 an alias, a list split across lines in flow style) is reported and left as it is, and the install still
-succeeds. `--dry-run` writes nothing. With `status` listed, omp still prints the badge on its own row
-beneath the editor as well, because `statusLine.showHookStatus` defaults to true; set it to `false` to
-show the badge in the line alone.
+succeeds. `--dry-run` writes nothing.
 
 ## Running a persona by its name
 

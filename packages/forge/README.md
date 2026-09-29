@@ -331,8 +331,10 @@ shares its line helpers (`deploy/yaml-lines.ts`). omp reads a segment list only 
 `statusLine.preset: custom`, so a host with no preset gets `preset: custom` with the default preset's
 layout written out (left plus `status`, right, segment options; a key the host set is kept), a host on
 `custom` gets `status` appended to its list, and a host on any other named preset is left
-byte-identical and told the addition. A shape it cannot extend is reported and left. Both honour
-`--dry-run`.
+byte-identical and told the addition. Where the segment is left in the live layout it also writes
+`showHookStatus: false` unless the host set it, because omp prints every extension's status on a row
+beneath the editor too and the segment already draws them all inline. A shape it cannot extend is
+reported and left. Both honour `--dry-run`.
 
 ### `cratylus explain [agent]`
 

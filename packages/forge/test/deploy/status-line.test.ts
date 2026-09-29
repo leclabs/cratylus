@@ -203,14 +203,20 @@ const OPTIONS = (i: string) => [
   `${i}    showUnstaged: true`,
   `${i}    showUntracked: true`,
 ];
+// The row omp prints beneath the editor repeating every extension's status: off, so the
+// badge shows once, in the line.
+const HOOKS = (i: string) => [`${i}showHookStatus: false`];
 const FULL = (i: string) =>
-  [...PRESET(i), ...LEFT(i), ...RIGHT(i), ...OPTIONS(i)].join('\n');
+  [...PRESET(i), ...LEFT(i), ...RIGHT(i), ...OPTIONS(i), ...HOOKS(i)].join(
+    '\n',
+  );
 
 describe('ensureStatusSegment', () => {
   const OMP = adapterByName('omp').statusSegment as StatusSegmentHost;
   const ensure = (path: string, dry = false) =>
     ensureStatusSegment(path, OMP, { dry });
   const CUSTOM_LEFT = ['vim', 'model', 'mode', 'path', 'git', 'pr'];
+  const HOOK_LINE = '  showHookStatus: false\n';
 
   it('appends the default preset’s whole layout under custom where the host has no statusLine', () => {
     const host = '# host config\ntheme: dark\nmodelRoles:\n  default: "@x"\n';
@@ -222,6 +228,7 @@ describe('ensureStatusSegment', () => {
       `leftSegments: ${DEFAULT_LEFT.join(', ')}`,
       'rightSegments: session_name',
       'segmentOptions: model, path, git',
+      'showHookStatus: false',
     ]);
     expect(f.read()).toBe(`${host}statusLine:\n${FULL('  ')}\n`);
   });
@@ -247,7 +254,7 @@ describe('ensureStatusSegment', () => {
     );
   });
 
-  it('keeps a leftSegments, rightSegments and segmentOptions the host wrote under no preset, adding only the preset and the segment', () => {
+  it('keeps a leftSegments, rightSegments and segmentOptions the host wrote under no preset, adding only the preset, the segment and the hook-row switch', () => {
     // The host wrote these under the default preset, which ignored them; under custom
     // they are what the host said, so they stay exactly as written.
     const host =
@@ -256,9 +263,10 @@ describe('ensureStatusSegment', () => {
     expect(ensure(f.path).written).toEqual([
       'preset: custom',
       'leftSegments: + status',
+      'showHookStatus: false',
     ]);
     expect(f.read()).toBe(
-      `${host.replace('    - model\n', '    - model\n    - status\n')}  preset: custom\n`,
+      `${host.replace('    - model\n', '    - model\n    - status\n')}  preset: custom\n${HOOK_LINE}`,
     );
   });
 
@@ -273,6 +281,7 @@ describe('ensureStatusSegment', () => {
         ...PRESET('  '),
         ...RIGHT('  '),
         ...OPTIONS('  '),
+        ...HOOKS('  '),
       ].join('\n')}\ntheme: dark\n`,
     );
     // The same with a flow list on the file's unterminated last line.
@@ -283,35 +292,51 @@ describe('ensureStatusSegment', () => {
         ...PRESET('  '),
         ...RIGHT('  '),
         ...OPTIONS('  '),
+        ...HOOKS('  '),
       ].join('\n')}`,
     );
   });
 
-  it('writes only the preset for a host whose no-preset layout already lists status', () => {
+  it('writes only the preset and the hook-row switch for a host whose no-preset layout already lists status', () => {
     const host =
       'statusLine:\n  leftSegments: [vim, status]\n  rightSegments: []\n  segmentOptions: {}\n';
     const f = file('config.yml', host);
-    expect(ensure(f.path).written).toEqual(['preset: custom']);
-    expect(f.read()).toBe(`${host}  preset: custom\n`);
+    expect(ensure(f.path).written).toEqual([
+      'preset: custom',
+      'showHookStatus: false',
+    ]);
+    expect(f.read()).toBe(`${host}  preset: custom\n${HOOK_LINE}`);
+  });
+
+  it('never changes a showHookStatus the host set, whatever its value', () => {
+    for (const value of ['true', 'false']) {
+      const host = `statusLine:\n  showHookStatus: ${value}\n`;
+      const f = file('config.yml', host);
+      const r = ensure(f.path);
+      expect(r.written).not.toContain('showHookStatus: false');
+      expect(f.read()).toContain(`  showHookStatus: ${value}\n`);
+      expect(f.read()?.match(/showHookStatus/g)).toHaveLength(1);
+    }
   });
 
   describe('on the custom preset', () => {
     const custom = (rest: string) => `statusLine:\n  preset: custom\n${rest}`;
 
-    it('inserts omp’s custom left list plus status where the host lists none, and nothing else', () => {
+    it('inserts omp’s custom left list plus status where the host lists none, and the hook-row switch', () => {
       const f = file('config.yml', custom('  separator: pipe\ntheme: dark\n'));
       const r = ensure(f.path);
       expect(r.written).toEqual([
         `leftSegments: ${[...CUSTOM_LEFT, 'status'].join(', ')}`,
+        'showHookStatus: false',
       ]);
       expect(f.read()).toBe(
         custom(
-          `  separator: pipe\n${LEFT_OF('  ', [...CUSTOM_LEFT, 'status']).join('\n')}\ntheme: dark\n`,
+          `  separator: pipe\n${LEFT_OF('  ', [...CUSTOM_LEFT, 'status']).join('\n')}\n${HOOK_LINE}theme: dark\n`,
         ),
       );
     });
 
-    it('appends status to the host’s own block list, changing no other byte', () => {
+    it('appends status to the host’s own block list and switches the hook row off, changing no other byte', () => {
       const host = custom(
         '  leftSegments:\n    - pi # brand\n    - "model"\n    - path\n  rightSegments:\n    - cost\ntheme: dark\n',
       );
@@ -319,10 +344,12 @@ describe('ensureStatusSegment', () => {
       const r = ensure(f.path);
       expect(r).toMatchObject({
         state: 'added',
-        written: ['leftSegments: + status'],
+        written: ['leftSegments: + status', 'showHookStatus: false'],
       });
       expect(f.read()).toBe(
-        `# top\n${host.replace('    - path\n', '    - path\n    - status\n')}`,
+        `# top\n${host
+          .replace('    - path\n', '    - path\n    - status\n')
+          .replace('    - cost\n', `    - cost\n${HOOK_LINE}`)}`,
       );
     });
 
@@ -333,7 +360,7 @@ describe('ensureStatusSegment', () => {
       );
       ensure(f.path);
       expect(f.read()).toBe(
-        'statusLine:\r\n  preset: custom\r\n  leftSegments:\r\n  - vim\r\n  - model\r\n  - status\r\ntheme: dark\r\n',
+        'statusLine:\r\n  preset: custom\r\n  leftSegments:\r\n  - vim\r\n  - model\r\n  - status\r\n  showHookStatus: false\r\ntheme: dark\r\n',
       );
     });
 
@@ -346,7 +373,7 @@ describe('ensureStatusSegment', () => {
     ])('appends status to a one-line flow list %s', (before, after) => {
       const f = file('config.yml', custom(`  leftSegments: ${before}\n`));
       expect(ensure(f.path).state).toBe('added');
-      expect(f.read()).toBe(custom(`  leftSegments: ${after}\n`));
+      expect(f.read()).toBe(custom(`  leftSegments: ${after}\n${HOOK_LINE}`));
     });
 
     it.each([
@@ -355,9 +382,9 @@ describe('ensureStatusSegment', () => {
       ['a flow list', '  leftSegments: [vim, status, pr]\n'],
       ['a quoted flow item', "  leftSegments: ['status']\n"],
     ])(
-      'leaves a host that already lists status (%s) byte-identical',
+      'leaves a host that already lists status (%s) and set showHookStatus byte-identical',
       (_n, rest) => {
-        const host = custom(rest);
+        const host = custom(`${rest}  showHookStatus: true\n`);
         const f = file('config.yml', host);
         expect(ensure(f.path)).toMatchObject({
           state: 'present',
@@ -367,6 +394,17 @@ describe('ensureStatusSegment', () => {
       },
     );
 
+    it('switches only the hook row off for a host that lists status and never set it', () => {
+      const host = custom('  leftSegments: [vim, status]\n');
+      const f = file('config.yml', host);
+      const r = ensure(f.path);
+      expect(r).toMatchObject({
+        state: 'added',
+        written: ['showHookStatus: false'],
+      });
+      expect(f.read()).toBe(`${host}${HOOK_LINE}`);
+    });
+
     it('does not mistake a longer segment name for status', () => {
       const f = file(
         'config.yml',
@@ -374,7 +412,7 @@ describe('ensureStatusSegment', () => {
       );
       expect(ensure(f.path).state).toBe('added');
       expect(f.read()).toBe(
-        custom('  leftSegments:\n    - status_bar\n    - status\n'),
+        custom(`  leftSegments:\n    - status_bar\n    - status\n${HOOK_LINE}`),
       );
     });
 
@@ -385,7 +423,7 @@ describe('ensureStatusSegment', () => {
       );
       expect(ensure(f.path).state).toBe('added');
       expect(f.read()).toBe(
-        'statusLine:\n  preset: "custom" # mine\n  leftSegments: [vim, status]\n',
+        `statusLine:\n  preset: "custom" # mine\n  leftSegments: [vim, status]\n${HOOK_LINE}`,
       );
     });
   });
@@ -396,7 +434,7 @@ describe('ensureStatusSegment', () => {
     ['default written out', 'default', 'default'],
     ['a name omp does not know', 'nonesuch', 'nonesuch'],
   ])(
-    'leaves a host on another preset (%s) byte-identical and names it',
+    'leaves a host on another preset (%s) byte-identical, showHookStatus unwritten, and names it',
     (_n, value, name) => {
       const host = `statusLine:\n  preset: ${value}\n  leftSegments:\n    - vim\n`;
       const f = file('config.yml', host);
@@ -413,7 +451,7 @@ describe('ensureStatusSegment', () => {
     expect(ensure(f.path, true)).toMatchObject({
       state: 'added',
       wrote: false,
-      written: ['leftSegments: + status'],
+      written: ['leftSegments: + status', 'showHookStatus: false'],
     });
     expect(f.read()).toBe(host);
     const none = file('config.yml', 'theme: dark\n');
@@ -608,20 +646,24 @@ describe('install — the status line', () => {
     const ROLES =
       'modelRoles:\n  default: "@default"\n  implementer: "@task"\n  planner: "@plan"\n  architect: "@default"\n  assayer: "@default"\n';
 
-    it('moves a host with no statusLine to custom with the default preset’s own layout plus status', async () => {
+    it('moves a host with no statusLine to custom with the default preset’s own layout plus status, the hook row off', async () => {
       expect(await install('omp')).toBe(0);
       expect(readFileSync(ompConfig(), 'utf8')).toContain(
         `statusLine:\n${FULL('  ')}\n`,
       );
       expect(out).toContain('added preset: custom; leftSegments: pi, vim');
+      expect(out).toContain('showHookStatus: false');
     });
 
-    it('appends status to a host already on custom, changing no other byte, and a second install changes none', async () => {
+    it('appends status to a host already on custom and switches the hook row off, changing no other byte, and a second install changes none', async () => {
       const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(
-        host.replace('    - model\n', '    - model\n    - status\n'),
+        host.replace(
+          '    - model\n',
+          '    - model\n    - status\n  showHookStatus: false\n',
+        ),
       );
       const after = read();
       out = '';
@@ -630,7 +672,7 @@ describe('install — the status line', () => {
       expect(out).toContain('`status` already listed');
     });
 
-    it('leaves a host on another named preset byte-identical and says what would show the badge', async () => {
+    it('leaves a host on another named preset byte-identical, hook row untouched, and says what would show the badge', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);

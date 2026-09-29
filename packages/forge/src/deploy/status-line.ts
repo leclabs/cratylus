@@ -182,10 +182,16 @@ export function ensureBadgeStatusLine(
  *  segments and ignores `leftSegments` altogether. */
 const CUSTOM_PRESET = 'custom';
 
+/** omp's key for the row it prints beneath the editor repeating each extension's
+ *  status; on by default. */
+const HOOK_STATUS_KEY = 'showHookStatus';
+
 /**
- *   - `added`        — the host's status line now lists the segment (written, or under
- *                      `dry` would be); `written` says what went in.
- *   - `present`      — the host is on `custom` and already lists it; the file is as it was.
+ *   - `added`        — the host's status line now lists the segment, or now hides the
+ *                      row that would repeat it (written, or under `dry` would be);
+ *                      `written` says what went in.
+ *   - `present`      — the host is on `custom`, already lists it, and set
+ *                      `showHookStatus`; the file is as it was.
  *   - `other-preset` — the host chose a named preset other than `custom`, whose layout
  *                      is the preset's own and has no such segment. Its choice is not
  *                      ours to change: the file is as it was, and `preset` names it.
@@ -414,6 +420,13 @@ function applyEdits(
  *  - ANY OTHER PRESET (`default` written out included) — the host's choice; nothing is
  *    written and `other-preset` names it.
  *
+ * WHEREVER THE SEGMENT IS NOW IN THE LIVE LAYOUT, `showHookStatus: false` is written
+ * too unless the host set that key: omp prints every extension's status beneath the
+ * editor as well by default, so the badge would show twice, and the segment already
+ * draws every status inline, so none is hidden. A host left on another preset gets
+ * neither the segment nor this. A host on `custom` that already lists the segment
+ * and set the key is left byte-identical.
+ *
  * A file with no `statusLine` is the no-preset case, and is created when absent.
  * Anything this cannot extend safely (a `statusLine` that is a flow mapping, a scalar,
  * anchored or tagged; a `preset` that is not a plain scalar; a `leftSegments` that is
@@ -482,6 +495,7 @@ export function ensureStatusSegment(
     left: `leftSegments: ${defaultLeft.join(', ')}`,
     right: `rightSegments: ${layout.right.join(', ')}`,
     options: `segmentOptions: ${Object.keys(layout.segmentOptions).join(', ')}`,
+    hooks: `${HOOK_STATUS_KEY}: false`,
   };
 
   // ── NO `statusLine`: append the default layout under `custom` ────────────────
@@ -493,6 +507,7 @@ export function ensureStatusSegment(
       ...listLines('leftSegments', defaultLeft, '  '),
       ...listLines('rightSegments', layout.right, '  '),
       ...optionLines(layout.segmentOptions, '  '),
+      `  ${HOOK_STATUS_KEY}: false`,
     ];
     return finish(
       `${text}${lead}${block.join(eol)}${eol}`,
@@ -588,6 +603,15 @@ export function ensureStatusSegment(
       inserted.push(...optionLines(layout.segmentOptions, indent));
       written.push(layoutWritten.options);
     }
+  }
+  // THE BADGE RENDERS ONCE. Wherever the layout now has the segment, the segment draws
+  // every extension's status inline, so the row omp also prints beneath the editor
+  // (`showHookStatus`, on by default) repeats each of them and hides none. Off unless
+  // the host chose. Never here for a host left on another preset: its layout has no
+  // segment, and that row is the only place a status shows.
+  if (!keyAt.has(HOOK_STATUS_KEY)) {
+    inserted.push(`${indent}${HOOK_STATUS_KEY}: false`);
+    written.push(layoutWritten.hooks);
   }
   if (inserted.length > 0) edits.push({ at: last, insert: inserted });
   if (edits.length === 0) {
