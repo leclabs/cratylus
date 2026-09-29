@@ -15,7 +15,7 @@ token: `plan revise u --plan p --repin -x …` used to read `-x` as `--repin`'s
 value and write, and now refuses `-x` and writes nothing. `--repin=x` is refused
 rather than having its value dropped.
 
-`@cratylus/runtime/verb-flags` now carries `VerbFlags`, in which each verb maps
-each flag it takes to `'value'` or `'switch'`, the per-verb `Flags`, the reader
+`@cratylus/runtime/verb-flags` carries `VerbFlags`, in which each verb maps each
+flag it takes to `'value'` or `'switch'`, the per-verb `Flags`, the reader
 `readArgv` and the `Argv` it returns, and `refused` and `nearest`, which take a
-verb's `Flags`. `refuseUnknown` is gone: the reader refuses.
+verb's `Flags`.

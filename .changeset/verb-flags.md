@@ -15,6 +15,5 @@ asks for the call to be corrected and run again. `--name`, `--state` and
 `--repin` on `plan add`, and `--state` on `plan revise`, are refused the same
 way, as flags those verbs do not take.
 
-`@cratylus/runtime/verb-flags` is the one home of that refusal: `VerbFlags`,
-the shape in which a capability declares its verbs' flags, and `refuseUnknown`,
-`refused` and `nearest`.
+The refusal has one home, the new subpath `@cratylus/runtime/verb-flags`, which
+every capability's verbs read their arguments through.
