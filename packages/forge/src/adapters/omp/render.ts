@@ -281,6 +281,7 @@ export const ompRoleRouting: RoleRouting = {
 export const ompStatusSegment: StatusSegmentHost = {
   configRels: OMP_CONFIG_RELS,
   segment: 'status',
+  defaultPreset: 'default',
   defaultLayout: {
     left: [
       'pi',

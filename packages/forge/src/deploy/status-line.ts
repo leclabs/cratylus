@@ -186,6 +186,16 @@ const CUSTOM_PRESET = 'custom';
  *  status; on by default. */
 const HOOK_STATUS_KEY = 'showHookStatus';
 
+/** The keys under which the host lays out its own line. Under the default preset the
+ *  two lists are ignored and `segmentOptions` is merged over the preset's own options,
+ *  and `custom` reads all three as the WHOLE layout. `separator` is not among them: it
+ *  applies under every preset, and `custom`'s own equals the default preset's. */
+const LAYOUT_KEYS = [
+  'leftSegments',
+  'rightSegments',
+  'segmentOptions',
+] as const;
+
 /**
  *   - `added`        — the host's status line now lists the segment, or now hides the
  *                      row that would repeat it (written, or under `dry` would be);
@@ -195,12 +205,16 @@ const HOOK_STATUS_KEY = 'showHookStatus';
  *   - `other-preset` — the host chose a named preset other than `custom`, whose layout
  *                      is the preset's own and has no such segment. Its choice is not
  *                      ours to change: the file is as it was, and `preset` names it.
+ *   - `own-layout`   — no preset is set, but the host wrote layout keys of its own
+ *                      (`keys`) that `custom` would activate or leave partial. The file
+ *                      is as it was, and `advice` says what to write.
  *   - `refused`      — a `statusLine` this cannot safely extend; the file is as it was.
  */
 export type StatusSegmentState =
   | 'added'
   | 'present'
   | 'other-preset'
+  | 'own-layout'
   | 'refused';
 
 export interface StatusSegmentResult {
@@ -213,6 +227,11 @@ export interface StatusSegmentResult {
   readonly written: readonly string[];
   /** The preset the host is on, when `other-preset`. */
   readonly preset?: string;
+  /** The layout keys the host wrote, when `own-layout`. */
+  readonly keys?: readonly string[];
+  /** Lines telling the host what to write to show the badge inline, when
+   *  `other-preset` or `own-layout`. */
+  readonly advice?: readonly string[];
   /** Why the file was left untouched, when `refused`. */
   readonly refused?: string;
 }
@@ -401,6 +420,65 @@ function applyEdits(
   return out.map(([t, e]) => t + e).join('');
 }
 
+/** The default layout under `custom`, as YAML lines at `indent`: the preset, its left
+ *  segments plus the segment, its right segments and its segment options. */
+function layoutLines(host: StatusSegmentHost, indent: string): string[] {
+  const layout = host.defaultLayout;
+  return [
+    `${indent}preset: ${CUSTOM_PRESET}`,
+    ...listLines('leftSegments', [...layout.left, host.segment], indent),
+    ...listLines('rightSegments', layout.right, indent),
+    ...optionLines(layout.segmentOptions, indent),
+  ];
+}
+
+/** The whole block that keeps the default preset's line and adds the badge. */
+function defaultBlock(host: StatusSegmentHost, indent = ''): string[] {
+  return [
+    'statusLine:',
+    ...layoutLines(host, '  '),
+    `  ${HOOK_STATUS_KEY}: false`,
+  ].map((line) => `${indent}${line}`);
+}
+
+/** What to write to show the badge inline on a host's chosen named preset. `custom`
+ *  REPLACES the preset's layout, so the advice says so and gives the whole block: the
+ *  exact lists for the default preset, and for any other the preset's own segments
+ *  followed by the segment, which are the harness's to name and not declared here. */
+function presetAdvice(host: StatusSegmentHost, preset: string): string[] {
+  if (preset === host.defaultPreset) {
+    return [
+      `\`preset: custom\` REPLACES the \`${preset}\` preset's layout with the one you list, so write the whole block, which keeps the line as it is and adds the badge:`,
+      ...defaultBlock(host, '  '),
+    ];
+  }
+  return [
+    `\`preset: custom\` REPLACES the \`${preset}\` preset's layout with the one you list, so write all of it or the line loses what \`${preset}\` shows:`,
+    '  statusLine:',
+    '    preset: custom',
+    '    leftSegments:',
+    `      - <each of ${preset}'s own left segments, in order>`,
+    `      - ${host.segment}`,
+    '    rightSegments:',
+    `      - <each of ${preset}'s own right segments, in order>`,
+    `    ${HOOK_STATUS_KEY}: false`,
+    `Under \`custom\` the separator and segment options also come from your own \`separator\` and \`segmentOptions\` keys; write them too to keep \`${preset}\`'s.`,
+  ];
+}
+
+/** What to write on a host with no preset that laid out its own line. */
+function ownLayoutAdvice(
+  host: StatusSegmentHost,
+  keys: readonly string[],
+): string[] {
+  return [
+    `With no preset omp ignores \`leftSegments\` and \`rightSegments\` and merges \`segmentOptions\` over the ${host.defaultPreset} preset's own, and \`preset: custom\` makes what you wrote the WHOLE layout, which would change the line. To show the badge inline, choose one:`,
+    `  - keep the line as it is: replace your ${keys.map((k) => `\`${k}\``).join(', ')} with the ${host.defaultPreset} preset's layout and the badge:`,
+    ...defaultBlock(host, '      '),
+    `  - or use your own layout: add \`preset: custom\`, put \`${host.segment}\` last in your \`leftSegments\`, and add \`${HOOK_STATUS_KEY}: false\`.`,
+  ];
+}
+
 /**
  * Make the host's omp status line show an extension's status inline: list the harness's
  * status segment (`host.segment`) in the layout, in the YAML file at `path`.
@@ -411,9 +489,10 @@ function applyEdits(
  *  - NO PRESET SET — the harness's default preset is in effect, and its layout has no
  *    such segment. `preset: custom` is added together with the default layout's own
  *    left segments plus the segment, its right segments and its segment options, so
- *    the line looks as it did with the badge added. A `leftSegments`, `rightSegments`
- *    or `segmentOptions` the host already wrote is kept as it is (the segment is
- *    appended to a list without it) and only the missing ones are filled in.
+ *    the line looks as it did with the badge added. IF THE HOST LAID OUT ITS OWN LINE
+ *    (`leftSegments`, `rightSegments` or `segmentOptions`), nothing is written and
+ *    `own-layout` says what to write: those keys are dormant or partial under the
+ *    default preset, and `custom` would make them the whole line.
  *  - `preset: custom` — the segment is appended to the host's `leftSegments` after its
  *    last item, or, where the host lists none, `host.customLeft` plus the segment is
  *    written. Nothing is reordered, removed or requoted. A list that has it is left.
@@ -488,11 +567,10 @@ export function ensureStatusSegment(
     }
   }
 
-  // What the default layout is, said key by key — for the file, and for the report.
-  const defaultLeft = [...layout.left, segment];
+  // What the default layout is, said key by key — for the report.
   const layoutWritten = {
     preset: `preset: ${CUSTOM_PRESET}`,
-    left: `leftSegments: ${defaultLeft.join(', ')}`,
+    left: `leftSegments: ${[...layout.left, segment].join(', ')}`,
     right: `rightSegments: ${layout.right.join(', ')}`,
     options: `segmentOptions: ${Object.keys(layout.segmentOptions).join(', ')}`,
     hooks: `${HOOK_STATUS_KEY}: false`,
@@ -503,10 +581,7 @@ export function ensureStatusSegment(
     const lead = text === '' || /[\r\n]$/.test(text) ? '' : eol;
     const block = [
       'statusLine:',
-      `  preset: ${CUSTOM_PRESET}`,
-      ...listLines('leftSegments', defaultLeft, '  '),
-      ...listLines('rightSegments', layout.right, '  '),
-      ...optionLines(layout.segmentOptions, '  '),
+      ...layoutLines(host, '  '),
       `  ${HOOK_STATUS_KEY}: false`,
     ];
     return finish(
@@ -566,43 +641,62 @@ export function ensureStatusSegment(
     }
   }
   if (preset !== undefined && preset !== CUSTOM_PRESET) {
-    return { path, state: 'other-preset', wrote: false, written: [], preset };
+    return {
+      path,
+      state: 'other-preset',
+      wrote: false,
+      written: [],
+      preset,
+      advice: presetAdvice(host, preset),
+    };
   }
   const onCustom = preset === CUSTOM_PRESET;
+
+  // NO PRESET, BUT THE HOST LAID OUT ITS OWN LINE. Under the default preset omp ignores
+  // `leftSegments` and `rightSegments`, and merges `segmentOptions` over that preset's
+  // own options; `custom` makes the host's keys the WHOLE layout. Moving the host there
+  // would light up a list it wrote for some other day — or drop the default preset's
+  // options from under its own — and change the line it sees. That is the host's
+  // decision to make, so nothing is written and the way to make it is told.
+  const ownLayout = LAYOUT_KEYS.filter((key) => keyAt.has(key));
+  if (!onCustom && ownLayout.length > 0) {
+    return {
+      path,
+      state: 'own-layout',
+      wrote: false,
+      written: [],
+      keys: ownLayout,
+      advice: ownLayoutAdvice(host, ownLayout),
+    };
+  }
 
   const edits: Edit[] = [];
   const inserted: string[] = [];
   const written: string[] = [];
-  if (!onCustom) {
-    inserted.push(`${indent}preset: ${CUSTOM_PRESET}`);
-    written.push(layoutWritten.preset);
-  }
-
-  const leftAt = keyAt.get('leftSegments');
-  if (leftAt === undefined) {
-    const left = onCustom ? [...host.customLeft, segment] : defaultLeft;
-    inserted.push(...listLines('leftSegments', left, indent));
-    written.push(`leftSegments: ${left.join(', ')}`);
+  if (onCustom) {
+    const leftAt = keyAt.get('leftSegments');
+    if (leftAt === undefined) {
+      const left = [...host.customLeft, segment];
+      inserted.push(...listLines('leftSegments', left, indent));
+      written.push(`leftSegments: ${left.join(', ')}`);
+    } else {
+      const plan = planListEdit(lines, leftAt, indent, segment);
+      if (plan.kind === 'refused') return refuse(plan.why);
+      if (plan.kind === 'edit') {
+        edits.push(plan.edit);
+        written.push(`leftSegments: + ${segment}`);
+      }
+    }
   } else {
-    const plan = planListEdit(lines, leftAt, indent, segment);
-    if (plan.kind === 'refused') return refuse(plan.why);
-    if (plan.kind === 'edit') {
-      edits.push(plan.edit);
-      written.push(`leftSegments: + ${segment}`);
-    }
-  }
-  // The rest of the default layout is written only where the host lacks it, and only
-  // when the host is moving off the default preset: on `custom` the host's own choice
-  // — an absent key included — is what it has.
-  if (!onCustom) {
-    if (!keyAt.has('rightSegments')) {
-      inserted.push(...listLines('rightSegments', layout.right, indent));
-      written.push(layoutWritten.right);
-    }
-    if (!keyAt.has('segmentOptions')) {
-      inserted.push(...optionLines(layout.segmentOptions, indent));
-      written.push(layoutWritten.options);
-    }
+    // The host set none of the layout keys, so the default preset is what it sees and
+    // is what it is moved to `custom` WITH: nothing of the host's is replaced.
+    inserted.push(...layoutLines(host, indent));
+    written.push(
+      layoutWritten.preset,
+      layoutWritten.left,
+      layoutWritten.right,
+      layoutWritten.options,
+    );
   }
   // THE BADGE RENDERS ONCE. Wherever the layout now has the segment, the segment draws
   // every extension's status inline, so the row omp also prints beneath the editor

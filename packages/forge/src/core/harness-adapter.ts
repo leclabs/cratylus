@@ -580,6 +580,9 @@ export interface StatusSegmentHost {
   readonly configRels: readonly string[];
   /** The segment an extension's status renders in. */
   readonly segment: string;
+  /** The name of the preset in effect when the host names none — and the one it may
+   *  write out. Its layout is `defaultLayout`. */
+  readonly defaultPreset: string;
   /** The layout in effect when the host names no preset. */
   readonly defaultLayout: StatusLayout;
   /** The left segments the `custom` preset falls back to when the host lists none. */

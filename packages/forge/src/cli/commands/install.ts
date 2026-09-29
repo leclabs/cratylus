@@ -401,8 +401,15 @@ function showPersonaBadge(
         return;
       case 'other-preset':
         say(
-          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is. To show it in the line, set \`preset: custom\` and list \`${host.segment}\` in \`leftSegments\``,
+          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is.`,
         );
+        for (const line of result.advice ?? []) say(`    ${line}`);
+        return;
+      case 'own-layout':
+        say(
+          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so the persona badge renders beneath the status line.`,
+        );
+        for (const line of result.advice ?? []) say(`    ${line}`);
         return;
       case 'added':
         say(

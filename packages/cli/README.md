@@ -165,15 +165,21 @@ the badge renders beneath the status line. Install edits the config file omp rea
 
 - **No preset set** (a file with no `statusLine` included): install writes `preset: custom` with the
   default preset's own left segments plus `status`, its right segments and its segment options, so the
-  status line looks as it did with the badge added. A `leftSegments`, `rightSegments` or
-  `segmentOptions` you already wrote is kept as it is (`status` is appended to a list without it), and
-  only what is missing is filled in.
+  status line looks as it did with the badge added. If you laid out your own line there
+  (`leftSegments`, `rightSegments` or `segmentOptions`), install writes nothing: omp ignores the two
+  lists under the default preset and merges `segmentOptions` over that preset's own, and `custom`
+  would make what you wrote the whole line, lighting up a list written for another day. It prints
+  the block that keeps the line as it is with the badge added, and the way to use your own layout
+  instead. A `separator` alone does not count; it applies under every preset.
 - **`preset: custom`**: `status` is appended after the last item of your `leftSegments`, no other byte
   changing, or, where you list none, omp's custom left list plus `status` is written. A list that has
   `status` is not touched.
-- **Any other named preset** (`minimal`, `compact`, `full`, `nerd`, `ascii`, or `default` written out):
-  your choice stands. The file is left byte-identical, and install prints the one addition that would
-  show the badge in the line: set `preset: custom` and list `status` in `leftSegments`.
+- **Any other named preset** (`minimal`, `compact`, `full`, `nerd`, `ascii`, or `default` written
+  out): your choice stands. The file is left byte-identical. `preset: custom` REPLACES that preset's
+  layout with the one you list, so install prints the whole block to write: the exact lists for
+  `default`, and for any other preset `leftSegments` as that preset's own segments followed by
+  `status`, `rightSegments` as its own, and `showHookStatus: false`. Under `custom` the separator and
+  segment options also come from your own keys, so write those too to keep the preset's.
 
 Wherever install leaves `status` in the live layout, that is, where it wrote `preset: custom` or listed
 `status` in a `custom` list, it also writes `showHookStatus: false` unless you set that key. omp prints

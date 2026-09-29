@@ -254,58 +254,65 @@ describe('ensureStatusSegment', () => {
     );
   });
 
-  it('keeps a leftSegments, rightSegments and segmentOptions the host wrote under no preset, adding only the preset, the segment and the hook-row switch', () => {
-    // The host wrote these under the default preset, which ignored them; under custom
-    // they are what the host said, so they stay exactly as written.
-    const host =
-      'statusLine:\n  leftSegments:\n    - model\n  rightSegments:\n    - cost\n  segmentOptions:\n    path:\n      maxLength: 10\n';
-    const f = file('config.yml', host);
-    expect(ensure(f.path).written).toEqual([
-      'preset: custom',
-      'leftSegments: + status',
-      'showHookStatus: false',
-    ]);
-    expect(f.read()).toBe(
-      `${host.replace('    - model\n', '    - model\n    - status\n')}  preset: custom\n${HOOK_LINE}`,
-    );
+  it.each([
+    ['leftSegments', '  leftSegments:\n    - model\n', ['leftSegments']],
+    ['rightSegments', '  rightSegments: [cost]\n', ['rightSegments']],
+    [
+      'segmentOptions',
+      '  segmentOptions:\n    path:\n      maxLength: 10\n',
+      ['segmentOptions'],
+    ],
+    [
+      'all of them, with a separator',
+      '  leftSegments: [model]\n  rightSegments: [cost]\n  separator: ascii\n  segmentOptions: {}\n',
+      ['leftSegments', 'rightSegments', 'segmentOptions'],
+    ],
+    [
+      'a leftSegments that already lists status',
+      '  leftSegments: [vim, status]\n  rightSegments: []\n  segmentOptions: {}\n',
+      ['leftSegments', 'rightSegments', 'segmentOptions'],
+    ],
+  ])(
+    'leaves a no-preset host with its own %s byte-identical and tells it what to write',
+    (_n, rest, keys) => {
+      // Under the default preset omp ignores the lists (and merges segmentOptions over
+      // the preset's own), and custom would make them the whole line: not ours to do.
+      const host = `statusLine:\n${rest}theme: dark\n`;
+      const f = file('config.yml', host);
+      const r = ensure(f.path);
+      expect(r).toMatchObject({ state: 'own-layout', wrote: false, keys });
+      expect(f.read()).toBe(host);
+      const advice = (r.advice ?? []).join('\n');
+      // Either: the exact default block, or the host's own layout made live.
+      expect(advice).toContain(
+        `statusLine:\n${FULL('  ')}`.replace(/\n/g, '\n      '),
+      );
+      expect(advice).toContain('put `status` last in your `leftSegments`');
+      expect(advice).toContain('would change the line');
+    },
+  );
+
+  it('does not treat a separator alone as a layout of its own: it applies under every preset', () => {
+    const f = file('config.yml', 'statusLine:\n  separator: ascii\n');
+    expect(ensure(f.path).state).toBe('added');
+    expect(f.read()).toBe(`statusLine:\n  separator: ascii\n${FULL('  ')}\n`);
   });
 
-  it('puts the appended segment straight after a list that closes the block, then the rest', () => {
-    const f = file(
-      'config.yml',
-      'statusLine:\n  leftSegments:\n    - vim\ntheme: dark\n',
-    );
-    ensure(f.path);
-    expect(f.read()).toBe(
-      `statusLine:\n  leftSegments:\n    - vim\n    - status\n${[
-        ...PRESET('  '),
-        ...RIGHT('  '),
-        ...OPTIONS('  '),
-        ...HOOKS('  '),
-      ].join('\n')}\ntheme: dark\n`,
-    );
-    // The same with a flow list on the file's unterminated last line.
-    const flow = file('config.yml', 'statusLine:\n  leftSegments: [vim]');
-    ensure(flow.path);
-    expect(flow.read()).toBe(
-      `statusLine:\n  leftSegments: [vim, status]\n${[
-        ...PRESET('  '),
-        ...RIGHT('  '),
-        ...OPTIONS('  '),
-        ...HOOKS('  '),
-      ].join('\n')}`,
-    );
+  it('writes nothing under dry-run for a host with a layout of its own either', () => {
+    const host = 'statusLine:\n  leftSegments: [model]\n';
+    const f = file('config.yml', host);
+    expect(ensure(f.path, true).state).toBe('own-layout');
+    expect(f.read()).toBe(host);
   });
 
-  it('writes only the preset and the hook-row switch for a host whose no-preset layout already lists status', () => {
-    const host =
-      'statusLine:\n  leftSegments: [vim, status]\n  rightSegments: []\n  segmentOptions: {}\n';
-    const f = file('config.yml', host);
+  it('writes only the preset and what is missing for a host that set a showHookStatus alone', () => {
+    const f = file('config.yml', 'statusLine:\n  showHookStatus: true\n');
     expect(ensure(f.path).written).toEqual([
       'preset: custom',
-      'showHookStatus: false',
+      `leftSegments: ${DEFAULT_LEFT.join(', ')}`,
+      'rightSegments: session_name',
+      'segmentOptions: model, path, git',
     ]);
-    expect(f.read()).toBe(`${host}  preset: custom\n${HOOK_LINE}`);
   });
 
   it('never changes a showHookStatus the host set, whatever its value', () => {
@@ -431,10 +438,9 @@ describe('ensureStatusSegment', () => {
   it.each([
     ['minimal', 'minimal', 'minimal'],
     ['a quoted name', '"compact" # mine', 'compact'],
-    ['default written out', 'default', 'default'],
     ['a name omp does not know', 'nonesuch', 'nonesuch'],
   ])(
-    'leaves a host on another preset (%s) byte-identical, showHookStatus unwritten, and names it',
+    'leaves a host on another preset (%s) byte-identical, showHookStatus unwritten, and says custom replaces that preset’s layout',
     (_n, value, name) => {
       const host = `statusLine:\n  preset: ${value}\n  leftSegments:\n    - vim\n`;
       const f = file('config.yml', host);
@@ -442,8 +448,33 @@ describe('ensureStatusSegment', () => {
       expect(r).toMatchObject({ state: 'other-preset', wrote: false });
       expect(r.preset).toBe(name);
       expect(f.read()).toBe(host);
+      const advice = (r.advice ?? []).join('\n');
+      expect(advice).toContain(`REPLACES the \`${name}\` preset's layout`);
+      // That preset's own segments, then status — never a list of omp's default.
+      expect(advice).toContain(
+        `<each of ${name}'s own left segments, in order>\n      - status`,
+      );
+      expect(advice).toContain(
+        `<each of ${name}'s own right segments, in order>`,
+      );
+      expect(advice).not.toContain('- pi\n');
     },
   );
+
+  it('leaves `preset: default` written out alone and gives the exact default block', () => {
+    const host = 'statusLine:\n  preset: default\n';
+    const f = file('config.yml', host);
+    const r = ensure(f.path);
+    expect(r).toMatchObject({
+      state: 'other-preset',
+      wrote: false,
+      preset: 'default',
+    });
+    expect(f.read()).toBe(host);
+    expect((r.advice ?? []).join('\n')).toContain(
+      `statusLine:\n${FULL('  ')}`.replace(/\n/g, '\n  '),
+    );
+  });
 
   it('reports what it would add and writes nothing under dry-run', () => {
     const host = 'statusLine:\n  preset: custom\n  leftSegments: [vim]\n';
@@ -672,13 +703,31 @@ describe('install — the status line', () => {
       expect(out).toContain('`status` already listed');
     });
 
-    it('leaves a host on another named preset byte-identical, hook row untouched, and says what would show the badge', async () => {
+    it('leaves a host on another named preset byte-identical, hook row untouched, and tells it that custom replaces the layout', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(host);
       expect(out).toContain('preset `minimal`');
-      expect(out).toContain('`preset: custom`');
+      expect(out).toContain("REPLACES the `minimal` preset's layout");
+      expect(out).toContain("<each of minimal's own left segments, in order>");
+      expect(out).toContain('showHookStatus: false');
+    });
+
+    it('leaves a no-preset host with a layout of its own byte-identical and gives it the block to write', async () => {
+      const host = `${ROLES}statusLine:\n  leftSegments:\n    - model\n  separator: ascii\n`;
+      const read = seed(host);
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(host);
+      expect(out).toContain('the host set `leftSegments` with no preset');
+      // The exact default-preset block, ready to write (install indents each line).
+      const pad = ' '.repeat(10);
+      expect(out).toContain(
+        `${pad}statusLine:\n${FULL('  ')
+          .split('\n')
+          .map((l) => `${pad}${l}`)
+          .join('\n')}`,
+      );
     });
 
     it('writes nothing under --dry-run, and says what it would add', async () => {

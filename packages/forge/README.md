@@ -329,9 +329,13 @@ with the host's command as one single-quoted argument and keeps every other key,
 wraps nothing twice. `ensureStatusSegment` edits omp's config as text, as `addModelRoles` does, and
 shares its line helpers (`deploy/yaml-lines.ts`). omp reads a segment list only under
 `statusLine.preset: custom`, so a host with no preset gets `preset: custom` with the default preset's
-layout written out (left plus `status`, right, segment options; a key the host set is kept), a host on
-`custom` gets `status` appended to its list, and a host on any other named preset is left
-byte-identical and told the addition. Where the segment is left in the live layout it also writes
+layout written out (left plus `status`, right, segment options) unless it laid out its own line
+(`leftSegments`, `rightSegments` or `segmentOptions`), which `custom` would activate or leave
+partial: that host is left byte-identical (`own-layout`) and told what to write. A host on `custom`
+gets `status` appended to its list, and a host on any other named preset is left byte-identical
+(`other-preset`) and told that `custom` replaces the preset's layout, with the whole block: exact
+lists for the default preset (`defaultPreset` on the port), and for another its own segments
+followed by `status`. Where the segment is left in the live layout it also writes
 `showHookStatus: false` unless the host set it, because omp prints every extension's status on a row
 beneath the editor too and the segment already draws them all inline. A shape it cannot extend is
 reported and left. Both honour `--dry-run`.
