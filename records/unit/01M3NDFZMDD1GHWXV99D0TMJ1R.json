@@ -1,0 +1,56 @@
+{
+  "envelope": {
+    "id": "01M3NDFZMDD1GHWXV99D0TMJ1R",
+    "entity": "01M3NDFZMDD1GHWXV99D0TMJ1Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T01:46:59.085Z",
+    "reason": "the kernel hands any flag to a plugin verb, so a configured capability routed through dispatch has no declared flags and no refusal",
+    "cause": "nico dispatch 2026-09-28"
+  },
+  "payload": {
+    "plan": "01M3ND9S44PF0HBP33APJVSNV3",
+    "spec": {
+      "name": "kernel-verb-flags",
+      "intent": "**Wave 2.** Realizes `verb flags` for every capability the kernel's generic dispatch routes. By the architect's ruling of 2026-09-28, a capability configured through the host config's `capabilities` is routed by the CLI through `packages/runtime/src/dispatch.ts`, so it falls under this concept. It depends on `verb-flags` for the refusal home, and on `memory-verb-flags`, which exports memory's flag table from `cli.ts` so that memory's port can carry it here. A kernel that refused undeclared flags before memory's port declared any would refuse every memory call.\n\nCensus at 63a012ce (re-derive before citing):\n- `dispatch` parses the argv tail with `parseArgs` and calls the port method whatever flags it holds. Nothing in the contract says which flags a verb takes. The contract is `RuntimePlugin` in `packages/runtime/src/plugin.ts`, with the ports in `ports/*.ts`; a port is an opaque bag of function-valued members, reflected by `verbsOf`.\n- The CLI's declared plugin set is `[memory]` (`packages/cli/src/cratylus.ts`). `bootstrap` and `discoverConfigured` (`packages/runtime/src/loader.ts`) load configured providers when no plugins are passed.\n- The only real port dispatched here is memory's `memoryVerbPort` (`packages/memory/src/verb-port.ts`), with one handler per `MEMORY_VERBS` entry. The event-tap `runtimePlugin` port and the fakes in `packages/runtime/test/kernel.test.ts` are the others; the kernel tests pass `--name` and other flags to fake verbs.\n\nChange:\n1. A port declares each verb's flags beside the verb, in the shape the `verb-flags` home defines. It rides on the port, beside the handler. `RuntimePlugin` keeps only its capability-keyed fields, because canon's `capability-keyspace` gate reads `defineRuntimePlugin` sites for them. `verbsOf` still lists verbs and nothing else.\n2. `dispatch` checks the given flags against the verb's declaration before calling the handler, and refuses an undeclared one with the home's refusal. The handler is not called, and the refusal does not read as a verb that ran and failed. A verb that declares nothing takes no flags.\n3. Memory's port declares, for each verb, the flags of memory's table (imported from `cli.ts`, the one declaration). It also declares memory's usage flag `help`, so `cratylus memory <verb> --help` still prints usage.\n4. `kernel.test.ts` fakes declare the flags their tests pass. New legs, with no new test file: an undeclared flag is refused with the home's text and the handler is not called; a verb declaring nothing refuses any flag; a declared flag reaches the handler as today.\n5. `packages/runtime/README.md` § Dispatch says a port declares its verbs' flags and the kernel refuses the rest. `.changeset/kernel-verb-flags.md` names `@cratylus/runtime`, `@cratylus/memory` and `cratylus`.",
+      "static": [
+        "`cratylus design show 'verb flags'` at 63a012ce, and the architect's ruling of 2026-09-28 (via Main) that the kernel dispatch is in the piece.",
+        "`packages/runtime/src/verb-flags.ts` as `verb-flags` lands it, and `packages/memory/src/cli.ts` as `memory-verb-flags` leaves it (the exported table).",
+        "`packages/cli/src/cratylus.ts` and `packages/runtime/src/main.ts:158-165`: how the CLI reaches `dispatch` and with which plugins.",
+        "`packages/canon/test/capability-keyspace.test.ts` (`pluginSites`): reads every `defineRuntimePlugin({…})` site for capability-keyed fields.",
+        "`packages/memory/test/verb-roster.test.ts`: pins `MEMORY_VERBS` to the table's verbs.",
+        "`packages/forge/test/deploy/integrate-smoke.test.ts`: drives memory through a deployed shim with `--home`, `--session`, `--body` and `--json`."
+      ],
+      "deps": [
+        "01M3ND9S473408PDSHQBWGZS3C",
+        "01M3ND9S9NG1VAGFRTTSW3EM80"
+      ],
+      "outputs": [
+        "packages/runtime/src/dispatch.ts",
+        "packages/runtime/src/plugin.ts",
+        "packages/runtime/src/loader.ts",
+        "packages/runtime/src/index.ts",
+        "packages/runtime/test/kernel.test.ts",
+        "packages/runtime/README.md",
+        "packages/memory/src/verb-port.ts",
+        ".changeset/kernel-verb-flags.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime test -- kernel` passes, with legs showing that a fake plugin verb declaring `name`, dispatched with `--nmae`, returns a non-zero code whose `err` contains what `src/verb-flags.ts` produces for that capability, verb, flag and `[name]`, and its handler is not called; that a verb declaring nothing, given `--x`, is refused and not called; and that a declared flag reaches the handler.",
+        "After `pnpm --filter \"cratylus...\" build`, from the repository root: `d=$(mktemp -d); AGENT_HOME=\"$d\" AGENT_SESSION_ID=smoke node packages/cli/dist/cratylus.js memory encode --bodyy hi` exits non-zero; its stderr contains `--bodyy` and does not contain `failed`; and `ls -A \"$d\"` prints nothing.",
+        "With the same build, `AGENT_HOME=\"$(mktemp -d)\" AGENT_SESSION_ID=smoke node packages/cli/dist/cratylus.js memory encode --help` exits 0 and its stdout contains `memory encode`.",
+        "`pnpm --filter @cratylus/forge test -- integrate-smoke` and `pnpm --filter @cratylus/memory test` pass.",
+        "`pnpm --filter @cratylus/canon test -- capability-keyspace` passes.",
+        "`pnpm --filter @cratylus/runtime typecheck`, `pnpm --filter @cratylus/runtime typecheck:test` and `pnpm --filter @cratylus/memory typecheck` pass.",
+        "`grep -q '\"@cratylus/runtime\":' .changeset/kernel-verb-flags.md && grep -q '\"@cratylus/memory\":' .changeset/kernel-verb-flags.md && grep -q '\"cratylus\":' .changeset/kernel-verb-flags.md` exits 0."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NCQZF0FH8FXX88A0GE6BV7",
+      "version": "01M3NCQZF141ZRXKZF7HEZC9N3",
+      "closure": {}
+    }
+  }
+}
