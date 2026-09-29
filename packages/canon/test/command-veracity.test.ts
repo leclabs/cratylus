@@ -356,7 +356,7 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
       'run `pnpm anatomy:project:targets` to regenerate',
       'then `pnpm canon:project` — this one is real',
       // A --filter citation, so the control covers that shape too. It named
-      // `project` until canon's private `project` / `project:codex` scripts were
+      // `project` until canon's private `project` / `project:<harness>` scripts were
       // deleted along with the CLIs they drove; `project:targets` is the
       // surviving filtered script.
       'pnpm --filter @cratylus/canon project:targets',

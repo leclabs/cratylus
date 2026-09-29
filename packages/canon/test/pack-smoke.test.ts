@@ -102,7 +102,7 @@ describe('PACK-SMOKE gate — the bytes a consumer receives', () => {
     // forge ships `"./adapters/*"`. An exact-string checker finds no file called
     // `dist/adapters/*.js` and would convict a correct package — or be "fixed" by dropping
     // the case, taking every subpath forge actually ships out of the law's reach.
-    const entries = ['dist/adapters/claude.js', 'dist/adapters/codex.js'];
+    const entries = ['dist/adapters/claude.js', 'dist/adapters/omp.js'];
     expect(targetResolves('./dist/adapters/*.js', entries)).toBe(true);
     expect(targetResolves('./dist/adapters/*.js', ['dist/other.js'])).toBe(
       false,

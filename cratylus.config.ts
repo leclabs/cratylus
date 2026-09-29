@@ -5,8 +5,8 @@ import { defineConfig } from 'cratylus';
 // commands it ships. `cratylus project --harness <name>` is the build-time
 // entry (ARCHITECTURE.md, "Two consumer entries, because there are two DAGs");
 // the private `toolkit/project-cli*.ts` reimplementations it replaces differed
-// from each other by one adapter string, and the codex copy had already drifted
-// once and shipped SESSIONLESS runtime shims to every codex-projected skill.
+// from each other by one adapter string, and one copy had already drifted
+// once and shipped SESSIONLESS runtime shims to every skill it projected.
 //
 // THE WHOLE PLUGIN, per harness — hooks included, never subset. A build step
 // that decides what the design IS is the projection silently editing the canon.

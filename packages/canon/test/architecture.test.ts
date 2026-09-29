@@ -446,7 +446,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // not DEFINED by it, which `ARCHITECTURE.md` names explicitly as not a divergence.
     // Three of the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the
     // cell SHAPES and now take them from the schema, so their forge edge is gone
-    // outright. Two more went with `toolkit/project-cli{,-codex}.ts`: they were one
+    // outright. Two more went with the two `toolkit/project-cli*.ts` files: they were one
     // program differing by an adapter string, and the shipped
     // `cratylus project --harness <name>` is that program.
     //

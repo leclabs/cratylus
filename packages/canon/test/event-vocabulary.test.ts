@@ -53,11 +53,6 @@ import {
 // TEST import was never an edge to begin with — while reaching across `rootDir` by path
 // breaks `typecheck:test` outright. The caution was aimed at a risk that does not exist,
 // and it cost the property it was protecting.
-import {
-  canonicalActToCodex,
-  canonicalToCodex,
-  codexHarnessAdapter,
-} from '@cratylus/forge/adapters/codex';
 import { ompHarnessAdapter } from '@cratylus/forge/adapters/omp';
 import {
   emitRuntimeConfig,
@@ -94,7 +89,6 @@ const packagesDir = join(here, '..', '..');
 const DECLARING_SITES: readonly string[] = [
   'canon/src/manifest.ts',
   'forge/src/adapters/claude/events.ts',
-  'forge/src/adapters/codex/events.ts',
   'forge/src/adapters/omp/events.ts',
 ];
 
@@ -261,8 +255,6 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
   const adapters: readonly [string, Readonly<Record<string, unknown>>][] = [
     ['claude', canonicalToClaude],
     ['claude acts', canonicalActToClaude],
-    ['codex', canonicalToCodex],
-    ['codex acts', canonicalActToCodex],
   ];
 
   for (const [name, map] of adapters) {
@@ -408,10 +400,10 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     expect(nativeEventsOf(parsed, OMP.harness)).toEqual(
       filtered(OMP.nativeEvents, CANONICAL_EVENTS),
     );
-    const codex = codexHarnessAdapter.name;
-    expect(() => nativeEventsOf(parsed, codex)).toThrow(
+    const unconfigured = 'not-a-harness';
+    expect(() => nativeEventsOf(parsed, unconfigured)).toThrow(
       new RegExp(
-        `install --harness ${codex}[\\s\\S]*deploy --harness ${codex}`,
+        `install --harness ${unconfigured}[\\s\\S]*deploy --harness ${unconfigured}`,
       ),
     );
   });
