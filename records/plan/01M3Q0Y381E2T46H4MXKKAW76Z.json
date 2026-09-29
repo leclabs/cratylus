@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3Q0Y381E2T46H4MXKKAW76Z",
+    "entity": "01M3PZSGMCQQSR4A220PFRY97V",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PZWM3D4DG6HKC7B8GDA3KJ"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T16:45:58.913Z",
+    "reason": "its only unit is accepted",
+    "cause": "role-routing completed"
+  },
+  "payload": {
+    "name": "role-routing",
+    "realizes": [
+      "01M3PZ5AS51YWKS979SHJ4PD1A"
+    ],
+    "state": "closed"
+  }
+}
