@@ -65,14 +65,20 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
-    expect(paths).toEqual([
-      'agents/probe.md',
-      'enforcing/_session/claude-agent',
-      'hooks/ping/ping.sh',
-      'settings.json',
-      'skills/greet/SKILL.md',
-      'skills/greet/scripts/note.mjs',
-    ]);
+    // The launch spec: the launcher, the status-line worker (both session-scoped) and
+    // the persona's badge file in its own scope — names derived from the bin.
+    expect(paths).toEqual(
+      [
+        'agents/probe.md',
+        'enforcing/_session/claude-agent',
+        `enforcing/_session/${CLI_BIN}-status-line.sh`,
+        `enforcing/probe/${CLI_BIN}-persona-badge.txt`,
+        'hooks/ping/ping.sh',
+        'settings.json',
+        'skills/greet/SKILL.md',
+        'skills/greet/scripts/note.mjs',
+      ].sort(),
+    );
     // Bytes, not paths-on-disk: every entry carries its own content.
     for (const f of t.files) expect(typeof f.content).toBe('string');
     expect(t).toMatchObject({ agents: 1, skills: 1, shims: 1, hooks: 1 });
