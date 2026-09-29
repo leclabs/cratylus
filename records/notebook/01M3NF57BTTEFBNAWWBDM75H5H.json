@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3NF57BTTEFBNAWWBDM75H5H",
+    "entity": "01M3NF57BTTEFBNAWWBDM75H5G",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T02:16:03.706Z",
+    "reason": "operator ruled memory a palimpsest to be removed; the kernel it alone used needs its own ruling",
+    "cause": "operator interjection 2026-09-28"
+  },
+  "payload": {
+    "title": "is the plugin kernel a palimpsest",
+    "kind": "question",
+    "topic": "runtime",
+    "body": "With the memory capability removed, the runtime's generic plugin kernel (RuntimeHost, loader bootstrap of configured capability providers, dispatch.ts with its own argv parser, the RuntimePlugin contract) routes nothing the CLI ships: memory was its only plugin, heartbeat is in CAPABILITIES but no plugin binds it, and per-capability session scope exists only for memory. ARCHITECTURE presents the runtime as ports with swappable strategies selected by configuration, and memory was the one strategy. Keep the kernel as the third-party extension seam (then refusing undeclared flags there is owed under verb flags), or remove it with memory and heartbeat as palimpsest?",
+    "blocks": []
+  }
+}
