@@ -190,16 +190,16 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
-  // The founding doctrine rides into EVERY projected Target and skill — the same
+  // The prime principle rides into every skill whose laws apply it — the same
   // ship-whole verbatim carry as the genus protocol, so the same class.
   {
     const mod = (await import(
-      pathToFileURL(join(srcRoot, 'genus/founding-doctrine.ts')).href
+      pathToFileURL(join(srcRoot, 'genus/prime-principle.ts')).href
     )) as Record<string, unknown>;
     for (const [k, v] of Object.entries(mod)) {
       if (typeof v === 'string') {
         surfaces.push({
-          label: `genus founding-doctrine ${k}`,
+          label: `genus prime-principle ${k}`,
           cls: 'genus-protocol',
           text: v,
         });
@@ -431,7 +431,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     // and the empty set travels through every downstream assertion as success.
     const labels = surfaces.map((s) => s.label);
     expect(labels).toContain('genus src/genus/persona.md ## Protocol');
-    expect(labels).toContain('genus founding-doctrine foundingDoctrine');
+    expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
     expect(labels).toContain('agent agents/nico.ts archetype');

@@ -9,7 +9,7 @@ import { cratylism } from '../dimensions/engineering-principles/cratylism.js';
  * `cratylism` ground axiom + the intrinsic-carry clause, and nothing whose truth
  * is contingent on this workspace.
  */
-export const foundingDoctrine = `## Prime Principle
+export const primePrinciple = `## Prime Principle
 
 ${cratylism}
 

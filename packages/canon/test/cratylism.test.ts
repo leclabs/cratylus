@@ -184,14 +184,12 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
 
   // The axiom ships by TWO routes: the dimension catalog (`cratylism.ts` → every
   // agent whose held role selects it, once, as its engineering-principle) and the
-  // `preamble` some skills set (`genus/founding-doctrine.ts` → the skills whose laws
+  // `preamble` some skills set (`genus/prime-principle.ts` → the skills whose laws
   // name concepts by anchor). The preamble once carried a hand-transcribed copy, so
   // cleaning the dimension left 26 artifacts shipping the superseded axiom while the
   // suite stayed green. The carry is now BY IMPORT; these legs keep it that way.
   it('the intrinsic preamble carries the canonized σ* value verbatim', async () => {
-    const { foundingDoctrine } = await import(
-      '../src/genus/founding-doctrine.js'
-    );
+    const { primePrinciple } = await import('../src/genus/prime-principle.js');
     const { cratylism } = await import(
       '../src/dimensions/engineering-principles/cratylism.js'
     );
@@ -208,7 +206,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     }
     expect(cratylism.length).toBeGreaterThan(80); // non-vacuous: a real axiom, not ''
     expect(
-      foundingDoctrine,
+      primePrinciple,
       'preamble has drifted from the canonized cratylism value — carry it by import, never transcribe',
     ).toContain(cratylism);
   });
@@ -249,19 +247,17 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and foreign
   // agents invoking a canon skill. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
-  // distinction `founding-doctrine.ts` draws against `rules/repo-preamble.ts`. The apex
+  // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`. The apex
   // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
   // out to every Target for exactly that reason; its one home is the AMBIENT carry.
   it('the intrinsic preamble names no workspace-local artifact', async () => {
-    const { foundingDoctrine } = await import(
-      '../src/genus/founding-doctrine.js'
-    );
+    const { primePrinciple } = await import('../src/genus/prime-principle.js');
     // Repo-local, non-deployed grounding docs + the ambient carry itself.
     const local = ['VISION', 'MODEL.md', 'ENGINE', 'CANON.md', 'AGENTS.md'];
     const leaked = local.filter((d) => {
       // `¬ contingent on workspace-root AGENTS.md` legitimately names the ambient
       // carry to DISCLAIM it; a bare mention elsewhere is the leak.
-      const stripped = foundingDoctrine.replace(
+      const stripped = primePrinciple.replace(
         '¬ contingent on workspace-root AGENTS.md',
         '',
       );

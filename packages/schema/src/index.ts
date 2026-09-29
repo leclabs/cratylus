@@ -548,7 +548,7 @@ export interface Agent {
    * an agent starts with the whole of what its skills rely on. A HARNESS whose
    * agent definition can name skills it preloads carries that closure natively
    * — omp as front-matter `autoloadSkills`, claude as the subagent `skills`
-   * field. codex has no such field, so there the closure reaches the agent as a
+   * field. A harness with no such field gets the closure as a
    * required-reading declaration in its instructions, and projection warns.
    */
   readonly skills?: readonly string[];
@@ -662,7 +662,7 @@ export interface Skill<C extends CapabilityName = CapabilityName>
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
    *  first section (above the fenced formal block). The engine knows only "a
    *  leading block"; a cell whose laws apply a principle fills it (canon sets its
-   *  founding doctrine on the skills that name concepts by anchor), so the
+   *  prime principle on the skills that name concepts by anchor), so the
    *  principle rides the projected bytes of exactly those cells. Absent ⇒ omitted.
    *  The same shape as `Agent.preamble`. */
   readonly preamble?: string;

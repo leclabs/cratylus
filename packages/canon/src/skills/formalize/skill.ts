@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 import { conceptualize } from '../conceptualize/skill.js';
 import { signify } from '../signify/skill.js';
@@ -34,5 +34,5 @@ gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 reconstruct(B) ≽ prose
 reconstruct(B) ⋡ prose ⇒ ⊥` as SkillExpression,
   composition: () => [conceptualize, signify],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

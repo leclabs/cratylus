@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
@@ -71,5 +71,5 @@ minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 conform(a)  ⇔  register(a) = σ*
 verbatim(a) ⇒ register(a) = σ*` as SkillExpression,
   composition: () => [],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

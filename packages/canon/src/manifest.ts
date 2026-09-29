@@ -5,8 +5,8 @@
 // `repertoire`, an `arity`, a `required`, and all machinery that operates on any
 // manifest obeying that shape. THIS module owns the INSTANCE: WHICH dimensions
 // exist, and each one's metadata. The manifest rides the PLUGIN (`src/index.ts`
-// declares `manifest: MANIFEST`), exactly as `preamble` does — "the axiom rides
-// the PLUGIN, so it survives projection by any consumer."
+// declares `manifest: MANIFEST`), so a consumer projecting canon gets the design
+// without the projector containing it.
 //
 // The manifest used to live in `forge`, which meant a corpus could not
 // discover a dimension without editing the projector — the thesis inverted at its

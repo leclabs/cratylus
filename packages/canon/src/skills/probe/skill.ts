@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
@@ -71,5 +71,5 @@ export const probe: Skill = {
   description: `use this skill to probe a signifier — read out the priors a word, phrase, or candidate name fires in the reader (\`fired\`, signify's decoder \`dec\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

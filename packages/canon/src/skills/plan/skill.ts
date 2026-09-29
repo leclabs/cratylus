@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 import { design } from '../design/skill.js';
@@ -165,5 +165,5 @@ export const plan: Skill = {
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'plan', configuration: LIFECYCLE },
   composition: () => [design, note],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

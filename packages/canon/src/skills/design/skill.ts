@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // THE DURATIVE HALF. `plan` and `deliver` are per-effort; this cell is the one that
@@ -87,5 +87,5 @@ export const design: Skill = {
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'design' },
   composition: () => [],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

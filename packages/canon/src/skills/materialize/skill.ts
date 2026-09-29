@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
@@ -66,5 +66,5 @@ s unnamed ∨ s ∉ S ⇒ ⊥
     classification ↦ membership test
     utility        ↦ instrument` as SkillExpression,
   composition: () => [],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

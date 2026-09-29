@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 import { formalize } from '../formalize/skill.js';
 
@@ -27,5 +27,5 @@ never \`X ≜ <cell>\` in prose ; sibling deps boundary-bound via Bindings
 create-skill ≜ name-as-verb → write fm → H1 + formula ( + Bindings ⇔ composes-siblings ) → author block @ formalize → resolve → verify → iterate-until-green → deploy
 boundary ≜ the skill cell ; prose→set-builder @ formalize ; dimension-vectors @ create-agent ; mints no dimension values` as SkillExpression,
   composition: () => [formalize],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };

@@ -1,4 +1,4 @@
-import { foundingDoctrine } from '../../genus/founding-doctrine.js';
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 import { design } from '../design/skill.js';
@@ -162,5 +162,5 @@ export const deliver: Skill = {
   description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design rather than against the executor's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it, send a gap back to the agent that built it, and fold what execution or the operator teaches about the design into it before the next dispatch, judgement or close, several findings in one amendment when they arrive together.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
-  preamble: foundingDoctrine,
+  preamble: primePrinciple,
 };
