@@ -66,6 +66,7 @@ export {
   type EmitRuntimeConfigOpts,
   type EmitRuntimeConfigResult,
   type EmittedEvents,
+  type EmittedHarness,
   type EmittedRuntimeConfig,
   emitRuntimeConfig,
   RUNTIME_CONFIG_ENV,

@@ -171,7 +171,13 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         rc = r.rc;
       }
     }
-    await emitHostRuntimeConfig(opts, harnessAdapter.nativeEvents, log, warn);
+    await emitHostRuntimeConfig(
+      opts,
+      harnessAdapter.name,
+      harnessAdapter.nativeEvents,
+      log,
+      warn,
+    );
     return rc;
   } catch (e) {
     console.error(pc.red(`${CLI_BIN} deploy: ${(e as Error).message}`));
@@ -196,6 +202,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
  */
 async function emitHostRuntimeConfig(
   opts: DeployCmdOpts,
+  harness: string,
   nativeEvents: Readonly<Record<string, string>>,
   log: (line: string) => void,
   warn: (line: string) => void,
@@ -225,8 +232,9 @@ async function emitHostRuntimeConfig(
     );
     return;
   }
-  const { path, wrote, doc } = emitRuntimeConfig({
+  const { path, wrote, doc, stanza } = emitRuntimeConfig({
     events,
+    harness,
     nativeEvents,
     skills: (await resolveSkills(plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
@@ -234,7 +242,7 @@ async function emitHostRuntimeConfig(
   log(
     `  runtime config${wrote ? '' : ' (dry-run)'}: ${path} — ` +
       `${doc.events.vocabulary.length} event(s), ` +
-      `${Object.keys(doc.events.native).length} with a native peer, ` +
+      `harnesses.${harness}: ${Object.keys(stanza.native).length} with a native peer, ` +
       `${Object.keys(doc.configuration ?? {}).length} configured capability(ies)`,
   );
 }

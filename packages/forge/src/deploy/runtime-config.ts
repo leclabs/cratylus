@@ -14,7 +14,7 @@
 // What it emits is a function of three inputs and nothing else:
 //   · the CORPUS's vocabulary — `AgentPlugin.events`, DATA on the plugin, which is
 //     how canon reaches the projector at all (property 3);
-//   · the ADAPTER's native map — `HarnessAdapter.nativeEvents`, the projection's own;
+//   · the ADAPTER's native map — `HarnessAdapter.nativeEvents`, under its `name`;
 //   · the CORPUS's capability configuration — what each skill's runtime face
 //     declares under `runtime.configuration`, keyed here by its capability.
 // All are already resolved by the time deploy runs. Nothing here decides anything
@@ -57,17 +57,23 @@ export function runtimeConfigTarget(
 }
 
 /**
- * The lifecycle-vocabulary half of the emitted config.
+ * The lifecycle-vocabulary half of the emitted config — the corpus's, and
+ * harness-independent.
  *
- * TWO FIELDS, NOT ONE, because they answer different questions and only the first
- * is harness-independent:
- *   · `vocabulary` — every name the corpus signifies. The runtime validates against
- *     it, so an unmapped-but-real event is rejected as UNREALIZABLE HERE rather than
- *     as an unknown word — the distinction the fidelity ladder rests on.
- *   · `native` — this harness's peers, for the events it can actually fire.
+ * `vocabulary` is every name the corpus signifies. The runtime validates against
+ * it, so an unmapped-but-real event is rejected as UNREALIZABLE HERE rather than as
+ * an unknown word — the distinction the fidelity ladder rests on. Which of those
+ * names a harness can fire is that harness's alone, in its {@link EmittedHarness}.
  */
 export interface EmittedEvents {
   readonly vocabulary: readonly EventName[];
+}
+
+/**
+ * One harness's stanza, `harnesses.<harness>`: its native name for each event in
+ * the vocabulary it can actually fire.
+ */
+export interface EmittedHarness {
   readonly native: Readonly<Record<EventName, string>>;
 }
 
@@ -76,6 +82,13 @@ export interface EmittedRuntimeConfig {
   readonly resolveFrom?: string;
   readonly capabilities: readonly string[];
   readonly events: EmittedEvents;
+  /**
+   * One stanza per harness, keyed by the adapter's `name`. A deploy writes its own
+   * harness's stanza and carries every other one over as it found it: one host runs
+   * several harnesses off one runtime, and a single flat map let the last deploy
+   * overwrite the others' names with its own.
+   */
+  readonly harnesses: Readonly<Record<string, EmittedHarness>>;
   /**
    * Each capability's configuration, as the corpus's skills declare it on their
    * runtime face. Regenerated every deploy, like `events`, and harness-independent.
@@ -88,8 +101,12 @@ export interface EmittedRuntimeConfig {
 export interface EmitRuntimeConfigOpts {
   /** The corpus's event vocabulary — `AgentPlugin.events`, merged over the set. */
   readonly events: readonly EventName[];
-  /** The harness's native map — `HarnessAdapter.nativeEvents`. */
+  /** The harness whose stanza this emission writes — `HarnessAdapter.name`. */
+  readonly harness: string;
+  /** That harness's native map — `HarnessAdapter.nativeEvents`. */
   readonly nativeEvents: Readonly<Record<EventName, string>>;
+  /** Every other harness's stanza, carried over unchanged. */
+  readonly harnesses?: Readonly<Record<string, EmittedHarness>>;
   /** The resolved plugin set's skills; their runtime faces carry the configuration. */
   readonly skills?: readonly Pick<Skill, 'name' | 'runtime'>[];
   /** Capability provider specifiers the host should register. */
@@ -102,11 +119,6 @@ export interface EmitRuntimeConfigOpts {
  * Build the host config document. PURE — no clock, no host, no file — so the
  * round-trip gate can drive it and compare what comes back against both authorities
  * it was built from.
- *
- * The native map is FILTERED to the vocabulary: a harness peer for a name the corpus
- * does not signify is not a fact about this corpus, and emitting it would let a
- * second vocabulary in through the map's keys — the exact re-entry this repair
- * exists to close.
  */
 export function runtimeConfigDocument(
   opts: EmitRuntimeConfigOpts,
@@ -118,20 +130,37 @@ export function runtimeConfigDocument(
         'validate, which is silence wearing a success',
     );
   }
-  const declared = new Set(opts.events);
-  const native: Record<string, string> = {};
-  for (const [event, nativeName] of Object.entries(opts.nativeEvents)) {
-    if (declared.has(event)) native[event] = nativeName;
-  }
   const configuration = configurationOf(opts.skills ?? []);
   return {
     ...(opts.resolveFrom !== undefined
       ? { resolveFrom: opts.resolveFrom }
       : {}),
     capabilities: [...(opts.capabilities ?? [])],
-    events: { vocabulary: [...opts.events], native },
+    events: { vocabulary: [...opts.events] },
+    harnesses: {
+      ...opts.harnesses,
+      [opts.harness]: harnessStanza(opts.events, opts.nativeEvents),
+    },
     ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
   };
+}
+
+/**
+ * One harness's stanza: its native map FILTERED to the vocabulary. A harness peer
+ * for a name the corpus does not signify is not a fact about this corpus, and
+ * emitting it would let a second vocabulary in through the map's keys — the exact
+ * re-entry the vocabulary repair exists to close.
+ */
+function harnessStanza(
+  events: readonly EventName[],
+  nativeEvents: Readonly<Record<EventName, string>>,
+): EmittedHarness {
+  const declared = new Set(events);
+  const native: Record<string, string> = {};
+  for (const [event, nativeName] of Object.entries(nativeEvents)) {
+    if (declared.has(event)) native[event] = nativeName;
+  }
+  return { native };
 }
 
 /**
@@ -170,16 +199,20 @@ export interface EmitRuntimeConfigResult {
   readonly path: string;
   readonly wrote: boolean;
   readonly doc: EmittedRuntimeConfig;
+  /** The stanza this emission wrote — `doc.harnesses[harness]`. */
+  readonly stanza: EmittedHarness;
 }
 
 /**
  * Emit the host config.
  *
- * `capabilities` are PRESERVED from an existing config when the caller supplies
- * none. A host's provider selection is the OPERATOR's declaration, made once and
- * kept; the vocabulary is the corpus's, regenerated every deploy. Overwriting the
- * first to deliver the second would make every deploy silently reset which memory
- * strategy that host runs — a behaviour change wearing a projection.
+ * The corpus's parts (`events`, `configuration`) and this harness's stanza are
+ * regenerated; everything else is carried over from an existing config as found.
+ * `capabilities` and `resolveFrom` are the OPERATOR's declaration, made once and
+ * kept: overwriting them to deliver the vocabulary would make every deploy silently
+ * reset which memory strategy that host runs — a behaviour change wearing a
+ * projection. Every OTHER harness's stanza is that harness's deploy's to write:
+ * replacing it here is how a claude deploy used to erase omp's native names.
  */
 export function emitRuntimeConfig(
   opts: EmitRuntimeConfigOpts & {
@@ -189,35 +222,50 @@ export function emitRuntimeConfig(
   },
 ): EmitRuntimeConfigResult {
   const path = opts.path ?? runtimeConfigTarget(opts.env);
-  const prior = readPriorCapabilities(path);
+  const prior = readPrior(path);
   const doc = runtimeConfigDocument({
     ...opts,
     capabilities: opts.capabilities ?? prior.capabilities,
+    harnesses: opts.harnesses ?? prior.harnesses,
     ...(opts.resolveFrom === undefined && prior.resolveFrom !== undefined
       ? { resolveFrom: prior.resolveFrom }
       : {}),
   });
-  if (opts.dry === true) return { path, wrote: false, doc };
+  const stanza = harnessStanza(opts.events, opts.nativeEvents);
+  if (opts.dry === true) return { path, wrote: false, doc, stanza };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
-  return { path, wrote: true, doc };
+  return { path, wrote: true, doc, stanza };
 }
 
-/** The operator-owned half of an existing config; empty when absent or corrupt. */
-function readPriorCapabilities(path: string): {
+/**
+ * The parts of an existing config this emission does not own — the operator's
+ * `capabilities` and `resolveFrom`, and every harness's stanza — empty when absent
+ * or corrupt. Stanzas are carried as found, not re-read: they are other deploys'
+ * output, and this one has no business normalizing them.
+ */
+function readPrior(path: string): {
   capabilities: readonly string[];
+  harnesses: Readonly<Record<string, EmittedHarness>>;
   resolveFrom?: string;
 } {
-  if (!existsSync(path)) return { capabilities: [] };
+  if (!existsSync(path)) return { capabilities: [], harnesses: {} };
   try {
     const raw = JSON.parse(readFileSync(path, 'utf8')) as {
       capabilities?: unknown;
+      harnesses?: unknown;
       resolveFrom?: unknown;
     };
     return {
       capabilities: Array.isArray(raw.capabilities)
         ? raw.capabilities.filter((s): s is string => typeof s === 'string')
         : [],
+      harnesses:
+        raw.harnesses !== null &&
+        typeof raw.harnesses === 'object' &&
+        !Array.isArray(raw.harnesses)
+          ? (raw.harnesses as Record<string, EmittedHarness>)
+          : {},
       ...(typeof raw.resolveFrom === 'string'
         ? { resolveFrom: raw.resolveFrom }
         : {}),
@@ -225,6 +273,6 @@ function readPriorCapabilities(path: string): {
   } catch {
     // A corrupt config must not wedge a deploy; the vocabulary is re-emitted and
     // the operator's unreadable selection is not silently invented.
-    return { capabilities: [] };
+    return { capabilities: [], harnesses: {} };
   }
 }
