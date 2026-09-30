@@ -66,13 +66,16 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
  * Claude resolves the alias to whatever it currently serves for that tier. Claude
  * Code has no host-configurable role aliases — a definition's `model` takes an id, a
  * tier alias or `inherit` — so the table lives here, in the one adapter that needs
- * it, and canon names no tier. Implementer work is spec-bounded, so it sits on the
- * middle tier; the roles that hold the design, the plan or the audit sit on the top.
+ * it, and canon names no tier. Work that holds, cuts or judges against the design
+ * (architect, planner, assayer) sits on the top tier; work bounded by a spec
+ * (implementer, integrator) sits on the middle one — the integrator lands and joins
+ * what the implementers built to their specs and decides nothing they did not.
  * A role absent from this table emits no `model`, and neither does an agent holding
  * none: both run on the session's model.
  */
-const CLAUDE_ROLE_TIERS: Readonly<Record<string, string>> = {
+export const CLAUDE_ROLE_TIERS: Readonly<Record<string, string>> = {
   implementer: 'sonnet',
+  integrator: 'sonnet',
   planner: 'opus',
   assayer: 'opus',
   architect: 'opus',

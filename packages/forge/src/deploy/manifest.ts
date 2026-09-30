@@ -53,6 +53,12 @@ export interface DeployManifest {
   // shared with every other program on the host, so a link is ours only if it is
   // written here — never because it happens to point at our launcher.
   personaLinks: string[];
+  // agent name -> the `model:` value the last deploy's RENDERED def carried (null ⇒
+  // none), for the harness whose def `model:` line is where a host sets a model. A
+  // deployed def whose `model:` differs from this is the host's edit, and the next
+  // deploy keeps it: the value here is what deploy would write, never what the host
+  // chose, so it stays true while the host's line stands.
+  agentModels: Record<string, string | null>;
 }
 
 export function emptyManifest(): DeployManifest {
@@ -61,6 +67,7 @@ export function emptyManifest(): DeployManifest {
     kinds: {},
     hookCommands: [],
     personaLinks: [],
+    agentModels: {},
   };
 }
 
@@ -84,6 +91,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       kinds: parsed.kinds ?? {},
       hookCommands: parsed.hookCommands ?? [],
       personaLinks: parsed.personaLinks ?? [],
+      agentModels: parsed.agentModels ?? {},
     };
   } catch {
     return emptyManifest();

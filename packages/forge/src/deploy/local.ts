@@ -1,7 +1,9 @@
 // Local filesystem placer — copy generated defs into a `.claude/` root on this
 // host. The def is overwritten freely (generated substance) — an agent's
 // self-authored memory lives entirely outside the deploy root, so this placer
-// has nothing else to protect. Skills are generated substance too — overwrite
+// has nothing else to protect — EXCEPT one line, where the harness makes it the host's:
+// the `model:` a host edited in a deployed def (`PlaceOpts.keepHostModel`; see
+// `placeAgentsLocal`). Skills are generated substance too — overwrite
 // freely.
 //
 // The PLACER never deletes. It only TESTIFIES — `report.written` records the
@@ -63,13 +65,54 @@ export function defaultAgentRel(name: string, agentExt = '.md'): string {
   return `agents/${name}${agentExt}`;
 }
 
+/** A def's front-matter `model:` line, whole, and its value — undefined where the
+ *  front matter carries none. Only a top-level key counts: an indented `model:` is
+ *  some other block's. */
+function frontMatterModel(
+  md: string,
+): { index: number; line: string; value: string } | undefined {
+  const lines = md.split('\n');
+  if (lines[0]?.trimEnd() !== '---') return undefined;
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i] as string;
+    if (line.trimEnd() === '---') return undefined;
+    if (/^model:/.test(line)) {
+      return { index: i, line, value: line.slice('model:'.length).trim() };
+    }
+  }
+  return undefined;
+}
+
+/** `md` with its front-matter `model:` line replaced by `line`, or dropped where
+ *  `line` is undefined. A line added where the def had none goes right after the
+ *  `description:`, where the projection puts it. */
+function withModelLine(md: string, line: string | undefined): string {
+  const lines = md.split('\n');
+  const at = frontMatterModel(md)?.index;
+  if (at !== undefined) {
+    if (line === undefined) lines.splice(at, 1);
+    else lines[at] = line;
+  } else if (line !== undefined) {
+    const after = lines.findIndex((l) => /^description:/.test(l));
+    lines.splice(after === -1 ? 1 : after + 1, 0, line);
+  }
+  return lines.join('\n');
+}
+
 /** Write <harnessDir>/<agentRel(name)> for each name — the harness-specific
  *  declaration, and the ONLY thing this function writes. Where that lands
  *  varies by harness (`agents/<name>.md` under claude's own root; omp's is
  *  `agent/agents/<name>.md`, the user-level task-agent root it discovers
  *  from). A harness whose destination sits under a dir it also scans for
  *  other things gets exactly the declaration there — never a sidecar, never a
- *  scan of what else lives beside it. */
+ *  scan of what else lives beside it.
+ *
+ *  With `opts.keepHostModel` the def is still replaced whole, but for its `model:`
+ *  line: the manifest records the `model:` each def was rendered with
+ *  (`report.models`), and a deployed def whose line differs from that record is the
+ *  host's choice, so the def placed over it carries the host's line — or none, where
+ *  the host removed it — and the log names it. No record (a first deploy) ⇒ nothing
+ *  to tell an edit from, and the def is written as rendered. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -85,6 +128,10 @@ export function placeAgentsLocal(
   const agentRel =
     opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const report = emptyReport();
+  const recorded = opts.keepHostModel
+    ? readManifest(harnessDir).agentModels
+    : undefined;
+  if (opts.keepHostModel) report.models = {};
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
@@ -94,12 +141,31 @@ export function placeAgentsLocal(
       continue;
     }
     const dest = resolvePath(harnessDir, agentRel(name));
+    let def = readFileSync(src, 'utf-8');
+    if (recorded !== undefined && report.models !== undefined) {
+      const rendered = frontMatterModel(def);
+      report.models[name] = rendered?.value ?? null;
+      if (Object.hasOwn(recorded, name) && existsSync(dest)) {
+        const host = frontMatterModel(readFileSync(dest, 'utf-8'));
+        if ((host?.value ?? null) !== recorded[name]) {
+          const kept = withModelLine(def, host?.line);
+          if (kept !== def) {
+            def = kept;
+            log(
+              `  ${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
+                `${host === undefined ? 'no model' : host.line} ` +
+                `(deploy renders ${rendered === undefined ? 'no model' : rendered.line})`,
+            );
+          }
+        }
+      }
+    }
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is
       // `agent/agents/`, two levels in, which does not exist until this run
       // makes it.
       mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, readFileSync(src, 'utf-8'), 'utf-8');
+      writeFileSync(dest, def, 'utf-8');
     }
     report.copied += 1;
     // Testimony: the def is the ONLY thing this placer ever writes, so it is

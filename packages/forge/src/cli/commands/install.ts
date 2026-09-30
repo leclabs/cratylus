@@ -24,6 +24,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import pc from 'picocolors';
+import { CLAUDE_ROLE_TIERS } from '../../adapters/claude/render.js';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
@@ -212,6 +213,7 @@ export async function runInstall(
         opts.home,
         opts.dryRun ?? false,
       );
+      describeClaudeRoles(adapter, report.heldRoles);
       const personas = treeNames(
         'agent',
         {
@@ -459,4 +461,34 @@ function seedModelRoles(
   for (const entry of result.added) {
     process.stdout.write(`    ${modelRoleLine(entry, '')}\n`);
   }
+}
+
+/**
+ * Show the host the roles it can set, on the harness with no role map of its own.
+ * Claude Code names a subagent's model in one place — the `model:` line of its
+ * definition — so each held role is listed with the tier the definitions holding it
+ * carry, and how the host changes it: edit that line (a deploy keeps it), or override
+ * every subagent at once with the documented environment pair.
+ */
+function describeClaudeRoles(
+  adapter: HarnessAdapter,
+  heldRoles: readonly string[],
+): void {
+  if (adapter.name !== 'claude' || heldRoles.length === 0) return;
+  process.stdout.write(
+    `  roles (${heldRoles.length}): each agent runs on its role's tier until the host sets its model\n`,
+  );
+  for (const role of heldRoles) {
+    const tier = Object.hasOwn(CLAUDE_ROLE_TIERS, role)
+      ? CLAUDE_ROLE_TIERS[role]
+      : undefined;
+    process.stdout.write(
+      tier === undefined
+        ? `    ${role}: no tier — runs on the session's model; set it with the \`model:\` line of each agent holding it (kept across installs)\n`
+        : `    ${role}: tier ${tier} (\`model: ${tier}\`) — set it with the \`model:\` line of each agent holding it (kept across installs)\n`,
+    );
+  }
+  process.stdout.write(
+    '  every subagent at once: CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 with CLAUDE_CODE_SUBAGENT_MODEL=<model>\n',
+  );
 }

@@ -153,6 +153,9 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     // destinations after. Read here rather than in the placer so the tree is
     // enumerated once, by the layer that already owns `--only` resolution.
     agents: treeNames('agent', opts.tree, opts.agentExt ?? '.md'),
+    // A claude def's `model:` line is the one place a host sets a subagent's model,
+    // so it is the host's to keep. `harnessHome` omitted ⇒ `.claude`.
+    keepHostModel: (opts.harnessHome ?? '.claude') === '.claude',
     log: opts.log,
     warn: opts.warn,
   };
@@ -299,6 +302,20 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
             ? [...new Set([...prior.hookCommands, ...registered])]
             : registered
           : prior.hookCommands,
+      // The models the agent defs were rendered with, for the next deploy to tell a
+      // host's edit from its own write. Retired and skipped names follow `kinds`: a
+      // full run drops a name it no longer places, a narrowed run leaves the others.
+      agentModels:
+        result.report.models === undefined
+          ? prior.agentModels
+          : {
+              ...Object.fromEntries(
+                Object.entries(prior.agentModels).filter(
+                  ([n]) => narrowed || skipped.includes(n),
+                ),
+              ),
+              ...result.report.models,
+            },
     });
   }
   return result;

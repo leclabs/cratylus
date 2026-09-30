@@ -694,6 +694,7 @@ describe('the claude model tier — the role an agent holds, as a tier alias', (
 
   it.each([
     ['implementer', 'sonnet'],
+    ['integrator', 'sonnet'],
     ['planner', 'opus'],
     ['assayer', 'opus'],
     ['architect', 'opus'],
@@ -717,7 +718,13 @@ describe('the claude model tier — the role an agent holds, as a tier alias', (
   });
 
   it('names a tier alias and never a model id or version', () => {
-    for (const role of ['implementer', 'planner', 'assayer', 'architect']) {
+    for (const role of [
+      'implementer',
+      'integrator',
+      'planner',
+      'assayer',
+      'architect',
+    ]) {
       expect(frontMatter(def(role))).toMatch(/^model: (opus|sonnet|haiku)$/m);
     }
   });

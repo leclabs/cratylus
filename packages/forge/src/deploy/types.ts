@@ -38,6 +38,12 @@ export interface PlaceReport {
   // settings.json hook commands registered this run (`hooks` kind only) — the
   // registration half of the same testimony.
   registered: string[];
+  // Agent defs only, and only where the placer keeps a host's `model:` choice
+  // (`PlaceOpts.keepHostModel`): name -> the `model:` value the RENDERED def carries
+  // (null ⇒ it carries none). Deploy records it in the manifest, and the next deploy
+  // reads a deployed def's `model:` against it to tell a host's edit from its own
+  // write. Absent ⇒ this placer records none.
+  models?: Record<string, string | null>;
 }
 
 export function emptyReport(): PlaceReport {
@@ -110,5 +116,13 @@ export interface PlaceOpts {
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string;
   log?: (line: string) => void;
+  /**
+   * Keep the `model:` line a HOST edited in a deployed agent def: a def whose
+   * `model:` differs from the value the manifest says the last deploy wrote keeps
+   * the host's line (or its absence) in the def placed over it, and the placer logs
+   * which. Set for the harness whose only place a host sets a subagent's model is
+   * that line (claude). Absent ⇒ the def is overwritten whole.
+   */
+  keepHostModel?: boolean;
   warn?: (line: string) => void;
 }

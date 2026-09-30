@@ -21,6 +21,7 @@ import {
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  deploySingle,
   placeAgentsLocal,
   placeSkillsLocal,
   projectScope,
@@ -61,6 +62,98 @@ describe('placeAgentsLocal', () => {
     const claude = join(tmp('forge-host-'), '.claude');
     placeAgentsLocal(claude, agentsDir, ['mav'], { ...silent, dry: true });
     expect(existsSync(join(claude, 'agents', 'mav.md'))).toBe(false);
+  });
+});
+
+describe('a host’s model line in a deployed claude def', () => {
+  const def = (model: string | undefined, body: string) =>
+    `---\nname: planner\ndescription: "d"\n${model === undefined ? '' : `model: ${model}\n`}color: blue\n---\n${body}\n`;
+
+  /** A render tree of one agent, `planner`, that later deploys re-render. */
+  function fixture(harnessHome?: string) {
+    const agentsDir = join(tmp('forge-render-'), 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    const home = tmp('forge-host-');
+    const logs: string[] = [];
+    const render = (model: string | undefined, body: string) =>
+      writeFileSync(join(agentsDir, 'planner.md'), def(model, body), 'utf-8');
+    const deploy = () =>
+      deploySingle({
+        kind: 'agent',
+        scope: 'user',
+        tree: { agentsDir, skillsDir: join(agentsDir, '..', 'skills') },
+        home,
+        ...(harnessHome === undefined ? {} : { harnessHome }),
+        log: (l) => logs.push(l),
+        warn: () => {},
+      });
+    const placed = join(home, harnessHome ?? '.claude', 'agents', 'planner.md');
+    const edit = (from: string, to: string) =>
+      writeFileSync(
+        placed,
+        readFileSync(placed, 'utf-8').replace(from, to),
+        'utf-8',
+      );
+    return { render, deploy, placed, edit, logs };
+  }
+
+  it('keeps the host’s model and replaces everything else, and names it', () => {
+    const f = fixture();
+    f.render('opus', 'first');
+    f.deploy();
+    f.edit('model: opus', 'model: haiku');
+    f.render('opus', 'second');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku', 'second'));
+    expect(f.logs.join('\n')).toMatch(
+      /kept the host's model for planner: model: haiku/,
+    );
+    // and again: the choice outlives every later install, not just the next one
+    f.render('opus', 'third');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku', 'third'));
+  });
+
+  it('keeps a model the host removed removed', () => {
+    const f = fixture();
+    f.render('opus', 'first');
+    f.deploy();
+    f.edit('model: opus\n', '');
+    f.render('opus', 'second');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def(undefined, 'second'));
+  });
+
+  it('keeps a model the host added where the render names none', () => {
+    const f = fixture();
+    f.render(undefined, 'first');
+    f.deploy();
+    f.edit('color: blue', 'model: haiku\ncolor: blue');
+    f.render(undefined, 'second');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku', 'second'));
+  });
+
+  it('follows the render where the host never touched the line', () => {
+    const f = fixture();
+    f.render('sonnet', 'first');
+    f.deploy();
+    f.render('opus', 'second');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus', 'second'));
+    f.render('sonnet', 'third');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('sonnet', 'third'));
+  });
+
+  it('is claude’s alone: another harness’s def is overwritten whole', () => {
+    const f = fixture('.omp');
+    f.render('opus', 'first');
+    f.deploy();
+    f.edit('model: opus', 'model: haiku');
+    f.render('opus', 'second');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus', 'second'));
   });
 });
 
