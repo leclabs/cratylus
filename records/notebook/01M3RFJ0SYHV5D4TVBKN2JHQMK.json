@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3RFJ0SYHV5D4TVBKN2JHQMK",
+    "entity": "01M3RDSWQSBTNTARA8G37B7KAA",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RDSWQTQ8TKR6GV1SX9J9PC"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T06:20:46.270Z",
+    "reason": "entered the design: architect role now routes a plan's close to the integrator and receives, from the planner, the names of units waiting on a route read from their ledgers; naming the base is the plan's how",
+    "cause": "loop-ledger closed"
+  },
+  "payload": null
+}

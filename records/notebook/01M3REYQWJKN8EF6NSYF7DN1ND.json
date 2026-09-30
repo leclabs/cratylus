@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3REYQWJKN8EF6NSYF7DN1ND",
+    "entity": "01M3REYQWJKN8EF6NSYF7DN1NC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "LedgerWriters",
+    "time": "2026-09-30T06:10:14.546Z",
+    "reason": "a finding beside the unit's path met at the loop cold read",
+    "cause": "cold read of the projected session texts of architect, planner, implementer, assayer and integrator"
+  },
+  "payload": {
+    "title": "architect has no text that reads where a unit stands",
+    "kind": "idea",
+    "topic": "ledger-writers of loop-ledger",
+    "body": "The ledger now says where every unit stands, and bare plan show prints each unit's latest event, but no text in the architect's session (skills design and note; its role sign) spells a plan read at all. The cold read of the five session texts (opus-5-5, haiku-4-5) answers where a unit stands from show(unit), which the plan skill marks not the architect's because it prints the spec; the architect is left with the reports it is routed. If the architect is to learn a unit's standing from the ledger rather than from a message, it needs a spelled bare plan show read, and the plan skill (near its hook cap) or the architect's role sign is where it would go. Outside ledger-writers' outputs (architect.ts is static for it).",
+    "blocks": []
+  }
+}
