@@ -216,6 +216,21 @@ command in the deploy manifest and prints what it changed. A `statusLine` that i
 one is left as it is, and no badge can show there: Claude Code rejects such a settings file
 entirely and runs no status line until it is fixed.
 
+### 4.10 "Take it all away"
+
+```sh
+cratylus uninstall --harness claude --dry-run   # what it would remove, and what it would leave
+cratylus uninstall --harness claude
+```
+
+`uninstall` removes from one harness what `install` placed there, and nothing you placed or changed.
+It goes by the harness's deploy manifest, which records a digest of every file install wrote, so a file
+you edited since is **left**, named, with the reason. It also takes back the hook registrations it
+added, unwraps your status line to your own command (byte for byte), removes the persona commands it
+placed or adopted, takes the lines it added out of omp's `config.yml` so the file is what you wrote
+(your `modelRoles` entries included), and removes its stanza of the runtime config. The manifest goes
+last. `--dry-run` prints the same two lists and writes nothing; `--harness` is required.
+
 ---
 
 ## 5. Proposed root `--help`

@@ -40,6 +40,7 @@ import {
   ensureBadgeStatusLine,
   ensureStatusSegment,
   modelRoleLine,
+  noteHostEdit,
   personaLauncherOf,
   placePersonaCommands,
   planPersonaCommands,
@@ -403,6 +404,9 @@ function showPersonaBadge(
   if (host !== undefined) {
     const path = hostConfigPath(adapter, host.configRels, opts.home);
     const result = ensureStatusSegment(path, host, { dry });
+    if (result.edit !== undefined) {
+      noteHostEdit(join(opts.home, adapter.home), path, result.edit);
+    }
     // The row beneath the editor is the badge's place wherever the layout has none of
     // its own; a host that had hidden it is told it is shown now, and why.
     const rowShown = result.hookRowShown
@@ -468,6 +472,10 @@ function seedModelRoles(
     heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),
     { dry },
   );
+  // What an uninstall takes out again: the lines just put in, and nothing of the host's.
+  if (result.edit !== undefined) {
+    noteHostEdit(join(home, adapter.home), path, result.edit);
+  }
   if (result.refused !== undefined) {
     process.stderr.write(
       `${pc.yellow('!')} ${CLI_BIN} install: did not edit ${path} — ${result.refused}. Held roles ${heldRoles.join(', ')} fall back to \`${routing.defaultRole}\`.\n`,

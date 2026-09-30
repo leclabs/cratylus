@@ -46,11 +46,12 @@ export {
 
 export {
   auditLocal,
+  type PlacedFileState,
+  placedFileState,
   placeAgentsLocal,
   placeSkillsLocal,
   renderedFiles,
 } from './local.js';
-export type { DriftReport, Divergence } from './local.js';
 
 export {
   hookTreeNames,
@@ -79,15 +80,25 @@ export {
 export {
   applyPrune,
   type DeployManifest,
+  digestFile,
+  digestWritten,
   emptyManifest,
   hasManifest,
+  type HostEdit,
+  type HunkState,
+  type HunkUndo,
   type KindRecord,
+  type LineHunk,
+  lineHunks,
   MANIFEST_REL,
   MANIFEST_VERSION,
+  nextDigests,
   nextKindRecord,
+  noteHostEdit,
   readManifest,
   staleFiles,
   unattributable,
+  undoHunks,
   unregisterHookCommands,
   unregisterHookCommandsAt,
   writeManifest,
@@ -162,6 +173,8 @@ export {
   type EnsureStatusSegmentOpts,
   ensureBadgeStatusLine,
   ensureStatusSegment,
+  restoreHostStatusLine,
+  type StatusLineRestore,
   type StatusSegmentResult,
   type StatusSegmentState,
 } from './status-line.js';

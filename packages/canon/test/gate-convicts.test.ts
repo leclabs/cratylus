@@ -267,6 +267,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // as the bytes were: the never-replace negatives are its fixtures, and it polices no
   // corpus.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
+  // runs `runInstall` then `runUninstall` over a tmp HOME the host has already written
+  // to, and compares the whole tree byte for byte; its convicting fixtures are the host's
+  // own edits (a placed file, a status line, a config line, a hook entry, a persona
+  // link), each asserted still there, and a record it cannot trust — it polices no
+  // corpus.
+  'forge/deploy/uninstall.test.ts': 'BEHAVIORAL',
   // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
   // negative (`.claude` absent) so the old hardcode cannot pass it.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',

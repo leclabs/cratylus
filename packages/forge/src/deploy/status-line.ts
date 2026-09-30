@@ -38,6 +38,7 @@ import type {
   StatusLayout,
   StatusSegmentHost,
 } from '../core/harness-adapter.js';
+import { type HostEdit, lineHunks } from './manifest.js';
 import {
   inlineValue,
   isBlankOrComment,
@@ -204,6 +205,45 @@ export function ensureBadgeStatusLine(
   );
 }
 
+/**
+ * What became of the status line an uninstall undid.
+ *   - `restored` — the line is the one install placed over the host's own command;
+ *                  the host's command is back, every other key of the line as it was.
+ *   - `removed`  — the line is the one install SET where the host had none; it is gone.
+ *   - `absent`   — the host has no `statusLine` any more; nothing to undo.
+ *   - `changed`  — the host runs another command than the one install placed; the
+ *                  line is the host's now and is left as it is.
+ */
+export type StatusLineRestore = 'restored' | 'removed' | 'absent' | 'changed';
+
+/**
+ * Undo `ensureBadgeStatusLine` in a parsed settings object, from what the manifest
+ * recorded: `placed` is the command install wrote, `host` the command the host ran
+ * before (null ⇒ it had none). Pure — no IO — and it returns a new object, so the
+ * key order the host had is the one that comes back.
+ */
+export function restoreHostStatusLine(
+  settings: Record<string, unknown>,
+  recorded: { readonly placed: string; readonly host: string | null },
+): { settings: Record<string, unknown>; state: StatusLineRestore } {
+  const line = settings.statusLine as { command?: unknown } | null | undefined;
+  if (line === undefined || line === null) return { settings, state: 'absent' };
+  if (typeof line !== 'object' || line.command !== recorded.placed) {
+    return { settings, state: 'changed' };
+  }
+  if (recorded.host === null) {
+    const { statusLine: _placed, ...rest } = settings;
+    return { settings: rest, state: 'removed' };
+  }
+  return {
+    settings: {
+      ...settings,
+      statusLine: { ...line, command: recorded.host },
+    },
+    state: 'restored',
+  };
+}
+
 // ── omp: config.yml `statusLine` ────────────────────────────────────────────
 
 /** omp's own name for the preset that reads its segment lists from the host's config.
@@ -309,6 +349,9 @@ export interface StatusSegmentResult {
    *  nothing else in the file changed. Under `other-preset`, `own-layout` and `refused`,
    *  where the file is otherwise as it was. */
   readonly hookRowShown?: boolean;
+  /** What was put in the file, for the deploy manifest — an uninstall takes exactly
+   *  this out. Present only when the file was written. */
+  readonly edit?: HostEdit;
 }
 
 export interface EnsureStatusSegmentOpts {
@@ -641,7 +684,8 @@ export function ensureStatusSegment(
   const dry = opts.dry ?? false;
   const segment = host.segment;
   const layout = host.defaultLayout;
-  const text = existsSync(path) ? readFileSync(path, 'utf8') : '';
+  const existed = existsSync(path);
+  const text = existed ? readFileSync(path, 'utf8') : '';
   const lines = splitLines(text);
   const eol = lines.find(([, t]) => t !== '')?.[1] || '\n';
 
@@ -656,11 +700,16 @@ export function ensureStatusSegment(
     next: string,
     written: readonly string[],
   ): StatusSegmentResult => {
-    if (!dry) {
-      mkdirSync(dirname(path), { recursive: true });
-      writeFileSync(path, next);
-    }
-    return { path, state: 'added', wrote: !dry, written };
+    if (dry) return { path, state: 'added', wrote: false, written };
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, next);
+    return {
+      path,
+      state: 'added',
+      wrote: true,
+      written,
+      edit: { created: !existed, hunks: lineHunks(text, next) },
+    };
   };
 
   // WHERE THE BADGE HAS NO PLACE BUT THE ROW beneath the editor, a host that hid that
@@ -679,18 +728,22 @@ export function ensureStatusSegment(
       const line = (lines[i] as [string, string])[0];
       const hit = HIDDEN_ROW.exec(line);
       if (hit === null || /(^|[ \t])#/.test(line.slice(0, hit.index))) continue;
-      if (!dry) {
-        const shown = line.replace(HIDDEN_ROW, '$1true');
-        writeFileSync(
-          path,
-          applyEdits(lines, [{ at: i, replace: shown }], eol),
-        );
-      }
+      const next = dry
+        ? undefined
+        : applyEdits(
+            lines,
+            [{ at: i, replace: line.replace(HIDDEN_ROW, '$1true') }],
+            eol,
+          );
+      if (next !== undefined) writeFileSync(path, next);
       return {
         ...left,
         wrote: !dry,
         written: [`${HOOK_STATUS_KEY}: true (was false)`],
         hookRowShown: true,
+        ...(next !== undefined
+          ? { edit: { created: false, hunks: lineHunks(text, next) } }
+          : {}),
       };
     }
     return left;

@@ -308,8 +308,8 @@ it links, so a regular file, another program's link, and the other harness's lau
 they were and reported as blocked. A hand-made link that resolves exactly to this launcher is adopted:
 recorded and reported, never re-created. The links it placed or adopted are
 recorded as `personaLinks` in the deploy manifest, and `removePersonaCommands` removes exactly the
-recorded links that still resolve to the launcher. Without the flag, install prints what it would place
-and asks on a terminal.
+recorded links that still resolve to the launcher (`cratylus uninstall` calls it). Without the flag,
+install prints what it would place and asks on a terminal.
 
 `scopedRel` (renamed from `enforcingRel`) places more than mechanism now: the SAME per-scope map also
 places the launch spec's overlay and launcher, because both belong beside the modules they wire, not in
@@ -364,6 +364,31 @@ only place, so a host's `showHookStatus: false` is turned to `true`, the one val
 ever changes, found as text so a flow mapping is reached too, and the result says `hookRowShown`.
 Other than that a shape it cannot extend is reported and left.
 Both honour `--dry-run`.
+
+### `cratylus uninstall --harness <name>`
+
+Removes from a harness's home what install placed there, and leaves what the host placed or changed.
+`cli/commands/uninstall.ts` reads the deploy manifest and nothing else to say what is install's, and the
+manifest records what that takes: `digests` (rel path → the sha-256 `deploy.ts` took of each file just
+after its placer wrote it, via `digestWritten`; a run carries the digest of a path it did not write, so
+an edit the host made is never blessed by a later run), `hostEdits` (rel path of a host-owned text file
+→ the `LineHunk`s install put in, as a line diff of the file before and after, taken by
+`addModelRoles` and `ensureStatusSegment` and written by install through `noteHostEdit`), and the
+existing `statusLine`, `hookCommands` and `personaLinks`.
+
+A recorded file whose digest still matches is removed, through `applyPrune`, which prunes the
+directories that leaves empty and never the root; `placedFileState` (`deploy/local.ts`) says
+`unchanged`, `changed`, `unverified` (no digest recorded) or `absent`. A hook registration is dropped by
+`unregisterHookCommands`, which takes an entry only when every command in it is recorded.
+`restoreHostStatusLine` puts the host's command back in the wrapped `statusLine` and deletes a `statusLine`
+install set. `undoHunks` takes each hunk out of the config by finding its lines, newest first, under the
+line that stood above them: a hunk whose lines are no longer there as written is `changed` and left, so
+the terminators come back with the lines and a file install created returns to nothing.
+`removePersonaCommands` takes the recorded persona commands. A path outside the harness home and the
+neutral `.agents` root, and a path another harness's manifest records, are left; so is everything that
+is `changed` or `unverified`. The report is two lists, removed and left, each left entry with its
+reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
+or foreign-version manifest is refused rather than read as empty.
 
 ### `cratylus explain [agent]`
 

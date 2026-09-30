@@ -44,7 +44,7 @@ import {
   stageAssets,
   walkSkillFiles,
 } from './bundle.js';
-import { readManifest, unattributable } from './manifest.js';
+import { digestFile, readManifest, unattributable } from './manifest.js';
 import {
   type DeployKind,
   type PlaceOpts,
@@ -724,4 +724,39 @@ export function auditLocal(
  *  render a foreign NAME back as a path for the report. */
 function kindDir(kind: DeployKind): string {
   return kind === 'skill' ? 'skills' : kind === 'hooks' ? 'hooks' : 'agents';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE REMOVAL READ — does a placed file still hold what we wrote?
+//
+// The audit above asks whether the host carries what the corpus RENDERS. An uninstall
+// asks the narrower question of one recorded path: are the bytes there still the ones
+// this tool laid down? The answer is the manifest's digest of the write, compared with
+// the bytes now — a REPORT, like the audit. Nothing is opened for writing.
+//
+// A file the host has changed since is the host's, and an uninstall leaves it. So is a
+// file with no recorded digest (placed before digests were kept): it cannot be told
+// from a host's edit, and the safe direction is to keep it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * How a recorded file stands.
+ *   - `unchanged`  — its bytes hash to the digest recorded when it was written.
+ *   - `changed`    — they do not: the host edited it.
+ *   - `unverified` — no digest was recorded, so an edit cannot be ruled out.
+ *   - `absent`     — nothing is there any more.
+ */
+export type PlacedFileState = 'unchanged' | 'changed' | 'unverified' | 'absent';
+
+/** The state of the file `rel` (from `harnessDir`) against the manifest's digests. */
+export function placedFileState(
+  harnessDir: string,
+  rel: string,
+  digests: Readonly<Record<string, string>>,
+): PlacedFileState {
+  const now = digestFile(resolvePath(harnessDir, rel));
+  if (now === undefined) return 'absent';
+  const written = Object.hasOwn(digests, rel) ? digests[rel] : undefined;
+  if (written === undefined) return 'unverified';
+  return now === written ? 'unchanged' : 'changed';
 }
