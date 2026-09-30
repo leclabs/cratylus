@@ -2,7 +2,7 @@ import type { Role } from '../../manifest.js';
 
 // The bottom arrow, and the only one that writes the substrate. `C ∉ implementer` is not
 // a deprivation: it is half of the two-description property that makes validation an
-// operation at all. An executor holding the design would be checking its own work
+// operation at all. An implementer holding the design would be checking its own work
 // against its own terms, which is the closed loop the ladder exists to open.
 
 export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact⟩

@@ -7,7 +7,7 @@ import type { Role } from '../../manifest.js';
 //
 // WHY THIS DOES NOT REOPEN THE TRUST DEFECT `deliver` CLOSES. That law forbids accepting
 // on a claim from the party that built the thing — one description, a closed loop. Here
-// there are still two descriptions and two witnesses: the executor holds the spec and not
+// there are still two descriptions and two witnesses: the implementer holds the spec and not
 // the design; this role holds the design and not the spec. The artifact read the law
 // demands happens HERE, the one site in the loop where reading substrate is the work
 // rather than a descent, and what reaches the principal is in the only vocabulary the

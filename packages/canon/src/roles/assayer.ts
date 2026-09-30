@@ -30,7 +30,7 @@ import type { RoleCell } from './hold.js';
 // `structured-data` makes the report a list of ⟨concept, uncovered-factor, locus⟩ rather
 // than a narrative, and a narrative is where mechanism-prose gets in. `cratylism`
 // carries the cheapest of the three questions — does the artifact SPELL its concept —
-// and `first-principles` forbids inheriting the executor's own account of what it built.
+// and `first-principles` forbids inheriting the implementer's own account of what it built.
 //
 // `design` and no `deliver`: it must read the lattice to lift into it, and judging is
 // not its remit.

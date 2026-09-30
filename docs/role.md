@@ -154,10 +154,10 @@ reserves by name. One edit on the role corrected `architect`, `kino` and `nico` 
 ### U4 · `deliver` names the witness and the lift — LANDED, under the rectified names
 
 `skills/deliver/skill.ts` gained `assay`, `assayer`, `achieved`, `unachieved`, the C-typed and
-routed-locus laws, the `assayer ⊥ executor` clause, and the redispatch law.
+routed-locus laws, the `assayer ⊥ implementer` clause, and the redispatch law.
 `validate ⊨ artifact ⟨NEVER r⟩` and `validate ⊨ self` are unchanged, because they are the laws the
 unit protects. The closing sequence now reads
-`… → verify ⟨executor⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → …`,
+`… → verify ⟨implementer⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → …`,
 and the header comment explains the read/verdict split.
 
 ### U5 · The witness agent cell — LANDED as `assayer`
@@ -202,7 +202,7 @@ silent, and that an identical input is never denied twice.
 
 The §6 list survived except where a rectification voided it. One role per agent, no inheritance, no
 fold at deploy time, no folded `provenance.mark`, no `delegation` axis, no verdict or
-mechanism-prose from the assayer, and no executor's spec in its hands are all held structurally by
+mechanism-prose from the assayer, and no implementer's spec in its hands are all held structurally by
 `holds` and by the role values. "Do not let an agent override a constitutive aspect" is void: there
 are no constitutive aspects, only a contract with no field to state it in. And the instruction not
 to enforce the arrow by deleting capabilities alone is honoured on both halves — the capabilities
