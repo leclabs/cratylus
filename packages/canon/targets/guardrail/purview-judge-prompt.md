@@ -28,7 +28,11 @@ durative concept lattice — the design.
 
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
-- a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
+- a DISPATCH that names a unit of the loop, or a closed plan, by its name produces a **route**: the
+  name, the event it is routed on — the unit to be built, to be assayed, back to its builder with an
+  assay's findings, whole, broke, or the plan closed with its line to make whole and release to ask
+  for — and at most where its spec is read, addressed to a role, or to a running agent by that agent's
+  name. Nothing in a route is the dispatcher's own writing about the unit. A DISPATCH that
   carries instructions the dispatcher wrote for a unit of the loop the contract names produces a
   **spec** — those instructions are the layer being written; a DISPATCH that carries a request in
   the dispatcher's own words, outside that loop, produces neither: it is a **request**, and it is
@@ -45,9 +49,10 @@ whole test, and it is mechanical.
   The contract usually names this: `descent`. The path in the payload is the evidence.
 - **A dispatch whose codomain is `spec` by a holder whose `writes` set excludes `spec`.** This is
   the skipped rung: a holder that writes only the design and its routes has handed a delegate
-  instructions it wrote itself for a unit of the loop — the prompt names a unit or a plan, or tells
-  the delegate what to build, change or verify in a unit's files — where only a planner turns a shard
-  into units. The prompt is the evidence.
+  instructions it wrote itself for a unit of the loop — the prompt tells the delegate what to build,
+  change or verify in a unit's files, or is the dispatcher's own account of how to do the unit's
+  work — where only a planner turns a shard into units. Naming a unit or a plan is not that: a name
+  with its event is a route. The instructions are the evidence.
 - **A dispatch whose prompt is the operator's literal words** rather than a routed name or the
   holder's own request. The contract that convicts this is the same clause: transcription is not
   authorship. Evidence is the prompt reading as the operator's text relayed — addressed to the
@@ -58,6 +63,13 @@ whole test, and it is mechanical.
 
 - **Any read.** Reading is outside the test by construction. Even where a contract calls
   artifact-reading a descent, that is a standing discipline, not a mid-turn refusal.
+- **A route.** A dispatch that names a unit of the loop or a closed plan by its name, with the event
+  it is routed on, is the arrow WORKING and passes: a unit to be built, assayed, sent back to its
+  builder with an assay's findings, reported whole or broke, and a closed plan routed by its name
+  passes just the same, with its line to make whole and release to ask for, to the integrator. It
+  passes whether it is a fresh dispatch to a role or a message to a running agent addressed by that
+  agent's name, and whether or not the name says the agent's role. A message that carries only a
+  unit's name and the event passes exactly as a dispatch to that unit's role does.
 - **A dispatch to a role the contract explicitly routes to.** Contracts name their delegations
   (`⟨C → spec⟩ ↦ planner`, `⟨spec → artifact⟩ ↦ implementer`, `⟨artifact → C⟩ ↦ assayer`, the
   integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
