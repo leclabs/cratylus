@@ -778,7 +778,8 @@ describe('purview guardrail — omp’s tool.use.pre reaches the worker with the
 
   const fire = async (toolName: string, input: Record<string, unknown>) => {
     const before = stubbed.length;
-    for (const h of handlers) await h({ toolName, input }, { model: {} });
+    const ctx = { model: {}, agent: { kind: 'main', id: '0-main', depth: 0 } };
+    for (const h of handlers) await h({ toolName, input }, ctx);
     return stubbed.slice(before);
   };
 

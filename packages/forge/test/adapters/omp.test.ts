@@ -606,17 +606,18 @@ describe('omp bridge — a guard that lets a fire through says so', () => {
   // or the envelope and then a verdict or nothing (judged).
   const STUB = `#!/bin/sh
 cat > "\${RECORD:-/dev/null}"
+echo fire >> "$(dirname "$RUBRIC")/fires"
+if [ "$MODE" = gated ]; then exit 0; fi
 if [ -n "$STANCE_EMIT_PAYLOAD" ]; then
   if [ "$MODE" = early ]; then
     echo "PURVIEW GUARDRAIL — DARK: jq is not installed. This call was NOT judged."
   else
-    printf '{"rubric":"%s","payload":"x"}\\n' "$RUBRIC"
+    printf '{"rubric":"%s","payload":"%s"}\\n' "$RUBRIC" 'contract: x\\nact: say \\"hi\\"'
   fi
   exit 0
 fi
 case "$MODE" in
   discarded) echo "STANCE GUARDRAIL — BLOCK DISCARDED: no span. This turn was NOT judged clean." ;;
-  noprogress) echo "STANCE GUARDRAIL — NO PROGRESS: byte-identical to the block already issued." ;;
   deny) printf '{"decision":"block","reason":"collapsed"}\\n' ;;
   judge)
     if grep -q BLOCK "$STANCE_VERDICT_FILE"; then
@@ -627,6 +628,11 @@ case "$MODE" in
   pass) ;;
 esac
 `;
+
+  const MAIN = { agent: { kind: 'main', id: '0-main', depth: 0 } };
+  // The payload the stub worker emits, decoded: a newline and a quote in it, so a
+  // wrapper or a re-encoding shows.
+  const PAYLOAD = 'contract: x\nact: say "hi"';
 
   type Handler = (event: unknown, ctx: unknown) => Promise<unknown>;
 
@@ -648,6 +654,7 @@ esac
   ): Promise<{
     sent: string[];
     content: string;
+    dir: string;
     run: (fire: Record<string, unknown>, ctx?: unknown) => Promise<unknown>;
     /** Fire every handler registered on the first native event, in order. */
     runAll: (
@@ -726,8 +733,9 @@ esac
     return {
       sent,
       content,
-      run: async (fire, ctx = {}) => handlers.get(native)?.(fire, ctx),
-      runAll: async (fire, ctx = {}) => {
+      dir,
+      run: async (fire, ctx = MAIN) => handlers.get(native)?.(fire, ctx),
+      runAll: async (fire, ctx = MAIN) => {
         const out: unknown[] = [];
         for (const h of every.get(native) ?? []) out.push(await h(fire, ctx));
         return out;
@@ -766,15 +774,10 @@ esac
   it.each(CELLS)(
     'relays a notice printed after the judge was asked, whatever it opens with — $event',
     async (cell) => {
-      for (const [mode, text] of [
-        ['discarded', /BLOCK DISCARDED/],
-        ['noprogress', /NO PROGRESS/],
-      ] as const) {
-        const { sent, result } = await fired(mode, cell);
-        expect(sent).toHaveLength(1);
-        expect(sent[0]).toMatch(text);
-        expect(result).toBeUndefined();
-      }
+      const { sent, result } = await fired('discarded', cell);
+      expect(sent).toHaveLength(1);
+      expect(sent[0]).toMatch(/BLOCK DISCARDED/);
+      expect(result).toBeUndefined();
     },
   );
 
@@ -782,6 +785,46 @@ esac
     const { sent, result } = await fired('pass', cell);
     expect(sent).toEqual([]);
     expect(result).toBeUndefined();
+  });
+
+  it('judges ONLY a main session: a subagent, and a session that cannot say which it is, run no worker', async () => {
+    // `ctx.agent` is how omp says which session is running (`kind: "main"` for the
+    // top-level session, `kind: "sub"` with a `parentId` for a subagent), and a
+    // context without it cannot be placed. A subagent is judged by nothing and says
+    // nothing; a session that cannot be placed is judged by nothing too, but the
+    // operator is told so, because a guard that is not in force is not silent.
+    const b = await load('gated', 'tool.use.pre');
+    const fires = () =>
+      readFileSync(join(b.dir, 'fires'), 'utf8').split('\n').length - 1;
+    const fire = { toolName: 'write', input: {} };
+
+    await b.run(fire, { agent: { kind: 'main', id: '0-main', depth: 0 } });
+    expect(fires()).toBe(1);
+    expect(b.sent).toEqual([]);
+
+    await b.run(fire, {
+      agent: { kind: 'sub', id: '0-Child', parentId: '0-main', depth: 1 },
+    });
+    expect(fires()).toBe(1);
+    expect(b.sent).toEqual([]);
+
+    expect(await b.run(fire, {})).toBeUndefined();
+    expect(fires()).toBe(1);
+    expect(b.sent).toHaveLength(1);
+    expect(b.sent[0]).toMatch(
+      /stance.*could not tell which session is running/,
+    );
+  });
+
+  it('hands the judge the worker’s payload ALONE as the user message', async () => {
+    let request: { messages?: { content?: unknown }[] } | undefined;
+    const b = await load('judge', 'tool.use.pre', async (_model, req) => {
+      request = req as typeof request;
+      return { content: [{ type: 'text', text: 'PASS' }] };
+    });
+    await b.run({ toolName: 'write', input: {} }, { model: {}, ...MAIN });
+    expect(request?.messages).toHaveLength(1);
+    expect(request?.messages?.[0]?.content).toBe(PAYLOAD);
   });
 
   it('judges a main session and judges NOTHING in a subagent session', async () => {
@@ -908,7 +951,7 @@ esac
             ?.replaceAll('_', ''),
         );
       const deadline = constant('JUDGE_TIMEOUT_MS');
-      const ctx = { model: {} };
+      const ctx = { model: {}, ...MAIN };
       return {
         judge,
         sent: b.sent,
