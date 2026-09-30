@@ -358,8 +358,11 @@ gets `status` appended to its list, and a host on any other named preset is left
 lists for the default preset (`defaultPreset` on the port), and for another its own segments
 followed by `status`. Where the segment is left in the live layout it also writes
 `showHookStatus: false` unless the host set it, because omp prints every extension's status on a row
-beneath the editor too and the segment already draws them all inline. A shape it cannot extend is
-reported and left. Both honour `--dry-run`.
+beneath the editor too and the segment already draws them all inline. Where it is not in the live
+layout (`other-preset`, `own-layout`, or a `custom` list it cannot extend) that row is the badge's
+only place, so a host's `showHookStatus: false` is turned to `true`, the one value of the host's it
+ever changes, and the result says `hookRowShown`. A shape it cannot extend is reported and left.
+Both honour `--dry-run`.
 
 ### `cratylus explain [agent]`
 

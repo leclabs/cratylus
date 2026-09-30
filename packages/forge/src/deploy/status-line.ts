@@ -215,6 +215,10 @@ const CUSTOM_PRESET = 'custom';
  *  status; on by default. */
 const HOOK_STATUS_KEY = 'showHookStatus';
 
+/** `key: false`, up to the value: the row is written hidden. Only the value is matched,
+ *  so what precedes it and what follows it (a comment) survive a replacement. */
+const HIDDEN_ROW = /^(.*?:[ \t]*)(?:false|False|FALSE)(?=[ \t]|#|$)/;
+
 /** The keys under which the host lays out its own line. Under the default preset the
  *  two lists are ignored and `segmentOptions` is merged over the preset's own options,
  *  and `custom` reads all three as the WHOLE layout. `separator` is not among them: the
@@ -234,11 +238,14 @@ const LAYOUT_KEYS = [
  *                      `showHookStatus`; the file is as it was.
  *   - `other-preset` — the host chose a named preset other than `custom`, whose layout
  *                      is the preset's own and has no such segment. Its choice is not
- *                      ours to change: the file is as it was, and `preset` names it.
+ *                      ours to change: the file is as it was, save a hidden row shown
+ *                      (`hookRowShown`), and `preset` names it.
  *   - `own-layout`   — no preset is set, but the host wrote layout keys of its own
  *                      (`keys`) that `custom` would activate or leave partial. The file
- *                      is as it was, and `advice` says what to write.
- *   - `refused`      — a `statusLine` this cannot safely extend; the file is as it was.
+ *                      is as it was, save a hidden row shown (`hookRowShown`), and
+ *                      `advice` says what to write.
+ *   - `refused`      — a `statusLine` this cannot safely extend; the file is as it was,
+ *                      save a hidden row shown (`hookRowShown`).
  */
 export type StatusSegmentState =
   | 'added'
@@ -264,6 +271,12 @@ export interface StatusSegmentResult {
   readonly advice?: readonly string[];
   /** Why the file was left untouched, when `refused`. */
   readonly refused?: string;
+  /** Set when the host hid the row beneath the editor (`showHookStatus: false`) while
+   *  its layout has no place for the badge but that row: the badge would have shown
+   *  nowhere, so the value was turned to `true` (written, or under `dry` would be) and
+   *  nothing else in the file changed. Under `other-preset`, `own-layout` and `refused`,
+   *  where the file is otherwise as it was. */
+  readonly hookRowShown?: boolean;
 }
 
 export interface EnsureStatusSegmentOpts {
@@ -572,15 +585,18 @@ function ownLayoutAdvice(
  * too unless the host set that key: omp prints every extension's status beneath the
  * editor as well by default, so the badge would show twice, and the segment already
  * draws every status inline, so none is hidden. A host left on another preset gets
- * neither the segment nor this. A host on `custom` that already lists the segment
- * and set the key is left byte-identical.
+ * neither the segment nor this, and its row beneath the editor is the badge's only place:
+ * where the host had hidden that row (`showHookStatus: false`) it is turned to `true`,
+ * the one value of the host's this ever changes, and `hookRowShown` says so. A host on
+ * `custom` that already lists the segment and set the key is left byte-identical.
  *
  * A file with no `statusLine` is the no-preset case, and is created when absent.
  * Anything this cannot extend safely (a `statusLine` that is a flow mapping, a scalar,
  * anchored or tagged; a `preset` that is not a plain scalar; a `leftSegments` that is
- * not a list, or a flow list split across lines) is left, and `refused` says why.
- * Every key the host set keeps its value, and every byte outside the inserted lines
- * survives.
+ * not a list, or a flow list split across lines) is left, and `refused` says why. The
+ * row is shown there too where the layout could be read that far and the host hid it.
+ * Every other key the host set keeps its value, and every byte outside the inserted
+ * lines survives.
  */
 export function ensureStatusSegment(
   path: string,
@@ -695,6 +711,37 @@ export function ensureStatusSegment(
   }
   const indent = entryIndent ?? '  ';
 
+  // WHERE THE BADGE HAS NO PLACE BUT THE ROW beneath the editor, a host that hid that
+  // row (`showHookStatus: false`) would see the badge nowhere. The row is the badge's
+  // fallback, so where this returns without listing the segment it turns the host's
+  // `false` to `true` — the one value it ever changes, and only when nothing else would
+  // show the persona — and touches no other byte.
+  const hiddenAt = keyAt.get(HOOK_STATUS_KEY);
+  const hiddenLine =
+    hiddenAt === undefined
+      ? undefined
+      : (lines[hiddenAt] as [string, string])[0];
+  const shownLine = hiddenLine?.replace(HIDDEN_ROW, '$1true');
+  const showRow = (left: StatusSegmentResult): StatusSegmentResult => {
+    if (hiddenAt === undefined || shownLine === hiddenLine) return left;
+    if (!dry) {
+      writeFileSync(
+        path,
+        applyEdits(
+          lines,
+          [{ at: hiddenAt, replace: shownLine as string }],
+          eol,
+        ),
+      );
+    }
+    return {
+      ...left,
+      wrote: !dry,
+      written: [`${HOOK_STATUS_KEY}: true (was false)`],
+      hookRowShown: true,
+    };
+  };
+
   // WHICH PRESET the host is on decides what a segment list means.
   const presetAt = keyAt.get('preset');
   let preset: string | undefined;
@@ -711,14 +758,14 @@ export function ensureStatusSegment(
   }
   const ownLayout = LAYOUT_KEYS.filter((key) => keyAt.has(key));
   if (preset !== undefined && preset !== CUSTOM_PRESET) {
-    return {
+    return showRow({
       path,
       state: 'other-preset',
       wrote: false,
       written: [],
       preset,
       advice: presetAdvice(host, preset, ownLayout),
-    };
+    });
   }
   const onCustom = preset === CUSTOM_PRESET;
 
@@ -729,14 +776,14 @@ export function ensureStatusSegment(
   // options from under its own — and change the line it sees. That is the host's
   // decision to make, so nothing is written and the way to make it is told.
   if (!onCustom && ownLayout.length > 0) {
-    return {
+    return showRow({
       path,
       state: 'own-layout',
       wrote: false,
       written: [],
       keys: ownLayout,
       advice: ownLayoutAdvice(host, ownLayout),
-    };
+    });
   }
 
   const edits: Edit[] = [];
@@ -750,7 +797,7 @@ export function ensureStatusSegment(
       written.push(`leftSegments: ${left.join(', ')}`);
     } else {
       const plan = planListEdit(lines, leftAt, indent, segment);
-      if (plan.kind === 'refused') return refuse(plan.why);
+      if (plan.kind === 'refused') return showRow(refuse(plan.why));
       if (plan.kind === 'edit') {
         edits.push(plan.edit);
         written.push(`leftSegments: + ${segment}`);

@@ -403,12 +403,23 @@ function showPersonaBadge(
   if (host !== undefined) {
     const path = hostConfigPath(adapter, host.configRels, opts.home);
     const result = ensureStatusSegment(path, host, { dry });
+    // The row beneath the editor is the badge's place wherever the layout has none of
+    // its own; a host that had hidden it is told it is shown now, and why.
+    const rowShown = result.hookRowShown
+      ? ` Save one value: its \`showHookStatus\` was false, which hid the persona badge's only place there, so ${dry ? 'it would be' : 'it is'} now true.`
+      : '';
     switch (result.state) {
       case 'refused':
+        if (result.hookRowShown) {
+          process.stderr.write(
+            `${pc.yellow('!')} ${CLI_BIN} install: could not list \`${host.segment}\` in ${path} — ${result.refused}. The persona badge renders beneath the status line, not in it.${rowShown}\n`,
+          );
+          return;
+        }
         refused(
           path,
           result.refused as string,
-          'The persona badge renders beneath the status line, not in it.',
+          'The persona badge renders beneath the status line, not in it, unless the host set `statusLine.showHookStatus: false`, which hides it there; set it true, or list the `status` segment in a `custom` layout, to see the badge.',
         );
         return;
       case 'present':
@@ -418,13 +429,13 @@ function showPersonaBadge(
         return;
       case 'other-preset':
         say(
-          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is.`,
+          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is.${rowShown}`,
         );
         for (const line of result.advice ?? []) say(`    ${line}`);
         return;
       case 'own-layout':
         say(
-          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so the persona badge renders beneath the status line.`,
+          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so the persona badge renders beneath the status line.${rowShown}`,
         );
         for (const line of result.advice ?? []) say(`    ${line}`);
         return;

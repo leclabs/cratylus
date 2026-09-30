@@ -202,7 +202,7 @@ the badge renders beneath the status line. Install edits the config file omp rea
   changing, or, where you list none, omp's custom left list plus `status` is written. A list that has
   `status` is not touched.
 - **Any other named preset** (`minimal`, `compact`, `full`, `nerd`, `ascii`, or `default` written
-  out): your choice stands. The file is left byte-identical. `preset: custom` REPLACES that preset's
+  out): your choice stands, and the file is left byte-identical, save one value described below. `preset: custom` REPLACES that preset's
   layout with the one you list, so install prints the whole block to write: the exact lists for
   `default`, and for any other preset `leftSegments` as that preset's own segments followed by
   `status`, `rightSegments` as its own, and `showHookStatus: false`. Under `custom` the preset's
@@ -213,12 +213,16 @@ Wherever install leaves `status` in the live layout, that is, where it wrote `pr
 `status` in a `custom` list, it also writes `showHookStatus: false` unless you set that key. omp prints
 every extension's status on a row beneath the editor by default (`statusLine.showHookStatus`), and the
 `status` segment already draws every one of them inline, so leaving the row on shows the badge twice and
-hides nothing. A host left on another named preset has no `status` in its layout and keeps that row, so
-install writes neither there.
+hides nothing. A host left on another named preset has no `status` in its layout, so that row is the
+badge's only place there: install writes neither key, and keeps the row on. Where you had turned it
+off (`showHookStatus: false`) on such a layout, or on a `custom` list install cannot extend, the badge
+would show nowhere, so install turns that one value to `true`, changes no other byte, and says so.
 
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow mapping,
-an alias, a list split across lines in flow style) is reported and left as it is, and the install still
-succeeds. `--dry-run` writes nothing.
+an alias, a list split across lines in flow style) is reported and left as it is, apart from that one
+value, and the install still succeeds. If the file cannot be read that far and hides the row, the
+badge shows nowhere until `showHookStatus` is true or `status` is listed, and the report says so.
+`--dry-run` writes nothing.
 
 ## Running a persona by its name
 
