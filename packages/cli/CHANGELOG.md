@@ -1,5 +1,18 @@
 # @cratylus/invoke
 
+## 0.7.3
+
+### Patch Changes
+
+- Updated dependencies [1947c67]
+- Updated dependencies [e6b58b6]
+- Updated dependencies [63569f7]
+- Updated dependencies [a38f423]
+- Updated dependencies [a0e28a8]
+  - @cratylus/canon@0.11.1
+  - @cratylus/forge@0.11.4
+  - @cratylus/runtime@0.8.1
+
 ## 0.7.2
 
 ### Patch Changes
