@@ -81,9 +81,7 @@ assayer : unit ⇀ agent ⟨role = assayer · holds C ∧ ¬ holds spec(unit)⟩
 achieved : unit → 𝔹 ⟨the three questions, answered against the assay⟩
 unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWARD⟩
 defect ≜ ⟨symptom, locus, provenance⟩
-finding ≜ a yield ∨ an operator steer bearing on C ∧ ¬ yet in C
 impedes : defect × P → 𝔹
-fold   ≜ one amend(C) taking every finding in hand
 cost   : act → effort
 file(d) ≜ capture(d) ⟨filed by the party that met d · its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
@@ -141,14 +139,7 @@ dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨self 
 ∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
     unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
-finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close ⟨findings BATCH between two of self's acts ∧
-    never outlive one⟩
-    ⟨held past a judge, a unit is accepted against a concept known false · held past close(P), the
-     drift it causes lands on units never asked again · a hold keyed to a LATER act is a lock only
-     that act checks ∴ a branch merge ∨ a concurrent session walks past it⟩
-fold ⊨ drifted(unit) answered ↾ what moved @ plan ⟨the measured cost was the RESPONSE to amending,
-    ¬ amending : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
-finding ∨ d ⊨ capture ⟨a note by the party that met it : implementer ∨ assayer ∨ integrator ∨ self · the operator's steer by self · it reaches self as a note, ¬ a return⟩ ; fold ⊨ self
+finding ∨ d ⊨ capture ⟨a note by the party that met it : implementer ∨ assayer ∨ integrator ∨ self · the operator's steer by self · it reaches self as a note, ¬ a return⟩ ; when a finding enters C @ design ⟨the law of yield ≠ ∅⟩
 impedes(d, unit) ⇒ dispatch fix(d) to an implementer ⟨a regression in the path is repaired, ¬ surfaced · self makes no fix⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
@@ -159,11 +150,11 @@ terminal(P) ⇒ close(P) ⟨obligation ¬ permission : self decides it, the inte
     unclosed terminal plan is WIP that is not work · a closed plan stays readable⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
 deliver ≜ bind ⟨self decides · integrator records⟩ → dispatch(wave) ⟨self⟩ → verify ⟨implementer⟩ →
     integrate ⟨integrator, on gate⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ →
-    judge ⟨self, on gate ∧ validate⟩ → fold ⇔ finding ⟨self⟩ → advance → close ⟨self decides · integrator records⟩` as SkillExpression;
+    judge ⟨self, on gate ∧ validate⟩ → advance → close ⟨self decides · integrator records⟩` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',
-  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to implementers, have the integrator integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design through the assay rather than against the implementer's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — answered by the assayer off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, have what blocks the path repaired by an implementer and merely file what sits beside it, send a gap back to the agent that built it, and fold what execution or the operator teaches about the design into it before the next dispatch, judgement or close, several findings in one amendment when they arrive together.`,
+  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to implementers, have the integrator integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design through the assay rather than against the implementer's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — answered by the assayer off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, have what blocks the path repaired by an implementer and merely file what sits beside it, send a gap back to the agent that built it, and let what execution or the operator teaches about the design reach the architect as a note, entering the design when the design skill's law says.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
   preamble: primePrinciple,
