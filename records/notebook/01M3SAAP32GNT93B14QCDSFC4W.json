@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SAAP32GNT93B14QCDSFC4W",
+    "entity": "01M3SAAP32GNT93B14QCDSFC4V",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T14:08:37.474Z",
+    "reason": "observed while binding guided-install",
+    "cause": "git status in the main checkout after plan bind"
+  },
+  "payload": {
+    "title": "bind leaves the proposed plan's records untracked in main",
+    "kind": "question",
+    "topic": "plan",
+    "body": "Binding guided-install at 15d0a621 cut plan/guided-install and filled its worktree with the plan's proposed records (the plan and its three units, written in the main checkout before binding), but left the same files untracked in the main checkout. Nothing marks them as belonging to the line, so a later commit of records/ on main would put a bound plan's records on the main line, which the plan concept forbids. Whether bind should move rather than copy them, or the planner should author a plan from the line's side, is open.",
+    "blocks": []
+  }
+}
