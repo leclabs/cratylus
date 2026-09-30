@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RJD04VXA9XKC7P8BGB68RE",
+    "entity": "01M3RJD04VXA9XKC7P8BGB68RD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayGuardAsksAgain",
+    "time": "2026-09-30T07:10:27.483Z",
+    "reason": "finding beside the assayed unit goes to a note, not the verdict",
+    "cause": "assay of guard-asks-again of judge-recovery"
+  },
+  "payload": {
+    "title": "operator prose for enforcement scope omits the open and recovery clauses",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "The Enforcement scope entry in packages/cli/README.md states binding and the degrade-to-steer rule but not that a guard whose judge cannot run lets the turn through and says so, nor that it asks the judge again once the judge may have recovered. Both clauses are in the live concept and realized on omp (guard-says-when-open, guard-asks-again); only the operator-facing prose lags. Seen while assaying guard-asks-again at 64af8938; not a defect of that unit.",
+    "blocks": []
+  }
+}

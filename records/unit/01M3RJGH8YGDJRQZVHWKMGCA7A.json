@@ -1,0 +1,58 @@
+{
+  "envelope": {
+    "id": "01M3RJGH8YGDJRQZVHWKMGCA7A",
+    "entity": "01M3RJ32M7VERKVA8NK31K58YQ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RJ38AXQT66XKYQ3E2NV0DZ"
+    ],
+    "author": "JudgeRecoveryIntegrator",
+    "time": "2026-09-30T07:12:23.326Z",
+    "reason": "integrated onto plan/judge-recovery and the whole gate is green on the combined tree",
+    "cause": "achieved verdict of AssayGuardAsksAgain at 64af8938"
+  },
+  "payload": {
+    "plan": "01M3RJ32KY015F81DX7ZCHS6H3",
+    "spec": {
+      "name": "guard-asks-again",
+      "intent": "Census @8ab80fed; render.ts and omp.test.ts last changed at 1b22cfe3, so re-derive any line number below if either changed since. Realize on omp the clause enforcement scope gained at 8ab80fed: a guard whose judge could not run asks the judge again once it may have recovered, so a passing outage never leaves the guard unjudged for the rest of a session. DEFECT (diagnosed in decision note \"guards' judge is dark\"): the omp bridge that forge emits into every guard and session extension (packages/forge/src/adapters/omp/render.ts, TURN_BRIDGE ~L722-732 and askJudge in TURN_EXEC ~L948-1027) counts consecutive deadline misses in judgeMisses; once it reaches JUDGE_MISS_LIMIT (3) askJudge returns undefined WITHOUT calling the judge, and only an answer resets the count. A latched judge is never asked, so it can never answer: one burst of slow calls blacks out every omp guard for the rest of the session. CHANGE: keep the 22 s deadline and keep the latch's purpose (a dead endpoint must not cost a full deadline on every fire), but make the latch expire. Once the run of misses reaches the limit, fires within a bounded cooldown skip the judge and are let through with the worker's dark notice as today; the first fire after the cooldown asks the judge once; an answer clears the run and the cooldown; a miss on that probe starts a new cooldown. The cooldown is a named constant in the emitted module, measured in wall time, between 30 s and 5 min, with a comment giving the reason for its value. SECOND PART, same clause: the bridge relays a notice only when it differs from the last one relayed (lastNotice, ~L703-708, relay ~L1036), and a judged fire never clears it, so after a recovery a second outage's dark notice, identical in text to the first, would be suppressed and the guard would go dark in silence. A judged fire (the verdict pass returned a verdict or a clean pass) must clear the remembered notice, so the next outage is said again. EXISTING TEST: omp.test.ts 'bounds the judge with its own deadline, latched by a run of misses' (~L550-584) pins source substrings of the latch; remove those substring assertions and prove the behaviour by running the emitted module instead, extending the existing harness 'omp bridge — a guard that lets a fire through says so' (~L600-749, fired(), which already swaps the completeSimple import for a stub). A test fire needs a ctx carrying a model (askJudge returns before the judge when ctx.model is absent) and a completeSimple stub that counts its calls and is scripted per call (hang past the deadline, or answer with a verdict block); drive the deadline and cooldown with a controlled clock (vitest fake timers or an equivalent), never with real waits. Add the tests to omp.test.ts; a new test file would also need registering in packages/canon/test/gate-convicts.test.ts and is not in outputs. packages/schema/src/hook-cell.ts is listed in outputs only because its comment spells the concept; it needs no change. NON-GOALS: which model role supplies the judge (advisor, smol, tiny); the notice dedupe being defeated by three guards alternating their lines; the Claude Code workers, which call the judge on every fire and hold no latch; packages/forge/CHANGELOG.md, which the changeset generates.",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "records/notebook/01M3RHE4YW3XRD2E7MKXNR4W4P.json",
+        "packages/forge/CHANGELOG.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        ".changeset/guard-asks-again.md",
+        "packages/schema/src/hook-cell.ts"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts` exits 0, and `pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/forge typecheck:test` exit 0.",
+        "RECOVERY: a test in omp.test.ts loads the module ompGuardrailExtensions emits, with a counting completeSimple stub and a controlled clock, and asserts the exact judge-call count at each step: three fires whose judge call hangs past the deadline make 3 calls; a fire inside the cooldown makes 0 further calls and is let through with the dark notice relayed; the first fire after the cooldown makes exactly 1 call, and when that call answers with a BLOCK verdict the fire's result is that block. With render.ts restored to its 8ab80fed text this test fails, because the fire after the cooldown makes no call.",
+        "RE-ARM: in a test, when the probe after the cooldown also misses its deadline, the next fire inside the new cooldown makes 0 judge calls and the first fire after it makes exactly 1.",
+        "SAID AGAIN: in a test, an outage relays its dark notice, an answered fire then judges, and a second outage whose notice text equals the first is relayed again, so sendUserMessage receives that notice twice in total. With render.ts restored to its 8ab80fed text this test fails.",
+        "COOLDOWN BOUND: the emitted module declares the cooldown as one named constant whose value is at least 30000 and at most 300000 ms, and the RECOVERY test advances the clock by that constant read from the emitted text rather than by a second literal.",
+        "No assertion in omp.test.ts checks the emitted text for the substrings 'if (judgeMisses >= JUDGE_MISS_LIMIT)', 'judgeMisses += 1;' or 'if (text) judgeMisses = 0;'.",
+        "`.changeset/guard-asks-again.md` names \"@cratylus/forge\": patch and says that on omp a guard whose judge stopped answering asks it again after a cooldown and says so again if a later outage follows a recovery.",
+        "`git diff --name-only 8ab80fed <landed commit>` lists only paths in this unit's outputs."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3RHYZ7D3B7S9GBTZ6MSVFS7",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "whole",
+        "commit": "5a0e346f",
+        "author": "JudgeRecoveryIntegrator",
+        "time": "2026-09-30T07:12:23.326Z"
+      }
+    ]
+  }
+}
