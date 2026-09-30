@@ -53,7 +53,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   'prim(c)': 'REFERENCE', // prose in signify, formal in conceptualize
   'concept-record': 'REFERENCE',
   cl: 'REFERENCE', // gloss in probe, signature in conceptualize
-  'σ*': 'REFERENCE',
   '≺': 'REFERENCE', // same order operator over different carriers
   O: 'REFERENCE', // both: the Target dimension-section set
   green: 'REFERENCE', // both: a gate-pass reached by FIXING, never by loosening

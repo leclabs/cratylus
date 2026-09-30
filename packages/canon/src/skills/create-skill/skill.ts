@@ -16,7 +16,7 @@ block           ≜ the self-sufficient set-builder block @ formalize : declarat
 xref            ≜ a sibling ∨ corpus concept, cited once by its bare σ* anchor
 gate            ∈ { schema, references, fences, symbols, verbatim-ref-free, operative, provenance } ⟨corpus-scoped : symbols · self-sufficiency span all cells⟩
 verify          ≜ the FULL corpus suite (\`pnpm test\`) as the shard-completion gate : per-cell PASS ≠ corpus PASS ∴ run the whole suite, ¬ the cell's own targeted check alone
-green           ≜ ∀ gate PASS reached by fixing → the FITTER sign ⟨declare the fittest glyph + cold-verify · ∨ resolve it to its decodable word⟩, never by degrading the sign to appease a gate ⟨gate = decodability registry, ¬ expression cap⟩
+green           ≜ ∀ gate PASS reached by fixing → the FITTER sign ⟨declare the fittest glyph in T · ∨ resolve it to its decodable word⟩, never by degrading the sign to appease a gate ⟨gate = decodability registry, ¬ expression cap⟩
 
 self-sufficient(block) ⇔ every term defined in-cell ∧ only live siblings named in prose, never restated
 ∀ glyph ∈ fences(cell) : glyph ∈ symbol-table ∪ definienda(cell) ∪ exemptions(Greek · subscript · box-drawing · em-dash)

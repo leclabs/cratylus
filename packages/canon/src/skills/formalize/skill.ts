@@ -14,12 +14,9 @@ T ≜ the declared notation table @ src/operator-lexicon.ts
 β ≜ { s | s imported, its anchor cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }
 
-σ* ≜ signify's fittest sign
-
 B ≜ formalize(prose) such that :
     ∀ e ∈ E      : signature(η(e)) ∈ B
     ∀ o ∈ O ∪ L  : law(η(o)) ∈ B
-    ∀ line ∈ B : line = σ*(its concept)
 
 Dfn ≜ { s | a line of B defines s }
 closed(B)   ⇔ symbols(B) ⊆ T ∪ Dfn ∪ β ∪ ι
@@ -29,7 +26,7 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
-σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*(c) ⟨llm-native⟩
+s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation answers to no cold decode⟩
 
 reconstruct(B) ≽ prose
 reconstruct(B) ⋡ prose ⇒ ⊥` as SkillExpression,
