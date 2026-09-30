@@ -1,0 +1,101 @@
+{
+  "envelope": {
+    "id": "01M3RFGFYFFR4N2T6VSBTTF3JN",
+    "entity": "01M3RD6V4D6WJ2H1H2QXZD3WPA",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RFDPR1EM7GBKCE5A0FVJQQ"
+    ],
+    "author": "LoopLedgerIntegrator",
+    "time": "2026-09-30T06:19:56.239Z",
+    "reason": "ledger-writers integrated onto plan/loop-ledger; the whole check ran once on the combined tree and was green",
+    "cause": "achieved ledger-writers of loop-ledger at 15b2e41e"
+  },
+  "payload": {
+    "plan": "01M3RD4P2CS03GF89NXABSN1JJ",
+    "spec": {
+      "name": "ledger-writers",
+      "intent": "Checkout /home/lex/workspaces/cratylus. Census @e74f0458; unit-ledger and integration-line land before this unit and change what it cites, so re-derive every count and line below from the tree they leave. Realize the clause of `unit` that says who writes its history and when: everything that happens to a unit while it is worked is written to its history as it happens, by the party it happens to (the implementer its landing with the commit that holds it, the assayer its verdict, the integrator the report that the unit was made whole or broke the whole), so the ledger alone says where every unit stands and on what it was accepted, and no agent needs a message or its memory to know. unit-ledger gives the verbs: `plan land|assay|whole|broke <unit> --plan <p> …`; read their flags from the landed runtime by `node packages/cli/dist/cratylus.js plan <verb> --x` (it refuses and lists them) after `pnpm build`.\nCHANGE. (1) Implementer: after committing its unit it records the landing with that commit, then returns `landed <unit> of <plan> at <commit>` as today. packages/canon/src/dimensions/role/implementer.ts (the arrow's writes gains the landing record; the verb spelled inside a host-CLI `${…}` span as its `plan show` read is, since the residue gate admits only σ* anchors bare), agents/implementer.ts, roles/implementer.ts comments. (2) Assayer: records its verdict (achieved, or not achieved with each missing part, and the commit it judged) before it returns it, and still never reads the spec; the verb's output carries no spec. packages/canon/src/dimensions/role/assayer.ts, agents/assayer.ts, roles/assayer.ts comments. (3) Integrator: records whole with the line's commit, or broke with the failing check, before its report. packages/canon/src/dimensions/role/integrator.ts, agents/integrator.ts, and packages/canon/src/skills/deliver/skill.ts (the green and red laws and the loop sequence say each party writes its own event as it happens, and that where a unit stands is read from `plan show`). (4) packages/canon/src/skills/plan/skill.ts: the four verbs as formal-block lines in the shape of `advance(unit) ≜ …`, flags equal to the runtime's. The plan skill sits near the claude skill hook cap (note 'a longer home at run time than at install'), so it stays under with margin. (5) .changeset/ledger-writers.md (@cratylus/canon minor). No new test file.",
+      "static": [
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/test/reader-reach.test.ts"
+      ],
+      "deps": [
+        "01M3RD5BPXR89HBJJS81YAVEG0",
+        "01M3RD62FTW75DZXVBVZR31J3G"
+      ],
+      "outputs": [
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/agents/assayer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        ".changeset/ledger-writers.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. `grep -c -E 'plan(\\.mjs)? (land|assay|whole|broke)'` over the session texts of implementer, assayer and integrator prints 0 at census; after, implementer's spells land, assayer's spells assay, integrator's spells whole and broke (print each line).",
+        "VERB FIDELITY. For every line of the projected session texts of planner, implementer, assayer and integrator that spells a plan verb (`scripts/plan.mjs <verb> …` or `cratylus plan <verb> …`), the flags it spells equal the set the landed runtime declares, read by `node packages/cli/dist/cratylus.js plan <verb> --x`; print each pair.",
+        "LIVE LEDGER SMOKE (print the script and its verbatim output). After `pnpm build`, in a throwaway git repository with one bound plan whose one unit is active (built with `node packages/cli/dist/cratylus.js`), run exactly the command lines the implementer, assayer and integrator session texts spell, placeholders filled, in the loop's order: land, assay not achieved, land, assay achieved, whole. `plan show <unit> --plan <p>` then lists those five events in order with their commits, verdicts and missing part.",
+        "LOOP COLD READ. Concatenate the session texts (RIG) of architect, planner, implementer, assayer and integrator and give them, with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, with this prompt verbatim: 'Below are the complete definitions of five AI agents that work together, each with the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. (a) After a unit has been worked, how does anyone learn, without asking another agent, which commit landed it, what the assayer found, and whether it made the whole or broke it? (b) Who writes each of those facts, and when? (c) Does the assayer read the unit’s spec at any point, including when it records its verdict?' Every read answers: (a) from the unit’s own history, `plan show <unit>`; (b) the implementer its landing when it commits, the assayer its verdict when it judges, the integrator whole or broke when it combines, each as it happens; (c) NO. Save each answer under /tmp/loop-ledger-cold-read/ledger-writers/ and print the (a)-(c) lines.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts test/reader-reach.test.ts test/reader-density.test.ts test/structural-parsimony.test.ts test/projection-stability.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/cratylism.test.ts` and `pnpm typecheck` exit 0; skill-hook-cap prints plan and deliver under the cap with their margins."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "version": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "15b2e41e8118cc8b94ab7e24466f2d0bd60d1d56",
+        "author": "LedgerWriters",
+        "time": "2026-09-30T06:15:39.073Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "15b2e41e8118cc8b94ab7e24466f2d0bd60d1d56",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "assayer",
+        "time": "2026-09-30T06:18:24.897Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "b5a047b6",
+        "author": "LoopLedgerIntegrator",
+        "time": "2026-09-30T06:19:56.239Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RE32FMC47PC769A5BWS56F",
+    "entity": "01M3RE32FMC47PC769A5BWS56E",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ad-hoc-delegation",
+    "time": "2026-09-30T05:55:07.892Z",
+    "reason": "proof legs not run as specified",
+    "cause": "no network to claude API"
+  },
+  "payload": {
+    "title": "ad-hoc-delegation live proof used host models",
+    "kind": "question",
+    "topic": "loop-ledger",
+    "body": "claude -p (stance-judge.sh) cannot reach the API on this host (ENOTFOUND, all 6 before-runs dark), so LIVE JUDGE and COLD READ ran through the worker's STANCE_EMIT_PAYLOAD/STANCE_VERDICT_FILE seam with the host completion models (smol for the judge; slow and smol for the cold read), not haiku/opus-5-5. Before: P1 denied 3/3, P2 denied 3/3. After: P1 allowed 3/3, P2 denied 3/3. Cold read: (a) YES in 23 of 24 reads (one kino smol NO contradicting its own quote), (b)-(d) NO, (e) planner in all. Rerun on a networked host with the named models if that exact model pair matters. Evidence: /tmp/loop-ledger-cold-read/ad-hoc-delegation/",
+    "blocks": []
+  }
+}

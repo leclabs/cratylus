@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RDMZZ0DRZ41SCTMBH2FGKY",
+    "entity": "01M3RDMZZ0DRZ41SCTMBH2FGKX",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T05:47:26.560Z",
+    "reason": "the guards' fail-open notices now arrive on every call and turn",
+    "cause": "repeated DARK notices during loop-ledger"
+  },
+  "payload": {
+    "title": "guards' judge is dark",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Since loop-ledger was dispatched, every stance-guardrail and purview-guardrail firing in the nico main session reports DARK: the judge did not answer, so every turn and call passes unjudged. Earlier in the same session the purview judge did answer (it denied three dispatches). The notices are the guard-says-when-open behaviour working; the question is why the judge stopped answering (judge model, credentials, rate limit, timeout) and whether a persistently dark guard should say so once rather than on every firing, since each notice interrupts the session as a steering message.",
+    "blocks": []
+  }
+}

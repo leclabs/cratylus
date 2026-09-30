@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RDSWR06SV8BPKPBXCWP6GD",
+    "entity": "01M3RDSWR06SV8BPKPBXCWP6GC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayIntegrationLine",
+    "time": "2026-09-30T05:50:07.104Z",
+    "reason": "residual second sign for the integrator role in prose outside the projected surfaces",
+    "cause": "assay of integration-line of plan loop-ledger at d9228821"
+  },
+  "payload": {
+    "title": "integration-line: the integrator is still called a position in prose",
+    "kind": "finding",
+    "topic": "integration-line of plan loop-ledger",
+    "body": "Assay of integration-line at d9228821. The integrator role's anchor moved from 'integrator position' to 'integrator role' because position was a second sign for the same concept. Every identifier, path and projected surface of the integrator spells role (integratorRole, roles/integrator.ts, dimensions/role/integrator.ts, the agent description and archetype, the role value, the deliver skill). The prose around them still calls it a position: docs/role.md:108 ('The fifth position is the one the architect session had been performing itself', in the paragraph where the unit changed 'architect position' to 'architect role') and :143 ('this position was reached'); the comments in dimensions/role/integrator.ts:17,21,23, roles/integrator.ts:14,20,31 and agents/integrator.ts:7 ('facts about the POSITION'; the same comment says 'the integrate role'). The same residue runs through the other four roles' files and docs/role.md:64-65, which no unit of this plan owns, so it is a corpus-wide sweep rather than this unit's gap.",
+    "blocks": []
+  }
+}

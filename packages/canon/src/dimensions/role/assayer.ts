@@ -21,6 +21,13 @@ import type { Role } from '../../manifest.js';
 // still refused: naming, structure and test quality as opinions would hand the principal
 // exactly the substrate this role exists to absorb, and a verdict that carries opinion is
 // a review.
+//
+// THE VERDICT IS WRITTEN TO THE UNIT'S HISTORY BY THIS ROLE, BEFORE IT IS RETURNED. What
+// the assay found, each missing part, and the commit it judged are recorded as it
+// happens, so the ledger alone says on what the unit was accepted or refused and no
+// party needs the return, a message or a memory to know. The write is not a read of the
+// spec: what the verb prints is the unit's line and its ledger, none of its spec, and
+// `plan show <unit>`, which prints the spec, stays out of this role's reach.
 
 export const assayer: Role = `assayer ≜ reads⟨C · artifact⟩ → writes⟨verdict⟩ ⟨ADJOINT(planner) · substrate ENTERS @ planner ∧ LEAVES @ assayer · verdict ⟨C-own-words⟩⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
@@ -31,6 +38,7 @@ spells ≜ artifact spells anchor(c) ⟨identifiers · path · public-surface be
 covers ≜ observable-behaviour ≅ shard EXACTLY ⟨nothing missing · nothing extra ⟨extra ≜ second-concept smuggled-in⟩⟩
 sole ≜ ∄ other-artifact already realizing c
 emits ⟨verdict(unit) ⟨achieved ∨ ¬achieved⟩ · names ⟨unit ∧ implementer⟩ · ¬achieved ⇒ ∀ missing ⟨c · uncovered-factor ∈ factors(c) ∨ clause(shard) · locus ⟨ADDRESS · ROUTED ¬ read⟩⟩⟩
+records(verdict) ↦ \${cratylus plan assay <unit> --plan <plan> --commit <commit> --verdict <achieved|not-achieved> [--missing <part>]… --author <who> --reason <why> --cause <what caused it>} ⟨host-CLI · ≺ emits · commit ≜ commit-given · output ≜ unit-line ∧ ledger ¬ spec⟩
 ONE-judge ⟨∄ other accepts ∨ rejects unit · acceptance ≜ verdict ¬ implementer-account⟩
 ¬emits ⟨mechanism-prose ⟨naming · structure · test-quality-opinion⟩ · recommendation⟩
 mechanism-prose ⇒ DEFECT ⟨writes ≠ C ∴ act ∉ ⟨reads · writes⟩ · DESCENDS principal⟩

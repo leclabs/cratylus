@@ -1,0 +1,70 @@
+{
+  "envelope": {
+    "id": "01M3RD62FTW75DZXVBVZR31J3H",
+    "entity": "01M3RD62FTW75DZXVBVZR31J3G",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T05:39:17.626Z",
+    "reason": "the integrator role now makes the plan line hold every approved unit and every record written while the plan ran; deliver cuts it from main and commits records only on green",
+    "cause": "architect handed shards architect role, unit and integrator role; operator priority: architect role first"
+  },
+  "payload": {
+    "plan": "01M3RD4P2CS03GF89NXABSN1JJ",
+    "spec": {
+      "name": "integration-line",
+      "intent": "Checkout /home/lex/workspaces/cratylus. Census @e74f0458 (source identical to d96cede3); re-derive any count or line below if a listed path changed since. Realize `integrator role` where it is still unrealized: the plan's one line is where the plan's whole work lives, every approved unit together with every design, plan and note record written while the plan ran, so releasing it loses nothing and no other branch holds anything it lacks. Plan corrected-shards ended with two branches: plan/corrected-shards held every approved unit and none of the 53 records written on the build branch, so the operator had to ask which branch held the work. Today packages/canon/src/skills/deliver/skill.ts defines `line(P) ≜ … branch plan/<plan> cut from main when P is bound` and commits 'the records written since' only under `integrate(unit) ∧ gate green`; the integrator role sign and agent say the same. So records written while a unit is red, the last unit's completed record and the plan's close record (both written after the final green), and every record written in another checkout never reach the line (notes 'records written after the last green are never committed before release', 'The plan line cannot be cut from main while design/first-share conflicts with it', 'integration line mechanics').\nHOW (this plan's, the same on every harness). (1) line(P) is cut at the integrator's first dispatch for bound P from the commit the plan's units are built on (the HEAD of the checkout where P was bound), not bare main, so the history the units stand on never conflicts at combination and the line lacks nothing that branch held when the plan began. (2) Records reach the line at every integrator act, each combination green or red and the plan's close, not only on green. A record is an immutable file named by its ULID, so the union never conflicts: the integrator adds every record file present in any worktree of the repository (tracked or not) or on any local branch that the line lacks, and commits them on the line by pathspec. A red leaves the unit's work off the line and still commits the records. (3) The architect routes the plan's close to the integrator, which gathers and commits the records written since (the planner's completed and close records among them), confirms that no worktree and no local branch holds a record the line lacks, and only then asks the operator to release the line.\nCHANGE. packages/canon/src/skills/deliver/skill.ts: the formal block's `line(P)`, the green and red laws, a gather law, the close law, the loop sequence, the description and the header comments; each other party's act stays named by its role. The skill spells the exact git commands for 'records the line lacks' and for gathering them. packages/canon/src/dimensions/role/integrator.ts: the arrow, `reserves` and the red line. packages/canon/src/agents/integrator.ts: description and archetype. packages/canon/src/roles/integrator.ts: comments, only where they contradict. docs/role.md: the section 'The integrator makes approved work whole' says the same, and its line 110 spells the retired anchor `architect position`, which becomes `architect role`. .changeset/integration-line.md (@cratylus/canon minor). Recording whole or broke in the unit's ledger belongs to ledger-writers (wave 1); do not add it here. No new test file.",
+      "static": [
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/runtime/src/record-store/store.ts",
+        "packages/canon/tooling/symbol-probe-gate.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "docs/role.md",
+        ".changeset/integration-line.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. In $T/skills/deliver/SKILL.md `grep -c 'cut from main'` prints 0 (census 1), and the lines that commit records name red and the plan's close as well as green (print them). In $T/agents/integrator.md the `## Role` names the records commit on every act (print it).",
+        "GATHER SMOKE (print the script and its verbatim output). In a throwaway repository: main holds records/note/A.json; branch plan/p is cut from it and gains records/note/D.json; local branch b gains records/note/B.json and a change to a non-record file; a second worktree holds an untracked records/plan/C.json. From a worktree on plan/p, run the deliver skill's 'records the line lacks' command verbatim: it prints exactly B and C. Run its gather commands verbatim: `git ls-tree -r --name-only plan/p records/` then lists A, B, C and D, and `git diff --name-only <before> plan/p` names no non-record file. At census the skill spells no such command.",
+        "LOOP COLD READ. Concatenate the session texts (RIG) of architect, planner, implementer, assayer and integrator and give them, with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, with this prompt verbatim: 'Below are the complete definitions of five AI agents that work together, each with the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. (a) When the plan’s line is released, can any design, plan or note record written while the plan ran be missing from it? Where does a note that an agent captured in another checkout end up? (b) When are the records written after the last unit’s combination (its completed record, the plan’s close record) committed, by whom, and is that before or after the operator is asked to release? (c) While a unit is red, are the records written meanwhile committed, and is the red unit’s work on the line? (d) From what commit is the plan’s line cut? (e) Does the integrator repair, judge, decide plan state, or move main?' Every read answers: (a) none can be missing, it is gathered onto the line; (b) at the plan’s close, by the integrator, before the ask; (c) the records yes, the unit’s work no; (d) the commit the plan’s units build on, where the plan was bound, not bare main; (e) NO to each. Save each answer under /tmp/loop-ledger-cold-read/integration-line/ and print the (a)-(e) lines.",
+        "VERB FIDELITY. For every line of the projected deliver skill that spells a capability verb (`scripts/<capability>.mjs <verb> …` or `cratylus <capability> <verb> …`), the flags it spells equal the set the runtime declares, read by running `cratylus <capability> <verb> --x` (it refuses and lists the flags); print each pair.",
+        "`git grep -n 'architect position' -- docs/role.md` prints nothing (census 1, line 110).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts test/reader-reach.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/structural-parsimony.test.ts test/projection-stability.test.ts test/cratylism.test.ts` and `pnpm typecheck` exit 0; skill-hook-cap prints deliver under the cap."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+      "version": "01M3RCX9BKKFFEH2C688G6C3SQ",
+      "closure": {
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}

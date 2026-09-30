@@ -14,7 +14,7 @@ import { holds } from '../roles/hold.js';
 
 // `nico` IS AN ARCHITECT over the corpus itself, exactly as `kino` is one over the film
 // floor: a main-session persona whose specialty, the corpus's concept space, sits over the
-// architect role and speaks only the architect position. It declared `build` before this,
+// architect role and speaks only the architect role. It declared `build` before this,
 // the same token `mav` declared, and the two shared almost nothing else, which is what a
 // role with no contract costs: the word could not tell its holders apart.
 //

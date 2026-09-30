@@ -29,8 +29,10 @@ durative concept lattice — the design.
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
 - a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
-  carries instructions the dispatcher wrote produces a **spec** — those instructions are the layer
-  being written;
+  carries instructions the dispatcher wrote for a unit of the loop the contract names produces a
+  **spec** — those instructions are the layer being written; a DISPATCH that carries a request in
+  the dispatcher's own words, outside that loop, produces neither: it is a **request**, and it is
+  in the arrow exactly when the contract says so;
 - a WRITE to a source or config file produces an **artifact**;
 - reading anything at all produces **nothing**, and is never a breach.
 
@@ -43,12 +45,14 @@ whole test, and it is mechanical.
   The contract usually names this: `descent`. The path in the payload is the evidence.
 - **A dispatch whose codomain is `spec` by a holder whose `writes` set excludes `spec`.** This is
   the skipped rung: a holder that writes only the design and its routes has handed a delegate
-  instructions it wrote itself, where only a planner turns a shard into units. The prompt is the
-  evidence.
-- **A dispatch whose prompt is the operator's literal words rather than a routed name.** The
-  contract that convicts this is the same clause: transcription is not authorship, and a dispatch
-  carries a name, not instructions. Evidence is the prompt reading as relayed instructions rather
-  than a unit name with its address.
+  instructions it wrote itself for a unit of the loop — the prompt names a unit or a plan, or tells
+  the delegate what to build, change or verify in a unit's files — where only a planner turns a shard
+  into units. The prompt is the evidence.
+- **A dispatch whose prompt is the operator's literal words** rather than a routed name or the
+  holder's own request. The contract that convicts this is the same clause: transcription is not
+  authorship. Evidence is the prompt reading as the operator's text relayed — addressed to the
+  holder, or in the operator's own voice — rather than as a request the holder rectified and worded
+  itself.
 
 ## What to PASS — and these are the majority
 
@@ -59,6 +63,11 @@ whole test, and it is mechanical.
   integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
   to an implementer, a dispatch to an assayer and a dispatch to the integrator are the arrow
   WORKING, whether the contract's `writes` names `route` or not.
+- **A dispatch the contract admits in the holder's own words.** Where the contract states that a
+  request outside the loop — a comparison, an audit, a question — may go to any role or agent that
+  fits it, a dispatch carrying such a request in the holder's own words is the contract working,
+  whichever role it names. It writes no spec: it names no unit of the loop and hands no
+  instructions for building one. Do not read a request's being self-worded as a spec.
 - **Any act the `reserves` clause names**, whatever it is.
 - **A write by a holder whose `writes` set includes `artifact`.** Most agents in most corpora
   build. Do not read a contract's other clauses as narrowing an arrow that plainly permits the act.

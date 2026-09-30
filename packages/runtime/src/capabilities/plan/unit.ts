@@ -4,11 +4,13 @@
 // the `unit` domain.
 //
 // A unit's payload is its plan (an entity reference), its full spec, its
-// lifecycle state and its pin (`pin.ts`), whose concept is the one the unit
-// realizes. Add writes its first version, revise supersedes it, advance moves
-// it one step forward along its lifecycle and refuses any other move, retract
-// withdraws it, and reconcile writes one version over every head of a diverged
-// unit.
+// lifecycle state, its pin (`pin.ts`), whose concept is the one the unit
+// realizes, and its ledger: every event so far of its being worked. Add writes
+// its first version, revise supersedes it, advance moves it one step forward
+// along its lifecycle and refuses any other move, an event (a landing, an
+// assay verdict, a report that it was made whole or broke the whole) is
+// appended to its ledger and changes nothing else of it, retract withdraws it,
+// and reconcile writes one version over every head of a diverged unit.
 //
 // The unit laws: one live unit per name within its plan; dependencies acyclic,
 // naming live units of the same plan; a plan that is not withdrawn. A write is
@@ -71,6 +73,31 @@ export interface Spec {
   readonly accept: readonly string[];
 }
 
+/** What an assay found: the unit's work meets what was asked, or does not. */
+export const VERDICTS = ['achieved', 'not-achieved'] as const;
+export type Verdict = (typeof VERDICTS)[number];
+
+/** What happened to a unit, by kind: its work landed at a commit; an assay
+ *  gave a verdict on a commit, naming what was missing when it was not
+ *  achieved; the line's commit holds the unit; the whole broke. */
+export type Fact =
+  | { readonly kind: 'land'; readonly commit: string }
+  | {
+      readonly kind: 'assay';
+      readonly commit: string;
+      readonly verdict: Verdict;
+      readonly missing: readonly string[];
+    }
+  | { readonly kind: 'whole'; readonly commit: string }
+  | { readonly kind: 'broke'; readonly check: string };
+
+/** One entry of a unit's ledger: a fact, and who wrote it when. */
+export type Event = Fact & {
+  readonly author: string;
+  /** ISO-8601 instant it was written. */
+  readonly time: string;
+};
+
 /** A unit's payload: its whole state as of one record. */
 export interface Unit {
   /** The plan the unit belongs to: an entity reference. */
@@ -78,6 +105,14 @@ export interface Unit {
   readonly spec: Spec;
   readonly state: string;
   readonly pin: Pin;
+  /** Its events, in order; a payload written before the ledger reads as
+   *  empty, so no reader spells the absence: see `ledgerOf`. */
+  readonly ledger?: readonly Event[];
+}
+
+/** The ledger `unit` carries: empty when it was written without one. */
+export function ledgerOf(unit: Unit): readonly Event[] {
+  return unit.ledger ?? [];
 }
 
 /** Who writes a record, and why. */
@@ -292,6 +327,7 @@ export function add(
     spec: { ...unit.spec, deps: canonicalOrder(unit.spec.deps) },
     state: first,
     pin: unit.pin,
+    ledger: [],
   };
   keepLaws(
     store.read<Unit>(DOMAIN),
@@ -321,6 +357,7 @@ export function revise(
     spec: { ...change.spec, deps: canonicalOrder(change.spec.deps) },
     state: unit.state,
     pin: change.pin,
+    ledger: ledgerOf(unit),
   };
   keepLaws(records, entity, 'amend', heads, next, planWithdrawn, refuse);
   return store.supersede<Unit>(DOMAIN, entity, heads, next, by);
@@ -351,6 +388,75 @@ export function advance(
     entity,
     heads,
     { ...unit, state: to },
+    by,
+  );
+}
+
+/** The events of several ledgers as one, each once, in time order: those the
+ *  ledgers share appear once, and those one alone recorded fall among them by
+ *  when they were written. Ties keep the order the ledgers were given in. */
+function union(ledgers: readonly (readonly Event[])[]): Event[] {
+  const each = new Map(
+    ledgers.flat().map((event) => [JSON.stringify(event), event]),
+  );
+  return [...each.values()].sort((a, b) => a.time.localeCompare(b.time));
+}
+
+/** Whether `state` is in flight: past the lifecycle's first state and short of
+ *  the one that satisfies a dependency. */
+function inFlight(lifecycle: UnitLifecycle, state: string): boolean {
+  const { states, satisfies } = checked(lifecycle);
+  const at = states.indexOf(state);
+  return at > 0 && at < states.indexOf(satisfies);
+}
+
+/**
+ * Append one event to a unit's ledger: a version superseding its head, its
+ * spec, state and pin as they were. Admitted only while the unit is in flight;
+ * a unit not yet started or already done has nothing being worked to record.
+ * (Whether its plan is worked is the plan's to say, and `Reading` says it.)
+ * Refuses a fact that names no commit or check, and an assay whose missing part
+ * contradicts its verdict: a verdict not achieved names what was missing, and
+ * one achieved names nothing.
+ */
+export function record(
+  store: RecordStore,
+  lifecycle: UnitLifecycle,
+  entity: string,
+  fact: Fact,
+  by: By,
+): Record<Unit> {
+  const refuse = refusal(fact.kind, entity);
+  const what = fact.kind === 'broke' ? fact.check : fact.commit;
+  if (what.trim() === '')
+    refuse(`give ${fact.kind === 'broke' ? 'the failing check' : 'a commit'}`);
+  if (fact.kind === 'assay') {
+    if (!VERDICTS.includes(fact.verdict))
+      refuse(`a verdict is ${VERDICTS.join(' or ')}`);
+    if (fact.verdict === 'achieved' && fact.missing.length > 0)
+      refuse('an assay that finds it achieved names nothing missing');
+    if (fact.verdict !== 'achieved' && fact.missing.length === 0)
+      refuse(
+        `an assay that finds it ${fact.verdict} names what is missing; give --missing`,
+      );
+  }
+  const { heads, unit } = settled(units(store), entity, refuse);
+  if (!checked(lifecycle).states.includes(unit.state))
+    refuse(`its state ${JSON.stringify(unit.state)} is not in the lifecycle`);
+  if (!inFlight(lifecycle, unit.state))
+    refuse(
+      `it is ${JSON.stringify(unit.state)}, and an event is recorded only on a unit in flight: past ${JSON.stringify(lifecycle.states[0])} and short of ${JSON.stringify(lifecycle.satisfies)}`,
+    );
+  const event: Event = {
+    ...fact,
+    author: by.author,
+    time: new Date().toISOString(),
+  };
+  return store.supersede<Unit>(
+    DOMAIN,
+    entity,
+    heads,
+    { ...unit, ledger: [...ledgerOf(unit), event] },
     by,
   );
 }
@@ -396,6 +502,9 @@ export function reconcile(
     spec: { ...change.spec, deps: canonicalOrder(change.spec.deps) },
     state: change.state,
     pin: change.pin,
+    ledger: union(
+      f.heads.flatMap((h) => (h.payload === null ? [] : [ledgerOf(h.payload)])),
+    ),
   };
   keepLaws(
     records,

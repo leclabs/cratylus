@@ -12,6 +12,10 @@
 //   bind       a plan, returning whichever plan was bound
 //   close      a plan, for good: it and its units are never written again
 //   reconcile  a diverged unit or plan: one version over every version
+//   land       the commit that holds a unit's work, in its ledger
+//   assay      an assay's verdict on a commit, in a unit's ledger
+//   whole      the line's commit holding a unit, in its ledger
+//   broke      the check a unit broke the whole by, in its ledger
 //
 // What composes the domains, resolves names and writes all or nothing is
 // `reading.ts`; this module maps each verb onto it. The laws spanning plan and
@@ -53,6 +57,8 @@ interface Shown {
   readonly plans: readonly string[];
   /** The name drilled, or how to name it over the reading the write leaves. */
   readonly name?: Name | ((after: Reading) => Name);
+  /** The name drills to each unit's line and ledger, none of its spec. */
+  readonly ledgerOnly?: boolean;
 }
 
 /** The plan capability over the records of the repository holding `from`. */
@@ -74,6 +80,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
               : planDomain.holders(read.plans, read.lifecycle.plan),
           ),
           typeof shown.name === 'function' ? shown.name(read) : shown.name,
+          shown.ledgerOnly,
         ),
     );
 
@@ -158,6 +165,27 @@ export function planHost(from: string = process.cwd()): PlanHost {
         `plan ${verb}: a plan has no ${given.join(', ')}; give a plan its --name and --realizes`,
       );
   };
+
+  /** An event written to a unit's ledger, and the unit's line and ledger it
+   *  leaves, none of its spec. */
+  const event = (
+    verb: string,
+    unit: string,
+    plan: string | undefined,
+    fact: unitDomain.Fact,
+    by: Invocation,
+  ): string =>
+    write((read) => {
+      const entity = read.resolveUnit(unit, plan);
+      const of = read.unitVersion(entity)?.plan as string;
+      read.unitWritable(of, verb);
+      unitDomain.record(read.store, read.lifecycle.unit, entity, fact, by);
+      return {
+        plans: [of],
+        name: bare(read.unitName(entity)),
+        ledgerOnly: true,
+      };
+    });
 
   return {
     show: (name, plan) =>
@@ -329,6 +357,29 @@ export function planHost(from: string = process.cwd()): PlanHost {
         return { plans: [current.plan], name: next.spec.name };
       }),
 
+    land: (unit, plan, commit, by) =>
+      event('land', unit, plan, { kind: 'land', commit }, by),
+
+    assay: (unit, plan, commit, verdict, missing, by) =>
+      event(
+        'assay',
+        unit,
+        plan,
+        {
+          kind: 'assay',
+          commit,
+          verdict: verdict as unitDomain.Verdict,
+          missing,
+        },
+        by,
+      ),
+
+    whole: (unit, plan, commit, by) =>
+      event('whole', unit, plan, { kind: 'whole', commit }, by),
+
+    broke: (unit, plan, check, by) =>
+      event('broke', unit, plan, { kind: 'broke', check }, by),
+
     bind: (plan, by) =>
       write((read) => {
         const entity = read.resolvePlan(plan);
@@ -487,7 +538,31 @@ export const VERBS = {
     repin: 'switch',
     ...INVOCATION,
   },
+  land: { plan: 'value', commit: 'value', ...INVOCATION },
+  assay: {
+    plan: 'value',
+    commit: 'value',
+    verdict: 'value',
+    missing: 'value',
+    ...INVOCATION,
+  },
+  whole: { plan: 'value', commit: 'value', ...INVOCATION },
+  broke: { plan: 'value', check: 'value', ...INVOCATION },
 } as const satisfies VerbFlags;
+
+/** The value of the flag `verb` needs, refusing its absence and saying what it
+ *  holds. */
+function required(
+  args: Argv,
+  verb: string,
+  flag: string,
+  what: string,
+): string {
+  const value = one(args, flag);
+  if (value === undefined)
+    throw new Error(`plan ${verb}: give --${flag} <${what}>`);
+  return value;
+}
 
 /** A plan or unit write's fields, as its flags give them. */
 function fieldsOf(args: Argv): Fields {
@@ -564,6 +639,43 @@ export function dispatchPlan(
         subject(args, 'plan', verb, 'unit or plan'),
         plan,
         fieldsOf(args),
+        by(),
+      );
+    case 'land':
+      return host.land(
+        subject(args, 'plan', verb, 'unit'),
+        plan,
+        required(args, verb, 'commit', 'the commit that holds its work'),
+        by(),
+      );
+    case 'assay': {
+      const verdict = required(
+        args,
+        verb,
+        'verdict',
+        `${unitDomain.VERDICTS.join(' or ')}`,
+      );
+      return host.assay(
+        subject(args, 'plan', verb, 'unit'),
+        plan,
+        required(args, verb, 'commit', 'the commit assayed'),
+        verdict,
+        many(args, 'missing') ?? [],
+        by(),
+      );
+    }
+    case 'whole':
+      return host.whole(
+        subject(args, 'plan', verb, 'unit'),
+        plan,
+        required(args, verb, 'commit', 'the line’s commit holding the unit'),
+        by(),
+      );
+    case 'broke':
+      return host.broke(
+        subject(args, 'plan', verb, 'unit'),
+        plan,
+        required(args, verb, 'check', 'the failing check'),
         by(),
       );
   }

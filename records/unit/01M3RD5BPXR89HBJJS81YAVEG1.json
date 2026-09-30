@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3RD5BPXR89HBJJS81YAVEG1",
+    "entity": "01M3RD5BPXR89HBJJS81YAVEG0",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T05:38:54.301Z",
+    "reason": "the unit gloss now writes each landing, verdict and integration outcome to the unit history; the runtime records none of them",
+    "cause": "architect handed shards architect role, unit and integrator role; operator priority: architect role first"
+  },
+  "payload": {
+    "plan": "01M3RD4P2CS03GF89NXABSN1JJ",
+    "spec": {
+      "name": "unit-ledger",
+      "intent": "Checkout /home/lex/workspaces/cratylus. Census @e74f0458 (source identical to d96cede3); re-derive any count or line below if a listed path changed since. Realize the clause of `unit` the runtime does not yet hold: everything that happens to a unit while it is worked is written to its history as it happens (each landing of its work with the commit that holds it, each assay verdict on it, and each report that it was made whole or broke the whole), so the ledger alone says where every unit stands and on what it was accepted, and no agent needs a message or its memory to know. Today a unit's payload (packages/runtime/src/capabilities/plan/unit.ts) is its plan, spec, lifecycle state and pin, and the plan verbs (dispatch.ts `VERBS`) are show, add, advance, retract, revise, bind, close and reconcile; none records a landing, a verdict or an integration outcome.\nCHANGE (the contract unit ledger-writers cites). (1) Four plan verbs, each taking `<unit> --plan <p>` and --author, --reason, --cause: `land <unit> --plan <p> --commit <sha>` (the implementer's landing); `assay <unit> --plan <p> --commit <sha> --verdict <achieved|not-achieved> [--missing <what>]…` (not-achieved takes one --missing or more, achieved refuses any); `whole <unit> --plan <p> --commit <sha>` (the line's commit holding the unit); `broke <unit> --plan <p> --check <failing check>`. Each writes one record in the unit's history, a version superseding its head like any unit write, whose payload is the unit's whole state with its ledger: every event so far, in order, each with its kind, its fact (commit; verdict and missing; failing check), author and time. A payload written before this change reads as an empty ledger. Revise, advance and reconcile carry the ledger over; a reconcile of heads that recorded different events carries their union in time order. An event never changes spec, state or pin.\n(2) An event is admitted only while the unit's plan is bound and the unit is in flight: past its lifecycle's first state and short of the state that satisfies a dependency, both read from the lifecycle configuration and never spelled (the record-store unit's criterion: no lifecycle literal in packages/runtime/src/capabilities). So it is refused on a proposed or closed plan and on a pending or completed unit, and a diverged unit points to reconcile.\n(3) The view (packages/runtime/src/view/plan.ts): `plan show <unit> --plan <p>` prints the ledger in order; each in-flight unit's line in `plan show [<plan>]` carries its latest event (landed <sha>, not achieved, achieved, whole, broke: <check>). An event verb's own output prints the unit's line and its ledger and none of its spec (intent, static, deps, outputs, accept): the assayer records its verdict and never reads a spec.\n(4) Tests in packages/runtime/test/plan.test.ts, in its style; the verb-surface test enumerating `VERBS` and refusing unknown flags covers the four. packages/runtime/README.md names the verbs where it names the others. (5) .changeset/unit-ledger.md (@cratylus/runtime minor). Nothing under packages/canon changes here: the skill and role texts telling each party to record are ledger-writers'.",
+      "static": [
+        "packages/runtime/src/record-store/store.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/src/capabilities/plan/pin.ts",
+        "packages/runtime/src/capabilities/plan/plan.ts",
+        "packages/runtime/test/verb-surface.ts",
+        "packages/canon/src/skills/plan/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/plan/unit.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/ports/plan.ts",
+        "packages/runtime/src/view/plan.ts",
+        "packages/runtime/src/index.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/unit-ledger.md"
+      ],
+      "accept": [
+        "Green: `pnpm --filter @cratylus/runtime exec vitest run test/plan.test.ts test/main.test.ts` and `pnpm typecheck` exit 0.",
+        "SMOKE (print the script and its verbatim output; a re-run reproduces it). After `pnpm build`, in a throwaway git repository (git init, one commit) with the host lifecycle configuration (pending, active, completed; proposed, bound, closed), drive `node /home/lex/workspaces/cratylus/packages/cli/dist/cratylus.js plan …`: add unit u to plan p (realizing a live concept defined there with `design define`), bind p, advance u to active; then land u --commit c1, assay u --commit c1 --verdict not-achieved --missing m1, land u --commit c2, assay u --commit c2 --verdict achieved, whole u --commit c3. `plan show u --plan p` lists those five events in that order with their commits, verdicts and missing part; `plan show p` shows u's line with its latest event (whole). At census `plan land` is refused as an unknown verb.",
+        "REFUSALS, each printed and each writing nothing: an event on a unit of a proposed plan; on a pending unit; on a completed unit; assay --verdict not-achieved with no --missing; assay --verdict achieved with --missing; `plan land u --plan p --x` refuses and lists the flags land takes.",
+        "SPEC STAYS OUT: add u with an intent, static, output and accept carrying the marker SPECMARK; the stdout of each of land, assay, whole and broke on u contains no SPECMARK (`grep -c SPECMARK` prints 0 per verb), while `plan show u --plan p` does.",
+        "CARRIED OVER: after events, `plan revise u --plan p --intent …` and `plan advance u --to completed` leave the ledger shown unchanged; two branches of one repository each recording an event on u and then merged show u diverged, and `plan reconcile u --plan p …` shows both events.",
+        "`git grep -nE \"'(pending|active|completed|proposed|bound|closed)'\" -- packages/runtime/src/capabilities/plan` prints nothing (census 0)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "version": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

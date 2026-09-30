@@ -7,6 +7,8 @@
 // frontier and the lifecycle's one step. The lifecycle arrives through
 // `$AGENT_RUNTIME_CONFIG`, in states invented here.
 
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { VERBS, dispatchPlan } from '../src/capabilities/plan/dispatch.js';
@@ -1012,6 +1014,234 @@ describe('plan — dependencies and the lifecycle', () => {
   });
 });
 
+/** A repository whose plan `into` is bound and holds `unit`, in flight. */
+function working(
+  repo: string,
+  unit = 'u',
+  into = 'p',
+  ...more: string[]
+): void {
+  concepts(repo);
+  add(repo, unit, into, 'c1', ...more);
+  plan(repo, 'bind', into, ...BY);
+  plan(repo, 'advance', unit, '--to', 'u-mid', ...BY);
+}
+
+/** The events in `unit`'s ledger as `plan show` prints them, each without its
+ *  author and time. */
+const ledger = (repo: string, of: string, unit: string): string[] =>
+  [
+    ...show(repo, [], unit, '--plan', of).matchAll(
+      /^ {4}\d+\. (.*) — test, \S+$/gm,
+    ),
+  ].map((m) => m[1] as string);
+
+describe('plan — the ledger of a unit worked', () => {
+  it('each event is written in order with its fact, the plan view carries the latest, and the unit’s status stays its own', () => {
+    const repo = repository();
+    working(repo);
+    const say = (...argv: string[]) =>
+      plan(repo, ...argv, '--plan', 'p', ...BY);
+    expect(show(repo, [], 'u', '--plan', 'p')).toContain('  ledger: none');
+    say('land', 'u', '--commit', 'c1');
+    expect(marks(repo, 'p', 'u')).toBe('u-mid, frontier');
+    expect(show(repo, [], 'p')).toContain('· last: landed c1');
+    say(
+      'assay',
+      'u',
+      '--commit',
+      'c1',
+      '--verdict',
+      'not-achieved',
+      '--missing',
+      'm1',
+      '--missing',
+      'm2',
+    );
+    expect(show(repo, [], 'p')).toMatch(/u — .* · last: not achieved$/m);
+    say('land', 'u', '--commit', 'c2');
+    say('assay', 'u', '--commit', 'c2', '--verdict', 'achieved');
+    expect(show(repo, [], 'p')).toMatch(/u — .* · last: achieved$/m);
+    say('whole', 'u', '--commit', 'c3');
+    expect(show(repo, [], 'p')).toMatch(/u — .* · last: whole$/m);
+    expect(ledger(repo, 'p', 'u')).toEqual([
+      'land c1',
+      'assay c1: not-achieved — missing: m1; m2',
+      'land c2',
+      'assay c2: achieved',
+      'whole c3',
+    ]);
+    say('broke', 'u', '--check', 'pnpm typecheck');
+    expect(show(repo, [], 'p')).toContain('· last: broke: pnpm typecheck');
+    expect(ledger(repo, 'p', 'u').at(-1)).toBe('broke: pnpm typecheck');
+    expect(marks(repo, 'p', 'u')).toBe('u-mid, frontier');
+  });
+
+  it('an event’s own output is the unit’s line and its ledger and none of its spec', () => {
+    const repo = repository();
+    working(
+      repo,
+      'u',
+      'p',
+      '--intent',
+      'SPECMARK intent',
+      '--static',
+      'SPECMARK static',
+      '--outputs',
+      'SPECMARK output',
+      '--accept',
+      'SPECMARK accept',
+    );
+    const outputs = [
+      ['land', '--commit', 'c1'],
+      [
+        'assay',
+        '--commit',
+        'c1',
+        '--verdict',
+        'not-achieved',
+        '--missing',
+        'm',
+      ],
+      ['whole', '--commit', 'c1'],
+      ['broke', '--check', 'chk'],
+    ].map((argv) =>
+      plan(
+        repo,
+        ...argv.slice(0, 1),
+        'u',
+        '--plan',
+        'p',
+        ...argv.slice(1),
+        ...BY,
+      ),
+    );
+    for (const out of outputs) {
+      expect(out).not.toContain('SPECMARK');
+      expect(out).toMatch(/\nunit: u — u-mid, frontier\n {2}ledger:\n/);
+    }
+    expect(
+      outputs[3]?.split('\n').filter((l) => /^ {4}\d+\./.test(l)),
+    ).toHaveLength(4);
+    expect(show(repo, [], 'u', '--plan', 'p')).toContain('SPECMARK');
+  });
+
+  it('REFUSES an event on a unit of a plan not bound, on a unit not yet started or done, on a closed plan, and a fact that contradicts itself; each writes nothing', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u', 'p');
+    add(repo, 'v', 'p');
+    const event = (unit: string) =>
+      refused(repo, 'land', unit, '--plan', 'p', '--commit', 'c1', ...BY);
+    expect(event('u')).toMatch(
+      /plan "p" is p-draft, not p-held, and a unit is worked only while its plan is p-held/,
+    );
+    plan(repo, 'bind', 'p', ...BY);
+    expect(event('u')).toMatch(
+      /it is "u-new", and an event is recorded only on a unit in flight: past "u-new" and short of "u-done"/,
+    );
+    plan(repo, 'advance', 'u', '--to', 'u-mid', ...BY);
+    const bad = (...argv: string[]) =>
+      refused(
+        repo,
+        'assay',
+        'u',
+        '--plan',
+        'p',
+        '--commit',
+        'c1',
+        ...argv,
+        ...BY,
+      );
+    expect(bad('--verdict', 'not-achieved')).toMatch(
+      /names what is missing; give --missing/,
+    );
+    expect(bad('--verdict', 'achieved', '--missing', 'm')).toMatch(
+      /names nothing missing/,
+    );
+    expect(bad('--verdict', 'perhaps')).toMatch(
+      /a verdict is achieved or not-achieved/,
+    );
+    expect(
+      refused(repo, 'assay', 'u', '--plan', 'p', '--commit', 'c1', ...BY),
+    ).toMatch(/give --verdict <achieved or not-achieved>/);
+    expect(refused(repo, 'land', 'u', '--plan', 'p', ...BY)).toMatch(
+      /give --commit/,
+    );
+    expect(
+      refused(repo, 'land', 'u', '--plan', 'p', '--commit', ' ', ...BY),
+    ).toMatch(/give a commit/);
+    expect(
+      refused(repo, 'broke', 'u', '--plan', 'p', '--check', '', ...BY),
+    ).toMatch(/give the failing check/);
+    plan(repo, 'advance', 'u', '--to', 'u-done', ...BY);
+    expect(event('u')).toMatch(
+      /it is "u-done", and an event is recorded only on a unit in flight/,
+    );
+    plan(repo, 'advance', 'u', '--to', 'u-past', ...BY);
+    expect(event('u')).toMatch(/it is "u-past"/);
+    plan(repo, 'close', 'p', ...BY);
+    expect(event('v')).toMatch(/plan "p" is p-over, which is final/);
+  });
+
+  it('revise and advance carry the ledger over; a unit written before the ledger reads as an empty one and takes events', () => {
+    const repo = repository();
+    working(repo);
+    plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY);
+    plan(
+      repo,
+      'assay',
+      'u',
+      '--plan',
+      'p',
+      '--commit',
+      'c1',
+      '--verdict',
+      'achieved',
+      ...BY,
+    );
+    const before = ledger(repo, 'p', 'u');
+    plan(repo, 'revise', 'u', '--plan', 'p', '--intent', 'changed', ...BY);
+    expect(ledger(repo, 'p', 'u')).toEqual(before);
+    plan(repo, 'advance', 'u', '--to', 'u-done', ...BY);
+    expect(ledger(repo, 'p', 'u')).toEqual(before);
+    expect(marks(repo, 'p', 'u')).toBe('u-done');
+    expect(show(repo, [], 'p')).toMatch(/u — .* · last: achieved$/m);
+
+    const old = repository();
+    working(old);
+    for (const file of records(old, 'unit')) {
+      const path = join(old, 'records', 'unit', file);
+      const stored = JSON.parse(readFileSync(path, 'utf8'));
+      stored.payload.ledger = undefined;
+      writeFileSync(path, `${JSON.stringify(stored, null, 2)}\n`);
+    }
+    expect(show(old, [], 'u', '--plan', 'p')).toContain('  ledger: none');
+    plan(old, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY);
+    expect(ledger(old, 'p', 'u')).toEqual(['land c1']);
+  });
+
+  it('events written on two branches diverge the unit, an event REFUSES until reconcile, and reconcile carries every event once, in time order', () => {
+    const repo = repository();
+    working(repo);
+    plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c0', ...BY);
+    merge(
+      repo,
+      'unit',
+      () => plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'cl', ...BY),
+      () => plan(repo, 'whole', 'u', '--plan', 'p', '--commit', 'cr', ...BY),
+    );
+    const shown = show(repo, [], 'p');
+    expect(shown).toMatch(/u — diverged, 2 versions/);
+    expect(
+      refused(repo, 'land', 'u', '--plan', 'p', '--commit', 'c9', ...BY),
+    ).toMatch(/has diverged; `plan reconcile` settles it/);
+    const settled = plan(repo, 'reconcile', 'u', '--plan', 'p', ...BY);
+    expect(settled).not.toMatch(/ — diverged/);
+    expect(ledger(repo, 'p', 'u')).toEqual(['land c0', 'land cl', 'whole cr']);
+  });
+});
+
 describe('plan — the flags each verb takes', () => {
   it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {
     const repo = repository();
@@ -1026,6 +1256,10 @@ describe('plan — the flags each verb takes', () => {
       ['bind', 'plan', 'alpha', ...BY],
       ['close', 'repin', 'alpha', ...BY],
       ['reconcile', 'to', 'u1', ...BY],
+      ['land', 'x', 'u1', '--commit', 'c1', ...BY],
+      ['assay', 'x', 'u1', '--commit', 'c1', '--verdict', 'achieved', ...BY],
+      ['whole', 'x', 'u1', '--commit', 'c1', ...BY],
+      ['broke', 'x', 'u1', '--check', 'c', ...BY],
     ];
     expect(calls.map(([verb]) => verb)).toEqual(Object.keys(VERBS));
     for (const [verb, flag, ...rest] of calls) {

@@ -210,6 +210,9 @@ const OF_PLAN = ' of plan ';
 /** What marks a withdrawn unit named where no plan is in view. */
 export const WITHDRAWN = ' (withdrawn)';
 
+/** The verbs that write an event to a unit's ledger. */
+export const EVENTS: readonly string[] = ['land', 'assay', 'whole', 'broke'];
+
 /** Stands for a unit not yet minted while its write is judged. */
 export const UNWRITTEN = '(new)';
 
@@ -650,9 +653,9 @@ export class Reading {
   }
 
   /** Refuses a write to a unit of plan `plan` when that plan is closed or
-   *  withdrawn; for `add`, diverged; and for `advance`, not bound, since a
-   *  unit's state moves forward only while its plan is bound. Adding to and
-   *  revising a unit of a proposed plan stand. */
+   *  withdrawn; for `add`, diverged; and for `advance` and an event, diverged
+   *  or not bound, since a unit is worked only while its plan is bound. Adding
+   *  to and revising a unit of a proposed plan stand. */
   unitWritable(plan: string, verb: string): void {
     const f = this.plans.get(plan);
     const name = JSON.stringify(printed(this.planName(plan)));
@@ -662,14 +665,15 @@ export class Reading {
       throw new Error(
         `plan ${verb}: plan ${name} is ${this.lifecycle.plan.final}, which is final, and its units are never written again`,
       );
-    if ((verb === 'add' || verb === 'advance') && f.diverged)
+    const worked = verb === 'advance' || EVENTS.includes(verb);
+    if ((verb === 'add' || worked) && f.diverged)
       throw new Error(
         `plan ${verb}: plan ${name} has diverged; \`plan reconcile ${printed(this.planName(plan))}\` settles it first`,
       );
     const { exclusive } = this.lifecycle.plan;
-    if (verb === 'advance' && !this.planBound(plan))
+    if (worked && !this.planBound(plan))
       throw new Error(
-        `plan advance: plan ${name} is ${f.payload?.state}, not ${exclusive}, and a unit is worked only while its plan is ${exclusive}; \`plan bind ${printed(this.planName(plan))}\` first`,
+        `plan ${verb}: plan ${name} is ${f.payload?.state}, not ${exclusive}, and a unit is worked only while its plan is ${exclusive}; \`plan bind ${printed(this.planName(plan))}\` first`,
       );
   }
 
@@ -779,6 +783,7 @@ export class Reading {
       static: unit.spec.static,
       outputs: unit.spec.outputs,
       accept: unit.spec.accept,
+      ledger: unitDomain.ledgerOf(unit),
     };
   }
 
