@@ -492,10 +492,6 @@ describe('omp enforcing surface', () => {
     // rather than short-circuiting on a missing verdict.
     expect(turn?.content).toContain('writeFileSync(file, verdict ?? "")');
     expect(turn?.content).not.toContain('if (!verdict) return undefined');
-    // Announced ONCE — the miss latch holds, so an unbounded notice would repeat
-    // one unchanging line at every later turn end.
-    expect(turn?.content).toContain('lastDark');
-    expect(turn?.content).toContain('sendUserMessage(out');
   });
 
   it('reads the verdict off STDOUT and a nonzero `code`, never `exitCode`', () => {
@@ -598,6 +594,157 @@ describe('omp enforcing surface', () => {
     expect(
       ompGuardrailExtensions([binding(['mav'], ['turn.end'])] as never),
     ).toEqual([]);
+  });
+});
+
+describe('omp bridge — a guard that lets a fire through says so', () => {
+  // The generated module is RUN, on worker stubs that print what the real workers
+  // print, because whether a notice reaches the operator is a fact about the
+  // bridge's two passes and not about any string in its source. The workers speak
+  // in one of three ways: a notice INSTEAD of the payload envelope (nothing could
+  // be judged), the envelope and then a notice (the verdict pass let it through),
+  // or the envelope and then a verdict or nothing (judged).
+  const STUB = `#!/bin/sh
+cat > /dev/null
+if [ -n "$STANCE_EMIT_PAYLOAD" ]; then
+  if [ "$MODE" = early ]; then
+    echo "PURVIEW GUARDRAIL — DARK: jq is not installed. This call was NOT judged."
+  else
+    printf '{"rubric":"%s","payload":"x"}\\n' "$RUBRIC"
+  fi
+  exit 0
+fi
+case "$MODE" in
+  discarded) echo "STANCE GUARDRAIL — BLOCK DISCARDED: no span. This turn was NOT judged clean." ;;
+  noprogress) echo "STANCE GUARDRAIL — NO PROGRESS: byte-identical to the block already issued." ;;
+  deny) printf '{"decision":"block","reason":"collapsed"}\\n' ;;
+  pass) ;;
+esac
+`;
+
+  type Handler = (event: unknown, ctx: unknown) => Promise<unknown>;
+
+  /** Load the generated module for `event`, fire its handler, and report what
+   *  omp would have been told: the messages sent and the handler's result. */
+  async function fired(
+    mode: string,
+    cell: { event: string; fire: Record<string, unknown> },
+    sendUserMessage: (m: string, o: unknown) => unknown = () => undefined,
+  ): Promise<{ sent: string[]; result: unknown }> {
+    const dir = mkdtempSync(join(tmpdir(), 'omp-bridge-'));
+    tmp.push(dir);
+    const stub = join(dir, 'worker.sh');
+    writeFileSync(stub, STUB);
+    const rubric = join(dir, 'rubric.md');
+    writeFileSync(rubric, 'the rubric');
+    const mech = new Map([
+      ['stance', { command: `MODE=${mode} RUBRIC=${rubric} sh ${stub}` }],
+    ]) as never;
+    const [mod] = ompGuardrailExtensions(
+      [
+        {
+          anchor: 'stance',
+          fragment: {
+            substrate: 'harness',
+            events: [cell.event],
+            realizedBy: 'stance',
+          },
+          agents: ['mav'],
+        },
+      ] as never,
+      mech,
+    );
+    // The module's one runtime import is omp's own model client, which the host
+    // supplies and a test does not have; no case here reaches a model.
+    const content = (mod?.content as string).replace(
+      "import { completeSimple } from '@oh-my-pi/pi-ai';",
+      'const completeSimple = async () => ({ content: [] });',
+    );
+    const file = join(dir, 'scope', 'extensions', OMP_GUARDRAIL_MODULE);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+    const handlers = new Map<string, Handler>();
+    const sent: string[] = [];
+    const pi = {
+      cwd: dir,
+      on: (event: string, h: Handler) => handlers.set(event, h),
+      sendUserMessage: (m: string, o: unknown) => {
+        sent.push(m);
+        return sendUserMessage(m, o);
+      },
+      exec: async (command: string, args: string[]) => {
+        const r = spawnSync(command, args, { encoding: 'utf8', cwd: dir });
+        return {
+          stdout: r.stdout,
+          stderr: r.stderr,
+          code: r.status,
+          killed: false,
+        };
+      },
+    };
+    // Dynamic by necessity: the module is the projection's OUTPUT, written above.
+    const mod2 = (await import(file)) as {
+      default: (pi: unknown) => void;
+    };
+    mod2.default(pi);
+    const native = [...handlers.keys()][0] as string;
+    const result = await handlers.get(native)?.(cell.fire, {});
+    return { sent, result };
+  }
+
+  const CELLS = [
+    { event: 'turn.end', fire: { messages: [] } },
+    { event: 'tool.use.pre', fire: { toolName: 'write', input: {} } },
+  ];
+
+  it.each(CELLS)(
+    'relays a notice printed before the judge is asked — $event',
+    async (cell) => {
+      const { sent, result } = await fired('early', cell);
+      expect(sent).toHaveLength(1);
+      expect(sent[0]).toMatch(/PURVIEW GUARDRAIL.*NOT judged/);
+      // The notice is never a refusal: the fire is let through.
+      expect(result).toBeUndefined();
+    },
+  );
+
+  it.each(CELLS)(
+    'relays a notice printed after the judge was asked, whatever it opens with — $event',
+    async (cell) => {
+      for (const [mode, text] of [
+        ['discarded', /BLOCK DISCARDED/],
+        ['noprogress', /NO PROGRESS/],
+      ] as const) {
+        const { sent, result } = await fired(mode, cell);
+        expect(sent).toHaveLength(1);
+        expect(sent[0]).toMatch(text);
+        expect(result).toBeUndefined();
+      }
+    },
+  );
+
+  it.each(CELLS)('stays SILENT on a judged pass — $event', async (cell) => {
+    const { sent, result } = await fired('pass', cell);
+    expect(sent).toEqual([]);
+    expect(result).toBeUndefined();
+  });
+
+  it('still refuses on a verdict, and sends no notice for it', async () => {
+    const { sent, result } = await fired('deny', CELLS[0] as never);
+    expect(sent).toEqual([]);
+    expect(result).toEqual({ decision: 'block', reason: 'collapsed' });
+  });
+
+  it('never fails the fire because the notice could not be delivered', async () => {
+    const throws = () => {
+      throw new Error('Agent is already processing');
+    };
+    const rejects = () => Promise.reject(new Error('busy'));
+    for (const send of [throws, rejects]) {
+      const { sent, result } = await fired('early', CELLS[0] as never, send);
+      expect(sent).toHaveLength(1);
+      expect(result).toBeUndefined();
+    }
   });
 });
 
