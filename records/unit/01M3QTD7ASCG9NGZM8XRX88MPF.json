@@ -1,0 +1,50 @@
+{
+  "envelope": {
+    "id": "01M3QTD7ASCG9NGZM8XRX88MPF",
+    "entity": "01M3QS5KR1RC6SBYPR5RVAQGW8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QTD6S0EY6FAPDFP9RS2C56"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:11:09.017Z",
+    "reason": "accepted: wave-0 assay achieved the builder sign in roles, skills, dimensions and docs (only released CHANGELOG history keeps executor); whole gate green",
+    "cause": "architect position amended at c9b3ec4c"
+  },
+  "payload": {
+    "plan": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "spec": {
+      "name": "builder-sign",
+      "intent": "Census @ef571276 (source identical to a8cf23f8: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the last sentence of the architect position, 'The builder's sign is implementer', outside the architect's own role cell and skills (units architect-role and architect-skills own those). Every spelling of `executor`/`executors` naming the builder becomes implementer: packages/canon/src/dimensions/role/planner.ts:16, projected into the planner definition as '∄ build @ planner ⟨unit ≜ spec · executor builds⟩'; dimensions/role/assayer.ts:10 and dimensions/role/implementer.ts:5 (comments); roles/assayer.ts:33 (comment); test/fixtures/generated/delegation-prompt.md:1 and subagent-return.md:1, whose 'executor: mav' also casts the persona mav as the builder (the header names the `implementer` agent instead); docs/role.md:157, 160 and 205. CHANGELOG.md files are release history and stay. The fixtures stay dense, so reader-reach.test.ts still passes them. No new test file, so canon's gate-convicts registry is untouched. None of these outputs projects into an architect holder, so this unit's cold read is a regression leg over the holders and its falsifying legs are the grep and the planner read.",
+      "static": [
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/test/reader-register.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/test/fixtures/generated/delegation-prompt.md",
+        "packages/canon/test/fixtures/generated/subagent-return.md",
+        "docs/role.md",
+        ".changeset/builder-is-the-implementer.md"
+      ],
+      "accept": [
+        "`git grep -n -i -w -E 'executors?' -- ':!records' ':!**/CHANGELOG.md'` prints no line in this unit's outputs; print the per-path denominator (census 1 in each of the 4 source paths and 2 fixtures, 3 in docs/role.md: 9 lines).",
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm exec cratylus project --harness claude --out $T`, which exits 0. An ARCHITECT HOLDER is an $T/agents/<h>.md whose `## Role` section opens `architect ≜` (4 at census: architect, kino, mav, nico; print N). $T/agents/planner.md contains `implementer builds` (grep -c prints 1) and no `executor` (census: `executor builds` 1).",
+        "PLANNER READ. Give $T/agents/planner.md whole, with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with the prompt verbatim 'Answer from this text alone, quoting the line that decides it: by what name does this agent call the party that builds the units it writes?'; save both under /tmp/architect-position-cold-read/builder-sign/. Both answer `implementer`; at census both would quote 'executor builds'.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/reader-reach.test.ts test/reader-density.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each architect holder build the text its session starts with: $T/agents/<h>.md whole (front matter and hooks included), then each skill of its `skills:` list in order, as $T/skills/<s>/SKILL.md with its front matter stripped. Give each text, with no other context and no tools, to two distinct models (anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, the pair the assay of 20961057 used) with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone. For each question answer YES, NO or UNCLEAR and quote the lines that decide it. (a) Does the agent itself build or edit the product's code or files? (b) Does it itself run code, tests, builds or checks? (c) Does it itself make commits? (d) Does it itself merge work into main? (e) Does it itself read code or produced artifacts? (f) Does it itself read the reports or returns of the agents it delegates to? (g) To whom, by name, does it hand planning, building, reading what landed, and running checks and merging?' Save every prompt and answer verbatim under /tmp/architect-position-cold-read/builder-sign/ and return the paths; print the number of reads taken (8 = 4 holders x 2 models). PASSES when no YES or UNCLEAR answer quotes a line that this unit's outputs project, and no (g) answer names the builder anything but `implementer` on a line this unit's outputs project; and, when this unit is the last of plan architect-position to land, when all (a)-(f) answers of all 8 reads are NO and every (g) names the builder `implementer`. FAILS at census: the leg is a regression guard here: no read of an architect holder may quote a line this unit's outputs project, and at census none does, so the falsifying legs are the grep and the planner read above.",
+        "COLD-READ QUESTION (f), corrected: 'does it read an implementer's report or account of its own work, an artifact, or a diff?' Reading the assay and the integrator's gate result is the position's own act and must NOT count as YES; the prompt says so."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3QTCQC72TV8AF4DANAMQSFC",
+      "closure": {}
+    }
+  }
+}
