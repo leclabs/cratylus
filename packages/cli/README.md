@@ -275,7 +275,15 @@ the status line layout), and the persona commands it linked or adopted. Uninstal
 It prints two lists: what it removed, and what it left because the host placed or changed it, each with
 its reason. A placed file you edited since install is left, and so is one recorded before digests were
 kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours, a
-status line you have pointed at another command, a `config.yml` line you rewrote, a persona command
-you replaced, and a file another harness's install still records. Left files are yours from then on:
-the manifest goes, so a later uninstall no longer names them. `--dry-run` runs every step and writes
-none. `--harness` is required. A host with no manifest has nothing removed, and the command says so.
+status line you have pointed at another command, a persona command you replaced, and a file another
+harness's install still records. A `config.yml` line you rewrote is left too, and only that line: every
+other line install added there still comes out, one at a time, and a line of yours beneath a block
+install added keeps the headers it sits under. Left files are yours from then on: the manifest goes, so
+a later uninstall no longer names them. `--dry-run` runs every step and writes none. `--harness` is
+required. A host with no manifest has nothing removed, and the command says so.
+
+A host installed before install recorded its `config.yml` edits has no record of which lines are
+install's. Uninstall names the file and leaves it as it is; run `install` again, which finds the
+`modelRoles` entries and the status line layout there byte for byte as it would write them and records
+them, and the next `uninstall` takes them out. What an older install did to the file's last line
+terminator cannot be recovered that way, so the file may end one newline longer than you wrote it.

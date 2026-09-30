@@ -48,6 +48,7 @@ import {
   personaLauncherOf,
   placedFileState,
   readManifest,
+  recordsHostEdits,
   removePersonaCommands,
   restoreHostStatusLine,
   runtimeConfigTarget,
@@ -276,18 +277,29 @@ function undoHostEdits(
     if (!existsSync(file)) continue;
     const text = readFileSync(file, 'utf8');
     const undone = undoHunks(text, edit.hunks);
-    for (const { hunk, state } of undone.results) {
-      // The host's own line that merely gained a terminator is not something install added.
-      const theirs = new Set(hunk.before.map((l) => l.trim()));
-      const lines = hunk.after
-        .map((l) => l.trim())
-        .filter((l) => l !== '' && !theirs.has(l))
-        .join(' / ');
-      if (state === 'undone') tally.removed.push({ what: `${file}: ${lines}` });
-      if (state === 'changed') {
+    for (const { hunk, removed, changed, holding } of undone.results) {
+      const said = (lines: readonly string[]): string =>
+        lines
+          .map((l) => l.trim())
+          .filter((l) => l !== '')
+          .join(' / ');
+      // A host line that only gained a terminator is not something install added.
+      const terminatorOnly =
+        hunk.before.length === 1 &&
+        hunk.before[0]?.trim() === hunk.after[0]?.trim();
+      if (removed.length > 0 && !terminatorOnly) {
+        tally.removed.push({ what: `${file}: ${said(removed)}` });
+      }
+      if (changed.length > 0) {
         tally.left.push({
-          what: `${file}: ${lines}`,
-          why: 'the host has changed or removed what install wrote there',
+          what: `${file}: ${said(changed)}`,
+          why: 'the host has changed or removed what install wrote there, so what stands there is the host’s',
+        });
+      }
+      if (holding.length > 0) {
+        tally.left.push({
+          what: `${file}: ${said(holding)}`,
+          why: 'lines the host wrote stand beneath it, so it stays with them',
         });
       }
     }
@@ -298,6 +310,24 @@ function undoHostEdits(
       writeFileSync(file, undone.text);
     }
   }
+}
+
+/** A harness installed before install recorded its edits to the host's config file:
+ *  what it added there is in the file with nothing saying which lines they are, and an
+ *  uninstall that removed by resemblance would be guessing at the host's own. */
+function reportUnrecordedConfig(
+  adapter: HarnessAdapter,
+  harnessDir: string,
+  tally: Tally,
+): void {
+  const rels =
+    adapter.roleRouting?.configRels ?? adapter.statusSegment?.configRels ?? [];
+  const file = rels.map((rel) => join(harnessDir, rel)).find(existsSync);
+  if (file === undefined) return;
+  tally.left.push({
+    what: file,
+    why: `${adapter.name} was installed before install recorded its edits to this file, so a \`modelRoles\` entry or status line layout it added cannot be told from yours; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records the lines it finds there byte for byte as it would write them, then uninstall`,
+  });
 }
 
 /** Every path a placer recorded, once each. */
@@ -464,10 +494,14 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   }
 
   const manifest = readManifest(harnessDir);
+  // Read now: the persona step below rewrites the record, and a rewrite reads back as
+  // one that records edits whatever it was.
+  const editsRecorded = recordsHostEdits(harnessDir);
   const tally: Tally = { removed: [], left: [] };
   try {
     removePersonaLinks(adapter, harnessDir, manifest, opts, tally);
     restoreSettings(adapter, harnessDir, manifest, dry, tally);
+    if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
     undoHostEdits(harnessDir, manifest, dry, tally);
     removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
     removeRuntimeStanza(adapter, dry, tally);

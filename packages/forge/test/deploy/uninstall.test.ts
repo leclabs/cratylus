@@ -442,10 +442,67 @@ describe('uninstall', () => {
 
       expect(uninstall('omp')).toBe(0);
 
-      // The block was one hunk and the host edited inside it, so none of it is taken.
-      expect(readFileSync(file, 'utf8')).toBe(rewritten);
+      // The host rewrote one line of the run: that line is the host's, and every other
+      // line install wrote comes out, each on its own.
+      expect(readFileSync(file, 'utf8')).toBe(
+        `${original}  planner: "anthropic/mine"\n`,
+      );
+      expect(out).toContain('planner: "@plan"');
       expect(out).toContain(
         'the host has changed or removed what install wrote',
+      );
+    });
+
+    it('takes every other line of an inserted run when the host changed one, and keeps the host’s block around it', () => {
+      const dir = harnessDir('omp');
+      mkdirSync(join(dir, 'agent'), { recursive: true });
+      const original = 'theme: dark\nmodelRoles:\n  default: "@x"\n';
+      const installed = `${original}  planner: "@plan"\n  architect: "@default"\n  implementer: "@task"\n`;
+      const file = join(dir, 'agent', 'config.yml');
+      writeFileSync(file, installed.replace('"@plan"', '"anthropic/mine"'));
+      writeManifest(dir, {
+        ...emptyManifest(),
+        hostEdits: {
+          'agent/config.yml': {
+            created: false,
+            hunks: lineHunks(original, installed),
+          },
+        },
+      });
+
+      expect(uninstall('omp')).toBe(0);
+
+      expect(readFileSync(file, 'utf8')).toBe(
+        `${original}  planner: "anthropic/mine"\n`,
+      );
+      const [removed, left] = out.split('left (') as [string, string];
+      expect(removed).toContain('architect: "@default"');
+      expect(removed).toContain('implementer: "@task"');
+      expect(left).toContain('planner: "@plan"');
+      expect(left).not.toContain('architect');
+    });
+
+    it('keeps the headers a changed nested line sits under, and takes the rest of the block', async () => {
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      const hostConfig = '# host\ntheme: dark\n';
+      writeFileSync(join(omp, 'agent', 'config.yml'), hostConfig);
+      expect(await install('omp')).toBe(0);
+      const file = join(omp, 'agent', 'config.yml');
+      const installed = readFileSync(file, 'utf8');
+      expect(installed).toContain('      abbreviate: true\n');
+      writeFileSync(
+        file,
+        installed.replace(
+          '      abbreviate: true\n',
+          '      abbreviate: false\n',
+        ),
+      );
+
+      expect(uninstall('omp')).toBe(0);
+
+      expect(readFileSync(file, 'utf8')).toBe(
+        `${hostConfig}statusLine:\n  segmentOptions:\n    path:\n      abbreviate: false\n`,
       );
     });
 
@@ -486,6 +543,66 @@ describe('uninstall', () => {
     });
   });
 
+  describe('a host installed before install recorded its config edits', () => {
+    // Ends with a newline: what an install from before edits were recorded did to the
+    // last line's terminator is not something its record can be adopted back to.
+    const HOST =
+      '# host config\nmodelRoles:\n  default: "anthropic/claude-x"\ntheme: dark\nnote: last line\n';
+
+    /** An omp install, then the record as an older version left it: no digests, no
+     *  edits — and the config lines it put in are all still in the file. */
+    async function installedByOlderVersion(): Promise<string> {
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      writeFileSync(join(omp, 'agent', 'config.yml'), HOST);
+      expect(await install('omp')).toBe(0);
+      const record = join(omp, MANIFEST_REL);
+      const {
+        hostEdits: _e,
+        digests: _d,
+        ...older
+      } = JSON.parse(readFileSync(record, 'utf8'));
+      writeFileSync(record, `${JSON.stringify(older, null, 2)}\n`);
+      return join(omp, 'agent', 'config.yml');
+    }
+
+    it('an uninstall names the config file it cannot vouch for, and leaves it as it is', async () => {
+      const config = await installedByOlderVersion();
+      const installed = readFileSync(config, 'utf8');
+      out = '';
+      expect(uninstall('omp')).toBe(0);
+      expect(readFileSync(config, 'utf8')).toBe(installed);
+      const left = out.split('left (')[1] as string;
+      expect(left).toContain(config);
+      expect(left).toContain(
+        'installed before install recorded its edits to this file',
+      );
+    });
+
+    it('a re-install records the lines it finds byte for byte as it would write them, and the next uninstall takes them', async () => {
+      const config = await installedByOlderVersion();
+      expect(await install('omp')).toBe(0);
+      expect(readManifest(harnessDir('omp')).hostEdits).not.toEqual({});
+      out = '';
+      expect(uninstall('omp')).toBe(0);
+      expect(readFileSync(config, 'utf8')).toBe(HOST);
+      expect(out).not.toContain('installed before install recorded');
+      expect(snapshot(home)).toEqual({ '.omp/agent/config.yml': HOST });
+    });
+
+    it('a second install after the record exists adds nothing to it, and its lines still come out', async () => {
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      writeFileSync(join(omp, 'agent', 'config.yml'), HOST);
+      expect(await install('omp')).toBe(0);
+      const once = readManifest(omp).hostEdits;
+      expect(await install('omp')).toBe(0);
+      expect(readManifest(omp).hostEdits).toEqual(once);
+      expect(uninstall('omp')).toBe(0);
+      expect(readFileSync(join(omp, 'agent', 'config.yml'), 'utf8')).toBe(HOST);
+    });
+  });
+
   describe('the line diff an uninstall takes edits out by', () => {
     const doc = 'a: 1\nb: 2\nc: 3\n';
 
@@ -497,6 +614,27 @@ describe('uninstall', () => {
       const { text, results } = undoHunks(host, hunks);
       expect(text).toBe('a: 1\nb: host\nc: 3\n');
       expect(results.map((r) => r.state)).toEqual(['undone', 'undone']);
+    });
+
+    it('records a last line install had to end apart from the lines appended beneath it', () => {
+      const hunks = lineHunks('a: 1\nb: 2', 'a: 1\nb: 2\nnew: 1\n');
+      expect(hunks.map((h) => [h.before, h.after])).toEqual([
+        [['b: 2'], ['b: 2\n']],
+        [[], ['new: 1\n']],
+      ]);
+    });
+
+    it('takes a block out line by line: the host’s changed line stays under the headers it was written beneath', () => {
+      const before = 'top: 1\n';
+      const after = `${before}block:\n  keep: 1\n  drop: 2\n  other:\n    deep: 3\n`;
+      const hunks = lineHunks(before, after);
+      expect(hunks).toHaveLength(1);
+      const host = after.replace('deep: 3', 'deep: host');
+      const { text, results } = undoHunks(host, hunks);
+      expect(text).toBe('top: 1\nblock:\n  other:\n    deep: host\n');
+      expect(results[0]?.state).toBe('partial');
+      expect(results[0]?.changed).toEqual(['    deep: 3\n']);
+      expect(results[0]?.holding).toEqual(['block:\n', '  other:\n']);
     });
 
     it('restores a replaced line, and an unterminated last line, exactly', () => {

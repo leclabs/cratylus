@@ -38,7 +38,7 @@ import type {
   StatusLayout,
   StatusSegmentHost,
 } from '../core/harness-adapter.js';
-import { type HostEdit, lineHunks } from './manifest.js';
+import { type HostEdit, adoptedHunk, lineHunks } from './manifest.js';
 import {
   inlineValue,
   isBlankOrComment,
@@ -357,6 +357,9 @@ export interface StatusSegmentResult {
 export interface EnsureStatusSegmentOpts {
   /** Report what would be added and write nothing. */
   readonly dry?: boolean;
+  /** Record as install's own the layout block the host has that is byte for byte the one
+   *  this would write: for a host installed before edits were recorded. */
+  readonly adopt?: boolean;
 }
 
 /** An insertion after line `at`, or the replacement of line `at`'s text. */
@@ -775,6 +778,30 @@ export function ensureStatusSegment(
     }
   }
   if (at !== -1) region = [at, extentOf(lines, at)];
+
+  // A `statusLine:` block that is byte for byte the one this writes where the host had
+  // none was written by an earlier install. Under `adopt` (a host installed before edits
+  // were recorded) it is recorded as install's own, so an uninstall takes it out; the
+  // same block written by hand is indistinguishable, and adopted alike.
+  if (opts.adopt === true && !dry && at !== -1) {
+    const block = [
+      'statusLine:',
+      ...layoutLines(host, '  '),
+      `  ${HOOK_STATUS_KEY}: false`,
+    ];
+    if (block.every((t, k) => lines[at + k]?.[0] === t)) {
+      return {
+        path,
+        state: 'present',
+        wrote: false,
+        written: [],
+        edit: {
+          created: false,
+          hunks: [adoptedHunk(text, at, block.length)],
+        },
+      };
+    }
+  }
 
   // What the default layout is, said key by key — for the report.
   const layoutWritten = {

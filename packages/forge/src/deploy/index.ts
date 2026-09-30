@@ -79,6 +79,7 @@ export {
 
 export {
   applyPrune,
+  adoptedHunk,
   type DeployManifest,
   digestFile,
   digestWritten,
@@ -99,6 +100,7 @@ export {
   staleFiles,
   unattributable,
   undoHunks,
+  recordsHostEdits,
   unregisterHookCommands,
   unregisterHookCommandsAt,
   writeManifest,

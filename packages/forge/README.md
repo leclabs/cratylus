@@ -381,9 +381,18 @@ directories that leaves empty and never the root; `placedFileState` (`deploy/loc
 `unchanged`, `changed`, `unverified` (no digest recorded) or `absent`. A hook registration is dropped by
 `unregisterHookCommands`, which takes an entry only when every command in it is recorded.
 `restoreHostStatusLine` puts the host's command back in the wrapped `statusLine` and deletes a `statusLine`
-install set. `undoHunks` takes each hunk out of the config by finding its lines, newest first, under the
-line that stood above them: a hunk whose lines are no longer there as written is `changed` and left, so
-the terminators come back with the lines and a file install created returns to nothing.
+install set. `undoHunks` takes the hunks out of the config newest first. An inserted run comes out
+ONE LINE AT A TIME, each found from under the line that stood above the run: a line the host has
+changed is `changed` and stays, whatever stands there is the host's, and every other line of the run
+still comes out; a line with lines of the host's beneath it (a header whose child the host edited)
+stays too, as `holding`, so the host's lines keep the block they were written in. A replaced line goes
+back only while it stands as written, and a terminator install added to the file's last line comes
+off only while that line is still the last. So the file comes back byte for byte, and a file install
+created returns to nothing. A record written before install recorded its edits carries no `hostEdits`
+(`recordsHostEdits`): an uninstall then names the config file it cannot vouch for, and the next
+install, which reads that before its deploy rewrites the record, adopts the `modelRoles` lines and
+the `statusLine` block it finds there byte for byte as it would write them (`adopt` on `addModelRoles`
+and `ensureStatusSegment`, recorded through `adoptedHunk`), so the uninstall after it takes them.
 `removePersonaCommands` takes the recorded persona commands. A path outside the harness home and the
 neutral `.agents` root, and a path another harness's manifest records, are left; so is everything that
 is `changed` or `unverified`. The report is two lists, removed and left, each left entry with its
