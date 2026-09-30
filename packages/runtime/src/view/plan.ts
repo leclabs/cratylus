@@ -33,6 +33,7 @@ import {
   field,
   header,
   incoherenceLine,
+  inline,
   list,
   resolveFirst,
 } from './layers.js';
@@ -50,7 +51,20 @@ export interface Plan {
   readonly diverged: boolean;
 }
 
-/** A unit's full spec and lifecycle state as its reader sees it. */
+/** One event of a unit's ledger: its kind and fact, who wrote it, and when. */
+export type Event = { readonly author: string; readonly time: string } & (
+  | { readonly kind: 'land'; readonly commit: string }
+  | {
+      readonly kind: 'assay';
+      readonly commit: string;
+      readonly verdict: string;
+      readonly missing: readonly string[];
+    }
+  | { readonly kind: 'whole'; readonly commit: string }
+  | { readonly kind: 'broke'; readonly check: string }
+);
+
+/** A unit's full spec, lifecycle state and ledger as its reader sees it. */
 export interface Unit {
   readonly name: Name;
   /** The plan the unit belongs to. */
@@ -64,6 +78,8 @@ export interface Unit {
   readonly static: readonly string[];
   readonly outputs: readonly string[];
   readonly accept: readonly string[];
+  /** What happened to it while it was worked, in order. */
+  readonly ledger: readonly Event[];
 }
 
 /** A live unit, with what `unit` and `pin` computed on it. */
@@ -147,11 +163,58 @@ function planInFull(plan: Plan, mark = ''): string[] {
   ];
 }
 
+/** What one event of a ledger says, e.g. `assay c1: not-achieved — missing: a; b`. */
+function eventFact(event: Event): string {
+  switch (event.kind) {
+    case 'land':
+    case 'whole':
+      return `${event.kind} ${event.commit}`;
+    case 'assay':
+      return `assay ${event.commit}: ${event.verdict}${event.missing.length ? ` — missing: ${event.missing.map(inline).join('; ')}` : ''}`;
+    case 'broke':
+      return `broke: ${inline(event.check)}`;
+  }
+}
+
+/** A unit's latest event as its line carries it: `landed c1`, `not achieved`,
+ *  `achieved`, `whole`, `broke: check`; empty when it has none. */
+function latest(unit: Unit): string {
+  const event = unit.ledger.at(-1);
+  if (event === undefined) return '';
+  switch (event.kind) {
+    case 'land':
+      return ` · last: landed ${event.commit}`;
+    case 'assay':
+      return ` · last: ${event.verdict.replace('-', ' ')}`;
+    case 'whole':
+      return ' · last: whole';
+    case 'broke':
+      return ` · last: broke: ${inline(event.check)}`;
+  }
+}
+
 function unitLine(unit: Unit, marks: string): string {
   const deps = unit.deps.length
     ? ` · deps ${unit.deps.map(printed).join(', ')}`
     : '';
-  return `${printed(unit.name)} — ${marks} · realizes ${printed(unit.realizes)}${deps}`;
+  return `${printed(unit.name)} — ${marks} · realizes ${printed(unit.realizes)}${deps}${latest(unit)}`;
+}
+
+/** A unit's ledger, one entry per event in order, each with who wrote it when. */
+function ledgerLines(unit: Unit): string[] {
+  return unit.ledger.length === 0
+    ? ['  ledger: none']
+    : [
+        '  ledger:',
+        ...unit.ledger.map(
+          (e, i) => `    ${i + 1}. ${eventFact(e)} — ${e.author}, ${e.time}`,
+        ),
+      ];
+}
+
+/** One unit by its line and its ledger, none of its spec. */
+function unitLedger(unit: Unit, marks: string): string[] {
+  return [`unit: ${printed(unit.name)} — ${marks}`, ...ledgerLines(unit)];
 }
 
 /** One unit in full; `placement` states the wave of a live unit. */
@@ -166,6 +229,7 @@ function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
     ...list('static', unit.static),
     ...list('outputs', unit.outputs),
     ...list('accept', unit.accept),
+    ...ledgerLines(unit),
   ];
 }
 
@@ -173,9 +237,14 @@ function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
  * The plan's view: the whole of each plan shown, or, given a `name`, every live
  * or withdrawn unit and plan it names in full and every version of every
  * diverged unit and plan it names by any of its names in full, beneath the
- * header and the resolve-first layer.
+ * header and the resolve-first layer. With `ledgerOnly`, a name drills to each
+ * live unit it names by its line and its ledger alone, and to no spec.
  */
-export function planView(state: PlanState, name?: Name): string {
+export function planView(
+  state: PlanState,
+  name?: Name,
+  ledgerOnly = false,
+): string {
   const { units } = state;
   const drifted = units.filter((u) => u.drift !== undefined);
   const suspect = units.filter((u) => u.suspicion.length);
@@ -270,26 +339,33 @@ export function planView(state: PlanState, name?: Name): string {
   if (name !== undefined)
     return [
       ...lines,
-      ...drilled(name, [
-        ...units
-          .filter((u) => denotes(name, u.name))
-          .map((u) => unitInFull(u, standing(u), placement(u))),
-        ...[...plans.values()]
-          .filter((p) => !p.diverged && denotes(name, p.name))
-          .map((p) => planInFull(p)),
-        ...state.withdrawnUnits
-          .filter((u) => denotes(name, u.name))
-          .map((u) => unitInFull(u, u.state)),
-        ...state.withdrawnPlans
-          .filter((p) => denotes(name, p.name))
-          .map((p) => planInFull(p, ' — withdrawn')),
-        ...state.divergedUnits
-          .filter((d) => denotesAny(name, d.names))
-          .map((d) => divergedLines(d, (u) => unitInFull(u, u.state))),
-        ...state.divergedPlans
-          .filter((d) => denotesAny(name, d.names))
-          .map((d) => divergedLines(d, (p) => planInFull(p))),
-      ]),
+      ...drilled(
+        name,
+        ledgerOnly
+          ? units
+              .filter((u) => denotes(name, u.name))
+              .map((u) => unitLedger(u, standing(u)))
+          : [
+              ...units
+                .filter((u) => denotes(name, u.name))
+                .map((u) => unitInFull(u, standing(u), placement(u))),
+              ...[...plans.values()]
+                .filter((p) => !p.diverged && denotes(name, p.name))
+                .map((p) => planInFull(p)),
+              ...state.withdrawnUnits
+                .filter((u) => denotes(name, u.name))
+                .map((u) => unitInFull(u, u.state)),
+              ...state.withdrawnPlans
+                .filter((p) => denotes(name, p.name))
+                .map((p) => planInFull(p, ' — withdrawn')),
+              ...state.divergedUnits
+                .filter((d) => denotesAny(name, d.names))
+                .map((d) => divergedLines(d, (u) => unitInFull(u, u.state))),
+              ...state.divergedPlans
+                .filter((d) => denotesAny(name, d.names))
+                .map((d) => divergedLines(d, (p) => planInFull(p))),
+            ],
+      ),
     ].join('\n');
 
   // A diverged unit's line, in its place: marked, with its names.

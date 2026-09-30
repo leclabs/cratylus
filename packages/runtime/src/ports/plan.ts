@@ -82,4 +82,39 @@ export interface PlanHost {
     fields: Fields,
     by: Invocation,
   ): string;
+  /** Record that the work of `unit` landed at `commit`. Admitted only while
+   *  the unit's plan is bound and the unit is in flight; the write prints the
+   *  unit's line and its ledger, none of its spec. */
+  land(
+    unit: string,
+    plan: string | undefined,
+    commit: string,
+    by: Invocation,
+  ): string;
+  /** Record an assay's `verdict` (`achieved` or `not-achieved`) on `commit`;
+   *  a verdict not achieved names what was `missing`, one achieved names
+   *  nothing. Admitted as `land` is. */
+  assay(
+    unit: string,
+    plan: string | undefined,
+    commit: string,
+    verdict: string,
+    missing: readonly string[],
+    by: Invocation,
+  ): string;
+  /** Record that the line's `commit` holds `unit`. Admitted as `land` is. */
+  whole(
+    unit: string,
+    plan: string | undefined,
+    commit: string,
+    by: Invocation,
+  ): string;
+  /** Record that `unit` broke the whole, by the failing `check`. Admitted as
+   *  `land` is. */
+  broke(
+    unit: string,
+    plan: string | undefined,
+    check: string,
+    by: Invocation,
+  ): string;
 }

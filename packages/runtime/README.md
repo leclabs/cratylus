@@ -47,11 +47,11 @@ Notes, design and plans are immutable records in the repository, folded when som
 and users meet them only through three capabilities that ship inside the runtime, each routed by
 `runCli` to its own verb surface and each with its port in the `.` barrel:
 
-| capability | port         | verbs                                                                       |
-| ---------- | ------------ | --------------------------------------------------------------------------- |
-| `design`   | `DesignHost` | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                  |
-| `plan`     | `PlanHost`   | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile` |
-| `note`     | `NoteHost`   | `show`, `capture`, `revise`, `retract`, `reconcile`                         |
+| capability | port         | verbs                                                                                                          |
+| ---------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
+| `design`   | `DesignHost` | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                                                     |
+| `plan`     | `PlanHost`   | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile`, `land`, `assay`, `whole`, `broke` |
+| `note`     | `NoteHost`   | `show`, `capture`, `revise`, `retract`, `reconcile`                                                            |
 
 Every input names an entity by name, and every output is the domain's view, in the domain's own
 words. Where a merge left one name held by more than one entity, the view prints each holder's
@@ -69,6 +69,19 @@ whole; a unit's pin is kept by every revise until one says `--repin` with a reas
 arrives as `configuration.plan` in the host runtime config, which deploy emits; without it `plan`
 refuses and names the deploy, and `design show` shows the lattice and says the plans standing on it
 wait for that deploy.
+
+A unit carries a ledger of what happens to it while it is worked, written as it happens: `plan land
+<unit> --plan <p> --commit <sha>` records the commit that holds its work, `plan assay <unit> --plan
+
+<p> --commit <sha> --verdict <achieved|not-achieved> [--missing <what>]…` an assay's verdict (a
+verdict not achieved names what was missing, one achieved names nothing), `plan whole <unit> --plan
+<p> --commit <sha>` the line's commit holding it, and `plan broke <unit> --plan <p> --check <check>`
+the failing check when it broke the whole. Each event carries its author and time, and is admitted
+only while the unit's plan is bound and the unit is in flight — past its lifecycle's first state and
+short of the one that satisfies a dependency. `plan show <unit> --plan <p>` prints the ledger in
+order, each unit's line in `plan show` carries its latest event, and an event's own output is the
+unit's line and its ledger, none of its spec. A revise, an advance and a reconcile carry the ledger
+over, a reconcile of units that recorded different events carrying their union in time order.
 
 Each verb declares, beside it, the flags it takes and whether each takes a value, and one reader in
 `./verb-flags` reads the verb's arguments against that declaration. A flag that takes a value is
