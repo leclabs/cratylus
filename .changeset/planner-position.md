@@ -1,5 +1,0 @@
----
-"@cratylus/canon": minor
----
-
-The planner turns the shards the architect hands down into a plan and owns it end to end. Each unit realizes exactly one shard, dependencies come first, each is sized for one implementer, and how a shard is realized on each harness is the planner's to decide. The planner binds the plan when no plan is bound, records each ready unit active as it hands the unit's name out, records it completed when the architect routes `whole <unit>`, closes the plan when every unit is completed, and returns only the plan's name and the ready units' names. When a shard the bound plan builds on is found wrong, the architect corrects the shard and the planner rectifies or rebuilds the plan before the blocking note is retracted; a shard it cannot plan is surfaced, never redrawn, and the planner never changes the design. In the `plan` skill, reconciling plans and units is the planner's (the design's stays the architect's), and `show <unit>` is the planner's and the implementer's read, never the architect's. The planner agent's description and archetype say shards, not a closed piece.
