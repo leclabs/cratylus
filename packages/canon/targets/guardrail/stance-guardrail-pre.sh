@@ -8,7 +8,8 @@
 #   - AskUserQuestion : a permission / option-menu on an in-remit reversible call
 #   - Agent/SendMessage : a dispatch transcribing literal words without extracted intent
 # WHAT IT DOES NOT DENY (reserved): an irreversible-outward consent menu, a true INTENT
-#   ambiguity, a substantive intent-extracted dispatch.
+#   ambiguity, a substantive intent-extracted dispatch, a unit or a closed plan routed by name (the
+#   intent lives in the spec at that address).
 #
 # SAFETY MODEL (mirrors stance-guardrail):
 #   - SCOPE-ENROLLED, exactly as its twin: a scope carrying a stance manifest is judged and
@@ -23,8 +24,8 @@
 #     identical call goes through unjudged, and says so.
 #   - OBSERVABLE. Every notice is also a line in the miss log.
 #
-# INPUT  : Claude Code PreToolUse hook JSON on stdin (tool_name, tool_input, agent_type
-#          [subagents], session_id, cwd, ...).
+# INPUT  : Claude Code PreToolUse hook JSON on stdin (tool_name, tool_input, agent_type,
+#          session_id, cwd, ...).
 # OUTPUT : on collapse -> stdout
 #          {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny",
 #           "permissionDecisionReason":"..."}} + exit 0.
@@ -92,6 +93,14 @@ trap 'rc=$?; [ "$rc" -eq 0 ] || open "an unexpected error stopped it (exit statu
 input="$(cat)"
 [ -n "$input" ] || open "the hook received no input"
 command -v jq >/dev/null 2>&1 || open "jq is not installed, so the hook payload cannot be read"
+
+# A GUARD BINDS A PERSONA'S OWN MAIN SESSION AND NO SUBAGENT IT DISPATCHES. A subagent is bounded
+# by what it was handed, judged by its assay and the whole check, and supervised by the main
+# session. Claude Code fires this hook inside a subagent too (settings hooks and the subagent's
+# own front-matter hooks), and there the payload carries `agent_id` — present only inside a
+# subagent. A guard that does not bind there is not dark: it exits before it judges and says
+# nothing.
+[ -z "$(printf '%s' "$input" | jq -r '.agent_id // empty' 2>/dev/null || true)" ] || allow
 
 # The sibling Stop hook's deployed dir owns the SHARED judge + rubric (deployed
 # together, as siblings under the SAME hooks root).
@@ -251,8 +260,8 @@ feedback="STANCE GUARDRAIL (pre) — denied this $tool_name call: it collapses o
 intent-driven-expert stance. $reason  Own the in-remit reversible call yourself instead of handing the \
 operator a menu; extract and serve the underlying INTENT instead of transcribing literal words into a \
 dispatch. Decide, note the call for review, and proceed. (Legitimate exceptions that should NOT be a menu \
-here: a genuine irreversible-outward consent choice, a true INTENT ambiguity for /elicit, or a substantive \
-intent-extracted dispatch.)"
+here: a genuine irreversible-outward consent choice, a true INTENT ambiguity for /elicit, a substantive \
+intent-extracted dispatch, or a unit or a closed plan routed by name, whose intent lives in its spec.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0

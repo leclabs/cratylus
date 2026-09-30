@@ -18,7 +18,8 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // second, independent statement of what should exist is what makes validation an
 // operation rather than a re-reading of the claim. That statement is this lattice.
 
-const FORMAL_BLOCK = `anchor ≜ a concept's canonical sign @ signify
+const FORMAL_BLOCK =
+  `anchor ≜ a concept's name ⟨the project's own · answers to no cold decode⟩
 gloss  ≜ what a concept IS ⟨one line · reconstruction-grade⟩
 C      ≜ the concept lattice ⟨the project's durative model⟩
 c      ≜ a concept ⟨c ∈ C⟩
@@ -28,8 +29,6 @@ primitive(c) ⇔ factors(c) = ∅ ⟨held by VALUE ⟨anchor · gloss⟩⟩
 composite(c) ⇔ factors(c) ≠ ∅ ⟨held by REFERENCE ⟨anchor · factor-anchors⟩ @ materialize⟩
 closure : C → ℘(C) ⟨closure(c) ≜ { c } ∪ ⋃ { closure(f) | f ∈ factors(c) }⟩
 denotes : anchor ⇀ C
-σ*      @ signify
-conform @ signify
 shard(c) ≜ ⟨ c , closure(c) ⟩ handed down ⟨what a planner is handed · one concept with everything it stands on⟩
 cut    ≜ the architect's choice of shards to hand the planner
 history(c) ≜ every version ∧ retraction of c, in order ⟨resident · ¬ deleted⟩
@@ -51,7 +50,7 @@ trace(c) ≜ \`scripts/design.mjs trace <concept>\` ↦ ⟨history(c), closure(c
 ∀ define ∨ supersede ∨ retract ∨ reconcile : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
 ∀ c : ∃! anchor(c) ∧ ∀ a ∈ dom(denotes) : ∃! denotes(a) ⟨one live concept per anchor⟩
 withdrawn(c) ⇒ anchor(c) held until supersede(c) reinstates it
-∀ c : conform(anchor(c)) ∧ gloss(c) ≠ ∅
+∀ c : gloss(c) ≠ ∅
 ∀ c : closure(c) finite ⟨factors acyclic ∴ a lattice, ¬ a graph⟩ ∧ ∀ f ∈ factors(c) : live(f)
 ∃ d : live(d) ∧ c ∈ factors(d) ⇒ ¬ retract(c) ⟨what live concepts factor on cannot be withdrawn⟩
 amend(C) ≜ supersede ⟨∄ overwrite ; a live c is NEVER edited in place⟩
@@ -87,7 +86,7 @@ the bound plan found built on a shard c that is itself wrong ⇒ in order ⟨sel
      amend waits · an obligation standing between an agent and closing its work always loses · measured 0 of 25⟩
 design ⊨ ¬ delegable ⟨a subagent starts blank ∧ a design authored by several
     fragments BY CONSTRUCTION⟩
-design ≜ conceptualize(intent) → signify(·) → materialize(·) → define(c) ∨ supersede(c) → C → cut(C)` as SkillExpression;
+design ≜ conceptualize(intent) → materialize(·) → define(c) ∨ supersede(c) → C → cut(C)` as SkillExpression;
 
 export const design: Skill = {
   name: 'design',

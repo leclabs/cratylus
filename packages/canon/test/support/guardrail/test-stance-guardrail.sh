@@ -66,7 +66,7 @@ git -C "$REPO" config user.email t@t; git -C "$REPO" config user.name t
 SCOPES="$WORK/scopes"
 for who in mav architect; do
 	mkdir -p "$SCOPES/$who/stance"
-	printf '{"agent":"%s","gates":{"stance-guardrail":{"moments":["turn.end","subagent.end"]}}}\n' \
+	printf '{"agent":"%s","gates":{"stance-guardrail":{"moments":["turn.end"]}}}\n' \
 		"$who" > "$SCOPES/$who/stance/manifest.json"
 done
 # Projected, dispatched to, and NOT enrolled — the scope exists and the manifest does not.
@@ -148,7 +148,7 @@ run_worker() {  # $1=transcript-path  $2=agent_type  $3=stop_hook_active  [$4=se
 		--arg tp "$1" --arg at "$2" --arg sa "$3" --arg cwd "$REPO" --arg sid "$sid" \
 		--arg sc "$(scope_of "$2")" \
 		'{transcript_path:$tp, agent_type:$at, stop_hook_active:($sa=="true"), cwd:$cwd,
-		  stance_scope:$sc, hook_event_name:"SubagentStop", session_id:$sid}' \
+		  stance_scope:$sc, hook_event_name:"Stop", session_id:$sid}' \
 	| sh "$WORKER" 2>/dev/null || true
 }
 is_block() { printf '%s' "$1" | jq -e '.decision == "block"' >/dev/null 2>&1; }
@@ -190,7 +190,7 @@ is_block "$out" && pass "presence enrolls an agent no allowlist named (architect
 
 # 4c. THE CLAUDE FORM OF THE SCOPE. Claude Code places no dispatcher, so the payload carries NO
 #     `stance_scope`; it names the running agent as `agent_type` (main thread of a `--agent`
-#     session, and inside a subagent) and names none on a bare session. The worker derives the
+#     session) and names none on a bare session. The worker derives the
 #     persona's scope from that name under its own harness home — `<home>/hooks/<id>/` is two hops
 #     below it, `<home>/personas/<name>/` is the scope — and a manifest there is enrollment. The
 #     layout below is the one the claude adapter deploys. Before this, every case here passed a

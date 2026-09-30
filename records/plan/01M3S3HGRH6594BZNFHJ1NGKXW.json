@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3S3HGRH6594BZNFHJ1NGKXW",
+    "entity": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RXDAPYKWPR3V2PVC5FSNQ7"
+    ],
+    "author": "LoopFrictionPlanner4",
+    "time": "2026-09-30T12:10:01.361Z",
+    "reason": "every unit of loop-friction is completed",
+    "cause": "routing-by-name recorded whole, the last unit"
+  },
+  "payload": {
+    "name": "loop-friction",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "closed"
+  }
+}

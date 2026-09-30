@@ -1,6 +1,6 @@
 # stance guardrail — the harness half of the principal stance
 
-A standing **Stop / SubagentStop hook** that **structurally refuses** a turn in which an agent collapses
+A standing **Stop hook** that **structurally refuses** a turn in which an agent collapses
 out of the **intent-driven-expert (fiduciary-agent) stance** — the harness enforcement that makes the
 stance _invariant_, not merely prompted.
 
@@ -43,8 +43,7 @@ in-remit permission-seeking, it PASSes. A false block wedges real work; a missed
 
 The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq` toggle:
 
-- **Source** — the forge `Hook` in `packages/canon/src/hook-cells.ts` (`turn.end` → Stop,
-  `subagent.end` → SubagentStop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
+- **Source** — the forge `Hook` in `packages/canon/src/hook-cells.ts` (`turn.end` → Stop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
 - **Project** — `pnpm canon:project` emits a `settings.json` `{hooks}` fragment + stages these workers
   under `.cratylus/claude/hooks/stance-guardrail/`.
@@ -63,7 +62,7 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
     envelope. A bare launch carries the dispatcher and no manifest, so it is silent by placement
     rather than by a branch.
   - **Claude Code** places no dispatcher, and its hook payload names the running agent as
-    `agent_type` (on the main thread of a `--agent` session and inside a subagent; a bare session
+    `agent_type` (on the main thread of a `--agent` session; a bare session
     names none). With no `stance_scope`, the worker reads `<harness home>/personas/<agent_type>` as
     the scope, where the harness home is the directory above the hooks root it was deployed into.
     A bare session, a built-in agent and a host's own agent have no manifest there and stay silent.
@@ -77,8 +76,14 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   harness that cannot name the running agent carries a guard as a steer and warns once per cell
   at projection and install.
 
-- **WHAT THE STOP WORKER JUDGES.** A SubagentStop payload names the parent's `transcript_path` and
-  the subagent's own `agent_transcript_path`; the subagent's is judged, never the parent's. A
+- **WHERE A GUARD BINDS.** A composing persona's own main session, and no subagent it dispatches: a
+  subagent is bounded by what it was handed, judged by its assay and the whole check, and supervised
+  by the main session. Claude Code fires settings hooks and a subagent's own front-matter hooks
+  inside a subagent, and the payload there carries `agent_id`, present only inside a subagent. Each
+  of the three workers exits 0 on such a payload before it asks its judge and prints nothing: a guard
+  that does not bind there is not dark. The Stop guard binds `turn.end` alone.
+
+- **WHAT THE STOP WORKER JUDGES.** The main session's `transcript_path`. A
   Claude Code Stop fires before the final assistant message reaches the transcript, so that
   message is taken from the payload's `last_assistant_message`. A turn that is only text is
   judged, and a tool turn is judged on its close.
@@ -113,7 +118,7 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
 
 | file                       | role                                                                                                                                                                                                                                         |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stance-guardrail.sh`      | the Stop/SubagentStop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                   |
+| `stance-guardrail.sh`      | the Stop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                                |
 | `stance-judge.sh`          | the default **judge backend** (contract: turn on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Calls headless `claude -p --model haiku`. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
 | `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                      |
 | `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.    |

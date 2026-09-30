@@ -1,0 +1,99 @@
+{
+  "envelope": {
+    "id": "01M3RZ87FBCPMNJSTG1B72FFJB",
+    "entity": "01M3RX1D0G1XM8VT152CZZBV4W",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RZ875534N5Q6MAC3G4WS1R"
+    ],
+    "author": "LoopFrictionPlanner4",
+    "time": "2026-09-30T10:55:02.635Z",
+    "reason": "integrator recorded whole after an achieved assay of 559f818b",
+    "cause": "whole oracle-scope of loop-friction from LoopFrictionIntegrator"
+  },
+  "payload": {
+    "plan": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "spec": {
+      "name": "oracle-scope",
+      "intent": "Census @a9258730; re-derive any line cited below if its path changed since (units-in-worktrees lands first and edits the plan and deliver skills). Realize the clause `prime principle` gained at 2026-09-30T10:05 (operator ruling 'cold-decode oracle scope'): the cold-decode oracle decides signs only for the corpus's core agent dimension names and values, the terminology it was built to discover; every other term is the industry's own, used as the industry understands it, and nothing cratylus ships holds a consumer's own surfaces to the oracle.\nAT CENSUS shipped laws hold every surface to the oracle's sign. The cratylism value's `∀ authored-surface ⟨σ* ∨ ⊕σ* · prose ≡ identifier ≡ path⟩` (packages/canon/src/dimensions/engineering-principles/cratylism.ts:3) reaches the ten skills carrying the prime principle (packages/canon/src/genus/prime-principle.ts) and every agent holding the architect, planner, implementer or assayer role, so an agent working in a consumer's repository holds that repository's names to σ*. signify defines `Art ≜ every authored surface` and `dom(α) spans EVERY altitude of Art` (packages/canon/src/skills/signify/skill.ts:37-38; its description says the same). design routes each concept's anchor through signify (packages/canon/src/skills/design/skill.ts:21, 31-32, `∀ c : conform(anchor(c))` at :54, and the pipeline at :90), so a consumer's own design concepts must be cold-decoded. formalize demands `∀ line ∈ B : line = σ*(its concept)` and `σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩` (packages/canon/src/skills/formalize/skill.ts:22, 32), and create-skill's green declares 'the fittest glyph + cold-verify' (packages/canon/src/skills/create-skill/skill.ts:19). cold-decode-oracle, held by nico, states `invariant ∀f` (packages/canon/src/dimensions/engineering-principles/cold-decode-oracle.ts:3).\nCHANGE. Scope each of these laws to the corpus's core agent dimension names and values, and say once, in the cratylism value, that every other term is the industry's own, used as the industry understands it, and that no consumer surface is held to the oracle. A design concept's anchor and a formal block's notation answer to no cold decode. Keep the axiom's opening `cratylism ⟨names natural` (test/cratylism.test.ts pins one home for it). Keep `conform` defined in signify: the plan and deliver skills cite `conform @ signify`, which is register, not a sign decision. The cratylism value is part of the plan skill's projected preamble, so plan must stay under Claude's hook cap (test/skill-hook-cap.test.ts). State the scope in packages/canon/README.md's first-principle paragraph (L53-58) and in genus/prime-principle.ts's doc comment. If a divergence the altitude ledger records stops diverging, delete its row in test/symbol-altitude.test.ts. The hand-authored ground documents (VISION.md, MODEL.md, ENGINE.md, CANON.md) are not this unit's. Add .changeset/oracle-scope.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/probe/skill.ts"
+      ],
+      "deps": [
+        "01M3RX0N5XMAM3RVTB8CX4SPWT"
+      ],
+      "outputs": [
+        "packages/canon/src/dimensions/engineering-principles/cratylism.ts",
+        "packages/canon/src/dimensions/engineering-principles/cold-decode-oracle.ts",
+        "packages/canon/src/genus/prime-principle.ts",
+        "packages/canon/src/skills/signify/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/formalize/skill.ts",
+        "packages/canon/src/skills/create-skill/skill.ts",
+        "packages/canon/src/skills/exemplify/skill.ts",
+        "packages/canon/test/symbol-altitude.test.ts",
+        "packages/canon/README.md",
+        ".changeset/oracle-scope.md"
+      ],
+      "accept": [
+        "`git grep -n -E 'authored-surface|every authored surface|EVERY altitude|cold-verify' -- packages/canon/src/dimensions packages/canon/src/skills packages/canon/src/genus` prints nothing. At a9258730 it prints cratylism.ts:3, signify/skill.ts:37, 38, formalize/skill.ts:32 and create-skill/skill.ts:19.",
+        "`git grep -n -E 'conform\\(anchor|signify\\(' -- packages/canon/src/skills/design/skill.ts` prints nothing. At a9258730 it prints :54 and :90.",
+        "`git grep -n -i 'dimension' -- packages/canon/src/dimensions/engineering-principles/cratylism.ts packages/canon/src/dimensions/engineering-principles/cold-decode-oracle.ts packages/canon/src/skills/signify/skill.ts packages/canon/README.md` prints, in each of the four files, the line scoping the oracle to the corpus's core agent dimension names and values. At a9258730 the first three print nothing, and the README says nothing of the oracle's scope.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/cratylism.test.ts test/skill-hook-cap.test.ts test/reader-density.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/formal-block-self-sufficiency.test.ts test/reader-reach.test.ts` and `pnpm --filter @cratylus/canon typecheck` exit 0, with plan under the cap.",
+        "`.changeset/oracle-scope.md` exists and names @cratylus/canon."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3Q4H5EY0JRSHR12V308QAS8",
+      "version": "01M3RWCXDY5EENS7G4MQQD9663",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "63569f75",
+        "author": "OracleScope",
+        "time": "2026-09-30T10:48:53.792Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "63569f75",
+        "verdict": "not-achieved",
+        "missing": [
+          "prime principle: nothing cratylus ships holds a consumer's own surfaces to the oracle, and the oracle decides signs only for the core agent dimension names and values. At 63569f75 exemplify still gates every authored cell of whatever context corpus it is invoked on through the cold-decode oracle: coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) is a conjunct of valid(k), Cells ≜ every authored cell, and the description is 'optimize a context corpus'. A consumer's own corpus is therefore accepted only on a cold decode. Locus: packages/canon/src/skills/exemplify/skill.ts, FORMAL_BLOCK (R_cold, coldpass, valid, Cells) and description",
+          "prime principle: the oracle decides signs only for the core agent dimension names and values, and every other term is the industry's own. At 63569f75 formalize still has every entity and operation of arbitrary prose signified: the description says 'signify each as a symbol (minting or boundary-binding to an anchor)' and the block has η : E ∪ O ⇀ symbols @ signify. The line closing the same block says a block's notation answers to no cold decode. create-skill still requires an xref to be cited by its bare σ* anchor for a sibling or corpus concept, which includes a consumer's own skill. Loci: packages/canon/src/skills/formalize/skill.ts (description, η) and packages/canon/src/skills/create-skill/skill.ts (xref)"
+        ],
+        "author": "AssayOracleScope",
+        "time": "2026-09-30T10:52:11.686Z"
+      },
+      {
+        "kind": "land",
+        "commit": "559f818b",
+        "author": "OracleScope",
+        "time": "2026-09-30T10:53:06.491Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "559f818b",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayOracleScope",
+        "time": "2026-09-30T10:53:34.088Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "c6623189",
+        "author": "LoopFrictionIntegrator",
+        "time": "2026-09-30T10:54:37.606Z"
+      }
+    ]
+  }
+}

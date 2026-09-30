@@ -90,7 +90,7 @@ advance(unit) ≜ \`scripts/plan.mjs advance <unit> --plan <p> --to <state>\`
 retract(unit) ≜ \`scripts/plan.mjs retract <unit> --plan <p>\`
 revise(unit) ≜ \`scripts/plan.mjs revise <unit> --plan <p> [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]…\` ⟨spec(unit) · pin(unit) kept⟩
 revise(P) ≜ \`scripts/plan.mjs revise <plan> [--name <n>] [--realizes <concept>]…\` ⟨name(P) ∨ realizes(P)⟩
-bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P), cuts P's line \`plan/<plan>\` from the HEAD of its checkout into \`<main worktree>.plan-<plan>\`⟩
+bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P), brings P's integration line into being, once⟩
 close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
 reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p> [--name <n>] [--realizes <concept>] [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--state <state>] [--repin]\` ∨ \`scripts/plan.mjs reconcile <plan> [--name <n>] [--realizes <concept>]… [--state <state>]\` ↦ one version superseding every current version of x ⟨each field the versions disagree on is given · a unit whose versions pin differently takes --repin⟩
 land(unit) ≜ \`scripts/plan.mjs land <unit> --plan <p> --commit <c>\`

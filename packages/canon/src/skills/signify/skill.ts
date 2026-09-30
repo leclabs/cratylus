@@ -19,7 +19,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept, discovered by cold decode against the model's priors, never coined; stage 2 of exemplify, independently invocable.`,
+  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept, discovered by cold decode against the model's priors, never coined, for the corpus's core agent dimension names and values alone; stage 2 of exemplify, independently invocable.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
@@ -34,8 +34,8 @@ circ(n,c)   ⇔ fired(n) = D(c)
 σ*(c)       ≜ argmin_{n : circ(n,c)} ⟨|n|, n⟩
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n) ≠ ∅ } ∧ circ(∘ M, c)
-Art         ≜ every authored surface ⟨prose ≡ identifier ≡ path⟩
-α           : C ↣ Names ⟨dom(α) spans EVERY altitude of Art⟩
+Art         ≜ the corpus's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
+α           : C ↣ Names ⟨dom(α) ≜ the concepts the corpus's core agent dimension names and values name · every other term is the industry's own, and no consumer surface is held to α⟩
 register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 

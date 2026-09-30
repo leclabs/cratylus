@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RX32EV860A46GRQDKQMHQN",
+    "entity": "01M3RX32EV860A46GRQDKQMHQM",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T10:17:16.507Z",
+    "reason": "the stance and purview guards conflict on routing by name",
+    "cause": "stance-guardrail-pre denied the loop-friction dispatch"
+  },
+  "payload": {
+    "title": "stance guard reads routing by name as a dispatch echo",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Now that the judge answers, the stance pre-call guard denied the architect routing ready units by name to implementers, calling it a dispatch echo with no distilled intent. The architect role routes a unit by name alone and never writes its spec, and the purview guard denies a dispatch that carries a self-written spec. The two guards now pull in opposite directions on the loop's central act. Workaround used: the dispatch names each unit and states its shard's what and why in the design's words, which is the architect's own writing, not a spec. The stance rubric should recognise a routed unit name, with its shard stated, as a substantive dispatch.",
+    "blocks": []
+  }
+}

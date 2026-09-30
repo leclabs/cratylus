@@ -1,0 +1,134 @@
+{
+  "envelope": {
+    "id": "01M3RYMV9REWSTJVG8DM85SC4N",
+    "entity": "01M3RX0N5XMAM3RVTB8CX4SPWT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RYM1AQA49G8RMREPA9RSNH"
+    ],
+    "author": "AssayGuardsSkipSubagents",
+    "time": "2026-09-30T10:44:27.576Z",
+    "reason": "the repair changes only the implementer role line, which still binds its holder to its own isolated worktree restricted to the plan's line, committing there and never on main; every other text and the runtime refusal stand as judged at d6730bec, so plan's worktree clause holds: each unit is built in its own isolated worktree off the line, and nothing an agent reads teaches it how to use worktrees",
+    "cause": "re-assay of the landing at 4ab49710 against shard plan (version 2026-09-30T10:05), after the unit broke the whole at d6730bec"
+  },
+  "payload": {
+    "plan": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "spec": {
+      "name": "units-in-worktrees",
+      "intent": "Census @a9258730; re-derive any line cited below if its path changed since. Realize the clause `plan` gained at 2026-09-30T10:05 (operator ruling 'worktrees are the agents' own competence'): each unit is built in its own isolated worktree off the plan's line; how an agent uses worktrees is its own competence, and nothing it reads teaches it.\nAT CENSUS the loop's texts teach the mechanics. deliver (packages/canon/src/skills/deliver/skill.ts): header L25-31 and L37-50 (branch `plan/<plan>`, worktree `<main worktree>.plan-<plan>`, 'a branch cut from the line'); formal block line(P) L86 (branch name and worktree path), lacks(P) L87 and gather(P) L88 (git pipelines), L81, L104-105 and L122 ('a branch cut from line(P)'), description L126. plan (packages/canon/src/skills/plan/skill.ts:93): bind(P) names the branch and the worktree path. The implementer builds on 'its own branch cut from the plan's line' (packages/canon/src/dimensions/role/implementer.ts:8-9 and :30; packages/canon/src/agents/implementer.ts description and archetype; packages/canon/src/roles/implementer.ts:25-27). The integrator role reads records across 'worktree ∧ local-branch' and places the line's cut at 'HEAD ⟨bind-checkout⟩' (packages/canon/src/dimensions/role/integrator.ts:32, :35); the planner role says the same of bind (packages/canon/src/dimensions/role/planner.ts:25). docs/role.md:114-123 repeats the branch, the path and 'a branch cut from that line'.\nCHANGE. These texts say each unit is built in its own worktree, isolated, off the plan's line, and never on main. They keep what and why: the line has one birth, at bind; the integrator finds it and cuts none; a bound plan's work and every record about it live on the line; main receives it only at release; before release no worktree or local branch holds a record the line lacks. They drop branch names, worktree paths and git commands, and state lacks(P) and gather(P) as the outcomes they check and bring about rather than as pipelines. Leave as they stand every formal-block symbol shared with another cell (gate, verify, yield, anchor, gloss) and deliver's `conform @ signify` and `∀ unit, r : ¬conform(r) ⇒ ¬accept(unit)(r)` (test/reader-reach.test.ts pins both). Keep plan and deliver under Claude's hook cap (test/skill-hook-cap.test.ts; plan has 21 characters to spare at a9258730). Non-goal: the runtime's refusal naming the git command that restores a missing line is operator-facing and stays, as does packages/runtime/README.md. Add .changeset/units-in-worktrees.md (@cratylus/canon patch).\nWIDENED after the assay of a0e28a88 (not achieved), census @46601657 of plan/loop-friction; packages/runtime has not changed since a9258730. Two readings still teach the mechanics. (1) The runtime's refusal of a write about a bound plan whose line no worktree holds, or whose line does not exist, is StoreFault `lineless` (packages/runtime/src/record-store/store.ts:311-320, its doc comment L308-310), thrown from store.ts:331 (cut, so bind refuses the same way) and packages/runtime/src/capabilities/plan/reading.ts:1250, 1274; it hands the agent the branch, the worktree path and a `git worktree add` command. packages/runtime/README.md:94-97 states that the refusal prints that command. Tests pin the command text: packages/runtime/test/plan.test.ts:1427-1466 and 1468-1490, packages/runtime/test/note.test.ts:~590-620, packages/runtime/test/record-store.test.ts:~685-695. (2) deliver's bound(P) law (packages/canon/src/skills/deliver/skill.ts:104 at a0e28a88) says a worktree the runtime cannot find is 'a refusal that names the command restoring it'. CHANGE, widened. The refusal says what holds and what did not happen: the plan is bound, its line has no worktree (or does not exist), and nothing was written; it names no branch, no path and no git command, and keeps its 'line' fault code. Its doc comment and the README's statement of the refusal say the same. The tests assert that outcome and that the refusal carries none of the three. deliver's bound(P) law keeps the line's one birth and drops the claim that the refusal names a command. The changeset names @cratylus/runtime as well as @cratylus/canon.",
+      "static": [
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/skills/signify/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/agents/planner.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "packages/canon/src/roles/planner.ts",
+        "docs/role.md",
+        "packages/runtime/src/record-store/store.ts",
+        "packages/runtime/README.md",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/test/record-store.test.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        ".changeset/units-in-worktrees.md"
+      ],
+      "accept": [
+        "`git grep -n -E 'plan/<plan>|<main worktree>|\\.plan-<plan>|for-each-ref|ls-tree|ls-files|git worktree|git checkout|git -C' -- packages/canon/src docs/role.md` prints nothing. At a9258730 it prints deliver/skill.ts:26, 28, 86, 87, 88, plan/skill.ts:93 and docs/role.md:115, 121.",
+        "`git grep -n -E 'branch cut from|own branch|cut ↾ plan-line|bind-checkout' -- packages/canon/src docs/role.md` prints nothing. At a9258730 it prints agents/implementer.ts:18, 20, dimensions/role/implementer.ts:9, 30, dimensions/role/integrator.ts:32, dimensions/role/planner.ts:25, roles/implementer.ts:26, deliver/skill.ts:30, 54, 81, 105, 122, 126 and docs/role.md:122.",
+        "`git grep -n worktree -- packages/canon/src/dimensions/role/implementer.ts packages/canon/src/agents/implementer.ts packages/canon/src/skills/deliver/skill.ts` prints, in each of the three files, a line saying a unit is built in its own worktree off the plan's line. At a9258730 the two implementer files print nothing.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts test/reader-reach.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/formal-block-self-sufficiency.test.ts test/command-veracity.test.ts` and `pnpm --filter @cratylus/canon typecheck` exit 0, with plan and deliver under the cap.",
+        "`git grep -n 'worktree add' -- packages/runtime/src packages/runtime/README.md` prints nothing. At 46601657 it prints store.ts:309, 316, 317 and README.md:95, 96.",
+        "In packages/runtime/test/plan.test.ts, note.test.ts and record-store.test.ts, each case refusing a write about a bound plan whose line no worktree holds, or whose line does not exist, asserts that the refusal says nothing was written and contains none of `git `, the branch `plan/<name>` and the line's worktree path. Run against packages/runtime/src/record-store/store.ts at 46601657, those cases fail; print the failing run.",
+        "`git grep -n -E 'names the command|command restoring' -- packages/canon/src/skills/deliver/skill.ts` prints nothing, and deliver's bound(P) law still says the line has one birth, at bind. At a0e28a88 the grep prints L104.",
+        "Green: `pnpm --filter @cratylus/runtime exec vitest run test/plan.test.ts test/note.test.ts test/record-store.test.ts` and `pnpm --filter @cratylus/runtime typecheck` exit 0.",
+        "`.changeset/units-in-worktrees.md` exists and names @cratylus/canon and @cratylus/runtime."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "a0e28a88f9bb9c3ec514e4094afda8583d9393f0",
+        "author": "UnitsInWorktrees2",
+        "time": "2026-09-30T10:37:39.882Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "a0e28a88",
+        "verdict": "not-achieved",
+        "missing": [
+          "plan — 'how an agent uses worktrees is its own competence, and nothing it reads teaches it': the runtime refusal of a bound plan whose line no worktree holds still hands the agent a branch name, a worktree path and a git worktree add command (packages/runtime/src/record-store/store.ts, lineless)",
+          "plan — same clause: the deliver skill still tells its reader that a worktree the runtime cannot find is a refusal that names the command restoring it (packages/canon/src/skills/deliver/skill.ts, the bound(P) law on the line's one birth)"
+        ],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T10:39:44.659Z"
+      },
+      {
+        "kind": "land",
+        "commit": "d6730bec99d0f9634fcd4acdc403f0dfb6df1407",
+        "author": "UnitsInWorktrees2",
+        "time": "2026-09-30T10:41:35.857Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "d6730bec",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T10:42:10.932Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm test: @cratylus/canon test/reader-density.test.ts > RESIDUE gate (AC-RESIDUE) > every deployed σ* payload is admissible — dimensions/role/implementer.ts free-NL connective [that] in \"commits own work ↾ that worktree\" (introduced by a0e28a88)",
+        "author": "LoopFrictionIntegrator",
+        "time": "2026-09-30T10:43:16.574Z"
+      },
+      {
+        "kind": "land",
+        "commit": "4ab49710d029b00974a47733714603fba64cd887",
+        "author": "UnitsInWorktrees2",
+        "time": "2026-09-30T10:44:00.983Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "4ab49710",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T10:44:27.575Z"
+      }
+    ]
+  }
+}

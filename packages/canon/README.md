@@ -54,7 +54,10 @@ The first principle (`dimensions/engineering-principles/cratylism.ts`) is not st
 It rides only the cells whose laws apply it: the ten skills that name concepts by anchor, optimal
 sign or cold decode set it as their `preamble`, and an agent carries it once, through the
 engineering-principles of the role it holds. A cell that does not use it never holds a host's own
-authored surfaces to this corpus's naming axiom. It is intrinsic to those cells' projected bytes, so
+authored surfaces to this corpus's naming axiom. The axiom is scoped: the cold-decode oracle decides
+signs only for the corpus's core agent dimension names and values, the terminology it was built to
+discover. Every other term is the industry's own, used as the industry understands it, and no
+consumer surface is held to the oracle. It is intrinsic to those cells' projected bytes, so
 it survives deployment into a foreign repository rather than depending on ambient context.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the

@@ -19,12 +19,22 @@ judge, so it stays fast and offline. These are for calibration against the live 
 through `stance-judge.sh` N times and count verdicts. A rubric edit that moves a rate here is a real
 change; one that does not is a preference.
 
+## Dispatches
+
+`dispatch-echo.txt` is the payload `stance-guardrail-pre.sh` emits under `STANCE_EMIT_PAYLOAD` for the
+hermetic suite's `DISPATCH_ECHO` prompt: an `Agent` dispatch handing the delegate the operator's words. It
+is an expected-BLOCK case, and `calibrate-stance-judge.sh` judges every `dispatch-*.txt` beside the
+`turn-*.txt` files. Its must-PASS counterpart is `controls/route-units-by-name.txt`, below.
+
 ## Controls
 
-`controls/` holds three payloads a judge must **not** block: a push gate handed over with the agent's
-pick, a done report with no tail, and a push the operator ordered and the agent executed. They sit
-outside the `turn-*.txt` glob because they are expected-PASS cases, and `calibrate-stance-judge.sh`
-judges each of them N times and reports how many judgements blocked (zero is the answer). Without
-them a rubric cut that made every payload convict would still score six for six on the fixtures.
+`controls/` holds four payloads a judge must **not** block: a push gate handed over with the agent's
+pick, a done report with no tail, a push the operator ordered and the agent executed, and
+`route-units-by-name.txt`, the payload the same worker emits for the architect's routing of three units
+by `<unit> of loop-friction` that the omp pre-call guard denied on 2026-09-30 as a dispatch-echo. A unit's
+name is an address and the spec there carries the intent, so a dispatch that routes it is not an echo.
+They sit outside the `turn-*.txt` and `dispatch-*.txt` globs because they are expected-PASS cases, and
+`calibrate-stance-judge.sh` judges each of them N times and reports how many judgements blocked (zero is
+the answer). Without them a rubric cut that made every payload convict would still score every fixture.
 A judge that cannot be reached prints `could not look: <why>` and stops rather than reporting a
 table of zeros; `STANCE_JUDGE_CMD` names another judge where `claude` cannot reach its API.

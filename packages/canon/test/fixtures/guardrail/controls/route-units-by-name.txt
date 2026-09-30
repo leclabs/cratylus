@@ -1,0 +1,7 @@
+Agent dispatch (the delegate prompt/message): Plan `loop-friction`, repository /home/lex/workspaces/cratylus. Your unit's spec: `cratylus plan show <unit> --plan loop-friction`.
+
+`guards-skip-subagents of loop-friction`
+
+`omp-guards-skip-subagents of loop-friction`
+
+`units-in-worktrees of loop-friction`

@@ -674,7 +674,7 @@ describe('record store — a plan’s line', () => {
     ).toBe(true);
   });
 
-  it('a branch no worktree holds is read from what it commits, and cut refuses it, saying the worktree that restores it', () => {
+  it('a branch no worktree holds is read from what it commits, and cut refuses it, saying the line has no worktree', () => {
     const repo = committed();
     const line = new RecordStore(repo).cut('p');
     const written = new StagedStore(repo);
@@ -687,7 +687,7 @@ describe('record store — a plan’s line', () => {
     expect(store.lines).toEqual([]);
     expect(ids(store.read(DOMAIN))).toEqual(ids([record]));
     expect(() => store.cut('p')).toThrow(
-      `git worktree add ${line.path} plan/p`,
+      'the line of plan p has no worktree, so nothing was written',
     );
     expect(store.line('p')).toEqual({
       branch: 'plan/p',

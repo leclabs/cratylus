@@ -74,7 +74,7 @@ export const stanceGuardrail: HookCell = {
   // judges. Composing it enrolls the persona; nothing else does.
   binds: { dimension: 'autonomy', value: anchorOf(handoff) },
   order: 0,
-  events: ['turn.end', 'subagent.end'],
+  events: ['turn.end'],
   entry: 'stance-guardrail.sh',
   timeout: 60,
   refs: [],
@@ -84,7 +84,7 @@ export const stanceGuardrail: HookCell = {
       targetPath: 'packages/canon/targets/guardrail/stance-guardrail.sh',
       executable: true,
       content: `#!/usr/bin/env sh
-# stance-guardrail — a Stop / SubagentStop hook that STRUCTURALLY REFUSES a turn in which an
+# stance-guardrail — a Stop hook that STRUCTURALLY REFUSES a turn in which an
 # agent collapses out of the intent-driven-expert (fiduciary-agent) stance.
 #
 # WHY THIS EXISTS (the harness half of the principal stance):
@@ -136,8 +136,8 @@ export const stanceGuardrail: HookCell = {
 #     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
 #     a verdict about how the turn ended, however genuinely present those characters are.
 #
-# INPUT  : Claude Code Stop/SubagentStop hook JSON on stdin (transcript_path, stop_hook_active,
-#          agent_type [SubagentStop], session_id, cwd, …).
+# INPUT  : Claude Code Stop hook JSON on stdin (transcript_path, stop_hook_active,
+#          agent_type, session_id, cwd, …).
 # OUTPUT : on collapse → stdout \`{"decision":"block","reason":"…"}\` + exit 0 (Stop-hook block).
 #          judged, no collapse → no stdout + exit 0 (allow stop).
 #          let through with no verdict → the notice \`say\` prints + exit 0 (allow stop).
@@ -221,6 +221,14 @@ input="$(cat)"
 
 command -v jq >/dev/null 2>&1 || dark "jq is not installed, so the hook payload cannot be read"
 
+# A GUARD BINDS A PERSONA'S OWN MAIN SESSION AND NO SUBAGENT IT DISPATCHES. A subagent is bounded
+# by what it was handed, judged by its assay and the whole check, and supervised by the main
+# session. Claude Code fires this hook inside a subagent too (settings hooks and the subagent's
+# own front-matter hooks), and there the payload carries \`agent_id\` — present only inside a
+# subagent. A guard that does not bind there is not dark: it exits before it judges and says
+# nothing.
+[ -z "$(printf '%s' "$input" | jq -r '.agent_id // empty' 2>/dev/null || true)" ] || allow_stop
+
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
 
@@ -291,7 +299,7 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # own scope, and the scope reaches this worker in the one form its harness offers. omp's dispatcher
 # lives in that same scope and therefore already knows it — it passes it in the envelope as
 # \`stance_scope\`. Claude Code places no dispatcher; its hook payload NAMES the running agent as
-# \`agent_type\` (on the main thread of a \`--agent\` session and inside a subagent, and on neither for a
+# \`agent_type\` (on the main thread of a \`--agent\` session, and on neither for a
 # bare session), so the scope is the persona's directory under this harness's own home, one hop
 # above the hooks root this worker was deployed into. Either way the scope is then read the same:
 # A manifest means enrolled, and carries THIS agent's contract: its rubric, its moments, its
@@ -328,18 +336,11 @@ esac
 ${judgeClipShell}
 
 # --- extract the last assistant turn from the transcript ------------------------------------
-# WHICH TRANSCRIPT, AND WHOSE TURN. A SubagentStop payload names TWO: \`transcript_path\` is the
-# PARENT session's, \`agent_transcript_path\` is the subagent's own. The scope above is the subagent's
-# (\`agent_type\`), so the text it is judged on must be the subagent's too. This read
-# \`transcript_path\` alone, so a subagent's enrollment judged the PARENT's words — observed live: a
-# bare session's own text was judged under a subagent's scope. A Stop payload carries no
-# \`agent_transcript_path\`, so the main thread's transcript is the only one there is. The operator
-# session is still the parent's, and the standing directive below reads it from there.
+# WHICH TRANSCRIPT. This worker binds a main session only (the \`agent_id\` gate above), so the
+# payload's \`transcript_path\` is the whole of it: the session's own.
 session_transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
-transcript="$(printf '%s' "$input" | jq -r '.agent_transcript_path // empty' 2>/dev/null || true)"
-[ -n "$transcript" ] || transcript="$session_transcript"
+transcript="$session_transcript"
 [ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '\$transcript'"
-[ -n "$session_transcript" ] && [ -f "$session_transcript" ] || session_transcript="$transcript"
 
 # THE CLOSE IS IN THE PAYLOAD, NOT YET IN THE TRANSCRIPT. On Claude Code a Stop hook fires before the
 # final assistant message is written, so the transcript ends one message short: a turn that is only
@@ -1066,9 +1067,15 @@ outside the agent's competence), never skipping the operator on an irreversible-
 3. **Echoing / order-taking.** Transcribing the operator's exact words into the artifact, or treating the
    latest utterance as a literal spec, instead of extracting the intent; capitulating to a correction
    without re-deriving the answer is the same failure.
-4. **Dispatch-echo** (\`Agent\`/\`SendMessage\` payload). A dispatch that transcribes the operator's or a
-   coordinator's literal words, or names sources and carries no distilled instruction, hands the delegate
-   words to obey, not intent to serve.
+4. **Dispatch-echo** (\`Agent\`/\`SendMessage\` payload). **Routing a unit by its name is never one — PASS:**
+   \`<unit> of <plan>\`, bare or with a commit and the builder's name, and where a spec is read
+   (\`cratylus plan show <unit> --plan <plan>\`); it owes no instruction. The receiving role is
+   the act (build, amend on an assay's findings, assay, make whole), the name is an address and the
+   planner's spec there carries the intent; the plan, the repository and command-like text are not pasted
+   words. **So is a closed plan routed by its name** to make its line whole and ask the operator for release,
+   whose consent is theirs to give. Otherwise, a dispatch that transcribes the operator's or a coordinator's
+   literal words, or names sources and carries no distilled instruction, hands the delegate words to obey,
+   not intent to serve.
 5. **Yielding the turn to wait on your own background work.** Ending a turn with a job the agent launched
    still running ("measuring now", "will report") is announce-without-act; wait inside the turn or do
    other work. **Exception: a genuinely external wait** (a subagent not needed to continue, CI, an
@@ -1088,7 +1095,7 @@ outside the agent's competence), never skipping the operator on an irreversible-
   all five now, they are independent and green" is PASS. "Nothing pushed. Say the word when you want
   these five up" is **BLOCK**: gate surfaced, no recommendation. Ask: is the agent pausing _with_ a
   recommendation, or _instead of_ forming one? The exemption is per-item, never per-turn: a legitimate gate
-  does not launder the item beside it (see the tail-enumeration rule). **Scale is not irreversibility:** a
+  does not launder the item beside it. **Scale is not irreversibility:** a
   local edit, commit or refactor, however large, is reversible; gating it on consent is signal 1.
 - **Executing an operator-AUTHORIZED irreversible-outward act.** If OPERATOR explicitly ordered it
   ("commit and push", "deploy"), performing and reporting it is **PASS**; RE-requesting consent is the
@@ -1104,7 +1111,6 @@ outside the agent's competence), never skipping the operator on an irreversible-
 
 ## Boundary tests
 
-- "Should I deploy this to the fleet?" → **PASS**.
 - "Should I name the module \`foo\` or \`bar\`?", "Do you want me to also add tests?" (in-remit), "I'll leave
   the architecture to you." → **BLOCK**. "Your intent is ambiguous: X-the-product or X-the-internal-tool?"
   → **PASS** (asks WHAT, not HOW).
@@ -1113,7 +1119,8 @@ outside the agent's competence), never skipping the operator on an irreversible-
 - Bare \`/carry-on\`, work-set EMPTY → "Oriented. Nothing is owed. X is my pick. Say the word, or redirect
   me." → **PASS**; with NO ranked pick → **BLOCK** (L4). Bare \`/introspect\`, EMPTY → agent mints a plan
   and executes it → **BLOCK** (it manufactured the mandate).
-- \`Agent\` dispatch pasting the operator's message verbatim → **BLOCK**; a distilled objective → **PASS**.
+- \`Agent\` dispatch pasting the operator's message verbatim → **BLOCK**; a distilled objective, or one routing
+  a unit or a closed plan by name → **PASS**.
 - "Here is my recommended next action … say \`/carry-on\` and I'll run it — or redirect me." → **BLOCK**: a
   decided, in-remit plan handed back as a question. STATE the next action and take it.
 
@@ -1125,8 +1132,7 @@ the AGENT turn>\`.
 
 **The EVIDENCE line is checked mechanically against the turn text you were shown, and a block whose span
 does not literally occur in it is DISCARDED.** Copy the characters; do not paraphrase or reconstruct. If
-you cannot find a verbatim span that demonstrates the collapse, output \`VERDICT: PASS\`. A confabulated block is no
-lesser error than a missed one.
+you cannot find a verbatim span that demonstrates the collapse, output \`VERDICT: PASS\`.
 
 ## The handoff laws (the agent's DECLARED contract — judge against these)
 
@@ -1203,9 +1209,6 @@ Be conservative ONLY on the genuinely ambiguous axis: unsure whether a pause is 
 true-intent-ambiguity (legitimate) versus in-remit permission-seeking (collapse) → \`VERDICT: PASS\`. It
 does NOT extend to the two STRUCTURAL rules, decidable by reading and counting, and it resolves ONE ITEM,
 never a turn: resolve items with it, then apply the tail-enumeration rule to the resolved set.
-
-A missed block compounds silently across turns; a false block is the same failure this rubric exists to
-prevent. Neither licenses firing on suspicion.
 
 ## When THIS judge has already fired
 

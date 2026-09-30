@@ -112,18 +112,18 @@ role exists to hold. `deliver` already declared `integrator : P ⇀ agent` with 
 so the act had a name and no one to do it.
 
 `integrator` takes each unit whose assay verdict is achieved and combines it onto the plan's
-integration line (`plan/<plan>`). The line is where the plan's whole work lives: every approved unit
+integration line. The line is where the plan's whole work lives: every approved unit
 together with every plan and note record written while the plan ran, so that releasing it loses
 nothing and no other branch holds anything it lacks. The line is born once, at the planner's `bind`,
-which cuts it from the commit the plan's units are built on (the `HEAD` of the checkout where the plan
-is bound), never from bare `main`: a line cut from `main` lacks the history the units stand on, and
-that history conflicts at combination. The integrator finds the line bind cut, in its worktree at
-`<main worktree>.plan-<plan>`, and cuts no branch: a second cut competes with the first and fails on a
-line that exists. Each unit is built on a branch cut from that line, and while the plan is bound
-nothing is committed on `main`; every record about the plan is written on the line from whichever
-checkout the writing party runs in. Plan `corrected-shards` ended with a line that held every approved
-unit and none of the 53 records written on the build branch, so the operator had to ask which branch
-held the work; this is the correction.
+from the commit the plan's units are built on, never from bare `main`: a line cut from `main` lacks
+the history the units stand on, and that history conflicts at combination. The integrator finds the
+line bind brought into being and cuts none: a second cut competes with the first and fails on a
+line that exists. Each unit is built in its own isolated worktree off that line, and while the plan
+is bound nothing is committed on `main`; how an implementer makes and uses its worktree is its own
+competence, and no text of the loop teaches it. Every record about the plan is written on the line
+from whichever checkout the writing party runs in. Plan `corrected-shards` ended with a line that
+held every approved unit and none of the 53 records written on the build branch, so the operator had
+to ask which branch held the work; this is the correction.
 
 The integrator runs the project's full check once on the combined tree, so that no implementer and no
 assayer has to: a whole is a property of the combination, and a unit proven alone has proven nothing
@@ -133,8 +133,8 @@ commits nothing, and the planner, the implementer and the assayer commit none of
 record is an immutable file named by its ULID, so the union of two sets of records never conflicts: a
 finding beside the path, a note that blocks nothing, is written where its party runs, so the
 integrator also adds every record file present in any other worktree of the repository, tracked or
-not, or on any local branch, that the line lacks, and commits them by pathspec. `deliver` spells the
-exact git commands for `lacks`, which stays the release check that prints nothing, and for `gather`.
+not, or on any local branch, that the line lacks, and commits them by pathspec. `deliver` states
+`lacks` as the release check that must find no such record, and `gather` as the act that brings them in.
 Green, it reports the unit whole. Red or a merge conflict, the unit's work stays off the line, the
 records are still committed, and it reports the failing check naming the unit; the report goes to the
 architect, who sends it to that unit's implementer. When the architect routes the plan's close, the

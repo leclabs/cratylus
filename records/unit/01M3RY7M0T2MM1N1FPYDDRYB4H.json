@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3RY7M0T2MM1N1FPYDDRYB4H",
+    "entity": "01M3RWZNFX1F4RHMW79BZ1QZ8G",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RXRSPTPH3WTQMKH14V18K8"
+    ],
+    "author": "AssayGuardsSkipSubagents",
+    "time": "2026-09-30T10:37:14.138Z",
+    "reason": "enforcement scope holds on Claude Code for the canon guards: each of the three guards, reached inside a subagent (payload carrying agent_id), lets the turn or call through without asking its judge and without a notice, and the same payload in a composing persona's main session is judged; the Stop guard no longer binds a subagent's end; the rest of the concept (visible fail-open, asking again, fitting the harness's time, binding by composition) is unchanged and its cases pass; the CLI README's Enforcement scope section carries the clause; no other artifact realized the main-session clause on Claude Code, and omp is the sibling unit's",
+    "cause": "assay of the landing at 1947c674 against shard enforcement scope (version 2026-09-30T08:38)"
+  },
+  "payload": {
+    "plan": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "spec": {
+      "name": "guards-skip-subagents",
+      "intent": "Census @a9258730; re-derive any line cited below if its path changed since. Realize the clause `enforcement scope` gained at 2026-09-30T08:38 (operator ruling 'guards bind main-session personas only'): a guard binds a composing agent only in that agent's own main session, never in a subagent it dispatches, which is bounded by what it was handed, judged by its assay and the whole check, and supervised by the main session. This unit carries the clause for the canon guard cells and for Claude Code; omp's bridge is unit omp-guards-skip-subagents.\nAT CENSUS. (1) The Stop guard's cell binds `events: ['turn.end', 'subagent.end']` (packages/canon/src/hooks/stance-guardrail.ts:77), so a finished subagent's turn is judged: on Claude as SubagentStop against the subagent's own transcript (stance-guardrail.ts:331-337), on omp on the `task` tool's tool_result. (2) On Claude Code, settings.json hooks and a subagent's front-matter hooks fire inside a subagent, and the payload then carries `agent_id`, which is present only inside a subagent, with the subagent's `agent_type` (code.claude.com/docs/en/hooks, common input fields). The three workers resolve their scope from `stance_scope` or `agent_type` (stance-guardrail.ts:293-313, stance-guardrail-pre.ts:175-186, purview-guardrail.ts:178-190) and never read `agent_id`, so an enrolled agent running as a subagent is judged at every turn end and tool call.\nCHANGE. Drop `subagent.end` from the Stop guard's events. Each of the three workers, given a payload carrying `agent_id`, exits 0 before asking its judge and prints nothing: a guard that does not bind there is not dark, so it says nothing. A main-session payload is judged exactly as today. Regenerate packages/canon/targets/guardrail/*.sh with `pnpm canon:project:targets`. Remove what served only the subagent turn: the SubagentStop transcript selection in the Stop worker and its case in packages/canon/test/stance-guardrail-dark.test.ts (~L389), and in packages/canon/test/support/guardrail/test-stance-guardrail.sh the SubagentStop-shaped payloads become Stop payloads where the case is about a main session. Correct every statement that the corpus binds subagent.end: hook-cells.ts header (L5-7), packages/canon/targets/guardrail/README.md (L3, L46-48, L80-83, L116), the event-vocabulary.test.ts doc comment (L100-101), CANON_EVENTS in packages/forge/test/project/realization.test.ts (L207-212), and packages/cli/README.md L84-86. The Enforcement scope entry of packages/cli/README.md (L102) gains the main-session clause. The event vocabulary keeps subagent.end (packages/canon/src/manifest.ts) and the adapters keep their bindings for it. Add .changeset/guards-skip-subagents.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/src/manifest.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/events.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/hook-cells.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/event-vocabulary.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/forge/test/project/realization.test.ts",
+        "packages/cli/README.md",
+        ".changeset/guards-skip-subagents.md"
+      ],
+      "accept": [
+        "For each of packages/canon/targets/guardrail/stance-guardrail.sh, stance-guardrail-pre.sh and purview-guardrail.sh, with the worker's scope enrolled as the existing tests rig it and its judge seam (STANCE_JUDGE_CMD, or STANCE_EMIT_PAYLOAD) pointed at a stub that records each call, a valid payload for that worker's event that carries `agent_id` exits 0, prints nothing and leaves the stub unasked; the same payload without `agent_id` asks the stub. The cases live in packages/canon/test/stance-guardrail-dark.test.ts or packages/canon/test/purview-guardrail.test.ts. At a9258730 the stub is asked in both runs.",
+        "`git grep -n -E 'subagent\\.end|SubagentStop' -- packages/canon/src/hooks packages/canon/src/hook-cells.ts packages/canon/targets packages/cli/README.md` prints nothing. At a9258730 it prints stance-guardrail.ts:77, hook-cells.ts:6, the targets README and stance-guardrail.sh, and cli README:85, among others.",
+        "The Enforcement scope entry of packages/cli/README.md says a guard binds only in a composing persona's own main session, never in a subagent it dispatches; print the entry. At a9258730 it says neither.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts test/stance-guardrail-dark.test.ts test/event-vocabulary.test.ts`, `pnpm --filter @cratylus/canon run stance-guard:test`, `pnpm --filter @cratylus/forge exec vitest run test/project/realization.test.ts` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/guards-skip-subagents.md` exists and names @cratylus/canon."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3RQE2NGC40BHYYPGFMWSRN2",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "1947c674",
+        "author": "GuardsSkipSubagents",
+        "time": "2026-09-30T10:29:08.442Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "1947c674",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T10:37:14.137Z"
+      }
+    ]
+  }
+}

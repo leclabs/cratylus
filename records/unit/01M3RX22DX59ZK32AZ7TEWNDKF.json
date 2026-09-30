@@ -1,0 +1,73 @@
+{
+  "envelope": {
+    "id": "01M3RX22DX59ZK32AZ7TEWNDKF",
+    "entity": "01M3RX0N5XMAM3RVTB8CX4SPWT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RX0N5XMAM3RVTB8CX4SPWV"
+    ],
+    "author": "LoopFrictionPlanner",
+    "time": "2026-09-30T10:16:43.709Z",
+    "reason": "ready unit handed out",
+    "cause": "architect handed shards enforcement scope, plan and prime principle"
+  },
+  "payload": {
+    "plan": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "spec": {
+      "name": "units-in-worktrees",
+      "intent": "Census @a9258730; re-derive any line cited below if its path changed since. Realize the clause `plan` gained at 2026-09-30T10:05 (operator ruling 'worktrees are the agents' own competence'): each unit is built in its own isolated worktree off the plan's line; how an agent uses worktrees is its own competence, and nothing it reads teaches it.\nAT CENSUS the loop's texts teach the mechanics. deliver (packages/canon/src/skills/deliver/skill.ts): header L25-31 and L37-50 (branch `plan/<plan>`, worktree `<main worktree>.plan-<plan>`, 'a branch cut from the line'); formal block line(P) L86 (branch name and worktree path), lacks(P) L87 and gather(P) L88 (git pipelines), L81, L104-105 and L122 ('a branch cut from line(P)'), description L126. plan (packages/canon/src/skills/plan/skill.ts:93): bind(P) names the branch and the worktree path. The implementer builds on 'its own branch cut from the plan's line' (packages/canon/src/dimensions/role/implementer.ts:8-9 and :30; packages/canon/src/agents/implementer.ts description and archetype; packages/canon/src/roles/implementer.ts:25-27). The integrator role reads records across 'worktree ∧ local-branch' and places the line's cut at 'HEAD ⟨bind-checkout⟩' (packages/canon/src/dimensions/role/integrator.ts:32, :35); the planner role says the same of bind (packages/canon/src/dimensions/role/planner.ts:25). docs/role.md:114-123 repeats the branch, the path and 'a branch cut from that line'.\nCHANGE. These texts say each unit is built in its own worktree, isolated, off the plan's line, and never on main. They keep what and why: the line has one birth, at bind; the integrator finds it and cuts none; a bound plan's work and every record about it live on the line; main receives it only at release; before release no worktree or local branch holds a record the line lacks. They drop branch names, worktree paths and git commands, and state lacks(P) and gather(P) as the outcomes they check and bring about rather than as pipelines. Leave as they stand every formal-block symbol shared with another cell (gate, verify, yield, anchor, gloss) and deliver's `conform @ signify` and `∀ unit, r : ¬conform(r) ⇒ ¬accept(unit)(r)` (test/reader-reach.test.ts pins both). Keep plan and deliver under Claude's hook cap (test/skill-hook-cap.test.ts; plan has 21 characters to spare at a9258730). Non-goal: the runtime's refusal naming the git command that restores a missing line is operator-facing and stays, as does packages/runtime/README.md. Add .changeset/units-in-worktrees.md (@cratylus/canon patch).",
+      "static": [
+        "packages/runtime/src/record-store/store.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/skills/signify/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/agents/planner.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "packages/canon/src/roles/planner.ts",
+        "docs/role.md",
+        ".changeset/units-in-worktrees.md"
+      ],
+      "accept": [
+        "`git grep -n -E 'plan/<plan>|<main worktree>|\\.plan-<plan>|for-each-ref|ls-tree|ls-files|git worktree|git checkout|git -C' -- packages/canon/src docs/role.md` prints nothing. At a9258730 it prints deliver/skill.ts:26, 28, 86, 87, 88, plan/skill.ts:93 and docs/role.md:115, 121.",
+        "`git grep -n -E 'branch cut from|own branch|cut ↾ plan-line|bind-checkout' -- packages/canon/src docs/role.md` prints nothing. At a9258730 it prints agents/implementer.ts:18, 20, dimensions/role/implementer.ts:9, 30, dimensions/role/integrator.ts:32, dimensions/role/planner.ts:25, roles/implementer.ts:26, deliver/skill.ts:30, 54, 81, 105, 122, 126 and docs/role.md:122.",
+        "`git grep -n worktree -- packages/canon/src/dimensions/role/implementer.ts packages/canon/src/agents/implementer.ts packages/canon/src/skills/deliver/skill.ts` prints, in each of the three files, a line saying a unit is built in its own worktree off the plan's line. At a9258730 the two implementer files print nothing.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts test/reader-reach.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/formal-block-self-sufficiency.test.ts test/command-veracity.test.ts` and `pnpm --filter @cratylus/canon typecheck` exit 0, with plan and deliver under the cap.",
+        "`.changeset/units-in-worktrees.md` exists and names @cratylus/canon."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

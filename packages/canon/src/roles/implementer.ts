@@ -23,8 +23,8 @@ import type { RoleCell } from './hold.js';
 // THE BOTTOM RUNG, and the only one whose write layer is the substrate. It carries no
 // workflow skill by design: a skill guides an agent through decisions it must make, and
 // this position's decisions were made for it. It needs a unit of work, tools, and the
-// discipline to stay inside the boundary: its unit is built on its own branch cut from
-// the plan's line, and while the plan is bound it never commits on main.
+// discipline to stay inside the boundary: its unit is built in its own isolated worktree
+// off the plan's line, and while the plan is bound it never commits on main.
 //
 // `note` and nothing else, because what it could not prove and any finding beside the
 // path leave it as a note, and `note` composes nothing, so the implementer still never
