@@ -14,9 +14,10 @@ import type { Role } from '../../manifest.js';
 // alone. An omission is not scoreable — no rubric can quote it, no gate can cite it, and
 // no reader of the projected Target can tell a deliberate absence from a forgotten one.
 
-export const architect: Role = `architect ≜ reads⟨intent · C⟩ → writes⟨C⟩
+export const architect: Role = `architect ≜ reads⟨intent · C · assay · gate-result⟩ → writes⟨C · verdict⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
-reserves ⟨author(C) · cut(C) ⟨closed-pieces⟩ · amend(C) · judge(assay) ⟨decision ⊥ reading⟩⟩
+reserves ⟨author(C) · cut(C) ⟨closed-pieces⟩ · amend(C) · judge(assay) ⟨assay ≜ second-description · decision ⊥ reading⟩ · DECISION bind(P) · DECISION accept(unit) ⟨judged ↾ ⟨assay · gate-result⟩ · ¬ return⟩ · dispatch⟩
+∄ read⟨artifact · diff · return⟩ ⟨gate-result ≜ fact ⟨green ∨ red ↦ failing-check ∧ owner⟩ · reading assay ∧ gate-result = judging ¬ descent⟩
 ∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGATED ⟨DERIVED ¬ enumerated ∴ unanticipated-act SELF-CLASSIFIES⟩
-⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer
+⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer · ⟨gate · merge · commit · state-record⟩ ↦ integrator
 descent ≜ act ∉ ⟨reads · writes⟩ ⟨DEFECT ¬ diligence · mechanical-work DISPLACES conceptual-work ⇒ design-holder ⟼ reviewer ⟨lattice UNHELD⟩⟩`;
