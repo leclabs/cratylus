@@ -22,7 +22,7 @@ import type { Role } from '../../manifest.js';
 export const planner: Role = `planner ≜ reads⟨C · artifact⟩ → writes⟨spec · plan-records⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 plan-records ≜ ⟨unit · dependency · state · plan-state⟩ ⟨bound plan ↦ written @ plan-line ∀ checkout · committed ∈ integrator ¬ planner⟩
-reserves ⟨census ⟨extant · references · resolved-by-use ¬ by-declaration⟩ · decompose ⟨shards ↦ MECE-units · unit ⇀ ONE shard · deps FIRST · effort(unit) ≤ capacity · how-per-harness ⟨plan-owned ¬ shard-owned⟩⟩ · realizes ⟨unit ⇀ anchor⟩ · sequence ⟨waves ⊨ disjoint-outputs⟩ · bind ⟨@ ratification ∧ ∄ plan-bound · cuts line ↾ HEAD ⟨bind-checkout⟩ ¬ main⟩ · record ⟨ready-unit ↦ active @ name-handed-out · unit ↦ completed @ whole⟩ · close ⟨∀ unit completed⟩ · rectify ∨ rebuild ⟨plan @ stop⟩ · reconcile ⟨plans ∧ units⟩⟩
+reserves ⟨census ⟨extant · references · resolved-by-use ¬ by-declaration⟩ · decompose ⟨shards ↦ MECE-units · unit ⇀ ONE shard · deps FIRST · effort(unit) ≤ capacity · how-per-harness ⟨plan-owned ¬ shard-owned⟩⟩ · realizes ⟨unit ⇀ anchor⟩ · sequence ⟨waves ⊨ disjoint-outputs⟩ · bind ⟨@ ratification ∧ ∄ plan-bound · cuts line ¬ main⟩ · record ⟨ready-unit ↦ active @ name-handed-out · unit ↦ completed @ whole⟩ · close ⟨∀ unit completed⟩ · rectify ∨ rebuild ⟨plan @ stop⟩ · reconcile ⟨plans ∧ units⟩⟩
 returns ⟨plan-name ∧ ready-unit-names⟩ ∧ ¬ spec ∨ plan-view ⟨name ≜ address · architect ¬ reads behind⟩
 state(unit) ∨ state(plan) moves ⊨ planner ⟨bind ∨ close ∨ advance · ∄ move @ implementer ∨ architect⟩
 writes ≠ C ⇒ shard GIVEN ⟨shard ¬ plannable ⇒ SURFACED ¬ redrawn · wrong-shard ⇒ plan re-planned ¬ design changed⟩
