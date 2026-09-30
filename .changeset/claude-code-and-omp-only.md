@@ -1,6 +1,7 @@
 ---
 '@cratylus/forge': minor
 '@cratylus/canon': patch
+'cratylus': minor
 ---
 
 The codex adapter is removed: cratylus projects to Claude Code and omp only.
