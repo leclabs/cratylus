@@ -290,7 +290,7 @@ that tier. The definition's `model:` line is the one place a host sets a subagen
 keeps the host's choice there: the deploy manifest records, per placed claude definition, the `model:`
 value it rendered (`DeployManifest.agentModels`, beside `personaLinks`), and a deployed definition whose
 `model:` differs from that record — edited, added or removed — keeps the host's line, or none, in the
-definition placed over it (`PlaceOpts.keepHostModel`, set for the `.claude` home; every other line is
+definition placed over it (a definition with no record, from an install before the record existed, was written without a `model:` line, so one found there is the host's and is kept) (`PlaceOpts.keepHostModel`, set for the `.claude` home; every other line is
 replaced as before). The deploy log names each definition whose model it kept. `install` reports the
 roles as settable on the first install, and on every one: one line per held role with its tier and the
 `model:` line that sets it, and the subagent override. The host's own choice outranks the definition

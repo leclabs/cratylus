@@ -146,6 +146,24 @@ describe('a host’s model line in a deployed claude def', () => {
     expect(readFileSync(f.placed, 'utf-8')).toBe(def('sonnet', 'third'));
   });
 
+  it('keeps a model the host set on a root installed before any record existed', () => {
+    const f = fixture();
+    mkdirSync(join(f.placed, '..'), { recursive: true });
+    writeFileSync(f.placed, def('haiku', 'old'), 'utf-8');
+    f.render('opus', 'new');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku', 'new'));
+  });
+
+  it('gives a def written before any record, with no model line, the rendered one', () => {
+    const f = fixture();
+    mkdirSync(join(f.placed, '..'), { recursive: true });
+    writeFileSync(f.placed, def(undefined, 'old'), 'utf-8');
+    f.render('opus', 'new');
+    f.deploy();
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus', 'new'));
+  });
+
   it('is claude’s alone: another harness’s def is overwritten whole', () => {
     const f = fixture('.omp');
     f.render('opus', 'first');

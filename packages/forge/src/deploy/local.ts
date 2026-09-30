@@ -111,8 +111,10 @@ function withModelLine(md: string, line: string | undefined): string {
  *  line: the manifest records the `model:` each def was rendered with
  *  (`report.models`), and a deployed def whose line differs from that record is the
  *  host's choice, so the def placed over it carries the host's line — or none, where
- *  the host removed it — and the log names it. No record (a first deploy) ⇒ nothing
- *  to tell an edit from, and the def is written as rendered. */
+ *  the host removed it — and the log names it. A def with NO record was placed before
+ *  the record existed, by a deploy that wrote no `model:` line, so its baseline is no
+ *  model: a `model:` line found there is the host's and is kept, and a def with none
+ *  takes the rendered one. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -145,9 +147,10 @@ export function placeAgentsLocal(
     if (recorded !== undefined && report.models !== undefined) {
       const rendered = frontMatterModel(def);
       report.models[name] = rendered?.value ?? null;
-      if (Object.hasOwn(recorded, name) && existsSync(dest)) {
+      if (existsSync(dest)) {
         const host = frontMatterModel(readFileSync(dest, 'utf-8'));
-        if ((host?.value ?? null) !== recorded[name]) {
+        const wrote = Object.hasOwn(recorded, name) ? recorded[name] : null;
+        if ((host?.value ?? null) !== wrote) {
           const kept = withModelLine(def, host?.line);
           if (kept !== def) {
             def = kept;
