@@ -1,5 +1,21 @@
 # @cratylus/invoke
 
+## 0.7.0
+
+### Minor Changes
+
+- 5635979: A unit carries a ledger of what happens to it while it is worked. Four new `plan` verbs write it: `land` (the commit that holds its work), `assay` (a verdict, `achieved` or `not-achieved` with what was missing, on a commit), `whole` (the line's commit holding the unit) and `broke` (the check that failed). An event is admitted only while the unit's plan is bound and the unit is in flight, and is refused on a proposed or closed plan and on a unit not yet started or already done. `plan show <unit> --plan <p>` prints the ledger, each unit's line in `plan show` carries its latest event, and an event's own output prints the unit's line and its ledger and none of its spec. Revise, advance and reconcile carry the ledger over; a unit written before this change reads as an empty ledger.
+
+### Patch Changes
+
+- Updated dependencies [8fe0ea1]
+- Updated dependencies [d922882]
+- Updated dependencies [15b2e41]
+- Updated dependencies [5635979]
+  - @cratylus/canon@0.10.0
+  - @cratylus/runtime@0.7.0
+  - @cratylus/forge@0.11.1
+
 ## 0.6.0
 
 ### Minor Changes
