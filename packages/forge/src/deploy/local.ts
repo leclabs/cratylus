@@ -152,7 +152,7 @@ export function placeAgentsLocal(
     let def = readFileSync(src, 'utf-8');
     if (recorded !== undefined && report.models !== undefined) {
       const rendered = frontMatterModel(def);
-      report.models[name] = rendered?.value ?? null;
+      const renderedValue = rendered?.value ?? null;
       let hostLine = false;
       if (existsSync(dest)) {
         const host = frontMatterModel(readFileSync(dest, 'utf-8'));
@@ -171,12 +171,21 @@ export function placeAgentsLocal(
         }
       }
       const chosen = opts.models?.[name];
-      if (chosen !== undefined && !hostLine) {
+      const place = chosen !== undefined && !hostLine;
+      if (place) {
         def = withModelLine(def, `model: ${chosen}`);
         log(
           `  ${opts.dry ? 'would place' : 'placed'} the chosen model for ${name}: model: ${chosen}`,
         );
       }
+      // A host's line that equals what the deploy renders is told from the rendering
+      // only by the record, so it is recorded as no model: the line then differs from
+      // the record and stays the host's when the rendering moves.
+      const own = hostLine || place;
+      report.models[name] =
+        own && (frontMatterModel(def)?.value ?? null) === renderedValue
+          ? null
+          : renderedValue;
     }
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is

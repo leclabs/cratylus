@@ -232,6 +232,19 @@ describe('runDeploy with the models an operator chose', () => {
     expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus'));
   });
 
+  it('keeps a chosen model that equals the rendered one when the rendering later moves', async () => {
+    const f = fixture();
+    f.render('opus');
+    expect(await f.deploy({ planner: 'opus' })).toBe(0);
+    expect(await f.deploy()).toBe(0);
+    f.render('haiku');
+    expect(await f.deploy()).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus'));
+    expect(readManifest(f.harnessDir).agentModels).toEqual({
+      planner: 'haiku',
+    });
+  });
+
   it('keeps a def whose host line was set before under a models entry', async () => {
     const f = fixture();
     f.render('opus');
