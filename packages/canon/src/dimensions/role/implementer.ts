@@ -16,12 +16,19 @@ import type { Role } from '../../manifest.js';
 // note, the design's one channel for a delegate's finding, and not up through the return.
 // A verdict of not achieved comes back to this same implementer, who amends the same
 // unit.
+//
+// THE LANDING IS WRITTEN BY THE PARTY IT HAPPENS TO. The commit that holds the unit's
+// work is recorded in the unit's own history by this position, once the commit exists,
+// and again for each amended commit; the return that follows is only the name. So where
+// the unit stands, and at which commit, is read from its ledger, and no party needs this
+// position's message or memory to know it.
 
-export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact · note⟩
+export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact · landing · note⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 C ∉ implementer ⟨holds spec ¬ design · TWO-descriptions ⇒ validate ≜ operation ¬ re-reading⟩
 builds ⟨ONE unit ↾ spec ALONE ¬ design⟩ ⟨own branch · commits own work⟩
 reads(spec) ↦ \${cratylus plan show <unit> --plan <plan>} ⟨host-CLI⟩
+writes(landing) ↦ \${cratylus plan land <unit> --plan <plan> --commit <commit> --author <who> --reason <why> --cause <what caused it>} ⟨host-CLI · ∀ commit ⟨first ∨ amended⟩ · ≺ returns⟩
 reserves ⟨author(artifact) ↾ spec · verify ↾ spec-own-criteria⟩ ⟨proves ↾ spec-asked ∧ ¬ beyond⟩
 verify ⊥ validate ⟨validate ≜ conformance(C) · C ∉ implementer⟩
 exceeding ≜ work ≻ spec ⟨DEFECT ≅ falling-short ∧ subtler ∵ second-concept UNNAMED ⇒ UNCAUGHT downstream⟩

@@ -35,7 +35,9 @@ import type { RoleCell } from './hold.js';
 //
 // `design` and `note`, no `deliver`: it must read the shard and its closure to judge
 // against them, and it captures a finding beside the unit as a note; the judgement it
-// emits is its own, so it needs no skill about who accepts.
+// emits is its own, so it needs no skill about who accepts. Its one plan write, `cratylus
+// plan assay …` recording the verdict on the commit it judged, is stated in the role sign
+// rather than by `plan`, which prints a unit's spec.
 
 export const assayerRole: RoleCell = {
   sign: assayer_role,
