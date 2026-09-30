@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RP0J34MK0HVN2NWE7EE4T2",
+    "entity": "01M3RP0J34MK0HVN2NWE7EE4T1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T08:13:34.180Z",
+    "reason": "operator asked why the work takes so long",
+    "cause": "operator: why is this work taking so long"
+  },
+  "payload": {
+    "title": "the loop is slow",
+    "kind": "question",
+    "topic": "consumer surface",
+    "body": "Operator: units that should be straightforward execution take far too long. Observed per unit: planner 2 to 11 min, implementer 3 to 24 min, assayer 2 to 5 min, integrator 1 to 3 min; one unit end to end runs 15 to 35 min. Causes seen in the agents' returns: specs carry acceptance legs heavier than the change (cold reads on two models, live smokes, skill-size caps, verb-fidelity checks), so proving costs more than building; every hand-off is a cold start that re-reads its role, its composed skills, the design and the code; most roles run on the top tier with high reasoning (this host routes planner, assayer and, through task, integrator to opus high); the four hand-offs per unit run in series. Guards firing inside subagents may add judge waits to every tool call (inference; the ruling that guards bind main sessions only addresses it).",
+    "blocks": []
+  }
+}
