@@ -39,12 +39,14 @@ import {
   describePersonaCommands,
   ensureBadgeStatusLine,
   ensureStatusSegment,
+  hasManifest,
   modelRoleLine,
   noteHostEdit,
   personaLauncherOf,
   placePersonaCommands,
   planPersonaCommands,
   readManifest,
+  recordsHostEdits,
   treeNames,
   writeManifest,
 } from '../../deploy/index.js';
@@ -165,6 +167,11 @@ export async function runInstall(
   // operator asked for agents on their machine, not for a render tree to keep, and
   // leaving one in their cwd would be this command inventing a project for someone
   // who told us they have none.
+  // A host this ran on before edits were recorded has the lines its install put in the
+  // host's config files with nothing saying so. Read BEFORE the deploy rewrites the
+  // record: what this install finds there, byte for byte what it would write, it adopts.
+  const harnessDir = join(opts.home, adapter.home);
+  const migrating = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
   const stage = mkdtempSync(join(tmpdir(), `${CLI_BIN}-install-`));
   try {
     const resolvedBodies = resolveFragmentBodies(
@@ -212,6 +219,7 @@ export async function runInstall(
         report.heldRoles,
         opts.home,
         opts.dryRun ?? false,
+        migrating,
       );
       describeClaudeRoles(adapter, report.heldRoles);
       const personas = treeNames(
@@ -224,7 +232,7 @@ export async function runInstall(
       );
       // Then the badge, which is what the operator sees of those personas: the host's
       // own status line, made to show it.
-      showPersonaBadge(adapter, personas, opts);
+      showPersonaBadge(adapter, personas, opts, migrating);
       // Then the persona commands: install's own step too, after the launcher they
       // link to has been placed.
       await linkPersonaCommands(adapter, personas, opts);
@@ -339,6 +347,7 @@ function showPersonaBadge(
   adapter: HarnessAdapter,
   personas: readonly string[],
   opts: InstallCmdOpts & { home: string },
+  adopt: boolean,
 ): void {
   if (personas.length === 0) return;
   const dry = opts.dryRun ?? false;
@@ -403,7 +412,7 @@ function showPersonaBadge(
   const host = adapter.statusSegment;
   if (host !== undefined) {
     const path = hostConfigPath(adapter, host.configRels, opts.home);
-    const result = ensureStatusSegment(path, host, { dry });
+    const result = ensureStatusSegment(path, host, { dry, adopt });
     if (result.edit !== undefined) {
       noteHostEdit(join(opts.home, adapter.home), path, result.edit);
     }
@@ -463,6 +472,7 @@ function seedModelRoles(
   heldRoles: readonly string[],
   home: string,
   dry: boolean,
+  adopt: boolean,
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
@@ -470,7 +480,7 @@ function seedModelRoles(
   const result = addModelRoles(
     path,
     heldRoles.map((role) => ({ role, value: `@${routing.nearest(role)}` })),
-    { dry },
+    { dry, adopt },
   );
   // What an uninstall takes out again: the lines just put in, and nothing of the host's.
   if (result.edit !== undefined) {
