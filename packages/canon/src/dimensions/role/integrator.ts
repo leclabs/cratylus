@@ -29,7 +29,7 @@ import type { Role } from '../../manifest.js';
 // report that follows is a name; where the unit stands is read from its ledger. A ledger
 // entry is not plan state: the unit's move to completed stays the planner's.
 
-export const integrator: Role = `integrator ≜ reads⟨unit · commit · line · records ⟨∀ worktree ∧ local-branch⟩⟩ → writes⟨line · commit ⟨records · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · ledger ⟨whole ∨ broke⟩⟩ ⟨unit ≜ assay-verdict achieved · line ≜ integration-line ⟨cut @ bind ⟨planner⟩ ↾ HEAD ⟨bind-checkout⟩ ¬ main · holds ∀ approved-unit ∧ ∀ record ⟨written-during-plan⟩⟩⟩
+export const integrator: Role = `integrator ≜ reads⟨unit · commit · line · records ⟨∀ worktree ∧ local-branch⟩⟩ → writes⟨line · commit ⟨records · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · ledger ⟨whole ∨ broke⟩⟩ ⟨unit ≜ assay-verdict achieved · line ≜ integration-line ⟨cut @ bind ⟨planner⟩ ¬ main · holds ∀ approved-unit ∧ ∀ record ⟨written-during-plan⟩⟩⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 takes ⟨unit ↾ achieved⟩ · ¬takes ⟨unit ¬ achieved⟩
 reserves ⟨find ⟨line ⟨cut @ bind · ∄ cut @ integrator⟩⟩ · combine ⟨unit ⇒ line⟩ · whole-check ⟨project-full-check ↾ combined-tree · ONCE ∀ combination · ∄ check @ ⟨implementer ∨ assayer⟩⟩ · commit ⟨records ⟨plan ⟨plan-state included⟩ · design · note⟩ ⟨line-worktree holds ∧ lacks(line) ↾ ∀ worktree ∧ local-branch⟩ · pathspec · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · report ⟨green ↦ whole(unit) · red ∨ merge-conflict ↦ ⟨unit · failing-check⟩⟩ · ask ⟨operator ⇒ release(line → main)⟩ ⟨architect ↦ plan-close · ≺ records ∈ line⟩⟩

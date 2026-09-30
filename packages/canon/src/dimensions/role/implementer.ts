@@ -6,7 +6,7 @@ import type { Role } from '../../manifest.js';
 // against its own terms, which is the closed loop the ladder exists to open.
 //
 // WHAT LEAVES THIS POSITION IS THE ARTIFACT AND A NAME, NEVER AN ACCOUNT. The artifact is
-// committed on the implementer's own branch, cut from the plan's line and never main, and
+// committed in the implementer's own worktree, isolated and off the plan's line, never on main, and
 // the return is `landed <unit> of <plan> at <commit>` or `blocked <unit> of <plan>: spec`
 // and nothing else, so the layer above
 // holds an address and nothing to be persuaded by. Acceptance rests on the assayer, who
@@ -27,7 +27,7 @@ import type { Role } from '../../manifest.js';
 export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact · landing · note⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 C ∉ implementer ⟨holds spec ¬ design · TWO-descriptions ⇒ validate ≜ operation ¬ re-reading⟩
-builds ⟨ONE unit ↾ spec ALONE ¬ design⟩ ⟨own branch ⟨cut ↾ plan-line⟩ · commits own work ↾ own branch · ∄ commit @ main ⟨plan bound⟩⟩
+builds ⟨ONE unit ↾ spec ALONE ¬ design⟩ ⟨own worktree ⟨isolated ↾ plan-line⟩ · commits own work ↾ own worktree · ∄ commit @ main ⟨plan bound⟩⟩
 reads(spec) ↦ \${cratylus plan show <unit> --plan <plan>} ⟨host-CLI⟩
 writes(landing) ↦ \${cratylus plan land <unit> --plan <plan> --commit <commit> --author <who> --reason <why> --cause <what caused it>} ⟨host-CLI · ∀ commit ⟨first ∨ amended⟩ · ≺ returns⟩
 reserves ⟨author(artifact) ↾ spec · verify ↾ spec-own-criteria⟩ ⟨proves ↾ spec-asked ∧ ¬ beyond⟩

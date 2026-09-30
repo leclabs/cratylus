@@ -1424,7 +1424,7 @@ describe('plan — a bound plan’s records live on its line', () => {
     }
   });
 
-  it('REFUSES a write about the plan when no worktree holds its line, naming the branch and the `git worktree add` that restores it, and writes nothing', () => {
+  it('REFUSES a write about the plan when no worktree holds its line, saying the worktree is missing and teaching no git command, and writes nothing', () => {
     const { repo, line } = lined();
     plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-mid', ...BY);
     commit(line, 'the line');
@@ -1440,8 +1440,8 @@ describe('plan — a bound plan’s records live on its line', () => {
       'u-done',
       ...BY,
     );
-    expect(said).toContain('plan/p');
-    expect(said).toContain(`git worktree add ${line} plan/p`);
+    expect(said).toContain('the line of plan p has no worktree');
+    expect(said).not.toContain('git');
     expect(status(repo)).toBe(before);
     git(repo, 'worktree', 'add', '-q', line, 'plan/p');
     expect(
@@ -1455,7 +1455,7 @@ describe('plan — a bound plan’s records live on its line', () => {
     add(repo, 'u', 'q');
     git(repo, 'branch', 'plan/q');
     expect(refused(repo, 'bind', 'q', ...BY)).toContain(
-      `git worktree add ${repo}.plan-q plan/q`,
+      'the line of plan q has no worktree',
     );
     const held = `${repo}.held`;
     git(repo, 'worktree', 'add', '-q', held, 'plan/q');
@@ -1465,8 +1465,8 @@ describe('plan — a bound plan’s records live on its line', () => {
     expect(records(held, 'plan')).toHaveLength(2);
   });
 
-  it('REFUSES a write about a bound plan whose line does not exist, naming the `git worktree add -b` that cuts it, and writes nothing; a plan not bound writes where it runs beside a branch of its name', () => {
-    const { repo, line } = lined();
+  it('REFUSES a write about a bound plan whose line does not exist, saying the line is missing and teaching no git command, and writes nothing; a plan not bound writes where it runs beside a branch of its name', () => {
+    const { repo } = lined();
     released(repo, 'p');
     const before = status(repo);
     const said = refused(
@@ -1479,7 +1479,8 @@ describe('plan — a bound plan’s records live on its line', () => {
       'u-mid',
       ...BY,
     );
-    expect(said).toContain(`git worktree add -b plan/p ${line}`);
+    expect(said).toContain('its line does not exist');
+    expect(said).not.toContain('git');
     expect(status(repo)).toBe(before);
     add(repo, 'z', 'q');
     git(repo, 'branch', 'plan/q');

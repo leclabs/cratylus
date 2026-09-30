@@ -97,13 +97,6 @@ function git(cwd: string, ...args: string[]): string {
   }
 }
 
-/** `path`, quoted for a shell when it needs it. */
-function shellQuoted(path: string): string {
-  return /^[\w@%+=:,./-]+$/.test(path)
-    ? path
-    : `'${path.replaceAll("'", `'\\''`)}'`;
-}
-
 /** Every worktree of the repository holding `cwd`, the main one first, each with
  *  the branch it holds (none when detached). */
 function worktrees(cwd: string): { path: string; branch?: string }[] {
@@ -305,16 +298,15 @@ export class RecordStore {
     return `${this.main}.plan-${plan}`;
   }
 
-  /** The refusal of a bound plan whose line no worktree holds, saying the `git
-   *  worktree add` that restores the worktree of a branch that exists, or cuts
-   *  the branch that does not. */
+  /** The refusal of a bound plan whose line no worktree holds, saying what is
+   *  missing, the worktree of a line that exists or the line itself, and not
+   *  how to make it. */
   lineless(plan: string): StoreFault {
-    const { branch, exists } = this.line(plan);
-    const at = shellQuoted(this.#lineAt(plan));
+    const { exists } = this.line(plan);
     return new StoreFault(
       exists
-        ? `the line of plan ${plan}, branch ${branch}, has no worktree, so nothing was written; restore it with \`git worktree add ${at} ${branch}\``
-        : `plan ${plan} is bound and its line, branch ${branch}, does not exist, so nothing was written; cut it with \`git worktree add -b ${branch} ${at}\``,
+        ? `the line of plan ${plan} has no worktree, so nothing was written`
+        : `plan ${plan} is bound and its line does not exist, so nothing was written`,
       'line',
     );
   }
