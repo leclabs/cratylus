@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RDSWQTQ8TKR6GV1SX9J9PC",
+    "entity": "01M3RDSWQSBTNTARA8G37B7KAA",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayIntegrationLine",
+    "time": "2026-09-30T05:50:07.098Z",
+    "reason": "assay finding beside the integrator role: the trigger for the integrator's close and base lives in the architect role",
+    "cause": "assay of integration-line of plan loop-ledger at d9228821"
+  },
+  "payload": {
+    "title": "integration-line: nothing tells the architect to route the close or name the base",
+    "kind": "finding",
+    "topic": "integration-line of plan loop-ledger",
+    "body": "Assay of integration-line at d9228821. The deliver skill now makes the plan's close an act of the integrator ('closed(P) ⇒ the architect routes the close to the integrator', after which it gathers the last records and only then asks for release) and says the integrator's first dispatch for a plan names base(P), the commit the units are built on, from which it cuts the line. Both acts are the architect's, but the architect does not hold deliver (roles/architect.ts gives it design and note only), and its role's route clause (dimensions/role/architect.ts, the reserves line, also in the uncommitted working-tree version) routes an achieved unit to the integrator, an unachieved unit or broken whole to the implementer and a ready unit to an implementer, and nothing else. So no surface the architect reads tells it to route the close or to name the base. Without the close route, the last unit's completed record and the close record never reach the line, which is the loss the integrator role's amendment closed. This belongs to the architect role's surfaces, not to the integrator's.",
+    "blocks": []
+  }
+}
