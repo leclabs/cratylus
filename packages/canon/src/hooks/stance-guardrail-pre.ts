@@ -1,6 +1,7 @@
 import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
+import { stanceGuardrailJudgeClip } from './stance-guardrail.js';
 
 // stance-guardrail-pre — the BEFORE-THE-CALL twin of `stance-guardrail` (the turn-end
 // cell). It STRUCTURALLY REFUSES, BEFORE the call fires, a mid-turn tool call that
@@ -184,6 +185,8 @@ manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 
+${stanceGuardrailJudgeClip}
+
 # --- extract the judged payload, branched by tool -------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 [ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
@@ -197,11 +200,11 @@ case "$tool_name" in
 			      + "  OPTIONS: " + ((.options // []) | map(.label // "") | join(" | ")))
 			| join("  ;;  ")
 		' 2>/dev/null || true)"
-		payload="AskUserQuestion menu (a question/option menu handed to the operator): $body" ;;
+		prefix="AskUserQuestion menu (a question/option menu handed to the operator): " ;;
 	Agent|SendMessage)
 		# the dispatch prompt/message — the dispatch-echo class
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
-		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
+		prefix="$tool_name dispatch (the delegate prompt/message): " ;;
 	*)
 		allow ;;  # DEFENCE IN DEPTH: every supported adapter computes a selector from the
 		          # act, so this never fires there. A harness that could fire the act but
@@ -210,6 +213,12 @@ case "$tool_name" in
 esac
 
 [ -n "\${body:-}" ] || allow  # nothing judgeable -> allow
+
+# THE JUDGE IS SENT AT MOST JUDGE_PAYLOAD_CAP BYTES, prefix included: a menu or a dispatch prompt
+# has no bound of its own, and a judgement has to fit the time the harness allows a guard. The
+# instruction of a prompt may sit at either end, so both ends are kept and the seam is marked.
+body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$prefix")))")"
+payload="$prefix$body"
 
 # --- loop-safety: never deny an identical tool_input twice ----------------------------------
 # No stop_hook_active analog exists for PreToolUse; a per-(session,input) marker caps re-deny.

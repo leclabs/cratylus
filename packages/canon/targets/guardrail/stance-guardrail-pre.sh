@@ -139,6 +139,45 @@ manifest="$stance_scope/stance/manifest.json"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 
+# THE JUDGE IS SENT A BOUNDED EXCERPT, never the whole text. A judgement has to fit inside the
+# time its harness allows a guard, and the text a turn or a dispatch carries has no bound of its own.
+# One cap, declared once in the stance cell, bounds everything sent together: the standing
+# directive, the operator's message, the agent turn and any layer-1 note. Text over its share is
+# cut on a character boundary and marked where it was cut.
+JUDGE_PAYLOAD_CAP=12000
+judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
+JUDGE_JQ='
+def pre($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| $s[:.lo] end;
+def suf($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| if .lo == 0 then "" else $s[-.lo:] end end;
+'
+# Text is read with --rawfile from stdin and never with -R: jq 1.7's raw reader corrupts a
+# multibyte character that straddles one of its read boundaries, on anything over a few KB.
+# The final N bytes of stdin, or all of it when it fits — no marker, so a caller can count them.
+judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
+# Stdin cut to at most N bytes by keeping its head and its tail, the seam marked. For a dispatch
+# prompt or a menu, whose instruction may sit at either end.
+judge_ends() {
+	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
+		$text | . as $s | ($s | utf8bytelength) as $t
+		| if $t <= $n then $s else
+			((($n - 200) / 2) | floor) as $k
+			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
+			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
+			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
+		end'
+}
+# The marker for text cut off its front: judge_cut WHAT TOTAL-BYTES SHOWN-BYTES.
+judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
+
+
 # --- extract the judged payload, branched by tool -------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 [ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
@@ -152,11 +191,11 @@ case "$tool_name" in
 			      + "  OPTIONS: " + ((.options // []) | map(.label // "") | join(" | ")))
 			| join("  ;;  ")
 		' 2>/dev/null || true)"
-		payload="AskUserQuestion menu (a question/option menu handed to the operator): $body" ;;
+		prefix="AskUserQuestion menu (a question/option menu handed to the operator): " ;;
 	Agent|SendMessage)
 		# the dispatch prompt/message — the dispatch-echo class
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
-		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
+		prefix="$tool_name dispatch (the delegate prompt/message): " ;;
 	*)
 		allow ;;  # DEFENCE IN DEPTH: every supported adapter computes a selector from the
 		          # act, so this never fires there. A harness that could fire the act but
@@ -165,6 +204,12 @@ case "$tool_name" in
 esac
 
 [ -n "${body:-}" ] || allow  # nothing judgeable -> allow
+
+# THE JUDGE IS SENT AT MOST JUDGE_PAYLOAD_CAP BYTES, prefix included: a menu or a dispatch prompt
+# has no bound of its own, and a judgement has to fit the time the harness allows a guard. The
+# instruction of a prompt may sit at either end, so both ends are kept and the seam is marked.
+body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$prefix")))")"
+payload="$prefix$body"
 
 # --- loop-safety: never deny an identical tool_input twice ----------------------------------
 # No stop_hook_active analog exists for PreToolUse; a per-(session,input) marker caps re-deny.

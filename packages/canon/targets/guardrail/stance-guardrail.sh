@@ -240,6 +240,45 @@ esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \
 	dark "the rubric named by $manifest is not readable at '$RUBRIC'"
 
+# THE JUDGE IS SENT A BOUNDED EXCERPT, never the whole text. A judgement has to fit inside the
+# time its harness allows a guard, and the text a turn or a dispatch carries has no bound of its own.
+# One cap, declared once in the stance cell, bounds everything sent together: the standing
+# directive, the operator's message, the agent turn and any layer-1 note. Text over its share is
+# cut on a character boundary and marked where it was cut.
+JUDGE_PAYLOAD_CAP=12000
+judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
+JUDGE_JQ='
+def pre($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| $s[:.lo] end;
+def suf($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| if .lo == 0 then "" else $s[-.lo:] end end;
+'
+# Text is read with --rawfile from stdin and never with -R: jq 1.7's raw reader corrupts a
+# multibyte character that straddles one of its read boundaries, on anything over a few KB.
+# The final N bytes of stdin, or all of it when it fits — no marker, so a caller can count them.
+judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
+# Stdin cut to at most N bytes by keeping its head and its tail, the seam marked. For a dispatch
+# prompt or a menu, whose instruction may sit at either end.
+judge_ends() {
+	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
+		$text | . as $s | ($s | utf8bytelength) as $t
+		| if $t <= $n then $s else
+			((($n - 200) / 2) | floor) as $k
+			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
+			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
+			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
+		end'
+}
+# The marker for text cut off its front: judge_cut WHAT TOTAL-BYTES SHOWN-BYTES.
+judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
+
+
 # --- extract the last assistant turn from the transcript ------------------------------------
 # WHICH TRANSCRIPT, AND WHOSE TURN. A SubagentStop payload names TWO: `transcript_path` is the
 # PARENT session's, `agent_transcript_path` is the subagent's own. The scope above is the subagent's
@@ -362,7 +401,8 @@ asst_close="$(jq -rs '
 	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\n") ]
 	| map(select(. != "")) | join("\n\n")
 ' "$transcript" 2>/dev/null || true)"
-[ -n "$asst_close" ] || asst_close="$asst_text"
+close_fallback=""
+[ -n "$asst_close" ] || { asst_close="$asst_text"; close_fallback=1; }
 
 [ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
 
@@ -476,14 +516,7 @@ asking which objective to serve is CORRECT here and must not be blocked; what re
 is deferring a decision already inside a mandate the operator did give."
 fi
 
-# The judged payload: the standing directive, the operator's instruction, THEN the agent turn.
-turn="$standing_block
-
-=== OPERATOR (most recent instruction — the authorization context) ===
-$operator
-
-=== AGENT (last assistant turn — judge THIS) ===
-$asst"
+# The judged payload is assembled after the layer-1 note below, because the cap covers both.
 
 # --- LAYER 1: deterministic checks (no LLM) --------------------------------------------------
 # The judge is one sample from a small model — a noisy signal, and unfit to carry an invariant on
@@ -531,8 +564,8 @@ fi
 # --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
 # The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
 # Non-zero judge exit, an empty answer or a verdict that is neither PASS nor BLOCK → dark.
-judged="$turn"
-[ -n "$l1_evidence" ] && judged="$turn
+l1_block=""
+[ -z "$l1_evidence" ] || l1_block="
 
 === LAYER-1 SIGNAL (deterministic pre-filter) ===
 This turn's closing text makes a first-person forward commitment, and the turn is ENDING with no
@@ -541,6 +574,48 @@ tool call after it — so the committed action was NOT performed. Verbatim span:
 Unless that commitment is genuinely contingent on something outside this turn (a dispatched agent
 still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
 and quote the span above as the evidence."
+
+# THE JUDGED PAYLOAD, BOUNDED: the standing directive, the operator's instruction, THEN the
+# agent turn, and the layer-1 note when there is one — all together at most JUDGE_PAYLOAD_CAP
+# bytes. The operator's message keeps its TAIL (a quarter of the cap at most: the instruction
+# that governs the turn is the last thing said). The agent turn keeps what remains after
+# every fixed part, and it keeps its END: the close is the text after the last tool call, every
+# rule that can fire reads it, and it is the last thing in the turn. Whatever is cut is marked
+# where it was cut.
+op_room=$((JUDGE_PAYLOAD_CAP / 4))
+op_total="$(judge_bytes "$operator")"
+if [ "$op_total" -gt "$op_room" ]; then
+	op_shown="$(printf '%s' "$operator" | judge_keep $((op_room - 200)))"
+	operator="$(judge_cut 'the operator message' "$op_total" "$(judge_bytes "$op_shown")")
+$op_shown"
+fi
+turn_head="$standing_block
+
+=== OPERATOR (most recent instruction — the authorization context) ===
+$operator
+
+=== AGENT (last assistant turn — judge THIS) ==="
+room=$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$turn_head") - $(judge_bytes "$l1_block") - 1))
+[ "$room" -gt 400 ] || room=400
+asst_total="$(judge_bytes "$asst")"
+if [ "$asst_total" -le "$room" ]; then
+	asst_sent="$asst"
+	close_seen="$asst_close"
+else
+	asst_shown="$(printf '%s' "$asst" | judge_keep $((room - 200)))"
+	asst_sent="$(judge_cut 'the agent turn' "$asst_total" "$(judge_bytes "$asst_shown")")
+$asst_shown"
+	if [ -n "$close_fallback" ]; then
+		# The turn ended ON a tool call, so the whole turn stood in for the close: what it
+		# showed, less the tool markers, which are not the agent's words.
+		close_seen="$(printf '%s\n' "$asst_shown" | sed '/^\[tools: .*\]$/d')"
+	else
+		# The close ends the turn, so what the excerpt shows of it is its own final bytes.
+		close_seen="$(printf '%s' "$asst_close" | judge_keep "$(judge_bytes "$asst_shown")")"
+	fi
+fi
+judged="$turn_head
+$asst_sent$l1_block"
 
 # THE JUDGE MAY LIVE OUTSIDE THIS PROCESS, and on a harness that already holds a
 # model it MUST. Spawning another vendor's CLI to answer a question the host can
@@ -630,11 +705,15 @@ printf '%s\t%s\t%s\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev
 	# not that it reproduced its list syntax. So both sides are flattened the same way:
 	# newlines to spaces, runs of whitespace to one, list markers dropped. Symmetric, so
 	# nothing is accepted on one side that would be rejected on the other.
+	# AND AGAINST WHAT THE JUDGE WAS ACTUALLY SENT. `close_seen` is the close as far as the
+	# bounded excerpt showed it (the whole close when nothing was cut). A span from text the
+	# excerpt elided cannot be a quotation of anything the judge read, however genuinely it is
+	# in the transcript, so it is discarded exactly as a fabricated one is.
 	ev_norm="$(printf '%s' "$evidence" | tr '\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
-	close_norm="$(printf '%s' "$asst_close" | tr '\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
+	close_norm="$(printf '%s' "$close_seen" | tr '\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
 	if ! printf '%s' "$close_norm" | grep -qF -- "$ev_norm"; then
 		printf 'DARK\t\t%s\n' "$evidence" >> "$verdict_log" 2>/dev/null || true
-		say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted a span that is not in the turn's CLOSE (mid-turn preamble, or confabulated): $evidence. No verdict stands; this turn was NOT judged clean."
+		say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted a span that is not in the turn's CLOSE as the judge was sent it (mid-turn preamble, text the excerpt elided, or confabulated): $evidence. No verdict stands; this turn was NOT judged clean."
 		allow_stop
 	fi
 fi

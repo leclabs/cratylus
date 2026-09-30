@@ -135,6 +135,45 @@ contract="$(awk '/^## Role$/{f=1;next} /^## /{f=0} f' "$AGENT_MD" 2>/dev/null ||
 # gate from inventing a law for a corpus that has not declared one.
 [ "$(printf '%s\n' "$contract" | grep -c '[^[:space:]]')" -ge 2 ] || allow
 
+# THE JUDGE IS SENT A BOUNDED EXCERPT, never the whole text. A judgement has to fit inside the
+# time its harness allows a guard, and the text a turn or a dispatch carries has no bound of its own.
+# One cap, declared once in the stance cell, bounds everything sent together: the standing
+# directive, the operator's message, the agent turn and any layer-1 note. Text over its share is
+# cut on a character boundary and marked where it was cut.
+JUDGE_PAYLOAD_CAP=12000
+judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
+JUDGE_JQ='
+def pre($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| $s[:.lo] end;
+def suf($n): . as $s | if $n <= 0 then "" else
+	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
+		((.lo + .hi + 1) / 2 | floor) as $m
+		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+	| if .lo == 0 then "" else $s[-.lo:] end end;
+'
+# Text is read with --rawfile from stdin and never with -R: jq 1.7's raw reader corrupts a
+# multibyte character that straddles one of its read boundaries, on anything over a few KB.
+# The final N bytes of stdin, or all of it when it fits — no marker, so a caller can count them.
+judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
+# Stdin cut to at most N bytes by keeping its head and its tail, the seam marked. For a dispatch
+# prompt or a menu, whose instruction may sit at either end.
+judge_ends() {
+	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
+		$text | . as $s | ($s | utf8bytelength) as $t
+		| if $t <= $n then $s else
+			((($n - 200) / 2) | floor) as $k
+			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
+			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
+			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
+		end'
+}
+# The marker for text cut off its front: judge_cut WHAT TOTAL-BYTES SHOWN-BYTES.
+judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
+
+
 # --- extract the judged payload, branched by act ---------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 [ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
@@ -158,11 +197,19 @@ esac
 
 [ -n "${body:-}" ] || allow
 
-payload="=== THE HOLDER'S DECLARED CONTRACT (agent: $agent_type) ===
+# THE JUDGE IS SENT AT MOST JUDGE_PAYLOAD_CAP BYTES, the declared contract and the act included.
+# The contract is a role section a few kilobytes long, so it may hold half the cap at most; the
+# dispatch prompt takes what is left, keeping both ends because its instruction may sit at either,
+# and the seam is marked. The evidence check below then runs against exactly this payload, so a
+# span in text the excerpt elided is discarded like any span that is not there.
+contract="$(printf '%s' "$contract" | judge_ends "$((JUDGE_PAYLOAD_CAP / 2))")"
+head_part="=== THE HOLDER'S DECLARED CONTRACT (agent: $agent_type) ===
 $contract
 === THE ACT ABOUT TO FIRE ===
 $act
-$body"
+"
+body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$head_part")))")"
+payload="$head_part$body"
 
 # --- loop-safety: never deny an identical tool_input twice ----------------------------------
 session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
