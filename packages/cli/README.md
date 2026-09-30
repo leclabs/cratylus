@@ -116,8 +116,9 @@ degrades and warns where it falls short; they are not the same, and this is what
   integrator routes to the built-in `@task`, as the implementer does. The host sets a role's model
   on Claude Code by the `model:` line of each agent holding it, and `install` keeps that choice:
   a deployed definition whose `model:` line is not the one the last install wrote (edited, or
-  removed) keeps the host's line in the definition placed over it, every other line is replaced as
-  before, and the install output names each agent whose model it kept. The first install prints one
+  removed) keeps the host's line in the definition placed over it (a root installed before the
+  record existed is covered: a `model:` line found in its definitions is the host's), every other
+  line is replaced as before, and the install output names each agent whose model it kept. The first install prints one
   line per held role, with its tier and the `model:` line that sets it. The host's own choice
   outranks the definition too: `--model` for a `claude --agent` main session, and for a dispatched
   subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
