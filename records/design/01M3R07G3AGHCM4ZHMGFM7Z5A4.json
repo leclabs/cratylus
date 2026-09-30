@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+    "entity": "01M3R07G3AGHCM4ZHMGFM7Z5A3",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T01:52:52.842Z",
+    "reason": "the design had no sign for the unit of design a unit is built to achieve, and shards written with mechanism in them destabilized every plan",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "design shard",
+    "gloss": "a concept of the design as the architect hands it down to be realized, together with everything it stands on: it states what must hold and why, never how a harness or a codebase achieves it, so a quirk met while building it is the planner's and the implementer's to solve, not a reason to change it. The architect cuts the design into shards; a plan realizes a set of them, and each of its units realizes exactly one.",
+    "factors": [
+      "01M3MEKH8E3Q8R94A9EFNDE986"
+    ]
+  }
+}

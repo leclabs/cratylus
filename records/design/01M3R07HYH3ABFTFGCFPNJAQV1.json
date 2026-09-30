@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3R07HYH3ABFTFGCFPNJAQV1",
+    "entity": "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MFY79KKQ98Y2YM57Y01DEG"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:54.737Z",
+    "reason": "a unit realizes a shard",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "unit",
+    "gloss": "one unit of work in a plan, realizing exactly one design shard, the concept its pin names, which is among the concepts its plan realizes, and carrying its full spec and lifecycle state, which moves forward one step at a time and only while its plan is bound; a unit of a proposed plan is authored and revised but not yet worked. One live unit per name within its plan. Its dependencies are acyclic and name live units of the same plan. Readiness is computed, never stored: a unit is ready when its plan is bound, every dependency has reached completion or moved past it, and no owed ruling names the unit or its plan.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHBYF8EJN5TTVED2MTPA",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

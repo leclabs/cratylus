@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3R07HNFACD3ZRBNQGSA8JSY",
+    "entity": "01M3QZDSNXFW5WVR66146BGMJK",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QZDSNXFW5WVR66146BGMJM"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:54.447Z",
+    "reason": "stability is stated in shards and plans",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "design stability",
+    "gloss": "the design is the fixed target while a plan realizes it. A change never moves a shard that a running plan is building against: it is appended to the design and realized by a following plan, sequenced after the work it depends on, so every plan finishes against the goal it began with. Only when a running plan is found to be built on a shard that is itself wrong does the plan stop; the design is corrected once, and the planner rectifies or rebuilds the plan before work resumes.",
+    "factors": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}
