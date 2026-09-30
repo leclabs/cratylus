@@ -14,6 +14,9 @@
 # The fixtures are not synthetic. Each is byte-identical to a payload `stance-guardrail.sh` built
 # and handed the judge at a real Stop event, and each is a collapse that SHIPPED PAST the gate.
 # `expected.json` records the law each should trip and the verdict production actually returned.
+# `dispatch-echo.txt` and `controls/route-units-by-name.txt` are the payloads `stance-guardrail-pre.sh`
+# emits (STANCE_EMIT_PAYLOAD) for an `Agent` dispatch: the hermetic suite's echo, and the routing of
+# units by name that the guard once denied.
 #
 # USAGE:  sh calibrate-stance-judge.sh [samples]        (default 5)
 #         STANCE_JUDGE_CMD=<cmd> names another judge, e.g. one on omp's advisor model where `claude`
@@ -73,14 +76,16 @@ blocks_of() {
 }
 
 printf 'stance-judge calibration — %s samples/payload\n  rubric: %s\n  judge:  %s\n\n' "$N" "$RUBRIC" "$JUDGE"
-printf '  %-12s %-8s %-9s %s\n' fixture expect observed law
-printf '  %-12s %-8s %-9s %s\n' ------- ------ -------- ---
+printf '  %-13s %-8s %-9s %s\n' fixture expect observed law
+printf '  %-13s %-8s %-9s %s\n' ------- ------ -------- ---
 
 flips=0
 misses=0
 total=0
 oks=0
-for f in "$FIXTURES"/turn-*.txt; do
+# The expected-BLOCK payloads are the turn-*.txt of a Stop event and the dispatch-*.txt of a pre-call
+# guard: both are collapses a judge must convict.
+for f in "$FIXTURES"/turn-*.txt "$FIXTURES"/dispatch-*.txt; do
 	[ -f "$f" ] || continue
 	name="$(basename "$f" .txt)"
 	# expected verdict + law, read out of expected.json when jq is available.
@@ -105,12 +110,12 @@ for f in "$FIXTURES"/turn-*.txt; do
 	else
 		mark="FLIP"; flips=$((flips + 1))
 	fi
-	printf '  %-12s %-8s %-9s %s  %s\n' "$name" "$expect" "$b/$N BLOCK" "$mark" "$law"
+	printf '  %-13s %-8s %-9s %s  %s\n' "$name" "$expect" "$b/$N BLOCK" "$mark" "$law"
 done
 
-# THE NEGATIVE CONTROLS: payloads a judge must NOT block, held under controls/ so the turn-*.txt
-# glob above never reads them as expected-BLOCK cases. A rubric cut that made every payload
-# convict would still score 6/6 above, so the controls are what keeps the table honest.
+# THE NEGATIVE CONTROLS: payloads a judge must NOT block, held under controls/ so the turn-*.txt and
+# dispatch-*.txt globs above never read them as expected-BLOCK cases. A rubric cut that made every
+# payload convict would still score every fixture above, so the controls are what keeps the table honest.
 overblocks=0
 controls=0
 printf '\n  %-28s %-8s %-9s\n' control expect observed
