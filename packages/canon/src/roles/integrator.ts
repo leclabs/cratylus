@@ -13,7 +13,8 @@ import type { RoleCell } from './hold.js';
 // THE RUNG THAT MAKES APPROVED WORK WHOLE. It carries no `software-engineering`, and
 // the absence is the same decision as `writes ≠ artifact` in its contract: this position
 // combines and checks, and a holder whose capabilities included building would be one
-// good intention away from repairing a red on the line.
+// good intention away from repairing a red on the line. It finds the line the planner's
+// bind cut and cuts no branch of its own, and commits the records that line's worktree holds.
 //
 // `deliver`, and it is the plan-side conduct of the loop, the skill that says what
 // arrives here, in what order, and what goes back. Skill routing gives it with `design`,
