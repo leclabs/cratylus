@@ -664,7 +664,11 @@ function renderRegistration(
   // registry come from, and an unused parameter in a generated file reads as a
   // leftover rather than a contract.
   const args = kind ? '(event, ctx: JudgeContext)' : '(event)';
-  return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${act}
+  // A subagent session is judged by nothing here — the return comes BEFORE the
+  // worker is run, so no judge is asked and no notice is printed. See
+  // `inSubagent` in the bridge for the signal and where it was established.
+  const subagent = kind ? '\n    if (inSubagent(ctx)) return;' : '';
+  return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${subagent}${act}
   });
   // ${r.anchor}`;
 }
@@ -764,6 +768,7 @@ const TURN_BRIDGE: readonly string[] = [
   '// not surfaced on the exported `ExtensionContext` type. Naming the two members',
   '// this module actually reads keeps the dependency honest and narrow.',
   'type JudgeContext = {',
+  '  agent?: { kind?: string };',
   '  model?: Model<Api>;',
   '  modelRegistry?: {',
   '    find(provider: string, modelId: string): Model<Api> | undefined;',
@@ -772,6 +777,21 @@ const TURN_BRIDGE: readonly string[] = [
   '    ): Promise<{ ok: boolean; apiKey?: string }>;',
   '  };',
   '};',
+  '',
+  '// A GUARD BINDS A PERSONA’S MAIN SESSION ONLY. omp hands a spawned subagent its',
+  "// parent's extensions (`preloadedExtensionPaths: l ? [] : n.extensionPaths` beside",
+  '// `parentAgentId` in the subagent session options), so this module also loads in',
+  "// every subagent the persona dispatches — and would judge that subagent's calls",
+  "// against the persona's contract. The one signal that says which session is",
+  '// running is `ctx.agent.kind`, on the context omp hands every handler: the main',
+  '// session carries `{ kind: "main", depth: 0 }` (TOP_LEVEL_AGENT), a subagent',
+  '// carries `{ kind: "sub", parentId, depth }`. ESTABLISHED against the omp 18.4.4',
+  '// binary (`~/.local/bin/omp`: the extension runner is built with',
+  '// `kind: un ? "sub" : "main"`, and `createContext()` returns `agent: this.agent`).',
+  '// Anything that is not `main` is not the main session. A context with no `agent`',
+  '// is judged, as before.',
+  'const inSubagent = (ctx: JudgeContext): boolean =>',
+  '  ctx.agent !== undefined && ctx.agent.kind !== "main";',
   '',
   '/** omp messages as the JSONL transcript lines the workers parse. */',
   'function transcriptOf(messages: readonly TurnMessage[]): string {',
@@ -1197,8 +1217,9 @@ function ompExtensionModule(
     `// The constraints in force for ${governs}.`,
     '//',
     ...placement,
-    '// There is no identity check below and there must not be one: composition is',
-    '// realized by WHERE this file is, not by what it asks at runtime.',
+    '// There is no PERSONA identity check below and there must not be one: composition',
+    '// is realized by WHERE this file is, not by what it asks at runtime. The one',
+    '// runtime question is whether the session is a subagent, which no judge reaches.',
     '',
     ...(needsTurn
       ? [

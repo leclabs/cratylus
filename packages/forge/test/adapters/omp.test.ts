@@ -642,13 +642,18 @@ esac
    *  stands in for omp's completeSimple; without one no case reaches a model. */
   async function load(
     mode: string,
-    event: string,
+    event: string | string[],
     judge?: Stub,
     sendUserMessage: (m: string, o: unknown) => unknown = () => undefined,
   ): Promise<{
     sent: string[];
     content: string;
     run: (fire: Record<string, unknown>, ctx?: unknown) => Promise<unknown>;
+    /** Fire every handler registered on the first native event, in order. */
+    runAll: (
+      fire: Record<string, unknown>,
+      ctx?: unknown,
+    ) => Promise<unknown[]>;
   }> {
     const dir = mkdtempSync(join(tmpdir(), 'omp-bridge-'));
     tmp.push(dir);
@@ -665,7 +670,7 @@ esac
           anchor: 'stance',
           fragment: {
             substrate: 'harness',
-            events: [event],
+            events: Array.isArray(event) ? event : [event],
             realizedBy: 'stance',
           },
           agents: ['mav'],
@@ -690,10 +695,14 @@ esac
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, content);
     const handlers = new Map<string, Handler>();
+    const every = new Map<string, Handler[]>();
     const sent: string[] = [];
     const pi = {
       cwd: dir,
-      on: (name: string, h: Handler) => handlers.set(name, h),
+      on: (name: string, h: Handler) => {
+        handlers.set(name, h);
+        every.set(name, [...(every.get(name) ?? []), h]);
+      },
       sendUserMessage: (m: string, o: unknown) => {
         sent.push(m);
         return sendUserMessage(m, o);
@@ -718,6 +727,11 @@ esac
       sent,
       content,
       run: async (fire, ctx = {}) => handlers.get(native)?.(fire, ctx),
+      runAll: async (fire, ctx = {}) => {
+        const out: unknown[] = [];
+        for (const h of every.get(native) ?? []) out.push(await h(fire, ctx));
+        return out;
+      },
     };
   }
 
@@ -768,6 +782,41 @@ esac
     const { sent, result } = await fired('pass', cell);
     expect(sent).toEqual([]);
     expect(result).toBeUndefined();
+  });
+
+  it('judges a main session and judges NOTHING in a subagent session', async () => {
+    // omp hands a spawned subagent its parent's extensions, so the module loads
+    // there too. The session says which it is on `ctx.agent`: `kind: "main"` for the
+    // top-level session, `kind: "sub"` with a `parentId` for a subagent (omp 18.4.4).
+    // A dispatch is a subagent's own call too, so both bound acts are covered.
+    const judge = { calls: 0 };
+    const b = await load(
+      'judge',
+      ['tool.use.pre', 'subagent.dispatch.pre'],
+      async () => {
+        judge.calls += 1;
+        return { content: [{ type: 'text', text: 'PASS' }] };
+      },
+    );
+    const main = { model: {}, agent: { kind: 'main', id: '0-main', depth: 0 } };
+    const sub = {
+      model: {},
+      agent: { kind: 'sub', id: '0-Child', parentId: '0-main', depth: 1 },
+    };
+    const fires = [
+      { toolName: 'write', input: {} },
+      { toolName: 'task', input: { tasks: [] } },
+    ];
+
+    for (const fire of fires) {
+      judge.calls = 0;
+      expect(await b.runAll(fire, sub)).toEqual([undefined, undefined]);
+      expect(judge.calls).toBe(0);
+      expect(b.sent).toEqual([]);
+
+      await b.runAll(fire, main);
+      expect(judge.calls).toBe(1);
+    }
   });
 
   it('still refuses on a verdict, and sends no notice for it', async () => {
