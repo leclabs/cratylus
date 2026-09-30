@@ -576,6 +576,30 @@ describe('ensureStatusSegment', () => {
         'statusLine:\n  preset: custom\n  leftSegments: &l [vim]\n  showHookStatus: true\n',
         'refused',
       ],
+      [
+        'a statusLine that is a flow mapping on one line',
+        'statusLine: {preset: minimal, showHookStatus: false}\ntheme: dark\n',
+        'statusLine: {preset: minimal, showHookStatus: true}\ntheme: dark\n',
+        'refused',
+      ],
+      [
+        'a statusLine that is a flow mapping over several lines, its key quoted',
+        'statusLine:\n  {\n    preset: minimal, # mine\n    "showHookStatus": False,\n  }\ntheme: dark\nshowHookStatus: false\n',
+        'statusLine:\n  {\n    preset: minimal, # mine\n    "showHookStatus": true,\n  }\ntheme: dark\nshowHookStatus: false\n',
+        'refused',
+      ],
+      [
+        'a preset that is not a plain value',
+        'statusLine:\n  preset: [minimal]\n  showHookStatus: false\n',
+        'statusLine:\n  preset: [minimal]\n  showHookStatus: true\n',
+        'refused',
+      ],
+      [
+        'a whole file that is a flow mapping',
+        '{statusLine: {preset: minimal, showHookStatus: false}}\n',
+        '{statusLine: {preset: minimal, showHookStatus: true}}\n',
+        'refused',
+      ],
     ])(
       'turns a hidden row on for a host on %s, changing no other byte',
       (_n, host, shown, state) => {

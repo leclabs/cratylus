@@ -220,9 +220,10 @@ would show nowhere, so install turns that one value to `true`, changes no other 
 
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow mapping,
 an alias, a list split across lines in flow style) is reported and left as it is, apart from that one
-value, and the install still succeeds. If the file cannot be read that far and hides the row, the
-badge shows nowhere until `showHookStatus` is true or `status` is listed, and the report says so.
-`--dry-run` writes nothing.
+value, and the install still succeeds. The `showHookStatus: false` is found as text, so it is turned on
+in a flow mapping or a block alike; only a `statusLine` that is an alias to a mapping written elsewhere
+keeps it out of reach, and there the badge shows nowhere until `showHookStatus` is true or `status` is
+listed, which the report says. `--dry-run` writes nothing.
 
 ## Running a persona by its name
 
