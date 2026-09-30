@@ -18,11 +18,17 @@ import type { Role } from '../../manifest.js';
 // design leaks back out into the work. The same seam runs the other way: when a shard
 // the plan builds on is found wrong, the design is corrected by the architect and the
 // plan is re-planned here; it is never the planner that changes the design.
+//
+// ACCEPTANCE IS PROPORTIONATE. Each unit's criteria prove what that unit changes and no
+// more: a live multi-model run to accept a wording edit costs more than the edit, and
+// units that prove more than they change are why the loop was slow. That is a defect
+// of the plan the planner wrote, not diligence.
 
 export const planner: Role = `planner ≜ reads⟨C · artifact⟩ → writes⟨spec · plan-records⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 plan-records ≜ ⟨unit · dependency · state · plan-state⟩ ⟨bound plan ↦ written @ plan-line ∀ checkout · committed ∈ integrator ¬ planner⟩
 reserves ⟨census ⟨extant · references · resolved-by-use ¬ by-declaration⟩ · decompose ⟨shards ↦ MECE-units · unit ⇀ ONE shard · deps FIRST · effort(unit) ≤ capacity · how-per-harness ⟨plan-owned ¬ shard-owned⟩⟩ · realizes ⟨unit ⇀ anchor⟩ · sequence ⟨waves ⊨ disjoint-outputs⟩ · bind ⟨@ ratification ∧ ∄ plan-bound · cuts line ¬ main⟩ · record ⟨ready-unit ↦ active @ name-handed-out · unit ↦ completed @ whole⟩ · close ⟨∀ unit completed⟩ · rectify ∨ rebuild ⟨plan @ stop⟩ · reconcile ⟨plans ∧ units⟩⟩
+accept(unit) ↾ what-unit-changes ¬ beyond ⟨proof ≻ change ⇒ defect @ plan ¬ diligence⟩
 returns ⟨plan-name ∧ ready-unit-names⟩ ∧ ¬ spec ∨ plan-view ⟨name ≜ address · architect ¬ reads behind⟩
 state(unit) ∨ state(plan) moves ⊨ planner ⟨bind ∨ close ∨ advance · ∄ move @ implementer ∨ architect⟩
 writes ≠ C ⇒ shard GIVEN ⟨shard ¬ plannable ⇒ SURFACED ¬ redrawn · wrong-shard ⇒ plan re-planned ¬ design changed⟩

@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3SF1TZN2WKBR2DSTY0K7RZ9",
+    "entity": "01M3SA82PWG8H7N61V0N69W6B8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SA9QR6ANVN7JKBBQE9MH9B"
+    ],
+    "author": "InstallPlanner4",
+    "time": "2026-09-30T15:31:10.453Z",
+    "reason": "every unit completed: proportionate-acceptance and install",
+    "cause": "whole install of guided-install from GuidedInstallIntegrator2 at c6b5e9c6"
+  },
+  "payload": {
+    "name": "guided-install",
+    "realizes": [
+      "01M3R07G7ZCK24TEDA78HW4VRM",
+      "01M3S9QXFG2PS1VAE275Y7PB7C"
+    ],
+    "state": "closed"
+  }
+}

@@ -28,6 +28,7 @@ import {
 } from 'node:fs';
 import { dirname, relative, resolve as resolvePath } from 'node:path';
 import { type KindRecord, recordPath } from '../prune/index.js';
+import { settingsJson } from './settings-json.js';
 import { splitLines } from './yaml-lines.js';
 
 // Re-exported so deploy's callers keep reading the prune vocabulary off deploy's
@@ -58,10 +59,24 @@ export interface DeployManifest {
   personaLinks: string[];
   // agent name -> the `model:` value the last deploy's RENDERED def carried (null ⇒
   // none), for the harness whose def `model:` line is where a host sets a model. A
-  // deployed def whose `model:` differs from this is the host's edit, and the next
-  // deploy keeps it: the value here is what deploy would write, never what the host
-  // chose, so it stays true while the host's line stands.
+  // deployed def whose `model:` differs from this, and is not in `hostModels`, is the
+  // host's edit. It is what deploy would write, never what the host chose.
   agentModels: Record<string, string | null>;
+  // The agents whose `model:` line is the host's, whatever its value against the
+  // rendering: one the operator chose at install, or one the host edited afterwards.
+  // A deploy places such a def carrying the line the host has, or none where the host
+  // removed it, and never renders one over it — a value cannot say this, since a
+  // chosen line can equal the rendered one and a removed line equals "none". A manifest
+  // written before this list reads as `[]`: `agentModels` alone then decides.
+  hostModels: string[];
+  // The roles whose `modelRoles` entry in the host's config is the operator's choice
+  // (omp), whatever its value against the nearest built-in route install seeds an entry
+  // with: a value cannot say this, since a choice can equal the seed. Such an entry is
+  // the host's from then on. An entry that is NOT here and is recorded in `hostEdits`
+  // byte for byte as install wrote it is install's own seed, which a later install may
+  // move to a model the operator now chooses. A manifest written before this list reads
+  // as `[]`.
+  hostRoutes: string[];
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -110,6 +125,8 @@ export function emptyManifest(): DeployManifest {
     hookCommands: [],
     personaLinks: [],
     agentModels: {},
+    hostModels: [],
+    hostRoutes: [],
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -137,6 +154,8 @@ export function readManifest(harnessDir: string): DeployManifest {
       hookCommands: parsed.hookCommands ?? [],
       personaLinks: parsed.personaLinks ?? [],
       agentModels: parsed.agentModels ?? {},
+      hostModels: parsed.hostModels ?? [],
+      hostRoutes: parsed.hostRoutes ?? [],
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},
@@ -523,6 +542,75 @@ export function noteHostEdit(
   });
 }
 
+/** Every line install recorded as its own insertion into `file`, with its terminator:
+ *  what an entry there must equal, byte for byte, to still be what install wrote. */
+export function recordedLines(harnessDir: string, file: string): Set<string> {
+  const edit =
+    readManifest(harnessDir).hostEdits[recordPath(relative(harnessDir, file))];
+  const lines = new Set<string>();
+  for (const hunk of edit?.hunks ?? []) {
+    if (hunk.before.length === 0) for (const l of hunk.after) lines.add(l);
+  }
+  return lines;
+}
+
+/** Move the record of one line install put into `file` to the line that now stands
+ *  there: `from` is what was recorded, `to` what install replaced it with. Where no
+ *  hunk holds `from` (a host installed before edits were recorded), `adopted` — the
+ *  new line as a hunk of its own — is recorded instead. */
+export function retargetHostEdit(
+  harnessDir: string,
+  file: string,
+  from: string,
+  to: string,
+  adopted: LineHunk,
+): void {
+  const manifest = readManifest(harnessDir);
+  const key = recordPath(relative(harnessDir, file));
+  const prior = manifest.hostEdits[key];
+  const moved = (prior?.hunks ?? []).map((h) =>
+    h.before.length === 0 && h.after.includes(from)
+      ? { ...h, after: h.after.map((l) => (l === from ? to : l)) }
+      : h,
+  );
+  const found = moved.some((h, i) => h !== prior?.hunks[i]);
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostEdits: {
+      ...manifest.hostEdits,
+      [key]: {
+        created: prior?.created ?? false,
+        ...prior,
+        hunks: found ? moved : [...(prior?.hunks ?? []), adopted],
+      },
+    },
+  });
+}
+
+/** Record which roles' `modelRoles` entries are now the operator's choice (`chosen`), and
+ *  which are install's own seed (`seeded`, a role that was in the first list before). */
+export function noteHostRoutes(
+  harnessDir: string,
+  chosen: readonly string[],
+  seeded: readonly string[],
+): void {
+  if (chosen.length === 0 && seeded.length === 0) return;
+  const manifest = readManifest(harnessDir);
+  const next = [
+    ...manifest.hostRoutes.filter(
+      (r) => !seeded.includes(r) && !chosen.includes(r),
+    ),
+    ...chosen,
+  ];
+  if (
+    next.length === manifest.hostRoutes.length &&
+    next.every((r) => manifest.hostRoutes.includes(r))
+  ) {
+    return;
+  }
+  writeManifest(harnessDir, { ...manifest, hostRoutes: next });
+}
+
 /** Mark `file` as one an install from before edits were recorded may have changed in ways
  *  nothing records — a value it turned, a line it put in a list of the host's. Called by
  *  the install that migrates the record, so the mark outlives the rewrite that makes the
@@ -677,22 +765,16 @@ export function unregisterHookCommandsAt(
   if (commands.length === 0 || !existsSync(settingsFile)) {
     return 0;
   }
+  const text = readFileSync(settingsFile, 'utf-8');
   let existing: Record<string, unknown>;
   try {
-    existing = JSON.parse(readFileSync(settingsFile, 'utf-8')) as Record<
-      string,
-      unknown
-    >;
+    existing = JSON.parse(text) as Record<string, unknown>;
   } catch {
     return 0; // never rewrite a file we could not parse
   }
   const { settings, removed } = unregisterHookCommands(existing, commands);
   if (removed > 0 && !dry) {
-    writeFileSync(
-      settingsFile,
-      `${JSON.stringify(settings, null, 2)}\n`,
-      'utf-8',
-    );
+    writeFileSync(settingsFile, settingsJson(settings, text), 'utf-8');
   }
   return removed;
 }

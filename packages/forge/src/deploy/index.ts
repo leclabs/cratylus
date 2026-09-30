@@ -46,6 +46,8 @@ export {
 
 export {
   auditLocal,
+  hostModelClaim,
+  type ModelLine,
   type PlacedFileState,
   placedFileState,
   placeAgentsLocal,
@@ -97,7 +99,10 @@ export {
   nextDigests,
   nextKindRecord,
   noteHostEdit,
+  noteHostRoutes,
   readManifest,
+  recordedLines,
+  retargetHostEdit,
   staleFiles,
   unattributable,
   undoHunks,

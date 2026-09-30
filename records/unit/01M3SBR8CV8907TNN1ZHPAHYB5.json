@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3SBR8CV8907TNN1ZHPAHYB5",
+    "entity": "01M3SA8YDTSQZZVXMCJT0YA1FZ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3SA8YDTSQZZVXMCJT0YA1G0"
+    ],
+    "author": "InstallPlanner3",
+    "time": "2026-09-30T14:33:30.779Z",
+    "reason": "One shard, install, was cut into two units that both realize it, and each unit is judged against the whole shard, so neither could be achieved alone. The guided run folds into the one unit that realizes install (install-placement, renamed install).",
+    "cause": "install-placement assayed not-achieved at 8bc1f6b2 and a432ae0b (ledger entries 2 and 4), each verdict naming the guided run this unit held"
+  },
+  "payload": null
+}

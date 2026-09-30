@@ -1,0 +1,77 @@
+{
+  "envelope": {
+    "id": "01M3SB56E1MW08V67T30PVS1GZ",
+    "entity": "01M3SA82Q6NTER3DXPSN8PK1WB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SAN3V2P9XFDXSAFJF4G8M7"
+    ],
+    "author": "AssayInstallPlacement",
+    "time": "2026-09-30T14:23:06.177Z",
+    "reason": "install not achieved at 8bc1f6b2. What the unit places is exact: omitted personas get no def, badge or stance and a re-install omitting them prunes them; a chosen model differing from the rendering is placed on claude, kept as the host's on later deploys, and uninstall removes everything placed with nothing left. Spells and sole hold. Covers fails on a default-equal choice not kept, no model placement on omp, a changeset claim install does not yet honour, and the guided run absent from install",
+    "cause": "assay of the landing at 8bc1f6b2 by implementer InstallPlacement against the shard install and its closure (role routing, supported harness, persona launch, uninstall), exercised through projection, deploy and uninstall on temporary claude and omp homes"
+  },
+  "payload": {
+    "plan": "01M3SA82PWG8H7N61V0N69W6B8",
+    "spec": {
+      "name": "install-placement",
+      "intent": "Census @15d0a621 (design at 15d0a621, working tree clean); every path is repo-relative on the plan's line. A line number or count cited here is a measurement at that commit: re-derive it if its path changed since. Realize the placement half of `install`: what install places is exactly what the operator decided (which personas, which models the roles route to) and nothing is printed unless the caller asks for it. The questions, the preview and the summary are unit guided-run's, which builds on this one; nothing here changes what `cratylus install` asks or prints.\nAT CENSUS. The Agent identity face (packages/schema/src/index.ts:514-568) is name, description, preamble, archetype, provenance, skills and holds; canon's fold holds() (packages/canon/src/roles/hold.ts:108) copies each identity field explicitly. The corpus has eight agents (architect, assayer, implementer, integrator, kino, mav, nico, planner). The operator ruled (decision note 'kino and nico are optional installs') that install offers kino and nico without preselecting them, while the general positions are installed by default; nothing declares it. projectPluginSet (packages/forge/src/project/index.ts:480) renders every agent of the plugin set, and ProjectedTree (:230) reports files, counts and heldRoles. runDeploy (packages/forge/src/cli/commands/deploy.ts:123) takes a log sink but writes warnings with console.error (:139). On claude the agent placer keeps a host's `model:` line (packages/forge/src/deploy/local.ts:133-165; keepHostModel set at packages/forge/src/deploy/deploy.ts:160): the manifest's agentModels records the model each def was rendered with, and a deployed line that differs from the record is the host's and survives every later deploy.\nCHANGE. (1) packages/schema/src/index.ts: Agent gains an optional identity field `optional` (true: an install offers the agent without preselecting it; absent: installed by default), documented as `holds` is. (2) holds() carries it; nico.ts and kino.ts declare `optional: true`; no other agent does. (3) Projection: ProjectOpts gains `omitAgents?: readonly string[]`, names of agents left out of the render entirely (no definition and no per-agent artifact of theirs; heldRoles counts rendered agents only); a name that is no agent of the plugin set throws, naming it. ProjectedTree gains `optionalAgents: readonly string[]`, the sorted names of the plugin set's agents that declare `optional`, whether rendered or omitted. (4) DeployCmdOpts gains `warn?: (line: string) => void` beside `log` (default console.error, as at census), which receives every warning line runDeploy and its placers print, and `models?: Readonly<Record<string, string>>`, agent name to a model value. On a harness whose agent placer keeps the host's model (claude), each named agent's def is placed carrying `model: <value>` while agentModels records the model the def was RENDERED with, so the chosen line stands as the host's choice on every later deploy and install; a named agent whose deployed def already carries a host line keeps the host's line. On a harness without that placer (omp, whose routes live in its own config) a non-empty `models` fails the deploy with one line naming the harness. `cratylus deploy`'s flags and output are unchanged. (5) Tests extend packages/forge/test/project/tree.test.ts and packages/forge/test/deploy/local.test.ts; no new test file. (6) .changeset/install-placement.md (@cratylus/schema, @cratylus/canon and @cratylus/forge minor).",
+      "static": [
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/adapters/claude/render.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/forge/test/deploy/local.test.ts",
+        ".changeset/install-placement.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/project/tree.test.ts test/deploy/local.test.ts` exits 0, and the two files hold cases that fail at census: a fixture plugin projected with omitAgents naming one agent renders no file of that agent and reports it in optionalAgents when it declares optional; an omitAgents name that is no agent throws naming it; on claude, runDeploy with models places the chosen `model:` line, the manifest's agentModels holds the rendered value, and a second runDeploy without models keeps the chosen line; a def whose host line was set before keeps it under a models entry; on omp a non-empty models returns non-zero and places nothing; warnings reach the warn sink and not console.error.",
+        "`grep -l 'optional: true' packages/canon/src/agents/*.ts` prints exactly packages/canon/src/agents/kino.ts and packages/canon/src/agents/nico.ts (census: none).",
+        "`pnpm typecheck` exits 0, and `pnpm --filter @cratylus/canon exec vitest run test/projection-stability.test.ts test/null-dimension.test.ts` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "version": "01M3S9QXFG2PS1VAE275Y7PB7D",
+      "closure": {
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "8bc1f6b2b1cabdbda9663bef24ba25f987612997",
+        "author": "InstallPlacement",
+        "time": "2026-09-30T14:14:19.234Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "8bc1f6b2b1cabdbda9663bef24ba25f987612997",
+        "verdict": "not-achieved",
+        "missing": [
+          "install, role routing: a model the operator chooses that equals the one the persona is rendered with is not kept as the host's choice; a later deploy whose rendering moved replaced planner's chosen opus with haiku while implementer's differing choice was kept (packages/forge/src/deploy/local.ts placeAgentsLocal)",
+          "install, supported harness: on omp a model the operator chooses for a role has no placement; deploy refuses the choice with exit 1 and install still seeds only the nearest built-in route (packages/forge/src/cli/commands/deploy.ts runDeploy; packages/forge/src/cli/commands/install.ts seedModelRoles)",
+          "install: the consumer-visible claim that install places what the operator decided is false at this commit; install still places every persona, kino and nico included, and no chosen model (.changeset/install-placement.md)",
+          "install: the guided run is absent; install asks neither which personas nor which models, shows nothing before placing, confirms nothing but the link question, ends in per-file lines rather than a brief summary, and takes no up-front personas or models for a scripted run (packages/forge/src/cli/commands/install.ts runInstall; the plan's pending guided-run unit also realizes install)"
+        ],
+        "author": "AssayInstallPlacement",
+        "time": "2026-09-30T14:23:06.177Z"
+      }
+    ]
+  }
+}

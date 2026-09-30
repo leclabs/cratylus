@@ -44,6 +44,9 @@ export interface PlaceReport {
   // reads a deployed def's `model:` against it to tell a host's edit from its own
   // write. Absent ⇒ this placer records none.
   models?: Record<string, string | null>;
+  // The names among them whose `model:` line is the host's (chosen by the operator, or
+  // edited by the host), recorded beside `models` for the same reason.
+  hostModels?: string[];
 }
 
 export function emptyReport(): PlaceReport {
@@ -124,5 +127,12 @@ export interface PlaceOpts {
    * that line (claude). Absent ⇒ the def is overwritten whole.
    */
   keepHostModel?: boolean;
+  /**
+   * The model an operator CHOSE per agent, name → `model:` value. Read only where
+   * `keepHostModel` is set: the def is placed carrying that line, unless the deployed
+   * def already carries a host's. The manifest still records the model the def was
+   * rendered with, so the chosen line stands as the host's on every later deploy.
+   */
+  models?: Readonly<Record<string, string>>;
   warn?: (line: string) => void;
 }

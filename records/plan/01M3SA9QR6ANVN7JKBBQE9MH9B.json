@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3SA9QR6ANVN7JKBBQE9MH9B",
+    "entity": "01M3SA82PWG8H7N61V0N69W6B8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SA82PWG8H7N61V0N69W6B9"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T14:08:06.406Z",
+    "reason": "ratified: three units over shards install and planner role, waves disjoint in outputs and references",
+    "cause": "shards install and planner role handed down by the architect"
+  },
+  "payload": {
+    "name": "guided-install",
+    "realizes": [
+      "01M3R07G7ZCK24TEDA78HW4VRM",
+      "01M3S9QXFG2PS1VAE275Y7PB7C"
+    ],
+    "state": "bound"
+  }
+}

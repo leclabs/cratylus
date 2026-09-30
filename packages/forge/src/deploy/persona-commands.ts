@@ -301,18 +301,27 @@ export function placePersonaCommands(
  * skipped without a word. A recorded link since replaced by something else is kept
  * too, and dropped from the record: the name is no longer ours to remove. Only a
  * symlink is ever unlinked. Under `dry` nothing is removed and the record is unchanged.
+ *
+ * With `only`, the candidates are those personas' commands alone: what an install
+ * that drops a persona removes, and no other command it placed.
  */
 export function removePersonaCommands(
   opts: Omit<PersonaCommandsOpts, 'peers' | 'pathEnv'> & {
     readonly dry?: boolean;
+    readonly only?: boolean;
   },
 ): PersonaRemovalReport {
   const binDir = binDirOf(opts.home);
   const manifest = readManifest(opts.harnessDir);
   const recorded = new Set(manifest.personaLinks);
+  const named = new Set(
+    opts.personas.map((p) => relToHome(opts.home, join(binDir, p))),
+  );
   const candidates = [
     ...new Set([
-      ...manifest.personaLinks.map((rel) => join(opts.home, rel)),
+      ...manifest.personaLinks
+        .filter((rel) => !opts.only || named.has(rel))
+        .map((rel) => join(opts.home, rel)),
       ...opts.personas.map((p) => join(binDir, p)),
     ]),
   ].sort();

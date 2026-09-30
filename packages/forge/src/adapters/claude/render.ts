@@ -81,6 +81,13 @@ export const CLAUDE_ROLE_TIERS: Readonly<Record<string, string>> = {
   architect: 'opus',
 };
 
+/** The tier aliases an operator is offered for a role, beside typing a model id. */
+export const CLAUDE_MODEL_TIERS: readonly string[] = [
+  'opus',
+  'sonnet',
+  'haiku',
+];
+
 /**
  * The Target front-matter: `name`, `description`, `model`, `color`, `skills`. `description`
  * is the agent's σ_human* `description` field VERBATIM — the human-read selection

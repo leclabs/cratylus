@@ -186,32 +186,56 @@ export async function runCli(
   cli
     .command(
       'install',
-      'Install the default corpus into a harness on this machine (no project needed)',
+      'Install the default corpus into a harness on this machine (no project needed), guided',
     )
-    .option('--harness <name>', 'harness to install into (default: detected)')
+    .option(
+      '--harness <name>',
+      'harness to install into (default: the one the host has, else asked)',
+    )
     .option(
       '--plugin <pkg>',
       'corpus package to install (default: the bundled one)',
     )
-    .option('--dry-run', 'print what would change; write nothing')
+    .option(
+      '--personas <names>',
+      "optional personas to install, comma-separated, or 'none' (default: asked; else the ones already installed)",
+    )
     .option(
       '--link-persona-commands',
-      'link a command named after each installed persona into ~/.local/bin, without asking',
+      'link a command named after each installed persona into ~/.local/bin, without asking; --no-link-persona-commands links none',
     )
+    .option(
+      '--model-roles <roles>',
+      "model per role, role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)",
+    )
+    .option(
+      '-y, --yes',
+      'take the default of every decision not given, ask nothing, place without asking to go ahead',
+    )
+    .option('--verbose', 'also print the per-file detail of the run')
+    .option('--dry-run', 'print what would be placed and stop; write nothing')
     .action(
       async (opts: {
         harness?: string;
         plugin?: string;
-        dryRun?: boolean;
+        personas?: string;
         linkPersonaCommands?: boolean;
+        modelRoles?: string;
+        yes?: boolean;
+        verbose?: boolean;
+        dryRun?: boolean;
       }) => {
         process.exit(
           await runInstall({
             harness: opts.harness,
             plugin: opts.plugin,
             corpus: cliOpts.defaultCorpus,
-            dryRun: opts.dryRun,
+            personas: opts.personas,
             linkPersonaCommands: opts.linkPersonaCommands,
+            modelRoles: opts.modelRoles,
+            yes: opts.yes,
+            verbose: opts.verbose,
+            dryRun: opts.dryRun,
             home: homedir(),
           }),
         );

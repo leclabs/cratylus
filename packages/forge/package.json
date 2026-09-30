@@ -61,6 +61,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
+    "@clack/prompts": "catalog:",
     "@cratylus/runtime": "workspace:*",
     "@cratylus/schema": "workspace:*",
     "cac": "catalog:",

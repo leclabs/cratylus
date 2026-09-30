@@ -118,6 +118,9 @@ export function holds(role: RoleCell, declared: Declared): Agent {
   if (declared.preamble !== undefined) {
     resolved.preamble = declared.preamble;
   }
+  if (declared.optional !== undefined) {
+    resolved.optional = declared.optional;
+  }
   const skills = [
     ...(role.skills ?? []),
     ...(declared.skills ?? []).filter((s) => !(role.skills ?? []).includes(s)),

@@ -731,6 +731,7 @@ describe('install — the status line', () => {
       cwd,
       corpus: plugin as never,
       pathEnv: '/usr/bin',
+      verbose: true,
       ...extra,
     });
   const settings = () => join(home, '.claude', 'settings.json');
