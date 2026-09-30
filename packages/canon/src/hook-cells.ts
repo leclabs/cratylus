@@ -3,7 +3,7 @@
 // `hooks.ts` no longer hand-authors a `Hook` nor points at on-disk `.sh` assets —
 // it lifts the harness-substrate cells (via forge's doctrine-free `hookIrOf`) into
 // the forge `Hook` IR the projector serializes into `.claude/settings.json`
-// (claude adapter: `turn.end` → Stop, `subagent.end` → SubagentStop) and carries
+// (claude adapter: `turn.end` → Stop) and carries
 // their VERBATIM worker payloads so the projector stages them under `hooks/<id>/`
 // (no file copy — the bytes come from the cell). Only `harness`-substrate cells
 // register in settings.json, and every surviving cell is one: the corpus's single

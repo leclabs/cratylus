@@ -81,8 +81,8 @@ degrades and warns where it falls short; they are not the same, and this is what
   rule on Claude Code: it taps the requested events that have a native peer, lists and warns
   about each one that has none as skipped, and refuses, writing nothing, when none can be
   tapped. Two more events on Claude Code and
-  three on omp are acts — `operator.consult.pre` and `subagent.dispatch.pre`, plus
-  `subagent.end` on omp — which each harness carries on its tool event, narrowed to the one
+  three on omp are acts — `operator.consult.pre` and `subagent.dispatch.pre`, plus a
+  subagent's end on omp — which each harness carries on its tool event, narrowed to the one
   tool.
 - **`eventTap`.** It works on Claude Code only: it attaches to Claude Code's hook settings
   (`.claude/settings.json`), and omp has no such file. Read the tap as absent on omp.
@@ -100,7 +100,11 @@ degrades and warns where it falls short; they are not the same, and this is what
   part of the output), and the order the bodies arrive in is not guaranteed. A
   project-level `.claude/skills/<name>` that shadows the user-level copy is not consulted.
 - **Enforcement scope.** A guard binds exactly the personas whose composition includes it, on
-  both harnesses, and a persona is enrolled by the presence of its stance manifest,
+  both harnesses, and only in a composing persona's own main session, never in a subagent it
+  dispatches: a subagent is bounded by what it was handed, judged by its assay and the whole
+  check, and supervised by the main session. On Claude Code the hook also fires inside a
+  subagent, where the payload carries `agent_id`, and each guard exits there before it judges
+  and says nothing. A persona is enrolled by the presence of its stance manifest,
   `stance/manifest.json`, in its own scope. omp carries the scope in a dispatcher per persona
   (`agent/personas/<name>/`); Claude Code has no dispatcher, so `install` places the manifest
   under `.claude/personas/<name>/` and the guards find it from the `agent_type` the hook payload

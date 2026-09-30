@@ -96,9 +96,11 @@ const DECLARING_SITES: readonly string[] = [
  * The most distinct event names a non-declaring file may carry and still be USING
  * the vocabulary rather than writing it down.
  *
- * TWO, and the number is measured rather than chosen. The largest consumer in the
- * live corpus is `canon/src/hooks/stance-guardrail.ts`, which binds exactly two
- * (`turn.end`, `subagent.end`); every other cell binds one. A file reaching three is
+ * TWO, and the number is measured rather than chosen. The largest consumers in the
+ * live corpus are `canon/src/hooks/stance-guardrail-pre.ts` (`operator.consult.pre`,
+ * `subagent.dispatch.pre`) and `canon/src/hooks/purview-guardrail.ts`
+ * (`subagent.dispatch.pre`, `tool.use.pre`), which bind exactly two each; every
+ * other cell binds one or, for the drift notice, two. A file reaching three is
  * no longer naming the moments it fires on — which is what `runtime/src/events.ts`
  * did with twenty-eight.
  */
@@ -214,7 +216,7 @@ describe('(a) canon declares the vocabulary, and nothing else does', () => {
     expect(caught.map((c) => c.file)).toEqual(['runtime/src/events.ts']);
     // 3. and the same predicate leaves a CONSUMER alone — a cell binding its own
     //    moments must not read as an enumeration, or the gate is a ban on usage.
-    const cell = `events: ['turn.end', 'subagent.end'],`;
+    const cell = `events: ['operator.consult.pre', 'subagent.dispatch.pre'],`;
     expect(
       undeclaredEnumerations(
         new Map([['canon/src/hooks/x.ts', cell]]),

@@ -208,7 +208,7 @@ describe('what the corpus actually faces — measured per predicate, not assumed
     'session.start',
     'tool.use.pre',
     'turn.end',
-    'subagent.end',
+    'subagent.dispatch.pre',
   ] as const;
 
   it('every harness event the canon cells declare is realizable on BOTH', () => {

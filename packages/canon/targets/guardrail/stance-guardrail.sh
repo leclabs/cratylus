@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# stance-guardrail — a Stop / SubagentStop hook that STRUCTURALLY REFUSES a turn in which an
+# stance-guardrail — a Stop hook that STRUCTURALLY REFUSES a turn in which an
 # agent collapses out of the intent-driven-expert (fiduciary-agent) stance.
 #
 # WHY THIS EXISTS (the harness half of the principal stance):
@@ -51,8 +51,8 @@
 #     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
 #     a verdict about how the turn ended, however genuinely present those characters are.
 #
-# INPUT  : Claude Code Stop/SubagentStop hook JSON on stdin (transcript_path, stop_hook_active,
-#          agent_type [SubagentStop], session_id, cwd, …).
+# INPUT  : Claude Code Stop hook JSON on stdin (transcript_path, stop_hook_active,
+#          agent_type, session_id, cwd, …).
 # OUTPUT : on collapse → stdout `{"decision":"block","reason":"…"}` + exit 0 (Stop-hook block).
 #          judged, no collapse → no stdout + exit 0 (allow stop).
 #          let through with no verdict → the notice `say` prints + exit 0 (allow stop).
@@ -136,6 +136,14 @@ input="$(cat)"
 
 command -v jq >/dev/null 2>&1 || dark "jq is not installed, so the hook payload cannot be read"
 
+# A GUARD BINDS A PERSONA'S OWN MAIN SESSION AND NO SUBAGENT IT DISPATCHES. A subagent is bounded
+# by what it was handed, judged by its assay and the whole check, and supervised by the main
+# session. Claude Code fires this hook inside a subagent too (settings hooks and the subagent's
+# own front-matter hooks), and there the payload carries `agent_id` — present only inside a
+# subagent. A guard that does not bind there is not dark: it exits before it judges and says
+# nothing.
+[ -z "$(printf '%s' "$input" | jq -r '.agent_id // empty' 2>/dev/null || true)" ] || allow_stop
+
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 JUDGE_CMD="${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
 
@@ -206,7 +214,7 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # own scope, and the scope reaches this worker in the one form its harness offers. omp's dispatcher
 # lives in that same scope and therefore already knows it — it passes it in the envelope as
 # `stance_scope`. Claude Code places no dispatcher; its hook payload NAMES the running agent as
-# `agent_type` (on the main thread of a `--agent` session and inside a subagent, and on neither for a
+# `agent_type` (on the main thread of a `--agent` session, and on neither for a
 # bare session), so the scope is the persona's directory under this harness's own home, one hop
 # above the hooks root this worker was deployed into. Either way the scope is then read the same:
 # A manifest means enrolled, and carries THIS agent's contract: its rubric, its moments, its
@@ -280,18 +288,11 @@ judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; wha
 
 
 # --- extract the last assistant turn from the transcript ------------------------------------
-# WHICH TRANSCRIPT, AND WHOSE TURN. A SubagentStop payload names TWO: `transcript_path` is the
-# PARENT session's, `agent_transcript_path` is the subagent's own. The scope above is the subagent's
-# (`agent_type`), so the text it is judged on must be the subagent's too. This read
-# `transcript_path` alone, so a subagent's enrollment judged the PARENT's words — observed live: a
-# bare session's own text was judged under a subagent's scope. A Stop payload carries no
-# `agent_transcript_path`, so the main thread's transcript is the only one there is. The operator
-# session is still the parent's, and the standing directive below reads it from there.
+# WHICH TRANSCRIPT. This worker binds a main session only (the `agent_id` gate above), so the
+# payload's `transcript_path` is the whole of it: the session's own.
 session_transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
-transcript="$(printf '%s' "$input" | jq -r '.agent_transcript_path // empty' 2>/dev/null || true)"
-[ -n "$transcript" ] || transcript="$session_transcript"
+transcript="$session_transcript"
 [ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '$transcript'"
-[ -n "$session_transcript" ] && [ -f "$session_transcript" ] || session_transcript="$transcript"
 
 # THE CLOSE IS IN THE PAYLOAD, NOT YET IN THE TRANSCRIPT. On Claude Code a Stop hook fires before the
 # final assistant message is written, so the transcript ends one message short: a turn that is only

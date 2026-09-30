@@ -522,7 +522,7 @@ describe.each(FORMS)(
 
 // THE CLAUDE FORM OF THE SCOPE. Claude Code places no dispatcher, so the payload carries
 // no `stance_scope`; it NAMES the running agent as `agent_type` (on the main thread of a
-// `claude --agent` session and inside a subagent, and on neither for a bare session). The
+// `claude --agent` session, and on neither for a bare session). The
 // worker derives the persona's scope from that name under its own harness home, and a
 // manifest there is enrollment. The layout is the one the claude adapter deploys:
 // `<home>/.claude/{hooks/<id>/, agents/, personas/<name>/stance/manifest.json}`.
@@ -604,6 +604,20 @@ describe('purview guardrail — the claude form of the scope (agent_type only)',
     expect(
       runClaude({ agent_type: `../personas/${architect.name}` }).stdout,
     ).toBe('');
+  });
+
+  it('is not bound inside a subagent: an `agent_id` payload exits 0, says nothing and leaves the judge unasked', () => {
+    const inside = runClaude({
+      agent_type: architect.name,
+      agent_id: 'a1b2c3',
+    });
+    expect(inside.status).toBe(0);
+    expect(inside.stdout).toBe('');
+    // The same payload in a main session is judged, so the silence above is the gate's.
+    const { payload } = JSON.parse(
+      runClaude({ agent_type: architect.name }).stdout,
+    ) as { payload: string };
+    expect(payload).toContain(architect.role);
   });
 
   it('lets a dispatcher-supplied scope win over the name (omp keeps its form)', () => {
