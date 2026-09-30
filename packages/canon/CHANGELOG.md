@@ -1,5 +1,14 @@
 # @cratylus/canon
 
+## 0.11.1
+
+### Patch Changes
+
+- 1947c67: The guards bind a persona's own main session and no subagent it dispatches. On Claude Code the three guard workers exit without judging, and without a notice, on a payload carrying `agent_id`; the Stop guard no longer binds `subagent.end`, so a finished subagent's turn is not judged.
+- 63569f7: The cold-decode oracle decides signs only for the corpus's core agent dimension names and values, the terminology it was built to discover. Every other term is the industry's own, used as the industry understands it, and no consumer surface is held to the oracle. The cratylism value states this once and no longer holds every authored surface to σ\*; signify's `Art` and `α` are scoped to the corpus, design's concept anchors and formalize's block notation answer to no cold decode, and create-skill's green no longer asks a glyph to be cold-verified.
+- a38f423: The stance guardrail passes a dispatch that routes a unit of a named plan, or a closed plan, by its name. The architect starts a plan's work, and routes every verdict, by `<unit> of <plan>` with at most where the spec is read, and routes a closed plan to make its line whole and ask the operator for release; the intent lives in the spec at that address, so the rubric's dispatch-echo signal now opens by exempting both and its boundary test PASSes them, and the pre-call guard's header and deny notice name them among what it does not deny. A dispatch pasting the operator's or a coordinator's literal words still BLOCKs. The rubric stays within 14 KB: sentences that restated what it says elsewhere were cut to make room. Calibration gains `dispatch-echo.txt` (expected-BLOCK) and `controls/route-units-by-name.txt` (must-PASS).
+- a0e28a8: The loop's texts say each unit is built in its own isolated worktree off the plan's line and never on main, and no longer teach the mechanics: branch names, worktree paths and git pipelines are dropped, and `lacks` and `gather` are stated as the outcomes they check and bring about. The runtime's refusal of a bound plan whose line has no worktree says what is missing and no longer hands the reader a branch name, a path and a `git worktree add` command.
+
 ## 0.11.0
 
 ### Minor Changes

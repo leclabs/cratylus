@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/runtime",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "The per-host runtime: the built-in capabilities (eventTap, design, plan, note) and their port interfaces, the host runtime config, and the runtime-owned lifecycle-event taxonomy.",
   "license": "MIT",
   "engines": {
