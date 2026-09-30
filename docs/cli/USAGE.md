@@ -208,6 +208,14 @@ this harness's own launcher is adopted: recorded and reported, not re-created. A
 command across harnesses, so whichever install links a name first owns it. The links it placed or
 adopted are recorded in the harness's deploy manifest, and only recorded links are ever removed.
 
+On Claude Code `install` also makes the persona's badge (`✈️ mav`) visible for as long as its session
+runs, in the status line. Where you have none it sets one; where you have your own it wraps it, with
+no flag: your command still runs and its output reaches the status line byte for byte, and in a
+session that runs a persona the badge goes in front of its first line. It records your original
+command in the deploy manifest and prints what it changed. A `statusLine` that is not a `command`
+one is left as it is, and no badge can show there: Claude Code rejects such a settings file
+entirely and runs no status line until it is fixed.
+
 ---
 
 ## 5. Proposed root `--help`

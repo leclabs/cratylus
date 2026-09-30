@@ -59,6 +59,12 @@ export interface DeployManifest {
   // deploy keeps it: the value here is what deploy would write, never what the host
   // chose, so it stays true while the host's line stands.
   agentModels: Record<string, string | null>;
+  // The claude `statusLine` install placed in the host's settings.json: `placed` is the
+  // `command` it wrote (a later run that finds another there knows the host changed it),
+  // `host` the command the host ran before — the badge worker carries it verbatim — or
+  // null where the host had none. `null` ⇒ install placed none. It is what an uninstall
+  // restores the host's line from.
+  statusLine: { placed: string; host: string | null } | null;
 }
 
 export function emptyManifest(): DeployManifest {
@@ -68,6 +74,7 @@ export function emptyManifest(): DeployManifest {
     hookCommands: [],
     personaLinks: [],
     agentModels: {},
+    statusLine: null,
   };
 }
 
@@ -92,6 +99,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       hookCommands: parsed.hookCommands ?? [],
       personaLinks: parsed.personaLinks ?? [],
       agentModels: parsed.agentModels ?? {},
+      statusLine: parsed.statusLine ?? null,
     };
   } catch {
     return emptyManifest();
