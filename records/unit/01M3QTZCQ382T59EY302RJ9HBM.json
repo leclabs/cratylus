@@ -1,0 +1,46 @@
+{
+  "envelope": {
+    "id": "01M3QTZCQ382T59EY302RJ9HBM",
+    "entity": "01M3QS6EW07SYFCT49H51S7TMJ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QTD6XHJF8DBZAKWASA1XJR"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:21:04.355Z",
+    "reason": "the amendment bounds reads the role and skills carry; nothing this unit writes moved",
+    "cause": "architect position amended at 30de8f26"
+  },
+  "payload": {
+    "plan": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "spec": {
+      "name": "kino-position",
+      "intent": "Census @ef571276 (source identical to a8cf23f8: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the architect position in kino's own declarations (packages/canon/src/agents/kino.ts). Operator ruling (note 'named personas and generic positions'): kino, nico and mav are main-session personas, each with its own specialty and personality over the architect role, and each speaks only the architect position; the generic `architect` is the subagent-oriented holder. Holders override scalars and EXTEND sets (roles/hold.ts), so what the role unit changes reaches here, and what the holder declares itself only this unit can fix. kino's film domain and its teaching stance stay.\nCHANGE. The description (line 31: 'delegating every mechanical build to subagents, and judging their output against that vision') becomes kino judging assays of what was built against the vision and handing planning to the planner, building to the implementer, reading what landed to the assayer, and checks and merges to the integrator. The archetype's 'keeps the vision whole by delegating every mechanical build to subagents and refusing the output that diverges from it' (line 33) makes the refusal a verdict on an assay, not a reading of the output; an assay is a second description in the design's own words, which is what separates it from a report. The comment at 24-26 gives 'image and video to judge a take' (reading an artifact) as the reason `modalities` stays unstated: restate the reason without it (the operator's references and intent arrive as image, video and audio), or state the value if no other reason holds. Keep the two capabilities, provenance-attribution and user-centered. Depends on architect-role: kino.ts compiles against roles/architect.ts, which that unit writes. No new test file, so canon's gate-convicts registry is untouched.",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts"
+      ],
+      "deps": [
+        "01M3QS44E762G7NS212AQK8S9Z"
+      ],
+      "outputs": [
+        "packages/canon/src/agents/kino.ts",
+        ".changeset/kino-position.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm exec cratylus project --harness claude --out $T`, which exits 0. An ARCHITECT HOLDER is an $T/agents/<h>.md whose `## Role` section opens `architect ≜` (4 at census: architect, kino, mav, nico; print N). `grep -c -E 'judging their output|refusing the output' $T/agents/kino.md` prints 0 (census 2).",
+        "`grep -c 'judge a take' packages/canon/src/agents/kino.ts` prints 0 (census 1).",
+        "The front-matter description of $T/agents/kino.md names planner, implementer, assayer and integrator (grep -c each ≥ 1; census: integrator 0).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/reader-density.test.ts test/structural-parsimony.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each architect holder build the text its session starts with: $T/agents/<h>.md whole (front matter and hooks included), then each skill of its `skills:` list in order, as $T/skills/<s>/SKILL.md with its front matter stripped. Give each text, with no other context and no tools, to two distinct models (anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, the pair the assay of 20961057 used) with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone. For each question answer YES, NO or UNCLEAR and quote the lines that decide it. (a) Does the agent itself build or edit the product's code or files? (b) Does it itself run code, tests, builds or checks? (c) Does it itself make commits? (d) Does it itself merge work into main? (e) Does it itself read code or produced artifacts? (f) Does it itself read the reports or returns of the agents it delegates to? (g) To whom, by name, does it hand planning, building, reading what landed, and running checks and merging?' Save every prompt and answer verbatim under /tmp/architect-position-cold-read/kino-position/ and return the paths; print the number of reads taken (8 = 4 holders x 2 models). PASSES when no YES or UNCLEAR answer quotes a line that this unit's outputs project, and no (g) answer names the builder anything but `implementer` on a line this unit's outputs project; and, when this unit is the last of plan architect-position to land, when all (a)-(f) answers of all 8 reads are NO and every (g) names the builder `implementer`. FAILS at census: Haiku answered (e) YES ('reads artifacts to judge them against vision') and both Opus reads answered (f) YES, all quoting kino's 'judging their output against that vision … refusing the output that diverges from it' (assay of 20961057, point 1).",
+        "COLD-READ QUESTION (f), corrected: 'does it read an implementer's report or account of its own work, an artifact, or a diff?' Reading the assay and the integrator's gate result is the position's own act and must NOT count as YES; the prompt says so."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3QTZ0XS6CBV821GFDQ9H075",
+      "closure": {}
+    }
+  }
+}
