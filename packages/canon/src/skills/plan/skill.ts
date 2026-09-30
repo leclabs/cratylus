@@ -92,11 +92,15 @@ advance(unit) ≜ \`scripts/plan.mjs advance <unit> --plan <p> --to <state>\`
 retract(unit) ≜ \`scripts/plan.mjs retract <unit> --plan <p>\`
 revise(unit) ≜ \`scripts/plan.mjs revise <unit> --plan <p> [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]…\` ⟨spec(unit) · pin(unit) kept⟩
 revise(P) ≜ \`scripts/plan.mjs revise <plan> [--name <n>] [--realizes <concept>]…\` ⟨name(P) ∨ realizes(P)⟩
-bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P) ∧ the P bound before returns to ${PLAN.states[0]}⟩
+bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P)⟩
 close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
 reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p> [--name <n>] [--realizes <concept>] [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--state <state>] [--repin]\` ∨ \`scripts/plan.mjs reconcile <plan> [--name <n>] [--realizes <concept>]… [--state <state>]\` ↦ one version superseding every current version of x ⟨each field the versions disagree on is given · a unit whose versions pin differently takes --repin⟩
+land(unit) ≜ \`scripts/plan.mjs land <unit> --plan <p> --commit <c>\`
+assay(unit) ≜ \`scripts/plan.mjs assay <unit> --plan <p> --commit <c> --verdict <achieved|not-achieved> [--missing <part>]…\`
+whole(unit) ≜ \`scripts/plan.mjs whole <unit> --plan <p> --commit <c>\`
+broke(unit) ≜ \`scripts/plan.mjs broke <unit> --plan <p> --check <check>\`
 
-∀ add ∨ advance ∨ retract ∨ revise ∨ bind ∨ close ∨ reconcile : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
+∀ verb ≠ show : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
 ∀ unit : realizes(unit) = the anchor of ONE shard ⟨TOTALITY is the gate · a unit citing no
     concept is work whose purpose cannot be stated ∴ REFUSED at authoring, ¬ warned⟩
 shard ¬ how ∴ how it is realized on each harness is the plan's
@@ -106,8 +110,6 @@ shard ¬ how ∴ how it is realized on each harness is the plan's
 ∀ n : |{ P | live(P) ∧ name(P) = n }| ≤ 1 ∧ ∀ P : |{ unit ∈ P | live(unit) ∧ name(unit) = n }| ≤ 1
 closed(P) ⇒ name(P) kept ∧ ∄ write to P ∨ any unit ∈ P ⟨closed is final · readable forever⟩
 ¬closed(P) ⇒ revise(P) admitted ⟨its name ∧ its concepts, never its state⟩
-state(P) moves by bind(P) ∨ close(P) alone
-revise routes to revise(unit) ∨ revise(P) by the name it is given ⟨--plan puts a unit's P in view⟩
 ∃ u : live(u) ∧ unit ∈ deps(u) ⇒ ¬ retract(unit)
 advance(unit) ⊨ bound(P) ∧ one step forward in States(unit) ⟨a skip ∨ a step back refuses · a unit of an unbound P is authored ∧ revised, ¬ worked⟩
 ∀ unit : R acyclic ∧ ∀ u ∈ deps(unit) : live(u) ∧ u ∈ P
@@ -133,11 +135,9 @@ slices(P) cut on shards ⟨¬ file-adjacency · files are a LAGGING proxy for mo
 ∀ unit, u ∈ wave(n) : unit ≠ u ⇒ outputs(unit) ∩ refs(u) = ∅ ⟨disjoint outputs is NECESSARY
     ¬ sufficient : a deletion in unit dangles a reference in u⟩
 ⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation
-∀ unit : effort(unit) ≤ capacity ⟨a unit past capacity hands its successor a re-read, ¬ progress⟩
-effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) ⟨each part realizes a factor⟩
+∀ unit : effort(unit) ≤ capacity ⟨a unit past capacity, or an implementer exhausted mid-unit (effort mis-estimated), hands its successor a re-read, ¬ progress⟩
+effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) ⟨each part realizes a factor⟩ ≺ redispatch
     ; factors = ∅ ⇒ SURFACE ⟨a primitive no implementer finishes is ¬ primitive @ design⟩
-an implementer exhausted mid-unit ⇒ effort(unit) mis-estimated ⇒ split ∨ SURFACE ≺ redispatch
-    ⟨¬ a chain of cold successors⟩
 ∀ unit : footprint(unit) ⊆ outputs(unit) ⟨outputs IS the contention set ∴ an under-declared
     array silently voids every disjointness proof above⟩
 ∀ unit : occurs(realizes(unit)) ⊆ outputs(unit) ⟨a unit's footprint is its REFERENCE set, ¬ its
@@ -156,7 +156,7 @@ plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → s
 
 export const plan: Skill = {
   name: 'plan',
-  description: `use this skill to decompose the shards a design hands down into MECE units of work — each realizing exactly one shard and citing the single concept it realizes, with its inputs, dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a shard that cannot be planned as handed down is surfaced, never silently redrawn. Its verbs show a plan or a unit, add, advance, retract and revise units, revise, bind and close a plan, and reconcile either.`,
+  description: `use this skill to decompose the shards a design hands down into MECE units of work — each realizing exactly one shard and citing the single concept it realizes, with its dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a shard that cannot be planned as handed down is surfaced, never silently redrawn. It also carries the verbs that write a unit's ledger.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'plan', configuration: LIFECYCLE },
   composition: () => [design, note],

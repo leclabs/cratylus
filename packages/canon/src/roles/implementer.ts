@@ -27,7 +27,8 @@ import type { RoleCell } from './hold.js';
 //
 // `note` and nothing else, because what it could not prove and any finding beside the
 // path leave it as a note, and `note` composes nothing, so the implementer still never
-// receives `design`. Its one plan read, `cratylus plan show <unit> --plan <plan>`, is
+// receives `design`. Its one plan read, `cratylus plan show <unit> --plan <plan>`, and its
+// one plan write, `cratylus plan land …` recording each commit that holds the unit, are
 // stated in the role sign rather than by `plan`, which composes `design`.
 
 export const implementerRole: RoleCell = {

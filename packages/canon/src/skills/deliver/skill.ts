@@ -44,18 +44,25 @@ import { plan } from '../plan/skill.js';
 //
 // WHO OWNS WHAT, so the loop reads in order: routing by name is the architect's; binding
 // the plan and recording a unit active, completed and the plan closed is the planner's;
-// building and verifying against the spec is the implementer's; the verdict is the
-// assayer's; cutting the line, combining, the whole check, the records commit at every
-// act and the ask to release are the integrator's. A finding is captured as a note by the
-// party that met it and is never chased; when a finding enters the design is the design
+// building and verifying against the spec, and writing the landing of each commit that
+// holds the unit, is the implementer's; the verdict, written to the unit's history before
+// it is returned, is the assayer's; cutting the line, combining, the whole check, the
+// unit's whole or broke written before the report, the records commit at every act and
+// the ask to release are the integrator's. A finding is captured as a note by the party
+// that met it and is never chased; when a finding enters the design is the design
 // skill's law.
+//
+// THE LEDGER IS WHERE A UNIT STANDS. Each party writes its own event to the unit's history
+// as it happens, so which commit landed a unit, what the assayer found on it and whether
+// it made the whole or broke it are read from `plan show <unit>`; no return, message or
+// memory has to carry them, and the returns stay names.
 
 const FORMAL_BLOCK = `shard  @ design
 anchor @ design
 yield  ≜ what execution established ∧ ¬ derivable from the design
 P      @ plan
 unit   @ plan
-advance, bind, close, closed, bound @ plan
+advance, bind, close, closed, bound, land, assay, whole, broke @ plan
 accept @ plan ⟨the MECHANICAL half⟩
 outputs @ plan
 artifact : P → ℘(path) ⟨what landed⟩
@@ -76,7 +83,6 @@ gather(P) ≜ \`git for-each-ref --format='%(refname)' refs/heads | while read -
 gate   ≜ the project's whole check ⟨every suite · typecheck · build : what a green line demands⟩
 verify : P × return → 𝔹 ⟨the IMPLEMENTER's · built-it-right, against spec⟩
 integrate(unit) ≜ merge artifact(unit) onto line(P) ⟨pre achieved(unit)⟩
-whole(unit) ≜ line(P) with unit integrated ∧ gate green
 defect ≜ ⟨symptom, locus, provenance⟩
 impedes : defect × P → 𝔹
 cost   : act → effort
@@ -91,8 +97,10 @@ integrator ⊨ ¬ judges ⟨it carries a verdict onward ∧ reaches none · the 
 integrator ⊨ takes(unit) ⇔ accepted(unit) ⟨what the architect sends it is a unit's name ∧ commit after an achieved verdict · the first dispatch for P also names base(P)⟩
 first dispatch for bound P ⇒ the integrator cuts line(P) from base(P) ⟨a later dispatch finds line(P) and uses it⟩
 integrate(unit) ⇒ gate ONCE on the combined tree ⟨a branch's green says nothing about the line after other landings · an implementer ∨ assayer re-running gate proves nothing new on nearly the same tree⟩
-integrate(unit) ∧ gate green ⇒ gather(P) ∧ report \`whole <unit> of <plan>\` ⟨whole(unit) · the architect sends it to the planner, which records advance(unit) completed ∧ hands out the newly ready names⟩
-integrate(unit) ∧ ¬ gate green ∨ a merge conflict ⇒ the unit's work OFF line(P) ⟨the merge aborted or the line returned to the commit before the combination⟩ ∧ gather(P) ∧ report \`red <unit> of <plan>: <failing check>\` ⟨the records written while the unit was red are still committed · the architect sends the report to the implementer that built the unit · the integrator repairs nothing⟩
+integrate(unit) ∧ gate green ⇒ whole(unit) ∧ gather(P) ∧ report \`whole <unit> of <plan>\` ⟨whole(unit) ≜ line(P) with unit integrated ∧ gate green, recorded by the integrator with the line's commit before the report · the architect sends the report to the planner, which records advance(unit) completed ∧ hands out the newly ready names⟩
+integrate(unit) ∧ ¬ gate green ∨ a merge conflict ⇒ the unit's work OFF line(P) ⟨the merge aborted or the line returned to the commit before the combination⟩ ∧ broke(unit) ∧ gather(P) ∧ report \`red <unit> of <plan>: <failing check>\` ⟨broke(unit) records the failing check before the report · the records written while the unit was red are still committed · the architect sends the report to the implementer that built the unit · the integrator repairs nothing⟩
+∀ event ∈ { land, assay, whole, broke } of unit : written to its history as it happens, by the party it happens to ⟨land ∈ the implementer, for each commit that holds unit · assay ∈ the assayer, before its verdict is returned · whole ∨ broke ∈ the integrator, before its report · none of them a return⟩
+where unit stands ∧ on what it was accepted ⇒ read from show(unit) ⟨its ledger : the commit that landed it, what the assayer found on it, whether it made the whole or broke it · ¬ a message ∧ ¬ an agent's memory⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
 finding ∨ d ⊨ capture ⟨a note by the party that met it : implementer ∨ assayer ∨ integrator ∨ architect · the operator's steer by the architect · it reaches the architect as a note, ¬ a return⟩ ; when a finding enters the design is the law of yield ≠ ∅ @ design
 impedes(d, unit) ⇒ an implementer repairs it ⟨a regression in the path goes back to the unit's implementer by way of the architect · the integrator makes no fix⟩
@@ -103,11 +111,11 @@ elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic⟩
 terminal(P) ⇒ close(P) ⟨obligation ¬ permission : the planner closes it · an unclosed terminal plan is WIP that is not work · a closed plan stays readable⟩
 closed(P) ⇒ the architect routes the close to the integrator ⟨the records written after the last combination, the planner's completed and close records among them, exist only now⟩
 the close routed ⇒ gather(P) ∧ lacks(P) prints nothing ⟨no worktree and no local branch holds a record line(P) lacks⟩ ∧ ask the operator release(P) ⟨the ask comes AFTER the gather · the integrator asks · it never moves main⟩
-deliver ≜ bind ⟨planner⟩ → send ⟨architect, by name⟩ → verify ⟨implementer⟩ → achieved ⟨assayer⟩ → integrate ∧ gate ⟨integrator, once on the combined tree⟩ → gather ⟨integrator, at every act : green or red⟩ → whole ⟨planner records completed⟩ → close ⟨planner⟩ → gather ⟨integrator, at the close⟩ → release ⟨operator, asked by the integrator once lacks(P) prints nothing⟩` as SkillExpression;
+deliver ≜ bind ⟨planner⟩ → send ⟨architect, by name⟩ → verify ⟨implementer, writes land⟩ → achieved ⟨assayer, writes assay⟩ → integrate ∧ gate ⟨integrator, once on the combined tree⟩ → whole ∨ broke ⟨integrator writes it⟩ → gather ⟨integrator, at every act : green or red⟩ → advance ⟨planner records completed⟩ → close ⟨planner⟩ → gather ⟨integrator, at the close⟩ → release ⟨operator, asked by the integrator once lacks(P) prints nothing⟩` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',
-  description: `use this skill to make a plan's approved work whole and see it released — take each unit whose assay verdict is achieved, integrate it onto the plan's integration line, run the project's whole check once on the combined tree, and at every act commit the records the line lacks by pathspec, then report the unit whole on green, or on red or a merge conflict leave the unit's work off the line and report the unit and the failing check. The line is cut at the first dispatch from the commit the plan's units are built on, never from bare main, and it holds the plan's whole work: every approved unit together with every design, plan and note record written while the plan ran, gathered from every worktree of the repository and every local branch, so releasing it loses nothing. Reach for it whenever an achieved unit arrives by name and commit, and when the plan closes: the records written after the last combination (the planner's completed and close records) are gathered and committed at the close, and only then does it ask the operator to release. It reads the loop in order: the architect sends each name and routes the close, the planner binds the plan and records units active and completed and the plan closed, the implementer builds, and the assayer's verdict, the one judgement of a unit, is the acceptance rather than the implementer's return; a merge is durability, and neither a merge nor a green check accepts. It never moves main itself. It also carries the conduct of the work: one plan bound at a time, finish before starting, a defect that impedes the path goes back to its implementer by way of the architect and one beside it is only filed, and a finding is captured as a note by the party that met it, entering the design when the design skill's law says.`,
+  description: `use this skill to make a plan's approved work whole and see it released — take each unit whose assay verdict is achieved, integrate it onto the plan's integration line, run the project's whole check once on the combined tree, and at every act commit the records the line lacks by pathspec, then record the unit whole with the line's commit and report it on green, or on red or a merge conflict leave the unit's work off the line, record the unit broke with the failing check, and report the unit and the failing check. The line is cut at the first dispatch from the commit the plan's units are built on, never from bare main, and it holds the plan's whole work: every approved unit together with every design, plan and note record written while the plan ran, gathered from every worktree of the repository and every local branch, so releasing it loses nothing. Reach for it whenever an achieved unit arrives by name and commit, and when the plan closes: the records written after the last combination (the planner's completed and close records) are gathered and committed at the close, and only then does it ask the operator to release. It reads the loop in order: the architect sends each name and routes the close, the planner binds the plan and records units active and completed and the plan closed, the implementer builds and records the landing of its commit, and the assayer's verdict, recorded by the assayer, the one judgement of a unit, is the acceptance rather than the implementer's return; each party writes its own event to the unit's history as it happens, so where a unit stands is read from \`plan show\` and never from a message; a merge is durability, and neither a merge nor a green check accepts. It never moves main itself. It also carries the conduct of the work: one plan bound at a time, finish before starting, a defect that impedes the path goes back to its implementer by way of the architect and one beside it is only filed, and a finding is captured as a note by the party that met it, entering the design when the design skill's law says.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
   preamble: primePrinciple,
