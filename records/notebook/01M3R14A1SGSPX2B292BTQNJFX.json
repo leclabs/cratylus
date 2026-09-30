@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R14A1SGSPX2B292BTQNJFX",
+    "entity": "01M3R14A1SGSPX2B292BTQNJFW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:08:36.921Z",
+    "reason": "surfaces outside the unit still describe the architect's old position",
+    "cause": "assay of architect-sees-the-design at af5bb999"
+  },
+  "payload": {
+    "title": "architect's residual readers of the old position",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "At af5bb999, three surfaces outside architect-sees-the-design still describe the architect's old position. packages/canon/src/skills/deliver/skill.ts:132 says self reads the plan view, the assay and the integrator's gate result; deliver is now the integrator's skill and deliver-loop is the unit that realizes it, so this is probably that unit's to correct. packages/canon/src/roles/hold.ts:25 still says an architect hands a cut piece to a planner, where the design now says shard. docs/role.md:24 quotes the old arrow reads⟨intent · C · plan-view · note · assay · gate-result⟩ → writes⟨C · note · verdict⟩; it is a disposition record of earlier work, so it may be meant to stay as history.",
+    "blocks": []
+  }
+}
