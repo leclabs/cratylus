@@ -212,7 +212,11 @@ export const OMP_WORKER_TOOL: Readonly<Record<EventName, string>> = {
  * this table (a read, a search) passes through unmapped, and the worker's default
  * branch allows it — which is what a gate that judges dispatches and writes only wants.
  * The worker reads a write's target from `file_path`, `path` or `notebook_path`; a call
- * carrying none of them gives it nothing to judge, and it allows.
+ * carrying none of them gives it nothing to judge, and it allows. The exception is a
+ * `write` whose `path` is an `agent://<id>` address: omp messages a running agent
+ * through `write` to `agent://` (`agent://all` broadcasts), so that call is the message
+ * act, and the module spells it on the wire as `SendMessage` — the recipient in `agent`,
+ * the content written in `message` — not through this table.
  */
 export const OMP_WIRE_TOOL: Readonly<Record<string, string>> = {
   ask: 'AskUserQuestion',
