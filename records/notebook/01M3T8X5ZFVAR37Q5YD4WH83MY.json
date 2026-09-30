@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T8X5ZFVAR37Q5YD4WH83MY",
+    "entity": "01M3T8X5ZFVAR37Q5YD4WH83MX",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayPurviewGuardPrecise3",
+    "time": "2026-09-30T23:03:00.847Z",
+    "reason": "finding beside the unit met while assaying it",
+    "cause": "reading the judge seams the purview guard uses at 11799c43"
+  },
+  "payload": {
+    "title": "the shared judge backend frames a purview act as a transcript",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "At 11799c43 the purview guard hands its judge the rubric, the holder's contract and the act. But both judge seams it shares with the stance guards, stance-judge.sh on Claude Code and the in-process judge the omp bridge renders, wrap that payload as '=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) ===' and close with 'Apply the rubric. Output ONLY the verdict block.' A purview payload holds no operator instruction and no agent turn, so the judge is told something false about what it reads. Under the shard, what a guard hands its judge is only what its one decision needs. This framing belongs to the shared backend, not to the purview worker, so it was not held against purview-guard-precise.",
+    "blocks": []
+  }
+}

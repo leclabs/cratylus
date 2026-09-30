@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T8WTMF1S01JBH276AXM6M5",
+    "entity": "01M3T8WTMF1S01JBH276AXM6M4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayPurviewGuardPrecise3",
+    "time": "2026-09-30T23:02:49.231Z",
+    "reason": "finding beside the unit met while assaying it",
+    "cause": "live probes of the purview guard at 11799c43"
+  },
+  "payload": {
+    "title": "a small judge model misreads a route as spec",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Assaying purview-guard-precise at 11799c43, the purview guard was run through its host-model seam against live models. With the session's default model, 35 of 35 architect acts were judged right: routes (build it, assay it, findings back, closed plan to the integrator), a shard to a planner and an ad-hoc request passed, and a spec, a source write and relayed operator words were denied. With the smaller 'smol' model, the route 'purview-guard-precise of guard-precision: build it.' to an implementer and a findings-back message to a running agent were denied 5 of 5 as spec, although the rubric names 'build it' as a route event. The rubric before the unit (6.6 KB, at cbac6a5f) gave the same two denials under that model, and it also denied a shard to a planner 3 times in 5, which the new rubric passes. So the concise hand did not cause this; the residual is judge-model capacity. The deployed Claude Code judge is haiku, and it could not be exercised here because the claude CLI hung headless. Whether the guard's judge model is strong enough to tell a route from a spec is open.",
+    "blocks": []
+  }
+}
