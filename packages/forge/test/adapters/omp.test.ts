@@ -605,7 +605,7 @@ describe('omp bridge — a guard that lets a fire through says so', () => {
   // be judged), the envelope and then a notice (the verdict pass let it through),
   // or the envelope and then a verdict or nothing (judged).
   const STUB = `#!/bin/sh
-cat > /dev/null
+cat > "\${RECORD:-/dev/null}"
 if [ -n "$STANCE_EMIT_PAYLOAD" ]; then
   if [ "$MODE" = early ]; then
     echo "PURVIEW GUARDRAIL — DARK: jq is not installed. This call was NOT judged."
@@ -816,6 +816,51 @@ esac
 
       await b.runAll(fire, main);
       expect(judge.calls).toBe(1);
+    }
+  });
+
+  it('hands the worker a message to an agent as the dispatch it is, and any other write as a write', async () => {
+    // omp messages a running agent through `write` to `agent://<id>`. The worker
+    // reads a `Write` as an act on the substrate and judges its path alone; the
+    // message is only judged where the envelope spells it as the contract does.
+    const b = await load(
+      'pass',
+      ['tool.use.pre', 'subagent.dispatch.pre'],
+      async () => ({ content: [{ type: 'text', text: 'PASS' }] }),
+    );
+    const main = { model: {}, agent: { kind: 'main', id: '0-main', depth: 0 } };
+    const record = join(mkdtempSync(join(tmpdir(), 'omp-envelope-')), 'seen');
+    tmp.push(dirname(record));
+    vi.stubEnv('RECORD', record);
+    const envelopeOf = async (input: Record<string, unknown>) => {
+      rmSync(record, { force: true });
+      await b.runAll({ toolName: 'write', input }, main);
+      return JSON.parse(readFileSync(record, 'utf8')) as Record<
+        string,
+        unknown
+      >;
+    };
+    try {
+      expect(
+        await envelopeOf({
+          path: 'agent://AssayInstall3',
+          content: 'install of guided-install at 1a2b3c4',
+        }),
+      ).toMatchObject({
+        tool_name: 'SendMessage',
+        tool_input: {
+          agent: 'AssayInstall3',
+          message: 'install of guided-install at 1a2b3c4',
+        },
+      });
+      expect(
+        await envelopeOf({ path: 'packages/forge/src/x.ts', content: 'x' }),
+      ).toMatchObject({
+        tool_name: 'Write',
+        tool_input: { path: 'packages/forge/src/x.ts' },
+      });
+    } finally {
+      vi.unstubAllEnvs();
     }
   });
 
