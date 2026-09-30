@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RJJ8Q5ZX2C5E7DFZ0B6D0Y",
+    "entity": "01M3RJJ8Q5ZX2C5E7DFZ0B6D0X",
+    "operation": "create",
+    "supersedes": [],
+    "author": "JudgeRecoveryIntegrator",
+    "time": "2026-09-30T07:13:20.102Z",
+    "reason": "a finding met while integrating goes to a note, not a fix",
+    "cause": "whole of guard-asks-again of judge-recovery left the unit diverged after gather"
+  },
+  "payload": {
+    "title": "whole written before gather forks the unit",
+    "kind": "idea",
+    "topic": "unit ledger",
+    "body": "At guard-asks-again of judge-recovery the integrator cut plan/judge-recovery from base e13ab418, merged the unit at 64af8938, ran the gate green, and wrote whole at 5a0e346f on the line BEFORE gathering. The unit's land record (committed on main in 337c2166, after the unit commit) and assay record (untracked in the main checkout) were not yet on the line, so whole superseded the planner's version 01M3RJ38 instead of the assay head 01M3RJCV; once gathered the unit is diverged (two heads: land+assay, and whole). Nothing is lost: plan reconcile unions the ledgers. Structural cause: deliver orders whole(unit) ≺ gather(P), but land and assay are written off the line, so any whole written on a line lacking them forks the unit. Gathering before writing whole (or an integrator gather step ahead of whole) would keep the ledger linear.",
+    "blocks": []
+  }
+}
