@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RFMFPV2F0QAW3DJD9KWHMT",
+    "entity": "01M3RFMFPV2F0QAW3DJD9KWHMS",
+    "operation": "create",
+    "supersedes": [],
+    "author": "LoopLedgerIntegrator",
+    "time": "2026-09-30T06:22:07.067Z",
+    "reason": "a defect met while gathering the line's records is filed, not resolved; reconcile is the planner's",
+    "cause": "gathering loop-ledger's records onto plan/loop-ledger at close"
+  },
+  "payload": {
+    "title": "ledger-writers diverged when the line gathered the records",
+    "kind": "finding",
+    "topic": "ledger-writers of plan loop-ledger",
+    "body": "When the line gathered loop-ledger's records at close (33772a8a), ledger-writers of plan loop-ledger showed as diverged with two current versions. Both supersede its assay record 01M3RFDPR1EM7GBKCE5A0FVJQQ: the integrator's whole event b5a047b6 (01M3RFGFYFFR4N2T6VSBTTF3JN, written in the line worktree at 06:19:56) and the planner's advance to completed (01M3RFH8837BGHTRYV2NY3CTB3, written in main's checkout at 06:20:21, which read a ledger that lacked the whole event). Each checkout was settled alone, and the divergence appeared only when the two were combined. The gate is green on the combined tree. Reconciling it is the planner's job, and plan show reports the plan as closed. The cause is that records were written in more than one checkout (main, the line worktree and the unit worktree), so the planner's read did not see the integrator's ledger write.",
+    "blocks": []
+  }
+}
