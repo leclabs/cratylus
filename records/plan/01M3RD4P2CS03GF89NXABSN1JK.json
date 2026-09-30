@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RD4P2CS03GF89NXABSN1JK",
+    "entity": "01M3RD4P2CS03GF89NXABSN1JJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T05:38:32.140Z",
+    "reason": "the architect role admits ad hoc delegation outside the loop, which its role section, the delegation action and the purview guard still refuse; operator priority puts it first",
+    "cause": "architect handed shards architect role, unit and integrator role; operator priority: architect role first"
+  },
+  "payload": {
+    "name": "loop-ledger",
+    "realizes": [
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3QRZYAQ4KRZJKS8MX0CNA39"
+    ],
+    "state": "proposed"
+  }
+}
