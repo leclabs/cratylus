@@ -1,5 +1,23 @@
 # @cratylus/schema
 
+## 0.6.0
+
+### Minor Changes
+
+- 8f1abc6: The scope-enrolled guards now judge on Claude Code, and only the agents that compose them. They fired from `settings.json` on every turn and exited at their scope gate, because the gate read only the `stance_scope` that omp's dispatcher supplies, so a Claude Code session was never judged and nothing said so.
+
+  `@cratylus/schema` adds the projection facts `harness-persona-root` and `stance-manifest`, and `HookCell.binds`: the composition (a dimension and optionally one value's anchor) that makes a cell a guard and binds an agent to it. A cell without `binds` binds nobody.
+
+  `@cratylus/forge` builds the stance manifest once, in `core/enrollment.ts`, and the projector stages it for every adapter that declares `scopedRel`. Each persona's manifest lists exactly the guards its composed agent includes, never every cell for every persona and never the drift notice, so omp's rendered manifests drop the `deploy-drift-notice` gate they used to carry. The claude adapter now declares `scopedRel`, placing a persona scope at `personas/<name>/` under `.claude`. `OMP_STANCE_MANIFEST` is now `STANCE_MANIFEST` in that module, and `install` logs the file as a stance manifest rather than as mechanism. A harness with no `scopedRel` cannot name the running agent, so projection warns once per guard and carries it as a steer, withholding its registration and workers. On omp, `tool.use.pre` now reaches its worker with the real `tool_name` (mapped from omp's `write`, `edit`, `task` and `ask`) instead of an empty one. `deploy` also stops dropping a cell's second matcher group on one event when it merges `settings.json`, which had left the stance dispatch guard and purview's every-tool group unregistered on a deployed host; an identical group is still added once.
+
+  `@cratylus/canon` resolves the scope in all three guard workers as `stance_scope` when present, and otherwise as `<harness home>/<persona root>/<agent_type>` when the payload names an agent. A bare session and an agent with no manifest stay silent, and an `agent_type` that is not one directory name is refused. The turn-end worker now judges a subagent's own transcript (`agent_transcript_path`) rather than its parent's, and takes the closing message from the payload's `last_assistant_message`, because Claude Code fires Stop before that message reaches the transcript, so a turn that was only text went unjudged. Purview now reads the shared judge seam (`STANCE_EMIT_PAYLOAD`, `STANCE_VERDICT_FILE`) like its siblings; under its own `PURVIEW_` names the omp bridge got no payload back and it judged nothing there. The workers take the manifest path from the `stance-manifest` fact, and the regenerated `.sh` targets differ accordingly.
+
+- 7c7d49b: The prime principle is carried only by the cells whose laws apply it, no longer stamped on every projected cell.
+
+  `AgentPlugin.preamble` is removed from `@cratylus/schema`, along with `ProjectOpts.preamble` and the plugin-wide stamping in `@cratylus/forge` (agent and skill projection, `resolveSkills`). A plugin that set `preamble:` must move the block onto the cells that need it. `Skill` gains an optional `preamble`, the same shape `Agent.preamble` already had, and projection emits it as the first section of that skill's SKILL.md.
+
+  `@cratylus/canon` drops `preamble` from its plugin and sets `primePrinciple` on the ten skills that name concepts by anchor, optimal sign or cold decode: `create-skill`, `deliver`, `design`, `exemplify`, `formalize`, `introspect`, `materialize`, `plan`, `probe` and `signify`. The other six skills carry no `## Prime Principle`, and no agent does: each agent already carries cratylism once through its held role's engineering-principles, where it previously carried it twice. The stance-guardrail operator-slot filter now recognizes a skill body by its verb H1 over the fenced formal block instead of by `## Prime Principle`.
+
 ## 0.5.0
 
 ### Minor Changes

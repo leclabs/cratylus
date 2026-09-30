@@ -1,5 +1,77 @@
 # @cratylus/invoke
 
+## 0.6.0
+
+### Minor Changes
+
+- 164b9bd: The codex adapter is removed: cratylus projects to Claude Code and omp only.
+
+  `@cratylus/forge` drops `adapters/codex` (the `./adapters/codex` subpath and `codexHarnessAdapter`), and the registry's `HarnessName` is `'claude' | 'omp'`, so `--harness codex` on `project` and `deploy` is refused with the known harnesses named. The port op `HarnessAdapter.scopeOrientation`, which only codex implemented, is removed along with its projection branch. The degrade-and-warn members `preloadsSkills`, `scopes`, `unnarrowed` and `agentExt` stay on the port.
+
+  `@cratylus/canon` rewords the one codex reference left in the stance-judge worker's comment; the regenerated `stance-judge.sh` differs in that comment alone.
+
+- 787d6c7: The persona badge now shows on Claude Code, and on omp it lands in the status line instead of beneath it. On Claude Code the badge is `<mark emoji> <name>` (the name alone for a persona with no mark, no color), in the status line of a session started with `--agent`, and never in a subagent's or a bare session's. `cratylus install` sets it as the status line where the host has none, through one worker that reads the running persona from the status line's own input (`agent.name`) and prints that persona's badge file, or nothing where none was placed. It needs `jq` and fails open without it.
+
+  A status line the host already has is never replaced. Install leaves it byte-identical and prints one line offering `--wrap-status-line`; with that flag the command becomes the worker with the host's command as its one argument, the host's output keeps every byte and gains the badge in front of its first line, every other `statusLine` key such as `padding` is kept, and a second run wraps nothing twice. `--dry-run` writes nothing.
+
+  On omp an extension's status renders inside the status line only where the host lists the `status` segment, and omp reads a segment list only under `statusLine.preset: custom`. Install now edits the config file omp reads (`config.yml`, else `config.yaml`) by the preset the host is on. With no preset set (a file with no `statusLine` included) it writes `preset: custom` with the default preset's own left segments plus `status`, its right segments and its segment options, so the line looks as before with the badge added, and keeps any layout key the host already wrote. On `preset: custom` it appends `status` after the last item of the host's `leftSegments` with no other byte changed, or writes omp's custom left list plus `status` where the host lists none. A host on any other named preset is left byte-identical and told the one addition that would show the badge. A shape it cannot extend is reported and left as it is.
+
+  Where install leaves `status` in the live omp layout it also writes `statusLine.showHookStatus: false` unless the host set that key, so the badge shows once, inline, and not again on the row omp prints beneath the editor. The `status` segment draws every extension's status inline, so none is hidden. A host left on another named preset keeps that row and gets neither the segment nor the key.
+
+  Install never activates a host's own layout. A host with no preset that wrote `leftSegments`, `rightSegments` or `segmentOptions` (ignored or only merged under omp's default preset, and made the whole line by `custom`) is left byte-identical and told what to write: the exact default-preset block that keeps its line and adds the badge, or its own layout made live. The advice replaces only the two lists, which are dormant; the host's own `segmentOptions` are live under every preset, so they are kept, with the default preset's options offered for any the host did not set. `preset: default` written out stays the host's named choice. The advice for a host on another named preset now says that `preset: custom` replaces that preset's layout and gives the whole block: exact lists for `default`, and for any other preset its own segments followed by `status`, and to write that preset's segment options. The host's `separator` setting applies under every preset, so the advice never asks for it.
+
+  The persona-command prompt now says how many commands it will link and how many it will adopt, rather than counting both as one number.
+
+  `@cratylus/forge` adds `HarnessAdapter.statusLine` (the Claude worker's file and the command that runs it) and `HarnessAdapter.statusSegment` (omp's config files, status segment, default layout and custom left list), the claude adapter's badge files and status-line worker in `launchSurface`, `deploy/status-line.ts` with `ensureBadgeStatusLine` and `ensureStatusSegment`, and `deploy/yaml-lines.ts`, the line helpers `model-roles.ts` and `status-line.ts` now share. `cratylus` adds the `install --wrap-status-line` flag.
+
+- 6e6986b: `cratylus install` can make each installed persona a command. `--link-persona-commands` links `~/.local/bin/<persona>` to the harness's launcher, so `planner -p 'hi'` starts a session as the planner persona: on omp through the generated `omp-agent`, and on Claude Code through a new `claude-agent` launcher that starts `claude --agent <persona>` and refuses a name that is no persona with one stderr line and exit 2. Without the flag, install prints one `would place` line per persona and says how to add them; on a terminal it asks first and answers no by default. It says when `~/.local/bin` is not on `PATH`.
+
+  It never overwrites. A name taken by a regular file, by another program's link, or by the other harness's launcher is left as it is and reported as blocked with what is there. A link made by hand to the harness's own launcher, as the interim recipe made them, is adopted: recorded in `personaLinks`, reported as adopted, and never re-created. A persona has one command across harnesses: whichever install links a name first owns it, and the other harness's install reports it as blocked by the first harness's launcher without suffixing a name.
+
+  `@cratylus/forge` adds `HarnessAdapter.launcherFile`, the claude adapter's `launchSurface` (one session-scoped `claude-agent`, staged and deployed like omp's launcher), and `deploy/persona-commands.ts` with `planPersonaCommands`, `placePersonaCommands`, `removePersonaCommands` and `personaLauncherOf`. The links an install placed or adopted are recorded as `personaLinks` in the deploy manifest, and removal takes exactly the recorded links that still resolve to the launcher. There is no `cratylus uninstall` verb yet.
+
+- f4f59d8: `cratylus uninstall --harness <claude|omp>` removes from a harness what `install` placed there, and leaves what the host placed or changed. It removes every recorded file whose bytes still match the digest taken when it was written, the hook registrations install added, the `modelRoles` entries and status line layout it added to omp's `config.yml` (the file comes back byte for byte, your own entries included), the persona commands it placed or adopted, and this harness's stanza of the runtime config. Claude Code's status line goes back to your own command, byte for byte, or is dropped where install set it. The deploy manifest goes last. It prints two lists: what it removed, and what it left because the host placed or changed it, each with its reason: a placed file you edited, a file recorded before digests were kept, a hook entry that now also runs a command of yours, a status line you pointed elsewhere, a config line you rewrote (and only that line: the rest of the run install added still comes out, one line at a time, keeping the headers a line of yours sits under), a persona command you replaced, a file another harness's install still records. `--dry-run` runs every step and writes nothing. `--harness` is required, and an unreadable manifest is refused rather than read as empty.
+
+  `@cratylus/forge` adds to the deploy manifest a `digests` map (the sha-256 of each file a deploy wrote, carried across runs that did not write it) and `hostEdits` (the lines install added to a host-owned text file, as a line diff, so the host's bytes around them are never recorded), with `digestWritten`, `nextDigests`, `noteHostEdit`, `lineHunks`, `undoHunks`, `placedFileState` and `restoreHostStatusLine`. `addModelRoles` and `ensureStatusSegment` return the `edit` they made. A host installed before this release has no digests, so its files are left by an uninstall until an install records them, and no record of its `config.yml` edits: uninstall names the file and leaves it, and a re-install adopts the `modelRoles` lines and `statusLine` block it finds there byte for byte as it would write them (`adopt` on `addModelRoles` and `ensureStatusSegment`), so the next uninstall takes them.
+
+### Patch Changes
+
+- 13b8886: Every claim that cratylus reaches a harness beyond Claude Code and omp is removed, and the two it supports are described as they are.
+
+  `cratylus` describes itself as projecting onto Claude Code and omp, not "any harness", and its README states the differences a user meets: 19 of the 31 canonical events have a native peer on Claude Code and 9 on omp, `eventTap` works on Claude Code only, and the persona badge, the launcher and `modelRoles` routing are omp's.
+
+  `@cratylus/forge` documents `--harness claude|omp` on `deploy` as well as `project`, drops the `@iarna/toml` dependency whose only consumer was the removed codex adapter, and no longer calls omp "the third harness" or claims Cursor reads its neutral root.
+
+- Updated dependencies [e944fac]
+- Updated dependencies [2096105]
+- Updated dependencies [9435068]
+- Updated dependencies [91a71f8]
+- Updated dependencies [d25f29f]
+- Updated dependencies [164b9bd]
+- Updated dependencies [8f1abc6]
+- Updated dependencies [6469410]
+- Updated dependencies [787d6c7]
+- Updated dependencies [406cd7d]
+- Updated dependencies [fe6756b]
+- Updated dependencies [82de756]
+- Updated dependencies [a945bf8]
+- Updated dependencies [759518b]
+- Updated dependencies [b27e94e]
+- Updated dependencies [439e9f4]
+- Updated dependencies [52d0b9c]
+- Updated dependencies [3141eac]
+- Updated dependencies [e53e720]
+- Updated dependencies [8e4b59e]
+- Updated dependencies [6e6986b]
+- Updated dependencies [5d2fceb]
+- Updated dependencies [7c7d49b]
+- Updated dependencies [7f3e7fb]
+- Updated dependencies [f4f59d8]
+- Updated dependencies [13b8886]
+  - @cratylus/canon@0.9.0
+  - @cratylus/forge@0.11.0
+  - @cratylus/runtime@0.6.0
+
 ## 0.5.2
 
 ### Patch Changes
