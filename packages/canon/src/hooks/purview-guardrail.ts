@@ -25,13 +25,15 @@ import type { HookCell } from '../manifest.js';
 // every agent in the corpus composed the fragment it claimed to enforce.
 //
 // WHAT IT BLOCKS is what the arrow excludes, and nothing else:
-//   · a dispatch to a builder for a piece no planner decomposed, from a holder whose
-//     arrow does not write spec — the architect skipping the middle rung;
+//   · a dispatch carrying a spec the dispatcher wrote, from a holder whose arrow does
+//     not write spec — the architect skipping the planner, who alone turns a shard into
+//     units;
 //   · a write to the substrate by a holder whose arrow does not write artifact;
-//   · a dispatch whose prompt is the operator's literal words rather than a cut piece
+//   · a dispatch whose prompt is the operator's literal words rather than a routed name
 //     — the same dispatch-echo the stance guard catches at turn end, refused here
 //     because at this moment the contract that convicts it is the ROLE's.
-// WHAT IT PASSES: a dispatch to a planner, a dispatch to an assayer, READING anything,
+// WHAT IT PASSES: a dispatch to a planner, a dispatch routing a unit name to an
+// implementer, a dispatch to an assayer, a dispatch to the integrator, READING anything,
 // and writing whatever the arrow reserves. Reading is never a block — the architect's
 // contract makes an artifact read a descent, but a read is cheap to undo and a gate
 // that fires on one would wedge every legitimate orientation.
@@ -44,7 +46,7 @@ import type { HookCell } from '../manifest.js';
 export const purviewGuardrail: HookCell = {
   id: 'purview-guardrail',
   residue:
-    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(build) ∄ decomposition⟩ · dispatch-echo ⟨literal-words ≠ cut-piece⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ assay⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
+    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(spec the dispatcher wrote) ∄ planner⟩ · dispatch-echo ⟨literal-words ≠ routed-name⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ implement(unit-name) ∨ assay ∨ integrate⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
   substrate: 'harness',
   // Bound by holding a role at all: the arrow it judges against is the role's own.
   binds: { dimension: 'role' },
@@ -149,7 +151,7 @@ case "$tool_name" in
 	Agent|SendMessage|Task)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		target="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .tool_input.agent // .tool_input.name // ""' 2>/dev/null || true)"
-		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: the spec this delegate will build from)"
+		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote)"
 		;;
 	Write|Edit|MultiEdit|NotebookEdit)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path // ""' 2>/dev/null || true)"
@@ -222,10 +224,11 @@ fi
 
 feedback="PURVIEW GUARDRAIL — denied this $tool_name call: it falls outside the arrow your own \\
 role contract declares. $reason  Delegation is a THEOREM of that arrow, not an option: an act whose \\
-domain or codomain lies outside it goes to the role that owns it — a decomposition to a planner, a \\
-build to an implementer, an artifact reading to an assayer. Hand it over and carry on with what the \\
-contract reserves. (Legitimate and NOT blocked here: reading anything, dispatching to a planner or an \\
-assayer, and performing any act the contract's own \\\`reserves\\\` clause names.)"
+domain or codomain lies outside it goes to the role that owns it — a decomposition of a shard to a \\
+planner, a build to an implementer, an artifact reading to an assayer, a merge or a whole check to \\
+the integrator. Hand it over by name and carry on with what the contract reserves. (Legitimate and \\
+NOT blocked here: reading anything, dispatching to a planner, routing a unit name to an implementer, \\
+an assayer or the integrator, and performing any act the contract's own \\\`reserves\\\` clause names.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0
@@ -271,7 +274,9 @@ durative concept lattice — the design.
 
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
-- a DISPATCH produces a **spec** — the delegate's instructions are the layer being written;
+- a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
+  carries instructions the dispatcher wrote produces a **spec** — those instructions are the layer
+  being written;
 - a WRITE to a source or config file produces an **artifact**;
 - reading anything at all produces **nothing**, and is never a breach.
 
@@ -283,20 +288,23 @@ whole test, and it is mechanical.
 - **A write whose codomain is \`artifact\` by a holder whose \`writes\` set excludes \`artifact\`.**
   The contract usually names this: \`descent\`. The path in the payload is the evidence.
 - **A dispatch whose codomain is \`spec\` by a holder whose \`writes\` set excludes \`spec\`.** This is
-  the skipped rung: a holder that writes only the design has handed a delegate a spec that no
-  spec-writing role produced. The prompt is the evidence.
-- **A dispatch whose prompt is the operator's literal words rather than a piece the agent cut.** The
-  contract that convicts this is the same clause: a dispatch is a spec, and transcription is not
-  authorship. Evidence is the prompt reading as relayed instructions rather than a bounded piece
-  with its own acceptance.
+  the skipped rung: a holder that writes only the design and its routes has handed a delegate
+  instructions it wrote itself, where only a planner turns a shard into units. The prompt is the
+  evidence.
+- **A dispatch whose prompt is the operator's literal words rather than a routed name.** The
+  contract that convicts this is the same clause: transcription is not authorship, and a dispatch
+  carries a name, not instructions. Evidence is the prompt reading as relayed instructions rather
+  than a unit name with its address.
 
 ## What to PASS — and these are the majority
 
 - **Any read.** Reading is outside the test by construction. Even where a contract calls
   artifact-reading a descent, that is a standing discipline, not a mid-turn refusal.
 - **A dispatch to a role the contract explicitly routes to.** Contracts name their delegations
-  (\`⟨C → spec⟩ ↦ plan\`, \`⟨artifact → C⟩ ↦ assay\`). Handing work to a named delegate is the arrow
-  WORKING.
+  (\`⟨C → spec⟩ ↦ planner\`, \`⟨spec → artifact⟩ ↦ implementer\`, \`⟨artifact → C⟩ ↦ assayer\`, the
+  integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
+  to an implementer, a dispatch to an assayer and a dispatch to the integrator are the arrow
+  WORKING, whether the contract's \`writes\` names \`route\` or not.
 - **Any act the \`reserves\` clause names**, whatever it is.
 - **A write by a holder whose \`writes\` set includes \`artifact\`.** Most agents in most corpora
   build. Do not read a contract's other clauses as narrowing an arrow that plainly permits the act.

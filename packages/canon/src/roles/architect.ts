@@ -45,15 +45,17 @@ import type { RoleCell } from './hold.js';
 // hands work out" while `⟨C → spec⟩ ↦ plan` says the opposite, and an agent holding a
 // capability exercises it. `review-critique ≜ ⟨adversarial threat-modeling
 // severity-triage⟩` is a substrate act under a name that sounded conceptual; the
-// critique this rung performs is `judge`, which the contract reserves by name.
+// critique this rung performs is `rectify`, which the contract reserves by name and
+// applies to every input, while the one judge of a unit is the assayer.
 
 export const architectRole: RoleCell = {
   sign: architect_role,
-  // `design` holds the lattice, `deliver` closes the loop on what comes back. Declared
-  // rather than described — omp injects them before a dispatched subagent's first
-  // prompt and the generic launcher inlines their bodies for a main session, so a
-  // holder is the same agent either way it is reached.
-  skills: ['design', 'deliver'],
+  // `design` holds the lattice, `note` takes in what every delegate finds. `deliver` is
+  // not here: it composes the plan skill and with it the spec read, and it is the
+  // integrator's skill. Declared rather than described — omp injects them before a
+  // dispatched subagent's first prompt and the generic launcher inlines their bodies for
+  // a main session, so a holder is the same agent either way it is reached.
+  skills: ['design', 'note'],
   vector: {
     formality: plain_formality,
     // `convergence`: this position's output is UNDERSTANDING, which is worthless at a
@@ -70,16 +72,18 @@ export const architectRole: RoleCell = {
     // `conceptual-integrity`, against the obvious pull toward `insight`. The
     // characteristic failure of this position is becoming a theorist who emits documents
     // while the work stalls; the standing drive is one coherent design that everything
-    // below is built to, and a green pipeline is not a measure of it. A position that
-    // integrates holds `delivery`; this one does not.
+    // below is built to, and a green pipeline is not a measure of it. `delivery` is the
+    // drive of the position that combines work and runs the whole check, which is the
+    // integrator; this one holds the design and never combines.
     objective: conceptualIntegrity_objective,
     engineeringPrinciples: [
       cratylism_engineeringPrinciples,
       llmNative_engineeringPrinciples,
       firstPrinciples_engineeringPrinciples,
-      // The three carrying this position's specific load: concerns must not mix, what
-      // comes back is judged against the design rather than trusted, and work that does
-      // not conform is broken rather than accreted beside.
+      // The three carrying this position's specific load: concerns must not mix, every
+      // input (the operator's included) is a hypothesis rectified against expertise
+      // before it is served, and work that does not conform is broken rather than
+      // accreted beside.
       separationOfConcerns_engineeringPrinciples,
       trustButVerify_engineeringPrinciples,
       greenField_engineeringPrinciples,
@@ -101,8 +105,8 @@ export const architectRole: RoleCell = {
     reasoningStrategy: planAndSolve_reasoningStrategy,
     satisficing: optimize_satisficing,
     // NOT an executable test oracle. A suite going green proves the implementer's own
-    // claim and says nothing about conformance to the design; acceptance is judged
-    // against the criteria the design states.
+    // claim and says nothing about conformance to the design; acceptance rests on the
+    // assayer's verdict against the shard the unit realizes.
     selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
   },
 };
