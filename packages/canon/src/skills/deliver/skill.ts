@@ -85,7 +85,7 @@ finding ≜ a yield ∨ an operator steer bearing on C ∧ ¬ yet in C
 impedes : defect × P → 𝔹
 fold   ≜ one amend(C) taking every finding in hand
 cost   : act → effort
-file(d) ≜ capture(d) ⟨its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
+file(d) ≜ capture(d) ⟨filed by the party that met d · its topic names the unit as \`u of plan p\` · beside the path ∴ it blocks nothing⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
 terminal : P → 𝔹
 
@@ -129,6 +129,7 @@ integrate ⊥ judge ⟨a merge is DURABILITY ∧ ¬ acceptance · acceptance is 
 integrator ⊨ ¬ validate ⟨it carries a verdict ∧ ¬ reaches one⟩
 integrator ≠ self ⟨self decides the state moves ∧ dispatches · the integrator gates, merges,
     commits ∧ records them · self runs no check, makes no commit, reads no artifact nor r⟩
+self reads ⟨show ⟨P ∧ unit⟩ · the assay · the integrator's gate result⟩ ⟨plan state comes from show, never from a delegate's return⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
 ¬spells ⇒ REFUSE ≺ any behavioural read ⟨the traceability arrow breaks at the cheapest
