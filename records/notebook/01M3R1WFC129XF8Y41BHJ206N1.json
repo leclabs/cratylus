@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R1WFC129XF8Y41BHJ206N1",
+    "entity": "01M3R1WFC129XF8Y41BHJ206N0",
+    "operation": "create",
+    "supersedes": [],
+    "author": "badge-always-visible",
+    "time": "2026-09-30T02:21:48.801Z",
+    "reason": "findings beside the unit's path",
+    "cause": "badge-always-visible of corrected-shards"
+  },
+  "payload": {
+    "title": "Non-command statusLine has no badge surface; deploy/index.ts comment stale",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Live on claude 2.1.285: a statusLine whose type is not command is a Settings Error and the whole settings.json is skipped, so no status line runs and nothing in install's outputs can show the badge; the only in-session surface is a one-time SessionStart systemMessage from an agent-frontmatter hook (needs adapters/claude/render.ts, outside this unit), which scrolls away. Also packages/forge/src/deploy/index.ts comment at :154-156 still says 'wrapped only on request' (outside this unit's outputs).",
+    "blocks": []
+  }
+}

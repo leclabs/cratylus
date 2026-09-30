@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R1W3F8DR4267NPBFCWXJ8V",
+    "entity": "01M3R1W3F8DR4267NPBFCWXJ8T",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:21:36.616Z",
+    "reason": "the verdict's finding, recorded with its evidence",
+    "cause": "assay of kino-position of corrected-shards at 3141eac2"
+  },
+  "payload": {
+    "title": "kino's archetype says it reads nothing from below and routes verdicts to whoever they name",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "At 3141eac2, kino's archetype in packages/canon/src/agents/kino.ts no longer has kino judging or refusing output. It now describes kino cutting shards and routing by name, and it hands planning, building, judging and making work whole to the four positions below; the shard asks for all of that. Two phrases in the archetype still contradict the shard, and they reach the composed agent next to the role contract. The first is 'kino reads none of what they produce', where 'they' means the planner, the implementer, the assayer and the integrator. The shard says what reaches the architect from below is exactly the assay verdict, the integrator's report of a unit that broke the whole, and the names of units ready to start, and those same positions produce all three. The role contract reads verdict, broke-the-whole and ready-names. The second is 'assay verdicts to whoever they name'. The shard sends an unachieved unit back to the same implementer with the findings and an achieved one to the integrator. A verdict names only the unit, the implementer and the shard, so an achieved verdict sent to whoever it names would go to the implementer and not to the integrator. Two smaller gaps did not decide the verdict. Kino's prose never lists the integrator's broke-the-whole report among what comes back, and it limits rectification to operator utterances, while the shard says every input, including a delegate's and its own. The role carries both, and kino's silence on them does not contradict it. The modalities comment, the capabilities and the framing contain nothing that contradicts the shard [observed].",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R1RWKYM22XTJXPFMMXPG5J",
+    "entity": "01M3R1RWKYM22XTJXPFMMXPG5H",
+    "operation": "create",
+    "supersedes": [],
+    "author": "kino-position",
+    "time": "2026-09-30T02:19:51.294Z",
+    "reason": "cold-read acceptance (h) and a red scoped gate outside this unit's outputs",
+    "cause": "kino-position of corrected-shards"
+  },
+  "payload": {
+    "title": "kino cold read: Haiku omits rectification in (h) and a sibling edit fails the residue gate",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Five Haiku 4.5 reads of kino's session text (/tmp/corrected-shards-cold-read/kino-position/) answer (h) with the decision-note and amend-at-plan-close rule but never say the change is weighed (rectified) first; Opus reads do. The rule sits in the role's reserves line and the design skill, not in kino's declarations, so the fix belongs to the design-stability wording. Also: the uncommitted edit to packages/canon/src/dimensions/engineering-principles/cold-decode-oracle.ts (clause 'verdict reaches holder in design's words') fails reader-density RESIDUE gate: free-NL connective [in].",
+    "blocks": []
+  }
+}
