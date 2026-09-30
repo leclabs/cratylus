@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QTJ0ED8CETYFA1FCXDKYD8",
+    "entity": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSGN4VZFMCPG7JM6BTEKGP"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:13:45.805Z",
+    "reason": "order corrected to implement → assay → accept → integrate: disjoint outputs make the unit commit what ships, the whole check catches combination faults and names their owner, and a whole-line assay re-reads assayed work with no route back to a unit",
+    "cause": "operator correction on the delivery order, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "integrator position",
+    "gloss": "the role that makes each accepted-or-pending landing durable on the shared line, one per bound plan and warm across its waves: it merges each ACCEPTED unit (one whose assay found its concept achieved) onto the bound plan's integration line (never the release line) and runs the project's whole check once on that combined tree, so implementers run only the checks their spec names; a unit's assay reads the unit's own commit, which disjoint outputs make identical to what lands; a red gate names the failing check and its owner and goes to the architect, who returns it to that unit's implementer; dependents are dispatched only after what they depend on is accepted and integrated; when the plan is closed it opens the promotion of that line to main, the release line, which the operator signs off; there is no second assay of the whole line; commits the plan and design records carrying the state moves the architect decided, and reports the gate's result to the architect in one line (green, or red with the failing check and its owner). It never decides: it does not accept, reject, amend the design or choose what is dispatched, and it never builds or repairs a unit; a red gate goes back to the architect, who routes it to the implementer that owns it. A merge is durability, not acceptance. Releasing and pushing stay the operator's sign-off.",
+    "factors": []
+  }
+}
