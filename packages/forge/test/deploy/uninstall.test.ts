@@ -590,6 +590,39 @@ describe('uninstall', () => {
       expect(snapshot(home)).toEqual({ '.omp/agent/config.yml': HOST });
     });
 
+    it('a host with no modelRoles key gets the key the old install created taken with its entries, and is told of the value that install turned', async () => {
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      const config = join(omp, 'agent', 'config.yml');
+      const host =
+        '# host\ntheme: dark\nstatusLine:\n  preset: default\n  showHookStatus: false\n';
+      writeFileSync(config, host);
+      expect(await install('omp')).toBe(0);
+      // The old install turned the hidden row on and created `modelRoles:`.
+      expect(readFileSync(config, 'utf8')).toContain('\nmodelRoles:\n');
+      expect(readFileSync(config, 'utf8')).toContain('showHookStatus: true');
+      const record = join(omp, MANIFEST_REL);
+      const {
+        hostEdits: _e,
+        digests: _d,
+        ...older
+      } = JSON.parse(readFileSync(record, 'utf8'));
+      writeFileSync(record, `${JSON.stringify(older, null, 2)}\n`);
+
+      expect(await install('omp')).toBe(0);
+      out = '';
+      expect(uninstall('omp')).toBe(0);
+
+      // The key and its entries are gone; the value the old install turned stays as it
+      // stands, and the file is named for it.
+      expect(readFileSync(config, 'utf8')).toBe(
+        host.replace('showHookStatus: false', 'showHookStatus: true'),
+      );
+      const left = out.split('left (')[1] as string;
+      expect(left).toContain(config);
+      expect(left).toContain('showHookStatus');
+    });
+
     it('a second install after the record exists adds nothing to it, and its lines still come out', async () => {
       const omp = harnessDir('omp');
       mkdirSync(join(omp, 'agent'), { recursive: true });

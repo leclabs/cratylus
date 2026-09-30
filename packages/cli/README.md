@@ -286,4 +286,8 @@ A host installed before install recorded its `config.yml` edits has no record of
 install's. Uninstall names the file and leaves it as it is; run `install` again, which finds the
 `modelRoles` entries and the status line layout there byte for byte as it would write them and records
 them, and the next `uninstall` takes them out. What an older install did to the file's last line
-terminator cannot be recovered that way, so the file may end one newline longer than you wrote it.
+terminator cannot be recovered that way, so the file may end one newline longer than you wrote it. A
+`modelRoles:` key an older install created goes with its entries when nothing but its entries is in the
+block. Anything else an older install may have done to the file, such as turning `showHookStatus` on or
+adding `status` to a list of yours, is not recorded and cannot be told from your own change: uninstall
+leaves it as it stands and names the file, in the left list, every time.
