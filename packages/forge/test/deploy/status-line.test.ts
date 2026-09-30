@@ -554,6 +554,69 @@ describe('ensureStatusSegment', () => {
     );
   });
 
+  // The row beneath the editor is the badge's only place wherever the layout lists no
+  // `status`; a host that hid it would see the persona nowhere.
+  describe('where the badge has no place but the row beneath the editor', () => {
+    it.each([
+      [
+        'another named preset',
+        'statusLine:\n  preset: minimal\n  showHookStatus: false # quiet\ntheme: dark\n',
+        'statusLine:\n  preset: minimal\n  showHookStatus: true # quiet\ntheme: dark\n',
+        'other-preset',
+      ],
+      [
+        'a layout of its own and no preset',
+        'statusLine:\n  leftSegments:\n    - vim\n  showHookStatus: False\n',
+        'statusLine:\n  leftSegments:\n    - vim\n  showHookStatus: true\n',
+        'own-layout',
+      ],
+      [
+        'a custom list it cannot extend',
+        'statusLine:\n  preset: custom\n  leftSegments: &l [vim]\n  showHookStatus: false\n',
+        'statusLine:\n  preset: custom\n  leftSegments: &l [vim]\n  showHookStatus: true\n',
+        'refused',
+      ],
+    ])(
+      'turns a hidden row on for a host on %s, changing no other byte',
+      (_n, host, shown, state) => {
+        const f = file('config.yml', host);
+        const r = ensure(f.path);
+        expect(r).toMatchObject({
+          state,
+          wrote: true,
+          hookRowShown: true,
+          written: ['showHookStatus: true (was false)'],
+        });
+        expect(f.read()).toBe(shown);
+      },
+    );
+
+    it('reports it and writes nothing under dry-run', () => {
+      const host = 'statusLine:\n  preset: minimal\n  showHookStatus: false\n';
+      const f = file('config.yml', host);
+      expect(ensure(f.path, true)).toMatchObject({
+        state: 'other-preset',
+        wrote: false,
+        hookRowShown: true,
+      });
+      expect(f.read()).toBe(host);
+    });
+
+    it.each([
+      [
+        'a row the host left shown',
+        'statusLine:\n  preset: minimal\n  showHookStatus: true\n',
+      ],
+      ['a row the host never set', 'statusLine:\n  preset: minimal\n'],
+    ])('leaves %s byte-identical', (_n, host) => {
+      const f = file('config.yml', host);
+      const r = ensure(f.path);
+      expect(r).toMatchObject({ state: 'other-preset', wrote: false });
+      expect(r.hookRowShown).toBeUndefined();
+      expect(f.read()).toBe(host);
+    });
+  });
+
   it('reports what it would add and writes nothing under dry-run', () => {
     const host = 'statusLine:\n  preset: custom\n  leftSegments: [vim]\n';
     const f = file('config.yml', host);
@@ -864,6 +927,22 @@ describe('install — the status line', () => {
       expect(out).toContain("REPLACES the `minimal` preset's layout");
       expect(out).toContain("<each of minimal's own left segments, in order>");
       expect(out).toContain('showHookStatus: false');
+    });
+
+    it('shows the row beneath the editor for a host that hid it on a layout with no place for the badge, and says so', async () => {
+      const host = `${ROLES}statusLine:\n  preset: minimal\n  showHookStatus: false\n`;
+      const read = seed(host);
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(
+        host.replace('showHookStatus: false', 'showHookStatus: true'),
+      );
+      expect(out).toContain('`showHookStatus` was false');
+      expect(out).toContain('it is now true');
+      const after = read();
+      out = '';
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(after);
+      expect(out).not.toContain('`showHookStatus` was false');
     });
 
     it('leaves a no-preset host with a layout of its own byte-identical and gives it the block to write', async () => {
