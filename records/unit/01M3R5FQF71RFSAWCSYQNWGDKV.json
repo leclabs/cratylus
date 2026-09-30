@@ -1,0 +1,51 @@
+{
+  "envelope": {
+    "id": "01M3R5FQF71RFSAWCSYQNWGDKV",
+    "entity": "01M3R06HPHFCXMV93XTTR344M4",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R1HGD97AP6FN89ZVEYR216"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T03:24:45.415Z",
+    "reason": "the integrator reports it whole on the plan's line after an achieved verdict",
+    "cause": "integrator report relayed by the architect"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "badge-always-visible",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @f2cd7e3a: the design was corrected there; plan architect-position is stopped under `design stability` and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize the corrected `persona badge` where claude-persona-badge's landed work falls short. The shard: the running persona's name and mark stay visible in the harness's interface for as long as its session runs, preferably in the status line or the nearest equivalent; only in a persona's own top-level interactive session; it takes nothing away from what the host already shows there, and where it cannot appear in place it still appears somewhere visible rather than not at all.\nSTANDING AT CENSUS. On Claude Code, install sets a badge status line where the host has none (stands) and, where the host has its own `settings.statusLine`, leaves it untouched and only prints a line naming `--wrap-status-line` (packages/forge/src/cli/commands/install.ts showPersonaBadge, :326-373; packages/forge/src/cli/index.ts :201-219; packages/forge/src/deploy/status-line.ts). Without that flag the persona appears nowhere, which the corrected shard rules out. The wrap itself already takes nothing away: the worker pipes the host command's output through byte-identical in a session running no persona and prefixes `<mark> <name>` to its first line in a persona's session.\nCHANGE. (1) Install wraps a host's own claude status line by default, recording the host's original command (in the wrapper, as today, and in the deploy manifest, packages/forge/src/deploy/manifest.ts, so unit uninstall can restore it exactly) and reporting what it changed and how the host's own output is kept. `--wrap-status-line` is removed from the CLI, help and docs (it no longer chooses anything). A statusLine the wrap cannot carry (not of type command) is left as it is, and the badge then appears in the nearest visible place Claude Code offers for a running session; the implementer establishes which one live (terminal title via the status-line worker's escape output, or a SessionStart systemMessage) and states it, or surfaces that none exists. (2) omp stands and is untouched. (3) packages/forge/test/deploy/status-line.test.ts covers the default wrap and the byte-identical pass-through; packages/cli/README.md, packages/forge/README.md and docs/cli/USAGE.md say so. (4) .changeset/badge-always-visible.md (@cratylus/forge minor). No new test file.\nDepends on claude-role-choice only because both edit install.ts, the deploy manifest and the two READMEs.",
+      "static": [
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/adapters/claude/render.ts"
+      ],
+      "deps": [
+        "01M3R03SJRJAYS8X21AE9Q1TYN"
+      ],
+      "outputs": [
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        ".changeset/badge-always-visible.md"
+      ],
+      "accept": [
+        "RIG: C=$(mktemp -d); mkdir -p $C/.claude; cp ~/.claude/.credentials.json $C/.claude/; write $C/.claude/settings.json `{\"statusLine\":{\"type\":\"command\",\"command\":\"printf HOSTLINE-7731\",\"padding\":0}}`; from cwd /home/lex/workspaces/cratylus-share, after `pnpm build`, `HOME=$C node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0 WITHOUT any wrap flag. In tmux, `claude --agent mav` shows `✈️ mav HOSTLINE-7731` on the status line and a bare `claude` shows `HOSTLINE-7731` alone. At census the first shows `HOSTLINE-7731` with no badge.",
+        "`printf '{}' | sh <the installed status-line command>` prints exactly `HOSTLINE-7731` (byte-identical pass-through), and a second install leaves settings.json byte-identical.",
+        "`node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --help` does not list `--wrap-status-line`, and `git grep -n wrap-status-line -- packages docs` prints nothing but CHANGELOG lines.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/deploy/status-line.test.ts test/deploy test/adapters` and `pnpm typecheck` exit 0; status-line.test.ts fails if a host status line is left without the badge or its output altered."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3NBKGAEMWHE61KYRA703KGR",
+      "version": "01M3QZDRJNXSW0YJ8TW1413KAP",
+      "closure": {}
+    }
+  }
+}
