@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RHYZ7D3B7S9GBTZ6MSVFS7",
+    "entity": "01M3QBFZX8JMA6VHK12AEAN8KV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R09TZ5XJE1HTRJPRQYT700"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T07:02:47.789Z",
+    "reason": "a guard stopped asking its judge after three timeouts and stayed dark for the whole session although the judge had recovered; the concept said the guard judges every turn it can but did not say a failed judge is asked again, and the realization that passed assay held the latch",
+    "cause": "operator approved fixing the dark judge as a one-unit plan"
+  },
+  "payload": {
+    "anchor": "enforcement scope",
+    "gloss": "a guard binds exactly the agents whose composition includes it, on every supported harness, and judges every turn it fires on; where its judge cannot run, it lets the turn through and says so, never silently, and it asks the judge again once the judge may have recovered, so a passing outage never leaves the guard unjudged for the rest of a session. Where a harness cannot tell which agent is running, the guard is carried as a stated rule instead and the operator is told; a guard that fires and judges nothing never ships.",
+    "factors": []
+  }
+}
