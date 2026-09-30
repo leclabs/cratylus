@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3RQDC0ZP1YQE1820A8FD05T",
+    "entity": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RMCNT8PKKWBV5R03NPTMXJ"
+    ],
+    "author": "JudgeSpeedPlanner",
+    "time": "2026-09-30T08:38:02.527Z",
+    "reason": "every unit completed: judgement-fits-time, records-on-the-line and work-on-the-line each whole on the line",
+    "cause": "integrator reported whole work-on-the-line of judge-speed-plan-line"
+  },
+  "payload": {
+    "name": "judge-speed-plan-line",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "closed"
+  }
+}
