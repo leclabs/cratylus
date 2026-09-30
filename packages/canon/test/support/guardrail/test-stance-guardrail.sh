@@ -579,10 +579,8 @@ if [ -f "$PRE_WORKER" ]; then
 	echo "stance-guardrail-pre — prove-it-bites (PreToolUse)"
 	export STANCE_RUBRIC="$RUBRIC"                 # fixture judge ignores it, but keep it hermetic
 	export STANCE_GUARD_LOG="$WORK/pre-misses.log"
-	export TMPDIR="$WORK/tmp"; mkdir -p "$TMPDIR"  # re-entry markers stay inside the sandbox
 
-	# session_id is passed per-case: the re-entry cap keys on (session_id, tool_input),
-	# so a DISTINCT session per case prevents markers from one case leaking into the next.
+	# session_id is passed per-case; each case uses its own so no case reads as another's retry.
 	run_pre() {  # $1=tool_name  $2=tool_input(json)  $3=agent_type  $4=session_id
 		jq -cn --arg tn "$1" --argjson ti "$2" --arg at "$3" --arg sid "$4" --arg cwd "$REPO" \
 			--arg sc "$(scope_of "$3")" \
@@ -613,10 +611,11 @@ if [ -f "$PRE_WORKER" ]; then
 	out="$(run_pre Agent "$DISPATCH_REAL" mav s4)"
 	is_deny "$out" && bad "substantive dispatch wrongly denied" || pass "substantive dispatch → allow"
 
-	# P5 — re-entry cap: the SAME (session, input) twice → 1st DENY, 2nd allows (loop safety).
-	out="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"; is_deny "$out" || bad "re-entry setup: 1st dispatch-echo not denied"
+	# P5 — a refusal holds: the SAME (session, input) twice → BOTH dispatches DENIED (a retry is
+	#      judged again, never waved through).
+	out="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"; is_deny "$out" || bad "retry setup: 1st dispatch-echo not denied"
 	out2="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"
-	is_deny "$out2" && bad "re-entry cap absent: identical input denied twice" || pass "re-entry cap: identical input allowed on 2nd try"
+	is_deny "$out2" && pass "refusal holds: identical dispatch-echo denied again on retry" || bad "retry waved through: identical dispatch-echo not denied on 2nd try"
 
 	# P6 — an UNENROLLED scope (no manifest) → no deny, the twin of case 4.
 	out="$(run_pre AskUserQuestion "$MENU_INREMIT" unenrolled s6)"
