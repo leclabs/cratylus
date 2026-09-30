@@ -24,18 +24,19 @@ import { provenanceAttribution as provenanceAttribution_transparency } from '../
 import type { RoleCell } from './hold.js';
 
 // THE MIDDLE RUNG. Holds `mission-command` and `handoff` but NOT `principal-self`: the
-// boundary was drawn above it, and the contract's `⊄ writes C` is what makes that
+// shards were cut above it, and the contract's `⊄ writes C` is what makes that
 // refusal structural rather than a matter of discipline.
 //
 // `system-design` is absent alongside `software-engineering` — this position neither
-// designs nor builds. What it owns is the census and the cut-into-units.
+// designs nor builds. What it owns is the plan: the census, the units cut from the
+// shards it is handed, and the plan's records from binding to closing.
 
 export const plannerRole: RoleCell = {
   sign: planner_role,
   // The role declares one skill, `plan`, and is given plan's composition with it
-  // (`design`, `note`), so it reads the boundary it plans inside. `deliver` belongs
-  // to the rung ABOVE, which draws that boundary; the rung BELOW declares none at
-  // all, because an implementer's decisions are made for it by its spec.
+  // (`design`, `note`), so it reads the shards it plans. `deliver` belongs to the rung
+  // ABOVE, which cuts them; the rung BELOW declares none at all, because an
+  // implementer's decisions are made for it by its spec.
   skills: ['plan'],
   vector: {
     formality: plain_formality,
