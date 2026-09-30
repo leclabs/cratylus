@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3SFSMK66SSGWGDEHAVXNT02",
+    "entity": "01M3SFSMK66SSGWGDEHAVXNT01",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T15:44:10.342Z",
+    "reason": "omp messages a running agent through write to agent://, and the omp module spells that as a Write, so the purview guard judges a path as an artifact write and never the message; the act it fires on must reach the worker as the dispatch it is",
+    "cause": "note 'purview guard reads a message to an agent as an artifact write'; shards enforcement scope and architect role handed down by the architect"
+  },
+  "payload": {
+    "name": "purview-routes",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "proposed"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SDYP42DD2VWTX09SN36H55",
+    "entity": "01M3SDYP417W1S2YW1MS8H0SCK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayInstall",
+    "time": "2026-09-30T15:11:58.594Z",
+    "reason": "a finding beside the unit is a note, not a verdict",
+    "cause": "live round trips while assaying install at d65e7db7"
+  },
+  "payload": {
+    "title": "install replaces a host's own ~/.cratylus.json and uninstall then deletes it",
+    "kind": "question",
+    "topic": "runtime config",
+    "body": "Beside the assay of install of guided-install at d65e7db7, observed in live temp-HOME runs. A ~/.cratylus.json the host wrote before any install ({\"x\":1}, or {\"configuration\":{\"mine\":{\"a\":1}}}) is replaced by install: its keys are gone afterwards, and neither the preview nor the summary names the file. uninstall of the only harness then removes the whole file as 'the runtime config: claude was its last harness', so the host's content is lost for good. A host edit made after install is handled (uninstall takes out only the harness stanza and keeps the file), and two harnesses sharing the file are handled. Whether a pre-existing file at that path is the host's to keep, or cratylus's by its name, is the runtime config concept's question; it lies outside install's closure, so it was not counted in that verdict.",
+    "blocks": []
+  }
+}

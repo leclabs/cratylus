@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3T4JG52B2DR9GF5AS7271NE",
+    "entity": "01M3T4HS7KWSR71Q4YNMBPPTV6",
+    "operation": "amend",
+    "supersedes": [
+      "01M3T4HS7KWSR71Q4YNMBPPTV7"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T21:47:16.514Z",
+    "reason": "an assayer asked for a ruling beside pre-call-refusal-holds",
+    "cause": "assay of pre-call-refusal-holds at c00b2618"
+  },
+  "payload": {
+    "title": "turn-end guard waves a refused stop through on retry",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Ruling: the turn end is outside 'a refused act stays refused'. Refusing an act holds back its effect; refusing a turn end holds back nothing, it makes the agent redo its turn, and a guard that could refuse a turn end forever would lock the session with no way out. So the turn-end guard may let a repeated or thrice-blocked stop through, provided it says so. Enter this into enforcement scope once guard-precision closes (held: the plan realizes that shard).",
+    "blocks": []
+  }
+}

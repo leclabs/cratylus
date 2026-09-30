@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T339W2KP7Q99MXB73T6XF5",
+    "entity": "01M3T339W2KP7Q99MXB73T6XF4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T21:21:29.986Z",
+    "reason": "operator relayed kino's report",
+    "cause": "kino: supply halted by purview guard"
+  },
+  "payload": {
+    "title": "kino's supply is halted by the purview guard",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Kino (cinematiclab, omp) reports three purview faults with evidence at agent://SupplyK2g, agent://SupplyK2h, agent://SupplyK2f, agent://SupplyP1 (and SupplyPlanner-6, SupplyIntegrator4): (1) subagents are judged against kino's architect contract, so implementers are refused their own unit's edits, a planner its plan records, an integrator its report; (2) every write agent://<name> is refused, in every direction, as an artifact write; (3) a refused call retried passes unjudged under the re-entry cap. 0.7.3 (loop-friction) should already skip subagents on omp and purview-routes (#42, unreleased) fixes (2) on omp; whether kino's session loaded the 0.7.3 extension is unconfirmed. (3) and the operator's ruling that the guards' judge prompts be a few precise sentences entered enforcement scope. Kino restarts p1, k2f, k2g, k2h once subagents are unguarded in its session.",
+    "blocks": []
+  }
+}
