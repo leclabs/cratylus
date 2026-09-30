@@ -1,0 +1,133 @@
+{
+  "envelope": {
+    "id": "01M3S3HGERBRD6VJ33D6A8Y16H",
+    "entity": "01M3RXFFCEZF6MFVPY4MX5JB8Y",
+    "operation": "amend",
+    "supersedes": [
+      "01M3S3GSAW1ZY8TDVVSAQAH4R2"
+    ],
+    "author": "LoopFrictionPlanner4",
+    "time": "2026-09-30T12:10:01.048Z",
+    "reason": "integrator recorded whole after an achieved assay of 6b3f14cd; its footprint lies within its outputs",
+    "cause": "whole routing-by-name of loop-friction from LoopFrictionIntegrator"
+  },
+  "payload": {
+    "plan": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "spec": {
+      "name": "routing-by-name",
+      "intent": "Census @a9258730; re-derive any line cited below if its path changed since (guards-skip-subagents lands first and edits packages/canon/src/hooks/stance-guardrail.ts, stance-guardrail-pre.ts and their targets). Realize in the stance rubric the act `architect role` prescribes: the architect starts a plan's work, and routes every verdict, by a unit's name alone; a unit's name is an address, not something it reads, and the spec at that address, which the planner wrote, carries the unit's distilled intent. A dispatch that routes a unit by name is therefore a substantive dispatch, not a dispatch echo.\nAT CENSUS. The rubric's source is the `stance-judge-prompt.md` worker of packages/canon/src/hooks/stance-guardrail.ts (content from L1028; filename at L952), projected to packages/canon/targets/guardrail/stance-judge-prompt.md (13968 bytes) and read by both guards on both harnesses (omp's bridge reads the same file; it embeds no copy). Signal 4, Dispatch-echo (L1069-1071), blocks a dispatch that transcribes the operator's or a coordinator's literal words, 'or names sources and carries no distilled instruction'; the boundary test at L1116 passes only 'a distilled objective'. The rubric never says unit. At 2026-09-30T10:16:56Z the omp pre-call guard denied the architect's routing of guards-skip-subagents, omp-guards-skip-subagents and units-in-worktrees with 'This is a dispatch-echo: the prompt only points the delegate at a spec command and lists unit names'. That task call had context \"Plan `loop-friction`, repository /home/lex/workspaces/cratylus. Your unit's spec: `cratylus plan show <unit> --plan loop-friction`.\" and three tasks whose text was \"`guards-skip-subagents of loop-friction`\", \"`omp-guards-skip-subagents of loop-friction`\" and \"`units-in-worktrees of loop-friction`\"; omp hands the worker an Agent call whose prompt is the context and each task text joined by a blank line. The purview guard already passes 'a dispatch routing a unit name to an implementer' and denies a dispatch carrying a spec the dispatcher wrote (packages/canon/src/hooks/purview-guardrail.ts:33-37), so today the two guards leave the architect no dispatch that passes both. The pre-call guard's deny notice lists as legitimate exceptions only a consent choice, an intent ambiguity and 'a substantive intent-extracted dispatch' (stance-guardrail-pre.ts:262-264; header L56-57 says the same). The calibration tool packages/canon/test/support/guardrail/calibrate-stance-judge.sh judges turn-*.txt fixtures as expected-BLOCK and controls/*.txt as must-PASS; no fixture or control is a dispatch. `claude -p` does not answer on this host under the user's settings (note 'claude -p never answers on this host under the user's settings'); the 2026-09-30 calibration used omp's advisor role through STANCE_JUDGE_CMD (expected.json `_cut_rubric`).\nCHANGE. In the rubric, signal 4 and its boundary test say that a dispatch routing a unit of a named plan by its name (to be built, back to its builder with an assay's findings, to be assayed, or to be made whole), with at most where its spec is read, is a substantive dispatch and PASSes: the intent lives in the spec at that address. A dispatch pasting the operator's or a coordinator's literal words still BLOCKs. Keep the rubric within 14 KB, the size packages/forge/src/adapters/omp/render.ts and its test state the judge's time budget was measured against. The pre-call guard's header and deny notice name a unit routed by name among what it does not deny. Regenerate packages/canon/targets/guardrail with `pnpm canon:project:targets`. Add to packages/canon/test/fixtures/guardrail a must-PASS control controls/route-units-by-name.txt holding the `payload` that targets/guardrail/stance-guardrail-pre.sh emits under STANCE_EMIT_PAYLOAD for a main-session Agent call whose prompt is the denied routing above, and an expected-BLOCK fixture dispatch-echo.txt holding the payload the same worker emits for the hermetic suite's DISPATCH_ECHO prompt; make calibrate-stance-judge.sh judge dispatch-*.txt as expected-BLOCK beside turn-*.txt; record both in expected.json with the measurement and name them in the fixtures README. Add .changeset/routing-by-name.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh"
+      ],
+      "deps": [
+        "01M3RWZNFX1F4RHMW79BZ1QZ8G"
+      ],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge-prompt.md",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/test/fixtures/guardrail/controls/route-units-by-name.txt",
+        "packages/canon/test/fixtures/guardrail/dispatch-echo.txt",
+        "packages/canon/test/fixtures/guardrail/expected.json",
+        "packages/canon/test/fixtures/guardrail/README.md",
+        "packages/canon/test/support/guardrail/calibrate-stance-judge.sh",
+        ".changeset/routing-by-name.md"
+      ],
+      "accept": [
+        "`git grep -n -w -i unit -- packages/canon/targets/guardrail/stance-judge-prompt.md` prints a line of signal 4 (Dispatch-echo) and a line of the Boundary tests, each saying a dispatch that routes a unit of a named plan by its name PASSes. At a9258730 it prints nothing.",
+        "`git grep -n -i 'by name' -- packages/canon/targets/guardrail/stance-guardrail-pre.sh` prints the deny notice's line naming a unit routed by name among the calls it does not deny. At a9258730 it prints nothing.",
+        "packages/canon/test/fixtures/guardrail/controls/route-units-by-name.txt is byte-identical to the `.payload` that targets/guardrail/stance-guardrail-pre.sh emits under STANCE_EMIT_PAYLOAD for the main-session Agent call whose prompt is the denied routing of 2026-09-30T10:16:56Z; print the command that shows it (cmp exits 0). Judged 5 times each with STANCE_RUBRIC set to the rubric at a9258730 (`git show a9258730:packages/canon/targets/guardrail/stance-judge-prompt.md`), it is BLOCKed in at least 1 of 5; with the new rubric in 0 of 5. Print both tallies and the judge used.",
+        "`sh packages/canon/test/support/guardrail/calibrate-stance-judge.sh 5` against the new rubric, with STANCE_JUDGE_CMD naming the judge used above, prints a table in which dispatch-echo and each of the six turn fixtures is ok at 5/5 BLOCK and every control, route-units-by-name included, is 0/5 BLOCK; print the table. expected.json records these numbers and the judge.",
+        "`wc -c < packages/canon/targets/guardrail/stance-judge-prompt.md` prints at most 14336.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts`, `pnpm --filter @cratylus/canon run stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/routing-by-name.md` exists and names @cratylus/canon."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3RFJ0M8RK6K703A30SP8QMC",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "a38f423f",
+        "author": "RoutingByName",
+        "time": "2026-09-30T11:03:24.003Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "a38f423f",
+        "verdict": "not-achieved",
+        "missing": [
+          "architect role — 'it starts a plan's work by routing, by name alone, the units the planner hands it; a unit's name is an address': the stance guard binding the architect's main session still refuses that act about half the time. The unit's own must-PASS control (controls/route-units-by-name.txt, the routing denied on 2026-09-30) under the rubric at a38f423f, judged by haiku-4-5 through omp headless with memory off and the omp bridge's own wrapper, came back BLOCK 5/10 run one after another, 2/3 in a second batch and 5/5 when run concurrently, against 10/10 under the rubric at a9258730. The recorded 0/5 does not reproduce (locus: signal 4's exemption in packages/canon/targets/guardrail/stance-judge-prompt.md and its twin in packages/canon/src/hooks/stance-guardrail.ts)"
+        ],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T11:08:54.670Z"
+      },
+      {
+        "kind": "land",
+        "commit": "6a07b831",
+        "author": "RoutingByName",
+        "time": "2026-09-30T11:31:31.554Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "6a07b831",
+        "verdict": "not-achieved",
+        "missing": [
+          "architect role — 'a closed plan to the integrator, which makes its line whole and asks for release': the stance guard on the architect's main session still denies routing a closed plan by its name, because signal 4's exemption names only a unit. Under the rubric at 6a07b831, the same judge as before (haiku-4-5, omp headless, memory off, the omp bridge's wrapper): 'Plan loop-friction has closed. Make its line whole.' was BLOCK 3/26 (1/6 concurrent, 2/20 in series), and 'Plan loop-friction closed. Make its line whole and ask the operator for release.' was BLOCK 8/10 in series, judged as dispatch-echo or as handing back a fork. Under a9258730 the first form was BLOCK 10/10 (locus: signal 4 in packages/canon/targets/guardrail/stance-judge-prompt.md and its twin in packages/canon/src/hooks/stance-guardrail.ts)"
+        ],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T11:41:43.155Z"
+      },
+      {
+        "kind": "land",
+        "commit": "6b3f14cd",
+        "author": "RoutingByName",
+        "time": "2026-09-30T12:00:56.856Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "6b3f14cd",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGuardsSkipSubagents",
+        "time": "2026-09-30T12:08:42.443Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "33b06def",
+        "author": "LoopFrictionIntegrator",
+        "time": "2026-09-30T12:09:37.371Z"
+      }
+    ]
+  }
+}
