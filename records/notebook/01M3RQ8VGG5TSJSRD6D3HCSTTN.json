@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RQ8VGG5TSJSRD6D3HCSTTN",
+    "entity": "01M3RQ8VGG5TSJSRD6D3HCSTTM",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayJudgementFitsTime",
+    "time": "2026-09-30T08:35:34.544Z",
+    "reason": "finding beside the unit judgement-fits-time",
+    "cause": "live calibration run while assaying d3a9597c"
+  },
+  "payload": {
+    "title": "calibration's could-not-look does not stop the run",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "At d3a9597c, packages/canon/test/support/guardrail/calibrate-stance-judge.sh calls could_not_look from blocks_of, which runs inside a command substitution, so its exit 0 leaves only that subshell. When one judgement gives no verdict, the run does not stop: the could-not-look line is folded into the tally, the shell prints 'Illegal number' on the comparisons, and the fixture is tabled as a FLIP. Observed while assaying judgement-fits-time with an omp-backed judge: turn-554 once gave no verdict and was tabled as '...could not look.../2 BLOCK FLIP', though two direct reruns both blocked it. The guards themselves are unaffected; this is the proof tool.",
+    "blocks": []
+  }
+}

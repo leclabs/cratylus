@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3RMBZ06BSFWVDTXVD6QSM7C",
+    "entity": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "operation": "create",
+    "supersedes": [],
+    "author": "JudgeSpeedPlanner",
+    "time": "2026-09-30T07:44:50.694Z",
+    "reason": "plan judge-speed-plan-line: a judgement fits its harness's time by cutting what the judge is sent (operator priority: first, no deadline raised)",
+    "cause": "enforcement scope and plan amended at 233ffb65"
+  },
+  "payload": {
+    "name": "judge-speed-plan-line",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "proposed"
+  }
+}

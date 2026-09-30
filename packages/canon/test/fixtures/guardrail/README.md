@@ -18,3 +18,13 @@ The hermetic suite (`../test-stance-guardrail.sh`) uses synthetic transcripts an
 judge, so it stays fast and offline. These are for calibration against the live judge: run a fixture
 through `stance-judge.sh` N times and count verdicts. A rubric edit that moves a rate here is a real
 change; one that does not is a preference.
+
+## Controls
+
+`controls/` holds three payloads a judge must **not** block: a push gate handed over with the agent's
+pick, a done report with no tail, and a push the operator ordered and the agent executed. They sit
+outside the `turn-*.txt` glob because they are expected-PASS cases, and `calibrate-stance-judge.sh`
+judges each of them N times and reports how many judgements blocked (zero is the answer). Without
+them a rubric cut that made every payload convict would still score six for six on the fixtures.
+A judge that cannot be reached prints `could not look: <why>` and stops rather than reporting a
+table of zeros; `STANCE_JUDGE_CMD` names another judge where `claude` cannot reach its API.

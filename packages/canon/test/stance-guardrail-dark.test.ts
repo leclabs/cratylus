@@ -43,7 +43,10 @@ import { resolveWorker } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { handoff } from '../src/dimensions/autonomy/handoff.js';
 import { stanceGuardrailPre } from '../src/hooks/stance-guardrail-pre.js';
-import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
+import {
+  stanceGuardrail,
+  stanceGuardrailJudgeCap,
+} from '../src/hooks/stance-guardrail.js';
 
 let root: string;
 let worker: string;
@@ -506,6 +509,218 @@ describe('STANCE GUARDRAIL — what the claude form judges', () => {
       agent_transcript_path: join(home, 'no-such-agent-transcript.jsonl'),
     });
     expect(seen).toBeNull();
+  });
+});
+
+// A JUDGEMENT FITS THE TIME ITS HARNESS ALLOWS A GUARD, so what the judge is sent is bounded.
+//
+// The judge's answer time grows with what it is sent, and omp kills an extension handler at
+// 30 s and a Claude Code cell at 60 s, while the payload had no bound of its own: the Stop
+// worker sent every assistant message since the last operator message and the whole operator
+// message, the pre worker the whole menu or dispatch prompt. A judge that is merely slow was
+// then reported as one that could not run. One cap, declared once in the stance cell, bounds
+// all three workers; the purview worker is held to it in `purview-guardrail.test.ts`.
+//
+// The workers are run in the omp form, whose bridge asks for the payload with
+// `STANCE_EMIT_PAYLOAD` and later returns the verdict with `STANCE_VERDICT_FILE`; the second
+// pass is the one that checks a block's EVIDENCE, and it must check it against what the first
+// pass SENT, not against the transcript the first pass cut down.
+describe('STANCE GUARDRAIL — the judge is sent a bounded excerpt', () => {
+  const cap = stanceGuardrailJudgeCap;
+  const big = 200_000;
+  let home: string;
+  let scope: string;
+  let tmp: string;
+  let n = 0;
+  const workers = {} as Record<'stop' | 'pre', string>;
+  const line = (o: unknown) => `${JSON.stringify(o)}\n`;
+  const said = (text: string) =>
+    line({ type: 'assistant', message: { content: [{ type: 'text', text }] } });
+  const tooled = line({
+    type: 'assistant',
+    message: { content: [{ type: 'tool_use', name: 'Bash' }] },
+  });
+  // Filler that no rule reads and the layer-1 pre-filter cannot match.
+  const filler = (bytes: number): string => 'lorem ipsum '.repeat(bytes / 12);
+
+  beforeAll(() => {
+    home = mkdtempSync(join(root, 'bounded-'));
+    tmp = join(home, 'tmp');
+    mkdirSync(tmp);
+    scope = join(home, '.omp', 'agent', 'personas', 'nico');
+    mkdirSync(join(scope, 'stance'), { recursive: true });
+    writeFileSync(
+      join(scope, 'stance', 'manifest.json'),
+      JSON.stringify({ agent: 'nico', gates: {} }),
+      'utf8',
+    );
+    for (const [key, cell, file] of [
+      ['stop', stanceGuardrail, 'stance-guardrail.sh'],
+      ['pre', stanceGuardrailPre, 'stance-guardrail-pre.sh'],
+    ] as const) {
+      const dir = join(home, '.omp', 'hooks', file.replace('.sh', ''));
+      mkdirSync(dir, { recursive: true });
+      workers[key] = join(dir, file);
+      writeFileSync(workers[key], sourceOf(cell, file, 'omp'), 'utf8');
+      chmodSync(workers[key], 0o755);
+    }
+  });
+
+  const fire = (
+    which: 'stop' | 'pre',
+    input: Record<string, unknown>,
+    env: Record<string, string>,
+  ) => {
+    n += 1;
+    return spawnSync('/bin/sh', [workers[which]], {
+      input: JSON.stringify({
+        stance_scope: scope,
+        agent_type: 'nico',
+        session_id: `bounded-${n}`,
+        cwd: home,
+        ...input,
+      }),
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      env: { ...process.env, HOME: home, TMPDIR: tmp, ...env },
+    });
+  };
+
+  const transcriptOf = (...records: string[]): { transcript_path: string } => {
+    const p = join(home, `turn-${n}-${records.length}.jsonl`);
+    writeFileSync(p, records.join(''), 'utf8');
+    return { transcript_path: p };
+  };
+
+  const emitted = (
+    which: 'stop' | 'pre',
+    input: Record<string, unknown>,
+  ): string => {
+    const r = fire(which, input, { STANCE_EMIT_PAYLOAD: '1' });
+    expect(r.status).toBe(0);
+    const envelope: { payload: string } = JSON.parse(r.stdout);
+    return envelope.payload;
+  };
+
+  // The turn: an operator message and an agent turn of 200000 bytes each. The operator's
+  // instruction is at its END, and so is the close's marker, in its last 200 bytes.
+  const bigTurn = () => ({
+    operator: `OPERATOR-HEAD-ELIDED ${filler(big)} OPERATOR-TAIL-KEPT`,
+    close: `CLOSE-HEAD-ELIDED words ${filler(big)} CLOSE-TAIL-KEPT then the marker CLOSE-MARKER-${Math.random().toString(36).slice(2)}`,
+  });
+  const bigInput = (t = bigTurn()) =>
+    transcriptOf(
+      line({ type: 'user', message: { content: t.operator } }),
+      said(t.close),
+    );
+
+  it('Stop worker: a 200000-byte operator message and turn are sent within the cap, close and tail kept', () => {
+    const t = bigTurn();
+    const payload = emitted('stop', bigInput(t));
+    expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(cap);
+    // The close is what every firing rule reads, and its last bytes are the turn's last.
+    expect(payload).toContain(t.close.slice(-200));
+    expect(payload).toContain('OPERATOR-TAIL-KEPT');
+    expect(payload).not.toContain('CLOSE-HEAD-ELIDED');
+    expect(payload).not.toContain('OPERATOR-HEAD-ELIDED');
+    // The judge is told it reads an excerpt, so a seam is never taken for the agent's words.
+    expect(payload).toMatch(
+      /\[ELIDED: the first \d+ of \d+ bytes of the agent turn/,
+    );
+    expect(payload).toMatch(
+      /\[ELIDED: the first \d+ of \d+ bytes of the operator message/,
+    );
+  });
+
+  it('Stop worker: a short close survives a preamble that is what overflows', () => {
+    const payload = emitted(
+      'stop',
+      transcriptOf(
+        line({ type: 'user', message: { content: 'go' } }),
+        said(`PREAMBLE-ELIDED ${filler(big)}`),
+        tooled,
+        said('Four commits shipped. Tree clean. SHORT-CLOSE-KEPT'),
+      ),
+    );
+    expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(cap);
+    expect(payload).toContain(
+      'Four commits shipped. Tree clean. SHORT-CLOSE-KEPT',
+    );
+    expect(payload).not.toContain('PREAMBLE-ELIDED');
+  });
+
+  it('Stop worker: a cut never lands inside a character', () => {
+    const payload = emitted(
+      'stop',
+      bigInput({
+        operator: 'é'.repeat(big / 2),
+        close: `${'é'.repeat(big / 2)} end`,
+      }),
+    );
+    expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(cap);
+    expect(payload).not.toContain('\uFFFD');
+  });
+
+  it('Stop worker: a turn under the cap is sent whole and unmarked', () => {
+    const payload = emitted(
+      'stop',
+      transcriptOf(
+        line({ type: 'user', message: { content: 'go' } }),
+        said('SMALL-TURN-WHOLE'),
+      ),
+    );
+    expect(payload).toContain('SMALL-TURN-WHOLE');
+    expect(payload).not.toContain('ELIDED');
+  });
+
+  it('Stop worker: a BLOCK quoting a span the cap elided is discarded, one quoting the sent close stands', () => {
+    const input = bigInput();
+    const verdict = (span: string): string => {
+      const p = join(home, `verdict-${Math.random()}`);
+      writeFileSync(
+        p,
+        `VERDICT: BLOCK\nREASON: collapsed\nEVIDENCE: ${span}\n`,
+      );
+      return p;
+    };
+    const elided = fire('stop', input, {
+      STANCE_VERDICT_FILE: verdict('CLOSE-HEAD-ELIDED words lorem ipsum'),
+    });
+    expect(elided.stdout).toMatch(/BLOCK DISCARDED/);
+    expect(elided.stdout).not.toMatch(/"decision":"block"/);
+    const sent = fire('stop', input, {
+      STANCE_VERDICT_FILE: verdict('CLOSE-TAIL-KEPT then the marker'),
+    });
+    expect(sent.status).toBe(0);
+    expect(JSON.parse(sent.stdout)).toMatchObject({ decision: 'block' });
+  });
+
+  it('pre worker: a 200000-byte menu and a 200000-byte dispatch prompt are each sent within the cap', () => {
+    const menu = emitted('pre', {
+      tool_name: 'AskUserQuestion',
+      tool_input: {
+        questions: [
+          {
+            question: `MENU-HEAD ${filler(big)} MENU-TAIL`,
+            options: [{ label: 'a' }, { label: 'b' }],
+          },
+        ],
+      },
+    });
+    const dispatch = emitted('pre', {
+      tool_name: 'Agent',
+      tool_input: { prompt: `PROMPT-HEAD ${filler(big)} PROMPT-TAIL` },
+    });
+    for (const [payload, head, tail] of [
+      [menu, 'MENU-HEAD', 'MENU-TAIL'],
+      [dispatch, 'PROMPT-HEAD', 'PROMPT-TAIL'],
+    ] as const) {
+      expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(cap);
+      // The instruction of a menu or a dispatch may sit at either end, so both are kept.
+      expect(payload).toContain(head);
+      expect(payload).toContain(tail);
+      expect(payload).toMatch(/\[ELIDED: \d+ of \d+ bytes from the middle/);
+    }
   });
 });
 

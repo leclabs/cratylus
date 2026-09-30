@@ -1,0 +1,84 @@
+{
+  "envelope": {
+    "id": "01M3RPKMDSQR63AGG4MC0JQWBN",
+    "entity": "01M3RMBZ0JPRKDN8NCJDXGTGC7",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RNED16N00YR6AVEFM0DY8S"
+    ],
+    "author": "JudgementFitsTime",
+    "time": "2026-09-30T08:23:59.161Z",
+    "reason": "calibrated the cut rubric against three controls, completed the operator prose, recorded the measurement",
+    "cause": "the unit's calibration, time and prose criteria"
+  },
+  "payload": {
+    "plan": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "spec": {
+      "name": "judgement-fits-time",
+      "intent": "Checkout: the plan's line, branch plan/judge-speed-plan-line, worktree /home/lex/workspaces/cratylus.plan-judge-speed-plan-line (run `pnpm install` there first). Build this unit on a branch cut from plan/judge-speed-plan-line and never commit on main: while this plan is bound its work and records live on its line. Census @233ffb65; re-derive any count or line number below if a listed path changed since. Realize the clause `enforcement scope` gained at 233ffb65: a judgement fits within the time its harness allows a guard, so a judge that is merely slow is never reported as one that could not run. DEFECT (decision note \"guards' judge is dark\", records/notebook/01M3RJSZMMAK4WY0BGDQ95NGPV.json): after judge-recovery a fresh omp session went dark on its first three calls while the judge was healthy. WHAT THE JUDGE IS SENT: the stance rubric packages/canon/targets/guardrail/stance-judge-prompt.md is 29015 bytes (8.9 KB in July; test/fixtures/guardrail/rubric-at-failure-HEAD.md is 10376), authored in packages/canon/src/hooks/stance-guardrail.ts (content from ~L864) and shared by the Stop worker and the pre-tool worker (stance-guardrail-pre.ts ~L159); the purview rubric is 5457 bytes plus the holder's declared contract. The payload is unbounded: the Stop worker sends every assistant message since the last operator message (asst, stance-guardrail.ts ~L327) and the whole last operator message (~L414); the pre worker sends the whole menu or dispatch body (stance-guardrail-pre.ts ~L194-204); purview sends the whole dispatch prompt (purview-guardrail.ts ~L210-227). TIME ALLOWED: omp kills an extension handler at 30 s and the bridge's judge deadline is `const JUDGE_TIMEOUT_MS = 22_000;` (packages/forge/src/adapters/omp/render.ts:722); Claude Code runs each guard cell with `timeout: 60` (stance-guardrail.ts:23, stance-guardrail-pre.ts:39, purview-guardrail.ts:60) and judges through `claude -p --model haiku` (targets/guardrail/stance-judge.sh). Measured: 9.3 s in-process for a 9 KB payload against the 29 KB rubric; 17-19 s through `omp -p` on haiku. OPERATOR PRIORITY: cut what the judge is sent; raise no deadline and no cell timeout. HOW (this plan's, the same on both harnesses, since both run the same workers). (1) Measure first where a judgement's time goes on the model omp's advisor role names (input size against the verdict's output length) and cut where the time is. (2) Cut the stance rubric to what a judge needs to decide: its rules, boundary tests and output protocol stay; rationale, history and measurement prose move to the hook source's comments or targets/guardrail/README.md, which no judge is sent. Every law the calibration fixtures convict on (test/fixtures/guardrail/expected.json) survives. The pre worker may be sent only the part that governs menus and dispatches, so long as one source still authors both. (3) Bound the payload of each of the three workers by one declared cap in one home: an oversized stance turn keeps its close (the text after the last tool call, which every firing rule reads) and the tail of the operator message, and the payload marks where text was elided. The EVIDENCE check verifies a quoted span against what the judge was actually sent. (4) packages/cli/README.md's Enforcement scope entry (L102-109) states the live concept: binding, the stated-rule fallback, a guard whose judge cannot run lets the turn through and says so, asks the judge again once it may have recovered, and a judgement fits the time its harness allows (this also answers idea note 'operator prose for enforcement scope omits the open and recovery clauses'). (5) Targets are generated: change the sources and run `pnpm canon:project:targets`; never hand-edit a target. (6) The comments in render.ts (~L710-722) and omp.test.ts (~L574-580) that cite the 29 KB rubric carry the new measurement; every constant stays. (7) Leave test/fixtures/guardrail/turn-*.txt and rubric-at-failure-HEAD.md byte-identical. Add no new *.test.ts file (the meta-gate registry packages/canon/test/gate-convicts.test.ts belongs to unit records-on-the-line); extend the existing suites. The three negative controls named in expected.json (_controls_n20) are added as payload files under test/fixtures/guardrail/controls/, outside the turn-*.txt glob.",
+      "static": [
+        "records/notebook/01M3RJSZMMAK4WY0BGDQ95NGPV.json",
+        "packages/canon/test/fixtures/guardrail/rubric-at-failure-HEAD.md",
+        "packages/canon/test/support/guardrail/calibrate-stance-judge.sh",
+        "packages/schema/src/hook-cell.ts",
+        "packages/forge/CHANGELOG.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge-prompt.md",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/purview-judge-prompt.md",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/fixtures/guardrail/expected.json",
+        "packages/canon/test/fixtures/guardrail/README.md",
+        "packages/canon/test/fixtures/guardrail/controls/",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/cli/README.md",
+        ".changeset/judgement-fits-time.md"
+      ],
+      "accept": [
+        "DEADLINES HELD: `git diff 233ffb65 <landed commit> -- packages/forge/src/adapters/omp/render.ts packages/canon/src/hooks` changes none of the lines `const JUDGE_TIMEOUT_MS = 22_000;`, `const JUDGE_MISS_LIMIT = 3;`, `const JUDGE_COOLDOWN_MS = 120_000;` or any guard cell's `timeout: 60` (print the grep of each on the landed tree).",
+        "RUBRIC CUT: `wc -c < packages/canon/targets/guardrail/stance-judge-prompt.md` prints at most 14000 (census 29015) and `wc -c < packages/canon/targets/guardrail/purview-judge-prompt.md` at most 5457; after `pnpm canon:project:targets`, `git status --porcelain packages/canon/targets` prints nothing (the targets are what the sources generate).",
+        "PAYLOAD CAP (hermetic, in an existing suite): each of the three workers run with STANCE_EMIT_PAYLOAD=1 on an input whose judged text is 200000 bytes (Stop worker: an operator message and an agent turn of 200000 bytes each, the turn's close carrying a unique marker in its last 200 bytes; pre worker: an AskUserQuestion menu and an Agent prompt of 200000 bytes; purview: an Agent prompt of 200000 bytes) emits a payload of at most 12000 bytes, and the Stop worker's payload contains the close's marker. At census each emitted payload exceeds 200000 bytes, so the test fails there.",
+        "EVIDENCE AGAINST WHAT WAS SENT (hermetic): on the 200000-byte turn, a fixture judge's BLOCK whose EVIDENCE quotes a span the cap elided is discarded with the BLOCK DISCARDED notice, and a BLOCK quoting a span inside the sent close stands.",
+        "CALIBRATION: `sh packages/canon/test/support/guardrail/calibrate-stance-judge.sh 5` on the cut rubric prints 6/6 fixtures ok, 0 flips, 0 misses, and each of the three control payloads under test/fixtures/guardrail/controls/, judged 5 times through the same judge command, is BLOCKed 0 of 5; print the judge command used (STANCE_JUDGE_CMD may name a judge on omp's advisor model where `claude` cannot reach its API) and every tally. A judge that could not be reached prints 'could not look: <why>' and this criterion fails.",
+        "TIME ON OMP: on the model omp's advisor role names on this host (print it), the call askJudge makes (completeSimple with the stance rubric as system prompt, the bridge's excerpt wrapper around the payload, maxTokens 4096, temperature 0, reasoning disabled) completes in at most 11000 ms (half of JUDGE_TIMEOUT_MS) on each of 3 samples for each of the six turn-*.txt fixtures and for the 200000-byte Stop input after the worker's cap; print every sample in ms (denominator: 21 samples). Any sample over 11000 ms, or any call that errors, fails this criterion.",
+        "TIME ON CLAUDE CODE: `sh packages/canon/targets/guardrail/stance-guardrail.sh` run on a Stop envelope whose transcript is the 200000-byte turn, enrolled through a stance manifest and with the default judge backend (`claude -p --model haiku`), exits within 30 s (half the cell's 60 s timeout) on each of 3 runs and ends with a verdict rather than a DARK or 'did not answer' notice; print wall time and output of each. If `claude` cannot reach its API on this host, print 'could not look: <why>' with the denominator 0/3; the criterion then fails.",
+        "`grep -n -i 'lets the turn through\\|asks the judge again\\|fits' packages/cli/README.md` prints lines inside the Enforcement scope entry naming the let-through-and-say-so, the ask-again and the time clauses (at census none of the three is there).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts test/purview-guardrail.test.ts test/hook-rule-boundary.test.ts test/harness-independence.test.ts test/reader-density.test.ts`, `pnpm stance-guard:test`, `pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts test/deploy` and `pnpm typecheck` exit 0.",
+        "`.changeset/judgement-fits-time.md` names \"@cratylus/canon\": patch (and \"@cratylus/forge\": patch if render.ts changed) and says a guard's judge is now sent a smaller rubric and a bounded excerpt so a judgement fits the time its harness allows, with no deadline raised.",
+        "`git diff --name-only 233ffb65 <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3RKANJB4NKJPX7B95CYKG47",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "13753bf9",
+        "author": "JudgementFitsTime",
+        "time": "2026-09-30T08:03:39.174Z"
+      },
+      {
+        "kind": "land",
+        "commit": "d3a9597c",
+        "author": "JudgementFitsTime",
+        "time": "2026-09-30T08:23:59.161Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RN0DGBP1DFTRYG32RNKBXF",
+    "entity": "01M3RN0DGBP1DFTRYG32RNKBXE",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T07:56:00.907Z",
+    "reason": "operator: guarding subagents is overkill; limit guards to the main agent personas",
+    "cause": "operator ruling during judge-speed-plan-line"
+  },
+  "payload": {
+    "title": "guards bind main-session personas only",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Operator ruling, rectified and adopted: a guard binds only a persona's own main session. A dispatched subagent is bounded by what it was handed (a spec, a shard, a unit name) and its result is judged by its assay and the integrator's whole check, and the main session supervises it; guarding it again duplicates that acceptance, and every subagent turn and tool call it judges competes with the main session's guards for the same judge, which is part of why the judge runs slow. Amend enforcement scope when judge-speed-plan-line closes (held: enforcement scope is a shard that plan realizes); a following plan realizes it.",
+    "blocks": []
+  }
+}

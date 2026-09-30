@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RPWN8DPAGTTVNDB5SAECS8",
+    "entity": "01M3RPWN8DPAGTTVNDB5SAECS7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "WorkOnTheLine",
+    "time": "2026-09-30T08:28:54.925Z",
+    "reason": "unproven legs of the unit",
+    "cause": "cold read result"
+  },
+  "payload": {
+    "title": "work-on-the-line cold read ran on role aliases; (e) answered hedged",
+    "kind": "question",
+    "topic": "work-on-the-line of judge-speed-plan-line",
+    "body": "The LOOP COLD READ ran through completion(model=default|smol), which resolve to anthropic/claude-opus-5-5:high and anthropic/claude-haiku-4-5 (the tool refuses exact model ids). Both answered (a)-(d) as required with quoted lines. On (e) haiku said no record can be missing; opus said none is by design but added that lacks checks only local branches and records/ and depends on the integrator running gather. Answers saved under /tmp/judge-speed-plan-line-cold-read/work-on-the-line/. The file-ops dimension (static, unchanged) still says commit main => green, which the loop texts now override for a bound plan.",
+    "blocks": []
+  }
+}

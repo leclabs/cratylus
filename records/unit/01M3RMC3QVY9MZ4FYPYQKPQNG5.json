@@ -1,0 +1,83 @@
+{
+  "envelope": {
+    "id": "01M3RMC3QVY9MZ4FYPYQKPQNG5",
+    "entity": "01M3RMC3QTE76WW3ZD3XK6QX7G",
+    "operation": "create",
+    "supersedes": [],
+    "author": "JudgeSpeedPlanner",
+    "time": "2026-09-30T07:44:55.547Z",
+    "reason": "plan judge-speed-plan-line: the runtime writes every record about a bound plan on its line, cut at bind",
+    "cause": "enforcement scope and plan amended at 233ffb65"
+  },
+  "payload": {
+    "plan": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "spec": {
+      "name": "records-on-the-line",
+      "intent": "Checkout: the plan's line, branch plan/judge-speed-plan-line, worktree /home/lex/workspaces/cratylus.plan-judge-speed-plan-line (run `pnpm install` there first). Build this unit on a branch cut from plan/judge-speed-plan-line and never commit on main: while this plan is bound its work and records live on its line. Census @233ffb65; re-derive any count or line number below if a listed path changed since. Realize in the runtime's plan and note domains the clause `plan` gained at 233ffb65: while a plan is bound, every record written about it is written on its one line and never on the main line, which receives them only when the closed plan is released. DEFECT (notes 'units landed on main before the line' on unit-ledger of plan loop-ledger, 'whole written before gather forks the unit', 'ledger-writers diverged when the line gathered the records', 'records written after the last green are never committed before release'): in loop-ledger and judge-recovery implementers committed on main and a bound plan's records were written in two checkouts, so a unit's history forked, main carried unjudged work, and the integrator had to scavenge every worktree and branch (deliver's lacks and gather). Today the store writes every record into the records/ of whatever checkout the verb runs in (RecordStore resolves `git rev-parse --show-toplevel` from cwd, packages/runtime/src/record-store/store.ts:100-114; its one construction site is capabilities/plan/reading.ts:249), and nothing cuts the line at bind (plan.ts bind; dispatch.ts:383-386). CONTRACT (fixed by this plan; records-on-the-line realizes it in the runtime and work-on-the-line writes the loop's texts against it, so neither changes it without a re-plan): (1) `plan bind <plan>` cuts line(P), branch `plan/<plan>`, from the HEAD of the checkout where bind runs, into a worktree at `<main worktree path>.plan-<plan>`, or uses the worktree that already holds that branch; it copies into that worktree every record of P and its units that the invoking checkout holds and the line lacks, then writes the bind record there, and its output names the branch and the worktree path. It refuses, writing nothing, when the branch exists and no worktree holds it, printing the `git worktree add` that restores one. (2) While P is bound, every write about P from any checkout of the repository (each plan verb on P or a unit of P: add, revise, retract, advance, reconcile, close, land, assay, whole, broke; and each note write whose blocks name P or a unit of P before or after the write) is written into the worktree holding line(P), never into the invoking checkout unless that is the line's worktree, and its output names where it wrote. With no worktree holding line(P) it refuses and writes nothing. (3) `plan show` and `note show` print the same state for P from the main checkout, from line(P)'s worktree and from the worktree of any branch cut from the line. (4) No new verb and no new flag. A write about a plan that is not bound, every design write, and a note naming no bound plan are written where they run, as today. (5) The runtime commits nothing; committing stays with the loop's parties. HOW within the contract is this unit's: e.g. reads may union the invoking checkout's records with the line's worktree, since records are immutable files named by ULID and a union never conflicts; git calls stay in the runtime's existing git seam. The immutability gate must still pass on a commit of the line's records. packages/runtime/README.md states the rule and where a bound plan's records live. Tests extend plan.test.ts, note.test.ts and record-store.test.ts; if a new test file is unavoidable, classify it in packages/canon/test/gate-convicts.test.ts, which this unit alone owns in this plan.",
+      "static": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/runtime/src/record-store/fold.ts",
+        "packages/runtime/src/record-store/immutability-gate.ts",
+        "packages/runtime/src/capabilities/plan/pin.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/verb-flags.ts",
+        "records/notebook/"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/record-store/store.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/capabilities/plan/plan.ts",
+        "packages/runtime/src/capabilities/plan/unit.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/capabilities/note/notebook.ts",
+        "packages/runtime/src/view/plan.ts",
+        "packages/runtime/src/view/notebook.ts",
+        "packages/runtime/src/ports/plan.ts",
+        "packages/runtime/src/ports/note.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/test/record-store.test.ts",
+        "packages/runtime/README.md",
+        "packages/canon/test/gate-convicts.test.ts",
+        ".changeset/records-on-the-line.md"
+      ],
+      "accept": [
+        "LINE SMOKE (print the script and its verbatim output; run the runtime built from this checkout by `pnpm --filter @cratylus/runtime build`). In a throwaway repository R whose main checkout holds a committed design concept: from R's main checkout add a unit to a new plan P realizing it, then bind P. `git -C R worktree list` shows a worktree at R.plan-P on branch plan/P, and bind's output names both. `git -C R.plan-P status --porcelain records/` lists the bind record and P's and its unit's proposal records; `git -C R status --porcelain records/` lists no record bind wrote. At census bind writes into R's checkout and cuts no branch, so this fails there.",
+        "ROUTING: continuing the smoke from R's main checkout, advance the unit to active, land it with a commit, capture a note --blocks P, then retract that note. Each output names R.plan-P as where it wrote; afterwards `git -C R status --porcelain records/` is unchanged from before these writes, and R.plan-P holds each new record file (print both listings). A design define and a write about a second, unbound plan run from R's main checkout land in R's checkout.",
+        "SAME STATE: `plan show P`, `plan show <unit> --plan P` and `note show` printed from R's main checkout, from R.plan-P and from a worktree of a branch cut from plan/P are byte-identical (`diff` prints nothing for each pair).",
+        "REFUSAL: after `git -C R worktree remove R.plan-P` with plan/P kept, `plan advance <unit> --plan P --to completed` from R's main checkout exits non-zero, `git -C R status --porcelain` is unchanged, and the message names plan/P and the `git worktree add` command that restores the worktree.",
+        "NO NEW SURFACE: `cratylus plan bind --x`, `cratylus plan advance --x` and `cratylus note capture --x` list the same flags on the landed build as at 233ffb65 (print each pair).",
+        "Tests: cases in plan.test.ts and note.test.ts cover bind cutting the line, a routed write from another checkout, and the refusal with no worktree; each fails with the runtime's src restored to 233ffb65. `pnpm --filter @cratylus/runtime exec vitest run`, `pnpm --filter @cratylus/runtime typecheck`, `pnpm --filter @cratylus/runtime typecheck:test` and `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts` exit 0.",
+        "`grep -n 'plan/<' packages/runtime/README.md` prints the rule that a bound plan's records live on its line (census: none).",
+        "`.changeset/records-on-the-line.md` names \"@cratylus/runtime\" and says bind cuts the plan's line and every record about a bound plan is written there from any checkout.",
+        "`git diff --name-only 233ffb65 <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RKANXJ8GNPTPY4HMWGMF0E",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

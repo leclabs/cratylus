@@ -11,6 +11,7 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   statSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -599,5 +600,104 @@ describe('canonical order', () => {
       '01K2B',
       '01K2B',
     ]);
+  });
+});
+
+describe('record store — a plan’s line', () => {
+  /** A repository with one commit. */
+  function committed(): string {
+    const repo = repository();
+    git(repo, 'commit', '-q', '--allow-empty', '-m', 'root');
+    return repo;
+  }
+
+  it('cut makes the branch plan/<plan> from this checkout’s HEAD in a worktree named after the main one, and a second cut finds it', () => {
+    const repo = committed();
+    const line = new RecordStore(repo).cut('p');
+    expect(line.path).toBe(`${realpathSync(repo)}.plan-p`);
+    expect(git(repo, 'rev-parse', 'plan/p')).toBe(
+      git(repo, 'rev-parse', 'HEAD'),
+    );
+    expect(new RecordStore(repo).cut('p')).toEqual(line);
+    expect(new RecordStore(line.path).lines).toEqual([line]);
+  });
+
+  it('reads are the union of this checkout and every line, a record held by two once; a write lands where flush is told, else here', () => {
+    const repo = committed();
+    const here = new RecordStore(repo).create(DOMAIN, { name: 'a' }, BY);
+    const line = new RecordStore(repo).cut('p');
+    const staged = new StagedStore(repo);
+    const there = staged.create(DOMAIN, { name: 'b' }, BY);
+    const beside = staged.create(DOMAIN, { name: 'c' }, BY);
+    staged.flush((_, record) =>
+      record.envelope.id === there.envelope.id ? line.path : undefined,
+    );
+    const dir = (top: string) => join(top, RECORDS_ROOT, DOMAIN);
+    expect(readdirSync(dir(line.path))).toEqual([`${there.envelope.id}.json`]);
+    expect(readdirSync(dir(repo)).sort()).toEqual(
+      [here, beside].map((r) => `${r.envelope.id}.json`).sort(),
+    );
+    const fromLine = new RecordStore(line.path);
+    const fromMain = new RecordStore(repo);
+    expect(ids(fromMain.read(DOMAIN))).toEqual(ids([here, there, beside]));
+    // The line reads what it holds and other lines hold, never a checkout's
+    // own uncommitted records.
+    expect(ids(fromLine.read(DOMAIN))).toEqual(ids([there]));
+    // A record both hold reads once.
+    new RecordStore(repo).copy(line, [
+      { domain: DOMAIN, id: here.envelope.id },
+    ]);
+    expect(ids(new RecordStore(repo).read(DOMAIN))).toEqual(
+      ids([here, there, beside]),
+    );
+  });
+
+  it('a write checks against the union: it may supersede a head that lives on the line', () => {
+    const repo = committed();
+    const line = new RecordStore(repo).cut('p');
+    const staged = new StagedStore(repo);
+    const first = staged.create(DOMAIN, { name: 'a' }, BY);
+    staged.flush(() => line.path);
+    const store = new RecordStore(repo);
+    const next = store.supersede(
+      DOMAIN,
+      first.envelope.entity,
+      [first.envelope.id],
+      { name: 'b' },
+      BY,
+    );
+    expect(
+      fold(store.read(DOMAIN)).get(first.envelope.entity)?.payload,
+    ).toEqual({ name: 'b' });
+    expect(
+      existsSync(join(repo, RECORDS_ROOT, DOMAIN, `${next.envelope.id}.json`)),
+    ).toBe(true);
+  });
+
+  it('a branch no worktree holds is read from what it commits, and cut refuses it, saying the worktree that restores it', () => {
+    const repo = committed();
+    const line = new RecordStore(repo).cut('p');
+    const written = new StagedStore(repo);
+    const record = written.create(DOMAIN, { name: 'a' }, BY);
+    written.flush(() => line.path);
+    git(line.path, 'add', '-A');
+    git(line.path, 'commit', '-q', '-m', 'the line');
+    git(repo, 'worktree', 'remove', line.path);
+    const store = new RecordStore(repo);
+    expect(store.lines).toEqual([]);
+    expect(ids(store.read(DOMAIN))).toEqual(ids([record]));
+    expect(() => store.cut('p')).toThrow(
+      `git worktree add ${line.path} plan/p`,
+    );
+    expect(store.line('p')).toEqual({
+      branch: 'plan/p',
+      exists: true,
+      path: undefined,
+    });
+    expect(store.line('q')).toEqual({
+      branch: 'plan/q',
+      exists: false,
+      path: undefined,
+    });
   });
 });

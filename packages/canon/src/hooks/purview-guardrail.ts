@@ -1,4 +1,5 @@
 import type { HookCell } from '../manifest.js';
+import { stanceGuardrailJudgeClip } from './stance-guardrail.js';
 
 // purview-guardrail — the gate that makes a ROLE CONTRACT scoreable.
 //
@@ -201,6 +202,8 @@ contract="$(awk '/^## Role$/{f=1;next} /^## /{f=0} f' "$AGENT_MD" 2>/dev/null ||
 # gate from inventing a law for a corpus that has not declared one.
 [ "$(printf '%s\\n' "$contract" | grep -c '[^[:space:]]')" -ge 2 ] || allow
 
+${stanceGuardrailJudgeClip}
+
 # --- extract the judged payload, branched by act ---------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 [ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
@@ -224,11 +227,19 @@ esac
 
 [ -n "\${body:-}" ] || allow
 
-payload="=== THE HOLDER'S DECLARED CONTRACT (agent: $agent_type) ===
+# THE JUDGE IS SENT AT MOST JUDGE_PAYLOAD_CAP BYTES, the declared contract and the act included.
+# The contract is a role section a few kilobytes long, so it may hold half the cap at most; the
+# dispatch prompt takes what is left, keeping both ends because its instruction may sit at either,
+# and the seam is marked. The evidence check below then runs against exactly this payload, so a
+# span in text the excerpt elided is discarded like any span that is not there.
+contract="$(printf '%s' "$contract" | judge_ends "$((JUDGE_PAYLOAD_CAP / 2))")"
+head_part="=== THE HOLDER'S DECLARED CONTRACT (agent: $agent_type) ===
 $contract
 === THE ACT ABOUT TO FIRE ===
 $act
-$body"
+"
+body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$head_part")))")"
+payload="$head_part$body"
 
 # --- loop-safety: never deny an identical tool_input twice ----------------------------------
 session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"

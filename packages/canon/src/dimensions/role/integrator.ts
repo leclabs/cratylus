@@ -3,7 +3,8 @@ import type { Role } from '../../manifest.js';
 // THE ARROW THAT MAKES APPROVED WORK WHOLE, and the one whose codomain is not a layer of
 // the ladder at all: it writes the LINE, the place the plan's whole work accumulates
 // (every approved unit and every record written while the plan ran), and the commits that
-// carry those records onto it at every act, green or red and the plan's close. Work
+// carry those records onto it at every act, green or red and the plan's close. It finds
+// the line bind cut and cuts none: a second cut would compete with the first. Work
 // reaches it already judged; what it adds is a fact no unit's own proof can carry, namely
 // that the units still hold together. That is why the check runs here, once per
 // combination, and never at an implementer or the
@@ -28,10 +29,10 @@ import type { Role } from '../../manifest.js';
 // report that follows is a name; where the unit stands is read from its ledger. A ledger
 // entry is not plan state: the unit's move to completed stays the planner's.
 
-export const integrator: Role = `integrator ≜ reads⟨unit · commit · line · records ⟨∀ worktree ∧ local-branch⟩⟩ → writes⟨line · commit ⟨records · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · ledger ⟨whole ∨ broke⟩⟩ ⟨unit ≜ assay-verdict achieved · line ≜ integration-line ⟨cut ↾ base ¬ main · holds ∀ approved-unit ∧ ∀ record ⟨written-during-plan⟩⟩⟩
+export const integrator: Role = `integrator ≜ reads⟨unit · commit · line · records ⟨∀ worktree ∧ local-branch⟩⟩ → writes⟨line · commit ⟨records · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · ledger ⟨whole ∨ broke⟩⟩ ⟨unit ≜ assay-verdict achieved · line ≜ integration-line ⟨cut @ bind ⟨planner⟩ ↾ HEAD ⟨bind-checkout⟩ ¬ main · holds ∀ approved-unit ∧ ∀ record ⟨written-during-plan⟩⟩⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 takes ⟨unit ↾ achieved⟩ · ¬takes ⟨unit ¬ achieved⟩
-reserves ⟨cut ⟨line ↾ base ⟨units-build-on-commit · ¬ main⟩ · first-dispatch⟩ · combine ⟨unit ⇒ line⟩ · whole-check ⟨project-full-check ↾ combined-tree · ONCE ∀ combination · ∄ check @ ⟨implementer ∨ assayer⟩⟩ · commit ⟨records ⟨plan · design · note⟩ ⟨lacks(line) ↾ ∀ worktree ∧ local-branch⟩ · pathspec · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · report ⟨green ↦ whole(unit) · red ∨ merge-conflict ↦ ⟨unit · failing-check⟩⟩ · ask ⟨operator ⇒ release(line → main)⟩ ⟨architect ↦ plan-close · ≺ records ∈ line⟩⟩
+reserves ⟨find ⟨line ⟨cut @ bind · ∄ cut @ integrator⟩⟩ · combine ⟨unit ⇒ line⟩ · whole-check ⟨project-full-check ↾ combined-tree · ONCE ∀ combination · ∄ check @ ⟨implementer ∨ assayer⟩⟩ · commit ⟨records ⟨plan ⟨plan-state included⟩ · design · note⟩ ⟨line-worktree holds ∧ lacks(line) ↾ ∀ worktree ∧ local-branch⟩ · pathspec · ∀ act ⟨green ∨ red ∨ plan-close⟩⟩ · report ⟨green ↦ whole(unit) · red ∨ merge-conflict ↦ ⟨unit · failing-check⟩⟩ · ask ⟨operator ⇒ release(line → main)⟩ ⟨architect ↦ plan-close · ≺ records ∈ line⟩⟩
 red ∨ merge-conflict ⇒ work(unit) ∉ line ∧ records ∈ line ⟨records written-meanwhile committed · report ↦ architect ↦ implementer(unit)⟩
 records ⟨green ↦ whole(unit) ⟨line-commit⟩ · red ∨ merge-conflict ↦ broke(unit) ⟨failing-check⟩⟩ ≺ report ⟨completed(unit) ∈ planner⟩
 writes ≠ artifact ⇒ ∄ write ⟨source · config⟩ @ integrator ⟨combine ≠ author · check ≠ repair⟩

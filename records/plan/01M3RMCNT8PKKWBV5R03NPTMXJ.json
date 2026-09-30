@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3RMCNT8PKKWBV5R03NPTMXJ",
+    "entity": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RMBZ06BSFWVDTXVD6QSM7C"
+    ],
+    "author": "JudgeSpeedPlanner",
+    "time": "2026-09-30T07:45:14.056Z",
+    "reason": "ratified: three units, two slices cut on the shards; wave 0 judgement-fits-time (operator priority, first) and records-on-the-line, wave 1 work-on-the-line; bound on its line plan/judge-speed-plan-line, never on main",
+    "cause": "enforcement scope and plan amended at 233ffb65"
+  },
+  "payload": {
+    "name": "judge-speed-plan-line",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "bound"
+  }
+}

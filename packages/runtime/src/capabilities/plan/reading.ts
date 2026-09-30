@@ -28,6 +28,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 import { type Fold, fold } from '../../record-store/fold.js';
 import {
   IDENTITY,
@@ -40,6 +41,8 @@ import {
 import type { Record, RecordId } from '../../record-store/record.js';
 import { introduced } from '../../record-store/repair.js';
 import {
+  type Line,
+  RECORDS_ROOT,
   RecordStore,
   StagedStore,
   StoreFault,
@@ -292,32 +295,53 @@ export class Reading {
     return typeof this.#lifecycle === 'string' ? this.#lifecycle : undefined;
   }
 
-  #git(...args: string[]): string {
+  #git(cwd: string, ...args: string[]): string {
     return execFileSync('git', args, {
-      cwd: this.from,
+      cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
   }
 
   /** Where the reading was computed: the commit, and whether writes not yet
-   *  committed are in it — on disk and uncommitted, or held by this act. */
+   *  committed are in it — on disk and uncommitted, or held by this act. Where
+   *  the repository has plan lines, it is the first line's commit and records
+   *  that are named, from whichever checkout the reading is made, so that one
+   *  state reads the same from every checkout and the plan's line, where its
+   *  work is committed, is what the header speaks of; otherwise it is this
+   *  checkout's. */
   get computed(): Computed {
+    const { store } = this;
+    const at =
+      store.lines.length > 0
+        ? store.lines.map((l) => ({
+            cwd: l.path,
+            root: join(l.path, RECORDS_ROOT),
+          }))
+        : [{ cwd: this.from, root: store.root }];
     let commit: string | undefined;
     try {
-      commit = this.#git('rev-parse', '--short', 'HEAD');
+      commit = this.#git(
+        at[0]?.cwd ?? this.from,
+        'rev-parse',
+        '--short',
+        'HEAD',
+      );
     } catch {
       // Nothing is committed yet: the header names no commit.
     }
-    const held = this.store instanceof StagedStore && this.store.holding;
-    const onDisk =
-      this.#git(
-        'status',
-        '--porcelain',
-        '--untracked-files=all',
-        '--',
-        this.store.root,
-      ) !== '';
+    const held = store instanceof StagedStore && store.holding;
+    const onDisk = at.some(
+      ({ cwd, root }) =>
+        this.#git(
+          cwd,
+          'status',
+          '--porcelain',
+          '--untracked-files=all',
+          '--',
+          root,
+        ) !== '',
+    );
     return { commit, uncommitted: held || onDisk };
   }
 
@@ -516,7 +540,13 @@ export class Reading {
   /** The plan `input` names, `undefined` when no plan holds it. */
   findPlan(input: string): string | undefined {
     const name = parsed(input);
-    return addressed('plan', name, this.#planHolders.get(bare(name)) ?? []);
+    const entity = addressed(
+      'plan',
+      name,
+      this.#planHolders.get(bare(name)) ?? [],
+    );
+    if (entity !== undefined) this.#unlined([entity]);
+    return entity;
   }
 
   /** The plan `input` names; refuses a name no plan holds. */
@@ -557,7 +587,9 @@ export class Reading {
       throw new Error(
         `unit ${JSON.stringify(input)} is in plans ${of.map((p) => printed(this.planName(p))).join(', ')}; name it with its plan, as ${of.map((p) => JSON.stringify(`${input}${OF_PLAN}${printed(this.planName(p))}`)).join(' or ')}`,
       );
-    return addressed('unit', name, holders);
+    const entity = addressed('unit', name, holders);
+    if (entity !== undefined) this.#unlined(this.#unitPlans(entity));
+    return entity;
   }
 
   /** The unit `input` names; refuses a name no unit holds. */
@@ -587,7 +619,14 @@ export class Reading {
   /** The note `input` titles, `undefined` when no note holds the title. */
   findNote(input: string): string | undefined {
     const name = parsed(input);
-    return addressed('note', name, this.#noteHolders.get(bare(name)) ?? []);
+    const entity = addressed(
+      'note',
+      name,
+      this.#noteHolders.get(bare(name)) ?? [],
+    );
+    if (entity !== undefined)
+      this.#unlined(this.#blockedPlans(this.#noteBlocks(entity)));
+    return entity;
   }
 
   /** What a note blocks: the plan `input` names, or the unit — written
@@ -607,6 +646,7 @@ export class Reading {
       throw new Error(
         `no plan or unit is named ${JSON.stringify(input)}; a note blocks a plan or a unit`,
       );
+    this.#unlined(this.#blockedPlans([entity]));
     return entity;
   }
 
@@ -1143,6 +1183,147 @@ export class Reading {
       ),
     };
   }
+
+  // ── the line ──
+
+  /** Each plan unit `unit` has carried, as plan entities. */
+  #unitPlans(unit: string): string[] {
+    const f = this.units.get(unit);
+    return f === undefined
+      ? []
+      : [...versions(f), ...withdrew(f, this.#unitRecords)].map((u) => u.plan);
+  }
+
+  /** Each plan or unit the note `entity` has blocked, as entities. */
+  #noteBlocks(entity: string): string[] {
+    const f = this.notes.get(entity);
+    return f === undefined
+      ? []
+      : [...versions(f), ...withdrew(f, this.#noteRecords)].flatMap(
+          (n) => n.blocks,
+        );
+  }
+
+  /** The plans a write to `entity` of `domain` is about, before it (`before`)
+   *  or after it: a plan itself, a unit's plan, the plans and the units' plans a
+   *  note blocks. */
+  #concerns(before: Reading, domain: string, entity: string): string[] {
+    const readings = [this, before];
+    switch (domain) {
+      case planDomain.DOMAIN:
+        return [entity];
+      case unitDomain.DOMAIN:
+        return readings.flatMap((r) => r.#unitPlans(entity));
+      case NOTEBOOK:
+        return readings.flatMap((r) => r.#blockedPlans(r.#noteBlocks(entity)));
+      default:
+        return [];
+    }
+  }
+
+  /** The plans `blocked` name, each a plan or a unit, as plan entities. */
+  #blockedPlans(blocked: readonly string[]): string[] {
+    return blocked.flatMap((b) =>
+      this.plans.has(b) ? [b] : this.#unitPlans(b),
+    );
+  }
+
+  /** Whether plan `entity` is bound: some version of it holds the lifecycle's
+   *  exclusive state. */
+  #bound(entity: string): boolean {
+    const f = this.plans.get(entity);
+    if (f === undefined || this.unconfigured !== undefined) return false;
+    const { exclusive } = this.lifecycle.plan;
+    return versions(f).some((v) => v.state === exclusive);
+  }
+
+  /** Refuses a write that names one of `plans` when a plan among them is bound
+   *  and no worktree holds its line: the refusal says so before any law, that
+   *  records a missing line hid could answer wrongly. A reading that is not of
+   *  a write never refuses. */
+  #unlined(plans: readonly string[]): void {
+    const { store } = this;
+    if (!(store instanceof StagedStore)) return;
+    for (const p of plans) {
+      const name = this.#planNamed(this, p);
+      if (name !== undefined && this.#bound(p) && !store.line(name).path)
+        throw store.lineless(name);
+    }
+  }
+
+  /**
+   * Where each write this reading's staged store holds belongs, `before` being
+   * the reading of what stood before the act. A write about a bound plan — one
+   * `before` held bound, or the plan `cutting`, whose line this act cuts —
+   * belongs on that plan's line, and is named here by the plan's name, by
+   * record id. Refuses, naming what restores it, a bound plan whose line no
+   * worktree holds, and a write about plans on two lines. Changes nothing.
+   */
+  placing(
+    before: Reading,
+    cutting?: string,
+  ): { readonly of: ReadonlyMap<string, string>; readonly cut?: string } {
+    const of = new Map<string, string>();
+    const { store } = this;
+    const cut =
+      cutting === undefined ? undefined : this.#planNamed(before, cutting);
+    if (!(store instanceof StagedStore)) return { of, cut };
+    const held = (name: string): string => {
+      const { exists, path } = store.line(name);
+      if (path === undefined && (exists || name !== cut))
+        throw store.lineless(name);
+      return name;
+    };
+    for (const { domain, record } of store.held) {
+      const { id, entity } = record.envelope;
+      const names = [
+        ...new Set(
+          this.#concerns(before, domain, entity)
+            .filter((p) => p === cutting || before.#bound(p))
+            .map((p) => this.#planNamed(before, p))
+            .filter((n): n is string => n !== undefined)
+            .map(held),
+        ),
+      ];
+      if (names.length > 1)
+        throw new Error(
+          `this write is about plans on two lines (${names.map((n) => `plan/${n}`).join(', ')}), and a write belongs on one; write about each alone`,
+        );
+      if (names[0] !== undefined) of.set(id, names[0]);
+    }
+    if (cut !== undefined) held(cut);
+    return { of, cut };
+  }
+
+  /** The name of plan `entity`, as this reading or `before` holds it. */
+  #planNamed(before: Reading, entity: string): string | undefined {
+    const f = this.plans.get(entity) ?? before.plans.get(entity);
+    return f === undefined ? undefined : versions(f)[0]?.name;
+  }
+
+  /** Every record, by domain and id, about plan `plan`: its own, its units' and
+   *  the notes blocking it or one of its units. */
+  recordsAbout(plan: string): { domain: string; id: string }[] {
+    const units = new Set(
+      [...this.units.keys()].filter((u) => this.#unitPlans(u).includes(plan)),
+    );
+    const notes = new Set(
+      [...this.notes.keys()].filter((n) =>
+        this.#noteBlocks(n).some((b) => b === plan || units.has(b)),
+      ),
+    );
+    const about: readonly [string, (entity: string) => boolean][] = [
+      [planDomain.DOMAIN, (e) => e === plan],
+      [unitDomain.DOMAIN, (e) => units.has(e)],
+      [NOTEBOOK, (e) => notes.has(e)],
+    ];
+    return about.flatMap(([domain, is]) =>
+      this.store
+        .read(domain)
+        .filter((r) => is(r.envelope.entity))
+        .map((r) => ({ domain, id: r.envelope.id })),
+    );
+  }
 }
 
 /** The message of a thrown value. */
@@ -1184,6 +1365,8 @@ function plainly(
         return new Error(
           `${capability}: the ${what}s changed while this write was being made, so nothing was written; show them again and repeat the write`,
         );
+      case 'line':
+        return new Error(`${capability}: ${error.message}`);
     }
   }
   try {
@@ -1215,20 +1398,49 @@ export function look(
  * what stands, and returns what the view drills into; `render` draws the view
  * over a reading of what the writes leave. Only when both have succeeded do
  * the writes reach disk, so a refusal anywhere leaves nothing written.
+ *
+ * A write about a plan that has a line lands on the line's worktree, whichever
+ * checkout ran it, and the view ends by naming where. `cut` names the plan
+ * entity, if `done` binds one, whose line the act cuts (`RecordStore.cut`)
+ * and fills with the records about it this checkout holds and the line lacks.
  */
 export function act<T>(
   capability: string,
   from: string,
   write: (read: Reading) => T,
   render: (read: Reading, done: T) => string,
+  cut: (done: T) => string | undefined = () => undefined,
 ): string {
   let store: StagedStore | undefined;
   try {
-    store = new StagedStore(from);
-    const done = write(new Reading(from, store));
-    const view = render(new Reading(from, store), done);
-    store.flush();
-    return view;
+    const staged = new StagedStore(from);
+    store = staged;
+    const before = new Reading(from, staged);
+    const done = write(before);
+    const after = new Reading(from, staged);
+    const view = render(after, done);
+    const cutting = cut(done);
+    const placing = after.placing(before, cutting);
+    const lines = new Map<string, Line>();
+    for (const name of new Set([
+      ...placing.of.values(),
+      ...(placing.cut === undefined ? [] : [placing.cut]),
+    ]))
+      lines.set(name, staged.cut(name));
+    const cutLine =
+      placing.cut === undefined ? undefined : lines.get(placing.cut);
+    if (cutting !== undefined && cutLine !== undefined)
+      staged.copy(cutLine, after.recordsAbout(cutting));
+    staged.flush((_, record) => {
+      const name = placing.of.get(record.envelope.id);
+      return name === undefined ? undefined : lines.get(name)?.path;
+    });
+    return [
+      view,
+      ...[...lines.values()].map(
+        (l) => `wrote to ${l.branch}, worktree ${l.path}`,
+      ),
+    ].join('\n');
   } catch (error) {
     throw plainly(capability, error, () => new Reading(from, store));
   }

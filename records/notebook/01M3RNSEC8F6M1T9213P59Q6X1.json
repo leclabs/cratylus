@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RNSEC8F6M1T9213P59Q6X1",
+    "entity": "01M3RNSEC8F6M1T9213P59Q6X0",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayRecordsOnTheLine",
+    "time": "2026-09-30T08:09:41.000Z",
+    "reason": "found while assaying records-on-the-line at f4227d81; beside the unit's verdict",
+    "cause": "sole check of shard plan against the loop's texts"
+  },
+  "payload": {
+    "title": "the integrator's line cut competes with bind's",
+    "kind": "question",
+    "topic": "plan",
+    "body": "At f4227d81 the runtime cuts plan/<plan> at plan bind, in a worktree at <main worktree>.plan-<plan>. The deliver skill (packages/canon/src/skills/deliver/skill.ts, line(P)) and docs/role.md still have the integrator cut the same branch at its first dispatch with git worktree add <path> -b plan/<plan> <base>, which fails once bind has cut it. Two artifacts realize the birth of a plan's line; which text is revised, and by which unit, is open.",
+    "blocks": []
+  }
+}

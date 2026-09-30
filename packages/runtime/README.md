@@ -83,6 +83,26 @@ order, each unit's line in `plan show` carries its latest event, and an event's 
 unit's line and its ledger, none of its spec. A revise, an advance and a reconcile carry the ledger
 over, a reconcile of units that recorded different events carrying their union in time order.
 
+A bound plan's records live on its line, the branch `plan/<plan>`. `plan bind` cuts it from the
+HEAD of the checkout it runs in into a worktree named `<main worktree path>.plan-<plan>` (or uses
+the worktree that already holds the branch), copies into it every record of the plan, its units and
+the notes blocking either that the checkout holds and the line lacks, and writes the bind there. While
+the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
+note write whose blocks name the plan or one of its units, before or after the write — is written
+into the line's worktree from whichever checkout runs it, and its output ends by naming the branch
+and worktree it wrote to. A bound plan with no worktree holding its line — the branch kept and its
+worktree removed, or no branch at all, as when it was merged early, deleted, or bound before lines
+existed — refuses the write, writes nothing, and prints the `git worktree add` that restores the
+worktree or, with no branch, cuts one (`git worktree add -b plan/<plan> <path>`); `bind` refuses a
+branch no worktree holds the same way.
+The runtime commits nothing: committing the line stays with whoever works it, and the main line
+receives the records only when the closed plan is released. A read is the union of the checkout's
+records and those of every line's worktree (a line no worktree holds is read from what its branch
+commits), so `plan show` and `note show` print the same state from the main checkout, from the
+line and from a branch cut from it; while lines exist their header names the first line's commit and
+whether its records are committed. Design writes, writes about a plan that is not bound and notes
+naming no bound plan are written where they run.
+
 Each verb declares, beside it, the flags it takes and whether each takes a value, and one reader in
 `./verb-flags` reads the verb's arguments against that declaration. A flag that takes a value is
 given as `--flag value` or `--flag=value`, taking the next token unless it begins with `--`; a flag

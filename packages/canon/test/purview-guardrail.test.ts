@@ -34,6 +34,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { mav } from '../src/agents/mav.js';
 import { purviewGuardrail } from '../src/hooks/purview-guardrail.js';
+import { stanceGuardrailJudgeCap } from '../src/hooks/stance-guardrail.js';
 
 let root: string;
 let worker: string;
@@ -166,6 +167,42 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     ) as { payload: string };
     expect(write.payload).toContain('codomain: artifact');
     expect(write.payload).toContain('/repo/src/a.ts');
+  });
+
+  it('bounds a 200000-byte dispatch prompt to the judge cap, contract intact, both ends kept', () => {
+    const prompt = `HEAD-OF-PROMPT ${'x'.repeat(200_000)} TAIL-OF-PROMPT`;
+    const { stdout } = run(
+      architect.name,
+      'Task',
+      { subagent_type: 'planner', prompt },
+      { STANCE_EMIT_PAYLOAD: '1' },
+    );
+    const { payload } = JSON.parse(stdout) as { payload: string };
+    expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(
+      stanceGuardrailJudgeCap,
+    );
+    // The law is the holder's own contract and is never what gets cut.
+    expect(payload).toContain(architect.role);
+    // The instruction of a dispatch may sit at either end.
+    expect(payload).toContain('HEAD-OF-PROMPT');
+    expect(payload).toContain('TAIL-OF-PROMPT');
+    expect(payload).toMatch(/\[ELIDED: \d+ of \d+ bytes from the middle/);
+  });
+
+  it('discards a BLOCK citing a span the cap elided, and keeps one citing a span it sent', () => {
+    const prompt = `HEAD-SPAN-KEPT ${'y'.repeat(50_000)} MIDDLE-SPAN-ELIDED ${'y'.repeat(50_000)} TAIL-SPAN-KEPT`;
+    const dispatch = { subagent_type: 'planner', prompt };
+    const verdict = (span: string): string =>
+      verdictFile(`VERDICT: BLOCK\nREASON: outside the arrow\nSPAN: ${span}\n`);
+    const elided = run(architect.name, 'Task', dispatch, {
+      STANCE_VERDICT_FILE: verdict('MIDDLE-SPAN-ELIDED'),
+    });
+    expect(elided.stdout).toMatch(/BLOCK DISCARDED/);
+    expect(elided.stdout).not.toMatch(/"permissionDecision":"deny"/);
+    const sent = run(architect.name, 'Task', dispatch, {
+      STANCE_VERDICT_FILE: verdict('TAIL-SPAN-KEPT'),
+    });
+    expect(sent.stdout).toMatch(/"permissionDecision":"deny"/);
   });
 
   it('never judges a read — the arrow test is on the codomain', () => {

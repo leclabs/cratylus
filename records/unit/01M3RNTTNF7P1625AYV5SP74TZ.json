@@ -1,0 +1,81 @@
+{
+  "envelope": {
+    "id": "01M3RNTTNF7P1625AYV5SP74TZ",
+    "entity": "01M3RMC3XTW7Y89GSN7H7Z2C8Q",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RMC3XTW7Y89GSN7H7Z2C8R"
+    ],
+    "author": "JudgeSpeedPlanner",
+    "time": "2026-09-30T08:10:26.352Z",
+    "reason": "work-on-the-line carries the integrator's competing line cut: its outputs already hold deliver skill.ts and docs/role.md",
+    "cause": "note \"the integrator's line cut competes with bind's\", from the assay of records-on-the-line"
+  },
+  "payload": {
+    "plan": "01M3RMBZ06BSFWVDTXVD6QSM7B",
+    "spec": {
+      "name": "work-on-the-line",
+      "intent": "Checkout: the plan's line, branch plan/judge-speed-plan-line, worktree /home/lex/workspaces/cratylus.plan-judge-speed-plan-line (run `pnpm install` there first). Build this unit on a branch cut from plan/judge-speed-plan-line and never commit on main: while this plan is bound its work and records live on its line. Census @233ffb65; re-derive any count or line number below if a listed path changed since. Realize in the loop's texts the clause `plan` gained at 233ffb65: while a plan is bound, all of its work and every record written about it are written on its one line and never on the main line, which receives them only when the closed plan is released. DEFECT (notes 'units landed on main before the line' on unit-ledger of plan loop-ledger, 'whole written before gather forks the unit', 'ledger-writers diverged when the line gathered the records', 'records written after the last green are never committed before release'): in loop-ledger and judge-recovery implementers committed on main and a bound plan's records were written in two checkouts, so a unit's history forked, main carried unjudged work, and the integrator had to scavenge every worktree and branch (deliver's lacks and gather). Today the texts put the line's cut at the integrator's first dispatch (packages/canon/src/skills/deliver/skill.ts header ~L25-43 and formal block L76, L79-82, L97-98, L100-101, L112-114, description L118; dimensions/role/integrator.ts L31, L34 `first-dispatch`; agents/integrator.ts description; docs/role.md ~L114-120), the implementer builds on an 'own branch' with no base named (dimensions/role/implementer.ts L9, L29), and the planner's bind names no line (skills/plan/skill.ts L95 and the procedure L153). CONTRACT (fixed by this plan; records-on-the-line realizes it in the runtime and work-on-the-line writes the loop's texts against it, so neither changes it without a re-plan): (1) `plan bind <plan>` cuts line(P), branch `plan/<plan>`, from the HEAD of the checkout where bind runs, into a worktree at `<main worktree path>.plan-<plan>`, or uses the worktree that already holds that branch; it copies into that worktree every record of P and its units that the invoking checkout holds and the line lacks, then writes the bind record there, and its output names the branch and the worktree path. It refuses, writing nothing, when the branch exists and no worktree holds it, printing the `git worktree add` that restores one. (2) While P is bound, every write about P from any checkout of the repository (each plan verb on P or a unit of P: add, revise, retract, advance, reconcile, close, land, assay, whole, broke; and each note write whose blocks name P or a unit of P before or after the write) is written into the worktree holding line(P), never into the invoking checkout unless that is the line's worktree, and its output names where it wrote. With no worktree holding line(P) it refuses and writes nothing. (3) `plan show` and `note show` print the same state for P from the main checkout, from line(P)'s worktree and from the worktree of any branch cut from the line. (4) No new verb and no new flag. A write about a plan that is not bound, every design write, and a note naming no bound plan are written where they run, as today. (5) The runtime commits nothing; committing stays with the loop's parties. CHANGE: the planner's bind cuts the line (plan skill: bind's gloss and the procedure; the planner role where it says where it writes and commits); the implementer builds each unit on its own branch cut from line(P) and never commits on main (implementer role, agent and roles/implementer.ts comments); the integrator finds the line rather than cutting it, combines onto it, and commits the records its worktree holds at every act (integrator role, agent and roles/integrator.ts comments); deliver's base(P), line(P), the first-dispatch law, lacks and gather (simplified now that records land on the line; lacks stays as the release check that prints nothing), the close law, the loop sequence and the description; docs/role.md says the same. Say once who commits the planner's state records on the line. Spell the runtime's behaviour only as the CONTRACT states it. Keep the plan and deliver skills under the hook cap (skill-hook-cap.test.ts; note 'a longer home at run time than at install' puts plan ~47 characters under), cutting words elsewhere in the skill rather than a law. Add no new test file. FINDING (assay of records-on-the-line at f4227d81, note \"the integrator's line cut competes with bind's\"): the runtime now cuts plan/<plan> at bind, so the integrator's cut in deliver's line(P) and in docs/role.md fails on a line that exists; this unit removes that cut from both texts, leaving bind the line's one birth.",
+      "static": [
+        "packages/canon/src/dimensions/actions/file-ops.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "records/notebook/"
+      ],
+      "deps": [
+        "01M3RMC3QTE76WW3ZD3XK6QX7G"
+      ],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/agents/planner.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/planner.ts",
+        "docs/role.md",
+        ".changeset/work-on-the-line.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from the unit's checkout run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole, followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped.",
+        "In $T/skills/deliver/SKILL.md and $T/agents/integrator.md, `grep -c 'first dispatch'` prints 0 for each (census: the deliver source spells it 5 times, the integrator agent once). `grep -n 'plan/<plan>' $T/skills/plan/SKILL.md` prints the bind line naming the line it cuts (census: 0 matches). The `## Role` of $T/agents/implementer.md names a branch cut from the plan's line and forbids a commit on main (print the lines; census: 'own branch' only).",
+        "ONE BIRTH OF THE LINE (note \"the integrator's line cut competes with bind's\"): `grep -c 'worktree add' packages/canon/src/skills/deliver/skill.ts` prints 0 (census 1: line(P) spells `git worktree add <path> -b plan/<plan> <base>` for the integrator), `grep -n 'first dispatch\\|dispatch for the bound' docs/role.md` prints nothing (census: line 118), and docs/role.md's integrator section says the integrator finds the line bind cut, at <main worktree>.plan-<plan>, and cuts no branch.",
+        "LOOP COLD READ. Concatenate the session texts (RIG) of architect, planner, implementer, assayer and integrator and give them, with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with this prompt verbatim: 'Below are the complete definitions of five AI agents that work together, each with the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. (a) When is a plan’s line cut, by whom, and from what? (b) On which branch does an implementer commit a unit’s work, and may any agent commit to main while the plan is bound? (c) Where is a unit’s land, assay and whole record written, whichever checkout the agent runs in? (d) What reaches main before the operator releases the closed plan? (e) At release, can any record written while the plan was bound be missing from the line?' Both models pass by answering (a) at bind, by the planner, from the HEAD where bind runs; (b) a branch cut from the plan’s line, and no; (c) in the line’s worktree; (d) nothing; (e) no, each with a quoted line. Any answer placing the cut at the integrator’s first dispatch or admitting a commit on main while bound fails. Save prompt and answers under /tmp/judge-speed-plan-line-cold-read/work-on-the-line/ and print the answers.",
+        "VERB FIDELITY: for every line of the projected plan and deliver skills that spells a capability verb (`scripts/<capability>.mjs <verb> …` or `cratylus <capability> <verb> …`), the flags it spells equal the set the runtime declares, read by running `cratylus <capability> <verb> --x` (it refuses and lists them); print each pair.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts test/reader-reach.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/structural-parsimony.test.ts test/projection-stability.test.ts test/cratylism.test.ts test/command-veracity.test.ts` and `pnpm typecheck` exit 0; skill-hook-cap prints plan and deliver under the cap.",
+        "`.changeset/work-on-the-line.md` names \"@cratylus/canon\" and says the planner's bind cuts the plan's line and a bound plan's work and records are written on it, never on main.",
+        "`git diff --name-only 233ffb65 <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RKANXJ8GNPTPY4HMWGMF0E",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}
