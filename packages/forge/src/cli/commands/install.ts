@@ -1052,10 +1052,18 @@ function seedModelRoles(
   const moved = wanted.filter((e) =>
     result.retargeted.some((m) => m.role === e.role),
   );
+  // A seed the operator chose the very value of is already what they chose: nothing
+  // moves, and the entry is still theirs from now on, as a moved one is.
+  const kept = wanted.filter(
+    (e) =>
+      seeded.has(e.role) &&
+      Object.hasOwn(choices, e.role) &&
+      !moved.some((m) => m.role === e.role),
+  );
   if (!dry) {
     noteHostRoutes(
       harnessDir,
-      [...result.added, ...moved]
+      [...result.added, ...moved, ...kept]
         .filter((e) => e.role in choices)
         .map((e) => e.role),
       result.added.filter((e) => !(e.role in choices)).map((e) => e.role),
@@ -1071,6 +1079,7 @@ function seedModelRoles(
       `the model of ${list(routed.map((e) => e.role))}, which ${path} already routes`,
     );
   }
+  for (const entry of kept) found.routes.push(`${entry.role} → ${entry.value}`);
   if (result.added.length === 0 && moved.length === 0) {
     found.detail.push(`  modelRoles: ${path} — no entry was missing`);
     return;

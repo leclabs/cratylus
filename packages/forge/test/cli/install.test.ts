@@ -400,6 +400,39 @@ describe('the guided install', () => {
     expect(readFileSync(ompConfig(), 'utf8')).not.toContain('assayer: "@slow"');
   });
 
+  it("on omp a choice equal to the seed it finds is the operator's from then on", async () => {
+    expect(await install({ harness: 'omp', yes: true })).toBe(0);
+    out = '';
+    expect(
+      await install({
+        harness: 'omp',
+        modelRoles: 'implementer=@task',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(out).toMatch(/implementer → @task/);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/implementer: "@task"/);
+
+    // A later choice does not move it; it is said to be the host's.
+    out = '';
+    expect(
+      await install({
+        harness: 'omp',
+        modelRoles: 'implementer=@smol',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/implementer: "@task"/);
+    expect(readFileSync(ompConfig(), 'utf8')).not.toContain('@smol');
+    expect(out).toMatch(
+      /--model-roles implementer=@smol: the host already routes/,
+    );
+
+    // What install put there still goes with the uninstall.
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(files(omp())).toEqual([]);
+  });
+
   it('preselects the personas installed before, and drops one the operator unticks', async () => {
     expect(await install({ harness: 'omp', personas: 'nico', yes: true })).toBe(
       0,
