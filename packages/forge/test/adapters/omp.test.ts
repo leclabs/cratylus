@@ -572,8 +572,10 @@ describe('omp enforcing surface', () => {
     expect(turn?.content).toContain('JUDGE_COOLDOWN_MS');
     expect(turn?.content).not.toContain('judgeAway = true');
     // Inside omp's 30 s handler kill, or the deadline never fires — and with real
-    // margin above a measured judge call: 9.3 s for a 9 KB payload against the
-    // 29 KB rubric, which the previous 12 s budget brushed on a short turn.
+    // margin above a measured judge call. The margin was set at 9.3 s for a 9 KB payload
+    // against a 29 KB rubric; the rubric is now cut to 14 KB and the payload capped at
+    // 12 KB, and a call measured 1.7-3.2 s on the advisor role, so the same deadline now
+    // leaves several times the margin. Nothing here was raised to make a judgement fit.
     const ms = /const JUDGE_TIMEOUT_MS = ([\d_]+);/.exec(turn?.content ?? '');
     expect(ms).not.toBeNull();
     const budget = Number(ms?.[1]?.replaceAll('_', ''));
