@@ -107,29 +107,45 @@ thing this party is forbidden to emit, so the sign would have asserted the oppos
 
 The fifth position is the one the architect session had been performing itself. Gating a unit,
 merging it and recording the plan's state were all done from the design-holder's own context, which
-is the descent the architect position forbids: mechanical work displacing the conceptual work the
-position exists to hold. `deliver` already declared `integrator : P ⇀ agent` with no role behind it,
+is the descent the architect role forbids: mechanical work displacing the conceptual work the
+role exists to hold. `deliver` already declared `integrator : P ⇀ agent` with no role behind it,
 so the act had a name and no one to do it.
 
 `integrator` takes each unit whose assay verdict is achieved and combines it onto the plan's
-integration line, a branch cut from `main` when the plan is bound (`plan/<plan>`). It runs the
-project's full check once on the combined tree, so that no implementer and no assayer has to: a whole
-is a property of the combination, and a unit proven alone has proven nothing about it. Green, it
-commits the records written since (plan, design, notes) by pathspec and reports the unit whole. Red or
-a merge conflict, it leaves the line as it was and reports the failing check naming the unit; the
-report goes to the architect, who sends it to that unit's implementer.
+integration line (`plan/<plan>`). The line is where the plan's whole work lives: every approved unit
+together with every design, plan and note record written while the plan ran, so that releasing it
+loses nothing and no other branch holds anything it lacks. It is cut at the integrator's first
+dispatch for the bound plan, from the commit the plan's units are built on (the `HEAD` of the checkout
+where the plan was bound), never from bare `main`: a line cut from `main` lacks the history the units
+stand on, and that history conflicts at combination. Plan `corrected-shards` ended with a line that
+held every approved unit and none of the 53 records written on the build branch, so the operator had
+to ask which branch held the work; this is the correction.
 
-The contract is `reads⟨unit · commit · line⟩ → writes⟨line · commit ⟨records⟩⟩`, and `writes ≠
-artifact` is what `purview-guardrail` quotes: combining is a git act and running the check is a check
-act, both reserved, while an Edit or a Write to a source file has the artifact codomain and is
-blocked. Around that arrow stand four prohibitions. It never repairs, because a repair on the line
+The integrator runs the project's full check once on the combined tree, so that no implementer and no
+assayer has to: a whole is a property of the combination, and a unit proven alone has proven nothing
+about it. At every act, whether the combination is green or red and again at the plan's close, it
+commits the records the line lacks. A record is an immutable file named by its ULID, so the union of
+two sets of records never conflicts: the integrator adds every record file present in any worktree of
+the repository, tracked or not, or on any local branch, that the line lacks, and commits them by
+pathspec. `deliver` spells the exact git commands for `lacks` and for `gather`. Green, it reports the
+unit whole. Red or a merge conflict, the unit's work stays off the line, the records are still
+committed, and it reports the failing check naming the unit; the report goes to the architect, who
+sends it to that unit's implementer. When the architect routes the plan's close, the integrator
+gathers and commits the records written since (the planner's completed and close records among them),
+confirms that no worktree and no local branch holds a record the line lacks, and only then asks the
+operator to release the line.
+
+The contract is `reads⟨unit · commit · line · records⟩ → writes⟨line · commit ⟨records · ∀ act⟩⟩`, and
+`writes ≠ artifact` is what `purview-guardrail` quotes: combining is a git act and running the check
+is a check act, both reserved, while an Edit or a Write to a source file has the artifact codomain and
+is blocked. Around that arrow stand four prohibitions. It never repairs, because a repair on the line
 turns a red into a green nobody judged. It never judges, because the verdict is the assayer's and
 arrived before this position was reached. It decides nothing about the design (the architect's) or
 the plan (its state is the planner's). And it never moves `main`: releasing the finished whole is the
-operator's sign-off, which it asks for when the architect routes the plan's close, as a pull request
-where the repository has a forge remote and `gh`, otherwise as the exact git command. The
-description names both familiar shapes it is not, a CI bot that fixes and a release manager that
-pushes, since a dispatcher reaches for the nearest one.
+operator's sign-off, which it asks for once the close is gathered, as a pull request where the
+repository has a forge remote and `gh`, otherwise as the exact git command. The description names
+both familiar shapes it is not, a CI bot that fixes and a release manager that pushes, since a
+dispatcher reaches for the nearest one.
 
 ## Unit disposition
 
