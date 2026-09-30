@@ -18,7 +18,9 @@ import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
 import {
   applyPrune,
+  digestWritten,
   hasManifest,
+  nextDigests,
   nextKindRecord,
   readManifest,
   staleFiles,
@@ -290,12 +292,20 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   }
 
   if (!dry) {
+    const kinds = {
+      ...prior.kinds,
+      [opts.kind]: nextKindRecord(priorKind, written, skipped, narrowed),
+    };
     writeManifest(harnessDir, {
       ...prior,
-      kinds: {
-        ...prior.kinds,
-        [opts.kind]: nextKindRecord(priorKind, written, skipped, narrowed),
-      },
+      kinds,
+      // What was just laid down, hashed, for an uninstall to tell the host's own edit
+      // from this write. A path this run did not write keeps its recorded digest.
+      digests: nextDigests(
+        prior.digests,
+        kinds,
+        digestWritten(harnessDir, written),
+      ),
       hookCommands:
         opts.kind === 'hooks'
           ? narrowed

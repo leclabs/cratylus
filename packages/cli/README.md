@@ -246,5 +246,36 @@ persona has ONE command across harnesses: whichever install links a name first o
 harness's install reports it as blocked by the first harness's launcher, and no suffixed name is made.
 The links an install placed are recorded in the harness's deploy manifest
 (`.forge/deploy-manifest.json`, `personaLinks`); a second install reports them as `present` and
-changes nothing. There is no `cratylus uninstall` yet, so a host that wants them gone removes the
-links by hand.
+changes nothing. `cratylus uninstall` removes them again (below).
+
+## Taking it away again
+
+```sh
+cratylus uninstall --harness claude            # or omp
+cratylus uninstall --harness claude --dry-run  # the same report, nothing written
+```
+
+`cratylus uninstall --harness <claude|omp>` removes from that harness what `install` placed there, and
+nothing the host placed or changed. What is `install`'s is decided by the harness's deploy manifest
+(`.forge/deploy-manifest.json`) and by nothing else: the manifest records a sha-256 digest of every
+file it wrote, the hook commands it registered in `settings.json`, the status line it set or wrapped
+(with your original command), the lines it added to omp's `config.yml` (the `modelRoles` entries and
+the status line layout), and the persona commands it linked or adopted. Uninstall removes:
+
+- every recorded file whose bytes still hash to that digest, and any directory that leaves empty;
+- the hook registrations it added, and your status line back as it was — your own command, every other
+  key as you had it — or no `statusLine` where you had none;
+- the lines it added to `config.yml`, so the file is what you wrote, byte for byte, your own
+  `modelRoles` entries included (a `config.yml` install created goes with its last line);
+- the persona commands it placed or adopted, and only those;
+- this harness's stanza of the runtime config (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and the
+  file itself when that was the last harness's;
+- the manifest, last, so a run that stops early can be run again.
+
+It prints two lists: what it removed, and what it left because the host placed or changed it, each with
+its reason. A placed file you edited since install is left, and so is one recorded before digests were
+kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours, a
+status line you have pointed at another command, a `config.yml` line you rewrote, a persona command
+you replaced, and a file another harness's install still records. Left files are yours from then on:
+the manifest goes, so a later uninstall no longer names them. `--dry-run` runs every step and writes
+none. `--harness` is required. A host with no manifest has nothing removed, and the command says so.

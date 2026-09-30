@@ -19,6 +19,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { type HostEdit, lineHunks } from './manifest.js';
 import {
   inlineValue,
   isBlankOrComment,
@@ -48,6 +49,9 @@ export interface AddModelRolesResult {
   /** Why the file was left untouched, when its `modelRoles` cannot be safely
    *  extended. Absent otherwise. */
   readonly refused?: string;
+  /** What was put in the file, for the deploy manifest — an uninstall takes exactly
+   *  this out. Present only when the file was written. */
+  readonly edit?: HostEdit;
 }
 
 const PLAIN_KEY = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
@@ -98,7 +102,12 @@ export function addModelRoles(
     if (dry) return { path, added, wrote: false };
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, next);
-    return { path, added, wrote: true };
+    return {
+      path,
+      added,
+      wrote: true,
+      edit: { created: !exists, hunks: lineHunks(text, next) },
+    };
   };
 
   // The top-level `modelRoles` key, and — while looking — whether the document is
