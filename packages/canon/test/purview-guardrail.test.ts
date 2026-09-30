@@ -169,6 +169,32 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     expect(write.payload).toContain('/repo/src/a.ts');
   });
 
+  it('reads a route by name off both spellings of a dispatch — Agent by its role, SendMessage by the running agent’s name', () => {
+    const closed =
+      'guided-install closed. Make its line whole and ask for release.';
+    const fresh = JSON.parse(
+      run(
+        architect.name,
+        'Agent',
+        { subagent_type: 'integrator', prompt: closed },
+        { STANCE_EMIT_PAYLOAD: '1' },
+      ).stdout,
+    ) as { payload: string };
+    expect(fresh.payload).toContain('DISPATCH to `integrator`');
+    expect(fresh.payload.endsWith(`\n${closed}`)).toBe(true);
+
+    const running = JSON.parse(
+      run(
+        architect.name,
+        'SendMessage',
+        { agent: 'GuidedInstallIntegrator3', message: closed },
+        { STANCE_EMIT_PAYLOAD: '1' },
+      ).stdout,
+    ) as { payload: string };
+    expect(running.payload).toContain('DISPATCH to `GuidedInstallIntegrator3`');
+    expect(running.payload.endsWith(`\n${closed}`)).toBe(true);
+  });
+
   it('bounds a 200000-byte dispatch prompt to the judge cap, contract intact, both ends kept', () => {
     const prompt = `HEAD-OF-PROMPT ${'x'.repeat(200_000)} TAIL-OF-PROMPT`;
     const { stdout } = run(
