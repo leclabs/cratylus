@@ -37,7 +37,10 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
+import canonPlugin from '../src/index.js';
 import { DIMENSION_NAMES } from '../src/manifest.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -179,16 +182,14 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     expect(divergences, divergences.join('\n')).toEqual([]);
   });
 
-  // The axiom ships by TWO routes with very different reach: the dimension catalog
-  // (`cratylism.ts` → only agents whose vector selects it — today, `nico` alone) and
-  // the plugin `preamble` (`genus/founding-doctrine.ts` → EVERY Target + EVERY SKILL.md).
-  // The preamble once carried a hand-transcribed copy, so cleaning the dimension left
-  // 26 artifacts shipping the superseded axiom while the suite stayed green. The carry
-  // is now BY IMPORT; these legs keep it that way.
+  // The axiom ships by TWO routes: the dimension catalog (`cratylism.ts` → every
+  // agent whose held role selects it, once, as its engineering-principle) and the
+  // `preamble` some skills set (`genus/prime-principle.ts` → the skills whose laws
+  // name concepts by anchor). The preamble once carried a hand-transcribed copy, so
+  // cleaning the dimension left 26 artifacts shipping the superseded axiom while the
+  // suite stayed green. The carry is now BY IMPORT; these legs keep it that way.
   it('the intrinsic preamble carries the canonized σ* value verbatim', async () => {
-    const { foundingDoctrine } = await import(
-      '../src/genus/founding-doctrine.js'
-    );
+    const { primePrinciple } = await import('../src/genus/prime-principle.js');
     const { cratylism } = await import(
       '../src/dimensions/engineering-principles/cratylism.js'
     );
@@ -205,27 +206,66 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     }
     expect(cratylism.length).toBeGreaterThan(80); // non-vacuous: a real axiom, not ''
     expect(
-      foundingDoctrine,
+      primePrinciple,
       'preamble has drifted from the canonized cratylism value — carry it by import, never transcribe',
     ).toContain(cratylism);
+  });
+
+  // An agent holds the axiom through its role's engineering-principles, so a leading
+  // stamp on top of it would say the same thing twice in one Target. Measured on the
+  // projection itself: the count is a fact about the shipped bytes, not the source.
+  it('no projected agent carries the cratylism value more than once', async () => {
+    const { cratylism } = await import(
+      '../src/dimensions/engineering-principles/cratylism.js'
+    );
+    // Narrow the `Value<O>` union to its bare σ* arm with the corpus's own predicate
+    // (as the leg above does), so the count reads a string without a cast.
+    const { enforcing } = await import('@cratylus/schema');
+    if (enforcing(cratylism)) {
+      throw new Error(
+        'cratylism is declared ENFORCING — this leg counts its bare σ* body',
+      );
+    }
+    for (const harness of ['claude', 'omp'] as const) {
+      const { files } = await projectPluginSet({
+        plugins: [canonPlugin],
+        adapter: adapterByName(harness),
+        warn: () => {},
+      });
+      const agents = files.filter((f) => /^agents\/[^/]+$/.test(f.path));
+      expect(agents.length, `${harness}: no agent projected`).toBeGreaterThan(
+        0,
+      );
+      const counts = agents.map((f) => ({
+        path: f.path,
+        n: f.content.split(cratylism).length - 1,
+      }));
+      expect(
+        counts.filter((c) => c.n > 1),
+        `${harness}: agent(s) carrying the cratylism value more than once`,
+      ).toEqual([]);
+      // non-vacuous: the value does reach agents, so a zero count is not an absent axiom
+      expect(
+        counts.some((c) => c.n === 1),
+        `${harness}: no agent carries cratylism at all — the count proves nothing`,
+      ).toBe(true);
+    }
   });
 
   // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and foreign
   // agents invoking a canon skill. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
-  // distinction `founding-doctrine.ts` draws against `rules/repo-preamble.ts`. The apex
+  // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`. The apex
   // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
   // out to every Target for exactly that reason; its one home is the AMBIENT carry.
   it('the intrinsic preamble names no workspace-local artifact', async () => {
-    const { foundingDoctrine } = await import(
-      '../src/genus/founding-doctrine.js'
-    );
+    const { primePrinciple } = await import('../src/genus/prime-principle.js');
     // Repo-local, non-deployed grounding docs + the ambient carry itself.
     const local = ['VISION', 'MODEL.md', 'ENGINE', 'CANON.md', 'AGENTS.md'];
     const leaked = local.filter((d) => {
       // `¬ contingent on workspace-root AGENTS.md` legitimately names the ambient
       // carry to DISCLAIM it; a bare mention elsewhere is the leak.
-      const stripped = foundingDoctrine.replace(
+      const stripped = primePrinciple.replace(
         '¬ contingent on workspace-root AGENTS.md',
         '',
       );

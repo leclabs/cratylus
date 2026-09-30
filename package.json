@@ -25,7 +25,6 @@
     "typecheck": "turbo run typecheck",
     "typecheck:test": "turbo run typecheck:test",
     "canon:project": "pnpm build && pnpm exec cratylus project --harness claude --out .cratylus/claude",
-    "canon:project:codex": "pnpm build && pnpm exec cratylus project --harness codex --out .cratylus/codex",
     "canon:project:omp": "pnpm build && pnpm exec cratylus project --harness omp --out .cratylus/omp",
     "canon:project:targets": "pnpm --filter @cratylus/canon project:targets",
     "canon:deploy:agent": "pnpm exec cratylus deploy --kind agent",
@@ -38,7 +37,7 @@
     "prepare": "husky",
     "stance-guard:test": "pnpm --filter @cratylus/canon run stance-guard:test",
     "dev": "turbo run dev --parallel",
-    "project": "pnpm canon:project && pnpm canon:project:codex && pnpm canon:project:omp",
+    "project": "pnpm canon:project && pnpm canon:project:omp",
     "verify": "pnpm build && pnpm lint && pnpm project && pnpm test",
     "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"
   },

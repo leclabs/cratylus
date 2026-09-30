@@ -104,9 +104,9 @@ export interface CellTarget {
  *
  * NOT AN ARBITRARY PICK, and not a face the cell chose: the committed `.sh` exists
  * to be byte-locked and read in review, and every deployed copy is emitted by
- * `projectPluginSet` under the adapter that session actually runs — a codex host
- * receives codex bytes whatever this says. What a wrong value here would cost is a
- * reviewer reading `settings.json` in a file whose subject is `hooks.json`, which
+ * `projectPluginSet` under the adapter that session actually runs — an omp host
+ * receives omp bytes whatever this says. What a wrong value here would cost is a
+ * reviewer reading `settings.json` in a file whose subject is an omp extension, which
  * is why the corpus's own harness is the honest one to commit.
  */
 export const COMMITTED_TARGET_HARNESS = 'claude';

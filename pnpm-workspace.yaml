@@ -27,7 +27,6 @@ catalog:
   gray-matter: ^4.0.3
   cac: ^6.7.14
   picocolors: ^1.1.0
-  "@iarna/toml": ^2.2.5
   chokidar: ^4.0.1
 
 # INJECTION IS WHAT MAKES `pnpm deploy` PRODUCE A CONSUMER ARTIFACT. Without it,

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R69511KFT9HE97RMBGF512",
+    "entity": "01M3R69511KFT9HE97RMBGF511",
+    "operation": "create",
+    "supersedes": [],
+    "author": "uninstall",
+    "time": "2026-09-30T03:38:38.497Z",
+    "reason": "outputs list was short of what the spec's own recording clause needs; report the deviation and the cleanup slip",
+    "cause": "uninstall of corrected-shards"
+  },
+  "payload": {
+    "title": "uninstall touched install.ts and deploy.ts, outside its outputs; and cleaned /tmp with two globs",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "The uninstall unit's outputs omit packages/forge/src/cli/commands/install.ts and packages/forge/src/deploy/deploy.ts, yet recording host edits (modelRoles, omp status layout) needs install.ts to persist them via noteHostEdit, and recording a digest per placed file needs one hunk in deploy.ts (digestWritten/nextDigests at the manifest write). No active sibling unit owned either path (claude-role-choice and badge-always-visible, which did, are whole), so they were edited and are in commit f4f59d80; a future planner should list them in outputs. Also: the unit's cleanup removed the exact temp HOMEs it made, but also ran rm -f over the globs /tmp/*.out and /tmp/snap-*.txt, which the contract forbade (only exact paths); those held its own scratch output but the glob could have matched another process's *.out. persona-commands.ts and types.ts/hooks.ts needed no change: removePersonaCommands already fit, and digests are read back from disk in deploy.ts right after placement.",
+    "blocks": []
+  }
+}

@@ -22,7 +22,7 @@
 // precedence rule, no ordering question.
 //
 // SINGULAR ARITY IS THE POINT, not a simplification. A role is the CONTRACT A PEER
-// DISPATCHES AGAINST: when an architect hands a cut piece to a planner it reasons about
+// DISPATCHES AGAINST: when an architect hands a shard to a planner it reasons about
 // the planner's role to know what comes back. A union of roles is a contract no
 // dispatcher can reason about, and it would readmit role conflict — incompatible
 // demands between two positions held at once — which singular arity deletes outright.

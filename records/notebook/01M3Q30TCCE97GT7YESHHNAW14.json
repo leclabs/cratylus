@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q30TCCE97GT7YESHHNAW14",
+    "entity": "01M3Q30TCCE97GT7YESHHNAW13",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:22:25.292Z",
+    "reason": "rectified item 2",
+    "cause": "operator's first-share hypothesis, 2026-09-29"
+  },
+  "payload": {
+    "title": "a cli fit for strangers",
+    "kind": "idea",
+    "topic": "first share",
+    "body": "The real want is a first-run experience a stranger trusts, not a framework swap. Today the CLI (cac + picocolors) leads with corpus-author commands (init, add, compose, project, optimize, catalog, explain) that an end user never needs. Split the surface by audience: a consumer path (install, upgrade with the relaunch guidance, uninstall, a health check) shown first, and the corpus-author commands grouped apart. Use the modern standard pieces: commander for commands, @clack/prompts for the install wizard, picocolors for color; one command framework, not two.",
+    "blocks": []
+  }
+}

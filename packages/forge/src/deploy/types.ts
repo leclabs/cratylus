@@ -38,6 +38,12 @@ export interface PlaceReport {
   // settings.json hook commands registered this run (`hooks` kind only) — the
   // registration half of the same testimony.
   registered: string[];
+  // Agent defs only, and only where the placer keeps a host's `model:` choice
+  // (`PlaceOpts.keepHostModel`): name -> the `model:` value the RENDERED def carries
+  // (null ⇒ it carries none). Deploy records it in the manifest, and the next deploy
+  // reads a deployed def's `model:` against it to tell a host's edit from its own
+  // write. Absent ⇒ this placer records none.
+  models?: Record<string, string | null>;
 }
 
 export function emptyReport(): PlaceReport {
@@ -63,8 +69,8 @@ export interface PlaceOpts {
   /**
    * The harness's agent-definition extension (`HarnessAdapter.agentExt`).
    * Defaults to `.md` for callers that predate it — a default, not an
-   * assumption. A placer that guessed here placed zero codex agents and
-   * reported success, because "no matching file" is indistinguishable from
+   * assumption. A placer that guessed here could place zero agents and
+   * report success, because "no matching file" is indistinguishable from
    * "nothing to do".
    */
   agentExt?: string;
@@ -85,7 +91,7 @@ export interface PlaceOpts {
    * every destination, harnessDir-relative, POSIX.
    *
    * Defaults to `[skills/<name>]`, the render tree's staging layout, which is
-   * claude's and codex's destination and is NOT omp's: omp scans
+   * claude's destination and is NOT omp's: omp scans
    * `~/.agents/skills`, so `~/.omp/skills` was a directory the harness never
    * read and a whole corpus of deployed skills was inert.
    *
@@ -110,5 +116,13 @@ export interface PlaceOpts {
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string;
   log?: (line: string) => void;
+  /**
+   * Keep the `model:` line a HOST edited in a deployed agent def: a def whose
+   * `model:` differs from the value the manifest says the last deploy wrote keeps
+   * the host's line (or its absence) in the def placed over it, and the placer logs
+   * which. Set for the harness whose only place a host sets a subagent's model is
+   * that line (claude). Absent ⇒ the def is overwritten whole.
+   */
+  keepHostModel?: boolean;
   warn?: (line: string) => void;
 }

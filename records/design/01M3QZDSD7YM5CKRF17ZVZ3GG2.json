@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDSD7YM5CKRF17ZVZ3GG2",
+    "entity": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QTJ0ED8CETYFA1FCXDKYD8"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:50.407Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "integrator position",
+    "gloss": "the role that makes approved work whole: it takes each unit whose assay verdict is achieved, combines it with the work already approved, and confirms the whole still holds by running the project's full check once, so no implementer has to. A failure names the unit it came from and returns to that unit's implementer by way of the architect. It decides nothing about the design and repairs nothing itself; releasing the finished whole is the operator's sign-off.",
+    "factors": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QC4APCBD2Y51KGWWP9YENV",
+    "entity": "01M3QBG00Z13RG3P9110NBW9X8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QBG00Z13RG3P9110NBW9X9"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:01:37.484Z",
+    "reason": "released install creates no per-persona commands; the links on the operator's own host were made by hand in earlier sessions, so any other host gets none",
+    "cause": "launcher investigation, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "persona launch",
+    "gloss": "running a harness's main session as a projected persona, with the persona's identity as its system prompt and its composed skills loaded before the first turn, exactly as a dispatched holder of the same position receives them. omp reaches it through the generated launcher; Claude Code through claude --agent, which applies the identity but preloads skills only for subagents, so the projection must carry the skills into the main session itself. Install makes each installed persona launchable by its name: it places a command named after the persona in the host's user bin directory on PATH (~/.local/bin), linked to the harness's launcher (omp: the generated omp-agent, which resolves the persona from its own name), never overwriting a file there that it did not place, and reports what it placed and when that directory is not on PATH; uninstall removes only what it placed.",
+    "factors": []
+  }
+}

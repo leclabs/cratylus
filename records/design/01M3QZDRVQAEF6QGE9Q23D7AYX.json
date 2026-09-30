@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDRVQAEF6QGE9Q23D7AYX",
+    "entity": "01M3QBG00Z13RG3P9110NBW9X8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QGRTXMM9D6BHQAWR4YVGFY"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:49.847Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "persona launch",
+    "gloss": "a persona can be started as a harness's main session, by its name, and it begins exactly as a dispatched holder of its position would: its identity is the session's prompt and its composed skills are present, whole, before its first turn. Making a persona launchable by name is offered, never imposed: the operator is told what will be placed and agrees; nothing the host already has is replaced; and what cratylus placed, it can take away again.",
+    "factors": []
+  }
+}

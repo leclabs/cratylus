@@ -18,7 +18,16 @@
 // is NOT a third sign and is not accepted anywhere — see `dispatch.ts`'s header.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export { EventTapHostClaude, EVENT_TAP_ID } from './claude.js';
+export {
+  EventTapHostClaude,
+  EVENT_TAP_ID,
+  type EventTapInstall,
+} from './claude.js';
+export {
+  EVENT_TAP_HARNESSES,
+  hasEventTapStrategy,
+  invokingHarness,
+} from './harness.js';
 export {
   dispatchEventTap,
   type EventTapDispatchOpts,

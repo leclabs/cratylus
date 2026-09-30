@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R07GP1DMK7NCQ1J084Y51F",
+    "entity": "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QZDSHGQ7FQ3XKAYVR75X4Y"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:53.441Z",
+    "reason": "the verdict is judged against a shard",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "assay verdict",
+    "gloss": "the assayer's judgement of one unit against the design shard it was created to realize: achieved, or not achieved with what is missing, naming the unit and its implementer, stated in the design's own language. The assayer holds the design, never the unit's spec, so its verdict is a second, independent description; acceptance rests on it, not on the implementer's account.",
+    "factors": [
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

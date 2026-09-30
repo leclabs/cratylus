@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R1SF7E00XSS9CDRR8KGFXB",
+    "entity": "01M3R1SF7E00XSS9CDRR8KGFXA",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:20:10.350Z",
+    "reason": "a source comment states the architect contract differently from the role it describes",
+    "cause": "assay of mav-position at e53e7200"
+  },
+  "payload": {
+    "title": "mav's comment quotes a narrower architect arrow",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "At e53e7200, packages/canon/src/agents/mav.ts opens its position paragraph with 'The role contract is reads⟨intent · C⟩ → writes⟨C⟩', while the architect role reads the intent, the design, notes, verdicts, broke-the-whole and ready names and writes the design, notes and routes. The sentences after it state the corrected position, so only the quoted arrow is stale. It is a comment and does not reach the projected agent.",
+    "blocks": []
+  }
+}

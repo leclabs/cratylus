@@ -1,0 +1,6 @@
+---
+"@cratylus/canon": patch
+"@cratylus/forge": patch
+---
+
+A guard that lets a turn or a call through without a verdict now says so where the operator reads it, instead of passing as silently as a judged clean turn. The turn-end stance guard, the pre-tool stance guard and the purview guard each print a notice naming the guard and why it could not judge (no `jq`, no input, an unreadable transcript, a missing Target or manifest agent, a judge that fails or does not answer, an unparseable verdict, a block discarded because the span it cited is not in the turn or call, state it cannot write, an unexpected error, and each re-entry cap: no progress, a spent bypass, an identical call already denied once) and still exit 0, so nothing wedges. On Claude Code the notice is the hook's JSON `systemMessage`, the only form that harness shows the session; on omp it is a bare line, and the omp hook bridge now relays every such line, from either of its two passes and whatever the line opens with (it relayed only lines naming the stance guard and `DARK`, and dropped anything printed before the judge was asked), without ever failing the fire on it. A judged pass, an unenrolled scope and a call that carries nothing to judge stay silent. The notice builders use shell builtins only, so a worker running with nothing but `sh` and `cat` on its `PATH` can still speak.

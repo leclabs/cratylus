@@ -1,0 +1,61 @@
+{
+  "envelope": {
+    "id": "01M3QCH2RC4KHJCV6HDNW3RWF5",
+    "entity": "01M3QCD3RRV1EVW9K19NCECT7X",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QCD3RRV1EVW9K19NCECT7Y"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:08:35.340Z",
+    "reason": "persona badge gloss amended with its claude clause, which this unit already realizes",
+    "cause": "claude-parity planner's boundary findings"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-persona-badge",
+      "intent": "Census @4c2b0d55 (code identical to ab8892a3: only records/ changed between them; re-derive any count below if a listed path changed since). Realize `persona badge` on Claude Code. FACTS OBSERVED LIVE AT CENSUS (Claude Code 2.1.285, interactive session in tmux): the status-line command's stdin JSON carries `\"agent\":{\"name\":\"<persona>\"}` (and `agent_type`) when started with `--agent`, and no `agent` key in a bare session. This answers the open question in note 'persona badge on claude'. The status line runs only in an interactive session: `claude -p` runs none. It is one host-owned `settings.statusLine` command, and subagents have a separate `subagentStatusLine`, so a badge set there is never a subagent's. Claude's agent front matter has no status-line key (its schema lists tools, disallowedTools, prompt, model, effort, permissionMode, mcpServers, hooks, maxTurns, skills, initialPrompt, memory, background, omitClaudeMd, isolation), so no per-persona settings exist to place into.\nCHANGE. (1) PROJECTION. claude's launchSurface (added by persona-commands) additionally emits, for each rendered persona, a badge text file in that persona's own scope (`personas/<name>/`, via the claude scopedRel from claude-enforcement-scope). Its content is baked at projection: `<mark.emoji> <name>` when provenance is non-null, `<name>` alone when it is null, and no hue. It also emits ONE session-scope status-line worker (filename derived from CLI_BIN, never spelled). The worker reads stdin once and takes the persona from `.agent.name`. It prints the persona's badge file when `<its own dir>/personas/<name>/<badge file>` exists, and nothing otherwise. So placement decides who has a badge, and the worker carries no persona list. Given one argument (a host command), it pipes the same stdin to `sh -c \"$1\"`, prefixes the badge and one space to the first line of that output when a badge applies, and otherwise passes the host output through byte-identical. It fails open (prints the host output, or nothing) when jq or the badge file is missing. omp is untouched.\n(2) INSTALL, never replacing the host's command. The logic lives in a new packages/forge/src/deploy/status-line.ts (paths as data, exported through deploy/index.ts) and runs from install after a successful deploy. When settings.json has no `statusLine`, it sets `{type: \"command\", command: sh \"<claude home expr>/<worker>\"}` (the home expression is the one hookCommand uses) and reports it. When statusLine is already this worker, or already wraps with it, it changes nothing. When it is the host's own, it leaves it byte-identical and prints one line offering the new flag `--wrap-status-line`. With that flag, the command becomes the worker invoked with the host's command verbatim as its single argument (single-quote escaped), every other statusLine key (padding, …) is kept, and a second run never wraps twice. `--dry-run` reports and writes nothing. The flag is registered in cli/index.ts. Uninstall's reach over statusLine is not stated by the design, so this unit does not touch uninstall.\n(3) DOCS: packages/cli/README.md's 'Persona badge and launcher' bullet (Claude now has a badge) and packages/forge/README.md's persona-badge paragraph gain the claude face. Changeset .changeset/claude-persona-badge.md (@cratylus/forge minor, cratylus minor for the flag). (4) TESTS: a new packages/forge/test/deploy/status-line.test.ts, and badge emission cases in packages/forge/test/adapters/claude.test.ts, including null provenance giving the name only. Register the new file in canon's gate-convicts registry.\nLIVE-OBSERVATION NOTE: the badge's live leg is an interactive `claude` in tmux under the same isolated HOME and CLAUDE_CONFIG_DIR, on haiku, because `claude -p` never executes a status line (observed).",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/schema/src/index.ts",
+        "packages/runtime/src/bin-name.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/canon/test/bin-name-single-home.test.ts"
+      ],
+      "deps": [
+        "01M3QCCA4EGF559739540C5YTW"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/claude-persona-badge.md"
+      ],
+      "accept": [
+        "RIG (every live leg): T=$(mktemp -d); mkdir -p $T/.claude $T/proj; cp ~/.claude/.credentials.json $T/.claude/; git -C $T/proj init -q; `pnpm build` in /home/lex/workspaces/cratylus-share, then from cwd /home/lex/workspaces/cratylus-share (its cratylus.config.ts supplies the corpus) `HOME=$T node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; sessions run as `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude -p <prompt> --model haiku --output-format stream-json --verbose --include-hook-events` (Claude Code 2.1.285 at census). Seed `$T/.claude/.claude.json` with `hasCompletedOnboarding: true` and `projects[\"$T/proj\"].hasTrustDialogAccepted: true`, because the status line is skipped without workspace trust. Run `tmux new-session -d -s b -x 200 -y 50 -c $T/proj \"env HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude --agent mav --model haiku\"`, then `sleep 15; tmux capture-pane -p -t b`, then kill the session. The captured pane contains `✈️ mav`. At 4c2b0d55 install sets no statusLine and the pane has no `✈️`. `jq -r .statusLine.command $T/.claude/settings.json` names the worker.",
+        "Same rig, with `claude --model haiku` (no --agent) in tmux. The pane contains none of the N badge texts (N = count of $T/.claude/personas/*/<badge file>, 7 at census; print N).",
+        "HOST COMMAND KEPT. In a fresh rig home, before install write settings.json `{\"statusLine\":{\"type\":\"command\",\"command\":\"printf HOSTLINE-7731\",\"padding\":0}}`. install --harness claude leaves `.statusLine` byte-identical (`jq -c`) and prints one line naming `--wrap-status-line`. `install --harness claude --wrap-status-line` then makes the tmux pane under `--agent mav` show `✈️ mav HOSTLINE-7731`, and under a bare session show `HOSTLINE-7731` with no badge. `.statusLine.command` contains `printf HOSTLINE-7731`, `.statusLine.padding` is 0, and a second `--wrap-status-line` install leaves settings.json byte-identical.",
+        "WORKER. `printf '{\"agent\":{\"name\":\"nico\"}}' | sh $T/.claude/<worker>` prints exactly the content of $T/.claude/personas/nico/<badge file>, which contains nico's mark emoji and `nico`. `printf '{}' | sh …` prints nothing. `printf '{\"agent\":{\"name\":\"Explore\"}}' | sh …` prints nothing.",
+        "LIVE -p leg (the contract's form). In the badge-installed rig, `claude -p 'Reply exactly PONG' --agent mav` exits 0 with result PONG. This shows the statusLine this unit sets does not break a non-interactive session, which runs no status line.",
+        "No hue, no spelled name. No badge file matches `grep -iwE 'blue|red|white|magenta|green|cyan|yellow'`, and none contains an ESC byte. `git grep -nF \"cratylus-status\" -- packages/forge/src` is empty, because names derive from CLI_BIN.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/deploy/status-line.test.ts test/adapters`, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts test/bin-name-single-home.test.ts`, and `pnpm typecheck` exit 0. status-line.test.ts fails if install is made to replace a host statusLine without the flag."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NBKGAEMWHE61KYRA703KGR",
+      "version": "01M3QCH26QQQ1HVABFMJ33GM92",
+      "closure": {}
+    }
+  }
+}

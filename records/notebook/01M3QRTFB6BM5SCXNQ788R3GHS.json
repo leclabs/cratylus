@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QRTFB6BM5SCXNQ788R3GHS",
+    "entity": "01M3QRTFB6BM5SCXNQ788R3GHR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:43:26.054Z",
+    "reason": "operator question: is the integrator unspecified",
+    "cause": "operator ruling, 2026-09-29"
+  },
+  "payload": {
+    "title": "the integrator has no holder",
+    "kind": "idea",
+    "topic": "deliver",
+    "body": "deliver defines integrator : P ⇀ agent (runs the whole check once, merges on green, commits, records the state moves the architect decided) but no role or agent in the corpus holds it. In practice the architect session did that work itself, which is the descent the architect position forbids. An integrator position (role + generic agent) is owed, with its own concept.",
+    "blocks": []
+  }
+}

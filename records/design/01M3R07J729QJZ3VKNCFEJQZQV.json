@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3R07J729QJZ3VKNCFEJQZQV",
+    "entity": "01M3MEKH8E3Q8R94A9EFNDE986",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MEKH8E3Q8R94A9EFNDE987"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:55.010Z",
+    "reason": "findings reach the architect as notes, as hypotheses",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "design",
+    "gloss": "the concept lattice C: every live concept with its anchor, gloss and factors. Its laws: one live concept per anchor, and a withdrawn concept keeps its anchor until reinstated; factors form a set, are acyclic and name live concepts, so a concept that others factor on cannot be retracted; every gloss and every reason is non-empty. The design knows nothing of plans. Only the architect writes it; a planner, implementer, assayer or integrator that meets divergence, incoherence or any other finding captures it as a note and never resolves it; the architect treats it as a hypothesis.",
+    "factors": [
+      "01M3MEKH37GZV0QAAPZTX6K86Y",
+      "01M3MEKH4WNSY2RE9VRTXZH9PT"
+    ]
+  }
+}

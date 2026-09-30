@@ -1,3 +1,4 @@
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const introspect: Skill = {
@@ -49,4 +50,5 @@ why(o) ∈ K_cfg            ⇒ reconcile @ { create-agent · deploy }
 why(o) = misnomer         ⇒ reconcile @ signify ≺ { create-agent · deploy }
 O · causes        @ live-anatomy` as SkillExpression,
   composition: () => [],
+  preamble: primePrinciple,
 };

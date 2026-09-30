@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R07H3NT2PPV2D421GH5AAJ",
+    "entity": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QZDSD7YM5CKRF17ZVZ3GG2"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:53.877Z",
+    "reason": "the integrator acts on achieved verdicts",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "integrator position",
+    "gloss": "the role that makes approved work whole: it takes each unit whose assay verdict is achieved, combines it with the work already approved, and confirms the whole still holds by running the project's full check once, so no implementer has to. A failure names the unit it came from and returns to that unit's implementer by way of the architect. It decides nothing about the design and repairs nothing itself; releasing the finished whole is the operator's sign-off.",
+    "factors": [
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X"
+    ]
+  }
+}

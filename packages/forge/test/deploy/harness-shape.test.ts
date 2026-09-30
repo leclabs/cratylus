@@ -2,10 +2,10 @@
 //
 // WHY THIS SHAPE OF TEST. The deploy half had no adapter in scope: scope resolved
 // `.claude`, the agent placer looked for `<name>.md`, and the hooks placer read
-// `settings.json`. Pointed at a codex render tree it placed ZERO agents and
-// reported success — because "no file matched the extension I assumed" is
-// indistinguishable from "there was nothing to deploy". A wrong default here
-// fails by finding nothing, which is the failure mode that reads as a pass.
+// `settings.json`. Pointed at another harness's render tree, a placer with those
+// defaults finds nothing to place and reports success — because "no file matched
+// the name I assumed" is indistinguishable from "there was nothing to deploy". A
+// wrong default here fails by finding nothing, which reads as a pass.
 //
 // So every assertion below is POSITIVE (this artifact landed at this path), and
 // each is paired against the other harness so a regression to a hardcoded
@@ -51,14 +51,20 @@ function tree(harness: string) {
   writeFileSync(join(src, 'agents', `warden${a.agentExt}`), 'warden def\n');
   writeFileSync(join(src, 'skills', 'probe', 'SKILL.md'), '# probe\n');
   writeFileSync(join(src, 'hooks', 'ping', 'ping.sh'), '#!/bin/sh\nexit 0\n');
-  writeFileSync(
-    join(src, a.hooksFile),
-    JSON.stringify({
-      hooks: {
-        SessionStart: [{ hooks: [{ type: 'command', command: 'sh ping.sh' }] }],
-      },
-    }),
-  );
+  // Only a harness with a `hooks()` op has a fragment for deploy to merge; omp's
+  // hooksFile names an emitted module and is never merged into a host config.
+  if (a.hooks) {
+    writeFileSync(
+      join(src, a.hooksFile),
+      JSON.stringify({
+        hooks: {
+          SessionStart: [
+            { hooks: [{ type: 'command', command: 'sh ping.sh' }] },
+          ],
+        },
+      }),
+    );
+  }
   return { root, src, adapter: a, home: join(root, 'target') };
 }
 
@@ -82,12 +88,12 @@ function deployAll(t: ReturnType<typeof tree>) {
   return join(t.home, t.adapter.home);
 }
 
-describe.each(['claude', 'codex'])('deploy --harness %s', (harness) => {
+describe.each(['claude', 'omp'])('deploy --harness %s', (harness) => {
   it('lands in THIS harness’s home, not another’s', () => {
     const t = tree(harness);
     const dir = deployAll(t);
     expect(existsSync(dir), `${dir} missing`).toBe(true);
-    for (const other of ['claude', 'codex'].filter((h) => h !== harness)) {
+    for (const other of ['claude', 'omp'].filter((h) => h !== harness)) {
       const foreign = join(t.home, adapterByName(other).home);
       expect(existsSync(foreign), `also wrote ${foreign}`).toBe(false);
     }
@@ -103,11 +109,14 @@ describe.each(['claude', 'codex'])('deploy --harness %s', (harness) => {
     ).toBe(true);
   });
 
-  it('writes this harness’s hook-config FILENAME', () => {
+  it('writes this harness’s hook-config FILENAME — only if it merges one', () => {
     const t = tree(harness);
     const dir = deployAll(t);
-    expect(existsSync(join(dir, t.adapter.hooksFile))).toBe(true);
-    for (const other of ['claude', 'codex'].filter((h) => h !== harness)) {
+    expect(
+      existsSync(join(dir, t.adapter.hooksFile)),
+      `${t.adapter.hooksFile} ${t.adapter.hooks ? 'missing' : 'written though this harness merges no host config'}`,
+    ).toBe(Boolean(t.adapter.hooks));
+    for (const other of ['claude', 'omp'].filter((h) => h !== harness)) {
       const foreign = adapterByName(other).hooksFile;
       if (foreign === t.adapter.hooksFile) continue;
       expect(existsSync(join(dir, foreign)), `also wrote ${foreign}`).toBe(
@@ -124,12 +133,11 @@ describe.each(['claude', 'codex'])('deploy --harness %s', (harness) => {
 });
 
 describe('the two harnesses genuinely differ — else the cases above are one case', () => {
-  it('claude and codex disagree on home, extension and hook file', () => {
+  it('claude and omp disagree on home and hook file', () => {
     const c = adapterByName('claude');
-    const x = adapterByName('codex');
-    expect(c.home).not.toBe(x.home);
-    expect(c.agentExt).not.toBe(x.agentExt);
-    expect(c.hooksFile).not.toBe(x.hooksFile);
+    const o = adapterByName('omp');
+    expect(c.home).not.toBe(o.home);
+    expect(c.hooksFile).not.toBe(o.hooksFile);
   });
 });
 

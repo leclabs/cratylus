@@ -24,6 +24,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
+import { STANCE_MANIFEST } from '../core/enrollment.js';
 // The DEFINING module, never the `core/` surface at large: two tokens are
 // wanted here — the staging dir the projection writes, and the deploy-time
 // self-reference substitution — and both must be the same constant every
@@ -54,15 +55,32 @@ interface HookEntry {
 }
 type HooksBlock = Record<string, HookEntry[]>;
 
-/** Does this event already carry an entry whose hooks include `command`? */
-function hasCommand(entries: HookEntry[], command: string): boolean {
-  return entries.some((e) => e.hooks?.some((h) => h.command === command));
+/**
+ * Does this event already carry `command` under the SAME matcher?
+ *
+ * THE MATCHER IS PART OF THE REGISTRATION. One cell can register one command
+ * under several matcher groups on a single native event — a guard that binds
+ * both `AskUserQuestion` and `Agent|SendMessage` on `PreToolUse` — and a dedupe
+ * on the command alone kept the first group and dropped every other, so the host
+ * carried a guard that fired on one of the acts it composed and none of the rest.
+ */
+function hasEntry(
+  entries: HookEntry[],
+  entry: HookEntry,
+  command: string,
+): boolean {
+  return entries.some(
+    (e) =>
+      e.matcher === entry.matcher &&
+      e.hooks?.some((h) => h.command === command),
+  );
 }
 
 /**
  * Merge a projected `hooks` block into an existing settings object, in place on
  * a clone, idempotently: for each event, append each incoming entry only if no
- * existing entry already registers the same command. Returns the merged settings
+ * existing entry already registers the same command under the same matcher.
+ * Returns the merged settings
  * + the count of entries actually added (0 ⇒ already present, a no-op write).
  * Pure — no IO — so it is unit-testable independently of the placer.
  */
@@ -77,7 +95,7 @@ export function mergeHooksSettings(
     const cur = [...(hooks[event] ?? [])];
     for (const entry of entries) {
       const cmd = entry.hooks?.[0]?.command;
-      if (cmd && hasCommand(cur, cmd)) {
+      if (cmd && hasEntry(cur, entry, cmd)) {
         continue; // already registered — idempotent skip
       }
       cur.push(entry);
@@ -237,6 +255,7 @@ export function placeHooksLocal(
     for (const scope of scopes) {
       const scopeDir = resolvePath(stageRoot, scope);
       const written: string[] = [];
+      const manifests: string[] = [];
       // A scope's artifacts are a TREE, not a flat list. This skipped any
       // directory outright, which silently dropped a persona's `stance/`
       // manifest — the file that says which cells gate that persona. The
@@ -274,13 +293,20 @@ export function placeHooksLocal(
           chmodSync(dest, statSync(src).mode);
         }
         written.push(rel);
+        if (file === STANCE_MANIFEST) manifests.push(rel);
       }
       if (written.length === 0) continue;
       // Testimony under the SCOPE, not under a hook id: one module carries every
       // cell's registrations, so no single cell owns it and a per-cell record would
       // claim the same file many times. Recorded so it retires with the scope.
       report.written[`${ENFORCING_STAGE_DIR}:${scope}`] = written;
-      log(`  mechanism ${scope} -> ${written.join(', ')}`);
+      // ONE SIGN PER ARTIFACT: the stance manifest is not "mechanism" — on claude it is
+      // the only thing a scope carries — so the log names it as what it is.
+      const modules = written.filter((rel) => !manifests.includes(rel));
+      if (modules.length > 0)
+        log(`  mechanism ${scope} -> ${modules.join(', ')}`);
+      if (manifests.length > 0)
+        log(`  stance manifest ${scope} -> ${manifests.join(', ')}`);
     }
   }
   log(`  hooks copied: ${report.copied}`);

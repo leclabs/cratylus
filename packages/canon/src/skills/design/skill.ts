@@ -1,3 +1,4 @@
+import { primePrinciple } from '../../genus/prime-principle.js';
 import type { Skill, SkillExpression } from '../../manifest.js';
 
 // THE DURATIVE HALF. `plan` and `deliver` are per-effort; this cell is the one that
@@ -13,7 +14,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 //
 // The second reason is verification. Acceptance keyed to a work-unit's own criteria
 // is a CLOSED loop — the unit is graded against its own account of itself, so an
-// executor that satisfies the letter passes while the system stays incoherent. A
+// implementer that satisfies the letter passes while the system stays incoherent. A
 // second, independent statement of what should exist is what makes validation an
 // operation rather than a re-reading of the claim. That statement is this lattice.
 
@@ -29,8 +30,8 @@ closure : C → ℘(C) ⟨closure(c) ≜ { c } ∪ ⋃ { closure(f) | f ∈ fact
 denotes : anchor ⇀ C
 σ*      @ signify
 conform @ signify
-Piece  ≜ a cut piece ⟨what a planner is handed⟩
-cut    : C → ℘(℘(C))
+shard(c) ≜ ⟨ c , closure(c) ⟩ handed down ⟨what a planner is handed · one concept with everything it stands on⟩
+cut    ≜ the architect's choice of shards to hand the planner
 history(c) ≜ every version ∧ retraction of c, in order ⟨resident · ¬ deleted⟩
 settled(c) ⇔ c has exactly one current version
 live(c) ⇔ settled(c) ∧ that version ¬ a retraction
@@ -70,20 +71,29 @@ reconcile ⊨ self ⟨reconciliation of the design is the architect's alone⟩
 planner ∨ implementer ∨ assayer ⊨ diverged ∨ incoherent ⇒ report ∧ ¬ resolve
 blast(c) ≜ { d ∈ C | c ∈ closure(d) } ⟨DERIVED, ¬ guessed · what the normal form buys⟩
 churn(primitive) high ⇒ conceptualization wrong ⟨primitives near-stable · composites move⟩
-⋃ cut(C) = C ∧ ∀ s₁, s₂ ∈ cut(C) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
-∀ s ∈ cut(C) : ∀ c ∈ s : closure(c) ⊆ s ⟨a piece is CLOSED ∴ plannable alone⟩
-cut ⊨ self ⟨the ASSIGNMENT of concepts to pieces is the design-holder's ; a planner
-    receiving a piece may ¬ redraw it · a boundary it cannot plan is SURFACED⟩
-yield ≠ ∅ ⇒ amend(C) ⟨intake at INCEPTION ∧ live, never at retirement : an obligation
-    standing between an agent and closing its work always loses · measured 0 of 25⟩
+shard(c) states what must hold ∧ why ∧ ¬ how ⟨how a harness or a codebase achieves it is the plan's⟩
+a quirk met while realizing shard(c) ⇒ the planner's ∧ the implementer's to solve ∧ ¬ a reason to amend(c)
+cut ⊨ self ⟨the CHOICE of shards is the design-holder's ; a planner receiving a shard may
+    ¬ redraw it · a boundary it cannot plan is SURFACED⟩
+yield ≠ ∅ ⇒ a hypothesis self rectifies against its expertise ∧ the field's practice, ¬ a fact to copy into C ⟨every input,
+    the operator's included, and every delegate's finding, which reaches self as a note⟩ ; a survivor
+    bearing on the bound plan ⇒ capture a decision note on the topic of its concept, blocking nothing, ∧
+    amend(C) when that plan completes, for a following plan sequenced after the work it depends on ; any other survivor ⇒ amend(C) at once
+the bound plan ⟨C is its fixed target : a held change never amends a shard under a running plan⟩ ; a change bears on it
+    ⇔ its concept is a shard the plan realizes ∨ stands in the closure of one
+the bound plan found built on a shard c that is itself wrong ⇒ in order ⟨self captures a note blocking that plan ;
+    self amend(c) once ; the planner re-plans, rectifying or rebuilding ; self retracts the note ; work resumes⟩
+    ⟨intake at INCEPTION ∧ live, never at retirement : the note is the intake, captured at once ; only the
+     amend waits · an obligation standing between an agent and closing its work always loses · measured 0 of 25⟩
 design ⊨ ¬ delegable ⟨a subagent starts blank ∧ a design authored by several
     fragments BY CONSTRUCTION⟩
 design ≜ conceptualize(intent) → signify(·) → materialize(·) → define(c) ∨ supersede(c) → C → cut(C)` as SkillExpression;
 
 export const design: Skill = {
   name: 'design',
-  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into closed pieces a planner can take. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution establishes something the model does not yet hold. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the executor's own claim.`,
+  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into shards a planner can take, each stating what and why, never how. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution or the operator establishes something the model does not yet hold: every such input is a hypothesis the holder rectifies first, and a survivor bearing on a shard a bound plan realizes is held as a note until that plan completes while any other is amended at once, and a plan found built on a wrong shard stops until the shard is corrected once and the plan re-planned. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the implementer's own claim.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'design' },
   composition: () => [],
+  preamble: primePrinciple,
 };

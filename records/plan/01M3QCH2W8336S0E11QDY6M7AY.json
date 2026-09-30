@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3QCH2W8336S0E11QDY6M7AY",
+    "entity": "01M3QCB2BZSJN545X0R4631PTD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QCB2BZSJN545X0R4631PTE"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:08:35.464Z",
+    "reason": "strict chain accepted: every unit writes the claude adapter, both READMEs and the meta-gate registry, so parallel worktrees would only trade waves for merge conflicts",
+    "cause": "claude-parity planner's boundary findings"
+  },
+  "payload": {
+    "name": "claude-parity",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR",
+      "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8"
+    ],
+    "state": "bound"
+  }
+}

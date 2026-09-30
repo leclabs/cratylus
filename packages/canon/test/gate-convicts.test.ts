@@ -180,7 +180,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // projects the LIVE `stance-guardrail-pre` cell through BOTH shipped adapters and
   // asserts the cell declares an act while the adapter computes the selector; its
   // convicting fixture drives the SAME projector over the pre-repair shape (a plain
-  // `tool.use.pre` binding) and shows codex emitting it in total silence.
+  // `tool.use.pre` binding) and shows claude emitting it in total silence.
   'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/null-dimension.test.ts': 'GATE',
@@ -199,6 +199,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // this plan still owes, and it is a different file.
   'canon/repo-root.test.ts': 'BEHAVIORAL',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
+  // projects the live corpus under claude and asserts every skill's launch-hook output
+  // fits claude's per-hook cap; its convicting fixture feeds the same predicate a skill
+  // one character over it.
+  'canon/skill-hook-cap.test.ts': 'GATE',
   'canon/skill-shape.test.ts': 'GATE',
   // drives the guardrail worker with a broken judge it supplies itself, and
   // carries its own negative control (opted-out ⇒ silent).
@@ -210,7 +214,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── forge ────────────────────────────────────────────────────────────
   'forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
-  'forge/adapters/codex-hooks.test.ts': 'BEHAVIORAL',
+  // Drives the claude adapter and the enrollment builder with cells and adapters it
+  // supplies itself; its negative cases are its own fixtures (an unrealizable event,
+  // an adapter realizing nothing, the session scope that must stay unenrolled).
+  'forge/adapters/claude.test.ts': 'BEHAVIORAL',
   // Drives the omp adapter with bindings and agents it supplies itself; its
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).
@@ -249,6 +256,23 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // itself, and asserts the negatives (an existing entry, a flow mapping, a dry run
   // leave the bytes untouched) — it polices no corpus.
   'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
+  // drives the persona-command placement API and `runInstall` over a tmp HOME whose bin
+  // dir it fills itself with a regular file, a foreign link, an unrecorded identical link
+  // and the other harness's launcher, and asserts every one is left as it was — the
+  // never-overwrite negatives are its fixtures, and it polices no corpus.
+  'forge/deploy/persona-commands.test.ts': 'BEHAVIORAL',
+  // drives `ensureBadgeStatusLine`, `ensureStatusSegment` and `runInstall` over host
+  // settings and configs it writes itself — a host's own status line, a list that
+  // already has `status`, shapes it cannot extend, a dry run — and asserts each is left
+  // as the bytes were: the never-replace negatives are its fixtures, and it polices no
+  // corpus.
+  'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
+  // runs `runInstall` then `runUninstall` over a tmp HOME the host has already written
+  // to, and compares the whole tree byte for byte; its convicting fixtures are the host's
+  // own edits (a placed file, a status line, a config line, a hook entry, a persona
+  // link), each asserted still there, and a record it cannot trust — it polices no
+  // corpus.
+  'forge/deploy/uninstall.test.ts': 'BEHAVIORAL',
   // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
   // negative (`.claude` absent) so the old hardcode cannot pass it.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
@@ -261,7 +285,13 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/project/bindings.test.ts': 'BEHAVIORAL',
   'forge/project/realization.test.ts': 'BEHAVIORAL',
   'forge/project/degradation.test.ts': 'BEHAVIORAL',
+  // projects a fixture plugin it owns under both adapters and reads the warnings.
+  'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
+  // projects a fixture plugin it owns whose skills straddle the claude hook cap, and
+  // asserts the oversized one is unhooked, named as required reading and warned once;
+  // its boundary cases (exactly the cap, one over) ARE its fixtures.
+  'forge/project/skill-hook-cap.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
   // asserts the live `src/project/index.ts` source performs no writes.
@@ -294,6 +324,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/design.test.ts': 'BEHAVIORAL',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
+  // drives the verb surface under injected omp / Claude Code / bare environments and
+  // scratch settings paths it builds itself; polices no live artifact.
+  'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
+  // drives `install` over requests it builds itself — all mapped, some, none — against
+  // a host config it supplies; polices no live artifact.
+  'runtime/event-tap-skipped.test.ts': 'BEHAVIORAL',
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',

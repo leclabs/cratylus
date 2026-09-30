@@ -27,17 +27,19 @@ import type { RoleCell } from './hold.js';
 // EVERY ASPECT BELOW IS CHOSEN AGAINST THE ONE FAILURE MODE — turning into a code
 // reviewer. `thoroughness` rewards answering every concept in `realizes(unit)` rather
 // than finding something to say. `satisfice` stops at the answer instead of reading on.
-// `structured-data` makes the report a list of ⟨concept, uncovered-factor, locus⟩ rather
-// than a narrative, and a narrative is where mechanism-prose gets in. `cratylism`
-// carries the cheapest of the three questions — does the artifact SPELL its concept —
-// and `first-principles` forbids inheriting the executor's own account of what it built.
+// `structured-data` makes the verdict a unit's name, its implementer and a list of
+// ⟨concept, uncovered-factor, locus⟩ rather than a narrative, and a narrative is where
+// mechanism-prose gets in. `cratylism` carries the cheapest of the three questions —
+// does the artifact SPELL its concept — and `first-principles` forbids inheriting the
+// implementer's own account of what it built.
 //
-// `design` and no `deliver`: it must read the lattice to lift into it, and judging is
-// not its remit.
+// `design` and `note`, no `deliver`: it must read the shard and its closure to judge
+// against them, and it captures a finding beside the unit as a note; the judgement it
+// emits is its own, so it needs no skill about who accepts.
 
 export const assayerRole: RoleCell = {
   sign: assayer_role,
-  skills: ['design'],
+  skills: ['design', 'note'],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

@@ -1,0 +1,52 @@
+{
+  "envelope": {
+    "id": "01M3QCEAJV2TDC953VRP45KMPM",
+    "entity": "01M3QCEAJV2TDC953VRP45KMPK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T20:07:05.051Z",
+    "reason": "plan claude-parity: realize the Claude Code faces of enforcement scope, persona launch, role routing and persona badge",
+    "cause": "live Claude Code assay (AssayClaudeLive, 2.1.285) and the four concepts amended at ab8892a3/2caaf76a"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-role-routing",
+      "intent": "Census @4c2b0d55 (code identical to ab8892a3: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the Claude Code clause of `role routing`: each held role maps to a Claude model tier alias in the claude adapter (implementer to sonnet; planner, assayer and architect to opus), naming no model version, and a host's own override stays the host's. Today agentFrontMatter (packages/forge/src/adapters/claude/render.ts:70-87) emits no `model`, so every subagent inherits the parent's model (assay) and a `--agent` main session runs on the account default. FACTS OBSERVED LIVE BY THE PLANNER AT CENSUS (2.1.285). A definition's `model: sonnet` routed a dispatched subagent to claude-sonnet-5-5 from a haiku main session. It also set a `--agent` main session to sonnet when no `--model` was given, and `--model haiku` overrode it for the main session. For a subagent, `CLAUDE_CODE_SUBAGENT_MODEL=haiku` alone did NOT override the definition's `model` (still sonnet), and neither did `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=haiku` alone. `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=haiku` did. The note 'role routing on claude' names only CLAUDE_CODE_SUBAGENT_MODEL, and the docs must state the observed override.\nCHANGE. A claude-local tier table in packages/forge/src/adapters/claude/render.ts (the claude adapter alone; canon names no tier). For an agent with `holds` (schema Agent.holds, set by canon's fold), agentFrontMatter emits `model: <tier>` right after `description`. implementer is sonnet; planner, assayer and architect are opus. A held role outside the table emits no `model`, so it runs on the session's model, and so does an agent holding no role. Only tier aliases, never a model id. `roleRouting` stays absent on claude (install seeds no host config; omp.test.ts:1245-1248 stays true). core/harness-adapter.ts's RoleRouting doc ('Absent ⇒ … definitions carry no route') is amended, since a harness may route by tier in its own definitions. DOCS: packages/cli/README.md :92-94 ('Claude Code's agent definitions carry no route') and packages/forge/README.md :234-235 ('claude leaves it absent and its definitions carry no route') state the tier table and the overrides observed above: `--model` for a main session, `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with `CLAUDE_CODE_SUBAGENT_MODEL` for subagents. Add a changeset .changeset/claude-role-routing.md (@cratylus/forge minor). TESTS: cases in packages/forge/test/adapters/claude.test.ts: each canon role's tier, an unknown role giving no model, and no holds giving no model.",
+      "static": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/test/adapters/omp.test.ts"
+      ],
+      "deps": [
+        "01M3QCEAF8D4B5R1DM3DBD4ASC"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/claude-role-routing.md"
+      ],
+      "accept": [
+        "Render: `pnpm build && pnpm exec cratylus project --harness claude --out /tmp/rr-claude`. agents/implementer.md carries `model: sonnet`. planner, assayer, architect, mav, nico and kino carry `model: opus`. The count of `^model:` lines over agents/*.md equals N (7 at census; print N), and none matches `claude-` or a digit. At 4c2b0d55 the count is 0.",
+        "RIG (every live leg): T=$(mktemp -d); mkdir -p $T/.claude $T/proj; cp ~/.claude/.credentials.json $T/.claude/; git -C $T/proj init -q; `pnpm build` in /home/lex/workspaces/cratylus-share, then from cwd /home/lex/workspaces/cratylus-share (its cratylus.config.ts supplies the corpus) `HOME=$T node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; sessions run as `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude -p <prompt> --model haiku --output-format stream-json --verbose --include-hook-events` (Claude Code 2.1.285 at census). SUBAGENT TIER, live: `claude -p \"Use the Agent tool once with subagent_type implementer and prompt 'Reply exactly PONG'. Then output its reply.\" --allowedTools Agent` (main on haiku). Every assistant message with non-null parent_tool_use_id carries a `claude-sonnet-` model, and every main-thread message carries `claude-haiku-`. At 4c2b0d55 the subagent runs on haiku (assay: the subagent inherits the parent model).",
+        "MAIN-SESSION TIER, live: in the rig, `claude -p 'Reply exactly PONG' --agent planner --output-format stream-json --verbose` WITHOUT --model. The init line's model starts `claude-opus-`. With `--model haiku` added, it starts `claude-haiku-`, so the host's override wins.",
+        "HOST OVERRIDE FOR SUBAGENTS, live: the subagent-tier run with `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 CLAUDE_CODE_SUBAGENT_MODEL=haiku` in the env puts the subagent on `claude-haiku-`. `grep -c CLAUDE_CODE_SUBAGENT_MODEL_FORCE packages/cli/README.md packages/forge/README.md` is ≥1 for each (0 and 0 at 4c2b0d55), and `grep -c 'carry no route' packages/cli/README.md packages/forge/README.md` is 0 for each (1 and 1 at 4c2b0d55).",
+        "omp and install unchanged by this unit: the omp render's agents/*.md are byte-identical before and after this unit (`diff -r` of two `project --harness omp` renders), and `adapterByName('claude').roleRouting` is undefined.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/adapters`, `pnpm typecheck` and, as the plan's closing gate, `pnpm verify` exit 0. The claude.test.ts tier case fails if implementer is mapped to opus."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "version": "01M3QBG08GT88N98JXNHHGMPXB",
+      "closure": {}
+    }
+  }
+}

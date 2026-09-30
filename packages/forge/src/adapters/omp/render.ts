@@ -1,5 +1,5 @@
-// The OMP (Oh My Pi) projection of the agent anatomy — the third harness, and
-// the only one whose persona is a NATIVE artifact of the harness rather than a
+// The OMP (Oh My Pi) projection of the agent anatomy — the only one of the two harnesses
+// whose persona is a NATIVE artifact of the harness rather than a
 // launch-time argument.
 //
 // THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers USER-level
@@ -41,7 +41,7 @@
 //     task-agent root, merged first-wins by exact name with a project
 //     `.omp/agents` (which wins) and the bundled defs (which lose).
 //   - a SKILL is `skills/<name>/SKILL.md` under `~/.agents` (the AgentSkills
-//     spec, shared with claude and codex) — omp's vendor-neutral `.agent[s]`
+//     spec, shared with claude) — omp's vendor-neutral `.agent[s]`
 //     provider reads that root NATIVELY, at priority 70, no flag and no
 //     profile (confirmed in the installed package's resource loader:
 //     `join(getHomeDir(), ".agents", "skills")` is scanned unconditionally,
@@ -58,8 +58,7 @@
 // THE SCOPE IS STILL A DIRECTORY — `agent/personas/<name>/extensions/` under
 // `~/.omp` — and that is still the whole reason this adapter exists. Claude
 // attaches a hook inside a subagent's own front-matter, so attachment is the
-// scope. Codex declares hooks globally and must re-express per-agent intent as a
-// generated `matcher` regex. omp needs neither: a module sitting where only the
+// scope. omp needs no selector: a module sitting where only the
 // composing persona's OWN `--config` overlay names it loads under that persona
 // and no other.
 //
@@ -105,11 +104,13 @@ import {
   type RoleRouting,
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
+  type StatusSegmentHost,
 } from '../../core/harness-adapter.js';
 import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
   OMP_ENVELOPE_KIND,
   OMP_REFUSAL_SHAPE,
+  OMP_WIRE_TOOL,
   OMP_WORKER_TOOL,
   canonicalToOmp,
   ompBindingOf,
@@ -160,8 +161,8 @@ export function ompAgentRel(name: string): string {
  * Where skill `<name>` lands, relative to the harness home — ONE path, at the
  * harness-neutral root omp reads NATIVELY on every launch.
  *
- * `agents` goes UNUSED: the fan-out this signature still carries for claude and
- * codex existed here only because a persona WAS a profile, and a profile's
+ * `agents` goes UNUSED: the fan-out this signature still carries
+ * existed here only because a persona WAS a profile, and a profile's
  * native config root is isolated from every other — so a skill reachable from
  * every persona needed N+1 copies. It no longer is: omp reads `~/.agents/skills`
  * NATIVELY, at provider priority 70, for every launch — personaed, bare, or
@@ -196,17 +197,6 @@ export const OMP_PERSONA_BADGE_MODULE = `${OMP_PERSONA_BADGE_KEY}.ts`;
 /** The `--config` overlay filename — the launcher's one argument for reaching a
  *  persona's own extensions. */
 export const OMP_OVERLAY_FILE = 'omp.yml';
-
-/** A persona's own stance manifest — scope-relative, so a worker addresses it as
- *  `<scope>/stance/manifest.json` and no caller ever spells a gate.
- *
- *  ONE FILE, EVERY GATE, keyed by the cell that owns it and carrying that cell's
- *  moments. A second gated dimension is a second ENTRY rather than a second
- *  file, a second field, or a line in any dispatcher — which is the whole reason
- *  it replaces an allowlist. That list named agents in a shell default, and had
- *  already drifted from the corpus it was copying: every persona projected here
- *  carries the guard, and the list enforced two of them. */
-export const OMP_STANCE_MANIFEST = 'stance/manifest.json';
 
 /** The generic launcher's filename — no extension, because it is invoked
  *  directly (`omp-agent mav`), never sourced or required.
@@ -256,20 +246,71 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 const OMP_DEFAULT_ROLE = 'default';
 
 /** The built-in omp role nearest to each role an agent may hold. A held role with
- *  no entry is nearest the default role. */
+ *  no entry is nearest the default role. The integrator's work is spec-bounded like
+ *  the implementer's (it joins what implementers built), so it routes to `task`. */
 const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
   implementer: 'task',
+  integrator: 'task',
   planner: 'plan',
 };
 
+/** The host config files omp reads its settings from — the ONE spelling, shared by
+ *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
+ *  config.yml is absent: omp reads the first that exists and never merges the two. */
+const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
+
 /** omp's role → model routing: the table {@link HarnessAdapter.roleRouting} exposes.
- *  The host keeps the mapping in `agent/config.yml` under its `modelRoles` key, or
- *  in `agent/config.yaml` when config.yml is absent — omp reads the first that
- *  exists and never merges the two. */
+ *  The host keeps the mapping in its config file under its `modelRoles` key. */
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
   nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
-  configRels: ['agent/config.yml', 'agent/config.yaml'],
+  configRels: OMP_CONFIG_RELS,
+};
+
+// ── Status line: where the persona badge renders ─────────────────────────────
+
+/** omp's status line, as {@link HarnessAdapter.statusSegment} exposes it. An extension's
+ *  status (`ctx.ui.setStatus`, which is how the persona badge speaks) renders inside
+ *  the line only where the layout lists `status`; omp's own layouts never do. The
+ *  layout is read from `statusLine.leftSegments` only under `statusLine.preset:
+ *  custom`, so a host that never chose a preset is on `default` — whose layout is what
+ *  `defaultLayout` copies, so a host moved to `custom` sees the line it already had.
+ *
+ *  These are omp's own defaults, copied and not imported: `STATUS_LINE_PRESETS.default`
+ *  (packages/tui/src/status-line/presets.ts) and `CUSTOM_STATUS_LINE_DEFAULTS.left`
+ *  (schema.ts). The `custom` preset's own separator is the default preset's, so no
+ *  separator is carried. */
+export const ompStatusSegment: StatusSegmentHost = {
+  configRels: OMP_CONFIG_RELS,
+  segment: 'status',
+  defaultPreset: 'default',
+  defaultLayout: {
+    left: [
+      'pi',
+      'vim',
+      'model',
+      'mode',
+      'collab',
+      'stream',
+      'path',
+      'git',
+      'pr',
+      'context_pct',
+      'cost',
+    ],
+    right: ['session_name'],
+    segmentOptions: {
+      model: { showThinkingLevel: true },
+      path: { abbreviate: true, maxLength: 40, stripWorkPrefix: true },
+      git: {
+        showBranch: true,
+        showStaged: true,
+        showUnstaged: true,
+        showUntracked: true,
+      },
+    },
+  },
+  customLeft: ['vim', 'model', 'mode', 'path', 'git', 'pr'],
 };
 
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
@@ -331,7 +372,7 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
       `model: [${[`@${a.holds}`, `@${OMP_DEFAULT_ROLE}`].map(yamlString).join(', ')}]`,
     );
   }
-  // omp's own preload field. claude has one too (`skills`); codex has none and
+  // omp's own preload field. claude has one too (`skills`); a harness without one
   // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
     fm.push(`autoloadSkills: [${a.skills.map(yamlString).join(', ')}]`);
@@ -351,7 +392,7 @@ function yamlString(s: string): string {
 
 /**
  * The omp SKILL.md for a resolved skill — the AgentSkills front-matter pair plus
- * the harness-neutral body, identical in shape to the codex projection because
+ * the harness-neutral body, identical in shape to claude's projection because
  * both consume the same spec.
  */
 export function skillToOmpMd(s: ResolvedSkill): string {
@@ -423,18 +464,11 @@ export function ompGuardrailExtensions(
 
   const out: HarnessProjection[] = [];
   for (const [agent, regs] of [...byAgent].sort()) {
-    // ⟨native event, tool, command⟩ already registered for this agent. Two acts can
-    // land on one native event (`operator.consult.pre` and `subagent.dispatch.pre`
-    // are both `tool_call`), and registering the same command twice would run the
-    // worker twice per call.
-    const seen = new Set<string>();
-    const lines: string[] = [];
-    for (const r of regs) {
-      const key = JSON.stringify([r.native, r.tool ?? '', r.command]);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      lines.push(renderRegistration(r));
-    }
+    // Deduped, and one judgment per act, in `renderRegistrations`: two acts can land
+    // on one native event (`operator.consult.pre` and `subagent.dispatch.pre` are both
+    // `tool_call`), and registering the same command twice would run the worker twice
+    // per call.
+    const lines = renderRegistrations(regs);
     if (lines.length === 0) continue;
     out.push({
       filename: OMP_GUARDRAIL_MODULE,
@@ -472,16 +506,7 @@ export function ompScopeActivatedExtensions(
   hooks: readonly Hook[],
   agentNames: readonly string[],
 ): HarnessProjection[] {
-  const seen = new Set<string>();
-  const lines: string[] = [];
-  // scope → the gates that scope carries, keyed by the cell that owns each. The
-  // registration lines below are IDENTICAL for every scope; this is what differs,
-  // and it is what makes enrollment a property of the scope rather than of a list
-  // somebody maintains elsewhere.
-  const gates: Record<
-    string,
-    { moments: string[]; command: string; timeout?: number }
-  > = {};
+  const regs: OmpRegistration[] = [];
   for (const hook of hooks) {
     for (const event of hook.events) {
       const binding = ompBindingOf(event);
@@ -489,84 +514,82 @@ export function ompScopeActivatedExtensions(
       // projection seam; registering a handler for an event omp never fires would
       // read as coverage and deliver none.
       if (!binding) continue;
-      const id = hook.id ?? event;
-      const reg: OmpRegistration = {
-        anchor: id,
+      regs.push({
+        anchor: hook.id ?? event,
         native: binding.event,
         tool: binding.matcher,
         workerTool: OMP_WORKER_TOOL[event],
         command: hook.command,
-      };
-      // The gate is recorded per CELL, before the registration dedupe below: two
-      // acts can collapse onto one native handler, and a gate that vanished with
-      // the duplicate registration would under-report the moments its own cell
-      // actually fires at.
-      const gate = gates[id] ?? {
-        moments: [],
-        command: hook.command,
-        timeout: hook.timeout,
-      };
-      if (!gate.moments.includes(event)) gate.moments.push(event);
-      gates[id] = gate;
-      const key = JSON.stringify([reg.native, reg.tool ?? '', reg.command]);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      lines.push(renderRegistration(reg));
+      });
     }
   }
+  const lines = renderRegistrations(regs);
   if (lines.length === 0) return [];
   const scopes = [SESSION_SCOPE, ...[...agentNames].sort()];
-  const manifestOf = (scope: string): string =>
-    `${JSON.stringify(
-      {
-        agent: scope,
-        gates: Object.fromEntries(
-          Object.entries(gates)
-            .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-            .map(([id, g]) => [
-              id,
-              { moments: [...g.moments].sort(), timeout: g.timeout },
-            ]),
-        ),
-      },
-      null,
-      2,
-    )}\n`;
-  return scopes.flatMap((scope) => [
-    {
-      filename: OMP_SESSION_MODULE,
-      scope,
-      content: ompExtensionModule(
-        scope === SESSION_SCOPE
-          ? 'the SESSION — a launch that named no persona'
-          : `every session of the persona \`${scope}\``,
-        scope === SESSION_SCOPE ? undefined : scope,
-        lines,
-      ),
-    },
-    // ONLY A PERSONA IS ENROLLED. The session scope gets the module — a bare
-    // launch still carries the dispatcher — but no manifest, so the worker it
-    // fires finds nothing and stays silent. That is the bare-launch case falling
-    // out of PLACEMENT, exactly as the identity already does, instead of out of
-    // an `agent_type`-is-empty branch that had to be remembered in two workers.
-    ...(scope === SESSION_SCOPE
-      ? []
-      : [
-          {
-            filename: OMP_STANCE_MANIFEST,
-            scope,
-            content: manifestOf(scope),
-          },
-        ]),
-  ]);
+  // Enrollment is not emitted here: the persona's manifest is the projector's, one
+  // builder for every harness (`core/enrollment.ts`).
+  return scopes.map((scope) => ({
+    filename: OMP_SESSION_MODULE,
+    scope,
+    content: ompExtensionModule(
+      scope === SESSION_SCOPE
+        ? 'the SESSION — a launch that named no persona'
+        : `every session of the persona \`${scope}\``,
+      scope === SESSION_SCOPE ? undefined : scope,
+      lines,
+    ),
+  }));
 }
 
-/** One `pi.on(...)` block — narrowed by an `if` when the act names a tool. */
-function renderRegistration(r: OmpRegistration): string {
+/**
+ * Every registration of one module, deduped, each rendered once.
+ *
+ * ONE ACT, ONE JUDGMENT. Two registrations of a cell can land on one native event and
+ * one command — purview binds the act `subagent.dispatch.pre` (`tool_call`, tool
+ * `task`) AND the unnarrowed `tool.use.pre` (`tool_call`, any tool) — and a `task` call
+ * then matches both, so the same dispatch was judged twice. Claude collapses identical
+ * commands; omp registers code, so nothing collapses them unless this does. The
+ * unnarrowed handler therefore skips the tools a narrowed registration of the same
+ * command already covers. The rule lives here, once, for every module this adapter
+ * emits, and not in any worker.
+ */
+function renderRegistrations(regs: readonly OmpRegistration[]): string[] {
+  const seen = new Set<string>();
+  const unique: OmpRegistration[] = [];
+  for (const r of regs) {
+    const key = JSON.stringify([r.native, r.tool ?? '', r.command]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(r);
+  }
+  return unique.map((r) =>
+    renderRegistration(
+      r,
+      r.tool !== undefined
+        ? []
+        : unique.flatMap((o) =>
+            o.native === r.native &&
+            o.command === r.command &&
+            o.tool !== undefined
+              ? [o.tool]
+              : [],
+          ),
+    ),
+  );
+}
+
+/** One `pi.on(...)` block — narrowed by an `if` when the act names a tool, and
+ *  skipping the tools in `covered` when it does not. */
+function renderRegistration(
+  r: OmpRegistration,
+  covered: readonly string[],
+): string {
   const refusal = OMP_REFUSAL_SHAPE[r.native];
   const guard = r.tool
     ? `\n    if (event.toolName !== ${JSON.stringify(r.tool)}) return;`
-    : '';
+    : covered.length > 0
+      ? `\n    if (${JSON.stringify(covered)}.includes(event.toolName)) return;`
+      : '';
   const kind = OMP_ENVELOPE_KIND[r.native];
   // THE VERDICT IS ON STDOUT, NEVER IN THE EXIT CODE, and reading it from the
   // wrong place is how this gate came to refuse work it had never judged. The
@@ -594,7 +617,10 @@ function renderRegistration(r: OmpRegistration): string {
         ? `judged(${cmd}, ctx, {}, dispatchTurn(event))`
         : kind === 'tool'
           ? (() => {
-              const wt = JSON.stringify(r.workerTool ?? r.tool ?? '');
+              const named = r.workerTool ?? r.tool;
+              if (named === undefined)
+                return `judged(${cmd}, ctx, toolEnvelope(event))`;
+              const wt = JSON.stringify(named);
               return `judged(${cmd}, ctx, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
             })()
           : `exec(${cmd})`;
@@ -676,10 +702,10 @@ const TURN_BRIDGE: readonly string[] = [
   '// `agent_end` registration for why delivery is bounded.',
   'let lastVerdict = "";',
   '',
-  '// The darkness last announced, so a latched-away judge is reported ONCE per',
-  '// session rather than on every turn end. An absent verdict is not a clean one,',
-  "// and the worker's own `dark` line is what says so.",
-  'let lastDark = "";',
+  '// The notice last relayed, so an unchanging one is delivered ONCE per session rather',
+  '// than at every turn end (a latched-away judge would repeat one line forever). An',
+  "// absent verdict is not a clean one, and the worker's own notice is what says so.",
+  'let lastNotice = "";',
   '',
   "// The judge's own deadline, set well inside omp's 30 s extension-handler kill",
   '// so an unreachable endpoint fails OPEN — loudly, via `dark` — instead of costing every',
@@ -780,6 +806,23 @@ const TURN_BRIDGE: readonly string[] = [
   '    .filter((s) => s.trim() !== "")',
   '    .join("\\n\\n");',
   '  return prompt ? { ...input, prompt } : input;',
+  '}',
+  '',
+  '// THE ENVELOPE OF A TOOL CALL NO SELECTOR NARROWED. `tool.use.pre` binds `tool_call`',
+  '// with no tool name, so nothing at registration says which tool this fire is, and',
+  '// the envelope carried an EMPTY `tool_name` — which the worker reads as "nothing to',
+  '// judge" and allows, on every call it was registered to judge. The name is on the',
+  "// event; it is spelled here in the workers' wire contract (`OMP_WIRE_TOOL`), and a",
+  "// tool the table does not name passes through under omp's own spelling, which the",
+  "// worker's `*)` branch allows.",
+  `const WIRE_TOOL: Record<string, string> = ${JSON.stringify(OMP_WIRE_TOOL)};`,
+  'function toolEnvelope(event: {',
+  '  toolName?: string;',
+  '  input?: Record<string, unknown>;',
+  '}): Record<string, unknown> {',
+  '  const raw = event.toolName ?? "";',
+  '  const tool = WIRE_TOOL[raw] ?? raw;',
+  '  return { tool_name: tool, tool_input: workerInput(tool, event.input ?? {}) };',
   '}',
   '',
   '// A FINISHED DELEGATION IS A JUDGEABLE TURN, and this is the translation that',
@@ -983,6 +1026,25 @@ const TURN_EXEC: readonly string[] = [
   '    }',
   '  };',
   '',
+  '  /**',
+  "   * A worker's let-through notice, to the operator and the agent both: it lands",
+  '   * as a user-attributed prompt so the AGENT reads it in context and the',
+  '   * OPERATOR reads it on screen, both parties to a guard needing to know it was',
+  '   * not in force. Once per distinct line, and never a reason for the turn to',
+  '   * fail: the guard let it through, so the notice cannot be what stops it.',
+  '   */',
+  '  const relay = (notice: string): void => {',
+  '    if (notice === lastNotice) return;',
+  '    lastNotice = notice;',
+  '    try {',
+  '      void Promise.resolve(',
+  '        pi.sendUserMessage(notice, { deliverAs: "nextTurn", attribution: "agent" }),',
+  '      ).catch(() => {});',
+  '    } catch {',
+  '      // Undelivered is not blocked.',
+  '    }',
+  '  };',
+  '',
   '  /** Worker → in-process judge → worker. `undefined` ⇒ no refusal. */',
   '  const judged = async (',
   '    cmd: string,',
@@ -1001,6 +1063,15 @@ const TURN_EXEC: readonly string[] = [
   '      const asked = await fire(cmd, dir, full, { STANCE_EMIT_PAYLOAD: "1" });',
   '      if (asked.code !== 0) return undefined;',
   '      const head = asked.stdout.trim();',
+  '      // THE ONLY THING THIS PASS ASKS FOR IS THE PAYLOAD ENVELOPE, so any other',
+  '      // line is the worker saying it let this fire through with no verdict (no',
+  '      // `jq`, no input, a scope it could not read, a re-entry cap already spent)',
+  '      // before the judge was ever reached. Dropping it here made every such path',
+  '      // silent on omp, whatever the worker printed. Relay it, and judge nothing.',
+  '      if (head !== "" && !head.startsWith("{")) {',
+  '        relay(head);',
+  '        return undefined;',
+  '      }',
   '      if (!head.startsWith("{")) return undefined;',
   '      let ask: { rubric?: string; payload?: string };',
   '      try {',
@@ -1008,8 +1079,8 @@ const TURN_EXEC: readonly string[] = [
   '      } catch {',
   '        return undefined;',
   '      }',
-  '      // Nothing emitted ⇒ the worker gated this fire out (opted out, off the',
-  '      // allowlist, no judgeable text). Nothing to judge and nothing to report.',
+  '      // Nothing emitted ⇒ the worker gated this fire out (not enrolled, nothing',
+  '      // judgeable in it). Nothing to judge and nothing to report.',
   '      if (!ask.rubric || !ask.payload) return undefined;',
   '      let rubric: string;',
   '      try {',
@@ -1028,15 +1099,13 @@ const TURN_EXEC: readonly string[] = [
   '      writeFileSync(file, verdict ?? "");',
   '      const answered = await fire(cmd, dir, full, { STANCE_VERDICT_FILE: file });',
   '      const out = answered.stdout.trim();',
-  '      if (out.includes("STANCE GUARDRAIL") && out.includes("DARK")) {',
-  '        // Once per session: the miss latch holds, so every later turn would',
-  '        // repeat one unchanging notice. It lands as a user-attributed prompt so',
-  '        // the AGENT reads it in context and the OPERATOR reads it on screen —',
-  '        // both parties to a stance need to know the check is not running.',
-  '        if (out !== lastDark) {',
-  '          lastDark = out;',
-  '          pi.sendUserMessage(out, { deliverAs: "nextTurn", attribution: "agent" });',
-  '        }',
+  '      // A line that is not a verdict is the worker saying this fire went through',
+  '      // WITHOUT one: the judge did not answer, the verdict did not parse, a block',
+  '      // was discarded, a cap was spent. Every guard notice is relayed, whatever',
+  '      // words it opens with, so the operator reads that the guard was not in force.',
+  '      // A verdict is JSON and travels through `verdictOf`.',
+  '      if (answered.code === 0 && out !== "" && !out.startsWith("{")) {',
+  '        relay(out);',
   '        return undefined;',
   '      }',
   '      return verdictOf(answered);',
@@ -1240,8 +1309,8 @@ export function ompOverlayYaml(): string {
  *
  * THE IDENTITY LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION. Every
  * adapter must carry the cell's `name` into whatever surface its harness reads
- * an identity from: claude has a front-matter `name:` field, codex has a TOML
- * `name`. A MAIN omp session has neither — `--append-system-prompt` is a TRUE
+ * an identity from: claude has a front-matter `name:` field. A MAIN omp session
+ * has none — `--append-system-prompt` is a TRUE
  * augment, so omp's base prompt survives underneath and asserts its OWN identity
  * ("Oh My Pi coding assistant"). Appending a body headed `# ✈️ mav` therefore
  * leaves TWO identities in one prompt, and which one answers depends on the
@@ -1554,7 +1623,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   agentExt: '.md',
   // Declared because the port requires it, and truthful: it is the artifact omp's
   // enforcement lands in. It is never merged into a host config the way claude's
-  // `settings.json` and codex's `hooks.json` are, because `hooks()` is absent and
+  // `settings.json` is, because `hooks()` is absent and
   // deploy therefore has no fragment to merge.
   hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
   // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds
@@ -1566,6 +1635,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // The role → model table: the definition names the role, install seeds the
   // host's `modelRoles` entry for it.
   roleRouting: ompRoleRouting,
+  statusSegment: ompStatusSegment,
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,
@@ -1596,6 +1666,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
     ...ompLaunchSurface(agents.map((a) => a.name)),
     ...ompPersonaBadgeExtensions(agents),
   ],
+  launcherFile: OMP_LAUNCHER_FILE,
   // The SESSION scope reads as itself OR as omission, so a caller may pass a
   // projection's `scope` field straight through. Requiring the translation put the
   // same `=== SESSION_SCOPE` conditional at every call site, and a call site that

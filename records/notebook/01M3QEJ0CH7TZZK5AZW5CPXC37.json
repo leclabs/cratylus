@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QEJ0CH7TZZK5AZW5CPXC37",
+    "entity": "01M3QEJ0CH7TZZK5AZW5CPXC36",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T20:44:02.833Z",
+    "reason": "operator hit it on a second host",
+    "cause": "badge investigation"
+  },
+  "payload": {
+    "title": "persona badge needs omp 18.3.2 or later",
+    "kind": "idea",
+    "topic": "persona badge",
+    "body": "The omp badge module reads ctx.agent.kind, which omp added in 18.3.2 (oh-my-pi 6624111512). On a host with omp 18.2.x the module throws 'undefined is not an object (evaluating ctx.agent.kind)' at session_start; upgrading omp fixed it (operator, 2026-09-29). Install should check the host's omp version against the minimum the projected extensions need and warn (or the module should guard ctx.agent and skip the badge on an older omp), rather than throw at launch.",
+    "blocks": []
+  }
+}

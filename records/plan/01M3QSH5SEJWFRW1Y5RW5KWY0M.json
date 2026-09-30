@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QSH5SEJWFRW1Y5RW5KWY0M",
+    "entity": "01M3QSH5SEJWFRW1Y5RW5KWY0K",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:55:49.934Z",
+    "reason": "integrator position is primitive and closed: one unit realizes it whole (role contract, role cell, generic agent, deliver naming, guard routes, harness routing, docs); census @406cd7d0",
+    "cause": "the integrator has no holder (note); design 98848b2f defines integrator position"
+  },
+  "payload": {
+    "name": "integrator-position",
+    "realizes": [
+      "01M3QRZYAQ4KRZJKS8MX0CNA39"
+    ],
+    "state": "proposed"
+  }
+}

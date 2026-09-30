@@ -20,7 +20,7 @@
 // `@cratylus/forge/project`; every harness projection rides it. A second copy
 // beside a harness CLI is not a variant, it is a fork: the canon fork missed a
 // change the single emitter carried for the whole life of its divergence, so every
-// codex-projected skill script ran a shim that no longer matched the others. The
+// forked-CLI-projected skill script ran a shim that no longer matched the others. The
 // identity gate below is what makes a re-fork impossible to land quietly: project
 // the SAME cell down BOTH harness paths and compare the emitted bytes.
 
@@ -65,7 +65,7 @@ function emitted(capability: string): string {
 }
 
 let claudeShim = '';
-let codexShim = '';
+let ompShim = '';
 
 /**
  * The shipped build-time CLI's entry, resolved from forge's OWN manifest.
@@ -101,7 +101,7 @@ function buildCli(): string {
 beforeAll(async () => {
   const base = mkdtempSync(join(tmpdir(), 'runtime-shim-projection-'));
   const claudeOut = join(base, 'claude');
-  const codexOut = join(base, 'codex');
+  const ompOut = join(base, 'omp');
 
   // The CLAUDE path, driven straight off the projector API.
   // V7 made the projector RETURN the artifact tree; the caller is the one writer.
@@ -111,27 +111,27 @@ beforeAll(async () => {
   });
   writeRenderTree(claudeOut, claudeReport.files);
 
-  // The CODEX path, through its real CLI — the fork's live call site. That call site
-  // is now the SHIPPED command: `cratylus project --harness codex`, reading the
-  // repository's own `cratylus.config.ts`. Driving the private `project-cli-codex.ts`
-  // here was what let the fork exist at all; there is no private codex CLI to drive.
+  // The OMP path, through its real CLI — the fork's live call site. That call site
+  // is now the SHIPPED command: `cratylus project --harness omp`, reading the
+  // repository's own `cratylus.config.ts`. Driving a private per-harness CLI
+  // here was what let the fork exist at all; there is none to drive.
   execFileSync(
     process.execPath,
     [
       buildCli(),
       'project',
       '--harness',
-      'codex',
+      'omp',
       '--config',
       join(requireRepoRoot(canonRoot), 'cratylus.config.ts'),
       '--out',
-      codexOut,
+      ompOut,
     ],
     { cwd: canonRoot, stdio: 'pipe' },
   );
 
   claudeShim = shimOf(claudeOut);
-  codexShim = shimOf(codexOut);
+  ompShim = shimOf(ompOut);
 }, 120_000);
 
 describe('runtime thin shim (S6 forge-build-integration)', () => {
@@ -187,10 +187,10 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
 });
 
 describe('runtime shim has ONE home across harnesses', () => {
-  it('claude and codex projections emit BYTE-IDENTICAL shims for one cell', () => {
+  it('claude and omp projections emit BYTE-IDENTICAL shims for one cell', () => {
     // The falsifier for a forked emitter: any second copy drifts, and drift shows
     // up here as a byte diff for one and the same capability.
-    expect(codexShim).toBe(claudeShim);
+    expect(ompShim).toBe(claudeShim);
   });
 
   it('no shim names a session: every capability, every harness, one plain forwarder', async () => {
@@ -222,6 +222,6 @@ describe('runtime shim has ONE home across harnesses', () => {
   it('the projected shim IS the single emitter output, verbatim', () => {
     // No harness-local post-processing: what the emitter returns is what lands in
     // the harness's tree.
-    expect(codexShim).toBe(emitted(CAPABILITY));
+    expect(ompShim).toBe(emitted(CAPABILITY));
   });
 });

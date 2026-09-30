@@ -22,7 +22,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   type EventTapResult,
   type EventTapVerb,
@@ -58,6 +58,17 @@ const CONFIG: RuntimeConfig = {
     },
   },
 };
+
+// This suite drives the CLAUDE tap. The tap reads which harness invoked it from the
+// environment (`event-tap-harness.test.ts` covers that), so a run launched from
+// inside an omp session would be refused; the suite states the harness it means
+// instead of inheriting the runner's.
+beforeAll(() => {
+  vi.stubEnv('OMPCODE', '');
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+});
 
 /** Drive the verb surface with the host config a deployed host would have. */
 const tap = (argv: string[]): ReturnType<typeof dispatchEventTap> =>

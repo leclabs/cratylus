@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R0XX1X6WX9E2BXQJFV7M31",
+    "entity": "01M3R0XX1X6WX9E2BXQJFV7M30",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:05:07.005Z",
+    "reason": "assay of design-shard at 82de7562 against the design shard",
+    "cause": "assay of design-shard at 82de7562"
+  },
+  "payload": {
+    "title": "Planner session holds shard and closed piece at once until the position units land",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Until planner-position and mav-position land, the projected planner session holds both vocabularies. Its design and plan skills hand it a shard: one concept with its closure, stating what and why but never how. Its own agent description and role cell still say it decomposes one closed piece, a cut-piece it is given. The mav description still cuts the design into closed pieces, and the comment in roles/hold.ts still has the architect hand a cut piece to a planner. I observed this in a claude projection of the worktree (/tmp/tmp.wedXWhYc5J), whose design and plan skill sources match 82de7562. These surfaces belong to the planner and architect positions, not to the design shard.",
+    "blocks": []
+  }
+}

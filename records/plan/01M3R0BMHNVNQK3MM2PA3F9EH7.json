@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R0BMHNVNQK3MM2PA3F9EH7",
+    "entity": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSFG2X10SYBHA1CXG145V7"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T01:55:08.469Z",
+    "reason": "stopped under design stability: built on shards that were themselves wrong; superseded by plan corrected-shards (builder-sign accepted and stands)",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": {
+    "name": "architect-position",
+    "realizes": [
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "closed"
+  }
+}

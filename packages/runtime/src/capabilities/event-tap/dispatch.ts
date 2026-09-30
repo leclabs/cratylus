@@ -10,6 +10,8 @@
 // no-op — and every refusal opens with the routing word, `eventTap`. A flag the
 // verb does not take is refused as the arguments are read, before anything else:
 // before the host config is read, and before any settings file or sink is touched.
+// Next, and on the same terms, the INVOKING HARNESS is resolved (`./harness.ts`) and
+// refused if it has no tap strategy — only Claude Code has one today.
 //
 // WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
 // config the projection emitted (`RuntimeConfig.events`) — ARCHITECTURE property 4.
@@ -39,13 +41,26 @@ import {
 } from '../../runtime-config.js';
 import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
+import {
+  EVENT_TAP_HARNESSES,
+  hasEventTapStrategy,
+  invokingHarness,
+  noEventTapStrategy,
+} from './harness.js';
 
 /** The verbs the event-tap capability exposes, each routing to one port method. */
 export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status';
 
 /** A verb's outcome, discriminated by verb — the value `main.ts` prints as JSON. */
 export type EventTapResult =
-  | { verb: 'install'; events: EventName[]; sink: string }
+  | {
+      verb: 'install';
+      /** The events the tap now observes — those requested that the harness fires. */
+      events: EventName[];
+      /** Requested events that were NOT tapped, each with why. Absent when none. */
+      skipped?: { event: EventName; reason: string }[];
+      sink: string;
+    }
   | { verb: 'uninstall' }
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
@@ -120,6 +135,15 @@ export interface EventTapDispatchOpts {
    * does rather than a second one.
    */
   readonly config?: RuntimeConfig | null;
+  /**
+   * The harness this call runs inside. Defaults to the one the environment names
+   * ({@link invokingHarness}), else Claude Code.
+   */
+  readonly harness?: string;
+  /** The environment the invoking harness is read from; defaults to `process.env`. */
+  readonly env?: NodeJS.ProcessEnv;
+  /** Where a degradation warning goes; defaults to stderr as `WARNING: <line>`. */
+  readonly warn?: (line: string) => void;
 }
 
 /**
@@ -143,6 +167,20 @@ export function dispatchEventTap(
     VERBS[verb as EventTapVerb],
   );
   const flag = (name: string) => flags.get(name)?.at(-1);
+  // WHO IS CALLING is settled before the host config is read or anything is
+  // touched: a harness with no tap strategy is refused as the arguments are read,
+  // so the operator is told THAT — not that the vocabulary is missing — and no
+  // settings file is written on behalf of a harness that never reads it. An
+  // injected `host` is itself the strategy, so it is not second-guessed.
+  if (opts.host === undefined) {
+    const harness =
+      opts.harness ??
+      invokingHarness(opts.env ?? process.env) ??
+      EventTapHostClaude.harness;
+    if (!hasEventTapStrategy(harness)) {
+      throw new Error(noEventTapStrategy(verb, harness));
+    }
+  }
   const config = opts.config ?? loadRuntimeConfig();
   const configured = configuredEvents(config);
   const tap =
@@ -159,8 +197,32 @@ export function dispatchEventTap(
       if (sink === undefined || sink.trim() === '') {
         throw new Error('eventTap install: --sink <path> is required');
       }
-      tap.install(events, { path: sink });
-      return { verb: 'install', events, sink };
+      // The result reports what is ACTUALLY tapped, and the skipped ones with why —
+      // `events` used to echo the request, so an event Claude Code never fires was
+      // listed as tapped. An injected host is the port, which reports nothing back:
+      // it is taken to have tapped what was asked.
+      let tapped = events;
+      let skipped: EventName[] = [];
+      if (tap instanceof EventTapHostClaude) {
+        ({ tapped, skipped } = tap.install(events, { path: sink }));
+      } else {
+        tap.install(events, { path: sink });
+      }
+      const warn =
+        opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
+      const label = EVENT_TAP_HARNESSES[EventTapHostClaude.harness];
+      const reason = `${label} fires no native event for it`;
+      for (const event of skipped) {
+        warn(`eventTap install: '${event}' is not tapped — ${reason}.`);
+      }
+      return {
+        verb: 'install',
+        events: tapped,
+        ...(skipped.length > 0
+          ? { skipped: skipped.map((event) => ({ event, reason })) }
+          : {}),
+        sink,
+      };
     }
     case 'uninstall':
       tap.remove();

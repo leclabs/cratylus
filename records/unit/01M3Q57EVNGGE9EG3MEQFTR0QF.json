@@ -1,0 +1,78 @@
+{
+  "envelope": {
+    "id": "01M3Q57EVNGGE9EG3MEQFTR0QF",
+    "entity": "01M3Q57EVNGGE9EG3MEQFTR0QE",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T18:01:00.021Z",
+    "reason": "cut prime principle into dispatchable work per the census at 8753f969",
+    "cause": "operator assignment: plan what-ships realizing prime principle and supported harness"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "prime-principle-where-applied",
+      "intent": "Carry the prime principle only on cells whose laws apply it. census @ 8753f969 (local://what-ships-census.md): 23 of 23 projected cells carry '## Prime Principle'; 7 of 7 agents carry cratylism twice. Remove the plugin-wide stamp: drop AgentPlugin.preamble from @cratylus/schema and its forge plumbing (project/index.ts agent and skill stamping, resolve-skills.ts), and drop `preamble:` from canon's plugin. Give the Skill cell an optional per-cell `preamble`, the same shape AgentIdentity.preamble already has. Set it to foundingDoctrine on exactly the 10 applying skills: create-skill, deliver, design, exemplify, formalize, introspect, materialize, plan, probe, signify. Leave it unset on carry-on, conceptualize, create-agent, elicit, event-tap, note (conceptualize and create-agent are borderline, per the census). Agents get no preamble, because each carries cratylism once through its held role's engineering-principles. The stance-guardrail operator-slot filter must recognize every projected skill body by a marker all SKILL.md bodies carry, never by '## Prime Principle'. Update test-stance-guardrail.sh so the slash-invocation case uses a body without the Prime Principle. Regenerate targets with `pnpm canon:project:targets` and commit only stance-guardrail.sh. Replace the stale claims (canon README table and paragraph, founding-doctrine.ts doc, schema doc comments, forge body.ts and skill-cell.ts preamble comments, the cratylism.test.ts L183-187 comment). Add a cratylism.test.ts leg that no projected agent carries the cratylism value more than once. Add a changeset: @cratylus/schema, @cratylus/forge and @cratylus/canon minor.",
+      "static": [
+        "packages/canon/src/dimensions/engineering-principles/cratylism.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/skills/carry-on/skill.ts",
+        "packages/canon/src/skills/conceptualize/skill.ts",
+        "packages/canon/src/skills/create-agent/skill.ts",
+        "packages/canon/src/skills/elicit/skill.ts",
+        "packages/canon/src/skills/event-tap/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/test/fixtures/guardrail/turn-193.txt",
+        "packages/canon/test/fixtures/guardrail/turn-554.txt"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/core/body.ts",
+        "packages/forge/src/core/exemplify/skill-cell.ts",
+        "packages/canon/src/index.ts",
+        "packages/canon/src/genus/founding-doctrine.ts",
+        "packages/canon/src/skills/create-skill/skill.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/exemplify/skill.ts",
+        "packages/canon/src/skills/formalize/skill.ts",
+        "packages/canon/src/skills/introspect/skill.ts",
+        "packages/canon/src/skills/materialize/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/probe/skill.ts",
+        "packages/canon/src/skills/signify/skill.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/cratylism.test.ts",
+        "packages/canon/README.md",
+        ".changeset/prime-principle-where-applied.md"
+      ],
+      "accept": [
+        "After `pnpm build`, project claude and omp to a temp dir T. For h in claude omp, `grep -c '^## Prime Principle' T/h/skills/<s>/SKILL.md` prints 0 for each of carry-on, conceptualize, create-agent, elicit, event-tap, note. At 8753f969 each prints 1.",
+        "In the same trees, each of the 10 applying skills (create-skill, deliver, design, exemplify, formalize, introspect, materialize, plan, probe, signify) prints 1 for `grep -c '^## Prime Principle'` and 1 for `grep -c 'cratylism ⟨names natural'`.",
+        "In the same trees, each of the 7 agents (T/h/agents/*.md) prints 0 for `grep -c '^## Prime Principle'` and 1 for `grep -c 'cratylism ⟨names natural'`. At 8753f969 these print 1 and 2.",
+        "`git grep -n -e 'preamble: foundingDoctrine' -- packages/canon/src/index.ts` prints nothing. `git grep -n -e 'readonly preamble' -- packages/schema/src/index.ts` shows no AgentPlugin member.",
+        "`git grep -n 'Prime Principle' -- packages/canon/src/hooks packages/canon/targets` prints nothing. `pnpm --filter @cratylus/canon run stance-guard:test` exits 0, and its slash-invocation case injects a skill body that has no '## Prime Principle' and asserts the body stays out of the payload.",
+        "`git grep -n -e 'every projected agent body' -e 'EVERY Target + EVERY SKILL.md' -e 'stamped into every cell' -e 'above every agent Target' -- packages` prints nothing. At 8753f969 it has hits.",
+        "cratylism.test.ts has a leg asserting no projected agent carries the cratylism value twice. The leg fails when run against 8753f969's projection (7 agents × 2) and passes after.",
+        "`pnpm build && pnpm project && pnpm --filter @cratylus/schema --filter @cratylus/forge --filter @cratylus/canon test` is green, and `pnpm exec biome check` passes on the unit's outputs.",
+        "`.changeset/prime-principle-where-applied.md` exists and names @cratylus/schema, @cratylus/forge and @cratylus/canon."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3Q4H5EY0JRSHR12V308QAS8",
+      "version": "01M3Q4H5EY0JRSHR12V308QAS9",
+      "closure": {}
+    }
+  }
+}

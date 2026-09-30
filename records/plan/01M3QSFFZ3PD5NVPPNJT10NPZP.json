@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3QSFFZ3PD5NVPPNJT10NPZP",
+    "entity": "01M3QCB2BZSJN545X0R4631PTD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QCH2W8336S0E11QDY6M7AY"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T23:54:54.819Z",
+    "reason": "all five units accepted on live assays; end-to-end live assay dispatched",
+    "cause": "assay of role routing on claude at 406cd7d0"
+  },
+  "payload": {
+    "name": "claude-parity",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR",
+      "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8"
+    ],
+    "state": "closed"
+  }
+}

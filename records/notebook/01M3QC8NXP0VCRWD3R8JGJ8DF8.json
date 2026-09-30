@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QC8NXP0VCRWD3R8JGJ8DF8",
+    "entity": "01M3QC8NXP0VCRWD3R8JGJ8DF7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T20:04:00.054Z",
+    "reason": "operator: the wizard tells the user what it will do and asks to confirm the symlinked launchers",
+    "cause": "launcher investigation follow-up"
+  },
+  "payload": {
+    "title": "omp install asks before linking persona commands",
+    "kind": "decision",
+    "topic": "first share",
+    "body": "Operator ruling: the omp install wizard states what it will place for persona launch (one ~/.local/bin/<persona> symlink per installed persona, pointing at ~/.omp/agent/omp-agent, never overwriting a file it did not place) and asks the user to confirm before creating the links. A non-interactive install creates none unless asked (e.g. a flag), and says how to add them. Until this ships, a host gets the links by hand: mkdir -p ~/.local/bin && for f in ~/.omp/agent/agents/*.md; do n=$(basename \"$f\" .md); [ -e ~/.local/bin/\"$n\" ] || ln -s ~/.omp/agent/omp-agent ~/.local/bin/\"$n\"; done",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R4Y7VJCEVK7R0MDJY1YHVN",
+    "entity": "01M3R4Y7VJCEVK7R0MDJY1YHVM",
+    "operation": "create",
+    "supersedes": [],
+    "author": "guard-says-when-open",
+    "time": "2026-09-30T03:15:12.370Z",
+    "reason": "the omp form of the guard notices could not be established live",
+    "cause": "unit landed at b27e94e0"
+  },
+  "payload": {
+    "title": "omp bridge does not relay most guard notices",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "guard-says-when-open landed at b27e94e0: each of the three workers says so on Claude as JSON systemMessage and on omp as a bare line. What omp shows an operator was not established live: no model was reachable in a temp-HOME omp run, so the omp form rests on reading the bridge in packages/forge/src/adapters/omp/render.ts (outside this unit's outputs). That bridge relays a worker line only from the second, verdict pass, and only when it contains 'STANCE GUARDRAIL' and 'DARK'. So a purview notice ('PURVIEW GUARDRAIL — DARK') is never relayed on omp; a notice printed before the STANCE_EMIT_PAYLOAD seam (no jq, no input, the pre-tool re-entry cap) is dropped by the first pass because its stdout does not start with '{'; and BLOCK DISCARDED and NO PROGRESS lines are not relayed. Should the omp bridge relay every guard's notice on either pass?",
+    "blocks": []
+  }
+}

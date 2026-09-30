@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R5D5Z7CWZDHRRQBSJWJNAH",
+    "entity": "01M3R5D5Z7CWZDHRRQBSJWJNAG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:23:21.959Z",
+    "reason": "third assay of badge-always-visible against persona badge",
+    "cause": "unit reworked and landed at f8732965"
+  },
+  "payload": {
+    "title": "badge-always-visible rework (f8732965): shard achieved; alias-to-anchor statusLine is the one shape left out of reach",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "The second rework closes the flow-mapping and unreadable-preset gap. In a live omp install into a temp HOME, a multi-line flow statusLine with 'showHookStatus: false' had only that value turned to true, and the operator was told. A dry run on the landed dist did the same for a one-line flow mapping, a quoted key with a trailing comment, a preset alias, and a file whose top level is a flow mapping. A 'showHookStatus: false' under another top-level key was left alone, as was a commented-out one. python yaml parsed every edited file with only that value changed. status-line.test.ts passes, 78 tests. One shape is left, and the code comment names it: 'statusLine: *b', where the anchor holds a mapping written elsewhere with showHookStatus: false. That returns refused with hookRowShown false, so the badge appears nowhere. [INFERENCE] A '<<: *base' merge key inside statusLine behaves the same. I count this as a residual, not a failure of the shard, because the hidden value sits outside statusLine's own text. The design-holder may rule otherwise. The Claude path is unchanged from 91a71f81, which I had already verified live.",
+    "blocks": []
+  }
+}

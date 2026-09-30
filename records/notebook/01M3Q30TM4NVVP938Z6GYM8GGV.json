@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q30TM4NVVP938Z6GYM8GGV",
+    "entity": "01M3Q30TM4NVVP938Z6GYM8GGT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T17:22:25.540Z",
+    "reason": "inferred from item 3's intent: nothing personal ships",
+    "cause": "operator's first-share hypothesis, 2026-09-29"
+  },
+  "payload": {
+    "title": "personal personas ship in the default corpus",
+    "kind": "question",
+    "topic": "first share",
+    "body": "kino is CinematicLab's domain architect and nico is this corpus's own; both install on every stranger's machine today. cratylus already has the mechanism to separate them: corpus plugins (install --plugin, cratylus.config.ts extends). Recommended: the default corpus ships the general positions (mav, architect, planner, implementer, assayer); kino moves to a CinematicLab-owned plugin and nico to this repository's project scope.",
+    "blocks": []
+  }
+}

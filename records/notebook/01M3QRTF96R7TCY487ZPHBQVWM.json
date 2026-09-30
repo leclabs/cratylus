@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QRTF96R7TCY487ZPHBQVWM",
+    "entity": "01M3QRTF96R7TCY487ZPHBQVWK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:43:25.990Z",
+    "reason": "operator ruling",
+    "cause": "operator ruling, 2026-09-29"
+  },
+  "payload": {
+    "title": "named personas and generic positions",
+    "kind": "decision",
+    "topic": "agents",
+    "body": "Operator ruling: named agents (mav, nico, kino) are main-session personas, each with its own specialty and personality, elevated above the generic position they hold; generic agents (architect, planner, implementer, assayer) are geared to subagent task work. mav stays a distinct persona over the architect role; the generic architect stays as the subagent-oriented holder of that role.",
+    "blocks": []
+  }
+}

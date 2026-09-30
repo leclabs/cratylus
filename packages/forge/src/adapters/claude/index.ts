@@ -11,7 +11,13 @@ export {
 } from './events.js';
 // The anatomy→claude-code Target/SKILL projection.
 export {
+  CLAUDE_LAUNCHER_FILE,
+  CLAUDE_LAUNCHER_SCRIPT,
+  CLAUDE_PERSONA_BADGE_FILE,
+  CLAUDE_STATUS_LINE_FILE,
+  CLAUDE_STATUS_LINE_SCRIPT,
   type ResolvedSkill,
+  claudeLaunchSurface,
   agentToClaudeMd,
   skillToClaudeMd,
   agentBody,
@@ -19,6 +25,12 @@ export {
   dimensionTitle,
   claudeHarnessAdapter,
 } from './render.js';
+// The command that carries a persona's skills into a `--agent` main session.
+export {
+  PERSONA_LAUNCH_MATCHER,
+  type PersonaSkillRoots,
+  personaSkillCommand,
+} from './persona-launch.js';
 // The hook → settings.json `hooks` block serializer, standalone by construction:
 // it lives in `hooks.ts` beside the render projection and imports only
 // `core/hook` + the event map. It was extracted out of the deleted IR write path,

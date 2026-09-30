@@ -1,0 +1,64 @@
+{
+  "envelope": {
+    "id": "01M3R1HH9MFDTAT1R7YHK86THX",
+    "entity": "01M3R05FKMF30XB0VQ99X85G5F",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R0HV2VAJ49HZKT8KHNEZBJ"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T02:15:50.324Z",
+    "reason": "ready: its dependencies are whole; handed to the architect to route by name",
+    "cause": "wave 0 whole"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "mav-position",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize the corrected `architect position` in mav's own declarations (packages/canon/src/agents/mav.ts). Operator ruling (note 'named personas and generic positions'): kino, nico and mav are main-session personas, each with its own specialty and personality over the architect role, and each speaks only the architect position; the generic `architect` is the subagent-oriented holder. Holders override scalars and extend sets (packages/canon/src/roles/hold.ts), so what architect-sees-the-design changes in the role reaches them, and what a persona declares itself only its own unit can fix. mav stays distinct from the generic architect by its persona: its voice, mark and maintenance register.\nTHE LOOP (the contract each workflow unit of this plan states its own share of; the design states what must hold and why, this is how). (1) The architect cuts the design into shards (a shard is one concept with everything it stands on, stating what and why, never how) and hands a set of them to the planner. The planner plans them (units each realizing one shard, dependencies first, each sized for one implementer, how each shard is realized on each harness included), binds the plan when no plan is bound, records each ready unit active as it hands it out, and returns only the plan's name and those units' names. (2) The architect routes each name, by name alone, to one implementer, naming the delegate after the unit and giving it the address `<unit> of <plan>` and nothing it wrote itself; a unit's name is an address the architect never reads behind. Delegates are named so they can be messaged again (Claude Code: SendMessage to the name given at dispatch, nested dispatch allowed; omp: agent messaging). (3) The implementer reads its unit's spec alone (never the design), builds on its own branch, proves only what its spec asks, commits its own work, and returns only `landed <unit> of <plan> at <commit>`, or `blocked <unit> of <plan>: spec` when the spec cannot be built as written (the architect routes that name to the planner). Its account of the work stays out of the return; a finding it meets it captures as a note. (4) The architect routes the name and commit to the assayer. The assayer reads the shard and the files at that commit, never the spec, and returns the assay verdict: achieved, or not achieved with what is missing in the design's own words, naming the unit and its implementer. It is the one judge of a unit. (5) Not achieved: the architect sends the findings to the same implementer by the name it gave it, and the unit returns to (4). Achieved: the architect routes the name and commit to the integrator. (6) The integrator combines the unit onto the plan's integration line (a branch cut from main when the plan is bound, `plan/<plan>`) and runs the project's whole check once on the combined tree; no implementer or assayer runs it. Green: it commits the records written since (plan, design, notes) by pathspec and returns `whole <unit> of <plan>`, which the architect routes to the planner; the planner records the unit completed and hands out the newly ready names as in (1). Red or a merge conflict: the line is left as it was and it returns `red <unit> of <plan>: <failing check>`, which the architect sends to the same implementer. The integrator never repairs, never judges and decides nothing. (7) When every unit is completed the planner closes the plan; the architect routes that to the integrator, which asks the operator to release the line to main (a pull request where the repository has a forge remote and `gh`, otherwise the exact git command). It never moves main. (8) The architect never reads a unit's spec (`plan show <unit>`), a plan view, a diff, an artifact or an implementer's account; it runs no check and makes no commit or merge. What reaches it is names (from the planner and on verdicts and results), verdicts, the integrator's red naming a unit, and notes. (9) Design stability. Every input, whether from the operator, a delegate or the architect itself, is a hypothesis the architect rectifies against its expertise and industry practice; every delegate's finding reaches it as a note. A surviving change that bears on a shard the bound plan realizes is captured as a decision note on that concept's topic, blocking nothing, amended into the design only after that plan closes, and realized by a following plan; a change to a concept no bound plan realizes is amended at once. Only when the bound plan is found built on a shard that is itself wrong does the architect stop it: it captures a note blocking the plan (an owed ruling, so no unit is ready), corrects the shard once, and the planner rectifies (repin, revise, retract, add) or rebuilds the plan; then the architect retracts the note and work resumes.\nCHANGE. Drop `framing: goalDirected` ('goal-directed ⟨shortest viable path · analysis ↾ delivery⟩' subordinates analysis to delivery; the role's systems-thinking holds; goal-directed.ts stays in the catalog). The description's 'judge assays of what was built against the design' becomes routing assay verdicts (the assayer judges), adding the integrator among the hand-offs. The archetype's 'Judges assays, never artifacts and never reports' becomes routing verdicts; cut 'Serves the operator's intent over their literal words, decides every in-remit call itself, and reserves for the operator only what is genuinely theirs …' (principal-self and mission-command, both projected by the role, already say it; the corrected position's rectifying of every input is the role's). Comments: 7-11 state the operator ruling; 13-19 quote the role contract as architect-sees-the-design leaves it; 21-26 drop the goal-directed defence and \"`delivery` needs no override\"; 28-33 (history of the retired structured-decision) cut. .changeset/mav-position.md (@cratylus/canon patch). No new test file.",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts"
+      ],
+      "deps": [
+        "01M3R00XN367KNF6Y1XZW4Z6T0"
+      ],
+      "outputs": [
+        "packages/canon/src/agents/mav.ts",
+        ".changeset/mav-position.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. `grep -c -E \"goal-directed|Serves the operator's intent|judge assays|Judges assays\" $T/agents/mav.md` prints 0 (census 4), and `grep -c -E 'structured-decision|needs no override' /home/lex/workspaces/cratylus-share/packages/canon/src/agents/mav.ts` prints 0 (census 2).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/null-dimension.test.ts test/purview-guardrail.test.ts test/structural-parsimony.test.ts test/reader-density.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each of mav, give its session text (RIG), with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer, with YES, NO or UNCLEAR where a question asks yes or no. (a) Does it itself build or edit product code or files, other than its own design records? (b) Does it itself run code, tests, builds or checks? (c) Does it itself commit or merge? (d) Does it itself read a unit, a unit's spec, a diff, a produced artifact, or an implementer's account of its work? (e) Does it itself decide whether a unit achieves what it was built for? (f) What reaches it from the agents below it? (g) When the verdict on a unit comes back not achieved, what does it do and to whom? And when achieved? And when the integrator reports a unit broke the whole? (h) While a plan is running, the operator asks for a change to something that plan is building. What does it do? (i) To whom, by name, does it hand planning, building, judging a unit against its goal, and combining approved work and running the full check?' Save every prompt and answer verbatim under /tmp/corrected-shards-cold-read/mav-position/ and print the number of reads taken. PASSES when every read answers NO to (a) through (e); every (f) names exactly assay verdicts, the integrator's report of a unit that broke the whole, and names of units ready to start (notes may be named as the intake of findings); every (g) says not-achieved and broke-the-whole go back to the same implementer with the findings and achieved goes to the integrator; every (h) says the change is weighed (rectified), held as a note until the running plan completes, then enters the design for a following plan; every (i) names planner, implementer, assayer and integrator. A YES or UNCLEAR quoting a line this unit's outputs project fails it. FAILS at census: mav's description says it judges assays, so (e) comes back YES; its goal-directed framing reads as answering for delivery."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3R09TDXEG2PJG6RFBDP3J65",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3MEKHA5W8RJBDX72X37FZVK",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    }
+  }
+}

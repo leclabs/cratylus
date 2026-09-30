@@ -24,12 +24,25 @@
 // stderr is NOT asserted: the cell routes its subprocess calls through `2>/dev/null`, so
 // stderr is empty by design and an assertion on it would itself be a dark check.
 
-import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectionFacts } from '@cratylus/forge/project';
+import { resolveWorker } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { handoff } from '../src/dimensions/autonomy/handoff.js';
+import { stanceGuardrailPre } from '../src/hooks/stance-guardrail-pre.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 
 let root: string;
@@ -37,12 +50,16 @@ let worker: string;
 let transcript: string;
 
 /** The guardrail cell projects several files; the worker is the hook entrypoint. */
-function workerSource(): string {
+function workerSource(harness = 'omp'): string {
   const f = stanceGuardrail.workers?.find(
     (x) => x.filename === 'stance-guardrail.sh',
   );
   if (!f) throw new Error('stance-guardrail.sh not found on the cell');
-  return f.content;
+  return resolveWorker(
+    f,
+    projectionFacts(adapterByName(harness)),
+    stanceGuardrail.speech,
+  ).content;
 }
 
 beforeAll(() => {
@@ -292,3 +309,510 @@ describe('STANCE RUBRIC — the transcribed dimension value tracks its cell', ()
     expect(rubric).toContain(handoff);
   });
 });
+
+// THE CLAUDE FORM OF THE SCOPE — a guard that fires and can never judge.
+//
+// Claude Code places no dispatcher, so its payload carries no `stance_scope`; it names the
+// running agent as `agent_type`. This worker used to read `.stance_scope` alone, so on
+// claude it fired from the global settings on every turn and exited at its scope gate
+// with nothing on stdout — observationally identical to a clean turn, forever. The
+// worker now derives the persona's scope from the name under its own harness home
+// (`<home>/hooks/<id>/` two hops up, then the persona root), and a manifest there is
+// enrollment. The layout is the one the claude adapter deploys.
+describe('STANCE GUARDRAIL — the claude form of the scope (agent_type only)', () => {
+  let claudeWorker: string;
+  let claudeTranscript: string;
+  let broken: string;
+  let home: string;
+
+  beforeAll(() => {
+    home = mkdtempSync(join(tmpdir(), 'stance-claude-'));
+    const dir = join(home, '.claude', 'hooks', 'stance-guardrail');
+    mkdirSync(dir, { recursive: true });
+    claudeWorker = join(dir, 'stance-guardrail.sh');
+    writeFileSync(claudeWorker, workerSource('claude'), 'utf8');
+    chmodSync(claudeWorker, 0o755);
+    // ONLY `nico` is enrolled: a manifest under the persona root is the whole of it.
+    const scope = join(home, '.claude', 'personas', 'nico', 'stance');
+    mkdirSync(scope, { recursive: true });
+    writeFileSync(
+      join(scope, 'manifest.json'),
+      JSON.stringify({
+        agent: 'nico',
+        gates: { 'stance-guardrail': { moments: ['turn.end'] } },
+      }),
+      'utf8',
+    );
+    claudeTranscript = join(home, 'transcript.jsonl');
+    writeFileSync(claudeTranscript, readFileSync(transcript), 'utf8');
+    broken = join(home, 'broken-judge.sh');
+    writeFileSync(broken, '#!/bin/sh\necho "boom" >&2\nexit 5\n');
+    chmodSync(broken, 0o755);
+  });
+
+  const runClaude = (payload: Record<string, unknown>) =>
+    spawnSync('sh', [claudeWorker], {
+      input: JSON.stringify({
+        session_id: `dark-claude-${Math.random()}`,
+        cwd: home,
+        transcript_path: claudeTranscript,
+        ...payload,
+      }),
+      encoding: 'utf8',
+      env: { ...process.env, STANCE_JUDGE_CMD: `sh ${broken}`, HOME: home },
+    });
+
+  it('reaches the judge for the enrolled persona the payload names — a dead judge announces itself', () => {
+    const res = runClaude({ agent_type: 'nico' });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toMatch(/DARK/);
+    expect(res.stdout).toMatch(/NOT judged/);
+  });
+
+  it('is silent on a bare session — the payload names no agent', () => {
+    expect(runClaude({}).stdout).toBe('');
+    expect(runClaude({ agent_type: '' }).stdout).toBe('');
+  });
+
+  it('is silent for a named agent that carries no manifest', () => {
+    expect(runClaude({ agent_type: 'general-purpose' }).stdout).toBe('');
+  });
+
+  it('never builds a scope path out of a name that is not one directory', () => {
+    expect(runClaude({ agent_type: '../personas/nico' }).stdout).toBe('');
+  });
+});
+
+// WHOSE TEXT, AND WHICH MESSAGE. Two payload facts the claude form depends on, each
+// observed live on Claude Code 2.1.285. A SubagentStop payload names the PARENT's
+// transcript (`transcript_path`) and the subagent's own (`agent_transcript_path`), and the
+// scope it resolves is the subagent's, so the turn judged must be the subagent's. And a Stop
+// payload fires BEFORE the final assistant message reaches the transcript: that message is
+// only in `last_assistant_message`, so a turn that is only text had nothing to judge.
+describe('STANCE GUARDRAIL — what the claude form judges', () => {
+  let claudeWorker: string;
+  let recorded: string;
+  let home: string;
+  const line = (o: unknown) => `${JSON.stringify(o)}\n`;
+  const user = (text: string) =>
+    line({ type: 'user', message: { content: text } });
+  const said = (text: string) =>
+    line({ type: 'assistant', message: { content: [{ type: 'text', text }] } });
+  const tooled = line({
+    type: 'assistant',
+    message: { content: [{ type: 'tool_use', name: 'Agent' }] },
+  });
+
+  const write = (name: string, body: string): string => {
+    const p = join(home, name);
+    writeFileSync(p, body, 'utf8');
+    return p;
+  };
+
+  beforeAll(() => {
+    home = mkdtempSync(join(tmpdir(), 'stance-claude-turn-'));
+    const dir = join(home, '.claude', 'hooks', 'stance-guardrail');
+    mkdirSync(dir, { recursive: true });
+    claudeWorker = join(dir, 'stance-guardrail.sh');
+    writeFileSync(claudeWorker, workerSource('claude'), 'utf8');
+    chmodSync(claudeWorker, 0o755);
+    const scope = join(home, '.claude', 'personas', 'nico', 'stance');
+    mkdirSync(scope, { recursive: true });
+    writeFileSync(
+      join(scope, 'manifest.json'),
+      JSON.stringify({ agent: 'nico', gates: {} }),
+      'utf8',
+    );
+    // A judge that records exactly what it was handed, and passes.
+    recorded = join(home, 'recorded');
+    const judge = join(home, 'recording-judge.sh');
+    writeFileSync(
+      judge,
+      `#!/bin/sh\ncat > ${recorded}\nprintf 'VERDICT: PASS\\n'\n`,
+    );
+    chmodSync(judge, 0o755);
+  });
+
+  const judgedBy = (payload: Record<string, unknown>): string | null => {
+    rmSync(recorded, { force: true });
+    spawnSync('sh', [claudeWorker], {
+      input: JSON.stringify({
+        session_id: `turn-${Math.random()}`,
+        cwd: home,
+        agent_type: 'nico',
+        ...payload,
+      }),
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        STANCE_JUDGE_CMD: `sh ${join(home, 'recording-judge.sh')}`,
+        HOME: home,
+      },
+    });
+    return existsSync(recorded) ? readFileSync(recorded, 'utf8') : null;
+  };
+
+  it('judges a turn that is only text, from the payload, before the transcript holds it', () => {
+    const seen = judgedBy({
+      transcript_path: write('t1.jsonl', user('do it')),
+      last_assistant_message: 'CLOSING-TEXT-ONLY-TURN',
+    });
+    expect(seen).toContain('CLOSING-TEXT-ONLY-TURN');
+  });
+
+  it('judges a tool turn on its close, not on the tools alone', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        't2.jsonl',
+        user('do it') + said('preamble') + tooled,
+      ),
+      last_assistant_message: 'CLOSE-AFTER-THE-TOOLS',
+    });
+    expect(seen).toContain('CLOSE-AFTER-THE-TOOLS');
+  });
+
+  it('does not count the close twice when the transcript already holds it', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        't3.jsonl',
+        user('do it') + said('ALREADY-WRITTEN'),
+      ),
+      last_assistant_message: 'ALREADY-WRITTEN',
+    });
+    expect(seen?.match(/ALREADY-WRITTEN/g)).toHaveLength(1);
+  });
+
+  it('judges the subagent’s transcript, never the parent’s', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        'parent.jsonl',
+        user('op') + said('PARENT-MARKER-TEXT'),
+      ),
+      agent_transcript_path: write(
+        'agent.jsonl',
+        user('dispatch prompt') + said('SUBAGENT-OWN-TEXT'),
+      ),
+    });
+    expect(seen).toContain('SUBAGENT-OWN-TEXT');
+    expect(seen).not.toContain('PARENT-MARKER-TEXT');
+  });
+
+  it('goes dark, rather than falling back to the parent, when the subagent’s transcript is unreadable', () => {
+    const seen = judgedBy({
+      transcript_path: write(
+        'parent2.jsonl',
+        user('op') + said('PARENT-MARKER-TEXT'),
+      ),
+      agent_transcript_path: join(home, 'no-such-agent-transcript.jsonl'),
+    });
+    expect(seen).toBeNull();
+  });
+});
+
+// A GUARD THAT LETS A TURN OR CALL THROUGH WITHOUT A VERDICT SAYS SO, where the operator reads it.
+//
+// Silence is the answer for "judged, no collapse" and for "not enrolled", and for nothing else.
+// The turn-end worker and the pre-tool worker are run as each harness receives them, resolved
+// against that harness's own facts: on Claude Code a hook's plain stdout on exit 0 reaches nobody,
+// so the notice is the hook's JSON `systemMessage`; omp's extension bridge reads the worker's
+// plain stdout, so its form is the bare line. Every case that is about `jq` runs under a PATH that
+// holds only `sh` and `cat`, because the worker must still be able to speak with nothing else.
+const sourceOf = (
+  cell: typeof stanceGuardrail,
+  filename: string,
+  harness: string,
+): string => {
+  const f = cell.workers?.find((x) => x.filename === filename);
+  if (!f) throw new Error(`${filename} not found on its cell`);
+  return resolveWorker(f, projectionFacts(adapterByName(harness)), cell.speech)
+    .content;
+};
+
+const SAYS = [
+  {
+    harness: 'omp',
+    base: ['.omp', 'agent'],
+    hooks: ['.omp', 'hooks'],
+    enroll: (scope: string): Record<string, unknown> => ({
+      stance_scope: scope,
+      agent_type: 'nico',
+    }),
+    notice: (stdout: string): string => {
+      expect(stdout.trim(), 'nothing was said').not.toBe('');
+      expect(stdout.startsWith('{'), 'omp reads a bare line').toBe(false);
+      return stdout;
+    },
+  },
+  {
+    harness: 'claude',
+    base: ['.claude'],
+    hooks: ['.claude', 'hooks'],
+    enroll: (): Record<string, unknown> => ({ agent_type: 'nico' }),
+    notice: (stdout: string): string => {
+      expect(stdout.trim(), 'nothing was said').not.toBe('');
+      const said = JSON.parse(stdout) as Record<string, unknown>;
+      expect(Object.keys(said)).toEqual(['systemMessage']);
+      return String(said.systemMessage);
+    },
+  },
+] as const;
+
+const WORKERS = [
+  {
+    name: 'stance guardrail (turn end)',
+    guard: 'STANCE GUARDRAIL',
+    dir: 'stance-guardrail',
+    file: 'stance-guardrail.sh',
+    cell: stanceGuardrail,
+    subject: 'turn',
+  },
+  {
+    name: 'stance guardrail (pre-tool)',
+    guard: 'STANCE GUARDRAIL',
+    dir: 'stance-guardrail-pre',
+    file: 'stance-guardrail-pre.sh',
+    cell: stanceGuardrailPre,
+    subject: 'call',
+  },
+] as const;
+
+const BLOCK_VERDICT = (span: string) =>
+  `VERDICT: BLOCK\nREASON: collapsed\nEVIDENCE: ${span}\n`;
+const MENU = 'which of these two options do you prefer for the naming here';
+
+describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
+  '$w.name — $form.harness: a $w.subject let through without a verdict says so',
+  ({ form, w }) => {
+    let home: string;
+    let workerPath: string;
+    let scope: string;
+    let stub: string;
+    let dead: string;
+    let tmp: string;
+    let n = 0;
+
+    beforeAll(() => {
+      home = mkdtempSync(join(root, `${w.dir}-${form.harness}-`));
+      const dir = join(home, ...form.hooks, w.dir);
+      mkdirSync(dir, { recursive: true });
+      workerPath = join(dir, w.file);
+      writeFileSync(workerPath, sourceOf(w.cell, w.file, form.harness), 'utf8');
+      chmodSync(workerPath, 0o755);
+      scope = join(home, ...form.base, 'personas', 'nico');
+      mkdirSync(join(scope, 'stance'), { recursive: true });
+      writeFileSync(
+        join(scope, 'stance', 'manifest.json'),
+        JSON.stringify({
+          agent: 'nico',
+          gates: { [w.dir]: { moments: ['turn.end'] } },
+        }),
+        'utf8',
+      );
+      stub = join(home, 'stub');
+      mkdirSync(stub);
+      symlinkSync('/bin/sh', join(stub, 'sh'));
+      symlinkSync('/bin/cat', join(stub, 'cat'));
+      dead = join(home, 'dead-judge.sh');
+      writeFileSync(dead, '#!/bin/sh\nexit 5\n');
+      tmp = join(home, 'tmp');
+      mkdirSync(tmp);
+    });
+
+    /** The hook payload this worker judges: the last message of a turn, or a menu handed over. */
+    const payload = (
+      over: Record<string, unknown> = {},
+    ): Record<string, unknown> => {
+      n += 1;
+      const base: Record<string, unknown> = {
+        ...form.enroll(scope),
+        session_id: `says-${w.dir}-${n}`,
+        cwd: home,
+      };
+      if (w.subject === 'turn') {
+        const t = join(home, `t${n}.jsonl`);
+        writeFileSync(
+          t,
+          `${JSON.stringify({ type: 'user', message: { content: 'go' } })}\n${JSON.stringify(
+            {
+              type: 'assistant',
+              message: { content: [{ type: 'text', text: `${MENU} ${n}` }] },
+            },
+          )}\n`,
+          'utf8',
+        );
+        base.transcript_path = t;
+      } else {
+        base.tool_name = 'AskUserQuestion';
+        base.tool_input = {
+          questions: [{ question: `${MENU} ${n}`, options: [{ label: 'a' }] }],
+        };
+      }
+      return { ...base, ...over };
+    };
+
+    const fire = (
+      env: Record<string, string>,
+      over: Record<string, unknown> = {},
+      stdin?: string,
+    ) =>
+      spawnSync('/bin/sh', [workerPath], {
+        input: stdin ?? JSON.stringify(payload(over)),
+        encoding: 'utf8',
+        env: { ...process.env, HOME: home, TMPDIR: tmp, ...env },
+      });
+
+    /** Exits 0, and names the guard and that the turn was not judged. */
+    const said = (r: SpawnSyncReturns<string>): string => {
+      expect(r.status).toBe(0);
+      const text = form.notice(r.stdout);
+      expect(text).toContain(w.guard);
+      expect(text).toMatch(/NOT judged/);
+      return text;
+    };
+
+    it('says so when jq is missing — a PATH of sh and cat', () => {
+      const r = spawnSync('/bin/sh', [workerPath], {
+        input: JSON.stringify(payload()),
+        encoding: 'utf8',
+        env: { PATH: stub },
+      });
+      expect(said(r)).toMatch(/jq/);
+    });
+
+    it('says so when the hook receives no input', () => {
+      expect(said(fire({}, {}, ''))).toMatch(/no input/);
+    });
+
+    it('says so when the judge file names nothing', () => {
+      const r = fire({ STANCE_VERDICT_FILE: join(home, 'no-such-verdict') });
+      expect(said(r)).toMatch(/judge did not answer/);
+    });
+
+    it('says so when the judge command fails', () => {
+      const r = fire({ STANCE_JUDGE_CMD: `sh ${dead}` });
+      expect(said(r)).toMatch(/judge did not answer/);
+    });
+
+    it('says so when the verdict is unparseable', () => {
+      const file = join(home, `unparseable-${w.dir}`);
+      writeFileSync(file, 'the model rambled and gave no verdict\n');
+      expect(said(fire({ STANCE_VERDICT_FILE: file }))).toMatch(/unparseable/);
+    });
+
+    it('stays SILENT on a judged pass — the one silent verdict', () => {
+      const file = join(home, `pass-${w.dir}`);
+      writeFileSync(file, 'VERDICT: PASS\nREASON: nothing collapsed\n');
+      const r = fire({ STANCE_VERDICT_FILE: file });
+      expect(r.status).toBe(0);
+      expect(r.stdout).toBe('');
+    });
+
+    it('stays SILENT for a scope no manifest enrolls', () => {
+      const bare = join(home, 'bare');
+      mkdirSync(bare, { recursive: true });
+      const r = fire({}, { stance_scope: bare, agent_type: '' });
+      expect(r.status).toBe(0);
+      expect(r.stdout).toBe('');
+    });
+
+    if (w.subject === 'call') {
+      it('says so when the re-entry cap lets the second identical call through', () => {
+        const file = join(home, 'deny-pre');
+        writeFileSync(file, 'VERDICT: BLOCK\nREASON: a menu\n');
+        const same = payload();
+        const once = fire({ STANCE_VERDICT_FILE: file }, same);
+        expect(once.stdout).toContain('permissionDecision');
+        expect(said(fire({ STANCE_VERDICT_FILE: file }, same))).toMatch(
+          /re-entry cap/,
+        );
+      });
+
+      it('says so when the payload names no tool', () => {
+        expect(said(fire({}, { tool_name: '' }))).toMatch(/names no tool/);
+      });
+    } else {
+      const closing = 'the close has this exact span in it';
+      const closed = (name: string): string => {
+        const t = join(home, name);
+        writeFileSync(
+          t,
+          `${JSON.stringify({ type: 'user', message: { content: 'go' } })}\n${JSON.stringify(
+            {
+              type: 'assistant',
+              message: { content: [{ type: 'text', text: closing }] },
+            },
+          )}\n`,
+          'utf8',
+        );
+        return t;
+      };
+
+      it('says so when a block is discarded for citing a span that is not there', () => {
+        const file = join(home, `fabricated-${w.dir}`);
+        writeFileSync(file, BLOCK_VERDICT('this text never appeared anywhere'));
+        const r = fire({ STANCE_VERDICT_FILE: file });
+        expect(said(r)).toMatch(/BLOCK DISCARDED/);
+        expect(r.stdout).not.toMatch(/"decision"|permissionDecision/);
+      });
+
+      it('says so when a block is discarded for quoting nothing', () => {
+        const file = join(home, 'unevidenced-turn');
+        writeFileSync(file, 'VERDICT: BLOCK\nREASON: collapsed\n');
+        expect(said(fire({ STANCE_VERDICT_FILE: file }))).toMatch(
+          /BLOCK DISCARDED/,
+        );
+      });
+
+      it('carries quotes and backslashes in a notice intact', () => {
+        const span = 'he said "no" \\ and left';
+        const file = join(home, 'quoted-turn');
+        writeFileSync(file, BLOCK_VERDICT(span));
+        expect(said(fire({ STANCE_VERDICT_FILE: file }))).toContain(span);
+      });
+
+      it('says so when the transcript is unreadable', () => {
+        const r = fire({}, { transcript_path: join(home, 'no-such.jsonl') });
+        expect(said(r)).toMatch(/transcript/);
+      });
+
+      it('says so, and does not block, when its state cannot be written', () => {
+        const file = join(home, 'block-turn');
+        writeFileSync(file, BLOCK_VERDICT(closing));
+        const notDir = join(home, 'a-file-not-a-dir');
+        writeFileSync(notDir, '');
+        const r = fire(
+          { STANCE_VERDICT_FILE: file, TMPDIR: notDir },
+          { transcript_path: closed('tstate.jsonl') },
+        );
+        expect(said(r)).toMatch(/state directory/);
+        expect(r.stdout).not.toContain('decision');
+      });
+
+      it('says so at the no-progress cap', () => {
+        const file = join(home, 'block-noprogress');
+        writeFileSync(file, BLOCK_VERDICT(closing));
+        const same = {
+          transcript_path: closed('tnp.jsonl'),
+          session_id: `np-${form.harness}`,
+        };
+        const first = fire({ STANCE_VERDICT_FILE: file }, same);
+        expect(first.stdout).toContain('decision');
+        const second = fire({ STANCE_VERDICT_FILE: file }, same);
+        expect(second.status).toBe(0);
+        expect(form.notice(second.stdout)).toMatch(/NO PROGRESS/);
+        expect(second.stdout).not.toMatch(/"decision"|decision":"block/);
+      });
+
+      it('says so when the block cap is spent', () => {
+        const file = join(home, 'block-spent');
+        writeFileSync(file, BLOCK_VERDICT(closing));
+        const r = fire(
+          { STANCE_VERDICT_FILE: file, STANCE_BLOCK_CAP: '0' },
+          { transcript_path: closed('tspent.jsonl') },
+        );
+        expect(r.status).toBe(0);
+        expect(form.notice(r.stdout)).toMatch(/BYPASS SPENT/);
+      });
+    }
+  },
+);

@@ -1,0 +1,47 @@
+{
+  "envelope": {
+    "id": "01M3QSVR215TVXM8RKBJ18ZTQX",
+    "entity": "01M3QS6F01WBFERMHC064GDZRD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QS6F01WBFERMHC064GDZRE"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:01:36.321Z",
+    "reason": "architect position amended: (f) asks about the builder's account, not the assay or gate result",
+    "cause": "architect-skills cold-read tension at e944facb"
+  },
+  "payload": {
+    "plan": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "spec": {
+      "name": "nico-position",
+      "intent": "Census @ef571276 (source identical to a8cf23f8: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the architect position in nico's own declarations (packages/canon/src/agents/nico.ts). Operator ruling (note 'named personas and generic positions'): kino, nico and mav are main-session personas, each with its own specialty and personality over the architect role, and each speaks only the architect position; the generic `architect` is the subagent-oriented holder. Holders override scalars and EXTEND sets (roles/hold.ts), so what the role unit changes reaches here, and what the holder declares itself only this unit can fix. nico's specialty (the corpus's concept space) stays.\nCHANGE. The vector casts nico as running and building: `actions: [codeExecution, delegation]` (after architect-role the role supplies delegation, so the override is dropped whole), `outputFormat: code` (dropped: unstated), `selfEvaluation: executableTestOracle` (dropped: the role's acceptance-criteria-check holds), `reasoningStrategy: react`, projected 'ReAct ⟨reason · act · observe⟩', the implementer's and assayer's loop over runs (dropped: the role's plan-and-solve holds). Two loci the census found beyond the assay: (a) the archetype says 'compose those primitives into the agents and skills that carry them. A canon cell is a concept written down, which is why authoring one is design and not build'. Canon cells are .ts files of this repository, so writing one is building; rewrite so nico canonizes signs in the design and hands the cells that carry them to the planner and implementer. (b) The engineering principle cold-decode-oracle (nico its only holder: dimensions/engineering-principles/cold-decode-oracle.ts) casts its holder as running the cold read ('cold-read = oracle') and sweeping the corpus ('sweep(m3) ≜ READING … grep ↦ citations'). Amend the value so the cold read and the sweep are dispatched and their result reaches the holder as an assay, keeping every law it states. Comments that defend what the concept forbids are rewritten or cut: 20-25 ('`mav` writes the artifact and hands the design up'), 27-30 ('in THIS domain a concept written down IS a TypeScript cell'), 32-35 (code-execution), 48-50 ('`parsimony` over `delivery`': name the role objective architect-role leaves), 67-70 ('The cold-decode oracle IS this agent's executable oracle — it runs and returns'). Keep maintenance, parsimony, analytical, invoke-the-canonical, zero-trust and the guardrails; the description keeps its domain and adds the hand-offs, checks and merges to the integrator among them. Depends on architect-role: nico.ts compiles against roles/architect.ts, and the objective comment names what that unit leaves. No new test file, so canon's gate-convicts registry is untouched.",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts"
+      ],
+      "deps": [
+        "01M3QS44E762G7NS212AQK8S9Z"
+      ],
+      "outputs": [
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/dimensions/engineering-principles/cold-decode-oracle.ts",
+        ".changeset/nico-position.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm exec cratylus project --harness claude --out $T`, which exits 0. An ARCHITECT HOLDER is an $T/agents/<h>.md whose `## Role` section opens `architect ≜` (4 at census: architect, kino, mav, nico; print N). `grep -c -E 'code-execution|executable-test-oracle|^## Output-Format|ReAct' $T/agents/nico.md` prints 0 (census 4, one each).",
+        "`grep -c -E 'IS a TypeScript cell|writes the artifact and hands the design up|it runs and returns|authoring one is design'` prints 0 over packages/canon/src/agents/nico.ts and over $T/agents/nico.md (census 4 and 1).",
+        "The front-matter description of $T/agents/nico.md names the integrator (census 0).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/null-dimension.test.ts test/structural-parsimony.test.ts test/reader-density.test.ts test/projection-stability.test.ts test/cratylism.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each architect holder build the text its session starts with: $T/agents/<h>.md whole (front matter and hooks included), then each skill of its `skills:` list in order, as $T/skills/<s>/SKILL.md with its front matter stripped. Give each text, with no other context and no tools, to two distinct models (anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, the pair the assay of 20961057 used) with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone. For each question answer YES, NO or UNCLEAR and quote the lines that decide it. (a) Does the agent itself build or edit the product's code or files? (b) Does it itself run code, tests, builds or checks? (c) Does it itself make commits? (d) Does it itself merge work into main? (e) Does it itself read code or produced artifacts? (f) Does it itself read the reports or returns of the agents it delegates to? (g) To whom, by name, does it hand planning, building, reading what landed, and running checks and merging?' Save every prompt and answer verbatim under /tmp/architect-position-cold-read/nico-position/ and return the paths; print the number of reads taken (8 = 4 holders x 2 models). PASSES when no YES or UNCLEAR answer quotes a line that this unit's outputs project, and no (g) answer names the builder anything but `implementer` on a line this unit's outputs project; and, when this unit is the last of plan architect-position to land, when all (a)-(f) answers of all 8 reads are NO and every (g) names the builder `implementer`. FAILS at census: Opus-slow and Haiku answered (b) YES quoting `code-execution` and `Self-Evaluation: executable-test-oracle`, and both Opus reads flagged `Output-Format: code` (assay of 20961057, point 1); no read of nico may quote the cold-decode-oracle line for (b) or (e).",
+        "COLD-READ QUESTION (f), corrected: 'does it read an implementer's report or account of its own work, an artifact, or a diff?' Reading the assay and the integrator's gate result is the position's own act and must NOT count as YES; the prompt says so."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3QSVPS11Y9TQFG8S39NY0GJ",
+      "closure": {}
+    }
+  }
+}

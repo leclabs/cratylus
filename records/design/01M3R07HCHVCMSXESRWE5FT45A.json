@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3R07HCHVCMSXESRWE5FT45A",
+    "entity": "01M3QRDK076G190M60GAV4DDGF",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QZDS8XPMFFF7BBJVQCXNK4"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:52:54.161Z",
+    "reason": "the fan-out is routing like any verdict; the position is composed of the concepts it works through",
+    "cause": "regrounding with the operator, 2026-09-29 (conceptual-design.md and the thread after it)"
+  },
+  "payload": {
+    "anchor": "architect position",
+    "gloss": "the role that holds the design, the goal every unit is built to achieve, and nothing below it. It treats every input, whether from the operator, a delegate or itself, as a hypothesis to rectify against its own expertise and industry practice; what survives enters the design as an appended change and is realized by a following plan. It cuts the design into shards for the planner and never sees a plan's units, a spec, an implementation or an implementer's account. What reaches it from below is the assay verdict on each unit against its shard: an unachieved unit it routes back to the same implementer with the assayer's findings, an achieved one to the integrator. Planning belongs to the planner, building to the implementer, judging whether a unit achieves its shard to the assayer, and making approved work whole to the integrator. It starts a plan's work by routing, by name alone, the units the planner hands it, exactly as it routes a verdict; a unit's name is an address, not something it reads.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKH8E3Q8R94A9EFNDE986",
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+      "01M3QZDSNXFW5WVR66146BGMJK",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

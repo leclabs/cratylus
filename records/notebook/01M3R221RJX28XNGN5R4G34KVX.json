@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R221RJX28XNGN5R4G34KVX",
+    "entity": "01M3R221RJX28XNGN5R4G34KVW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner-position",
+    "time": "2026-09-30T02:24:51.474Z",
+    "reason": "cold read of the planner session surfaced it; outside this unit's outputs and budget",
+    "cause": "planner-position of corrected-shards"
+  },
+  "payload": {
+    "title": "plan skill: split-on-factors law against one-shard-per-unit",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "In skills/plan/skill.ts, effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) says each part realizes a factor, while realizes(unit) = the anchor of ONE shard and the loop says each unit realizes exactly one shard. A cold read (opus) flagged the tension: a factor-part does not realize a shard's anchor. Worth one ruling on what a split part realizes.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "envelope": {
+    "id": "01M3Q7HAPYZ8BS5WECA9Q3E1PC",
+    "entity": "01M3Q57NHKTYPFG510HDRSF7KC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q5Q1NVRX8JYR5FQWPDPB30"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:41:20.606Z",
+    "reason": "accepted: supported harness achieved on every factor at b2daebb2 (two adapters, every cell to both, degrade-and-warn live on both, no unsupported-harness claims, real differences documented); tap reach on claude acts ruled event-tap's concept, not this one; VISION.md:3 surfaced to the operator; whole gate green",
+    "cause": "final assay of supported harness at b2daebb2"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "codex-adapter-removed",
+      "intent": "Remove the codex adapter. census @ 8753f969 (local://what-ships-census.md): 238 lines in 27 files. Delete packages/forge/src/adapters/codex/{events,index,render}.ts and packages/forge/test/adapters/codex-hooks.test.ts, and drop codex-hooks from gate-convicts.test.ts. Set the registry's HarnessName to 'claude' | 'omp', so `--harness codex` is refused by adapterByName naming the known harnesses. Remove the port op scopeOrientation, which only codex implemented: its HarnessAdapter member, its branch in project/index.ts, and its tree.test.ts case. Reword the codex comments across the forge src (harness-adapter.ts, project/index.ts, realization.ts, deploy/*, cli/commands/deploy.ts, core/body.ts, core/exemplify/skill-cell.ts, adapters/claude/render.ts, adapters/omp/{events,index,render}.ts), the schema src (hook-cell.ts, hook/index.ts, index.ts) and canon hooks/stance-guardrail.ts:697. Keep omp's verbatim 'Claude/Codex-compatible' upstream quotes. Keep the port's degrade members (preloadsSkills, scopes, unnarrowed, agentExt). Regenerate targets and commit only stance-judge.sh. Add a changeset: @cratylus/forge minor (a harness removed) and @cratylus/canon patch.",
+      "static": [
+        "packages/forge/tsup.config.ts",
+        "packages/forge/package.json",
+        "packages/forge/src/cli/commands/project.ts",
+        "packages/forge/src/cli/commands/install.ts"
+      ],
+      "deps": [
+        "01M3Q57EVNGGE9EG3MEQFTR0QE",
+        "01M3Q57MZST5PX6D2QY1MY0KHC",
+        "01M3Q57N3JRXRKWF99AE21S6HZ",
+        "01M3Q57N76VT7Q16AQKSRZJV35",
+        "01M3Q57NAMXCAQDRJFM9YYP8X1",
+        "01M3Q57NE2X9BGM8789TH37QP8"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/codex/events.ts",
+        "packages/forge/src/adapters/codex/index.ts",
+        "packages/forge/src/adapters/codex/render.ts",
+        "packages/forge/test/adapters/codex-hooks.test.ts",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/project/realization.ts",
+        "packages/forge/src/core/body.ts",
+        "packages/forge/src/core/exemplify/skill-cell.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/schema/src/hook-cell.ts",
+        "packages/schema/src/hook/index.ts",
+        "packages/schema/src/index.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        ".changeset/claude-code-and-omp-only.md"
+      ],
+      "accept": [
+        "`pnpm build && pnpm exec cratylus project --harness codex --out \"$(mktemp -d)\"` exits non-zero, and its stderr names the known harnesses `claude, omp`. At 8753f969 it exits 0.",
+        "`test ! -e packages/forge/src/adapters/codex && test ! -e packages/forge/test/adapters/codex-hooks.test.ts` succeeds.",
+        "`git grep -n scopeOrientation -- packages` prints nothing. At 8753f969 it has hits.",
+        "`git grep -n -i codex -- . ':!records' ':!**/CHANGELOG.md' ':!.changeset'` prints exactly the 3 verbatim quotes of omp's 'Claude/Codex-compatible' doc comment (omp/events.ts, omp/render.ts, omp.test.ts). At 8753f969 it prints 491 lines.",
+        "`rm -rf .cratylus && pnpm build && pnpm lint && pnpm project && pnpm test` is green, and `pnpm --filter @cratylus/canon run stance-guard:test` exits 0.",
+        "`.changeset/claude-code-and-omp-only.md` exists and names @cratylus/forge."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}

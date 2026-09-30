@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R14WT87PERWDPQDP7NPT0X",
+    "entity": "01M3R14WT87PERWDPQDP7NPT0W",
+    "operation": "create",
+    "supersedes": [],
+    "author": "integrator",
+    "time": "2026-09-30T02:08:56.136Z",
+    "reason": "the loop's line is cut from main, and main conflicts with the branch the plan was bound on",
+    "cause": "integrating design-shard of corrected-shards"
+  },
+  "payload": {
+    "title": "The plan line cannot be cut from main while design/first-share conflicts with it",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "THE LOOP (6) puts the integration line at plan/<plan>, a branch cut from main when the plan is bound. Cut from main (2288b948) and merged with design-shard (82de7562), the combination conflicts in packages/canon/src/agents/mav.ts: main carries a cherry-pick of 'mav's description names the architect it is' that design/first-share holds in a different form. The conflict is in history from before the plan was bound, not in any unit, so a red on it would name no owner. The integrator cut plan/corrected-shards at the binding commit 151f415b on design/first-share instead and combines achieved units there; a unit whose parent commit is not yet achieved is cherry-picked alone. Releasing the line to main will meet the same mav.ts conflict; the operator resolves it at release.",
+    "blocks": []
+  }
+}

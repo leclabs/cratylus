@@ -3,11 +3,11 @@
 //
 // WHAT WAS WRONG. `stance-guardrail-pre` bound `tool.use.pre` and narrowed it with
 // `matcher: 'AskUserQuestion|Agent|SendMessage'` — three claude tool names sitting on
-// a shape whose entire claim is harness-neutrality. The claude adapter read the
-// field; the codex adapter did not, dropped it, and said NOTHING. So on codex the
-// guardrail's worker was spawned on every single tool call, and the render looked
-// clean either way. The divergence was invisible to every gate that checks what IS
-// emitted.
+// a shape whose entire claim is harness-neutrality. The narrowing was a field one
+// adapter read and another dropped, and said NOTHING. So on the harness that dropped
+// it the guardrail's worker was spawned on every single tool call, and the render
+// looked clean either way. The divergence was invisible to every gate that checks
+// what IS emitted.
 //
 // WHY THERE IS NO TOOL VOCABULARY. The obvious repair — a canonical tool enum with
 // per-adapter maps, in the shape `CanonicalEvent` already has — is a category error.
@@ -18,20 +18,15 @@
 // own residue had factored three tool names into TWO ACTS four lines above the field
 // that flattened them back.
 //
-// SO THIS FILE HOLDS THREE THINGS, and the third is the one that failed before:
+// SO THIS FILE HOLDS TWO THINGS, and the second is the one that failed before:
 //   1. the cell declares acts and NO selector — there is no field left to hold one;
-//   2. claude COMPUTES the selector the cell no longer spells;
-//   3. codex REPORTS the selector it cannot express, through the warnings channel it
-//      already had. The gap was never the defect. The SILENCE was.
+//   2. claude COMPUTES the selector the cell no longer spells, so the narrowing the
+//      old shape lost is present in the emitted settings.
 
 import {
   canonicalActToClaude,
   claudeHarnessAdapter,
 } from '@cratylus/forge/adapters/claude';
-import {
-  canonicalActToCodex,
-  codexHarnessAdapter,
-} from '@cratylus/forge/adapters/codex';
 import { hookIrOf } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { describe, expect, it } from 'vitest';
@@ -77,24 +72,18 @@ describe('the ACT vocabulary — two members, and no tool enum', () => {
       ).toContain(act);
   });
 
-  it('EXACTLY TWO, and both adapters bind the same two', () => {
+  it('EXACTLY TWO, and claude binds them', () => {
     // A third act has no site in this corpus. The count is pinned so a future one
     // arrives as a signification decision rather than as an adapter-local addition.
     expect(ACTS).toHaveLength(2);
-    expect(Object.keys(canonicalActToCodex).sort()).toEqual(ACTS);
   });
 
-  it('claude answers each act with a SELECTOR; codex answers with a declared LOSS', () => {
-    for (const act of ACTS) {
+  it('claude answers each act with a SELECTOR', () => {
+    for (const act of ACTS)
       expect(
         canonicalActToClaude[act]?.matcher,
         `claude binds '${act}' to no selector — the narrowing died in transit`,
       ).toBeTruthy();
-      expect(
-        canonicalActToCodex[act]?.unnarrowed,
-        `codex binds '${act}' with neither a selector nor a stated reason — that is the silence this gate exists for`,
-      ).toBeTruthy();
-    }
   });
 });
 
@@ -155,58 +144,22 @@ describe('CLAUDE — the selector is COMPUTED at projection', () => {
   });
 });
 
-describe('CODEX — the loss is SPOKEN, and the hook still deploys', () => {
-  const { settings, warnings, skipped } = project(
-    codexHarnessAdapter,
-    irFor(codexHarnessAdapter),
-  );
-
-  it('names BOTH acts it could not narrow, and the cell they came from', () => {
-    // THE PROPERTY THE OLD TREE FAILED. `.cratylus/codex/hooks.json` carried no
-    // matcher and the projection carried no warning; there was nothing anywhere to
-    // read the divergence off.
-    expect(warnings).toHaveLength(2);
-    for (const act of ACTS)
-      expect(
-        warnings.join(' | '),
-        `codex dropped the narrowing of '${act}' without saying so`,
-      ).toContain(act);
-    expect(warnings.join(' | ')).toContain('stance-guardrail-pre');
-    expect(warnings.join(' | ')).toContain('agent_type');
-  });
-
-  it('reports without DROPPING — the guardrail still runs on codex', () => {
-    // A codex agent with no stance guard at all was the older, worse failure. The
-    // repair reports the degradation; it does not restore the outage.
-    expect(skipped).toEqual([]);
-    expect(entriesUnder(settings, 'PreToolUse').length).toBeGreaterThan(0);
-  });
-
-  it('registers the worker ONCE, though two acts collapse onto one native event', () => {
-    // A doubling this repair could have introduced: both acts are `PreToolUse` here
-    // and neither carries a selector, so a naive loop would spawn the worker twice
-    // per tool call.
-    const entries = entriesUnder(settings, 'PreToolUse');
-    expect(entries).toHaveLength(1);
-    expect(entries[0]?.matcher).toBeUndefined();
-  });
-});
-
-describe('CONVICTING FIXTURE — the shape this replaced, projected to codex', () => {
-  /** The pre-repair binding: a plain tool event, narrowed by a field codex ignored. */
+describe('CONVICTING FIXTURE — the shape this replaced, projected to claude', () => {
+  /** The pre-repair binding: a plain tool event carrying no act, so nothing to narrow by. */
   const legacyShape: Hook = {
     id: 'stance-guardrail-pre',
     events: ['tool.use.pre'],
-    command: 'sh "$HOME/.codex/hooks/stance-guardrail-pre/x.sh"',
+    command: 'sh "$HOME/.claude/hooks/stance-guardrail-pre/x.sh"',
   };
 
-  it('CONVICTS: the old binding projects to codex in TOTAL SILENCE', () => {
+  it('CONVICTS: the old binding projects UNNARROWED and in total silence', () => {
     // Run the SAME projector over the shape the cell used to have. `tool.use.pre` is
-    // an ordinary mapped event, so codex emits it, narrows nothing, and — because
-    // there is no act to declare a loss for — has nothing to say. That silence is
-    // exactly what shipped, and it is what the act binding removed.
+    // an ordinary mapped event, so claude emits it, narrows nothing, and — because
+    // there is no act to bind a selector to — has nothing to say. That wildcard
+    // entry is what spawned the worker on every tool call, and it is what the act
+    // binding removed.
     const { settings, warnings, skipped } = project(
-      codexHarnessAdapter,
+      claudeHarnessAdapter,
       legacyShape,
     );
     expect(entriesUnder(settings, 'PreToolUse')).toHaveLength(1);
@@ -215,10 +168,13 @@ describe('CONVICTING FIXTURE — the shape this replaced, projected to codex', (
     expect(skipped).toEqual([]);
   });
 
-  it('the live cell over the SAME projector does not go quiet', () => {
+  it('the live cell over the SAME projector IS narrowed', () => {
     // The control's other half: the difference is the CELL, not a change of judge.
-    expect(
-      project(codexHarnessAdapter, irFor(codexHarnessAdapter)).warnings.length,
-    ).toBeGreaterThan(0);
+    const { settings } = project(
+      claudeHarnessAdapter,
+      irFor(claudeHarnessAdapter),
+    );
+    for (const entry of entriesUnder(settings, 'PreToolUse'))
+      expect(entry.matcher).toBeTruthy();
   });
 });

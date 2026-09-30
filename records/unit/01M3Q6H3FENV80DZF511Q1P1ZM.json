@@ -1,0 +1,51 @@
+{
+  "envelope": {
+    "id": "01M3Q6H3FENV80DZF511Q1P1ZM",
+    "entity": "01M3Q6H3FENV80DZF511Q1P1ZK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T18:23:44.622Z",
+    "reason": "assay: supported harness unachieved on documentation claims and a dead codex-only dependency",
+    "cause": "assay of supported harness on what-ships"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "unsupported-claims-removed",
+      "intent": "Remove every documentation and packaging claim that cratylus supports a harness other than Claude Code and omp, and every description of those two that is false at this commit (loci from the supported-harness assay, agent://AssaySupportedHarness/uncovered). DELETE docs/release-audit-checklist.md, docs/research/harness-reach-matrix.md and docs/claude-agents-md-assumption.md (stale contract/research sheets describing adapters, an IR and a tripwire that no longer exist; git keeps the history), and fix every link to them. packages/cli/package.json and docs/cli/USAGE.md say 'any harness': say Claude Code and omp. Drop USAGE's argument that the closed registry is a defect and its call for third-party adapters. packages/forge/README.md: deploy and project are per-harness (--harness claude|omp), settings.json is claude's, omp emits enforcing modules; its option table gains --harness. packages/cli/README.md states the real differences a user meets: claude realizes 19 of 31 lifecycle events natively and omp 9; event-tap works on Claude Code only; the persona badge and launcher, and role routing via modelRoles, are omp's. forge core/harness-adapter.ts drops the Cursor reach claim; the omp adapter headers stop calling omp 'the third harness'. Remove @iarna/toml from packages/forge/package.json and its pnpm-workspace.yaml catalog entry, and refresh the lockfile. Do NOT edit VISION.md (ground; surfaced to the operator).",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "docs/**",
+        "packages/cli/package.json",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        ".changeset/unsupported-claims-removed.md"
+      ],
+      "accept": [
+        "the three stale docs are gone and git grep for their filenames outside records/ and CHANGELOGs prints nothing",
+        "git grep -n -i -E 'aider|cline|continue\\.dev|copilot|crush|cursor|gemini|opencode|goose|antigravity|kilo|devin|\\bzed\\b|any harness|third harness' -- docs packages ':!**/CHANGELOG.md' ':!records' prints nothing, or only lines the implementer justifies as not a support claim",
+        "packages/forge/README.md documents --harness for deploy and project and no longer says deploy targets .claude only",
+        "packages/cli/README.md states the 19-of-31 vs 9-of-31 event reach and that event-tap is Claude Code only",
+        "git grep iarna -- packages pnpm-workspace.yaml prints nothing and pnpm install --frozen-lockfile succeeds",
+        "prettier --check on changed markdown and biome check on changed code pass"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}

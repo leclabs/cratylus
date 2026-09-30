@@ -1,0 +1,53 @@
+{
+  "envelope": {
+    "id": "01M3R0QV8S8BSMAF3GV65Y7CJG",
+    "entity": "01M3R03SJRJAYS8X21AE9Q1TYN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R0JQBBV2ZQRJ7K45C239FE"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T02:01:48.569Z",
+    "reason": "recording each claude definition model in the manifest needs PlaceReport (types.ts) and the merge in deployLocal (deploy.ts); no sibling in waves 0 or 1 declares either; uninstall (wave 2) reads them after",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "claude-role-choice",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize the corrected `role routing` where claude-role-routing's landed work falls short, and carry the new integrator role. The shard: each agent carries the role it holds, never a model; the host decides which model fills each role; where the host decided nothing, the agent runs on the harness's nearest built-in route for that kind of work (its ordinary default where it has none), or on a tier-only harness on the tier suited to the position's work: work that holds, cuts or judges against the design (architect, planner, assayer) top, spec-bounded work (implementer, integrator) middle; install makes the roles visible to the host as something it can set, and never changes a choice the host has made.\nSTANDING AT CENSUS. The claude tier table (packages/forge/src/adapters/claude/render.ts CLAUDE_ROLE_TIERS, :74) maps implementer to sonnet and planner, assayer and architect to opus: it stands. Two clauses fail on Claude Code. (a) Claude has no host-configurable role map; the one place a host sets a subagent's model is the agent definition's `model:` line, and deploy overwrites agent definitions freely (packages/forge/src/deploy/local.ts header: 'The def is overwritten freely'), so a host that edits `model:` loses its choice at the next install. (b) Install reports nothing about roles on Claude (seedModelRoles in packages/forge/src/cli/commands/install.ts runs only where the adapter has roleRouting, which claude leaves absent), so the host is never shown the roles as settable. The new integrator role (unit integrator-makes-whole) routes by ruling (note 'the integrator's role-routing tier'): omp nearest built-in `task`, Claude tier `sonnet`.\nCHANGE. (1) CLAUDE_ROLE_TIERS gains integrator → sonnet and packages/forge/src/adapters/omp/render.ts OMP_NEAREST_ROLE (:250) gains integrator → task, each with its reason in the tables' doc comments. (2) Claude install keeps a host's choice: deploy records, per claude agent definition it places, the `model:` value it wrote (packages/forge/src/deploy/manifest.ts, beside personaLinks); at the next deploy, a deployed definition whose `model:` line differs from the recorded value keeps the host's line in the newly placed definition (everything else is replaced as today) and the install report names it. A host line that sets no model (removed) is kept removed. (3) Claude install reports the roles as settable: one line per held role naming its tier and that the host sets it by the `model:` line of each agent holding it (kept across installs), plus the documented subagent override (`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with `CLAUDE_CODE_SUBAGENT_MODEL`). (4) packages/cli/README.md and packages/forge/README.md state (2) and (3) and the integrator's routes. (5) Tests in the existing files packages/forge/test/adapters/claude.test.ts, packages/forge/test/adapters/omp.test.ts and packages/forge/test/deploy/local.test.ts (a new file would need registering in packages/canon/test/gate-convicts.test.ts). (6) .changeset/role-choice-kept.md (@cratylus/forge minor).\nomp stands (ruling b14d8c4e: its nearest built-in routes are that work's default; its modelRoles entries are host-owned and never changed). The omp-launched persona's model is a note for a later plan, not this unit.",
+      "static": [
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/deploy/model-roles.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        ".changeset/role-choice-kept.md",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/deploy/local.test.ts"
+      ],
+      "accept": [
+        "Render: `pnpm build && pnpm exec cratylus project --harness claude --out $T` (T=$(mktemp -d), cwd /home/lex/workspaces/cratylus-share) with a fixture or corpus agent holding integrator emits `model: sonnet` for it; the omp render names `@task` for integrator. At census integrator maps to nothing on either (omp falls back to default).",
+        "KEPT: C=$(mktemp -d); `HOME=$C node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; edit $C/.claude/agents/planner.md's `model: opus` to `model: haiku`; install again; the line still reads `model: haiku`, every other line of that file equals a fresh render, and the install output names planner's kept model. At census the second install writes `model: opus` back.",
+        "VISIBLE: the first install's output carries one line per held role (print the count; 5 roles once integrator-makes-whole lands, 4 before) naming its tier and the `model:` line that sets it, and names CLAUDE_CODE_SUBAGENT_MODEL_FORCE. At census it carries none.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/adapters test/deploy` and `pnpm typecheck` exit 0; the local.test.ts case fails if deploy overwrites a host-edited model line."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "version": "01M3R09V7M6R7WVBZ7TTCC6S1C",
+      "closure": {}
+    }
+  }
+}

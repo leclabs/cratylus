@@ -1,0 +1,46 @@
+{
+  "envelope": {
+    "id": "01M3Q7HAZEWDTJRF09Y8BYXR3H",
+    "entity": "01M3Q6H3KR4462BD6FJNFCG6ZK",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q6H3W9BZZQ6V2MC40FX199"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T18:41:20.878Z",
+    "reason": "accepted: supported harness achieved on every factor at b2daebb2 (two adapters, every cell to both, degrade-and-warn live on both, no unsupported-harness claims, real differences documented); tap reach on claude acts ruled event-tap's concept, not this one; VISION.md:3 surfaced to the operator; whole gate green",
+    "cause": "final assay of supported harness at b2daebb2"
+  },
+  "payload": {
+    "plan": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "spec": {
+      "name": "event-tap-degrades-on-omp",
+      "intent": "event-tap ships to omp but the runtime has only a Claude strategy: from an omp context 'cratylus eventTap install' writes <cwd>/.claude/settings.json and 'status' reports attached: true while omp never reads that file (loci: packages/runtime/src/capabilities/event-tap/dispatch.ts:148-153; packages/forge/src/project/index.ts:679-684). Degrade and warn per the fidelity ladder: (1) projecting event-tap to a harness whose runtime has no tap strategy warns once at projection and install, naming the capability, the harness and what is lost (the skill still ships as a declaration, never silently); (2) the runtime determines which harness invoked it (from the host runtime config or the invoking environment; choose what is reliable and say why) and, when that harness has no tap strategy, refuses install with a message naming the harness and that only Claude Code has a tap today, writing nothing; (3) status never reports attached for a harness it did not attach to. Claude behaviour unchanged.",
+      "static": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/forge/src/adapters/omp/events.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/event-tap/**",
+        "packages/runtime/test/**",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/test/project/**",
+        ".changeset/event-tap-degrades-on-omp.md"
+      ],
+      "accept": [
+        "projecting the corpus with --harness omp prints exactly one warning naming event-tap and omp; --harness claude prints none",
+        "in a temp dir with an omp invocation context, cratylus eventTap install exits non-zero, names omp and Claude Code, and creates no .claude directory",
+        "status in that context never reports attached: true",
+        "claude eventTap install/status tests unchanged and green",
+        "runtime and forge targeted tests, typecheck and biome on outputs pass"
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    }
+  }
+}

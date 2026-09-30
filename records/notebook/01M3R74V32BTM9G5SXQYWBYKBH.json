@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R74V32BTM9G5SXQYWBYKBH",
+    "entity": "01M3R74V32BTM9G5SXQYWBYKBG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:53:45.826Z",
+    "reason": "third assay of uninstall against the uninstall shard",
+    "cause": "unit reworked and landed at 111feb54"
+  },
+  "payload": {
+    "title": "uninstall rework (111feb54): shard achieved; a pre-record showHookStatus flip is reported, not reverted",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "I ran live omp round trips at 111feb54 in temp HOMEs, each through an old-shape record (digests and hostEdits deleted), then a re-install, then an uninstall. On a bare host, and on a host with only 'theme: dark', the old install had created the 'modelRoles:' key and the statusLine block; config.yml came back byte for byte. That closes case C of the previous finding. A fresh install still undoes line by line: the host changed 'planner' to '@slow', and only that line was left and reported, together with its 'modelRoles:' parent. The residual is case D. A host on preset minimal with 'showHookStatus: false' keeps the 'true' an old install wrote. Uninstall now names config.yml under 'left', says an older install may have turned showHookStatus, and says nothing records which. [INFERENCE] I count this as achieved with a real residual: no record exists to tell that flip from the host's own value. The only installs that could have made it are those between aef3994f and f4f59d80, about 19 minutes tonight. The operator's real ~/.omp record is older, dated 09:29, and its config still reads showHookStatus: false (read-only check). The design-holder may rule otherwise.",
+    "blocks": []
+  }
+}

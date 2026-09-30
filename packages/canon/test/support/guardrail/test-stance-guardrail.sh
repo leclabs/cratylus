@@ -188,6 +188,43 @@ out="$(run_worker "$COLLAPSE" architect false)"
 is_block "$out" && pass "presence enrolls an agent no allowlist named (architect)" \
 	|| bad "manifest present but architect was not judged"
 
+# 4c. THE CLAUDE FORM OF THE SCOPE. Claude Code places no dispatcher, so the payload carries NO
+#     `stance_scope`; it names the running agent as `agent_type` (main thread of a `--agent`
+#     session, and inside a subagent) and names none on a bare session. The worker derives the
+#     persona's scope from that name under its own harness home — `<home>/hooks/<id>/` is two hops
+#     below it, `<home>/personas/<name>/` is the scope — and a manifest there is enrollment. The
+#     layout below is the one the claude adapter deploys. Before this, every case here passed a
+#     `stance_scope` only omp supplies, so a worker that never fired on claude read as green.
+CLAUDE_HOME="$WORK/claude"
+mkdir -p "$CLAUDE_HOME/hooks/stance-guardrail"
+cp "$WORKER" "$CLAUDE_HOME/hooks/stance-guardrail/stance-guardrail.sh"
+for who in mav architect; do
+	mkdir -p "$CLAUDE_HOME/personas/$who/stance"
+	cp "$SCOPES/$who/stance/manifest.json" "$CLAUDE_HOME/personas/$who/stance/manifest.json"
+done
+run_claude_worker() {  # $1=transcript-path  $2=agent_type ("" = a bare session: the key is absent)
+	n="$(($(cat "$_SESSC") + 1))"; printf '%s' "$n" > "$_SESSC"
+	jq -cn --arg tp "$1" --arg at "$2" --arg cwd "$REPO" --arg sid "claude$n" \
+		'{transcript_path:$tp, stop_hook_active:false, cwd:$cwd, hook_event_name:"Stop", session_id:$sid}
+		 + (if $at == "" then {} else {agent_type:$at} end)' \
+	| sh "$CLAUDE_HOME/hooks/stance-guardrail/stance-guardrail.sh" 2>/dev/null || true
+}
+out="$(run_claude_worker "$COLLAPSE" mav)"
+is_block "$out" && pass "claude form: agent_type alone enrolls mav via its manifest under the persona root" \
+	|| bad "claude form: a collapse by mav was NOT judged — the guard fires and can never judge"
+out="$(run_claude_worker "$COLLAPSE" architect)"
+is_block "$out" && pass "claude form: presence enrolls an agent no allowlist named (architect)" \
+	|| bad "claude form: manifest present but architect was not judged"
+out="$(run_claude_worker "$COLLAPSE" "")"
+is_block "$out" && bad "claude form: a bare session (no agent_type) was judged" \
+	|| pass "claude form: a bare session names no agent, so it stays silent"
+out="$(run_claude_worker "$COLLAPSE" general-purpose)"
+is_block "$out" && bad "claude form: a built-in agent with no manifest was judged" \
+	|| pass "claude form: a named agent carrying no manifest stays silent"
+out="$(run_claude_worker "$COLLAPSE" ../personas/mav)"
+is_block "$out" && bad "claude form: an agent_type that is not one directory name reached a scope" \
+	|| pass "claude form: an agent_type that is not one directory name is refused"
+
 # 5. ON + collapse + stop_hook_active=true → STILL BLOCKS. Judging is never skipped.
 #    THIS ASSERTION IS INVERTED FROM ITS ORIGINAL. It used to read "stop_hook_active suppresses
 #    block", and that green test was defending the hole: it demoted the invariant to alternating
@@ -428,7 +465,12 @@ mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the 
 # The elevation arrives as a SLASH INVOCATION — the wrapped form the operator slot filters out.
 {
 	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
-	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>\n## Prime Principle\ncratylism"}}')"
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>"}}')"
+	# The harness then injects the SKILL BODY as its own meta user message, opening with the
+	# wrapper claude emits and carrying no Prime Principle (a cell that does not apply it carries
+	# none). The stand-in avoids the re-dispatch words the standing-directive scan reads, so it
+	# can only reach the payload through the operator slot.
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,isMeta:true,message:{role:"user",content:"Base directory for this skill: /home/u/.claude/skills/design\n\n# Design\n\n```text\nSKILL-BODY-SENTINEL ≜ the formal block\n```\n"}}')"
 	printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
 } > "$SD_ELEV"
 
@@ -456,8 +498,75 @@ case "$p" in
 	*) bad "the grant's utterance did not reach the payload" ;;
 esac
 case "$p" in
-	*"Prime Principle"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
+	*"SKILL-BODY-SENTINEL"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
 	*) pass "the skill body stayed out; only the utterance crossed" ;;
+esac
+
+# THE OPERATOR SLOT KEYS ON THE HARNESS'S WRAPPER, NOT ON PROSE SHAPE. A projected skill body is
+# a verb H1 over a fenced block, and so is a perfectly ordinary operator message that pastes a
+# spec; a filter keyed on that shape drops real operator turns from the judge. Each injected
+# body below wears the wrapper its harness really emits — claude: a meta user message opening
+# "Base directory for this skill:"; omp: a `skill-prompt` message closing with a `---` rule and
+# "Skill: <path>/SKILL.md" — and the operator-shaped message wears neither.
+slot_payload() {  # $1=the message injected after the operator's "look at the loader"
+	_t="$WORK/slot.jsonl"
+	{
+		printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
+		printf '%s\n' "$(jq -cn --arg t "$1" '{type:"user",isSidechain:false,message:{role:"user",content:$t}}')"
+		printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
+	} > "$_t"
+	sd_payload "$_t"
+}
+BT='```'; DASH='---'
+p="$(slot_payload "Base directory for this skill: /home/u/.claude/skills/design
+
+# Design
+
+${BT}text
+CLAUDE-BODY-SENTINEL ≜ the formal block
+${BT}")"
+case "$p" in
+	*CLAUDE-BODY-SENTINEL*) bad "a claude-injected skill body (no Prime Principle) reached the operator slot" ;;
+	*) pass "claude-injected skill body without a Prime Principle → filtered" ;;
+esac
+p="$(slot_payload "Base directory for this skill: /home/u/.claude/skills/plan
+
+# Plan
+
+## Prime Principle
+
+cratylism
+
+${BT}text
+CLAUDE-PP-BODY-SENTINEL ≜ the formal block
+${BT}")"
+case "$p" in
+	*CLAUDE-PP-BODY-SENTINEL*) bad "a claude-injected skill body (with a Prime Principle) reached the operator slot" ;;
+	*) pass "claude-injected skill body with a Prime Principle → filtered" ;;
+esac
+p="$(slot_payload "# Design
+
+${BT}text
+OMP-BODY-SENTINEL ≜ the formal block
+${BT}
+
+${DASH}
+
+Skill: /home/u/.agents/skills/design/SKILL.md")"
+case "$p" in
+	*OMP-BODY-SENTINEL*) bad "an omp skill-prompt body reached the operator slot" ;;
+	*) pass "omp skill-prompt body → filtered" ;;
+esac
+p="$(slot_payload "# Target
+
+the loader in packages/x
+
+${BT}text
+OPERATOR-SHAPE-SENTINEL ≜ what I want changed
+${BT}")"
+case "$p" in
+	*OPERATOR-SHAPE-SENTINEL*) pass "an operator message shaped like a skill body (H1 over a fenced block) stays in the operator slot" ;;
+	*) bad "a genuine operator message was dropped because it looked like a skill body" ;;
 esac
 
 # ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
@@ -517,6 +626,32 @@ if [ -f "$PRE_WORKER" ]; then
 	out="$(run_pre AskUserQuestion "$MENU_INREMIT" architect s7)"
 	is_deny "$out" && pass "presence enrolls the pre-gate too (architect)" \
 		|| bad "manifest present but architect's menu was not denied"
+
+	# P8 — THE CLAUDE FORM, as case 4c: no `stance_scope`, the payload names the agent. The worker
+	#      sits at `<home>/hooks/<id>/` beside its Stop twin and finds `<home>/personas/<name>/`.
+	mkdir -p "$CLAUDE_HOME/hooks/stance-guardrail-pre"
+	cp "$PRE_WORKER" "$CLAUDE_HOME/hooks/stance-guardrail-pre/stance-guardrail-pre.sh"
+	run_claude_pre() {  # $1=tool_name  $2=tool_input(json)  $3=agent_type ("" = bare session)  $4=session_id
+		jq -cn --arg tn "$1" --argjson ti "$2" --arg at "$3" --arg sid "$4" --arg cwd "$REPO" \
+			'{tool_name:$tn, tool_input:$ti, cwd:$cwd, hook_event_name:"PreToolUse", session_id:$sid}
+			 + (if $at == "" then {} else {agent_type:$at} end)' \
+		| sh "$CLAUDE_HOME/hooks/stance-guardrail-pre/stance-guardrail-pre.sh" 2>/dev/null || true
+	}
+	out="$(run_claude_pre AskUserQuestion "$MENU_INREMIT" mav c1)"
+	is_deny "$out" && pass "claude form: agent_type alone enrolls the pre-gate (mav)" \
+		|| bad "claude form: mav's in-remit menu was NOT denied — the guard fires and can never judge"
+	out="$(run_claude_pre Agent "$DISPATCH_ECHO" architect c2)"
+	is_deny "$out" && pass "claude form: presence enrolls the pre-gate for architect" \
+		|| bad "claude form: manifest present but architect's dispatch-echo was not denied"
+	out="$(run_claude_pre AskUserQuestion "$MENU_INREMIT" "" c3)"
+	is_deny "$out" && bad "claude form: a bare session (no agent_type) was denied" \
+		|| pass "claude form: a bare session names no agent, so the pre-gate stays silent"
+	out="$(run_claude_pre AskUserQuestion "$MENU_INREMIT" general-purpose c4)"
+	is_deny "$out" && bad "claude form: a built-in agent with no manifest was denied" \
+		|| pass "claude form: a named agent carrying no manifest stays silent"
+	out="$(run_claude_pre AskUserQuestion "$MENU_INREMIT" ../personas/mav c5)"
+	is_deny "$out" && bad "claude form: an agent_type that is not one directory name reached a scope" \
+		|| pass "claude form: an agent_type that is not one directory name is refused"
 else
 	printf '  skip — no pre-worker at %s\n' "$PRE_WORKER"
 fi

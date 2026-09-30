@@ -21,7 +21,6 @@
 
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
-import { foundingDoctrine } from './genus/founding-doctrine.js';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
@@ -32,7 +31,7 @@ export default defineAgentPlugin({
   name: 'canon',
   // WHICH dimensions exist — this corpus's own manifest, carried on the plugin so
   // a consumer projecting canon gets canon's dimension set without the projector
-  // containing it. The same carry as `preamble` below.
+  // containing it.
   manifest: MANIFEST,
   // WHICH lifecycle events exist — carried the same way, and for the same reason.
   // The projector needs the members to emit a host's runtime configuration
@@ -42,7 +41,5 @@ export default defineAgentPlugin({
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),
-  // The axiom rides the PLUGIN, so it survives projection by any consumer.
-  preamble: foundingDoctrine,
   hooks: dir('./hooks'),
 });

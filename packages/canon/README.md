@@ -44,16 +44,18 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | `agents`    | the agent vectors                                                                   |
 | `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes |
 | `hooks`     | the hook cells, each carrying its verbatim worker payload                           |
-| `preamble`  | the founding doctrine, emitted above every projected agent body                     |
 
 Canon owns the catalog because a dimension is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
 consumer can extend this design — or add a dimension to it — without editing the tool that renders
 it. The shapes those cells are authored against are [`@cratylus/schema`](../schema/README.md)'s.
 
-The preamble rides the plugin for the same reason: the first principle
-(`dimensions/engineering-principles/cratylism.ts`) is intrinsic to the projected bytes, so it
-survives deployment into a foreign repository rather than depending on ambient context.
+The first principle (`dimensions/engineering-principles/cratylism.ts`) is not stamped on every cell.
+It rides only the cells whose laws apply it: the ten skills that name concepts by anchor, optimal
+sign or cold decode set it as their `preamble`, and an agent carries it once, through the
+engineering-principles of the role it holds. A cell that does not use it never holds a host's own
+authored surfaces to this corpus's naming axiom. It is intrinsic to those cells' projected bytes, so
+it survives deployment into a foreign repository rather than depending on ambient context.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the
 directory fields are resolved against `import.meta.url` at definition time and consumed verbatim.

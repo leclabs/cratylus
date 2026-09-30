@@ -1,0 +1,57 @@
+{
+  "envelope": {
+    "id": "01M3QEZJJF77G1K9Y12746T5MG",
+    "entity": "01M3QCD3RRV1EVW9K19NCECT7X",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QCH2RC4KHJCV6HDNW3RWF5"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:51:27.439Z",
+    "reason": "persona badge amended with its omp placement clause",
+    "cause": "badge placement investigation, 2026-09-29"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-persona-badge",
+      "intent": " OMP CLAUSE (gloss amended): install ensures omp's 'status' segment is in the host's statusLine.leftSegments in the omp config file omp reads (agent/config.yml, else config.yaml; same surgical, host-owned insertion rules as modelRoles): no key → write omp's default left list (vim, model, mode, path, git, pr) plus status; a list without status → append status; a list with it → untouched; report the change; --dry-run writes nothing. Evidence: oh-my-pi packages/tui/src/status-line/segments.ts:208-221 (status segment renders hook statuses), schema.ts:36-40 (defaults lack status), coding-agent/src/config/settings.ts:276-288 (statusLine.leftSegments).",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/schema/src/index.ts",
+        "packages/runtime/src/bin-name.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/canon/test/bin-name-single-home.test.ts"
+      ],
+      "deps": [
+        "01M3QCCA4EGF559739540C5YTW"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/claude-persona-badge.md",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/cli/commands/install.ts"
+      ],
+      "accept": [
+        "omp install on a config without statusLine writes leftSegments = [vim, model, mode, path, git, pr, status]; on one listing segments without status appends status and changes no other byte; on one with status leaves the file byte-identical; --dry-run writes nothing"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NBKGAEMWHE61KYRA703KGR",
+      "version": "01M3QEZJ5DBE4G7XJ98JPVT6V1",
+      "closure": {}
+    }
+  }
+}

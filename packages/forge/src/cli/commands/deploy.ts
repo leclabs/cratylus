@@ -50,7 +50,7 @@ export interface DeployCmdOpts {
   // What to ship. `all` expands to agent → skill → hooks (same target opts).
   kind: DeployKindArg;
   scope: Scope;
-  /** Harness name (`claude` | `codex`); decides WHICH home the tree lands in. */
+  /** Harness name (`claude` | `omp`); decides WHICH home the tree lands in. */
   harness?: string | null;
   // Target — the local harness root the scope resolves to.
   home?: string | null;
@@ -125,9 +125,9 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     return runDeployCheck(opts);
   }
   // WHICH harness's home the tree lands in. Resolved by NAME through the same
-  // registry `project` uses, so `deploy --harness codex` and `project --harness
-  // codex` cannot disagree about where codex lives. Unknown name fails loudly
-  // here rather than silently deploying into `.claude`.
+  // registry `project` uses, so `deploy --harness <name>` and `project --harness
+  // <name>` cannot disagree about where that harness lives. Unknown name fails
+  // loudly here rather than silently deploying into `.claude`.
   const harnessAdapter = adapterByName(opts.harness ?? 'claude');
   const tree: RenderTree = {
     agentsDir: opts.agentsDir,

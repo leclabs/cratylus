@@ -2,24 +2,20 @@
 // captures the projection operations a consumer (canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
 // on-disk ARTIFACTS — WITHOUT naming a concrete adapter module. A consumer selects
-// an implementation strictly BY NAME (`adapterByName('claude' | 'codex')`), so no
+// an implementation strictly BY NAME (`adapterByName('claude' | 'omp')`), so no
 // `adapters/<harness>` subpath import leaks into the consumer.
 //
 // Each projection op returns `{ filename, content }` — the harness owns its own
-// file naming (`<name>.md` vs `<name>.toml`; `SKILL.md`), the consumer owns only
-// the parent directory it writes under. Optional ops (`scopeOrientation`, `hooks`)
-// are present only on harnesses that have that artifact (codex has an `AGENTS.md`
-// index; claude serializes hooks → a `settings.json` fragment).
+// file naming (`<name>.md`; `SKILL.md`), the consumer owns only
+// the parent directory it writes under. Optional ops (`hooks`, `enforcingSurface`)
+// are present only on harnesses that have that artifact (claude serializes hooks →
+// a `settings.json` fragment).
 //
 // VOCABULARY — the GENUS is `artifact`: one projected file, `⟨filename, content⟩`,
-// which is what every op below returns. This file used to spell the genus `surface`
-// in its prose while binding `surface?()` to ONE species (codex's `AGENTS.md`), so
-// the field and the prose disagreed about the extension of the same sign and a
-// reader who trusted either was wrong about the other. The species is now
-// `scopeOrientation`, and `surface` is left to the sense the rest of the corpus
-// already gives it — a module's exposed API extent (`resolve/`'s public surface, a
-// port's INTERFACE surface). `enforcingSurface` below keeps the word in exactly
-// that sense: the global config extent a harness offers, not a file.
+// which is what every op below returns. `surface` is kept for the sense the rest
+// of the corpus gives it — a module's exposed API extent (`resolve/`'s public
+// surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
+// exactly that sense: the global config extent a harness offers, not a file.
 
 import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
 import type {
@@ -75,9 +71,8 @@ export const SHARED_STAGE_DIR = 'shared';
  *
  * NOT this project's invention, which is exactly why it is worth targeting: omp
  * reads `~/.agent[s]/{skills,rules,prompts,commands,AGENTS.md,SYSTEM.md}` through a
- * vendor-neutral provider at discovery priority 70, and Cursor reads
- * `~/.agents/skills/` and `.agents/skills/`. A corpus that lands here is loaded by
- * two harnesses with no flag, no copy and no per-profile fan-out.
+ * vendor-neutral provider at discovery priority 70. A corpus that lands here is
+ * loaded by omp with no flag, no copy and no per-profile fan-out.
  *
  * It is a SIBLING of every harness home (`.omp`, `.claude`, …), so an adapter
  * addresses it as `../<this>/…` from its own home and deploy must be told it is a
@@ -114,19 +109,18 @@ export const SCOPE_DIR_TOKEN = '{{scopeDir}}';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
-  /** The harness-owned filename (with extension), e.g. `mav.md` / `mav.toml` / `SKILL.md`. */
+  /** The harness-owned filename (with extension), e.g. `mav.md` / `SKILL.md`. */
   readonly filename: string;
   readonly content: string;
   /**
    * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
    *
-   * Absent ⇒ the artifact is global to the harness home, which is every harness
-   * whose enforcement is a config FILE (claude's `settings.json`, codex's
-   * `hooks.json`): one artifact, one place, no scope to name. Present ⇒ the
-   * artifact is one of MANY, and its scope decides where deploy lands it
-   * (`HarnessAdapter.scopedRel`). omp is the harness that needs this: its
-   * scope is a DIRECTORY, so the same registrations are emitted once per scope
-   * and each copy is correct by placement rather than by a runtime filter.
+   * Absent ⇒ the artifact is global to the harness home: one artifact, one place,
+   * no scope to name (claude's `settings.json`). Present ⇒ the artifact is one of
+   * MANY, and its scope decides where deploy lands it (`HarnessAdapter.scopedRel`).
+   * omp's scope is a DIRECTORY, so the same registrations are emitted once per
+   * scope and each copy is correct by placement rather than by a runtime filter;
+   * claude's persona scope holds only the stance manifest its workers look for.
    */
   readonly scope?: string;
   /**
@@ -144,9 +138,8 @@ export interface HarnessProjection {
 export interface HarnessHooksProjection {
   /**
    * WHERE this harness keeps its scope-activated hook config — `settings.json`
-   * for claude, `hooks.json` for codex. The projector used to hardcode the claude
-   * name, which made a second harness's artifact unnameable and is why codex's was
-   * assumed not to exist.
+   * for claude. The projector used to hardcode the claude name, which made a
+   * second harness's artifact unnameable.
    */
   readonly filename: string;
   readonly settings: Record<string, unknown>;
@@ -175,14 +168,23 @@ export interface AgentDefContext {
    * values — INJECTED, because MODEL makes `mechanism` a function of (fragment,
    * adapter) that deploy emits, not a field the source cell carries. A harness
    * that attaches per-agent (claude: front-matter hooks) renders them; one that
-   * declares globally (codex) ignores it and uses `enforcingSurface` instead.
+   * declares globally ignores it and uses `enforcingSurface` instead.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
+  /**
+   * The composed skills this adapter must NOT print into a main session, because
+   * what the hook would print exceeds `mainSessionSkillHook.cap`: projection
+   * measures each composed skill and hands the ones over the cap down by name. The
+   * adapter names each as required reading — in what reaches the MAIN session only,
+   * never the definition's body, which a dispatched holder reads too — so the
+   * harness's own skill tool loads it on demand. Absent or empty: every skill fits.
+   */
+  readonly oversizedSkills?: ReadonlySet<string>;
 }
 
 /** The projection port a harness adapter implements. */
 export interface HarnessAdapter {
-  /** The canonical harness name this adapter projects for (`claude`, `codex`, …). */
+  /** The canonical harness name this adapter projects for (`claude`, `omp`). */
   readonly name: string;
   /**
    * The substrate this adapter realizes constraints on.
@@ -194,23 +196,22 @@ export interface HarnessAdapter {
   readonly substrate: Substrate;
   /**
    * The dot-directory this harness reads its deployed artifacts from — `.claude`,
-   * `.codex`. Relative to `$HOME` at user scope, to the project root at project
+   * `.omp`. Relative to `$HOME` at user scope, to the project root at project
    * scope.
    *
-   * REQUIRED, and the reason the whole deploy half existed only for claude: every
-   * scope, manifest and prune path spelled `.claude` directly, with no adapter in
-   * scope to ask. `deploy --harness codex` could be typed and could not be
-   * honoured, so a correct codex render had nowhere to land.
+   * REQUIRED, and the reason the whole deploy half once existed only for claude:
+   * every scope, manifest and prune path spelled `.claude` directly, with no
+   * adapter in scope to ask.
    */
   readonly home: string;
   /**
-   * The file EXTENSION this harness's agent definitions carry — `.md`, `.toml`.
+   * The file EXTENSION this harness's agent definitions carry — `.md`.
    *
    * `agentDef` already returns a full filename, but DEPLOY reads a render tree
    * off disk and has no vector to ask, so it needs the extension on its own. It
-   * assumed `.md`, which is why a codex deploy placed zero agents: it looked for
-   * `<name>.md` in a directory of `<name>.toml`, found nothing, and reported
-   * success.
+   * once assumed `.md` outright, so a harness whose agents carry another extension
+   * would have placed zero agents: it looked for `<name>.md`, found nothing, and
+   * reported success.
    */
   readonly agentExt: string;
   /**
@@ -225,8 +226,8 @@ export interface HarnessAdapter {
    * between them. It used to be the identity map, which silently assumed every
    * harness stages the way forge does.
    *
-   * Claude and codex do (`agents/<name>.md`, `agents/<name>.toml`), so the
-   * assumption held for two harnesses and was invisible. **omp does not**: its
+   * Claude does (`agents/<name>.md`), so the
+   * assumption held for one harness and was invisible. **omp does not**: its
    * definition lands at `<home>/agent/agents/<name>.md` — inside omp's own
    * config root, two levels down, because that is the USER-level task-agent
    * root omp discovers from and forge's flat `agents/<name>.md` staging is not
@@ -242,8 +243,8 @@ export interface HarnessAdapter {
    *
    * PLURAL because how many destinations a skill needs depends on how the
    * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
-   * and codex read skills from one user-level dir, so `agents` goes unused for
-   * either. **omp used to be the exception** — its native config root was
+   * reads skills from one user-level dir, so `agents` goes unused for it.
+   * **omp used to be the exception** — its native config root was
    * profile-scoped, so a skill reachable from every projected persona needed
    * N+1 copies (see `git blame` for the incident: `~/.omp/skills` is a
    * directory omp never scans, so a byte-perfect render once deployed 16
@@ -259,8 +260,8 @@ export interface HarnessAdapter {
    */
   skillRel(name: string, agents: readonly string[]): readonly string[];
   /**
-   * The filename of this harness's hook-config artifact — `settings.json`,
-   * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
+   * The filename of this harness's hook-config artifact — `settings.json`.
+   * Mirrors `HarnessHooksProjection.filename`; deploy needs it to
    * find the fragment in the render tree and to merge into the host's copy.
    */
   readonly hooksFile: string;
@@ -269,8 +270,8 @@ export interface HarnessAdapter {
    * where it judges in-process and needs no subprocess.
    *
    * Declared on the port because it is the fact that made every harness's guard
-   * depend on one vendor: the judge backend hardcoded `claude`, so codex's stance
-   * guard and omp's both required a third CLI installed and separately
+   * depend on one vendor: the judge backend hardcoded `claude`, so omp's stance
+   * guard required a second CLI installed and separately
    * authenticated, and a lapsed session in that CLI failed every verdict open,
    * silently, everywhere at once. A harness answers with its OWN model or it says
    * it cannot, and neither answer belongs in a cell.
@@ -283,8 +284,8 @@ export interface HarnessAdapter {
    *
    * REQUIRED, because the answer decides what an agent's skills become here. Yes
    * ⇒ `agentDef` emits the native field from `Agent.skills`. No ⇒ it emits none
-   * (codex's agent TOML has no such field, only `skills.config` enable/disable)
-   * and renders the skills as a required-reading declaration instead, and
+   * (a harness whose agent definition has no such field) and renders the skills
+   * as a required-reading declaration instead, and
    * projection warns once per agent that has any: the fidelity ladder's floor is
    * a steer, never silence.
    *
@@ -292,6 +293,27 @@ export interface HarnessAdapter {
    * (`skillClosure`), so an adapter renders it and computes nothing.
    */
   readonly preloadsSkills: boolean;
+  /**
+   * How this harness carries a persona's composed skills into a MAIN session, where
+   * its native preload (`preloadsSkills`) does not reach — by a hook that prints each
+   * skill. Absent for a harness whose main session already has them.
+   *
+   * `cap` is a fact of the harness: the most characters one such hook's output may
+   * hold before the harness replaces it with a preview the model does not have to
+   * read. `size` is what that hook prints for a skill, given the skill's projected
+   * `SKILL.md` text — the number projection weighs against `cap`, to decide which
+   * skills the adapter cannot hook and to warn once per skill that it cannot.
+   *
+   * `hostHome` is the home the definitions will be installed under, when the caller
+   * knows it (`install` does; `project` does not). The hook prints each skill's
+   * directory, and that path is part of its output, so a longer home is a longer
+   * output. Absent, the size counts the path as the definition spells it, which is a
+   * LOWER BOUND: a host with a longer home prints more.
+   */
+  readonly mainSessionSkillHook?: {
+    readonly cap: number;
+    size(skillName: string, skillMd: string, hostHome?: string): number;
+  };
   /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.
    *
@@ -319,7 +341,7 @@ export interface HarnessAdapter {
    * The predicate behind `¬scopable(e, adapter)`, and a STRICTLY stronger demand
    * than `realizes`: firing is not scoping. An adapter may fire an event globally
    * and still be unable to say WHICH agent it fired for, because the harness gives
-   * the hook no agent identifier to match on. Codex's `Stop` is exactly that —
+   * the hook no agent identifier to match on. Such an event is
    * realizable, unscopable.
    *
    * Only asked of a constraint some agent's `ir(a)` composes. A session-wide hook
@@ -337,8 +359,8 @@ export interface HarnessAdapter {
    * a worker DOES (`content`, harness-agnostic behaviour); the harness owns WHERE
    * it lands and HOW it is invoked. `$HOME/.claude/hooks/<anchor>/<file>` is a
    * claude FACE, and a canon cell that spelled it out would have chosen a harness
-   * — which is precisely what it did, and why the codex projection carried no
-   * governance at all: every cell's command named a claude path, so codex's whole
+   * — which is precisely what it did, and why a second harness's projection carried no
+   * governance at all: every cell's command named a claude path, so that harness's whole
    * hooks dir was dropped rather than translated.
    *
    * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
@@ -350,22 +372,6 @@ export interface HarnessAdapter {
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
-  /**
-   * The one artifact this harness loads because the reader is IN THIS SCOPE rather
-   * than because anything was selected — codex's `AGENTS.md`; claude projects none.
-   * It orients whoever reads it: what this workspace is, and an index of the agents
-   * and skills available here.
-   *
-   * SCOPE-ACTIVATED, and that is the whole differentia. `agentDef` and `skillDef`
-   * are selection-activated — their bytes are read only once a reader picks that
-   * agent or invokes that skill. This one is read first and unconditionally, which
-   * is why it takes the WHOLE agent-name set and no single vector.
-   *
-   * It was called `surface`, a sign this file's own prose simultaneously used for
-   * the genus (any projected artifact). Same sign, two extensions, one file — see
-   * the VOCABULARY note at the top.
-   */
-  scopeOrientation?(agentNames: readonly string[]): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports
    *  hooks (claude → `settings.json` `hooks` block). */
   hooks?(hooks: readonly Hook[]): HarnessHooksProjection;
@@ -377,7 +383,7 @@ export interface HarnessAdapter {
    * THE ADAPTER'S JOB IS TO ADAPT. The canon authors the ideal shape: a constraint
    * composed into the agents it governs. What varies is how much of that a given
    * harness can express. Claude attaches hooks to a subagent directly, so it needs
-   * nothing here and omits this. Codex declares hooks globally, so its adapter must
+   * nothing here and omits this. A harness that declares hooks globally must
    * map per-agent down onto a global surface plus a matcher — the mapping lives in
    * the adapter, never in the canon, and never in a hand-written filter inside the
    * mechanism.
@@ -389,14 +395,14 @@ export interface HarnessAdapter {
    * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
    * never a field the source cell carries.
    *
-   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** Codex's implementation already
-   * took a `mechanisms` parameter and defaulted it to an empty map; the adapter
-   * wired `(bindings) => codexHooksJson(bindings)` and never passed one, so every
-   * binding hit `if (!m) continue` and the function returned `null` for every input
-   * — measured, not inferred. Codex's per-agent enforcing constraints reached the
-   * host as nothing at all, while the unit tests stayed green because they call the
-   * function DIRECTLY with a mechanism map the production path never supplies.
-   * Threading it through the port is what makes the two paths the same path.
+   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** An implementation took a
+   * `mechanisms` parameter and defaulted it to an empty map, and the adapter never
+   * passed one, so every binding hit `if (!m) continue` and the function returned
+   * `null` for every input — measured, not inferred. Per-agent enforcing
+   * constraints reached the host as nothing at all, while the unit tests stayed
+   * green because they called the function DIRECTLY with a mechanism map the
+   * production path never supplied. Threading it through the port is what makes
+   * the two paths the same path.
    *
    * Returns one projection, MANY, or null. Plural because a harness may scope by
    * per-agent DIRECTORY rather than by a selector: omp writes one module per
@@ -454,6 +460,15 @@ export interface HarnessAdapter {
    * start one persona has a launch spec whether or not this port generates it
    * for them.
    *
+   * EVERY HARNESS THAT DECLARES IT PLACES THE STANCE MANIFEST, mechanism or
+   * not: the projector stages one per persona (`core/enrollment.ts`) and this map
+   * says where it lands. omp's scope carries modules beside it; claude's carries
+   * nothing else, because claude registers in `settings.json` and its workers find
+   * the persona by the `agent_type` the hook payload names. The map must place a
+   * persona's manifest directly under `<root>/<persona>/`, keeping its
+   * scope-relative path (`STANCE_MANIFEST`), because the workers derive that root
+   * from it (`personaRootOf`).
+   *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is
    * asked at DEPLOY, which reads the tree off disk and has no projection to
@@ -495,13 +510,65 @@ export interface HarnessAdapter {
    * pass `--profile work` on the launcher's own command line and get both.
    *
    * Absent ⇒ this harness carries identity in its own native field (claude's
-   * front-matter `name`, codex's TOML `name`) and composes no launch spec.
+   * front-matter `name`) and composes no launch spec.
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
   /**
+   * The filename of this harness's GENERIC PERSONA LAUNCHER — the file
+   * {@link launchSurface} emits at the {@link SESSION_SCOPE}, one for every persona,
+   * which resolves the persona to launch from its own invoked name.
+   *
+   * Declared on the port because install's persona commands link to it: a command
+   * named after a persona is a symlink to this file, and where it landed is the
+   * adapter's own answer (`scopedRel(launcherFile, SESSION_SCOPE)`), never a path
+   * install spells. Absent ⇒ this harness has no launcher, so no persona command
+   * can be linked to it.
+   */
+  readonly launcherFile?: string;
+  /**
+   * The harness's ONE host-owned status-line command, and the worker this port
+   * ships to fill it — declared by a harness whose status line is a single command
+   * with no segments to add a badge to (claude's `settings.statusLine`), so the
+   * persona badge cannot sit beside the host's own line and must BE the line, or
+   * wrap it.
+   *
+   * `file` is the worker {@link launchSurface} emits at the {@link SESSION_SCOPE}:
+   * one for every persona, which asks the harness's status-line input which persona
+   * runs and prints that persona's baked badge file, or nothing where none was
+   * placed. `command` is the shell command that runs the placed worker, written
+   * against `$HOME` and not a resolved path, for the reason `hookCommand` is: it is
+   * read at RUN time on whatever host it lands on. Install sets it as the host's
+   * status line where the host has none, and appends the host's own command to it,
+   * as one quoted argument, to wrap it.
+   *
+   * Absent ⇒ this harness's status line takes segments (omp's does: see
+   * {@link statusSegment}) or has no status line install could set.
+   */
+  readonly statusLine?: StatusLineWorker;
+  /**
+   * Where an extension's status appears in this harness's status line, for a harness
+   * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
+   * persona badge is an extension status, and it renders INSIDE the line only where
+   * the host's layout lists `segment` — otherwise beneath it. Install adds it, to the
+   * host's own layout and never over it.
+   *
+   * Four facts, all the harness's own. `configRels` is where the host keeps the
+   * layout, harness-home relative in the order the harness READS them (the first that
+   * exists, as {@link RoleRouting.configRels}). `segment` is the segment's id.
+   * `defaultLayout` is what the harness lays out when the host names no preset — the
+   * layout in effect on a host that never chose one, which has no `segment`, and
+   * which the harness reads segment lists from ONLY under its `custom` preset: so a
+   * host with no preset can show the badge only by choosing `custom`, and install
+   * then writes this layout under it so the line looks as it did. `customLeft` is
+   * the left list the `custom` preset falls back to when the host lists none.
+   *
+   * Absent ⇒ this harness has no segment list to add to.
+   */
+  readonly statusSegment?: StatusSegmentHost;
+  /**
    * How this harness routes a MODEL by the ROLE an agent holds — the table that
    * lets a projected definition name its position ({@link Agent.holds}) and leaves
-   * the host to choose the model. The projection names no model, ever.
+   * the host to choose the model. The projection names no model id, ever.
    *
    * Three facts, all the harness's own: the ROLE it falls back to when the host
    * never configured the held one (`defaultRole`, the role such an agent then runs
@@ -512,10 +579,47 @@ export interface HarnessAdapter {
    * does). Install reads this by harness name through the registry, so it never
    * imports an adapter.
    *
-   * Absent ⇒ this harness has no role-keyed model routing: definitions carry no
-   * route and install touches no host config.
+   * Absent ⇒ this harness has no host-configured role → model table: install
+   * touches no host config. That is not "definitions name no model route": a
+   * harness may route by a tier of its own in the definitions it projects, keyed
+   * by the held role and owned by that adapter alone (claude emits a tier alias
+   * per role), and the host's choice still outranks it.
    */
   roleRouting?: RoleRouting;
+}
+
+/** The status-line worker a harness ships. See {@link HarnessAdapter.statusLine}. */
+export interface StatusLineWorker {
+  /** The worker's filename, at the {@link SESSION_SCOPE}. */
+  readonly file: string;
+  /** The shell command that runs the placed worker, host command not yet appended. */
+  readonly command: string;
+}
+
+/** A status-line layout: the segments each side lists, and the options they carry. */
+export interface StatusLayout {
+  readonly left: readonly string[];
+  readonly right: readonly string[];
+  /** Options per segment id, each a plain scalar. */
+  readonly segmentOptions: Readonly<
+    Record<string, Readonly<Record<string, string | number | boolean>>>
+  >;
+}
+
+/** Where an extension's status appears in a harness's status line. See
+ *  {@link HarnessAdapter.statusSegment}. */
+export interface StatusSegmentHost {
+  /** The host config files that hold the layout, harness-home relative, in read order. */
+  readonly configRels: readonly string[];
+  /** The segment an extension's status renders in. */
+  readonly segment: string;
+  /** The name of the preset in effect when the host names none — and the one it may
+   *  write out. Its layout is `defaultLayout`. */
+  readonly defaultPreset: string;
+  /** The layout in effect when the host names no preset. */
+  readonly defaultLayout: StatusLayout;
+  /** The left segments the `custom` preset falls back to when the host lists none. */
+  readonly customLeft: readonly string[];
 }
 
 /** A harness's role → model routing table. See {@link HarnessAdapter.roleRouting}. */

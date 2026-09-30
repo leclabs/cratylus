@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QS44E2VW0E67DPB3C1SM0W",
+    "entity": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:48:42.562Z",
+    "reason": "the role every architect holder folds still casts it as committing, formatting and answering for a green main; its contract names no integrator",
+    "cause": "assay of 20961057 (agent AssayArchitectCells); design concept architect position @a8cf23f8"
+  },
+  "payload": {
+    "name": "architect-position",
+    "realizes": [
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "proposed"
+  }
+}

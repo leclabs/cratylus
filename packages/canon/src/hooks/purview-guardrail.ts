@@ -25,13 +25,15 @@ import type { HookCell } from '../manifest.js';
 // every agent in the corpus composed the fragment it claimed to enforce.
 //
 // WHAT IT BLOCKS is what the arrow excludes, and nothing else:
-//   · a dispatch to a builder for a piece no planner decomposed, from a holder whose
-//     arrow does not write spec — the architect skipping the middle rung;
+//   · a dispatch carrying a spec the dispatcher wrote, from a holder whose arrow does
+//     not write spec — the architect skipping the planner, who alone turns a shard into
+//     units;
 //   · a write to the substrate by a holder whose arrow does not write artifact;
-//   · a dispatch whose prompt is the operator's literal words rather than a cut piece
+//   · a dispatch whose prompt is the operator's literal words rather than a routed name
 //     — the same dispatch-echo the stance guard catches at turn end, refused here
 //     because at this moment the contract that convicts it is the ROLE's.
-// WHAT IT PASSES: a dispatch to a planner, a dispatch to an assayer, READING anything,
+// WHAT IT PASSES: a dispatch to a planner, a dispatch routing a unit name to an
+// implementer, a dispatch to an assayer, a dispatch to the integrator, READING anything,
 // and writing whatever the arrow reserves. Reading is never a block — the architect's
 // contract makes an artifact read a descent, but a read is cheap to undo and a gate
 // that fires on one would wedge every legitimate orientation.
@@ -44,8 +46,10 @@ import type { HookCell } from '../manifest.js';
 export const purviewGuardrail: HookCell = {
   id: 'purview-guardrail',
   residue:
-    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(build) ∄ decomposition⟩ · dispatch-echo ⟨literal-words ≠ cut-piece⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ assay⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
+    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(spec the dispatcher wrote) ∄ planner⟩ · dispatch-echo ⟨literal-words ≠ routed-name⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ implement(unit-name) ∨ assay ∨ integrate⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
   substrate: 'harness',
+  // Bound by holding a role at all: the arrow it judges against is the role's own.
+  binds: { dimension: 'role' },
   order: 1,
   events: ['subagent.dispatch.pre', 'tool.use.pre'],
   entry: 'purview-guardrail.sh',
@@ -73,18 +77,81 @@ export const purviewGuardrail: HookCell = {
 #   - CONTRACT-ENROLLED, one step further. A persona whose Target carries no \`## Role\`
 #     section has no arrow to be outside of, so it is allowed. A gate cannot convict
 #     against a law that was never declared.
-#   - FAILS OPEN. Any error (no jq, no Target, judge failure) -> exit 0.
+#   - FAILS OPEN, NEVER SILENTLY. Any error (no jq, no input, no Target, judge failure,
+#     unparseable verdict, unexpected error) -> exit 0, and the call goes through WITH A NOTICE
+#     the operator reads (\`say\`: Claude Code's JSON \`systemMessage\`, omp's relayed line) naming
+#     this guard and why it could not judge. Silence is reserved for "judged, pass", "not
+#     enrolled" and "no arrow declared".
 #   - EVIDENCE-CHECKED. A BLOCK must quote a span that is literally present in the
-#     payload; a citation that is not there is a fabricated block and is DISCARDED.
-#   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice.
+#     payload; a citation that is not there is a fabricated block and is DISCARDED — and the
+#     discard is said, since no verdict then stands.
+#   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice. The second,
+#     identical call goes through unjudged, and says so.
 #
 # INPUT  : Claude Code PreToolUse hook JSON on stdin.
 # OUTPUT : on a purview breach -> a deny decision on stdout + exit 0.
-#          otherwise -> no stdout + exit 0.
+#          judged, pass -> no stdout + exit 0.
+#          let through with no verdict -> the notice \`say\` prints + exit 0.
 #
-# POSIX sh. Depends on: jq. Missing jq -> fail open.
+# POSIX sh. Depends on: jq. Missing jq -> the guard says so and allows the call.
 
 set -eu
+
+# WHAT AN OPERATOR READS WHEN THE GUARD CANNOT JUDGE, defined before anything that needs a
+# command: the first thing that can be missing is \`jq\`, and a worker run with a PATH holding
+# little beyond \`sh\` and \`cat\` must still say it did not judge, so \`esc\`, \`say\` and \`open\`
+# are builtins only and nothing external runs above the jq check.
+#
+# Claude Code shows the operator a hook's JSON \`systemMessage\` and NOT its plain stdout on
+# exit 0. omp's extension bridge reads the worker's plain stdout, and would relay a JSON object
+# as raw JSON — hence one form per harness, chosen at projection by the harness's own name.
+esc() {
+	_in="$1"
+	_out=""
+	_nl="$(printf '\\nx')"
+	_nl="\${_nl%x}"
+	_tab="$(printf '\\t')"
+	_cr="$(printf '\\r')"
+	while [ -n "$_in" ]; do
+		_rest="\${_in#?}"
+		_c="\${_in%"$_rest"}"
+		case "$_c" in
+			'\\') _c='\\\\' ;;
+			'"') _c='\\"' ;;
+			"$_nl") _c='\\n' ;;
+			"$_tab") _c='\\t' ;;
+			"$_cr") _c='\\r' ;;
+		esac
+		_out="$_out$_c"
+		_in="$_rest"
+	done
+	printf '%s' "$_out"
+}
+say() {
+	case "{{fact:harness-name}}" in
+		claude) printf '{"systemMessage":"%s"}\\n' "$(esc "$1")" ;;
+		*) printf '%s\\n' "$1" ;;
+	esac
+}
+
+allow() { exit 0; }
+
+# A verdict and a failure are different facts and silence carries only one of them: \`allow\`
+# means "judged, pass" or "not this guard's call", \`open\` means "could not judge" — the call
+# still proceeds, and the operator is told.
+open() {
+	[ -z "\${LOG:-}" ] || printf '%s\\n' "open: $1 tool=\${tool_name:-?} agent=\${agent_type:-?}" >> "$LOG" 2>/dev/null || true
+	say "PURVIEW GUARDRAIL — DARK: $1. This call was NOT judged; the absence of a deny is an absence of a verdict, not a clean one."
+	exit 0
+}
+
+# A PreToolUse hook must never break a session. An unexpected error (a nonzero status reaching
+# the trap) is let through AND SAID; every deliberate \`exit 0\` arrives with status 0.
+trap 'rc=$?; [ "$rc" -eq 0 ] || open "an unexpected error stopped it (exit status $rc)"; exit 0' EXIT
+
+input="$(cat)"
+[ -n "$input" ] || open "the hook received no input"
+command -v jq >/dev/null 2>&1 || open "jq is not installed, so the hook payload cannot be read"
 
 # The sibling Stop hook's deployed dir owns the SHARED judge backend, resolved from
 # this script's own location exactly as the pre-hook resolves it — every hooks root
@@ -98,33 +165,32 @@ RUBRIC="\${PURVIEW_RUBRIC:-$NEUTRAL_ROOT/purview-guardrail/purview-judge-prompt.
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $JUDGE_DIR/stance-judge.sh}"
 LOG="\${PURVIEW_GUARD_LOG:-$SELF_DIR/misses.log}"
 
-trap 'exit 0' EXIT
-
-allow() { exit 0; }
-note() { printf '%s\\n' "$1" >> "$LOG" 2>/dev/null || true; }
-
-input="$(cat)"
-[ -n "$input" ] || allow
-command -v jq >/dev/null 2>&1 || allow
-
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
 
 # --- scope gate: the persona's OWN stance manifest -------------------------------------------
+# The scope is the one the harness hands over: \`stance_scope\` where a dispatcher sits in the
+# persona's own scope (omp), else the persona directory of the agent the payload NAMES
+# (\`agent_type\`, Claude Code — none on a bare session) under this harness's home, one hop above
+# the hooks root. Presence of the manifest is enrollment; no agent list lives here.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow
-manifest="$stance_scope/stance/manifest.json"
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow ;; esac
+	stance_scope="$(dirname -- "$HOOKS_ROOT")/{{fact:harness-persona-root}}/$named"
+fi
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
-[ -n "$agent_type" ] || allow
+[ -n "$agent_type" ] || open "the stance manifest at $manifest names no agent, so there is no declared contract to judge against"
 
 # --- the LAW: this persona's own projected role contract -------------------------------------
-# A persona scope is \`<root>/agent/personas/<name>\` and the Target it was projected
-# from is \`<root>/agent/agents/<name>.md\` — two levels out and back down, the same
-# shape of derivation the judge path above uses. Overridable for test rigs.
+# A persona scope is \`<root>/personas/<name>\` (claude) or \`<root>/agent/personas/<name>\` (omp), and
+# the Target it was projected from is \`agents/<name>.md\` beside \`personas/\` — two levels out and
+# back down, the same shape of derivation the judge path above uses. Overridable for test rigs.
 AGENT_ROOT="$(dirname -- "$(dirname -- "$stance_scope")")"
 AGENT_MD="\${PURVIEW_AGENT_MD:-$AGENT_ROOT/agents/$agent_type.md}"
-[ -f "$AGENT_MD" ] || allow
+[ -f "$AGENT_MD" ] || open "the agent's projected Target is not at $AGENT_MD, so its declared contract cannot be read"
 contract="$(awk '/^## Role$/{f=1;next} /^## /{f=0} f' "$AGENT_MD" 2>/dev/null || true)"
 # A contract that is a BARE TOKEN states no arrow, so there is nothing to be outside
 # of. Only a multi-line contract is scoreable, and saying so here is what keeps the
@@ -133,13 +199,13 @@ contract="$(awk '/^## Role$/{f=1;next} /^## /{f=0} f' "$AGENT_MD" 2>/dev/null ||
 
 # --- extract the judged payload, branched by act ---------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
-[ -n "$tool_name" ] || allow
+[ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
 
 case "$tool_name" in
 	Agent|SendMessage|Task)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		target="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .tool_input.agent // .tool_input.name // ""' 2>/dev/null || true)"
-		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: the spec this delegate will build from)"
+		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote)"
 		;;
 	Write|Edit|MultiEdit|NotebookEdit)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path // ""' 2>/dev/null || true)"
@@ -164,28 +230,32 @@ $body"
 session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 sig="$(printf '%s' "$input" | jq -c '.tool_input' 2>/dev/null | cksum | cut -d' ' -f1 2>/dev/null || echo 0)"
 seen="\${TMPDIR:-/tmp}/.purview-pre-$session_id-$sig"
-[ -f "$seen" ] && allow
+[ -f "$seen" ] && open "this exact call was already denied once, so the re-entry cap lets it through unjudged"
 
 # --- judge (SHARED backend, OWN rubric) -----------------------------------------------------
-if [ -n "\${PURVIEW_EMIT_PAYLOAD:-}" ]; then
+# THE SAME SEAM, UNDER THE SAME NAMES, as the two stance workers: a host that holds a model
+# runs this worker twice around a judgment it makes itself (\`STANCE_EMIT_PAYLOAD\` to receive
+# the payload and rubric, \`STANCE_VERDICT_FILE\` naming the answer). This one read
+# \`PURVIEW_\`-prefixed names of its own, so the omp bridge — which speaks the shared names —
+# got no payload back and purview judged nothing there, on every call, while reading as a
+# guard that had found nothing.
+if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
 	jq -cn --arg r "$RUBRIC" --arg p "$payload" '{rubric:$r, payload:$p}'
 	exit 0
 fi
-if [ -n "\${PURVIEW_VERDICT_FILE:-}" ]; then
-	verdict="$(cat "\${PURVIEW_VERDICT_FILE}" 2>/dev/null || true)"
-	[ -n "$verdict" ] || {
-		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-empty tool=$tool_name agent=$agent_type"
-		allow
-	}
+if [ -n "\${STANCE_VERDICT_FILE:-}" ]; then
+	verdict="$(cat "\${STANCE_VERDICT_FILE}" 2>/dev/null || true)"
+	[ -n "$verdict" ] || open "the judge did not answer"
 else
-	verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || {
-		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-fail tool=$tool_name agent=$agent_type"
-		allow
-	}
+	verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || open "the judge did not answer"
 fi
 
-decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
-[ "$decision" = "BLOCK" ] || allow
+decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1 | sed 's/[[:space:]]*$//')"
+case "$decision" in
+	PASS) allow ;;  # judged, pass: the one silent verdict
+	BLOCK) ;;
+	*) open "the judge's verdict was unparseable (no VERDICT: PASS or VERDICT: BLOCK line)" ;;
+esac
 
 reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This act falls outside the arrow your role contract declares."
@@ -197,8 +267,9 @@ reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head 
 cited="$(printf '%s\\n' "$verdict" | sed -n 's/^SPAN:[[:space:]]*//p' | head -1)"
 if [ -n "$cited" ]; then
 	printf '%s' "$payload" | grep -qF -- "$cited" || {
-		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) evidence-fail tool=$tool_name agent=$agent_type span=$cited"
-		allow
+		[ -z "\${LOG:-}" ] || printf '%s\\n' "block-discarded: span=$cited tool=$tool_name agent=$agent_type" >> "$LOG" 2>/dev/null || true
+		say "PURVIEW GUARDRAIL — BLOCK DISCARDED: the judge blocked this call but cited a span that is not in it (fabricated): $cited. No verdict stands; this call was NOT judged clean."
+		exit 0
 	}
 fi
 
@@ -206,10 +277,11 @@ fi
 
 feedback="PURVIEW GUARDRAIL — denied this $tool_name call: it falls outside the arrow your own \\
 role contract declares. $reason  Delegation is a THEOREM of that arrow, not an option: an act whose \\
-domain or codomain lies outside it goes to the role that owns it — a decomposition to a planner, a \\
-build to an implementer, an artifact reading to an assayer. Hand it over and carry on with what the \\
-contract reserves. (Legitimate and NOT blocked here: reading anything, dispatching to a planner or an \\
-assayer, and performing any act the contract's own \\\`reserves\\\` clause names.)"
+domain or codomain lies outside it goes to the role that owns it — a decomposition of a shard to a \\
+planner, a build to an implementer, an artifact reading to an assayer, a merge or a whole check to \\
+the integrator. Hand it over by name and carry on with what the contract reserves. (Legitimate and \\
+NOT blocked here: reading anything, dispatching to a planner, routing a unit name to an implementer, \\
+an assayer or the integrator, and performing any act the contract's own \\\`reserves\\\` clause names.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0
@@ -255,7 +327,9 @@ durative concept lattice — the design.
 
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
-- a DISPATCH produces a **spec** — the delegate's instructions are the layer being written;
+- a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
+  carries instructions the dispatcher wrote produces a **spec** — those instructions are the layer
+  being written;
 - a WRITE to a source or config file produces an **artifact**;
 - reading anything at all produces **nothing**, and is never a breach.
 
@@ -267,20 +341,23 @@ whole test, and it is mechanical.
 - **A write whose codomain is \`artifact\` by a holder whose \`writes\` set excludes \`artifact\`.**
   The contract usually names this: \`descent\`. The path in the payload is the evidence.
 - **A dispatch whose codomain is \`spec\` by a holder whose \`writes\` set excludes \`spec\`.** This is
-  the skipped rung: a holder that writes only the design has handed a delegate a spec that no
-  spec-writing role produced. The prompt is the evidence.
-- **A dispatch whose prompt is the operator's literal words rather than a piece the agent cut.** The
-  contract that convicts this is the same clause: a dispatch is a spec, and transcription is not
-  authorship. Evidence is the prompt reading as relayed instructions rather than a bounded piece
-  with its own acceptance.
+  the skipped rung: a holder that writes only the design and its routes has handed a delegate
+  instructions it wrote itself, where only a planner turns a shard into units. The prompt is the
+  evidence.
+- **A dispatch whose prompt is the operator's literal words rather than a routed name.** The
+  contract that convicts this is the same clause: transcription is not authorship, and a dispatch
+  carries a name, not instructions. Evidence is the prompt reading as relayed instructions rather
+  than a unit name with its address.
 
 ## What to PASS — and these are the majority
 
 - **Any read.** Reading is outside the test by construction. Even where a contract calls
   artifact-reading a descent, that is a standing discipline, not a mid-turn refusal.
 - **A dispatch to a role the contract explicitly routes to.** Contracts name their delegations
-  (\`⟨C → spec⟩ ↦ plan\`, \`⟨artifact → C⟩ ↦ assay\`). Handing work to a named delegate is the arrow
-  WORKING.
+  (\`⟨C → spec⟩ ↦ planner\`, \`⟨spec → artifact⟩ ↦ implementer\`, \`⟨artifact → C⟩ ↦ assayer\`, the
+  integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
+  to an implementer, a dispatch to an assayer and a dispatch to the integrator are the arrow
+  WORKING, whether the contract's \`writes\` names \`route\` or not.
 - **Any act the \`reserves\` clause names**, whatever it is.
 - **A write by a holder whose \`writes\` set includes \`artifact\`.** Most agents in most corpora
   build. Do not read a contract's other clauses as narrowing an arrow that plainly permits the act.

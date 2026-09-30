@@ -1,0 +1,79 @@
+{
+  "envelope": {
+    "id": "01M3QCH308N8VK2XK4276MJ6NC",
+    "entity": "01M3QCB2C4JGATZG18SWXS9G9M",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QCB2C4JGATZG18SWXS9G9N"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T20:08:35.592Z",
+    "reason": "wave 0 dispatched",
+    "cause": "claude-parity planner's boundary findings"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "claude-enforcement-scope",
+      "intent": "Census @4c2b0d55 (code identical to ab8892a3: only records/ changed between them; re-derive any count below if a listed path changed since). DEFECT (observed live by the assay and re-observed by the planner): on Claude Code the three scope-enrolled guards fire from the global settings.json (stance-guardrail on Stop and SubagentStop; stance-guardrail-pre on PreToolUse AskUserQuestion and Agent|SendMessage; purview-guardrail on PreToolUse) and every one exits at its scope gate, because the gate reads only `.stance_scope` (packages/canon/src/hooks/stance-guardrail.ts:190-193, stance-guardrail-pre.ts:116-120, purview-guardrail.ts:114-119, mirrored in packages/canon/targets/guardrail/*.sh), which only omp's dispatcher injects (packages/forge/src/adapters/omp/render.ts:854-855), and the claude projection places no manifest (the claude adapter has no scopedRel). Claude Code's hook payload names the running agent as `agent_type` on the main thread of a `claude --agent <name>` session and inside a subagent, and carries none on a bare session's main thread (observed on SessionStart, UserPromptSubmit, Stop and PreToolUse at census; SubagentStop per assay).\nCHANGE. (1) ONE ENROLLMENT, EMITTED ONCE. The persona enrollment manifest `stance/manifest.json` ({agent, gates: {<cell id>: {moments, timeout}}}), today built by `manifestOf` inside ompScopeActivatedExtensions (omp/render.ts:517-533) and emitted at :551-559, moves to ONE harness-neutral builder in a new packages/forge/src/core/enrollment.ts and ONE emission site in projectPluginSet (packages/forge/src/project/index.ts): for every adapter that declares `scopedRel`, one manifest per rendered persona, staged at `enforcing/<persona>/stance/manifest.json`, its gates computed from the scope-activated cells' events the adapter realizes (`adapter.realizes`). omp's scopeActivatedSurface stops emitting the manifest, and the omp render's manifests stay byte-identical. OMP_STANCE_MANIFEST becomes the neutral constant exported from core (clean cutover: omp/index.ts re-export and omp.test.ts import move with it; no alias). The session scope gets no manifest on either harness.\n(2) CLAUDE PLACEMENT. claudeHarnessAdapter gains `scopedRel`, placing a persona scope at `personas/<agent>/<file>` under `.claude`, so purview's existing derivation (two directories above the scope, then `agents/<name>.md`) resolves `.claude/agents/<name>.md` unchanged. Claude keeps settings.json (`hooks`) as its registration. The manifest emission does not sit inside project/index.ts's `if (renderHooks) … else if (renderScopeActivated)` branch. deploy/hooks.ts already places staged scoped artifacts beside the settings merge, and deploy/local.ts already audits them (read, not edited).\n(3) ONE SCOPE GATE IN THE WORKERS. All three worker cells resolve the scope as `.stance_scope` when present (omp), and otherwise, when `.agent_type` is non-empty, as `<harness home>/<persona root>/<agent_type>`. The harness home is the directory above the worker's hooks root (workers land at `<home>/hooks/<id>/` on both harnesses). The persona root is a NEW ProjectionFact (packages/schema/src/hook-cell.ts `ProjectionFact`), valued in `projectionFacts` (project/index.ts) from the adapter's scopedRel, so the layout keeps one home (claude `personas`, omp `agent/personas`). Enrollment stays PRESENCE of the manifest, and no worker carries an agent list (the runtime allowlist retired in targets/guardrail/README.md stays retired). So a bare claude session (no agent_type) and a built-in or host agent (no manifest) stay silent. Regenerate the committed targets with `pnpm canon:project:targets`; hook-rule-boundary.test.ts byte-locks them.\n(4) DOCS. packages/canon/targets/guardrail/README.md's safety model states both harnesses' forms of the scope. packages/cli/README.md 'Where Claude Code and omp differ' gains an enforcement bullet. packages/forge/README.md's deploy paragraph says claude also places persona manifests under `.claude/personas/<name>/`. core/harness-adapter.ts scopedRel doc no longer calls omp the only harness needing it. Add a changeset .changeset/claude-enforcement-scope.md (@cratylus/schema, @cratylus/forge, @cratylus/canon minor).\n(5) TESTS. Canon worker cases for the claude form (agent_type only, a fake claude home holding personas/<name>/stance/manifest.json) in the existing guard suites. A new packages/forge/test/adapters/claude.test.ts pins claude scopedRel and manifest emission, and is registered in canon's gate-convicts registry.\nNOT IN SCOPE: the hook command's `$HOME` vs CLAUDE_CONFIG_DIR resolution (note 'claude hooks resolve through HOME, not the config dir'; no concept in this piece; the rig sets HOME=$T so both agree).",
+      "static": [
+        "packages/forge/src/adapters/claude/hooks.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/canon/src/hook-cells.ts",
+        "packages/canon/test/hook-rule-boundary.test.ts",
+        "packages/canon/test/harness-independence.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "MODEL.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/hook-cell.ts",
+        "packages/forge/src/core/enrollment.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/project/projection-facts.test.ts",
+        "packages/forge/test/project/fixtures-facts/hooks/fact-probe.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/claude-enforcement-scope.md"
+      ],
+      "accept": [
+        "RIG (every live leg): T=$(mktemp -d); mkdir -p $T/.claude $T/proj; cp ~/.claude/.credentials.json $T/.claude/; git -C $T/proj init -q; `pnpm build` in /home/lex/workspaces/cratylus-share, then from cwd /home/lex/workspaces/cratylus-share (its cratylus.config.ts supplies the corpus) `HOME=$T node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; sessions run as `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude -p <prompt> --model haiku --output-format stream-json --verbose --include-hook-events` (Claude Code 2.1.285 at census). Also write $T/judge.sh = `#!/bin/sh` + `{ echo \"== $1\"; cat; } >> $T/judged; printf 'VERDICT: PASS\\n'` and export STANCE_JUDGE_CMD=\"sh $T/judge.sh\" into the claude env. Run `claude -p \"Use the Agent tool once with subagent_type implementer and prompt 'Reply exactly PONG'. Then say done.\" --agent mav --allowedTools Agent` under the rig. It exits 0. $T/judged holds at least one block headed by the purview rubric path (purview-judge-prompt.md) whose payload contains `(agent: mav)`, and at least two blocks headed by the stance rubric path (stance-judge-prompt.md): the PreToolUse dispatch and mav's Stop. Before the change, at 4c2b0d55, $T/judged is never created (assay: every trace ends at `stance_scope=` then allow).",
+        "Same rig and prompt. After the run, `$T/.claude/personas/<name>/stance/manifest.json` exists for each of the N projected personas (N = count of $T/.claude/agents/*.md, 7 at census; print N) and for no other name, and `jq -r .agent` of each equals its directory name. There is none at 4c2b0d55.",
+        "Same rig, without --agent (a bare session), prompt `Use the Agent tool once with subagent_type general-purpose and prompt 'Reply exactly PONG'.`. The stream-json shows a PreToolUse hook event with exit_code 0 and a Stop hook event, and $T/judged gains 0 lines. The guards fire, and an unenrolled scope stays silent.",
+        "Deny reaches the session. Same rig with STANCE_VERDICT_FILE=$T/block, where $T/block is `VERDICT: BLOCK\\nREASON: probe-deny-7731\\n`, and STANCE_JUDGE_CMD still the recorder. Run `--agent mav` with the dispatch prompt of the first criterion. The Agent tool_use's tool_result in stream-json carries `probe-deny-7731`, and no subagent assistant message (parent_tool_use_id non-null) appears. At 4c2b0d55 the dispatch proceeds and implementer answers PONG.",
+        "omp enrollment unchanged. Render omp at 4c2b0d55 (in a `git worktree add` of that commit) and after the change with `pnpm exec cratylus project --harness omp --out <dir>`. `diff -r` of the two trees' enforcing/*/stance/manifest.json prints nothing, and enforcing/_session/ has no stance/ in either.",
+        "`git grep -n 'manifestOf\\|stance/manifest.json' -- packages/forge/src` names exactly one builder module (core/enrollment.ts) plus the neutral constant, and omp/render.ts no longer spells the manifest's shape.",
+        "Green: `pnpm canon:project:targets` leaves `git diff --exit-code packages/canon/targets` clean after the commit. `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts test/stance-guardrail-dark.test.ts test/hook-rule-boundary.test.ts test/harness-parity.test.ts test/gate-convicts.test.ts`, `pnpm stance-guard:test`, `pnpm --filter @cratylus/forge exec vitest run test/adapters test/project test/deploy`, and `pnpm typecheck` all exit 0. The claude-form worker cases fail when the agent_type fallback is removed from any one worker (convicting control)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3QBFZX8JMA6VHK12AEAN8KW",
+      "closure": {}
+    }
+  }
+}

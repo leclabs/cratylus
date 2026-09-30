@@ -30,6 +30,7 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
+import { hasEventTapStrategy } from '@cratylus/runtime/capabilities/event-tap';
 import {
   type Agent,
   type Binding,
@@ -37,6 +38,7 @@ import {
   type Enforcing,
   type HookCell,
   type ProjectionFacts,
+  type Skill,
   type Value,
   anchorOf,
   bodyOf,
@@ -53,6 +55,11 @@ import {
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
+import {
+  STANCE_MANIFEST,
+  personaRootOf,
+  stanceManifests,
+} from '../core/enrollment.js';
 import {
   dimensionFieldsOf,
   enforcingValuesOf,
@@ -115,6 +122,9 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     // judges in-process names no CLI, and the backend must fail open rather than
     // fall back to somebody else's.
     'harness-judge-bin': adapter.judgeBin,
+    // Read back from `scopedRel`, so a worker names no layout of its own.
+    'harness-persona-root': personaRootOf(adapter),
+    'stance-manifest': STANCE_MANIFEST,
   };
 }
 
@@ -131,8 +141,6 @@ export interface ProjectablePlugin {
    * COMPOSED value rather than the authored one (see `composedBodies`).
    */
   readonly fragments?: string;
-  /** Leading block stamped into this plugin's cells; travels with the plugin. */
-  readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
   /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
@@ -153,12 +161,6 @@ export interface ProjectOpts {
    * discovery already minted — see `discoverFragments`.
    */
   readonly resolvedBodies?: ReadonlyMap<string, string>;
-  /**
-   * A doctrine-agnostic leading block stamped into every projected cell. The corpus
-   * passes its founding doctrine so the axiom rides the projected bytes rather than
-   * ambient repo context; a consumer may pass nothing.
-   */
-  readonly preamble?: string;
   /**
    * `anchor → HarnessMechanism` — the realization payloads for this corpus's
    * enforcing values, INJECTED.
@@ -181,12 +183,19 @@ export interface ProjectOpts {
    * default here is therefore LOUD: silence must be chosen, never inherited.
    */
   readonly warn?: (line: string) => void;
+  /**
+   * The home directory these definitions will be installed under, when the caller
+   * knows it — `install` does, `project` does not. A harness whose main-session
+   * hook prints each skill's directory (`mainSessionSkillHook`) weighs a skill
+   * against its cap with this path, since a longer home is a longer output. Absent,
+   * the weighing is a lower bound.
+   */
+  readonly hostHome?: string;
 }
 
 interface Src {
   readonly dir: string;
   readonly plugin: string;
-  readonly preamble?: string;
 }
 
 export interface ProjectReport {
@@ -428,6 +437,19 @@ function withResolvedBodies(
   return folded as unknown as Agent;
 }
 
+/** A skill cell as the adapters render it. */
+function resolvedSkillOf(cell: Skill): ResolvedSkill {
+  return {
+    name: cell.name,
+    trigger: `/${cell.name}`,
+    description: cell.description,
+    formalBlock: cell.formalBlock,
+    composedFrom: cell.composition().map((c) => `/${c.name}`),
+    ...(cell.preamble ? { preamble: cell.preamble } : {}),
+    runtime: cell.runtime,
+  };
+}
+
 /**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
@@ -483,11 +505,7 @@ export async function projectPluginSet(
       for (const n of await scanModuleNames(p.agents, ['base'])) {
         const prev = agentSrc.get(n);
         if (prev) log(`  override agent ${n}: ${prev.plugin} → ${p.name}`);
-        agentSrc.set(n, {
-          dir: p.agents,
-          plugin: p.name,
-          preamble: p.preamble,
-        });
+        agentSrc.set(n, { dir: p.agents, plugin: p.name });
       }
     }
   }
@@ -507,8 +525,8 @@ export async function projectPluginSet(
   // agents compose (scope is derived from composition), so every vector must exist
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
-  const pending: { name: string; pre?: string }[] = [];
-  for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
+  const pending: string[] = [];
+  for (const [name, { dir }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const bodied = withResolvedBodies(await agentOf(modPath), subst, manifest);
@@ -518,7 +536,7 @@ export async function projectPluginSet(
     const skills = skillClosure(bodied.skills ?? [], roster);
     const agent = skills.length > 0 ? { ...bodied, skills } : bodied;
     composed.push({ name, agent });
-    pending.push({ name, ...(pre ? { pre } : {}) });
+    pending.push(name);
   }
 
   // A HARNESS THAT CANNOT PRELOAD A SKILL still gets the agent's skills, as a
@@ -529,6 +547,31 @@ export async function projectPluginSet(
       if (!agent.skills?.length) continue;
       warn(
         `agent '${name}' is given skills ${agent.skills.join(', ')}, but the '${opts.adapter.name}' adapter has no agent-definition field that preloads a skill. No native field is emitted; the skills reach the agent as a required-reading declaration in its definition — a steer, not a preload.`,
+      );
+    }
+  }
+
+  // A SKILL THE MAIN-SESSION HOOK CANNOT CARRY. Where a harness carries a persona's
+  // skills into its main session by a hook that prints each one, the harness caps
+  // what one hook may print — and a body over the cap arrives as a preview the
+  // model is not asked to read, in silence. So each skill an agent is given is
+  // weighed here against the cap, once, and one over it is handed to the adapter to
+  // name as required reading instead of hooking. It is never trimmed to fit.
+  const oversizedSkills = new Set<string>();
+  const mainSessionHook = opts.adapter.mainSessionSkillHook;
+  if (mainSessionHook) {
+    const given = new Set(composed.flatMap((c) => c.agent.skills ?? []));
+    for (const { name, skill: cell } of contributedSkills) {
+      if (!given.has(name)) continue;
+      const size = mainSessionHook.size(
+        name,
+        opts.adapter.skillDef(resolvedSkillOf(cell)).content,
+        opts.hostHome,
+      );
+      if (size <= mainSessionHook.cap) continue;
+      oversizedSkills.add(name);
+      warn(
+        `skill '${name}' prints ${size} characters into a '${opts.adapter.name}' main session, over the harness's per-hook output cap of ${mainSessionHook.cap}. ${opts.hostHome === undefined ? '' : `Measured with the host home '${opts.hostHome}'. `}The hook names it as required reading in place of printing it, for each agent composing it, so the Skill tool loads it on demand.`,
       );
     }
   }
@@ -560,15 +603,13 @@ export async function projectPluginSet(
     ? new Map([...opts.mechanisms].filter(([anchor]) => !degraded.has(anchor)))
     : opts.mechanisms;
 
-  for (const { name, pre } of pending) {
+  for (const name of pending) {
     const agent = composed.find((c) => c.name === name)?.agent as Agent;
-    const { filename, content } = opts.adapter.agentDef(
-      {
-        ...agent,
-        ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
-      },
-      { manifest, ...(mechanisms ? { mechanisms } : {}) },
-    );
+    const { filename, content } = opts.adapter.agentDef(agent, {
+      manifest,
+      ...(mechanisms ? { mechanisms } : {}),
+      ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
+    });
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
@@ -619,22 +660,22 @@ export async function projectPluginSet(
   );
   if (boundBindings.length > 0 && opts.adapter.enforcingSurface) {
     // `mechanisms` THREADED. Passing only the bindings left every implementation
-    // with an empty map, so codex's returned `null` for every input and its
-    // per-agent enforcing constraints reached the host as nothing — green the whole
+    // with an empty map, so an implementation returned `null` for every input and
+    // its per-agent enforcing constraints reached the host as nothing — green the whole
     // time, because the unit tests call the function directly with a map the
     // production path never supplied.
     const surface = opts.adapter.enforcingSurface(boundBindings, mechanisms);
     // One projection or MANY: a harness scoping by per-agent directory emits one
     // artifact per composing agent (omp), and one scoping by selector emits a
-    // single global artifact (codex).
+    // single global artifact.
     for (const s of surface
       ? Array.isArray(surface)
         ? surface
         : [surface]
       : []) {
       // A SCOPED artifact is staged by scope and mapped at deploy; an unscoped one
-      // is the harness's single global artifact and stays at the tree root, where
-      // codex's `hooks.json` has always been.
+      // is the harness's single global artifact and stays at the tree root, as a
+      // hook-config file does.
       const path =
         s.scope === undefined
           ? s.filename
@@ -656,8 +697,9 @@ export async function projectPluginSet(
   // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
   // scopes appear here: an artifact that NAMES one persona is that persona's
   // (omp's overlay), and one that resolves a persona at RUN time belongs to the
-  // session and is emitted once (omp's launcher). Optional: claude and codex
-  // carry identity in their own agent def and compose nothing here.
+  // session and is emitted once (omp's launcher, and claude's — which starts
+  // `claude --agent <persona>` so a persona has a command by its own name).
+  // Optional: an adapter with no launcher composes nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(rendered)) {
@@ -677,19 +719,26 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  for (const { name, skill: cell, preamble: pre } of contributedSkills) {
-    const resolved: ResolvedSkill = {
-      name: cell.name,
-      trigger: `/${cell.name}`,
-      description: cell.description,
-      formalBlock: cell.formalBlock,
-      composedFrom: cell.composition().map((c) => `/${c.name}`),
-      ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
-      runtime: cell.runtime,
-    };
+  let warnedTaplessHarness = false;
+  for (const { name, skill: cell } of contributedSkills) {
+    const resolved = resolvedSkillOf(cell);
     const cellOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
     files.push({ path: join(cellOut, filename), content });
+    if (
+      cell.runtime?.capability === 'eventTap' &&
+      !warnedTaplessHarness &&
+      !hasEventTapStrategy(opts.adapter.name)
+    ) {
+      // DEGRADE, and say so — once per projection, not once per skill. The runtime's
+      // tap has a strategy for Claude Code alone, so on this harness the skill
+      // ships as a declaration whose `eventTap install` REFUSES; shipping it
+      // without a word would read as a working tap.
+      warnedTaplessHarness = true;
+      warn(
+        `skill '${name}' declares the '${cell.runtime.capability}' capability, which has no tap strategy on '${opts.adapter.name}': only Claude Code has one today. The skill ships as a declaration, but no events are captured here and \`${CLI_BIN} ${cell.runtime.capability} install\` refuses on '${opts.adapter.name}'.`,
+      );
+    }
     if (cell.runtime) {
       files.push({
         path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
@@ -726,11 +775,28 @@ export async function projectPluginSet(
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
 
+  // A GUARD NEEDS A SCOPE, AND A HARNESS THAT CANNOT NAME THE RUNNING AGENT HAS NONE.
+  // A cell that binds a composition is a guard, and a guard registered where no
+  // manifest can be found fires on every session and enrolls nobody — the defect
+  // this projection exists to rule out, and one that reads as coverage. A harness
+  // with no `scopedRel` therefore carries such a cell as a STEER only: its rule is
+  // already declared in the agent bodies that compose it, its mechanism is withheld,
+  // and the operator is told once per cell, here and again at install.
+  const unscopable = opts.adapter.scopedRel
+    ? []
+    : hookCells.filter((cell) => cell.binds);
+  for (const cell of unscopable) {
+    warn(
+      `guard '${cell.id}' cannot be scoped on '${opts.adapter.name}': this harness cannot name the running agent, so a hook registered for it would fire for every session and judge none. It is carried as a steer (the rule stays declared in the agents that compose it) and its mechanism is not deployed here.`,
+    );
+  }
+  const carried = hookCells.filter((cell) => !unscopable.includes(cell));
+
   let hooks = 0;
-  if (hookCells.length > 0) {
+  if (carried.length > 0) {
     const renderHooks = opts.adapter.hooks;
     // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
-    // only the first. `hooks` returns a settings fragment (claude, codex);
+    // only the first. `hooks` returns a settings fragment (claude);
     // `scopeActivatedSurface` returns modules placed per scope (omp, whose loader
     // scans a dir and whose config root is profile-scoped). Reading the absence of
     // the FORMER as "no surface at all" is what dropped all five of canon's
@@ -741,10 +807,9 @@ export async function projectPluginSet(
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
       // surface loses these cells' MECHANISM, not the build — and the operator is
       // told, because an absent guardrail that announced nothing is the failure this
-      // whole design removes. Refusing here is what drove the codex CLI to delete
-      // canon's hooks dir from its plugin set, so codex agents ran ungoverned and
-      // silent.
-      for (const cell of hookCells) {
+      // whole design removes. Refusing here would delete canon's hooks dir from a
+      // plugin set, so agents ran ungoverned and silent.
+      for (const cell of carried) {
         warn(
           `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The cell is not deployed here.`,
         );
@@ -753,8 +818,9 @@ export async function projectPluginSet(
       // RESOLVE HERE, at the emission boundary. `cell.workers` are TEMPLATES; the
       // deployed bytes are `resolveWorker(w, facts, cell.speech)`, and an unknown
       // placeholder throws rather than shipping `{{…}}` to a host.
-      const sources = hookCells.map((cell) => ({
+      const sources = carried.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
+        ...(cell.binds ? { binds: cell.binds } : {}),
         workers: cell.workers.map((w) =>
           resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
@@ -800,7 +866,7 @@ export async function projectPluginSet(
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {
-          for (const cell of hookCells) {
+          for (const cell of carried) {
             warn(
               `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': none of its events are realizable here. The cell is not deployed here.`,
             );
@@ -813,6 +879,24 @@ export async function projectPluginSet(
       // code surface would have shipped registrations pointing at workers that were
       // never staged.
       if (registered) {
+        // ONE STANCE MANIFEST PER BOUND PERSONA, emitted once, for every harness that
+        // places a scoped artifact: each lists exactly the guards its composed agent
+        // includes, at the moments this adapter realizes. It sits past the branch that
+        // registered the cells because enrollment is not a property of HOW a harness
+        // registers — omp's module per scope and claude's one settings file both hand
+        // the workers the same manifest to find. The session scope gets none.
+        if (opts.adapter.scopedRel) {
+          for (const m of stanceManifests(
+            sources,
+            opts.adapter,
+            rendered,
+            manifest,
+          )) {
+            const path = join(ENFORCING_STAGE_DIR, m.scope, m.filename);
+            files.push({ path, content: m.content });
+            log(`EMIT stance manifest ${path}`);
+          }
+        }
         for (const src of sources) {
           const id = src.hook.id ?? 'unnamed';
           for (const worker of src.workers) {
@@ -838,23 +922,6 @@ export async function projectPluginSet(
         }
       }
     }
-  }
-
-  // The SCOPE-ACTIVATED ORIENTATION — codex's `AGENTS.md`, the artifact a workspace
-  // reads before any agent is selected. OPTIONAL on the port
-  // (`HarnessAdapter.scopeOrientation`) because it is a harness property, not a cell
-  // kind: codex has one, claude has none, and a harness without one must project the
-  // same tree it always did — hence the guard, and hence NO throw on absence.
-  //
-  // It is emitted LAST because it indexes the projected agent names, and it goes
-  // into `files` like every other artifact: it used to be the codex CLI's own direct
-  // disk write, which is precisely the fork that let that path drift. Rendering it
-  // here keeps this module's no-file-descriptor property intact.
-  const renderOrientation = opts.adapter.scopeOrientation;
-  if (renderOrientation) {
-    const { filename, content } = renderOrientation(agentNames);
-    files.push({ path: filename, content });
-    log(`EMIT orientation ${filename}`);
   }
 
   const heldRoles = [

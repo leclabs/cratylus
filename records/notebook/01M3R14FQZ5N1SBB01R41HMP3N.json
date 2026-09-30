@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R14FQZ5N1SBB01R41HMP3N",
+    "entity": "01M3R14FQYHGRBFDVA6SGG61AY",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:08:42.751Z",
+    "reason": "the design names no role that carries a finished unit to its judge",
+    "cause": "assay of architect-sees-the-design at af5bb999"
+  },
+  "payload": {
+    "title": "who routes a finished unit to the assayer",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "The architect position says what reaches the architect from below is exactly the assay verdict, the integrator's broke-the-whole report and the names of units ready to start. The implementer position says the implementer hands its work on to be judged, but no shard says to whom or through whom. At af5bb999 the generic architect's archetype fills the gap by having the architect route a unit's commit to the assayer, which means the implementer's finished-unit name also reaches the architect, a fourth input the architect position does not list. Either the architect position should name that input, or another position should carry a finished unit to its assayer.",
+    "blocks": []
+  }
+}

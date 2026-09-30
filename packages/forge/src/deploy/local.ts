@@ -1,7 +1,9 @@
 // Local filesystem placer — copy generated defs into a `.claude/` root on this
 // host. The def is overwritten freely (generated substance) — an agent's
 // self-authored memory lives entirely outside the deploy root, so this placer
-// has nothing else to protect. Skills are generated substance too — overwrite
+// has nothing else to protect — EXCEPT one line, where the harness makes it the host's:
+// the `model:` a host edited in a deployed def (`PlaceOpts.keepHostModel`; see
+// `placeAgentsLocal`). Skills are generated substance too — overwrite
 // freely.
 //
 // The PLACER never deletes. It only TESTIFIES — `report.written` records the
@@ -42,7 +44,7 @@ import {
   stageAssets,
   walkSkillFiles,
 } from './bundle.js';
-import { readManifest, unattributable } from './manifest.js';
+import { digestFile, readManifest, unattributable } from './manifest.js';
 import {
   type DeployKind,
   type PlaceOpts,
@@ -63,13 +65,56 @@ export function defaultAgentRel(name: string, agentExt = '.md'): string {
   return `agents/${name}${agentExt}`;
 }
 
+/** A def's front-matter `model:` line, whole, and its value — undefined where the
+ *  front matter carries none. Only a top-level key counts: an indented `model:` is
+ *  some other block's. */
+function frontMatterModel(
+  md: string,
+): { index: number; line: string; value: string } | undefined {
+  const lines = md.split('\n');
+  if (lines[0]?.trimEnd() !== '---') return undefined;
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i] as string;
+    if (line.trimEnd() === '---') return undefined;
+    if (/^model:/.test(line)) {
+      return { index: i, line, value: line.slice('model:'.length).trim() };
+    }
+  }
+  return undefined;
+}
+
+/** `md` with its front-matter `model:` line replaced by `line`, or dropped where
+ *  `line` is undefined. A line added where the def had none goes right after the
+ *  `description:`, where the projection puts it. */
+function withModelLine(md: string, line: string | undefined): string {
+  const lines = md.split('\n');
+  const at = frontMatterModel(md)?.index;
+  if (at !== undefined) {
+    if (line === undefined) lines.splice(at, 1);
+    else lines[at] = line;
+  } else if (line !== undefined) {
+    const after = lines.findIndex((l) => /^description:/.test(l));
+    lines.splice(after === -1 ? 1 : after + 1, 0, line);
+  }
+  return lines.join('\n');
+}
+
 /** Write <harnessDir>/<agentRel(name)> for each name — the harness-specific
  *  declaration, and the ONLY thing this function writes. Where that lands
  *  varies by harness (`agents/<name>.md` under claude's own root; omp's is
  *  `agent/agents/<name>.md`, the user-level task-agent root it discovers
  *  from). A harness whose destination sits under a dir it also scans for
  *  other things gets exactly the declaration there — never a sidecar, never a
- *  scan of what else lives beside it. */
+ *  scan of what else lives beside it.
+ *
+ *  With `opts.keepHostModel` the def is still replaced whole, but for its `model:`
+ *  line: the manifest records the `model:` each def was rendered with
+ *  (`report.models`), and a deployed def whose line differs from that record is the
+ *  host's choice, so the def placed over it carries the host's line — or none, where
+ *  the host removed it — and the log names it. A def with NO record was placed before
+ *  the record existed, by a deploy that wrote no `model:` line, so its baseline is no
+ *  model: a `model:` line found there is the host's and is kept, and a def with none
+ *  takes the rendered one. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -80,11 +125,15 @@ export function placeAgentsLocal(
   const warn = opts.warn ?? (() => {});
   const agentExt = opts.agentExt ?? '.md';
   // SOURCE is the render tree's staging layout; DESTINATION is the harness's own.
-  // They coincide for claude and codex and do not for omp, which is why the
+  // They coincide for claude and do not for omp, which is why the
   // destination is asked for rather than assumed.
   const agentRel =
     opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const report = emptyReport();
+  const recorded = opts.keepHostModel
+    ? readManifest(harnessDir).agentModels
+    : undefined;
+  if (opts.keepHostModel) report.models = {};
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
@@ -94,12 +143,32 @@ export function placeAgentsLocal(
       continue;
     }
     const dest = resolvePath(harnessDir, agentRel(name));
+    let def = readFileSync(src, 'utf-8');
+    if (recorded !== undefined && report.models !== undefined) {
+      const rendered = frontMatterModel(def);
+      report.models[name] = rendered?.value ?? null;
+      if (existsSync(dest)) {
+        const host = frontMatterModel(readFileSync(dest, 'utf-8'));
+        const wrote = Object.hasOwn(recorded, name) ? recorded[name] : null;
+        if ((host?.value ?? null) !== wrote) {
+          const kept = withModelLine(def, host?.line);
+          if (kept !== def) {
+            def = kept;
+            log(
+              `  ${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
+                `${host === undefined ? 'no model' : host.line} ` +
+                `(deploy renders ${rendered === undefined ? 'no model' : rendered.line})`,
+            );
+          }
+        }
+      }
+    }
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is
       // `agent/agents/`, two levels in, which does not exist until this run
       // makes it.
       mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, readFileSync(src, 'utf-8'), 'utf-8');
+      writeFileSync(dest, def, 'utf-8');
     }
     report.copied += 1;
     // Testimony: the def is the ONLY thing this placer ever writes, so it is
@@ -126,8 +195,8 @@ export function placeAgentsLocal(
  *
  *  MANY DESTINATIONS, because a harness may scope a reader by directory: omp's
  *  native config root is per-profile, so a skill every projected persona can load
- *  is one copy per profile plus one in the session root. claude and codex return a
- *  single path and behave exactly as before. */
+ *  is one copy per profile plus one in the session root. claude returns a
+ *  single path and behaves exactly as before. */
 export function placeSkillsLocal(
   harnessDir: string,
   tree: RenderTree,
@@ -655,4 +724,39 @@ export function auditLocal(
  *  render a foreign NAME back as a path for the report. */
 function kindDir(kind: DeployKind): string {
   return kind === 'skill' ? 'skills' : kind === 'hooks' ? 'hooks' : 'agents';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE REMOVAL READ — does a placed file still hold what we wrote?
+//
+// The audit above asks whether the host carries what the corpus RENDERS. An uninstall
+// asks the narrower question of one recorded path: are the bytes there still the ones
+// this tool laid down? The answer is the manifest's digest of the write, compared with
+// the bytes now — a REPORT, like the audit. Nothing is opened for writing.
+//
+// A file the host has changed since is the host's, and an uninstall leaves it. So is a
+// file with no recorded digest (placed before digests were kept): it cannot be told
+// from a host's edit, and the safe direction is to keep it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * How a recorded file stands.
+ *   - `unchanged`  — its bytes hash to the digest recorded when it was written.
+ *   - `changed`    — they do not: the host edited it.
+ *   - `unverified` — no digest was recorded, so an edit cannot be ruled out.
+ *   - `absent`     — nothing is there any more.
+ */
+export type PlacedFileState = 'unchanged' | 'changed' | 'unverified' | 'absent';
+
+/** The state of the file `rel` (from `harnessDir`) against the manifest's digests. */
+export function placedFileState(
+  harnessDir: string,
+  rel: string,
+  digests: Readonly<Record<string, string>>,
+): PlacedFileState {
+  const now = digestFile(resolvePath(harnessDir, rel));
+  if (now === undefined) return 'absent';
+  const written = Object.hasOwn(digests, rel) ? digests[rel] : undefined;
+  if (written === undefined) return 'unverified';
+  return now === written ? 'unchanged' : 'changed';
 }

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QRRQHNBT1F7SZFW7CZRYKM",
+    "entity": "01M3QRRQHNBT1F7SZFW7CZRYKK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T23:42:28.917Z",
+    "reason": "residual disclosed by the main-session skills assay",
+    "cause": "re-assay of main-session skills at b523e730"
+  },
+  "payload": {
+    "title": "a longer home at run time than at install",
+    "kind": "idea",
+    "topic": "persona launch",
+    "body": "Install weighs each claude main-session skill against the home it installs under. If the same files are later reached through a longer home path, a skill near the 10,000-character hook cap (plan is 47 under with a short home) can exceed it and arrive as Claude's 2 KB preview with no warning. Shrinking plan below the cap with margin, or a run-time check in the hook, would close it.",
+    "blocks": []
+  }
+}

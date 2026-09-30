@@ -1,11 +1,11 @@
 // The HARNESS-NEUTRAL dimension→markdown-body machinery: the shared helpers that map
 // a typed `Agent` vector / `ResolvedSkill` to its composed markdown BODY, before
-// any harness-specific framing (claude front-matter, codex TOML) wraps it.
+// any harness-specific framing (a claude or omp front-matter) wraps it.
 //
 // This is core, not an adapter: the composed Target body is identical whichever
-// harness carries it (a claude `.md` body, a codex `.toml` `developer_instructions`),
+// harness carries it (a claude `.md` body, an omp `.md` body),
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
-// other. (Kills the former `codex/render.ts → claude/render.ts` edge.)
+// other.
 
 import type { Agent, DimensionManifest, Value } from '@cratylus/schema';
 import { bodyOf, dimensionValueOf } from '@cratylus/schema';
@@ -42,8 +42,8 @@ export function agentBody(a: Agent, manifest: DimensionManifest): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
-  // Doctrine-agnostic leading block (verbatim), above `## Archetype` — the consumer's
-  // founding-doctrine carry when set; the engine knows only that it leads.
+  // Doctrine-agnostic leading block (verbatim), above `## Archetype` — the agent's
+  // own `preamble` when it declares one; the engine knows only that it leads.
   if (a.preamble) {
     out.push(a.preamble, '');
   }
@@ -83,8 +83,8 @@ export interface ResolvedSkill {
   readonly composedFrom: readonly string[];
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
    *  first section (above the fenced formal block). The engine knows only "a
-   *  leading block"; a consumer fills it (canon injects its founding doctrine so a
-   *  FOREIGN agent invoking the skill still holds the axiom). Absent ⇒ omitted. */
+   *  leading block"; the cell that applies a principle fills it (`Skill.preamble`).
+   *  Absent ⇒ omitted. */
   readonly preamble?: string;
   /**
    * The RUNTIME capability this skill is a face of (mirrors `Skill.runtime`). When
@@ -106,7 +106,7 @@ function deriveVerb(name: string): string {
 /**
  * The SKILL.md body for a resolved skill, rendered through the ONE generator
  * `renderSkillCellBody` as `# <verb>` + fenced `formalBlock` + "Composed from …".
- * Shared by the claude and codex adapters. Returns `rstrip() + "\n"`.
+ * Shared by the claude and omp adapters. Returns `rstrip() + "\n"`.
  */
 export function skillBody(s: ResolvedSkill): string {
   return renderSkillCellBody({

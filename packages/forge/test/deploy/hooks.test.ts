@@ -75,6 +75,27 @@ describe('mergeHooksSettings', () => {
     const hooks = twice.settings.hooks as Record<string, unknown[]>;
     expect(hooks.Stop).toHaveLength(1);
   });
+
+  it('keeps every matcher group one command registers on one event, and stays idempotent', () => {
+    // A guard bound to two acts lands as two matcher groups on PreToolUse. Deduping
+    // by command alone kept the first and dropped the second, so the host carried a
+    // guard that fired on one act and never on the other.
+    const pre = 'sh "$HOME/.claude/hooks/stance-guardrail-pre/w.sh"';
+    const hook = { type: 'command' as const, command: pre };
+    const incoming = {
+      PreToolUse: [
+        { hooks: [hook], matcher: 'AskUserQuestion' },
+        { hooks: [hook], matcher: 'Agent|SendMessage' },
+      ],
+    };
+    const once = mergeHooksSettings({}, incoming);
+    expect(once.added).toBe(2);
+    const groups = (
+      once.settings.hooks as { PreToolUse: Array<{ matcher?: string }> }
+    ).PreToolUse.map((g) => g.matcher);
+    expect(groups).toEqual(['AskUserQuestion', 'Agent|SendMessage']);
+    expect(mergeHooksSettings(once.settings, incoming).added).toBe(0);
+  });
 });
 
 describe('placeHooksLocal', () => {
@@ -134,6 +155,55 @@ describe('placeHooksLocal', () => {
     ) as { permissions: unknown; hooks: Record<string, unknown[]> };
     expect(settings.permissions).toEqual({ allow: ['Bash(git:*)'] });
     expect(settings.hooks.Stop).toHaveLength(1);
+  });
+
+  it('deploys every matcher group of a cell on one event, leaves the host’s own entries alone, and a second deploy is byte-identical', () => {
+    const src = tmp('forge-hooks-render-');
+    const cmd = 'sh "$HOME/.claude/hooks/pre-guard/pre-guard.sh"';
+    const hook = { type: 'command', command: cmd, timeout: 60 };
+    writeFileSync(
+      join(src, 'settings.json'),
+      `${JSON.stringify(
+        {
+          hooks: {
+            PreToolUse: [
+              { hooks: [hook], matcher: 'AskUserQuestion' },
+              { hooks: [hook], matcher: 'Agent|SendMessage' },
+            ],
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    mkdirSync(join(src, 'hooks', 'pre-guard'), { recursive: true });
+    writeFileSync(join(src, 'hooks', 'pre-guard', 'pre-guard.sh'), '# w\n');
+    const claude = join(tmp('forge-hooks-host-'), '.claude');
+    mkdirSync(claude, { recursive: true });
+    // The host's own entry, first, under a matcher of its own.
+    const own = {
+      hooks: [{ type: 'command', command: 'echo mine' }],
+      matcher: 'Bash',
+    };
+    writeFileSync(
+      join(claude, 'settings.json'),
+      JSON.stringify({ hooks: { PreToolUse: [own] } }, null, 2),
+    );
+    const tree = { agentsDir: '', skillsDir: '', hooksDir: src };
+    const settingsOf = (): string =>
+      readFileSync(join(claude, 'settings.json'), 'utf-8');
+
+    placeHooksLocal(claude, tree, ['pre-guard'], silent);
+    const first = settingsOf();
+    const groups = JSON.parse(first).hooks.PreToolUse;
+    expect(groups).toEqual([
+      own,
+      { hooks: [hook], matcher: 'AskUserQuestion' },
+      { hooks: [hook], matcher: 'Agent|SendMessage' },
+    ]);
+
+    placeHooksLocal(claude, tree, ['pre-guard'], silent);
+    expect(settingsOf()).toBe(first);
   });
 
   it('dry-run changes nothing on disk', () => {

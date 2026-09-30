@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3QCB2BZSJN545X0R4631PTE",
+    "entity": "01M3QCB2BZSJN545X0R4631PTD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T20:05:18.335Z",
+    "reason": "plan claude-parity: realize the Claude Code faces of enforcement scope, persona launch, role routing and persona badge",
+    "cause": "live Claude Code assay (AssayClaudeLive, 2.1.285) and the four concepts amended at ab8892a3/2caaf76a"
+  },
+  "payload": {
+    "name": "claude-parity",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR",
+      "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8"
+    ],
+    "state": "proposed"
+  }
+}

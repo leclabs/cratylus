@@ -119,9 +119,9 @@ export interface NativeBinding {
    * WHY this harness cannot express the act's selector, when it cannot — the
    * adapter's own words, routed to the projection's `warnings`.
    *
-   * IT IS A FIELD, not a convention, because SILENCE IS THE DEFECT. Codex reads
-   * `matcher` as a regex over `agent_type`, so it can FIRE `operator.consult.pre`
-   * and cannot NARROW it; it used to drop the narrowing without a word and the hook
+   * IT IS A FIELD, not a convention, because SILENCE IS THE DEFECT. A harness whose
+   * selector cannot express the act's narrowing can FIRE `operator.consult.pre`
+   * and cannot NARROW it; an adapter used to drop the narrowing without a word and the hook
    * ran on every tool call there. Declaring the loss beside the binding makes the
    * report structural: the serializer has the sentence in hand at the only moment
    * it could stay quiet.
@@ -147,8 +147,8 @@ export interface HarnessMechanism {
    * Residual DYNAMIC selector (client-native regex) for subject-scoped events.
    *
    * THE ONLY REGISTER THAT MAY HOLD ONE — see the law above, and the header. It is
-   * a function OF the adapter (codex generates `^(mav|nico)$` from composition;
-   * claude takes the {@link NativeBinding} of the act), so it is COMPUTED at
+   * a function OF the adapter (claude takes the {@link NativeBinding} of the
+   * act), so it is COMPUTED at
    * realization and never read off a source cell.
    */
   readonly matcher?: string;

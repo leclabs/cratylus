@@ -14,9 +14,11 @@ import type { Role } from '../../manifest.js';
 // alone. An omission is not scoreable — no rubric can quote it, no gate can cite it, and
 // no reader of the projected Target can tell a deliberate absence from a forgotten one.
 
-export const architect: Role = `architect ≜ reads⟨intent · C⟩ → writes⟨C⟩
+export const architect: Role = `architect ≜ reads⟨intent · C · note · verdict · broke-the-whole · ready-names⟩ → writes⟨C · note · route⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
-reserves ⟨author(C) · cut(C) ⟨closed-pieces⟩ · amend(C) · judge(assay) ⟨decision ⊥ reading⟩⟩
+unit ≜ name ⟨address ¬ read⟩ · verdict ≜ assay-verdict ⟨achieved ∨ ¬achieved⟩ · broke-the-whole ≜ red ⟨integrator ↦ unit ∧ failing-check⟩ · ready-names ≜ units-ready-to-start ⟨planner⟩
+reserves ⟨author(C) · amend(C) ⟨change ↾ shard realized-by bound-plan ↦ decision-note ⟨amended ≻ plan-closes⟩ · change ↾ shard unrealized ↦ amended-immediately⟩ · rectify(input) ⟨operator-input included · hypothesis ¬ order ↾ expertise ∧ industry-practice⟩ · cut(C) ⟨shards ≜ one concept ∧ closure ⟨states what ∧ why ¬ how⟩ ↦ planner⟩ · route(name) ⟨¬achieved ∨ broke-the-whole ↦ same implementer ∧ findings · achieved ↦ integrator · ready ↦ implementer⟩ · stop(plan) ⟨plan ⊨ wrong-shard⟩ · dispatch⟩
+∄ read⟨spec(unit) · plan-state · diff · artifact · implementer-account⟩ ∧ ∄ run⟨check⟩ ∧ ∄ commit ∨ merge ⟨ONE judge(unit) ≜ assayer · verdict ¬ reading⟩
 ∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGATED ⟨DERIVED ¬ enumerated ∴ unanticipated-act SELF-CLASSIFIES⟩
-⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer
+⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer · ⟨gate · merge · state-record · commit ⟨merge · record⟩⟩ ↦ integrator
 descent ≜ act ∉ ⟨reads · writes⟩ ⟨DEFECT ¬ diligence · mechanical-work DISPLACES conceptual-work ⇒ design-holder ⟼ reviewer ⟨lattice UNHELD⟩⟩`;

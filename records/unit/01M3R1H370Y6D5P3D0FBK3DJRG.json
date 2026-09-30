@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3R1H370Y6D5P3D0FBK3DJRG",
+    "entity": "01M3R0EH93C32SW0E6TS0SAWCZ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R0RR10VDTTR04N94E7N4B4"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T02:15:35.904Z",
+    "reason": "the integrator reports it whole on the plan's line after an achieved verdict",
+    "cause": "integrator report relayed by the architect"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "assayer-position",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize `assayer position` with its factor `assay verdict`: the role that judges whether a built unit achieves the shard it was created to realize, holding the design and never the unit's spec, and says so as an assay verdict in the design's own words (achieved, or not achieved with what is missing, naming the unit and its implementer); it is the one judge of a unit, nothing else accepts or rejects one, and acceptance rests on its verdict, not on the implementer's account. At census the assayer is built NOT to judge: packages/canon/src/dimensions/role/assayer.ts says `¬emits ⟨verdict ⟨accept ∉ remit ∵ keyed-to C ⟨amended-by design-holder⟩⟩ · …⟩`; agents/assayer.ts's description says 'Returns CONCEPTS, never a verdict: it does not accept, reject …' and its archetype 'leaving the decision to the party that owns the design … an accept or a reject takes a decision that was never delegated'; its header comment says 'the VERDICT stays with the design-holder'; roles/assayer.ts says 'judging is not its remit'. The three questions a verdict answers live today only in deliver's formal block (`achieved(unit) ⇔ … spells ∧ covers ∧ sole`), a skill the assayer does not hold.\nTHE LOOP (the contract each workflow unit of this plan states its own share of; the design states what must hold and why, this is how). (1) The architect cuts the design into shards (a shard is one concept with everything it stands on, stating what and why, never how) and hands a set of them to the planner. The planner plans them (units each realizing one shard, dependencies first, each sized for one implementer, how each shard is realized on each harness included), binds the plan when no plan is bound, records each ready unit active as it hands it out, and returns only the plan's name and those units' names. (2) The architect routes each name, by name alone, to one implementer, naming the delegate after the unit and giving it the address `<unit> of <plan>` and nothing it wrote itself; a unit's name is an address the architect never reads behind. Delegates are named so they can be messaged again (Claude Code: SendMessage to the name given at dispatch, nested dispatch allowed; omp: agent messaging). (3) The implementer reads its unit's spec alone (never the design), builds on its own branch, proves only what its spec asks, commits its own work, and returns only `landed <unit> of <plan> at <commit>`, or `blocked <unit> of <plan>: spec` when the spec cannot be built as written (the architect routes that name to the planner). Its account of the work stays out of the return; a finding it meets it captures as a note. (4) The architect routes the name and commit to the assayer. The assayer reads the shard and the files at that commit, never the spec, and returns the assay verdict: achieved, or not achieved with what is missing in the design's own words, naming the unit and its implementer. It is the one judge of a unit. (5) Not achieved: the architect sends the findings to the same implementer by the name it gave it, and the unit returns to (4). Achieved: the architect routes the name and commit to the integrator. (6) The integrator combines the unit onto the plan's integration line (a branch cut from main when the plan is bound, `plan/<plan>`) and runs the project's whole check once on the combined tree; no implementer or assayer runs it. Green: it commits the records written since (plan, design, notes) by pathspec and returns `whole <unit> of <plan>`, which the architect routes to the planner; the planner records the unit completed and hands out the newly ready names as in (1). Red or a merge conflict: the line is left as it was and it returns `red <unit> of <plan>: <failing check>`, which the architect sends to the same implementer. The integrator never repairs, never judges and decides nothing. (7) When every unit is completed the planner closes the plan; the architect routes that to the integrator, which asks the operator to release the line to main (a pull request where the repository has a forge remote and `gh`, otherwise the exact git command). It never moves main. (8) The architect never reads a unit's spec (`plan show <unit>`), a plan view, a diff, an artifact or an implementer's account; it runs no check and makes no commit or merge. What reaches it is names (from the planner and on verdicts and results), verdicts, the integrator's red naming a unit, and notes. (9) Design stability. Every input, whether from the operator, a delegate or the architect itself, is a hypothesis the architect rectifies against its expertise and industry practice; every delegate's finding reaches it as a note. A surviving change that bears on a shard the bound plan realizes is captured as a decision note on that concept's topic, blocking nothing, amended into the design only after that plan closes, and realized by a following plan; a change to a concept no bound plan realizes is amended at once. Only when the bound plan is found built on a shard that is itself wrong does the architect stop it: it captures a note blocking the plan (an owed ruling, so no unit is ready), corrects the shard once, and the planner rectifies (repin, revise, retract, add) or rebuilds the plan; then the architect retracts the note and work resumes.\nCHANGE. (1) packages/canon/src/dimensions/role/assayer.ts states the gloss: it emits the verdict of (4), per unit, achieved or not achieved with each missing part as ⟨concept, uncovered factor or clause of the shard, locus as an address⟩, naming the unit and its implementer; it is the one judge of a unit. The three questions move here from deliver: does the artifact spell its concept's anchor, does its behaviour cover the shard exactly (nothing missing, nothing extra: an extra is a second concept smuggled in), and does anything else already realize it. It reads the shard (`design show <concept>`, with its closure) and the files at the commit it is given, never `plan show <unit>`, a spec, or the implementer's account. Keep the prohibition on mechanism-prose (naming, structure, test quality as opinions). A finding beside the unit it captures as a note.\n(2) packages/canon/src/roles/assayer.ts: rewrite the comments that deny it the judgement; skills stay ['design']; structured-data holds.\n(3) packages/canon/src/agents/assayer.ts: description, archetype and header comment say what the gloss says: the one judge of a unit, judging it against its shard, never its spec; still not a reviewer (no opinion on mechanism, no recommendation).\n(4) .changeset/assayer-position.md (@cratylus/canon minor). Wave-2 unit deliver-loop removes deliver's copy of the three questions. No new test file. Supersedes this plan's retracted unit assay-verdict.\nCAPABILITY REACH (added while in flight). The assayer captures findings as notes (the design: every delegate's finding is a note) but composes only design, which composes nothing: packages/canon/src/roles/assayer.ts `skills` becomes ['design', 'note'].",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/skills/deliver/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/agents/assayer.ts",
+        ".changeset/assayer-position.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. `grep -c -E 'never a verdict|¬emits ⟨verdict|leaving the decision' $T/agents/assayer.md` prints 0 (census 3); its `## Role` contains the three questions (spells, covers, sole, or their plain statement) and `implementer`.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/projection-stability.test.ts test/reader-density.test.ts test/structural-parsimony.test.ts test/purview-guardrail.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each of assayer, give its session text (RIG), with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. (a) In one paragraph, what is this agent's role: what it takes in, what it produces, and for whom? (b) What does it never do? (c) Does it decide whether a unit achieves what it was built for, and is anyone else allowed to accept or reject one? Against what does it judge, and what does it read to do so? Does it read the unit's spec or the implementer's account? What forms can its answer take, and what does a negative one contain?' Save every prompt and answer verbatim under /tmp/corrected-shards-cold-read/assayer-position/ and print the number of reads taken. PASSES when every read says it is the one judge of a unit, judges it against the design concept (shard) it was built to realize from the design and the landed files, never the spec or the implementer's account, and answers achieved or not achieved with what is missing, naming the unit and its implementer, in the design's words. FAILS at census: both models say it returns concepts and never a verdict, quoting 'Returns CONCEPTS, never a verdict'.",
+        "The front matter `skills:` of $T/agents/assayer.md lists design and note (census: design only)."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3R07GTRNG7RVJGW2VD2SABA",
+      "version": "01M3R07GTRNG7RVJGW2VD2SABB",
+      "closure": {
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}

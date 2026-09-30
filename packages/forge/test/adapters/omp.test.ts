@@ -28,7 +28,6 @@ import {
   OMP_REFUSAL_SHAPE,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
-  OMP_STANCE_MANIFEST,
   agentToOmpMd,
   canonicalActToOmp,
   canonicalToOmp,
@@ -41,6 +40,7 @@ import {
   ompSkillRel,
 } from '../../src/adapters/omp/index.js';
 import { adapterByName } from '../../src/adapters/registry/index.js';
+import { STANCE_MANIFEST, personaRootOf } from '../../src/core/enrollment.js';
 import {
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
@@ -251,8 +251,8 @@ describe('omp event map', () => {
   });
 
   it('declares NO unnarrowed loss on any act, because a hook here is CODE', () => {
-    // Codex must report every act unnarrowed: its only selector is a regex over
-    // `agent_type`. omp's hook is a TypeScript module that receives `toolName`, so
+    // A harness whose only selector is a regex over `agent_type` must report every
+    // act unnarrowed. omp's hook is a TypeScript module that receives `toolName`, so
     // narrowing is an `if`. If this ever gains an `unnarrowed`, the adapter has
     // silently lost the ability to filter and the report must say so.
     for (const [act, binding] of Object.entries(canonicalActToOmp)) {
@@ -492,10 +492,6 @@ describe('omp enforcing surface', () => {
     // rather than short-circuiting on a missing verdict.
     expect(turn?.content).toContain('writeFileSync(file, verdict ?? "")');
     expect(turn?.content).not.toContain('if (!verdict) return undefined');
-    // Announced ONCE — the miss latch holds, so an unbounded notice would repeat
-    // one unchanging line at every later turn end.
-    expect(turn?.content).toContain('lastDark');
-    expect(turn?.content).toContain('sendUserMessage(out');
   });
 
   it('reads the verdict off STDOUT and a nonzero `code`, never `exitCode`', () => {
@@ -587,17 +583,168 @@ describe('omp enforcing surface', () => {
     expect(budget).toBeGreaterThan(15_000);
   });
 
-  it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
+  it('emits nothing when the mechanism is absent — and that is the arity bug', () => {
     // EXONERATING FIXTURE. Without a mechanism there is no command to wire, so
     // emitting nothing is correct. What was NOT correct was reaching this state
-    // because the port dropped `mechanisms` on the floor: codex's adapter wired
-    // `enforcingSurface` at arity 1, so every call took this branch and its
-    // per-agent guardrails reached the host as nothing at all — green throughout,
+    // because a port dropped `mechanisms` on the floor: an adapter that wires
+    // `enforcingSurface` at arity 1 takes this branch on every call, and its
+    // per-agent guardrails reach the host as nothing at all — green throughout,
     // because the unit tests call the function DIRECTLY with a mechanism map the
     // production path never supplies.
     expect(
       ompGuardrailExtensions([binding(['mav'], ['turn.end'])] as never),
     ).toEqual([]);
+  });
+});
+
+describe('omp bridge — a guard that lets a fire through says so', () => {
+  // The generated module is RUN, on worker stubs that print what the real workers
+  // print, because whether a notice reaches the operator is a fact about the
+  // bridge's two passes and not about any string in its source. The workers speak
+  // in one of three ways: a notice INSTEAD of the payload envelope (nothing could
+  // be judged), the envelope and then a notice (the verdict pass let it through),
+  // or the envelope and then a verdict or nothing (judged).
+  const STUB = `#!/bin/sh
+cat > /dev/null
+if [ -n "$STANCE_EMIT_PAYLOAD" ]; then
+  if [ "$MODE" = early ]; then
+    echo "PURVIEW GUARDRAIL — DARK: jq is not installed. This call was NOT judged."
+  else
+    printf '{"rubric":"%s","payload":"x"}\\n' "$RUBRIC"
+  fi
+  exit 0
+fi
+case "$MODE" in
+  discarded) echo "STANCE GUARDRAIL — BLOCK DISCARDED: no span. This turn was NOT judged clean." ;;
+  noprogress) echo "STANCE GUARDRAIL — NO PROGRESS: byte-identical to the block already issued." ;;
+  deny) printf '{"decision":"block","reason":"collapsed"}\\n' ;;
+  pass) ;;
+esac
+`;
+
+  type Handler = (event: unknown, ctx: unknown) => Promise<unknown>;
+
+  /** Load the generated module for `event`, fire its handler, and report what
+   *  omp would have been told: the messages sent and the handler's result. */
+  async function fired(
+    mode: string,
+    cell: { event: string; fire: Record<string, unknown> },
+    sendUserMessage: (m: string, o: unknown) => unknown = () => undefined,
+  ): Promise<{ sent: string[]; result: unknown }> {
+    const dir = mkdtempSync(join(tmpdir(), 'omp-bridge-'));
+    tmp.push(dir);
+    const stub = join(dir, 'worker.sh');
+    writeFileSync(stub, STUB);
+    const rubric = join(dir, 'rubric.md');
+    writeFileSync(rubric, 'the rubric');
+    const mech = new Map([
+      ['stance', { command: `MODE=${mode} RUBRIC=${rubric} sh ${stub}` }],
+    ]) as never;
+    const [mod] = ompGuardrailExtensions(
+      [
+        {
+          anchor: 'stance',
+          fragment: {
+            substrate: 'harness',
+            events: [cell.event],
+            realizedBy: 'stance',
+          },
+          agents: ['mav'],
+        },
+      ] as never,
+      mech,
+    );
+    // The module's one runtime import is omp's own model client, which the host
+    // supplies and a test does not have; no case here reaches a model.
+    const content = (mod?.content as string).replace(
+      "import { completeSimple } from '@oh-my-pi/pi-ai';",
+      'const completeSimple = async () => ({ content: [] });',
+    );
+    const file = join(dir, 'scope', 'extensions', OMP_GUARDRAIL_MODULE);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+    const handlers = new Map<string, Handler>();
+    const sent: string[] = [];
+    const pi = {
+      cwd: dir,
+      on: (event: string, h: Handler) => handlers.set(event, h),
+      sendUserMessage: (m: string, o: unknown) => {
+        sent.push(m);
+        return sendUserMessage(m, o);
+      },
+      exec: async (command: string, args: string[]) => {
+        const r = spawnSync(command, args, { encoding: 'utf8', cwd: dir });
+        return {
+          stdout: r.stdout,
+          stderr: r.stderr,
+          code: r.status,
+          killed: false,
+        };
+      },
+    };
+    // Dynamic by necessity: the module is the projection's OUTPUT, written above.
+    const mod2 = (await import(file)) as {
+      default: (pi: unknown) => void;
+    };
+    mod2.default(pi);
+    const native = [...handlers.keys()][0] as string;
+    const result = await handlers.get(native)?.(cell.fire, {});
+    return { sent, result };
+  }
+
+  const CELLS = [
+    { event: 'turn.end', fire: { messages: [] } },
+    { event: 'tool.use.pre', fire: { toolName: 'write', input: {} } },
+  ];
+
+  it.each(CELLS)(
+    'relays a notice printed before the judge is asked — $event',
+    async (cell) => {
+      const { sent, result } = await fired('early', cell);
+      expect(sent).toHaveLength(1);
+      expect(sent[0]).toMatch(/PURVIEW GUARDRAIL.*NOT judged/);
+      // The notice is never a refusal: the fire is let through.
+      expect(result).toBeUndefined();
+    },
+  );
+
+  it.each(CELLS)(
+    'relays a notice printed after the judge was asked, whatever it opens with — $event',
+    async (cell) => {
+      for (const [mode, text] of [
+        ['discarded', /BLOCK DISCARDED/],
+        ['noprogress', /NO PROGRESS/],
+      ] as const) {
+        const { sent, result } = await fired(mode, cell);
+        expect(sent).toHaveLength(1);
+        expect(sent[0]).toMatch(text);
+        expect(result).toBeUndefined();
+      }
+    },
+  );
+
+  it.each(CELLS)('stays SILENT on a judged pass — $event', async (cell) => {
+    const { sent, result } = await fired('pass', cell);
+    expect(sent).toEqual([]);
+    expect(result).toBeUndefined();
+  });
+
+  it('still refuses on a verdict, and sends no notice for it', async () => {
+    const { sent, result } = await fired('deny', CELLS[0] as never);
+    expect(sent).toEqual([]);
+    expect(result).toEqual({ decision: 'block', reason: 'collapsed' });
+  });
+
+  it('never fails the fire because the notice could not be delivered', async () => {
+    const throws = () => {
+      throw new Error('Agent is already processing');
+    };
+    const rejects = () => Promise.reject(new Error('busy'));
+    for (const send of [throws, rejects]) {
+      const { sent, result } = await fired('early', CELLS[0] as never, send);
+      expect(sent).toHaveLength(1);
+      expect(result).toBeUndefined();
+    }
   });
 });
 
@@ -631,30 +778,23 @@ describe('omp scope-activated surface', () => {
     ]);
   });
 
-  it('enrolls a persona by PLACING its manifest, and the session by omitting one', () => {
-    // PRESENCE IS ENROLLMENT. The worker asks whether this scope carries a
-    // manifest, never whether a list names the agent, so composing a cell
-    // enrolls every persona carrying it and nothing central is edited. The
-    // allowlist this replaces was a runtime self-filter over an enrollment the
-    // corpus already derived, and it had drifted exactly as such a list does:
-    // every projected persona carried the guard while the shell default named
-    // `nico mav`, leaving `architect` and `kino` holding principal authority and
-    // never once judged.
+  it('stages no manifest itself — enrollment is the projector’s, one builder for every harness', () => {
+    // The persona's manifest used to be built here, so a second harness needing
+    // one would have spelled it a second time. It is now `core/enrollment.ts`'s,
+    // emitted by the projector for every adapter that declares `scopedRel`; this
+    // surface is the modules alone, one per scope, the session included.
     const out = ompScopeActivatedExtensions([HOOK], ['mav', 'nico']);
-    const manifests = out.filter((f) => f.filename === OMP_STANCE_MANIFEST);
-    // A bare launch still loads the dispatcher and still finds nothing to judge:
-    // the silence falls out of PLACEMENT, not out of an `agent_type` branch that
-    // had to be remembered identically in two separate workers.
-    expect(manifests.map((f) => f.scope)).toEqual(['mav', 'nico']);
-    expect(ompHarnessAdapter.scopedRel?.(OMP_STANCE_MANIFEST, 'mav')).toBe(
-      `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/mav/${OMP_STANCE_MANIFEST}`,
+    expect(out.map((f) => f.filename)).toEqual([
+      OMP_SESSION_MODULE,
+      OMP_SESSION_MODULE,
+      OMP_SESSION_MODULE,
+    ]);
+    expect(ompHarnessAdapter.scopedRel?.(STANCE_MANIFEST, 'mav')).toBe(
+      `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/mav/${STANCE_MANIFEST}`,
     );
-    // Keyed by the CELL that owns the gate and carrying that cell's own moments,
-    // so a second gated dimension is a second ENTRY rather than a new field, a
-    // new file, or a line in any caller.
-    const parsed = JSON.parse(manifests[0]?.content ?? '{}');
-    expect(parsed.agent).toBe('mav');
-    expect(parsed.gates['stance-guardrail'].moments).toEqual(['turn.end']);
+    expect(personaRootOf(ompHarnessAdapter)).toBe(
+      `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}`,
+    );
   });
 
   it('registers the cell’s native event and its worker command', () => {
@@ -1222,12 +1362,18 @@ describe('omp role routing', () => {
     expect(routing.defaultRole).toBe('default');
     expect(
       Object.fromEntries(
-        ['implementer', 'planner', 'assayer', 'architect', 'unheard-of'].map(
-          (r) => [r, routing.nearest(r)],
-        ),
+        [
+          'implementer',
+          'integrator',
+          'planner',
+          'assayer',
+          'architect',
+          'unheard-of',
+        ].map((r) => [r, routing.nearest(r)]),
       ),
     ).toEqual({
       implementer: 'task',
+      integrator: 'task',
       planner: 'plan',
       assayer: 'default',
       architect: 'default',
@@ -1242,8 +1388,8 @@ describe('omp role routing', () => {
     ]);
   });
 
-  it('is omp alone — claude and codex leave the member absent', () => {
+  it('is omp alone — claude leaves the member absent', () => {
     expect(adapterByName('claude').roleRouting).toBeUndefined();
-    expect(adapterByName('codex').roleRouting).toBeUndefined();
+    expect(adapterByName('omp').roleRouting).toBeDefined();
   });
 });

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QGRV75VXV2C8F8KCHYC0V0",
+    "entity": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QGCVKXJ3NKRYP6J4NVGK6Y"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T21:22:44.069Z",
+    "reason": "adoption: a hand-made link already leading to this harness's launcher, recorded with the host's consent at install, is the install's to remove; the glosses said the opposite of the ruling",
+    "cause": "re-assay of persona launch at f68b39ad"
+  },
+  "payload": {
+    "anchor": "uninstall",
+    "gloss": "removing from a host everything a cratylus install placed for one harness, as recorded in its deploy manifest (agents, skills, hooks and their registrations, extensions, launchers, persona commands, and host config entries it added), and nothing the host placed itself (a persona command it adopted with the host's consent counts as placed): a file or entry it did not place, or one the host changed since, is left and reported. It is the consumer surface's verb; each placing concept owns the removal of what it places.",
+    "factors": []
+  }
+}

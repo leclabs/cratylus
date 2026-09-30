@@ -104,12 +104,17 @@ const NONCE = `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const runtimeConfig = join(root, 'runtime-config.json');
 
 /** The deployed shim runs `cratylus` off PATH; isolate git config too, and
- *  point the runtime at the emitted host config rather than the operator's real one. */
+ *  point the runtime at the emitted host config rather than the operator's real one.
+ *  The harness markers are blanked: the event tap reads which harness invoked it from
+ *  the environment, and this leg drives the CLAUDE shim, so a run launched from inside
+ *  an omp session must not hand it omp's. */
 const hermeticEnv = {
   ...process.env,
   PATH: `${join(hostRoot, 'bin')}:${process.env.PATH ?? ''}`,
   GIT_CONFIG_GLOBAL: '/dev/null',
   AGENT_RUNTIME_CONFIG: runtimeConfig,
+  OMPCODE: '',
+  CLAUDECODE: '',
 };
 
 afterAll(() => {

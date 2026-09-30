@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R1RGNDDGVREXWD0JV33S1N",
+    "entity": "01M3R1RGNDDGVREXWD0JV33S1M",
+    "operation": "create",
+    "supersedes": [],
+    "author": "mav-position",
+    "time": "2026-09-30T02:19:39.053Z",
+    "reason": "cold read of mav-position showed one wrong (h) from a role/skill line outside this unit's outputs",
+    "cause": "mav-position of corrected-shards"
+  },
+  "payload": {
+    "title": "haiku conflates hold-and-amend with stop-the-plan on an operator change mid-plan",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "mav-position cold read, 3 rounds x opus-5.5 and haiku-4.5 (/tmp/corrected-shards-cold-read/mav-position/): every read passed (a)-(g),(i); haiku round 1 answered (h) as capture a decision note BLOCKING the plan, amend once, planner re-plans, i.e. the wrong-shard stop path, instead of holding a non-blocking note until the plan closes. Rounds 2 and 3 answered (h) correctly. The wording comes from the role's amend(C) clause and the design skill, not from mav.ts.",
+    "blocks": []
+  }
+}

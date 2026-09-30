@@ -13,10 +13,10 @@
 
 ## 1. What cratylus is
 
-**Author agent semantics once; realize them on any harness.**
+**Author agent semantics once; realize them on Claude Code and omp.**
 
 You describe agents, skills and rules as a **corpus** of signified primitives. Cratylus projects
-that corpus onto whatever harness you actually run — Claude Code, Codex, others — deterministically.
+that corpus onto whatever harness you actually run — Claude Code and omp — deterministically.
 The corpus is data; the projector is a pure function of it; the harness is a target, never the
 source of truth.
 
@@ -191,12 +191,52 @@ cratylus-run memory encode --name mav --body '…'
 Deployed skills call this; you rarely type it. It stays a **separate command**, shipped by the same
 package — see §8, item 3.
 
+### 4.9 "Run a persona by its name"
+
+```sh
+cratylus install --harness claude --link-persona-commands
+planner -p 'draft the plan'
+```
+
+`install` can put a command named after each installed persona in `~/.local/bin`, linked to the
+harness's launcher, so `planner` starts a session as the planner persona. Without
+`--link-persona-commands` a terminal install shows the links it would make and asks first; a piped or
+scripted one makes none and says to pass the flag. It reports when `~/.local/bin` is not on
+`PATH`. It never overwrites: a name that is taken (a file of yours, another program's link, or the
+other harness's launcher) is left alone and reported with what is there. A link you made by hand to
+this harness's own launcher is adopted: recorded and reported, not re-created. A persona has one
+command across harnesses, so whichever install links a name first owns it. The links it placed or
+adopted are recorded in the harness's deploy manifest, and only recorded links are ever removed.
+
+On Claude Code `install` also makes the persona's badge (`✈️ mav`) visible for as long as its session
+runs, in the status line. Where you have none it sets one; where you have your own it wraps it, with
+no flag: your command still runs and its output reaches the status line byte for byte, and in a
+session that runs a persona the badge goes in front of its first line. It records your original
+command in the deploy manifest and prints what it changed. A `statusLine` that is not a `command`
+one is left as it is, and no badge can show there: Claude Code rejects such a settings file
+entirely and runs no status line until it is fixed.
+
+### 4.10 "Take it all away"
+
+```sh
+cratylus uninstall --harness claude --dry-run   # what it would remove, and what it would leave
+cratylus uninstall --harness claude
+```
+
+`uninstall` removes from one harness what `install` placed there, and nothing you placed or changed.
+It goes by the harness's deploy manifest, which records a digest of every file install wrote, so a file
+you edited since is **left**, named, with the reason. It also takes back the hook registrations it
+added, unwraps your status line to your own command (byte for byte), removes the persona commands it
+placed or adopted, takes the lines it added out of omp's `config.yml` so the file is what you wrote
+(your `modelRoles` entries included), and removes its stanza of the runtime config. The manifest goes
+last. `--dry-run` prints the same two lists and writes nothing; `--harness` is required.
+
 ---
 
 ## 5. Proposed root `--help`
 
 ```
-cratylus/1.0.0 — author agent semantics once, realize them on any harness
+cratylus/1.0.0 — author agent semantics once, realize them on Claude Code and omp
 
 Usage
   $ cratylus <command> [options]
@@ -236,15 +276,12 @@ Six verbs, MECE across **configure / discover / inspect / gate / emit / place**.
 
 ## 6. What this does not fix, and must
 
-Three closures block the plugin thesis. None is a CLI question; all outrank one.
+Two closures block the plugin thesis. Neither is a CLI question; both outrank one.
 
-1. **The harness registry is closed.** `HarnessName = 'claude' | 'codex'` — a third party cannot
-   ship an adapter without editing forge. That contradicts VISION's headline, _"realize behavior
-   everywhere."_ Adapters should ride the **config** (projection), not the corpus plugin (meaning).
-2. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its
+1. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its
    members one is a real plugin, two are hardcoded string intercepts, one has no implementation.
    Canon already solved this one axis over with an open, corpus-owned vocabulary.
-3. **`buildPlugin` does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts` describe a
+2. **`buildPlugin` does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts` describe a
    two-named-export plugin contract; `git grep` returns four hits, all prose. The real contract is
    an unnamed `default` export — and the two-bin argument cites that contract as precedent.
 

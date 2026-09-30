@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R11D8EZR9ZRCSM3JBT2W97",
+    "entity": "01M3R11D8EZR9ZRCSM3JBT2W96",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:07:01.902Z",
+    "reason": "role routing requires that install never changes a choice the host has made; the no-record path does",
+    "cause": "assay of claude-role-choice of corrected-shards"
+  },
+  "payload": {
+    "title": "claude-role-choice: an install over a root the prior version made overwrites the host's model lines",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "Observed at 7f3e7fb6 in a temp HOME. With a record in the deploy manifest, a host's edited or removed model: line in a claude agent definition is kept across installs (implementer set to haiku and architect's line removed both survived a reinstall, each named in the log), and install lists the five held roles with their tiers and how to set them. With no record, the definition is written as rendered: after dropping agentModels from the manifest and setting assayer to haiku, the next install wrote assayer back to opus and implementer back to sonnet. Every claude root installed before this commit has no record, and the versions that made those roots already wrote these same tier lines (implementer sonnet; planner, assayer, architect opus), so any host that had set a subagent's model under them loses that choice on the first install after upgrading. The changeset says so outright ('A first install into a root with no record writes what it rendered'). Because the prior tier table matches the current one for every role those roots hold, a definition line that differs from what is rendered could be read as the host's even without a record. Whether that fits the role-routing shard is for the design-holder to decide.",
+    "blocks": []
+  }
+}

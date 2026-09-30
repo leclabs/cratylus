@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QBG0M5JHTXMKNCFBYYCYMQ",
+    "entity": "01M3QBG0M5JHTXMKNCFBYYCYMP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T19:50:31.813Z",
+    "reason": "live assay finding",
+    "cause": "live Claude Code assay, 2026-09-29"
+  },
+  "payload": {
+    "title": "claude hooks resolve through HOME, not the config dir",
+    "kind": "idea",
+    "topic": "claude parity",
+    "body": "Projected claude hook commands address $HOME/.claude/hooks, so with CLAUDE_CONFIG_DIR set the session runs whatever hooks sit in the real home, not the deployed ones (live assay F2). Hooks should resolve from the config dir Claude Code actually loaded.",
+    "blocks": []
+  }
+}

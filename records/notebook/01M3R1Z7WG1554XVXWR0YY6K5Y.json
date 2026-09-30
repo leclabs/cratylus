@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R1Z7WG1554XVXWR0YY6K5Y",
+    "entity": "01M3R1W3F8DR4267NPBFCWXJ8T",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R1W3F8DR4267NPBFCWXJ8V"
+    ],
+    "author": "assayer",
+    "time": "2026-09-30T02:23:19.440Z",
+    "reason": "the rework at 8467ee37 resolves both contradictions this note raised",
+    "cause": "re-assay of kino-position of corrected-shards at 8467ee37"
+  },
+  "payload": {
+    "title": "kino's archetype says it reads nothing from below and routes verdicts to whoever they name",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Raised at 3141eac2: kino's archetype said 'kino reads none of what they produce' about the planner, the implementer, the assayer and the integrator, and it routed 'assay verdicts to whoever they name'. Both contradicted the architect position. The rework at 8467ee37 fixes both. The archetype now says that what reaches kino is the assay verdict on a unit, the integrator's report of a unit that broke the whole, and the names of units ready to start, and that it reads no unit, spec, diff, artifact or account of the work. It routes a ready unit to an implementer, an unachieved unit or a broken whole back to the same implementer with the findings, and an achieved unit to the integrator. The description now routes on the assay verdicts and the integrator's reports [observed]. One stale item remains outside the agent: .changeset/kino-position.md still describes the 3141eac2 wording, 'routing units by name and assay verdicts', and says nothing about the integrator's reports or where each verdict goes. It does not reach the composed agent.",
+    "blocks": []
+  }
+}

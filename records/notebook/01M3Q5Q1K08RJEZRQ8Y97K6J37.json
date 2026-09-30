@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Q5Q1K08RJEZRQ8Y97K6J37",
+    "entity": "01M3Q5Q1K08RJEZRQ8Y97K6J36",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T18:09:30.721Z",
+    "reason": "found while delivering what-ships",
+    "cause": "wave 0 returns"
+  },
+  "payload": {
+    "title": "a primitive file-cut for capacity",
+    "kind": "idea",
+    "topic": "plan",
+    "body": "Plan what-ships split the primitive 'supported harness' into six units by file area to fit executor capacity. The plan law says a unit past capacity is split on its concept's factors and, when factors = ∅, SURFACED; a file-cut instead leaves no unit that realizes the concept alone, so no per-unit assay can pass and acceptance falls back to verify. Either the law should admit a removal-shaped primitive to be cut by site with one assay on the whole, or such a concept should be factored (adapter, gates, docs) at design time.",
+    "blocks": []
+  }
+}

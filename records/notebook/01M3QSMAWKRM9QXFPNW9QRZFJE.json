@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QSMAWKRM9QXFPNW9QRZFJE",
+    "entity": "01M3QSMAWKRM9QXFPNW9QRZFJD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T23:57:33.459Z",
+    "reason": "the route is a cost-versus-quality choice the operator owns, and the unit encodes a recommendation until ruled",
+    "cause": "census of role routing for plan integrator-position"
+  },
+  "payload": {
+    "title": "the integrator's role-routing tier",
+    "kind": "question",
+    "topic": "integrator",
+    "body": "Which model route does the integrator position run on? The omp built-in roles, read from the omp binary at census, are default, smol, slow, plan, task, commit, vision, advisor and web. The Claude tiers are opus, sonnet and haiku. At census, with no entry, omp routes it to `default` and Claude runs it on the session's model. The plan recommends omp `task` and claude `sonnet`, the implementer's route: the work is bounded and mechanical, but reading a red check's output and naming its owner, while never trying to fix it, is where the fast tier is weakest. The alternatives are smol/haiku (cheapest), omp `commit` (nearest by name; it is omp's own commit-message role, and what it resolves to on a host that leaves it unset was not checked), or no entry (default and session model). Unit integrator of plan integrator-position encodes the recommendation, and the ruling revises it.",
+    "blocks": [
+      "01M3QSH5SMWQ5WCDQTS8QKKA1D"
+    ]
+  }
+}

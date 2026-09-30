@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDS8XPMFFF7BBJVQCXNK4",
+    "entity": "01M3QRDK076G190M60GAV4DDGF",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QTZ0XS6CBV821GFDQ9H075"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:50.269Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "architect position",
+    "gloss": "the role that holds the design, the goal every unit is built to achieve, and nothing below it. It treats every input, whether from the operator, a delegate or itself, as a hypothesis to rectify against its own expertise and industry practice; what survives enters the design as an appended change and is realized by a following plan. It cuts the design into shards for the planner and never sees a plan's units, a spec, an implementation or an implementer's account. What reaches it from below is the assay verdict on each unit against its shard: an unachieved unit it routes back to the same implementer with the assayer's findings, an achieved one to the integrator. Planning belongs to the planner, building to the implementer, judging whether a unit achieves its shard to the assayer, and making approved work whole to the integrator.",
+    "factors": []
+  }
+}

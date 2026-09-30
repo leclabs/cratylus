@@ -44,7 +44,7 @@ async function tree() {
  *
  * Comments are stripped and matches are CALL-SHAPED (`name(`), because a plain
  * substring scan was wrong in both directions: it convicted prose naming
- * `writeFileSync` — it caught a real comment during the codex collapse, and the
+ * `writeFileSync` — it caught a real comment once, and the
  * author reworded the comment rather than weaken the gate — and it would equally
  * have missed nothing, since any mention at all tripped it. `from 'node:fs'` is
  * checked too: the structural fact behind "opens no file descriptor" is that the
@@ -65,13 +65,20 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
-    expect(paths).toEqual([
-      'agents/probe.md',
-      'hooks/ping/ping.sh',
-      'settings.json',
-      'skills/greet/SKILL.md',
-      'skills/greet/scripts/note.mjs',
-    ]);
+    // The launch spec: the launcher, the status-line worker (both session-scoped) and
+    // the persona's badge file in its own scope — names derived from the bin.
+    expect(paths).toEqual(
+      [
+        'agents/probe.md',
+        'enforcing/_session/claude-agent',
+        `enforcing/_session/${CLI_BIN}-status-line.sh`,
+        `enforcing/probe/${CLI_BIN}-persona-badge.txt`,
+        'hooks/ping/ping.sh',
+        'settings.json',
+        'skills/greet/SKILL.md',
+        'skills/greet/scripts/note.mjs',
+      ].sort(),
+    );
     // Bytes, not paths-on-disk: every entry carries its own content.
     for (const f of t.files) expect(typeof f.content).toBe('string');
     expect(t).toMatchObject({ agents: 1, skills: 1, shims: 1, hooks: 1 });
@@ -108,38 +115,10 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(worker?.executable).toBe(true);
   });
 
-  // The scope-activated orientation (codex `AGENTS.md`). It was the ONE
-  // artifact the projector could not render, which is why the codex CLI kept a
-  // whole forked pipeline just to reach its own disk write — and why that fork
-  // shipped sessionless shims. It is a tree entry now, like everything else.
-  //
-  // Codex declares no `hooks` op and the projector refuses a hook-carrying plugin
-  // set it cannot render, so this case takes the fixture WITHOUT its hooks dir.
-  const { hooks: _codexHasNoHooks, ...orientationPlugin } = plugin;
-
-  it('emits the harness orientation into the tree, indexing the projected agents', async () => {
-    const t = await projectPluginSet({
-      plugins: [orientationPlugin],
-      adapter: adapterByName('codex'),
-    });
-    const orientation = t.files.find((f) => f.path === 'AGENTS.md');
-    // Rendered by the adapter, addressed at the render-tree ROOT (not under agents/).
-    expect(orientation?.content).toContain('`probe` — `agents/probe.toml`');
-    // An ordinary artifact: bytes in the tree, no exec bit, no side-channel write.
-    expect(orientation?.executable).toBeUndefined();
-  });
-
-  it('emits NO orientation for a harness that declares none — claude is unchanged', async () => {
-    // The guard on the guard: teaching the projector about `scopeOrientation` must not
-    // add a byte to a harness without one. It is optional on the port on purpose.
-    const t = await tree();
-    expect(t.files.some((f) => f.path === 'AGENTS.md')).toBe(false);
-  });
-
   // "Rendering is not writing" is a LOAD-BEARING property, not tidiness: it is what
   // makes "what does this plugin set project?" answerable without a tmpdir. Asserting
   // it by grepping raw source was too weak in both directions — it convicted any
-  // COMMENT naming `writeFileSync` (it caught a prose line during the codex collapse),
+  // COMMENT naming `writeFileSync` (it once caught a prose line),
   // and it would have missed `fs.writeFileSync` or an aliased import entirely.
   //
   // The structural fact is stronger and comment-immune: a module that opens no file

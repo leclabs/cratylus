@@ -99,8 +99,8 @@ import type { HookCell } from '../manifest.js';
 // is held by a test rather than remembered.
 //
 // A FULL BYTE COMPARISON of every rendered artifact is therefore what runs — no
-// digest, and above all NO SAMPLE. A sampled check that misses the founding doctrine
-// reports "in sync", which is the exact failure this cell exists to end. The
+// digest, and above all NO SAMPLE. A sample that skips the ten skills carrying the
+// prime principle reports "in sync", which is the exact failure this cell exists to end. The
 // `deploy-drift-notice` suite re-measures the clean path and fails on a regression, so
 // the number above is a held bound rather than a remembered one.
 //
@@ -119,7 +119,7 @@ import type { HookCell } from '../manifest.js';
 //      matches is now THIS harness's, because the projector substitutes this
 //      harness's hooks-file name (`harness-hooks-file`) and its own name
 //      (`harness-name`, passed to the comparator so it audits the right home). A
-//      codex session reports on the codex deployment. The pair lives on
+//      omp session reports on the omp deployment. The pair lives on
 //      `HarnessAdapter` and reaches here through projection, which is the only stage
 //      that knows which adapter it is rendering for — the alternative was a
 //      shell-side copy of the harness registry, a second home for adapter knowledge.
@@ -200,7 +200,7 @@ export const deployDriftNotice: HookCell = {
 #   - ADVISORY ONLY. Prints to stdout and exits 0. It never emits
 #     {"decision":"block"} — a stale deployment must not block a session.
 #   - NEVER SAMPLES. The comparison is the tool's own: whole tree, byte for byte.
-#     A sampled check that misses the founding doctrine reports "in sync".
+#     A sample that skips the ten skills carrying the prime principle reports "in sync".
 #   - NOT A COUNT. It relays the tool's report, which carries the superseded lines
 #     still running and the rendered lines missing.
 #
@@ -233,9 +233,9 @@ DEPLOY_TOOL={{fact:deploy-bin}}
 
 # WHICH HARNESS THIS PROJECTION IS FOR. A hook worker is handed no identity by the
 # session it runs in, so a worker that must LOOK at a deployed tree had to guess —
-# and guessed claude, which made a codex session report on a sibling deployment.
+# and guessed claude, which made an omp session report on a sibling deployment.
 # These two are the adapter's own \`name\` and \`hooksFile\`, substituted at
-# projection: the codex render of this cell carries codex's.
+# projection: the omp render of this cell carries omp's.
 HARNESS={{fact:harness-name}}
 HARNESS_HOOKS_FILE={{fact:harness-hooks-file}}
 
@@ -287,8 +287,8 @@ done
 # A render tree is recognized by BEING one: \`agents/\` + \`skills/\` + THIS harness's
 # own hooks file. That file is what distinguishes this harness's tree from another
 # harness's tree sitting beside it, and it is named by projection rather than by
-# this script — so a codex render of this worker skips the claude tree and a claude
-# render skips the codex one. The \`--out\` dir is an operator's choice, so the tree
+# this script — so an omp render of this worker skips the claude tree and a claude
+# render skips the omp one. The \`--out\` dir is an operator's choice, so the tree
 # is discovered, never named.
 #
 # THE GLOB USED TO BE \`.render*\`, WHICH MADE THE PARAGRAPH ABOVE FALSE. The shape
@@ -380,7 +380,7 @@ if [ -z "$cli" ]; then
 fi
 
 # \`--harness\` is what makes the audited HOME this session's. Without it the tool
-# resolves its default root, so a codex tree would be compared against the claude
+# resolves its default root, so an omp tree would be compared against the claude
 # deployment — a report that is about neither.
 # The tool reports and repairs nothing, so it is safe to point at a host mid-work.
 set +e

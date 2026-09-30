@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R09VG6XNT4XW2BFMMH8W8E",
+    "entity": "01M3MEKHK6QA4SFYW73YXKASWM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MJDC7K710DKW7JCA18D190"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:54:10.054Z",
+    "reason": "hypothesis 5: a unit reconcile is a choice between spec fields, which only the planner reads",
+    "cause": "rulings on the corrected-shards planner's hypotheses, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "skill routing",
+    "gloss": "each skill routes its reader's intents to its own domain interface in its own vocabulary, and holds its domain's authority rules: reconciliation of the design is the architect's alone, of plans and units the planner's, and of notes anyone's. `plan` pins and advances. `deliver` reads both and records acceptance by advancing a unit. `note` captures without an admission bar. No skill restates another's rules or mentions the record store; a skill that relies on another composes it, and every agent is given its role's skills together with everything they compose, so it starts with the whole of the system it works in, never a part.",
+    "factors": [
+      "01M3MEKHHB7HFK4FFQQG5C1Z0G"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QS9BVB263ZJK718GQ41T3C",
+    "entity": "01M3QS6QW3EFWD8C2FEGG2P1G9",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QS6QW3EFWD8C2FEGG2P1GA"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T23:51:33.995Z",
+    "reason": "ruling on the owed objective sign",
+    "cause": "cold probe of objective candidates, 2026-09-29"
+  },
+  "payload": {
+    "title": "the architect objective's sign",
+    "kind": "decision",
+    "topic": "architect position",
+    "body": "Ruled: the architect position's objective is a new objective value `conceptual-integrity` (Brooks's sign; the architect archetype already calls the position 'keeper of conceptual integrity'). Cold probe, two models each, with only 'Objective: <value>': conceptual-integrity decoded as guarding one coherent design others build to, neither building, testing nor merging; design-fidelity decoded as an implementer serving someone else's design; realization ⟨artifact ≅ design⟩ as a builder; delivery ⟨end-to-end integrated green⟩ as build-test-merge. The value carries no gloss; its sign carries it. `delivery` stays in the catalog for positions that do integrate.",
+    "blocks": []
+  }
+}

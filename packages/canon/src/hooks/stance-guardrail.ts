@@ -1,3 +1,4 @@
+import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
 
@@ -13,6 +14,9 @@ export const stanceGuardrail: HookCell = {
   residue:
     'structural-refusal ↾ turn-end · block ⟨intent-driven-expert-collapse⟩ ⟨permission-seeking · own-judgment-deferral · order-taking⟩ · pass ⟨reserved · irreversible-outward ↦ consent · intent-ambiguity ↦ elicit · ∄ mandate ↦ surface ⟨electing the objective ∉ in-remit⟩⟩ · harness-invariant ⟨prompt-identity erodes ↾ RLHF-corrigibility⟩',
   substrate: 'harness',
+  // The composition that binds an agent: it carries `handoff`, whose laws the rubric
+  // judges. Composing it enrolls the persona; nothing else does.
+  binds: { dimension: 'autonomy', value: anchorOf(handoff) },
   order: 0,
   events: ['turn.end', 'subagent.end'],
   entry: 'stance-guardrail.sh',
@@ -61,12 +65,16 @@ export const stanceGuardrail: HookCell = {
 #     whether a guard may run in a DIRECTORY. The off switch is launching \`omp\` rather than a
 #     persona — declining to BE the agent, instead of being it unjudged.
 #   - FAILS OPEN, BUT NEVER SILENTLY-CLEAN. Any error → exit 0 (allow stop): a guardrail that
-#     wedges work on its own flakiness is worse than a missed block. But once the guard is
-#     ENABLED and in scope, a failure that prevents judging (no transcript, judge unreachable)
-#     announces itself via \`dark\` instead of passing as a clean turn — silence is reserved for
-#     "judged, no collapse". Pre-enablement paths (no jq, opted out, off-allowlist) stay silent:
-#     there, not-checking is the correct answer, not a failure to report.
-#   - LOOP-SAFE. Honors stop_hook_active and a hard re-entry cap so it can never wedge a turn.
+#     wedges work on its own flakiness is worse than a missed block. But a turn let through
+#     WITHOUT A VERDICT says so where the operator reads it (\`say\`: Claude Code's JSON
+#     \`systemMessage\`, omp's relayed line), naming this guard and why it could not judge —
+#     no jq, no input, an unreadable transcript or rubric, a judge that does not answer or
+#     answers unparseably, a block it could not verify, state it cannot write, an unexpected
+#     error, and the two re-entry caps (no-progress, spent bypass). Silence is reserved for
+#     "judged, no collapse" and for "not enrolled" (no persona manifest in scope, or nothing
+#     judgeable in the turn): there, not-checking is the correct answer, not a failure to report.
+#   - LOOP-SAFE. Judges every turn and bounds the BLOCKS (a no-progress detector and a
+#     one-shot, self-resetting bypass), so it can never wedge a turn.
 #   - POSITION-SOUND. Every rubric rule that can fire is a claim about the turn's CLOSE. So the
 #     L1 window and the EVIDENCE check both run against \`asst_close\` — the text AFTER the last
 #     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
@@ -75,11 +83,87 @@ export const stanceGuardrail: HookCell = {
 # INPUT  : Claude Code Stop/SubagentStop hook JSON on stdin (transcript_path, stop_hook_active,
 #          agent_type [SubagentStop], session_id, cwd, …).
 # OUTPUT : on collapse → stdout \`{"decision":"block","reason":"…"}\` + exit 0 (Stop-hook block).
-#          otherwise → no stdout + exit 0 (allow stop).
+#          judged, no collapse → no stdout + exit 0 (allow stop).
+#          let through with no verdict → the notice \`say\` prints + exit 0 (allow stop).
 #
-# POSIX sh. Depends on: jq (transcript parse). Missing jq → fail open.
+# POSIX sh. Depends on: jq (transcript parse). Missing jq → the guard says so and allows the stop.
 
 set -eu
+
+# WHAT AN OPERATOR READS WHEN THE GUARD CANNOT JUDGE, defined before anything that needs a
+# command. The first thing that can be missing is \`jq\`, and a worker run with a PATH holding
+# little beyond \`sh\` and \`cat\` must still say it did not judge — so \`esc\`, \`say\` and \`dark\`
+# are builtins only, and nothing external runs above the jq check.
+#
+# Claude Code shows the operator a hook's JSON \`systemMessage\` and NOT its plain stdout on
+# exit 0, so a notice printed as a bare line reaches nobody there. omp's extension bridge
+# reads the worker's plain stdout and relays a line naming this guard and DARK to the
+# session, and would relay a JSON object as raw JSON — hence one form per harness, chosen at
+# projection by the harness's own name.
+esc() {
+	_in="$1"
+	_out=""
+	_nl="$(printf '\\nx')"
+	_nl="\${_nl%x}"
+	_tab="$(printf '\\t')"
+	_cr="$(printf '\\r')"
+	while [ -n "$_in" ]; do
+		_rest="\${_in#?}"
+		_c="\${_in%"$_rest"}"
+		case "$_c" in
+			'\\') _c='\\\\' ;;
+			'"') _c='\\"' ;;
+			"$_nl") _c='\\n' ;;
+			"$_tab") _c='\\t' ;;
+			"$_cr") _c='\\r' ;;
+		esac
+		_out="$_out$_c"
+		_in="$_rest"
+	done
+	printf '%s' "$_out"
+}
+say() {
+	case "{{fact:harness-name}}" in
+		claude) printf '{"systemMessage":"%s"}\\n' "$(esc "$1")" ;;
+		*) printf '%s\\n' "$1" ;;
+	esac
+}
+
+# A Stop hook must never break a session. An unexpected error (a nonzero status reaching the
+# trap) is let through AND SAID; every deliberate \`exit 0\` arrives here with status 0 and stays
+# as quiet as it chose to be.
+trap 'rc=$?; [ -z "\${view:-}" ] || rm -f "$view" 2>/dev/null; [ "$rc" -eq 0 ] || dark "an unexpected error stopped it (exit status $rc)"; exit 0' EXIT
+
+allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
+
+# A VERDICT and a FAILURE are different facts, and silence can only carry one of them.
+# \`allow_stop\` means "checked, no collapse". It must never also be the answer to "could
+# not check" — that is a bypass by omission: with the judge unreachable the guardrail
+# reports a clean turn forever and nothing ever says the guardrail went dark. Exactly the
+# defect fixed one file over in the memory nudge ("a broken runtime read as a clean bill
+# of health, silently and forever"); the inversion is the same — \`if signal absent then
+# pass\` becomes \`if signal absent then SAY SO\` — and, as there, it still never wedges the
+# turn. Reached only for a guard that is IN SCOPE and could not judge: a scope carrying no
+# persona manifest stays silent.
+dark() {
+	# THE HEARTBEAT, and the reason the log is worth keeping. A VERDICT row and a
+	# DARK row are both evidence the guard RAN; only an EMPTY log means it never
+	# did. Recording judged turns alone made "not judged" and "no session" read
+	# identically — measured on a live host: an endpoint behind the advisor role
+	# accepted connections and never answered, and five hours of one session were
+	# unjudged while leaving no trace whatsoever to notice it by.
+	if [ -n "\${verdict_log:-}" ]; then
+		printf 'DARK\\t\\t%s\\n' "$1" >> "$verdict_log" 2>/dev/null || true
+	fi
+	say "STANCE GUARDRAIL — DARK: $1. This turn was NOT judged; the absence of a block is an absence of a verdict, not a clean one."
+	exit 0
+}
+
+# --- read hook input ------------------------------------------------------------------------
+input="$(cat)"
+[ -n "$input" ] || dark "the hook received no input"
+
+command -v jq >/dev/null 2>&1 || dark "jq is not installed, so the hook payload cannot be read"
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
@@ -99,40 +183,6 @@ NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
 # different contract without the dispatcher learning anything about either.
 RUBRIC="\${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
-# A Stop hook must never break a session. Trap any unexpected error → allow the stop.
-trap 'exit 0' EXIT
-
-allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
-
-# A VERDICT and a FAILURE are different facts, and silence can only carry one of them.
-# \`allow_stop\` means "checked, no collapse". It must never also be the answer to "could
-# not check" — that is a bypass by omission: with the judge unreachable the guardrail
-# reports a clean turn forever and nothing ever says the guardrail went dark. Exactly the
-# defect fixed one file over in the memory nudge ("a broken runtime read as a clean bill
-# of health, silently and forever"); the inversion is the same — \`if signal absent then
-# pass\` becomes \`if signal absent then SAY SO\` — and, as there, it still never wedges the
-# turn. Reached only AFTER the opt-in and allowlist checks, so a repo that never enabled
-# the guard stays silent.
-dark() {
-	# THE HEARTBEAT, and the reason the log is worth keeping. A VERDICT row and a
-	# DARK row are both evidence the guard RAN; only an EMPTY log means it never
-	# did. Recording judged turns alone made "not judged" and "no session" read
-	# identically — measured on a live host: an endpoint behind the advisor role
-	# accepted connections and never answered, and five hours of one session were
-	# unjudged while leaving no trace whatsoever to notice it by.
-	if [ -n "\${verdict_log:-}" ]; then
-		printf 'DARK\\t\\t%s\\n' "\$1" >> "\$verdict_log" 2>/dev/null || true
-	fi
-	printf 'STANCE GUARDRAIL — DARK: %s. This turn was NOT judged; the absence of a block is an absence of a verdict, not a clean one.\\n' "\$1"
-	exit 0
-}
-
-# --- read hook input ------------------------------------------------------------------------
-input="$(cat)"
-[ -n "$input" ] || allow_stop
-
-command -v jq >/dev/null 2>&1 || allow_stop  # no jq → cannot parse → fail open
-
 # --- loop safety: budget the BLOCKS, never the JUDGING ---------------------------------------
 # SUPERSEDES the original \`stop_hook_active=true → allow_stop\` short-circuit, which was not a
 # loop guard but a hole. It demoted the invariant to "enforced on alternating turns" and handed
@@ -148,7 +198,8 @@ command -v jq >/dev/null 2>&1 || allow_stop  # no jq → cannot parse → fail o
 #   - consecutive-block cap  — after N blocks on one task, stop blocking and fail LOUD+OPEN.
 #   - no-progress detector   — if the judged turn is byte-identical to the one already blocked,
 #                              the agent changed nothing and won't on the next attempt either.
-# State is per-session, in a tmp file keyed by session id; absent/unwritable state → fail open.
+# State is per-session, in a tmp file keyed by session id; a state dir it cannot write goes dark
+# before any block is issued, since the caps below could not hold.
 session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 state_dir="\${TMPDIR:-/tmp}/stance-guardrail"
 mkdir -p "$state_dir" 2>/dev/null || true
@@ -181,15 +232,24 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # written in different languages in different files.
 #
 # Enrollment is now PRESENCE. Each bound persona's projection lands a manifest in that persona's
-# own scope, and the dispatcher — which lives in that same scope and therefore already knows it
-# — passes it in the envelope. A manifest means enrolled, and carries THIS agent's contract: its
-# rubric, its moments, its handoff laws. No manifest means not enrolled, which is silence rather
-# than an error, so a plain session that never declared itself anything stays untouched exactly
-# as it was. Adding a persona enrolls it; adding a gated dimension edits one persona's manifest;
-# neither is a line in this file.
+# own scope, and the scope reaches this worker in the one form its harness offers. omp's dispatcher
+# lives in that same scope and therefore already knows it — it passes it in the envelope as
+# \`stance_scope\`. Claude Code places no dispatcher; its hook payload NAMES the running agent as
+# \`agent_type\` (on the main thread of a \`--agent\` session and inside a subagent, and on neither for a
+# bare session), so the scope is the persona's directory under this harness's own home, one hop
+# above the hooks root this worker was deployed into. Either way the scope is then read the same:
+# A manifest means enrolled, and carries THIS agent's contract: its rubric, its moments, its
+# handoff laws. No manifest means not enrolled, which is silence rather than an error, so a plain
+# session, a built-in agent or a host's own agent — none of which declared itself anything — stays
+# untouched exactly as it was. Adding a persona enrolls it; adding a gated dimension edits one
+# persona's manifest; neither is a line in this file, and this file carries no agent list.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow_stop
-manifest="$stance_scope/stance/manifest.json"
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow_stop ;; esac
+	stance_scope="$(dirname -- "$(dirname -- "$SELF_DIR")")/{{fact:harness-persona-root}}/$named"
+fi
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow_stop
 
 # The persona's own contract, each field falling back to the shipped default. A manifest that
@@ -204,14 +264,46 @@ manifest_rubric="$(jq -r '.rubric // empty' "$manifest" 2>/dev/null || true)"
 case "$manifest_rubric" in
 	'') ;;
 	/*) RUBRIC="$manifest_rubric" ;;
-	*) RUBRIC="$stance_scope/stance/$manifest_rubric" ;;
+	*) RUBRIC="$(dirname -- "$manifest")/$manifest_rubric" ;;
 esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \\
 	dark "the rubric named by $manifest is not readable at '\$RUBRIC'"
 
 # --- extract the last assistant turn from the transcript ------------------------------------
-transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
+# WHICH TRANSCRIPT, AND WHOSE TURN. A SubagentStop payload names TWO: \`transcript_path\` is the
+# PARENT session's, \`agent_transcript_path\` is the subagent's own. The scope above is the subagent's
+# (\`agent_type\`), so the text it is judged on must be the subagent's too. This read
+# \`transcript_path\` alone, so a subagent's enrollment judged the PARENT's words — observed live: a
+# bare session's own text was judged under a subagent's scope. A Stop payload carries no
+# \`agent_transcript_path\`, so the main thread's transcript is the only one there is. The operator
+# session is still the parent's, and the standing directive below reads it from there.
+session_transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
+transcript="$(printf '%s' "$input" | jq -r '.agent_transcript_path // empty' 2>/dev/null || true)"
+[ -n "$transcript" ] || transcript="$session_transcript"
 [ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '\$transcript'"
+[ -n "$session_transcript" ] && [ -f "$session_transcript" ] || session_transcript="$transcript"
+
+# THE CLOSE IS IN THE PAYLOAD, NOT YET IN THE TRANSCRIPT. On Claude Code a Stop hook fires before the
+# final assistant message is written, so the transcript ends one message short: a turn that is only
+# text had NO assistant text to judge (fired, and passed in silence), and a tool turn was judged
+# without its close. The payload carries that message as \`last_assistant_message\`. It is appended
+# to a private copy as the last assistant record — unless the transcript already ends with exactly
+# that text — so every extraction below sees the whole turn and the original file is never touched.
+last="$(printf '%s' "$input" | jq -r '.last_assistant_message // empty' 2>/dev/null || true)"
+if [ -n "$last" ]; then
+	present="$(jq -rs --arg t "$last" '
+		[ .[] | select(.type == "assistant") ] | last
+		| ((.message.content // []) | map(select(.type == "text") | .text) | join("\\n")) == $t
+	' "$transcript" 2>/dev/null || echo false)"
+	if [ "$present" != true ]; then
+		view="$state_dir/$session.turn.$$"
+		{
+			cat "$transcript"
+			printf '\\n'
+			jq -cn --arg t "$last" '{type:"assistant", isSidechain:false, message:{role:"assistant", content:[{type:"text", text:$t}]}}'
+		} > "$view" 2>/dev/null && transcript="$view"
+	fi
+fi
 
 # The transcript is JSONL: each line has top-level .type ("assistant"/"user"), .isSidechain
 # (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use)
@@ -313,9 +405,12 @@ asst_close="$(jq -rs '
 # context: it is confidently wrong context, and the rubric leans on this slot to decide
 # whether an irreversible act was authorized.
 #
-# Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
-# message> tags, and they carry the skill's own formal preamble. Fall back to the most recent
-# message that survives the filter.
+# Skill bodies are recognizable by the wrapper the HARNESS puts on them, never by their prose:
+# claude injects one as a meta user message opening "Base directory for this skill: <dir>", after
+# a <command-name>/<command-message> invocation message; omp's \`skill-prompt\` message closes with
+# a "---" rule and "Skill: <path>/SKILL.md". An operator message that merely looks like a skill
+# (an H1 over a fenced block) carries neither, and stays. Fall back to the most recent message
+# that survives the filter.
 operator="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -328,8 +423,8 @@ operator="$(jq -rs '
 	| map(select(
 	      (test("<command-name>") | not)
 	      and (test("<command-message>") | not)
-	      and (test("Base directory for this skill:") | not)
-	      and (test("## Prime Principle") | not)
+	      and (test("^\\\\s*Base directory for this skill:") | not)
+	      and (test("\\\\n---\\\\n\\\\nSkill: [^\\\\n]*SKILL\\\\.md\\\\s*$") | not)
 	      and (test("^\\\\s*<system-reminder>") | not)
 	      and (test("\\\\[SYSTEM NOTIFICATION - NOT USER INPUT\\\\]") | not)
 	      and (test("<task-notification>") | not)
@@ -389,7 +484,7 @@ standing="$(jq -rs '
 	       else . end
 	     | gsub("\\\\s+"; " ")) as $said
 	    | "\\($n - 1 - $hit.key)\\n\\($said)" end
-' "$transcript" 2>/dev/null || true)"
+' "\${session_transcript:-$transcript}" 2>/dev/null || true)"
 
 if [ -n "$standing" ]; then
 	since="$(printf '%s\\n' "$standing" | head -1)"
@@ -464,7 +559,7 @@ fi
 
 # --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
 # The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
-# Non-zero judge exit → fail open.
+# Non-zero judge exit, an empty answer or a verdict that is neither PASS nor BLOCK → dark.
 judged="$turn"
 [ -n "$l1_evidence" ] && judged="$turn
 
@@ -501,8 +596,12 @@ else
 	verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
 fi
 
-decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
-[ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop
+decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1 | sed 's/[[:space:]]*$//')"
+case "$decision" in
+	PASS) allow_stop ;;  # judged, no collapse: the one silent verdict
+	BLOCK) ;;
+	*) dark "the judge's verdict was unparseable (no VERDICT: PASS or VERDICT: BLOCK line)" ;;
+esac
 
 reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This turn collapsed out of the intent-driven-expert stance."
@@ -528,7 +627,8 @@ reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head 
 evidence="$(printf '%s\\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1 \\
 	| sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
 if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
-	printf 'stance-guardrail: DISCARDING block — no EVIDENCE line; an unevidenced block cannot be distinguished from a fabricated one. REASON was: %s\\n' "$reason" >&2
+	printf 'DARK\\t\\t%s\\n' "$reason" >> "$verdict_log" 2>/dev/null || true
+	say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted no EVIDENCE line, and an unevidenced block cannot be told from a fabricated one. No verdict stands; this turn was NOT judged clean. The judge's reason was: $reason"
 	allow_stop
 fi
 if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
@@ -562,10 +662,14 @@ printf '%s\\t%s\\t%s\\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/
 	ev_norm="$(printf '%s' "$evidence" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
 	close_norm="$(printf '%s' "$asst_close" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
 	if ! printf '%s' "$close_norm" | grep -qF -- "$ev_norm"; then
-		printf 'stance-guardrail: DISCARDING block — judge quoted a span that is not in the turn'"'"'s CLOSE (mid-turn preamble, or confabulated): %s\\n' "$evidence" >&2
+		printf 'DARK\\t\\t%s\\n' "$evidence" >> "$verdict_log" 2>/dev/null || true
+		say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted a span that is not in the turn's CLOSE (mid-turn preamble, or confabulated): $evidence. No verdict stands; this turn was NOT judged clean."
 		allow_stop
 	fi
 fi
+
+# A block is only safe to issue when the caps below can hold, and they live in the state dir.
+[ -w "$state_dir" ] || dark "its state directory '$state_dir' is not writable, so the caps that keep a block from wedging the turn cannot hold, and a block was not issued"
 
 # --- loop safety: bound EFFORT, never PERMISSION ----------------------------------------------
 # A safety check must never be a function of how many times it has fired. Ethernet caps attempts
@@ -593,7 +697,7 @@ BLOCK_CAP="\${STANCE_BLOCK_CAP:-3}"
 turn_hash="$(printf '%s' "$asst_text" | cksum | cut -d' ' -f1)"
 last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
 if [ "$turn_hash" = "$last_hash" ]; then
-	printf 'STANCE GUARDRAIL — NO PROGRESS: this turn is byte-identical to the one already blocked, so blocking again cannot help. Allowing the stop UNRESOLVED: %s — the finding STANDS and is unaddressed.\\n' "$reason"
+	say "STANCE GUARDRAIL — NO PROGRESS: this turn is byte-identical to the one already blocked, so blocking again cannot help. Allowing the stop UNRESOLVED: $reason — the finding STANDS and is unaddressed."
 	allow_stop
 fi
 
@@ -615,7 +719,7 @@ fi
 # whether the policy still applies.
 if [ "$block_count" -ge "$BLOCK_CAP" ]; then
 	printf '0' > "$count_file" 2>/dev/null || true
-	printf 'STANCE GUARDRAIL — BYPASS SPENT after %s consecutive blocks. This turn was judged COLLAPSED and is allowed through UNRESOLVED: %s — the gate is RE-ARMED as of now; the next collapsed turn blocks again.\\n' "$BLOCK_CAP" "$reason"
+	say "STANCE GUARDRAIL — BYPASS SPENT after $BLOCK_CAP consecutive blocks. This turn was judged COLLAPSED and is allowed through UNRESOLVED: $reason — the gate is RE-ARMED as of now; the next collapsed turn blocks again."
 	allow_stop
 fi
 printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
@@ -694,7 +798,7 @@ turn="$(cat)"
 # Resolve the judge model CLI — THIS HARNESS'S OWN, carried as a projection fact.
 #
 # It read \`\${STANCE_JUDGE_BIN:-claude}\`, and that one literal made every harness
-# depend on one vendor: codex's stance guard and omp's both needed \`claude\`
+# depend on one vendor: omp's stance guard needed \`claude\`
 # installed and separately authenticated, and when that OAuth lapsed every verdict
 # on every harness failed open in silence. A harness answers with its own model.
 #

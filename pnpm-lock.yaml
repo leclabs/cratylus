@@ -165,9 +165,6 @@ settings:
 
 catalogs:
   default:
-    '@iarna/toml':
-      specifier: ^2.2.5
-      version: 2.2.5
     '@types/node':
       specifier: ^22.0.0
       version: 22.19.21
@@ -283,9 +280,6 @@ importers:
       '@cratylus/schema':
         specifier: workspace:*
         version: link:../schema
-      '@iarna/toml':
-        specifier: 'catalog:'
-        version: 2.2.5
       cac:
         specifier: 'catalog:'
         version: 6.7.14
@@ -1008,9 +1002,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@iarna/toml@2.2.5':
-    resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
 
   '@inquirer/external-editor@1.0.3':
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}
@@ -2705,8 +2696,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.1':
     optional: true
-
-  '@iarna/toml@2.2.5': {}
 
   '@inquirer/external-editor@1.0.3(@types/node@25.9.3)':
     dependencies:

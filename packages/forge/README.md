@@ -6,8 +6,9 @@ Agents, skills, and hooks are **authored** as typed TypeScript cells inside plug
 declares which plugins it extends; `forge` resolves that set into one merged canon and projects it
 into harness artifacts on the local machine.
 
-The direction matters. The canon is the source; `~/.claude/` is a projection of it. Nothing in this
-pipeline reads a harness's existing configuration and treats it as truth.
+The direction matters. The canon is the source; a harness's home (`~/.claude/`, `~/.omp/`) is a
+projection of it. Nothing in this pipeline reads a harness's existing configuration and treats it as
+truth.
 
 ## The pipeline
 
@@ -15,15 +16,15 @@ pipeline reads a harness's existing configuration and treats it as truth.
 init → add → compose → project → deploy
 ```
 
-| Stage     | What it does                                                                   |
-| --------- | ------------------------------------------------------------------------------ |
-| `init`    | scaffolds `cratylus.config.ts` in the project root, extending the canon plugin |
-| `add`     | wires another plugin package into that config's `extends`                      |
-| `compose` | resolves the plugin set into one merged fragment set, and prints it            |
-| `project` | renders the resolved set into a render tree (`.render/`)                       |
-| `deploy`  | places the render tree into the local `.claude/` root                          |
+| Stage     | What it does                                                                        |
+| --------- | ----------------------------------------------------------------------------------- |
+| `init`    | scaffolds `cratylus.config.ts` in the project root, extending the canon plugin      |
+| `add`     | wires another plugin package into that config's `extends`                           |
+| `compose` | resolves the plugin set into one merged fragment set, and prints it                 |
+| `project` | renders the resolved set into a render tree (`.render/`)                            |
+| `deploy`  | places the render tree into the chosen harness's local root (`.claude/` or `.omp/`) |
 
-Projection goes from composed cells to harness artifacts **directly**. The claude and codex harness
+Projection goes from composed cells to harness artifacts **directly**. The claude and omp harness
 adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
 no intermediate exchange format between the two, and no stage of this pipeline reads or writes one.
 
@@ -59,7 +60,7 @@ cratylus project         # render into ./.render
 cratylus deploy \
   --agents-dir .render/agents \
   --skills-dir .render/skills \
-  --hooks-dir  .render       # place into ~/.claude
+  --hooks-dir  .render       # place into ~/.claude (add --harness omp for ~/.omp)
 ```
 
 `init` writes a config that already extends the canon, so the shortest useful path skips `add`
@@ -126,20 +127,22 @@ cratylus compose --config ./other.config.ts
 
 ### `cratylus project`
 
-Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
-carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
-them. A shim forwards its arguments to `cratylus <capability>` with the caller's environment, and it
-needs no session from any harness.
+Materializes the resolved set into a render tree: `agents/`, `skills/`, and the harness's hook surface.
+On claude that includes a `settings.json` carrying the hook registrations. omp has no hook
+config, so its hooks are emitted as `enforcing/<scope>/` modules and there is no `settings.json`.
+Skills that need a runtime companion get their shim emitted alongside them. A shim forwards its
+arguments to `cratylus <capability>` with the caller's environment, and it needs no session from any
+harness.
 
 ```
-cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
+cratylus project [--config <path>] [--out <dir>] [--harness claude|omp]
 ```
 
 Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
 the counts it wrote and the exact `deploy` invocation that ships them.
 
 ```
-cratylus project --out ./build --harness codex
+cratylus project --out ./build --harness omp
 ```
 
 #### An agent is given its skills' closure
@@ -154,37 +157,36 @@ agent is rendered; every adapter renders the list it is handed.
 Where it lands depends on whether the harness's agent definition can name skills it preloads
 (`HarnessAdapter.preloadsSkills`):
 
-| Harness | Preloads | The closure becomes                                                                                          |
-| ------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                   |
-| claude  | yes      | the subagent front-matter `skills` sequence                                                                  |
-| codex   | no       | a `## Required reading` section ending `developer_instructions`, plus one warning per agent given any skills |
-
-Codex's agent TOML has no preload field (only `skills.config` enable/disable), so its rung is the
-fidelity ladder's floor: a steer the agent reads, never silence.
+| Harness | Preloads | The closure becomes                                                                                                                                                                                                                  |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                                                                                                                                           |
+| claude  | yes      | subagent: front-matter `skills`; for a main session, a `SessionStart` hook per skill in the definition prints its body (a skill over the hook's output cap is named under `## Required reading` by the hook instead, with a warning) |
 
 ### `cratylus deploy`
 
-Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill
-directories are copied; `settings.json` hook registrations are merged into any existing file rather
-than replacing it.
+Places an already-projected render tree into the **local** root of the harness named by `--harness`
+(`claude` or `omp`, default `claude`): `.claude/` or `.omp/`. Agent definitions and skill
+directories are copied. On claude, `settings.json` hook registrations are merged into any existing
+file rather than replacing it; on omp, the `enforcing/<scope>/` modules are placed instead, since omp has no
+hook config to merge.
 
 ```
 cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 ```
 
-| Option               | Effect                                                   |
-| -------------------- | -------------------------------------------------------- |
-| `--agents-dir <dir>` | render tree `agents/` — the projected definitions        |
-| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories  |
-| `--hooks-dir <dir>`  | render tree hooks root (`settings.json` + `hooks/<id>/`) |
-| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)   |
-| `--scope <scope>`    | `user` \| `project` (default `user`)                     |
-| `--home <dir>`       | user-scope `.claude` parent, instead of `~`              |
-| `--project <dir>`    | project root for `--scope project` (default cwd)         |
-| `--only <names>`     | comma-separated names to deploy                          |
-| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`         |
-| `--dry-run`          | print the actions and change nothing                     |
+| Option               | Effect                                                                      |
+| -------------------- | --------------------------------------------------------------------------- |
+| `--harness <name>`   | `claude` \| `omp` (default `claude`): whose root and layout                 |
+| `--agents-dir <dir>` | render tree `agents/` — the projected definitions                           |
+| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories                     |
+| `--hooks-dir <dir>`  | hooks: claude `settings.json`, omp `enforcing/<scope>/`, both `hooks/<id>/` |
+| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)                      |
+| `--scope <scope>`    | `user` \| `project` (default `user`)                                        |
+| `--home <dir>`       | user-scope parent of the harness home (`.claude` or `.omp`), instead of `~` |
+| `--project <dir>`    | project root for `--scope project` (default cwd)                            |
+| `--only <names>`     | comma-separated names to deploy                                             |
+| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`                            |
+| `--dry-run`          | print the actions and change nothing                                        |
 
 Which directories are required depends on `--kind`: `all` requires all three, `hooks` requires only
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
@@ -195,21 +197,32 @@ own model routing — omp's `modelRoles` — is host configuration, not a deploy
 writes it, and only `cratylus install` seeds the missing entries for the roles the installed agents
 hold.
 
+Every adapter that declares `scopedRel` also receives one stance manifest per persona that composes a
+guard, staged at `enforcing/<persona>/stance/manifest.json` by the projector (`core/enrollment.ts`, one
+builder for both harnesses). A cell is a guard when it declares `binds`, the composition that binds an
+agent to it; a persona's manifest lists exactly the guards its composed agent includes, and a cell that
+binds nothing (a notice) is never listed. On omp the manifest lands beside the persona's modules; on
+claude, whose hooks stay in `settings.json`, it is the only scoped artifact, and lands under
+`.claude/personas/<name>/`. A harness with no `scopedRel` cannot name the running agent, so projection
+warns once per guard and carries it as a steer, deploying no mechanism for it.
+
 #### The destinations are the adapter's, not the render tree's
 
 A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<name>/`,
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                   | Port op                  | claude / codex                 | omp                                                          |
-| -------------------------- | ------------------------ | ------------------------------ | ------------------------------------------------------------ |
-| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`           | `agent/agents/<name>.md`                                     |
-| skill directory            | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively)        |
-| hook registration          | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                                    |
-| scoped mechanism module    | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                                  |
-| persona badge module       | `scopedRel(file, scope)` | —                              | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
-| `--config` overlay         | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml` (per persona)                              |
-| launcher                   | `scopedRel(file, scope)` | —                              | `agent/omp-agent` (0755, ONE for every persona)              |
+| Artifact                   | Port op                  | claude                                                      | omp                                                          |
+| -------------------------- | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`                                        | `agent/agents/<name>.md`                                     |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                                             | `../.agents/skills/<name>` (one copy — read natively)        |
+| hook registration          | `hooksFile` (merged)     | `settings.json`                                             | — (no hook config exists)                                    |
+| stance manifest            | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json`                     | `<scope>/stance/manifest.json` (per persona)                 |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                                                           | `<scope>/extensions/<file>`                                  |
+| persona badge              | `scopedRel(file, scope)` | `personas/<agent>/cratylus-persona-badge.txt` (per persona) | `<scope>/extensions/cratylus-persona-badge.ts` (per persona) |
+| `--config` overlay         | `scopedRel(file, scope)` | —                                                           | `<scope>/omp.yml` (per persona)                              |
+| launcher                   | `scopedRel(file, scope)` | `personas/_session/claude-agent` (0755, ONE)                | `agent/omp-agent` (0755, ONE for every persona)              |
+| status-line worker         | `scopedRel(file, scope)` | `personas/_session/cratylus-status-line.sh` (0755, ONE)     | —                                                            |
 
 `<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
 `agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
@@ -231,9 +244,9 @@ host that never configured the role runs the agent on the default role (`modelRo
 holding no role has no `model` key. Which model fills a role is the host's `modelRoles` entry in
 `~/.omp/agent/config.yml` (or `config.yaml`, which omp reads only when config.yml is absent). The table
 behind this is the adapter's optional `roleRouting` member (its default role, the built-in role nearest
-each held role, and the config paths in read order); claude and codex leave it absent and their definitions carry no
-route. `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
-`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer to `task`, planner to `plan`,
+each held role, and the config paths in read order); claude leaves it absent, since it has no host
+role map to seed (its definitions route by tier instead, below). `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
+`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer and integrator to `task`, planner to `plan`,
 assayer and architect to `default`. It edits the config file omp reads — `config.yml`, else `config.yaml` —
 by inserting lines, so every other byte survives; it never changes an entry the host already has, creates
 `config.yml` only when the host has neither file, and, when `modelRoles` is
@@ -267,6 +280,37 @@ persona stopped being a profile. Assuming the staging layout was every harness's
 once deployed 16 omp skills into `~/.omp/skills` — a directory that harness never scans — while
 reporting success.
 
+**On Claude Code the definition names a tier, never a model version.** Claude Code has no
+host-configurable role aliases: a definition's `model` takes an id, a tier alias or `inherit`. The
+claude adapter therefore holds its own table from the held role to a tier alias, and an agent's
+definition carries `model: <tier>` right after its `description`: `sonnet` for an implementer or
+integrator, `opus` for a planner, assayer or architect. An agent holding any other role, or none, has
+no `model` and runs on the session's model. The alias resolves to whatever Claude currently serves for
+that tier. The definition's `model:` line is the one place a host sets a subagent's model, so a deploy
+keeps the host's choice there: the deploy manifest records, per placed claude definition, the `model:`
+value it rendered (`DeployManifest.agentModels`, beside `personaLinks`), and a deployed definition whose
+`model:` differs from that record — edited, added or removed — keeps the host's line, or none, in the
+definition placed over it (a definition with no record, from an install before the record existed, was written without a `model:` line, so one found there is the host's and is kept) (`PlaceOpts.keepHostModel`, set for the `.claude` home; every other line is
+replaced as before). The deploy log names each definition whose model it kept. `install` reports the
+roles as settable on the first install, and on every one: one line per held role with its tier and the
+`model:` line that sets it, and the subagent override. The host's own choice outranks the definition
+too: `--model` on a `claude --agent` main session, and for a dispatched subagent
+`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
+(`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's tier standing).
+
+**Persona commands.** `launcherFile` on the port names the launcher the adapter's `launchSurface`
+emits in the SESSION scope: `omp-agent` on omp, `claude-agent` on Claude Code
+(`personas/_session/claude-agent`, which starts `claude --agent <persona>` and refuses a name that
+is no persona with one stderr line, exit 2). `cratylus install --link-persona-commands` links
+`~/.local/bin/<persona>` to it, through `placePersonaCommands` in `deploy/persona-commands.ts`: it
+plans first (`planPersonaCommands`), places only the names that are free, and never unlinks before
+it links, so a regular file, another program's link, and the other harness's launcher are all left as
+they were and reported as blocked. A hand-made link that resolves exactly to this launcher is adopted:
+recorded and reported, never re-created. The links it placed or adopted are
+recorded as `personaLinks` in the deploy manifest, and `removePersonaCommands` removes exactly the
+recorded links that still resolve to the launcher (`cratylus uninstall` calls it). Without the flag,
+install prints what it would place and asks on a terminal.
+
 `scopedRel` (renamed from `enforcingRel`) places more than mechanism now: the SAME per-scope map also
 places the launch spec's overlay and launcher, because both belong beside the modules they wire, not in
 a directory of their own. A harness whose hook surface is a PROGRAM rather than a config file (omp: its
@@ -281,6 +325,79 @@ session only (`ctx.hasUI` and `ctx.agent.kind === "main"`, never a subagent), it
 to the persona's mark emoji and name, or the name alone for an agent with no provenance. The text is
 baked at projection, because omp calls a launched persona `main` and the module cannot ask; it carries
 no hue, because omp strips color from an extension's status text.
+
+On Claude Code the badge is a text file per persona, `personas/<agent>/cratylus-persona-badge.txt`,
+with the same baked text (`<mark emoji> <name>`, or the name alone, no hue), and ONE session-scoped
+status-line worker beside the launcher. Claude's status line is a single `settings.json` command
+with no segments, and its input carries `agent.name` only under `--agent`, so the worker reads the
+running persona there, prints that persona's badge file when one was placed (placement decides who
+has a badge; the worker holds no persona list) and prints nothing otherwise. Given the host's own
+command as its one argument it runs that on the same input and puts the badge and a space before the
+first line of its output. It fails open without `jq`. The port declares the worker as `statusLine`
+(`file`, and the `command` that runs it, written against `$HOME`). A harness whose status line is a
+list of segments declares `statusSegment` instead (omp's): the host config files that hold the layout,
+the segment an extension's status renders in, the layout in effect when the host names no preset, and
+the left list the `custom` preset falls back to.
+
+Making the host's status line show the badge is install's, in `deploy/status-line.ts`, after a
+successful deploy and only when personas were installed. `ensureBadgeStatusLine` sets the worker as
+`statusLine` where the host has none, keeps a status line that already is the worker, and wraps any
+other: it rewrites `command` to the worker with the host's command as one single-quoted argument,
+keeps every other key, and a second run wraps nothing twice. Its result carries the `command` now in
+place and the host's original (`null` where the host had none), which install records as
+`DeployManifest.statusLine` for an uninstall to restore from. A `statusLine` that is not a `command`
+one is refused and left byte-identical (Claude Code rejects such a file and runs no status line).
+`ensureStatusSegment` edits omp's config as text, as `addModelRoles` does, and
+shares its line helpers (`deploy/yaml-lines.ts`). omp reads a segment list only under
+`statusLine.preset: custom`, so a host with no preset gets `preset: custom` with the default preset's
+layout written out (left plus `status`, right, segment options) unless it laid out its own line
+(`leftSegments`, `rightSegments` or `segmentOptions`), which `custom` would activate or leave
+partial: that host is left byte-identical (`own-layout`) and told what to write. A host on `custom`
+gets `status` appended to its list, and a host on any other named preset is left byte-identical
+(`other-preset`) and told that `custom` replaces the preset's layout, with the whole block: exact
+lists for the default preset (`defaultPreset` on the port), and for another its own segments
+followed by `status`. Where the segment is left in the live layout it also writes
+`showHookStatus: false` unless the host set it, because omp prints every extension's status on a row
+beneath the editor too and the segment already draws them all inline. Where it is not in the live
+layout (`other-preset`, `own-layout`, or any shape it cannot extend or read) that row is the badge's
+only place, so a host's `showHookStatus: false` is turned to `true`, the one value of the host's it
+ever changes, found as text so a flow mapping is reached too, and the result says `hookRowShown`.
+Other than that a shape it cannot extend is reported and left.
+Both honour `--dry-run`.
+
+### `cratylus uninstall --harness <name>`
+
+Removes from a harness's home what install placed there, and leaves what the host placed or changed.
+`cli/commands/uninstall.ts` reads the deploy manifest and nothing else to say what is install's, and the
+manifest records what that takes: `digests` (rel path → the sha-256 `deploy.ts` took of each file just
+after its placer wrote it, via `digestWritten`; a run carries the digest of a path it did not write, so
+an edit the host made is never blessed by a later run), `hostEdits` (rel path of a host-owned text file
+→ the `LineHunk`s install put in, as a line diff of the file before and after, taken by
+`addModelRoles` and `ensureStatusSegment` and written by install through `noteHostEdit`), and the
+existing `statusLine`, `hookCommands` and `personaLinks`.
+
+A recorded file whose digest still matches is removed, through `applyPrune`, which prunes the
+directories that leaves empty and never the root; `placedFileState` (`deploy/local.ts`) says
+`unchanged`, `changed`, `unverified` (no digest recorded) or `absent`. A hook registration is dropped by
+`unregisterHookCommands`, which takes an entry only when every command in it is recorded.
+`restoreHostStatusLine` puts the host's command back in the wrapped `statusLine` and deletes a `statusLine`
+install set. `undoHunks` takes the hunks out of the config newest first. An inserted run comes out
+ONE LINE AT A TIME, each found from under the line that stood above the run: a line the host has
+changed is `changed` and stays, whatever stands there is the host's, and every other line of the run
+still comes out; a line with lines of the host's beneath it (a header whose child the host edited)
+stays too, as `holding`, so the host's lines keep the block they were written in. A replaced line goes
+back only while it stands as written, and a terminator install added to the file's last line comes
+off only while that line is still the last. So the file comes back byte for byte, and a file install
+created returns to nothing. A record written before install recorded its edits carries no `hostEdits`
+(`recordsHostEdits`): an uninstall then names the config file it cannot vouch for, and the next
+install, which reads that before its deploy rewrites the record, adopts the `modelRoles` lines and
+the `statusLine` block it finds there byte for byte as it would write them (`adopt` on `addModelRoles`
+and `ensureStatusSegment`, recorded through `adoptedHunk`), so the uninstall after it takes them.
+`removePersonaCommands` takes the recorded persona commands. A path outside the harness home and the
+neutral `.agents` root, and a path another harness's manifest records, are left; so is everything that
+is `changed` or `unverified`. The report is two lists, removed and left, each left entry with its
+reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
+or foreign-version manifest is refused rather than read as empty.
 
 ### `cratylus explain [agent]`
 
@@ -313,7 +430,7 @@ Three concerns look adjacent to this pipeline and are deliberately outside it.
 ordinary package install. It is a _precondition_ of the pipeline, not a stage of it — `init` cannot run
 before the CLI exists.
 
-**Projection is local.** `deploy` writes to a `.claude/` root on the machine it runs on, resolved from
+**Projection is local.** `deploy` writes to a harness root (`.claude/` or `.omp/`) on the machine it runs on, resolved from
 `--scope`, `--home`, and `--project`. It has no transport, no host list, and no remote mode.
 
 **Running it across many hosts is yours.** Iterating a fleet is an outer loop _around_ the whole
@@ -333,7 +450,7 @@ import { deploySingle, userScope, projectScope } from '@cratylus/forge/deploy';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 ```
 
-`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'codex'` — so a
+`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'omp'` — so a
 consumer depends on the adapter port and this selector rather than on a concrete harness module.
 Plugin authors also want `@cratylus/schema` for the cell types — they are no longer forge's, and
 importing them from the projector was the inversion `schema` exists to end.

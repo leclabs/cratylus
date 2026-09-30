@@ -17,15 +17,18 @@
 // `--only` run prunes inside its subset, and no prior manifest prunes nothing —
 // are enforced by `staleFiles`/`nextKindRecord` in `../prune` and consumed here.
 
+import { createHash } from 'node:crypto';
 import {
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, resolve as resolvePath } from 'node:path';
-import type { KindRecord } from '../prune/index.js';
+import { dirname, relative, resolve as resolvePath } from 'node:path';
+import { type KindRecord, recordPath } from '../prune/index.js';
+import { splitLines } from './yaml-lines.js';
 
 // Re-exported so deploy's callers keep reading the prune vocabulary off deploy's
 // own module — the lift moved the HOME of the mechanism, not deploy's surface.
@@ -48,10 +51,69 @@ export interface DeployManifest {
   kinds: Record<string, KindRecord>;
   // settings.json hook commands this tool registered (the `hooks` kind).
   hookCommands: string[];
+  // The persona commands this harness's install linked into the user's bin dir,
+  // as paths relative to the user's HOME (`.local/bin/<persona>`). The bin dir is
+  // shared with every other program on the host, so a link is ours only if it is
+  // written here — never because it happens to point at our launcher.
+  personaLinks: string[];
+  // agent name -> the `model:` value the last deploy's RENDERED def carried (null ⇒
+  // none), for the harness whose def `model:` line is where a host sets a model. A
+  // deployed def whose `model:` differs from this is the host's edit, and the next
+  // deploy keeps it: the value here is what deploy would write, never what the host
+  // chose, so it stays true while the host's line stands.
+  agentModels: Record<string, string | null>;
+  // The claude `statusLine` install placed in the host's settings.json: `placed` is the
+  // `command` it wrote (a later run that finds another there knows the host changed it),
+  // `host` the command the host ran before — the badge worker carries it verbatim — or
+  // null where the host had none. `null` ⇒ install placed none. It is what an uninstall
+  // restores the host's line from.
+  statusLine: { placed: string; host: string | null } | null;
+  // rel path (from the deploy root, POSIX) -> the sha-256 of the bytes this tool last
+  // WROTE there, for every path in `kinds`. A placed file whose bytes still hash to this
+  // is untouched since; one that does not is the host's own edit, and an uninstall
+  // leaves it. A path with no digest (recorded before digests were kept) cannot be told
+  // either way, and is left too.
+  digests: Record<string, string>;
+  // rel path (from the deploy root, POSIX) of a host-owned TEXT file install edited
+  // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
+  // are never recorded; an uninstall takes these lines out and touches nothing else.
+  hostEdits: Record<string, HostEdit>;
+}
+
+/** One run of lines install put into a host-owned text file, kept WITH their line
+ *  terminators so the file's own line endings come back byte for byte. */
+export interface LineHunk {
+  /** The line just above the run as install left the file, or null where the run
+   *  opens it. It tells two identical runs apart; it need not still match. */
+  context: string | null;
+  /** What the host had where `after` now stands; empty for a pure insertion. */
+  before: string[];
+  /** What install wrote. */
+  after: string[];
+}
+
+/** Everything install changed in one host-owned text file. */
+export interface HostEdit {
+  /** Whether install created the file: an uninstall that leaves it empty removes it. */
+  created: boolean;
+  /** In the order made; an uninstall takes them out newest first. */
+  hunks: LineHunk[];
+  /** Set where the record was migrated from one that recorded no edits: what an older
+   *  install did to this file beyond the lines adopted cannot be told from the host's. */
+  migrated?: boolean;
 }
 
 export function emptyManifest(): DeployManifest {
-  return { version: MANIFEST_VERSION, kinds: {}, hookCommands: [] };
+  return {
+    version: MANIFEST_VERSION,
+    kinds: {},
+    hookCommands: [],
+    personaLinks: [],
+    agentModels: {},
+    statusLine: null,
+    digests: {},
+    hostEdits: {},
+  };
 }
 
 /** Read the record for a deploy root. A missing, unreadable, or malformed
@@ -73,6 +135,11 @@ export function readManifest(harnessDir: string): DeployManifest {
       version: MANIFEST_VERSION,
       kinds: parsed.kinds ?? {},
       hookCommands: parsed.hookCommands ?? [],
+      personaLinks: parsed.personaLinks ?? [],
+      agentModels: parsed.agentModels ?? {},
+      statusLine: parsed.statusLine ?? null,
+      digests: parsed.digests ?? {},
+      hostEdits: parsed.hostEdits ?? {},
     };
   } catch {
     return emptyManifest();
@@ -91,12 +158,424 @@ export function writeManifest(harnessDir: string, m: DeployManifest): void {
   writeFileSync(f, `${JSON.stringify(m, null, 2)}\n`, 'utf-8');
 }
 
+// ── What an uninstall needs, recorded ────────────────────────────────────────
+//
+// The record above says WHICH paths this tool wrote; an uninstall also has to know
+// whether the host has changed one since, and which lines of a host-owned file were
+// this tool's. Both are recorded at the time of writing, from what was written:
+// a digest of every placed file's bytes, and the lines install put into a text file
+// the host owns. Neither holds the host's own content.
+
+/** The sha-256 (hex) of the file's bytes; undefined where `abs` is absent or not a file. */
+export function digestFile(abs: string): string | undefined {
+  try {
+    if (!statSync(abs).isFile()) return undefined;
+    return createHash('sha256').update(readFileSync(abs)).digest('hex');
+  } catch {
+    return undefined;
+  }
+}
+
+/** The digests of the files a placer just wrote, read back from the root. Called
+ *  straight after placing, so the bytes hashed are the bytes the placer laid down. */
+export function digestWritten(
+  harnessDir: string,
+  written: KindRecord,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const rel of Object.values(written).flat()) {
+    const digest = digestFile(resolvePath(harnessDir, rel));
+    if (digest !== undefined) out[rel] = digest;
+  }
+  return out;
+}
+
+/** The digests to keep once a run has written `fresh`: one per path the new `kinds`
+ *  record, `fresh`'s where this run wrote it and the recorded one where it did not
+ *  (a warned skip, a name outside a `--only` subset) — carried, never re-read, so a
+ *  file the host has edited is not blessed by a run that did not write it. */
+export function nextDigests(
+  prior: Readonly<Record<string, string>>,
+  kinds: Readonly<Record<string, KindRecord>>,
+  fresh: Readonly<Record<string, string>>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const record of Object.values(kinds)) {
+    for (const rel of Object.values(record).flat()) {
+      const digest = fresh[rel] ?? prior[rel];
+      if (digest !== undefined) out[rel] = digest;
+    }
+  }
+  return out;
+}
+
+/** A file's lines with their terminators, so joining them gives the file back. */
+const literalLines = (text: string): string[] =>
+  splitLines(text).map(([t, e]) => t + e);
+
+/** A line without its terminator. */
+const textOf = (line: string): string => line.replace(/[\r\n]+$/, '');
+
+/**
+ * The runs of lines that turn `before` into `after`, as a minimal line diff. Lines are
+ * aligned by their TEXT, so a last line install had to end (a terminator gained) is a
+ * matched line that differs, not a deleted one and an added one. Install only inserts and
+ * replaces, so every hunk is one of two shapes: a pure insertion (`before` empty) or one
+ * line replaced by one line. A gap that holds both — a flow list rewritten with a block
+ * appended right under it — is cut into the replacement, then the insertion beneath it.
+ * The middle between the common head and tail is aligned by longest common subsequence,
+ * so two edits apart in a file stay two hunks and the host's lines between them are
+ * never part of either.
+ */
+export function lineHunks(before: string, after: string): LineHunk[] {
+  const a = literalLines(before);
+  const b = literalLines(after);
+  const ka = a.map(textOf);
+  const kb = b.map(textOf);
+  let head = 0;
+  while (head < a.length && head < b.length && ka[head] === kb[head]) head += 1;
+  let tailA = a.length;
+  let tailB = b.length;
+  while (tailA > head && tailB > head && ka[tailA - 1] === kb[tailB - 1]) {
+    tailA -= 1;
+    tailB -= 1;
+  }
+  const hunks: LineHunk[] = [];
+  const paired = (ai: number, bi: number): void => {
+    if (a[ai] === b[bi]) return;
+    hunks.push({
+      context: bi > 0 ? (b[bi - 1] as string) : null,
+      before: [a[ai] as string],
+      after: [b[bi] as string],
+    });
+  };
+  for (let k = 0; k < head; k += 1) paired(k, k);
+
+  const x = ka.slice(head, tailA);
+  const y = kb.slice(head, tailB);
+  const width = y.length + 1;
+  const lcs = new Uint32Array((x.length + 1) * width);
+  const at = (i: number, j: number): number => lcs[i * width + j] as number;
+  for (let i = x.length - 1; i >= 0; i -= 1) {
+    for (let j = y.length - 1; j >= 0; j -= 1) {
+      lcs[i * width + j] =
+        x[i] === y[j]
+          ? at(i + 1, j + 1) + 1
+          : Math.max(at(i + 1, j), at(i, j + 1));
+    }
+  }
+  let open: { start: number; before: string[]; after: string[] } | undefined;
+  const close = (): void => {
+    if (open === undefined) return;
+    const above = head + open.start - 1;
+    let context: string | null = above >= 0 ? (b[above] as string) : null;
+    const pairs = Math.min(open.before.length, open.after.length);
+    for (let k = 0; k < pairs; k += 1) {
+      hunks.push({
+        context,
+        before: [open.before[k] as string],
+        after: [open.after[k] as string],
+      });
+      context = open.after[k] as string;
+    }
+    if (open.after.length > pairs) {
+      hunks.push({ context, before: [], after: open.after.slice(pairs) });
+    } else if (open.before.length > pairs) {
+      hunks.push({ context, before: open.before.slice(pairs), after: [] });
+    }
+    open = undefined;
+  };
+  let i = 0;
+  let j = 0;
+  while (i < x.length || j < y.length) {
+    if (i < x.length && j < y.length && x[i] === y[j]) {
+      close();
+      paired(head + i, head + j);
+      i += 1;
+      j += 1;
+      continue;
+    }
+    open ??= { start: j, before: [], after: [] };
+    if (j < y.length && (i === x.length || at(i, j + 1) >= at(i + 1, j))) {
+      open.after.push(b[head + j] as string);
+      j += 1;
+    } else {
+      open.before.push(a[head + i] as string);
+      i += 1;
+    }
+  }
+  close();
+  for (let k = 0; tailA + k < a.length; k += 1) paired(tailA + k, tailB + k);
+  return hunks;
+}
+
+/** What became of one hunk when an uninstall took it out.
+ *   - `undone`   — every line install wrote stood in the file and is gone (or, for a
+ *                  replaced line, is the host's original again).
+ *   - `partial`  — some lines were taken out; the rest are in `changed` or `holding`.
+ *   - `restored` — install's lines are gone and the original stands: the host put it
+ *                  back itself.
+ *   - `changed`  — nothing was taken: the host changed or removed what install wrote. */
+export type HunkState = 'undone' | 'partial' | 'restored' | 'changed';
+
+export interface HunkUndo {
+  readonly hunk: LineHunk;
+  readonly state: HunkState;
+  /** The lines install wrote that were taken out. */
+  readonly removed: string[];
+  /** Lines install wrote that the host has since changed or removed: whatever the host
+   *  has there instead is untouched. */
+  readonly changed: string[];
+  /** Lines install wrote that stay because lines of the host's stand beneath them, so
+   *  the host's lines keep the structure they were written under. */
+  readonly holding: string[];
+}
+
+const indentOf = (line: string): number =>
+  (/^[ \t]*/.exec(line) as RegExpExecArray)[0].length;
+
+/** Whether `line` carries anything a YAML reader would take as content. */
+const isContent = (line: string): boolean => {
+  const t = line.trim();
+  return t !== '' && !t.startsWith('#');
+};
+
+/** Where each of `hunk.after` stands in `lines`, or -1: searched forward from under the
+ *  hunk's context line, in order, and from the top for a line that moved. */
+function locate(lines: readonly string[], hunk: LineHunk): number[] {
+  const context = hunk.context === null ? -1 : lines.indexOf(hunk.context);
+  const taken = new Set<number>();
+  let from = context + 1;
+  return hunk.after.map((line) => {
+    let at = lines.indexOf(line, from);
+    if (at < 0 || taken.has(at)) {
+      at = lines.findIndex((l, i) => l === line && !taken.has(i));
+    }
+    if (at >= 0) {
+      taken.add(at);
+      from = Math.max(from, at + 1);
+    }
+    return at;
+  });
+}
+
+/** Whether a line of the host's stands beneath `lines[at]`, past the lines `gone`: the
+ *  next line with content is indented deeper, or is a list item under a `key:`. */
+function hasChild(
+  lines: readonly string[],
+  gone: ReadonlySet<number>,
+  at: number,
+): boolean {
+  const own = lines[at] as string;
+  const opens = textOf(own).trimEnd().endsWith(':');
+  for (let j = at + 1; j < lines.length; j += 1) {
+    const next = lines[j] as string;
+    if (gone.has(j) || !isContent(next)) continue;
+    return (
+      indentOf(next) > indentOf(own) ||
+      (opens &&
+        indentOf(next) === indentOf(own) &&
+        next.trimStart().startsWith('- '))
+    );
+  }
+  return false;
+}
+
+/** Where `run` stands in `lines`, preferring the place under `context`; -1 when nowhere. */
+function findRun(
+  lines: readonly string[],
+  run: readonly string[],
+  context: string | null,
+): number {
+  let first = -1;
+  for (let i = 0; i + run.length <= lines.length; i += 1) {
+    if (!run.every((line, k) => lines[i + k] === line)) continue;
+    if ((i > 0 ? lines[i - 1] : null) === context) return i;
+    if (first < 0) first = i;
+  }
+  return first;
+}
+
+/** Take one hunk out of `lines`, in place. */
+function undoHunk(lines: string[], hunk: LineHunk): HunkUndo {
+  const none = { removed: [], changed: [], holding: [] };
+
+  // A line install replaced: the host's original goes back where it stood.
+  if (hunk.before.length === 1 && hunk.after.length === 1) {
+    const [was] = hunk.before as [string];
+    const [wrote] = hunk.after as [string];
+    const at = findRun(lines, [wrote], hunk.context);
+    // A line only given its terminator (install appended beneath the file's last line)
+    // is put back unterminated only while it IS the last line: with anything after it,
+    // the terminator is what keeps the host's lines apart.
+    if (at >= 0 && textOf(was) === textOf(wrote) && at !== lines.length - 1) {
+      return { hunk, state: 'restored', ...none };
+    }
+    if (at >= 0) {
+      lines[at] = was;
+      return { hunk, state: 'undone', ...none, removed: [wrote] };
+    }
+    return lines.includes(was)
+      ? { hunk, state: 'restored', ...none }
+      : { hunk, state: 'changed', ...none, changed: [wrote] };
+  }
+
+  // Lines install inserted: each is taken out ON ITS OWN, so a line the host has changed
+  // does not keep its neighbours in the file. A line with a host line beneath it stays,
+  // bottom up, so what the host wrote is never left without the block it sits in.
+  if (hunk.before.length === 0 && hunk.after.length > 0) {
+    const where = locate(lines, hunk);
+    const gone = new Set<number>();
+    const removed: string[] = [];
+    const changed: string[] = [];
+    const holding: string[] = [];
+    for (let k = hunk.after.length - 1; k >= 0; k -= 1) {
+      const line = hunk.after[k] as string;
+      const at = where[k] as number;
+      if (at < 0) changed.unshift(line);
+      else if (hasChild(lines, gone, at)) holding.unshift(line);
+      else {
+        gone.add(at);
+        removed.unshift(line);
+      }
+    }
+    const kept = lines.filter((_, i) => !gone.has(i));
+    lines.splice(0, lines.length, ...kept);
+    const state =
+      removed.length === 0
+        ? 'changed'
+        : changed.length + holding.length === 0
+          ? 'undone'
+          : 'partial';
+    return { hunk, state, removed, changed, holding };
+  }
+
+  // Any other shape is taken whole or not at all.
+  const at =
+    hunk.after.length > 0 ? findRun(lines, hunk.after, hunk.context) : -1;
+  if (at >= 0) {
+    lines.splice(at, hunk.after.length, ...hunk.before);
+    return { hunk, state: 'undone', ...none, removed: [...hunk.after] };
+  }
+  const back =
+    hunk.before.length > 0 && findRun(lines, hunk.before, hunk.context) >= 0;
+  return back || hunk.after.length === 0
+    ? { hunk, state: 'restored', ...none }
+    : { hunk, state: 'changed', ...none, changed: [...hunk.after] };
+}
+
+/** `text` with each hunk taken out, newest first, and what became of each (in the
+ *  order recorded). A line the host has changed since is left as it is. */
+export function undoHunks(
+  text: string,
+  hunks: readonly LineHunk[],
+): { text: string; results: HunkUndo[] } {
+  const lines = literalLines(text);
+  const results = [...hunks].reverse().map((hunk) => undoHunk(lines, hunk));
+  return { text: lines.join(''), results: results.reverse() };
+}
+
+/** Record what install did to the host-owned text file `file`, in `harnessDir`'s
+ *  manifest. Merged with what is already there for the file, and never twice: a hunk
+ *  already recorded is not recorded again, and neither is an insertion whose every line
+ *  an earlier insertion already covers (a re-install that finds its own lines there). */
+export function noteHostEdit(
+  harnessDir: string,
+  file: string,
+  edit: HostEdit,
+): void {
+  if (edit.hunks.length === 0) return;
+  const manifest = readManifest(harnessDir);
+  const key = recordPath(relative(harnessDir, file));
+  const prior = manifest.hostEdits[key];
+  const hunks = [...(prior?.hunks ?? [])];
+  const covered = new Map<string, number>();
+  for (const h of hunks) {
+    if (h.before.length > 0) continue;
+    for (const line of h.after) covered.set(line, (covered.get(line) ?? 0) + 1);
+  }
+  let added = 0;
+  for (const hunk of edit.hunks) {
+    if (hunks.some((h) => JSON.stringify(h) === JSON.stringify(hunk))) continue;
+    if (hunk.before.length === 0) {
+      const left = new Map(covered);
+      const already = hunk.after.every((line) => {
+        const n = left.get(line) ?? 0;
+        left.set(line, n - 1);
+        return n > 0;
+      });
+      if (already) continue;
+    }
+    hunks.push(hunk);
+    added += 1;
+  }
+  if (added === 0 && prior !== undefined) return;
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostEdits: {
+      ...manifest.hostEdits,
+      [key]: {
+        ...prior,
+        created: (prior?.created ?? false) || edit.created,
+        hunks,
+      },
+    },
+  });
+}
+
+/** Mark `file` as one an install from before edits were recorded may have changed in ways
+ *  nothing records — a value it turned, a line it put in a list of the host's. Called by
+ *  the install that migrates the record, so the mark outlives the rewrite that makes the
+ *  record look as if it had always recorded edits; an uninstall reports the file for it. */
+export function markMigratedConfig(harnessDir: string, file: string): void {
+  const manifest = readManifest(harnessDir);
+  const key = recordPath(relative(harnessDir, file));
+  const prior = manifest.hostEdits[key];
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostEdits: {
+      ...manifest.hostEdits,
+      [key]: { created: false, hunks: [], ...prior, migrated: true },
+    },
+  });
+}
+
+/** A hunk that records `count` lines ALREADY in `text`, from line `from`, as install's:
+ *  what an install from before edits were recorded put there. */
+export function adoptedHunk(
+  text: string,
+  from: number,
+  count: number,
+): LineHunk {
+  const lines = literalLines(text);
+  return {
+    context: from > 0 ? (lines[from - 1] as string) : null,
+    before: [],
+    after: lines.slice(from, from + count),
+  };
+}
+
+/** Whether the record on disk was written by a version that records host edits. One
+ *  written before carries no `hostEdits` at all — which is not the same as carrying an
+ *  empty one: the first cannot say what install put in the host's config files, the
+ *  second says it put nothing. `readManifest` reads both as empty. */
+export function recordsHostEdits(harnessDir: string): boolean {
+  try {
+    const parsed = JSON.parse(
+      readFileSync(resolvePath(harnessDir, MANIFEST_REL), 'utf-8'),
+    ) as Partial<DeployManifest>;
+    return parsed.hostEdits !== undefined;
+  } catch {
+    return false;
+  }
+}
+
 /** The kind's top-level dir under the deploy root, and how a name reads out of
  *  an entry there. An agent entry is `<name><agentExt>`, and the extension is the
  *  HARNESS's — it is not a constant of this table, so the table only records THAT
- *  the entry is extended, never with what. Naming `.md` here is what made codex
- *  prune blind: a `.toml` tree filtered by `.md` matches nothing, and nothing
- *  reads as "no orphans". */
+ *  the entry is extended, never with what. Naming `.md` here would make prune
+ *  blind to a harness whose agents carry another extension: a tree filtered by
+ *  `.md` matches nothing, and nothing reads as "no orphans". */
 const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
   agent: { dir: 'agents', extended: true },
   skill: { dir: 'skills' },

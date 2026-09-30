@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R5V8PMGZ39RERVNKDKTQDA",
+    "entity": "01M3R5V8PMGZ39RERVNKDKTQD9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:31:03.508Z",
+    "reason": "seen beside the unit while assaying deliver-loop at fe6756bb",
+    "cause": "packages/canon/src/dimensions/role/architect.ts line 23"
+  },
+  "payload": {
+    "title": "architect role still hands plan-state records to the integrator",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "At fe6756bb the architect role's delegation line routes 'gate · merge · state-record · commit' to the integrator. The deliver skill at the same commit, the integrator role and the planner position give recording a unit active or completed and a plan closed to the planner; the integrator commits the records written since but decides no plan state. The integrator position is met by deliver-loop; this stale word belongs to the architect position's surfaces.",
+    "blocks": []
+  }
+}

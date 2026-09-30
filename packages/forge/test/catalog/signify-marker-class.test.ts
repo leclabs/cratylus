@@ -91,14 +91,11 @@ const SKIP_DIRS: ReadonlySet<string> = new Set([
   'node_modules',
   'dist',
   'coverage',
-  // ONE entry, because the projection now has ONE root. This was two —
-  // `.render-ts` and `.render-ts-codex` — plus a third, `.render`, left over from a
-  // Python pipeline that no longer exists. Every member of this set is matched as a
-  // single PATH SEGMENT against a directory name during the walk, so the moment those
-  // two became `.cratylus/claude` and `.cratylus/codex` they stopped matching anything
-  // at all: no directory is ever NAMED `.cratylus/claude`. Suffix-siblings needed one
-  // entry each and silently tolerated a third that was already dead; a parent needs one
-  // and cannot go stale per-harness. Adding a harness now costs nothing here.
+  // ONE entry, because the projection has ONE root. Every member of this set is
+  // matched as a single PATH SEGMENT against a directory name during the walk, so a
+  // per-harness entry such as `.cratylus/claude` would match nothing at all: no
+  // directory is ever NAMED `.cratylus/claude`. A parent needs one entry and cannot
+  // go stale per-harness. Adding a harness now costs nothing here.
   '.cratylus',
 ]);
 

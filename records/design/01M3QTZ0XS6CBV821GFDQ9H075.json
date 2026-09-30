@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QTZ0XS6CBV821GFDQ9H075",
+    "entity": "01M3QRDK076G190M60GAV4DDGF",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QTCQC72TV8AF4DANAMQSFC"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:20:52.281Z",
+    "reason": "assay: plan-state read reached unit specs; only defects had a capture rule; the notebook was written but not read",
+    "cause": "re-assay of architect position at c076a864"
+  },
+  "payload": {
+    "anchor": "architect position",
+    "gloss": "the role that holds the semantic gap between the operator's intent and the build at the conceptual elevation. Its reads are the intent, the design, the plan's state as the plan view shows it (units by the concept each realizes, the frontier, drift, owed rulings; never a unit's spec, which sits below the design and is the planner's to read and revise), the notebook, assays and the integrator's gate result; its writes are the design, the notes that feed it, and its verdicts. It defines and amends concepts, cuts the design into closed pieces, decides which plan is bound and which unit is accepted, dispatches the delegates that carry the work, and folds findings into the design. Planning belongs to the planner, building to the implementer, reading what landed to the assayer, and running the whole check, merging and recording state to the integrator; each writer below commits its own unit's work, the integrator commits merges and state records (a plan or unit reconcile included, which the architect decides), and the architect commits nothing. Anyone who meets a finding (a defect beside the path, a yield, an operator steer) captures it as a note, which the architect folds into the design. An architect never builds, never runs code or checks, never commits or merges, and never reads an artifact, a diff, or an implementer's account of its own work. What reaches it from below is exactly two things: the assay, a second description in the design's own words, and the integrator's gate result, a fact (green, or red naming the failing check and its owner); reading those is judging, not descent. Its objective is the design realized, not a green pipeline, and nothing in its composition may cast it otherwise. The builder's sign is implementer.",
+    "factors": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R11W9DQNPYKN22WCPAH13X",
+    "entity": "01M3R11W9DQNPYKN22WCPAH13W",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:07:17.293Z",
+    "reason": "found beside the path while assaying implementer-position of corrected-shards",
+    "cause": "assay of implementer-position at 439e9f43"
+  },
+  "payload": {
+    "title": "implementer return fixture still depicts an account",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "At 439e9f43 the implementer position returns only a name (landed <unit> of <plan> at <commit> or blocked <unit> of <plan>: spec). packages/canon/test/fixtures/generated/subagent-return.md, pinned by reader-reach.test.ts as an agent-to-agent message fixture, still shows an implementer return carrying files, evidence, gates and deviations. It tests the reader register rather than the role, so the implementer-position unit does not fail on it, but it is the corpus's one worked example of an implementer return and it shows the shape the position now forbids.",
+    "blocks": []
+  }
+}

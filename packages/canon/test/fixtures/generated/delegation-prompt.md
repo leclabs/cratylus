@@ -1,4 +1,4 @@
-# dispatch: add-endpoint — plan healthz, wave(0), executor: mav
+# dispatch: add-endpoint — plan healthz, wave(0), agent: implementer
 
 Task-file = dispatch prompt (reader-llm-default: ρ = LLM; blind-dispatchable — no plan prose beyond this message).
 

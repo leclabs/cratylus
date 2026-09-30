@@ -5,8 +5,8 @@
 // `repertoire`, an `arity`, a `required`, and all machinery that operates on any
 // manifest obeying that shape. THIS module owns the INSTANCE: WHICH dimensions
 // exist, and each one's metadata. The manifest rides the PLUGIN (`src/index.ts`
-// declares `manifest: MANIFEST`), exactly as `preamble` does — "the axiom rides
-// the PLUGIN, so it survives projection by any consumer."
+// declares `manifest: MANIFEST`), so a consumer projecting canon gets the design
+// without the projector containing it.
 //
 // The manifest used to live in `forge`, which meant a corpus could not
 // discover a dimension without editing the projector — the thesis inverted at its
@@ -257,9 +257,9 @@ export type { SkillExpression };
 // TWO MEMBERS NAME AN ACT RATHER THAN A HARNESS CALLBACK, and they are the reason
 // there is no tool vocabulary. `stance-guardrail-pre` bound `tool.use.pre` and then
 // narrowed it with `matcher: 'AskUserQuestion|Agent|SendMessage'` — three claude tool
-// names, on a cell whose whole claim is harness-neutrality, silently dropped by the
-// codex adapter (so the hook fired on every tool call there). The obvious repair — a
-// canonical TOOL vocabulary beside this one — is a category error: harnesses share a
+// names, on a cell whose whole claim is harness-neutrality, silently dropped by an
+// adapter that could not narrow it (so the hook fired on every tool call there). The
+// obvious repair — a canonical TOOL vocabulary beside this one — is a category error: harnesses share a
 // LIFECYCLE, which is closed, but their TOOL SETS are open-world (MCP servers add
 // tools at run time, users add their own), so a closed enum over them is permanently
 // incomplete and every adapter map would be near-empty.
@@ -282,7 +282,7 @@ export type { SkillExpression };
 // TWO, and no third: a third act has no site in this corpus. An adapter maps each to
 // its native ⟨event, selector⟩ pair (`NativeBinding`); a harness that can fire the
 // act but not narrow it DECLARES that loss and the projection warns, which is what
-// closed the codex divergence. `matcher` no longer exists on any cell or IR shape.
+// closed that divergence. `matcher` no longer exists on any cell or IR shape.
 //
 // `vcs.commit.post` IS AN ORDINARY MEMBER. It was `SubstrateEvent = CanonicalEvent |
 // 'vcs.commit.post'` — a union that existed only because the enum was closed and a
@@ -336,5 +336,6 @@ export const CANONICAL_EVENTS = [
 /** One moment this corpus has a name for — the pivot every adapter maps FROM. */
 export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
 
-/** This corpus's `HookCell`: schema's shape, narrowed to the events above. */
-export type HookCell = HookCellOf<CanonicalEvent>;
+/** This corpus's `HookCell`: schema's shape, narrowed to the events above and to
+ *  this manifest's dimensions, so a guard binding a misspelled one is a compile error. */
+export type HookCell = HookCellOf<CanonicalEvent, Dimension>;

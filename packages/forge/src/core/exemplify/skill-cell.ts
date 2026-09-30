@@ -67,7 +67,7 @@ export function renderBody(spec: SkillCellSpec): string {
 }
 
 /**
- * THE ONE skill-cell body generator — the single home both the claude/codex
+ * THE ONE skill-cell body generator — the single home both the claude/omp
  * adapter skill projection (`@cratylus/forge/adapters/claude` `skillBody`)
  * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
  * from parts to markdown: a verb H1, optional intro prose, the fenced `text`
@@ -82,7 +82,7 @@ export function renderSkillCellBody(parts: {
   readonly intro?: string;
   readonly composedFrom?: readonly string[];
   /** OPTIONAL doctrine-agnostic leading block (verbatim), emitted directly under the
-   *  verb H1, above the formal block — a consumer's founding-doctrine carry. */
+   *  verb H1, above the formal block — the cell's own `Skill.preamble`. */
   readonly preamble?: string;
   /** OPTIONAL runtime-capability binding. Renders the one line that makes the
    *  projected thin shim REACHABLE — the shim is emitted as `scripts/<capability>.mjs`

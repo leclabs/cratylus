@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R4TYNT56XGF4ADTSP46TQG",
+    "entity": "01M3R4TYNT56XGF4ADTSP46TQF",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:13:24.666Z",
+    "reason": "assay of badge-always-visible against persona badge",
+    "cause": "unit landed at 91a71f81"
+  },
+  "payload": {
+    "title": "badge-always-visible: omp badge appears nowhere where the host hides the hook-status row",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "Assay of badge-always-visible (BadgeAlwaysVisible, 91a71f81) against persona badge. Claude Code achieves the shard, checked in a live claude 2.1.285 session with a temp HOME and haiku. A host statusLine that uses bash syntax and ANSI color was wrapped with no flag. In a mav session the line read '✈️ mav HOSTLINE nobash'. The host's own command, run unwrapped by Claude, printed 'HOSTLINE nobash', so the wrap takes nothing away. A bare session showed the host line with no badge, and the original command was recorded in the deploy manifest. Not achieved on omp: the badge appears nowhere, rather than 'somewhere visible', when the host is on a named preset other than custom (state other-preset) or has its own layout with no preset (state own-layout) AND has set statusLine.showHookStatus: false. omp draws the row beneath the editor only when (showHookStatus ?? true) and status is not among the segments. I read that condition from the omp binary's strings. ensureStatusSegment ignores that key in both states, and install still tells the operator the badge 'renders beneath the status line'. I confirmed with a dry run on the landed dist that both files come back as other-preset and own-layout, with nothing written. [INFERENCE] The omp path was not touched at 91a71f81 and predates the shard's last amendment. Residual on Claude: a statusLine that is not a command one is refused with a message, and no badge shows. Claude itself rejects that settings file and skips every setting in it (observed: 'Files with errors are skipped entirely'), so no placement install could make would load there.",
+    "blocks": []
+  }
+}

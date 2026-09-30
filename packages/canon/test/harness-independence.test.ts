@@ -17,8 +17,8 @@
 //     directory that does not exist.
 //
 //   · `stance-judge.sh` defaulted its judge binary to `claude` on EVERY harness,
-//     so codex's guard and omp's both required a third vendor's CLI installed and
-//     separately authenticated. That CLI's OAuth lapsed on the author's host, and
+//     so omp's guard required a third vendor's CLI installed and separately
+//     authenticated. That CLI's OAuth lapsed on the author's host, and
 //     every verdict on every harness failed open in silence — a gate deployed,
 //     opted in, correctly scoped, and judging nothing.
 //
@@ -59,10 +59,10 @@ const hooksRoot = join(
 );
 
 /** Every harness root a deployed artifact could name. */
-const HARNESS_HOMES = ['.claude', '.codex', '.omp'] as const;
+const HARNESS_HOMES = ['.claude', '.omp'] as const;
 
 /** Every harness CLI a deployed artifact could spawn. */
-const HARNESS_CLIS = ['claude', 'codex', 'omp'] as const;
+const HARNESS_CLIS = ['claude', 'omp'] as const;
 
 async function shellTargets(): Promise<{ path: string; lines: string[] }[]> {
   const out: { path: string; lines: string[] }[] = [];
@@ -114,12 +114,12 @@ describe('harness independence', () => {
     // AIMED AT THE TEMPLATE, NOT THE RESOLVED BYTES, and the distinction is the
     // gate. `targets/` holds ONE harness's resolution (claude's, the byte
     // anchor), so `:-claude}` is correct there and says nothing about the other
-    // two. The cell is what every projection shares, so a vendor literal THERE
-    // is a literal in all three — which is exactly how the judge came to default
-    // to `claude` on codex and omp alike.
+    // harness. The cell is what every projection shares, so a vendor literal THERE
+    // is a literal in both — which is exactly how the judge came to default
+    // to `claude` on omp as well.
     //
-    // The repair is `{{fact:harness-judge-bin}}`: claude resolves `claude`, codex
-    // resolves `codex`, and omp resolves EMPTY because it judges in-process.
+    // The repair is `{{fact:harness-judge-bin}}`: claude resolves `claude`, and omp
+    // resolves EMPTY because it judges in-process.
     const cells: { path: string; lines: string[] }[] = [];
     for await (const rel of glob('*.ts', { cwd: hooksRoot })) {
       cells.push({
@@ -166,7 +166,7 @@ describe('harness independence', () => {
     // shared ⇒ identical catches one marked shared that in fact differs per
     // harness, which would publish one harness's bytes to a root all of them read.
     const adapters = HARNESS_CLIS.map((h) => adapterByName(h));
-    expect(adapters.length).toBeGreaterThanOrEqual(3);
+    expect(adapters.length).toBeGreaterThanOrEqual(2);
 
     const misfiled: string[] = [];
     let dataAssets = 0;

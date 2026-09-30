@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R57BQKHNE44EPDMH0327BF",
+    "entity": "01M3R57BQKHNE44EPDMH0327BE",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:20:11.251Z",
+    "reason": "re-assay of badge-always-visible against persona badge",
+    "cause": "unit reworked and landed at aef3994f"
+  },
+  "payload": {
+    "title": "badge-always-visible rework (aef3994f): omp badge still appears nowhere where statusLine is inline or its preset unreadable and the hook row is hidden",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "The rework closes the gap in the earlier finding. I ran live installs into a temp HOME. With 'preset: minimal' and 'showHookStatus: false # hide it', install turned only that value to true and kept the comment, and the operator was told. A dry run on the landed dist showed the same fallback for own-layout (hookRowShown) and for a custom leftSegments it cannot extend (refused, hookRowShown). The badge still appears nowhere when statusLine is an inline flow mapping, e.g. 'statusLine: {preset: minimal, showHookStatus: false}', or when preset is not a plain value, e.g. an alias, and the host has hidden the hook row. In both cases install refuses before it reads showHookStatus, leaves the file byte-identical, and prints advice to set the key true; I observed this live for the flow mapping. omp loads such a file, so unlike Claude's invalid statusLine this is not a file the harness itself skips. [INFERENCE] These are rare shapes; the rest of the shard holds on both harnesses, and the Claude path is unchanged from 91a71f81, which already achieved it.",
+    "blocks": []
+  }
+}

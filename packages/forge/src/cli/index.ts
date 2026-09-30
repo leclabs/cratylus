@@ -23,6 +23,7 @@ import { runInit } from './commands/init.js';
 import { runInstall } from './commands/install.js';
 import { runOptimize } from './commands/optimize.js';
 import { runProject } from './commands/project.js';
+import { runUninstall } from './commands/uninstall.js';
 
 /**
  * This package's version, read from the manifest that DEFINES it.
@@ -193,11 +194,16 @@ export async function runCli(
       'corpus package to install (default: the bundled one)',
     )
     .option('--dry-run', 'print what would change; write nothing')
+    .option(
+      '--link-persona-commands',
+      'link a command named after each installed persona into ~/.local/bin, without asking',
+    )
     .action(
       async (opts: {
         harness?: string;
         plugin?: string;
         dryRun?: boolean;
+        linkPersonaCommands?: boolean;
       }) => {
         process.exit(
           await runInstall({
@@ -205,11 +211,29 @@ export async function runCli(
             plugin: opts.plugin,
             corpus: cliOpts.defaultCorpus,
             dryRun: opts.dryRun,
+            linkPersonaCommands: opts.linkPersonaCommands,
             home: homedir(),
           }),
         );
       },
     );
+
+  cli
+    .command(
+      'uninstall',
+      'Remove from a harness what install placed there, and leave what the host placed or changed',
+    )
+    .option('--harness <name>', 'harness to remove from (required)')
+    .option('--dry-run', 'print what would be removed and left; write nothing')
+    .action((opts: { harness?: string; dryRun?: boolean }) => {
+      process.exit(
+        runUninstall({
+          harness: opts.harness,
+          dryRun: opts.dryRun,
+          home: homedir(),
+        }),
+      );
+    });
 
   cli
     .command(

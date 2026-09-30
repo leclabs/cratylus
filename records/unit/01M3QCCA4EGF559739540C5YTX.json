@@ -1,0 +1,68 @@
+{
+  "envelope": {
+    "id": "01M3QCCA4EGF559739540C5YTX",
+    "entity": "01M3QCCA4EGF559739540C5YTW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T20:05:59.054Z",
+    "reason": "plan claude-parity: realize the Claude Code faces of enforcement scope, persona launch, role routing and persona badge",
+    "cause": "live Claude Code assay (AssayClaudeLive, 2.1.285) and the four concepts amended at ab8892a3/2caaf76a"
+  },
+  "payload": {
+    "plan": "01M3QCB2BZSJN545X0R4631PTD",
+    "spec": {
+      "name": "persona-commands",
+      "intent": "Census @4c2b0d55 (code identical to ab8892a3: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the clause of `persona launch` that makes each installed persona launchable by its own name, on BOTH harnesses, under the operator ruling in note 'omp install asks before linking persona commands'. Evidence: forge has no code that creates these links (symlinkSync appears only in packages/forge/test/adapters/omp.test.ts:15,846,875). The operator's host links (~/.local/bin/{architect,implementer,kino,mav,nico,planner} -> ~/.omp/agent/omp-agent) were made by hand. The omp launcher already resolves the persona from `basename $0`, busybox-style (omp/render.ts:1291-1330, OMP_LAUNCHER_FILE :217). Claude Code has no launcher: `claude --agent <name>` is the main-session entry.\nCHANGE. (1) CLAUDE LAUNCHER. claudeHarnessAdapter gains `launchSurface`, emitting one SESSION-scope executable launcher that mirrors omp-agent's contract. Its filename is derived by the same rule as OMP_LAUNCHER_FILE (`<harness>-agent`), never spelled twice. The persona is `basename` of $0 after following symlinks, or $1 when invoked by its own name (then shifted). It refuses with exit 2 and one stderr line naming the persona and the expected path when `<its own resolved dir>/agents/<persona>.md` is absent, and otherwise `exec claude --agent <persona> \"$@\"`. claude's scopedRel (added by claude-enforcement-scope for persona scopes) gains the session-scope mapping, the launcher at the `.claude` root. Update core/harness-adapter.ts's launchSurface doc ('Absent ⇒ claude carries identity natively').\n(2) ONE PORT FACT FOR THE LINK TARGET. HarnessAdapter gains one optional member naming the launcher's harness-home-relative path (omp: `agent/omp-agent`, claude: the new launcher), so install reaches it by harness name through the registry. ProjectedTree (project/index.ts) reports the rendered persona names, so install needs no re-read.\n(3) PLACEMENT API, CALLABLE BY THE WIZARD. A new packages/forge/src/deploy/persona-commands.ts, exported via deploy/index.ts, takes paths as data and never imports an adapter. It has three parts. `plan` computes, for each persona, one entry for `<home>/.local/bin/<persona>`: `place` (nothing there); `present` (a symlink this tool recorded, still resolving to this launcher); or `blocked` (anything else, with its current target or kind: a regular file, a foreign symlink, another harness's launcher, or an identical link this tool did not record). `place` creates only `place` entries as symlinks to the absolute launcher path, mkdir -p the bin dir, and records them. `remove` deletes only recorded links still resolving to this launcher. Placement is recorded in the harness's deploy manifest (packages/forge/src/deploy/manifest.ts, `.forge/deploy-manifest.json`), the one home of what this tool placed, so uninstall reads it. The later install wizard calls `plan`, shows it, asks, then calls `place`. The interactive confirmation itself is NOT in this unit.\n(4) INSTALL. `cratylus install` never creates a link unless given the new flag `--link-personas` (cli/index.ts). Without the flag, after a successful deploy it prints what it would place (one line per `place`, plus each `blocked` entry with its reason) and the exact command that adds them (`<bin> install --harness <h> --link-personas`). With the flag it places the `place` entries and reports each link placed, each present and each blocked. With `--dry-run` and the flag it reports would-place and writes nothing. In every case, when `<home>/.local/bin` is not an entry of PATH, it prints one line saying so. Links are never created for a failed deploy.\n(5) UNINSTALL. A new verb `cratylus uninstall [--harness <h>] [--dry-run]` (packages/forge/src/cli/commands/uninstall.ts, registered in cli/index.ts) removes exactly the recorded links that still resolve to this harness's launcher, drops them from the record and reports each. A recorded link since replaced by something else is left and reported. It removes nothing else. What else uninstall should reverse is not stated by the design (surfaced).\n(6) DOCS and TESTS. packages/cli/README.md's 'Persona badge and launcher' bullet and install section, packages/forge/README.md's launcher paragraph (:221-227) and install/uninstall usage, and docs/cli/USAGE.md where it lists verbs. A changeset .changeset/persona-commands.md (@cratylus/forge minor; cratylus minor for the new verb and flag). A new packages/forge/test/deploy/persona-commands.test.ts, registered in canon's gate-convicts registry.\nBoth harnesses' persona commands share one namespace (~/.local/bin/<persona>). A link placed for one harness is `blocked` for the other and never replaced (surfaced as a design question).",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/canon/test/bin-name-single-home.test.ts"
+      ],
+      "deps": [
+        "01M3QCB2C4JGATZG18SWXS9G9M"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        ".changeset/persona-commands.md"
+      ],
+      "accept": [
+        "RIG (every live leg): T=$(mktemp -d); mkdir -p $T/.claude $T/proj; cp ~/.claude/.credentials.json $T/.claude/; git -C $T/proj init -q; `pnpm build` in /home/lex/workspaces/cratylus-share, then from cwd /home/lex/workspaces/cratylus-share (its cratylus.config.ts supplies the corpus) `HOME=$T node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude` exits 0; sessions run as `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude claude -p <prompt> --model haiku --output-format stream-json --verbose --include-hook-events` (Claude Code 2.1.285 at census). In the rig, install ran WITHOUT --link-personas and PATH lacking $T/.local/bin. It exits 0. `ls -A $T/.local/bin 2>/dev/null` prints nothing. stdout names each of the N personas (N = count of $T/.claude/agents/*.md, 7 at census; print N) as would-place, prints the literal `--link-personas`, and prints one line naming `$T/.local/bin` as not on PATH. At 4c2b0d55 install prints none of these and `--link-personas` is refused as an unknown flag.",
+        "Same rig, `HOME=$T PATH=\"$T/.local/bin:$PATH\" node …/cratylus.js install --harness claude --link-personas` exits 0. For each persona, `readlink -f $T/.local/bin/<n>` equals `realpath $T/.claude/<claude launcher>`, and the not-on-PATH line is absent.",
+        "LIVE LAUNCH (Claude). `cd $T/proj && HOME=$T CLAUDE_CONFIG_DIR=$T/.claude $T/.local/bin/planner -p 'Reply exactly PONG' --model haiku --output-format stream-json --verbose --include-hook-events` exits 0 with result PONG. The session transcript under $T/.claude/projects/ contains `\"agentSetting\":\"planner\"`, and its system prompt starts `# 🗺️ planner`. `$T/.local/bin/nosuch` (a link to the launcher named after no persona) exits 2 with one stderr line naming `nosuch`.",
+        "LIVE LAUNCH (omp, recording stub). T2=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share, `HOME=$T2 node …/cratylus.js install --harness omp --link-personas` exits 0 and each `$T2/.local/bin/<n>` resolves to `$T2/.omp/agent/omp-agent`. With a stub `$T2/bin/omp` that writes its NUL-separated argv to `$T2/bin/omp.argv`, `PATH=$T2/bin:$PATH $T2/.local/bin/planner -p hi` exits 0, and the argument after `--append-system-prompt` contains `# 🗺️ planner`.",
+        "NEVER OVERWRITES. In a fresh rig home, first create `$T/.local/bin/mav` as a regular file `host`, `$T/.local/bin/nico` -> /bin/true, and `$T/.local/bin/kino` -> the claude launcher itself (identical, unrecorded). Then install --link-personas. mav is byte-identical afterwards, and nico's and kino's `readlink` targets are unchanged. Each of the three is reported as blocked with its current target, and the other personas are placed.",
+        "CROSS-HARNESS. In one HOME, `install --harness omp --link-personas` then `install --harness claude --link-personas`. Every link still resolves to omp-agent, and the claude install reports each persona as blocked by the omp launcher.",
+        "IDEMPOTENT AND UNINSTALL. A second `install --harness claude --link-personas` places nothing, reports every placed link as present, and leaves every link unchanged. Then `ln -sf /bin/true $T/.local/bin/planner`, and `HOME=$T node …/cratylus.js uninstall --harness claude` exits 0. It removes exactly the links it placed that still resolve to the launcher. planner (replaced) and the three pre-existing entries of the never-overwrites criterion remain unchanged and are reported, and a second uninstall removes nothing. `uninstall --dry-run` before that removes nothing and lists what it would remove.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/deploy/persona-commands.test.ts test/adapters test/deploy/harness-shape.test.ts`, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts test/bin-name-single-home.test.ts`, and `pnpm typecheck` exit 0. The placement API's `plan` classifies a regular file, a foreign symlink and an unrecorded identical link as blocked in the unit test, and that test fails if `place` is made to overwrite."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QBG00Z13RG3P9110NBW9X8",
+      "version": "01M3QC4APCBD2Y51KGWWP9YENV",
+      "closure": {}
+    }
+  }
+}

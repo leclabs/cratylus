@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3QSNYDXRGRPGF3RN6EN7SJ8",
+    "entity": "01M3QSMAWKRM9QXFPNW9QRZFJD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSMAWKRM9QXFPNW9QRZFJE"
+    ],
+    "author": "nico",
+    "time": "2026-09-29T23:58:26.237Z",
+    "reason": "ruling on the owed routing tier",
+    "cause": "integrator-position planner"
+  },
+  "payload": {
+    "title": "the integrator's role-routing tier",
+    "kind": "decision",
+    "topic": "integrator",
+    "body": "Ruled: the integrator routes like the implementer — omp nearest built-in role `task`, Claude tier `sonnet`. Its work is spec-bounded mechanics (merge onto the plan's line, run the whole check, commit records of decisions it is handed); it decides nothing, so it needs no principal-grade model, and a red gate goes up to the architect rather than being reasoned about.",
+    "blocks": []
+  }
+}

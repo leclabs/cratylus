@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QZDSHGQ7FQ3XKAYVR75X4Y",
+    "entity": "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T01:38:50.544Z",
+    "reason": "the judge of a unit was unnamed in the design; the regrounded model makes the assayer that judge",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "assay verdict",
+    "gloss": "the assayer's judgement of one unit against the design shard it was created to realize: achieved, or not achieved with what is missing, naming the unit and its implementer, stated in the design's own language. The assayer holds the design, never the unit's spec, so its verdict is a second, independent description; acceptance rests on it, not on the implementer's account.",
+    "factors": []
+  }
+}

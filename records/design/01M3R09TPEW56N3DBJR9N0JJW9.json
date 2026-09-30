@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3R09TPEW56N3DBJR9N0JJW9",
+    "entity": "01M3QZDSNXFW5WVR66146BGMJK",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R07HNFACD3ZRBNQGSA8JSY"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:54:09.231Z",
+    "reason": "hypothesis 2: appending to a shard in flight would move what its units are judged against",
+    "cause": "rulings on the corrected-shards planner's hypotheses, 2026-09-29"
+  },
+  "payload": {
+    "anchor": "design stability",
+    "gloss": "the design is the fixed target while a plan realizes it. A change never moves a shard that a running plan is building against: a change bearing on such a shard is held as a note until that plan completes, then enters the design and is realized by a following plan; a change to any other part of the design enters at once; sequenced after the work it depends on, so every plan finishes against the goal it began with. Only when a running plan is found to be built on a shard that is itself wrong does the plan stop; the design is corrected once, and the planner rectifies or rebuilds the plan before work resumes.",
+    "factors": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

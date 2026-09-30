@@ -9,14 +9,15 @@
 
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import TOML from '@iarna/toml';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
+import type { HarnessAdapter } from '../../src/core/harness-adapter.js';
 import {
   type ProjectablePlugin,
   projectPluginSet,
 } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+import { SHORTFALL, shortfallAdapter } from './shortfall-adapter.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(here, 'fixtures-closure');
@@ -39,13 +40,13 @@ const override: ProjectablePlugin = {
 const CLOSURE = ['a', 'e', 'ghost', 'b', 'd', 'c'];
 
 async function project(
-  harness: string,
+  harness: string | HarnessAdapter,
   plugins: readonly ProjectablePlugin[] = [base],
 ) {
   const warnings: string[] = [];
   const tree = await projectPluginSet({
     plugins,
-    adapter: adapterByName(harness),
+    adapter: typeof harness === 'string' ? adapterByName(harness) : harness,
     warn: (line) => warnings.push(line),
   });
   const agent = (name: string) => {
@@ -100,34 +101,33 @@ describe('claude — the subagent `skills` field carries the closure', () => {
   });
 });
 
-describe('codex — no preload field, so the closure degrades to a declaration', () => {
-  const instructions = (toml: string) =>
-    TOML.parse(toml).developer_instructions as string;
-
-  it('ends `developer_instructions` with a required-reading section, in closure order', async () => {
-    const { agent } = await project('codex');
-    const text = instructions(agent('chain'));
+describe('a harness with no preload field — the closure degrades to a declaration', () => {
+  // No supported harness lacks a preload field, so the test-local shortfall
+  // adapter (claude without `preloadsSkills`) is the witness.
+  it('ends the definition with a required-reading section, in closure order', async () => {
+    const { agent } = await project(shortfallAdapter);
+    const text = agent('chain');
     const section = text.slice(text.lastIndexOf('\n## '));
     expect(section.startsWith('\n## Required reading\n')).toBe(true);
     expect([...section.matchAll(/^- `([^`]+)`/gm)].map((m) => m[1])).toEqual(
       CLOSURE,
     );
-    expect(instructions(agent('bare'))).not.toContain('## Required reading');
+    expect(agent('bare')).not.toContain('## Required reading');
   });
 
-  it('emits no `skills` key into any agent TOML', async () => {
-    const { agent } = await project('codex');
+  it('emits no `skills` field into any agent front-matter', async () => {
+    const { agent } = await project(shortfallAdapter);
     for (const name of ['chain', 'bare']) {
-      expect(Object.keys(TOML.parse(agent(name)))).not.toContain('skills');
+      expect(fence(agent(name))).not.toMatch(/^skills:/m);
     }
   });
 
-  it('warns once for the agent given skills, naming it, codex and its skills', async () => {
-    const { warnings } = await project('codex');
+  it('warns once for the agent given skills, naming it, the adapter and its skills', async () => {
+    const { warnings } = await project(shortfallAdapter);
     expect(warnings).toHaveLength(1);
     const [warning] = warnings as [string];
     expect(warning).toContain("'chain'");
-    expect(warning).toContain("'codex'");
+    expect(warning).toContain(`'${SHORTFALL}'`);
     expect(warning).toContain(CLOSURE.join(', '));
     expect(warning).not.toContain('bare');
   });

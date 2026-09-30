@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R6ZYYWCFTSTNKT69DVHQ2R",
+    "entity": "01M3R6ZYYWCFTSTNKT69DVHQ2Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:51:05.948Z",
+    "reason": "second assay of uninstall against the uninstall shard",
+    "cause": "unit reworked and landed at 367b8914"
+  },
+  "payload": {
+    "title": "uninstall rework (367b8914): line-by-line undo achieved; the pre-record upgrade path still leaves cratylus lines unreported",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "I ran live round trips at 367b8914 in temp HOMEs. The first gap is closed. When the host changed only 'architect' to '@slow', uninstall removed the other four seeded roles and the whole statusLine block, and left and reported only the host's line. On a bare host, the host changed one leftSegment and added 'separator: pipe' under the statusLine block. Every other inserted line went. 'statusLine:' and 'leftSegments:' stayed, reported as holding the host's lines. Uninstall straight from an old-shape record (digests and hostEdits deleted) now reports config.yml and advises a re-install. The second gap is only half closed: re-install and then uninstall still leaves cratylus-placed content, and it is not reported (left 0). (C) On a host with no modelRoles, the old install created the 'modelRoles:' key line. Adoption records only the entry lines, which match modelRoleLine, so 'modelRoles:' survives as a bare null key. (D) On a host on preset minimal with 'showHookStatus: false', the old install (aef3994f and later) turned it to true. Adoption does not recognise that flip, so after uninstall the host's value stays true instead of its own false. On the same host, a fresh install, with no old record, restores both byte for byte (checked at f4f59d80). [INFERENCE] Case C is the common one: any older install on a host with no modelRoles key. The operator's real ~/.omp record is the old shape. Uninstall without a re-install still leaves every placed file as unverified. It reports them and deletes the record.",
+    "blocks": []
+  }
+}

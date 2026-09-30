@@ -21,7 +21,7 @@ What landed instead gives the doc what it actually wanted. `role` stays exactly 
 `{ axis: 'Persona', repertoire: 'open', arity: 'scalar' }` at `packages/canon/src/manifest.ts:52` —
 and its VALUES changed. Each is now a multi-line contract rather than a bare token: the arrow the
 position is over the ladder `intent ≺ C ≺ spec ≺ artifact`, in the form
-`architect ≜ reads⟨intent · C⟩ → writes⟨C⟩`, with the acts the arrow reserves and the defect it
+`architect ≜ reads⟨intent · C · plan-view · note · assay · gate-result⟩ → writes⟨C · note · verdict⟩`, with the acts the arrow reserves and the defect it
 names. The bundle is a separate structure (`RoleCell` in `roles/hold.ts`) that is made of dimension
 values and carries the `role` value as its `sign`. A role can now be STATED, not merely named, which
 was D3's complaint, and the projected section survives.
@@ -62,7 +62,7 @@ verbs. That is the accreted corpus carried forward as a constraint, which is the
 `green-field` names, and it was caught by the operator rather than by the work.
 
 A role is a POSITION, and a position is a WHO. The catalog is therefore `architect`, `planner`,
-`implementer` and `assayer`, and the unspecialized holder of each carries the position's own name —
+`implementer`, `assayer` and `integrator`, and the unspecialized holder of each carries the position's own name —
 which `architect` already did, and which is what made it the odd one out.
 
 The ACTS keep their verbs, and the distinction is the point rather than an inconsistency: `assay` is
@@ -103,6 +103,34 @@ The name was cold-decoded over the contract, as U2 and U5 instructed. `witness` 
 all declared under the comment "the five per-cell / partition witnesses"). A verdict is the precise
 thing this party is forbidden to emit, so the sign would have asserted the opposite of the cell.
 
+### The integrator makes approved work whole
+
+The fifth position is the one the architect session had been performing itself. Gating a unit,
+merging it and recording the plan's state were all done from the design-holder's own context, which
+is the descent the architect position forbids: mechanical work displacing the conceptual work the
+position exists to hold. `deliver` already declared `integrator : P ⇀ agent` with no role behind it,
+so the act had a name and no one to do it.
+
+`integrator` takes each unit whose assay verdict is achieved and combines it onto the plan's
+integration line, a branch cut from `main` when the plan is bound (`plan/<plan>`). It runs the
+project's full check once on the combined tree, so that no implementer and no assayer has to: a whole
+is a property of the combination, and a unit proven alone has proven nothing about it. Green, it
+commits the records written since (plan, design, notes) by pathspec and reports the unit whole. Red or
+a merge conflict, it leaves the line as it was and reports the failing check naming the unit; the
+report goes to the architect, who sends it to that unit's implementer.
+
+The contract is `reads⟨unit · commit · line⟩ → writes⟨line · commit ⟨records⟩⟩`, and `writes ≠
+artifact` is what `purview-guardrail` quotes: combining is a git act and running the check is a check
+act, both reserved, while an Edit or a Write to a source file has the artifact codomain and is
+blocked. Around that arrow stand four prohibitions. It never repairs, because a repair on the line
+turns a red into a green nobody judged. It never judges, because the verdict is the assayer's and
+arrived before this position was reached. It decides nothing about the design (the architect's) or
+the plan (its state is the planner's). And it never moves `main`: releasing the finished whole is the
+operator's sign-off, which it asks for when the architect routes the plan's close, as a pull request
+where the repository has a forge remote and `gh`, otherwise as the exact git command. The
+description names both familiar shapes it is not, a CI bot that fixes and a release manager that
+pushes, since a dispatcher reaches for the nearest one.
+
 ## Unit disposition
 
 ### U0 · Roles as bundles — LANDED, rectified
@@ -115,7 +143,7 @@ scalar is the holder's when the key is PRESENT (present-with-`null` is an explic
 the role's otherwise. `provenance.mark` never folds — `holds` copies `declared.provenance` and the
 role vector has no such field, so a holder cannot inherit a mark, and the key is required on the
 identity, so it cannot be dropped by accident. No agent can declare two roles: `holds` takes one
-`RoleCell` and `Declared` omits `role`. Four roles exist; seven agents hold one each.
+`RoleCell` and `Declared` omits `role`. Five roles exist; eight agents hold one each.
 
 Two acceptance criteria were not met as written. The promotion out of `MANIFEST` was rectified
 above. Byte-identical Targets were not achieved either, and the reason is the union rule: role
@@ -132,7 +160,7 @@ restates a value the role supplies unchanged.
 
 `dimensions/role/architect.ts` states the pair, the acts it reserves, the ladder, and delegation as
 a theorem: `∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGATED`, with
-`⟨C → spec⟩ ↦ plan · ⟨spec → artifact⟩ ↦ implement · ⟨artifact → C⟩ ↦ assay` as the derived
+`⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer · ⟨gate · merge · state-record · commit ⟨merge · record⟩⟩ ↦ integrator` as the derived
 consequence rather than the declaration. `descent` is named as the defect. `architect`, `kino` and
 `nico` all carry it verbatim by holding the role, and no `delegation` axis was minted.
 
@@ -154,10 +182,10 @@ reserves by name. One edit on the role corrected `architect`, `kino` and `nico` 
 ### U4 · `deliver` names the witness and the lift — LANDED, under the rectified names
 
 `skills/deliver/skill.ts` gained `assay`, `assayer`, `achieved`, `unachieved`, the C-typed and
-routed-locus laws, the `assayer ⊥ executor` clause, and the redispatch law.
+routed-locus laws, the `assayer ⊥ implementer` clause, and the redispatch law.
 `validate ⊨ artifact ⟨NEVER r⟩` and `validate ⊨ self` are unchanged, because they are the laws the
 unit protects. The closing sequence now reads
-`… → verify ⟨executor⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → …`,
+`… → verify ⟨implementer⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → …`,
 and the header comment explains the read/verdict split.
 
 ### U5 · The witness agent cell — LANDED as `assayer`
@@ -202,7 +230,7 @@ silent, and that an identical input is never denied twice.
 
 The §6 list survived except where a rectification voided it. One role per agent, no inheritance, no
 fold at deploy time, no folded `provenance.mark`, no `delegation` axis, no verdict or
-mechanism-prose from the assayer, and no executor's spec in its hands are all held structurally by
+mechanism-prose from the assayer, and no implementer's spec in its hands are all held structurally by
 `holds` and by the role values. "Do not let an agent override a constitutive aspect" is void: there
 are no constitutive aspects, only a contract with no field to state it in. And the instruction not
 to enforce the arrow by deleting capabilities alone is honoured on both halves — the capabilities

@@ -84,10 +84,8 @@ const OMP_ACT_TOOL: Readonly<Record<EventName, string>> = {
 /**
  * Canonical ACT → the omp ⟨native event, native selector⟩ pair.
  *
- * **EVERY BINDING HERE IS NARROWED, AND THAT IS THE DIFFERENCE FROM CODEX.** Codex
- * spends its only `PreToolUse` selector on `agent_type` and therefore fires these
- * acts unnarrowed, which its adapter has to report as a loss. omp has no such
- * shortage — and the reason is structural rather than lucky:
+ * **EVERY BINDING HERE IS NARROWED.** omp has no shortage of selectors — and the
+ * reason is structural rather than lucky:
  *
  * **an omp hook is CODE, so the selector is an `if`.** The handler receives the
  * event with `toolName` on it (`ToolCallEvent`/`ToolResultEvent`,
@@ -116,8 +114,7 @@ export const canonicalActToOmp: Readonly<Record<EventName, NativeBinding>> =
  * native name. `undefined` ⇔ unrealizable here.
  *
  * The single question every omp emission site asks, so no site can consult one
- * table and miss the other. Mirrors `codexBindingOf` deliberately: two harnesses
- * with the same two-table shape should answer it the same way.
+ * table and miss the other.
  */
 export function ompBindingOf(event: EventName): NativeBinding | undefined {
   const act = canonicalActToOmp[event];
@@ -203,4 +200,23 @@ export const OMP_ENVELOPE_KIND: Readonly<
 export const OMP_WORKER_TOOL: Readonly<Record<EventName, string>> = {
   'operator.consult.pre': 'AskUserQuestion',
   'subagent.dispatch.pre': 'Agent',
+};
+
+/**
+ * The wire-contract spelling of each omp tool an UNNARROWED `tool_call` may carry.
+ *
+ * `OMP_WORKER_TOOL` is keyed by the canonical ACT, which is enough where a selector
+ * narrowed the registration to one tool. `tool.use.pre` names no tool, so which one
+ * fired is only on the event, in omp's spelling, and the workers' contract spells the
+ * same acts otherwise: `write` is `Write` there, `task` is `Agent`. A tool absent from
+ * this table (a read, a search) passes through unmapped, and the worker's default
+ * branch allows it — which is what a gate that judges dispatches and writes only wants.
+ * The worker reads a write's target from `file_path`, `path` or `notebook_path`; a call
+ * carrying none of them gives it nothing to judge, and it allows.
+ */
+export const OMP_WIRE_TOOL: Readonly<Record<string, string>> = {
+  ask: 'AskUserQuestion',
+  task: 'Agent',
+  write: 'Write',
+  edit: 'Edit',
 };

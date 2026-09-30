@@ -1,0 +1,50 @@
+{
+  "envelope": {
+    "id": "01M3R0G40GA23ASGK31R6HHY90",
+    "entity": "01M3R0G40GA23ASGK31R6HHY8Z",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T01:57:35.376Z",
+    "reason": "enforcement scope amended: a guard whose judge cannot run lets the turn through and says so; three guards still pass silently on some paths",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "guard-says-when-open",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize the amended `enforcement scope` where claude-enforcement-scope's landed work falls short: a guard binds exactly the agents whose composition includes it, on every supported harness, and judges every turn it fires on; where its judge cannot run, it lets the turn through and says so, never silently (ruling b14d8c4e). STANDING AT CENSUS: scope by composition, the Claude agent_type scope and the stated-rule degradation stand. The Stop guard (packages/canon/src/hooks/stance-guardrail.ts) has `dark()`, which prints 'STANCE GUARDRAIL — DARK: … This turn was NOT judged' for an unreadable rubric or transcript and a judge that does not answer; but it still passes silently where jq is missing (`command -v jq … || allow_stop`) and where its state is absent or unwritable ('absent/unwritable state → fail open', :155), and at the re-entry cap. The pre-tool guard (stance-guardrail-pre.ts) and the purview guard (purview-guardrail.ts) have no `dark`: `allow() { exit 0; }` answers both 'judged, pass' and 'could not judge' (no jq, empty input, judge failure, unparseable verdict), with at most a line in their own log. Whether the Stop hook's stdout reaches the operator on each harness is not established at census: on Claude Code, a hook's plain stdout on exit 0 is not shown to the session; a JSON `systemMessage` is.\nCHANGE. Every path on which a guard lets a turn or call through without a verdict says so where the operator sees it on that harness (Claude Code: the hook's JSON `systemMessage`; omp: the form its hook runtime shows, established live by the implementer and stated), naming the guard and why it could not judge, and still never wedges the turn. A judged pass stays silent. Cover packages/canon/src/hooks/stance-guardrail.ts (the silent paths above), stance-guardrail-pre.ts and purview-guardrail.ts (all fail-open paths), then regenerate packages/canon/targets/guardrail/*.sh with `pnpm canon:project:targets` (cwd /home/lex/workspaces/cratylus-share). The re-entry cap: at the cap the turn is let through unjudged, so it says so too. Tests in the existing packages/canon/test/purview-guardrail.test.ts and packages/canon/test/stance-guardrail-dark.test.ts cover each silent path. .changeset/guard-says-when-open.md (@cratylus/canon patch). Depends on architect-sees-the-design only because both edit purview-guardrail.ts and its target.",
+      "static": [
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/src/adapters/claude/hooks.ts",
+        "packages/forge/src/adapters/omp/render.ts"
+      ],
+      "deps": [
+        "01M3R00XN367KNF6Y1XZW4Z6T0"
+      ],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        ".changeset/guard-says-when-open.md"
+      ],
+      "accept": [
+        "For each of the three workers, with jq removed from PATH (a PATH holding only a stub dir with sh and cat), running it on a valid hook payload exits 0 and prints a message naming the guard and that the turn was not judged, in the harness's operator-visible form (Claude: JSON with `systemMessage`). At census the pre-tool and purview workers print nothing and the Stop worker prints nothing on this path.",
+        "The same for a judge that fails (`STANCE_VERDICT_FILE` or the judge command pointing at nothing) and for an unparseable verdict, for each worker; and a judged PASS prints nothing (the silent case stays silent).",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts test/stance-guardrail-dark.test.ts test/hook-rule-boundary.test.ts test/harness-parity.test.ts` and `pnpm typecheck` exit 0. A case in each named test file fails if any fail-open path is made silent again."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3R09TZ5XJE1HTRJPRQYT700",
+      "closure": {}
+    }
+  }
+}

@@ -75,7 +75,6 @@ import { describe, expect, it } from 'vitest';
 import type { Agent, Dimension, Value } from '../src/manifest.js';
 import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
-import { nonceControl } from '../tooling/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
 import { canonPolicy } from '../tooling/cold-oracle/policy.js';
@@ -190,16 +189,16 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
-  // The founding doctrine rides into EVERY projected Target and skill — the same
+  // The prime principle rides into every skill whose laws apply it — the same
   // ship-whole verbatim carry as the genus protocol, so the same class.
   {
     const mod = (await import(
-      pathToFileURL(join(srcRoot, 'genus/founding-doctrine.ts')).href
+      pathToFileURL(join(srcRoot, 'genus/prime-principle.ts')).href
     )) as Record<string, unknown>;
     for (const [k, v] of Object.entries(mod)) {
       if (typeof v === 'string') {
         surfaces.push({
-          label: `genus founding-doctrine ${k}`,
+          label: `genus prime-principle ${k}`,
           cls: 'genus-protocol',
           text: v,
         });
@@ -431,7 +430,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     // and the empty set travels through every downstream assertion as success.
     const labels = surfaces.map((s) => s.label);
     expect(labels).toContain('genus src/genus/persona.md ## Protocol');
-    expect(labels).toContain('genus founding-doctrine foundingDoctrine');
+    expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
     expect(labels).toContain('agent agents/nico.ts archetype');
@@ -775,23 +774,6 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
     // conformance witness: the gated corpus needs no pins.
     expect(ACCEPT_RATCHET.length).toBe(0);
   });
-
-  // ── LIVE authority — the priors-only BLIND cold-oracle (gated integration lane) ──
-  // Hits the network + a live model (slow, non-deterministic) → opt-in only, so the
-  // hermetic floor above stays green on every commit. Run: COLD_ORACLE_LIVE=1 vitest.
-  const live = process.env.COLD_ORACLE_LIVE === '1';
-  it.runIf(live)(
-    'BLIND isolation positive control — a nonce decodes to its GENERIC prior, not a registry gloss',
-    () => {
-      const ctl = nonceControl({ model: 'sonnet' });
-      // isolation holds ⇔ the coined nonce reads as an unknown/coined term. If the
-      // corpus/registry had leaked in, it would come back with a local gloss.
-      expect(ctl.isolated, `nonce '${ctl.nonce}' → ${ctl.decode}`).toBe(true);
-      // and never carries a project-registry gloss (the σ* skill sense of `signify`).
-      expect(/injective canonical anchor|σ\*/.test(ctl.decode)).toBe(false);
-    },
-    180_000,
-  );
 });
 
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══

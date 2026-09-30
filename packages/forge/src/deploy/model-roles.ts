@@ -19,6 +19,18 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import {
+  type HostEdit,
+  type LineHunk,
+  adoptedHunk,
+  lineHunks,
+} from './manifest.js';
+import {
+  inlineValue,
+  isBlankOrComment,
+  keyOf,
+  splitLines,
+} from './yaml-lines.js';
 
 /** One mapping the host should have: the role, and the alias or model it routes to. */
 export interface ModelRoleEntry {
@@ -30,6 +42,9 @@ export interface ModelRoleEntry {
 export interface AddModelRolesOpts {
   /** Report what would be added and write nothing. */
   readonly dry?: boolean;
+  /** Record as install's own the entries the host already has that are byte for byte
+   *  the ones this would write: for a host installed before edits were recorded. */
+  readonly adopt?: boolean;
 }
 
 export interface AddModelRolesResult {
@@ -42,14 +57,13 @@ export interface AddModelRolesResult {
   /** Why the file was left untouched, when its `modelRoles` cannot be safely
    *  extended. Absent otherwise. */
   readonly refused?: string;
+  /** What was put in the file, and what was adopted, for the deploy manifest — an
+   *  uninstall takes exactly this out. Present when the file was written, and under
+   *  `adopt` when a line was adopted. */
+  readonly edit?: HostEdit;
 }
 
 const PLAIN_KEY = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
-// One `key:` at the head of a line — quoted or plain. A plain key may not open with
-// a YAML indicator, which is what keeps `- item`, `[a]`, `{a: b}` and `&a x: y`
-// from reading as keys.
-const TOP_LEVEL_KEY =
-  /^(?:"([^"]*)"|'([^']*)'|((?!-(?:[ \t]|$))[^\s#'"[\]{}?&*!|>%@`,][^:#]*?))[ \t]*:(?:[ \t]|$)/;
 
 /** The whole line an entry occupies, without its terminator. */
 export function modelRoleLine(entry: ModelRoleEntry, indent: string): string {
@@ -57,36 +71,6 @@ export function modelRoleLine(entry: ModelRoleEntry, indent: string): string {
     ? entry.role
     : JSON.stringify(entry.role);
   return `${indent}${key}: ${JSON.stringify(entry.value)}`;
-}
-
-/** `[text, terminator]` for each line, so the file's own line endings are kept. */
-function splitLines(text: string): [string, string][] {
-  const lines: [string, string][] = [];
-  const re = /([^\r\n]*)(\r\n|\n|\r|$)/gy;
-  let m: RegExpExecArray | null = re.exec(text);
-  while (m !== null && m.index < text.length) {
-    lines.push([m[1] as string, m[2] as string]);
-    m = re.exec(text);
-  }
-  return lines;
-}
-
-/** Whether a line carries nothing a YAML reader would take as content. */
-function isBlankOrComment(line: string): boolean {
-  const t = line.trim();
-  return t === '' || t.startsWith('#');
-}
-
-/** The key a `key: value` line names, or `undefined` when it is not one. */
-function keyOf(content: string): string | undefined {
-  const m = TOP_LEVEL_KEY.exec(content);
-  if (m === null) return undefined;
-  return (m[1] ?? m[2] ?? m[3] ?? '').trim();
-}
-
-/** The value text on a line after its key's colon, comment removed. */
-function inlineValue(afterColon: string): string {
-  return afterColon.replace(/(^|[ \t])#.*$/, '').trim();
 }
 
 /**
@@ -122,12 +106,21 @@ export function addModelRoles(
   const finish = (
     added: readonly ModelRoleEntry[],
     next: string,
+    adopted: (source: string) => LineHunk[] = () => [],
   ): AddModelRolesResult => {
     if (added.length === 0) return { path, added, wrote: false };
     if (dry) return { path, added, wrote: false };
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, next);
-    return { path, added, wrote: true };
+    return {
+      path,
+      added,
+      wrote: true,
+      edit: {
+        created: !exists,
+        hunks: [...lineHunks(text, next), ...adopted(next)],
+      },
+    };
   };
 
   // The top-level `modelRoles` key, and — while looking — whether the document is
@@ -176,6 +169,7 @@ export function addModelRoles(
   let entryIndent: string | undefined;
   let last = at; // the last line of the block that carries content
   const present = new Set<string>();
+  const entryAt = new Map<string, number>(); // each key's first line
   for (let i = at + 1; i < lines.length; i++) {
     const line = (lines[i] as [string, string])[0];
     if (isBlankOrComment(line)) {
@@ -195,7 +189,10 @@ export function addModelRoles(
     last = i;
     if (indent === entryIndent) {
       const key = keyOf(line.slice(indent.length));
-      if (key !== undefined) present.add(key);
+      if (key !== undefined) {
+        present.add(key);
+        if (!entryAt.has(key)) entryAt.set(key, i);
+      }
     } else if (indent.length < entryIndent.length) {
       return refuse(
         '`modelRoles` has entries at inconsistent indentation, so an entry cannot be added safely',
@@ -203,10 +200,45 @@ export function addModelRoles(
     }
   }
 
-  const missing = wanted.filter((e) => !present.has(e.role));
-  if (missing.length === 0) return { path, added: [], wrote: false };
-
   const indent = entryIndent ?? '  ';
+  // Lines the host already has that are byte for byte what this would write. Under
+  // `adopt` they are recorded as install's own, exactly as a hand-made link to the
+  // launcher is adopted: an install from before edits were recorded put them there, and
+  // nothing else could tell them apart from the host's.
+  const adopted =
+    opts.adopt === true && !dry
+      ? wanted.flatMap((e) => {
+          const i = entryAt.get(e.role);
+          return i !== undefined &&
+            (lines[i] as [string, string])[0] === modelRoleLine(e, indent)
+            ? [i]
+            : [];
+        })
+      : [];
+  // A block that is nothing BUT adopted entries under a bare `modelRoles:` key was
+  // created by that install, key line included — it is recorded whole, so the key goes
+  // with its last entry. A host's own entry in the block makes the key the host's.
+  const wholeBlock =
+    adopted.length > 0 &&
+    (lines[at] as [string, string])[0] === 'modelRoles:' &&
+    adopted.length === last - at &&
+    adopted.every((i) => i > at && i <= last);
+  const adoptedHunks = (source: string): LineHunk[] =>
+    wholeBlock
+      ? [adoptedHunk(source, at, last - at + 1)]
+      : adopted.map((i) => adoptedHunk(source, i, 1));
+  const missing = wanted.filter((e) => !present.has(e.role));
+  if (missing.length === 0) {
+    return adopted.length === 0
+      ? { path, added: [], wrote: false }
+      : {
+          path,
+          added: [],
+          wrote: false,
+          edit: { created: false, hunks: adoptedHunks(text) },
+        };
+  }
+
   const inserted = missing.map((e) => modelRoleLine(e, indent));
   // The anchor line may be the file's last, with no terminator: it gains one, and
   // the new lines end the way the file did — without one.
@@ -223,5 +255,5 @@ export function addModelRoles(
     anchorEol === ''
       ? `${head}${anchorText}${eol}${inserted.join(eol)}`
       : `${head}${anchorText}${anchorEol}${inserted.join(eol)}${eol}${tail}`;
-  return finish(missing, next);
+  return finish(missing, next, adoptedHunks);
 }

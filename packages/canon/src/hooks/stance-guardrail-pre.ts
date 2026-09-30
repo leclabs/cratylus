@@ -1,3 +1,5 @@
+import { anchorOf } from '@cratylus/schema';
+import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
 
 // stance-guardrail-pre — the BEFORE-THE-CALL twin of `stance-guardrail` (the turn-end
@@ -12,13 +14,14 @@ import type { HookCell } from '../manifest.js';
 //
 // IT BINDS TWO ACTS, NOT ONE EVENT PLUS A REGEX. This cell used to read
 // `events: ['tool.use.pre']` + `matcher: 'AskUserQuestion|Agent|SendMessage'` — three
-// claude tool names on a harness-agnostic shape, which the codex adapter dropped
-// without a word, so the hook there fired on EVERY tool call and only the worker's
-// own `*) allow ;;` branch kept it correct. The two acts below were already latent in
-// the residue (`permission-menu` · `dispatch-echo`); naming them moves the narrowing
-// to the adapter, which alone knows which of its tools performs the act. Each adapter
-// computes its own ⟨native event, native selector⟩ pair, and one that can fire an act
-// but not narrow it now SAYS SO through the projection's warnings.
+// claude tool names on a harness-agnostic shape, which an adapter that could not
+// narrow by tool name dropped without a word, so the hook there fired on EVERY tool
+// call and only the worker's own `*) allow ;;` branch kept it correct. The two acts
+// below were already latent in the residue (`permission-menu` · `dispatch-echo`);
+// naming them moves the narrowing to the adapter, which alone knows which of its
+// tools performs the act. Each adapter computes its own ⟨native event, native
+// selector⟩ pair, and one that can fire an act but not narrow it now SAYS SO through
+// the projection's warnings.
 // `test/hook-rule-boundary.test.ts` byte-locks the worker;
 // `test/hook-act-selector.test.ts` holds the seam.
 
@@ -27,6 +30,9 @@ export const stanceGuardrailPre: HookCell = {
   residue:
     'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
   substrate: 'harness',
+  // Bound by the same composition as its turn-end twin: the stance it enforces is the
+  // one `handoff` declares.
+  binds: { dimension: 'autonomy', value: anchorOf(handoff) },
   order: 1,
   events: ['operator.consult.pre', 'subagent.dispatch.pre'],
   entry: 'stance-guardrail-pre.sh',
@@ -53,21 +59,84 @@ export const stanceGuardrailPre: HookCell = {
 #   - SCOPE-ENROLLED, exactly as its twin: a scope carrying a stance manifest is judged and
 #     every other scope is silent. No repo opt-in, no allowlist — the projection that places a
 #     persona also enrolls it, and declining the guard means declining the persona.
-#   - FAILS OPEN. Any error (no jq, judge failure, bad input) -> exit 0 (allow the call).
+#   - FAILS OPEN, NEVER SILENTLY. Any error (no jq, no input, judge failure, unparseable verdict,
+#     unexpected error) -> exit 0 (allow the call), and the call goes through WITH A NOTICE the
+#     operator reads (\`say\`: Claude Code's JSON \`systemMessage\`, omp's relayed line) naming this
+#     guard and why it could not judge. Silence is reserved for "judged, pass" and "not enrolled".
 #   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice (there is no
-#     stop_hook_active analog for PreToolUse), so it can never wedge a call.
-#   - OBSERVABLE. Judge failures/timeouts are logged (fails open, but a miss is visible).
+#     stop_hook_active analog for PreToolUse), so it can never wedge a call. The second,
+#     identical call goes through unjudged, and says so.
+#   - OBSERVABLE. Every notice is also a line in the miss log.
 #
 # INPUT  : Claude Code PreToolUse hook JSON on stdin (tool_name, tool_input, agent_type
 #          [subagents], session_id, cwd, ...).
 # OUTPUT : on collapse -> stdout
 #          {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny",
 #           "permissionDecisionReason":"..."}} + exit 0.
-#          otherwise -> no stdout + exit 0 (allow the call).
+#          judged, pass -> no stdout + exit 0 (allow the call).
+#          let through with no verdict -> the notice \`say\` prints + exit 0 (allow the call).
 #
-# POSIX sh. Depends on: jq. Missing jq -> fail open.
+# POSIX sh. Depends on: jq. Missing jq -> the guard says so and allows the call.
 
 set -eu
+
+# WHAT AN OPERATOR READS WHEN THE GUARD CANNOT JUDGE, defined before anything that needs a
+# command: the first thing that can be missing is \`jq\`, and a worker run with a PATH holding
+# little beyond \`sh\` and \`cat\` must still say it did not judge, so \`esc\`, \`say\` and \`open\`
+# are builtins only and nothing external runs above the jq check.
+#
+# Claude Code shows the operator a hook's JSON \`systemMessage\` and NOT its plain stdout on
+# exit 0. omp's extension bridge reads the worker's plain stdout and relays a line naming this
+# guard and DARK to the session, and would relay a JSON object as raw JSON — hence one form per
+# harness, chosen at projection by the harness's own name.
+esc() {
+	_in="$1"
+	_out=""
+	_nl="$(printf '\\nx')"
+	_nl="\${_nl%x}"
+	_tab="$(printf '\\t')"
+	_cr="$(printf '\\r')"
+	while [ -n "$_in" ]; do
+		_rest="\${_in#?}"
+		_c="\${_in%"$_rest"}"
+		case "$_c" in
+			'\\') _c='\\\\' ;;
+			'"') _c='\\"' ;;
+			"$_nl") _c='\\n' ;;
+			"$_tab") _c='\\t' ;;
+			"$_cr") _c='\\r' ;;
+		esac
+		_out="$_out$_c"
+		_in="$_rest"
+	done
+	printf '%s' "$_out"
+}
+say() {
+	case "{{fact:harness-name}}" in
+		claude) printf '{"systemMessage":"%s"}\\n' "$(esc "$1")" ;;
+		*) printf '%s\\n' "$1" ;;
+	esac
+}
+
+allow() { exit 0; }  # emit nothing; the tool call proceeds.
+
+# A verdict and a failure are different facts and silence carries only one of them: \`allow\`
+# means "judged, pass" or "not this guard's call", \`open\` means "could not judge" — the call
+# still proceeds, and the operator is told.
+open() {
+	[ -z "\${LOG:-}" ] || printf '%s\\n' "open: $1 tool=\${tool_name:-?} agent=\${agent_type:-?}" >> "$LOG" 2>/dev/null || true
+	say "STANCE GUARDRAIL (pre) — DARK: $1. This call was NOT judged; the absence of a deny is an absence of a verdict, not a clean one."
+	exit 0
+}
+
+# A PreToolUse hook must never break a session. An unexpected error (a nonzero status reaching
+# the trap) is let through AND SAID; every deliberate \`exit 0\` arrives with status 0.
+trap 'rc=$?; [ "$rc" -eq 0 ] || open "an unexpected error stopped it (exit status $rc)"; exit 0' EXIT
+
+# --- read hook input ------------------------------------------------------------------------
+input="$(cat)"
+[ -n "$input" ] || open "the hook received no input"
+command -v jq >/dev/null 2>&1 || open "jq is not installed, so the hook payload cannot be read"
 
 # The sibling Stop hook's deployed dir owns the SHARED judge + rubric (deployed
 # together, as siblings under the SAME hooks root).
@@ -91,17 +160,6 @@ RUBRIC="\${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $JUDGE_DIR/stance-judge.sh}"
 LOG="\${STANCE_GUARD_LOG:-$SELF_DIR/misses.log}"
 
-# A PreToolUse hook must never break a session. Trap any unexpected error -> allow.
-trap 'exit 0' EXIT
-
-allow() { exit 0; }  # emit nothing; the tool call proceeds.
-note() { printf '%s\\n' "$1" >> "$LOG" 2>/dev/null || true; }
-
-# --- read hook input ------------------------------------------------------------------------
-input="$(cat)"
-[ -n "$input" ] || allow
-command -v jq >/dev/null 2>&1 || allow  # no jq -> cannot parse -> fail open
-
 # The per-repo opt-in is GONE, for the reason its twin states: it asked whether a guard may run in
 # a DIRECTORY, and a stance belongs to the agent, not the checkout. \`cwd\` survives it — the worker
 # still runs where the session runs.
@@ -112,16 +170,23 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 # The twin of the turn-end guard's gate, and inverted for the same reason: an allowlist here was
 # a runtime self-filter over an enrollment the corpus already derives, and it had drifted the way
 # such a list always drifts. Presence of a manifest in this persona's own scope IS enrollment.
-# Absent → silence, never an error, so an unenrolled launch is untouched.
+# Absent → silence, never an error, so an unenrolled launch is untouched. The scope is the one
+# the harness hands over: \`stance_scope\` where a dispatcher sits in the persona's own scope (omp),
+# else the persona directory of the agent the payload NAMES (\`agent_type\`, Claude Code — none on a
+# bare session) under this harness's home, one hop above the hooks root. No agent list here.
 stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
-[ -n "$stance_scope" ] || allow
-manifest="$stance_scope/stance/manifest.json"
+if [ -z "$stance_scope" ]; then
+	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	case "$named" in '' | */* | . | ..) allow ;; esac
+	stance_scope="$(dirname -- "$HOOKS_ROOT")/{{fact:harness-persona-root}}/$named"
+fi
+manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 
 # --- extract the judged payload, branched by tool -------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
-[ -n "$tool_name" ] || allow
+[ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
 
 case "$tool_name" in
 	AskUserQuestion)
@@ -138,10 +203,10 @@ case "$tool_name" in
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
 	*)
-		allow ;;  # DEFENCE IN DEPTH, and on some harnesses the only narrowing there is:
-		          # claude's adapter computes a selector from the act and this never fires;
-		          # codex has no subject selector, so its projection WARNS and this branch
-		          # is what keeps the guard off every other tool call.
+		allow ;;  # DEFENCE IN DEPTH: every supported adapter computes a selector from the
+		          # act, so this never fires there. A harness that could fire the act but
+		          # not narrow it would WARN in projection, and this branch is what would
+		          # keep the guard off every other tool call.
 esac
 
 [ -n "\${body:-}" ] || allow  # nothing judgeable -> allow
@@ -151,7 +216,7 @@ esac
 session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 sig="$(printf '%s' "$input" | jq -c '.tool_input' 2>/dev/null | cksum | cut -d' ' -f1 2>/dev/null || echo 0)"
 seen="\${TMPDIR:-/tmp}/.stance-pre-$session_id-$sig"
-[ -f "$seen" ] && allow  # already denied this exact input once -> let it through
+[ -f "$seen" ] && open "this exact call was already denied once, so the re-entry cap lets it through unjudged"
 
 # --- judge (SHARED backend + rubric) --------------------------------------------------------
 # The same out-of-process seam the Stop worker carries, and for the same reason: a
@@ -163,19 +228,17 @@ if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
 fi
 if [ -n "\${STANCE_VERDICT_FILE:-}" ]; then
 	verdict="$(cat "\${STANCE_VERDICT_FILE}" 2>/dev/null || true)"
-	[ -n "$verdict" ] || {
-		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-empty tool=$tool_name agent=\${agent_type:-?}"
-		allow
-	}
+	[ -n "$verdict" ] || open "the judge did not answer"
 else
-	verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || {
-		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-fail tool=$tool_name agent=\${agent_type:-?}"
-		allow
-	}
+	verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || open "the judge did not answer"
 fi
 
-decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
-[ "$decision" = "BLOCK" ] || allow  # PASS, empty, or anything but BLOCK -> allow
+decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1 | sed 's/[[:space:]]*$//')"
+case "$decision" in
+	PASS) allow ;;  # judged, pass: the one silent verdict
+	BLOCK) ;;
+	*) open "the judge's verdict was unparseable (no VERDICT: PASS or VERDICT: BLOCK line)" ;;
+esac
 
 reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This tool call collapsed out of the intent-driven-expert stance."

@@ -8,8 +8,8 @@
 // then emitted the mechanism anyway would pass every test in that file.
 //
 // One fixture drives both sides. `warden` composes an enforcing guardrail on
-// `turn.end` — realizable on both harnesses, narrowable only by claude — so the
-// SAME vector must project as a bound on claude and a steer on codex.
+// `turn.fail` — claude realizes it and omp has no peer for it — so the SAME
+// vector must project as a bound on claude and a steer on omp.
 
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -59,10 +59,10 @@ async function project(harness: string) {
   return { tree, warnings, agentFile };
 }
 
-describe('claude — the harness CAN narrow it, so it stays a bound', () => {
+describe('claude — the harness CAN realize it, so it stays a bound', () => {
   it('emits the mechanism into the agent definition', async () => {
     const { agentFile } = await project('claude');
-    expect(agentFile?.content).toContain('Stop');
+    expect(agentFile?.content).toContain('StopFailure');
     expect(agentFile?.content).toContain('sh fixture-warden.sh');
   });
 
@@ -78,12 +78,12 @@ describe('claude — the harness CAN narrow it, so it stays a bound', () => {
   });
 });
 
-describe('codex — cannot narrow it, so it degrades to a steer', () => {
+describe('omp — has no peer for the event, so it degrades to a steer', () => {
   it('COMPLETES the projection rather than throwing', async () => {
     // The operator asked for an agent projection and must receive one. A build
     // that cannot finish because the target harness is weaker forces exactly the
     // harness knowledge the canon exists to spare them.
-    const { tree } = await project('codex');
+    const { tree } = await project('omp');
     expect(tree.agents).toBe(1);
     expect(tree.files.length).toBeGreaterThan(0);
   });
@@ -92,50 +92,45 @@ describe('codex — cannot narrow it, so it degrades to a steer', () => {
     // The whole justification for warning instead of refusing. If this ever
     // fails, the warning becomes a receipt for silent non-enforcement and the
     // refusal must come back.
-    const { agentFile } = await project('codex');
+    const { agentFile } = await project('omp');
     expect(agentFile?.content).toContain(
       'fixture-warden ≜ the rule the agent can read',
     );
   });
 
-  it('WITHHOLDS the mechanism — no global hook, no widening', async () => {
-    // Codex could only have emitted this hook for EVERY agent on the host. The
-    // absence asserted here is the difference between degrading and widening.
-    const { tree } = await project('codex');
+  it('WITHHOLDS the mechanism — no command reaches any emitted file', async () => {
+    const { tree } = await project('omp');
     const all = tree.files.map((f) => f.content).join('\n');
     expect(all).not.toContain('sh fixture-warden.sh');
-    expect(tree.files.map((f) => f.path)).not.toContain('hooks.json');
   });
 
   it('WITHHOLDS the worker bytes — dead files read as coverage', async () => {
-    const { tree } = await project('codex');
+    const { tree } = await project('omp');
     expect(tree.files.map((f) => f.path)).not.toContain(
       'hooks/fixture-warden/worker.sh',
     );
   });
 
   it('WARNS, naming the constraint, the event, the harness and the agent', async () => {
-    const { warnings } = await project('codex');
+    const { warnings } = await project('omp');
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain('fixture-warden');
-    expect(warnings[0]).toContain('turn.end');
-    expect(warnings[0]).toContain('codex');
+    expect(warnings[0]).toContain('turn.fail');
+    expect(warnings[0]).toContain("'omp'");
     expect(warnings[0]).toContain('warden');
   });
 
   it('says the rule SURVIVES, so the operator can judge the risk', async () => {
-    const { warnings } = await project('codex');
+    const { warnings } = await project('omp');
     expect(warnings[0]).toMatch(/steer, not a bound/i);
   });
 });
 
 describe('the SEAM withholds — observed at the seam, not downstream of it', () => {
-  // WHY SPIES AND NOT OUTPUT. The assertions above were checked by mutation and
-  // did NOT convict: defeating the seam's withholding left every one of them
-  // green, because codex's agent TOML carries no hook field and `codexHooksJson`
-  // skips an unscopable event on its own. Three guards, and the output could not
-  // tell them apart — so the law could migrate back into the adapter, which is
-  // exactly the drift this design removed.
+  // WHY SPIES AND NOT OUTPUT. Output cannot tell the seam's withholding from an
+  // adapter that happens to emit nothing for an event it cannot carry, so the law
+  // could migrate back into the adapter, which is exactly the drift this design
+  // removed.
   //
   // These observe what the seam HANDS the adapter. They fail the moment the
   // decision stops being the seam's, whatever the adapter then does about it.
@@ -170,7 +165,7 @@ describe('the SEAM withholds — observed at the seam, not downstream of it', ()
   }
 
   it('never offers a degraded binding to the global surface', async () => {
-    const s = spy('codex');
+    const s = spy('omp');
     await projectPluginSet({
       plugins: [plugin],
       adapter: s.adapter,
@@ -183,7 +178,7 @@ describe('the SEAM withholds — observed at the seam, not downstream of it', ()
   });
 
   it('never offers a degraded mechanism to agentDef', async () => {
-    const s = spy('codex');
+    const s = spy('omp');
     await projectPluginSet({
       plugins: [plugin],
       adapter: s.adapter,
@@ -209,20 +204,20 @@ describe('the SEAM withholds — observed at the seam, not downstream of it', ()
 
 describe('the two harnesses genuinely diverge on this fixture', () => {
   // Without this, every assertion above could be passing for the wrong reason —
-  // a fixture that degraded on BOTH harnesses would satisfy the codex block and
+  // a fixture that degraded on BOTH harnesses would satisfy the omp block and
   // silently gut the claude one.
-  it('same vector, different mode — bound on claude, steer on codex', async () => {
+  it('same vector, different mode — bound on claude, steer on omp', async () => {
     const claude = await project('claude');
-    const codex = await project('codex');
+    const omp = await project('omp');
     expect(claude.warnings).toEqual([]);
-    expect(codex.warnings).toHaveLength(1);
+    expect(omp.warnings).toHaveLength(1);
     expect(claude.agentFile?.content).toContain('sh fixture-warden.sh');
-    expect(codex.agentFile?.content).not.toContain('sh fixture-warden.sh');
+    expect(omp.agentFile?.content).not.toContain('sh fixture-warden.sh');
   });
 
   it('and BOTH publish the declaration regardless of mode', async () => {
     const declaration = 'fixture-warden ≜ the rule the agent can read';
     expect((await project('claude')).agentFile?.content).toContain(declaration);
-    expect((await project('codex')).agentFile?.content).toContain(declaration);
+    expect((await project('omp')).agentFile?.content).toContain(declaration);
   });
 });

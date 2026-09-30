@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3Q57EVJ2FSHF2VBZ4PRG9KD",
+    "entity": "01M3Q57EVJ2FSHF2VBZ4PRG9KC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-29T18:01:00.018Z",
+    "reason": "cut prime principle into dispatchable work per the census at 8753f969",
+    "cause": "operator assignment: plan what-ships realizing prime principle and supported harness"
+  },
+  "payload": {
+    "name": "what-ships",
+    "realizes": [
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N"
+    ],
+    "state": "proposed"
+  }
+}

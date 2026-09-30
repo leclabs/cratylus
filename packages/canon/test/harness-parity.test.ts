@@ -1,10 +1,10 @@
 // GATE — the canon is the GENERIC design, so every harness gets it.
 //
-// WHY THIS EXISTS. `.cratylus/codex/` carried `agents`, `AGENTS.md` and `skills`
-// and NO hooks at all: every codex agent ran with no stance guardrail, no memory
+// WHY THIS EXISTS. One harness's render once carried `agents`, `AGENTS.md` and `skills`
+// and NO hooks at all: every agent on it ran with no stance guardrail, no memory
 // nudge, no resume notice. The whole suite was green. Nothing was broken in a way
 // any gate could see, because the loss was authored — a build step deleted canon's
-// hooks dir from the codex plugin set, on a comment claiming codex had no hook
+// hooks dir from that harness's plugin set, on a comment claiming it had no hook
 // surface. A considered-looking omission is invisible to every test that checks
 // what IS emitted rather than what ISN'T.
 //
@@ -32,7 +32,6 @@ const here = dirname(fileURLToPath(import.meta.url));
 // file's own location in its body, so moving the file silently repoints the tree.
 const repoRoot = requireRepoRoot(here);
 const CLAUDE = join(repoRoot, '.cratylus/claude');
-const CODEX = join(repoRoot, '.cratylus/codex');
 const OMP = join(repoRoot, '.cratylus/omp');
 
 /** Every harness render this corpus produces, with the artifact naming its hooks.
@@ -48,7 +47,6 @@ const RENDERS = [
     hooksFile: 'settings.json',
     home: '.claude',
   },
-  { harness: 'codex', root: CODEX, hooksFile: 'hooks.json', home: '.codex' },
   {
     harness: 'omp',
     root: OMP,
@@ -116,13 +114,13 @@ describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
       cells: ['a', 'b'],
       config: 'sh "$HOME/.claude/hooks/a/a.sh"',
       home: '.claude',
-      foreignHomes: ['.codex'],
+      foreignHomes: ['.omp'],
     },
     {
-      harness: 'codex',
+      harness: 'omp',
       cells: ['a', 'b'],
-      config: 'sh "$HOME/.codex/hooks/a/a.sh"',
-      home: '.codex',
+      config: 'sh "$HOME/.omp/hooks/a/a.sh"',
+      home: '.omp',
       foreignHomes: ['.claude'],
     },
   ];
@@ -136,7 +134,7 @@ describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
       ok[0] as Reading,
       { ...(ok[1] as Reading), cells: [], config: null },
     ];
-    expect(parityViolations(bad).join(' | ')).toMatch(/codex deploys \[\]/);
+    expect(parityViolations(bad).join(' | ')).toMatch(/omp deploys \[\]/);
   });
 
   it('CONVICTS a harness missing ONE cell', () => {
@@ -163,11 +161,11 @@ describe('GATE — no cell is silently absent from a harness', () => {
     // The control. With one render missing, every comparison below passes by
     // having nothing to compare, which is exactly how the original defect hid —
     // and how omp's total absence of governance survived the gate that was added
-    // to catch exactly that on codex.
+    // to catch exactly that on another harness.
     expect(
       present.map((r) => r.harness).sort(),
-      'run `pnpm canon:project`, `pnpm canon:project:codex` and `pnpm canon:project:omp` first',
-    ).toEqual(['claude', 'codex', 'omp']);
+      'run `pnpm canon:project` and `pnpm canon:project:omp` first',
+    ).toEqual(['claude', 'omp']);
   });
 
   it('every harness deploys the SAME set of governance cells', () => {

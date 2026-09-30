@@ -29,11 +29,11 @@ dist/
 # deployment, plural per harness, and shipped nowhere.
 #
 # The harnesses are SUBDIRECTORIES rather than sibling dirs distinguished by suffix. The
-# previous names were `.render-ts` and `.render-ts-codex`, where `-ts` meant "the
+# previous names were `.render-ts` and `.render-ts-<harness>`, where `-ts` meant "the
 # TypeScript render, as opposed to the Python one" — and the Python one (`resolve.py`,
 # `deploy.py`, `packages/canon/ideas`) has not existed for some time. The discriminator
-# named a completed migration, and the concatenated-suffix shape is what let the codex tree
-# drift undetected. `harness-parity.test.ts` compares the two; siblings under one parent is
+# named a completed migration, and the concatenated-suffix shape is what let one harness
+# tree drift undetected. `harness-parity.test.ts` compares the two; siblings under one parent is
 # the shape that comparison actually has.
 #
 # `.cratylus/` is wholly derived and safe to `rm -rf`, which is why CI projects it

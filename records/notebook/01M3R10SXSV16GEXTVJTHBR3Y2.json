@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R10SXSV16GEXTVJTHBR3Y2",
+    "entity": "01M3R10SXSV16GEXTVJTHBR3Y1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T02:06:42.105Z",
+    "reason": "a finding beside the assayed unit is a note, not part of its verdict",
+    "cause": "assay of assayer-position of corrected-shards at 9435068c"
+  },
+  "payload": {
+    "title": "acceptance still reserved outside the assayer at 9435068c",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "The assayer position says the assayer is the one judge of a unit and nothing else accepts or rejects one. At the landing of assayer-position (9435068c) the assayer's own role, agent and cell say exactly that, but two surfaces outside the unit still give acceptance to the architect: the architect role reserves 'judge(assay)' and 'DECISION accept(unit)' (packages/canon/src/dimensions/role/architect.ts, the reserves line), and the deliver skill's validate and judge laws say self judges the assay and self decides acceptance, with a failed validation 'rejected back' by self (packages/canon/src/skills/deliver/skill.ts, the validate/judge block). By the cut these belong to architect-sees-the-design (architect position) and deliver-loop (integrator position), not to assayer-position, so they were not counted against it; they should be checked when those units are assayed. Separately, docs/role.md's U2 entry still describes the assayer with the old contract (writes C, ¬emits verdict), which the landing contradicts; whether that history entry is left as record or brought up to date is open.",
+    "blocks": []
+  }
+}

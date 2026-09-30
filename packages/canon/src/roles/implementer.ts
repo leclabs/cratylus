@@ -1,6 +1,5 @@
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
-import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { softwareEngineering as softwareEngineering_capabilities } from '../dimensions/capabilities/software-engineering.js';
 import { verificationTesting as verificationTesting_capabilities } from '../dimensions/capabilities/verification-testing.js';
@@ -25,17 +24,28 @@ import type { RoleCell } from './hold.js';
 // workflow skill by design: a skill guides an agent through decisions it must make, and
 // this position's decisions were made for it. It needs a unit of work, tools, and the
 // discipline to stay inside the boundary.
+//
+// `note` and nothing else, because what it could not prove and any finding beside the
+// path leave it as a note, and `note` composes nothing, so the implementer still never
+// receives `design`. Its one plan read, `cratylus plan show <unit> --plan <plan>`, is
+// stated in the role sign rather than by `plan`, which composes `design`.
 
 export const implementerRole: RoleCell = {
   sign: implementer_role,
+  skills: ['note'],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,
-    // `limitation-disclosure`: this position's entire value to the layer above is an
-    // honest account of what it could NOT establish. A clean report that hides an
-    // unproven leg is worse than a failure, because it is acted on.
+    // `limitation-disclosure`, and its channel is a NOTE. What this position could not
+    // establish is owed to the design, and the design takes a delegate's finding as a
+    // note; the return is a name with no account, and the unit is judged on the
+    // assayer's verdict, never on anything said about the work. An unproven leg left
+    // out of every note is the hazard: the unit is accepted on a reader's verdict
+    // without anyone having been told the leg was open.
     transparency: limitationDisclosure_transparency,
-    autonomy: [missionCommand, handoff_autonomy],
+    // `mission-command` alone. `handoff` shapes a report that leads with its evidence and
+    // ends on the operator's action items, and this position hands up a name, not a report.
+    autonomy: [missionCommand],
     objective: correctness_objective,
     engineeringPrinciples: [
       cratylism_engineeringPrinciples,

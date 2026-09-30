@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QHW579NA0VXPYYM46V7ZSH",
+    "entity": "01M3QHW579NA0VXPYYM46V7ZSG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-29T21:42:01.193Z",
+    "reason": "operator's naming hypothesis; naming is owed to signify, not coined",
+    "cause": "operator steer, 2026-09-29"
+  },
+  "payload": {
+    "title": "the workflow's name",
+    "kind": "question",
+    "topic": "naming",
+    "body": "Operator proposes 'concept driven development' for the design → plan → deliver workflow, as the precise sibling of domain-driven design. Rectified: DDD centres a domain model shared with domain experts through a ubiquitous language; this workflow centres a concept lattice held by an architect who keeps the semantic gap between intent and build, never descending into the build, and validates every landing against the lattice through an independent assay. The candidate must be probed cold before it is admitted (does it decode as 'the architect holds the concepts; work is cut from and judged against them', or merely as 'DDD with concepts'?), with rivals such as 'concept-first' and 'design-held delivery' probed beside it. The chosen anchor then names the practice the install wizard offers (the note 'install offers practices, not the whole corpus').",
+    "blocks": []
+  }
+}

@@ -1,7 +1,7 @@
 // THE GATE THAT KEEPS SOURCE VISIBLE — no tracked authored file carries a byte that
 // makes a text tool go dark on it.
 //
-// WHY THIS EXISTS, precisely. `packages/forge/src/adapters/codex/render.ts` was authored
+// WHY THIS EXISTS, precisely. An adapter's `render.ts` (since removed) was authored
 // with two raw NUL bytes inside a template literal, as separators in a dedup key. The
 // choice was defensible on its own terms — NUL cannot occur in a hook id, a native event
 // name, or a matcher, so the key was injective. What it also did:
@@ -203,18 +203,17 @@ describe('authored source is TEXT — a byte that blinds grep must not reach the
     // offenders over zero files read, and the two legs below would pass over nothing.
     const seen = authoredFiles(repoRoot);
     expect(seen.length).toBeGreaterThan(100);
-    // Three roots, so a walk that reached only one is visible: the symptom's own file,
+    // Three roots, so a walk that reached only one is visible: an adapter's own source,
     // this test dir (hence this file, once tracked — see SCOPE IS TRACKED-NESS above),
     // and a document at the repo root that no package path would cover.
-    expect(seen).toContain('packages/forge/src/adapters/codex/render.ts');
+    expect(seen).toContain('packages/forge/src/adapters/omp/render.ts');
     expect(seen).toContain('packages/canon/test/gate-convicts.test.ts');
     expect(seen).toContain('AGENTS.md');
     // And the reads land: the denylist excludes payloads, never authored source, so a
     // named file must come back with bytes in it rather than as an unread name.
     expect(
-      readFileSync(
-        join(repoRoot, 'packages/forge/src/adapters/codex/render.ts'),
-      ).length,
+      readFileSync(join(repoRoot, 'packages/forge/src/adapters/omp/render.ts'))
+        .length,
     ).toBeGreaterThan(0);
   });
 

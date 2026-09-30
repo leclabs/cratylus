@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R2KA2F81E8881Q0PYRBWRE",
+    "entity": "01M3R2KA2F81E8881Q0PYRBWRD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico-position",
+    "time": "2026-09-30T02:34:17.039Z",
+    "reason": "cold read of (h) is thinner on haiku than the pass wording asks",
+    "cause": "nico-position of corrected-shards"
+  },
+  "payload": {
+    "title": "nico cold read: haiku (h) omits rectify and the following plan",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "In nico-position cold reads (/tmp/corrected-shards-cold-read/nico-position/), both opus reads and both haiku reads answered NO to (a)-(e), (f), (g) and (i) as required. Both haiku (h) answers named the decision note and amendment after the plan closes but never said the operator's change is weighed (rectified) nor that it enters the design for a following plan; opus-1 said both. The lines that decide (h) live in the design skill and architect role, not in nico's outputs.",
+    "blocks": []
+  }
+}
