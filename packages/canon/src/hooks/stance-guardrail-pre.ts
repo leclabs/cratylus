@@ -54,7 +54,8 @@ export const stanceGuardrailPre: HookCell = {
 #   - AskUserQuestion : a permission / option-menu on an in-remit reversible call
 #   - Agent/SendMessage : a dispatch transcribing literal words without extracted intent
 # WHAT IT DOES NOT DENY (reserved): an irreversible-outward consent menu, a true INTENT
-#   ambiguity, a substantive intent-extracted dispatch.
+#   ambiguity, a substantive intent-extracted dispatch, a unit or a closed plan routed by name (the
+#   intent lives in the spec at that address).
 #
 # SAFETY MODEL (mirrors stance-guardrail):
 #   - SCOPE-ENROLLED, exactly as its twin: a scope carrying a stance manifest is judged and
@@ -268,8 +269,8 @@ feedback="STANCE GUARDRAIL (pre) — denied this $tool_name call: it collapses o
 intent-driven-expert stance. $reason  Own the in-remit reversible call yourself instead of handing the \\
 operator a menu; extract and serve the underlying INTENT instead of transcribing literal words into a \\
 dispatch. Decide, note the call for review, and proceed. (Legitimate exceptions that should NOT be a menu \\
-here: a genuine irreversible-outward consent choice, a true INTENT ambiguity for /elicit, or a substantive \\
-intent-extracted dispatch.)"
+here: a genuine irreversible-outward consent choice, a true INTENT ambiguity for /elicit, a substantive \\
+intent-extracted dispatch, or a unit or a closed plan routed by name, whose intent lives in its spec.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0
