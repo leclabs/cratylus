@@ -974,15 +974,24 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
     });
 
     if (w.subject === 'call') {
-      it('says so when the re-entry cap lets the second identical call through', () => {
-        const file = join(home, 'deny-pre');
-        writeFileSync(file, 'VERDICT: BLOCK\nREASON: a menu\n');
-        const same = payload();
-        const once = fire({ STANCE_VERDICT_FILE: file }, same);
-        expect(once.stdout).toContain('permissionDecision');
-        expect(said(fire({ STANCE_VERDICT_FILE: file }, same))).toMatch(
-          /re-entry cap/,
+      it('judges a retried refused call again and denies it again', () => {
+        const calls = join(home, 'judge-calls');
+        const counting = join(home, 'counting-judge.sh');
+        writeFileSync(
+          counting,
+          `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\nprintf 'VERDICT: BLOCK\\nREASON: a menu\\n'\n`,
         );
+        const same = payload();
+        const env = { STANCE_JUDGE_CMD: `sh ${counting}` };
+        for (const attempt of [1, 2]) {
+          const r = fire(env, same);
+          expect(r.status, `attempt ${attempt}`).toBe(0);
+          expect(r.stdout, `attempt ${attempt}`).toContain(
+            'permissionDecision',
+          );
+          expect(r.stdout, `attempt ${attempt}`).toContain('deny');
+        }
+        expect(readFileSync(calls, 'utf8')).toBe('xx');
       });
 
       it('says so when the payload names no tool', () => {
