@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RDSPFV2M10MNRB9PTVN1A6",
+    "entity": "01M3RDSPFV2M10MNRB9PTVN1A5",
+    "operation": "create",
+    "supersedes": [],
+    "author": "LoopLedgerIntegrator",
+    "time": "2026-09-30T05:50:00.699Z",
+    "reason": "a defect met beside the path is filed, not chased",
+    "cause": "integrating unit-ledger of plan loop-ledger"
+  },
+  "payload": {
+    "title": "units landed on main before the line",
+    "kind": "question",
+    "topic": "unit-ledger of plan loop-ledger",
+    "body": "When the integrator took unit-ledger of plan loop-ledger (achieved at 56359797), no plan/loop-ledger line existed and the unit's commit already sat on main, followed by d9228821 (integration-line of plan loop-ledger), which had no achieved verdict. Implementer commits reached main ahead of assay and integration, so main carried unjudged work and the line had to be cut retroactively at the bind commit 889fef54. The integrator did not move main. Open: should implementers commit on a unit branch or worktree rather than main, and does main need resetting to the bind commit before release, which is the operator's call.",
+    "blocks": []
+  }
+}
