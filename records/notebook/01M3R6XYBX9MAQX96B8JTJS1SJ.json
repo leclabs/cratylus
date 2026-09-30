@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R6XYBX9MAQX96B8JTJS1SJ",
+    "entity": "01M3R6XYBX9MAQX96B8JTJS1SH",
+    "operation": "create",
+    "supersedes": [],
+    "author": "uninstall",
+    "time": "2026-09-30T03:49:59.805Z",
+    "reason": "assay found the shard unmet on two counts; both closed, limits stated",
+    "cause": "uninstall of corrected-shards, rework"
+  },
+  "payload": {
+    "title": "uninstall rework: per-line config undo, adoption for pre-record hosts",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Rework of uninstall after the assay: (1) hunks are now two shapes only, a pure insertion or one line replaced by one line, and an inserted run comes out line by line (undoHunks/undoHunk), so one host-changed model role no longer keeps its neighbours; a line with host lines beneath it stays as holding. (2) A manifest written before hostEdits existed (recordsHostEdits false) makes uninstall name the omp config file it cannot vouch for; the next install, reading that before its deploy rewrites the record, adopts modelRoles lines and the exact statusLine block it finds byte for byte as it would write them (adopt on addModelRoles/ensureStatusSegment, adoptedHunk), so the uninstall after takes them. Known limit: what an older install did to the config's last-line terminator is unrecoverable, so a migrated file may end one newline longer; documented in the CLI README. Also, this pass edited .changeset/uninstall.md with a python one-liner via bash, against the tooling rule; the content was checked after.",
+    "blocks": []
+  }
+}

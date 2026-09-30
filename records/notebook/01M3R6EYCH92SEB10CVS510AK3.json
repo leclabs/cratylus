@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R6EYCH92SEB10CVS510AK3",
+    "entity": "01M3R6EYCH92SEB10CVS510AK2",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:41:48.305Z",
+    "reason": "assay of uninstall against the uninstall shard",
+    "cause": "unit landed at f4f59d80"
+  },
+  "payload": {
+    "title": "uninstall (f4f59d80): cratylus-placed lines of omp's config.yml survive uninstall when the host edits one of them, and on every host installed before this commit",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "I ran live round trips at f4f59d80 in temp HOMEs. Claude: the host had its own statusLine, hooks, permissions, agent, skill, hook file and a ~/.local/bin tool. After install, the host changed the model line of one placed agent, added a Stop hook and a theme key, and dropped a note into personas/mav. Uninstall restored settings.json to the host's content plus its later changes; the statusLine was unwrapped to 'echo HOSTLINE'. It removed all eight persona commands, every unedited placed file, ~/.cratylus.json and the record. It left mav.md and reported it, and kept the host's note and its directory, without reporting the note. omp: a host on preset minimal with 'showHookStatus: false # hide' and its own modelRoles, and a bare host that got the whole custom layout, both got config.yml back byte for byte. --dry-run matched the real run. Not achieved, first gap: install records each run of lines it inserts as one hunk, and uninstall leaves the whole hunk when any line in it differs. I changed only 'architect: \"@default\"' to '@slow'. The other four seeded lines (assayer, implementer, integrator, planner) stayed in config.yml, and all five were reported as changed by the host. The same holds for the ~30-line statusLine block install writes. Second gap, the upgrade path: a record written before this commit has no digests and no hostEdits. The operator's real ~/.claude and ~/.omp records are that shape (read-only check). I simulated one by deleting both fields, which is what readManifest defaults them to. For omp, even after a re-install, the modelRoles and statusLine lines install had put in config.yml are never recorded, because a re-install finds them present and writes nothing. Uninstall neither removes nor reports them (left 0, 36 lines remain). Without a re-install, every placed file is left as unverified (claude: 53 left, 7 removed), under the heading 'the host placed or changed these'. The record is then deleted, so a later uninstall finds nothing recorded. Residual: an empty ~/.agents directory install created stays after every uninstall; whether it existed before was never recorded.",
+    "blocks": []
+  }
+}
