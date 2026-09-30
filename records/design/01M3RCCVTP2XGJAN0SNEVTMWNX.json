@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+    "entity": "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R07HYH3ABFTFGCFPNJAQV1"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:25:31.607Z",
+    "reason": "the loop's middle is unrecorded: between active and completed, a unit's landing commit, every assay verdict (the one fact acceptance rests on) and every red report travel only as messages, so a lost session loses where each unit stands and the ledger cannot show on what a unit was accepted",
+    "cause": "operator: the record store must be the source of truth for each domain; check agents append every state change"
+  },
+  "payload": {
+    "anchor": "unit",
+    "gloss": "one unit of work in a plan, realizing exactly one design shard, the concept its pin names, which is among the concepts its plan realizes, and carrying its full spec and lifecycle state, which moves forward one step at a time and only while its plan is bound; a unit of a proposed plan is authored and revised but not yet worked. Everything that happens to a unit while it is worked is written to its history as it happens: each landing of its work with the commit that holds it, each assay verdict on it, and each report that it was made whole or broke the whole, so the ledger alone says where every unit stands and on what it was accepted, and no agent needs a message or its memory to know. One live unit per name within its plan. Its dependencies are acyclic and name live units of the same plan. Readiness is computed, never stored: a unit is ready when its plan is bound, every dependency has reached completion or moved past it, and no owed ruling names the unit or its plan.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHBYF8EJN5TTVED2MTPA",
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

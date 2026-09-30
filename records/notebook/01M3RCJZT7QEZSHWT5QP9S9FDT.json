@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3RCJZT7QEZSHWT5QP9S9FDT",
+    "entity": "01M3RCADATHDR6ZBNB2NWTGN7R",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RCADATHDR6ZBNB2NWTGN7S"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:28:52.295Z",
+    "reason": "operator ruled ad hoc comparisons delegable to any position; the ruling now lives in architect position",
+    "cause": "operator approved the guard fix as the next plan's first unit"
+  },
+  "payload": null
+}

@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3RCJZJ2AFPRRAQ10XZFP7S2",
+    "entity": "01M3QRDK076G190M60GAV4DDGF",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R09TDXEG2PJG6RFBDP3J65"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:28:52.034Z",
+    "reason": "the purview guard refused an ad hoc comparison the operator asked for, twice to an assayer, because it read every self-worded dispatch as a spec; the routing discipline exists to keep the loop's acceptance independent and has no load outside that loop",
+    "cause": "operator: ad hoc requests may be delegated to whomever the architect chooses; the guard is overly restrictive"
+  },
+  "payload": {
+    "anchor": "architect position",
+    "gloss": "the role that holds the design, the goal every unit is built to achieve, and nothing below it. It treats every input, whether from the operator, a delegate or itself, as a hypothesis to rectify against its own expertise and industry practice; what survives enters the design as an appended change and is realized by a following plan. It cuts the design into shards for the planner and never reads a unit, a spec, an implementation or an implementer's account; a unit reaches it only as a name, an address to route. What reaches it from below is exactly that: the assay verdict on each unit against its shard, the integrator's report of a unit whose work broke the whole, and the names of units ready to start: an unachieved unit, or one that broke the whole, it routes back to the same implementer with the findings; an achieved one to the integrator. Planning belongs to the planner, building to the implementer, judging whether a unit achieves its shard to the assayer, and making approved work whole to the integrator. It starts a plan's work by routing, by name alone, the units the planner hands it, exactly as it routes a verdict; a unit's name is an address, not something it reads. This discipline binds the work of realizing the design, from shard to plan to whole; an ad hoc request from the operator outside that work, such as a comparison, an audit or a question, the architect may hand to whichever position or agent fits it, in its own words.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKH8E3Q8R94A9EFNDE986",
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+      "01M3QZDSNXFW5WVR66146BGMJK",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}
