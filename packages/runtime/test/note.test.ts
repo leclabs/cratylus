@@ -13,7 +13,9 @@ import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
   IDENTITY,
+  commit,
   configured,
+  git,
   merge,
   records,
   refusal,
@@ -57,6 +59,51 @@ function plans(repo: string): void {
   add('b', 'pl');
   add('o', 'other', '--plan-realizes', 'c');
   plan(repo, 'bind', 'pl', ...BY);
+}
+
+/** Release plan `name`'s line into the branch `repo` is on, as closing the plan
+ *  and merging its line does: its records joined to this checkout's, its
+ *  worktree and branch gone, so the plan's writes land where they run and a
+ *  branch merge can make them diverge. */
+function released(repo: string, name: string): void {
+  const line = `${repo}.plan-${name}`;
+  commit(repo, 'before release');
+  commit(line, 'the line');
+  git(repo, 'merge', '-q', '--no-edit', `plan/${name}`);
+  git(repo, 'worktree', 'remove', line);
+  git(repo, 'branch', '-q', '-d', `plan/${name}`);
+}
+
+/** Diverge what plan `name`'s line holds, as a merge of two branches of it
+ *  does: `left` and `right` each write from the state the line held, and the
+ *  line's history is merged. Returns the payloads each side newly wrote into
+ *  `domain`, as written. */
+function diverged(
+  repo: string,
+  name: string,
+  domain: string,
+  left: () => void,
+  right: () => void,
+): { left: string[]; right: string[] } {
+  const line = `${repo}.plan-${name}`;
+  commit(line, 'base');
+  const base = git(line, 'rev-parse', 'HEAD').trim();
+  const side = (write: () => void): { commit: string; wrote: string[] } => {
+    const before = new Set(records(line, domain));
+    write();
+    commit(line, 'side');
+    return {
+      commit: git(line, 'rev-parse', 'HEAD').trim(),
+      wrote: records(line, domain)
+        .filter((f) => !before.has(f))
+        .map((f) => JSON.stringify(stored(line, domain, f).payload)),
+    };
+  };
+  const first = side(left);
+  git(line, 'reset', '-q', '--hard', base);
+  const second = side(right);
+  git(line, 'merge', '-q', '--no-edit', first.commit);
+  return { left: first.wrote, right: second.wrote };
 }
 
 /** The frontier of plan `of`, by unit name. */
@@ -113,8 +160,9 @@ describe('note — owed rulings', () => {
     const repo = repository();
     plans(repo);
     capture(repo, 'split', '--blocks', 'a');
-    merge(
+    diverged(
       repo,
+      'pl',
       'notebook',
       () => note(repo, 'revise', 'split', '--blocks', 'b', ...BY),
       () => note(repo, 'revise', 'split', '--body', 'still a', ...BY),
@@ -204,8 +252,9 @@ describe('note — a blocked unit that is withdrawn', () => {
       ),
     ).toHaveLength(1);
     expect(after).not.toContain('nothing live, withdrawn or diverged');
-    const retracted = records(repo, 'unit')
-      .map((f) => stored(repo, 'unit', f).envelope)
+    const line = `${repo}.plan-pl`;
+    const retracted = records(line, 'unit')
+      .map((f) => stored(line, 'unit', f).envelope)
       .filter((e) => e.operation === 'retract')
       .map((e) => e.entity);
     const [first] = retracted;
@@ -357,8 +406,9 @@ describe('note — the notebook by title', () => {
     const repo = repository();
     plans(repo);
     capture(repo, 'both');
-    const written = merge(
+    const written = diverged(
       repo,
+      'pl',
       'notebook',
       () =>
         note(repo, 'revise', 'both', '--blocks', 'a', '--blocks', 'b', ...BY),
@@ -419,5 +469,153 @@ describe('note — the flags each verb takes', () => {
         ),
       );
     }
+  });
+});
+
+describe('note — a note about a bound plan is written on its line', () => {
+  const status = (repo: string): string =>
+    git(repo, 'status', '--porcelain', '--untracked-files=all', 'records/');
+
+  /** A plan `pl` of units `a` and `b`, bound from a checkout holding its
+   *  concept committed; returns the checkout and the line's worktree. */
+  function lined() {
+    const repo = repository();
+    dispatchDesign(['define', 'c', '--gloss', 'a concept', ...BY], {
+      from: repo,
+    });
+    commit(repo, 'design');
+    plan(
+      repo,
+      'add',
+      'a',
+      '--plan',
+      'pl',
+      '--realizes',
+      'c',
+      '--plan-realizes',
+      'c',
+      ...BY,
+    );
+    plan(repo, 'add', 'b', '--plan', 'pl', '--realizes', 'c', ...BY);
+    plan(repo, 'bind', 'pl', ...BY);
+    return { repo, line: `${repo}.plan-pl` };
+  }
+
+  it('a capture, a revise and a retract naming the plan or one of its units land on the line from the main checkout, and each says where', () => {
+    const { repo, line } = lined();
+    const before = status(repo);
+    const wrote = `wrote to plan/pl, worktree ${line}`;
+    expect(capture(repo, 'hold', '--blocks', 'pl')).toContain(wrote);
+    expect(note(repo, 'revise', 'hold', '--blocks', 'a', ...BY)).toContain(
+      wrote,
+    );
+    expect(note(repo, 'retract', 'hold', ...BY)).toContain(wrote);
+    expect(capture(repo, 'release', '--blocks', 'b')).toContain(wrote);
+    expect(note(repo, 'revise', 'release', '--blocks', '', ...BY)).toContain(
+      wrote,
+    );
+    expect(status(repo)).toBe(before);
+    expect(records(line, 'notebook')).toHaveLength(5);
+    expect(records(repo, 'notebook')).toHaveLength(0);
+  });
+
+  it('a note naming no bound plan lands where it runs', () => {
+    const { repo } = lined();
+    const said = capture(repo, 'free');
+    expect(said).not.toContain('wrote to');
+    expect(records(repo, 'notebook')).toHaveLength(1);
+  });
+
+  it('the notebook prints the same from the main checkout, the line and a branch cut from it', () => {
+    const { repo, line } = lined();
+    capture(repo, 'hold', '--blocks', 'pl');
+    commit(line, 'the line');
+    const work = `${repo}.work`;
+    git(repo, 'worktree', 'add', '-q', '-b', 'work', work, 'plan/pl');
+    const main = note(repo, 'show');
+    expect(note(line, 'show')).toBe(main);
+    expect(note(work, 'show')).toBe(main);
+  });
+
+  it('REFUSES a note naming the plan when no worktree holds its line, and one naming plans on two lines, writing nothing', () => {
+    const { repo, line } = lined();
+    plan(
+      repo,
+      'add',
+      'o',
+      '--plan',
+      'other',
+      '--realizes',
+      'c',
+      '--plan-realizes',
+      'c',
+      ...BY,
+    );
+    // Each plan is bound on a line of its own: what a merge of two lines that
+    // each bound a plan leaves.
+    commit(line, 'pl bound');
+    plan(repo, 'bind', 'other', ...BY);
+    git(line, 'clean', '-fdq');
+    const two = refused(
+      note,
+      repo,
+      'capture',
+      'both',
+      '--kind',
+      'k',
+      '--topic',
+      't',
+      '--body',
+      'b',
+      '--blocks',
+      'pl',
+      '--blocks',
+      'other',
+      ...BY,
+    );
+    expect(two).toContain('plan/other');
+    expect(two).toContain('plan/pl');
+    commit(line, 'the line');
+    git(repo, 'worktree', 'remove', line);
+    const said = refused(
+      note,
+      repo,
+      'capture',
+      'hold',
+      '--kind',
+      'k',
+      '--topic',
+      't',
+      '--body',
+      'b',
+      '--blocks',
+      'pl',
+      ...BY,
+    );
+    expect(said).toContain('plan/pl');
+    expect(said).toContain(`git worktree add ${line} plan/pl`);
+    expect(capture(repo, 'free')).not.toContain('wrote to');
+  });
+
+  it('REFUSES a note naming a bound plan whose line does not exist, naming the `git worktree add -b` that cuts it, and writes nothing', () => {
+    const { repo, line } = lined();
+    released(repo, 'pl');
+    const said = refused(
+      note,
+      repo,
+      'capture',
+      'hold',
+      '--kind',
+      'k',
+      '--topic',
+      't',
+      '--body',
+      'b',
+      '--blocks',
+      'a',
+      ...BY,
+    );
+    expect(said).toContain(`git worktree add -b plan/pl ${line}`);
+    expect(records(repo, 'notebook')).toEqual([]);
   });
 });

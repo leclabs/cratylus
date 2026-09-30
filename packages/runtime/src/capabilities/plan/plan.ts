@@ -41,7 +41,7 @@ import { introduced } from '../../record-store/repair.js';
 import type { RecordStore } from '../../record-store/store.js';
 
 /** The records domain holding plans. */
-const DOMAIN = 'plan';
+export const DOMAIN = 'plan';
 
 /** Stands for a proposed plan in the gate: its entity is minted only when it is
  *  written, and no minted entity is empty. */

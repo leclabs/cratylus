@@ -14,6 +14,15 @@
 // id whose file exists. The commit-time and CI half of that law is the immutability
 // gate's, which reads the root from `RECORDS_ROOT` below.
 //
+// A PLAN'S LINE. A bound plan's records live on its one line: the branch
+// `plan/<plan>`, held by a worktree of the repository. Reading is the union of the
+// records of the checkout the store was built from and of every worktree holding a
+// `plan/*` branch, which is sound because records are immutable files named by
+// ULID — a record in two checkouts is one record, and a union never conflicts. The
+// store only provides the line: which writes belong on it is the reading's
+// (`capabilities/plan/reading.ts`). A write lands where `persist` is told, by
+// default in the checkout the store was built from. The store commits nothing.
+//
 // Records are machine-written bytes: `RECORDS_ROOT` is in biome's `files.ignore`, so
 // no formatter ever owns them.
 //
@@ -21,7 +30,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+  constants,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { ulid } from '../ulid.js';
 import { fold } from './fold.js';
@@ -31,24 +49,102 @@ import type { Envelope, Operation, Record, RecordId } from './record.js';
  *  every record, one subdirectory per domain. Declared once, here. */
 export const RECORDS_ROOT = 'records';
 
+/** The branch prefix of a plan's line: the line of plan `p` is `plan/p`. */
+const LINE_PREFIX = 'plan/';
+
+/** A plan's line: its branch, and the worktree holding it. */
+export interface Line {
+  readonly plan: string;
+  readonly branch: string;
+  /** Absolute path of the worktree holding the branch. */
+  readonly path: string;
+}
+
 /**
  * A failure of the store itself rather than of a domain's law: the directory is
  * not inside a repository (`outside`); a stored record cannot be read as the
- * record its file name says it is (`damaged`, with its `path`); or the records
- * a write was checked against moved before it landed (`moved`). The store
- * words the message for a reader of the store; a caller meeting agents speaks
- * it in its domain's words from `kind`, `domain` and `path`.
+ * record its file name says it is (`damaged`, with its `path`); the records
+ * a write was checked against moved before it landed (`moved`); or a plan's
+ * line cannot be written to or cut (`line`, its message saying how to restore
+ * it). The store words the message for a reader of the store; a caller meeting
+ * agents speaks it in its domain's words from `kind`, `domain` and `path`.
  */
 export class StoreFault extends Error {
   constructor(
     message: string,
-    readonly kind: 'outside' | 'damaged' | 'moved',
+    readonly kind: 'outside' | 'damaged' | 'moved' | 'line',
     readonly domain?: string,
     readonly path?: string,
   ) {
     super(message);
     this.name = 'StoreFault';
   }
+}
+
+/** `args` run as git in `cwd`, its output trimmed; a failure throws with git's
+ *  own words as the message. */
+function git(cwd: string, ...args: string[]): string {
+  try {
+    return execFileSync('git', args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (error) {
+    const said =
+      error instanceof Error && 'stderr' in error ? String(error.stderr) : '';
+    throw new Error(said.trim() || String(error));
+  }
+}
+
+/** `path`, quoted for a shell when it needs it. */
+function shellQuoted(path: string): string {
+  return /^[\w@%+=:,./-]+$/.test(path)
+    ? path
+    : `'${path.replaceAll("'", `'\\''`)}'`;
+}
+
+/** Every worktree of the repository holding `cwd`, the main one first, each with
+ *  the branch it holds (none when detached). */
+function worktrees(cwd: string): { path: string; branch?: string }[] {
+  return git(cwd, 'worktree', 'list', '--porcelain')
+    .split(/\n\s*\n/)
+    .flatMap((block) => {
+      const rows = block.split('\n');
+      const path = rows.find((r) => r.startsWith('worktree '))?.slice(9);
+      if (path === undefined || !existsSync(path)) return [];
+      const branch = rows
+        .find((r) => r.startsWith('branch refs/heads/'))
+        ?.slice('branch refs/heads/'.length);
+      return [{ path: realpathSync(path), branch }];
+    });
+}
+
+/** The record the file `name` at `path` holds, as `text`; refuses what is not
+ *  the record its name says. */
+function recordOf<P>(
+  name: string,
+  path: string,
+  domain: string,
+  text: string,
+): Record<P> {
+  const damaged = (why: string): never => {
+    throw new StoreFault(
+      `record store: ${path} ${why}`,
+      'damaged',
+      domain,
+      path,
+    );
+  };
+  let record: Record<P> | undefined;
+  try {
+    record = JSON.parse(text) as Record<P>;
+  } catch {
+    return damaged('is not a readable record');
+  }
+  if (`${record?.envelope?.id}.json` !== name)
+    damaged(`carries record id ${record?.envelope?.id}`);
+  return record as Record<P>;
 }
 
 /** The records in one domain directory `dir` of `domain`, in record-id order. */
@@ -65,24 +161,49 @@ function readDomain<P>(dir: string, domain: string): Record<P>[] {
     .sort()
     .map((name) => {
       const path = join(dir, name);
-      const damaged = (why: string): never => {
-        throw new StoreFault(
-          `record store: ${path} ${why}`,
-          'damaged',
-          domain,
-          path,
-        );
-      };
-      let record: Record<P> | undefined;
-      try {
-        record = JSON.parse(readFileSync(path, 'utf8')) as Record<P>;
-      } catch {
-        return damaged('is not a readable record');
-      }
-      if (`${record?.envelope?.id}.json` !== name)
-        damaged(`carries record id ${record?.envelope?.id}`);
-      return record as Record<P>;
+      return recordOf<P>(name, path, domain, readFileSync(path, 'utf8'));
     });
+}
+
+/** The records of `domain` committed on `branch`, in record-id order: what a
+ *  line holds for a reader when no worktree does. */
+function readBranch<P>(
+  cwd: string,
+  branch: string,
+  domain: string,
+): Record<P>[] {
+  const tree = `${branch}:${RECORDS_ROOT}/${domain}`;
+  let names: string[];
+  try {
+    names = git(cwd, 'ls-tree', '--name-only', tree)
+      .split('\n')
+      .filter((name) => name.endsWith('.json'));
+  } catch {
+    return [];
+  }
+  if (names.length === 0) return [];
+  const out = execFileSync('git', ['cat-file', '--batch'], {
+    cwd,
+    input: `${names.map((name) => `${tree}/${name}`).join('\n')}\n`,
+    maxBuffer: 1 << 30,
+  });
+  const records: Record<P>[] = [];
+  let at = 0;
+  for (const name of names) {
+    const header = out.subarray(at, out.indexOf('\n', at)).toString();
+    const size = Number(header.split(' ')[2]);
+    const body = at + header.length + 1;
+    records.push(
+      recordOf<P>(
+        name,
+        `${tree}/${name}`,
+        domain,
+        out.subarray(body, body + size).toString('utf8'),
+      ),
+    );
+    at = body + size + 1;
+  }
+  return records;
 }
 
 /**
@@ -94,37 +215,146 @@ function readDomain<P>(dir: string, domain: string): Record<P>[] {
  * touches another.
  */
 export class RecordStore {
-  /** Absolute path of the records root. */
+  /** Absolute path of the checkout this store was built from. */
+  readonly top: string;
+  /** Absolute path of that checkout's records root. */
   readonly root: string;
+  /** The worktree holding each plan line, in branch order; the checkout this
+   *  store was built from is among them when it holds one. */
+  readonly lines: readonly Line[];
+  /** The main worktree: the checkout a line's worktree is named after. */
+  readonly main: string;
+  /** Every branch of a plan line, held by a worktree or not. */
+  readonly #branches: readonly string[];
 
   constructor(from: string = process.cwd()) {
     let top: string;
     try {
-      top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
-        cwd: from,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
+      top = git(from, 'rev-parse', '--show-toplevel');
     } catch {
       throw new StoreFault(
         `record store: ${from} is not inside a git repository`,
         'outside',
       );
     }
-    this.root = join(top, RECORDS_ROOT);
+    this.top = realpathSync(top);
+    this.root = join(this.top, RECORDS_ROOT);
+    const held = worktrees(this.top);
+    this.main = held[0]?.path ?? this.top;
+    this.#branches = git(
+      this.top,
+      'for-each-ref',
+      '--format=%(refname:short)',
+      `refs/heads/${LINE_PREFIX}`,
+    )
+      .split('\n')
+      .filter((b) => b !== '');
+    this.lines = held
+      .flatMap(({ path, branch }) =>
+        branch?.startsWith(LINE_PREFIX)
+          ? [{ plan: branch.slice(LINE_PREFIX.length), branch, path }]
+          : [],
+      )
+      .sort((a, b) => (a.branch < b.branch ? -1 : 1));
   }
 
-  #dir(domain: string): string {
+  #dir(domain: string, top: string = this.top): string {
     if (!/^[^/\\.][^/\\]*$/.test(domain))
       throw new Error(
         `record store: domain ${JSON.stringify(domain)} is not one directory name`,
       );
-    return join(this.root, domain);
+    return join(top, RECORDS_ROOT, domain);
   }
 
-  /** Every record of `domain`, in record-id order. A domain never written is empty. */
+  /** Every record of `domain`, in record-id order: those of this checkout, of
+   *  every plan line's worktree and, for a line no worktree holds, those
+   *  committed on its branch, a record held twice being one. A domain never
+   *  written is empty. */
   read<P>(domain: string): Record<P>[] {
-    return readDomain<P>(this.#dir(domain), domain);
+    const records = new Map<RecordId, Record<P>>();
+    const held = new Set(this.lines.map((l) => l.branch));
+    const found = [
+      ...[
+        this.top,
+        ...this.lines.map((l) => l.path).filter((p) => p !== this.top),
+      ].map((top) => readDomain<P>(this.#dir(domain, top), domain)),
+      ...this.#branches
+        .filter((b) => !held.has(b))
+        .map((b) => readBranch<P>(this.top, b, domain)),
+    ];
+    for (const r of found.flat())
+      if (!records.has(r.envelope.id)) records.set(r.envelope.id, r);
+    return [...records.values()].sort((a, b) =>
+      a.envelope.id < b.envelope.id ? -1 : 1,
+    );
+  }
+
+  /** The line of plan `plan`: its branch, whether the branch exists, and the
+   *  worktree holding it when one does. */
+  line(plan: string): { branch: string; exists: boolean; path?: string } {
+    const branch = `${LINE_PREFIX}${plan}`;
+    return {
+      branch,
+      exists: this.#branches.includes(branch),
+      path: this.lines.find((l) => l.plan === plan)?.path,
+    };
+  }
+
+  /** Where the worktree of the line of `plan` belongs. */
+  #lineAt(plan: string): string {
+    return `${this.main}.plan-${plan}`;
+  }
+
+  /** The refusal of a bound plan whose line no worktree holds, saying the `git
+   *  worktree add` that restores the worktree of a branch that exists, or cuts
+   *  the branch that does not. */
+  lineless(plan: string): StoreFault {
+    const { branch, exists } = this.line(plan);
+    const at = shellQuoted(this.#lineAt(plan));
+    return new StoreFault(
+      exists
+        ? `the line of plan ${plan}, branch ${branch}, has no worktree, so nothing was written; restore it with \`git worktree add ${at} ${branch}\``
+        : `plan ${plan} is bound and its line, branch ${branch}, does not exist, so nothing was written; cut it with \`git worktree add -b ${branch} ${at}\``,
+      'line',
+    );
+  }
+
+  /**
+   * The line of `plan`, cut if it does not exist: the branch `plan/<plan>` from
+   * the HEAD of this checkout, in a worktree named after the main one. The
+   * worktree that already holds the branch is used as it stands. Refuses a
+   * branch no worktree holds.
+   */
+  cut(plan: string): Line {
+    const { branch, exists, path } = this.line(plan);
+    if (path !== undefined) return { plan, branch, path };
+    if (exists) throw this.lineless(plan);
+    const at = this.#lineAt(plan);
+    try {
+      git(this.top, 'worktree', 'add', '-b', branch, at, 'HEAD');
+    } catch (error) {
+      throw new StoreFault(
+        `the line of plan ${plan} could not be cut: ${error instanceof Error ? error.message : String(error)}`,
+        'line',
+      );
+    }
+    return { plan, branch, path: realpathSync(at) };
+  }
+
+  /** Copy into `line` each record, named by domain and id, this checkout holds
+   *  and the line lacks. */
+  copy(
+    line: Line,
+    records: readonly { readonly domain: string; readonly id: RecordId }[],
+  ): void {
+    if (line.path === this.top) return;
+    for (const { domain, id } of records) {
+      const from = join(this.#dir(domain), `${id}.json`);
+      const to = join(this.#dir(domain, line.path), `${id}.json`);
+      if (!existsSync(from) || existsSync(to)) continue;
+      mkdirSync(this.#dir(domain, line.path), { recursive: true });
+      copyFileSync(from, to, constants.COPYFILE_EXCL);
+    }
   }
 
   /**
@@ -187,14 +417,16 @@ export class RecordStore {
     this.persist(domain, record, () => refuse(rewrite));
   }
 
-  /** Put one checked record on disk, calling `exists` when its file is there
-   *  already. */
+  /** Put one checked record on disk, in the records of the checkout at `top`
+   *  (default: the one this store was built from), calling `exists` when its
+   *  file is there already. */
   protected persist<P>(
     domain: string,
     record: Record<P>,
     exists: () => never,
+    top: string = this.top,
   ): void {
-    const dir = this.#dir(domain);
+    const dir = this.#dir(domain, top);
     mkdirSync(dir, { recursive: true });
     try {
       writeFileSync(
@@ -330,15 +562,29 @@ export class StagedStore extends RecordStore {
     this.#held.push({ domain, record: record as Record });
   }
 
-  /** Put every held write on disk, in the order it was written. */
-  flush(): void {
+  /** The writes held, in the order they were written. */
+  get held(): readonly { readonly domain: string; readonly record: Record }[] {
+    return this.#held;
+  }
+
+  /** Put every held write on disk, in the order it was written: in the checkout
+   *  `into` names for it, else in the one this store was built from. */
+  flush(
+    into: (domain: string, record: Record) => string | undefined = () =>
+      undefined,
+  ): void {
     for (const { domain, record } of this.#held.splice(0))
-      super.persist(domain, record, () => {
-        throw new StoreFault(
-          `record store: ${record.envelope.id} refused — that record exists, and a record is never rewritten`,
-          'moved',
-          domain,
-        );
-      });
+      super.persist(
+        domain,
+        record,
+        () => {
+          throw new StoreFault(
+            `record store: ${record.envelope.id} refused — that record exists, and a record is never rewritten`,
+            'moved',
+            domain,
+          );
+        },
+        into(domain, record),
+      );
   }
 }

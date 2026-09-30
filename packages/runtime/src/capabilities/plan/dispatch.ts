@@ -59,6 +59,8 @@ interface Shown {
   readonly name?: Name | ((after: Reading) => Name);
   /** The name drills to each unit's line and ledger, none of its spec. */
   readonly ledgerOnly?: boolean;
+  /** The plan entity this write binds, whose line it cuts. */
+  readonly cut?: string;
 }
 
 /** The plan capability over the records of the repository holding `from`. */
@@ -82,6 +84,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
           typeof shown.name === 'function' ? shown.name(read) : shown.name,
           shown.ledgerOnly,
         ),
+      (shown) => shown.cut,
     );
 
   /** A unit's spec: `fields` over `current`, its deps resolved in `plan`. */
@@ -384,7 +387,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
       write((read) => {
         const entity = read.resolvePlan(plan);
         planDomain.bind(read.store, read.lifecycle.plan, entity, read.owed, by);
-        return { plans: [] };
+        return { plans: [], cut: entity };
       }),
 
     close: (plan, by) =>
