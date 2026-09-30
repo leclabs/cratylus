@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SDKA3D7G4474BXZK26CGDA",
+    "entity": "01M3SDKA3D7G4474BXZK26CGD9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "Install",
+    "time": "2026-09-30T15:05:45.837Z",
+    "reason": "finding beside the path of the install unit",
+    "cause": "install.test.ts ran runUninstall without isolating the runtime config"
+  },
+  "payload": {
+    "title": "uninstall in a test reaches the real runtime config",
+    "kind": "question",
+    "topic": "tests",
+    "body": "runUninstall removes its harness stanza from runtimeConfigTarget(), which is $AGENT_RUNTIME_CONFIG else the process HOME/.cratylus.json, not the home the test passes. A test that calls runUninstall without stubbing AGENT_RUNTIME_CONFIG deletes the operator real ~/.cratylus.json once it holds no other harness (it did so during unit install: plan land then failed with \"lifecycle is absent\"). The file was rebuilt by installing into temp homes with AGENT_RUNTIME_CONFIG pointed at it; install.test.ts now stubs the variable as uninstall.test.ts does. Should runUninstall and emitRuntimeConfig take the config path from the same home the run was given, so a test cannot reach the real one?",
+    "blocks": []
+  }
+}

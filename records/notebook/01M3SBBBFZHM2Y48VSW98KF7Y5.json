@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SBBBFZHM2Y48VSW98KF7Y5",
+    "entity": "01M3SBBBFZHM2Y48VSW98KF7Y4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "InstallPlacement2",
+    "time": "2026-09-30T14:26:27.967Z",
+    "reason": "findings 2 and 4 of the assay lie beyond install-placement's spec",
+    "cause": "assay entry 2 of install-placement"
+  },
+  "payload": {
+    "title": "omp has no placement for a chosen model",
+    "kind": "question",
+    "topic": "install",
+    "body": "Assay of install-placement (guided-install) found that on omp a model the operator chooses for a role has no placement: runDeploy with a non-empty models fails with one line naming the harness (as the unit's spec requires), and install's seedModelRoles seeds only the nearest built-in route. Whether guided-run should place chosen models on omp through its own config routes, or refuse the question there, is open; install-placement cannot decide it. Also open for guided-run: install still asks neither personas nor models and does not yet pass omitAgents or models.",
+    "blocks": []
+  }
+}
