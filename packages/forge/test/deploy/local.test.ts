@@ -19,12 +19,14 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { runDeploy } from '../../src/cli/commands/deploy.js';
 import {
   deploySingle,
   placeAgentsLocal,
   placeSkillsLocal,
   projectScope,
+  readManifest,
   userScope,
 } from '../../src/deploy/index.js';
 import { buildRenderTree, tmp } from './helpers.js';
@@ -172,6 +174,105 @@ describe('a host’s model line in a deployed claude def', () => {
     f.render('opus', 'second');
     f.deploy();
     expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus', 'second'));
+  });
+});
+
+describe('runDeploy with the models an operator chose', () => {
+  const def = (model: string | undefined) =>
+    `---\nname: planner\ndescription: "d"\n${model === undefined ? '' : `model: ${model}\n`}color: blue\n---\nbody\n`;
+
+  function fixture(harness?: string) {
+    const root = tmp('forge-render-');
+    const agentsDir = join(root, 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    const skillsDir = join(root, 'skills');
+    const home = tmp('forge-host-');
+    const warnings: string[] = [];
+    const render = (model: string | undefined) =>
+      writeFileSync(join(agentsDir, 'planner.md'), def(model), 'utf-8');
+    const deploy = (models?: Record<string, string>) =>
+      runDeploy({
+        agentsDir,
+        skillsDir,
+        kind: 'agent',
+        scope: 'user',
+        home,
+        ...(harness === undefined ? {} : { harness }),
+        ...(models === undefined ? {} : { models }),
+        log: () => {},
+        warn: (l) => warnings.push(l),
+      });
+    const harnessDir = join(home, harness === 'omp' ? '.omp' : '.claude');
+    const placed = join(harnessDir, 'agents', 'planner.md');
+    return { render, deploy, placed, harnessDir, warnings };
+  }
+
+  it('places the chosen model, records the rendered one, and the choice outlives a deploy without models', async () => {
+    const f = fixture();
+    f.render('opus');
+    expect(await f.deploy({ planner: 'haiku' })).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku'));
+    expect(readManifest(f.harnessDir).agentModels).toEqual({ planner: 'opus' });
+    expect(await f.deploy()).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku'));
+  });
+
+  it('places a chosen model where the render names none', async () => {
+    const f = fixture();
+    f.render(undefined);
+    expect(await f.deploy({ planner: 'haiku' })).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('haiku'));
+    expect(readManifest(f.harnessDir).agentModels).toEqual({ planner: null });
+  });
+
+  it('leaves an agent it names no model for on the rendered one', async () => {
+    const f = fixture();
+    f.render('opus');
+    expect(await f.deploy({ other: 'haiku' })).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('opus'));
+  });
+
+  it('keeps a def whose host line was set before under a models entry', async () => {
+    const f = fixture();
+    f.render('opus');
+    await f.deploy();
+    writeFileSync(
+      f.placed,
+      readFileSync(f.placed, 'utf-8').replace('model: opus', 'model: sonnet'),
+      'utf-8',
+    );
+    expect(await f.deploy({ planner: 'haiku' })).toBe(0);
+    expect(readFileSync(f.placed, 'utf-8')).toBe(def('sonnet'));
+  });
+
+  it('refuses a non-empty models on omp, naming the harness, and places nothing', async () => {
+    const f = fixture('omp');
+    f.render('opus');
+    expect(await f.deploy({ planner: 'haiku' })).not.toBe(0);
+    expect(f.warnings).toHaveLength(1);
+    expect(f.warnings[0]).toContain('omp');
+    expect(existsSync(f.harnessDir)).toBe(false);
+  });
+
+  it('an empty models is no request on omp', async () => {
+    const f = fixture('omp');
+    f.render('opus');
+    expect(await f.deploy({})).toBe(0);
+    expect(existsSync(f.harnessDir)).toBe(true);
+  });
+
+  it('reports warnings to the warn sink, and not to console.error', async () => {
+    const f = fixture();
+    f.render('opus');
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      // No config and no plugins: the host runtime config cannot be emitted, and says so.
+      expect(await f.deploy()).toBe(0);
+      expect(f.warnings.length).toBeGreaterThan(0);
+      expect(errors).not.toHaveBeenCalled();
+    } finally {
+      errors.mockRestore();
+    }
   });
 });
 

@@ -15,6 +15,7 @@ import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import { keepsHostModel } from '../../deploy/deploy.js';
 import {
   DEPLOY_CHECK_EXIT,
   type DeployKind,
@@ -66,6 +67,13 @@ export interface DeployCmdOpts {
   check?: boolean;
   /** Sink for the report (tests, and any caller that is not a terminal). */
   log?: (line: string) => void;
+  /** Where warnings go — every warning line `runDeploy` and its placers print, and
+   *  the line it fails with. Absent ⇒ `console.error`. */
+  warn?: (line: string) => void;
+  /** Per-agent model the operator chose (agent name → `model:` value), placed on
+   *  the def where the harness keeps a host's model line (claude). A harness whose
+   *  routes live in its own config (omp) refuses a non-empty map. */
+  models?: Readonly<Record<string, string>>;
   /**
    * Path to `cratylus.config.ts` — read, when no `plugins` are supplied, for the
    * facts deploy cannot obtain from a render tree: the corpus's lifecycle-event
@@ -136,7 +144,19 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     companions: opts.companions,
   };
   const log = opts.log ?? ((line: string) => console.log(line));
-  const warn = (line: string) => console.error(line);
+  const warn = opts.warn ?? ((line: string) => console.error(line));
+  if (
+    opts.models !== undefined &&
+    Object.keys(opts.models).length > 0 &&
+    !keepsHostModel(harnessAdapter.home)
+  ) {
+    warn(
+      pc.red(
+        `${CLI_BIN} deploy: the '${harnessAdapter.name}' harness routes models in its own config, so a per-agent model cannot be placed on its agent defs`,
+      ),
+    );
+    return 1;
+  }
 
   // Expand the `all` sugar to the concrete kinds; a single kind runs a
   // one-element loop. Every kind reuses the EXISTING per-kind engine path with
@@ -162,6 +182,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         hooksFile: harnessAdapter.hooksFile,
         home: opts.home ?? null,
         project: opts.project ?? null,
+        ...(opts.models ? { models: opts.models } : {}),
         only: splitList(opts.only),
         dry: opts.dryRun ?? false,
         log,
@@ -180,7 +201,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     );
     return rc;
   } catch (e) {
-    console.error(pc.red(`${CLI_BIN} deploy: ${(e as Error).message}`));
+    warn(pc.red(`${CLI_BIN} deploy: ${(e as Error).message}`));
     return 1;
   }
 }

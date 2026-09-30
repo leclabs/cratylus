@@ -124,5 +124,12 @@ export interface PlaceOpts {
    * that line (claude). Absent ⇒ the def is overwritten whole.
    */
   keepHostModel?: boolean;
+  /**
+   * The model an operator CHOSE per agent, name → `model:` value. Read only where
+   * `keepHostModel` is set: the def is placed carrying that line, unless the deployed
+   * def already carries a host's. The manifest still records the model the def was
+   * rendered with, so the chosen line stands as the host's on every later deploy.
+   */
+  models?: Readonly<Record<string, string>>;
   warn?: (line: string) => void;
 }

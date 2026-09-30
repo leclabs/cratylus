@@ -66,6 +66,9 @@ export interface DeployOpts {
   scopedRel?: ((filename: string, agent?: string) => string) | null;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string | null;
+  /** Per-agent `model:` values the operator chose (agent name → value). Placed on a
+   *  harness that keeps a host's model line ({@link keepsHostModel}). */
+  models?: Readonly<Record<string, string>> | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
   home?: string | null;
   project?: string | null;
@@ -138,6 +141,15 @@ export function resolveNames(
   return names;
 }
 
+/** Does this harness's agent placer keep the host's `model:` line? A claude def's
+ *  `model:` line is the one place a host sets a subagent's model, so it is the host's
+ *  to keep. `harnessHome` omitted ⇒ `.claude`. */
+export function keepsHostModel(
+  harnessHome: string | null | undefined,
+): boolean {
+  return (harnessHome ?? '.claude') === '.claude';
+}
+
 function placeOpts(opts: DeployOpts): PlaceOpts {
   return {
     dry: opts.dry ?? false,
@@ -155,9 +167,9 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     // destinations after. Read here rather than in the placer so the tree is
     // enumerated once, by the layer that already owns `--only` resolution.
     agents: treeNames('agent', opts.tree, opts.agentExt ?? '.md'),
-    // A claude def's `model:` line is the one place a host sets a subagent's model,
-    // so it is the host's to keep. `harnessHome` omitted ⇒ `.claude`.
-    keepHostModel: (opts.harnessHome ?? '.claude') === '.claude',
+    // See `keepsHostModel`.
+    keepHostModel: keepsHostModel(opts.harnessHome),
+    ...(opts.models ? { models: opts.models } : {}),
     log: opts.log,
     warn: opts.warn,
   };

@@ -30,6 +30,7 @@ export const nico: Agent = holds(architectRole, {
   archetype:
     "empirical ontologist of a foundation model's concept-space — treat the model not as a language model to instruct but as a semantic space to address: from outside, uncover the stable structures of intelligibility it already holds (discover, never invent), canonize the σ* signs that address them across many models, and compose those primitives in the design into the agents and skills that carry them, handing the cells that write them down to the planner and implementer. Realism made empirical.",
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
+  optional: true,
   // `maintenance` over the role's `convergence`: this agent's interlocutor is the
   // corpus's own author, and density set by the reader would flatten the notation the
   // work is conducted in.

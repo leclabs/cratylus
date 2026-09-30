@@ -187,3 +187,40 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     ).toEqual(["import 'node:fs'"]);
   });
 });
+
+describe('projectPluginSet — omitAgents leaves an agent out of the render', () => {
+  const pair: ProjectablePlugin = {
+    name: 'pair',
+    manifest: FIXTURE_MANIFEST,
+    agents: join(fixtures, 'pair', 'agents'),
+  };
+  const project = (omitAgents?: readonly string[]) =>
+    projectPluginSet({
+      plugins: [pair],
+      adapter: adapterByName('claude'),
+      ...(omitAgents ? { omitAgents } : {}),
+    });
+
+  it('renders no file of an omitted agent, counts only the rendered ones, and still reports it as optional', async () => {
+    const whole = await project();
+    expect(whole.agents).toBe(2);
+    expect(whole.files.some((f) => f.path.includes('offered'))).toBe(true);
+
+    const t = await project(['offered']);
+    expect(t.agents).toBe(1);
+    expect(t.files.some((f) => f.path.includes('offered'))).toBe(false);
+    expect(t.files.some((f) => f.path.includes('steady'))).toBe(true);
+    expect(t.optionalAgents).toEqual(['offered']);
+    expect(whole.optionalAgents).toEqual(['offered']);
+  });
+
+  it('an agent that does not declare optional is omittable, and is not reported as optional', async () => {
+    const t = await project(['steady']);
+    expect(t.files.some((f) => f.path.includes('steady'))).toBe(false);
+    expect(t.optionalAgents).toEqual(['offered']);
+  });
+
+  it('throws, naming it, on an omitAgents name that is no agent of the plugin set', async () => {
+    await expect(project(['ghost'])).rejects.toThrow(/'ghost'/);
+  });
+});

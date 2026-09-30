@@ -114,7 +114,13 @@ function withModelLine(md: string, line: string | undefined): string {
  *  the host removed it — and the log names it. A def with NO record was placed before
  *  the record existed, by a deploy that wrote no `model:` line, so its baseline is no
  *  model: a `model:` line found there is the host's and is kept, and a def with none
- *  takes the rendered one. */
+ *  takes the rendered one.
+ *
+ *  With `opts.models` a named agent's def is placed carrying `model: <value>` — the
+ *  operator's choice at install — while `report.models` still records the model the
+ *  def was RENDERED with, so that line stands as the host's on every later deploy. A
+ *  def whose deployed `model:` line is already the host's keeps it: a choice made
+ *  before is not overwritten by a later one. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -147,10 +153,12 @@ export function placeAgentsLocal(
     if (recorded !== undefined && report.models !== undefined) {
       const rendered = frontMatterModel(def);
       report.models[name] = rendered?.value ?? null;
+      let hostLine = false;
       if (existsSync(dest)) {
         const host = frontMatterModel(readFileSync(dest, 'utf-8'));
         const wrote = Object.hasOwn(recorded, name) ? recorded[name] : null;
         if ((host?.value ?? null) !== wrote) {
+          hostLine = host !== undefined;
           const kept = withModelLine(def, host?.line);
           if (kept !== def) {
             def = kept;
@@ -161,6 +169,13 @@ export function placeAgentsLocal(
             );
           }
         }
+      }
+      const chosen = opts.models?.[name];
+      if (chosen !== undefined && !hostLine) {
+        def = withModelLine(def, `model: ${chosen}`);
+        log(
+          `  ${opts.dry ? 'would place' : 'placed'} the chosen model for ${name}: model: ${chosen}`,
+        );
       }
     }
     if (!opts.dry) {

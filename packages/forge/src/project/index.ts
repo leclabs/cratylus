@@ -191,6 +191,14 @@ export interface ProjectOpts {
    * the weighing is a lower bound.
    */
   readonly hostHome?: string;
+  /**
+   * Names of agents LEFT OUT of the render entirely: no definition, no launcher, no
+   * scoped enforcing artifact, no stance manifest and no hook registration of theirs,
+   * and none of them counted in the report. A name that is no agent of the plugin set
+   * throws, naming it — an omission that silently matched nothing would read as one
+   * that held.
+   */
+  readonly omitAgents?: readonly string[];
 }
 
 interface Src {
@@ -233,6 +241,10 @@ export interface ProjectedTree extends ProjectReport {
    *  a consumer that routes by role — install — knows them without re-reading a
    *  definition. Empty when no rendered agent holds one. */
   readonly heldRoles: readonly string[];
+  /** The sorted names of the plugin set's agents that declare `optional`
+   *  ({@link Agent.optional}), rendered or omitted — what an install offers
+   *  without preselecting. */
+  readonly optionalAgents: readonly string[];
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -526,10 +538,22 @@ export async function projectPluginSet(
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
+  const omitted = new Set(opts.omitAgents ?? []);
+  for (const name of omitted) {
+    if (!agentSrc.has(name)) {
+      throw new Error(
+        `omitAgents names '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
+      );
+    }
+  }
+  const optionalAgents: string[] = [];
   for (const [name, { dir }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const bodied = withResolvedBodies(await agentOf(modPath), subst, manifest);
+    const authored = await agentOf(modPath);
+    if (authored.optional) optionalAgents.push(name);
+    if (omitted.has(name)) continue;
+    const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
     // with everything they compose, and every adapter renders the list it is
     // handed rather than computing its own.
@@ -930,7 +954,15 @@ export async function projectPluginSet(
     ),
   ].sort();
 
-  return { files, agents, skills, shims, hooks, heldRoles };
+  return {
+    files,
+    agents,
+    skills,
+    shims,
+    hooks,
+    heldRoles,
+    optionalAgents: optionalAgents.sort(),
+  };
 }
 
 export { emitRuntimeShim } from './runtime-shim.js';
