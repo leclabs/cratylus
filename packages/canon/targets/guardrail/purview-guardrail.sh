@@ -143,7 +143,7 @@ case "$tool_name" in
 	Agent|SendMessage|Task)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		target="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .tool_input.agent // .tool_input.name // ""' 2>/dev/null || true)"
-		act="DISPATCH to \`${target:-unnamed}\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote)"
+		act="DISPATCH to \`${target:-unnamed}\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote for a unit of the loop, request when it carries the dispatcher's own words outside the loop)"
 		;;
 	Write|Edit|MultiEdit|NotebookEdit)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path // ""' 2>/dev/null || true)"
@@ -217,9 +217,11 @@ feedback="PURVIEW GUARDRAIL — denied this $tool_name call: it falls outside th
 role contract declares. $reason  Delegation is a THEOREM of that arrow, not an option: an act whose \
 domain or codomain lies outside it goes to the role that owns it — a decomposition of a shard to a \
 planner, a build to an implementer, an artifact reading to an assayer, a merge or a whole check to \
-the integrator. Hand it over by name and carry on with what the contract reserves. (Legitimate and \
-NOT blocked here: reading anything, dispatching to a planner, routing a unit name to an implementer, \
-an assayer or the integrator, and performing any act the contract's own \`reserves\` clause names.)"
+the integrator. Hand a unit of the loop over by name and carry on with what the contract reserves. \
+(Legitimate and NOT blocked here: reading anything, dispatching to a planner, routing a unit name to \
+an implementer, an assayer or the integrator, dispatching a request outside the loop to whichever role \
+or agent fits it in your own rectified words where your contract admits it, and performing any act the \
+contract's own \`reserves\` clause names.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0

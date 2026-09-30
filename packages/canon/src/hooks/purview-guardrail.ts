@@ -25,18 +25,22 @@ import type { HookCell } from '../manifest.js';
 // every agent in the corpus composed the fragment it claimed to enforce.
 //
 // WHAT IT BLOCKS is what the arrow excludes, and nothing else:
-//   · a dispatch carrying a spec the dispatcher wrote, from a holder whose arrow does
-//     not write spec — the architect skipping the planner, who alone turns a shard into
-//     units;
+//   · a dispatch carrying a spec the dispatcher wrote for a unit of the loop, from a holder
+//     whose arrow does not write spec — the architect skipping the planner, who alone turns
+//     a shard into units;
 //   · a write to the substrate by a holder whose arrow does not write artifact;
-//   · a dispatch whose prompt is the operator's literal words rather than a routed name
-//     — the same dispatch-echo the stance guard catches at turn end, refused here
-//     because at this moment the contract that convicts it is the ROLE's.
-// WHAT IT PASSES: a dispatch to a planner, a dispatch routing a unit name to an
-// implementer, a dispatch to an assayer, a dispatch to the integrator, READING anything,
-// and writing whatever the arrow reserves. Reading is never a block — the architect's
-// contract makes an artifact read a descent, but a read is cheap to undo and a gate
-// that fires on one would wedge every legitimate orientation.
+//   · a dispatch whose prompt is the operator's literal words rather than a routed name or
+//     the holder's own request — the same dispatch-echo the stance guard catches at turn
+//     end, refused here because at this moment the contract that convicts it is the ROLE's.
+// WHAT IT PASSES: a dispatch to a planner, a dispatch routing a unit name to an implementer,
+// a dispatch to an assayer, a dispatch to the integrator, a dispatch outside the loop of
+// realizing the design — a comparison, an audit, a question — in the holder's own words,
+// where the holder's own contract admits it, READING anything, and writing whatever the arrow
+// reserves. The operator saw an ad hoc comparison refused twice because a self-worded prompt
+// was read as a spec; a request is not a spec, the routing discipline binds units of the loop
+// and not everything a holder says to a delegate. Reading is never a block — the architect's
+// contract makes an artifact read a descent, but a read is cheap to undo and a gate that
+// fires on one would wedge every legitimate orientation.
 //
 // FAIL-OPEN, EVIDENCE-CHECKED, RE-ENTRY-CAPPED — all three inherited from the sibling
 // pre-hook, which is also the structural model for the worker. A block whose cited span
@@ -46,7 +50,7 @@ import type { HookCell } from '../manifest.js';
 export const purviewGuardrail: HookCell = {
   id: 'purview-guardrail',
   residue:
-    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(spec the dispatcher wrote) ∄ planner⟩ · dispatch-echo ⟨literal-words ≠ routed-name⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ implement(unit-name) ∨ assay ∨ integrate⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
+    'structural-refusal ↾ mid-turn act ∉ role-arrow · deny-before-fire ⟨descent ⟨write(artifact) ∉ writes⟩ · skipped-rung ⟨dispatch(spec the dispatcher wrote for a unit of the loop) ∄ planner⟩ · dispatch-echo ⟨literal-words ≠ routed-name ∨ own-words⟩⟩ · pass ⟨read · act ∈ reserves · dispatch ↦ plan ∨ implement(unit-name) ∨ assay ∨ integrate ∨ ad-hoc(own-words ∉ loop ↾ contract admits)⟩ · law = the HOLDER-projected role-section ⟨quoted verbatim · ¬ authored-opinion⟩ · shared judge-backend ⟨sibling⟩ · fail-open ∧ evidence-checked ∧ re-entry-capped',
   substrate: 'harness',
   // Bound by holding a role at all: the arrow it judges against is the role's own.
   binds: { dimension: 'role' },
@@ -205,7 +209,7 @@ case "$tool_name" in
 	Agent|SendMessage|Task)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		target="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .tool_input.agent // .tool_input.name // ""' 2>/dev/null || true)"
-		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote)"
+		act="DISPATCH to \\\`\${target:-unnamed}\\\` (codomain: route when it carries a unit name and address only, spec when it carries instructions the dispatcher wrote for a unit of the loop, request when it carries the dispatcher's own words outside the loop)"
 		;;
 	Write|Edit|MultiEdit|NotebookEdit)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path // ""' 2>/dev/null || true)"
@@ -279,9 +283,11 @@ feedback="PURVIEW GUARDRAIL — denied this $tool_name call: it falls outside th
 role contract declares. $reason  Delegation is a THEOREM of that arrow, not an option: an act whose \\
 domain or codomain lies outside it goes to the role that owns it — a decomposition of a shard to a \\
 planner, a build to an implementer, an artifact reading to an assayer, a merge or a whole check to \\
-the integrator. Hand it over by name and carry on with what the contract reserves. (Legitimate and \\
-NOT blocked here: reading anything, dispatching to a planner, routing a unit name to an implementer, \\
-an assayer or the integrator, and performing any act the contract's own \\\`reserves\\\` clause names.)"
+the integrator. Hand a unit of the loop over by name and carry on with what the contract reserves. \\
+(Legitimate and NOT blocked here: reading anything, dispatching to a planner, routing a unit name to \\
+an implementer, an assayer or the integrator, dispatching a request outside the loop to whichever role \\
+or agent fits it in your own rectified words where your contract admits it, and performing any act the \\
+contract's own \\\`reserves\\\` clause names.)"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0
@@ -328,8 +334,10 @@ durative concept lattice — the design.
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
 - a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
-  carries instructions the dispatcher wrote produces a **spec** — those instructions are the layer
-  being written;
+  carries instructions the dispatcher wrote for a unit of the loop the contract names produces a
+  **spec** — those instructions are the layer being written; a DISPATCH that carries a request in
+  the dispatcher's own words, outside that loop, produces neither: it is a **request**, and it is
+  in the arrow exactly when the contract says so;
 - a WRITE to a source or config file produces an **artifact**;
 - reading anything at all produces **nothing**, and is never a breach.
 
@@ -342,12 +350,14 @@ whole test, and it is mechanical.
   The contract usually names this: \`descent\`. The path in the payload is the evidence.
 - **A dispatch whose codomain is \`spec\` by a holder whose \`writes\` set excludes \`spec\`.** This is
   the skipped rung: a holder that writes only the design and its routes has handed a delegate
-  instructions it wrote itself, where only a planner turns a shard into units. The prompt is the
-  evidence.
-- **A dispatch whose prompt is the operator's literal words rather than a routed name.** The
-  contract that convicts this is the same clause: transcription is not authorship, and a dispatch
-  carries a name, not instructions. Evidence is the prompt reading as relayed instructions rather
-  than a unit name with its address.
+  instructions it wrote itself for a unit of the loop — the prompt names a unit or a plan, or tells
+  the delegate what to build, change or verify in a unit's files — where only a planner turns a shard
+  into units. The prompt is the evidence.
+- **A dispatch whose prompt is the operator's literal words** rather than a routed name or the
+  holder's own request. The contract that convicts this is the same clause: transcription is not
+  authorship. Evidence is the prompt reading as the operator's text relayed — addressed to the
+  holder, or in the operator's own voice — rather than as a request the holder rectified and worded
+  itself.
 
 ## What to PASS — and these are the majority
 
@@ -358,6 +368,11 @@ whole test, and it is mechanical.
   integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
   to an implementer, a dispatch to an assayer and a dispatch to the integrator are the arrow
   WORKING, whether the contract's \`writes\` names \`route\` or not.
+- **A dispatch the contract admits in the holder's own words.** Where the contract states that a
+  request outside the loop — a comparison, an audit, a question — may go to any role or agent that
+  fits it, a dispatch carrying such a request in the holder's own words is the contract working,
+  whichever role it names. It writes no spec: it names no unit of the loop and hands no
+  instructions for building one. Do not read a request's being self-worded as a spec.
 - **Any act the \`reserves\` clause names**, whatever it is.
 - **A write by a holder whose \`writes\` set includes \`artifact\`.** Most agents in most corpora
   build. Do not read a contract's other clauses as narrowing an arrow that plainly permits the act.
