@@ -106,7 +106,14 @@ degrades and warns where it falls short; they are not the same, and this is what
   under `.claude/personas/<name>/` and the guards find it from the `agent_type` the hook payload
   names. A bare Claude Code session and an agent that is not a projected persona are not
   enrolled and stay silent. A harness that cannot name the running agent carries a guard as a
-  steer and warns once per guard at projection and install.
+  steer, the stated rule in place of the enforced one, and warns once per guard at projection and
+  install. A guard whose judge cannot run lets the turn through and says so where the operator
+  reads it, never as a clean verdict, and asks the judge again once it may have recovered: on
+  omp a run of misses pauses the judge for a cooldown and the first ask after it is the probe.
+  A judgement fits the time its harness allows a guard, so a judge that is merely slow is never
+  reported as one that could not run: the judge is sent a rubric cut to what it needs to decide
+  and an excerpt bounded by one cap, an oversized turn keeping its close and its operator
+  message its tail, with the elision marked, and no deadline is raised to make it fit.
 - **Role routing.** An agent names the role it holds, never a model. On omp the role becomes
   `model: ["@<role>", "@default"]` and the model behind it is the host's `modelRoles` entry
   (next section). Claude Code has no host-configurable roles, so a definition there names a model

@@ -96,6 +96,18 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   block. But an enrolled scope whose judge could not answer announces itself via `dark` and
   records a DARK row in the verdict log: silence is reserved for NOT ENROLLED.
 - **LOOP-SAFE.** A block budget bounds re-entry; judging itself is never skipped.
+- **A JUDGEMENT FITS THE TIME ITS HARNESS ALLOWS A GUARD.** omp kills an extension handler at
+  30 s and a Claude Code cell runs 60 s, and the judge's time follows what it is sent. The
+  rubric is cut to what a judge needs to decide (about 14 KB, from 29 KB): its rules, boundary
+  tests and output protocol. The rationale, history and measurements that used to ride in it
+  are comments on the hook source, which no judge is sent. What each worker sends is bounded
+  by one cap, 12000 bytes, declared once in the stance cell: the Stop worker keeps the close of
+  the turn (the text after the last tool call, which every rule that can fire reads) and the
+  tail of the operator message, and the pre and purview workers keep both ends of a menu or a
+  dispatch prompt. Every cut is marked `[ELIDED: …]` in the payload, cuts fall on character
+  boundaries, and a BLOCK's EVIDENCE is checked against what the judge was sent, so a span in
+  elided text is discarded like any span that is not there. No deadline or cell timeout was
+  raised to make it fit.
 
 ## Components
 
