@@ -20,11 +20,12 @@
 #     the operator reads (`say`: Claude Code's JSON `systemMessage`, omp's relayed line) naming
 #     this guard and why it could not judge. Silence is reserved for "judged, pass", "not
 #     enrolled" and "no arrow declared".
-#   - EVIDENCE-CHECKED. A BLOCK must quote a span that is literally present in the
-#     payload; a citation that is not there is a fabricated block and is DISCARDED — and the
-#     discard is said, since no verdict then stands.
-#   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice. The second,
-#     identical call goes through unjudged, and says so.
+#   - EVIDENCE-CHECKED. A BLOCK must quote, on an `EVIDENCE:` line, a span that is literally
+#     present in the payload; a citation that is not there is a fabricated block and is
+#     DISCARDED — and the discard is said, since no verdict then stands.
+#   - RETRY-PROOF. A refused act stays refused however often it is retried: every call is
+#     judged afresh, a repeat of a refused call included, and a BLOCK on it denies it again.
+#     No marker is written and nothing is let through unjudged for having been denied before.
 #
 # INPUT  : Claude Code PreToolUse hook JSON on stdin.
 # OUTPUT : on a purview breach -> a deny decision on stdout + exit 0.
@@ -190,11 +191,11 @@ case "$tool_name" in
 	Agent|SendMessage|Task)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		target="$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .tool_input.agent // .tool_input.name // ""' 2>/dev/null || true)"
-		act="DISPATCH to \`${target:-unnamed}\` (codomain: route when it names a unit of the loop or a closed plan, with the event it is routed on and at most where its spec is read, and carries nothing the dispatcher wrote for it; spec when it carries instructions the dispatcher wrote for a unit of the loop; request when it carries the dispatcher's own words outside the loop)"
+		act="DISPATCH to \`${target:-unnamed}\`"
 		;;
 	Write|Edit|MultiEdit|NotebookEdit)
 		body="$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // .tool_input.notebook_path // ""' 2>/dev/null || true)"
-		act="WRITE to the substrate (codomain: artifact)"
+		act="WRITE to $body"
 		;;
 	*)
 		# DEFENCE IN DEPTH. `tool.use.pre` fires on every tool on a harness with no
@@ -219,11 +220,8 @@ $act
 body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$head_part")))")"
 payload="$head_part$body"
 
-# --- loop-safety: never deny an identical tool_input twice ----------------------------------
-session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
-sig="$(printf '%s' "$input" | jq -c '.tool_input' 2>/dev/null | cksum | cut -d' ' -f1 2>/dev/null || echo 0)"
-seen="${TMPDIR:-/tmp}/.purview-pre-$session_id-$sig"
-[ -f "$seen" ] && open "this exact call was already denied once, so the re-entry cap lets it through unjudged"
+# A refused call stays refused however often it is retried: there is no marker, no cap and
+# no memory of a prior denial. Every call is judged, a repeat of a refused call included.
 
 # --- judge (SHARED backend, OWN rubric) -----------------------------------------------------
 # THE SAME SEAM, UNDER THE SAME NAMES, as the two stance workers: a host that holds a model
@@ -257,7 +255,7 @@ reason="$(printf '%s\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -
 # A block naming a span the payload does not contain is a hallucinated block, and a
 # fabricated refusal is not a lesser error than a missed one. Same rule, same reason as
 # the turn-end sibling.
-cited="$(printf '%s\n' "$verdict" | sed -n 's/^SPAN:[[:space:]]*//p' | head -1)"
+cited="$(printf '%s\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1)"
 if [ -n "$cited" ]; then
 	printf '%s' "$payload" | grep -qF -- "$cited" || {
 		[ -z "${LOG:-}" ] || printf '%s\n' "block-discarded: span=$cited tool=$tool_name agent=$agent_type" >> "$LOG" 2>/dev/null || true
@@ -265,8 +263,6 @@ if [ -n "$cited" ]; then
 		exit 0
 	}
 fi
-
-: > "$seen" 2>/dev/null || true
 
 feedback="PURVIEW GUARDRAIL — denied this $tool_name call: it falls outside the arrow your own \
 role contract declares. $reason  Delegation is a THEOREM of that arrow, not an option: an act whose \
