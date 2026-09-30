@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3R0RRCTSSG5SH7JQB40KJ4M",
+    "entity": "01M3R0F566DF8Z5CSJC3CK39D9",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R0JQHEC8Z6KY9Z6ZQ9DWFH"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T02:02:18.394Z",
+    "reason": "a rewritten skill must still spell each verb and flag exactly as the runtime declares it",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "design-shard",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize `design shard`: a concept of the design as the architect hands it down to be realized, together with everything it stands on; it states what must hold and why, never how a harness or a codebase achieves it, so a quirk met while building it is the planner's and implementer's to solve, not a reason to change it; the architect cuts the design into shards, a plan realizes a set of them, and each of its units realizes exactly one. At census the skills carry the older sign and shape, a cut piece: packages/canon/src/skills/design/skill.ts declares `Piece ≜ a cut piece ⟨what a planner is handed⟩`, `cut : C → ℘(℘(C))` with the partition law `⋃ cut(C) = C ∧ … s₁ ∩ s₂ = ∅` and `∀ s ∈ cut(C) : ∀ c ∈ s : closure(c) ⊆ s ⟨a piece is CLOSED⟩`, and `cut ⊨ self ⟨… a planner receiving a piece may ¬ redraw it …⟩`; packages/canon/src/skills/plan/skill.ts declares `s ≜ a cut piece ⟨closed · handed down · ¬ redrawable here⟩ @ design`, with `realizes(unit) ∈ { anchor(c) | c ∈ s }` and `closure(denotes(realizes(unit))) ⊆ s ⟨a unit reaching outside its piece …⟩`, and its description says 'decompose ONE cut piece'. Shards of different concepts share what they stand on, so they are no partition.\nTHE LOOP (the contract each workflow unit of this plan states its own share of; the design states what must hold and why, this is how). (1) The architect cuts the design into shards (a shard is one concept with everything it stands on, stating what and why, never how) and hands a set of them to the planner. The planner plans them (units each realizing one shard, dependencies first, each sized for one implementer, how each shard is realized on each harness included), binds the plan when no plan is bound, records each ready unit active as it hands it out, and returns only the plan's name and those units' names. (2) The architect routes each name, by name alone, to one implementer, naming the delegate after the unit and giving it the address `<unit> of <plan>` and nothing it wrote itself; a unit's name is an address the architect never reads behind. Delegates are named so they can be messaged again (Claude Code: SendMessage to the name given at dispatch, nested dispatch allowed; omp: agent messaging). (3) The implementer reads its unit's spec alone (never the design), builds on its own branch, proves only what its spec asks, commits its own work, and returns only `landed <unit> of <plan> at <commit>`, or `blocked <unit> of <plan>: spec` when the spec cannot be built as written (the architect routes that name to the planner). Its account of the work stays out of the return; a finding it meets it captures as a note. (4) The architect routes the name and commit to the assayer. The assayer reads the shard and the files at that commit, never the spec, and returns the assay verdict: achieved, or not achieved with what is missing in the design's own words, naming the unit and its implementer. It is the one judge of a unit. (5) Not achieved: the architect sends the findings to the same implementer by the name it gave it, and the unit returns to (4). Achieved: the architect routes the name and commit to the integrator. (6) The integrator combines the unit onto the plan's integration line (a branch cut from main when the plan is bound, `plan/<plan>`) and runs the project's whole check once on the combined tree; no implementer or assayer runs it. Green: it commits the records written since (plan, design, notes) by pathspec and returns `whole <unit> of <plan>`, which the architect routes to the planner; the planner records the unit completed and hands out the newly ready names as in (1). Red or a merge conflict: the line is left as it was and it returns `red <unit> of <plan>: <failing check>`, which the architect sends to the same implementer. The integrator never repairs, never judges and decides nothing. (7) When every unit is completed the planner closes the plan; the architect routes that to the integrator, which asks the operator to release the line to main (a pull request where the repository has a forge remote and `gh`, otherwise the exact git command). It never moves main. (8) The architect never reads a unit's spec (`plan show <unit>`), a plan view, a diff, an artifact or an implementer's account; it runs no check and makes no commit or merge. What reaches it is names (from the planner and on verdicts and results), verdicts, the integrator's red naming a unit, and notes. (9) Design stability. Every input, whether from the operator, a delegate or the architect itself, is a hypothesis the architect rectifies against its expertise and industry practice; every delegate's finding reaches it as a note. A surviving change that bears on a shard the bound plan realizes is captured as a decision note on that concept's topic, blocking nothing, amended into the design only after that plan closes, and realized by a following plan; a change to a concept no bound plan realizes is amended at once. Only when the bound plan is found built on a shard that is itself wrong does the architect stop it: it captures a note blocking the plan (an owed ruling, so no unit is ready), corrects the shard once, and the planner rectifies (repin, revise, retract, add) or rebuilds the plan; then the architect retracts the note and work resumes.\nCHANGE. (1) design/skill.ts: the shard replaces the piece (sign and shape): shard(c) ≜ ⟨c, closure(c)⟩ handed down, stating what ∧ why ∧ ¬ how; cut ≜ the architect's choice of shards to hand the planner (no partition law; the cut stays the architect's, ¬ delegable); a quirk met while realizing a shard is the planner's and implementer's, never a reason to amend it. The description's clause about cutting says shards.\n(2) plan/skill.ts: a plan realizes a set of shards and each unit exactly one (replacing `s ≜ a cut piece` and the laws citing it); how a shard is realized on each harness is the plan's. The description says shards. HARD BUDGET: plan weighs 9922 characters on the hook-cap gate at census, 78 under Claude's 10,000 cap, and unit planner-position edits it next wave; its weighed size must not grow here, so pay every added character with a cut in the same cell.\n(3) If a renamed symbol makes packages/canon/test/symbol-altitude.test.ts report a divergence, classify it in its LEDGER with the reason (this unit and wave-2 deliver-loop are the only units that may touch the ledger). (4) .changeset/design-shard.md (@cratylus/canon minor). The planner's role and agent cells, the purview guard and roles/hold.ts's comment also say 'piece'; units planner-position, architect-sees-the-design and deliver-loop change those. No new test file.",
+      "static": [
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/tooling/symbol-probe-gate.ts",
+        "packages/canon/test/skill-hook-cap.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/test/symbol-altitude.test.ts",
+        ".changeset/design-shard.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. `grep -c -i -E 'cut piece|\\bpiece\\b' $T/skills/design/SKILL.md $T/skills/plan/SKILL.md` prints 0 for each (census 3 and 3), and each declares a shard.",
+        "`pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts` exits 0 and prints plan ≤ 9922 (census 9922).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each of planner, give its session text (RIG), with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. (a) What exactly is it handed to plan, and what does that thing include? (b) Does what it is handed say how a harness or codebase should achieve it? (c) While building, a quirk of the harness makes the handed-down statement awkward to realize. Whose problem is that, and does the statement change? (d) How many of the handed-down things does one unit realize, and one plan?' Save every prompt and answer verbatim under /tmp/corrected-shards-cold-read/design-shard/ and print the number of reads taken. PASSES when every (a) says a shard: one concept with everything it stands on; every (b) says what and why, never how; every (c) says the planner's or the implementer's, and the shard does not change; every (d) says one per unit and a set per plan. FAILS at census: the skills say 'a cut piece', a closed set of concepts, and nothing answers (b) or (c).",
+        "VERB FIDELITY. For every line of the projected skill that spells a capability verb (`scripts/<capability>.mjs <verb> …`), the flags it spells equal the set the runtime declares, read by running `cratylus <capability> <verb> --x` (it refuses and lists the flags the verb takes); print each pair. A verb or flag the runtime does not have fails this leg (note 'skill prose restates verb flags': nothing else ties the two)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3R07G3AGHCM4ZHMGFM7Z5A3",
+      "version": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+      "closure": {
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}
