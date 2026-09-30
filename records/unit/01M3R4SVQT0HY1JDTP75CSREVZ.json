@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3R4SVQT0HY1JDTP75CSREVZ",
+    "entity": "01M3R04GHA4M7B4WTEWB3E429V",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R0RSGHCGB8XNVX5RDF1C5P"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T03:12:48.891Z",
+    "reason": "the fold laws moved to design-stability",
+    "cause": "assay of design-stability: shard unachieved because deliver still folds every finding before the next dispatch; that line was cut into deliver-loop"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "deliver-loop",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @b14d8c4e (design rulings at b14d8c4e; 376f47f1 added design shard and the planner, implementer and assayer positions; source identical to f2cd7e3a): plan architect-position is stopped under `design stability`, and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize `integrator position` in the skill the integrator holds: packages/canon/src/skills/deliver/skill.ts becomes the plan-side conduct of the loop from the integrator's side (integrator-makes-whole gives the integrator skills ['deliver']; architect-sees-the-design removes deliver from the architect). At census deliver is written for the architect as judge and reader: `validate : P → 𝔹 ⟨the PRINCIPAL's⟩`, `validate ⊨ self`, `judge(unit) ≜ gate green ∧ validate(unit) ⇒ advance(unit) ⟨self decides · the integrator records⟩`, `self reads ⟨show ⟨P⟩ · the assay · the integrator's gate result⟩`, `integrate ⊥ judge … ∴ integrate ≺ assay admitted`, `integrate(unit) ≜ merge artifact(unit) into main`, `finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close`, `fold ⊨ drifted(unit) answered`, the three questions `achieved(unit) ⇔ … spells ∧ covers ∧ sole` (now the assayer's, unit assayer-position), WIP and close laws with `self decides`, a 'piece' at :150, and the pipeline `deliver ≜ bind ⟨self decides · integrator records⟩ → … → judge ⟨self, on gate ∧ validate⟩ → fold …`. Its description opens 'execute a plan and ACCEPT its results … validate each landed artifact … fold what execution or the operator teaches about the design into it before the next dispatch'. Its header comments argue for the architect judging.\nTHE LOOP (the contract each workflow unit of this plan states its own share of; the design states what must hold and why, this is how). (1) The architect cuts the design into shards (a shard is one concept with everything it stands on, stating what and why, never how) and hands a set of them to the planner. The planner plans them (units each realizing one shard, dependencies first, each sized for one implementer, how each shard is realized on each harness included), binds the plan when no plan is bound, records each ready unit active as it hands it out, and returns only the plan's name and those units' names. (2) The architect routes each name, by name alone, to one implementer, naming the delegate after the unit and giving it the address `<unit> of <plan>` and nothing it wrote itself; a unit's name is an address the architect never reads behind. Delegates are named so they can be messaged again (Claude Code: SendMessage to the name given at dispatch, nested dispatch allowed; omp: agent messaging). (3) The implementer reads its unit's spec alone (never the design), builds on its own branch, proves only what its spec asks, commits its own work, and returns only `landed <unit> of <plan> at <commit>`, or `blocked <unit> of <plan>: spec` when the spec cannot be built as written (the architect routes that name to the planner). Its account of the work stays out of the return; a finding it meets it captures as a note. (4) The architect routes the name and commit to the assayer. The assayer reads the shard and the files at that commit, never the spec, and returns the assay verdict: achieved, or not achieved with what is missing in the design's own words, naming the unit and its implementer. It is the one judge of a unit. (5) Not achieved: the architect sends the findings to the same implementer by the name it gave it, and the unit returns to (4). Achieved: the architect routes the name and commit to the integrator. (6) The integrator combines the unit onto the plan's integration line (a branch cut from main when the plan is bound, `plan/<plan>`) and runs the project's whole check once on the combined tree; no implementer or assayer runs it. Green: it commits the records written since (plan, design, notes) by pathspec and returns `whole <unit> of <plan>`, which the architect routes to the planner; the planner records the unit completed and hands out the newly ready names as in (1). Red or a merge conflict: the line is left as it was and it returns `red <unit> of <plan>: <failing check>`, which the architect sends to the same implementer. The integrator never repairs, never judges and decides nothing. (7) When every unit is completed the planner closes the plan; the architect routes that to the integrator, which asks the operator to release the line to main (a pull request where the repository has a forge remote and `gh`, otherwise the exact git command). It never moves main. (8) The architect never reads a unit's spec (`plan show <unit>`), a plan view, a diff, an artifact or an implementer's account; it runs no check and makes no commit or merge. What reaches it is names (from the planner and on verdicts and results), verdicts, the integrator's red naming a unit, and notes. (9) Design stability. Every input, whether from the operator, a delegate or the architect itself, is a hypothesis the architect rectifies against its expertise and industry practice; every delegate's finding reaches it as a note. A surviving change that bears on a shard the bound plan realizes is captured as a decision note on that concept's topic, blocking nothing, amended into the design only after that plan closes, and realized by a following plan; a change to a concept no bound plan realizes is amended at once. Only when the bound plan is found built on a shard that is itself wrong does the architect stop it: it captures a note blocking the plan (an owed ruling, so no unit is ready), corrects the shard once, and the planner rectifies (repin, revise, retract, add) or rebuilds the plan; then the architect retracts the note and work resumes.\nCHANGE. (1) Rewrite deliver's formal block, description and header comments to (5), (6) and (7) from the integrator's side, naming each other act's owner by role so the loop reads in order: the verdict is the assayer's and acceptance rests on it (cite the role, do not restate its three questions); routing by name is the architect's; plan state (active, completed, close) and binding are the planner's; `integrate(unit)` merges an achieved unit onto the plan's line and `gate` runs once per combination on the combined tree; green commits records by pathspec and reports whole; red or conflict leaves the line and reports the unit and failing check; release to main is the operator's sign-off, asked by the integrator. Keep: one plan bound at a time, a finding captured as a note by the party that met it (never chased), the return an address (`conform @ signify` and `¬conform(r) ⇒ ¬accept(unit)(r)` stay verbatim since packages/canon/test/reader-reach.test.ts pins them, or update that test with the reason). Remove every law giving self a verdict, a plan read, a fold before the next dispatch, or integration before the assay; the design-change law is design-stability's (cite `@ design`). composition stays [design, plan, note]. The skill stays under the hook-cap gate's cap (8507 at census). If a symbol change makes packages/canon/test/symbol-altitude.test.ts report a divergence, classify it in its LEDGER.\n(2) packages/canon/src/roles/hold.ts:25 says 'when an architect hands a cut piece to a planner'; say shard (comment only; the one spelling of the old sign left after design-shard, planner-position and architect-sees-the-design; no sibling in this wave compiles against hold.ts).\n(3) .changeset/deliver-integrates.md (@cratylus/canon minor). No new test file.\nAMENDED BY THE PLANNER: design-stability (wave 1) removed deliver's fold laws (`finding ⇒ fold ≺ …`, `fold ≜`, `fold ⊨ drifted …`, the pipeline's fold step and the description's fold clause) and put a line citing the design's law in their place. Re-derive this file's census from its state after design-stability; do not reintroduce a fold.",
+      "static": [
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/tooling/symbol-probe-gate.ts"
+      ],
+      "deps": [
+        "01M3R00XN367KNF6Y1XZW4Z6T0",
+        "01M3R01GTHP2135893Z1MN97YM",
+        "01M3R02ZND6QPRBBB9TGWDK2X9",
+        "01M3R0EH93C32SW0E6TS0SAWCZ",
+        "01M3R0EHEJJB3Z66CHN350TSS1",
+        "01M3R0G3TH32TX9VC7XW8D9Z88"
+      ],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/test/symbol-altitude.test.ts",
+        "packages/canon/src/roles/hold.ts",
+        ".changeset/deliver-integrates.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm build`, then `pnpm exec cratylus project --harness claude --out $T`; both exit 0. The session text of an agent h is $T/agents/<h>.md whole (front matter and hooks included), followed by each skill of its `skills:` list in order as $T/skills/<s>/SKILL.md with its front matter stripped. In $T/skills/deliver/SKILL.md `grep -c -E \"integrate ≺ assay|fold ≺ self's next dispatch|validate ⊨ self|self reads|into main|piece\"` prints 0 (census 6), `grep -c 'role = integrator'` prints ≥1 (census 0), and the skill names the assayer's verdict as the acceptance.",
+        "`pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts` exits 0 and prints deliver under the cap.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/reader-reach.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "LOOP COLD READ. Concatenate the session texts (RIG) of architect, planner, implementer, assayer and integrator and give them, with no other context and no tools, to anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5 with this prompt verbatim: 'Below are the complete definitions of five AI agents that work together, each with the skills loaded into it at session start. Answer from this text alone, quoting the lines that decide each answer. Walk one unit of work through the system from the moment a plan is bound to the moment its work reaches the main line: at each step, which agent acts, what it reads, what it hands on and to whom. Then answer: (a) who judges whether the unit achieves what it was built for; (b) what happens when that judgement is negative; (c) when is the project's full check run, by whom, and how many times per unit; (d) what does the agent holding the design learn about the unit; (e) who moves work into the main line; (f) who records the plan's and units' state.' Save both under /tmp/corrected-shards-cold-read/deliver-loop/. PASSES when both walks match THE LOOP above in order and actors, (a) is the assayer, (b) sends the findings to the same implementer by way of the architect, (c) is once per unit by the integrator on the combined line after the verdict, (d) is only its name and the verdict (or the integrator's report that it broke the whole), (e) is the operator's sign-off asked by the integrator, and (f) is the planner. FAILS at census: the census deliver makes the architect the judge and integrates before the assay, and no integrator definition exists.",
+        "VERB FIDELITY. For every line of the projected skill that spells a capability verb (`scripts/<capability>.mjs <verb> …`), the flags it spells equal the set the runtime declares, read by running `cratylus <capability> <verb> --x` (it refuses and lists the flags the verb takes); print each pair. A verb or flag the runtime does not have fails this leg (note 'skill prose restates verb flags': nothing else ties the two)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRZYAQ4KRZJKS8MX0CNA39",
+      "version": "01M3R07H3NT2PPV2D421GH5AAJ",
+      "closure": {
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296"
+      }
+    }
+  }
+}
