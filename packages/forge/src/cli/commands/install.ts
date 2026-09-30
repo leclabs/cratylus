@@ -34,6 +34,7 @@ import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
+  MANIFEST_REL,
   addModelRoles,
   describePersonaCommands,
   ensureBadgeStatusLine,
@@ -42,7 +43,9 @@ import {
   personaLauncherOf,
   placePersonaCommands,
   planPersonaCommands,
+  readManifest,
   treeNames,
+  writeManifest,
 } from '../../deploy/index.js';
 import {
   type ProjectablePlugin,
@@ -69,10 +72,6 @@ export interface InstallCmdOpts {
    *  asking (`--link-persona-commands`). Without it, an interactive install asks first and
    *  a non-interactive one places none and says how to. */
   linkPersonaCommands?: boolean;
-  /** Wrap the host's own Claude Code status line in the persona badge instead of only
-   *  offering to (`--wrap-status-line`). Without it, a status line the host already
-   *  has is left exactly as it is. */
-  wrapStatusLine?: boolean;
   /** Asked before linking, when `linkPersonaCommands` is absent. Default: a yes/no prompt
    *  on a terminal, and `false` where stdin or stdout is not one. */
   confirm?: (question: string) => Promise<boolean>;
@@ -324,12 +323,15 @@ function hostConfigPath(
  *
  * The two harnesses' status lines differ in kind, and each declares its own on the
  * port. Claude Code's is ONE command (`adapter.statusLine` names the worker that
- * fills it): set where the host has none, and never replaced where it has one — only
- * offered a wrap, done under `--wrap-status-line`. omp's is a list of segments
- * (`adapter.statusSegment`), which shows an extension's status only where it lists
- * `status`: install adds it to the layout in the config file the harness reads, moving
- * a host on the default preset to the `custom` one that reads a list at all, and
- * leaving a host on any other named preset as it is. Either failure to edit is
+ * fills it): set where the host has none, and WRAPPED where it has one — the worker
+ * runs the host's command and prints the badge in front of its first line, and prints
+ * that command's output byte for byte in a session that runs no persona, so the badge
+ * is never left off and nothing the host shows is taken away. The host's command is
+ * recorded in the deploy manifest for an uninstall to restore. omp's is a list of
+ * segments (`adapter.statusSegment`), which shows an extension's status only where it
+ * lists `status`: install adds it to the layout in the config file the harness reads,
+ * moving a host on the default preset to the `custom` one that reads a list at all,
+ * and leaving a host on any other named preset as it is. Either failure to edit is
  * reported and the install itself still succeeds.
  */
 function showPersonaBadge(
@@ -350,12 +352,34 @@ function showPersonaBadge(
 
   const worker = adapter.statusLine;
   if (worker !== undefined) {
-    const path = join(opts.home, adapter.home, adapter.hooksFile);
-    const result = ensureBadgeStatusLine(path, worker.command, {
-      dry,
-      wrap: opts.wrapStatusLine ?? false,
-    });
+    const harnessDir = join(opts.home, adapter.home);
+    const path = join(harnessDir, adapter.hooksFile);
+    const result = ensureBadgeStatusLine(path, worker.command, { dry });
     const tag = `statusLine${dry ? ' (dry-run)' : ''}: ${path}`;
+    if (result.state === 'refused') {
+      refused(
+        path,
+        result.refused as string,
+        'The persona badge is not on the status line.',
+      );
+      return;
+    }
+    // What an uninstall restores the host's line from. A line this run found already
+    // wrapped is recorded too where no record stands, so a host installed before the
+    // record began still has one; a host command that cannot be read back out of it
+    // leaves the record as it was.
+    if (!dry && result.host !== undefined) {
+      const manifest = readManifest(harnessDir);
+      if (result.state !== 'kept' || manifest.statusLine === null) {
+        writeManifest(harnessDir, {
+          ...manifest,
+          statusLine: {
+            placed: result.placed as string,
+            host: result.host,
+          },
+        });
+      }
+    }
     switch (result.state) {
       case 'set':
         say(
@@ -364,23 +388,11 @@ function showPersonaBadge(
         return;
       case 'wrapped':
         say(
-          `  ${tag} — ${dry ? 'would wrap' : 'wrapped'} the host's status line command in the persona badge`,
+          `  ${tag} — ${dry ? 'would wrap' : 'wrapped'} the host's status line command in the persona badge: the badge is printed before the first line of its output, and its output is passed through byte for byte in a session with no persona; the original command (${result.host}) ${dry ? 'would be' : 'is'} recorded in ${join(harnessDir, MANIFEST_REL)}`,
         );
         return;
       case 'kept':
         say(`  statusLine: ${path} — already shows the persona badge`);
-        return;
-      case 'offer':
-        say(
-          `  statusLine: ${path} — the host's own status line, left as it is; pass --wrap-status-line to show the persona badge in front of its output`,
-        );
-        return;
-      case 'refused':
-        refused(
-          path,
-          result.refused as string,
-          'The persona badge is not on the status line.',
-        );
         return;
     }
   }

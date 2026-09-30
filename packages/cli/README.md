@@ -169,11 +169,14 @@ host's own configuration is only ever added to.
 **On Claude Code** the status line is one command, `statusLine` in `settings.json`, with no segments
 to add to. Where the host has none, install sets the badge worker as that command
 (`sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
-own, install leaves it byte-identical and prints one line offering `--wrap-status-line`. With that
-flag the command becomes the worker with the host's command as its one argument, so the worker runs
-it and puts the badge and a space in front of the first line it prints; every other key of
-`statusLine`, `padding` included, is kept, and a second `--wrap-status-line` install changes no
-byte. Without the flag install never replaces or wraps a status line the host has. The worker asks
+own, install wraps it, with no flag: the command becomes the worker with the host's command as its
+one argument, so the worker runs it and puts the badge and a space in front of the first line it
+prints, and in a session that runs no persona its output reaches the status line byte for byte, so
+nothing the host shows is taken away and the badge is never left off. Every other key of
+`statusLine`, `padding` included, is kept, the host's original command is recorded in the deploy
+manifest, install prints what it changed, and a second install changes no byte. A `statusLine` that
+is not a `command` one is left as it is: Claude Code rejects such a settings file entirely and runs
+no status line until it is fixed, so no badge can show there and install says so. The worker asks
 the status line's input which persona runs (`agent.name`, present only under `--agent`), so a bare
 `claude` session and an agent that is no installed persona show no badge, and it needs `jq`: without
 it the worker prints the host's output and no badge. `claude -p` runs no status line at all.

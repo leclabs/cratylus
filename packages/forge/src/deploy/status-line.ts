@@ -6,9 +6,12 @@
 //
 //   · CLAUDE CODE'S status line is ONE command in `settings.json`, with no segments to
 //     add to, so the badge cannot sit beside the host's own line. Where the host has
-//     none, install sets the badge worker as the line. Where it has one, install never
-//     replaces it: it says so and offers to WRAP it — the worker runs the host's
-//     command and puts the badge in front of its output. `ensureBadgeStatusLine`.
+//     none, install sets the badge worker as the line. Where it has one, install WRAPS
+//     it: the worker runs the host's command and puts the badge in front of its output,
+//     which reaches the host's line byte for byte in a session with no persona — so
+//     nothing the host shows is taken away, and the badge is never left off. The host's
+//     command is kept whole, in the wrapper and in the result, for uninstall to
+//     restore. `ensureBadgeStatusLine`.
 //
 //   · OMP's status line is a list of segments, and an extension's status renders only
 //     where the host's layout lists the `status` segment (absent from omp's own
@@ -49,29 +52,28 @@ import {
  *   - `set`     — the host had none; the badge worker is now the line.
  *   - `wrapped` — the host's own command now runs inside the worker.
  *   - `kept`    — already the worker, or already wrapped in it; nothing to do.
- *   - `offer`   — the host's own line, left as it is; wrapping was not asked for.
  *   - `refused` — a `statusLine` (or settings file) this cannot safely extend.
  */
-export type BadgeStatusLineState =
-  | 'set'
-  | 'wrapped'
-  | 'kept'
-  | 'offer'
-  | 'refused';
+export type BadgeStatusLineState = 'set' | 'wrapped' | 'kept' | 'refused';
 
 export interface BadgeStatusLineResult {
   readonly path: string;
   readonly state: BadgeStatusLineState;
-  /** Whether the file was written. Never under `dry`, never for `kept`, `offer` or
-   *  `refused`. */
+  /** Whether the file was written. Never under `dry`, never for `kept` or `refused`. */
   readonly wrote: boolean;
   /** Why nothing was done, when `refused`. */
   readonly refused?: string;
+  /** The `command` the host's status line has (or, under `dry`, would have) once this
+   *  ran. Absent when `refused`. */
+  readonly placed?: string;
+  /** The command the host ran as its own line: verbatim for `wrapped` and for a
+   *  `kept` line that is a wrap this made; `null` where the host had none (`set`, or a
+   *  `kept` bare worker). Absent when `refused`, and for a `kept` line whose host
+   *  command cannot be read back out of it. */
+  readonly host?: string | null;
 }
 
 export interface EnsureBadgeStatusLineOpts {
-  /** Wrap the host's own command in the worker instead of only offering to. */
-  readonly wrap?: boolean;
   /** Report what would change and write nothing. */
   readonly dry?: boolean;
 }
@@ -82,17 +84,34 @@ function shellQuote(s: string): string {
   return `'${s.replace(/'/g, `'\\''`)}'`;
 }
 
+/** The string `shellQuote` made `word` from, or `undefined` where `word` is not exactly
+ *  what it makes. */
+function shellUnquote(word: string): string | undefined {
+  let out = '';
+  let i = 0;
+  for (;;) {
+    if (word[i] !== "'") return undefined;
+    const close = word.indexOf("'", i + 1);
+    if (close < 0) return undefined;
+    out += word.slice(i + 1, close);
+    i = close + 1;
+    if (i === word.length) return out;
+    if (!word.startsWith(`\\''`, i)) return undefined;
+    out += "'";
+    i += 2;
+  }
+}
+
 /**
- * Make the host's Claude Code status line show the persona badge, without ever
- * replacing what the host has.
+ * Make the host's Claude Code status line show the persona badge, without taking
+ * anything the host shows away.
  *
  *  - no `statusLine` ⇒ `{type: "command", command: workerCommand}` is set.
  *  - it already IS `workerCommand`, or wraps a command with it ⇒ nothing changes, so
  *    a second run never wraps twice.
- *  - it is the host's own command ⇒ left byte-identical and reported as `offer`; with
- *    `opts.wrap`, its command becomes `workerCommand '<host command>'` — the host's
- *    command verbatim as the worker's one argument — and every other key it carries
- *    (`padding`, …) is kept.
+ *  - it is the host's own command ⇒ its command becomes `workerCommand '<host command>'`
+ *    — the host's command verbatim as the worker's one argument — and every other key
+ *    it carries (`padding`, …) is kept. The result names the host's command.
  *  - it is anything else (not an object, not a `command` line, no command), or the
  *    file is not a JSON object ⇒ nothing is written and `refused` says why.
  *
@@ -112,11 +131,13 @@ export function ensureBadgeStatusLine(
   const write = (
     settings: Record<string, unknown>,
     state: 'set' | 'wrapped',
+    placed: string,
+    host: string | null,
   ): BadgeStatusLineResult => {
-    if (opts.dry) return { path, state, wrote: false };
+    if (opts.dry) return { path, state, wrote: false, placed, host };
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
-    return { path, state, wrote: true };
+    return { path, state, wrote: true, placed, host };
   };
 
   let settings: Record<string, unknown> = {};
@@ -145,6 +166,8 @@ export function ensureBadgeStatusLine(
     return write(
       { ...settings, statusLine: { type: 'command', command: workerCommand } },
       'set',
+      workerCommand,
+      null,
     );
   }
   if (
@@ -155,23 +178,29 @@ export function ensureBadgeStatusLine(
     host.command === ''
   ) {
     return refuse(
-      '`statusLine` is not a `command` status line, so there is no command to wrap',
+      '`statusLine` is not a `command` status line, so there is no command to wrap; Claude Code rejects such a settings file and runs no status line, so no persona badge can show there until it is fixed',
     );
   }
   const command = host.command;
-  if (command === workerCommand || command.startsWith(`${workerCommand} `)) {
-    return { path, state: 'kept', wrote: false };
+  if (command === workerCommand) {
+    return { path, state: 'kept', wrote: false, placed: command, host: null };
   }
-  if (!opts.wrap) return { path, state: 'offer', wrote: false };
+  if (command.startsWith(`${workerCommand} `)) {
+    const wrapped = shellUnquote(command.slice(workerCommand.length + 1));
+    return {
+      path,
+      state: 'kept',
+      wrote: false,
+      placed: command,
+      ...(wrapped !== undefined ? { host: wrapped } : {}),
+    };
+  }
+  const placed = `${workerCommand} ${shellQuote(command)}`;
   return write(
-    {
-      ...settings,
-      statusLine: {
-        ...host,
-        command: `${workerCommand} ${shellQuote(command)}`,
-      },
-    },
+    { ...settings, statusLine: { ...host, command: placed } },
     'wrapped',
+    placed,
+    command,
   );
 }
 

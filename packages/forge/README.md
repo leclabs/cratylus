@@ -341,10 +341,13 @@ the left list the `custom` preset falls back to.
 
 Making the host's status line show the badge is install's, in `deploy/status-line.ts`, after a
 successful deploy and only when personas were installed. `ensureBadgeStatusLine` sets the worker as
-`statusLine` where the host has none, keeps a status line that already is the worker, and leaves any
-other byte-identical, offering `--wrap-status-line`; with the flag it rewrites `command` to the worker
-with the host's command as one single-quoted argument and keeps every other key, and a second run
-wraps nothing twice. `ensureStatusSegment` edits omp's config as text, as `addModelRoles` does, and
+`statusLine` where the host has none, keeps a status line that already is the worker, and wraps any
+other: it rewrites `command` to the worker with the host's command as one single-quoted argument,
+keeps every other key, and a second run wraps nothing twice. Its result carries the `command` now in
+place and the host's original (`null` where the host had none), which install records as
+`DeployManifest.statusLine` for an uninstall to restore from. A `statusLine` that is not a `command`
+one is refused and left byte-identical (Claude Code rejects such a file and runs no status line).
+`ensureStatusSegment` edits omp's config as text, as `addModelRoles` does, and
 shares its line helpers (`deploy/yaml-lines.ts`). omp reads a segment list only under
 `statusLine.preset: custom`, so a host with no preset gets `preset: custom` with the default preset's
 layout written out (left plus `status`, right, segment options) unless it laid out its own line

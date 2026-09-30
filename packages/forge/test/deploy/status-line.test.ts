@@ -2,14 +2,16 @@
 // and what it must never do.
 //
 // Both files are HOST-OWNED, so nearly every case is a byte claim. Claude Code's
-// `settings.statusLine` is one command: install sets it only where the host has none,
-// and a host's own is left exactly as it is unless the operator asks to wrap it —
-// which keeps the command, and every other key beside it, and never wraps twice. omp's
+// `settings.statusLine` is one command: install sets it where the host has none and
+// WRAPS a host's own by default — the host's output keeps every byte, the badge goes in
+// front of its first line in a persona's session, every other key beside the command
+// is kept, and it never wraps twice. omp's
 // `statusLine.leftSegments` is a list: `status` is appended to the host's own, no other
 // byte changing, and left alone when already listed. Unit cases drive the two functions
 // on strings a host might really have written; install cases run `runInstall` against
 // a corpus written at run time, with a tmp HOME so no real host is ever read.
 
+import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -93,32 +95,34 @@ describe('ensureBadgeStatusLine', () => {
     });
   });
 
-  it('leaves the host’s own status line byte-identical and offers the wrap, without the flag', () => {
+  it('wraps the host’s own status line with no option, keeping its other keys, and names the host’s command', () => {
     const f = file('settings.json', HOST);
     const r = ensureBadgeStatusLine(f.path, WORKER);
-    expect(r).toMatchObject({ state: 'offer', wrote: false });
-    expect(f.read()).toBe(HOST);
-  });
-
-  it('wraps the host’s command verbatim as the worker’s one argument, keeping its other keys', () => {
-    const f = file('settings.json', HOST);
-    const r = ensureBadgeStatusLine(f.path, WORKER, { wrap: true });
-    expect(r).toMatchObject({ state: 'wrapped', wrote: true });
+    const placed = `${WORKER} 'printf '\\''it'\\'''\\''s'\\'''`;
+    expect(r).toMatchObject({
+      state: 'wrapped',
+      wrote: true,
+      placed,
+      host: "printf 'it''s'",
+    });
     const line = JSON.parse(f.read() as string).statusLine;
     expect(line.padding).toBe(0);
     expect(line.type).toBe('command');
     // The host command's own quote survives one round of shell quoting.
-    expect(line.command).toBe(`${WORKER} 'printf '\\''it'\\'''\\''s'\\'''`);
+    expect(line.command).toBe(placed);
     expect(JSON.parse(f.read() as string).theme).toBe('dark');
   });
 
   it('never wraps twice, and never re-sets what is already the worker', () => {
     const f = file('settings.json', HOST);
-    ensureBadgeStatusLine(f.path, WORKER, { wrap: true });
+    ensureBadgeStatusLine(f.path, WORKER);
     const wrapped = f.read();
-    expect(ensureBadgeStatusLine(f.path, WORKER, { wrap: true }).state).toBe(
-      'kept',
-    );
+    // What it made is read back: the host's command comes out as it went in.
+    expect(ensureBadgeStatusLine(f.path, WORKER)).toMatchObject({
+      state: 'kept',
+      wrote: false,
+      host: "printf 'it''s'",
+    });
     expect(f.read()).toBe(wrapped);
 
     const bare = file(
@@ -126,10 +130,23 @@ describe('ensureBadgeStatusLine', () => {
       `${JSON.stringify({ statusLine: { type: 'command', command: WORKER } }, null, 2)}\n`,
     );
     const before = bare.read();
-    expect(ensureBadgeStatusLine(bare.path, WORKER, { wrap: true }).state).toBe(
-      'kept',
-    );
+    expect(ensureBadgeStatusLine(bare.path, WORKER)).toMatchObject({
+      state: 'kept',
+      host: null,
+    });
     expect(bare.read()).toBe(before);
+  });
+
+  it('keeps a hand-written wrap whose host command cannot be read back, and names no host', () => {
+    const f = file(
+      'settings.json',
+      `${JSON.stringify({ statusLine: { type: 'command', command: `${WORKER} "$(date)"` } })}\n`,
+    );
+    const before = f.read();
+    const r = ensureBadgeStatusLine(f.path, WORKER);
+    expect(r).toMatchObject({ state: 'kept', wrote: false });
+    expect(r.host).toBeUndefined();
+    expect(f.read()).toBe(before);
   });
 
   it('writes nothing under dry-run, for a set and for a wrap alike', () => {
@@ -141,7 +158,7 @@ describe('ensureBadgeStatusLine', () => {
 
     const host = file('settings.json', HOST);
     expect(
-      ensureBadgeStatusLine(host.path, WORKER, { dry: true, wrap: true }),
+      ensureBadgeStatusLine(host.path, WORKER, { dry: true }),
     ).toMatchObject({ state: 'wrapped', wrote: false });
     expect(host.read()).toBe(HOST);
 
@@ -158,7 +175,7 @@ describe('ensureBadgeStatusLine', () => {
     ['a status line that is a string', '{"statusLine":"printf x"}'],
   ])('refuses %s, leaving the file as it was', (_name, content) => {
     const f = file('settings.json', content);
-    const r = ensureBadgeStatusLine(f.path, WORKER, { wrap: true });
+    const r = ensureBadgeStatusLine(f.path, WORKER);
     expect(r.state).toBe('refused');
     expect(r.refused).toBeTruthy();
     expect(f.read()).toBe(content);
@@ -676,54 +693,128 @@ describe('install — the status line', () => {
       expect(existsSync(join(scope, 'alpha'))).toBe(true);
     });
 
-    it('never replaces the host’s own status line without the flag, and names the flag', async () => {
-      const host = `${JSON.stringify(
-        {
-          statusLine: {
-            type: 'command',
-            command: 'printf HOSTLINE-7731',
-            padding: 0,
-          },
-        },
-        null,
-        2,
-      )}\n`;
+    // The badge is decided by the SESSION, not by install, so the installed command is
+    // RUN the way Claude Code runs it: through a shell, the status line's JSON on stdin.
+    const HOST_LINE = 'printf HOSTLINE-7731';
+    const hostSettings = (command = HOST_LINE) =>
+      `${JSON.stringify({ statusLine: { type: 'command', command, padding: 0 } }, null, 2)}\n`;
+    const runLine = (stdin: string) => {
+      const command = JSON.parse(readFileSync(settings(), 'utf8')).statusLine
+        .command as string;
+      const r = spawnSync('sh', ['-c', command], {
+        input: stdin,
+        env: { ...process.env, HOME: home },
+        encoding: 'utf8',
+      });
+      expect(r.status).toBe(0);
+      return r.stdout;
+    };
+    const manifest = () =>
+      JSON.parse(
+        readFileSync(
+          join(home, '.claude', '.forge', 'deploy-manifest.json'),
+          'utf8',
+        ),
+      );
+    const withJq = spawnSync('jq', ['--version']).status === 0;
+
+    it('wraps the host’s own status line with no flag, keeps padding, records the original, and a second run changes no byte', async () => {
       mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(settings(), host);
+      writeFileSync(settings(), hostSettings());
       expect(await install('claude')).toBe(0);
-      expect(JSON.parse(readFileSync(settings(), 'utf8')).statusLine).toEqual({
+      const line = JSON.parse(readFileSync(settings(), 'utf8')).statusLine;
+      expect(line).toEqual({
         type: 'command',
-        command: 'printf HOSTLINE-7731',
+        command: `${worker()} '${HOST_LINE}'`,
         padding: 0,
       });
-      expect(out).toContain('--wrap-status-line');
+      expect(manifest().statusLine).toEqual({
+        placed: line.command,
+        host: HOST_LINE,
+      });
+      expect(out).toContain('wrapped the host');
+      expect(out).toContain('byte for byte');
+      expect(out).toContain(HOST_LINE);
+      const once = readFileSync(settings(), 'utf8');
+      const recorded = readFileSync(
+        join(home, '.claude', '.forge', 'deploy-manifest.json'),
+        'utf8',
+      );
+      expect(await install('claude')).toBe(0);
+      expect(readFileSync(settings(), 'utf8')).toBe(once);
+      expect(
+        readFileSync(
+          join(home, '.claude', '.forge', 'deploy-manifest.json'),
+          'utf8',
+        ),
+      ).toBe(recorded);
     });
 
-    it('wraps it under --wrap-status-line, keeps padding, and a second run changes no byte', async () => {
+    it('records no host command where the host had no status line', async () => {
+      expect(await install('claude')).toBe(0);
+      expect(manifest().statusLine).toEqual({
+        placed: worker(),
+        host: null,
+      });
+    });
+
+    it('records a wrap that an earlier install made before the record existed', async () => {
+      mkdirSync(join(home, '.claude'), { recursive: true });
+      writeFileSync(settings(), hostSettings(`${worker()} '${HOST_LINE}'`));
+      expect(await install('claude')).toBe(0);
+      expect(manifest().statusLine).toEqual({
+        placed: `${worker()} '${HOST_LINE}'`,
+        host: HOST_LINE,
+      });
+    });
+
+    it('passes the host’s output through byte for byte in a session with no persona', async () => {
       mkdirSync(join(home, '.claude'), { recursive: true });
       writeFileSync(
         settings(),
-        JSON.stringify({
-          statusLine: {
-            type: 'command',
-            command: 'printf HOSTLINE-7731',
-            padding: 0,
-          },
-        }),
+        hostSettings(`printf 'one\\ntwo  \\n\\nthree'`),
       );
-      expect(await install('claude', { wrapStatusLine: true })).toBe(0);
-      const line = JSON.parse(readFileSync(settings(), 'utf8')).statusLine;
-      expect(line.command).toBe(`${worker()} 'printf HOSTLINE-7731'`);
-      expect(line.padding).toBe(0);
-      const once = readFileSync(settings(), 'utf8');
-      expect(await install('claude', { wrapStatusLine: true })).toBe(0);
-      expect(readFileSync(settings(), 'utf8')).toBe(once);
+      expect(await install('claude')).toBe(0);
+      expect(runLine('{}')).toBe('one\ntwo  \n\nthree');
+      // An agent that is no installed persona has no badge either.
+      expect(runLine('{"agent":{"name":"Explore"}}')).toBe(
+        'one\ntwo  \n\nthree',
+      );
+      expect(runLine('')).toBe('one\ntwo  \n\nthree');
     });
 
-    it('writes nothing to the status line under --dry-run, and says what it would do', async () => {
+    it.skipIf(!withJq)(
+      'puts the badge in front of the first line of the host’s output in a persona’s session, and only there',
+      async () => {
+        mkdirSync(join(home, '.claude'), { recursive: true });
+        writeFileSync(settings(), hostSettings(`printf 'one\\ntwo\\n'`));
+        expect(await install('claude')).toBe(0);
+        expect(runLine('{"agent":{"name":"alpha"}}')).toBe('alpha one\ntwo\n');
+        expect(runLine('{}')).toBe('one\ntwo\n');
+      },
+    );
+
+    it('leaves a status line that is not a command exactly as it is, and says no badge can show there', async () => {
+      const host = '{"statusLine":{"type":"static","text":"x"}}';
+      mkdirSync(join(home, '.claude'), { recursive: true });
+      writeFileSync(settings(), host);
+      expect(await install('claude')).toBe(0);
+      expect(readFileSync(settings(), 'utf8')).toBe(host);
+      expect(out).toContain('no persona badge can show there');
+      expect(manifest().statusLine).toBeNull();
+    });
+
+    it('writes nothing to the status line or the manifest under --dry-run, and says what it would do', async () => {
       expect(await install('claude', { dryRun: true })).toBe(0);
       expect(existsSync(settings())).toBe(false);
       expect(out).toContain('would set');
+
+      mkdirSync(join(home, '.claude'), { recursive: true });
+      writeFileSync(settings(), hostSettings());
+      out = '';
+      expect(await install('claude', { dryRun: true })).toBe(0);
+      expect(readFileSync(settings(), 'utf8')).toBe(hostSettings());
+      expect(out).toContain('would wrap');
     });
   });
 
