@@ -91,6 +91,7 @@ export {
   type KindRecord,
   type LineHunk,
   lineHunks,
+  markMigratedConfig,
   MANIFEST_REL,
   MANIFEST_VERSION,
   nextDigests,

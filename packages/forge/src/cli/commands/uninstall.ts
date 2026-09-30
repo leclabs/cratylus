@@ -275,6 +275,12 @@ function undoHostEdits(
   for (const [rel, edit] of Object.entries(manifest.hostEdits)) {
     const file = resolve(harnessDir, rel);
     if (!existsSync(file)) continue;
+    if (edit.migrated === true) {
+      tally.left.push({
+        what: file,
+        why: 'an install from before edits were recorded may have changed more of this file than the lines adopted — a value it turned (`showHookStatus`), a segment it put in a list of yours — and nothing records which, so it is left as it stands; the lines that were adopted are the ones taken out',
+      });
+    }
     const text = readFileSync(file, 'utf8');
     const undone = undoHunks(text, edit.hunks);
     for (const { hunk, removed, changed, holding } of undone.results) {

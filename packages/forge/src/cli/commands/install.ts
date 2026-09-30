@@ -40,6 +40,7 @@ import {
   ensureBadgeStatusLine,
   ensureStatusSegment,
   hasManifest,
+  markMigratedConfig,
   modelRoleLine,
   noteHostEdit,
   personaLauncherOf,
@@ -416,6 +417,9 @@ function showPersonaBadge(
     if (result.edit !== undefined) {
       noteHostEdit(join(opts.home, adapter.home), path, result.edit);
     }
+    if (adopt && !dry && existsSync(path)) {
+      markMigratedConfig(join(opts.home, adapter.home), path);
+    }
     // The row beneath the editor is the badge's place wherever the layout has none of
     // its own; a host that had hidden it is told it is shown now, and why.
     const rowShown = result.hookRowShown
@@ -485,6 +489,9 @@ function seedModelRoles(
   // What an uninstall takes out again: the lines just put in, and nothing of the host's.
   if (result.edit !== undefined) {
     noteHostEdit(join(home, adapter.home), path, result.edit);
+  }
+  if (adopt && !dry && existsSync(path)) {
+    markMigratedConfig(join(home, adapter.home), path);
   }
   if (result.refused !== undefined) {
     process.stderr.write(

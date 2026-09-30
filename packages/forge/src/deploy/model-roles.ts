@@ -19,7 +19,12 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { type HostEdit, adoptedHunk, lineHunks } from './manifest.js';
+import {
+  type HostEdit,
+  type LineHunk,
+  adoptedHunk,
+  lineHunks,
+} from './manifest.js';
 import {
   inlineValue,
   isBlankOrComment,
@@ -101,7 +106,7 @@ export function addModelRoles(
   const finish = (
     added: readonly ModelRoleEntry[],
     next: string,
-    adopted: readonly number[] = [],
+    adopted: (source: string) => LineHunk[] = () => [],
   ): AddModelRolesResult => {
     if (added.length === 0) return { path, added, wrote: false };
     if (dry) return { path, added, wrote: false };
@@ -113,10 +118,7 @@ export function addModelRoles(
       wrote: true,
       edit: {
         created: !exists,
-        hunks: [
-          ...lineHunks(text, next),
-          ...adopted.map((i) => adoptedHunk(next, i, 1)),
-        ],
+        hunks: [...lineHunks(text, next), ...adopted(next)],
       },
     };
   };
@@ -213,6 +215,18 @@ export function addModelRoles(
             : [];
         })
       : [];
+  // A block that is nothing BUT adopted entries under a bare `modelRoles:` key was
+  // created by that install, key line included — it is recorded whole, so the key goes
+  // with its last entry. A host's own entry in the block makes the key the host's.
+  const wholeBlock =
+    adopted.length > 0 &&
+    (lines[at] as [string, string])[0] === 'modelRoles:' &&
+    adopted.length === last - at &&
+    adopted.every((i) => i > at && i <= last);
+  const adoptedHunks = (source: string): LineHunk[] =>
+    wholeBlock
+      ? [adoptedHunk(source, at, last - at + 1)]
+      : adopted.map((i) => adoptedHunk(source, i, 1));
   const missing = wanted.filter((e) => !present.has(e.role));
   if (missing.length === 0) {
     return adopted.length === 0
@@ -221,10 +235,7 @@ export function addModelRoles(
           path,
           added: [],
           wrote: false,
-          edit: {
-            created: false,
-            hunks: adopted.map((i) => adoptedHunk(text, i, 1)),
-          },
+          edit: { created: false, hunks: adoptedHunks(text) },
         };
   }
 
@@ -244,5 +255,5 @@ export function addModelRoles(
     anchorEol === ''
       ? `${head}${anchorText}${eol}${inserted.join(eol)}`
       : `${head}${anchorText}${anchorEol}${inserted.join(eol)}${eol}${tail}`;
-  return finish(missing, next, adopted);
+  return finish(missing, next, adoptedHunks);
 }

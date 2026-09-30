@@ -98,6 +98,9 @@ export interface HostEdit {
   created: boolean;
   /** In the order made; an uninstall takes them out newest first. */
   hunks: LineHunk[];
+  /** Set where the record was migrated from one that recorded no edits: what an older
+   *  install did to this file beyond the lines adopted cannot be told from the host's. */
+  migrated?: boolean;
 }
 
 export function emptyManifest(): DeployManifest {
@@ -511,7 +514,28 @@ export function noteHostEdit(
     ...manifest,
     hostEdits: {
       ...manifest.hostEdits,
-      [key]: { created: (prior?.created ?? false) || edit.created, hunks },
+      [key]: {
+        ...prior,
+        created: (prior?.created ?? false) || edit.created,
+        hunks,
+      },
+    },
+  });
+}
+
+/** Mark `file` as one an install from before edits were recorded may have changed in ways
+ *  nothing records — a value it turned, a line it put in a list of the host's. Called by
+ *  the install that migrates the record, so the mark outlives the rewrite that makes the
+ *  record look as if it had always recorded edits; an uninstall reports the file for it. */
+export function markMigratedConfig(harnessDir: string, file: string): void {
+  const manifest = readManifest(harnessDir);
+  const key = recordPath(relative(harnessDir, file));
+  const prior = manifest.hostEdits[key];
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostEdits: {
+      ...manifest.hostEdits,
+      [key]: { created: false, hunks: [], ...prior, migrated: true },
     },
   });
 }
