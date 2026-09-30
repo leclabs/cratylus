@@ -91,6 +91,14 @@ input="$(cat)"
 [ -n "$input" ] || open "the hook received no input"
 command -v jq >/dev/null 2>&1 || open "jq is not installed, so the hook payload cannot be read"
 
+# A GUARD BINDS A PERSONA'S OWN MAIN SESSION AND NO SUBAGENT IT DISPATCHES. A subagent is bounded
+# by what it was handed, judged by its assay and the whole check, and supervised by the main
+# session. Claude Code fires this hook inside a subagent too (settings hooks and the subagent's
+# own front-matter hooks), and there the payload carries `agent_id` — present only inside a
+# subagent. A guard that does not bind there is not dark: it exits before it judges and says
+# nothing.
+[ -z "$(printf '%s' "$input" | jq -r '.agent_id // empty' 2>/dev/null || true)" ] || allow
+
 # The sibling Stop hook's deployed dir owns the SHARED judge backend, resolved from
 # this script's own location exactly as the pre-hook resolves it — every hooks root
 # holds the hook dirs as siblings, so this derivation is true at every site this file

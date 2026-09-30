@@ -386,12 +386,10 @@ describe('STANCE GUARDRAIL — the claude form of the scope (agent_type only)', 
   });
 });
 
-// WHOSE TEXT, AND WHICH MESSAGE. Two payload facts the claude form depends on, each
-// observed live on Claude Code 2.1.285. A SubagentStop payload names the PARENT's
-// transcript (`transcript_path`) and the subagent's own (`agent_transcript_path`), and the
-// scope it resolves is the subagent's, so the turn judged must be the subagent's. And a Stop
-// payload fires BEFORE the final assistant message reaches the transcript: that message is
-// only in `last_assistant_message`, so a turn that is only text had nothing to judge.
+// WHICH MESSAGE. A payload fact the claude form depends on, observed live on Claude Code
+// 2.1.285: a Stop payload fires BEFORE the final assistant message reaches the transcript.
+// That message is only in `last_assistant_message`, so a turn that is only text had nothing
+// to judge.
 describe('STANCE GUARDRAIL — what the claude form judges', () => {
   let claudeWorker: string;
   let recorded: string;
@@ -436,9 +434,9 @@ describe('STANCE GUARDRAIL — what the claude form judges', () => {
     chmodSync(judge, 0o755);
   });
 
-  const judgedBy = (payload: Record<string, unknown>): string | null => {
+  const fireClaude = (payload: Record<string, unknown>) => {
     rmSync(recorded, { force: true });
-    spawnSync('sh', [claudeWorker], {
+    const r = spawnSync('sh', [claudeWorker], {
       input: JSON.stringify({
         session_id: `turn-${Math.random()}`,
         cwd: home,
@@ -452,8 +450,13 @@ describe('STANCE GUARDRAIL — what the claude form judges', () => {
         HOME: home,
       },
     });
-    return existsSync(recorded) ? readFileSync(recorded, 'utf8') : null;
+    return {
+      r,
+      seen: existsSync(recorded) ? readFileSync(recorded, 'utf8') : null,
+    };
   };
+  const judgedBy = (payload: Record<string, unknown>): string | null =>
+    fireClaude(payload).seen;
 
   it('judges a turn that is only text, from the payload, before the transcript holds it', () => {
     const seen = judgedBy({
@@ -485,30 +488,70 @@ describe('STANCE GUARDRAIL — what the claude form judges', () => {
     expect(seen?.match(/ALREADY-WRITTEN/g)).toHaveLength(1);
   });
 
-  it('judges the subagent’s transcript, never the parent’s', () => {
-    const seen = judgedBy({
-      transcript_path: write(
-        'parent.jsonl',
-        user('op') + said('PARENT-MARKER-TEXT'),
-      ),
-      agent_transcript_path: write(
-        'agent.jsonl',
-        user('dispatch prompt') + said('SUBAGENT-OWN-TEXT'),
-      ),
-    });
-    expect(seen).toContain('SUBAGENT-OWN-TEXT');
-    expect(seen).not.toContain('PARENT-MARKER-TEXT');
+  // A GUARD BINDS A PERSONA'S OWN MAIN SESSION, never a subagent it dispatches. Claude Code
+  // fires the hook inside a subagent too, and only there the payload carries `agent_id`.
+  it('is not bound inside a subagent: an `agent_id` payload exits 0, says nothing and leaves the judge unasked', () => {
+    const payload = {
+      transcript_path: write('t4.jsonl', user('do it')),
+      last_assistant_message: 'SUBAGENT-CLOSE',
+    };
+    const inside = fireClaude({ ...payload, agent_id: 'a1b2c3' });
+    expect(inside.r.status).toBe(0);
+    expect(inside.r.stdout).toBe('');
+    expect(inside.seen).toBeNull();
+    // The same payload in a main session is judged, so the silence above is the gate's.
+    expect(fireClaude(payload).seen).toContain('SUBAGENT-CLOSE');
+  });
+});
+
+// The pre guard's twin of the case above: it binds the main session and no subagent.
+describe('STANCE GUARDRAIL (pre) — a guard binds a main session only', () => {
+  let preWorker: string;
+  let scope: string;
+  let home: string;
+
+  beforeAll(() => {
+    home = mkdtempSync(join(root, 'pre-main-'));
+    const dir = join(home, '.claude', 'hooks', 'stance-guardrail-pre');
+    mkdirSync(dir, { recursive: true });
+    preWorker = join(dir, 'stance-guardrail-pre.sh');
+    writeFileSync(
+      preWorker,
+      sourceOf(stanceGuardrailPre, 'stance-guardrail-pre.sh', 'claude'),
+      'utf8',
+    );
+    chmodSync(preWorker, 0o755);
+    scope = join(home, '.claude', 'personas', 'nico');
+    mkdirSync(join(scope, 'stance'), { recursive: true });
+    writeFileSync(
+      join(scope, 'stance', 'manifest.json'),
+      JSON.stringify({ agent: 'nico', gates: {} }),
+      'utf8',
+    );
   });
 
-  it('goes dark, rather than falling back to the parent, when the subagent’s transcript is unreadable', () => {
-    const seen = judgedBy({
-      transcript_path: write(
-        'parent2.jsonl',
-        user('op') + said('PARENT-MARKER-TEXT'),
-      ),
-      agent_transcript_path: join(home, 'no-such-agent-transcript.jsonl'),
+  const fire = (extra: Record<string, unknown>) =>
+    spawnSync('sh', [preWorker], {
+      input: JSON.stringify({
+        stance_scope: scope,
+        agent_type: 'nico',
+        session_id: `pre-main-${Math.random()}`,
+        cwd: home,
+        tool_name: 'Agent',
+        tool_input: { prompt: 'build the fold' },
+        ...extra,
+      }),
+      encoding: 'utf8',
+      env: { ...process.env, HOME: home, STANCE_EMIT_PAYLOAD: '1' },
     });
-    expect(seen).toBeNull();
+
+  it('exits 0, says nothing and leaves the judge unasked for an `agent_id` payload', () => {
+    const inside = fire({ agent_id: 'a1b2c3' });
+    expect(inside.status).toBe(0);
+    expect(inside.stdout).toBe('');
+    // The same payload in a main session is judged, so the silence above is the gate's.
+    const main = fire({});
+    expect(JSON.parse(main.stdout).payload).toContain('build the fold');
   });
 });
 
