@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R5PETTWQYP5GQZ79Y730KG",
+    "entity": "01M3R54VMV19BPTHSJ5STKA56B",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R54VMV19BPTHSJ5STKA56C"
+    ],
+    "author": "assayer",
+    "time": "2026-09-30T03:28:25.946Z",
+    "reason": "the rework answers the finding",
+    "cause": "assay of guard-says-when-open at 1b22cfe3"
+  },
+  "payload": {
+    "title": "guard-says-when-open: omp drops the guards' let-through notices at b27e94e0",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "Raised at b27e94e0: omp's bridge relayed a guard's let-through notice only when it read 'STANCE GUARDRAIL' and 'DARK' and only from the verdict pass, so purview notices, every notice raised before the judge was asked, and the Stop guard's 'BLOCK DISCARDED' reached no one on omp. 1b22cfe3 answers it: the bridge now relays any non-JSON line from either pass. I ran the generated omp module in a temp HOME on the real omp-form workers with a stubbed model: a purview notice raised before the judge (manifest naming no agent), purview's judge-did-not-answer and unparseable-verdict notices, the pre-guard's judge-did-not-answer notice and the Stop guard's BLOCK DISCARDED notice were each relayed once; a PASS stayed silent and an evidenced BLOCK still refused. Still open and not counted against the unit: the Stop guard allows a turn with no assistant text in silence (stance-guardrail.ts, the 'no judgeable agent text' line).",
+    "blocks": []
+  }
+}

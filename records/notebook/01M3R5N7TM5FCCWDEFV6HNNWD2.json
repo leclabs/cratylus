@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R5N7TM5FCCWDEFV6HNNWD2",
+    "entity": "01M3R5N7TM5FCCWDEFV6HNNWD1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "deliver-loop",
+    "time": "2026-09-30T03:27:46.004Z",
+    "reason": "cold read of the loop found the records commit trails the state it records",
+    "cause": "deliver-loop of corrected-shards"
+  },
+  "payload": {
+    "title": "records written after the last green are never committed before release",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Cold read of the five-agent loop (deliver-loop): the integrator commits the records written since only on a green, and each green precedes the planner recording that unit completed. So the last unit's completed record and the plan's close record are written after the final green, and nothing in the loop has anyone commit them before the integrator asks the operator to release the line. Records also accumulate uncommitted while a unit is red. Source: /tmp/corrected-shards-cold-read/deliver-loop/claude-opus-5-5.answer.md, gap 2.",
+    "blocks": []
+  }
+}
