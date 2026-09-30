@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RPKSEWSA6A80QWEJFQ0S3Z",
+    "entity": "01M3RPKMMJ1HATAA73V3VS2J1D",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RPKMMJ1HATAA73V3VS2J1E"
+    ],
+    "author": "JudgementFitsTime",
+    "time": "2026-09-30T08:24:04.316Z",
+    "reason": "topic was split by the shell",
+    "cause": "capture passed the topic unquoted"
+  },
+  "payload": {
+    "title": "claude -p never answers on this host under the user's settings",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "On this host `claude -p --model haiku` prints nothing for 60 s and more with the user's ~/.claude/settings.json, and answers in 2 to 5 s with --setting-sources '' or with a HOME whose settings.json is {}. The hooks in settings.json are not the cause (settings without them hang the same); enabledPlugins, env or another key is. So the default judge backend of stance-judge.sh cannot answer on this host and every Claude Code guard here goes dark whatever the payload size. Seen while measuring judgement-fits-time; its Claude Code time criterion was measured under a clean HOME (11 to 20 s on the 200000-byte turn, verdict PASS). Not bisected further; whether the judge call should skip user settings (--setting-sources '') is a design question for the judge backend.",
+    "blocks": []
+  }
+}
