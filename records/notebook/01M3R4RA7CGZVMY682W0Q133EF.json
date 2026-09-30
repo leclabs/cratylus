@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R4RA7CGZVMY682W0Q133EF",
+    "entity": "01M3R4RA7CGZVMY682W0Q133EE",
+    "operation": "create",
+    "supersedes": [],
+    "author": "assayer",
+    "time": "2026-09-30T03:11:58.188Z",
+    "reason": "assay of design-stability at a945bf8e",
+    "cause": "packages/canon/src/skills/deliver/skill.ts finding and fold laws"
+  },
+  "payload": {
+    "title": "design-stability: the deliver skill still folds every finding into the design before the next dispatch",
+    "kind": "finding",
+    "topic": "corrected-shards",
+    "body": "Assay of design-stability at a945bf8e. The design skill states the shard faithfully: it names the design as the bound plan's fixed target, holds a change bearing on a shard the plan realizes (or on anything in its closure) as a non-blocking decision note until the plan completes and then amends it for a following plan sequenced after the work it depends on, amends any other change at once, and gives a bound plan found built on a wrong shard the ordered stop: a blocking note, one amendment, a re-plan, then the note retracted. The skill description says the same. The architect role's reserves line already agrees. The deliver skill, which composes design and runs the plan, still says the opposite at a945bf8e and at 7d6079eb (packages/canon/src/skills/deliver/skill.ts, the finding and fold laws, lines 84-86 and 144-151). A finding is a yield or an operator steer. It must be folded into the design before self's next dispatch, judge or close, and a hold keyed to a later act is rejected by name as a lock that only that act checks. An architect loading deliver during a running plan is therefore told to move the shard the plan is building against, so the design is not yet a fixed target in the loop that realizes it. deliver-loop (wave 2, after design-stability) may be meant to rewrite this law. The existing note on deliver says deliver-loop rewrites the skill. If its spec covers the fold law, the shard is whole when that unit lands; if it does not, no unit of corrected-shards carries design stability into deliver. I did not read deliver-loop's spec.",
+    "blocks": []
+  }
+}
