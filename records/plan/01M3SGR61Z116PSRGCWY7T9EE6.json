@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3SGR61Z116PSRGCWY7T9EE6",
+    "entity": "01M3SFSMK66SSGWGDEHAVXNT01",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SFTXC9R8B4D45HT3YH7HAE"
+    ],
+    "author": "PurviewRoutePlanner2",
+    "time": "2026-09-30T16:00:51.263Z",
+    "reason": "every unit completed",
+    "cause": "whole omp-message-is-dispatch and whole closed-plan-route of purview-routes"
+  },
+  "payload": {
+    "name": "purview-routes",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "closed"
+  }
+}

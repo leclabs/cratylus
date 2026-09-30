@@ -1,0 +1,47 @@
+{
+  "envelope": {
+    "id": "01M3SFV0MKEH0CGHBXVP847BR7",
+    "entity": "01M3SFSMKP5D4MY96EA9NH3BGY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SFSMKP5D4MY96EA9NH3BGZ"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T15:44:55.443Z",
+    "reason": "ready: no deps, no owed ruling; its name is handed out",
+    "cause": "bind purview-routes"
+  },
+  "payload": {
+    "plan": "01M3SFSMK66SSGWGDEHAVXNT01",
+    "spec": {
+      "name": "omp-message-is-dispatch",
+      "intent": "Census @15d0a621; re-derive any line cited below if its path changed since. Realize on omp the clause of `enforcement scope` that a guard, on every supported harness, judges the act it fires on. omp messages a running agent with its `write` tool addressed to `agent://<id>` (`agent://all` broadcasts); Claude Code messages one with `SendMessage`, which the purview worker already reads as a dispatch.\nAT CENSUS. The omp guard module's unnarrowed `tool.use.pre` handler builds the worker's envelope in `toolEnvelope` (packages/forge/src/adapters/omp/render.ts:859-866), spelling omp's tool names by `OMP_WIRE_TOOL` (packages/forge/src/adapters/omp/events.ts:205-222, `write` to `Write`). A message therefore reaches the purview worker as `tool_name: Write` with `tool_input.path: agent://<id>`; the worker's `Write|Edit|MultiEdit|NotebookEdit` branch (packages/canon/src/hooks/purview-guardrail.ts:225-228) hands the judge `WRITE to the substrate (codomain: artifact)` and the path, and never the message. The worker's dispatch branch (L220-223) reads the body from `.tool_input.prompt // .message // .description` and the recipient from `.subagent_type // .agent // .name`. Measured with the deployed omp worker (the omp projection of packages/canon/targets/guardrail/purview-guardrail.sh at 15d0a621, byte-identical rubric) and the judge below: the architect's `write` to `agent://InstallPlanner4` carrying `whole install of guided-install` was BLOCKed 5/5; the same message as `SendMessage {agent: InstallPlanner4, message: ...}` 0/5; a SendMessage carrying build instructions for a unit 5/5. No file in the repository spells `agent://` at census; the module emitter's only consumers are the omp adapter (render.ts, index.ts) and packages/forge/test/adapters/omp.test.ts.\nCHANGE. In the envelope the omp module hands a worker, a `write` whose path is an `agent://` address is the message act, spelled on the wire as `SendMessage`, with the recipient (the address after `agent://`) in `agent` and the written content in `message`; every other `write`, and every `edit`, is spelled as today. Keep the workers' wire contract, the adapter's act bindings and the subagent-session skip unchanged. Say beside the mapping, and where events.ts describes a write's target, that omp messages a running agent through `write` to `agent://`. Add .changeset/omp-message-is-dispatch.md (@cratylus/forge patch).\nJUDGE, for every judged criterion: omp headless, `omp -p --config <a file setting memory.backend: off> --no-tools --no-session --no-skills --no-rules --no-extensions --no-lsp --thinking off --model anthropic/claude-haiku-4-5 --system-prompt <rubric>`, the payload in stance-judge.sh's transcript-excerpt wrapper, the first answer carrying a `VERDICT:` line taken (asked again up to 3 times), named to the worker through STANCE_JUDGE_CMD; `claude -p` could not reach its API at census. The architect's scope is its deployed omp persona (`~/.omp/agent/personas/architect`, passed as `stance_scope`), whose contract reads `writes⟨C · note · route⟩`.",
+      "static": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        "packages/forge/src/adapters/omp/index.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        ".changeset/omp-message-is-dispatch.md"
+      ],
+      "accept": [
+        "A case in packages/forge/test/adapters/omp.test.ts loads the module ompGuardrailExtensions generates for a persona binding tool.use.pre and subagent.dispatch.pre, on a worker stub that records the envelope it reads on stdin, and fires in a main session the tool_call `{toolName: 'write', input: {path: 'agent://AssayInstall3', content: 'install of guided-install at 1a2b3c4'}}`: the worker receives tool_name `SendMessage`, tool_input.agent `AssayInstall3` and tool_input.message that content. In the same case a `write` to `packages/forge/src/x.ts` reaches the worker as `Write` with that path. Against render.ts at 15d0a621 the first reaches it as `Write`, so the case fails there.",
+        "The envelope the generated module builds for the main-session fire `write` to `agent://InstallPlanner4` carrying `whole install of guided-install`, piped with the architect's scope and STANCE_EMIT_PAYLOAD set into the purview worker in its omp form at 15d0a621, yields a payload whose act line reads DISPATCH to `InstallPlanner4` followed by the message; judged 10 times with the judge below and that worker and rubric, it is BLOCKed 0 of 10, where the envelope at 15d0a621 (`Write`, `agent://InstallPlanner4`) is BLOCKed at least 9 of 10. Print both act lines, both tallies and the judge used.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts` and `pnpm --filter @cratylus/forge typecheck` exit 0.",
+        "`.changeset/omp-message-is-dispatch.md` exists and names @cratylus/forge."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3RQE2NGC40BHYYPGFMWSRN2",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

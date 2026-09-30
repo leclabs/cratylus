@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SGJ2RH369DC6HDGMSX4HN2",
+    "entity": "01M3SGJ2RH369DC6HDGMSX4HN1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayClosedPlanRoute",
+    "time": "2026-09-30T15:57:31.281Z",
+    "reason": "a finding beside the unit is a note, not part of the verdict",
+    "cause": "assay of closed-plan-route of purview-routes at 34011244"
+  },
+  "payload": {
+    "title": "the architect's role contract names no closed-plan route",
+    "kind": "question",
+    "topic": "architect role",
+    "body": "Beside the assay of closed-plan-route of purview-routes at 34011244 (achieved). The architect role says the planner's report that a plan has closed reaches the architect, and that the architect routes a closed plan to the integrator, which makes its line whole and asks for release. The architect's own role contract, packages/canon/src/dimensions/role/architect.ts, is the text the purview guard reads as the law and the text the architect acts from. Its reads list is intent, C, note, verdict, broke-the-whole and ready-names, with no plan-closed report. Its route clause lists only not-achieved or broke-the-whole to the same implementer, achieved to the integrator, and ready to an implementer, with no closed plan. The guard now passes the route because its rubric names it, but the contract that should tell the architect to make the route does not state it.",
+    "blocks": []
+  }
+}

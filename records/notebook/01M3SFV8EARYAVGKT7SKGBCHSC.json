@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SFV8EARYAVGKT7SKGBCHSC",
+    "entity": "01M3SFV8EARYAVGKT7SKGBCHSB",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T15:45:03.434Z",
+    "reason": "a harness asymmetry in what the dispatch act covers, outside the finding the plan realizes",
+    "cause": "census for plan purview-routes at 15d0a621"
+  },
+  "payload": {
+    "title": "omp's dispatch act does not cover a message to a running agent",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "Found while planning purview-routes. On Claude Code the canonical act subagent.dispatch.pre is Agent|SendMessage (packages/forge/src/adapters/claude/events.ts:100), so a guard bound to it judges a message to a running agent as well as a fresh dispatch. On omp it is the task tool alone (packages/forge/src/adapters/omp/events.ts:80), and omp messages a running agent through write to agent://<id>. Unit omp-message-is-dispatch spells that write as SendMessage in the envelope of the unnarrowed tool.use.pre handler, which is all the purview guard needs; stance-guardrail-pre binds subagent.dispatch.pre and not tool.use.pre, so on omp it still never judges a message for dispatch-echo [inferred from the bindings at 15d0a621, not run]. Whether the dispatch act on omp should include a message is the design's call.",
+    "blocks": []
+  }
+}

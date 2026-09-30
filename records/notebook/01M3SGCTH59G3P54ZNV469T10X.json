@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SGCTH59G3P54ZNV469T10X",
+    "entity": "01M3SGCTH59G3P54ZNV469T10W",
+    "operation": "create",
+    "supersedes": [],
+    "author": "OmpMessageIsDispatch",
+    "time": "2026-09-30T15:54:39.013Z",
+    "reason": "criterion not met deterministically",
+    "cause": "judge variance on a borderline route/spec message"
+  },
+  "payload": {
+    "title": "omp-message-is-dispatch judge tally not zero every batch",
+    "kind": "question",
+    "topic": "purview-routes",
+    "body": "The build is landed and the envelope is proven (SendMessage, agent=InstallPlanner4, act line DISPATCH to InstallPlanner4 followed by the message). The criterion 'BLOCKed 0 of 10' did not hold on every batch: with haiku-4-5 via omp headless the message 'whole install of guided-install' to InstallPlanner4 was BLOCKed as codomain spec (contract writes exclude spec) in 1,1,4,2,3 of 10 (rubric as system prompt only) and 1,0,0,1,0 of 10 (rubric also in the stance-judge.sh wrapper); the old Write envelope was BLOCKed 10 of 10 twice. The residual is the judge's classification of a bare install request as spec versus route, not the envelope; the worker and rubric are static for this unit.",
+    "blocks": []
+  }
+}

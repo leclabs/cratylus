@@ -1,0 +1,91 @@
+{
+  "envelope": {
+    "id": "01M3SGR2XXAJR8A87XY2C4DGHV",
+    "entity": "01M3SFTMC6T6T9A43C7VM7PK2W",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SGPWEF0DNPZAPT7HTM6V37"
+    ],
+    "author": "PurviewRoutePlanner2",
+    "time": "2026-09-30T16:00:48.061Z",
+    "reason": "integrator reported whole",
+    "cause": "whole closed-plan-route of purview-routes"
+  },
+  "payload": {
+    "plan": "01M3SFSMK66SSGWGDEHAVXNT01",
+    "spec": {
+      "name": "closed-plan-route",
+      "intent": "Census @15d0a621; re-derive any line cited below if its path changed since. Realize in the purview guard the route `architect role` prescribes once a plan closes: the planner's report that a plan has closed goes to the integrator, which makes its line whole and asks for release, and the architect routes it by the plan's name exactly as it routes a unit, whether by a fresh dispatch to the integrator role or by a message to the integrator already running, which reaches the worker addressed by that agent's name rather than its role.\nAT CENSUS. The purview rubric is the `purview-judge-prompt.md` worker of packages/canon/src/hooks/purview-guardrail.ts (content L325-412), projected to packages/canon/targets/guardrail/purview-judge-prompt.md (5457 bytes). It defines a route as a dispatch that carries 'a unit name and its address only' (L355-356), cites 'the prompt names a unit or a plan' as the evidence of a spec (L370-374), and passes a dispatch to a role the contract routes to (L385-389). The worker states the dispatch codomain the same way in its act line (L223) and lists what it does not block in its deny notice (L301-309); none of the three names a closed plan. Measured against the architect's deployed contract with the worker and rubric at 15d0a621 and the judge below: `guided-install closed. Make its line whole and ask for release.` was BLOCKed 8/10 as an Agent dispatch to `integrator`, and 7/10 (4/5 in an earlier run) as a SendMessage to the running integrator `GuidedInstallIntegrator3`; `closed guided-install` alone 0/10; a unit routed by name as a SendMessage to a running agent (to be assayed, whole to the planner, broke to the planner, achieved to the integrator, not-achieved back to its builder with the assay's findings) 0 of 5 or 0 of 10 each; a SendMessage carrying build instructions for a unit 5/5.\nCHANGE. The rubric, and the worker's act line and deny notice where they state a route, say that a route names a unit of the loop or a closed plan by its name, with the event it is routed on (to be built, assayed, back to its builder with an assay's findings, whole, broke, or closed with its line to make whole and release to ask for) and at most where its spec is read, addressed to a role or to a running agent by that agent's name, and PASSes; a dispatch handing the delegate instructions the dispatcher wrote for building, changing or verifying a unit still BLOCKs. Keep the worker's wire contract unchanged: the tool names it branches on and the tool_input fields it reads. Regenerate packages/canon/targets/guardrail with `pnpm canon:project:targets`. Add .changeset/closed-plan-route.md (@cratylus/canon patch).\nJUDGE, for every judged criterion: omp headless, `omp -p --config <a file setting memory.backend: off> --no-tools --no-session --no-skills --no-rules --no-extensions --no-lsp --thinking off --model anthropic/claude-haiku-4-5 --system-prompt <rubric>`, the payload in stance-judge.sh's transcript-excerpt wrapper, the first answer carrying a `VERDICT:` line taken (asked again up to 3 times), named to the worker through STANCE_JUDGE_CMD; `claude -p` could not reach its API at census. The architect's scope is its deployed omp persona (`~/.omp/agent/personas/architect`, passed as `stance_scope`), whose contract reads `writes⟨C · note · route⟩`.",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge.sh"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/purview-judge-prompt.md",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/test/purview-guardrail.test.ts",
+        ".changeset/closed-plan-route.md"
+      ],
+      "accept": [
+        "Four payloads that packages/canon/targets/guardrail/purview-guardrail.sh emits in its omp form under STANCE_EMIT_PAYLOAD for the architect's scope, main session: (a) Agent, subagent_type `integrator`, prompt `guided-install closed. Make its line whole and ask for release.`; (b) SendMessage, agent `GuidedInstallIntegrator3`, message `guided-install closed. Make its line whole and ask for release.`; (c) SendMessage, agent `InstallPlanner4`, message `whole install of guided-install`; (d) SendMessage, agent `Install`, message `In packages/forge/src/adapters/omp/render.ts change toolEnvelope so a write to agent:// is spelled SendMessage, then add a case to omp.test.ts and commit.`. Each is judged 10 times with the judge below, once with the worker and rubric at 15d0a621 and once with those at the unit's commit. At 15d0a621 (a) and (b) are each BLOCKed at least 3 of 10; at the unit's commit (a), (b) and (c) are BLOCKed 0 of 10 each and (d) at least 9 of 10. Print the eight tallies and the judge used.",
+        "`git grep -n -i 'closed plan' -- packages/canon/targets/guardrail/purview-judge-prompt.md` prints a line of the rubric's PASS section saying a closed plan routed by its name passes. At 15d0a621 it prints nothing.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/closed-plan-route.md` exists and names @cratylus/canon."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3RFJ0M8RK6K703A30SP8QMC",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "34011244e2320b1dc53099f00d241c9011e6a6f0",
+        "author": "ClosedPlanRoute",
+        "time": "2026-09-30T15:48:51.541Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "34011244",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayClosedPlanRoute",
+        "time": "2026-09-30T15:57:25.802Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "5c4d190d",
+        "author": "PurviewRoutesIntegrator2",
+        "time": "2026-09-30T16:00:08.655Z"
+      }
+    ]
+  }
+}
