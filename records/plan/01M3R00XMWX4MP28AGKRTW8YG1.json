@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3R00XMWX4MP28AGKRTW8YG1",
+    "entity": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T01:49:17.340Z",
+    "reason": "the architect role still judges, reads the plan view and loads deliver and plan; the corrected shard has it route verdicts and see only the design",
+    "cause": "design corrected at f2cd7e3a; Main stopped plan architect-position under design stability and asked for one plan in its place"
+  },
+  "payload": {
+    "name": "corrected-shards",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR",
+      "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3QRZYAQ4KRZJKS8MX0CNA39",
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+      "01M3QZDSNXFW5WVR66146BGMJK"
+    ],
+    "state": "proposed"
+  }
+}

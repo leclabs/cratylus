@@ -1,0 +1,56 @@
+{
+  "envelope": {
+    "id": "01M3R06HVBY7TX2WWZBS0PXMQN",
+    "entity": "01M3R06HVBY7TX2WWZBS0PXMQM",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T01:52:21.867Z",
+    "reason": "nothing realizes uninstall; persona launch and the badge wrap each need what cratylus placed to be removable",
+    "cause": "design corrected at f2cd7e3a; Main stopped plan architect-position under design stability and asked for one plan in its place"
+  },
+  "payload": {
+    "plan": "01M3R00XMWX4MP28AGKRTW8YG0",
+    "spec": {
+      "name": "uninstall",
+      "intent": "Worktree /home/lex/workspaces/cratylus-share (branch design/first-share); every path below is under it and no command runs in the main checkout. Census @f2cd7e3a: the design was corrected there; plan architect-position is stopped under `design stability` and its landed architect-role and architect-skills work (7d53132e, e944facb, 9809add3, c076a864, ce240336, 539140df) is this unit's starting state. Re-derive any count or line below if a listed path changed since. Realize `uninstall`: removing from a host everything cratylus placed there for one harness, and nothing the host placed or changed itself, which is left in place and reported. No unit realizes it at census, and two accepted units lean on it: persona-commands built a removal routine for persona commands (packages/forge/src/deploy/persona-commands.ts) that no verb reaches, so `persona launch`'s 'what cratylus placed, it can take away again' is unmet; and the badge's wrap of a host status line (badge-always-visible) must be undone to the host's own command.\nWHAT IS RECORDED AT CENSUS: the deploy manifest (packages/forge/src/deploy/manifest.ts, `.forge/deploy-manifest.json` under the harness root) records per kind the paths each placer wrote, the settings.json hook commands registered, and the persona links; the prune mechanism (packages/forge/src/prune) removes recorded paths. It records no content, so a placed file the host changed since cannot be told from one it did not; omp modelRoles entries install added (packages/forge/src/deploy/model-roles.ts) are reported but not recorded; the claude status line and kept model lines are recorded by claude-role-choice and badge-always-visible.\nCHANGE. (1) Record what uninstall needs: a content digest per placed file and each host-config entry install added (omp modelRoles lines, the claude statusLine wrap with the host's original, the persona links), in the manifest. (2) A verb `cratylus uninstall --harness <claude|omp>` (packages/forge/src/cli/commands/uninstall.ts, routed in packages/forge/src/cli/index.ts, reachable through the `cratylus` command as install is) that removes every recorded file whose content still matches its digest, every hook registration and host-config entry it added that the host has not changed, unwraps the status line to the host's original, removes the persona links it placed or adopted, removes the manifest last, and prints what it removed and, separately, each thing it left because the host placed or changed it. `--dry-run` prints the same and writes nothing. (3) Tests in a new packages/forge/test/deploy/uninstall.test.ts, registered in packages/canon/test/gate-convicts.test.ts's REGISTRY. (4) packages/cli/README.md, packages/forge/README.md and docs/cli/USAGE.md document it. (5) .changeset/uninstall.md (cratylus and @cratylus/forge minor).",
+      "static": [
+        "packages/forge/src/prune/index.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/hooks.ts"
+      ],
+      "deps": [
+        "01M3R03SJRJAYS8X21AE9Q1TYN",
+        "01M3R06HPHFCXMV93XTTR344M4"
+      ],
+      "outputs": [
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        ".changeset/uninstall.md"
+      ],
+      "accept": [
+        "ROUND TRIP (claude): H=$(mktemp -d); populate $H/.claude with a host file agents/hostowned.md, a settings.json holding a host key `\"theme\":\"dark\"` and a host statusLine; snapshot `find $H -type f | sort` with sha256sum. From cwd /home/lex/workspaces/cratylus-share, after `pnpm build`: `HOME=$H node /home/lex/workspaces/cratylus-share/packages/cli/dist/cratylus.js install --harness claude --link-persona-commands` exits 0; edit one placed skill file; `HOME=$H node …/cratylus.js uninstall --harness claude` exits 0. Afterwards the snapshot matches again except the edited skill file, which is still present and named in the output as left because the host changed it; the host statusLine is byte-identical to the original; $H/.local/bin holds no persona link. At census `uninstall` is refused as an unknown command.",
+        "ROUND TRIP (omp): the same with --harness omp, and a host config.yml whose modelRoles holds one host entry: after uninstall config.yml equals the original byte for byte, including the host entry, and install's added entries are gone.",
+        "`HOME=$H node …/cratylus.js uninstall --harness claude --dry-run` after an install writes nothing (snapshot unchanged) and prints what it would remove.",
+        "Green: `pnpm --filter @cratylus/forge exec vitest run test/deploy` , `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts` and `pnpm typecheck` exit 0; uninstall.test.ts fails if a host-changed file is removed."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "version": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+      "closure": {}
+    }
+  }
+}
