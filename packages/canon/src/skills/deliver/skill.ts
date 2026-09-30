@@ -57,7 +57,7 @@ frontier @ plan
 realizes @ plan
 advance, bind, close, bound, ready, capacity @ plan
 show ⟨C⟩ @ design
-show ⟨P ∧ unit⟩ @ plan
+show ⟨P⟩ @ plan
 accept @ plan ⟨the MECHANICAL half⟩
 outputs @ plan
 artifact : P → ℘(path) ⟨what landed · the EVIDENCE⟩
@@ -129,7 +129,7 @@ integrate ⊥ judge ⟨a merge is DURABILITY ∧ ¬ acceptance · acceptance is 
 integrator ⊨ ¬ validate ⟨it carries a verdict ∧ ¬ reaches one⟩
 integrator ≠ self ⟨self decides the state moves ∧ dispatches · the integrator gates, merges,
     commits ∧ records them · self runs no check, makes no commit, reads no artifact nor r⟩
-self reads ⟨show ⟨P ∧ unit⟩ · the assay · the integrator's gate result⟩ ⟨plan state comes from show, never from a delegate's return⟩
+self reads ⟨show ⟨P⟩ · the assay · the integrator's gate result⟩ ⟨the plan VIEW : units by concept, frontier, drift, owed rulings · never a unit's spec, which the planner reads ∧ revises · plan state comes from show, never from a delegate's return⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
 ¬spells ⇒ REFUSE ≺ any behavioural read ⟨the traceability arrow breaks at the cheapest
@@ -148,6 +148,7 @@ finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close ⟨findings BATCH 
      that act checks ∴ a branch merge ∨ a concurrent session walks past it⟩
 fold ⊨ drifted(unit) answered ↾ what moved @ plan ⟨the measured cost was the RESPONSE to amending,
     ¬ amending : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
+finding ∨ d ⊨ capture ⟨a note by the party that met it : implementer ∨ assayer ∨ integrator ∨ self · the operator's steer by self · it reaches self as a note, ¬ a return⟩ ; fold ⊨ self
 impedes(d, unit) ⇒ dispatch fix(d) to an implementer ⟨a regression in the path is repaired, ¬ surfaced · self makes no fix⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
