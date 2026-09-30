@@ -1,5 +1,0 @@
----
-'@cratylus/canon': minor
----
-
-The integrator now makes the plan's one line hold the plan's whole work. The line is cut at the integrator's first dispatch from the commit the plan's units are built on, the `HEAD` of the checkout where the plan was bound, and no longer from bare `main`. Records reach it at every act, each combination green or red and the plan's close, and no longer only on green: the integrator adds every record file any worktree of the repository (tracked or not) or any local branch holds that the line lacks, and commits them by pathspec. `deliver` spells the exact git commands for the records the line lacks and for gathering them. A red keeps the unit's work off the line and still commits the records; at the close the integrator gathers the planner's completed and close records, confirms nothing is missing, and only then asks the operator to release. The integrator role, agent and `docs/role.md` say the same, and `docs/role.md` spells `architect role` where it spelled the retired `architect position`.

@@ -1,5 +1,12 @@
 # @cratylus/forge
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [5635979]
+  - @cratylus/runtime@0.7.0
+
 ## 0.11.0
 
 ### Minor Changes

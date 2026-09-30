@@ -1,5 +1,0 @@
----
-"@cratylus/canon": minor
----
-
-The architect role admits ad hoc delegation. Routing by name binds the units of the loop, the work of realizing the design from shard to plan to whole; an ad hoc request from the operator outside it, such as a comparison, an audit or a question, the architect may hand to whichever role or agent fits it, in its own words, rectified and never the operator's literal ones. The `## Role` every architect holder projects, the `delegation` action and the holders' descriptions and archetypes say so, and the purview guard no longer reads a self-worded request as a spec: it passes a dispatch the holder's own contract admits outside the loop, and still blocks a spec the dispatcher wrote for a unit of the loop and a dispatch that transcribes the operator's literal words. The role also no longer routes the recording of plan state (bind, active, completed, close) to the integrator: it is the planner's, and the integrator combines, runs the whole check and commits records.
