@@ -215,9 +215,41 @@ const CUSTOM_PRESET = 'custom';
  *  status; on by default. */
 const HOOK_STATUS_KEY = 'showHookStatus';
 
-/** `key: false`, up to the value: the row is written hidden. Only the value is matched,
- *  so what precedes it and what follows it (a comment) survive a replacement. */
-const HIDDEN_ROW = /^(.*?:[ \t]*)(?:false|False|FALSE)(?=[ \t]|#|$)/;
+/** `showHookStatus: false`, up to the value: the row is written hidden. Only the value
+ *  is matched, so what precedes it and what follows it (a comment, a `,` or `}`) survive
+ *  a replacement. */
+const HIDDEN_ROW =
+  /(\bshowHookStatus["']?[ \t]*:[ \t]*)(?:false|False|FALSE)(?=[ \t,}\]#]|$)/;
+
+/** The last line of `statusLine`'s value, from its key at line `at`: the lines a flow
+ *  mapping spans until its brackets close, else every blank, comment or indented line
+ *  after it. Brackets are counted as text, quotes and all — it bounds a search, and
+ *  nothing is inserted by it. */
+function extentOf(
+  lines: readonly (readonly [string, string])[],
+  at: number,
+): number {
+  const value = inlineOf((lines[at] as readonly [string, string])[0]);
+  if (value.startsWith('{') || value.startsWith('[')) {
+    let depth = 0;
+    for (let i = at; i < lines.length; i++) {
+      const line = (lines[i] as readonly [string, string])[0];
+      const text = (i === at ? value : line).replace(/(^|[ \t])#.*$/, '');
+      depth += (text.match(/[[{]/g) ?? []).length;
+      depth -= (text.match(/[\]}]/g) ?? []).length;
+      if (depth <= 0) return i;
+    }
+    return lines.length - 1;
+  }
+  let last = at;
+  for (let i = at + 1; i < lines.length; i++) {
+    const line = (lines[i] as readonly [string, string])[0];
+    if (isBlankOrComment(line)) continue;
+    if (!/^[ \t]/.test(line)) break;
+    last = i;
+  }
+  return last;
+}
 
 /** The keys under which the host lays out its own line. Under the default preset the
  *  two lists are ignored and `segmentOptions` is merged over the preset's own options,
@@ -594,7 +626,10 @@ function ownLayoutAdvice(
  * Anything this cannot extend safely (a `statusLine` that is a flow mapping, a scalar,
  * anchored or tagged; a `preset` that is not a plain scalar; a `leftSegments` that is
  * not a list, or a flow list split across lines) is left, and `refused` says why. The
- * row is shown there too where the layout could be read that far and the host hid it.
+ * row is shown there too, found as text in `statusLine`'s own lines (the whole file where
+ * there is no block mapping to find `statusLine` in), so a host that hid it in a flow
+ * mapping is reached as well; only a `statusLine` that is an alias to a mapping written
+ * elsewhere keeps its `false` out of reach.
  * Every other key the host set keeps its value, and every byte outside the inserted
  * lines survives.
  */
@@ -628,6 +663,39 @@ export function ensureStatusSegment(
     return { path, state: 'added', wrote: !dry, written };
   };
 
+  // WHERE THE BADGE HAS NO PLACE BUT THE ROW beneath the editor, a host that hid that
+  // row (`showHookStatus: false`) would see the badge nowhere. The row is the badge's
+  // fallback, so wherever this returns without listing the segment — a layout it
+  // leaves as the host's, or one it cannot read — it turns the host's `false` to
+  // `true`, the one value it ever changes, and only when nothing else would show the
+  // persona; every other byte stays. The key is looked for in `statusLine`'s own lines
+  // (the whole file where there is no block mapping to find `statusLine` in) and
+  // matched as text, so a block mapping, a flow mapping on one line or over several,
+  // and a quoted key are all reached without reading the layout they sit in.
+  let region: readonly [number, number] = [0, lines.length - 1];
+  const showRow = (left: StatusSegmentResult): StatusSegmentResult => {
+    const [from, to] = region;
+    for (let i = from; i <= to; i++) {
+      const line = (lines[i] as [string, string])[0];
+      const hit = HIDDEN_ROW.exec(line);
+      if (hit === null || /(^|[ \t])#/.test(line.slice(0, hit.index))) continue;
+      if (!dry) {
+        const shown = line.replace(HIDDEN_ROW, '$1true');
+        writeFileSync(
+          path,
+          applyEdits(lines, [{ at: i, replace: shown }], eol),
+        );
+      }
+      return {
+        ...left,
+        wrote: !dry,
+        written: [`${HOOK_STATUS_KEY}: true (was false)`],
+        hookRowShown: true,
+      };
+    }
+    return left;
+  };
+
   // The top-level `statusLine` key — and, while looking, whether the document is a
   // block mapping at all, since appending a key to anything else corrupts it.
   let at = -1;
@@ -639,8 +707,10 @@ export function ensureStatusSegment(
     const key = keyOf(line);
     if (key === undefined) {
       if (!sawTopLevel) {
-        return refuse(
-          'the file is not a block mapping at its top level, so a `statusLine:` key cannot be added safely',
+        return showRow(
+          refuse(
+            'the file is not a block mapping at its top level, so a `statusLine:` key cannot be added safely',
+          ),
         );
       }
       continue;
@@ -651,6 +721,7 @@ export function ensureStatusSegment(
       break;
     }
   }
+  if (at !== -1) region = [at, extentOf(lines, at)];
 
   // What the default layout is, said key by key — for the report.
   const layoutWritten = {
@@ -677,8 +748,10 @@ export function ensureStatusSegment(
 
   // ── `statusLine` IS PRESENT ───────────────────────────────────────────────────
   if (inlineOf((lines[at] as [string, string])[0]) !== '') {
-    return refuse(
-      '`statusLine` holds an inline value (a flow mapping, scalar, anchor, alias or tag), which cannot be extended by inserting lines',
+    return showRow(
+      refuse(
+        '`statusLine` holds an inline value (a flow mapping, scalar, anchor, alias or tag), which cannot be extended by inserting lines',
+      ),
     );
   }
 
@@ -694,15 +767,19 @@ export function ensureStatusSegment(
     if (entryIndent === undefined) {
       entryIndent = indent;
       if (keyOf(line.slice(indent.length)) === undefined) {
-        return refuse(
-          '`statusLine` is not a mapping of `key: value` lines, so a layout cannot be added safely',
+        return showRow(
+          refuse(
+            '`statusLine` is not a mapping of `key: value` lines, so a layout cannot be added safely',
+          ),
         );
       }
     }
     last = i;
     if (indent.length < entryIndent.length) {
-      return refuse(
-        '`statusLine` has entries at inconsistent indentation, so a layout cannot be added safely',
+      return showRow(
+        refuse(
+          '`statusLine` has entries at inconsistent indentation, so a layout cannot be added safely',
+        ),
       );
     }
     const key =
@@ -710,37 +787,6 @@ export function ensureStatusSegment(
     if (key !== undefined && !keyAt.has(key)) keyAt.set(key, i);
   }
   const indent = entryIndent ?? '  ';
-
-  // WHERE THE BADGE HAS NO PLACE BUT THE ROW beneath the editor, a host that hid that
-  // row (`showHookStatus: false`) would see the badge nowhere. The row is the badge's
-  // fallback, so where this returns without listing the segment it turns the host's
-  // `false` to `true` — the one value it ever changes, and only when nothing else would
-  // show the persona — and touches no other byte.
-  const hiddenAt = keyAt.get(HOOK_STATUS_KEY);
-  const hiddenLine =
-    hiddenAt === undefined
-      ? undefined
-      : (lines[hiddenAt] as [string, string])[0];
-  const shownLine = hiddenLine?.replace(HIDDEN_ROW, '$1true');
-  const showRow = (left: StatusSegmentResult): StatusSegmentResult => {
-    if (hiddenAt === undefined || shownLine === hiddenLine) return left;
-    if (!dry) {
-      writeFileSync(
-        path,
-        applyEdits(
-          lines,
-          [{ at: hiddenAt, replace: shownLine as string }],
-          eol,
-        ),
-      );
-    }
-    return {
-      ...left,
-      wrote: !dry,
-      written: [`${HOOK_STATUS_KEY}: true (was false)`],
-      hookRowShown: true,
-    };
-  };
 
   // WHICH PRESET the host is on decides what a segment list means.
   const presetAt = keyAt.get('preset');
@@ -751,8 +797,10 @@ export function ensureStatusSegment(
     );
     preset = raw === '' ? undefined : scalarOf(raw);
     if (preset === undefined) {
-      return refuse(
-        '`preset` holds no plain value (a null, flow collection, anchor, alias or tag), so the layout in effect cannot be told',
+      return showRow(
+        refuse(
+          '`preset` holds no plain value (a null, flow collection, anchor, alias or tag), so the layout in effect cannot be told',
+        ),
       );
     }
   }
