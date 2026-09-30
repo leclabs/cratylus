@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R22JYAYYSB25R5FG7EKZC3",
+    "entity": "01M3R22JYAYYSB25R5FG7EKZC2",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T02:25:09.066Z",
+    "reason": "work stopped by the usage limit mid-wave",
+    "cause": "429 rate_limit_error on every delegate"
+  },
+  "payload": {
+    "title": "corrected-shards paused on the usage limit",
+    "kind": "decision",
+    "topic": "corrected-shards",
+    "body": "Paused 2026-09-29 when the account hit its rate limit (retry-after about 131 hours). Loop state by unit, for resuming: wave 0 all six whole (integrated). Wave 1: mav-position achieved at f3d3c50c and kino-position achieved at 8467ee37, both routed to the integrator but not yet integrated (its turn failed on the limit); badge-always-visible landed at 91a71f81 and planner-position landed at 5d2fceb4, both awaiting assay (the badge assay failed on the limit); guard-says-when-open's implementer failed on the limit before returning, so it is redispatched; design-stability and nico-position were still building. Wave 2 not started. Resume: redispatch or re-route each unit from its state above; nothing needs rework from the pause itself.",
+    "blocks": []
+  }
+}
