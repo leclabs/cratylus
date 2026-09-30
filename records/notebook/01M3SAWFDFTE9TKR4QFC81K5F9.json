@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SAWFDFTE9TKR4QFC81K5F9",
+    "entity": "01M3SAWFDFTE9TKR4QFC81K5F8",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T14:18:20.463Z",
+    "reason": "purview guard denied three routing messages",
+    "cause": "guided-install routing"
+  },
+  "payload": {
+    "title": "purview guard reads a message to an agent as an artifact write",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "With the judge answering again after loop-friction, the purview guard denies the architect's write to agent://<name> (a message routing a unit name to a warm assayer, or a whole report to the planner) as a write whose codomain is artifact. A message to an agent is a route, inside writes⟨C · note · route⟩; the guard reads the write tool by its name, not its target. Workaround: route through a fresh dispatch, which it passes, at the cost of losing warm agents' context. The purview rubric should classify a write to agent:// as a route.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3SFTXC9R8B4D45HT3YH7HAE",
+    "entity": "01M3SFSMK66SSGWGDEHAVXNT01",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SFSMK66SSGWGDEHAVXNT02"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T15:44:52.105Z",
+    "reason": "ratified: two units on disjoint outputs (the omp adapter in forge; the purview cell in canon), one wave, each realizing one handed shard",
+    "cause": "no plan bound; guided-install closed"
+  },
+  "payload": {
+    "name": "purview-routes",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QRDK076G190M60GAV4DDGF"
+    ],
+    "state": "bound"
+  }
+}

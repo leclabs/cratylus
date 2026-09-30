@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SAN81E1WPEXH16MCD3BA9A",
+    "entity": "01M3SAN81E1WPEXH16MCD3BA99",
+    "operation": "create",
+    "supersedes": [],
+    "author": "InstallPlacement",
+    "time": "2026-09-30T14:14:23.534Z",
+    "reason": "could not prove the cause",
+    "cause": "full forge suite run in the unit worktree"
+  },
+  "payload": {
+    "title": "integrate-smoke fails in a fresh unit worktree",
+    "kind": "question",
+    "topic": "testing",
+    "body": "test/deploy/integrate-smoke.test.ts (forge) failed in worktree cratylus.unit-install-placement at the guard existsSync(binDir/cratylus) after pnpm install, typecheck build; it passes in the main checkout. Unproven cause: likely the cratylus hub dist unbuilt in a fresh worktree. Unit install-placement did not touch that path.",
+    "blocks": []
+  }
+}

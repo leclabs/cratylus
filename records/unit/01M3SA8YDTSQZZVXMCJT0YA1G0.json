@@ -1,0 +1,69 @@
+{
+  "envelope": {
+    "id": "01M3SA8YDTSQZZVXMCJT0YA1G0",
+    "entity": "01M3SA8YDTSQZZVXMCJT0YA1FZ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T14:07:40.474Z",
+    "reason": "the guided run: ask only the operator's decisions, preview, confirm, place, summarize; quiet unless asked; silent when every decision is given or there is no terminal",
+    "cause": "shards install and planner role handed down by the architect"
+  },
+  "payload": {
+    "plan": "01M3SA82PWG8H7N61V0N69W6B8",
+    "spec": {
+      "name": "guided-run",
+      "intent": "Census @15d0a621 (design at 15d0a621, working tree clean); every path is repo-relative on the plan's line. A line number or count cited here is a measurement at that commit: re-derive it if its path changed since. Realize `install` as its gloss states it: by default a short guided run that asks only what the operator must decide (which harness, which personas, whether to link their launch commands, which models the roles route to), shows what it will place before placing anything, places it only once confirmed, and ends with a brief summary of what was done and what to do next; per-file detail appears only when asked for; given every decision up front, or run without a terminal, it asks nothing. What install places stays exactly what `cratylus uninstall` removes. Builds on install-placement: Agent.optional (kino and nico), ProjectOpts.omitAgents, ProjectedTree.optionalAgents, and runDeploy's `warn` sink and claude `models`.\nAT CENSUS. packages/forge/src/cli/commands/install.ts (542 lines): runInstall refuses when --harness is absent and the host has no supported harness or two (:104-127); renders and places every agent; prints `corpus:` and `harness:` lines, then the whole deploy log through runDeploy's default console.log sink (`=== LOCAL deploy -> …`, `defs copied: N`, prune lines), then per-file lines from seedModelRoles, describeClaudeRoles, showPersonaBadge and linkPersonaCommands. Model roles are seeded with the harness's nearest built-in route without asking. The one question (askOnTerminal, a readline y/N at :307) comes AFTER everything is placed, and only for persona commands. Measured: a non-interactive `install --harness omp` into an empty temp HOME prints 79 lines, 4 of them deploy-log lines (`=== LOCAL deploy` or `defs copied`), and places all eight agents, kino and nico included. CLI flags (packages/forge/src/cli/index.ts:187-220): --harness, --plugin, --dry-run, --link-persona-commands. No prompt library is a dependency; the operator's note that became this concept rectified @clack/prompts as the current community choice for the interactive flow, with argument parsing staying with cac.\nHOW (this plan's, per harness). Decisions and their flags. Harness: `--harness <claude|omp>`; asked only when absent and the host has not exactly one supported harness; without a terminal, refused as at census. Personas: `--personas <name,…|none>`, the corpus's optional personas to install; every agent not declared optional is always installed, since the personas dispatch them; asked only when the corpus declares optional personas; default: the optional personas already installed on this host (none on a fresh one), so a re-install never drops one silently; an optional persona not chosen is omitted from the render, and a previously installed one is pruned. Launch commands: `--link-persona-commands` / `--no-link-persona-commands`; asked only when there is a command to place or adopt; default: none placed, per the operator's ruling 'omp install asks before linking persona commands'. Model roles: `--model-roles <role=model,…|default>`; asked only for held roles the host has not routed itself. On omp a route is a modelRoles entry: offer the harness's built-in roles with the nearest one preselected, and accept a typed model; write it as seedModelRoles writes today, so it is recorded for uninstall. On claude a route is the `model:` line of each agent holding the role: offer the tiers with the role's tier preselected, and write a choice other than that tier through runDeploy's `models`, so it stands as the host's choice. A role the host already routed is never asked and never changed, is named as the host's in the preview, and a --model-roles entry for it is left as the host set it and said so. `--yes` takes the default for every decision not given and places without asking. With every decision given, or without a terminal on stdin and stdout, nothing is asked and the run places without a confirmation.\nPREVIEW, before anything is written, a screenful at most: the harness and its home; the personas to install, and any installed persona to be removed; the counts of agents, skills and hooks; each host config file install will edit, with what changes in it (model roles, status line); the launch commands to link. Then one confirmation; declining writes nothing. `--dry-run` prints the preview and stops. SUMMARY after placing, a few lines: what was placed; what the host had set that was left alone; each warning; what to do next (start or restart the harness, launch a linked persona by its name, `cratylus uninstall --harness <h>` to remove it all). Warnings (a projection degradation, a config file install could not edit) are always shown, one line each. `--verbose` additionally prints the per-file detail the census run prints. Everything placed is recorded as the census install records it, so uninstall removes exactly it, including a chosen claude model line and a persona dropped on re-install.\nCHANGE. install.ts (the guided run, with the prompts behind an injectable seam so tests answer them, replacing `confirm`); cli/index.ts (the flags above, --verbose, --yes); @clack/prompts added to packages/forge/package.json through the pnpm-workspace.yaml catalog (pnpm-lock.yaml follows); the four existing install tests that assert per-file lines pass verbose or assert the summary instead; a new packages/forge/test/cli/install.test.ts, registered in packages/canon/test/gate-convicts.test.ts's REGISTRY as 'forge/cli/install.test.ts'; packages/cli/README.md, packages/forge/README.md and docs/cli/USAGE.md say how install runs and document every flag; .changeset/guided-install.md (cratylus and @cratylus/forge minor). Temp directories a check creates are removed by their exact paths, never by a glob.",
+      "static": [
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/cli/src/cratylus.ts"
+      ],
+      "deps": [
+        "01M3SA82Q6NTER3DXPSN8PK1WB"
+      ],
+      "outputs": [
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        ".changeset/guided-install.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli/install.test.ts test/deploy` exits 0, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts` exits 0, and `pnpm typecheck` exits 0. install.test.ts drives runInstall through the injected prompts and fails at census (the file does not exist): a decision given by flag is not asked; nothing is written before the confirmation and declining writes nothing; without a terminal nothing is asked; a role the host already routed is neither asked nor changed; a persona installed before is preselected on re-install.",
+        "QUIET BY DEFAULT: after `pnpm build`, H=$(mktemp -d); mkdir -p $H/.omp/agent; `HOME=$H node packages/cli/dist/cratylus.js install --harness omp </dev/null` exits 0, prints at most 25 lines, none containing `=== LOCAL deploy` or `defs copied`, and one naming `cratylus uninstall`; $H/.omp/agent/agents holds mav.md and neither kino.md nor nico.md; $H/.local/bin holds no link. Census: 79 lines, 4 deploy-log lines, kino.md and nico.md placed. Re-run in a fresh HOME with `--verbose`: the output contains `=== LOCAL deploy`.",
+        "UP FRONT AND BACK OUT (claude): H2=$(mktemp -d); mkdir -p $H2/.claude; printf '{\"theme\":\"dark\"}\\n' > $H2/.claude/settings.json; snapshot `(cd $H2 && find . -type f | sort | xargs sha256sum)`. `HOME=$H2 node packages/cli/dist/cratylus.js install --harness claude --personas nico --no-link-persona-commands --model-roles planner=sonnet </dev/null` exits 0; $H2/.claude/agents/nico.md exists and $H2/.claude/agents/planner.md has the line `model: sonnet`. Then `… install --harness claude --personas none </dev/null` exits 0, nico.md is gone and planner.md still has `model: sonnet`. Then `HOME=$H2 node packages/cli/dist/cratylus.js uninstall --harness claude` exits 0 and the snapshot matches again. Census: `--personas` and `--model-roles` are refused as unknown options.",
+        "ASKS FIRST ON A TERMINAL: H3=$(mktemp -d); mkdir -p $H3/.claude $H3/.omp; `timeout 20 script -qec \"HOME=$H3 node packages/cli/dist/cratylus.js install\" /dev/null </dev/null` captures a question and not the census refusal `name one with --harness`, and `find $H3 -type f | wc -l` prints 0 afterwards."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "version": "01M3S9QXFG2PS1VAE275Y7PB7D",
+      "closure": {
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": []
+  }
+}

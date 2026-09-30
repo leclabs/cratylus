@@ -1,0 +1,84 @@
+{
+  "envelope": {
+    "id": "01M3SAWPDT7AYKW4WK1QBQZRMV",
+    "entity": "01M3SA9BJTX9P7D3AZQ7S1DGJV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SATVAFZ010K368KZ83NFCR"
+    ],
+    "author": "InstallPlanner2",
+    "time": "2026-09-30T14:18:27.642Z",
+    "reason": "integrator recorded whole for proportionate-acceptance",
+    "cause": "whole proportionate-acceptance of guided-install from GuidedInstallIntegrator"
+  },
+  "payload": {
+    "plan": "01M3SA82PWG8H7N61V0N69W6B8",
+    "spec": {
+      "name": "proportionate-acceptance",
+      "intent": "Census @15d0a621 (design at 15d0a621, working tree clean); every path is repo-relative on the plan's line. A line number or count cited here is a measurement at that commit: re-derive it if its path changed since. Realize the amended `planner role` (amended at 2026-09-30T13:58, cause note 'the loop is slow'): each unit's acceptance proves what that unit changes and no more; a proof costlier than the change, such as a live multi-model run for a wording edit, is a defect of the plan, not diligence. The rest of the gloss was realized by unit planner-position of plan corrected-shards and stands at census.\nAT CENSUS. The planner's role sign (the `planner` string in packages/canon/src/dimensions/role/planner.ts) reserves census, decompose, realizes, sequence, bind, record, close, rectify or rebuild and reconcile, and says nothing of acceptance: `grep -c accept` on the file prints 0. The plan skill the planner composes holds acceptance as mechanical and able to fail (packages/canon/src/skills/plan/skill.ts) and sits 2 characters under Claude's 10,000-character per-hook cap (packages/canon/test/skill-hook-cap.test.ts prints `plan 9998`), so the law does not go there. The observed cost the amendment answers: units took 15 to 35 minutes end to end, mostly proving more than they changed (cold reads on two models, live smokes, size caps, verb-fidelity checks on wording edits).\nCHANGE. (1) The role sign states the law in its own notation, as its own line or inside decompose: accept(unit) bounded to what the unit changes, and a proof costlier than the change a defect of the plan, not diligence. The comment above the sign says why, in a sentence or two. Declare no symbol that another cell declares differently. (2) .changeset/planner-proportionate-acceptance.md (@cratylus/canon patch). Nothing else changes: the planner agent's description and archetype, the role cell in packages/canon/src/roles/planner.ts and the plan skill stay as they are.",
+      "static": [
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/skills/plan/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/planner.ts",
+        ".changeset/planner-proportionate-acceptance.md"
+      ],
+      "accept": [
+        "After `pnpm build`, T=$(mktemp -d); `pnpm exec cratylus project --harness claude --out $T` exits 0, and the lines of $T/agents/planner.md from `## Role` up to the next `## ` heading contain `accept` and `defect` (census: neither).",
+        "`pnpm --filter @cratylus/canon exec vitest run test/reader-density.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/structural-parsimony.test.ts test/skill-hook-cap.test.ts` exits 0, and skill-hook-cap still prints `plan 9998`."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3R07G7ZCK24TEDA78HW4VRM",
+      "version": "01M3S9QXVJ07SZYRB0EKZ86GJ5",
+      "closure": {
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "3ebd9fc884a71753d040ec095b4e2b75616eccda",
+        "author": "ProportionateAcceptance",
+        "time": "2026-09-30T14:09:29.535Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "3ebd9fc8",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayProportionateAcceptance",
+        "time": "2026-09-30T14:10:51.644Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "95715b7b",
+        "author": "GuidedInstallIntegrator",
+        "time": "2026-09-30T14:17:27.119Z"
+      }
+    ]
+  }
+}

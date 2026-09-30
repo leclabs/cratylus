@@ -1,0 +1,122 @@
+{
+  "envelope": {
+    "id": "01M3SBTGVAXAHVYMQEX9RYNMVT",
+    "entity": "01M3SA82Q6NTER3DXPSN8PK1WB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3SBGN9VCX09CNPJ7AF3KQE3"
+    ],
+    "author": "InstallPlanner3",
+    "time": "2026-09-30T14:34:44.970Z",
+    "reason": "One shard, install, was cut into two units that both realized it; each unit is judged against the whole shard, so neither could be achieved alone. This unit now realizes install whole: the placement layer it landed, the ownership fix assay 4 found missing, the omp route, and the guided run of the retracted guided-run. Renamed install, since it is no longer the placement half. Census re-derived at a432ae0b for the paths the landing changed.",
+    "cause": "install-placement assayed not-achieved at 8bc1f6b2 and a432ae0b (ledger entries 2 and 4), each verdict naming the guided run held by guided-run"
+  },
+  "payload": {
+    "plan": "01M3SA82PWG8H7N61V0N69W6B8",
+    "spec": {
+      "name": "install",
+      "intent": "Census @15d0a621 for the plan line (design at 15d0a621) and @a432ae0b for the work landed so far; every path is repo-relative. A line number or count cited here is a measurement at the commit named beside it: re-derive it if its path changed since. Realize `install` whole, as its gloss states it: by default a short guided run that asks only what the operator must decide (which harness, which personas, whether to link their launch commands, which models the roles route to), shows what it will place before placing anything, places it only once confirmed, and ends with a brief summary of what was done and what to do next; per-file detail appears only when asked for; given every decision up front, or run without a terminal, it asks nothing. What install places is exactly what the operator decided and exactly what `cratylus uninstall` removes. This unit is the only unit of the plan realizing `install`; it absorbs the retracted unit guided-run, so it is judged achieved only when the whole guided run and its placement hold together.\nBASE. Build on branch unit/install-placement at a432ae0b (worktree /home/lex/workspaces/cratylus.unit-install-placement), which already carries this unit's placement layer: Agent.optional (packages/schema/src/index.ts:577), declared only by kino and nico and carried by canon's holds() (packages/canon/src/roles/hold.ts); ProjectOpts.omitAgents (packages/forge/src/project/index.ts:201, a name that is no agent throws, :541-547) and ProjectedTree.optionalAgents (:247); runDeploy's `warn` sink and `models` map (packages/forge/src/cli/commands/deploy.ts:72-76, a non-empty `models` on omp fails with exit 1 at :147-159); keepsHostModel (packages/forge/src/deploy/deploy.ts:147); the chosen-model placement in placeAgentsLocal (packages/forge/src/deploy/local.ts:173-188); fixtures packages/forge/test/project/fixtures/pair/agents/{offered,steady}.ts. Nothing of it is used by `cratylus install` yet. Assays at 8bc1f6b2 and a432ae0b (ledger entries 2 and 4) found it not achieved for the reasons this spec now carries.\nSTILL WRONG AT a432ae0b (role routing; the host's choice). On claude a `model:` line the operator chose at install is the host's from then on, whatever its value against the rendering: a later deploy or install keeps it when the rendering moves, and when the host later edits or removes it, the host's edit stands (a removed line stays removed). A line cratylus rendered and nobody chose follows the rendering, as at census. At a432ae0b the manifest's agentModels (packages/forge/src/deploy/manifest.ts:64, Record<string, string | null>) is the only record, and local.ts:183-188 records null for a chosen line equal to the rendered model; so after the host deletes that line, the deployed value (none) equals the record (null), the line reads as cratylus's, and the next deploy puts `model: opus` back (assay entry 4; at 8bc1f6b2 the same sequence left no line, but a chosen line equal to the rendering was then lost when the rendering moved, assay entry 2). The record must tell a line the operator or host owns from a line cratylus rendered independent of their values; how is the implementer's. A manifest written by a prior release (agentModels only, or none) still reads as it does at a432ae0b.\nAT CENSUS (@15d0a621, unchanged at a432ae0b). packages/forge/src/cli/commands/install.ts (542 lines): runInstall refuses when --harness is absent and the host has no supported harness or two (:104-127); renders and places every agent; prints `corpus:` and `harness:` lines, then the whole deploy log through runDeploy's default console.log sink, then per-file lines from seedModelRoles (:474), describeClaudeRoles, showPersonaBadge and linkPersonaCommands. Model roles are seeded with the harness's nearest built-in route without asking (omp: modelRoles entries in ~/.omp/agent/config.yml such as `planner: \"@plan\"`, recorded for uninstall through noteHostEdit). The one question (askOnTerminal, a readline y/N at :307) comes AFTER everything is placed, and only for persona commands. CLI flags (packages/forge/src/cli/index.ts:187-220): --harness, --plugin, --dry-run, --link-persona-commands. Measured @a432ae0b (build of that worktree): a non-interactive `install --harness omp` into an empty temp HOME exits 0, prints 74 lines (79 @15d0a621), 4 of them deploy-log lines (`=== LOCAL deploy` or `defs copied`), places all eight agents, kino and nico included, and links nothing under ~/.local/bin; `install --harness omp` then `uninstall --harness omp` leaves 0 files; `--personas` and `--model-roles` are refused by cac as unknown options; on a host with both ~/.claude and ~/.omp a terminal run without --harness prints `name one with --harness <claude|omp>` and writes 0 files. Claude's role tiers (packages/forge/src/adapters/claude/render.ts:76-82): planner, assayer, architect opus; implementer, integrator sonnet. No prompt library is a dependency; the operator's note that became this concept rectified @clack/prompts as the current community choice for the interactive flow, with argument parsing staying with cac. Other `install --harness` mentions (packages/runtime/src/runtime-config.ts:153, runtime and canon tests) keep working unchanged, since --harness stays.\nHOW (this plan's, per harness). Decisions and their flags. Harness: `--harness <claude|omp>`; asked only when absent and the host has not exactly one supported harness; without a terminal, refused as at census. Personas: `--personas <name,…|none>`, the corpus's optional personas (ProjectedTree.optionalAgents) to install; every agent not declared optional is always installed, since the personas dispatch them; asked only when the corpus declares optional personas; default: the optional personas already installed on this host (none on a fresh one), so a re-install never drops one silently; an optional persona not chosen is omitted from the render (omitAgents), and a previously installed one is pruned. Launch commands: `--link-persona-commands` / `--no-link-persona-commands`; asked only when there is a command to place or adopt; default: none placed, per the operator's ruling 'omp install asks before linking persona commands'. Model roles: `--model-roles <role=model,…|default>`; asked only for held roles the host has not routed itself. A model given by flag, or picked in the prompt rather than left at its preselected default, is the operator's choice; a role left at its default follows cratylus's routing as at census. On omp a route is a modelRoles entry: offer the harness's built-in roles with the nearest one preselected and accept a typed model; write a choice as seedModelRoles writes an entry today, so it is recorded for uninstall; omp choices never go through runDeploy's `models`, which stays claude-only. On claude a route is the `model:` line of each agent holding the role: offer the tiers with the role's tier preselected, and place every choice, including one equal to the role's tier, through runDeploy's `models`, so it stands as the host's under the rule in STILL WRONG. A role the host already routed is never asked and never changed, is named as the host's in the preview, and a --model-roles entry for it is left as the host set it and said so. `--yes` takes the default for every decision not given and places without asking. With every decision given, or without a terminal on stdin and stdout, nothing is asked and the run places without a confirmation.\nPREVIEW, before anything is written, a screenful at most: the harness and its home; the personas to install, and any installed persona to be removed; the counts of agents, skills and hooks; each host config file install will edit, with what changes in it (model roles, status line); the launch commands to link. Then one confirmation; declining writes nothing. `--dry-run` prints the preview and stops. SUMMARY after placing, a few lines: what was placed; what the host had set that was left alone; each warning; what to do next (start or restart the harness, launch a linked persona by its name, `cratylus uninstall --harness <h>` to remove it all). Warnings (a projection degradation, a config file install could not edit) are always shown, one line each, through runDeploy's `warn` sink and install's own. `--verbose` additionally prints the per-file detail the census run prints. Everything placed is recorded as the census install records it, so uninstall removes exactly it, including a chosen claude model line, a chosen omp modelRoles entry and a persona dropped on re-install.\nCHANGE. install.ts (the guided run, with the prompts behind an injectable seam so tests answer them, replacing `confirm`); cli/index.ts (the flags above, --verbose, --yes); local.ts, manifest.ts and deploy.ts (the ownership record in STILL WRONG); @clack/prompts added to packages/forge/package.json through the pnpm-workspace.yaml catalog (pnpm-lock.yaml follows); the four existing install tests that assert per-file lines (test/deploy/model-roles, persona-commands, status-line, uninstall) pass verbose or assert the summary instead; a new packages/forge/test/cli/install.test.ts, registered in packages/canon/test/gate-convicts.test.ts's REGISTRY as 'forge/cli/install.test.ts'; cases added to packages/forge/test/deploy/local.test.ts for the ownership record; packages/cli/README.md, packages/forge/README.md (its agentModels account at :290-294 @a432ae0b included) and docs/cli/USAGE.md say how install runs and document every flag. One changeset, .changeset/guided-install.md (@cratylus/schema, @cratylus/canon, @cratylus/forge and cratylus minor), states the whole change; .changeset/install-placement.md, whose claim that install does not yet use the placement layer stops being true, is folded into it and deleted. Temp directories a check creates are removed by their exact paths, never by a glob.",
+      "static": [
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/cli/src/cratylus.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/forge/test/project/fixtures/pair/agents/offered.ts",
+        "packages/forge/test/project/fixtures/pair/agents/steady.ts",
+        "packages/forge/test/deploy/local.test.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        "docs/cli/USAGE.md",
+        ".changeset/install-placement.md",
+        ".changeset/guided-install.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli/install.test.ts test/deploy test/project/tree.test.ts` exits 0, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts test/projection-stability.test.ts test/null-dimension.test.ts` exits 0, and `pnpm typecheck` exits 0. install.test.ts drives runInstall through the injected prompts and fails at census (the file does not exist): a decision given by flag is not asked; nothing is written before the confirmation and declining writes nothing; without a terminal nothing is asked; a role the host already routed is neither asked nor changed; a persona installed before is preselected on re-install.",
+        "HOST'S CHOICE STANDS (claude), in packages/forge/test/deploy/local.test.ts, cases that fail @a432ae0b: a def deployed with a chosen model equal to its rendered one, whose host then deletes the `model:` line, is placed with no `model:` line by the next deploy without models; and the same chosen line, left in place, survives a later deploy whose rendered model moved. The cases at a432ae0b for a differing choice, no choice, and a host line set before a choice still pass.",
+        "`grep -l 'optional: true' packages/canon/src/agents/*.ts` prints exactly packages/canon/src/agents/kino.ts and packages/canon/src/agents/nico.ts (@15d0a621: none).",
+        "QUIET BY DEFAULT: after `pnpm build`, H=$(mktemp -d); mkdir -p $H/.omp/agent; `HOME=$H node packages/cli/dist/cratylus.js install --harness omp </dev/null` exits 0, prints at most 25 lines, none containing `=== LOCAL deploy` or `defs copied`, and one naming `cratylus uninstall`; $H/.omp/agent/agents holds mav.md and neither kino.md nor nico.md; $H/.local/bin holds no link. @a432ae0b: 74 lines, 4 deploy-log lines, kino.md and nico.md placed. Re-run in a fresh HOME with `--verbose`: the output contains `=== LOCAL deploy`.",
+        "UP FRONT AND BACK OUT (claude): H2=$(mktemp -d); mkdir -p $H2/.claude; printf '{\"theme\":\"dark\"}\\n' > $H2/.claude/settings.json; snapshot `(cd $H2 && find . -type f | sort | xargs sha256sum)`. `HOME=$H2 node packages/cli/dist/cratylus.js install --harness claude --personas nico --no-link-persona-commands --model-roles planner=sonnet,assayer=opus </dev/null` exits 0; $H2/.claude/agents/nico.md exists, planner.md has the line `model: sonnet` and assayer.md the line `model: opus`. Delete the `model:` line from assayer.md. Then `… install --harness claude --personas none </dev/null` exits 0: nico.md is gone, planner.md still has `model: sonnet`, and assayer.md has no `model:` line. Then `HOME=$H2 node packages/cli/dist/cratylus.js uninstall --harness claude` exits 0 and the snapshot matches again. @a432ae0b: `--personas` and `--model-roles` are refused as unknown options.",
+        "CHOSEN ROUTE ON OMP: H4=$(mktemp -d); mkdir -p $H4/.omp/agent; `HOME=$H4 node packages/cli/dist/cratylus.js install --harness omp --no-link-persona-commands --model-roles planner=@slow </dev/null` exits 0 and $H4/.omp/agent/config.yml has a modelRoles line `planner: \"@slow\"` (or unquoted @slow); then `HOME=$H4 node packages/cli/dist/cratylus.js uninstall --harness omp` exits 0 and `find $H4 -type f | wc -l` prints 0. @a432ae0b: `--model-roles` is refused as an unknown option, and install writes `planner: \"@plan\"`.",
+        "ASKS FIRST ON A TERMINAL: H3=$(mktemp -d); mkdir -p $H3/.claude $H3/.omp; `timeout 20 script -qec \"HOME=$H3 node packages/cli/dist/cratylus.js install\" /dev/null </dev/null` captures a question and not the refusal `name one with --harness` (printed @a432ae0b), and `find $H3 -type f | wc -l` prints 0 afterwards."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "version": "01M3S9QXFG2PS1VAE275Y7PB7D",
+      "closure": {
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "8bc1f6b2b1cabdbda9663bef24ba25f987612997",
+        "author": "InstallPlacement",
+        "time": "2026-09-30T14:14:19.234Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "8bc1f6b2b1cabdbda9663bef24ba25f987612997",
+        "verdict": "not-achieved",
+        "missing": [
+          "install, role routing: a model the operator chooses that equals the one the persona is rendered with is not kept as the host's choice; a later deploy whose rendering moved replaced planner's chosen opus with haiku while implementer's differing choice was kept (packages/forge/src/deploy/local.ts placeAgentsLocal)",
+          "install, supported harness: on omp a model the operator chooses for a role has no placement; deploy refuses the choice with exit 1 and install still seeds only the nearest built-in route (packages/forge/src/cli/commands/deploy.ts runDeploy; packages/forge/src/cli/commands/install.ts seedModelRoles)",
+          "install: the consumer-visible claim that install places what the operator decided is false at this commit; install still places every persona, kino and nico included, and no chosen model (.changeset/install-placement.md)",
+          "install: the guided run is absent; install asks neither which personas nor which models, shows nothing before placing, confirms nothing but the link question, ends in per-file lines rather than a brief summary, and takes no up-front personas or models for a scripted run (packages/forge/src/cli/commands/install.ts runInstall; the plan's pending guided-run unit also realizes install)"
+        ],
+        "author": "AssayInstallPlacement",
+        "time": "2026-09-30T14:23:06.177Z"
+      },
+      {
+        "kind": "land",
+        "commit": "a432ae0b2b10ff900e07441258e775a05e8cf418",
+        "author": "InstallPlacement2",
+        "time": "2026-09-30T14:26:27.963Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "a432ae0b2b10ff900e07441258e775a05e8cf418",
+        "verdict": "not-achieved",
+        "missing": [
+          "install, role routing: a host's removal of a model line is undone after the operator chose the rendered model. Chosen opus with opus rendered, the host then deleted the line, and the next deploy put 'model: opus' back; at 8bc1f6b2 the same sequence left no line, as a302ae0b still does after a differing choice or no choice (packages/forge/src/deploy/local.ts placeAgentsLocal, the record written for a line the operator or host owns)",
+          "install, supported harness: on omp a model the operator chooses for a role still has no placement; runDeploy refuses a non-empty choice with exit 1 and install seeds only the nearest built-in route (packages/forge/src/cli/commands/deploy.ts runDeploy; packages/forge/src/cli/commands/install.ts seedModelRoles)",
+          "install: the guided run is still absent; install asks neither which personas nor which models, shows nothing before placing, confirms only the link question, ends in per-file lines, and takes no up-front personas or models for a scripted run (packages/forge/src/cli/commands/install.ts runInstall; the plan's pending guided-run unit also realizes install)"
+        ],
+        "author": "AssayInstallPlacement2",
+        "time": "2026-09-30T14:29:21.851Z"
+      }
+    ]
+  }
+}
