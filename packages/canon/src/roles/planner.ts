@@ -29,7 +29,8 @@ import type { RoleCell } from './hold.js';
 //
 // `system-design` is absent alongside `software-engineering` — this position neither
 // designs nor builds. What it owns is the plan: the census, the units cut from the
-// shards it is handed, and the plan's records from binding to closing.
+// shards it is handed, and the plan's records from binding, which cuts the plan's line, to
+// closing. The integrator, not this position, commits the records it writes on the line.
 
 export const plannerRole: RoleCell = {
   sign: planner_role,

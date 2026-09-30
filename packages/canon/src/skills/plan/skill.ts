@@ -79,10 +79,9 @@ wave(n+1) ≜ { unit | unit ∉ W(n) ∧ ∀ u : (unit, u) ∈ R ⇒ u ∈ W(n) 
 W(n)   ≜ ⋃ { wave(i) | i ≤ n }
 owed   @ note
 blocked(unit) ⇔ ∃ u ∈ deps(unit) : ¬satisfied(u)
-ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready
-    PROMISES an implementer can FINISH · conflating a dep with a ruling stalls a fan-out⟩
+ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready PROMISES an implementer can FINISH⟩
 frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | bound(P) ∧ ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
-    the plan IS · ¬ only what is dispatchable · ¬bound(P) ⇒ frontier(P) = ∅⟩
+    the plan IS · ¬bound(P) ⇒ frontier(P) = ∅⟩
 planner   ≜ the planner ⟨bounded to its shards⟩
 conform @ signify
 show(P) ≜ \`scripts/plan.mjs show [<plan>]\` ↦ the bound P in wave order ∨ any P named, whole
@@ -92,7 +91,7 @@ advance(unit) ≜ \`scripts/plan.mjs advance <unit> --plan <p> --to <state>\`
 retract(unit) ≜ \`scripts/plan.mjs retract <unit> --plan <p>\`
 revise(unit) ≜ \`scripts/plan.mjs revise <unit> --plan <p> [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]…\` ⟨spec(unit) · pin(unit) kept⟩
 revise(P) ≜ \`scripts/plan.mjs revise <plan> [--name <n>] [--realizes <concept>]…\` ⟨name(P) ∨ realizes(P)⟩
-bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P)⟩
+bind(P) ≜ \`scripts/plan.mjs bind <plan>\` ⟨bound(P) · cuts the plan's line, branch \`plan/<plan>\`, from the HEAD of its checkout into \`<main worktree>.plan-<plan>\` · while bound, every write about P from any checkout lands there, never on main⟩
 close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
 reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p> [--name <n>] [--realizes <concept>] [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--state <state>] [--repin]\` ∨ \`scripts/plan.mjs reconcile <plan> [--name <n>] [--realizes <concept>]… [--state <state>]\` ↦ one version superseding every current version of x ⟨each field the versions disagree on is given · a unit whose versions pin differently takes --repin⟩
 land(unit) ≜ \`scripts/plan.mjs land <unit> --plan <p> --commit <c>\`
@@ -121,13 +120,12 @@ drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan �
 drifted(unit) ⇒ response ↾ what moved ⟨nothing ⇒ repin · gloss ⇒ repin ∨ revise(unit) ∧ repin, by what the
     new gloss adds ∨ drops · anchor ∨ factors ⇒ revise(unit) ∧ repin · re-cut ⇔ shard itself moved⟩
 suspect(unit) ⇒ the same response ↾ what moved beneath ⟨the concept that moved is a factor, ¬ the one
-    unit spells ∴ its anchor moving alone ⇒ repin · a factor dropped beneath shows as the concept
-    above it amended in factors⟩
+    unit spells ∴ its anchor moving alone ⇒ repin⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
 reconcile ⊨ planner ⟨reconciliation of plans ∧ units is the planner's alone⟩
 slices(P) cut on shards ⟨¬ file-adjacency · files are a LAGGING proxy for modularity ∴
-    file-cut ⇒ ∀ unit ⊇ fragments of several c ⇒ implementer finishes ∧ system incoherent⟩
+    file-cut ⇒ a unit holds fragments of several c⟩
 ⋃ slices(P) = P ∧ ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
 ∄ swap improving cross(slices(P)) ⟨LOCAL argmin · a global one is ¬ decidable⟩
 ∀ n < m : |wave(n)| = 1 ⇒ slices mis-cut ⟨a singleton non-terminal wave is a CHAIN⟩
@@ -146,17 +144,16 @@ effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) ⟨each pa
     already pass before the work, test nothing⟩
 census(P) ⊨ once ∧ pinned⟨commit⟩ ∧ cited by every unit ⟨¬ re-derived per implementer⟩
 ∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨commit⟩ ∴ cite ⇔ ∄ change to its paths since
-    that commit ; else re-derive ≺ cite ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree
-    moves ∧ nothing reds⟩
+    that commit ; else re-derive ≺ cite ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 ∀ unit : conform(spec(unit))
-plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → bind(P) ⟨only when ¬∃ bound P⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩
+plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → bind(P) ⟨only when ¬∃ bound P · cuts the line⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩
     ; on \`whole <unit>\` : advance(unit) ↦ ${UNIT.satisfies}, hand out the newly ready ; ∀ unit completed ⇒ close(P)
     ; on a stop ⟨an owed note blocking P⟩ : rectify ⟨repin ∨ revise ∨ retract ∨ add⟩ ∨ rebuild P ≺ the note is retracted ⟨the drift laws apply to a bound P⟩` as SkillExpression;
 
 export const plan: Skill = {
   name: 'plan',
-  description: `use this skill to decompose the shards a design hands down into MECE units of work — each realizing exactly one shard and citing the single concept it realizes, with its dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a shard that cannot be planned as handed down is surfaced, never silently redrawn. It also carries the verbs that write a unit's ledger.`,
+  description: `use this skill to decompose the shards a design hands down into MECE units of work — each realizing exactly one shard and citing the single concept it realizes, with its dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams, not file adjacency, and ordered into waves of disjoint outputs that dispatch concurrently. Reach for it after a design exists and before any work is dispatched. Its bind cuts the plan's line, and it carries the verbs that write a unit's ledger.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'plan', configuration: LIFECYCLE },
   composition: () => [design, note],
