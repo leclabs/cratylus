@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RZ61EJNSG63Z1N9XAEQ5C2",
+    "entity": "01M3RZ61EJNSG63Z1N9XAEQ5C1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T10:53:50.930Z",
+    "reason": "an assayer's finding beside oracle-scope",
+    "cause": "assay of oracle-scope at 559f818b"
+  },
+  "payload": {
+    "title": "signify's exclusion law omits outside the core",
+    "kind": "idea",
+    "topic": "prime principle",
+    "body": "Beside oracle-scope's assay: signify's exclusion law (a concept outside dom(α) gets no anchor) lists two reasons for a concept falling outside dom(α). Now that dom(α) is the core agent dimension names and values, a concept outside the core falls outside it for a third reason the law does not list. Wording only; for a following plan.",
+    "blocks": []
+  }
+}
