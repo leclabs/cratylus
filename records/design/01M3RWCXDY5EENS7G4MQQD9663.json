@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RWCXDY5EENS7G4MQQD9663",
+    "entity": "01M3Q4H5EY0JRSHR12V308QAS8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Q4H5EY0JRSHR12V308QAS9"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T10:05:10.463Z",
+    "reason": "the oracle served the phase in which the corpus discovered its own terminology; its constraints have since leaked past that scope and fight industry-standard terms that models already decode precisely",
+    "cause": "operator: constrain the cold-decode oracle to core agent dimension names and values; never restrict consumers"
+  },
+  "payload": {
+    "anchor": "prime principle",
+    "gloss": "the corpus's first principle, cratylism: a concept's canonical sign is intrinsic and discovered, never coined. It is carried only by the cells whose laws apply it (those that name concepts by anchor, optimal sign or cold decode, and any agent declaring it as an engineering principle), never prepended to every projected cell, because a cell that does not use it would hold a host's own authored surfaces to this corpus's naming axiom. This repository's own sessions receive it through their project context, not through what ships. Its instrument, the cold-decode oracle, decides signs only for the corpus's core agent dimension names and values, the terminology it was built to discover; every other term is the industry's own, used as the industry understands it, and nothing cratylus ships holds a consumer's own surfaces to the oracle.",
+    "factors": []
+  }
+}

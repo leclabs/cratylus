@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3RWCX2WZRZE58R55GA90PN7",
+    "entity": "01M3MEKHA5W8RJBDX72X37FZVJ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RKANXJ8GNPTPY4HMWGMF0E"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T10:05:10.108Z",
+    "reason": "work-on-the-line wrote branch names, worktree paths and git commands into the texts agents read; agents and both supported harnesses already know worktrees, so the design states only that each unit is isolated in one off the line",
+    "cause": "operator: implementers should simply be told to use a worktree for isolation"
+  },
+  "payload": {
+    "anchor": "plan",
+    "gloss": "an entity naming the set of concepts it realizes and its lifecycle: proposed, bound, then closed, which is final. One live plan per name, and a closed plan keeps its name. Binding a plan returns whichever plan was bound to proposed, so at most one plan is bound, and when a merge leaves two, binding the one to keep resolves it. An owed ruling that names a plan blocks binding it and every unit in it. A closed plan and its units are never written again, and stay readable forever; closing replaces retiring by deletion. While a plan is bound, all of its work and every record written about it are written on its one line and never on the main line, which receives them only when the closed plan is released. Each unit is built in its own isolated worktree off that line; how an agent uses worktrees is its own competence, and nothing it reads teaches it.",
+    "factors": [
+      "01M3MEKH4WNSY2RE9VRTXZH9PT",
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR"
+    ]
+  }
+}

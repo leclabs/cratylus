@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3RWCXKJJBAS41D33XQF2MVZ",
+    "entity": "01M3RS2CN951BFEW7D29E0QDXG",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RS2CN951BFEW7D29E0QDXH"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T10:05:10.642Z",
+    "reason": "entered the design",
+    "cause": "operator approved the next plan"
+  },
+  "payload": null
+}
