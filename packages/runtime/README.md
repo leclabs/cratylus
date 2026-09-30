@@ -90,8 +90,11 @@ the notes blocking either that the checkout holds and the line lacks, and writes
 the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
 note write whose blocks name the plan or one of its units, before or after the write — is written
 into the line's worktree from whichever checkout runs it, and its output ends by naming the branch
-and worktree it wrote to. With no worktree holding the line it refuses, writes nothing and prints
-the `git worktree add` that restores one; `bind` refuses a branch no worktree holds the same way.
+and worktree it wrote to. A bound plan with no worktree holding its line — the branch kept and its
+worktree removed, or no branch at all, as when it was merged early, deleted, or bound before lines
+existed — refuses the write, writes nothing, and prints the `git worktree add` that restores the
+worktree or, with no branch, cuts one (`git worktree add -b plan/<plan> <path>`); `bind` refuses a
+branch no worktree holds the same way.
 The runtime commits nothing: committing the line stays with whoever works it, and the main line
 receives the records only when the closed plan is released. A read is the union of the checkout's
 records and those of every line's worktree (a line no worktree holds is read from what its branch

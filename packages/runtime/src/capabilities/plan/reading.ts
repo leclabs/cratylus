@@ -1228,38 +1228,36 @@ export class Reading {
     );
   }
 
-  /** Whether plan `entity` is still in play: not every version of it closed. A
-   *  plan this reading does not hold is. */
-  #open(entity: string): boolean {
+  /** Whether plan `entity` is bound: some version of it holds the lifecycle's
+   *  exclusive state. */
+  #bound(entity: string): boolean {
     const f = this.plans.get(entity);
-    const final =
-      this.unconfigured === undefined ? this.lifecycle.plan.final : '';
-    return f === undefined || versions(f).some((v) => v.state !== final);
+    if (f === undefined || this.unconfigured !== undefined) return false;
+    const { exclusive } = this.lifecycle.plan;
+    return versions(f).some((v) => v.state === exclusive);
   }
 
-  /** Refuses a write that names one of `plans` when its line, the branch
-   *  `plan/<plan>` of a plan still in play, has no worktree: the refusal says so
-   *  before any law, that could be answered wrongly by records a missing
-   *  worktree hid. A reading that is not of a write never refuses. */
+  /** Refuses a write that names one of `plans` when a plan among them is bound
+   *  and no worktree holds its line: the refusal says so before any law, that
+   *  records a missing line hid could answer wrongly. A reading that is not of
+   *  a write never refuses. */
   #unlined(plans: readonly string[]): void {
     const { store } = this;
     if (!(store instanceof StagedStore)) return;
     for (const p of plans) {
       const name = this.#planNamed(this, p);
-      if (name === undefined || !this.#open(p)) continue;
-      const { exists, path } = store.line(name);
-      if (exists && path === undefined) throw store.lineless(name);
+      if (name !== undefined && this.#bound(p) && !store.line(name).path)
+        throw store.lineless(name);
     }
   }
 
   /**
    * Where each write this reading's staged store holds belongs, `before` being
-   * the reading of what stood before the act. A write about a plan that has a
-   * line — a plan not closed whose branch `plan/<plan>` exists, or the plan
-   * `cutting`, whose line this act cuts — belongs on that line, and is named
-   * here by the plan's name, by record id. Refuses, naming what restores it, a
-   * line no worktree holds, and a write about plans on two lines. Changes
-   * nothing.
+   * the reading of what stood before the act. A write about a bound plan — one
+   * `before` held bound, or the plan `cutting`, whose line this act cuts —
+   * belongs on that plan's line, and is named here by the plan's name, by
+   * record id. Refuses, naming what restores it, a bound plan whose line no
+   * worktree holds, and a write about plans on two lines. Changes nothing.
    */
   placing(
     before: Reading,
@@ -1270,25 +1268,21 @@ export class Reading {
     const cut =
       cutting === undefined ? undefined : this.#planNamed(before, cutting);
     if (!(store instanceof StagedStore)) return { of, cut };
-    const lined = new Map<string, boolean>();
-    const onLine = (name: string): boolean => {
-      let line = lined.get(name);
-      if (line === undefined) {
-        const { exists, path } = store.line(name);
-        if (exists && path === undefined) throw store.lineless(name);
-        line = exists || name === cut;
-        lined.set(name, line);
-      }
-      return line;
+    const held = (name: string): string => {
+      const { exists, path } = store.line(name);
+      if (path === undefined && (exists || name !== cut))
+        throw store.lineless(name);
+      return name;
     };
     for (const { domain, record } of store.held) {
       const { id, entity } = record.envelope;
       const names = [
         ...new Set(
           this.#concerns(before, domain, entity)
-            .filter((p) => before.#open(p))
+            .filter((p) => p === cutting || before.#bound(p))
             .map((p) => this.#planNamed(before, p))
-            .filter((n): n is string => n !== undefined && onLine(n)),
+            .filter((n): n is string => n !== undefined)
+            .map(held),
         ),
       ];
       if (names.length > 1)
@@ -1297,7 +1291,7 @@ export class Reading {
         );
       if (names[0] !== undefined) of.set(id, names[0]);
     }
-    if (cut !== undefined) onLine(cut);
+    if (cut !== undefined) held(cut);
     return { of, cut };
   }
 

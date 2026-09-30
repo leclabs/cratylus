@@ -305,12 +305,16 @@ export class RecordStore {
     return `${this.main}.plan-${plan}`;
   }
 
-  /** The refusal of a line whose branch exists and no worktree holds it,
-   *  saying the `git worktree add` that restores one. */
+  /** The refusal of a bound plan whose line no worktree holds, saying the `git
+   *  worktree add` that restores the worktree of a branch that exists, or cuts
+   *  the branch that does not. */
   lineless(plan: string): StoreFault {
-    const { branch } = this.line(plan);
+    const { branch, exists } = this.line(plan);
+    const at = shellQuoted(this.#lineAt(plan));
     return new StoreFault(
-      `the line of plan ${plan}, branch ${branch}, has no worktree, so nothing was written; restore it with \`git worktree add ${shellQuoted(this.#lineAt(plan))} ${branch}\``,
+      exists
+        ? `the line of plan ${plan}, branch ${branch}, has no worktree, so nothing was written; restore it with \`git worktree add ${at} ${branch}\``
+        : `plan ${plan} is bound and its line, branch ${branch}, does not exist, so nothing was written; cut it with \`git worktree add -b ${branch} ${at}\``,
       'line',
     );
   }

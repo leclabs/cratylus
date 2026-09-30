@@ -60,6 +60,27 @@ function released(repo: string, name: string): void {
   git(repo, 'branch', '-q', '-d', `plan/${name}`);
 }
 
+/** Diverge what plan `name`'s line holds, as a merge of two branches of it
+ *  does: `left` and `right` each write from the state the line held, and the
+ *  line's history is merged. */
+function diverged(
+  repo: string,
+  name: string,
+  left: () => void,
+  right: () => void,
+): void {
+  const line = `${repo}.plan-${name}`;
+  commit(line, 'base');
+  const base = git(line, 'rev-parse', 'HEAD').trim();
+  left();
+  commit(line, 'left');
+  const merged = git(line, 'rev-parse', 'HEAD').trim();
+  git(line, 'reset', '-q', '--hard', base);
+  right();
+  commit(line, 'right');
+  git(line, 'merge', '-q', '--no-edit', merged);
+}
+
 /** Concepts `c1`, `c2`, and `leaf` standing on `base`. */
 function concepts(repo: string): void {
   design(repo, 'define', 'c1', '--gloss', 'one', ...BY);
@@ -416,14 +437,10 @@ describe('plan — units are worked only while their plan is bound', () => {
     add(repo, 'a', 'one');
     add(repo, 'b', 'two');
     plan(repo, 'bind', 'one', ...BY);
-    released(repo, 'one');
-    merge(
+    diverged(
       repo,
-      'unit',
-      () => {
-        plan(repo, 'bind', 'two', ...BY);
-        released(repo, 'two');
-      },
+      'one',
+      () => plan(repo, 'bind', 'two', ...BY),
       () => plan(repo, 'advance', 'a', '--to', 'u-mid', ...BY),
     );
     expect(marks(repo, 'one', 'a')).toBe('u-mid');
@@ -479,18 +496,13 @@ describe('plan — incoherence, repaired one write at a time', () => {
     add(repo, 'a1', 'one');
     add(repo, 'b1', 'two');
     add(repo, 'b2', 'two');
-    merge(
-      repo,
-      'plan',
-      () => {
-        plan(repo, 'bind', 'one', ...BY);
-        released(repo, 'one');
-      },
-      () => {
-        plan(repo, 'bind', 'two', ...BY);
-        released(repo, 'two');
-      },
-    );
+    // Each plan is bound on a line of its own, and one line's records leave
+    // the other plan in the state it was bound: what a merge of two lines
+    // that each bound a plan leaves.
+    plan(repo, 'bind', 'one', ...BY);
+    commit(`${repo}.plan-one`, 'one bound');
+    plan(repo, 'bind', 'two', ...BY);
+    git(`${repo}.plan-one`, 'clean', '-fdq');
     const out = show(repo);
     const header = out.split('\n')[0] as string;
     expect(header).toMatch(/^plans one \(p-held\), two \(p-held\) at /);
@@ -515,12 +527,11 @@ describe('plan — incoherence, repaired one write at a time', () => {
     add(repo, 'A', 'pl');
     add(repo, 'B', 'pl');
     plan(repo, 'bind', 'pl', ...BY);
-    released(repo, 'pl');
     plan(repo, 'advance', 'B', '--to', 'u-mid', ...BY);
     plan(repo, 'advance', 'B', '--to', 'u-done', ...BY);
-    merge(
+    diverged(
       repo,
-      'unit',
+      'pl',
       () => plan(repo, 'retract', 'B', ...BY),
       () => {
         plan(repo, 'revise', 'A', '--deps', 'B', ...BY);
@@ -913,7 +924,6 @@ describe('plan — dependencies and the lifecycle', () => {
     add(repo, 'b', 'pl', 'c1', '--deps', 'a');
     add(repo, 'o', 'other');
     plan(repo, 'bind', 'pl', ...BY);
-    released(repo, 'pl');
     expect(
       refused(
         repo,
@@ -943,9 +953,9 @@ describe('plan — dependencies and the lifecycle', () => {
     plan(repo, 'advance', 'a', '--to', 'u-done', ...BY);
     plan(repo, 'advance', 'a', '--to', 'u-past', ...BY);
     expect(marks(repo, 'pl', 'b')).toBe('u-new, frontier');
-    merge(
+    diverged(
       repo,
-      'unit',
+      'pl',
       () => plan(repo, 'revise', 'b', '--intent', 'left', ...BY),
       () => plan(repo, 'revise', 'b', '--intent', 'right', ...BY),
     );
@@ -1251,11 +1261,10 @@ describe('plan — the ledger of a unit worked', () => {
   it('events written on two branches diverge the unit, an event REFUSES until reconcile, and reconcile carries every event once, in time order', () => {
     const repo = repository();
     working(repo);
-    released(repo, 'p');
     plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c0', ...BY);
-    merge(
+    diverged(
       repo,
-      'unit',
+      'p',
       () => plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'cl', ...BY),
       () => plan(repo, 'whole', 'u', '--plan', 'p', '--commit', 'cr', ...BY),
     );
@@ -1454,5 +1463,38 @@ describe('plan — a bound plan’s records live on its line', () => {
       `wrote to plan/q, worktree ${held}`,
     );
     expect(records(held, 'plan')).toHaveLength(2);
+  });
+
+  it('REFUSES a write about a bound plan whose line does not exist, naming the `git worktree add -b` that cuts it, and writes nothing; a plan not bound writes where it runs beside a branch of its name', () => {
+    const { repo, line } = lined();
+    released(repo, 'p');
+    const before = status(repo);
+    const said = refused(
+      repo,
+      'advance',
+      'u',
+      '--plan',
+      'p',
+      '--to',
+      'u-mid',
+      ...BY,
+    );
+    expect(said).toContain(`git worktree add -b plan/p ${line}`);
+    expect(status(repo)).toBe(before);
+    add(repo, 'z', 'q');
+    git(repo, 'branch', 'plan/q');
+    const units = records(repo, 'unit').length;
+    const out = plan(
+      repo,
+      'revise',
+      'z',
+      '--plan',
+      'q',
+      '--intent',
+      'x',
+      ...BY,
+    );
+    expect(out).not.toContain('wrote to');
+    expect(records(repo, 'unit')).toHaveLength(units + 1);
   });
 });
