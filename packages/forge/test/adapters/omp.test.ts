@@ -1215,12 +1215,18 @@ describe('omp role routing', () => {
     expect(routing.defaultRole).toBe('default');
     expect(
       Object.fromEntries(
-        ['implementer', 'planner', 'assayer', 'architect', 'unheard-of'].map(
-          (r) => [r, routing.nearest(r)],
-        ),
+        [
+          'implementer',
+          'integrator',
+          'planner',
+          'assayer',
+          'architect',
+          'unheard-of',
+        ].map((r) => [r, routing.nearest(r)]),
       ),
     ).toEqual({
       implementer: 'task',
+      integrator: 'task',
       planner: 'plan',
       assayer: 'default',
       architect: 'default',

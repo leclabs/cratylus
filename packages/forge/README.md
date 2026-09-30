@@ -244,9 +244,9 @@ host that never configured the role runs the agent on the default role (`modelRo
 holding no role has no `model` key. Which model fills a role is the host's `modelRoles` entry in
 `~/.omp/agent/config.yml` (or `config.yaml`, which omp reads only when config.yml is absent). The table
 behind this is the adapter's optional `roleRouting` member (its default role, the built-in role nearest
-each held role, and the config paths in read order); claude leaves it absent, since install seeds no
-claude config (its definitions route by tier instead, below). `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
-`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer to `task`, planner to `plan`,
+each held role, and the config paths in read order); claude leaves it absent, since it has no host
+role map to seed (its definitions route by tier instead, below). `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
+`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer and integrator to `task`, planner to `plan`,
 assayer and architect to `default`. It edits the config file omp reads — `config.yml`, else `config.yaml` —
 by inserting lines, so every other byte survives; it never changes an entry the host already has, creates
 `config.yml` only when the host has neither file, and, when `modelRoles` is
@@ -283,13 +283,20 @@ reporting success.
 **On Claude Code the definition names a tier, never a model version.** Claude Code has no
 host-configurable role aliases: a definition's `model` takes an id, a tier alias or `inherit`. The
 claude adapter therefore holds its own table from the held role to a tier alias, and an agent's
-definition carries `model: <tier>` right after its `description`: `sonnet` for an implementer,
-`opus` for a planner, assayer or architect. An agent holding any other role, or none, has no `model`
-and runs on the session's model. The alias resolves to whatever Claude currently serves for that
-tier, and `install` seeds nothing. The host's own choice outranks the definition: `--model` on a
-`claude --agent` main session, and for a dispatched subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1`
-together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>` (`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the
-definition's tier standing).
+definition carries `model: <tier>` right after its `description`: `sonnet` for an implementer or
+integrator, `opus` for a planner, assayer or architect. An agent holding any other role, or none, has
+no `model` and runs on the session's model. The alias resolves to whatever Claude currently serves for
+that tier. The definition's `model:` line is the one place a host sets a subagent's model, so a deploy
+keeps the host's choice there: the deploy manifest records, per placed claude definition, the `model:`
+value it rendered (`DeployManifest.agentModels`, beside `personaLinks`), and a deployed definition whose
+`model:` differs from that record — edited, added or removed — keeps the host's line, or none, in the
+definition placed over it (`PlaceOpts.keepHostModel`, set for the `.claude` home; every other line is
+replaced as before). The deploy log names each definition whose model it kept. `install` reports the
+roles as settable on the first install, and on every one: one line per held role with its tier and the
+`model:` line that sets it, and the subagent override. The host's own choice outranks the definition
+too: `--model` on a `claude --agent` main session, and for a dispatched subagent
+`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
+(`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's tier standing).
 
 **Persona commands.** `launcherFile` on the port names the launcher the adapter's `launchSurface`
 emits in the SESSION scope: `omp-agent` on omp, `claude-agent` on Claude Code

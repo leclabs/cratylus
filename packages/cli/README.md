@@ -110,12 +110,19 @@ degrades and warns where it falls short; they are not the same, and this is what
 - **Role routing.** An agent names the role it holds, never a model. On omp the role becomes
   `model: ["@<role>", "@default"]` and the model behind it is the host's `modelRoles` entry
   (next section). Claude Code has no host-configurable roles, so a definition there names a model
-  tier alias: `model: sonnet` for an implementer, `model: opus` for a planner, assayer or
-  architect; an agent holding any other role, or none, has no `model` and runs on the session's
-  model. The host's own choice outranks the definition: `--model` for a `claude --agent` main
-  session, and for a dispatched subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with
-  `CLAUDE_CODE_SUBAGENT_MODEL=<model>` (`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's
-  tier standing).
+  tier alias: `model: sonnet` for an implementer or integrator (spec-bounded work), `model: opus`
+  for a planner, assayer or architect (work that holds, cuts or judges against the design); an agent
+  holding any other role, or none, has no `model` and runs on the session's model. On omp the
+  integrator routes to the built-in `@task`, as the implementer does. The host sets a role's model
+  on Claude Code by the `model:` line of each agent holding it, and `install` keeps that choice:
+  a deployed definition whose `model:` line is not the one the last install wrote (edited, or
+  removed) keeps the host's line in the definition placed over it, every other line is replaced as
+  before, and the install output names each agent whose model it kept. The first install prints one
+  line per held role, with its tier and the `model:` line that sets it. The host's own choice
+  outranks the definition too: `--model` for a `claude --agent` main session, and for a dispatched
+  subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
+  (`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's tier standing); `install` names that
+  pair as well.
 
 ## The host's model routing on omp
 
@@ -133,7 +140,7 @@ modelRoles:
 
 `cratylus install --harness omp` reads the roles the installed agents hold and, for each
 one `modelRoles` has no key for, adds an entry aliasing the nearest built-in omp role:
-implementer to `@task`, planner to `@plan`, assayer and architect to `@default`. It
+implementer and integrator to `@task`, planner to `@plan`, assayer and architect to `@default`. It
 prints one `<role>: "@<alias>"` line per entry it added, with the file's path, or says
 that no entry was missing. `--dry-run` prints the same entries as would-add and writes
 nothing.

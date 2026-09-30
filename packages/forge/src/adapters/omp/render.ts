@@ -246,9 +246,11 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 const OMP_DEFAULT_ROLE = 'default';
 
 /** The built-in omp role nearest to each role an agent may hold. A held role with
- *  no entry is nearest the default role. */
+ *  no entry is nearest the default role. The integrator's work is spec-bounded like
+ *  the implementer's (it joins what implementers built), so it routes to `task`. */
 const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
   implementer: 'task',
+  integrator: 'task',
   planner: 'plan',
 };
 
