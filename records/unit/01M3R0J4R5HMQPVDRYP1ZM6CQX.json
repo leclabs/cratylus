@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3R0J4R5HMQPVDRYP1ZM6CQX",
+    "entity": "01M3R026BK0FZPXB3SS32E9VHP",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R026BMKC6VA0FX59H22JDD"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T01:58:41.669Z",
+    "reason": "superseded by assayer-position, which realizes assayer position (factor assay verdict) over the same assayer cells",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": null
+}

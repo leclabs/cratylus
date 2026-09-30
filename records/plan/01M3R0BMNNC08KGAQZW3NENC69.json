@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R0BMNNC08KGAQZW3NENC69",
+    "entity": "01M3QSH5SEJWFRW1Y5RW5KWY0K",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSH5SEJWFRW1Y5RW5KWY0M"
+    ],
+    "author": "planner",
+    "time": "2026-09-30T01:55:08.597Z",
+    "reason": "its unit was pinned to a superseded integrator position and never built; superseded by plan corrected-shards",
+    "cause": "Main rulings b14d8c4e; design gained design shard and the planner, implementer and assayer positions at 376f47f1"
+  },
+  "payload": {
+    "name": "integrator-position",
+    "realizes": [
+      "01M3QRZYAQ4KRZJKS8MX0CNA39"
+    ],
+    "state": "closed"
+  }
+}
