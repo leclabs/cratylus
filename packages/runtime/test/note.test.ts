@@ -592,13 +592,13 @@ describe('note — a note about a bound plan is written on its line', () => {
       'pl',
       ...BY,
     );
-    expect(said).toContain('plan/pl');
-    expect(said).toContain(`git worktree add ${line} plan/pl`);
+    expect(said).toContain('the line of plan pl has no worktree');
+    expect(said).not.toContain('git');
     expect(capture(repo, 'free')).not.toContain('wrote to');
   });
 
-  it('REFUSES a note naming a bound plan whose line does not exist, naming the `git worktree add -b` that cuts it, and writes nothing', () => {
-    const { repo, line } = lined();
+  it('REFUSES a note naming a bound plan whose line does not exist, saying the line is missing and teaching no git command, and writes nothing', () => {
+    const { repo } = lined();
     released(repo, 'pl');
     const said = refused(
       note,
@@ -615,7 +615,8 @@ describe('note — a note about a bound plan is written on its line', () => {
       'a',
       ...BY,
     );
-    expect(said).toContain(`git worktree add -b plan/pl ${line}`);
+    expect(said).toContain('its line does not exist');
+    expect(said).not.toContain('git');
     expect(records(repo, 'notebook')).toEqual([]);
   });
 });

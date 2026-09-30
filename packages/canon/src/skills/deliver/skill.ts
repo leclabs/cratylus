@@ -101,7 +101,7 @@ release(P) ≜ line(P) reaches main ⟨the operator's sign-off · a pull request
 accepted(unit) ⇔ achieved(unit) ⟨acceptance rests on the assayer's verdict · never on r, never on a merge, never on a green gate⟩
 integrator ⊨ ¬ judges ⟨it carries a verdict onward ∧ reaches none · the verdict arrived before it was reached⟩
 integrator ⊨ takes(unit) ⇔ accepted(unit) ⟨what the architect sends it is a unit's name ∧ commit after an achieved verdict⟩
-bound(P) ⇒ bind cut line(P) ∧ the integrator finds it and cuts none ⟨the line has one birth · a worktree the runtime cannot find is a refusal that names the command restoring it⟩
+bound(P) ⇒ bind cut line(P) ∧ the integrator finds it and cuts none ⟨the line has one birth · a line the runtime cannot find is a refusal that says what is missing⟩
 bound(P) ⇒ ∀ unit ∈ P : built in its own worktree off line(P) ∧ ∄ commit @ main ⟨work ↦ that worktree · records ↦ line(P) · main receives line(P) only at release(P)⟩
 bound(P) ⇒ every record about P is written on line(P) from any checkout ∧ the integrator commits them at every act ⟨the planner's state records included · the runtime commits nothing · planner ∧ implementer ∧ assayer commit none of them⟩
 integrate(unit) ⇒ gate ONCE on the combined tree ⟨a branch's green says nothing about the line after other landings · an implementer ∨ assayer re-running gate proves nothing new on nearly the same tree⟩

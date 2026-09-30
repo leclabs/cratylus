@@ -1256,7 +1256,7 @@ export class Reading {
    * the reading of what stood before the act. A write about a bound plan — one
    * `before` held bound, or the plan `cutting`, whose line this act cuts —
    * belongs on that plan's line, and is named here by the plan's name, by
-   * record id. Refuses, naming what restores it, a bound plan whose line no
+   * record id. Refuses, saying what is missing, a bound plan whose line no
    * worktree holds, and a write about plans on two lines. Changes nothing.
    */
   placing(
