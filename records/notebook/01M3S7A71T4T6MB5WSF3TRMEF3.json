@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3S7A71T4T6MB5WSF3TRMEF3",
+    "entity": "01M3RX32EV860A46GRQDKQMHQM",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RX32EV860A46GRQDKQMHQN"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T13:15:56.346Z",
+    "reason": "routing-by-name, released in loop-friction, passes routing by name and the closed-plan routing reliably (16/16 each)",
+    "cause": "loop-friction released"
+  },
+  "payload": null
+}
