@@ -1,5 +1,22 @@
 # @cratylus/canon
 
+## 0.11.0
+
+### Minor Changes
+
+- 936d174: The loop's texts now place a plan's work on its line. The planner's bind cuts the plan's line, the branch `plan/<plan>` from the HEAD of the checkout where bind runs, and a bound plan's work and records are written on it, never on main: each implementer builds its unit on a branch cut from the line and commits nothing on main while the plan is bound, every record about the plan is written on the line from any checkout, and the integrator finds the line and cuts no branch, committing the records the line holds at every act. The `deliver` skill drops the integrator's first-dispatch cut and its base, so bind is the line's one birth, and `docs/role.md` says the same.
+
+### Patch Changes
+
+- d3a9597: A guard's judge is now sent a smaller rubric and a bounded excerpt, so a judgement fits the time
+  its harness allows a guard and a judge that is merely slow is no longer reported as one that could
+  not run. The stance rubric is cut from 29 KB to under 14 KB, keeping its rules, boundary tests and
+  output protocol; its rationale and measurements move to the hook source's comments. All three
+  workers (turn end, pre-tool, purview) send at most 12000 bytes: a turn keeps its close and the
+  operator message its tail, a dispatch or menu keeps both ends, each cut is marked, and a BLOCK's
+  evidence is checked against what the judge was sent. No deadline and no cell timeout is raised.
+  The omp bridge's deadline comments now carry the new measurement; its constants are unchanged.
+
 ## 0.10.0
 
 ### Minor Changes
