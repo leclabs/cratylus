@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3SGQEEGZ3GM7AMTET402K75",
+    "entity": "01M3SGQEEGZ3GM7AMTET402K74",
+    "operation": "create",
+    "supersedes": [],
+    "author": "PurviewRoutesIntegrator2",
+    "time": "2026-09-30T16:00:27.088Z",
+    "reason": "met while combining closed-plan-route: the commit-msg hook refused the merge(...) subject the line already carries",
+    "cause": "husky commit-msg commitlint refusal on git merge -m 'merge(purview-routes): closed-plan-route'"
+  },
+  "payload": {
+    "title": "line merge commit subject fails commitlint type-enum",
+    "kind": "idea",
+    "topic": "omp-message-is-dispatch of plan purview-routes",
+    "body": "On plan/purview-routes the combination commit 8bd6d15d is subject 'merge(purview-routes): omp-message-is-dispatch'; 'merge' is not in commitlint's type-enum, so the husky commit-msg hook refuses that subject (it refused the same shape for closed-plan-route, committed instead as 'chore(purview-routes): merge closed-plan-route'). CI's gate does not run commitlint, so the gate stays green; the subject reaches main at release. Beside the path: blocks nothing.",
+    "blocks": []
+  }
+}
