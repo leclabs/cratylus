@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RD3XFY5AD6R5FRSDZ3X7SH",
+    "entity": "01M3RD3XFY5AD6R5FRSDZ3X7SG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T05:38:06.975Z",
+    "reason": "the install surface fails the consumer surface the first-share effort set out to give",
+    "cause": "operator: the CLI is not beautiful, intuitive or lean; note it for a future plan"
+  },
+  "payload": {
+    "title": "install is noise, not a wizard",
+    "kind": "idea",
+    "topic": "consumer surface",
+    "body": "Operator observation after installing 0.6.0: `cratylus install --harness <harness>` should by default be a guided, good-looking, lean wizard, but today it prints a bucket of internal detail and ends in one y/n confirmation; it is neither intuitive nor lean. Intended: the default run asks only what the operator must decide (harness, which personas, persona launch commands, model roles), shows what will be placed before placing it, and ends with a short summary of what was done and what to do next; the detail now printed goes behind a verbose flag. Rectified library choice: commander is an argument parser, not a wizard; for the interactive flow the current community choice is @clack/prompts (Astro, Svelte and Nuxt scaffolders use it), with @inquirer/prompts the established alternative; argument parsing stays with the existing parser or commander/citty. Belongs to first-share piece 3 (consumer surface: install wizard, a nicer CLI with consumer commands first).",
+    "blocks": []
+  }
+}
