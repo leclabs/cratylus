@@ -1,0 +1,5 @@
+---
+"@cratylus/canon": minor
+---
+
+The implementer position is stated as the one that builds a unit from its spec alone and hands up a name, not an account. Its role contract now says it builds on its own branch, proves only what the spec asks, commits its own work, and returns only `landed <unit> of <plan> at <commit>` or `blocked <unit> of <plan>: spec`; that the assayer judges the unit against its shard, and that a verdict of not achieved comes back to the same implementer, who amends the same unit; and that what it could not prove, and any finding beside the path, is captured as a note and never travels up in the return. It reads its spec with `cratylus plan show <unit> --plan <plan>`, stated in the role sign, and composes the `note` skill and nothing else, so it still never receives `design`. The agent's description and archetype say the same, and no longer make an honest account the position's value to the layer above. `limitation-disclosure` stays, its channel now the note, and the `handoff` autonomy value is dropped from the role because it shapes a report and this position returns a name.
