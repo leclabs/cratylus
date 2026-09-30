@@ -5,12 +5,12 @@ import { signify } from '../signify/skill.js';
 
 export const formalize: Skill = {
   name: 'formalize',
-  description: `use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, signify each as a symbol (minting or boundary-binding to an anchor), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.`,
+  description: `use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, name each as a symbol (a core agent dimension name or value by its signify anchor, minted or boundary-bound; any other term as the industry's own), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.`,
   formalBlock: `prose ≜ the source text
 E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
 T ≜ the declared notation table @ src/operator-lexicon.ts
-η : E ∪ O ⇀ symbols @ signify
+η : E ∪ O ⇀ symbols ⟨core agent dimension names and values @ signify · every other term the industry's own⟩
 β ≜ { s | s imported, its anchor cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }
 

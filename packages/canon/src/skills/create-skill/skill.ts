@@ -12,8 +12,8 @@ description     ≜ fm's reconstruction-grade one-liner ; { description , name }
 H1              ≜ the skill name, a VERB, fires on its own @ selection ; body ≺ H1 dropped by composer
 formula         ≜ the first prose \`≜\` line, consumed as the composition formula
 Bindings        ≜ a prose \`Bindings: composes <a> · <b>.\` line, boundary-binds live sibling deps
-block           ≜ the self-sufficient set-builder block @ formalize : declarations above \`=== … ===\`, laws below, no prose, σ* density
-xref            ≜ a sibling ∨ corpus concept, cited once by its bare σ* anchor
+block           ≜ the self-sufficient set-builder block @ formalize : declarations above \`=== … ===\`, laws below, no prose, dense notation
+xref            ≜ a sibling ∨ corpus concept, cited once by its bare name ⟨a core agent dimension name or value by its σ* anchor · any other term as the industry's own⟩
 gate            ∈ { schema, references, fences, symbols, verbatim-ref-free, operative, provenance } ⟨corpus-scoped : symbols · self-sufficiency span all cells⟩
 verify          ≜ the FULL corpus suite (\`pnpm test\`) as the shard-completion gate : per-cell PASS ≠ corpus PASS ∴ run the whole suite, ¬ the cell's own targeted check alone
 green           ≜ ∀ gate PASS reached by fixing → the FITTER sign ⟨declare the fittest glyph in T · ∨ resolve it to its decodable word⟩, never by degrading the sign to appease a gate ⟨gate = decodability registry, ¬ expression cap⟩
