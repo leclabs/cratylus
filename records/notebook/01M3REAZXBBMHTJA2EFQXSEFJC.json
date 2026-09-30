@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3REAZXBBMHTJA2EFQXSEFJC",
+    "entity": "01M3R5V8PMGZ39RERVNKDKTQD9",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R5V8PMGZ39RERVNKDKTQDA"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:59:27.403Z",
+    "reason": "ad-hoc-delegation, now whole on plan/loop-ledger, gives plan-state records to the planner; the assay confirmed the subject no longer holds",
+    "cause": "whole ad-hoc-delegation of loop-ledger"
+  },
+  "payload": null
+}
