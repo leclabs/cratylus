@@ -21,7 +21,7 @@ What landed instead gives the doc what it actually wanted. `role` stays exactly 
 `{ axis: 'Persona', repertoire: 'open', arity: 'scalar' }` at `packages/canon/src/manifest.ts:52` —
 and its VALUES changed. Each is now a multi-line contract rather than a bare token: the arrow the
 position is over the ladder `intent ≺ C ≺ spec ≺ artifact`, in the form
-`architect ≜ reads⟨intent · C⟩ → writes⟨C⟩`, with the acts the arrow reserves and the defect it
+`architect ≜ reads⟨intent · C · plan-state · assay · gate-result⟩ → writes⟨C · note · verdict⟩`, with the acts the arrow reserves and the defect it
 names. The bundle is a separate structure (`RoleCell` in `roles/hold.ts`) that is made of dimension
 values and carries the `role` value as its `sign`. A role can now be STATED, not merely named, which
 was D3's complaint, and the projected section survives.
@@ -132,7 +132,7 @@ restates a value the role supplies unchanged.
 
 `dimensions/role/architect.ts` states the pair, the acts it reserves, the ladder, and delegation as
 a theorem: `∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGATED`, with
-`⟨C → spec⟩ ↦ plan · ⟨spec → artifact⟩ ↦ implement · ⟨artifact → C⟩ ↦ assay` as the derived
+`⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer · ⟨gate · merge · state-record · commit ⟨merge · record⟩⟩ ↦ integrator` as the derived
 consequence rather than the declaration. `descent` is named as the defect. `architect`, `kino` and
 `nico` all carry it verbatim by holding the role, and no `delegation` axis was minted.
 
