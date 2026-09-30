@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3R14XZ51NXZ9AJWM44DQENW",
+    "entity": "01M3R11D8EZR9ZRCSM3JBT2W96",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R11D8EZR9ZRCSM3JBT2W97"
+    ],
+    "author": "assayer",
+    "time": "2026-09-30T02:08:57.317Z",
+    "reason": "the rework at aa46281e resolves the question this note raised",
+    "cause": "re-assay of claude-role-choice of corrected-shards at aa46281e"
+  },
+  "payload": {
+    "title": "claude-role-choice: an install over a root the prior version made overwrites the host's model lines",
+    "kind": "question",
+    "topic": "corrected-shards",
+    "body": "Raised at 7f3e7fb6: on a claude root with no agentModels record, install wrote each definition's model: line back to the rendered tier. aa46281e answers this. A root with no record now counts as having been written with no model: line, so any line found there belongs to the host and is kept. I observed this in a temp HOME: with the record and every model line removed, as a released install leaves it, a host line of 'model: haiku' on assayer survived the upgrade install and a later reinstall, and the other definitions took their rendered tiers. The assumption behind it matches the release history: the tier lines arrived at 406cd7d0, which no release tag contains (forge@0.10.0 is the latest), so every released root has no model lines. One case is left, and it touches only roots installed from unreleased builds between 406cd7d0 and 7f3e7fb6. If a host removed a tier line in such a root, the removal looks the same as the no-model baseline, so install writes the tier back.",
+    "blocks": []
+  }
+}

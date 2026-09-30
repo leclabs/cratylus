@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R10Z6J2916PREVJFX5AF92",
+    "entity": "01M3R10Z6J2916PREVJFX5AF91",
+    "operation": "create",
+    "supersedes": [],
+    "author": "architect-sees-the-design",
+    "time": "2026-09-30T02:06:47.506Z",
+    "reason": "the spec's outputs and its no-other-targets clause omit a file the rubric edit regenerates",
+    "cause": "architect-sees-the-design of corrected-shards"
+  },
+  "payload": {
+    "title": "purview-judge-prompt.md is a second generated target of the guardrail source",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "The rubric text inside hooks/purview-guardrail.ts projects to targets/guardrail/purview-judge-prompt.md, so any rubric edit changes that file too. The unit architect-sees-the-design lists only purview-guardrail.sh as an output and says no other targets file may change; it committed both, because editing the rubric as the spec asks cannot leave the second file untouched. Unit guard-says-when-open edits the same source and will need the same.",
+    "blocks": []
+  }
+}

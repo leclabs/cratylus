@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R0VNZBNBRRKAN0MQM6363G",
+    "entity": "01M3R0VNZBNBRRKAN0MQM6363F",
+    "operation": "create",
+    "supersedes": [],
+    "author": "integrator-makes-whole",
+    "time": "2026-09-30T02:03:54.220Z",
+    "reason": "the session text the integrator loads argues with its own role",
+    "cause": "integrator-makes-whole of corrected-shards"
+  },
+  "payload": {
+    "title": "Loaded deliver skill contradicts the integrator on merging into main and on order",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "Cold read of the integrator session text (4 of 4 reads, /tmp/corrected-shards-cold-read/integrator-makes-whole/) passes every criterion, but opus flagged that the deliver skill still says integrate(unit) ≜ merge artifact(unit) into main, integrate ≺ assay admitted, and self decides the state moves. The integrator role says it never moves main, takes only achieved units, and plan state is the planner's. deliver-loop rewrites the skill and should remove the contradiction.",
+    "blocks": []
+  }
+}

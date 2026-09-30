@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R0ZFQH88Q1SJS82J4885BG",
+    "entity": "01M3R0ZFQH88Q1SJS82J4885BF",
+    "operation": "create",
+    "supersedes": [],
+    "author": "implementer-position",
+    "time": "2026-09-30T02:05:58.897Z",
+    "reason": "the sign has to spell the CLI form the spec names and the gate blocks a bare spelling",
+    "cause": "implementer-position of corrected-shards"
+  },
+  "payload": {
+    "title": "implementer role sign spells its CLI read inside a residue reference span",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "The residue gate admits only σ* anchors in a dimension value, so --plan and <unit> cannot appear bare; the implementer sign spells cratylus plan show <unit> --plan <plan> inside an escaped reference span, which the gate treats as opaque code and which projects as a literal dollar-brace span. Also the handoff autonomy value was dropped from the implementer because it shapes a report and the role returns a name. Haiku cold reads said the name returns to the assayer; the text never names the recipient.",
+    "blocks": []
+  }
+}

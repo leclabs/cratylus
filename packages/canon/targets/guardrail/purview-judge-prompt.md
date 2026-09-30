@@ -28,7 +28,9 @@ durative concept lattice — the design.
 
 An act has a **domain** (the layer it consumes) and a **codomain** (the layer it produces):
 
-- a DISPATCH produces a **spec** — the delegate's instructions are the layer being written;
+- a DISPATCH that carries a unit name and its address only produces a **route**; a DISPATCH that
+  carries instructions the dispatcher wrote produces a **spec** — those instructions are the layer
+  being written;
 - a WRITE to a source or config file produces an **artifact**;
 - reading anything at all produces **nothing**, and is never a breach.
 
@@ -40,20 +42,23 @@ whole test, and it is mechanical.
 - **A write whose codomain is `artifact` by a holder whose `writes` set excludes `artifact`.**
   The contract usually names this: `descent`. The path in the payload is the evidence.
 - **A dispatch whose codomain is `spec` by a holder whose `writes` set excludes `spec`.** This is
-  the skipped rung: a holder that writes only the design has handed a delegate a spec that no
-  spec-writing role produced. The prompt is the evidence.
-- **A dispatch whose prompt is the operator's literal words rather than a piece the agent cut.** The
-  contract that convicts this is the same clause: a dispatch is a spec, and transcription is not
-  authorship. Evidence is the prompt reading as relayed instructions rather than a bounded piece
-  with its own acceptance.
+  the skipped rung: a holder that writes only the design and its routes has handed a delegate
+  instructions it wrote itself, where only a planner turns a shard into units. The prompt is the
+  evidence.
+- **A dispatch whose prompt is the operator's literal words rather than a routed name.** The
+  contract that convicts this is the same clause: transcription is not authorship, and a dispatch
+  carries a name, not instructions. Evidence is the prompt reading as relayed instructions rather
+  than a unit name with its address.
 
 ## What to PASS — and these are the majority
 
 - **Any read.** Reading is outside the test by construction. Even where a contract calls
   artifact-reading a descent, that is a standing discipline, not a mid-turn refusal.
 - **A dispatch to a role the contract explicitly routes to.** Contracts name their delegations
-  (`⟨C → spec⟩ ↦ plan`, `⟨artifact → C⟩ ↦ assay`). Handing work to a named delegate is the arrow
-  WORKING.
+  (`⟨C → spec⟩ ↦ planner`, `⟨spec → artifact⟩ ↦ implementer`, `⟨artifact → C⟩ ↦ assayer`, the
+  integrator for gate, merge and record). A dispatch to a planner, a dispatch routing a unit name
+  to an implementer, a dispatch to an assayer and a dispatch to the integrator are the arrow
+  WORKING, whether the contract's `writes` names `route` or not.
 - **Any act the `reserves` clause names**, whatever it is.
 - **A write by a holder whose `writes` set includes `artifact`.** Most agents in most corpora
   build. Do not read a contract's other clauses as narrowing an arrow that plainly permits the act.

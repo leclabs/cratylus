@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3R157F539XKSR1TQFC3SMWS",
+    "entity": "01M3R157F539XKSR1TQFC3SMWR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T02:09:07.045Z",
+    "reason": "concurrent delegates share /tmp",
+    "cause": "AssayClaudeRoleChoice report"
+  },
+  "payload": {
+    "title": "a delegate deleted every temp dir",
+    "kind": "idea",
+    "topic": "corrected-shards",
+    "body": "An assayer cleaned its temp HOME with rm -rf /tmp/tmp*, deleting every sibling's mktemp directory. Delegates running concurrently must clean up only the exact directory they created (keep its path, remove that path).",
+    "blocks": []
+  }
+}
