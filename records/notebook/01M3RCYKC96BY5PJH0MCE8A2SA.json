@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RCYKC96BY5PJH0MCE8A2SA",
+    "entity": "01M3RCRQBZHNFJ7N175ZQ9WH5Y",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RCRQBZHNFJ7N175ZQ9WH5Z"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:35:12.777Z",
+    "reason": "the concept was renamed from architect position to architect role",
+    "cause": "operator: position duplicated the established sign role"
+  },
+  "payload": {
+    "title": "mav duplicates the architect",
+    "kind": "question",
+    "topic": "architect role",
+    "body": "The architect role is one concept, held by four agents with identical role sections: the generic architect and the personas mav, nico and kino. nico adds a domain (this corpus's canon) and kino adds one (films); mav adds none, since it is the architect of whatever repository it is given, which is what the generic architect already is. Separately, a generic architect listed as a dispatchable subagent contradicts the law that the design is not delegable. Open for the operator: one general holder, launched as a main session and never dispatched, named architect or mav.",
+    "blocks": []
+  }
+}
