@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3S9QY4DDCHB3V1RX88WP8PK",
+    "entity": "01M3RDMZZ0DRZ41SCTMBH2FGKX",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RJSZMMAK4WY0BGDQ95NGPV"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T13:58:23.117Z",
+    "reason": "after loop-friction and the reinstall, the stance guard judged this session's turn and returned a real BLOCK within its limit; latch, rubric size and subagent load are all fixed",
+    "cause": "omp-muo65z6n verdict log: 1 BLOCK, 0 DARK"
+  },
+  "payload": null
+}

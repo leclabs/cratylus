@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3S9QXVJ07SZYRB0EKZ86GJ5",
+    "entity": "01M3R07G7ZCK24TEDA78HW4VRM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RCX9HBR1X742FPVZYC207J"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T13:58:22.834Z",
+    "reason": "units that should be straightforward took 15 to 35 minutes end to end, mostly because specs demanded proof far heavier than the change",
+    "cause": "note: the loop is slow"
+  },
+  "payload": {
+    "anchor": "planner role",
+    "gloss": "the role that turns the shards the architect hands down into a plan: units, each realizing exactly one shard, ordered so what a unit depends on comes first, sized so one implementer can finish each. It owns everything about the plan, including how each shard is to be realized on each harness, and re-plans, rectifying or rebuilding, when a shard it builds on is found wrong. It never changes the design. Each unit's acceptance proves what that unit changes and no more: a proof costlier than the change, such as a live multi-model run for a wording edit, is a defect of the plan, not diligence.",
+    "factors": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

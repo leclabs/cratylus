@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3S9QY1YF3HZA10P2DMCFDPS",
+    "entity": "01M3RD3XFY5AD6R5FRSDZ3X7SG",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RD3XFY5AD6R5FRSDZ3X7SH"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T13:58:23.038Z",
+    "reason": "entered the design as install",
+    "cause": "install cut for the next plan"
+  },
+  "payload": null
+}

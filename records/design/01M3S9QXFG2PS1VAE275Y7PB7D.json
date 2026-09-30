@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3S9QXFG2PS1VAE275Y7PB7D",
+    "entity": "01M3S9QXFG2PS1VAE275Y7PB7C",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T13:58:22.448Z",
+    "reason": "the design had uninstall but no install; the operator found install a bucket of noise ending in one y/n, neither intuitive nor lean",
+    "cause": "note: install is noise, not a wizard"
+  },
+  "payload": {
+    "anchor": "install",
+    "gloss": "placing cratylus on a host for one supported harness. By default it is a short guided run: it asks only what the operator must decide (which harness, which personas, whether to link their launch commands, which models the roles route to), shows what it will place before placing anything, places it only once confirmed, and ends with a brief summary of what was done and what to do next. Per-file detail appears only when asked for. Given every decision up front, or run without a terminal, it asks nothing, so scripts and CI can install. Why: install is a consumer's first contact with cratylus, and a run that dumps its internals and ends in a bare yes or no teaches nothing and invites a wrong choice; what install places is exactly what uninstall later removes.",
+    "factors": [
+      "01M3PZ5AS51YWKS979SHJ4PD1A",
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "01M3QBG00Z13RG3P9110NBW9X8",
+      "01M3QGCVKW1FYB0TXVT8R5BB6K"
+    ]
+  }
+}
