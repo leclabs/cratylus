@@ -200,8 +200,9 @@ planner -p 'draft the plan'
 
 `install` can put a command named after each installed persona in `~/.local/bin`, linked to the
 harness's launcher, so `planner` starts a session as the planner persona. Without
-`--link-persona-commands` a terminal install shows the links it would make and asks first; a piped or
-scripted one makes none and says to pass the flag. It reports when `~/.local/bin` is not on
+`--link-persona-commands` a terminal install asks whether to link them (the answer defaults to no); a
+piped or scripted one makes none and says to pass the flag; `--no-link-persona-commands` makes none
+without asking. It reports when `~/.local/bin` is not on
 `PATH`. It never overwrites: a name that is taken (a file of yours, another program's link, or the
 other harness's launcher) is left alone and reported with what is there. A link you made by hand to
 this harness's own launcher is adopted: recorded and reported, not re-created. A persona has one
@@ -230,6 +231,35 @@ added, unwraps your status line to your own command (byte for byte), removes the
 placed or adopted, takes the lines it added out of omp's `config.yml` so the file is what you wrote
 (your `modelRoles` entries included), and removes its stanza of the runtime config. The manifest goes
 last. `--dry-run` prints the same two lists and writes nothing; `--harness` is required.
+
+### 4.11 "Put my agents on this machine, guided"
+
+```sh
+cratylus install                                   # asks what it must, previews, places on your yes
+cratylus install --harness omp --personas nico --no-link-persona-commands \
+  --model-roles planner=@slow                      # every decision given: asks nothing
+cratylus install --harness claude --personas none --model-roles default --yes </dev/null
+cratylus install --dry-run                         # the preview alone; writes nothing
+cratylus install --verbose                         # also the per-file detail
+```
+
+`install` asks only what you must decide: which **harness** (asked only when `--harness` is absent and
+the host does not have exactly one), which of the corpus's **optional personas** to install (`kino`,
+`nico`; every other agent is always installed, since the personas dispatch them) with the ones
+already installed preselected, whether to **link their launch commands**, and which **model each
+role routes to**. A decision given by flag is not asked. Before anything is written it shows a
+screenful — the harness and its home, the personas (and any to be removed), the counts of agents,
+skills and hooks, each host config file it will edit and what changes in it, the models chosen, the
+commands to link — and asks once to go ahead; declining writes nothing. It then prints a few lines:
+what it placed, what you had set that it left alone, each warning, and what to do next (start or
+restart the harness, launch a linked persona by its name, `cratylus uninstall --harness <h>`).
+
+A model you choose is yours from then on: on omp it is a `modelRoles` entry, on Claude Code the
+`model:` line of each agent holding the role, and a later install keeps it even where it equals what
+cratylus would render, or where you edited or removed it. A role you had already routed is never
+asked and never changed. Given every decision, with `--yes`, or with no terminal on stdin and stdout,
+nothing is asked and nothing waits for a confirmation: each decision not given takes its default
+(the personas already installed, no links, cratylus's routing), and an ambiguous harness is refused.
 
 ---
 

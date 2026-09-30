@@ -242,6 +242,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/cli/cli.test.ts': 'BEHAVIORAL',
   'forge/cli/compose.test.ts': 'BEHAVIORAL',
   'forge/cli/explain.test.ts': 'BEHAVIORAL',
+  // drives `runInstall` through injected prompts over a corpus and a tmp HOME it writes
+  // itself, and asserts on the host's bytes: nothing is written before the confirmation
+  // or on a decline, a decision given by flag or a run with no terminal asks nothing, and
+  // a role the host already routed is neither asked nor changed — it polices no corpus.
+  'forge/cli/install.test.ts': 'BEHAVIORAL',
   'forge/config/loader.test.ts': 'BEHAVIORAL',
   'forge/config/scaffold.test.ts': 'BEHAVIORAL',
   'forge/core/runtime-shim-binding.test.ts': 'BEHAVIORAL',

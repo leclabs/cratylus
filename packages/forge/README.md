@@ -246,7 +246,7 @@ holding no role has no `model` key. Which model fills a role is the host's `mode
 behind this is the adapter's optional `roleRouting` member (its default role, the built-in role nearest
 each held role, and the config paths in read order); claude leaves it absent, since it has no host
 role map to seed (its definitions route by tier instead, below). `cratylus install --harness omp` reads the held roles off the projected agents and, for each role
-`modelRoles` has no key for, inserts `<role>: "@<nearest>"` — implementer and integrator to `task`, planner to `plan`,
+`modelRoles` has no key for, inserts `<role>: "<model>"` — the model the operator chose for it, or else the nearest built-in alias: implementer and integrator to `@task`, planner to `@plan`,
 assayer and architect to `default`. It edits the config file omp reads — `config.yml`, else `config.yaml` —
 by inserting lines, so every other byte survives; it never changes an entry the host already has, creates
 `config.yml` only when the host has neither file, and, when `modelRoles` is
@@ -287,14 +287,22 @@ definition carries `model: <tier>` right after its `description`: `sonnet` for a
 integrator, `opus` for a planner, assayer or architect. An agent holding any other role, or none, has
 no `model` and runs on the session's model. The alias resolves to whatever Claude currently serves for
 that tier. The definition's `model:` line is the one place a host sets a subagent's model, so a deploy
-keeps the host's choice there: the deploy manifest records, per placed claude definition, the `model:`
-value it rendered (`DeployManifest.agentModels`, beside `personaLinks`), and a deployed definition whose
-`model:` differs from that record — edited, added or removed — keeps the host's line, or none, in the
-definition placed over it (a definition with no record, from an install before the record existed, was written without a `model:` line, so one found there is the host's and is kept) (`PlaceOpts.keepHostModel`, set for the `.claude` home; every other line is
-replaced as before). The deploy log names each definition whose model it kept. `install` reports the
-roles as settable on the first install, and on every one: one line per held role with its tier and the
-`model:` line that sets it, and the subagent override. The host's own choice outranks the definition
-too: `--model` on a `claude --agent` main session, and for a dispatched subagent
+keeps the host's choice there. The deploy manifest records, per placed claude definition, the `model:`
+value it rendered (`DeployManifest.agentModels`, beside `personaLinks`), and which definitions' line is
+the host's (`DeployManifest.hostModels`): a model the operator chose at install (`runDeploy`'s `models`),
+and one the host edited, added or removed afterwards — a deployed definition whose `model:` differs from
+the rendered record. A definition in `hostModels` is placed carrying the line the host has, or none where
+the host removed it, whatever the line's value against the rendering: a chosen line equal to the rendered
+model stays the host's when the rendering moves, and a removed line stays removed. A line cratylus
+rendered and nobody chose follows the rendering. Two lists, because no value tells a chosen line that
+equals the rendering from a rendered one, nor a removed line from a definition that renders none. A
+manifest written before `hostModels` reads it as empty, so `agentModels` alone decides, as it did (a
+definition with no record, from an install before the record existed, was written without a `model:`
+line, so one found there is the host's and is kept) (`PlaceOpts.keepHostModel`, set for the `.claude`
+home; every other line is replaced as before, `hostModelClaim` is the rule). The deploy log names each
+definition whose model it kept. `install --verbose` reports the roles as settable, one line per held role
+with its tier and the `model:` line that sets it, and the subagent override. The host's own choice
+outranks the definition too: `--model` on a `claude --agent` main session, and for a dispatched subagent
 `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
 (`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's tier standing).
 
@@ -308,8 +316,9 @@ it links, so a regular file, another program's link, and the other harness's lau
 they were and reported as blocked. A hand-made link that resolves exactly to this launcher is adopted:
 recorded and reported, never re-created. The links it placed or adopted are
 recorded as `personaLinks` in the deploy manifest, and `removePersonaCommands` removes exactly the
-recorded links that still resolve to the launcher (`cratylus uninstall` calls it). Without the flag,
-install prints what it would place and asks on a terminal.
+recorded links that still resolve to the launcher (`cratylus uninstall` calls it; with `only` it
+removes just the named personas' commands, which is how an install that drops a persona unlinks
+it). Without the flag, a terminal install asks and a scripted one links none.
 
 `scopedRel` (renamed from `enforcingRel`) places more than mechanism now: the SAME per-scope map also
 places the launch spec's overlay and launcher, because both belong beside the modules they wire, not in
@@ -364,6 +373,35 @@ only place, so a host's `showHookStatus: false` is turned to `true`, the one val
 ever changes, found as text so a flow mapping is reached too, and the result says `hookRowShown`.
 Other than that a shape it cannot extend is reported and left.
 Both honour `--dry-run`.
+
+### `cratylus install [--harness <name>]`
+
+`cli/commands/install.ts` is the guided run over the deploy layer. Four decisions are the operator's — the
+harness, the corpus's optional personas (`Agent.optional`, offered by `ProjectedTree.optionalAgents`;
+every other agent is always installed), whether to link the persona commands, and the model each held
+role routes to — and each has a flag (`--harness`, `--personas <name,…|none>`, `--link-persona-commands`
+/ `--no-link-persona-commands`, `--model-roles <role=model,…|default>`), which is never asked. The
+questions sit behind `InstallPrompts` (`cli/commands/install-prompts.ts`; `@clack/prompts` on a
+terminal), so `runInstall` takes `prompts` and `interactive` and a test answers them. `--yes`, or no
+terminal on stdin and stdout, asks nothing: each decision not given takes its default (the personas
+already installed, no links, cratylus's routing; an ambiguous harness is refused). An omitted persona is
+`omitAgents` to the projection, and one installed before and now omitted is pruned by the deploy, its
+command unlinked by `removePersonaCommands({ only })`.
+
+A role's model is placed where the harness keeps it. On omp it is a `modelRoles` entry, written by
+`addModelRoles` as the nearest built-in alias is and recorded through `noteHostEdit` for uninstall;
+`runDeploy`'s `models` stays claude-only. On claude it is `models` (agent name → value for each agent
+holding the role, `ProjectedTree.roleHolders`) through `runDeploy`, so it stands as the host's under
+`DeployManifest.hostModels`. A role the host already routed (an omp `modelRoles` key; a claude agent
+whose `model:` line `hostModelClaim` says is the host's) is neither asked nor changed.
+
+Before anything is written the run shows a preview — the harness and its home, the personas, the
+counts, each host file edited and what changes in it, the models chosen, the commands to link — and, on
+a terminal where a decision was left open, asks once to go ahead; declining writes nothing. The
+preview is the placement run with `dry` set, so it cannot differ from what is then placed. `--dry-run`
+prints it and stops. The summary that follows a placement is a few lines: what was placed, what the host
+had set that was left alone, each warning (through `runDeploy`'s `warn` sink and install's own, one line
+each, on stderr), and what to do next. `--verbose` also prints the per-file detail.
 
 ### `cratylus uninstall --harness <name>`
 

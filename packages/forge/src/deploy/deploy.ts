@@ -308,6 +308,8 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
       ...prior.kinds,
       [opts.kind]: nextKindRecord(priorKind, written, skipped, narrowed),
     };
+    const models = result.report.models;
+    const carried = (n: string): boolean => narrowed || skipped.includes(n);
     writeManifest(harnessDir, {
       ...prior,
       kinds,
@@ -325,19 +327,25 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
             : registered
           : prior.hookCommands,
       // The models the agent defs were rendered with, for the next deploy to tell a
-      // host's edit from its own write. Retired and skipped names follow `kinds`: a
-      // full run drops a name it no longer places, a narrowed run leaves the others.
+      // host's edit from its own write, and the defs whose line is the host's. Retired
+      // and skipped names follow `kinds`: a full run drops a name it no longer places,
+      // a narrowed run leaves the others.
       agentModels:
-        result.report.models === undefined
+        models === undefined
           ? prior.agentModels
           : {
               ...Object.fromEntries(
-                Object.entries(prior.agentModels).filter(
-                  ([n]) => narrowed || skipped.includes(n),
-                ),
+                Object.entries(prior.agentModels).filter(([n]) => carried(n)),
               ),
-              ...result.report.models,
+              ...models,
             },
+      hostModels:
+        models === undefined
+          ? prior.hostModels
+          : [
+              ...prior.hostModels.filter((n) => carried(n) && !(n in models)),
+              ...(result.report.hostModels ?? []),
+            ],
     });
   }
   return result;

@@ -297,6 +297,7 @@ describe('install — the host modelRoles', () => {
       cwd,
       corpus: plugin as never,
       dryRun,
+      verbose: true,
     });
 
   beforeEach(() => {

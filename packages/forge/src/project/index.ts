@@ -241,6 +241,9 @@ export interface ProjectedTree extends ProjectReport {
    *  a consumer that routes by role — install — knows them without re-reading a
    *  definition. Empty when no rendered agent holds one. */
   readonly heldRoles: readonly string[];
+  /** Each held role → the sorted names of the rendered agents holding it: where a
+   *  consumer that routes by role must act on the agents, not the role. */
+  readonly roleHolders: Readonly<Record<string, readonly string[]>>;
   /** The sorted names of the plugin set's agents that declare `optional`
    *  ({@link Agent.optional}), rendered or omitted — what an install offers
    *  without preselecting. */
@@ -948,11 +951,14 @@ export async function projectPluginSet(
     }
   }
 
-  const heldRoles = [
-    ...new Set(
-      rendered.flatMap((a) => (a.holds === undefined ? [] : [a.holds])),
-    ),
-  ].sort();
+  const roleHolders: Record<string, string[]> = {};
+  rendered.forEach((a, i) => {
+    if (a.holds === undefined) return;
+    const held = roleHolders[a.holds] ?? [];
+    held.push(agentNames[i] as string);
+    roleHolders[a.holds] = held;
+  });
+  for (const held of Object.values(roleHolders)) held.sort();
 
   return {
     files,
@@ -960,7 +966,8 @@ export async function projectPluginSet(
     skills,
     shims,
     hooks,
-    heldRoles,
+    heldRoles: Object.keys(roleHolders).sort(),
+    roleHolders,
     optionalAgents: optionalAgents.sort(),
   };
 }

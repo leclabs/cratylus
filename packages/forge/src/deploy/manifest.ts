@@ -28,6 +28,7 @@ import {
 } from 'node:fs';
 import { dirname, relative, resolve as resolvePath } from 'node:path';
 import { type KindRecord, recordPath } from '../prune/index.js';
+import { settingsJson } from './settings-json.js';
 import { splitLines } from './yaml-lines.js';
 
 // Re-exported so deploy's callers keep reading the prune vocabulary off deploy's
@@ -58,10 +59,16 @@ export interface DeployManifest {
   personaLinks: string[];
   // agent name -> the `model:` value the last deploy's RENDERED def carried (null ⇒
   // none), for the harness whose def `model:` line is where a host sets a model. A
-  // deployed def whose `model:` differs from this is the host's edit, and the next
-  // deploy keeps it: the value here is what deploy would write, never what the host
-  // chose, so it stays true while the host's line stands.
+  // deployed def whose `model:` differs from this, and is not in `hostModels`, is the
+  // host's edit. It is what deploy would write, never what the host chose.
   agentModels: Record<string, string | null>;
+  // The agents whose `model:` line is the host's, whatever its value against the
+  // rendering: one the operator chose at install, or one the host edited afterwards.
+  // A deploy places such a def carrying the line the host has, or none where the host
+  // removed it, and never renders one over it — a value cannot say this, since a
+  // chosen line can equal the rendered one and a removed line equals "none". A manifest
+  // written before this list reads as `[]`: `agentModels` alone then decides.
+  hostModels: string[];
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -110,6 +117,7 @@ export function emptyManifest(): DeployManifest {
     hookCommands: [],
     personaLinks: [],
     agentModels: {},
+    hostModels: [],
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -137,6 +145,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       hookCommands: parsed.hookCommands ?? [],
       personaLinks: parsed.personaLinks ?? [],
       agentModels: parsed.agentModels ?? {},
+      hostModels: parsed.hostModels ?? [],
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},
@@ -677,22 +686,16 @@ export function unregisterHookCommandsAt(
   if (commands.length === 0 || !existsSync(settingsFile)) {
     return 0;
   }
+  const text = readFileSync(settingsFile, 'utf-8');
   let existing: Record<string, unknown>;
   try {
-    existing = JSON.parse(readFileSync(settingsFile, 'utf-8')) as Record<
-      string,
-      unknown
-    >;
+    existing = JSON.parse(text) as Record<string, unknown>;
   } catch {
     return 0; // never rewrite a file we could not parse
   }
   const { settings, removed } = unregisterHookCommands(existing, commands);
   if (removed > 0 && !dry) {
-    writeFileSync(
-      settingsFile,
-      `${JSON.stringify(settings, null, 2)}\n`,
-      'utf-8',
-    );
+    writeFileSync(settingsFile, settingsJson(settings, text), 'utf-8');
   }
   return removed;
 }

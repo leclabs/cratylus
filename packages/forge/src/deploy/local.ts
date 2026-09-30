@@ -44,7 +44,12 @@ import {
   stageAssets,
   walkSkillFiles,
 } from './bundle.js';
-import { digestFile, readManifest, unattributable } from './manifest.js';
+import {
+  type DeployManifest,
+  digestFile,
+  readManifest,
+  unattributable,
+} from './manifest.js';
 import {
   type DeployKind,
   type PlaceOpts,
@@ -65,12 +70,16 @@ export function defaultAgentRel(name: string, agentExt = '.md'): string {
   return `agents/${name}${agentExt}`;
 }
 
-/** A def's front-matter `model:` line, whole, and its value — undefined where the
- *  front matter carries none. Only a top-level key counts: an indented `model:` is
- *  some other block's. */
-function frontMatterModel(
-  md: string,
-): { index: number; line: string; value: string } | undefined {
+/** A def's front-matter `model:` line, whole, and its value. */
+export interface ModelLine {
+  index: number;
+  line: string;
+  value: string;
+}
+
+/** A def's front-matter `model:` line — undefined where the front matter carries
+ *  none. Only a top-level key counts: an indented `model:` is some other block's. */
+function frontMatterModel(md: string): ModelLine | undefined {
   const lines = md.split('\n');
   if (lines[0]?.trimEnd() !== '---') return undefined;
   for (let i = 1; i < lines.length; i++) {
@@ -99,6 +108,24 @@ function withModelLine(md: string, line: string | undefined): string {
   return lines.join('\n');
 }
 
+/** Whether the `model:` line of the def deployed as `name` is the host's, given the
+ *  manifest `prior`: listed in `hostModels`, or differing from the value the last
+ *  deploy recorded (no record ⇒ no model). `undefined` ⇒ it is cratylus's, and follows
+ *  the rendering. Otherwise the line the host has — `undefined` where it removed it. */
+export function hostModelClaim(
+  prior: DeployManifest,
+  name: string,
+  deployed: string,
+): { line: ModelLine | undefined } | undefined {
+  const host = frontMatterModel(deployed);
+  const wrote = Object.hasOwn(prior.agentModels, name)
+    ? prior.agentModels[name]
+    : null;
+  return prior.hostModels.includes(name) || (host?.value ?? null) !== wrote
+    ? { line: host }
+    : undefined;
+}
+
 /** Write <harnessDir>/<agentRel(name)> for each name — the harness-specific
  *  declaration, and the ONLY thing this function writes. Where that lands
  *  varies by harness (`agents/<name>.md` under claude's own root; omp's is
@@ -108,19 +135,22 @@ function withModelLine(md: string, line: string | undefined): string {
  *  scan of what else lives beside it.
  *
  *  With `opts.keepHostModel` the def is still replaced whole, but for its `model:`
- *  line: the manifest records the `model:` each def was rendered with
- *  (`report.models`), and a deployed def whose line differs from that record is the
- *  host's choice, so the def placed over it carries the host's line — or none, where
- *  the host removed it — and the log names it. A def with NO record was placed before
- *  the record existed, by a deploy that wrote no `model:` line, so its baseline is no
- *  model: a `model:` line found there is the host's and is kept, and a def with none
- *  takes the rendered one.
+ *  line, which the host may own. The manifest records the `model:` each def was
+ *  rendered with (`report.models`) and the defs whose line is the host's
+ *  (`report.hostModels`). A def listed as the host's is placed over carrying the line
+ *  it has now, or none where the host removed it; any other whose deployed line
+ *  differs from its record was edited by the host, and becomes the host's. So a line
+ *  stays the host's while the rendering moves, whatever its value against it, and a
+ *  removed line stays removed. A def with NO record was placed before the record
+ *  existed, by a deploy that wrote no `model:` line, so its baseline is no model: a
+ *  `model:` line found there is the host's and is kept, and a def with none takes the
+ *  rendered one. The log names each line kept.
  *
  *  With `opts.models` a named agent's def is placed carrying `model: <value>` — the
- *  operator's choice at install — while `report.models` still records the model the
- *  def was RENDERED with, so that line stands as the host's on every later deploy. A
- *  def whose deployed `model:` line is already the host's keeps it: a choice made
- *  before is not overwritten by a later one. */
+ *  operator's choice at install — and is listed as the host's from then on, while
+ *  `report.models` still records the model the def was RENDERED with. A def whose
+ *  deployed `model:` line is already the host's keeps it: a choice made before is not
+ *  overwritten by a later one. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -136,10 +166,11 @@ export function placeAgentsLocal(
   const agentRel =
     opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const report = emptyReport();
-  const recorded = opts.keepHostModel
-    ? readManifest(harnessDir).agentModels
-    : undefined;
-  if (opts.keepHostModel) report.models = {};
+  const prior = opts.keepHostModel ? readManifest(harnessDir) : undefined;
+  if (prior !== undefined) {
+    report.models = {};
+    report.hostModels = [];
+  }
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
@@ -150,42 +181,41 @@ export function placeAgentsLocal(
     }
     const dest = resolvePath(harnessDir, agentRel(name));
     let def = readFileSync(src, 'utf-8');
-    if (recorded !== undefined && report.models !== undefined) {
+    if (
+      prior !== undefined &&
+      report.models !== undefined &&
+      report.hostModels !== undefined
+    ) {
       const rendered = frontMatterModel(def);
-      const renderedValue = rendered?.value ?? null;
+      let owned = false;
       let hostLine = false;
-      if (existsSync(dest)) {
-        const host = frontMatterModel(readFileSync(dest, 'utf-8'));
-        const wrote = Object.hasOwn(recorded, name) ? recorded[name] : null;
-        if ((host?.value ?? null) !== wrote) {
-          hostLine = host !== undefined;
-          const kept = withModelLine(def, host?.line);
-          if (kept !== def) {
-            def = kept;
-            log(
-              `  ${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
-                `${host === undefined ? 'no model' : host.line} ` +
-                `(deploy renders ${rendered === undefined ? 'no model' : rendered.line})`,
-            );
-          }
+      const deployed = existsSync(dest)
+        ? hostModelClaim(prior, name, readFileSync(dest, 'utf-8'))
+        : undefined;
+      if (deployed !== undefined) {
+        const host = deployed.line;
+        owned = true;
+        hostLine = host !== undefined;
+        const kept = withModelLine(def, host?.line);
+        if (kept !== def) {
+          def = kept;
+          log(
+            `  ${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
+              `${host === undefined ? 'no model' : host.line} ` +
+              `(deploy renders ${rendered === undefined ? 'no model' : rendered.line})`,
+          );
         }
       }
       const chosen = opts.models?.[name];
-      const place = chosen !== undefined && !hostLine;
-      if (place) {
+      if (chosen !== undefined && !hostLine) {
         def = withModelLine(def, `model: ${chosen}`);
+        owned = true;
         log(
           `  ${opts.dry ? 'would place' : 'placed'} the chosen model for ${name}: model: ${chosen}`,
         );
       }
-      // A host's line that equals what the deploy renders is told from the rendering
-      // only by the record, so it is recorded as no model: the line then differs from
-      // the record and stays the host's when the rendering moves.
-      const own = hostLine || place;
-      report.models[name] =
-        own && (frontMatterModel(def)?.value ?? null) === renderedValue
-          ? null
-          : renderedValue;
+      report.models[name] = rendered?.value ?? null;
+      if (owned) report.hostModels.push(name);
     }
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is

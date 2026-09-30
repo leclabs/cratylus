@@ -46,6 +46,8 @@ export {
 
 export {
   auditLocal,
+  hostModelClaim,
+  type ModelLine,
   type PlacedFileState,
   placedFileState,
   placeAgentsLocal,

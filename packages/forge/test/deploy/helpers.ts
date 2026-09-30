@@ -3,9 +3,23 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { InstallPrompts } from '../../src/cli/commands/install-prompts.js';
 
 export function tmp(prefix: string): string {
   return mkdtempSync(join(tmpdir(), prefix));
+}
+
+/** The prompts of a guided install, answering as an operator who accepts every
+ *  default; `over` replaces the answers a case is about. */
+export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
+  return {
+    harness: async (found) => found[0],
+    personas: async (_offered, initial) => [...initial],
+    linkCommands: async () => false,
+    routes: async () => ({}),
+    confirm: async () => true,
+    ...over,
+  };
 }
 
 /** A minimal but representative render tree: two agents (mav, nico) and two

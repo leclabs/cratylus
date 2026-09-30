@@ -44,6 +44,9 @@ export interface PlaceReport {
   // reads a deployed def's `model:` against it to tell a host's edit from its own
   // write. Absent ⇒ this placer records none.
   models?: Record<string, string | null>;
+  // The names among them whose `model:` line is the host's (chosen by the operator, or
+  // edited by the host), recorded beside `models` for the same reason.
+  hostModels?: string[];
 }
 
 export function emptyReport(): PlaceReport {

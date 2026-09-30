@@ -44,6 +44,37 @@ cratylus note show
 cratylus note capture 'a title' --kind … --topic … --body '…' --blocks 'u1 of plan p' --author … --reason … --cause …
 ```
 
+## Install
+
+`cratylus install` is a short guided run. It asks only what you must decide, shows what it will
+place before placing anything, places it once you confirm, and ends with a few lines saying what
+was done and what to do next. Per-file detail is `--verbose`'s. Given every decision up front, or
+run without a terminal (stdin and stdout), it asks nothing and places without asking to go ahead.
+
+The decisions, each with the flag that settles it (a decision given by flag is never asked):
+
+| Decision                                 | Flag                                                     | Asked when                                                       | Default where nothing is asked                         |
+| ---------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Which harness                            | `--harness <claude\|omp>`                                | absent, and the host does not have exactly one supported harness | none: refused                                          |
+| Which optional personas (`kino`, `nico`) | `--personas <name,…\|none>`                              | the corpus declares optional personas                            | the ones already installed here (none on a fresh host) |
+| Whether to link their launch commands    | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                                            |
+| Which model each role routes to          | `--model-roles <role=model,…\|default>`                  | there are held roles the host has not routed itself              | cratylus's own routing                                 |
+
+Every agent not declared optional is always installed, since the personas dispatch them. An
+optional persona you do not choose is left out of what is placed, and one installed before and
+not chosen now is removed, with its launch command. `--model-roles` given at all settles the
+decision: a role it does not name keeps cratylus's routing. On omp a model is a `modelRoles`
+entry in the host's config (`planner=@slow`, or a model such as `anthropic/claude-opus-5-5:high`);
+on Claude Code it is the `model:` line of each agent holding the role (`planner=sonnet`). A role
+you name there is yours from then on: a later install keeps it. A role the host already routed
+itself is never asked and never changed, is named as the host's in the preview, and a
+`--model-roles` entry for it is left as the host set it and said so.
+
+Also: `--yes` (`-y`) takes the default of every decision not given and places without asking;
+`--dry-run` prints what would be placed and stops, writing nothing; `--verbose` also prints the
+per-file detail; `--plugin <package>` installs another corpus. `cratylus uninstall --harness <h>`
+removes exactly what install placed.
+
 ## The host runtime config
 
 `cratylus` reads one per-host file, `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`.
@@ -126,10 +157,12 @@ degrades and warns where it falls short; they are not the same, and this is what
   holding any other role, or none, has no `model` and runs on the session's model. On omp the
   integrator routes to the built-in `@task`, as the implementer does. The host sets a role's model
   on Claude Code by the `model:` line of each agent holding it, and `install` keeps that choice:
-  a deployed definition whose `model:` line is not the one the last install wrote (edited, or
-  removed) keeps the host's line in the definition placed over it (a root installed before the
-  record existed is covered: a `model:` line found in its definitions is the host's), every other
-  line is replaced as before, and the install output names each agent whose model it kept. The first install prints one
+  a model you choose at install (`--model-roles`, or picked when asked) is the host's from then on,
+  whatever its value against the rendering, and so is one you edit in a deployed definition, or
+  remove (a removed line stays removed); a line cratylus rendered and nobody chose follows the
+  rendering, and a root installed before the record existed is covered (a `model:` line found in
+  its definitions is the host's). The install output names each role left as the host set it. The
+  `--verbose` install prints one
   line per held role, with its tier and the `model:` line that sets it. The host's own choice
   outranks the definition too: `--model` for a `claude --agent` main session, and for a dispatched
   subagent `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
@@ -151,11 +184,12 @@ modelRoles:
 ```
 
 `cratylus install --harness omp` reads the roles the installed agents hold and, for each
-one `modelRoles` has no key for, adds an entry aliasing the nearest built-in omp role:
-implementer and integrator to `@task`, planner to `@plan`, assayer and architect to `@default`. It
-prints one `<role>: "@<alias>"` line per entry it added, with the file's path, or says
-that no entry was missing. `--dry-run` prints the same entries as would-add and writes
-nothing.
+one `modelRoles` has no key for, adds an entry: the model you chose for it (`--model-roles
+planner=@slow`, or picked when asked), else an alias of the nearest built-in omp role:
+implementer and integrator to `@task`, planner to `@plan`, assayer and architect to `@default`. The
+summary names the file and the roles it gained; `--verbose` prints one `<role>: "@<alias>"` line
+per entry it added, or says that no entry was missing. `--dry-run` shows the same as would-edit and
+writes nothing.
 
 An entry the host already has is never changed, whether it is an alias or a concrete
 model id, quoted or plain, so pointing a role at a model is done in that file and
@@ -244,10 +278,12 @@ listed, which the report says. `--dry-run` writes nothing.
 the planner persona with the persona's identity as its system prompt. Every other word on the command
 line is the harness's own flag.
 
-Without the flag, install prints one `would place` line per persona and how to add them. On a terminal
-it asks first, and answers no by default; a piped or scripted install places none. It says when
+Without a flag, a terminal install asks whether to link them, and the answer defaults to no; a piped
+or scripted install links none and its summary says to pass the flag (`--verbose` lists a `would
+place` line per persona). `--no-link-persona-commands` links none without asking. It says when
 `~/.local/bin` is not on `PATH`. `--dry-run` places nothing either way.
-The question it asks says how many commands it will link and how many it will adopt.
+The question it asks says how many commands it will link and how many it will adopt. A persona
+left out on a re-install has its command unlinked again, if install placed it.
 
 Install never overwrites. A name that is taken by a file, by another program's link, or by the other
 harness's launcher is left as it is and reported as `blocked`, with what is there. A link you made by

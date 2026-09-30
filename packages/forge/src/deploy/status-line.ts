@@ -39,6 +39,7 @@ import type {
   StatusSegmentHost,
 } from '../core/harness-adapter.js';
 import { type HostEdit, adoptedHunk, lineHunks } from './manifest.js';
+import { settingsJson } from './settings-json.js';
 import {
   inlineValue,
   isBlankOrComment,
@@ -137,7 +138,8 @@ export function ensureBadgeStatusLine(
   ): BadgeStatusLineResult => {
     if (opts.dry) return { path, state, wrote: false, placed, host };
     mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
+    const like = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+    writeFileSync(path, settingsJson(settings, like));
     return { path, state, wrote: true, placed, host };
   };
 
