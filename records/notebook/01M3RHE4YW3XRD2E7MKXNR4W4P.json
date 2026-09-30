@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RHE4YW3XRD2E7MKXNR4W4P",
+    "entity": "01M3RDMZZ0DRZ41SCTMBH2FGKX",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RHD2W1Q6B9KCZ0MR5A03JD"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T06:53:36.604Z",
+    "reason": "drop the retracted claim that the guards should read the judge role",
+    "cause": "operator: the judge role is an omp role for Jev"
+  },
+  "payload": {
+    "title": "guards' judge is dark",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Root cause, diagnosed: a latch in the omp session extension (forge's omp adapter, render.ts, projected to ~/.omp/agent/extensions/cratylus-session.ts). The in-process judge (the advisor role, anthropic/claude-haiku-4-5 on this host) has a 22 s deadline per call; after three consecutive timeouts, askJudge returns no verdict WITHOUT calling the judge again, and the miss count is reset only by an answer. Since a latched judge is never asked, it can never answer: one transient burst of slow calls (loop-ledger fanned out implementers and assayers against the same provider) blacked out all three omp guards for the rest of the session. The judge model itself is healthy: a direct call answered in 5 s. Not configuration. The enforcement scope concept already requires every firing to be judged where the judge can run, so this is a realization defect: the latch must expire, retrying the judge after a cooldown. Also: dark notices dedupe per distinct line, so three guards alternating defeat the dedupe.. Immediate relief: a new session resets the latch. After reinstalling 0.7.0 another omp session judged a turn (a BLOCK) and then went dark once, so the judge answers again but still times out at times; this session's own turn end left no verdict record, which is unexplained. The host's `judge` model role is omp's own (Jev, for search relevance) and unrelated to the guards, which judge on the advisor role.",
+    "blocks": []
+  }
+}
