@@ -14,7 +14,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 //
 // The second reason is verification. Acceptance keyed to a work-unit's own criteria
 // is a CLOSED loop — the unit is graded against its own account of itself, so an
-// executor that satisfies the letter passes while the system stays incoherent. A
+// implementer that satisfies the letter passes while the system stays incoherent. A
 // second, independent statement of what should exist is what makes validation an
 // operation rather than a re-reading of the claim. That statement is this lattice.
 
@@ -83,7 +83,7 @@ design ≜ conceptualize(intent) → signify(·) → materialize(·) → define(
 
 export const design: Skill = {
   name: 'design',
-  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into closed pieces a planner can take. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution establishes something the model does not yet hold. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the executor's own claim.`,
+  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into closed pieces a planner can take. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution establishes something the model does not yet hold. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the implementer's own claim.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'design' },
   composition: () => [],

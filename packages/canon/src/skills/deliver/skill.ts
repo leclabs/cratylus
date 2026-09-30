@@ -7,22 +7,23 @@ import { plan } from '../plan/skill.js';
 
 // WHERE THE TRUST DEFECT IS CLOSED. Acceptance keyed to a unit's own criteria is a
 // closed loop: the author writes the unit, writes its criteria, and checks the return
-// against them. Every term comes from one source, so an executor satisfying the letter
+// against them. Every term comes from one source, so an implementer satisfying the letter
 // passes while the design goes unmet. Instructing the principal to "actually verify"
 // cannot repair this — verification is a TWO-DESCRIPTION operation, and with one
 // description there is no operation to perform, so it degenerates into re-reading the
 // claim. The second description is the design, which is why this cell composes it.
 //
-// The split that matters: the EXECUTOR verifies ⟨did I build it per the spec⟩ and the
-// PRINCIPAL validates ⟨is this what the design called for⟩. Both are legitimate and
-// neither substitutes. Today only the first exists in most loops.
+// The split that matters: the IMPLEMENTER verifies ⟨did I build it per the spec⟩ and the
+// PRINCIPAL validates ⟨is this what the design called for⟩, by judging the assay and never
+// the artifact or the return. Both are legitimate and neither substitutes. Today only the
+// first exists in most loops.
 //
 // The three validation questions are cheap BY CONSTRUCTION, and that is load-bearing
 // rather than convenient: a check costing more than redoing the work is skipped, and
 // no instruction survives that gradient. Naming discipline is what buys the cheapness —
 // if the artifact spells its concept, two of the three are reading a name.
 //
-// WHERE THE READ GOES, AND WHY THE VERDICT DOES NOT FOLLOW IT. `validate ⊨ artifact` is
+// WHERE THE READ GOES, AND WHY THE VERDICT DOES NOT FOLLOW IT. The artifact read is
 // right and it has a cost: reading artifacts is reading files — paths, identifiers, call
 // sites — which is exactly the mechanical work the architect's contract calls a descent.
 // Left there, the skill obliges the design-holder to descend on every wave, and by the
@@ -36,7 +37,7 @@ import { plan } from '../plan/skill.js';
 // A THIRD PARTY DOES NOT REOPEN THE DEFECT THIS CELL CLOSES. The law forbids accepting
 // on a claim from the party that BUILT the thing: one description, a closed loop. There
 // are still two descriptions here and they are still held by different parties — the
-// executor holds the spec and not the design, the assayer holds the design and not the
+// implementer holds the spec and not the design, the assayer holds the design and not the
 // spec. The artifact read the law demands still happens; it happens at the one site in
 // the loop where reading substrate is the work rather than a descent, and what reaches
 // the principal is in the only vocabulary the principal can check without descending.
@@ -60,16 +61,16 @@ show ⟨P ∧ unit⟩ @ plan
 accept @ plan ⟨the MECHANICAL half⟩
 outputs @ plan
 artifact : P → ℘(path) ⟨what landed · the EVIDENCE⟩
-r      ≜ an executor's return
+r      ≜ an implementer's return
 conform @ signify
-executor : P ⇀ agent
+implementer : P ⇀ agent
 self   @ design
 capture @ note
 spells : path × anchor → 𝔹 ⟨identifiers · path · public surface bear the sign⟩
 covers : path × ℘(C) → 𝔹 ⟨observable behaviour ≅ the factorization · nothing missing
          ∧ nothing extra⟩
 sole   : path × anchor → 𝔹 ⟨∄ other artifact realizing the same concept⟩
-verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec · ↾ accept(unit), ¬ gate⟩
+verify : P × return → 𝔹 ⟨the IMPLEMENTER's · built-it-right, against spec · ↾ accept(unit), ¬ gate⟩
 gate   ≜ the project's whole check ⟨every suite · typecheck · build : what a green main demands⟩
 integrate(unit) ≜ merge artifact(unit) into main ⟨pre gate green on the MERGED tree · a branch's
     green says nothing about main after other landings⟩
@@ -100,41 +101,42 @@ locus ⊨ ROUTED ∧ ¬ read ⟨an ADDRESS so the redispatch has one · a citati
     handing the principal substrate is the same defect in smaller pieces⟩
 assay ⊨ artifact ⟨the ASSAYER reads the files · the ONE site in the loop where
     substrate-reading is ¬ a descent⟩
-assayer ⊥ executor ⟨TWO descriptions, two witnesses : executor holds spec ∧ ¬ holds C ·
+assayer ⊥ implementer ⟨TWO descriptions, two witnesses : implementer holds spec ∧ ¬ holds C ·
     assayer holds C ∧ ¬ holds spec⟩
-validate(unit) ≜ unachieved(unit) = ∅ ⟨the principal JUDGES the assay ∧ ¬ re-reads the
-    artifact · the READ is delegable · the VERDICT is ¬ delegable ∵ keyed to C, which the
-    principal alone amends⟩
-validate ⊨ artifact ⟨NEVER r · a summary is a CLAIM ∧ the file is EVIDENCE ·
+validate(unit) ≜ unachieved(unit) = ∅ ⟨self JUDGES the assay ∧ reads neither the artifact nor r ·
+    the READ is delegable · the VERDICT is ¬ delegable ∵ keyed to C, which self alone amends⟩
+validate ⊨ assay ⟨NEVER r · a summary is a CLAIM ∧ the file is EVIDENCE, read by the assayer ·
     an acceptance that read only the return has accepted nothing⟩
-validate ⊨ self ⟨¬ delegable · the executor cannot judge its own conformance ∵ it
+validate ⊨ self ⟨¬ delegable · the implementer cannot judge its own conformance ∵ it
     holds the spec ∧ ¬ the design⟩
-verify ⊥ validate ⟨two checks, two witnesses · neither substitutes ; an executor's
-    green suite proves the EXECUTOR's own assertion ∧ nothing about the design⟩
-judge(unit) ≜ verify(unit, r) ∧ validate(unit) ⇒ advance(unit) ⟨the acceptance⟩ ; ¬ ⇒ r rejected
-    back to executor(unit) ∧ ¬advance(unit)
-    ⟨r lands VERBATIM ≺ any verdict on it · the loss mode is read-reason-discard,
-     and it takes everything when a run dies mid-judgement⟩
-    ⟨fan-in is as order-sensitive as fan-out : ∀ unit dispatched, confirm executor(unit)
-     RETURNED · outputs(unit) exist ≠ executor(unit) returned⟩
-¬validate(unit) ⇒ redispatch(executor(unit), unachieved(unit)) ⟨the flaw handed down is
-    CONCEPTUAL ∧ ¬ a review · executor(unit) is the SAME agent that built it while it has
+verify ⊥ validate ⟨two checks, two witnesses · neither substitutes ; an implementer's
+    green suite proves the IMPLEMENTER's own assertion ∧ nothing about the design⟩
+judge(unit) ≜ gate green ⟨the integrator's result⟩ ∧ validate(unit) ⇒ advance(unit) ⟨the acceptance ·
+    self decides · the integrator records⟩ ; ¬ ⇒ r rejected back to implementer(unit) ∧ ¬advance(unit)
+    ⟨r lands VERBATIM with the integrator ≺ any verdict on it · the loss mode is
+     read-reason-discard, and it takes everything when a run dies mid-judgement⟩
+    ⟨fan-in is as order-sensitive as fan-out : ∀ unit dispatched, the integrator confirms
+     implementer(unit) RETURNED · outputs(unit) exist ≠ implementer(unit) returned⟩
+¬validate(unit) ⇒ redispatch(implementer(unit), unachieved(unit)) ⟨the flaw handed down is
+    CONCEPTUAL ∧ ¬ a review · implementer(unit) is the SAME agent that built it while it has
     capacity ; a cold successor re-reads what it built⟩
 gate ⊨ integrate ∧ ¬ verify ⟨the whole check runs ONCE per landing, by the integrator · an
-    executor ∨ assayer re-running it proves nothing new on nearly the same tree⟩
+    implementer ∨ assayer re-running it proves nothing new on nearly the same tree⟩
 integrate ⊥ judge ⟨a merge is DURABILITY ∧ ¬ acceptance · acceptance is advance(unit) after the
     assay⟩ ∴ integrate ≺ assay admitted ∧ the next ready unit dispatches while the assay runs
     ⟨ready waits on satisfied deps ∴ ¬ a dependent builds on an unaccepted unit · the assay reads
      artifact(unit) at its landing commit ∵ main moves under a pipelined assay⟩
 integrator ⊨ ¬ validate ⟨it carries a verdict ∧ ¬ reaches one⟩
+integrator ≠ self ⟨self decides the state moves ∧ dispatches · the integrator gates, merges,
+    commits ∧ records them · self runs no check, makes no commit, reads no artifact nor r⟩
 cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the cheapness
     is BOUGHT by conform(anchor) ∴ naming discipline is the verification budget⟩
 ¬spells ⇒ REFUSE ≺ any behavioural read ⟨the traceability arrow breaks at the cheapest
     place it will ever be visible⟩
 ¬covers ∧ extra ⇒ a second concept smuggled in unnamed ⇒ amend(C) ∨ REFUSE
 ¬sole ⇒ duplication ⟨the observable signature of a vision that fragmented⟩
-dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨advance(unit) ∧
-    executor(unit) runs spec(unit)⟩ ; pre bound(P) ∧ ⊨ disjoint-outputs
+dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨ready(unit)⟩ concurrently ⟨self dispatches · the integrator
+    records advance(unit) ∧ implementer(unit) runs spec(unit)⟩ ; pre bound(P) ∧ ⊨ disjoint-outputs
 ∀ c : ∄ unit ⟨realizes(unit) = anchor(c)⟩ ⇒ SURFACE ⟨a concept nothing builds is design agreed ∧
     unbuilt · the reverse orphan is plan's⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
@@ -145,21 +147,21 @@ finding ⇒ fold ≺ self's next dispatch ∨ judge ∨ close ⟨findings BATCH 
      that act checks ∴ a branch merge ∨ a concurrent session walks past it⟩
 fold ⊨ drifted(unit) answered ↾ what moved @ plan ⟨the measured cost was the RESPONSE to amending,
     ¬ amending : ~12 serial amendments re-cut one plan ~10× where the piece never moved⟩
-impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
+impedes(d, unit) ⇒ dispatch fix(d) to an implementer ⟨a regression in the path is repaired, ¬ surfaced · self makes no fix⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩
 cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
-∃ P : ¬terminal(P) ⇒ ∃ P : bound(P) ⟨WIP = 1, held by bind : it returns the plan bound before ·
-    finish before starting⟩
+∃ P : ¬terminal(P) ⇒ ∃ P : bound(P) ⟨WIP = 1, held by bind : self decides it, the integrator
+    records it, and it returns the plan bound before · finish before starting⟩
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic⟩
-terminal(P) ⇒ close(P) ⟨obligation ¬ permission · an unclosed terminal plan is WIP
-    that is not work · a closed plan stays readable⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
-deliver ≜ bind → dispatch(wave) → verify ⟨executor⟩ → integrate ⟨integrator, on gate⟩ →
-    assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ → judge → fold ⇔ finding →
-    advance → close` as SkillExpression;
+terminal(P) ⇒ close(P) ⟨obligation ¬ permission : self decides it, the integrator records it · an
+    unclosed terminal plan is WIP that is not work · a closed plan stays readable⟩ ; C persists ⟨plans come ∧ go ABOVE the design⟩
+deliver ≜ bind ⟨self decides · integrator records⟩ → dispatch(wave) ⟨self⟩ → verify ⟨implementer⟩ →
+    integrate ⟨integrator, on gate⟩ → assay ⟨assayer, on artifact⟩ → validate ⟨self, on the assay⟩ →
+    judge ⟨self, on gate ∧ validate⟩ → fold ⇔ finding ⟨self⟩ → advance → close ⟨self decides · integrator records⟩` as SkillExpression;
 
 export const deliver: Skill = {
   name: 'deliver',
-  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to executors, integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design rather than against the executor's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — read off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, repair what blocks the path and merely file what sits beside it, send a gap back to the agent that built it, and fold what execution or the operator teaches about the design into it before the next dispatch, judgement or close, several findings in one amendment when they arrive together.`,
+  description: `use this skill to execute a plan and ACCEPT its results — dispatch a wave of units to implementers, have the integrator integrate each landing into main once the project's whole check is green, and validate each landed artifact against the design through the assay rather than against the implementer's report; a merge is durability and acceptance comes after the assay. Reach for it whenever delegated work comes back. Validation is three cheap questions — does the artifact spell its concept's name, does its behaviour cover that concept's factorization exactly, and does anything else already realize it — answered by the assayer off the files themselves, never off a summary. It also carries the conduct of the work: one plan bound at a time, finish before starting, have what blocks the path repaired by an implementer and merely file what sits beside it, send a gap back to the agent that built it, and fold what execution or the operator teaches about the design into it before the next dispatch, judgement or close, several findings in one amendment when they arrive together.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [design, plan, note],
   preamble: primePrinciple,
