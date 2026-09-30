@@ -16,9 +16,11 @@ import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
   IDENTITY,
+  commit,
   configured,
   entitiesNamed,
   everyRecord,
+  git,
   merge,
   records,
   refusal,
@@ -44,6 +46,19 @@ const show = (
   shared: readonly string[] = [],
   ...argv: string[]
 ) => spoken(repo, plan(repo, 'show', ...argv), shared);
+
+/** Release plan `name`'s line into the branch `repo` is on, as closing the plan
+ *  and merging its line does: its records joined to this checkout's, its
+ *  worktree and branch gone, so the plan's writes land where they run and a
+ *  branch merge can make them diverge. */
+function released(repo: string, name: string): void {
+  const line = `${repo}.plan-${name}`;
+  commit(repo, 'before release');
+  commit(line, 'the line');
+  git(repo, 'merge', '-q', '--no-edit', `plan/${name}`);
+  git(repo, 'worktree', 'remove', line);
+  git(repo, 'branch', '-q', '-d', `plan/${name}`);
+}
 
 /** Concepts `c1`, `c2`, and `leaf` standing on `base`. */
 function concepts(repo: string): void {
@@ -401,10 +416,14 @@ describe('plan — units are worked only while their plan is bound', () => {
     add(repo, 'a', 'one');
     add(repo, 'b', 'two');
     plan(repo, 'bind', 'one', ...BY);
+    released(repo, 'one');
     merge(
       repo,
       'unit',
-      () => plan(repo, 'bind', 'two', ...BY),
+      () => {
+        plan(repo, 'bind', 'two', ...BY);
+        released(repo, 'two');
+      },
       () => plan(repo, 'advance', 'a', '--to', 'u-mid', ...BY),
     );
     expect(marks(repo, 'one', 'a')).toBe('u-mid');
@@ -463,8 +482,14 @@ describe('plan — incoherence, repaired one write at a time', () => {
     merge(
       repo,
       'plan',
-      () => plan(repo, 'bind', 'one', ...BY),
-      () => plan(repo, 'bind', 'two', ...BY),
+      () => {
+        plan(repo, 'bind', 'one', ...BY);
+        released(repo, 'one');
+      },
+      () => {
+        plan(repo, 'bind', 'two', ...BY);
+        released(repo, 'two');
+      },
     );
     const out = show(repo);
     const header = out.split('\n')[0] as string;
@@ -490,6 +515,7 @@ describe('plan — incoherence, repaired one write at a time', () => {
     add(repo, 'A', 'pl');
     add(repo, 'B', 'pl');
     plan(repo, 'bind', 'pl', ...BY);
+    released(repo, 'pl');
     plan(repo, 'advance', 'B', '--to', 'u-mid', ...BY);
     plan(repo, 'advance', 'B', '--to', 'u-done', ...BY);
     merge(
@@ -887,6 +913,7 @@ describe('plan — dependencies and the lifecycle', () => {
     add(repo, 'b', 'pl', 'c1', '--deps', 'a');
     add(repo, 'o', 'other');
     plan(repo, 'bind', 'pl', ...BY);
+    released(repo, 'pl');
     expect(
       refused(
         repo,
@@ -1224,6 +1251,7 @@ describe('plan — the ledger of a unit worked', () => {
   it('events written on two branches diverge the unit, an event REFUSES until reconcile, and reconcile carries every event once, in time order', () => {
     const repo = repository();
     working(repo);
+    released(repo, 'p');
     plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c0', ...BY);
     merge(
       repo,
@@ -1301,5 +1329,130 @@ describe('plan — the flags each verb takes', () => {
     expect(said).toContain(
       'it does not take --repin=true (the nearest flag it takes is --repin).',
     );
+  });
+});
+
+describe('plan — a bound plan’s records live on its line', () => {
+  const status = (repo: string): string =>
+    git(repo, 'status', '--porcelain', '--untracked-files=all', 'records/');
+
+  /** A plan `p` of unit `u` proposed in `repo`'s checkout, bound there. */
+  function lined() {
+    const repo = repository();
+    concepts(repo);
+    commit(repo, 'design');
+    add(repo, 'u', 'p');
+    const before = everyRecord(repo);
+    const bound = plan(repo, 'bind', 'p', ...BY);
+    return { repo, line: `${repo}.plan-p`, before, bound };
+  }
+
+  it('bind cuts the line from the checkout it runs in, copies the plan’s records into it, writes the bind there, and names both', () => {
+    const { repo, line, before, bound } = lined();
+    expect(bound).toContain(`wrote to plan/p, worktree ${line}`);
+    expect(git(repo, 'worktree', 'list', '--porcelain')).toContain(
+      `worktree ${line}\nHEAD ${git(repo, 'rev-parse', 'HEAD').trim()}\nbranch refs/heads/plan/p`,
+    );
+    const held = everyRecord(line);
+    expect(before.every((f) => held.includes(f))).toBe(true);
+    const added = held.filter((f) => !before.includes(f));
+    expect(added).toHaveLength(1);
+    expect(records(line, 'plan')).toContain(added[0]);
+    expect(everyRecord(repo)).toEqual(before);
+    expect(status(repo)).not.toContain(added[0]);
+  });
+
+  it('a write about the plan lands on the line from any checkout and says where; design and unbound plans land where they run', () => {
+    const { repo, line } = lined();
+    const mainBefore = status(repo);
+    const wrote = `wrote to plan/p, worktree ${line}`;
+    expect(
+      plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-mid', ...BY),
+    ).toContain(wrote);
+    expect(
+      plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY),
+    ).toContain(wrote);
+    expect(status(repo)).toBe(mainBefore);
+    expect(ledger(repo, 'p', 'u')).toEqual(['land c1']);
+    const held = everyRecord(line).length;
+    commit(line, 'the line');
+    const work = `${repo}.work`;
+    git(repo, 'worktree', 'add', '-q', '-b', 'work', work, 'plan/p');
+    const landed = plan(
+      work,
+      'land',
+      'u',
+      '--plan',
+      'p',
+      '--commit',
+      'c2',
+      ...BY,
+    );
+    expect(landed).toContain(wrote);
+    expect(everyRecord(line)).toHaveLength(held + 1);
+    expect(status(work)).toBe('');
+    expect(ledger(repo, 'p', 'u')).toEqual(['land c1', 'land c2']);
+    const out = add(repo, 'z', 'other');
+    expect(out).not.toContain('wrote to');
+    design(repo, 'define', 'c3', '--gloss', 'three', ...BY);
+    expect(status(repo)).not.toBe(mainBefore);
+    expect(everyRecord(line)).toHaveLength(held + 1);
+  });
+
+  it('the same state prints from the main checkout, the line and a branch cut from it', () => {
+    const { repo, line } = lined();
+    plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-mid', ...BY);
+    commit(line, 'the line');
+    const work = `${repo}.work`;
+    git(repo, 'worktree', 'add', '-q', '-b', 'work', work, 'plan/p');
+    for (const argv of [
+      ['show', 'p'],
+      ['show', 'u', '--plan', 'p'],
+    ]) {
+      const main = plan(repo, ...argv);
+      expect(plan(line, ...argv)).toBe(main);
+      expect(plan(work, ...argv)).toBe(main);
+    }
+  });
+
+  it('REFUSES a write about the plan when no worktree holds its line, naming the branch and the `git worktree add` that restores it, and writes nothing', () => {
+    const { repo, line } = lined();
+    plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-mid', ...BY);
+    commit(line, 'the line');
+    git(repo, 'worktree', 'remove', line);
+    const before = status(repo);
+    const said = refused(
+      repo,
+      'advance',
+      'u',
+      '--plan',
+      'p',
+      '--to',
+      'u-done',
+      ...BY,
+    );
+    expect(said).toContain('plan/p');
+    expect(said).toContain(`git worktree add ${line} plan/p`);
+    expect(status(repo)).toBe(before);
+    git(repo, 'worktree', 'add', '-q', line, 'plan/p');
+    expect(
+      plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-done', ...BY),
+    ).toContain(`wrote to plan/p, worktree ${line}`);
+  });
+
+  it('bind REFUSES a branch no worktree holds, and uses the worktree that holds it otherwise', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u', 'q');
+    git(repo, 'branch', 'plan/q');
+    expect(refused(repo, 'bind', 'q', ...BY)).toContain(
+      `git worktree add ${repo}.plan-q plan/q`,
+    );
+    const held = `${repo}.held`;
+    git(repo, 'worktree', 'add', '-q', held, 'plan/q');
+    expect(plan(repo, 'bind', 'q', ...BY)).toContain(
+      `wrote to plan/q, worktree ${held}`,
+    );
+    expect(records(held, 'plan')).toHaveLength(2);
   });
 });
