@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RJKTQ388YYVYGDB1D8ZG1H",
+    "entity": "01M3RJ32KY015F81DX7ZCHS6H3",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RJ384XWXV5F1C69F7T7N5S"
+    ],
+    "author": "JudgePlanner",
+    "time": "2026-09-30T07:14:11.299Z",
+    "reason": "every unit completed",
+    "cause": "guard-asks-again completed"
+  },
+  "payload": {
+    "name": "judge-recovery",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "closed"
+  }
+}

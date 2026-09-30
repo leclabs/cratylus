@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RJ32KY015F81DX7ZCHS6H4",
+    "entity": "01M3RJ32KY015F81DX7ZCHS6H3",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-09-30T07:05:02.334Z",
+    "reason": "plan judge-recovery: realize on omp the recovery clause enforcement scope gained, one unit by operator scope",
+    "cause": "enforcement scope amended at 8ab80fed after decision note \"guards' judge is dark\""
+  },
+  "payload": {
+    "name": "judge-recovery",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "proposed"
+  }
+}
