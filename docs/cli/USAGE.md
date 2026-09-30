@@ -256,8 +256,9 @@ restart the harness, launch a linked persona by its name, `cratylus uninstall --
 
 A model you choose is yours from then on: on omp it is a `modelRoles` entry, on Claude Code the
 `model:` line of each agent holding the role, and a later install keeps it even where it equals what
-cratylus would render, or where you edited or removed it. A role you had already routed is never
-asked and never changed. Given every decision, with `--yes`, or with no terminal on stdin and stdout,
+cratylus would render, or where you edited or removed it. On omp the entry install seeded for a role
+you did not choose is not yours until you edit it: a later install asks that role again and moves
+the entry to your answer. A role you had already routed is never asked and never changed. Given every decision, with `--yes`, or with no terminal on stdin and stdout,
 nothing is asked and nothing waits for a confirmation: each decision not given takes its default
 (the personas already installed, no links, cratylus's routing), and an ambiguous harness is refused.
 

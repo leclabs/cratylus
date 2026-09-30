@@ -69,6 +69,14 @@ export interface DeployManifest {
   // chosen line can equal the rendered one and a removed line equals "none". A manifest
   // written before this list reads as `[]`: `agentModels` alone then decides.
   hostModels: string[];
+  // The roles whose `modelRoles` entry in the host's config is the operator's choice
+  // (omp), whatever its value against the nearest built-in route install seeds an entry
+  // with: a value cannot say this, since a choice can equal the seed. Such an entry is
+  // the host's from then on. An entry that is NOT here and is recorded in `hostEdits`
+  // byte for byte as install wrote it is install's own seed, which a later install may
+  // move to a model the operator now chooses. A manifest written before this list reads
+  // as `[]`.
+  hostRoutes: string[];
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -118,6 +126,7 @@ export function emptyManifest(): DeployManifest {
     personaLinks: [],
     agentModels: {},
     hostModels: [],
+    hostRoutes: [],
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -146,6 +155,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       personaLinks: parsed.personaLinks ?? [],
       agentModels: parsed.agentModels ?? {},
       hostModels: parsed.hostModels ?? [],
+      hostRoutes: parsed.hostRoutes ?? [],
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},
@@ -530,6 +540,75 @@ export function noteHostEdit(
       },
     },
   });
+}
+
+/** Every line install recorded as its own insertion into `file`, with its terminator:
+ *  what an entry there must equal, byte for byte, to still be what install wrote. */
+export function recordedLines(harnessDir: string, file: string): Set<string> {
+  const edit =
+    readManifest(harnessDir).hostEdits[recordPath(relative(harnessDir, file))];
+  const lines = new Set<string>();
+  for (const hunk of edit?.hunks ?? []) {
+    if (hunk.before.length === 0) for (const l of hunk.after) lines.add(l);
+  }
+  return lines;
+}
+
+/** Move the record of one line install put into `file` to the line that now stands
+ *  there: `from` is what was recorded, `to` what install replaced it with. Where no
+ *  hunk holds `from` (a host installed before edits were recorded), `adopted` — the
+ *  new line as a hunk of its own — is recorded instead. */
+export function retargetHostEdit(
+  harnessDir: string,
+  file: string,
+  from: string,
+  to: string,
+  adopted: LineHunk,
+): void {
+  const manifest = readManifest(harnessDir);
+  const key = recordPath(relative(harnessDir, file));
+  const prior = manifest.hostEdits[key];
+  const moved = (prior?.hunks ?? []).map((h) =>
+    h.before.length === 0 && h.after.includes(from)
+      ? { ...h, after: h.after.map((l) => (l === from ? to : l)) }
+      : h,
+  );
+  const found = moved.some((h, i) => h !== prior?.hunks[i]);
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostEdits: {
+      ...manifest.hostEdits,
+      [key]: {
+        created: prior?.created ?? false,
+        ...prior,
+        hunks: found ? moved : [...(prior?.hunks ?? []), adopted],
+      },
+    },
+  });
+}
+
+/** Record which roles' `modelRoles` entries are now the operator's choice (`chosen`), and
+ *  which are install's own seed (`seeded`, a role that was in the first list before). */
+export function noteHostRoutes(
+  harnessDir: string,
+  chosen: readonly string[],
+  seeded: readonly string[],
+): void {
+  if (chosen.length === 0 && seeded.length === 0) return;
+  const manifest = readManifest(harnessDir);
+  const next = [
+    ...manifest.hostRoutes.filter(
+      (r) => !seeded.includes(r) && !chosen.includes(r),
+    ),
+    ...chosen,
+  ];
+  if (
+    next.length === manifest.hostRoutes.length &&
+    next.every((r) => manifest.hostRoutes.includes(r))
+  ) {
+    return;
+  }
+  writeManifest(harnessDir, { ...manifest, hostRoutes: next });
 }
 
 /** Mark `file` as one an install from before edits were recorded may have changed in ways

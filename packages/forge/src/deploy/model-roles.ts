@@ -45,6 +45,22 @@ export interface AddModelRolesOpts {
   /** Record as install's own the entries the host already has that are byte for byte
    *  the ones this would write: for a host installed before edits were recorded. */
   readonly adopt?: boolean;
+  /** Entries whose role already has a line that is install's own seed, to be moved to
+   *  the value given: the one case in which an existing entry is changed. The caller
+   *  vouches that each line is install's; a role with no line, or a line already
+   *  holding the value, is ignored. */
+  readonly retarget?: readonly ModelRoleEntry[];
+}
+
+/** One existing line moved to a new value. */
+export interface RetargetedModelRole {
+  readonly role: string;
+  /** The whole line as it stood, with its terminator. */
+  readonly from: string;
+  /** The whole line as it now stands, with its terminator. */
+  readonly to: string;
+  /** The new line as a hunk of its own, for a record that never held `from`. */
+  readonly hunk: LineHunk;
 }
 
 export interface AddModelRolesResult {
@@ -57,6 +73,11 @@ export interface AddModelRolesResult {
   /** Why the file was left untouched, when its `modelRoles` cannot be safely
    *  extended. Absent otherwise. */
   readonly refused?: string;
+  /** For each wanted role the file already has, its whole line as it stands, with its
+   *  terminator. Empty when `refused`. */
+  readonly current: Readonly<Record<string, string>>;
+  /** The existing lines `retarget` moved (or, under `dry`, would). */
+  readonly retargeted: readonly RetargetedModelRole[];
   /** What was put in the file, and what was adopted, for the deploy manifest — an
    *  uninstall takes exactly this out. Present when the file was written, and under
    *  `adopt` when a line was adopted. */
@@ -102,24 +123,34 @@ export function addModelRoles(
     added: [],
     wrote: false,
     refused: reason,
+    current: {},
+    retargeted: [],
   });
+  const nothing = { current: {}, retargeted: [] } as const;
+  // `moved` is the text with the retargeted lines already changed: the lines install
+  // gains are read against it, since a moved line is not an insertion.
   const finish = (
     added: readonly ModelRoleEntry[],
+    moved: string,
     next: string,
+    current: Record<string, string>,
+    retargeted: readonly RetargetedModelRole[],
     adopted: (source: string) => LineHunk[] = () => [],
   ): AddModelRolesResult => {
-    if (added.length === 0) return { path, added, wrote: false };
-    if (dry) return { path, added, wrote: false };
+    const rest = { current, retargeted };
+    if (added.length === 0 && retargeted.length === 0) {
+      return { path, added, wrote: false, ...rest };
+    }
+    if (dry) return { path, added, wrote: false, ...rest };
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, next);
+    const hunks = [...lineHunks(moved, next), ...adopted(next)];
     return {
       path,
       added,
       wrote: true,
-      edit: {
-        created: !exists,
-        hunks: [...lineHunks(text, next), ...adopted(next)],
-      },
+      ...rest,
+      ...(hunks.length > 0 ? { edit: { created: !exists, hunks } } : {}),
     };
   };
 
@@ -149,10 +180,17 @@ export function addModelRoles(
 
   // ── NO `modelRoles` KEY: append a block ───────────────────────────────────────
   if (at === -1) {
-    if (wanted.length === 0) return { path, added: [], wrote: false };
+    if (wanted.length === 0)
+      return { path, added: [], wrote: false, ...nothing };
     const body = wanted.map((e) => modelRoleLine(e, '  ')).join(eol);
     const lead = text === '' || /[\r\n]$/.test(text) ? '' : eol;
-    return finish(wanted, `${text}${lead}modelRoles:${eol}${body}${eol}`);
+    return finish(
+      wanted,
+      text,
+      `${text}${lead}modelRoles:${eol}${body}${eol}`,
+      {},
+      [],
+    );
   }
 
   // ── THE KEY IS PRESENT ───────────────────────────────────────────────────────
@@ -201,6 +239,14 @@ export function addModelRoles(
   }
 
   const indent = entryIndent ?? '  ';
+  const current: Record<string, string> = {};
+  for (const e of wanted) {
+    const i = entryAt.get(e.role);
+    if (i !== undefined) {
+      const [t, le] = lines[i] as [string, string];
+      current[e.role] = t + le;
+    }
+  }
   // Lines the host already has that are byte for byte what this would write. Under
   // `adopt` they are recorded as install's own, exactly as a hand-made link to the
   // launcher is adopted: an install from before edits were recorded put them there, and
@@ -227,14 +273,43 @@ export function addModelRoles(
     wholeBlock
       ? [adoptedHunk(source, at, last - at + 1)]
       : adopted.map((i) => adoptedHunk(source, i, 1));
+
+  // The seeds to move: the line changes in place, so the file keeps its order, and the
+  // change is not read as an insertion, which an uninstall would take out whole.
+  const moves: { role: string; at: number; from: string; to: string }[] = [];
+  for (const e of opts.retarget ?? []) {
+    const i = entryAt.get(e.role);
+    if (i === undefined) continue;
+    const [t, le] = lines[i] as [string, string];
+    const line = modelRoleLine(e, indent);
+    if (t !== line)
+      moves.push({ role: e.role, at: i, from: t + le, to: line + le });
+  }
+  const moved = lines.map(
+    ([t, le], i) => moves.find((m) => m.at === i)?.to ?? t + le,
+  );
+  const movedText = moved.join('');
+  const retargetedOf = (source: string): RetargetedModelRole[] =>
+    moves.map((m) => ({
+      role: m.role,
+      from: m.from,
+      to: m.to,
+      hunk: adoptedHunk(source, m.at, 1),
+    }));
+
   const missing = wanted.filter((e) => !present.has(e.role));
   if (missing.length === 0) {
+    if (moves.length > 0) {
+      return finish([], movedText, movedText, current, retargetedOf(movedText));
+    }
     return adopted.length === 0
-      ? { path, added: [], wrote: false }
+      ? { path, added: [], wrote: false, current, retargeted: [] }
       : {
           path,
           added: [],
           wrote: false,
+          current,
+          retargeted: [],
           edit: { created: false, hunks: adoptedHunks(text) },
         };
   }
@@ -242,18 +317,20 @@ export function addModelRoles(
   const inserted = missing.map((e) => modelRoleLine(e, indent));
   // The anchor line may be the file's last, with no terminator: it gains one, and
   // the new lines end the way the file did — without one.
-  const [anchorText, anchorEol] = lines[last] as [string, string];
-  const head = lines
-    .slice(0, last)
-    .map(([t, e]) => t + e)
-    .join('');
-  const tail = lines
-    .slice(last + 1)
-    .map(([t, e]) => t + e)
-    .join('');
+  const anchorEol = (lines[last] as [string, string])[1];
+  const head = moved.slice(0, last).join('');
+  const anchor = moved[last] as string;
+  const tail = moved.slice(last + 1).join('');
   const next =
     anchorEol === ''
-      ? `${head}${anchorText}${eol}${inserted.join(eol)}`
-      : `${head}${anchorText}${anchorEol}${inserted.join(eol)}${eol}${tail}`;
-  return finish(missing, next, adoptedHunks);
+      ? `${head}${anchor}${eol}${inserted.join(eol)}`
+      : `${head}${anchor}${inserted.join(eol)}${eol}${tail}`;
+  return finish(
+    missing,
+    movedText,
+    next,
+    current,
+    retargetedOf(next),
+    adoptedHunks,
+  );
 }

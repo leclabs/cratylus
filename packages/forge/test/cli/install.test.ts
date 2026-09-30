@@ -331,6 +331,75 @@ describe('the guided install', () => {
     );
   });
 
+  it('on omp asks again for the routes install seeded itself, and moves them to the choice', async () => {
+    expect(await install({ harness: 'omp', yes: true })).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/planner: "@plan"/);
+
+    // A rerun by flag moves the seed to the model now chosen; the host was never
+    // credited with the seed.
+    out = '';
+    expect(
+      await install({ harness: 'omp', modelRoles: 'planner=@slow', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/planner: "@slow"/);
+    expect(readFileSync(ompConfig(), 'utf8')).not.toContain('@plan"');
+    expect(out).not.toMatch(/already routes/);
+    expect(out).not.toMatch(/left alone: the model of/);
+
+    // A guided rerun asks every role but the one chosen, which is now the host's.
+    let roles: string[] = [];
+    expect(
+      await install({
+        ...asked({
+          personas: async () => [],
+          routes: async (questions) => {
+            roles = questions.map((q) => q.role);
+            return { assayer: '@slow' };
+          },
+          linkCommands: async () => false,
+          confirm: async () => true,
+        }),
+        harness: 'omp',
+      }),
+    ).toBe(0);
+    expect(roles).toEqual(['assayer', 'implementer']);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/assayer: "@slow"/);
+
+    // What was chosen stands: a later flag for it is left as it is, and said so.
+    out = '';
+    expect(
+      await install({ harness: 'omp', modelRoles: 'assayer=@fast', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/assayer: "@slow"/);
+    expect(out).toMatch(/--model-roles assayer=@fast: the host already routes/);
+
+    // The uninstall takes out every line install put there, moved ones included.
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(files(omp())).toEqual([]);
+  });
+
+  it("on omp a choice equal to the seed is still the operator's, and a seed the host edited is the host's", async () => {
+    expect(
+      await install({ harness: 'omp', modelRoles: 'planner=@plan', yes: true }),
+    ).toBe(0);
+    expect(
+      await install({ harness: 'omp', modelRoles: 'planner=@slow', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/planner: "@plan"/);
+
+    // The host changes a seed by hand: it is the host's from then on.
+    const text = readFileSync(ompConfig(), 'utf8');
+    writeFileSync(
+      ompConfig(),
+      text.replace('assayer: "@', 'assayer: "openai/'),
+    );
+    expect(
+      await install({ harness: 'omp', modelRoles: 'assayer=@slow', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toMatch(/assayer: "openai\//);
+    expect(readFileSync(ompConfig(), 'utf8')).not.toContain('assayer: "@slow"');
+  });
+
   it('preselects the personas installed before, and drops one the operator unticks', async () => {
     expect(await install({ harness: 'omp', personas: 'nico', yes: true })).toBe(
       0,

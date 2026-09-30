@@ -392,8 +392,15 @@ A role's model is placed where the harness keeps it. On omp it is a `modelRoles`
 `addModelRoles` as the nearest built-in alias is and recorded through `noteHostEdit` for uninstall;
 `runDeploy`'s `models` stays claude-only. On claude it is `models` (agent name → value for each agent
 holding the role, `ProjectedTree.roleHolders`) through `runDeploy`, so it stands as the host's under
-`DeployManifest.hostModels`. A role the host already routed (an omp `modelRoles` key; a claude agent
-whose `model:` line `hostModelClaim` says is the host's) is neither asked nor changed.
+`DeployManifest.hostModels`. A role the host already routed (an omp `modelRoles` key that is not
+install's own seed; a claude agent whose `model:` line `hostModelClaim` says is the host's) is
+neither asked nor changed. On omp an entry is install's own seed while its line is, byte for byte,
+one `DeployManifest.hostEdits` records install inserting and its role is not in
+`DeployManifest.hostRoutes`, the roles whose entry is the operator's choice (a choice can equal the
+seed, so no value tells them apart; a manifest written before the list reads it as empty). A later
+install asks for a seed's role again and moves the line to the answer (`addModelRoles`'s `retarget`,
+the record moved with it by `retargetHostEdit`), so an uninstall still takes out exactly what install
+put there; an entry the host edited or added, or the operator chose, is left as it is.
 
 Before anything is written the run shows a preview — the harness and its home, the personas, the
 counts, each host file edited and what changes in it, the models chosen, the commands to link — and, on

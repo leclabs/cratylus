@@ -66,12 +66,15 @@ import {
   markMigratedConfig,
   modelRoleLine,
   noteHostEdit,
+  noteHostRoutes,
   personaLauncherOf,
   placePersonaCommands,
   planPersonaCommands,
   readManifest,
+  recordedLines,
   recordsHostEdits,
   removePersonaCommands,
+  retargetHostEdit,
   treeNames,
   writeManifest,
 } from '../../deploy/index.js';
@@ -373,6 +376,8 @@ async function install(
   const routesDefs = routing === undefined && keepsHostModel(adapter.home);
   const validModel = routesDefs ? CLAUDE_MODEL : OMP_MODEL;
   const hostRouted = new Set<string>();
+  // omp: the roles whose entry is install's own seed, still as it wrote it.
+  const seeded = new Set<string>();
   let routable = tree.heldRoles;
   let configRefused = false;
   if (routing !== undefined) {
@@ -384,8 +389,26 @@ async function install(
     );
     configRefused = probe.refused !== undefined;
     const missing = new Set(probe.added.map((e) => e.role));
+    // An entry is install's own seed while it stands as install wrote it and no
+    // operator chose it: a later run may move it to the model chosen now. Any other
+    // entry is the host's, an operator's choice included.
+    const written = recordedLines(harnessDir, path);
+    const chosen = readManifest(harnessDir).hostRoutes;
+    // A host installed before edits were recorded has no such record; its seeds are
+    // the lines this install would write itself, which it adopts.
+    const legacy = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
     for (const role of tree.heldRoles) {
-      if (!configRefused && !missing.has(role)) hostRouted.add(role);
+      if (configRefused || missing.has(role)) continue;
+      const line = probe.current[role] as string;
+      const seed = `${modelRoleLine(
+        { role, value: `@${routing.nearest(role)}` },
+        '',
+      )}${/\r?\n$/.exec(line)?.[0] ?? ''}`;
+      const own =
+        !chosen.includes(role) &&
+        (written.has(line) || (legacy && line.trimStart() === seed));
+      if (own) seeded.add(role);
+      else hostRouted.add(role);
     }
   } else if (routesDefs) {
     const prior = readManifest(harnessDir);
@@ -548,7 +571,7 @@ async function install(
       // The routes the definitions just placed name roles; the host maps a role to a
       // model. Deploy is unchanged — this is install's own step, and a deploy that
       // failed places no routes to back.
-      seedModelRoles(found, adapter, tree.heldRoles, choices, {
+      seedModelRoles(found, adapter, tree.heldRoles, choices, seeded, {
         home: opts.home,
         dry,
         adopt: migrating,
@@ -983,31 +1006,42 @@ function showPersonaBadge(
 /**
  * Give every held role the host has not mapped an entry — the operator's choice for
  * it, or else an alias of the harness's nearest built-in role — and say what was
- * added. An entry the host already has is never changed; a `modelRoles` that cannot be
- * safely extended is reported and left as it is — the install itself still succeeds.
+ * added. An entry that is install's own seed (`seeded`) moves to the operator's choice
+ * for it, and otherwise stands; an entry the host has is never changed; a `modelRoles`
+ * that cannot be safely extended is reported and left as it is — the install itself
+ * still succeeds. What the operator chose is recorded as the host's from then on.
  */
 function seedModelRoles(
   found: Findings,
   adapter: HarnessAdapter,
   heldRoles: readonly string[],
   choices: Readonly<Record<string, string>>,
+  seeded: ReadonlySet<string>,
   run: { home: string; dry: boolean; adopt: boolean },
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
   const { home, dry, adopt } = run;
+  const harnessDir = join(home, adapter.home);
   const path = hostConfigPath(adapter, routing.configRels, home);
   const wanted: ModelRoleEntry[] = heldRoles.map((role) => ({
     role,
     value: choices[role] ?? `@${routing.nearest(role)}`,
   }));
-  const result = addModelRoles(path, wanted, { dry, adopt });
+  const result = addModelRoles(path, wanted, {
+    dry,
+    adopt,
+    retarget: wanted.filter((e) => seeded.has(e.role) && e.role in choices),
+  });
   // What an uninstall takes out again: the lines just put in, and nothing of the host's.
-  if (result.edit !== undefined) {
-    noteHostEdit(join(home, adapter.home), path, result.edit);
+  if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
+  if (!dry) {
+    for (const m of result.retargeted) {
+      retargetHostEdit(harnessDir, path, m.from, m.to, m.hunk);
+    }
   }
   if (adopt && !dry && existsSync(path)) {
-    markMigratedConfig(join(home, adapter.home), path);
+    markMigratedConfig(harnessDir, path);
   }
   if (result.refused !== undefined) {
     found.warnings.push(
@@ -1015,30 +1049,62 @@ function seedModelRoles(
     );
     return;
   }
+  const moved = wanted.filter((e) =>
+    result.retargeted.some((m) => m.role === e.role),
+  );
+  if (!dry) {
+    noteHostRoutes(
+      harnessDir,
+      [...result.added, ...moved]
+        .filter((e) => e.role in choices)
+        .map((e) => e.role),
+      result.added.filter((e) => !(e.role in choices)).map((e) => e.role),
+    );
+  }
+  // Only the host's own entries are the host's to be credited with; install's seeds,
+  // standing as it wrote them, are not.
   const routed = wanted.filter(
-    (e) => !result.added.some((a) => a.role === e.role),
+    (e) => !result.added.some((a) => a.role === e.role) && !seeded.has(e.role),
   );
   if (routed.length > 0) {
     found.left.push(
       `the model of ${list(routed.map((e) => e.role))}, which ${path} already routes`,
     );
   }
-  if (result.added.length === 0) {
+  if (result.added.length === 0 && moved.length === 0) {
     found.detail.push(`  modelRoles: ${path} — no entry was missing`);
     return;
   }
-  found.detail.push(
-    `  modelRoles${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'added' : 'would add'}`,
-  );
+  if (result.added.length > 0) {
+    found.detail.push(
+      `  modelRoles${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'added' : 'would add'}`,
+    );
+  }
   for (const entry of result.added) {
     found.detail.push(`    ${modelRoleLine(entry, '')}`);
+  }
+  if (moved.length > 0) {
+    found.detail.push(
+      `  modelRoles${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would move' : 'moved'} the entries install seeded to the models you chose`,
+    );
+    for (const entry of moved)
+      found.detail.push(`    ${modelRoleLine(entry, '')}`);
+  }
+  for (const entry of [...result.added, ...moved]) {
     if (Object.hasOwn(choices, entry.role)) {
       found.routes.push(`${entry.role} → ${entry.value}`);
     }
   }
   found.edits.push({
     path,
-    what: `modelRoles gains ${list(result.added.map((e) => e.role))}`,
+    what: [
+      ...(result.added.length > 0
+        ? [`modelRoles gains ${list(result.added.map((e) => e.role))}`]
+        : []),
+      ...(moved.length > 0
+        ? [`modelRoles moves ${list(moved.map((e) => e.role))} to your choice`]
+        : []),
+    ].join('; '),
   });
 }
 

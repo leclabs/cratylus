@@ -66,7 +66,9 @@ not chosen now is removed, with its launch command. `--model-roles` given at all
 decision: a role it does not name keeps cratylus's routing. On omp a model is a `modelRoles`
 entry in the host's config (`planner=@slow`, or a model such as `anthropic/claude-opus-5-5:high`);
 on Claude Code it is the `model:` line of each agent holding the role (`planner=sonnet`). A role
-you name there is yours from then on: a later install keeps it. A role the host already routed
+you name there is yours from then on: a later install keeps it. On omp the entry install seeds for
+a role you did not choose is not yours: it stays as install wrote it until you edit it, and a later
+install asks that role again and moves the entry to your answer. A role the host already routed
 itself is never asked and never changed, is named as the host's in the preview, and a
 `--model-roles` entry for it is left as the host set it and said so.
 
