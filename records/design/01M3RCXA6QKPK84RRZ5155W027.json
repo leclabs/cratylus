@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RCXA6QKPK84RRZ5155W027",
+    "entity": "01M3PZ5AS51YWKS979SHJ4PD1A",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R09V7M6R7WVBZ7TTCC6S1C"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:34:30.615Z",
+    "reason": "the concept's own gloss names it a role, and role is the sign the corpus already uses for it (the Role dimension of every agent, role routing, the harness's model roles); position was a second sign for the same concept",
+    "cause": "operator: architect position is a duplicate of the established sign architect role"
+  },
+  "payload": {
+    "anchor": "role routing",
+    "gloss": "the role an agent holds is what its host routes a model by. Each agent carries to the harness the role it holds, never a model; the host decides which model fills each role. Where the host has decided nothing, the agent runs on the harness's nearest built-in route for that kind of work (its ordinary default where it has none), or, on a harness that routes only by tier, on the tier suited to the role's work: work that holds, cuts or judges against the design (architect, planner, assayer) on the top tier; spec-bounded work (implementer, integrator) on the middle tier. Install makes the roles visible to the host as something it can set, and never changes a choice the host has made.",
+    "factors": []
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3RCX9PZ8RD4PFBTBJY6AKX1",
+    "entity": "01M3R07GCQ2FM8D4CE4044A5J9",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R07GCQ2FM8D4CE4044A5JA"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:34:30.111Z",
+    "reason": "the concept's own gloss names it a role, and role is the sign the corpus already uses for it (the Role dimension of every agent, role routing, the harness's model roles); position was a second sign for the same concept",
+    "cause": "operator: architect position is a duplicate of the established sign architect role"
+  },
+  "payload": {
+    "anchor": "implementer role",
+    "gloss": "the role that builds one unit to realize its shard, working from the unit's spec alone and never the design, proving only what its spec asks, and handing its work on to be judged. A verdict of not achieved comes back to the same implementer with the assayer's findings.",
+    "factors": [
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B"
+    ]
+  }
+}

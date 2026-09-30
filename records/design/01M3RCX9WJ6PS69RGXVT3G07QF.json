@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3RCX9WJ6PS69RGXVT3G07QF",
+    "entity": "01M3R07GTRNG7RVJGW2VD2SABA",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R07GTRNG7RVJGW2VD2SABB"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:34:30.290Z",
+    "reason": "the concept's own gloss names it a role, and role is the sign the corpus already uses for it (the Role dimension of every agent, role routing, the harness's model roles); position was a second sign for the same concept",
+    "cause": "operator: architect position is a duplicate of the established sign architect role"
+  },
+  "payload": {
+    "anchor": "assayer role",
+    "gloss": "the role that judges whether a built unit achieves the shard it was created to realize, holding the design and never the unit's spec, and says so as an assay verdict in the design's own words. It is the one judge of a unit; nothing else accepts or rejects one.",
+    "factors": [
+      "01M3QZDSHGQ7FQ3XKAYVR75X4X",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RCRQBZHNFJ7N175ZQ9WH5Z",
+    "entity": "01M3RCRQBZHNFJ7N175ZQ9WH5Y",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T05:32:00.255Z",
+    "reason": "operator suspected architect is a duplicate word; the concept is single but its general-purpose holders are two",
+    "cause": "operator: you guys hold the architect role; it feels like a duplicate word for the same idea"
+  },
+  "payload": {
+    "title": "mav duplicates the architect",
+    "kind": "question",
+    "topic": "architect position",
+    "body": "The architect position is one concept, held by four agents with identical role sections: the generic architect and the personas mav, nico and kino. nico adds a domain (this corpus's canon) and kino adds one (films); mav adds none, since it is the architect of whatever repository it is given, which is what the generic architect already is. Two holders of one scope is a duplicate sign. Separately, a generic architect listed as a dispatchable subagent contradicts the law that the design is not delegable. Recommendation: one general holder, launched as a main session and never dispatched; the operator chooses whether its name is architect or mav.",
+    "blocks": []
+  }
+}

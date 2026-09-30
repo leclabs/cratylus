@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RCXAGWQC0RZ1A1C8398R78",
+    "entity": "01M3QBG00Z13RG3P9110NBW9X8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QZDRVQAEF6QGE9Q23D7AYX"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:34:30.940Z",
+    "reason": "the concept's own gloss names it a role, and role is the sign the corpus already uses for it (the Role dimension of every agent, role routing, the harness's model roles); position was a second sign for the same concept",
+    "cause": "operator: architect position is a duplicate of the established sign architect role"
+  },
+  "payload": {
+    "anchor": "persona launch",
+    "gloss": "a persona can be started as a harness's main session, by its name, and it begins exactly as a dispatched holder of its role would: its identity is the session's prompt and its composed skills are present, whole, before its first turn. Making a persona launchable by name is offered, never imposed: the operator is told what will be placed and agrees; nothing the host already has is replaced; and what cratylus placed, it can take away again.",
+    "factors": []
+  }
+}

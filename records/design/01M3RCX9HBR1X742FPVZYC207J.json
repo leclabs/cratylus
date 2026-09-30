@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3RCX9HBR1X742FPVZYC207J",
+    "entity": "01M3R07G7ZCK24TEDA78HW4VRM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3R07G7ZCK24TEDA78HW4VRN"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T05:34:29.931Z",
+    "reason": "the concept's own gloss names it a role, and role is the sign the corpus already uses for it (the Role dimension of every agent, role routing, the harness's model roles); position was a second sign for the same concept",
+    "cause": "operator: architect position is a duplicate of the established sign architect role"
+  },
+  "payload": {
+    "anchor": "planner role",
+    "gloss": "the role that turns the shards the architect hands down into a plan: units, each realizing exactly one shard, ordered so what a unit depends on comes first, sized so one implementer can finish each. It owns everything about the plan, including how each shard is to be realized on each harness, and re-plans, rectifying or rebuilding, when a shard it builds on is found wrong. It never changes the design.",
+    "factors": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}
