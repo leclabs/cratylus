@@ -1,0 +1,59 @@
+{
+  "envelope": {
+    "id": "01M3QTCQGH4TDTHSEAVYRSWQFR",
+    "entity": "01M3QS44E762G7NS212AQK8S9Z",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSVQ1KVX0NY7PYAW8P2NYD"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:10:52.817Z",
+    "reason": "architect position amended; wave-0 assay gaps in the role's text",
+    "cause": "assay of architect-position wave 0 at 0727ca96"
+  },
+  "payload": {
+    "plan": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "spec": {
+      "name": "architect-role",
+      "intent": "Census @ef571276 (source identical to a8cf23f8: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the architect position in the role cell every architect holder folds (roles/architect.ts and its sign dimensions/role/architect.ts): its reads are the intent, the design and assays; its writes are the design and its verdicts; it defines and amends concepts, cuts the design, decides which plan is bound and which unit is accepted, and dispatches the delegates; planning goes to the planner, building to the implementer, reading what landed to the assayer, and running the whole check, merging, committing and recording state moves to the integrator; it never builds, runs code or checks, commits, merges, or reads an artifact or a delegate's report; its objective is the design realized, not a green pipeline.\nCHANGE. (1) dimensions/role/architect.ts, the `## Role` every holder projects: the arrow becomes reads⟨intent · C · assay⟩ → writes⟨C · verdict⟩; `reserves` adds the DECISION of bind(P), the DECISION of accept(unit) (judge on the assay and the integrator's gate result, never on a return) and dispatch; the routing line adds ⟨gate · merge · commit · state-record⟩ ↦ integrator beside planner, implementer and assayer. Keep `descent` and the self-classifying delegation clause. The integrator has no holder in the corpus at census (note 'the integrator has no holder'; plan integrator-position may add one): name it as deliver does, name no agent for it, and assign none of its acts to self.\n(2) roles/architect.ts `actions`: [`delegation`] replaces [`file-ops`]. Holders' sets EXTEND the role's (roles/hold.ts), so file-ops can only leave here. file-ops carried the one commit rule a dispatcher needs (docs/commit-gated-on-acceptance-hypothesis.md: with no commit rule in reach a dispatcher withheld every lane's commit in 18 of 18 dispatches; reading `commit ≜ durability ¬ acceptance` it let every lane commit in 6 of 6), so dimensions/actions/delegation.ts (nico its only other holder) gains that a writer's commit is durability, not acceptance, and that no dispatch withholds it. Keep every clause reader-reach.test.ts matches (`return ↦ σ*`, `¬long-form-prose`, `human-project ↾ carried-deliverable`, no `ρ=`). file-ops.ts is unchanged (planner and implementer hold it).\n(3) `objective`: `delivery ⟨end-to-end integrated green⟩` leaves the role for the value the owed note 'the architect objective's sign' rules. This unit is BLOCKED until that ruling; at the ruling it is revised to declare the new value's file (dimensions/objective/<sign>.ts) under outputs, or nothing new if an existing value is ruled. objective/delivery.ts stays in the catalog.\n(4) roles/architect.ts comments that defend what the concept forbids are rewritten or cut: 70-73 (delivery; 'the standing drive is the finished system'), 79-81 ('executors are told to BREAK'; this position as the checker of delegated work), 94-95 (file-ops; 'where a lane's commit would be withheld'), 102-104 ('proves the executor's own claim'). The builder's sign is implementer.\n(5) agents/architect.ts, the generic subagent-oriented holder (operator ruling 'named personas and generic positions'): its description adds checks, merges and state records to the integrator among the hand-offs, and the archetype keeps nothing a cold read takes as building, checking, committing, merging or reading.\n(6) .changeset/architects-hold-the-design.md, the one site outside records spelling 'architect position' (occurs), states the whole position.\nNo new test file, so canon's gate-convicts registry is untouched. kino, nico and mav are later units (they compile against roles/architect.ts). ASSAY FOLLOW-UP (0727ca96): the role's reads name plan state (its view) beside assay and gate-result, and its writes name notes; delegation.ts's commit clause names the writer's own-unit commit and the integrator's merge and record commits so no reader finds two owners; docs/role.md (lines 24, 134-136) and the pending changesets (.changeset/architects-hold-the-design.md, .changeset/architect-position-skills.md) state the landed position with the integrator.",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/dimensions/actions/file-ops.ts",
+        "packages/canon/src/dimensions/objective/delivery.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "docs/commit-gated-on-acceptance-hypothesis.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/src/agents/architect.ts",
+        ".changeset/architects-hold-the-design.md",
+        "packages/canon/src/dimensions/objective/conceptual-integrity.ts",
+        "docs/role.md",
+        ".changeset/architect-position-skills.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm exec cratylus project --harness claude --out $T`, which exits 0. An ARCHITECT HOLDER is an $T/agents/<h>.md whose `## Role` section opens `architect ≜` (4 at census: architect, kino, mav, nico; print N). In each holder's `## Actions` and `## Objective` sections `grep -c -E 'file-ops|formatter|main ⇒ green|delivery ⟨'` prints 0 (census: 4 for architect, kino and mav, 3 for nico).",
+        "In each holder's `## Actions` section `delegation` is present and the dispatch commit rule is present (`grep -c withholding` prints 1 while `grep -c file-ops` prints 0; census: withholding 1 only through file-ops).",
+        "Each holder's `## Role` section contains `integrator` (census 0 in all four), `assay` inside reads⟨…⟩ and `verdict` inside writes⟨…⟩; print the section.",
+        "Each holder but nico projects the ruled objective value in `## Objective` (nico overrides it with parsimony).",
+        "`git grep -c -i -w -E 'executors?' -- packages/canon/src/roles/architect.ts packages/canon/src/agents/architect.ts` prints nothing (census 2 in roles/architect.ts).",
+        "$T/agents/architect.md front-matter description contains `integrator` (census 0).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts test/reader-reach.test.ts test/reader-density.test.ts test/structural-parsimony.test.ts test/null-dimension.test.ts test/projection-stability.test.ts test/cratylism.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each architect holder build the text its session starts with: $T/agents/<h>.md whole (front matter and hooks included), then each skill of its `skills:` list in order, as $T/skills/<s>/SKILL.md with its front matter stripped. Give each text, with no other context and no tools, to two distinct models (anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, the pair the assay of 20961057 used) with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone. For each question answer YES, NO or UNCLEAR and quote the lines that decide it. (a) Does the agent itself build or edit the product's code or files? (b) Does it itself run code, tests, builds or checks? (c) Does it itself make commits? (d) Does it itself merge work into main? (e) Does it itself read code or produced artifacts? (f) Does it itself read the reports or returns of the agents it delegates to? (g) To whom, by name, does it hand planning, building, reading what landed, and running checks and merging?' Save every prompt and answer verbatim under /tmp/architect-position-cold-read/architect-role/ and return the paths; print the number of reads taken (8 = 4 holders x 2 models). PASSES when no YES or UNCLEAR answer quotes a line that this unit's outputs project, and no (g) answer names the builder anything but `implementer` on a line this unit's outputs project; and, when this unit is the last of plan architect-position to land, when all (a)-(f) answers of all 8 reads are NO and every (g) names the builder `implementer`. FAILS at census: every read of every holder quoted `file-ops … commit ↾ own-paths ⟨pathspec · formatter(own-paths) ≺ commit⟩` for (c), and both Opus reads left (d)/(e) UNCLEAR on `main ⇒ green` and `delivery ⟨end-to-end integrated green⟩` (assay of 20961057, point 1).",
+        "COLD-READ QUESTION (f), corrected: 'does it read an implementer's report or account of its own work, an artifact, or a diff?' Reading the assay and the integrator's gate result is the position's own act and must NOT count as YES; the prompt says so.",
+        "a cold reader asked 'who commits what' answers: each writer its own unit; the integrator merges and state records; the architect nothing",
+        "docs/role.md quotes the landed arrow and names the integrator"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3QTCQC72TV8AF4DANAMQSFC",
+      "closure": {}
+    }
+  }
+}

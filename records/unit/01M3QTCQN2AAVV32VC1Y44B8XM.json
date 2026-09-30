@@ -1,0 +1,53 @@
+{
+  "envelope": {
+    "id": "01M3QTCQN2AAVV32VC1Y44B8XM",
+    "entity": "01M3QS50TGBQHV6543V08P9F88",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QSVQ9TM0PF4ZBVAP3YDP26"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T00:10:52.962Z",
+    "reason": "architect position amended; wave-0 assay gaps in deliver",
+    "cause": "assay of architect-position wave 0 at 0727ca96"
+  },
+  "payload": {
+    "plan": "01M3QS44E2VW0E67DPB3C1SM0V",
+    "spec": {
+      "name": "architect-skills",
+      "intent": "Census @ef571276 (source identical to a8cf23f8: only records/ changed between them; re-derive any count below if a listed path changed since). Realize the architect position in the skills every architect holder loads at session start (design, deliver, and plan through deliver's composition; note is clean): nothing in them may cast the holder as building, running checks, committing, merging, or reading an artifact or a delegate's report, and the builder's sign is implementer. Architect's rulings carried: (1) `executor` becomes `implementer` everywhere, `executor : P ⇀ agent` → `implementer : P ⇀ agent`, `r ≜ an implementer's return`; (2) the integrator runs the whole check, merges, commits, and records the state moves self decides (bind, advance, close); self's acceptance reads the integrator's gate result and the assay, never r; (3) dispatch and deciding state moves stay self's.\nCHANGE in skills/deliver/skill.ts (18 projected `executor` spellings at census): judge(unit) is rebuilt on the integrator's gate result and validate(unit) on the assay, with no `verify(unit, r)` in it (verify stays the implementer's own check, carried in r); r lands verbatim with the integrator, which confirms the return (the fan-in law, 116-119) before integrate; `validate ⊨ artifact ⟨NEVER r⟩` (108) becomes validate reading the assay, the assayer reading the artifact, self reading neither artifact nor r; dispatch(P) (136-137) keeps self dispatching and gives the `advance(unit)` it records to the integrator; `impedes(d, unit) ⇒ fix(d)` (148) dispatches the fix to an implementer, never made by self; the WIP law and `terminal(P) ⇒ close(P)` (151-155) say self decides and the integrator records; the closing `deliver ≜ …` (156-158) names each step's actor; one new law: the integrator is never self. At census no agent holds the integrator (note 'the integrator has no holder'); plan integrator-position owns line 76's gloss and the substance of the gate/integrate laws 123-129, so this unit changes those only to rename executor (123-124) and names no integrator agent. Keep verbatim `conform @ signify` and `¬conform(r) ⇒ ¬accept(unit)(r)` (reader-reach.test.ts pins both). Rewrite the description (162: 'dispatch a wave of units to executors, integrate each landing into main …, read off the files themselves') and the header comments (8-42: 'the EXECUTOR verifies', '`validate ⊨ artifact` is right') to the same assignment. deliver's `composition` stays [design, plan, note]: whether plan should reach architects through it collides with the `skill routing` concept and is surfaced upward, not decided here.\nskills/plan/skill.ts: the 8 `executor` spellings (lines 74 twice, 84, 131, 140, 143, 144, 154) become implementer; the procedure line (160) states the procedure is the planner's (census, slice, add, ratify) and ends at ratification, `→ advance` leaving it (recording state is the integrator's). HARD BUDGET: plan weighs 9953 characters on the hook-cap gate, 47 under claude's 10,000 cap (note 'a longer home at run time than at install' already calls that margin short), so its weighed size must not grow: pay each added character with a cut in the same cell.\nskills/design/skill.ts: 2 spellings (comment line 17, description line 86) become implementer.\nIf a renamed or added symbol makes symbol-altitude.test.ts report a divergence, classify it in its LEDGER with the recorded reason. No new test file, so canon's gate-convicts registry is untouched.\nBOUNDARY AMENDED after integrator position moved (2709be8e: the integrator integrates onto the bound plan's line, and main receives only closed, accepted plans through a promotion): deliver lines 73-76 (gate, the `integrate(unit)` definition, `integrator`) and 123-129 belong to plan integrator-position. This unit changes them only by renaming executor to implementer. It rewrites no `into main` destination anywhere, including the 'integrate each landing into main' clause of description 162. In that clause it changes only who does what. ASSAY FOLLOW-UP (0727ca96): deliver's file(d) names its filer, the party that met d (anyone may capture); deliver's reads for the architect include the plan view (show ⟨P ∧ unit⟩) alongside assay and gate result. Plan and unit reconcile wording in the plan skill is the integrator plan's, not yours.",
+      "static": [
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/test/skill-hook-cap.test.ts",
+        "packages/canon/tooling/symbol-probe-gate.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/test/symbol-altitude.test.ts",
+        ".changeset/architect-position-skills.md"
+      ],
+      "accept": [
+        "RIG (every projection leg): T=$(mktemp -d); from cwd /home/lex/workspaces/cratylus-share run `pnpm exec cratylus project --harness claude --out $T`, which exits 0. An ARCHITECT HOLDER is an $T/agents/<h>.md whose `## Role` section opens `architect ≜` (4 at census: architect, kino, mav, nico; print N). `grep -o -i -w -E 'executors?' $T/skills/<s>/SKILL.md | wc -l` for s = deliver, plan, design prints 0, 0, 0 (census 18, 8, 1).",
+        "$T/skills/deliver/SKILL.md declares `implementer : P ⇀ agent` (grep -c prints 1; census 0) and carries a law that the integrator is never self (`grep -c -E 'integrator.*(≠|¬) ?self'` ≥ 1; census 0).",
+        "In $T/skills/deliver/SKILL.md `grep -c 'verify(unit, r)'` prints 0 (census 1), and the line opening `judge(unit) ≜` contains `gate` and `validate`.",
+        "`grep -c 'ratify @ planner → advance' $T/skills/plan/SKILL.md` prints 0 (census 1).",
+        "`pnpm --filter @cratylus/canon exec vitest run test/skill-hook-cap.test.ts` exits 0 and prints plan ≤ 9953 and deliver ≤ 10000 (census 9953 and 7420).",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/reader-reach.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/symbols.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/projection-stability.test.ts` and `pnpm typecheck` exit 0.",
+        "COLD READ. For each architect holder build the text its session starts with: $T/agents/<h>.md whole (front matter and hooks included), then each skill of its `skills:` list in order, as $T/skills/<s>/SKILL.md with its front matter stripped. Give each text, with no other context and no tools, to two distinct models (anthropic/claude-opus-5-5 and anthropic/claude-haiku-4-5, the pair the assay of 20961057 used) with this prompt verbatim: 'Below is the complete definition of an AI agent and the skills loaded into it at session start. Answer from this text alone. For each question answer YES, NO or UNCLEAR and quote the lines that decide it. (a) Does the agent itself build or edit the product's code or files? (b) Does it itself run code, tests, builds or checks? (c) Does it itself make commits? (d) Does it itself merge work into main? (e) Does it itself read code or produced artifacts? (f) Does it itself read the reports or returns of the agents it delegates to? (g) To whom, by name, does it hand planning, building, reading what landed, and running checks and merging?' Save every prompt and answer verbatim under /tmp/architect-position-cold-read/architect-skills/ and return the paths; print the number of reads taken (8 = 4 holders x 2 models). PASSES when no YES or UNCLEAR answer quotes a line that this unit's outputs project, and no (g) answer names the builder anything but `implementer` on a line this unit's outputs project; and, when this unit is the last of plan architect-position to land, when all (a)-(f) answers of all 8 reads are NO and every (g) names the builder `implementer`. FAILS at census: the Opus read of architect with its four skills answered (f) YES quoting `judge(unit) ≜ verify(unit, r) ∧ …` and `r lands VERBATIM ≺ any verdict on it`, and took binding, advancing and closing as the architect's own acts from `deliver ≜ bind → dispatch(wave) → …` (assay of 20961057, point 1).",
+        "COLD-READ QUESTION (f), corrected: 'does it read an implementer's report or account of its own work, an artifact, or a diff?' Reading the assay and the integrator's gate result is the position's own act and must NOT count as YES; the prompt says so.",
+        "deliver states who files a defect beside the path (the party that met it)",
+        "a cold reader of the architect with injected skills finds no contradiction about who reads plan state"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3QTCQC72TV8AF4DANAMQSFC",
+      "closure": {}
+    }
+  }
+}
