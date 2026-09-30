@@ -56,6 +56,7 @@ import {
   undoHunks,
   unregisterHookCommands,
 } from '../../deploy/index.js';
+import { settingsJson } from '../../deploy/settings-json.js';
 import { containingRoot } from '../../prune/index.js';
 
 export interface UninstallCmdOpts {
@@ -83,9 +84,6 @@ interface Tally {
   readonly removed: Removal[];
   readonly left: Leftover[];
 }
-
-const settingsJson = (settings: Record<string, unknown>): string =>
-  `${JSON.stringify(settings, null, 2)}\n`;
 
 /** Why the record cannot be trusted, or `undefined` when it can. `readManifest` reads a
  *  bad record as EMPTY, which is right for a deploy and wrong here: an uninstall that
@@ -188,9 +186,11 @@ function restoreSettings(
     return;
   const file = join(harnessDir, adapter.hooksFile);
   if (!existsSync(file)) return;
+  let text: string;
   let settings: Record<string, unknown>;
   try {
-    const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
+    text = readFileSync(file, 'utf8');
+    const parsed: unknown = JSON.parse(text);
     if (
       typeof parsed !== 'object' ||
       parsed === null ||
@@ -261,7 +261,7 @@ function restoreSettings(
   if (Object.keys(next).length === 0) {
     dropFile(harnessDir, file);
   } else {
-    writeFileSync(file, settingsJson(next));
+    writeFileSync(file, settingsJson(next, text));
   }
 }
 

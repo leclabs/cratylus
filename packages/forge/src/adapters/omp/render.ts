@@ -264,6 +264,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
   nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
+  offered: ['default', 'smol', 'slow', 'plan', 'task'],
   configRels: OMP_CONFIG_RELS,
 };
 

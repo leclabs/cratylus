@@ -35,6 +35,7 @@ import {
   SCOPE_DIR_TOKEN,
   SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
+import { settingsJson } from './settings-json.js';
 import {
   type PlaceOpts,
   type PlaceResult,
@@ -222,16 +223,17 @@ export function placeHooksLocal(
   ];
   if (Object.keys(incoming).length > 0) {
     const settingsFile = resolvePath(harnessDir, hooksFile);
-    const existing: Record<string, unknown> = existsSync(settingsFile)
-      ? (JSON.parse(readFileSync(settingsFile, 'utf-8')) as Record<
-          string,
-          unknown
-        >)
-      : {};
+    const before = existsSync(settingsFile)
+      ? readFileSync(settingsFile, 'utf-8')
+      : undefined;
+    const existing: Record<string, unknown> =
+      before === undefined
+        ? {}
+        : (JSON.parse(before) as Record<string, unknown>);
     const { settings, added } = mergeHooksSettings(existing, incoming);
     if (!opts.dry) {
       mkdirSync(harnessDir, { recursive: true });
-      writeFileSync(settingsFile, `${JSON.stringify(settings, null, 2)}\n`);
+      writeFileSync(settingsFile, settingsJson(settings, before));
     }
     log(
       `  ${hooksFile}: merged hooks for [${Object.keys(incoming).join(', ')}] ` +

@@ -629,6 +629,9 @@ export interface RoleRouting {
   /** The harness's own built-in role nearest to a held role; `defaultRole` for a
    *  role it has no closer peer for. */
   nearest(heldRole: string): string;
+  /** The harness's built-in roles a held role may be routed to, for an operator to
+   *  choose among; each is offered as the alias `@<role>`. */
+  readonly offered: readonly string[];
   /** The host config files that map roles to models, relative to the harness home,
    *  in the harness's read order: it reads the first that exists and ignores the
    *  rest, so a file created beside an existing later one would shadow it. */

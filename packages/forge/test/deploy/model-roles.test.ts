@@ -173,6 +173,57 @@ describe('addModelRoles — a block-style modelRoles', () => {
   });
 });
 
+describe('addModelRoles — retarget', () => {
+  const HOST =
+    '# host\nmodelRoles:\n  planner: "@plan"\n  task: "@default"\ntheme: dark\n';
+  const at = (content: string, retarget: readonly ModelRoleEntry[]) => {
+    const path = join(tmpRoot(), 'config.yml');
+    writeFileSync(path, content);
+    const result = addModelRoles(path, retarget, { retarget });
+    return { result, after: readFileSync(path, 'utf8') };
+  };
+
+  it('moves the one line it is told to, in place, and reports it whole', () => {
+    const { result, after } = at(HOST, [{ role: 'planner', value: '@slow' }]);
+    expect(after).toBe(HOST.replace('"@plan"', '"@slow"'));
+    expect(result.added).toEqual([]);
+    expect(result.wrote).toBe(true);
+    expect(result.retargeted.map((m) => [m.from, m.to])).toEqual([
+      ['  planner: "@plan"\n', '  planner: "@slow"\n'],
+    ]);
+    // A move is not an insertion: nothing for an uninstall to take out beyond the record.
+    expect(result.edit).toBeUndefined();
+  });
+
+  it('moves a line and adds a missing one in the same write', () => {
+    const { result, after } = at(HOST, [
+      { role: 'planner', value: '@slow' },
+      { role: 'assayer', value: '@fast' },
+    ]);
+    expect(after).toBe(
+      '# host\nmodelRoles:\n  planner: "@slow"\n  task: "@default"\n  assayer: "@fast"\ntheme: dark\n',
+    );
+    expect(result.added).toEqual([{ role: 'assayer', value: '@fast' }]);
+    expect(result.edit?.hunks.flatMap((h) => h.after)).toEqual([
+      '  assayer: "@fast"\n',
+    ]);
+  });
+
+  it('leaves a line already holding the value, and a role with no line, alone', () => {
+    const path = join(tmpRoot(), 'config.yml');
+    writeFileSync(path, HOST);
+    const result = addModelRoles(path, [], {
+      retarget: [
+        { role: 'planner', value: '@plan' },
+        { role: 'ghost', value: '@x' },
+      ],
+    });
+    expect(result.retargeted).toEqual([]);
+    expect(result.wrote).toBe(false);
+    expect(readFileSync(path, 'utf8')).toBe(HOST);
+  });
+});
+
 describe('addModelRoles — no modelRoles block', () => {
   it('appends the block at the end and leaves line 1 alone', () => {
     const { result, after } = run('theme: dark\n');
@@ -297,6 +348,7 @@ describe('install — the host modelRoles', () => {
       cwd,
       corpus: plugin as never,
       dryRun,
+      verbose: true,
     });
 
   beforeEach(() => {
