@@ -149,7 +149,11 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
   });
 
   it('names the act and its target and nothing else — the definitions of what an act produces are the rubric’s', () => {
-    const actLine = (agent: string, tool: string, input: object): string => {
+    const actLine = (
+      agent: string,
+      tool: string,
+      input: Record<string, unknown>,
+    ): string => {
       const { payload } = JSON.parse(
         run(agent, tool, input, { STANCE_EMIT_PAYLOAD: '1' }).stdout,
       ) as { payload: string };
