@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDS0C66XJRS1PKP5ZH5QB",
+    "entity": "01M3QBFZX8JMA6VHK12AEAN8KV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KW"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:49.996Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "enforcement scope",
+    "gloss": "a guard binds exactly the agents whose composition includes it, on every supported harness, and judges every turn it fires on. Where a harness cannot tell which agent is running, the guard is carried as a stated rule instead and the operator is told; a guard that fires and judges nothing never ships.",
+    "factors": []
+  }
+}

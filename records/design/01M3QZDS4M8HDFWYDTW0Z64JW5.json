@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+    "entity": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QGRV75VXV2C8F8KCHYC0V0"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:50.132Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "uninstall",
+    "gloss": "removing from a host everything cratylus placed there for one harness, and nothing the host placed or changed itself, which is left in place and reported.",
+    "factors": []
+  }
+}

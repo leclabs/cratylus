@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3QZDSNXFW5WVR66146BGMJM",
+    "entity": "01M3QZDSNXFW5WVR66146BGMJK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T01:38:50.685Z",
+    "reason": "design churn under running plans broke this session's acceptance; the invariant is now in the design",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "design stability",
+    "gloss": "the design is the fixed target while a plan realizes it. A change never moves a shard that a running plan is building against: it is appended to the design and realized by a following plan, sequenced after the work it depends on, so every plan finishes against the goal it began with. Only when a running plan is found to be built on a shard that is itself wrong does the plan stop; the design is corrected once, and the planner rectifies or rebuilds the plan before work resumes.",
+    "factors": []
+  }
+}

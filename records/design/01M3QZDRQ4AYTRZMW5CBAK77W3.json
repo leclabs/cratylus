@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDRQ4AYTRZMW5CBAK77W3",
+    "entity": "01M3PZ5AS51YWKS979SHJ4PD1A",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QBG08GT88N98JXNHHGMPXB"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:49.700Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "role routing",
+    "gloss": "the position an agent holds is what its host routes a model by. Each agent carries to the harness the role it holds, never a model; the host decides which model fills each role. Where the host has decided nothing, the agent runs on the harness's ordinary default, or, on a harness that routes only by tier, on the tier suited to the position's work: spec-bounded building on the middle tier, holding and judging design on the top tier. Install makes the roles visible to the host as something it can set, and never changes a choice the host has made.",
+    "factors": []
+  }
+}

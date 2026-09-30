@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3QZDRJNXSW0YJ8TW1413KAP",
+    "entity": "01M3NBKGAEMWHE61KYRA703KGR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3QNDVBK5BMBD4V4SQZSAGQ4"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T01:38:49.557Z",
+    "reason": "restated at the conceptual altitude: the earlier wording carried harness mechanism, which made every finding about the mechanism look like a flaw in the concept",
+    "cause": "regrounding with the operator, 2026-09-29: shards state what and why, never how; the design is the fixed goal"
+  },
+  "payload": {
+    "anchor": "persona badge",
+    "gloss": "the running persona's identity, its name and mark, visible in the harness's interface for as long as its session runs, preferably in the status line or the nearest equivalent, so the operator always sees which persona a session is. Shown only in a persona's own top-level interactive session, never in a subagent's or in a session running no persona. It takes nothing away from what the host already shows there, and where it cannot appear in place it still appears somewhere visible rather than not at all.",
+    "factors": []
+  }
+}
