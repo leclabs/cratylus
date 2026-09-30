@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RQE2NGC40BHYYPGFMWSRN2",
+    "entity": "01M3QBFZX8JMA6VHK12AEAN8KV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RKANJB4NKJPX7B95CYKG47"
+    ],
+    "author": "nico",
+    "time": "2026-09-30T08:38:25.712Z",
+    "reason": "operator ruling held during judge-speed-plan-line: a dispatched subagent is already bounded, judged twice and supervised, so guarding it duplicates that acceptance and competes for the same judge",
+    "cause": "judge-speed-plan-line closed"
+  },
+  "payload": {
+    "anchor": "enforcement scope",
+    "gloss": "a guard binds exactly the agents whose composition includes it, and only in such an agent’s own main session, never in a subagent it dispatches, which is bounded by what it was handed, judged by its assay and the whole check, and supervised by the main session; on every supported harness it judges every turn it fires on; where its judge cannot run, it lets the turn through and says so, never silently, and it asks the judge again once the judge may have recovered, so a passing outage never leaves the guard unjudged for the rest of a session. A judgement fits within the time its harness allows a guard, so a judge that is merely slow is never reported as one that could not run. Where a harness cannot tell which agent is running, the guard is carried as a stated rule instead and the operator is told; a guard that fires and judges nothing never ships.",
+    "factors": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RS2CR2JHR6A5G82KS2CPPP",
+    "entity": "01M3RS2CR2JHR6A5G82KS2CPPN",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T09:06:59.970Z",
+    "reason": "operator: LLMs know how to use git worktrees; implementers should simply be told to use one for isolation",
+    "cause": "operator ruling after judge-speed-plan-line"
+  },
+  "payload": {
+    "title": "worktrees are the agents' own competence",
+    "kind": "decision",
+    "topic": "plan",
+    "body": "Operator ruling, rectified and adopted: agents and both supported harnesses already know git worktrees; the loop's texts should state only that each unit is built in its own worktree, isolated, off its plan's line, and never teach the mechanics (branch naming schemes, worktree paths, git commands). work-on-the-line wrote such mechanics into the plan skill, deliver and the role texts, which is how prescribed inside what an agent reads; a shard states what and why, and a text an agent reads should trust its competence the same way. Realize in the next plan as a revision of those texts; the runtime's refusal naming the command that restores a missing line is an operator-facing message and may stay.",
+    "blocks": []
+  }
+}

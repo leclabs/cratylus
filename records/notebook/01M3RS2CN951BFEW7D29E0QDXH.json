@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RS2CN951BFEW7D29E0QDXH",
+    "entity": "01M3RS2CN951BFEW7D29E0QDXG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T09:06:59.881Z",
+    "reason": "operator: the oracle's most useful time has passed; constrain it to core dimension names and values and never restrict consumers",
+    "cause": "operator ruling after judge-speed-plan-line"
+  },
+  "payload": {
+    "title": "cold-decode oracle scope",
+    "kind": "decision",
+    "topic": "prime principle",
+    "body": "Operator ruling, rectified and adopted: the cold-decode oracle served the phase when cratylus was discovering its own terminology, and that phase is done; its constraints have since leaked past their purpose and fight industry-standard terms, which models already decode precisely without the overhead. Its scope becomes the corpus's core agent dimension names and values only. Everywhere else, including every surface a consumer of projected cratylus assets authors, the industry's own term is used as the industry understands it, and nothing cratylus ships holds a consumer to the oracle. Enters the design at the next plan's cut, as an amendment of prime principle (which names cold decode among the laws it is carried by).",
+    "blocks": []
+  }
+}
