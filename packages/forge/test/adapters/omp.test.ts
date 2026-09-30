@@ -17,7 +17,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_AGENT_DEF_DIR,
   OMP_GUARDRAIL_MODULE,
@@ -569,9 +569,7 @@ describe('omp enforcing surface', () => {
     );
     expect(turn?.content).toContain('Promise.race');
     expect(turn?.content).toContain('JUDGE_TIMEOUT_MS');
-    expect(turn?.content).toContain('if (judgeMisses >= JUDGE_MISS_LIMIT)');
-    expect(turn?.content).toContain('judgeMisses += 1;');
-    expect(turn?.content).toContain('if (text) judgeMisses = 0;');
+    expect(turn?.content).toContain('JUDGE_COOLDOWN_MS');
     expect(turn?.content).not.toContain('judgeAway = true');
     // Inside omp's 30 s handler kill, or the deadline never fires — and with real
     // margin above a measured judge call: 9.3 s for a 9 KB payload against the
@@ -618,19 +616,38 @@ case "$MODE" in
   discarded) echo "STANCE GUARDRAIL — BLOCK DISCARDED: no span. This turn was NOT judged clean." ;;
   noprogress) echo "STANCE GUARDRAIL — NO PROGRESS: byte-identical to the block already issued." ;;
   deny) printf '{"decision":"block","reason":"collapsed"}\\n' ;;
+  judge)
+    if grep -q BLOCK "$STANCE_VERDICT_FILE"; then
+      printf '{"decision":"block","reason":"collapsed"}\\n'
+    elif [ ! -s "$STANCE_VERDICT_FILE" ]; then
+      echo "PURVIEW GUARDRAIL — DARK: the judge did not answer. This call was NOT judged."
+    fi ;;
   pass) ;;
 esac
 `;
 
   type Handler = (event: unknown, ctx: unknown) => Promise<unknown>;
 
-  /** Load the generated module for `event`, fire its handler, and report what
-   *  omp would have been told: the messages sent and the handler's result. */
-  async function fired(
+  type Stub = (...args: unknown[]) => Promise<unknown>;
+  const stubs: string[] = [];
+  afterEach(() => {
+    for (const key of stubs)
+      delete (globalThis as Record<string, unknown>)[key];
+    stubs.length = 0;
+  });
+
+  /** Load the generated module for `event` on a worker in `mode`. `judge`
+   *  stands in for omp's completeSimple; without one no case reaches a model. */
+  async function load(
     mode: string,
-    cell: { event: string; fire: Record<string, unknown> },
+    event: string,
+    judge?: Stub,
     sendUserMessage: (m: string, o: unknown) => unknown = () => undefined,
-  ): Promise<{ sent: string[]; result: unknown }> {
+  ): Promise<{
+    sent: string[];
+    content: string;
+    run: (fire: Record<string, unknown>, ctx?: unknown) => Promise<unknown>;
+  }> {
     const dir = mkdtempSync(join(tmpdir(), 'omp-bridge-'));
     tmp.push(dir);
     const stub = join(dir, 'worker.sh');
@@ -646,7 +663,7 @@ esac
           anchor: 'stance',
           fragment: {
             substrate: 'harness',
-            events: [cell.event],
+            events: [event],
             realizedBy: 'stance',
           },
           agents: ['mav'],
@@ -655,10 +672,17 @@ esac
       mech,
     );
     // The module's one runtime import is omp's own model client, which the host
-    // supplies and a test does not have; no case here reaches a model.
+    // supplies and a test does not have.
+    const key = `__ompJudge${stubs.length}`;
+    if (judge) {
+      stubs.push(key);
+      (globalThis as Record<string, unknown>)[key] = judge;
+    }
     const content = (mod?.content as string).replace(
       "import { completeSimple } from '@oh-my-pi/pi-ai';",
-      'const completeSimple = async () => ({ content: [] });',
+      judge
+        ? `const completeSimple = (...a: unknown[]) => (globalThis as unknown as Record<string, (...b: unknown[]) => Promise<never>>)['${key}'](...a);`
+        : 'const completeSimple = async () => ({ content: [] });',
     );
     const file = join(dir, 'scope', 'extensions', OMP_GUARDRAIL_MODULE);
     mkdirSync(dirname(file), { recursive: true });
@@ -667,7 +691,7 @@ esac
     const sent: string[] = [];
     const pi = {
       cwd: dir,
-      on: (event: string, h: Handler) => handlers.set(event, h),
+      on: (name: string, h: Handler) => handlers.set(name, h),
       sendUserMessage: (m: string, o: unknown) => {
         sent.push(m);
         return sendUserMessage(m, o);
@@ -688,8 +712,23 @@ esac
     };
     mod2.default(pi);
     const native = [...handlers.keys()][0] as string;
-    const result = await handlers.get(native)?.(cell.fire, {});
-    return { sent, result };
+    return {
+      sent,
+      content,
+      run: async (fire, ctx = {}) => handlers.get(native)?.(fire, ctx),
+    };
+  }
+
+  /** Load the generated module for `event`, fire its handler, and report what
+   *  omp would have been told: the messages sent and the handler's result. */
+  async function fired(
+    mode: string,
+    cell: { event: string; fire: Record<string, unknown> },
+    sendUserMessage: (m: string, o: unknown) => unknown = () => undefined,
+  ): Promise<{ sent: string[]; result: unknown }> {
+    const b = await load(mode, cell.event, undefined, sendUserMessage);
+    const result = await b.run(cell.fire);
+    return { sent: b.sent, result };
   }
 
   const CELLS = [
@@ -745,6 +784,132 @@ esac
       expect(sent).toHaveLength(1);
       expect(result).toBeUndefined();
     }
+  });
+
+  describe('a judge that stopped answering is asked again', () => {
+    // The latch a run of misses sets must EXPIRE. A judge that is never asked can
+    // never answer, so a latch cleared only by an answer blacked out every guard
+    // for the rest of a session on one burst of slow calls. This runs the emitted
+    // module against a completeSimple that counts its calls, with a clock the test
+    // owns: the deadline and the cooldown are advanced, never waited for.
+    type Script = 'hang' | 'PASS' | 'BLOCK';
+    const TURN = CELLS[0] as (typeof CELLS)[number];
+
+    async function bridge() {
+      const judge = { calls: 0, script: [] as Script[], asked: () => {} };
+      const b = await load('judge', 'turn.end', async () => {
+        judge.calls += 1;
+        judge.asked();
+        const step = judge.script.shift();
+        return step === undefined || step === 'hang'
+          ? new Promise<never>(() => {})
+          : { content: [{ type: 'text', text: step }] };
+      });
+      const constant = (name: string): number =>
+        Number(
+          new RegExp(`const ${name} = ([\\d_]+);`)
+            .exec(b.content)?.[1]
+            ?.replaceAll('_', ''),
+        );
+      const deadline = constant('JUDGE_TIMEOUT_MS');
+      const ctx = { model: {} };
+      return {
+        judge,
+        sent: b.sent,
+        deadline,
+        cooldown: constant('JUDGE_COOLDOWN_MS'),
+        /** A fire that reaches the judge, which then does `step`. */
+        async ask(step: Script): Promise<unknown> {
+          judge.script.push(step);
+          const reached = new Promise<void>((r) => {
+            judge.asked = r;
+          });
+          const fire = b.run(TURN.fire, ctx);
+          await reached;
+          if (step === 'hang') await vi.advanceTimersByTimeAsync(deadline);
+          return fire;
+        },
+        /** A fire that must not reach the judge. */
+        skip: (): Promise<unknown> => b.run(TURN.fire, ctx),
+        wait: (ms: number) => vi.advanceTimersByTimeAsync(ms),
+      };
+    }
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('declares a cooldown between 30 s and 5 min, and probes once after it', async () => {
+      const b = await bridge();
+      expect(b.cooldown).toBeGreaterThanOrEqual(30_000);
+      expect(b.cooldown).toBeLessThanOrEqual(300_000);
+
+      for (let i = 0; i < 3; i++) expect(await b.ask('hang')).toBeUndefined();
+      expect(b.judge.calls).toBe(3);
+
+      // Inside the cooldown the judge is not asked, and the fire goes through
+      // with the worker's dark notice relayed.
+      await b.wait(b.cooldown / 2);
+      expect(await b.skip()).toBeUndefined();
+      expect(b.judge.calls).toBe(3);
+      expect(b.sent).toHaveLength(1);
+      expect(b.sent[0]).toMatch(/DARK.*NOT judged/);
+
+      // The first fire after it asks exactly once, and the answer is the result.
+      await b.wait(b.cooldown);
+      expect(await b.ask('BLOCK')).toEqual({
+        decision: 'block',
+        reason: 'collapsed',
+      });
+      expect(b.judge.calls).toBe(4);
+
+      // The answer cleared the run: the next fire asks again with no cooldown.
+      expect(await b.ask('PASS')).toBeUndefined();
+      expect(b.judge.calls).toBe(5);
+    });
+
+    it('starts a new cooldown when the probe misses too', async () => {
+      const b = await bridge();
+      for (let i = 0; i < 3; i++) await b.ask('hang');
+      await b.wait(b.cooldown);
+      await b.ask('hang');
+      expect(b.judge.calls).toBe(4);
+
+      await b.skip();
+      expect(b.judge.calls).toBe(4);
+      await b.wait(b.cooldown / 2);
+      await b.skip();
+      expect(b.judge.calls).toBe(4);
+
+      await b.wait(b.cooldown);
+      await b.ask('PASS');
+      expect(b.judge.calls).toBe(5);
+    });
+
+    it('does not count a miss for a call that was answered', async () => {
+      // The deadline timer outlived an answered call and counted a miss when it
+      // fired, so a run of ANSWERED calls latched the judge away.
+      const b = await bridge();
+      for (let i = 0; i < 3; i++) await b.ask('PASS');
+      await b.wait(b.deadline * 2);
+      await b.ask('PASS');
+      expect(b.judge.calls).toBe(4);
+    });
+
+    it('says an outage again when a judged fire came between two', async () => {
+      const b = await bridge();
+      await b.ask('hang');
+      expect(b.sent).toHaveLength(1);
+      // Judged: the remembered notice is cleared.
+      await b.ask('PASS');
+      expect(b.sent).toHaveLength(1);
+      await b.ask('hang');
+      expect(b.sent).toHaveLength(2);
+      expect(b.sent[1]).toBe(b.sent[0]);
+    });
   });
 });
 
