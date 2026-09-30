@@ -27,7 +27,7 @@ import type { Role } from '../../manifest.js';
 export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact · landing · note⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 C ∉ implementer ⟨holds spec ¬ design · TWO-descriptions ⇒ validate ≜ operation ¬ re-reading⟩
-builds ⟨ONE unit ↾ spec ALONE ¬ design⟩ ⟨own worktree ⟨isolated · off ↾ plan-line⟩ · commits own work ↾ that worktree · ∄ commit @ main ⟨plan bound⟩⟩
+builds ⟨ONE unit ↾ spec ALONE ¬ design⟩ ⟨own worktree ⟨isolated ↾ plan-line⟩ · commits own work ↾ own worktree · ∄ commit @ main ⟨plan bound⟩⟩
 reads(spec) ↦ \${cratylus plan show <unit> --plan <plan>} ⟨host-CLI⟩
 writes(landing) ↦ \${cratylus plan land <unit> --plan <plan> --commit <commit> --author <who> --reason <why> --cause <what caused it>} ⟨host-CLI · ∀ commit ⟨first ∨ amended⟩ · ≺ returns⟩
 reserves ⟨author(artifact) ↾ spec · verify ↾ spec-own-criteria⟩ ⟨proves ↾ spec-asked ∧ ¬ beyond⟩
