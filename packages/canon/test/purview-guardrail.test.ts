@@ -16,8 +16,15 @@
 // both directions are asserted: a read is never judged, a fabricated citation is
 // discarded, an unenrolled scope is silent, and an identical input is never denied twice.
 
-import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
@@ -78,6 +85,10 @@ beforeAll(() => {
       'utf8',
     );
   }
+});
+
+afterAll(() => {
+  rmSync(root, { recursive: true, force: true });
 });
 
 const scopeOf = (name: string): string =>
@@ -193,7 +204,8 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
         'VERDICT: BLOCK\nREASON: fabricated\nSPAN: this text never appeared anywhere\n',
       ),
     });
-    expect(stdout).toBe('');
+    expect(stdout).not.toContain('permissionDecision');
+    expect(stdout).toMatch(/BLOCK DISCARDED/);
   });
 
   it('allows a PASS verdict', () => {
@@ -214,7 +226,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     const { stdout, status } = run(architect.name, 'Task', DISPATCH, {
       STANCE_VERDICT_FILE: join(root, 'no-such-verdict'),
     });
-    expect(stdout).toBe('');
+    expect(stdout).toMatch(/PURVIEW GUARDRAIL — DARK.*NOT judged/);
     expect(status).toBe(0);
   });
 
@@ -251,9 +263,225 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
       env: { ...process.env, STANCE_VERDICT_FILE: file },
     });
     expect(once.stdout).toContain('deny');
-    expect(twice.stdout).toBe('');
+    expect(twice.stdout).not.toContain('permissionDecision');
+    expect(twice.stdout).toMatch(/re-entry cap/);
   });
 });
+
+// A GUARD THAT LETS A CALL THROUGH WITHOUT A VERDICT SAYS SO, where the operator reads it.
+//
+// Silence is the answer for "judged, pass" and nothing else: a purview guard whose judge is
+// gone, whose `jq` is missing or whose Target never landed is observationally identical to a
+// guard that found nothing, forever. On Claude Code a hook's plain stdout on exit 0 reaches
+// nobody, so the notice is the hook's JSON `systemMessage`; omp's extension bridge reads the
+// worker's plain stdout, so its form is the bare line. The workers are run as each harness
+// receives them — resolved against that harness's own facts — under a PATH that holds only
+// `sh` and `cat` where the point is that `jq` is gone.
+const FORMS = [
+  {
+    harness: 'omp',
+    hooks: ['.omp', 'hooks'],
+    base: ['.omp', 'agent'],
+    enroll: (scope: string): Record<string, unknown> => ({
+      stance_scope: scope,
+    }),
+    notice: (stdout: string): string => {
+      expect(stdout.trim(), 'nothing was said').not.toBe('');
+      expect(stdout.startsWith('{'), 'omp reads a bare line').toBe(false);
+      return stdout;
+    },
+  },
+  {
+    harness: 'claude',
+    hooks: ['.claude', 'hooks'],
+    base: ['.claude'],
+    enroll: (): Record<string, unknown> => ({ agent_type: architect.name }),
+    notice: (stdout: string): string => {
+      expect(stdout.trim(), 'nothing was said').not.toBe('');
+      const said = JSON.parse(stdout) as Record<string, unknown>;
+      expect(Object.keys(said)).toEqual(['systemMessage']);
+      return String(said.systemMessage);
+    },
+  },
+] as const;
+
+describe.each(FORMS)(
+  'purview guardrail — $harness: a call let through without a verdict says so',
+  (form) => {
+    let home: string;
+    let workerPath: string;
+    let scope: string;
+    let stub: string;
+    let dead: string;
+
+    beforeAll(() => {
+      home = mkdtempSync(join(root, `${form.harness}-`));
+      const hooks = join(home, ...form.hooks, 'purview-guardrail');
+      mkdirSync(hooks, { recursive: true });
+      workerPath = join(hooks, 'purview-guardrail.sh');
+      writeFileSync(workerPath, workerSource(form.harness), 'utf8');
+      chmodSync(workerPath, 0o755);
+      const agents = join(home, ...form.base, 'agents');
+      mkdirSync(agents, { recursive: true });
+      writeFileSync(
+        join(agents, `${architect.name}.md`),
+        `# ${architect.name}\n\n## Role\n\n${architect.role}\n\n## Formality\n\nplain\n`,
+        'utf8',
+      );
+      scope = join(home, ...form.base, 'personas', architect.name);
+      mkdirSync(join(scope, 'stance'), { recursive: true });
+      writeFileSync(
+        join(scope, 'stance', 'manifest.json'),
+        JSON.stringify({ agent: architect.name, gates: {} }),
+        'utf8',
+      );
+      stub = join(home, 'stub');
+      mkdirSync(stub);
+      symlinkSync('/bin/sh', join(stub, 'sh'));
+      symlinkSync('/bin/cat', join(stub, 'cat'));
+      dead = join(home, 'dead-judge.sh');
+      writeFileSync(dead, '#!/bin/sh\nexit 5\n');
+    });
+
+    const fire = (
+      env: Record<string, string>,
+      over: Record<string, unknown> = {},
+      stdin?: string,
+    ) =>
+      spawnSync('/bin/sh', [workerPath], {
+        input:
+          stdin ??
+          JSON.stringify({
+            ...form.enroll(scope),
+            tool_name: 'Task',
+            tool_input: DISPATCH,
+            session_id: `open-${Math.random()}`,
+            cwd: home,
+            ...over,
+          }),
+        encoding: 'utf8',
+        env: { ...process.env, ...env },
+      });
+
+    /** Exits 0, and names the guard and that the call was not judged. */
+    const said = (r: SpawnSyncReturns<string>): string => {
+      expect(r.status).toBe(0);
+      const text = form.notice(r.stdout);
+      expect(text).toContain('PURVIEW GUARDRAIL');
+      expect(text).toMatch(/NOT judged/);
+      return text;
+    };
+
+    it('says so when jq is missing — a PATH of sh and cat', () => {
+      const r = spawnSync('/bin/sh', [workerPath], {
+        input: JSON.stringify({
+          ...form.enroll(scope),
+          tool_name: 'Task',
+          tool_input: DISPATCH,
+          session_id: 'nojq',
+          cwd: home,
+        }),
+        encoding: 'utf8',
+        env: { PATH: stub },
+      });
+      expect(said(r)).toMatch(/jq/);
+    });
+
+    it('says so when the hook receives no input', () => {
+      expect(said(fire({}, {}, ''))).toMatch(/no input/);
+    });
+
+    it('says so when the judge file names nothing', () => {
+      const r = fire({ STANCE_VERDICT_FILE: join(home, 'no-such-verdict') });
+      expect(said(r)).toMatch(/judge did not answer/);
+    });
+
+    it('says so when the judge command fails', () => {
+      const r = fire({ STANCE_JUDGE_CMD: `sh ${dead}` });
+      expect(said(r)).toMatch(/judge did not answer/);
+    });
+
+    it('says so when the verdict is unparseable', () => {
+      const r = fire({
+        STANCE_VERDICT_FILE: verdictFile(
+          'the model rambled and gave no verdict',
+        ),
+      });
+      expect(said(r)).toMatch(/unparseable/);
+    });
+
+    it('says so when the persona’s Target never landed', () => {
+      const r = fire({ PURVIEW_AGENT_MD: join(home, 'no-such-target.md') });
+      expect(said(r)).toMatch(/Target/);
+    });
+
+    it('says so when the manifest names no agent', () => {
+      const anon = join(home, 'anon');
+      mkdirSync(join(anon, 'stance'), { recursive: true });
+      writeFileSync(
+        join(anon, 'stance', 'manifest.json'),
+        JSON.stringify({ gates: {} }),
+        'utf8',
+      );
+      expect(said(fire({}, { stance_scope: anon }))).toMatch(/names no agent/);
+    });
+
+    it('says so when the payload names no tool', () => {
+      expect(said(fire({}, { tool_name: '' }))).toMatch(/names no tool/);
+    });
+
+    it('says so when the re-entry cap lets the second identical call through', () => {
+      const file = verdictFile(
+        'VERDICT: BLOCK\nREASON: outside the arrow\nSPAN: build the fold exactly as written\n',
+      );
+      const session = {
+        session_id: `cap-${form.harness}-${process.pid}-${Date.now()}`,
+      };
+      const once = fire({ STANCE_VERDICT_FILE: file }, session);
+      expect(once.stdout).toContain('permissionDecision');
+      expect(said(fire({ STANCE_VERDICT_FILE: file }, session))).toMatch(
+        /re-entry cap/,
+      );
+    });
+
+    it('says so when a block is discarded for citing a span the call does not contain', () => {
+      const r = fire({
+        STANCE_VERDICT_FILE: verdictFile(
+          'VERDICT: BLOCK\nREASON: fabricated\nSPAN: this text never appeared anywhere\n',
+        ),
+      });
+      expect(said(r)).toMatch(/BLOCK DISCARDED/);
+      expect(r.stdout).not.toContain('permissionDecision');
+    });
+
+    it('carries quotes and backslashes in a notice intact', () => {
+      const span = 'he said "no" \\ and left';
+      const r = fire({
+        STANCE_VERDICT_FILE: verdictFile(
+          `VERDICT: BLOCK\nREASON: fabricated\nSPAN: ${span}\n`,
+        ),
+      });
+      expect(said(r)).toContain(span);
+    });
+
+    it('stays SILENT on a judged pass — the one silent verdict', () => {
+      const r = fire({
+        STANCE_VERDICT_FILE: verdictFile(
+          'VERDICT: PASS\nREASON: routes to plan\n',
+        ),
+      });
+      expect(r.status).toBe(0);
+      expect(r.stdout).toBe('');
+    });
+
+    it('stays SILENT for a persona no manifest enrolls, and for a read', () => {
+      const bare = join(home, 'bare');
+      mkdirSync(bare);
+      expect(fire({}, { stance_scope: bare, agent_type: '' }).stdout).toBe('');
+      expect(fire({}, { tool_name: 'Read' }).stdout).toBe('');
+    });
+  },
+);
 
 // THE CLAUDE FORM OF THE SCOPE. Claude Code places no dispatcher, so the payload carries
 // no `stance_scope`; it NAMES the running agent as `agent_type` (on the main thread of a
