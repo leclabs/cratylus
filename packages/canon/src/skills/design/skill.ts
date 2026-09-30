@@ -30,8 +30,8 @@ closure : C → ℘(C) ⟨closure(c) ≜ { c } ∪ ⋃ { closure(f) | f ∈ fact
 denotes : anchor ⇀ C
 σ*      @ signify
 conform @ signify
-Piece  ≜ a cut piece ⟨what a planner is handed⟩
-cut    : C → ℘(℘(C))
+shard(c) ≜ ⟨ c , closure(c) ⟩ handed down ⟨what a planner is handed · one concept with everything it stands on⟩
+cut    ≜ the architect's choice of shards to hand the planner
 history(c) ≜ every version ∧ retraction of c, in order ⟨resident · ¬ deleted⟩
 settled(c) ⇔ c has exactly one current version
 live(c) ⇔ settled(c) ∧ that version ¬ a retraction
@@ -71,10 +71,10 @@ reconcile ⊨ self ⟨reconciliation of the design is the architect's alone⟩
 planner ∨ implementer ∨ assayer ⊨ diverged ∨ incoherent ⇒ report ∧ ¬ resolve
 blast(c) ≜ { d ∈ C | c ∈ closure(d) } ⟨DERIVED, ¬ guessed · what the normal form buys⟩
 churn(primitive) high ⇒ conceptualization wrong ⟨primitives near-stable · composites move⟩
-⋃ cut(C) = C ∧ ∀ s₁, s₂ ∈ cut(C) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
-∀ s ∈ cut(C) : ∀ c ∈ s : closure(c) ⊆ s ⟨a piece is CLOSED ∴ plannable alone⟩
-cut ⊨ self ⟨the ASSIGNMENT of concepts to pieces is the design-holder's ; a planner
-    receiving a piece may ¬ redraw it · a boundary it cannot plan is SURFACED⟩
+shard(c) states what must hold ∧ why ∧ ¬ how ⟨how a harness or a codebase achieves it is the plan's⟩
+a quirk met while realizing shard(c) ⇒ the planner's ∧ the implementer's to solve ∧ ¬ a reason to amend(c)
+cut ⊨ self ⟨the CHOICE of shards is the design-holder's ; a planner receiving a shard may
+    ¬ redraw it · a boundary it cannot plan is SURFACED⟩
 yield ≠ ∅ ⇒ amend(C) ⟨intake at INCEPTION ∧ live, never at retirement : an obligation
     standing between an agent and closing its work always loses · measured 0 of 25⟩
 design ⊨ ¬ delegable ⟨a subagent starts blank ∧ a design authored by several
@@ -83,7 +83,7 @@ design ≜ conceptualize(intent) → signify(·) → materialize(·) → define(
 
 export const design: Skill = {
   name: 'design',
-  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into closed pieces a planner can take. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution establishes something the model does not yet hold. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the implementer's own claim.`,
+  description: `use this skill to build and hold a project's DURATIVE conceptual model — the one artifact that outlives every plan: each concept's anchor, gloss and factorization, amended only by append-only supersession, and cut into shards a planner can take, each stating what and why, never how. Its verbs show the design or one concept, define, amend, retract and reconcile a concept, and trace how one came to be, what it stands on and what stands on it. Reach for it FIRST on any long-horizon effort, before any work is decomposed, and again whenever execution establishes something the model does not yet hold. It is what acceptance is judged against, so without it verification has no referent and degrades into re-reading the implementer's own claim.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'design' },
   composition: () => [],

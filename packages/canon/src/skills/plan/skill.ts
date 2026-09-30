@@ -36,14 +36,13 @@ const LIFECYCLE = {
 } as const;
 const { plan: PLAN, unit: UNIT } = LIFECYCLE;
 
-const FORMAL_BLOCK =
-  `s      ≜ a cut piece ⟨closed · handed down · ¬ redrawable here⟩ @ design
+const FORMAL_BLOCK = `shard  @ design
 c      @ design
 anchor @ design
 closure @ design
 withdrawn @ design
 self   @ design
-P      ≜ a plan : the units cutting s into work
+P      ≜ a plan : the units realizing a set of shards
 unit   ≜ a unit of work ⟨unit ∈ P⟩
 name(x) ≜ the label x is addressed by ⟨x a P ∨ a unit · revisable⟩
 States(P) ≜ { ${PLAN.states.join(', ')} } ⟨in lifecycle order⟩
@@ -84,7 +83,7 @@ ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨
     PROMISES an implementer can FINISH · conflating a dep with a ruling stalls a fan-out⟩
 frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | bound(P) ∧ ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where
     the plan IS · ¬ only what is dispatchable · ¬bound(P) ⇒ frontier(P) = ∅⟩
-planner   ≜ the planner ⟨bounded to s⟩
+planner   ≜ the planner ⟨bounded to its shards⟩
 conform @ signify
 show(P) ≜ \`scripts/plan.mjs show [<plan>]\` ↦ the bound P in wave order ∨ any P named, whole
 show(unit) ≜ \`scripts/plan.mjs show <unit> --plan <p>\` ↦ one unit in full
@@ -98,10 +97,10 @@ close(P) ≜ \`scripts/plan.mjs close <plan>\` ⟨closed(P)⟩
 reconcile(x) ≜ \`scripts/plan.mjs reconcile <unit> --plan <p> [--name <n>] [--realizes <concept>] [--intent <i>] [--static <path>]… [--deps <unit>]… [--outputs <path>]… [--accept <criterion>]… [--state <state>] [--repin]\` ∨ \`scripts/plan.mjs reconcile <plan> [--name <n>] [--realizes <concept>]… [--state <state>]\` ↦ one version superseding every current version of x ⟨each field the versions disagree on is given · a unit whose versions pin differently takes --repin⟩
 
 ∀ add ∨ advance ∨ retract ∨ revise ∨ bind ∨ close ∨ reconcile : \`--author <who> --reason <why> --cause <what caused it>\` ⟨a set-valued flag repeats, one member each⟩
-∀ unit : realizes(unit) ∈ { anchor(c) | c ∈ s } ⟨TOTALITY is the gate · a unit citing no
+∀ unit : realizes(unit) = the anchor of ONE shard ⟨TOTALITY is the gate · a unit citing no
     concept is work whose purpose cannot be stated ∴ REFUSED at authoring, ¬ warned⟩
-∀ unit : closure(denotes(realizes(unit))) ⊆ s ⟨a unit reaching outside its piece is a
-    BOUNDARY finding · SURFACE it ; the planner may ¬ redraw the cut⟩
+shard ¬ how ∴ how it is realized on each harness is the plan's ⟨a quirk is solved here ¬ a
+    reason to change the shard · one it cannot plan as handed is SURFACED, ¬ redrawn⟩
 ∀ unit : realizes(unit) = the concept pin(unit) names ∧ realizes(unit) ∈ realizes(P) ⟨a merge
     breaking it is incoherent(P), reported like the others⟩
 |{ P | bound(P) }| ≤ 1 ⟨held by bind(P), which returns the P bound before⟩
@@ -119,14 +118,14 @@ pin(unit) retaken ⇔ \`scripts/plan.mjs revise <unit> --plan <p> --repin --reas
 withdrawn(denotes(realizes(unit))) ⇒ drifted(unit) ∧ ¬ incoherent(P) ⟨a retraction in the design never breaks a plan law⟩
 drifted(unit) ∨ suspect(unit) ⇒ SURFACE ⟨the design moved under the plan · drift, ¬ staleness⟩
 drifted(unit) ⇒ response ↾ what moved ⟨nothing ⇒ repin · gloss ⇒ repin ∨ revise(unit) ∧ repin, by what the
-    new gloss adds ∨ drops · anchor ∨ factors ⇒ revise(unit) ∧ repin · re-cut ⇔ s itself moved⟩
+    new gloss adds ∨ drops · anchor ∨ factors ⇒ revise(unit) ∧ repin · re-cut ⇔ shard itself moved⟩
 suspect(unit) ⇒ the same response ↾ what moved beneath ⟨the concept that moved is a factor, ¬ the one
     unit spells ∴ its anchor moving alone ⇒ repin · a factor dropped beneath shows as the concept
     above it amended in factors⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
 reconcile ⊨ self ⟨reconciliation of plans ∧ units is the architect's alone⟩
-slices(P) cut on s ⟨¬ file-adjacency · files are a LAGGING proxy for modularity ∴
+slices(P) cut on shards ⟨¬ file-adjacency · files are a LAGGING proxy for modularity ∴
     file-cut ⇒ ∀ unit ⊇ fragments of several c ⇒ implementer finishes ∧ system incoherent⟩
 ⋃ slices(P) = P ∧ ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
 ∄ swap improving cross(slices(P)) ⟨argmin ↾ LOCAL · exhaustive ∧ deterministic ;
@@ -156,11 +155,11 @@ census(P) ⊨ once ∧ pinned⟨commit⟩ ∧ cited by every unit ⟨¬ re-deriv
     moves ∧ nothing reds · within P it moves only by landed outputs, each declared before dispatch⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 ∀ unit : conform(spec(unit))
-plan ≜ the planner's procedure ⟨ends at ratify⟩ : take(s) → census ⟨delegable⟩ → slice(s) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner` as SkillExpression;
+plan ≜ the planner's procedure ⟨ends at ratify⟩ : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner` as SkillExpression;
 
 export const plan: Skill = {
   name: 'plan',
-  description: `use this skill to decompose ONE cut piece of a design into MECE units of work — each citing the single concept it realizes, with its inputs, dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. A unit that cites no concept is refused; a piece that cannot be planned as handed down is surfaced, never silently redrawn. Its verbs show a plan or a unit, add, advance, retract and revise units, revise, bind and close a plan, and reconcile either.`,
+  description: `use this skill to decompose the shards a design hands down into MECE units of work — each realizing exactly one shard and citing the single concept it realizes, with its inputs, dependencies, declared outputs and mechanical acceptance criteria — sliced on the design's seams rather than on file adjacency, and ordered into waves whose outputs are disjoint so they dispatch concurrently without contending. Reach for it after a design exists and before any work is dispatched. How each shard is realized on each harness is the plan's. A unit that cites no concept is refused; a shard that cannot be planned as handed down is surfaced, never silently redrawn. Its verbs show a plan or a unit, add, advance, retract and revise units, revise, bind and close a plan, and reconcile either.`,
   formalBlock: FORMAL_BLOCK,
   runtime: { capability: 'plan', configuration: LIFECYCLE },
   composition: () => [design, note],
