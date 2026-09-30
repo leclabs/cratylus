@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RB5GCF0278C6D28SEZVS64",
+    "entity": "01M3RB5GCF0278C6D28SEZVS63",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T05:04:01.935Z",
+    "reason": "comparing the installed 0.6.0 workflow with the design found no role that owns this judgement",
+    "cause": "operator asked to compare the installed CDD workflow with the design"
+  },
+  "payload": {
+    "title": "the whole has no assay",
+    "kind": "question",
+    "topic": "workflow",
+    "body": "The assayer judges one unit against its shard; nothing judges the installed workflow as a whole against the design. When the operator asked for that comparison, the purview guard refused dispatching it to an assayer, since it is no unit. Either whole-system conformance is a concept the design must place, with an owner, or it is the operator's own act.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RCADATHDR6ZBNB2NWTGN7S",
+    "entity": "01M3RCADATHDR6ZBNB2NWTGN7R",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-09-30T05:24:11.226Z",
+    "reason": "operator ruled the refusal overly restrictive",
+    "cause": "operator: ad hoc comparisons can be delegated to whomever the architect chooses"
+  },
+  "payload": {
+    "title": "purview guard blocks ad hoc delegation",
+    "kind": "idea",
+    "topic": "workflow",
+    "body": "The purview guard refused dispatching an ad hoc comparison (installed workflow against the design) to an assayer because the dispatch was no unit name. Outside the design, plan, deliver loop an architect may delegate an ad hoc request to whomever fits; the guard should bind only acts inside that loop. Operator ruling: overly restrictive, follow up.",
+    "blocks": []
+  }
+}
