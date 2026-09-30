@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3RX1Z87WRFC68Y71R20QCXQ",
+    "entity": "01M3RWZNFHK04MGWA92Y78SQPC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RWZNFHK04MGWA92Y78SQPD"
+    ],
+    "author": "LoopFrictionPlanner",
+    "time": "2026-09-30T10:16:40.455Z",
+    "reason": "ratified: four units in two waves, no plan bound",
+    "cause": "architect handed shards enforcement scope, plan and prime principle"
+  },
+  "payload": {
+    "name": "loop-friction",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "bound"
+  }
+}

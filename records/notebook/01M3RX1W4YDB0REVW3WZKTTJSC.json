@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3RX1W4YDB0REVW3WZKTTJSC",
+    "entity": "01M3RX1W4YDB0REVW3WZKTTJSB",
+    "operation": "create",
+    "supersedes": [],
+    "author": "LoopFrictionPlanner",
+    "time": "2026-09-30T10:16:37.278Z",
+    "reason": "surface a ground-document divergence the plan does not own",
+    "cause": "census of prime principle for plan loop-friction"
+  },
+  "payload": {
+    "title": "ground documents still bind every sign to cold decode",
+    "kind": "question",
+    "topic": "prime principle",
+    "body": "The prime principle now scopes the cold-decode oracle to the corpus's core agent dimension names and values (amended 2026-09-30T10:05). The hand-authored ground documents still state the older reach: ENGINE.md:21 'canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w)' (formal blocks as the symbolic-σ* regression suite), MODEL.md:43 'SIGNIFIED : ∀c∈concepts(a): α(c)=σ*(c)', and VISION.md:175 'semantic bindings are tested against model priors before they are admitted to the canon'. Plan loop-friction's unit oracle-scope leaves ground documents alone, since they are hand-authored and not the planner's to cut; whether and how they follow the amended concept is the design-holder's call. Observed at a9258730.",
+    "blocks": []
+  }
+}
