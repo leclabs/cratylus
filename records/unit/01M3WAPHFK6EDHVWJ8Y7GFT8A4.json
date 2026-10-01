@@ -1,0 +1,109 @@
+{
+  "envelope": {
+    "id": "01M3WAPHFK6EDHVWJ8Y7GFT8A4",
+    "entity": "01M3W8XNQG57A8TSJJZ52X6ZZY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WAMQ5Y1A4MGXQ7475X5A03"
+    ],
+    "author": "GroundDocuments",
+    "time": "2026-10-01T18:12:49.267Z",
+    "reason": "ARCHITECTURE.md's runtime section no longer places lifecycle guardrails beneath the runtime and says a guard is a canon hook cell forge projects as the harness's hook",
+    "cause": "assay of 7a2e2c15 not achieved: note 'ARCHITECTURE puts lifecycle guardrails under the runtime'"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "ground-documents",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Bring the ground documents (VISION.md 198 lines, MODEL.md 78, ENGINE.md 52, ARCHITECTURE.md 271) and the two documents that introduce them (CANON.md 32, AGENTS.md 15) into agreement with the current design (`cratylus design show`) and with what the code does once unit persona-residue of this plan has landed. The documentation shard's cause is the operator's ruling to bring the ground documents in line within the docs rewrite; that licenses the VISION.md edits this unit makes, which CANON.md otherwise reserves. (1) The oracle's scope. The prime principle, amended 2026-09-30, scopes the cold-decode oracle to the corpus's core agent dimension names and values; every other term is the industry's own, used as the industry understands it, and nothing cratylus ships holds a consumer's own surfaces to the oracle. The ground documents state the older reach: VISION.md:173-175 (the constraint reaches every authored surface, anything this project writes is subject to cold verification, semantic bindings are tested against model priors before admission), MODEL.md:41-48 (SIGNIFIED ∀c∈concepts(a): α(c)=σ*(c), and COLD-BLIND over every fragment), ENGINE.md:19-22 (verify, signify-verify, canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w), formal blocks as the symbolic-σ* regression suite) and CANON.md:24-32 (the signification gate: every symbol a skill declares round-trips; check packages/canon/tooling/symbol-probe-gate.ts for what it gates today). State the scope in each. This settles the note 'ground documents still bind every sign to cold decode'. (2) Roles and personas. ENGINE.md:23-29 states the fold (Role, holds, declares, select, ⊕) and that provenance.mark is the holder's and never the role's; after persona-residue a role-named agent is its role's generic holder and takes its description, archetype and mark from the role, and a persona declares its own. State the fold as it landed and name the two kinds by their anchors, generic holder of a role and persona. MODEL.md:70-73 (BEING/FACE: a being's memory-home, single per being) speaks of machinery cratylus does not ship: the runtime's capabilities are eventTap, design, plan and note, and the persona concept puts a persona's memory and continuity outside cratylus for now; say what holds. (3) ARCHITECTURE.md. Its runtime section (:83-97) names the event tap's Claude strategy, which writes Claude's settings format (packages/runtime/src/capabilities/event-tap), and then says the runtime 'knows no harness and no corpus'; make the section say what holds. This settles the note 'runtime knows no harness, yet ships a Claude strategy'. The same section's list of what the runtime is beneath (:86-89 at a67c4816) names 'lifecycle guardrails' as the runtime's second job; the operator ruled this a stale claim, not a target (decision note 'ARCHITECTURE puts lifecycle guardrails under the runtime'): guards are canon hook cells deployed as harness hooks, plus forge's omp extension, and the runtime hosts the capabilities eventTap, design, plan and note and no guard. Say so, and place the guards where they ship. Its section 'Where the source diverges today' (:190-271) is a report of rows that are all struck, and says no row is unstruck: it records history the commits already hold, so reduce it to what holds today. ARCHITECTURE.md is the one home of what each package is for; README.md and the package READMEs link to it. (4) CANON.md and AGENTS.md introduce the ground documents; make their reading order and claims true (AGENTS.md:3 reads 'CRITICAL INVARIENT' with a stray '\\*\\*'). Keep the tests that read these files green: packages/canon/test/ground-conformance.test.ts parses MODEL.md's `Kind ≜ {…}` line, and cratylism.test.ts and hook-rule-boundary.test.ts name VISION, MODEL, ENGINE, CANON and AGENTS.md as files that exist. Persona wording: prose says persona only for an agent named as an individual (mav, nico, kino) and agent for any installed agent; a shipped identifier, flag, manifest key or path that spells persona for every agent (--link-persona-commands, --no-link-persona-commands, personaLinks, personas/ scope directories, cratylus-persona-badge, harness-persona-root, the Persona axis) is quoted verbatim as the code spells it, since renaming it waits on the ruling asked for in the note 'persona spelled for every agent in forge and schema'. A link into a file another unit of this plan writes (the ground documents, the package READMEs, docs/, packages/cli/README.md, README.md) names the file only, never a #fragment. ",
+      "static": [
+        "packages/canon/src/genus/prime-principle.ts",
+        "packages/canon/src/dimensions/engineering-principles",
+        "packages/canon/tooling/symbol-probe-gate.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles",
+        "packages/canon/src/agents",
+        "packages/runtime/src",
+        "packages/canon/test/ground-conformance.test.ts",
+        "packages/canon/test/cratylism.test.ts",
+        "packages/canon/test/hook-rule-boundary.test.ts",
+        "records/design"
+      ],
+      "deps": [
+        "01M3W8TK2ZGCA7YCGFPT08X6FB"
+      ],
+      "outputs": [
+        "VISION.md",
+        "MODEL.md",
+        "ENGINE.md",
+        "ARCHITECTURE.md",
+        "CANON.md",
+        "AGENTS.md"
+      ],
+      "accept": [
+        "`grep -l \"dimension names and values\" VISION.md MODEL.md ENGINE.md CANON.md` lists all four files",
+        "`git grep -n -E \"∀ w ∈ declarations\\(skill\\)|anything this project writes is subject|tested against model priors before they are admitted\" -- VISION.md ENGINE.md` prints nothing",
+        "`git grep -n -E \"provenance\\.mark ∉ dom|MEMORY-HOME|INVARIENT\" -- ENGINE.md MODEL.md AGENTS.md` prints nothing",
+        "every line of ARCHITECTURE.md that contains 'knows no harness' also names the event tap's strategy",
+        "`git grep -n -w persona -- ENGINE.md` prints at least one line",
+        "every relative link in the six files resolves to a path tracked at the landing commit, and none that points into README.md, docs/ or a package README carries a #fragment",
+        "`pnpm --filter @cratylus/canon test -- test/ground-conformance.test.ts test/cratylism.test.ts test/hook-rule-boundary.test.ts` exits 0",
+        "the `### \\`runtime\\`` section of ARCHITECTURE.md does not name guardrails or guards as something the runtime provides, and ARCHITECTURE.md names canon's hook cells as where the guards come from"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+      "version": "01M3W846YWG5Z3CYWN0W5F4W6R",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "b4bd37b5",
+        "author": "GroundDocuments",
+        "time": "2026-10-01T18:07:35.982Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b4bd37b5bc495063507fb8d1d46d1b93c6b6dd24",
+        "verdict": "not-achieved",
+        "missing": [
+          "documentation, clause 'the ground documents agree with the current design': ENGINE.md:25, the Role line this commit extended, still glosses a Role as 'the EXPECTATIONS attached to a position'. The design names each role by its anchor (architect role, planner role, implementer role, assayer role, integrator role), and position is the retired second sign for it. hold.ts now says 'the expectations attached to one role', so ENGINE spells the concept differently from both the design and the code it describes"
+        ],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T18:09:53.786Z"
+      },
+      {
+        "kind": "land",
+        "commit": "7a2e2c15",
+        "author": "GroundDocuments",
+        "time": "2026-10-01T18:11:00.975Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7a2e2c15",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T18:11:21.525Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7a2e2c15",
+        "verdict": "not-achieved",
+        "missing": [
+          "documentation, clause 'the ground documents agree with the current design' and 'every statement matches what the shipped code does', as the decision note 'ARCHITECTURE puts lifecycle guardrails under the runtime' rules it: ARCHITECTURE.md:85-89 still calls the runtime the platform beneath 'lifecycle guardrails — enforcement of stances the agent would otherwise drift out of'. The ruling says this is a stale claim and not a target. Guards are canon hook cells deployed as harness hooks, plus forge's omp extension, and the runtime hosts eventTap, design, plan and note and no guard"
+        ],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T18:11:49.566Z"
+      },
+      {
+        "kind": "land",
+        "commit": "09a2e325",
+        "author": "GroundDocuments",
+        "time": "2026-10-01T18:12:49.267Z"
+      }
+    ]
+  }
+}
