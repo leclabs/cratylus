@@ -138,6 +138,29 @@ export class EventTapHostClaude implements EventTapHost {
   }
 
   /**
+   * Why an event this host cannot bind is skipped, said of `subject` (the event, or
+   * the list of them).
+   *
+   * A stanza that carries NO act bindings is one an earlier deploy wrote, before they
+   * existed — and then an event with no entry in `native` is either one Claude Code
+   * fires nothing for or an act whose binding the stanza was never given. The runtime
+   * cannot tell which (which events are acts is the corpus's to say, and arrives only
+   * in the stanza's `acts`), so it names both and the deploy that writes the binding,
+   * rather than assert the first of a case that may be the second. A stanza that
+   * carries act bindings but not this one is current, and the first is then the fact.
+   */
+  skipReason(subject: string): string {
+    if (Object.keys(this.#acts).length === 0) {
+      return (
+        `this host's ${EventTapHostClaude.harness} stanza holds no act bindings (it was written before them), ` +
+        `so the binding for ${subject} may be missing from it: \`${CLI_BIN} install --harness ${EventTapHostClaude.harness}\` ` +
+        `(or \`${CLI_BIN} deploy --harness ${EventTapHostClaude.harness}\`) writes it; failing that, Claude Code has no native peer for ${subject}`
+      );
+    }
+    return `Claude Code fires no native event for ${subject}`;
+  }
+
+  /**
    * Attach the tap to every event in `events` that Claude Code fires, and REPORT
    * which those were and which it does not fire — the port's `install` returns
    * nothing, and a strategy that dropped the second list on the floor let an
@@ -158,7 +181,7 @@ export class EventTapHostClaude implements EventTapHost {
     const tapped = events.filter((e) => !skipped.includes(e));
     if (tapped.length === 0) {
       throw new Error(
-        `eventTap install: Claude Code fires no native event for ${skipped.join(', ')} — there is nothing to tap; nothing was written.`,
+        `eventTap install: ${this.skipReason(skipped.join(', '))} — there is nothing to tap; nothing was written.`,
       );
     }
     this.#sinkPath = sink.path;
