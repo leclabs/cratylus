@@ -85,8 +85,10 @@ reconcile of units that recorded different events carrying their union in time o
 
 A bound plan's records live on its line, the branch `plan/<plan>`. `plan bind` cuts it from the
 HEAD of the checkout it runs in into a worktree named `<main worktree path>.plan-<plan>` (or uses
-the worktree that already holds the branch), copies into it every record of the plan, its units and
-the notes blocking either that the checkout holds and the line lacks, and writes the bind there. While
+the worktree that already holds the branch), moves onto it every record of the plan, its units and
+the notes blocking either that the checkout holds — each is no longer in the checkout or its index
+afterwards, whether the line lacked it or already held it, unless the checkout's HEAD tracks it,
+since a committed record is never removed — and writes the bind there. While
 the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
 note write whose blocks name the plan or one of its units, before or after the write — is written
 into the line's worktree from whichever checkout runs it, and its output ends by naming the branch
