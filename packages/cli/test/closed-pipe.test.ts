@@ -15,12 +15,13 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const bin = join(packageRoot, 'dist', 'cratylus.js');
+const here = dirname(fileURLToPath(import.meta.url));
+const bin = join(here, '..', 'dist', 'cratylus.js');
 /** The repository root, where a cratylus.config.ts resolves for `project`. */
-const repoRoot = join(packageRoot, '..', '..');
+const repoRoot = requireRepoRoot(here);
 
 interface Ended {
   readonly code: number | null;
