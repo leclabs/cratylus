@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WHN0PDB3RG7HW0T12YZ8XV",
+    "entity": "01M3WHN0PDB3RG7HW0T12YZ8XT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "HostRuntimeConfigKept",
+    "time": "2026-10-01T20:14:19.341Z",
+    "reason": "a finding beside the unit's path",
+    "cause": "host-runtime-config-kept: carrying the host's keys made the unparseable case the one remaining way the host's content is replaced"
+  },
+  "payload": {
+    "title": "install replaces an unparseable runtime config unread",
+    "kind": "question",
+    "topic": "runtime config",
+    "body": "emitRuntimeConfig (packages/forge/src/deploy/runtime-config.ts, priorConfig) reads a runtime config that is not valid JSON, or not an object, as empty, so a deploy rewrites it whole and the host's bytes are lost; uninstall (removeRuntimeStanza) by contrast leaves such a file unread and says nothing. host-runtime-config-kept carried every key of a parseable config and left this as it was; whether a deploy should refuse, or report, an unreadable config is not decided.",
+    "blocks": []
+  }
+}
