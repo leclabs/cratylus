@@ -1,0 +1,135 @@
+{
+  "envelope": {
+    "id": "01M3V2XMM7GJKA80MEZTNT8GT7",
+    "entity": "01M3V159KE7F16TE190KK64237",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V2VTZTFVDG18GRKGQYER54"
+    ],
+    "author": "assayer",
+    "time": "2026-10-01T06:37:38.823Z",
+    "reason": "command line: the merge brings the unit up to the plan line without touching its forge files (identical to f189ab10) and keeps both chalk and commander in a lockfile a frozen offline install accepts; built from it, install, deploy and uninstall still write results to stdout and one-line diagnostics to stderr, refuse an unknown --harness or --kind and a missing render dir saying what to do, stay quiet by default, and name every write and removal outside the harness directory",
+    "cause": "re-assay of host-commands-output at b7823751 after it broke the whole at f189ab10 on a lockfile conflict"
+  },
+  "payload": {
+    "plan": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "spec": {
+      "name": "host-commands-output",
+      "intent": "Census @d8907e0c (design at d8907e0c, working tree clean); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. THE REGISTER every unit of plan command-line writes to (plan-owned, so the command reads as one tool): a result goes to stdout, and anything that is not the result (a failure, a warning, a note, a hint) goes to stderr. A failure is one stderr line `cratylus <command>: <what went wrong>; <what to do>`, and the exit code is non-zero; success exits 0. A capability refusal keeps its `cratylus: <capability>: …` form. A warning is a stderr line `cratylus <command>: warning: <message>`. There are no decorative glyphs (✓ ✗ ! • ·), no `===` banners and no blank spacer lines, and each line holds one fact. Colour marks only the failure or warning prefix. It is decided per stream: only when that stream is a terminal and NO_COLOR is unset (CI and FORCE_COLOR never turn it on for a pipe or a file). Per-file detail appears only under --verbose. \nRealize `command line`'s output conventions and footguns for the three commands that write to the host: install, uninstall and deploy. This unit also brings in chalk, the operator's choice for colour (retracted note 'the cli is cluttered, bloated and ugly'), and creates the one module that decides colour.\nAT CENSUS (all observed with packages/cli/dist built at d8907e0c, in temp HOMEs). (1) Colour comes from picocolors 1.1.1 in 9 command files (65 lines matching `pc.`). picocolors decides from stdout alone, and CI turns it on, so ANSI leaks: with stdout on a terminal and stderr redirected to a file, `cratylus uninstall 2>f` wrote `ESC[31m✗ESC[39m` into f; with `CI=1` and a pipe, the same escape went down the pipe. (2) `cratylus deploy --from <tree> --home <tmp>` printed 51 stdout lines: `=== LOCAL deploy -> … ===` banners, a `skill x -> path` line per file, and `NOTE --home '<tmp>' is a home dir -> deploying to …` three times, once per kind. (3) `cratylus uninstall --harness claude` after an install printed 57 lines, listing every one of the 54 removed paths. install keeps per-file detail behind --verbose (packages/forge/src/cli/index.ts:215), but uninstall and deploy have no --verbose. (4) `cratylus install -y` (and its --dry-run preview) writes the runtime config `~/.cratylus.json` (or $AGENT_RUNTIME_CONFIG) through runDeploy → emitRuntimeConfig (commands/deploy.ts:256), and neither the preview nor the summary names that file. The summary names settings.json only. (5) Failures and warnings are written as `✗ cratylus install: …`, `! <warning>` and `WARNING: …`: three markers for one kind of line.\nCHANGE. Add chalk to the pnpm catalog and to packages/forge/package.json. Leave picocolors in place: unit project-commands-output still imports it, and unit command-tree removes the dependency. Create packages/forge/src/cli/style.ts as the only forge module that imports chalk. It exports `say(line)` (a result line, written to stdout), and `warn(command, message)` and `fail(command, message)` (diagnostic lines in the register's form, written to stderr, with the prefix coloured only when stderr is a terminal and NO_COLOR is unset). It also exports whatever a caller needs to hand runDeploy's log and warn sinks. These names are the contract that units project-commands-output and command-tree build on. Move install.ts, install-prompts.ts (where it prints outside the @clack/prompts UI), uninstall.ts and commands/deploy.ts onto style.ts and the register. deploy and uninstall become quiet by default: a short summary of what was placed or removed, with counts and the next step. Their per-file lines appear only under a new `--verbose` flag, declared in cli/index.ts the way install's is. What uninstall leaves because the host placed or changed it is still reported by default, because the `uninstall` concept requires that. Any NOTE appears once. install's preview and summary name every file it writes outside the harness directory, the runtime config included. Keep: install's guided run as it is (questions, preview, confirmation, summary, `--verbose` detail), deploy --check's report lines and DEPLOY_CHECK_EXIT codes (the deploy-drift-notice hook relays them), the `uninstall` concept's leave-and-report behaviour, and the per-harness degradation warnings that `supported harness` requires (they become `warning:` lines). Out of scope: the cac→Commander port, flag-value validation such as --kind/--scope/--harness choices (unit command-tree), and the authoring commands (unit project-commands-output).",
+      "static": [
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/config/scaffold.ts",
+        "packages/forge/src/config/index.ts",
+        "packages/forge/src/project/index.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/cli/style.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/install-prompts.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/local.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/init.ts",
+        "packages/forge/src/deploy/scope.ts",
+        "packages/forge/src/deploy/bundle.ts",
+        "packages/forge/package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/forge/test/deploy/cli.test.ts",
+        "packages/forge/test/deploy/check.test.ts",
+        "packages/forge/test/deploy/local.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/deploy/runtime-bin-resolvable.test.ts",
+        "packages/forge/test/deploy/hooks.test.ts",
+        "packages/forge/test/deploy/prune.test.ts",
+        "packages/forge/test/deploy/init-harness-home.test.ts",
+        ".changeset/host-commands-output.md"
+      ],
+      "accept": [
+        "Colour is per stream. With packages built, run in a temp HOME: (a) `script -qc \"env -u NO_COLOR TERM=xterm cratylus uninstall 2>$T/err\" /dev/null` leaves no ESC byte in $T/err; (b) `env -u NO_COLOR TERM=xterm CI=1 cratylus uninstall 2>&1 | cat -v` shows no `^[`; (c) `script -qc \"env -u NO_COLOR TERM=xterm cratylus uninstall\" /dev/null | cat -v` shows `^[[` only around the `cratylus uninstall:` prefix; (d) the same with NO_COLOR=1 shows none. (a) and (b) fail at census.",
+        "`grep -rln \"from 'chalk'\" packages/forge/src` prints exactly packages/forge/src/cli/style.ts; `grep -n picocolors packages/forge/src/cli/commands/install.ts packages/forge/src/cli/commands/install-prompts.ts packages/forge/src/cli/commands/uninstall.ts packages/forge/src/cli/commands/deploy.ts` prints nothing; and none of those four files contains the glyphs ✓ ✗ • · or `===` in an output string.",
+        "Quiet by default. In a temp HOME, after `cratylus project --out $T/r` (built at the unit's base), `cratylus deploy --from $T/r --home $T` prints at most 6 stdout lines, none containing `===` or ` -> `, and `--home` is noted at most once. `cratylus deploy --from $T/r --home $T --verbose` prints the per-file lines. After `cratylus install --harness claude -y`, `cratylus uninstall --harness claude` prints no removed file path on stdout, but its counts; `--verbose` lists them; a file the host edited after install is still named by default. At census: 51 lines, 3 NOTEs, and 54 paths.",
+        "In a temp HOME with AGENT_RUNTIME_CONFIG=$T/rc.json, both `cratylus install --harness claude -y --dry-run` and `cratylus install --harness claude -y` print $T/rc.json on stdout, as the runtime config written, or that would be written (census: absent from both).",
+        "A render dir that deploy reads and that does not exist is refused, never read as an empty tree. In a temp HOME, after `cratylus project --out $T/r` and `cratylus deploy --from $T/r --home $T` has placed agents under $T/.claude/agents: `cratylus deploy --from $T/r --agents-dir $T/nope --home $T`, the same with `--kind agent`, `cratylus deploy --from $T/nope --home $T`, and `cratylus deploy --from $T/r --skills-dir $T/nope --kind skill --home $T` each exit non-zero with empty stdout and one stderr line beginning `cratylus deploy:` that names the missing path, and after them every file under $T/.claude is byte-identical to what the first deploy left (compare `find $T/.claude -type f -exec sha256sum {} +` before and after). `cratylus deploy --from $T/r --agents-dir $T/nope --kind skill --home $T` is not refused, since --kind skill does not read the agents dir. At 42718fdc, as its assay reports, the --agents-dir run exits 0 and prunes the agents the first deploy placed.",
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli/install.test.ts test/deploy` exits 0, and `pnpm --filter @cratylus/forge typecheck` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3V08TM6NB9PGN3HZ4R2VYYN",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3S9QXFG2PS1VAE275Y7PB7D",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "42718fdc1a429d21ea06f6b86e730c2fdf09e562",
+        "author": "HostCommandsOutput",
+        "time": "2026-10-01T06:24:15.719Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "42718fdc",
+        "verdict": "not-achieved",
+        "missing": [
+          "command line, every error says what went wrong and what to do: 'cratylus install --yes --harness nope' exits 1 with an uncaught Error and a stack trace instead of one 'cratylus install:' line naming the known harnesses to pass (locus: packages/forge/src/cli/commands/install.ts, runInstall)",
+          "command line, plain output one fact per line and no footguns: 'cratylus deploy --kind bogus …' is not refused, exits 0 and its summary reads 'deployed 2 undefineds to claude' (locus: packages/forge/src/cli/commands/deploy.ts, summarize/runDeploy; packages/forge/src/cli/index.ts, deploy --kind)",
+          "command line, nothing written where the consumer did not ask, said plainly: uninstall's default report says 'removed N items from claude (<home>/.claude)' while it also removes the persona commands in ~/.local/bin, the shared files in ~/.agents and the runtime config ~/.cratylus.json, naming them only under --verbose, where install and deploy name every write outside the harness directory by default (locus: packages/forge/src/cli/commands/uninstall.ts, print)"
+        ],
+        "author": "assayer",
+        "time": "2026-10-01T06:27:45.997Z"
+      },
+      {
+        "kind": "land",
+        "commit": "f189ab10f44f41cc728f6c94c5fe53ffb25f2c06",
+        "author": "HostCommandsOutput",
+        "time": "2026-10-01T06:34:18.038Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "f189ab10",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "assayer",
+        "time": "2026-10-01T06:34:59.033Z"
+      },
+      {
+        "kind": "broke",
+        "check": "merge conflict: pnpm-lock.yaml catalogs block (line ~174) — line adds commander ^14.0.3 (capability-commands), f189ab10 adds chalk ^5.4.0 at the same place; f189ab10 is based on 77c5b1ad and does not hold 1ca9c852",
+        "author": "CommandLineIntegrator",
+        "time": "2026-10-01T06:35:33.511Z"
+      },
+      {
+        "kind": "land",
+        "commit": "b7823751122e4e96aea3ab91aafdbe4889d7c9e6",
+        "author": "HostCommandsOutput",
+        "time": "2026-10-01T06:36:39.802Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b7823751",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "assayer",
+        "time": "2026-10-01T06:37:38.822Z"
+      }
+    ]
+  }
+}
