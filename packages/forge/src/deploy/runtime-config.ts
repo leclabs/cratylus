@@ -337,19 +337,53 @@ export function emitRuntimeConfig(
 }
 
 /**
- * The existing config as an object, empty when absent, corrupt or not an object.
- * Its harness stanzas are carried as found, not re-read: they are other deploys'
- * output, and this one has no business normalizing them.
+ * What is wrong with the runtime config at `path`, said as the tail of a sentence
+ * about the file; `undefined` when there is none or it reads as a JSON object. A file
+ * that is there and cannot be read so is the host's bytes: nothing here rewrites it.
+ */
+export function unreadableRuntimeConfig(path: string): string | undefined {
+  if (!existsSync(path)) return undefined;
+  let text: string;
+  try {
+    text = readFileSync(path, 'utf8');
+  } catch (e) {
+    return `cannot be read (${(e as Error).message})`;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return 'is not valid JSON';
+  }
+  return isPlain(parsed) ? undefined : 'is not a JSON object';
+}
+
+/** The runtime config at `path` is there and cannot be read as a JSON object. */
+export class UnreadableRuntimeConfigError extends Error {
+  constructor(
+    readonly path: string,
+    readonly why: string,
+  ) {
+    super(
+      `${path} ${why}; repair the file or move it away, then run the command again`,
+    );
+    this.name = 'UnreadableRuntimeConfigError';
+  }
+}
+
+/**
+ * The existing config as an object, empty when absent. One that is there and cannot be
+ * read as a JSON object is refused, never read as empty: writing over it would lose
+ * the host's bytes without a word. Its harness stanzas are carried as found, not
+ * re-read: they are other deploys' output, and this one has no business normalizing
+ * them.
  */
 function priorConfig(path: string): Plain {
-  if (!existsSync(path)) return {};
-  try {
-    const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
-    return isPlain(parsed) ? parsed : {};
-  } catch {
-    // A corrupt config must not wedge a deploy; the vocabulary is re-emitted.
-    return {};
-  }
+  const why = unreadableRuntimeConfig(path);
+  if (why !== undefined) throw new UnreadableRuntimeConfigError(path, why);
+  return existsSync(path)
+    ? (JSON.parse(readFileSync(path, 'utf8')) as Plain)
+    : {};
 }
 
 /** What an uninstall of one harness does to a runtime config. */
