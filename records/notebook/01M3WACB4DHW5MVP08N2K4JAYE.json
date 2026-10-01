@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WACB4DHW5MVP08N2K4JAYE",
+    "entity": "01M3NMF45T3ZE0GPVXZJB5AYYJ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NMF45T3ZE0GPVXZJB5AYYK"
+    ],
+    "author": "GroundDocuments",
+    "time": "2026-10-01T18:07:15.085Z",
+    "reason": "ARCHITECTURE's runtime section now says the runtime knows no corpus and knows no harness beyond the event tap's Claude strategy",
+    "cause": "unit ground-documents of docs-and-persona"
+  },
+  "payload": null
+}

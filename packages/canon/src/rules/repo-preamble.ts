@@ -28,7 +28,7 @@ export const repoPreamble: RuleCell = {
   refs: [],
   content: `# AGENTS
 
-**CRITICAL INVARIENT:** You **MUST Read** these documents upon session-start:\\*\\*
+**CRITICAL INVARIANT:** You **MUST Read** these documents upon session-start:
 
 - [\`CANON.md\`](./CANON.md) — **overview and primer**
 - [\`CRATYLISM\`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)

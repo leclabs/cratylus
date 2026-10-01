@@ -94,7 +94,12 @@ Each is reached through its **port**. The event tap's Claude strategy is the cas
 interchangeable implementations: it proxies Claude's own hooks from behind the event tap's port,
 where another harness's strategy would stand in its place.
 
-It ships **with** the agent and runs on the host. It knows no harness and no corpus.
+It ships **with** the agent and runs on the host. It knows no corpus: the corpus's event vocabulary and
+each capability's configuration reach it in the host config that deploy writes.
+
+It knows no harness beyond the event tap's Claude strategy, which writes Claude's settings format, and
+the tap refuses a caller whose harness has no strategy of its own; `design`, `plan` and `note` are
+repository-scoped and know no harness at all.
 
 ### `forge` — projection
 
@@ -147,9 +152,9 @@ the generated shims that invoke it spell one name.
 
 **What the merge costs, stated because it is a cost.** A host that only runs agents now installs the
 projector and the corpus along with the runtime. `await import()` cannot defer that: dynamic import
-defers **evaluation**, never **installation**. The bill is paid where it is visible — the e2e gate
-lists the full dependency closure it installs — and it buys a consumer one install instead of a
-seam they never asked about.
+defers **evaluation**, never **installation**. The bill is paid where it is visible — the `cratylus`
+manifest lists `canon`, `forge` and `runtime` as its dependencies — and it buys a consumer one install
+instead of a seam they never asked about.
 
 ## The north star
 
@@ -180,92 +185,38 @@ The load-bearing properties, in order of how much they matter:
 
 1. **Meaning and mechanism never reference each other.** `canon` and `runtime` share no
    edge in either direction. A skill names a capability; it does not name an implementation.
-2. **Nothing depends on projection.** Forge is a leaf in the direction that matters. Canon reaches it
-   only as a **build tool for canon's own scripts** — never from a cell.
+2. **Nothing depends on projection but the consumer entry.** Forge is a leaf in the direction that
+   matters: `cli`, the composition root, imports it to build the command, and canon reaches it only as
+   a **build tool for canon's own scripts** — never from a cell.
 3. **Canon reaches forge as DATA, not as a dependency.** The corpus is passed to the projector as a
    plugin. The dotted edge is a flow, not an import.
 4. **Runtime depends on nothing.** It is the deployed base, and everything corpus-specific reaches it
    as configuration the projection emitted.
 
-## Where the source diverges today
+## How the properties are held
 
-Stated honestly, because a north star that pretends to be a description is useless.
+The four properties are enforced by `packages/canon/test/architecture.test.ts`, which reads every
+workspace package's real import graph. Its shrink-only pin set `ARCHITECTURE_RATCHET` is empty, so all
+four hold with no exception, and a pin that stopped naming a live breach would fail the suite.
 
-**This table is a REPORT, and it is the only part of this document that is.** Everything above it —
-the north star and the four properties — is ground: never revised to match what the source currently
-does, and where the two disagree the source is wrong. The table's function is the opposite. It states
-where the source stands _today_, so it is rewritten whenever the source moves, and a struck row is a
-repair that landed. Nothing above the table changes because the source changed.
+That gate holds **import-graph edges and nothing else**. What an edge cannot show needs a gate of its
+own, and has one only where one was written:
 
-| divergence                                                                                     | evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | held by                                                                                                                                                                                                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~**`schema` imports `runtime`**~~ — **REPAIRED 2026-08-05**                                   | Schema took `RuntimePlugin` only to derive `keyof Omit<…,'name'>` — a **vocabulary** obtained by reaching into a **shape**. Schema now states only that a capability has a name; `canon/manifest.ts` declares the members. Ports never moved, edge gone, projection unmoved, and the cell check got _stronger_                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `architecture.test.ts` — _"every other edge is one the architecture permits"_. `schema → runtime` appears in no `PERMITTED` pair, so the edge's return fails that leg                                                                                                                                                                                                                             |
-| ~~**canon's ROOT imports the projector**~~ — **REPAIRED 2026-08-05**                           | `canon/src/index.ts` took `defineAgentPlugin` from `@cratylus/forge/resolve` — the corpus reaching into the projector for its own authoring surface, and the last breach of **property 2**. `AgentPlugin` never depended on forge: it imported one type from the schema and the factory is `(plugin) => plugin`. Moved to `@cratylus/schema`; **property 2 now holds with no exceptions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `architecture.test.ts` — the property-2 leg, plus the exact count _"canon root modules importing the projector"_ = 0                                                                                                                                                                                                                                                                              |
-| ~~**nothing is published yet** — every version is `0.0.0`~~ — **CLOSED 2026-08-06**            | five packages are on npm at `0.1.1` — `forge`, `invoke`, `memory`, `runtime`, `schema` (`npm view @cratylus/<pkg> version`) — shipped by the changesets Release PRs `36f988b7` (#7) and `454f18f3` (#8); `npm view @cratylus/forge time --json` dates `0.1.0` to `2026-08-06T10:40:54Z` and `0.1.1` to `2026-08-06T11:05:44Z`. `canon` was **not** published at the time of this observation (`npm view @cratylus/canon` → 404) and its manifest read `0.0.0`, as private `tooling`'s still does. **Both halves of that sentence have since expired** and the row is left standing with the correction rather than rewritten: `@cratylus/canon@0.1.0` is on the registry and is a declared runtime dependency of `cratylus`, so the command cannot resolve without it — and `@cratylus/invoke`, named above, was renamed `cratylus` on 2026-08-07 (`bd88ef9b`), leaving the scoped name deprecated on the registry and absent from this repo. A dated observation that later reads as a standing claim is how a required package came within one command of being deprecated as abandoned. **Names are no longer free.** Why `canon` was held back is not recorded anywhere this document can cite — the structure is stated, the motive is not inferred | **nothing** — but not for the reason this column used to give. It said no test reads a `version`; `version-single-home.test.ts` does, and did when that was written. What it holds is that the **manifest is the version's sole home** — never what the version IS or whether it shipped. `publishConfig` is read by nothing outside the six manifests declaring it (`git grep -l publishConfig`) |
-| ~~**canon's own most structural module is still `src/anatomy.ts`**~~ — **REPAIRED 2026-08-05** | the module is `src/manifest.ts`. This row's count has been wrong twice over: `154` was quoted forward and never measured, and the `169 src + 6 test` that replaced it does not sum to its own `177`. Measured with `git grep -lE "from '[^']*manifest\.js'" -- packages/canon/src packages/canon/test`: **171 `src` + 6 `test` = 177**, at `9dad9455`, the commit that wrote the row                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | the module PATH only, by named anchor in two gates: `architecture.test.ts` expects the edge `canon/manifest.ts → schema`, and `event-vocabulary.test.ts` reads `canon/src/manifest.ts` and requires `CANONICAL_EVENTS` in it. Nothing forbids the retired sign returning elsewhere                                                                                                                |
-| ~~**a canon cell names the runtime's binary**~~ — **REPAIRED 2026-08-05**                      | the cell now names a FACT, not a value: `workers[].content` carries `{{fact:runtime-bin}}` and the projector substitutes at emission. The byte-anchor was not weakened — its subject moved from the cell's literal to the resolved bytes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `architecture.test.ts`, the property-1 count (`canon → runtime` = 0); and `bin-name-single-home.test.ts` — no consumer spells the name, every hook artifact defaults `$MEMORY_BIN` to `CLI_BIN`, no emitted artifact ships an unresolved placeholder                                                                                                                                              |
-| ~~**the lifecycle vocabulary is declared twice**~~ — **REPAIRED `2b4a87d0`, 2026-08-05**       | and the row was wrong on its own terms about _which_ two sites: the duplicate was runtime ↔ **schema**, never runtime ↔ forge, as `runtime/src/events.ts`'s own header records. 28 members in each copy, identical as sets and in order, agreeing only because the two consumer sets were disjoint. Both copies are gone — that module now declares `export type EventName = string` and nothing else, and canon's `manifest.ts` is the sole home (`CANONICAL_EVENTS`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `event-vocabulary.test.ts`, all three legs: a sole-declaring-site census over `packages/*/src`, adapter-key conformance against canon's tuple, and a deploy→runtime config round trip through a real file                                                                                                                                                                                         |
-| ~~**property 1 is breached, and a GATE PINS THE BREACH**~~ — **REPAIRED 2026-08-05**           | the pin is gone and `ARCHITECTURE_RATCHET` is **empty**. Property 1 holds with no exceptions. The counter-gate was amended first, as this document required, then the import was deleted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `architecture.test.ts` — the property-1 leg, its exact count, and the shrink-only leg, which is what makes an _empty_ ratchet mean something rather than nothing                                                                                                                                                                                                                                  |
-| ~~**`FIXTURE_ANATOMY`**~~ — **REPAIRED 2026-08-05**                                            | now `FIXTURE_MANIFEST`. `git grep -o FIXTURE_MANIFEST -- packages` gives **75 occurrences across 17 files** at `9dad9455` — not the `~110` this row claimed, and it was already 75 at the very commit that WROTE `~110`, so that figure was never measured at all                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | **nothing.** TypeScript holds the symbol's internal consistency whatever it is called; no gate prohibits the retired sign from returning                                                                                                                                                                                                                                                          |
+- the lifecycle vocabulary has one home, `CANONICAL_EVENTS` in canon's `manifest.ts`. Two of its three
+  consumers are reached by channels no compiler checks — forge's per-harness maps key over open
+  strings, and the runtime reads a host config, which is bytes — so `event-vocabulary.test.ts` holds
+  them.
+- a package's version has one home, its manifest. `version-single-home.test.ts` holds **where** a
+  version lives, never **what** it is; whether a version is published is a fact about npm that nothing
+  here asks.
 
-**Property 1 held on 2026-08-05, and the ratchet is empty.** It was the highest-ranked property and
-the hardest: a test REQUIRED the failure, so repairing the architecture turned the suite red, and
-both escapes were closed on purpose — the cell had to CARRY the bin's value and was forbidden to
-spell it. The counter-gate was amended first, exactly as this document demanded, and the replacement
-leg is strictly stronger: it sweeps every emitted hook artifact rather than one hand-named file.
+**A property stated only in prose is a property that drifts silently.** A claim in this document that no
+gate holds is one to re-check against the tree before it is trusted. A count quoted here names its
+command and the commit it was taken at, because a bare count of the live tree is true on the day it is
+written and unowned afterwards.
 
-**The trade is recorded, because it is a trade.** A cell reaching the runtime became a build script
-reaching the projector — licensed by property 2, which permits canon's build steps to use forge as a
-tool. Canon's licensed build scripts went 4 → 5.
-
-**What the third column says, and what it does not.** The four properties are enforced by
-`canon/test/architecture.test.ts`, which reads every workspace package's real import graph. That gate
-holds **import-graph edges and nothing else**, so it reaches five of the eight rows above and no
-more. Its shrink-only pin set `ARCHITECTURE_RATCHET` is **empty**, which means no row above is a pin.
-This paragraph replaces one that said every row here was a live ratchet entry, and so failed the
-suite the day it was repaired; that is a property of pins, and there have been none since 2026-08-05.
-Where it leaves the rest:
-
-- a **DRY breach across two packages** is not an edge. The lifecycle-vocabulary row was one, and the
-  gate that holds it had to be written separately — three legs, two of which the type system cannot
-  reach at all, because an adapter map keys over open strings and a host config is bytes.
-- a **rename** is not an edge either. `src/anatomy.ts → src/manifest.ts` survives only because two
-  gates happen to name the new path out loud, which is an anchor rather than a rule; and
-  `FIXTURE_ANATOMY → FIXTURE_MANIFEST` is held by nothing, because the compiler keeps a symbol's
-  uses consistent with its declaration whatever that declaration is called.
-- **nothing is published yet** was held by nothing at all, and it is the second row to prove what
-  that costs: it went false at `2026-08-06T10:40:54Z`, when the first publish landed, and read as
-  live for the rest of that day. **No row in this table is unstruck now.**
-
-Two rows held by nothing is the honest count, not a gap to be talked away. This table has now proved
-twice what an unheld row does. The lifecycle-vocabulary row asserted a condition that had been
-repaired and gated at `2b4a87d0`, and it read as live for a day beneath a sentence claiming every row
-here was a live ratchet entry. It was not one, no ratchet entry existed, and the claimed guard did
-not cover the class. The publish row failed the same way in the opposite direction — it claimed a
-divergence that had already closed — and no gate could report it, because the one test that reads a
-`version` holds **where the version lives**, never **what it is**, and publish status is a fact about
-npm that no gate here asks for. **A property stated only in prose is a property that drifts
-silently** — the lesson this section already carried, applied to the section itself, twice.
-
-**A third instance surfaced in the same pass, and it is the worst shape of the three.** The row's
-own evidence column asserted that _no test reads a `version`_ — false on the day it was written, with
-`version-single-home.test.ts` sitting in the suite. That is a **false premise beneath a true
-conclusion**: the row's verdict (_held by nothing_) was correct, so nothing about the outcome looked
-wrong, and the wrong reason survived every reading. It was corrected only by re-running the claim
-rather than re-reading it.
-
-**Every count in the evidence column names its command and the commit it was taken at.** A bare count
-of the live tree is the same defect one level down: it is true on the day it is written and unowned
-afterwards. This table has carried three wrong ones — a `~110` that was 75 at the very commit that
-wrote it, a `154` that was 177, and a `169 + 6` that does not sum to the `177` printed beside it. A
-measurement anchored to a commit stays true; re-run the command for today's figure.
-
-Canon's **build scripts** importing forge is _not_ a divergence — those are canon's build steps using
-the projector as a tool, which is what a tool is for. The divergence is a **cell** importing it. Keep
+Canon's **build scripts** importing forge is _not_ a breach — those are canon's build steps using the
+projector as a tool, which is what a tool is for. The breach would be a **cell** importing it. Keep
 that distinction: it is the difference between a corpus that is built by forge and a corpus that is
-defined by it. There are five such scripts — the count `architecture.test.ts` pins — and
-`git grep -lE "from '@cratylus/forge" -- packages/canon/tooling` names them. That command read
-`packages/canon/src` until 2026-08-06 and returned **0**, because the scripts moved to `tooling/`, a
-sibling of `src/` rather than a child. The gate did not drift with it — `architecture.test.ts` scans
-both roots and still pins 5 — so this was a stale command beside a live count, which is the harder
-failure to see: the number stayed right while the way to check it stopped working.
+defined by it. `architecture.test.ts` pins the number of such scripts, and
+`git grep -lE "from '@cratylus/forge" -- packages/canon/tooling` names them.

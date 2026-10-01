@@ -7,7 +7,7 @@ scope  ≜ pipeline realizing MODEL invariants + boundary projections rendering 
 ```
 
 ```
-{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, α, intent, decode_cold, core, ir} ⊂ MODEL
+{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, α, intent, decode_cold, core, terminology, ir} ⊂ MODEL
 canon ≜ {c:cell ∣ accept(c)}
 valid(canon) ⇒ deterministic(deploy) ∧ ∀stage∈pipeline: preserves(stage, MODEL-invariants)
 
@@ -17,16 +17,22 @@ intake     : yield(Execution) → discover ⟨the feedback edge⟩ ; ∄ intake 
 author     : Intent → cell
 normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
-signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned
-canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w)                 -- formal blocks ARE the symbolic-σ* regression suite
+             ⟨the cold-decode oracle decides signs only for the corpus's core agent dimension names and values (MODEL's terminology) ; every other term is the industry's own, used as the industry understands it, ∉ verify ∧ ∉ the oracle⟩
+             ⟨nothing cratylus ships holds a consumer's own surfaces to it⟩
+signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned ; w a symbol this corpus's own skills declare
+canonizable(skill) ⇒ ∀ w ∈ declared(skill) : signify-verify(w)                    -- skill of THIS corpus ; one obligation per declared symbol ; the gate routes RECORDED probe readouts to pass ∨ fail, and a symbol with none is owed, ¬ passed
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
 Role       ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED ∧ PARTIAL : the EXPECTATIONS attached to a position ; made OF dimension values ∴ ¬ itself a dimension — the `role` dimension carries its SIGN⟩
+             ⟨∧ the identity of its generic holder : description · archetype · provenance.mark⟩
+generic-holder ≜ the agent NAMED for its Role (architect · planner · implementer · assayer · integrator) ⟨carries nothing beyond the Role : its description, archetype and mark are the Role's ; declares ∅⟩
+persona    ≜ an agent named as an individual (mav · nico · kino) ⟨holds one Role and DECLARES its residue over it : its own description, archetype and mark at least, any dimension value besides⟩
 holds      : agent → Role ⟨SINGULAR : a Role is the contract a PEER dispatches against ∧ ∄ dispatcher that can reason about a union of Roles⟩
-declares   : agent → (DimensionName ⇸ ℘(fragment)) ⟨what the HOLDER states over the position ; ¬ bounded in size⟩
+declares   : agent → (DimensionName ⇸ ℘(fragment)) ⟨what a persona states over the Role : its residue ; ¬ bounded in size ; ∅ for a generic-holder⟩
 select     : agent → (DimensionName ⇸ ℘(fragment)) ; select(a) = holds(a) ⊕ declares(a)   -- the fold runs @ select ∴ the emitted Target is FLAT
 ⊕ ⊨ arity @ manifest ⟨set ⇒ holds(a) ∪ declares(a) ⟨EXTEND⟩ ; scalar ⇒ declares(a) if the key is STATED ⟨OVERRIDE⟩, else holds(a)⟩
-role ∉ dom(declares) ⇒ contract(holds(a)) ¬ overridable ⟨∄ field a holder may state ∴ inviolable BY CONSTRUCTION, ¬ by a marking⟩
-provenance.mark ∉ dom(⊕) ⟨instance-bound @ create-agent : the HOLDER, ¬ the position⟩
+role ∉ dom(declares) ⇒ contract(holds(a)) ¬ overridable ⟨∄ field a persona may state ∴ inviolable BY CONSTRUCTION, ¬ by a marking⟩
+mark ∉ dom(⊕) ⟨identity, ¬ folded : a generic-holder's mark is its Role's, a persona's is its own⟩
+             ⟨the fold REFUSES a persona with no archetype or mark of its own, a persona whose mark is its Role's, and a Role-named agent that declares anything beyond its Role⟩
 compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
 realize    : cell × harness-adapter ⇀ harness-mechanism ⟨realizes MODEL's `mechanism` ; keyed on the CELL, ¬ on ActivationMode alone⟩
              ⟨reads activation(c) ∧ — for an enforcing f — events(f) ∧ substrate(f) : a mode cannot see which Event fires⟩
