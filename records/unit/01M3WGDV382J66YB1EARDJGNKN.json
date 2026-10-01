@@ -1,0 +1,125 @@
+{
+  "envelope": {
+    "id": "01M3WGDV382J66YB1EARDJGNKN",
+    "entity": "01M3WFR4JM0JD5PZYVYBSB5FMY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WGD78GRSHP114GABAS32S1"
+    ],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T19:52:55.656Z",
+    "reason": "the integrator recorded it whole after an achieved assay",
+    "cause": "whole closed-plan-route of notebook-gaps"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "closed-plan-route",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize architect role in the texts that state it: what reaches the architect from below is the assay verdict on each unit, the integrator's report of a unit that broke the whole, the names of units ready to start or waiting on a route (which the planner reads from each unit's ledger, so a lost session resumes from the ledger and not from memory), and the planner's report that a plan has closed; it routes a closed plan to the integrator, which makes its line whole and asks for release. Three texts state this and none does whole at 8d0a7283. (1) The contract, the `architect` role value in packages/canon/src/dimensions/role/architect.ts:17-25, the text the architect acts from and the purview guard reads as the law (note 'the architect's role contract names no closed-plan route'): reads⟨intent · C · note · verdict · broke-the-whole · ready-names⟩ has no closed-plan report and ready-names covers only units ready to start, not those waiting on a route; route(name ↾ unit-of-loop) routes ¬achieved ∨ broke-the-whole, achieved and ready, and no closed plan. State, in the value's own notation, the names of units ready to start or waiting on a route as the planner reads them from the ledger, the planner's closed-plan report among the reads, and a closed plan ↦ integrator ⟨line made whole · release asked of the operator⟩ among the routes. (2) The architect role cell's archetype (packages/canon/src/roles/architect.ts, `archetype`) enumerates the architect's routes and leaves out the closed plan to the integrator, so it is narrower than the contract (note 'the close report has no sender and no restatement'): make it name that route too, changing nothing else in the cell. (3) The sender: the planner role value (packages/canon/src/dimensions/role/planner.ts:32) returns only ⟨plan-name ∧ ready-unit-names⟩, so nothing states that the planner reports a closed plan to the architect (same note): state, in that value's notation, that on close(P) it returns the report that P has closed, by name, and that the names it returns are units ready to start or waiting on a route; change no other line of it. The purview rubric (packages/canon/src/hooks/purview-guardrail.ts:223) already passes the route and the deliver skill (packages/canon/src/skills/deliver/skill.ts:119-121) already states it; neither changes. The agents' description fields and mav/kino/nico are not this unit's. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/roles/planner.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        ".changeset/closed-plan-route.md"
+      ],
+      "accept": [
+        "the reads⟨…⟩ on the first line of the `architect` value names the planner's closed-plan report and units waiting on a route beside those ready to start, and its route(…) clause routes a closed plan to the integrator; at 8d0a7283 none holds (the value's only 'clos' is amend's 'plan-closes')",
+        "the `archetype` of architectRole in packages/canon/src/roles/architect.ts names routing a closed plan to the integrator; at 8d0a7283 it does not",
+        "the `planner` role value's returns line names the report that a plan has closed; at 8d0a7283 it returns only ⟨plan-name ∧ ready-unit-names⟩",
+        "`git diff <the commit the unit's work starts from> --stat` lists no source file but packages/canon/src/dimensions/role/architect.ts, packages/canon/src/roles/architect.ts and packages/canon/src/dimensions/role/planner.ts",
+        "in packages/canon, `pnpm exec vitest run test/purview-guardrail.test.ts test/persona.test.ts` exits 0 and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3RFJ0M8RK6K703A30SP8QMC",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "03bdff1723555c8b091865ca8df0444898b2de81",
+        "author": "ClosedPlanRouteContract",
+        "time": "2026-10-01T19:43:05.964Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "03bdff17",
+        "verdict": "not-achieved",
+        "missing": [
+          "architect role: among what reaches the architect from below, the names of units waiting on a route, which the planner reads from each unit's ledger so a lost session resumes from the ledger and not from memory; the role's contract still names only units ready to start (packages/canon/src/dimensions/role/architect.ts, the reads arrow and the ready-names definition)"
+        ],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T19:46:33.164Z"
+      },
+      {
+        "kind": "land",
+        "commit": "0253ce759c430d7a57d4c4021c424d0f1780ffc3",
+        "author": "ClosedPlanRouteContract",
+        "time": "2026-10-01T19:47:55.773Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "0253ce75",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T19:48:23.189Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm test → @cratylus/canon test/reader-density.test.ts › RESIDUE gate (AC-RESIDUE) › every deployed σ* payload is admissible: dimensions/role/architect.ts modifier ⟨line made whole · release asked of the operator⟩ carries free-NL connectives [of·the]",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T19:49:54.658Z"
+      },
+      {
+        "kind": "land",
+        "commit": "3bf7fbdbadf8164c6f29d9c906a7bb0062f2acb8",
+        "author": "ClosedPlanRouteContract",
+        "time": "2026-10-01T19:51:08.400Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "3bf7fbdb",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T19:51:32.897Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "37932e5d",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T19:52:35.344Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WGHF57RZXDTXNXZDHQHGKE",
+    "entity": "01M3WGHF57RZXDTXNXZDHQHGKD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayGaps4",
+    "time": "2026-10-01T19:54:54.503Z",
+    "reason": "finding beside the unit claude-act-natives, kept out of its verdict",
+    "cause": "assay of 2a51381c (claude-act-natives of notebook-gaps)"
+  },
+  "payload": {
+    "title": "a names-only claude stanza misreports act events as unfired",
+    "kind": "idea",
+    "topic": "event-tap",
+    "body": "Observed at 2a51381c: where the host's claude stanza was written by a deploy before act bindings (native names, no acts), cratylus eventTap install --events operator.consult.pre skips the event with 'Claude Code fires no native event for it', exit 0. Claude Code does fire it (PreToolUse on AskUserQuestion); what is missing is the stanza's binding, and the deploy that writes it (cratylus install --harness claude, or cratylus deploy --harness claude) goes unnamed. The command line's rule that every error says what went wrong and what to do is not met on that path.",
+    "blocks": []
+  }
+}
