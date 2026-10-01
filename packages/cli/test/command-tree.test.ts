@@ -112,7 +112,10 @@ describe('the top-level help lists every command and capability', () => {
     expect(at('Commands')).toBeGreaterThan(-1);
     expect(at('Commands')).toBeLessThan(at('Capabilities'));
     expect(at('Capabilities')).toBeLessThan(at('Corpus authoring'));
-    expect(listed(out, 'Commands').slice(0, 2)).toEqual(['install', 'uninstall']);
+    expect(listed(out, 'Commands').slice(0, 2)).toEqual([
+      'install',
+      'uninstall',
+    ]);
   });
 
   it('holds no blank spacer line and wraps no line', async () => {
