@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TQCCBMY40PMZTG76GTZ309",
+    "entity": "01M3TQCCBMY40PMZTG76GTZ308",
+    "operation": "create",
+    "supersedes": [],
+    "author": "TurnEndPlanner",
+    "time": "2026-10-01T03:15:58.964Z",
+    "reason": "realize the turn-end exception of enforcement scope as amended 2026-10-01T01:24",
+    "cause": "shard enforcement scope handed to the planner after its amendment"
+  },
+  "payload": {
+    "name": "turn-end-loop",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "proposed"
+  }
+}
