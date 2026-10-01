@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WQPP3ME5G6Z0ST32C7AD0Q",
+    "entity": "01M3WQPP3ME5G6Z0ST32C7AD0P",
+    "operation": "create",
+    "supersedes": [],
+    "author": "OmpImplementerWorktree",
+    "time": "2026-10-01T22:00:05.492Z",
+    "reason": "finding beside the path of omp-implementer-worktree of remaining-gaps",
+    "cause": "omp isolation measured for omp-implementer-worktree of remaining-gaps"
+  },
+  "payload": {
+    "title": "omp isolated copy can run from the line only while the dispatcher's checkout is clean",
+    "kind": "idea",
+    "topic": "omp implementer worktree",
+    "body": "Measured on omp 18.4.9 (temp repo, PI_CODING_AGENT_DIR with task.isolation enabled, apply false, merge branch): a dispatcher tool_call handler can revise a task's input to isolated:true; the copy is cut from the dispatcher's checkout (HEAD ab0a949 = main, not the line tip 4b82bc1) and no ref can be given; a session_start handler in the sub session (ctx.agent.kind==='sub', ctx.cwd the copy) can 'git checkout --detach <line>' inside the copy, the copy sees the source refs. With a CLEAN dispatcher checkout omp then fetches the agent's own commits to omp/task/<id> in the parent repo (d80409c, line IS ancestor, main git status unchanged). With a DIRTY dispatcher checkout (uncommitted or untracked files) omp replays the agent's commits against the baseline WIP onto the dispatcher's HEAD: the branch had no line history and the agent's hashes were lost. A realization would need host settings task.isolation.enabled true, apply false, merge branch (global, changing the operator's own isolated tasks), a way to hand the line tip to the child, and a clean-checkout guard on dispatch. omp-implementer-worktree of remaining-gaps did not build it and states the shortfall instead.",
+    "blocks": []
+  }
+}

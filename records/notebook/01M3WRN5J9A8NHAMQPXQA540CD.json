@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WRN5J9A8NHAMQPXQA540CD",
+    "entity": "01M3WQPP3ME5G6Z0ST32C7AD0P",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WQPP3ME5G6Z0ST32C7AD0Q"
+    ],
+    "author": "OmpImplementerWorktree",
+    "time": "2026-10-01T22:16:44.361Z",
+    "reason": "the unit now builds the isolation and keeps the line move as the remainder",
+    "cause": "assay not-achieved on bb861f06"
+  },
+  "payload": {
+    "title": "omp isolated copy can run from the line only while the dispatcher's checkout is clean",
+    "kind": "idea",
+    "topic": "omp implementer worktree",
+    "body": "Built by omp-implementer-worktree of remaining-gaps: a dispatcher tool_call handler sets isolated:true on implementer spawns and install records task.isolation.enabled true, apply false, merge branch; the copy is cut from the dispatcher's HEAD (measured on omp 18.4.9: HEAD ab0a949 = main, not the line tip 4b82bc1; no ref can be given). NOT built: running the copy from the line. Measured possible while the dispatcher's checkout is CLEAN: a session_start handler in the sub session (ctx.agent.kind==='sub', ctx.cwd the copy) can 'git checkout --detach <line>' in the copy (it sees the source refs), after which omp fetches the agent's own commits to omp/task/<id> (line IS ancestor, main git status unchanged). With a DIRTY dispatcher checkout (uncommitted or untracked files) omp replays the agent's commits against the baseline WIP onto the dispatcher's HEAD: the branch lost the line history and the agent's hashes. Still needed for that: a way to hand the line tip to the child (the copy's cwd is not the dispatcher's, so cratylus plan show there may not find the plan) and a clean-checkout guard at dispatch.",
+    "blocks": []
+  }
+}
