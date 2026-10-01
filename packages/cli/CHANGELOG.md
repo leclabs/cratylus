@@ -1,5 +1,18 @@
 # @cratylus/invoke
 
+## 0.10.1
+
+### Patch Changes
+
+- b5735e0: The README that ships with the package now puts what a consumer does first: install the command, run the guided install, start an agent by its name, take it away again. The explanatory sections (the guided install, the status line badge, where Claude Code and omp differ, model routing, the host runtime config, uninstall) stand above the command reference, which is unchanged in what it lists. No behaviour changes.
+- Updated dependencies [be25412]
+- Updated dependencies [b4bd37b]
+- Updated dependencies [e79b4b0]
+- Updated dependencies [b3cb992]
+  - @cratylus/canon@0.13.1
+  - @cratylus/forge@0.14.1
+  - @cratylus/runtime@0.9.2
+
 ## 0.10.0
 
 ### Minor Changes
