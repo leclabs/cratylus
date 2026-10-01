@@ -100,11 +100,19 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   the stop, because a guardrail that wedges work on its own flakiness is worse than a missed
   block. But an enrolled scope whose judge could not answer announces itself via `dark` and
   records a DARK row in the verdict log: silence is reserved for NOT ENROLLED.
-- **A REFUSAL HOLDS.** Every turn is judged, a turn identical to a refused one included, and a
-  BLOCK blocks the stop however many blocks came before it. Nothing remembers a refusal to wave
-  a retry through and nothing counts blocks to stop blocking: the block count rides in the reason
-  as a count, and no turn is allowed through because of how many times it was refused. What ends
-  a run of blocks is a turn the judge passes.
+- **A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP.** Every turn is judged,
+  a turn identical to a refused one included, and a BLOCK blocks the stop. The turn end is the one
+  exception to a refused act staying refused: refusing it holds back no effect, it only makes the
+  agent redo its turn. A stop that follows a block of this guard (`stop_hook_active`) continues a
+  run of blocks; a stop that follows none starts a new run at 0. When the judge's BLOCK survives
+  the evidence checks and the run already holds a block and this turn is byte-identical to the one
+  last blocked in it, or the run already holds 3 blocks, the stop is let through and the guard
+  says so: `STANCE GUARDRAIL` names the stop as let through UNRESOLVED, the finding standing, with
+  the judge's reason. A run that cannot be counted (its record unreadable or the state dir
+  unwritable) lets a following stop through the same way, because a bound that cannot be counted
+  cannot hold; a fresh stop there still blocks. The 3 is a constant in the cell, and no
+  environment variable sets it. The bound is on one stop, never on the session: the next stop that
+  follows no block is judged and blocked like any other.
 - **A JUDGE IS SENT ONLY WHAT ITS ONE DECISION NEEDS.** The rubric is the stance test in a few
   sentences over the contract it applies to (the `handoff` value, quoted from its cell) and the
   output block, at most 2 KB. The Stop payload is facts under plain labels and no sentence
