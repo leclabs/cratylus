@@ -194,6 +194,16 @@ export function ensureBadgeStatusLine(
   if (command === workerCommand) {
     return { path, state: 'kept', wrote: false, placed: command, host: null };
   }
+  if (command.startsWith(`${workerCommand} `)) {
+    const wrapped = shellUnquote(command.slice(workerCommand.length + 1));
+    return {
+      path,
+      state: 'kept',
+      wrote: false,
+      placed: command,
+      ...(wrapped !== undefined ? { host: wrapped } : {}),
+    };
+  }
   // A line install itself placed and recorded under another spelling of the worker —
   // the command a former release wrote — is ours and not the host's: it is made the
   // current worker again, over the same host command, and never wrapped.
@@ -209,16 +219,6 @@ export function ensureBadgeStatusLine(
       moved,
       recorded.host,
     );
-  }
-  if (command.startsWith(`${workerCommand} `)) {
-    const wrapped = shellUnquote(command.slice(workerCommand.length + 1));
-    return {
-      path,
-      state: 'kept',
-      wrote: false,
-      placed: command,
-      ...(wrapped !== undefined ? { host: wrapped } : {}),
-    };
   }
   const placed = `${workerCommand} ${shellQuote(command)}`;
   return write(

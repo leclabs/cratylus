@@ -184,6 +184,24 @@ describe('ensureBadgeStatusLine', () => {
     });
   });
 
+  it('leaves a line it recorded placing, current and wrapped or bare, as it is: kept, nothing written', () => {
+    const hostCmd = 'printf host';
+    const NOW =
+      'sh "${CLAUDE_HOME:-$HOME/.claude}/personas/_session/worker.sh"';
+    for (const placed of [NOW, `${NOW} 'printf host'`]) {
+      const f = file(
+        'settings.json',
+        `${JSON.stringify({ statusLine: { type: 'command', command: placed } }, null, 2)}\n`,
+      );
+      const before = f.read();
+      const r = ensureBadgeStatusLine(f.path, NOW, {
+        recorded: { placed, host: placed === NOW ? null : hostCmd },
+      });
+      expect(r).toMatchObject({ state: 'kept', wrote: false });
+      expect(f.read()).toBe(before);
+    }
+  });
+
   it('keeps a hand-written wrap whose host command cannot be read back, and names no host', () => {
     const f = file(
       'settings.json',

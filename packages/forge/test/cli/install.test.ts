@@ -1044,6 +1044,23 @@ describe('the guided install', () => {
     });
   });
 
+  it('writes nothing and reports no edit when it runs again over a status line it wrapped, dry or not', async () => {
+    const settingsFile = join(claude(), 'settings.json');
+    writeFileSync(
+      settingsFile,
+      `${JSON.stringify({ statusLine: { type: 'command', command: 'printf host' } }, null, 2)}\n`,
+    );
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(out).toContain('your status line command is wrapped');
+    const wrapped = readFileSync(settingsFile, 'utf8');
+    for (const dryRun of [false, true]) {
+      out = '';
+      expect(await install({ harness: 'claude', yes: true, dryRun })).toBe(0);
+      expect(out).not.toContain('status line');
+      expect(readFileSync(settingsFile, 'utf8')).toBe(wrapped);
+    }
+  });
+
   it('takes the status line an earlier install recorded placing, spelled as a former release wrote it, for its own: the worker becomes the current one, never wrapped, and uninstall removes it', async () => {
     expect(await install({ harness: 'claude', yes: true })).toBe(0);
     const settingsFile = join(claude(), 'settings.json');
