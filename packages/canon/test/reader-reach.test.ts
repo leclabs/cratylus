@@ -4,9 +4,12 @@
 //
 //   1. CONSUMER-GENERATED artifacts — what the generating skills (praxis ·
 //      create-agent · exemplify) emit on consumer hosts. Fixtures under
-//      `test/fixtures/generated/` were produced 2026-07-01
-//      on fresh consumer projects by the skills AS CODIFIED (each cell now carries
-//      the ρ=LLM discipline in its own laws) and pinned here; each must conform.
+//      `test/fixtures/generated/` were produced 2026-07-01 on fresh consumer
+//      projects by the skills AS CODIFIED (each cell now carries the ρ=LLM
+//      discipline in its own laws) and pinned here; each must conform. The
+//      exception is the delegation-prompt and subagent-return pair, which
+//      depicts this corpus's implementer: a dispatch naming the one unit to
+//      build, and the return that is only that unit's name.
 //   2. AGENT↔AGENT messages — delegation prompts + subagent returns, ρ=LLM by
 //      standing rule (codified: `dimensions/actions/delegation.ts` definiens; the
 //      dispatch/judge laws in `skills/praxis.ts`; `conform(k)` in exemplify's
