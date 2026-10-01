@@ -22,7 +22,7 @@ verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
 signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned ; w a symbol this corpus's own skills declare
 canonizable(skill) ⇒ ∀ w ∈ declared(skill) : signify-verify(w)                    -- skill of THIS corpus ; one obligation per declared symbol ; the gate routes RECORDED probe readouts to pass ∨ fail, and a symbol with none is owed, ¬ passed
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
-Role       ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED ∧ PARTIAL : the EXPECTATIONS attached to a position ; made OF dimension values ∴ ¬ itself a dimension — the `role` dimension carries its SIGN⟩
+Role       ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED ∧ PARTIAL : the EXPECTATIONS of anyone holding the role ; made OF dimension values ∴ ¬ itself a dimension — the `role` dimension carries its SIGN⟩
              ⟨∧ the identity of its generic holder : description · archetype · provenance.mark⟩
 generic-holder ≜ the agent NAMED for its Role (architect · planner · implementer · assayer · integrator) ⟨carries nothing beyond the Role : its description, archetype and mark are the Role's ; declares ∅⟩
 persona    ≜ an agent named as an individual (mav · nico · kino) ⟨holds one Role and DECLARES its residue over it : its own description, archetype and mark at least, any dimension value besides⟩
