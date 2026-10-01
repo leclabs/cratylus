@@ -1,25 +1,13 @@
 # cratylus
 
-The command. One package, one bin, and the only executable in
-[cratylus](../../README.md) — everything it composes is an ordinary ESM library.
+The command. One package and one bin; what it composes, and why this is the only package that may
+know all of it, is in [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
 ```sh
 npm install -g cratylus
 ```
 
 It needs Node 22 or later.
-
-## What it composes
-
-| package             | what it contributes                                          |
-| ------------------- | ------------------------------------------------------------ |
-| `@cratylus/forge`   | the build surface — resolve a corpus, render it, place it    |
-| `@cratylus/runtime` | capability dispatch — what deployed skills call back into    |
-| `@cratylus/canon`   | the default corpus, imported so it resolves wherever this is |
-
-This is the only package permitted to know all three. `forge` projects and depends
-on no corpus; `canon` is a corpus and knows no projector; a consumer wants one
-install. That composition is the whole of what this package adds.
 
 ## Use
 
@@ -46,7 +34,9 @@ cratylus install
 Code or omp. It needs no project and no config. It looks for a harness by its home directory,
 `~/.claude` for Claude Code and `~/.omp` for omp. Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
-bundled one, and fails if that file imports a package that is not installed there.
+bundled one, and fails if that file imports a package that is not installed there. The help also
+lists `--plugin <pkg>`, but `cratylus` installs the bundled corpus whatever it names, so to install
+another corpus, name it in a `cratylus.config.ts`.
 
 The run is short. It asks only what you have not said, shows what it will place before it places
 anything, places it once you confirm, and ends with a few lines saying what was done and what to do
@@ -63,13 +53,14 @@ asked):
 | ------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ |
 | Which harness                         | `--harness <claude\|omp>`                                | absent, and the host does not have exactly one supported harness | none: refused                        |
 | Which practices                       | `--practices <name,…>` / `--all`                         | neither is given, on a terminal                                  | none: refused, whatever `--yes` says |
-| Whether to link their launch commands | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                          |
 | Which model each role routes to       | `--model-roles <role=model,…\|default>`                  | there are held roles the host has not routed itself              | cratylus's own routing               |
+| Whether to link their launch commands | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                          |
 
-On a terminal the questions come in that order. The model question first asks whether to choose a
-model per role at all, and answering no keeps the default routing. Linking defaults to no. Unless a
-flag settled every decision, the preview ends with one last question, `Install this?`. Answering no,
-or cancelling any question with Ctrl-C or Esc, writes nothing.
+On a terminal the questions come in that order, and `Install this?` follows them. The model
+question first asks whether to choose a model per role at all, and answering no keeps the default
+routing. Linking defaults to no.
+Unless a flag settled every decision, the preview ends with that last question. Answering no, or
+cancelling any question with Ctrl-C or Esc, writes nothing.
 
 `--yes` (`-y`) takes the default of every decision not given and places without asking to go ahead.
 On a terminal that is the practices already installed here, else the preselected ones; it is no
@@ -392,18 +383,18 @@ Install the bundled corpus into a harness on this machine, asking what you have 
 cratylus install [options]
 ```
 
-| Flag                         | What it does                                                                                                                                                                                          |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                                |
-| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus); `cratylus` installs the bundled corpus whatever this names, and a `cratylus.config.ts` in the current directory is what installs another |
-| `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                      |
-| `--all`                      | Install every practice, without asking                                                                                                                                                                |
-| `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                       |
-| `--no-link-persona-commands` | Link no persona commands, without asking                                                                                                                                                              |
-| `--model-roles <roles>`      | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)                                                          |
-| `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)        |
-| `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                             |
-| `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                                  |
+| Flag                         | What it does                                                                                                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
+| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus)                                                                                                                                    |
+| `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
+| `--all`                      | Install every practice, without asking                                                                                                                                                         |
+| `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                |
+| `--no-link-persona-commands` | Link no persona commands, without asking                                                                                                                                                       |
+| `--model-roles <roles>`      | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)                                                   |
+| `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
+| `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                      |
+| `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                           |
 
 ### `cratylus uninstall`
 
