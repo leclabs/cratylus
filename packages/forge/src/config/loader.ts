@@ -56,6 +56,32 @@ export class ConfigShapeError extends Error {
   }
 }
 
+/**
+ * A config (or a plugin it imports) names a package that is not installed. Node's
+ * own `ERR_MODULE_NOT_FOUND` is a stack trace that names the package and says
+ * nothing of what to do; this is the one line a consumer can act on.
+ */
+export class MissingPackageError extends Error {
+  constructor(
+    readonly configPath: string,
+    readonly packageName: string,
+  ) {
+    super(
+      `${configPath} imports '${packageName}', which is not installed; run \`npm i -D ${packageName}\``,
+    );
+    this.name = 'MissingPackageError';
+  }
+}
+
+/** The package a failed `import()` could not find, or undefined when the failure is
+ *  anything else (a missing relative file, a syntax error, a throwing config). */
+function missingPackage(e: unknown): string | undefined {
+  if ((e as { code?: unknown } | null)?.code !== 'ERR_MODULE_NOT_FOUND') {
+    return undefined;
+  }
+  return /^Cannot find package '([^']+)'/.exec((e as Error).message)?.[1];
+}
+
 /** Structural guard: a default export carrying an `extends` array is an `CratylusConfig`. */
 function isConfig(v: unknown): v is CratylusConfig {
   return (
@@ -72,7 +98,14 @@ function isConfig(v: unknown): v is CratylusConfig {
  */
 export async function loadConfig(configPath: string): Promise<CratylusConfig> {
   const abs = resolvePath(configPath);
-  const mod = (await import(pathToFileURL(abs).href)) as { default?: unknown };
+  let mod: { default?: unknown };
+  try {
+    mod = (await import(pathToFileURL(abs).href)) as { default?: unknown };
+  } catch (e) {
+    const pkg = missingPackage(e);
+    if (pkg !== undefined) throw new MissingPackageError(abs, pkg);
+    throw e;
+  }
   if (!isConfig(mod.default)) {
     throw new ConfigShapeError(abs);
   }

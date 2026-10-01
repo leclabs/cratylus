@@ -1,10 +1,10 @@
-// `forge init` — scaffold a project from the default plugin.
+// `cratylus init` — scaffold a project from the default plugin.
 //
 // `init` scaffolds `cratylus.config.ts` — the config-is-code home whose
 // zero-config default `extends: [canon]` (empty `patches`). The default is A
 // PACKAGE (the canon plugin), never a special-cased template: composing
 // that config runs the canon default through the normal `resolve()` with empty
-// patches. `forge add <plugin>` wires more plugins in.
+// patches. `cratylus add <plugin>` wires more plugins in.
 //
 // The retired greenfield-founding CLI (`found`) is subsumed here: the project is
 // scaffolded FROM the default plugin (resolved through `resolve()`), not from a
@@ -23,8 +23,9 @@
 // decide which corpus a project extends — that is projection fusing with meaning
 // (ARCHITECTURE, property 3: the corpus reaches forge as DATA).
 
-import pc from 'picocolors';
-import { scaffoldConfig } from '../../config/index.js';
+import { CLI_BIN } from '../../bin-name.js';
+import { CONFIG_PACKAGE, scaffoldConfig } from '../../config/index.js';
+import { fail, say } from '../style.js';
 
 export interface InitOpts {
   cwd?: string;
@@ -39,12 +40,22 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
   // zero-config default `extends: [canon]` (the default IS the canon plugin,
   // resolved through `resolve()` — defaults-are-a-package, never special-cased).
   // Idempotent: an existing config is left untouched.
-  const scaffold = await scaffoldConfig(cwd, { plugin: opts.plugin });
-  console.log(
-    scaffold.created ? pc.green('✓') : pc.gray('•'),
-    scaffold.created
-      ? `scaffolded ${scaffold.path} (extends: ${scaffold.plugin})`
-      : `${scaffold.path} already exists — left untouched`,
+  let scaffold: Awaited<ReturnType<typeof scaffoldConfig>>;
+  try {
+    scaffold = await scaffoldConfig(cwd, { plugin: opts.plugin });
+  } catch (e) {
+    fail('init', `${(e as Error).message}; pass --plugin <package>`);
+    return 1;
+  }
+  if (!scaffold.created) {
+    say(`${scaffold.path} already exists; left untouched`);
+    return 0;
+  }
+  say(`scaffolded ${scaffold.path} (extends: ${scaffold.plugin})`);
+  // The config imports two packages, and neither is installed by writing it: say
+  // what makes it load, so `compose` is not the first to find out.
+  say(
+    `next: npm i -D ${CONFIG_PACKAGE} ${scaffold.plugin}, then ${CLI_BIN} compose`,
   );
   return 0;
 }

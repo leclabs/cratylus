@@ -4,6 +4,7 @@
 export { type CratylusConfig, defineConfig } from './config.js';
 export {
   ConfigShapeError,
+  MissingPackageError,
   composeFromFile,
   loadConfig,
   loadPlugins,
@@ -12,6 +13,7 @@ export {
 export {
   type AddResult,
   CONFIG_FILE,
+  CONFIG_PACKAGE,
   ConfigEditError,
   DEFAULT_PLUGIN_PACKAGE,
   type ScaffoldOpts,

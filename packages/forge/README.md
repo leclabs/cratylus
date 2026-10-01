@@ -54,13 +54,11 @@ npm i @cratylus/canon@file:../canon
 ```bash
 cd ~/myproject
 
-forge init            # scaffolds cratylus.config.ts (extends: [canon])
+cratylus init            # scaffolds cratylus.config.ts (extends: [canon]) and names what to install
+npm i -D cratylus @cratylus/canon
 cratylus compose         # inspect the resolved fragment set
-cratylus project         # render into ./.render
-cratylus deploy \
-  --agents-dir .render/agents \
-  --skills-dir .render/skills \
-  --hooks-dir  .render       # place into ~/.claude (add --harness omp for ~/.omp)
+cratylus project         # render into ./.cratylus/claude
+cratylus deploy          # place into ~/.claude (add --harness omp for ~/.omp)
 ```
 
 `init` writes a config that already extends the canon, so the shortest useful path skips `add`
@@ -69,7 +67,7 @@ entirely. Adding a second plugin is what `add` is for.
 The scaffolded config is real, type-checked TypeScript — `extends` entries are imports, not strings:
 
 ```ts
-import { defineConfig } from '@cratylus/forge/config';
+import { defineConfig } from 'cratylus';
 import canon from '@cratylus/canon';
 
 export default defineConfig({
@@ -80,15 +78,19 @@ export default defineConfig({
 
 ## Commands
 
-### `forge init`
+### `cratylus init`
 
 Scaffolds `cratylus.config.ts` with the zero-config default `extends: [canon]`. The default is a
 package resolved through the ordinary resolver, not a baked-in template. An existing config is left
 untouched.
 
 ```
-forge init
+cratylus init
 ```
+
+Writing the config does not install what it imports. `init` prints the install command the config needs
+to load (`npm i -D cratylus @cratylus/canon`); until it has run, a command that loads the config fails on
+one line that names the missing package and that command.
 
 `@cratylus/canon` is the **default**, not the only corpus this scaffolds against — a projector that
 could name only one corpus would be deciding what the design is. The plugin is a parameter of the
@@ -101,27 +103,26 @@ await scaffoldConfig(cwd); // extends: [canon]  — DEFAULT_PLUGIN_PACKAGE
 await scaffoldConfig(cwd, { plugin: '@acme/corpus' }); // extends: [corpus]
 ```
 
-The binding name is derived from the package specifier, and `forge add` edits either config the
+The binding name is derived from the package specifier, and `cratylus add` edits either config the
 same way — it reads the config's shape, not any particular corpus's name.
 
-### `forge add <plugin>`
+### `cratylus add <plugin>`
 
 Inserts a real `import` for the package and appends its binding to `extends`. Idempotent — re-adding a
 wired plugin reports no change. The npm install is deliberately left to you rather than run, and is
 printed as the next step.
 
 ```
-forge add @acme/agent-plugin
+cratylus add @acme/agent-plugin
 ```
 
 ### `cratylus compose`
 
-Loads the config, resolves the plugin set, and prints every resolved fragment with its value. Writes
-nothing.
+Loads the config, resolves the plugin set, and prints every resolved fragment with its value, one per
+line. Writes nothing; `project` is the command that renders.
 
 ```
 cratylus compose
-cratylus compose --dry-run                     # same, stated explicitly
 cratylus compose --config ./other.config.ts
 ```
 
@@ -135,11 +136,12 @@ arguments to `cratylus <capability>` with the caller's environment, and it needs
 harness.
 
 ```
-cratylus project [--config <path>] [--out <dir>] [--harness claude|omp]
+cratylus project [--config <path>] [--out <dir>] [--harness claude|omp] [--verbose]
 ```
 
-Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
-the counts it wrote and the exact `deploy` invocation that ships them.
+Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.cratylus/<harness>` (the tree `cratylus deploy`
+reads), harness `claude`. On success it prints one line with the counts it wrote and the `deploy`
+invocation that ships them; `--verbose` also prints a line per file rendered or pruned.
 
 ```
 cratylus project --out ./build --harness omp

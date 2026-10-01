@@ -40,6 +40,14 @@ export class ConfigEditError extends Error {
 export const DEFAULT_PLUGIN_PACKAGE = '@cratylus/canon';
 
 /**
+ * The package a consumer installs to get `defineConfig`: the one that ships the
+ * command line, so a config's import resolves wherever the command does. It is
+ * named after the command it ships, so it is the command's name and not a second
+ * spelling of it.
+ */
+export const CONFIG_PACKAGE: string = CLI_BIN;
+
+/**
  * Render the zero-config scaffold against `plugin`: one real import of that
  * package, bound under the identifier `identForPackage` derives for it, and
  * `extends: [<that binding>]` with empty patches.
@@ -54,13 +62,13 @@ export function scaffoldSource(
     );
   }
   const ident = identForPackage(pkg);
-  return `import { defineConfig } from '@cratylus/forge/config';
+  return `import { defineConfig } from '${CONFIG_PACKAGE}';
 import ${ident} from '${pkg}';
 
-// forge — config is code. This is the SINGLE config home.
+// This is the SINGLE config home: config is code.
 // \`extends\` are REAL imports: type-checked, IDE-complete, no build step.
 // Zero-config default = the ${ident} plugin through the resolver, empty patches.
-// Wire more plugins with \`forge add <package>\`.
+// Wire more plugins with \`${CLI_BIN} add <package>\`.
 export default defineConfig({
   extends: [${ident}],
   patches: [],
@@ -138,7 +146,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const path = join(cwd, CONFIG_FILE);
   if (!existsSync(path)) {
     throw new ConfigEditError(
-      `${path}: no ${CONFIG_FILE} — run \`${CLI_BIN} init\` first`,
+      `no ${CONFIG_FILE} at ${path}; run \`${CLI_BIN} init\` first`,
     );
   }
   let src = await readFile(path, 'utf8');
@@ -158,7 +166,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const lastImport = [...src.matchAll(/^import\s.*?;$/gm)].pop();
   if (!lastImport || lastImport.index === undefined) {
     throw new ConfigEditError(
-      `${path}: no import lines found — is this a scaffolded ${CONFIG_FILE}?`,
+      `${path} has no import lines; \`${CLI_BIN} add\` edits a scaffolded ${CONFIG_FILE}, so add the import and the extends entry by hand`,
     );
   }
   const insertAt = lastImport.index + lastImport[0].length;
@@ -169,7 +177,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const m = extendsRe.exec(src);
   if (!m) {
     throw new ConfigEditError(
-      `${path}: could not locate an \`extends: [ … ]\` array to append to`,
+      `${path} has no \`extends: [ … ]\` array to append to; add the import and the extends entry by hand`,
     );
   }
   const inner = (m[1] ?? '').trim();

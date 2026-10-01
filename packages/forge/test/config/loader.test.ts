@@ -7,10 +7,11 @@
 //  (3) `extends: [canon]` (the real canon dimensions) resolves to the canon
 //      default fragment set.
 
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   type CratylusConfig,
@@ -160,5 +161,62 @@ describe('extends: [canon] — resolves to the canon default set', () => {
     );
     // A known canon fragment resolved to its branded-string body.
     expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
+  });
+});
+
+// A missing package is a fact about NODE's resolver, and vitest resolves imports with
+// its own (it reports a different error for the same absence), so this runs the loader
+// the way the command line does: in a plain `node`, from the built package.
+describe('loadConfig — a package the config imports is not installed', () => {
+  const LOADER = pathToFileURL(
+    fileURLToPath(new URL('../../dist/config/index.js', import.meta.url)),
+  ).href;
+
+  /** Load `source` as a config in plain node; what `loadConfig` threw, or null. */
+  function loadFailure(source: string): {
+    name: string;
+    message: string;
+    packageName?: string;
+  } | null {
+    const root = mkdtempSync(join(tmpdir(), 'forge-missing-'));
+    try {
+      writeFileSync(join(root, 'cratylus.config.ts'), source);
+      const run = spawnSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          `import { loadConfig } from ${JSON.stringify(LOADER)};
+           try { await loadConfig(process.argv[1]); console.log('null'); }
+           catch (e) { console.log(JSON.stringify({ name: e.name, message: e.message, packageName: e.packageName })); }`,
+          join(root, 'cratylus.config.ts'),
+        ],
+        { encoding: 'utf8' },
+      );
+      expect(run.stderr).toBe('');
+      return JSON.parse(run.stdout) as ReturnType<typeof loadFailure>;
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+
+  it('reports the package and the command that installs it, as one line', () => {
+    const failure = loadFailure(
+      "import x from '@acme/not-installed';\nexport default { extends: [x], patches: [] };\n",
+    );
+    expect(failure?.name).toBe('MissingPackageError');
+    expect(failure?.packageName).toBe('@acme/not-installed');
+    expect(failure?.message).toContain("'@acme/not-installed'");
+    expect(failure?.message).toContain('npm i -D @acme/not-installed');
+    expect(failure?.message).not.toMatch(/\n|file:\/\//);
+  });
+
+  it('leaves any other failure to speak for itself', () => {
+    // A missing LOCAL file is not an install problem, and `npm i` would not cure it.
+    const failure = loadFailure(
+      "import x from './absent.ts';\nexport default { extends: [x], patches: [] };\n",
+    );
+    expect(failure?.name).not.toBe('MissingPackageError');
+    expect(failure?.message).toContain('absent.ts');
   });
 });
