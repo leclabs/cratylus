@@ -1300,10 +1300,32 @@ describe('plan — the ledger of a unit worked', () => {
     landRefused(repo, 'no-such-commit', 'not a commit');
   });
 
-  it('records a land of a commit made in a worktree of its own, on a branch cut from the line', () => {
+  it('REFUSES a land of a commit whose history shares nothing with the line, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    const apart = `${repo}.orphan`;
+    git(repo, 'worktree', 'add', '-q', '--orphan', '-b', 'orphan', apart);
+    landRefused(
+      repo,
+      empty(apart, 'a history of its own'),
+      'does not run from',
+    );
+  });
+
+  it('REFUSES a land of a commit cut from the main checkout after it moved past the line, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    empty(repo, 'main moves on');
+    const cut = `${repo}.cut`;
+    git(repo, 'worktree', 'add', '-q', '-b', 'cut', cut, 'main');
+    landRefused(repo, empty(cut, 'built off main'), 'does not run from');
+  });
+
+  it('records a land of a commit made in a worktree of its own, on a branch cut from the line, though the line has moved on since', () => {
     const repo = repository();
     working(repo);
     const own = built(repo);
+    empty(`${repo}.plan-p`, 'the line moves on');
     plan(repo, 'land', 'u', '--plan', 'p', '--commit', own, ...BY);
     expect(ledger(repo, 'p', 'u')).toEqual([`land ${own}`]);
   });

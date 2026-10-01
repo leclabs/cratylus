@@ -328,16 +328,19 @@ export class RecordStore {
 
   /**
    * Where the work of `commit` was built, as far as the repository says: it
-   * `unresolved` when no commit answers to the name; `main` when the HEAD of
+   * is `unresolved` when no commit answers to the name; `main` when the HEAD of
    * the main worktree contains it, so it was built in that checkout, whatever
    * branch the checkout is on; `line` when the line of `plan` already contains
-   * it, so it was built in the line's own worktree; `apart` otherwise, built in
-   * a worktree of its own. Changes nothing.
+   * it, so it was built in the line's own worktree; `adrift` when its history
+   * does not run from the line, sharing none with it or holding a commit the
+   * main checkout has and the line lacks, so it was cut from elsewhere; and
+   * `apart` otherwise, built in a worktree of its own off the line. Changes
+   * nothing.
    */
   builtIn(
     plan: string,
     commit: string,
-  ): 'unresolved' | 'main' | 'line' | 'apart' {
+  ): 'unresolved' | 'main' | 'line' | 'adrift' | 'apart' {
     let id: string;
     try {
       id = git(
@@ -351,12 +354,31 @@ export class RecordStore {
     } catch {
       return 'unresolved';
     }
-    if (contains(this.top, id, git(this.main, 'rev-parse', 'HEAD')))
-      return 'main';
+    const head = git(this.main, 'rev-parse', 'HEAD');
+    if (contains(this.top, id, head)) return 'main';
     const { branch, exists } = this.line(plan);
-    return exists && contains(this.top, id, `refs/heads/${branch}`)
-      ? 'line'
-      : 'apart';
+    if (!exists) return 'apart';
+    const tip = `refs/heads/${branch}`;
+    if (contains(this.top, id, tip)) return 'line';
+    return this.#offLine(id, tip, head) ? 'apart' : 'adrift';
+  }
+
+  /** Whether the history of commit `id` runs from the line at `tip`: it shares
+   *  history with the line, and everything it shares with the main checkout at
+   *  `head` the line holds too, so it was not cut from where main went on. */
+  #offLine(id: string, tip: string, head: string): boolean {
+    try {
+      git(this.top, 'merge-base', id, tip);
+    } catch {
+      return false;
+    }
+    let shared: string[];
+    try {
+      shared = git(this.top, 'merge-base', '--all', id, head).split('\n');
+    } catch {
+      return true;
+    }
+    return shared.every((base) => contains(this.top, base, tip));
   }
 
   /**
