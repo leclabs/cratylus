@@ -1961,7 +1961,11 @@ describe('omp role routing', () => {
 // the emitted handler the way omp calls it.
 describe('omp dispatch isolation', () => {
   const agent = (name: string, isolation?: 'worktree') =>
-    ({ ...AGENT, name, ...(isolation ? { isolation } : {}) }) as never;
+    ({
+      ...(AGENT as object),
+      name,
+      ...(isolation ? { isolation } : {}),
+    }) as never;
   const implementer = agent('implementer', 'worktree');
   const planner = agent('planner');
 
