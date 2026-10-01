@@ -1,0 +1,26 @@
+{
+  "envelope": {
+    "id": "01M3WTENEADR6B4KBYSCRJ2XQY",
+    "entity": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPVQ0DJNJ2KPVAX847XKS6"
+    ],
+    "author": "IsolationPlanner",
+    "time": "2026-10-01T22:48:08.394Z",
+    "reason": "every unit completed",
+    "cause": "integrator's whole of claude-config-dir, the last unit"
+  },
+  "payload": {
+    "name": "remaining-gaps",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "01M3R07GCQ2FM8D4CE4044A5J9",
+      "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM"
+    ],
+    "state": "closed"
+  }
+}
