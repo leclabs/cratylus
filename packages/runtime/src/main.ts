@@ -1,27 +1,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The runtime MAIN — the thin Commander CLI over the capabilities the runtime ships.
+// The runtime MAIN — the Commander commands for the capabilities the runtime ships.
 //
-// This module EXPORTS runCli; it does not invoke it. The invoking bin lives in
-// the installable CLI package, which hands the runtime every argv whose first
-// word is a member of `CAPABILITIES`.
+// This module EXPORTS the commands; it neither builds a program nor runs one. The
+// program lives in the installable CLI package, which adds these commands to its
+// own tree beside the projector's, so `--help` lists every command and capability
+// there is, and one refusal answers a word that is neither.
 //
-// ONE COMMANDER COMMAND PER CAPABILITY, one subcommand per verb, all of it built
-// from the declarations beside the verbs: the capability's summary from
-// `CAPABILITY_SUMMARIES`, a verb's summary, positional, and each flag's
-// description and whether it takes a value from the capability's `VERBS`. Nothing
-// is retyped here, so help cannot say what a verb does not take.
+// ONE COMMANDER COMMAND PER CAPABILITY, its verbs rendered into its help, all of it
+// built from the declarations beside the verbs: the capability's summary from
+// `CAPABILITY_SUMMARIES`, a verb's summary, positional, and each flag's description
+// and whether it takes a value from the capability's `VERBS`. Nothing is retyped
+// here, so help cannot say what a verb does not take.
 //
-// COMMANDER DOES NOT PARSE A VERB'S FLAGS. It owns the structure and the help;
-// the tokens after the verb reach that verb's dispatcher exactly as given, and
+// COMMANDER DOES NOT PARSE A VERB'S FLAGS. It owns the structure and the help; the
+// tokens after the verb reach that verb's dispatcher exactly as given, and
 // `readArgv` stays their one reader, so every `verb flags` refusal is the
 // dispatcher's own. The one thing read here is whether the tokens ask for help:
 // `--help` or `-h` as a token of its own, never as the value of a flag that
-// takes one — `note capture t --body -h` keeps `-h` as the body.
+// takes one — `note capture t --body -h` keeps `-h` as the body. A verb the
+// capability does not declare is refused by `verbOf`, the one home of that refusal.
 //
 // `eventTap` prints its JSON result; `design`, `plan` and `note` print their
-// view. A refusal is a loud code-1 failure, printed as `cratylus: <message>`.
+// view. A refusal is a loud code-1 failure, printed as `cratylus <message>`, a message opening with the
+// capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
-// call that named no verb, where it is a failure. It holds no blank spacer line.
+// call that named no verb, where it is a failure.
 //
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
 // not written here: its one home is `./bin-name.ts`. See that module for why the
@@ -29,7 +32,6 @@
 // compiler-invisible emitted string).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { createRequire } from 'node:module';
 import { Command, Option } from 'commander';
 import { CLI_BIN } from './bin-name.js';
 import { VERBS as DESIGN } from './capabilities/design/dispatch.js';
@@ -38,6 +40,7 @@ import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { VERBS as NOTE } from './capabilities/note/dispatch.js';
 import { dispatchNote } from './capabilities/note/index.js';
+import { verbOf } from './capabilities/plan/argv.js';
 import { VERBS as PLAN } from './capabilities/plan/dispatch.js';
 import { dispatchPlan } from './capabilities/plan/index.js';
 import {
@@ -46,24 +49,6 @@ import {
   type Capability,
 } from './capability.js';
 import type { Verb, VerbFlags } from './verb-flags.js';
-
-/**
- * This package's version, read from the manifest that DEFINES it.
- *
- * It was the literal `'0.0.0'`, and `0.1.0` shipped to npm with every CLI still reporting
- * `0.0.0` — confirmed by installing the published tarball on another host. A version is a
- * CLAIM ABOUT THE ARTIFACT, and it had no home: `changeset version` rewrites the manifest
- * and cannot rewrite a string in TypeScript, so the two were guaranteed to diverge at the
- * first release and to stay diverged forever.
- *
- * Read by package SELF-REFERENCE rather than a relative path, which is the form
- * `bin-name.ts` already uses and for the same reason: tsup inlines this module into
- * `dist/<entry>/index.js`, so `../package.json` would resolve from the wrong depth once
- * bundled. Node resolves a self-reference through the package's own `exports`.
- */
-export const VERSION: string = createRequire(import.meta.url)(
-  '@cratylus/runtime/package.json',
-).version;
 
 /**
  * Each capability's verb surface: the verbs it declares, and its verb and
@@ -93,13 +78,22 @@ const SURFACES: {
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
 
-/** One verb's command: its summary, its positional and its flags, rendered
- *  into its help. The flags are declared so they print; they are never parsed. */
-function verbCommand(name: string, verb: Verb): Command {
+/** One verb's command, held for its help alone: its summary, its positional and
+ *  its flags, declared so they print. It is never registered and never parses. */
+function verbCommand(
+  capability: Capability,
+  name: string,
+  verb: Verb,
+): Command {
   const command = new Command(name)
     .description(verb.summary)
     .helpCommand(false)
-    .configureHelp(UNWRAPPED);
+    .configureHelp({
+      ...UNWRAPPED,
+      // Held by no parent, the command would name only itself in its usage line.
+      commandUsage: (self) =>
+        `${CLI_BIN} ${capability} ${self.name()} ${self.usage()}`,
+    });
   if (verb.positional !== null) command.argument(verb.positional);
   for (const [flag, spec] of Object.entries(verb.flags))
     command.addOption(
@@ -109,28 +103,6 @@ function verbCommand(name: string, verb: Verb): Command {
       ),
     );
   return command;
-}
-
-/** The command line: one command per capability, one subcommand per verb. */
-function commandLine(): Command {
-  const program = new Command(CLI_BIN)
-    .description(`Run a verb of a capability: ${CAPABILITIES.join(', ')}`)
-    .helpCommand(false)
-    .configureHelp(UNWRAPPED);
-  for (const capability of CAPABILITIES) {
-    const command = new Command(capability)
-      .description(CAPABILITY_SUMMARIES[capability])
-      .helpCommand(false)
-      .configureHelp(UNWRAPPED);
-    for (const [verb, declared] of Object.entries(SURFACES[capability].verbs))
-      command.addCommand(verbCommand(verb, declared));
-    program.addCommand(command);
-  }
-  return program;
-}
-
-function isCapability(word: string): word is Capability {
-  return (CAPABILITIES as readonly string[]).includes(word);
 }
 
 /** A token read as an attempted flag even after a flag the verb does not take
@@ -163,90 +135,96 @@ function asksForHelp(tokens: readonly string[], verb: Verb): boolean {
   return false;
 }
 
-/**
- * A reader that closes stdout early — `cratylus design show | head -1` — has
- * taken all it wants, which is not a failure: the process ends quietly with the
- * exit code it already holds. Any other stdout error stays loud.
- */
-function endOnClosedStdout(error: NodeJS.ErrnoException): void {
-  if (error.code !== 'EPIPE') throw error;
-  process.exit();
-}
-
 function refuse(message: string): void {
-  process.stderr.write(`${CLI_BIN}: ${message}\n`);
+  process.stderr.write(`${CLI_BIN} ${message}\n`);
   process.exitCode = 1;
 }
 
-/** `command`'s help, a line holding one fact: Commander's spacer lines go. */
-function helpOf(command: Command, error: boolean): string {
-  return command.helpInformation({ error }).replace(/\n{2,}/g, '\n');
-}
-
-/** Print `command`'s help: to stdout and a success when asked for, to stderr
- *  and a failure when it is the answer to a call that named no verb. */
-function printHelp(command: Command, asked: boolean): void {
+/** Print `text`, a help, through `command`'s own output: to stdout and a success
+ *  when asked for, to stderr and a failure when it is the answer to a call that
+ *  named no verb. */
+function printHelp(command: Command, text: string, asked: boolean): void {
+  const output = command.configureOutput();
   if (asked) {
-    process.stdout.write(helpOf(command, false));
+    (output.writeOut ?? process.stdout.write.bind(process.stdout))(text);
     process.exitCode = 0;
   } else {
-    process.stderr.write(helpOf(command, true));
+    (output.writeErr ?? process.stderr.write.bind(process.stderr))(text);
     process.exitCode = 1;
   }
 }
 
-/** Bin entrypoint: help and version, else route → stdio + exit code. */
-export async function runCli(argv: readonly string[]): Promise<void> {
-  if (!process.stdout.listeners('error').includes(endOnClosedStdout))
-    process.stdout.on('error', endOnClosedStdout);
-  const program = commandLine();
+/** A capability's help: its verbs, and where to ask for what a verb takes. */
+function helpOf(command: Command, error: boolean): string {
+  return `${command.helpInformation({ error })}Run ${CLI_BIN} ${command.name()} <verb> --help for what a verb takes.\n`;
+}
 
-  const first = argv[0];
-  if (first === undefined || first === '--help' || first === '-h') {
-    printHelp(program, true);
-    return;
-  }
-  if (first === '--version' || first === '-v') {
-    process.stdout.write(`${VERSION}\n`);
-    process.exitCode = 0;
-    return;
-  }
-  if (!isCapability(first)) {
-    refuse(
-      `unknown capability '${first}' — the capabilities are ${CAPABILITIES.join(', ')}`,
-    );
-    return;
-  }
-  const capability = program.commands.find(
-    (command) => command.name() === first,
-  ) as Command;
-  const { verbs, run } = SURFACES[first];
-  const verb = argv[1];
-  if (verb === undefined) {
-    printHelp(capability, false);
-    return;
-  }
-  if (verb === '--help' || verb === '-h') {
-    printHelp(capability, true);
-    return;
-  }
-  if (!Object.hasOwn(verbs, verb)) {
-    refuse(
-      `${first}: unknown verb '${verb}'; the verbs are ${Object.keys(verbs).join(', ')}; run ${CLI_BIN} ${first} --help`,
-    );
-    return;
-  }
-  if (asksForHelp(argv.slice(2), verbs[verb] as Verb)) {
-    printHelp(
-      capability.commands.find((command) => command.name() === verb) as Command,
-      true,
-    );
-    return;
-  }
-  try {
-    process.stdout.write(`${run(argv.slice(1))}\n`);
-    process.exitCode = 0;
-  } catch (err) {
-    refuse(err instanceof Error ? err.message : String(err));
-  }
+/** One capability's command: its verbs in its help, its action routing the verb
+ *  and the tokens after it, exactly as given, to the capability's verb surface. */
+function capabilityCommand(capability: Capability): Command {
+  const { verbs, run } = SURFACES[capability];
+  const verbCommands = new Map(
+    Object.entries(verbs).map(([name, verb]) => [
+      name,
+      verbCommand(capability, name, verb),
+    ]),
+  );
+  return (
+    new Command(capability)
+      .description(CAPABILITY_SUMMARIES[capability])
+      .usage('<verb> [args]')
+      .configureHelp({
+        ...UNWRAPPED,
+        visibleCommands: () => [...verbCommands.values()],
+      })
+      // The verb and everything after it reach the action untouched: the command
+      // stops reading options at its first operand, and the help flag is the
+      // action's to read, never Commander's.
+      .helpOption(false)
+      .passThroughOptions()
+      .allowUnknownOption()
+      .argument('[verb]')
+      .argument('[args...]')
+      .action(
+        (
+          verb: string | undefined,
+          tokens: string[],
+          _options: unknown,
+          self: Command,
+        ) => {
+          if (verb === undefined) {
+            printHelp(self, helpOf(self, true), false);
+            return;
+          }
+          if (verb === '--help' || verb === '-h') {
+            printHelp(self, helpOf(self, false), true);
+            return;
+          }
+          try {
+            verbOf([verb], capability, verbs);
+            if (asksForHelp(tokens, verbs[verb] as Verb)) {
+              printHelp(
+                self,
+                (verbCommands.get(verb) as Command).helpInformation(),
+                true,
+              );
+              return;
+            }
+            process.stdout.write(`${run([verb, ...tokens])}\n`);
+            process.exitCode = 0;
+          } catch (err) {
+            refuse(err instanceof Error ? err.message : String(err));
+          }
+        },
+      )
+  );
+}
+
+/**
+ * The runtime's commands, one per capability in `CAPABILITIES` order. They stop
+ * reading options at the verb, so the program that holds them enables positional
+ * options.
+ */
+export function capabilityCommands(): Command[] {
+  return CAPABILITIES.map(capabilityCommand);
 }

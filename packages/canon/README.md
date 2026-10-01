@@ -14,15 +14,15 @@ _means_, never how either is carried.
 ## Install
 
 ```bash
-npm install @cratylus/canon
+npm install cratylus @cratylus/canon
 ```
 
 The package's whole public surface is its default export — canon as an agent-plugin. A consumer
-`extends` it from an `cratylus.config.ts` and projects it with
-[`@cratylus/forge`](../forge/README.md):
+`extends` it from a `cratylus.config.ts` and projects it with the `cratylus` command, whose
+[README](../cli/README.md) documents each command:
 
 ```ts
-import { defineConfig } from '@cratylus/forge/config';
+import { defineConfig } from 'cratylus';
 import canon from '@cratylus/canon';
 
 export default defineConfig({

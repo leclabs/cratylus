@@ -1,5 +1,6 @@
-// `runCli` — each capability the runtime ships reaches its own verb surface, and a
-// first word that is none of them is refused, naming them all.
+// `capabilityCommands` — each capability the runtime ships reaches its own verb
+// surface, and a verb it does not declare is refused in the one wording every
+// dispatcher throws.
 //
 // Driven the way the bin drives it: argv in, stdout, stderr and the exit code out,
 // in a scratch repository as the working directory, under a host config carrying
@@ -9,17 +10,23 @@
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { Command } from 'commander';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
+import { dispatchDesign } from '../src/capabilities/design/index.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
+import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 import { VERBS as NOTE } from '../src/capabilities/note/dispatch.js';
+import { dispatchNote } from '../src/capabilities/note/index.js';
 import { VERBS as PLAN } from '../src/capabilities/plan/dispatch.js';
+import { dispatchPlan } from '../src/capabilities/plan/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
   type Capability,
 } from '../src/capability.js';
-import { runCli } from '../src/main.js';
+import { capabilityCommands } from '../src/main.js';
 import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
 import { type VerbFlags, refused } from '../src/verb-flags.js';
 import { BY, CONFIG, everyRecord, repository } from './verb-surface.js';
@@ -66,7 +73,16 @@ afterAll(() => {
   vi.unstubAllEnvs();
 });
 
-/** Run `runCli(argv)` in the scratch repository; what it printed and its code. */
+/** The commands in a program that stops reading options at its first command, as
+ *  the program that owns the bin holds them. */
+function program(): Command {
+  const host = new Command(CLI_BIN).enablePositionalOptions();
+  for (const command of capabilityCommands()) host.addCommand(command);
+  return host;
+}
+
+/** Run `argv` through the commands in the scratch repository; what they printed
+ *  and the code they left. */
 async function run(
   argv: readonly string[],
 ): Promise<{ code: number | undefined; out: string; err: string }> {
@@ -87,7 +103,7 @@ async function run(
   let code: number | undefined;
   try {
     process.chdir(repo);
-    await runCli(argv);
+    await program().parseAsync(argv, { from: 'user' });
     code = process.exitCode as number | undefined;
   } finally {
     process.chdir(cwd);
@@ -115,7 +131,7 @@ const ROUTED: {
   note: { argv: ['show'], says: /^notebook at / },
 };
 
-describe('runCli routes each capability to its own verb surface', () => {
+describe('the capability commands route each capability to its own verb surface', () => {
   it.each(CAPABILITIES)('%s', async (capability) => {
     const { argv, says } = ROUTED[capability];
     const { code, out, err } = await run([capability, ...argv]);
@@ -124,23 +140,11 @@ describe('runCli routes each capability to its own verb surface', () => {
     expect(out).toMatch(says);
   });
 
-  it("a capability's refusal exits 1 as `cratylus: <message>`", async () => {
+  it("a capability's refusal exits 1 as `cratylus <message>`", async () => {
     const { code, out, err } = await run(['eventTap', 'frobnicate']);
     expect(out).toBe('');
     expect(code).toBe(1);
-    expect(err).toMatch(/^cratylus: eventTap: unknown verb 'frobnicate'/);
-  });
-});
-
-describe('runCli refuses a first word that is no capability', () => {
-  // The kebab register and the rejected abbreviation of `eventTap`, and a stranger.
-  it.each(['event-tap', 'tap', 'frob'])('%s', async (word) => {
-    const { code, out, err } = await run([word, 'status']);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toMatch(new RegExp(`^cratylus: unknown capability '${word}'`));
-    for (const capability of ['eventTap', 'design', 'plan', 'note'])
-      expect(err).toContain(capability);
+    expect(err).toMatch(/^cratylus eventTap: unknown verb 'frobnicate'/);
   });
 });
 
@@ -151,7 +155,7 @@ const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   note: NOTE,
 };
 
-describe('runCli prints a capability’s help from its declarations', () => {
+describe('the capability commands print their help from the declarations', () => {
   it.each(CAPABILITIES)(
     '%s --help names every verb and its summary',
     async (c) => {
@@ -165,11 +169,6 @@ describe('runCli prints a capability’s help from its declarations', () => {
       }
     },
   );
-
-  it('a capability’s help holds no blank spacer line', async () => {
-    const { out } = await run(['plan', '--help']);
-    expect(out.split('\n').slice(0, -1)).not.toContain('');
-  });
 
   it.each([
     ['plan', 'add', '<unit>'],
@@ -206,7 +205,7 @@ describe('runCli prints a capability’s help from its declarations', () => {
   });
 });
 
-describe('runCli answers a missing or unknown verb with what to do', () => {
+describe('the capability commands answer a missing or undeclared verb with what to do', () => {
   it('no verb prints the capability’s help on stderr and exits 1', async () => {
     const { code, out, err } = await run(['plan']);
     expect(out).toBe('');
@@ -215,7 +214,7 @@ describe('runCli answers a missing or unknown verb with what to do', () => {
       expect(err).toContain(summary);
   });
 
-  it('an unknown verb is one line naming it, the verbs and the help to ask for', async () => {
+  it('a verb the capability does not declare is one line naming it, the verbs and the help to ask for', async () => {
     const { code, out, err } = await run(['plan', 'frob']);
     expect(out).toBe('');
     expect(code).toBe(1);
@@ -224,9 +223,33 @@ describe('runCli answers a missing or unknown verb with what to do', () => {
     for (const verb of Object.keys(PLAN)) expect(err).toContain(verb);
     expect(err).toContain('cratylus plan --help');
   });
+
+  const DISPATCHERS: {
+    readonly [C in Capability]: (argv: string[]) => unknown;
+  } = {
+    eventTap: dispatchEventTap,
+    design: dispatchDesign,
+    plan: dispatchPlan,
+    note: dispatchNote,
+  };
+
+  it.each(CAPABILITIES)(
+    '%s refuses in the very words its dispatcher throws when called as a library',
+    async (c) => {
+      let thrown: unknown;
+      try {
+        DISPATCHERS[c](['frob']);
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown).toBeInstanceOf(Error);
+      const { err } = await run([c, 'frob']);
+      expect(err).toBe(`${CLI_BIN} ${(thrown as Error).message}\n`);
+    },
+  );
 });
 
-describe('runCli leaves a verb’s flags to the verb’s own reader', () => {
+describe('the capability commands leave a verb’s flags to the verb’s own reader', () => {
   it('a flag the verb does not take is refused as `refused` words it, and nothing is written', async () => {
     const before = everyRecord(repo);
     const { code, out, err } = await run([
@@ -240,7 +263,7 @@ describe('runCli leaves a verb’s flags to the verb’s own reader', () => {
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err).toBe(
-      `cratylus: ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
+      `cratylus ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
     );
     expect(everyRecord(repo)).toEqual(before);
   });

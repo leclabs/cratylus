@@ -59,9 +59,11 @@ function warning(command: string, message: string): string {
   return `${prefix} ${oneLine(message)}`;
 }
 
-/** The line a failure is written as, without writing it. */
+/** The line a failure is written as, without writing it. A failure of the program
+ *  itself, before any command is named, passes `''` and reads `cratylus: <message>`. */
 function failure(command: string, message: string): string {
-  const prefix = paint(process.stderr, 'red', `${CLI_BIN} ${command}:`);
+  const who = command === '' ? CLI_BIN : `${CLI_BIN} ${command}`;
+  const prefix = paint(process.stderr, 'red', `${who}:`);
   return `${prefix} ${oneLine(message)}`;
 }
 
@@ -71,7 +73,8 @@ export function warn(command: string, message: string): void {
 }
 
 /** A failure, to stderr: `cratylus <command>: <what went wrong>; <what to do>`. The
- *  caller supplies both halves in `message`; the exit code is the caller's. */
+ *  caller supplies both halves in `message`; the exit code is the caller's. The
+ *  program's own refusals, which name no command, pass `''` for it. */
 export function fail(command: string, message: string): void {
   process.stderr.write(`${failure(command, message)}\n`);
 }

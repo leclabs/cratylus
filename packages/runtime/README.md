@@ -32,7 +32,7 @@ capability.
 | `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                                                                                                      |
 | `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                                                                                                                |
 | `./capability`             | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the four capabilities the runtime ships, and a line on each                                                                                                                                                                                                |
-| `./main`                   | `runCli` — the thin Commander CLI that prints each capability's and verb's help from its declarations and routes each capability to its verb surface                                                                                                                                                              |
+| `./main`                   | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                       |
 | `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `RuntimeConfig`                                                                                                                                                                                                                                       |
 | `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                        |
 | `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                            |
@@ -45,7 +45,7 @@ The `.` barrel is pure contracts: no implementation.
 
 Notes, design and plans are immutable records in the repository, folded when someone asks. Agents
 and users meet them only through three capabilities that ship inside the runtime, each routed by
-`runCli` to its own verb surface and each with its port in the `.` barrel:
+`capabilityCommands` to its own verb surface and each with its port in the `.` barrel:
 
 | capability | port         | verbs                                                                                                          |
 | ---------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
@@ -119,14 +119,16 @@ verb takes, and asks for the call to be corrected and run again.
 
 ## Routing
 
-`runCli` routes `<capability> <verb> [args]` through one table typed over `Capability`, so a
-capability without a route does not compile. Each capability's verb surface owns its verbs' flag
-grammar: `eventTap` prints its JSON result, and `design`, `plan` and `note` print their view.
-A refusal exits `1` as `cratylus: <message>`; a first word that is no capability exits `1` naming
-the four. Never a silent no-op.
+`capabilityCommands` builds one Commander command per capability, and routes
+`<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
+route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`
+prints its JSON result, and `design`, `plan` and `note` print their view. A refusal exits `1` as
+`cratylus <message>` (the message opens with the capability and the verb, as `cratylus plan assay: …`), and a verb the capability does not declare is refused by `verbOf` in the one
+wording every dispatcher throws when called as a library. Never a silent no-op.
 
-`runCli` exports but does not invoke. The invoking bin lives in [`cratylus`](../cli/README.md),
-which hands the runtime every command whose first word is a member of `CAPABILITIES`.
+`capabilityCommands` exports commands and builds no program. The program lives in
+[`cratylus`](../cli/README.md), which adds them to one tree beside the projector's commands, so its
+`--help` lists every command and capability there is.
 
 ## The host runtime config
 

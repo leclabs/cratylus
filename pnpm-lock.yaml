@@ -171,18 +171,12 @@ catalogs:
     '@types/node':
       specifier: ^22.0.0
       version: 22.19.21
-    cac:
-      specifier: ^6.7.14
-      version: 6.7.14
     chalk:
       specifier: ^5.4.0
       version: 5.6.2
     commander:
       specifier: ^14.0.3
       version: 14.0.3
-    picocolors:
-      specifier: ^1.1.0
-      version: 1.1.1
     tsup:
       specifier: ^8.3.0
       version: 8.5.1
@@ -270,6 +264,9 @@ importers:
       '@cratylus/runtime':
         specifier: workspace:*
         version: link:../runtime
+      commander:
+        specifier: 'catalog:'
+        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -280,6 +277,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.19.21)
 
   packages/forge:
     dependencies:
@@ -292,15 +292,12 @@ importers:
       '@cratylus/schema':
         specifier: workspace:*
         version: link:../schema
-      cac:
-        specifier: 'catalog:'
-        version: 6.7.14
       chalk:
         specifier: 'catalog:'
         version: 5.6.2
-      picocolors:
+      commander:
         specifier: 'catalog:'
-        version: 1.1.1
+        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 3.25.76

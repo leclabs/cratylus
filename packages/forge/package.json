@@ -64,9 +64,8 @@
     "@clack/prompts": "catalog:",
     "@cratylus/runtime": "workspace:*",
     "@cratylus/schema": "workspace:*",
-    "cac": "catalog:",
     "chalk": "catalog:",
-    "picocolors": "catalog:",
+    "commander": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
