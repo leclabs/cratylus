@@ -1,0 +1,89 @@
+{
+  "envelope": {
+    "id": "01M3VZQN50X3NKATWEZSXFWBYK",
+    "entity": "01M3VXM2F29MCWCMXGPJRHBY86",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VYZ484P84JP4ESJFMCDF23"
+    ],
+    "author": "InstallPractices",
+    "time": "2026-10-01T15:01:11.456Z",
+    "reason": "install offers practices in place of optional personas",
+    "cause": "the unit's work is committed on unit/install-practices"
+  },
+  "payload": {
+    "plan": "01M3VXJG57793F706D3RBE6P6Q",
+    "spec": {
+      "name": "install-practices",
+      "intent": "Census @c8760f92 (design at c8760f92); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since; units practice and consumer-commands-first of this plan land first and change packages/schema/src/index.ts, packages/forge/src/project/index.ts, packages/canon/src/roles/hold.ts, packages/forge/src/cli/index.ts and packages/cli/README.md. The root package.json, pnpm-lock.yaml and AGENTS.md carry uncommitted edits that are the operator's; no unit of this plan touches them.\nRealize `install` whole, as its gloss states it now that install offers practices. By default it is a short guided run that asks only what the operator must decide (which harness, which practices, whether to link their launch commands, which models the roles route to), shows what it will place before placing anything, places it only once confirmed, and ends with a brief summary of what was done and what to do next. Per-file detail appears only when asked for. Given every decision up front, or run without a terminal, it asks nothing. With no terminal it installs only the practices it is named, or every practice when told to, and never waits on a question. What install places is exactly what uninstall later removes. Every clause but the practices was realized by plan guided-install (closed) and must keep holding: the harness, launch-command and model-role decisions, their flags, the preview, the summary, and the records uninstall reads stay as they are.\nAT CENSUS. [observed, packages/cli/dist built 2026-10-01 09:16] a non-terminal `cratylus install --harness omp` into an empty HOME exits 0, prints 11 lines, one of them `optional personas: none`, and places 6 agents, all 16 skills and 4 hooks (62 files); `--all` is refused as an unknown option. [read] The persona decision is packages/forge/src/cli/commands/install.ts (1197 lines) :363-391: `--personas`, offered from ProjectedTree.optionalAgents, defaulting where nothing is asked to the optional personas already installed; the render with omitAgents is :338-360 and the preview line :739-746. install-prompts.ts asks it at personas() (:34-39, :109-116); the flag is packages/forge/src/cli/index.ts:302-307. It is documented in packages/cli/README.md (the install flag table :127-141; 'The guided install' :666-698, its row :678 and prose :682-686) and packages/forge/README.md (:328-338, :354). Agent.optional (packages/schema/src/index.ts:568-577), declared by packages/canon/src/agents/kino.ts:36 and nico.ts:33 and copied by roles/hold.ts:121-123, and ProjectOpts.omitAgents and ProjectedTree.optionalAgents (packages/forge/src/project/index.ts:195-201, :247-250, :544-558) exist only for that decision. Five forge test files drive runInstall: test/cli/install.test.ts and test/deploy/{model-roles,persona-commands,status-line,uninstall}.test.ts; test/deploy/helpers.ts answers the prompts. packages/runtime/src/runtime-config.ts:153 tells a reader with no runtime config to run `cratylus install --harness <h>` or `cratylus deploy --harness <h>`; it stays as it is, since on a terminal that install asks and without one its refusal says what to add.\nPRACTICES (unit practice's). The corpus declares its practices, each with a name, a one-line description and whether a fresh install preselects it (canon: cdd preselected; corpus-authoring, film-production and carry-on not), and its plumbing; projection takes the practices to render and reports the declared ones on ProjectedTree.\nCHANGE (how, this plan's). The practices decision replaces the personas decision, a clean cutover. Flags: `--practices <name,…>` names the declared practices to install, and `--all` installs every practice; given together they are refused, and a name that is no declared practice is refused naming the declared ones, with nothing written. On a terminal with neither flag, install asks one multiselect of the declared practices, each shown with its description, preselecting the practices already installed here, or on a fresh host the corpus's preselected ones; plumbing is never offered nor listed as a choice. `--yes` on a terminal takes that preselection. With no terminal on stdin and stdout and neither flag, install refuses before writing anything: one stderr line `cratylus install: …` naming `--practices` with the declared practices and `--all`, exit 1; this holds under --yes and on a host that already has practices installed. Projection is given the chosen practices, so only their agents, skills and guards and the plumbing are placed. A practice installed before and not chosen now is removed, with whatever no chosen practice still carries (its agents, skills, hooks, stance manifests and persona commands), as a dropped persona is removed at census. Install records which practices it installed so the next run preselects them and uninstall still removes exactly what was placed. The preview and the summary name the practices to install and any to remove, in place of `optional personas`. The launch-command question covers the personas of the chosen practices; the model-role question covers the roles their agents hold. Retire Agent.optional (schema, kino, nico, hold.ts), ProjectOpts.omitAgents and ProjectedTree.optionalAgents, and every test case or fixture that exists only for them (packages/forge/test/project/fixtures/pair/agents/offered.ts and its cases in tree.test.ts), so nothing offers a persona on its own. Each test that drives runInstall without a terminal names its practices. packages/cli/README.md (the install flag table and 'The guided install') and packages/forge/README.md (How install places a corpus) say how install offers practices; install --help states each flag's default. One changeset, .changeset/install-practices.md (@cratylus/schema, @cratylus/canon, @cratylus/forge and cratylus minor). Temp directories a check creates are removed by their exact paths, never by a glob.\nFINDINGS BESIDE practice (landed at 57fd456f, integrated at a0efcc5f), both this unit's. (1) Note 'persona optionality stands beside practices': per-persona optionality is a second, per-agent way of choosing what install places, so it retires here as CHANGE already says (Agent.optional, ProjectedTree.optionalAgents, ProjectOpts.omitAgents, --personas), and with it every prose that offers a persona on its own, packages/forge/README.md's 'every agent but the optional personas is always installed' and its kin in packages/cli/README.md included. (2) An empty choice of practices never installs the whole corpus. [read @a0efcc5f] packages/forge/src/project/index.ts:210-220 documents ProjectOpts.practices 'Absent or empty ⇒ every cell is rendered', and :691 renders every cell when the list is empty, so an install whose operator deselects every practice, or given `--practices ''`, would place every agent, skill and hook. Absent keeps meaning every cell (`project` and whole-corpus renders stay byte for byte); an empty list is refused by projection with an error saying no practice was chosen, before anything is rendered, and the comment says so. Install never reaches it: the terminal question requires at least one practice, and `--practices ''` (or one holding only commas or spaces) is refused with one stderr line `cratylus install: …` that names the declared practices and says that removing everything is `cratylus uninstall --harness <h>`, with nothing written.",
+      "static": [
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/canon/src/practices.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/cli/src/cratylus.ts"
+      ],
+      "deps": [
+        "01M3VXJG5V1JCWQ22KWG18Q7JB",
+        "01M3VXK2RCVTPDDE2FY879EVD8"
+      ],
+      "outputs": [
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/install-prompts.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/schema/src/index.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/helpers.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/forge/test/project/practices.test.ts",
+        "packages/forge/test/project/fixtures/pair/agents/offered.ts",
+        "packages/forge/test/project/fixtures/pair/agents/steady.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/cli/README.md",
+        "packages/forge/README.md",
+        ".changeset/install-practices.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli/install.test.ts test/deploy test/project`, `pnpm --filter @cratylus/canon exec vitest run test/gate-convicts.test.ts test/practices.test.ts test/projection-stability.test.ts`, `pnpm --filter cratylus test` and `pnpm typecheck` exit 0. install.test.ts drives runInstall through the injected prompts and convicts each of, failing at census: the practices question offers exactly the declared practices and no plumbing, preselecting cdd on a fresh host and the installed practices on a re-install; a decision given by --practices or --all is not asked; with no terminal and neither flag, runInstall refuses and writes nothing, also under --yes and over an existing install.",
+        "NO TERMINAL, NO GUESS: after `pnpm build`, H=$(mktemp -d); mkdir -p $H/.omp/agent; `HOME=$H node packages/cli/dist/cratylus.js install --harness omp </dev/null` exits 1 with empty stdout and one stderr line beginning `cratylus install:` that names `--practices` and `--all`, and `find $H -type f | wc -l` prints 0. At census it exits 0 and places 62 files.",
+        "ONE PRACTICE: then `HOME=$H node packages/cli/dist/cratylus.js install --harness omp --practices cdd --no-link-persona-commands </dev/null` exits 0; $H/.omp/agent/agents holds exactly architect.md, assayer.md, implementer.md, integrator.md, mav.md and planner.md; $H/.agents/skills holds design, plan, note, deliver and event-tap and none of signify, probe, create-agent and carry-on; stdout names cdd and no line names optional personas.",
+        "SWITCH AND BACK OUT: then the same run with `--practices cdd,corpus-authoring` exits 0 and places nico.md and skills/signify; with `--practices carry-on` it exits 0, $H/.omp/agent/agents holds no agent definition, and $H/.agents/skills holds carry-on and event-tap and not design; with `--all` it exits 0 and places all eight agents, kino.md and nico.md among them; then `HOME=$H node packages/cli/dist/cratylus.js uninstall --harness omp` exits 0 and `find $H -type f | wc -l` prints 0. At census --practices and --all are refused as unknown options.",
+        "REFUSALS: in a fresh temp HOME, `install --harness omp --practices bogus </dev/null` and `install --harness omp --practices cdd --all </dev/null` each exit 1 with one stderr line beginning `cratylus install:` (the first naming the declared practices) and leave 0 files.",
+        "ASKS ON A TERMINAL: H3=$(mktemp -d); mkdir -p $H3/.omp/agent; `timeout 20 script -qec \"HOME=$H3 node packages/cli/dist/cratylus.js install --harness omp\" /dev/null </dev/null` captures a question listing cdd, corpus-authoring, film-production and carry-on and not event-tap, and `find $H3 -type f | wc -l` prints 0 afterwards. At census that question offers the optional personas kino and nico.",
+        "RETIRED: `git grep -nE \"optionalAgents|omitAgents|--personas|optional: true\" -- 'packages/*/src'` and `git grep -n \"readonly optional?\" -- packages/schema/src/index.ts` print nothing. At census they print hits in schema, canon kino.ts and nico.ts, forge project/index.ts, install.ts and cli/index.ts.",
+        "NO PRACTICE IS NOT EVERY PRACTICE: in a fresh temp HOME with .omp/agent, `HOME=$H node packages/cli/dist/cratylus.js install --harness omp --practices '' </dev/null` exits 1 with one stderr line beginning `cratylus install:` that names `cratylus uninstall`, and `find $H -type f | wc -l` prints 0; packages/forge/test/project/practices.test.ts gains a case, failing at a0efcc5f, that projectPluginSet given `practices: []` throws and renders nothing, while a render with practices absent still places every cell; install.test.ts gains a case that a terminal run answering the practices question with none is refused (or the question cannot be answered empty) and writes nothing.",
+        "NO PERSONA ON ITS OWN: `git grep -niE \"optional personas?|--personas\" -- packages/cli/README.md packages/forge/README.md` prints nothing (at a0efcc5f it prints the install flag table, 'The guided install' and forge's 'How install places a corpus')."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "version": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+      "closure": {
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "1e5fd227",
+        "author": "InstallPractices",
+        "time": "2026-10-01T15:01:11.456Z"
+      }
+    ]
+  }
+}
