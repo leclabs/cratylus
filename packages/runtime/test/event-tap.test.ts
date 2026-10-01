@@ -221,10 +221,11 @@ describe('tap uninstall restores what install placed', () => {
     install(settingsPath, sinkPath);
     expect(existsSync(settingsPath)).toBe(true);
 
-    tap(['uninstall', '--settings', settingsPath]);
+    const res = tap(['uninstall', '--settings', settingsPath]);
 
     expect(existsSync(settingsPath)).toBe(false);
     expect(existsSync(dirname(settingsPath))).toBe(false);
+    expect(res).toEqual({ verb: 'uninstall' });
   });
 
   it('removes every directory install made for a nested settings path', () => {
@@ -260,10 +261,11 @@ describe('tap uninstall restores what install placed', () => {
     writeFileSync(other, 'host-owned\n', 'utf8');
     install(settingsPath, sinkPath);
 
-    tap(['uninstall', '--settings', settingsPath]);
+    const res = tap(['uninstall', '--settings', settingsPath]);
 
     expect(existsSync(settingsPath)).toBe(false);
     expect(readFileSync(other, 'utf8')).toBe('host-owned\n');
+    expect(res).toEqual({ verb: 'uninstall' });
   });
 
   it('keeps a directory the host put a file in after install', () => {
@@ -272,10 +274,16 @@ describe('tap uninstall restores what install placed', () => {
     const other = join(dirname(settingsPath), 'CLAUDE.md');
     writeFileSync(other, 'added later\n', 'utf8');
 
-    tap(['uninstall', '--settings', settingsPath]);
+    const res = tap(['uninstall', '--settings', settingsPath]);
 
     expect(existsSync(settingsPath)).toBe(false);
     expect(readFileSync(other, 'utf8')).toBe('added later\n');
+    expect(res).toEqual({
+      verb: 'uninstall',
+      left: [
+        { path: dirname(settingsPath), why: expect.stringContaining('host') },
+      ],
+    });
   });
 
   it('keeps a settings file the host added keys to after install', () => {
@@ -288,9 +296,13 @@ describe('tap uninstall restores what install placed', () => {
       'utf8',
     );
 
-    tap(['uninstall', '--settings', settingsPath]);
+    const res = tap(['uninstall', '--settings', settingsPath]);
 
     expect(read(settingsPath)).toEqual({ env: { FOO: 'bar' } });
+    expect(res).toEqual({
+      verb: 'uninstall',
+      left: [{ path: settingsPath, why: expect.stringContaining('host') }],
+    });
   });
 
   it.each([

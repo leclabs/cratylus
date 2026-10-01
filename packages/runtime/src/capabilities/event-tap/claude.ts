@@ -27,6 +27,7 @@ import type {
   CaptureRow,
   CaptureSink,
   EventTapHost,
+  EventTapLeft,
   EventTapStatus,
 } from '../../ports/event-tap.js';
 import type { RuntimeActBinding } from '../../runtime-config.js';
@@ -132,19 +133,23 @@ function render(value: unknown, restore: TapRestore | undefined): string {
 /**
  * Remove `dir` and up to `count - 1` parents above it, stopping at the first that
  * holds anything: a directory install made is the host's once the host puts
- * something in it.
+ * something in it. Returns that directory, if there was one.
  */
-function removeEmptyDirectories(dir: string, count: number): void {
+function removeEmptyDirectories(
+  dir: string,
+  count: number,
+): string | undefined {
   let d = dir;
   for (let i = 0; i < count; i += 1, d = dirname(d)) {
     try {
       rmdirSync(d);
     } catch (err) {
       const code = (err as NodeJS.ErrnoException).code;
-      if (code === 'ENOTEMPTY' || code === 'EEXIST') return;
+      if (code === 'ENOTEMPTY' || code === 'EEXIST') return d;
       throw err;
     }
   }
+  return undefined;
 }
 
 /**
@@ -286,22 +291,32 @@ export class EventTapHostClaude implements EventTapHost {
     return { tapped, skipped };
   }
 
-  remove(): void {
+  remove(): EventTapLeft[] {
     const settingsPath = this.#settingsPath;
-    if (!existsSync(settingsPath)) return;
+    if (!existsSync(settingsPath)) return [];
     const text = readFileSync(settingsPath, 'utf8');
-    if (text.trim() === '') return;
+    if (text.trim() === '') return [];
     const base = JSON.parse(text) as Record<string, unknown> & {
       hooks?: ClaudeHooksBlock;
     };
     const hooks = base.hooks;
-    if (!hooks) return;
+    if (!hooks) return [];
 
     // What the install stamped on its entries; any one will do.
     const restore = Object.values(hooks)
       .flat()
       .flatMap((e) => e.hooks)
       .find((h) => h.id === EVENT_TAP_ID && h.restore !== undefined)?.restore;
+    // A file install made, and now holds what the host put in it: kept, and said.
+    const keptFile: EventTapLeft[] =
+      restore !== undefined && 'created' in restore
+        ? [
+            {
+              path: settingsPath,
+              why: 'install created it, and the host has since put its own content in it',
+            },
+          ]
+        : [];
 
     const cleaned: ClaudeHooksBlock = {};
     for (const [event, entries] of Object.entries(hooks)) {
@@ -313,6 +328,7 @@ export class EventTapHostClaude implements EventTapHost {
         .filter((e) => e.hooks.length > 0);
       if (kept.length > 0) cleaned[event] = kept;
     }
+    this.#sinkPath = undefined;
 
     if (Object.keys(cleaned).length > 0) {
       writeFileSync(
@@ -320,8 +336,7 @@ export class EventTapHostClaude implements EventTapHost {
         render({ ...base, hooks: cleaned }, restore),
         'utf8',
       );
-      this.#sinkPath = undefined;
-      return;
+      return keptFile;
     }
     // No foreign entries remain: drop the whole key so nothing residual is left
     // behind (a bare `hooks: {}` would be residue).
@@ -331,13 +346,25 @@ export class EventTapHostClaude implements EventTapHost {
       // The tap's entries were all the file held and install made the file: put the
       // host back as it was before install, file and the directories made for it.
       unlinkSync(settingsPath);
-      removeEmptyDirectories(dirname(settingsPath), restore.created);
-    } else if (nothingElse && restore !== undefined && 'blank' in restore) {
-      writeFileSync(settingsPath, restore.blank, 'utf8');
-    } else {
-      writeFileSync(settingsPath, render(rest, restore), 'utf8');
+      const left = removeEmptyDirectories(
+        dirname(settingsPath),
+        restore.created,
+      );
+      return left === undefined
+        ? []
+        : [
+            {
+              path: left,
+              why: 'install created it, and the host has since put something in it',
+            },
+          ];
     }
-    this.#sinkPath = undefined;
+    if (nothingElse && restore !== undefined && 'blank' in restore) {
+      writeFileSync(settingsPath, restore.blank, 'utf8');
+      return [];
+    }
+    writeFileSync(settingsPath, render(rest, restore), 'utf8');
+    return keptFile;
   }
 
   readCapture(): CaptureRow[] {
