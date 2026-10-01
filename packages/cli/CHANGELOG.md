@@ -1,5 +1,16 @@
 # @cratylus/invoke
 
+## 0.8.3
+
+### Patch Changes
+
+- e3aa516: The README's "Enforcement scope" entry now tells consumers that a guard refusal can be contested: state why, and the act proceeds with the contest logged for review.
+- Updated dependencies [cd697a8]
+- Updated dependencies [31a7cfc]
+- Updated dependencies [3d8a735]
+- Updated dependencies [a6a6a7e]
+  - @cratylus/canon@0.12.3
+
 ## 0.8.2
 
 ### Patch Changes
