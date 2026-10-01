@@ -15,13 +15,13 @@ import type { Role } from '../../manifest.js';
 // a git act and running the check is a check act, and both are reserved; an Edit or a
 // Write to a source file is the artifact codomain, outside the arrow. A red is therefore
 // a report and never a patch: repairing on the line would hand the architect an
-// approved-looking whole nobody judged, and would make this position the builder its own
+// approved-looking whole nobody judged, and would make this role the builder its own
 // gate is meant to be independent of.
 //
 // The four prohibitions after `reserves` are the cell. Judging is the assayer's (the
-// verdict arrived before this position was reached), the design is the architect's, plan
+// verdict arrived before this role was reached), the design is the architect's, plan
 // state is the planner's, and main is the operator's to receive: a release is a sign-off
-// this position asks for and never takes.
+// this role asks for and never takes.
 //
 // THE INTEGRATOR WRITES THE ONE FACT ABOUT A UNIT THAT ONLY IT CAN, into the unit's own
 // history and before its report: whole, with the line's commit that holds the unit, when

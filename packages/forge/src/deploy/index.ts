@@ -171,9 +171,10 @@ export {
 } from './persona-commands.js';
 
 // The host's status line, where the persona badge becomes visible: Claude Code's one
-// `settings.statusLine` command (set where the host has none, wrapped only on request,
-// never replaced) and omp's `statusLine` layout (the `status` segment listed, under
-// the `custom` preset that reads a list at all).
+// `settings.statusLine` command (set where the host has none; where it has one, install
+// wraps that command so the badge prints before its output; never replaced) and omp's
+// `statusLine` layout (the `status` segment listed, under the `custom` preset that
+// reads a list at all).
 export {
   type BadgeStatusLineResult,
   type BadgeStatusLineState,
