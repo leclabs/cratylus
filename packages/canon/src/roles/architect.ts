@@ -22,6 +22,10 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { conceptualIntegrity as conceptualIntegrity_objective } from '../dimensions/objective/conceptual-integrity.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
 import { architect as architect_role } from '../dimensions/role/architect.js';
+import { assayer as assayer_role } from '../dimensions/role/assayer.js';
+import { implementer as implementer_role } from '../dimensions/role/implementer.js';
+import { integrator as integrator_role } from '../dimensions/role/integrator.js';
+import { planner as planner_role } from '../dimensions/role/planner.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
@@ -56,6 +60,10 @@ export const architectRole: RoleCell = {
   // dispatched subagent's first prompt and the generic launcher inlines their bodies for
   // a main session, so a holder is the same agent either way it is reached.
   skills: ['design', 'note'],
+  // The writers below, by role: the architect hands a shard to the planner, a ready
+  // unit to the implementer, a commit to the assayer and an achieved unit to the
+  // integrator, so an install that places an architect places those four.
+  dispatches: [planner_role, implementer_role, assayer_role, integrator_role],
   vector: {
     formality: plain_formality,
     // `convergence`: this position's output is UNDERSTANDING, which is worthless at a

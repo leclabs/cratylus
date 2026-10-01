@@ -35,6 +35,8 @@ import type { RoleCell } from './hold.js';
 export const implementerRole: RoleCell = {
   sign: implementer_role,
   skills: ['note'],
+  // Dispatches no role: it builds its one unit and returns a name.
+  dispatches: [],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

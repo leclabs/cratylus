@@ -70,6 +70,15 @@ export interface RoleCell {
   readonly sign: Role;
   /** The apparatus every holder operates through. Holders may add; see `holds`. */
   readonly skills?: readonly string[];
+  /**
+   * The roles whose holders THIS position's holders hand work to — stated as data
+   * because the role text says it only in prose, and an install that placed the
+   * dispatcher without the dispatched would fail when run. `[]` is the statement
+   * that the position dispatches none: a dispatching position states its roles and
+   * a leaf states none, so no cell leaves the question unanswered. The fold copies
+   * their anchors to `Agent.dispatches`, as it does the held role to `Agent.holds`.
+   */
+  readonly dispatches: readonly Role[];
   /** The aspects expected of anyone holding the position — DEFAULTS, every one. */
   readonly vector: RoleVector;
 }
@@ -81,7 +90,7 @@ export interface RoleCell {
  * bounded in exactly one way: `role` is absent, because the contract is the position's.
  * An aspect stated here OVERRIDES a scalar the role supplies and EXTENDS a set.
  */
-export type Declared = Omit<AgentIdentity, 'holds'> &
+export type Declared = Omit<AgentIdentity, 'holds' | 'dispatches'> &
   Partial<Omit<DimensionFields, 'role'>>;
 
 /**
@@ -114,6 +123,9 @@ export function holds(role: RoleCell, declared: Declared): Agent {
     // The held role's anchor, on the identity face: forge is blind to the `role`
     // dimension, so this is the one place the position reaches a harness.
     holds: anchorOf(role.sign),
+    ...(role.dispatches.length > 0
+      ? { dispatches: role.dispatches.map((r) => anchorOf(r)) }
+      : {}),
   };
   if (declared.preamble !== undefined) {
     resolved.preamble = declared.preamble;
