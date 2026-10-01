@@ -3,7 +3,7 @@ import type { HookCell } from '../manifest.js';
 
 // purview-guardrail — the gate that makes a ROLE CONTRACT scoreable.
 //
-// A role value now states the arrow the position is over the ladder
+// A role value now states the arrow the role is over the ladder
 // `intent ≺ C ≺ spec ≺ artifact`, and an act whose domain or codomain falls outside
 // that arrow is delegated NECESSARILY. Declared, that is a steer. This cell is the
 // bound: it refuses, before the call fires, an act the holder's own contract puts

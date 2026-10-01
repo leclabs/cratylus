@@ -193,6 +193,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
   'canon/pack-smoke.test.ts': 'GATE',
+  // enumerates the LIVE agents: a role-named agent carries exactly its role's identity and a
+  // persona a description, archetype and mark of its own. Its convicting fixtures hand
+  // the fold a persona with no archetype, with no mark, with its role's mark, and a
+  // role-named agent that declares a dimension value or only an identity.
+  'canon/persona.test.ts': 'GATE',
   // holds the declared practices against the LIVE corpus: the set is exactly the four,
   // every agent, skill and harness hook cell is placed by a practice or the plumbing,
   // and each practice renders alone on both harnesses. Its convicting fixtures feed the

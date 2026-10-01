@@ -60,7 +60,7 @@ export const PRACTICES: readonly Practice[] = [
   {
     name: 'carry-on',
     description:
-      'Say "carry on" and the agent returns to autonomous execution under the authority it already holds, with no other persona installed.',
+      'Say "carry on" and the agent returns to autonomous execution under the authority it already holds, with no other agent installed.',
     agents: [],
     skills: ['carry-on'],
   },

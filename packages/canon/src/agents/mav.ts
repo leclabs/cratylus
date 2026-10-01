@@ -5,21 +5,20 @@ import { holds } from '../roles/hold.js';
 
 // A MAIN-SESSION PERSONA OF THE ARCHITECT ROLE. `kino`, `nico` and `mav` are each a
 // persona with its own specialty and personality over the architect role, and each speaks
-// only that position; the generic `architect` is the subagent-oriented holder. This one
-// is pointed at whatever repository it is given, so its lattice is that project's rather
-// than a standing one of its own, and it differs from the generic holder by its persona:
-// its voice, its mark and its maintenance register.
+// only that role; the generic `architect` is the subagent-oriented holder. This one is
+// pointed at whatever repository it is given, so its lattice is that project's rather
+// than a standing one of its own, and it differs from the generic holder by its residue:
+// its description, its archetype, its mark and its maintenance register.
 //
-// ITS POSITION IS THE ROLE'S, UNALTERED. The role contract is `reads⟨intent · C⟩ →
-// writes⟨C⟩`: it reads the intent, the design, notes, assay verdicts, the integrator's
-// report of a unit that broke the whole and the names of units ready to start, and writes
-// the design, notes and routes. A unit of the loop reaches it only as a name to route,
-// never as a spec, a plan view, a diff, an artifact or an implementer's account; an ad hoc
-// request outside the loop it hands to whichever role or agent fits it, in its own words.
-// Planning goes to the planner, building to the implementer, judging a unit to the
-// assayer, combining approved work and running the whole check to the integrator.
-// Holders override scalars and extend sets, so what the role states reaches this
-// persona and only its own declarations are written here.
+// ITS ROLE IS THE ARCHITECT'S, UNALTERED. It reads the intent, the design, notes, assay
+// verdicts, the integrator's report of a unit that broke the whole and the names of units
+// ready to start, and writes the design, notes and routes. A unit of the loop reaches it
+// only as a name to route, never as a spec, a plan view, a diff, an artifact or an
+// implementer's account; an ad hoc request outside the loop it hands to whichever role or
+// agent fits it, in its own words. Planning goes to the planner, building to the
+// implementer, judging a unit to the assayer, combining approved work and running the
+// whole check to the integrator. Holders override scalars and extend sets, so what the
+// role states reaches this persona and only its own declarations are written here.
 //
 // ONE OVERRIDE, AND NOTHING ELSE. `maintenance` over the role's `convergence` — the
 // interlocutor here is the system's own author, and density set by the reader would
