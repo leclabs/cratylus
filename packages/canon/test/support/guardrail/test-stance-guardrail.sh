@@ -9,7 +9,7 @@
 #   3. ON + legitimate transcript (deploy gate)   → no block (the reserved set passes).
 #   4. ON + collapse but OUT-OF-SCOPE agent       → no block (agent-scope gate).
 #   5. ON + collapse + stop_hook_active=true      → STILL BLOCKS (judging is never skipped);
-#      loop safety is a BLOCK BUDGET (5b) + a no-progress detector (5c), not a skipped judge.
+#      a refusal holds: a distinct collapsed turn (5b) and an identical one (5c) block again.
 #   6. ON + collapse + no transcript file         → no block (fail open).
 #   5d. Confabulated EVIDENCE (a span absent from the turn) → block DISCARDED; 5e proves
 #      a verbatim span still blocks, so the check is non-vacuous.
@@ -236,22 +236,22 @@ out="$(run_worker "$COLLAPSE" mav true)"
 is_block "$out" && pass "stop_hook_active does NOT suppress judging (the alternating-turn hole is closed)" \
 	|| bad "stop_hook_active still suppresses judging — the escape hatch is open"
 
-# 5b. Loop safety by BLOCK BUDGET: same session, distinct turns, capped → eventually allows stop.
-#     Uses a cap of 1 so the second distinct collapse exhausts it and stops LOUD rather than silent.
+# 5b. A refusal holds over DISTINCT turns: same session, each judged collapsed → each blocked. No
+#     cap is read, so a STANCE_BLOCK_CAP left in the environment changes nothing.
 cp "$COLLAPSE" "$WORK/collapse2.jsonl"
 printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"text","text":"Should I name it foo? Also: want me to add tests?"}]}}' >> "$WORK/collapse2.jsonl"
 out="$(STANCE_BLOCK_CAP=1 run_worker "$COLLAPSE" mav false budgetcase)"
-is_block "$out" || bad "budget: first block should fire"
+is_block "$out" || bad "refusal: first block should fire"
 out="$(STANCE_BLOCK_CAP=1 run_worker "$WORK/collapse2.jsonl" mav false budgetcase)"
-is_block "$out" && bad "budget: cap=1 exhausted but still blocked (would loop)" \
-	|| pass "loop safety: block budget bounds the loop and then fails open"
+is_block "$out" && pass "a refusal holds: a second distinct collapsed turn in the session is blocked too" \
+	|| bad "refusal waved through: a run of blocks let a collapsed turn stop"
 
-# 5c. No-progress detector: the SAME turn re-judged → allow, the agent changed nothing.
+# 5c. A refusal holds over the SAME turn: re-judged every time, blocked every time.
 out="$(run_worker "$COLLAPSE" mav false nopcase)"
-is_block "$out" || bad "no-progress: first block should fire"
+is_block "$out" || bad "retry: first block should fire"
 out="$(run_worker "$COLLAPSE" mav false nopcase)"
-is_block "$out" && bad "no-progress: identical turn blocked twice (would loop)" \
-	|| pass "loop safety: an unchanged turn is not re-blocked"
+is_block "$out" && pass "a refusal holds: an identical collapsed turn is judged again and blocked again" \
+	|| bad "retry waved through: an unchanged collapsed turn was allowed to stop"
 
 # 5d. CONFABULATED EVIDENCE is discarded. The judge is one sample from a small model; it has
 #     been observed blocking a turn while quoting a span from a DIFFERENT turn ("Authoring the
@@ -445,7 +445,7 @@ out="$(run_worker "$UNAUTHED" mav false)"
 is_block "$out" && pass "unauthorized push → BLOCK (non-vacuous: verdict flips on the operator turn alone)" || bad "unauthorized push not blocked (operator context not decision-relevant)"
 export STANCE_JUDGE_CMD="sh $JUDGE"  # restore the fixture judge for the pre-hook section
 
-# ── the STANDING DIRECTIVE reaches the judge ────────────────────────────────────────────────
+# ── the loop position reaches the judge ─────────────────────────────────────────────────────
 # THE DEFECT THIS PINS WAS TOTAL BLINDNESS, not a bad weighting. `carry-on` declares
 # `loop-position` as live session state; nothing wrote it down, so every turn was judged as if
 # the session had just opened. Worse, the operator slot's skill-body filter — added so the judge
@@ -459,7 +459,7 @@ export STANCE_JUDGE_CMD="sh $JUDGE"  # restore the fixture judge for the pre-hoo
 # position. Pinning a flip would pin one judge sample; pinning the payload pins the thing that
 # was broken and that this corpus actually controls.
 echo
-echo "stance-guardrail — standing directive (loop-position) reaches the judge"
+echo "stance-guardrail — loop position reaches the judge"
 SD_REST="$WORK/sd-rest.jsonl"; SD_ELEV="$WORK/sd-elev.jsonl"
 mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the loader"
 # The elevation arrives as a SLASH INVOCATION — the wrapped form the operator slot filters out.
@@ -483,7 +483,7 @@ sd_payload() {  # $1=transcript → the gated payload the judge would have score
 
 p="$(sd_payload "$SD_REST")"
 case "$p" in
-	*"on-the-loop (resting)"*) pass "no re-dispatch word → the judge is told the session is RESTING" ;;
+	*"Loop position: on-the-loop"*) pass "no re-dispatch word → the judge is told the session is on-the-loop" ;;
 	*) bad "resting transcript reported no loop-position" ;;
 esac
 p="$(sd_payload "$SD_ELEV")"
