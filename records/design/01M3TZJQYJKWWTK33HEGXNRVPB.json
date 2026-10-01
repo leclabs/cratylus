@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TZJQYJKWWTK33HEGXNRVPB",
+    "entity": "01M3QBFZX8JMA6VHK12AEAN8KV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TVG4Z8PEWY4YMEDQYAH97Q"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T05:39:16.050Z",
+    "reason": "the operator found the guard workers bloated (14 KB and 50 KB); stance-workers-lean cut them to 6 KB and 15 KB with byte-identical behaviour, but no concept measured worker size",
+    "cause": "decision note 'a guard is no larger than its one act'; refusal-way-forward closed"
+  },
+  "payload": {
+    "anchor": "enforcement scope",
+    "gloss": "a guard binds exactly the agents whose composition includes it, and only in such an agent’s own main session, never in a subagent it dispatches, which is bounded by what it was handed, judged by its assay and the whole check, and supervised by the main session; on every supported harness it judges every turn it fires on; where its judge cannot run, it lets the turn through and says so, never silently, and it asks the judge again once the judge may have recovered, so a passing outage never leaves the guard unjudged for the rest of a session. A judgement fits within the time its harness allows a guard, so a judge that is merely slow is never reported as one that could not run. A guard judges an act against the contract of the agent that performs it, and a refusal never strands the agent: a guard exists so agents keep working within their remit when no one is watching, and its judge can be wrong, so every refusal leaves the agent a way to continue on its own. A retry is judged again rather than waved through unexamined, and an agent that holds a refusal wrong contests it by stating why; the contested act then proceeds and the contest is recorded for the operator to review, never left waiting on the operator to unblock it. What a guard hands its judge is only what its one decision needs, the test stated in a few sentences and the act and contract it applies to, because every sentence beyond that costs time and gives the judge more to misread. The guard itself is no larger than its one act needs, reading the event, deciding whether it applies, asking the judge and relaying the verdict with its way forward; anything more it carries is a defect. Where a harness cannot tell which agent is running, the guard is carried as a stated rule instead and the operator is told; a guard that fires and judges nothing never ships. At the turn end, where refusing holds back no effect and only makes the agent redo its turn, a repeated or several-times-refused stop goes through, saying so, rather than lock a session in an endless loop.",
+    "factors": []
+  }
+}

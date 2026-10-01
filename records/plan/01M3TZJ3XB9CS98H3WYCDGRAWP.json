@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3TZJ3XB9CS98H3WYCDGRAWP",
+    "entity": "01M3TWQ60F9V1VKNVRVSNZWHSN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TWSJRA5XV6EPB2FJ0FG422"
+    ],
+    "author": "WayForwardPlanner7",
+    "time": "2026-10-01T05:38:55.531Z",
+    "reason": "every unit completed: purview-contest, stance-workers-lean, stance-contest, contest-answers-refusal",
+    "cause": "whole contest-answers-refusal recorded by WayForwardIntegrator4 at 2715b105"
+  },
+  "payload": {
+    "name": "refusal-way-forward",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "closed"
+  }
+}

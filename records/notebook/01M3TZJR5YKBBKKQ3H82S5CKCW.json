@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3TZJR5YKBBKKQ3H82S5CKCW",
+    "entity": "01M3TY2W7JMM8534HECVQA7857",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TY2W7JMM8534HECVQA7858"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T05:39:16.286Z",
+    "reason": "entered the design as enforcement scope",
+    "cause": "refusal-way-forward closed"
+  },
+  "payload": null
+}
