@@ -43,7 +43,7 @@ import type { HookCell } from '../manifest.js';
 //
 // EVERYTHING ELSE IS LEFT AS THE HARNESS WOULD DO IT. For every worktree that is not the
 // implementer's, and for the implementer's when there is no line to cut from — no plan
-// bound, `cratylus` or `jq` missing, a `plan show` answer the worker does not recognise
+// bound, `cratylus` missing, a `plan show` answer the worker does not recognise
 // (`with nothing committed yet`) — the worker creates what Claude Code's own creation
 // would: a worktree at `<project>/.<harness>/worktrees/<name>` on a branch
 // `worktree-<name>`, cut from origin's default branch, or from the session's HEAD where
@@ -51,6 +51,11 @@ import type { HookCell } from '../manifest.js';
 // path. The hook has replaced that creation for every worktree on the host, so it owes
 // the same behaviour for every one it is not cutting from a line, and it never fails one
 // for want of a line. It says on stderr when the implementer's was made without one.
+//
+// `jq` IS NOT WHAT THE LINE NEEDS. It reads the request and the host's `baseRef`, and
+// where it is not installed the worker reads the one flat string each holds with `sed`;
+// finding the line's tip asks the runtime and uses no `jq`, so a host without `jq` still
+// has the implementer's worktree cut from the line.
 //
 // WHAT IT STILL REFUSES is a creation Claude Code's would refuse as well: a request that
 // names no readable `cwd` or an unusable `name`, a `cwd` inside no repository, a path that
@@ -77,7 +82,7 @@ import type { HookCell } from '../manifest.js';
 export const lineWorktree: HookCell = {
   id: 'line-worktree',
   residue:
-    'creation-moment ↦ WorktreeCreate ⟨hook PERFORMS the creation ¬ observes it · prints path ∧ nothing else⟩ · acts ↾ implementer-copy ⟨name ≜ agent-a⟨hex⁷ ∨ hex¹⁶⟩ ¬ agent_type ∵ input names the dispatcher⟩ ∧ plan bound ⇒ cut(copy, tip(plan-integration)) ⟨new branch ∉ ⟨main · integration⟩ · tip ↦ runtime-answer ¬ spelled · ∄ plan-name ∧ ∄ branch-name ∧ ∄ path ∉ runtime⟩ · ∀ other copy ∨ ∀ failure ⟨∄ plan bound · runtime missing · jq missing · answer unknown⟩ ⇒ create as host would ⟨origin-default ∨ HEAD ↾ baseRef · <project>/.<harness>/worktrees/<name> · ¬ fail⟩ · creation impossible ⟨¬ cwd · ¬ name · ¬ repository · path taken · git refuses⟩ ⇒ FAIL LOUD ⟨stderr ∧ non-zero ∧ ∅ path ∧ ∅ copy⟩ ⟨¬ fall back to main checkout ∵ isolates nothing ∧ reads as isolation⟩ · removal ≜ kept ⟨∄ WorktreeRemove ∵ copy holds the unit’s commits⟩ · ∄ speech',
+    'creation-moment ↦ WorktreeCreate ⟨hook PERFORMS the creation ¬ observes it · prints path ∧ nothing else⟩ · acts ↾ implementer-copy ⟨name ≜ agent-a⟨hex⁷ ∨ hex¹⁶⟩ ¬ agent_type ∵ input names the dispatcher⟩ ∧ plan bound ⇒ cut(copy, tip(plan-integration)) ⟨new branch ∉ ⟨main · integration⟩ · tip ↦ runtime-answer ¬ spelled · ∄ plan-name ∧ ∄ branch-name ∧ ∄ path ∉ runtime⟩ · ∀ other copy ∨ ∀ failure ⟨∄ plan bound · runtime missing · answer unknown⟩ ⇒ create as host would ⟨origin-default ∨ HEAD ↾ baseRef · <project>/.<harness>/worktrees/<name> · ¬ fail⟩ · creation impossible ⟨¬ cwd · ¬ name · ¬ repository · path taken · git refuses⟩ ⇒ FAIL LOUD ⟨stderr ∧ non-zero ∧ ∅ path ∧ ∅ copy⟩ ⟨¬ fall back to main checkout ∵ isolates nothing ∧ reads as isolation⟩ · removal ≜ kept ⟨∄ WorktreeRemove ∵ copy holds the unit’s commits⟩ · ∄ speech',
   substrate: 'harness',
   events: ['worktree.create'],
   entry: 'line-worktree.sh',
@@ -103,8 +108,8 @@ export const lineWorktree: HookCell = {
 #                   harness names agent-a<7 or 16 hex digits>; the input names no
 #                   subagent, so the name is what there is to tell it by.
 #   - EVERY OTHER WORKTREE, AND THE IMPLEMENTER'S WHEN THERE IS NO LINE TO CUT FROM
-#                   (no plan bound, cratylus or jq missing, a plan show answer this does
-#                   not know): the worktree is made as the harness would have made it,
+#                   (no plan bound, cratylus missing, a plan show answer this does not
+#                   know): the worktree is made as the harness would have made it,
 #                   at <project>/.<harness>/worktrees/<name> from the origin's default
 #                   branch, or from HEAD where the host's worktree.baseRef is "head", or
 #                   where there is no origin. This never fails one for want of a line.
@@ -227,9 +232,7 @@ harness_start() {
 # ── WHERE FROM? the line, for the implementer's, if the runtime says there is one ──
 start=""
 if [ "$implementer" = yes ]; then
-	if [ "$have_jq" = no ]; then
-		note "jq is not installed: the implementer's worktree is made as the harness would make it, not from a plan's line"
-	elif start="$(line_tip)" && [ -n "$start" ]; then
+	if start="$(line_tip)" && [ -n "$start" ]; then
 		:
 	else
 		start=""

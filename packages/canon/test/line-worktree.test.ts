@@ -297,6 +297,34 @@ describe("line-worktree — a plan is bound, the implementer's worktree", () => 
   );
 });
 
+describe('line-worktree — a plan is bound and jq is missing from PATH', () => {
+  it.each(implementerNames)(
+    'still cuts the implementer’s %s from the tip of the line, which needs no jq',
+    (name) => {
+      const tip = bindLineWithCommit();
+      const r = run(request(name), noJq);
+      expect(r.status, r.stderr).toBe(0);
+      const path = r.stdout.trim();
+      expect(path.split('\n')).toHaveLength(1);
+      expect(worktrees()).toContain(path);
+      expect(isAncestor(path, tip)).toBe(true);
+      expect(readFileSync(join(path, 'line.txt'), 'utf8')).toBe(
+        'on the line\n',
+      );
+    },
+  );
+
+  it('makes any other worktree as the harness would, from HEAD', () => {
+    const tip = bindLineWithCommit();
+    const path = expectMadeAsHarness(
+      run(request('bridge-3f9a1c'), noJq),
+      'bridge-3f9a1c',
+      git(repo, 'rev-parse', 'HEAD'),
+    );
+    expect(isAncestor(path, tip)).toBe(false);
+  });
+});
+
 describe('line-worktree — a plan is bound, every other worktree', () => {
   it.each(otherNames)(
     'makes %s as the harness would, from HEAD and not from the line, without asking the runtime',
@@ -392,14 +420,13 @@ describe("line-worktree — no line to cut the implementer's worktree from", () 
       expectNotFromLine(run(request(name), toolbin), tip);
     });
 
-    it('with jq missing from PATH, makes it as the harness would, reading the request and baseRef without jq', () => {
-      const tip = bindLineWithCommit();
-      setBaseRefHead();
+    it('with no plan bound and jq missing from PATH, reads the request and worktree.baseRef without jq', () => {
       const originTip = originBehindHead();
+      setBaseRefHead();
       const r = run(request(name), noJq);
       const path = expectMadeAsHarness(r, name, git(repo, 'rev-parse', 'HEAD'));
+      // baseRef "head" was read: cut from the session's HEAD, past origin's default branch.
       expect(git(path, 'rev-parse', 'HEAD')).not.toBe(originTip);
-      expect(isAncestor(path, tip)).toBe(false);
     });
 
     it('with the runtime failing, makes it as the harness would', () => {

@@ -13,8 +13,8 @@
 #                   harness names agent-a<7 or 16 hex digits>; the input names no
 #                   subagent, so the name is what there is to tell it by.
 #   - EVERY OTHER WORKTREE, AND THE IMPLEMENTER'S WHEN THERE IS NO LINE TO CUT FROM
-#                   (no plan bound, cratylus or jq missing, a plan show answer this does
-#                   not know): the worktree is made as the harness would have made it,
+#                   (no plan bound, cratylus missing, a plan show answer this does not
+#                   know): the worktree is made as the harness would have made it,
 #                   at <project>/.<harness>/worktrees/<name> from the origin's default
 #                   branch, or from HEAD where the host's worktree.baseRef is "head", or
 #                   where there is no origin. This never fails one for want of a line.
@@ -137,9 +137,7 @@ harness_start() {
 # ── WHERE FROM? the line, for the implementer's, if the runtime says there is one ──
 start=""
 if [ "$implementer" = yes ]; then
-	if [ "$have_jq" = no ]; then
-		note "jq is not installed: the implementer's worktree is made as the harness would make it, not from a plan's line"
-	elif start="$(line_tip)" && [ -n "$start" ]; then
+	if start="$(line_tip)" && [ -n "$start" ]; then
 		:
 	else
 		start=""
