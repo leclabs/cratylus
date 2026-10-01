@@ -1,85 +1,63 @@
 # Cratylus
 
-> **A foundation model is not merely an engine to be instructed. It is a semantic space to be addressed.**
+Cratylus puts a set of named agents, skills and guards on your machine for Claude Code or omp. Each
+agent is projected from a corpus of meanings whose names were discovered in the model's own
+vocabulary rather than written as prose, so the same corpus renders the same way every time. You
+install it with one command and start an agent by its name. The thesis behind that is in
+[VISION.md](./VISION.md).
 
-The discipline is **latent lexicography** — the descriptive lexicography of a foundation model's
-latent vocabulary. Cratylus is its instrument. See [VISION §The discipline](./VISION.md#the-discipline).
+## Install and use
 
-<!-- THE ⊥ IS CLOSED. `semantic engineering` stood here until 2026-07-26, when a cold decode
-     disconfirmed it against two established fields (ontology engineering / Semantic Web, and PLT
-     formal-semantics engineering); the derivation returned ⊥ convergently and a definite
-     description stood in, because under `cratylism` a sign is discovered or absent, never coined.
-     It was found on 2026-08-05: `latent lexicography` for the discipline, `Cratylus` for the
-     instrument. Both were admitted by the standard the placeholder was protecting — argmin over
-     candidates, blind reverse decode, occupancy check — not by preference. The admitting
-     evidence is VISION §The discipline. The prior ⊥ was measured on an isolated cold oracle —
-     tool-less, project-blind, cwd outside the repo, harness env block stripped — whose positive
-     control passed (coined tokens decoded as unestablished) and whose candidate-free negative
-     control returned six distinct strings across eight runs, mode `semantic anchoring` at 3/8 and
-     one model only, with both existence-question runs answering "no established term". Every
-     candidate the oracle did produce then failed a reverse decode on discovery-not-authorship. -->
+You need Node 22 or later, and Claude Code or omp run at least once on this machine.
 
-![thesis.png](./thesis.png)
+1. Install the command:
 
-## The problem
+   ```sh
+   npm install -g cratylus
+   ```
 
-Prompt engineering asks _how should I describe this?_ Context engineering asks _what should
-accompany the request?_ Both locate meaning in text the author writes, and both inherit the same
-failure: prose is re-interpreted on every read. Iterate on it and it accumulates hedges, patches and
-hidden assumptions — more context consumed, weaker specification.
+2. Put the agents on this machine:
 
-## The inversion
+   ```sh
+   cratylus install
+   ```
 
-A foundation model already holds dense, structured priors over the concepts you are trying to
-express. For any such concept there exists a signifier that fires it most sharply — the one
-minimizing the mismatch between what the token actually invokes and what you meant. That is a
-**optimal-signifier**, and it is **discovered, not coined**.
+   The run is guided. It asks only what you have not said: which harness, which practices (the ways
+   of working it offers, each installed as one choice), and which model each role routes to. It asks
+   whether to link a launch command for each installed agent, which `--link-persona-commands` answers
+   up front. It shows what it will place, and places it once you confirm.
 
-|                         | asks                           | meaning comes from   |
-| ----------------------- | ------------------------------ | -------------------- |
-| prompt engineering      | how do I **describe** it?      | the author           |
-| context engineering     | what should **accompany** it?  | the assembled window |
-| **latent lexicography** | what is it **already called**? | **the model**        |
+3. Start an installed agent by its name, where install linked its command:
 
-The consequence is a compiler, not a prompt library: **discover → verify → canonize → compose →
-project**. The canon is source; every agent, skill and config is a deterministic projection of it.
-Runtime prose stops being the definition and becomes the emitted representation.
+   ```sh
+   mav
+   ```
 
-This guarantees a **reproducible semantic specification** — deliberately not deterministic model
-behavior, which would be a lie. Only one of those two uncertainties is reducible.
+   Any other word on the command line is the harness's own flag.
 
-## The packages
+4. Take it away again, whenever you like:
 
-| package                                   | concern                                                          |
-| ----------------------------------------- | ---------------------------------------------------------------- |
-| [`@cratylus/canon`](./packages/canon)     | **meaning** — the corpus of signified agents, skills and rules   |
-| [`@cratylus/runtime`](./packages/runtime) | **mechanism** — four built-in capabilities, each behind its port |
-| [`@cratylus/forge`](./packages/forge)     | **projection** — the deterministic map onto one harness          |
-| [`@cratylus/schema`](./packages/schema)   | the shapes a corpus authors against                              |
-| [`cratylus`](./packages/cli)              | **the CLI** — composes the three above; the one command          |
+   ```sh
+   cratylus uninstall --harness claude   # or omp
+   ```
 
-**One package, one command.** `npm i -g cratylus` and everything is `cratylus <verb>` — build
-verbs route to the projector, capability verbs to the runtime. It is also the composition root:
-`forge` projects and depends on no corpus, `canon` is a corpus and knows no projector, and this is
-the only package permitted to hold both.
+   It removes what install placed and leaves whatever the host placed or changed.
 
-## Status
+The questions and their flags, what a refusal says, the status line badge, where Claude Code and
+omp differ, and what uninstall leaves are all in [packages/cli/README.md](./packages/cli/README.md).
 
-**Pre-release.** The scoped libraries are on npm at `0.1.1`; `@cratylus/canon` and the unscoped
-`cratylus` CLI are not published yet, which is the gap that currently makes the documented consumer
-path untypable. The architecture's
-load-bearing properties are enforced by a gate that reads the real import graph, and the projected
-corpus is pinned by harness-parity and projection-stability gates rather than by prose. Where the source diverges
-from the intended architecture, [`ARCHITECTURE.md`](./ARCHITECTURE.md) says so in a ratchet table
-that fails the suite when a breach is repaired without retiring its pin.
+## Where to go from here
 
-## Reading order
-
-1. [`VISION.md`](./VISION.md) — **why**: the thesis, the inversion, the discipline
-2. [`MODEL.md`](./MODEL.md) — **what** exists
-3. [`ENGINE.md`](./ENGINE.md) — **how** anchors are discovered, validated and projected
-4. [`ARCHITECTURE.md`](./ARCHITECTURE.md) — the packages and the seams between them
-5. [`CANON.md`](./CANON.md) — the corpus itself
+- To write a corpus of your own, read the package that owns each concern:
+  [packages/forge/README.md](./packages/forge/README.md) for projecting a corpus onto a harness,
+  [packages/schema/README.md](./packages/schema/README.md) for the shapes a corpus authors against,
+  [packages/canon/README.md](./packages/canon/README.md) for the corpus that ships, and
+  [packages/runtime/README.md](./packages/runtime/README.md) for the capabilities the agents call.
+- To change cratylus itself, start with [ARCHITECTURE.md](./ARCHITECTURE.md), which maps the packages
+  and the seams between them, then the ground documents in the order they build: [VISION.md](./VISION.md)
+  (why), [MODEL.md](./MODEL.md) (what exists), [ENGINE.md](./ENGINE.md) (how anchors are discovered,
+  validated and projected) and [CANON.md](./CANON.md) (the corpus itself). [AGENTS.md](./AGENTS.md)
+  lists what to read at the start of a session and the working conventions of the repository.
 
 ## License
 
