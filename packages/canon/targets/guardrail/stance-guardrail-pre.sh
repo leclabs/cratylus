@@ -124,10 +124,9 @@ CONTEST_DIR="${TMPDIR:-/tmp}/guardrail-contest/$GUARD_ID/$GUARD_SESSION"
 CONTEST_AT="$CONTEST_DIR/stop"
 [ "$GUARD_ACT" = stop ] || CONTEST_AT="$CONTEST_DIR/$(printf '%s %s' "$GUARD_ACT" "${GUARD_CALL:-}" | cksum | cut -d' ' -f1)"
 contest_heard() {
-	contest="$(cat "$CONTEST_AT.contest" 2>/dev/null || true)"
-	[ -n "$contest" ] || return 0
-	refusal="$(cat "$CONTEST_AT.refused" 2>/dev/null || true)"
+	refusal="$(cat "$CONTEST_AT.refused" 2>/dev/null)" && contest="$(cat "$CONTEST_AT.contest" 2>/dev/null)" || contest=
 	rm -f "$CONTEST_AT.contest" "$CONTEST_AT.refused"
+	[ -n "$contest" ] || return 0
 	log="${GUARD_CONTEST_LOG:-$NEUTRAL_ROOT/guardrail/contests.log}"
 	mkdir -p "$(dirname -- "$log")" 2>/dev/null && jq -cn --arg time "$(date -u +%FT%TZ)" --arg guard "$GUARD_ID" \
 		--arg session "$GUARD_SESSION" --arg agent "$GUARD_AGENT" --arg act "$GUARD_ACT" --arg refusal "$refusal" \

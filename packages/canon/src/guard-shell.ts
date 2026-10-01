@@ -51,12 +51,17 @@ judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; wha
  *   GUARD_CALL     the call's compact `tool_input` (unset at the turn end)
  *   NEUTRAL_ROOT   the `.agents` root, home of the default contest log
  *
- * It then offers `contest_heard` (call before judging: a contested fire is reported and
- * exits 0) and `contest_refused REASON` (call on a standing refusal: records REASON and
- * prints the way forward, to be placed after the judge's reason in what is returned).
- * Contest files live in `$CONTEST_DIR`, named `<key>.refused` and `<key>.contest`, `<key>`
- * being the cksum of the call's tool name and tool input, or `stop`. The functions use the
- * shell names `contest`, `refusal`, `log`, `kept` and `again`; a worker leaves them alone.
+ * It then offers `contest_heard` (call before judging) and `contest_refused REASON` (call on
+ * a refusal: records REASON and prints the way forward, to be placed after the judge's reason
+ * in what is returned). A refusal of a key stands from the fire that refused it until the next
+ * fire of that key. A contest answers a refusal that stands: a fire is contested, reported and
+ * let through unjudged (exit 0), only when `<key>.refused` exists, whatever it holds, and
+ * `<key>.contest` holds text. Every other fire that reaches `contest_heard` leaves neither file
+ * behind and is judged as usual, a contest written before the refusal it would answer being
+ * discarded unheard, and a block recording its refusal anew. Contest files live in
+ * `$CONTEST_DIR`, named `<key>.refused` and `<key>.contest`, `<key>` being the cksum of the
+ * call's tool name and tool input, or `stop`. The functions use the shell names `contest`,
+ * `refusal`, `log`, `kept` and `again`; a worker leaves them alone.
  *
  * Regular template: `\${` and `\\n` are the shell's `${` and `\n`.
  */
@@ -65,10 +70,9 @@ CONTEST_DIR="\${TMPDIR:-/tmp}/guardrail-contest/$GUARD_ID/$GUARD_SESSION"
 CONTEST_AT="$CONTEST_DIR/stop"
 [ "$GUARD_ACT" = stop ] || CONTEST_AT="$CONTEST_DIR/$(printf '%s %s' "$GUARD_ACT" "\${GUARD_CALL:-}" | cksum | cut -d' ' -f1)"
 contest_heard() {
-	contest="$(cat "$CONTEST_AT.contest" 2>/dev/null || true)"
-	[ -n "$contest" ] || return 0
-	refusal="$(cat "$CONTEST_AT.refused" 2>/dev/null || true)"
+	refusal="$(cat "$CONTEST_AT.refused" 2>/dev/null)" && contest="$(cat "$CONTEST_AT.contest" 2>/dev/null)" || contest=
 	rm -f "$CONTEST_AT.contest" "$CONTEST_AT.refused"
+	[ -n "$contest" ] || return 0
 	log="\${GUARD_CONTEST_LOG:-$NEUTRAL_ROOT/guardrail/contests.log}"
 	mkdir -p "$(dirname -- "$log")" 2>/dev/null && jq -cn --arg time "$(date -u +%FT%TZ)" --arg guard "$GUARD_ID" \\
 		--arg session "$GUARD_SESSION" --arg agent "$GUARD_AGENT" --arg act "$GUARD_ACT" --arg refusal "$refusal" \\

@@ -682,6 +682,27 @@ describe.each(FORMS)(
         expect(existsSync(other)).toBe(true);
       });
 
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the act is judged as usual.
+      it('judges a call whose contest was written before any refusal, discards that contest, and judges the same call again', () => {
+        const path = refusedAt(fireDispatch());
+        rmSync(path.replace(/contest$/, 'refused'));
+        expect(judged()).toBe(1);
+
+        writeFileSync(path, `${NOTICE}\n`);
+        const ahead = fireDispatch();
+        expect(refusedAt(ahead)).toBe(path);
+        expect(ahead.stdout).not.toContain('contested');
+        expect(judged()).toBe(2);
+        expect(existsSync(env.GUARD_CONTEST_LOG as string)).toBe(false);
+        expect(existsSync(path)).toBe(false);
+
+        const next = fireDispatch();
+        expect(refusedAt(next)).toBe(path);
+        expect(judged()).toBe(3);
+        expect(existsSync(env.GUARD_CONTEST_LOG as string)).toBe(false);
+      });
+
       it('does not take an empty contest for one', () => {
         const path = refusedAt(fireDispatch());
         writeFileSync(path, '');

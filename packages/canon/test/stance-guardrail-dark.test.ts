@@ -1050,6 +1050,29 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
         expect(j.calls()).toBe(2);
         expect(existsSync(path)).toBe(true);
       });
+
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the call is judged as usual.
+      it('judges a call whose contest was written before any refusal, discards that contest, and judges the same call again', () => {
+        const j = contesting('ahead');
+        const session = `ahead-${w.dir}-${form.harness}-call`;
+        const same = { ...payload(), session_id: session };
+        const path = deniedAt(fire(j.env, same), session);
+        rmSync(path.replace(/contest$/, 'refused'));
+        expect(j.calls()).toBe(1);
+
+        writeFileSync(path, `${WHY}\n`);
+        const ahead = fire(j.env, same);
+        expect(deniedAt(ahead, session)).toBe(path);
+        expect(ahead.stdout).not.toContain('contested');
+        expect(j.calls()).toBe(2);
+        expect(existsSync(j.log)).toBe(false);
+        expect(existsSync(path)).toBe(false);
+
+        expect(deniedAt(fire(j.env, same), session)).toBe(path);
+        expect(j.calls()).toBe(3);
+        expect(existsSync(j.log)).toBe(false);
+      });
     } else {
       const closed = (name: string, text: string = closing): string => {
         const t = join(home, name);
@@ -1329,6 +1352,89 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
           'a stop that follows the spent contest',
         );
         expect(j.calls()).toBe(2);
+      });
+
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the stop is judged as usual.
+      it('judges a stop whose contest was written before any refusal, discards that contest, and blocks the next stop again', () => {
+        const j = contesting('stop-ahead');
+        const session = `ahead-${w.dir}-${form.harness}-stop`;
+        const at = join(tmp, 'guardrail-contest', w.dir, session, 'stop');
+        mkdirSync(dirname(at), { recursive: true });
+        writeFileSync(`${at}.contest`, `${WHY}\n`);
+        const turn = { session_id: session };
+
+        const ahead = fire(j.env, {
+          ...turn,
+          transcript_path: closed('tahead1.jsonl'),
+          stop_hook_active: false,
+        });
+        blocked(ahead, 'a stop that follows a contest written ahead');
+        expect(String(JSON.parse(ahead.stdout).reason)).toContain(
+          `> '${at}.contest'`,
+        );
+        expect(ahead.stdout).not.toContain('contested');
+        expect(j.calls()).toBe(1);
+        expect(existsSync(j.log)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+
+        blocked(
+          fire(j.env, {
+            ...turn,
+            transcript_path: closed('tahead2.jsonl', `${closing} again`),
+            stop_hook_active: true,
+          }),
+          'the next stop, with no contest written',
+        );
+        expect(j.calls()).toBe(2);
+        expect(existsSync(j.log)).toBe(false);
+      });
+
+      // A refusal stands from the fire that refused it until the next fire of that key: a stop the
+      // agent complied with, and the judge then passed, leaves no refusal for a later contest.
+      it('lets a refusal lapse at the next stop, so a contest written after it answers nothing', () => {
+        const calls = join(home, 'lapse-calls');
+        const verdict = join(home, 'lapse-verdict');
+        const judge = join(home, 'lapse-judge.sh');
+        const log = join(tmp, 'lapse-contests.log');
+        writeFileSync(
+          judge,
+          `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\ncat "${verdict}"\n`,
+        );
+        const env = { STANCE_JUDGE_CMD: `sh ${judge}`, GUARD_CONTEST_LOG: log };
+        const count = (): number =>
+          existsSync(calls) ? readFileSync(calls, 'utf8').length : 0;
+        const session = `lapse-${w.dir}-${form.harness}-stop`;
+        const at = join(tmp, 'guardrail-contest', w.dir, session, 'stop');
+        const stop = (name: string, active: boolean) =>
+          fire(env, {
+            session_id: session,
+            transcript_path: closed(name, `${closing} ${name}`),
+            stop_hook_active: active,
+          });
+
+        writeFileSync(verdict, BLOCK_VERDICT(closing));
+        blocked(stop('tlapse1.jsonl', false), 'the stop the judge blocks');
+        expect(count()).toBe(1);
+        expect(existsSync(`${at}.refused`)).toBe(true);
+
+        writeFileSync(verdict, 'VERDICT: PASS\nREASON: nothing collapsed\n');
+        const passed = stop('tlapse2.jsonl', true);
+        expect(passed.status).toBe(0);
+        expect(passed.stdout).toBe('');
+        expect(count()).toBe(2);
+        expect(existsSync(`${at}.refused`)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+
+        writeFileSync(verdict, BLOCK_VERDICT(closing));
+        writeFileSync(`${at}.contest`, `${WHY}\n`);
+        const after = stop('tlapse3.jsonl', false);
+        blocked(after, 'a stop after the refusal lapsed');
+        expect(after.stdout).not.toContain('contested');
+        expect(count()).toBe(3);
+        expect(existsSync(log)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+        expect(existsSync(`${at}.refused`)).toBe(true);
       });
     }
   },
