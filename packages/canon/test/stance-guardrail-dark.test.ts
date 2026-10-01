@@ -997,12 +997,13 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
         expect(said(r)).toMatch(/transcript/);
       });
 
-      it('blocks the same collapsed turn every time it is fired in one session', () => {
+      it('blocks the same collapsed turn every time it is fired fresh in one session', () => {
         const file = join(home, 'block-same');
         writeFileSync(file, BLOCK_VERDICT(closing));
         const same = {
           transcript_path: closed('tsame.jsonl'),
           session_id: `same-${form.harness}`,
+          stop_hook_active: false,
         };
         for (const attempt of [1, 2, 3]) {
           const r = fire({ STANCE_VERDICT_FILE: file }, same);
@@ -1013,7 +1014,7 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
         }
       });
 
-      it('blocks four different collapsed turns in one session', () => {
+      it('blocks four different collapsed turns each fired fresh in one session', () => {
         const session = `four-${form.harness}`;
         for (const i of [1, 2, 3, 4]) {
           const span = `collapsed close number ${i} with its own span`;
@@ -1024,6 +1025,7 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
             {
               transcript_path: closed(`tfour${i}.jsonl`, span),
               session_id: session,
+              stop_hook_active: false,
             },
           );
           expect(r.status, `turn ${i}`).toBe(0);
@@ -1053,6 +1055,128 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
         );
         expect(r.status).toBe(0);
         expect(r.stdout).toContain('"decision":"block"');
+      });
+
+      // THE TURN END IS THE ONE EXCEPTION TO A REFUSED ACT STAYING REFUSED, and only for one stop.
+      // A judge that counts its calls and always blocks, quoting a span that is in the close, is
+      // fired the way a harness fires it: the first stop with `stop_hook_active` false, each stop
+      // after a block with it true.
+      const counted = (
+        name: string,
+      ): { env: Record<string, string>; calls: () => number } => {
+        const calls = join(home, `${name}-calls`);
+        const judge = join(home, `${name}-judge.sh`);
+        writeFileSync(
+          judge,
+          `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\nprintf 'VERDICT: BLOCK\\nREASON: collapsed\\nEVIDENCE: ${closing}\\n'\n`,
+        );
+        return {
+          env: { STANCE_JUDGE_CMD: `sh ${judge}` },
+          calls: () =>
+            existsSync(calls) ? readFileSync(calls, 'utf8').length : 0,
+        };
+      };
+
+      /** Exits 0, prints no block decision, and says the stop was let through UNRESOLVED. */
+      const letThrough = (r: SpawnSyncReturns<string>, why: string): void => {
+        expect(r.status, why).toBe(0);
+        expect(r.stdout, why).not.toContain('"decision":"block"');
+        const text = form.notice(r.stdout);
+        expect(text, why).toContain(w.guard);
+        expect(text, why).toContain('UNRESOLVED');
+      };
+      const blocked = (r: SpawnSyncReturns<string>, why: string): void => {
+        expect(r.status, why).toBe(0);
+        expect(r.stdout, why).toContain('"decision":"block"');
+      };
+
+      it('lets a repeated stop through, said, and blocks the next fresh stop again', () => {
+        const j = counted('repeat');
+        const turn = {
+          transcript_path: closed('trepeat.jsonl'),
+          session_id: `repeat-${form.harness}`,
+        };
+        blocked(
+          fire(j.env, { ...turn, stop_hook_active: false }),
+          'the first stop',
+        );
+        letThrough(
+          fire(j.env, { ...turn, stop_hook_active: true }),
+          'the same turn after the block',
+        );
+        expect(j.calls()).toBe(2);
+        blocked(
+          fire(j.env, { ...turn, stop_hook_active: false }),
+          'a fresh stop after the let-through',
+        );
+      });
+
+      it('lets a fourth refused stop through, said, and blocks the next fresh stop again', () => {
+        const j = counted('run');
+        const session = `run-${form.harness}`;
+        const stop = (i: number, active: boolean) =>
+          fire(j.env, {
+            transcript_path: closed(`trun${i}.jsonl`, `${closing} ${i}`),
+            session_id: session,
+            stop_hook_active: active,
+          });
+        blocked(stop(1, false), 'stop 1');
+        blocked(stop(2, true), 'stop 2');
+        blocked(stop(3, true), 'stop 3');
+        letThrough(stop(4, true), 'stop 4');
+        expect(j.calls()).toBe(4);
+        blocked(stop(5, false), 'a fresh stop after the let-through');
+      });
+
+      it('never lets a stop through that follows no block, however many different ones come', () => {
+        const j = counted('fresh');
+        const session = `fresh-${form.harness}`;
+        for (const i of [1, 2, 3, 4, 5]) {
+          blocked(
+            fire(j.env, {
+              transcript_path: closed(`tfresh${i}.jsonl`, `${closing} ${i}`),
+              session_id: session,
+              stop_hook_active: false,
+            }),
+            `fresh stop ${i}`,
+          );
+        }
+        expect(j.calls()).toBe(5);
+      });
+
+      it('counts a run per session: another session continues nothing of it', () => {
+        const j = counted('apart');
+        const stop = (session: string, i: number, active: boolean) =>
+          fire(j.env, {
+            transcript_path: closed(
+              `tapart${session}${i}.jsonl`,
+              `${closing} ${i}`,
+            ),
+            session_id: `apart-${form.harness}-${session}`,
+            stop_hook_active: active,
+          });
+        for (const i of [1, 2, 3]) blocked(stop('a', i, i > 1), `a ${i}`);
+        blocked(
+          stop('b', 1, true),
+          'a stop of another session holds no run of its own',
+        );
+      });
+
+      it('lets a stop through that follows a block when its run cannot be counted, and still blocks a fresh one', () => {
+        const j = counted('uncountable');
+        const notDir = join(home, 'a-file-not-a-tmpdir');
+        writeFileSync(notDir, '');
+        const env = { ...j.env, TMPDIR: notDir };
+        const turn = { transcript_path: closed('tuncountable.jsonl') };
+        blocked(
+          fire(env, { ...turn, stop_hook_active: false }),
+          'a fresh stop with no state',
+        );
+        letThrough(
+          fire(env, { ...turn, stop_hook_active: true }),
+          'a stop after a block with no state',
+        );
+        expect(j.calls()).toBe(2);
       });
     }
   },
