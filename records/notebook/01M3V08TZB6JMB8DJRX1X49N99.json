@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3V08TZB6JMB8DJRX1X49N99",
+    "entity": "01M3TVFKSJ3E0KGZ9Z0TZTXA99",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TVFKSJ3E0KGZ9Z0TZTXA9A"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T05:51:20.043Z",
+    "reason": "entered the design as command line",
+    "cause": "command line defined"
+  },
+  "payload": null
+}
