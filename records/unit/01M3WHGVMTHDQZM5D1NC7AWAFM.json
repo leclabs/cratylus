@@ -1,0 +1,92 @@
+{
+  "envelope": {
+    "id": "01M3WHGVMTHDQZM5D1NC7AWAFM",
+    "entity": "01M3WH71W438RJJ85P2BBXT3JT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WHG1Y7BVX12JZ4W6A5ECQ5"
+    ],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T20:12:03.098Z",
+    "reason": "the integrator recorded it whole after an achieved assay",
+    "cause": "whole close-report-sender of notebook-gaps"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "close-report-sender",
+      "intent": "Census @2d8096ae (the plan line after act-skip-names-deploy; design at 2d8096ae); every path is repo-relative on the plan's line. A line number cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file. Realize planner role as the sender of what the architect reads from it. Ruled (decision note 'the close report has no sender and no restatement'): the architect role reads the planner's report that a plan has closed and the names of units ready to start or waiting on a route, which the planner reads from each unit's ledger; the planner is the one that sends them, so the planner role's contract states that it returns those. The contract, the `planner` role value in packages/canon/src/dimensions/role/planner.ts, says at :32 `returns ⟨plan-name ∧ ready-unit-names⟩ ∧ ¬ spec ∨ plan-view …`: no closed-plan report and no units waiting on a route. State, in that value's own notation, that it returns the plan's name and the names of units ready to start or waiting on a route, read from their ledgers, and on close(P) the report that P has closed, by name; keep `¬ spec ∨ plan-view` and change no other line of the value. The role cell (packages/canon/src/roles/planner.ts) is not this unit's. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/skills/deliver/skill.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/planner.ts",
+        ".changeset/close-report-sender.md"
+      ],
+      "accept": [
+        "the `returns` line of the `planner` value names the report that a plan has closed and units waiting on a route beside those ready to start; at 2d8096ae it returns only ⟨plan-name ∧ ready-unit-names⟩",
+        "`git diff <the commit the unit's work starts from>` changes exactly one line of the `planner` value, its `returns` line, and no other source file",
+        "in packages/canon, `pnpm exec vitest run test/reader-density.test.ts test/persona.test.ts test/purview-guardrail.test.ts` exits 0 (the RESIDUE gate admits only σ* anchors in a dimension value; a free connective broke the whole once on this plan) and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3R07G7ZCK24TEDA78HW4VRM",
+      "version": "01M3S9QXVJ07SZYRB0EKZ86GJ5",
+      "closure": {
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "714b57be931e97022452470182eb574aaf1e1326",
+        "author": "CloseReportSender",
+        "time": "2026-10-01T20:08:12.331Z"
+      },
+      {
+        "kind": "land",
+        "commit": "e4bb058e1fd9371725c4dc609f9efc5e6e5b4eaa",
+        "author": "CloseReportSender",
+        "time": "2026-10-01T20:08:48.352Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "e4bb058e1fd9371725c4dc609f9efc5e6e5b4eaa",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps5",
+        "time": "2026-10-01T20:10:22.938Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "86f7b4d7",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T20:11:36.775Z"
+      }
+    ]
+  }
+}

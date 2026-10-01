@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WHGPM1Z6G9S1HB0MBQNRM9",
+    "entity": "01M3WG2J225RXR3K5MGH7R2S50",
+    "operation": "retract",
+    "supersedes": [
+      "01M3WH5Y72HV9TXNC68CBW59FZ"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T20:11:57.953Z",
+    "reason": "realized: close-report-sender (planner role returns the close report and route names) and archetype-closed-plan-route (archetype names the closed-plan route), both whole on the line",
+    "cause": "notebook-gaps"
+  },
+  "payload": null
+}
