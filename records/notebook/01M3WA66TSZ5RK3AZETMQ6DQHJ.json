@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WA66TSZ5RK3AZETMQ6DQHJ",
+    "entity": "01M3WA66TSZ5RK3AZETMQ6DQHH",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ContributorDocs",
+    "time": "2026-10-01T18:03:54.073Z",
+    "reason": "findings beside the contributor-docs path",
+    "cause": "contributor-docs of docs-and-persona accept check"
+  },
+  "payload": {
+    "title": "docs paths named outside docs that are not tracked",
+    "kind": "question",
+    "topic": "documentation",
+    "body": "At 65bc3a8a, two tracked files outside docs/ name a docs/ path that no tracked file answers to, so the accept line 'every docs/ path a tracked file outside docs/, records/ and changelogs names is tracked' cannot hold for them as written. packages/canon/test/fixtures/guardrail/turn-600.txt:26 quotes docs/research/semantic-engineering-research-candidates.md (a recorded transcript payload, measured at N=20 by expected.json, so its bytes were left). packages/forge/src/adapters/omp/render.ts:1269 says omp's own docs/hooks.md, a file of the omp project. Neither is a path of this repository; whether the accept line should exclude them is open. Also: docs/role.md was removed, which settles the docs side of the notes 'docs/role.md still calls the purview guard re-entry-capped', 'acceptance still reserved outside the assayer at 9435068c', 'architect's residual readers of the old position' and 'integration-line: the integrator is still called a position in prose'; their non-docs parts are not mine to retract.",
+    "blocks": []
+  }
+}

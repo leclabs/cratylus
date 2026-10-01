@@ -1,0 +1,53 @@
+{
+  "envelope": {
+    "id": "01M3W8VBDVZ5MP9HS281S61J6E",
+    "entity": "01M3W8V33FC1W9DH83AQ5A4RZB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W8V33FC1W9DH83AQ5A4RZC"
+    ],
+    "author": "DocsPlanner",
+    "time": "2026-10-01T17:40:29.755Z",
+    "reason": "the diff criterion named a67c4816 and whole directories, so another unit landing first on the line would have failed it",
+    "cause": "planner self-review before binding"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "stale-comments",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Make the code comments that the notebook found stale say what the code does now, and change nothing else. Sites: (1) packages/forge/src/adapters/omp/render.ts:722-740, a comment emitted into the omp guard module, says the stance rubric 'is now cut to 14 KB and every worker caps what it sends at 12 KB'; the rubrics at packages/canon/targets/guardrail/ measure 2037 bytes (stance-judge-prompt.md) and 1908 bytes (purview-judge-prompt.md). Check the workers' send cap in canon/src/hooks and state both as they are, or drop the figures. This settles the omp part of the note 'stale comments describe removed guard caps'. (2) packages/canon/test/support/guardrail/test-stance-guardrail.sh, the HERMETIC STATE comment at :131-138: the same note says it calls the per-session state a block budget a no-progress detector suppresses; at a67c4816 it already describes the run bound (3 blocks in a run, or a repeat of the last blocked turn). Confirm it against the worker in canon/src/hooks/stance-guardrail.ts and correct only what is still untrue. (3) packages/forge/src/deploy/index.ts:174 says the host's settings.statusLine command is 'wrapped only on request'; install now wraps the host's command in the badge (forge/src/cli/commands/install.ts:1037-1041). Say what deploy and install do. This settles the comment part of the note 'Non-command statusLine has no badge surface; deploy/index.ts comment stale'. Leave the comment's use of persona and the rest of that file's wording about persona commands alone: it waits on the note 'persona spelled for every agent in forge and schema'. (4) the comments in packages/canon/src/dimensions/role/architect.ts:4, implementer.ts:13,22,25 and integrator.ts:18,22,24 call a role a position; call it a role. This settles the dimensions part of the note 'integration-line: the integrator is still called a position in prose'. Only the // comments: the dimension values these files export are projected and stay byte for byte. Add a patch changeset for @cratylus/forge, since the omp comment is emitted into a projected module.",
+      "static": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge-prompt.md",
+        "packages/canon/targets/guardrail/purview-judge-prompt.md",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/deploy/status-line.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        ".changeset/stale-comments.md"
+      ],
+      "accept": [
+        "`git grep -n -E \"14 KB|only on request\" -- packages/forge/src` prints nothing",
+        "`git grep -n -i -w -E \"positions?\" -- packages/canon/src/dimensions/role` prints nothing",
+        "every line that `git diff -U0 <the commit the unit's work starts from> <the commit that lands it> -- packages/forge/src/adapters/omp/render.ts packages/forge/src/deploy/index.ts packages/canon/test/support/guardrail/test-stance-guardrail.sh packages/canon/src/dimensions/role` adds or removes is a comment line: a // or * line, a # line in the .sh file, or an element of render.ts's emitted comment array whose string starts with //",
+        "`pnpm --filter @cratylus/forge test -- test/adapters/omp.test.ts` and `pnpm --filter @cratylus/canon test -- test/stance-guardrail-dark.test.ts` exit 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+      "version": "01M3W846YWG5Z3CYWN0W5F4W6R",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

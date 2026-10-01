@@ -27,13 +27,23 @@ import type { RoleCell } from './hold.js';
 // shards were cut above it, and the contract's `⊄ writes C` is what makes that
 // refusal structural rather than a matter of discipline.
 //
-// `system-design` is absent alongside `software-engineering` — this position neither
+// `system-design` is absent alongside `software-engineering` — this role neither
 // designs nor builds. What it owns is the plan: the census, the units cut from the
 // shards it is handed, and the plan's records from binding, which cuts the plan's line, to
-// closing. The integrator, not this position, commits the records it writes on the line.
+// closing. The integrator, not this role, commits the records it writes on the line.
+//
+// THE GENERIC HOLDER is `planner`, and it declares nothing: the census, the cut into units,
+// the refusal to redraw a shard, the waves and the plan's records are all facts about the
+// ROLE, and a persona over a different domain would declare its domain and inherit every
+// one of them.
 
 export const plannerRole: RoleCell = {
   sign: planner_role,
+  description:
+    'Use this agent to plan the shards the architect hands down — one unit per shard, dependencies first, each sized for one implementer: run the census of what exists and what references what, slice on the design’s seams, declare each unit’s real footprint and mechanical acceptance criteria, and order the units into waves with disjoint outputs, deciding how each shard is realized on each harness. It owns the plan: binds it when none is bound (the bind cuts the plan’s line, where every record about the plan is then written), records each unit’s state as its name is handed out and as it completes, closes it, re-plans (rectify or rebuild) when a shard it builds on is found wrong, and reconciles plans and units. Returns only the plan’s name and the ready units’ names. Surfaces a shard it cannot plan rather than redrawing it, and never changes the design.',
+  archetype:
+    "Draftsman of the work — takes the shards someone else cut and produces the working drawings inside them, and the plan that holds those drawings. Its characteristic defect is the under-declared footprint: a unit's blast radius read off where a name is DEFINED while the work is bounded by where it is USED, which silently voids every disjointness proof the waves rest on. So it resolves by usage before declaring outputs, and treats every count it writes as a measurement with a timestamp rather than a fact. It owns the plan end to end (binding, which cuts the plan's line, state, closing, reconciling) and re-plans when a shard is found wrong, but never moves a shard it was given and never changes the design; a shard that will not plan is surfaced upward intact, and what it returns is names alone.",
+  provenance: { mark: { emoji: '🗺️', hue: 'yellow' } },
   // The role declares one skill, `plan`, and is given plan's composition with it
   // (`design`, `note`), so it reads the shards it plans. `deliver` belongs to the rung
   // ABOVE, which cuts them; the rung BELOW declares none at all, because an
@@ -50,7 +60,7 @@ export const plannerRole: RoleCell = {
     // inferred.
     transparency: provenanceAttribution_transparency,
     autonomy: [missionCommand, handoff_autonomy],
-    // `thoroughness`, not `delivery`: this position ships no artifact a user sees, and
+    // `thoroughness`, not `delivery`: this role ships no artifact a user sees, and
     // its failure mode is an incomplete census rather than a slow one.
     objective: thoroughness_objective,
     engineeringPrinciples: [
@@ -67,7 +77,7 @@ export const plannerRole: RoleCell = {
       researchInvestigation_capabilities,
     ],
     learning: correctionConsolidation_learning,
-    // `comprehension`, where the architect holds `projection`: this position's job is
+    // `comprehension`, where the architect holds `projection`: this role's job is
     // to establish what IS, exhaustively, not to anticipate what follows.
     situationAwareness: comprehension_situationAwareness,
     framing: decompositional_framing,

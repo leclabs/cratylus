@@ -170,9 +170,9 @@ This architecture is compatible with a **Cratylist** account of naming, drawn fr
 
 This is an engineering constraint, not a claim that all language has one objectively correct name. Within a declared model population, target concept, and validation method, naming is treated as a fact to investigate rather than a preference to settle.
 
-The constraint therefore reaches **every authored surface**, and it recognizes no privileged kind: prose, identifier, and path are one register, each carrying either an optimal-signifier or a composition of them. An enumeration of the surfaces that qualify would be a bound on the discipline, and there is none — anything this project writes is subject to the same cold-verification.
+The constraint is scoped to the corpus's own terminology. It holds the **core agent dimension names and values** — the terms this project exists to discover — to a cold decode, and every other term is the industry's own, used as the industry understands it. Nothing this project ships holds a consumer's own surfaces to that test.
 
-Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: semantic bindings are tested against model priors before they are admitted to the canon.
+Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: the canon admits those names and values only once a cold decode against model priors has recovered the concept each one names, while a term outside them is taken as the industry uses it.
 
 ## Non-Goals
 
@@ -195,4 +195,4 @@ This document explains **why** the project exists.
 
 [`ENGINE.md`](./ENGINE.md) defines **how** optimal-signifiers are discovered, validated, canonized, composed, projected, and deployed.
 
-[`CANON.md`](./CANON.md) is the canonical corpus itself: the validated library of optimal-signifiers and compositions.
+[`CANON.md`](./CANON.md) introduces these documents. The canonical corpus itself — the validated library of optimal-signifiers and compositions — is the `@cratylus/canon` package, and [`ARCHITECTURE.md`](./ARCHITECTURE.md) says what each package is for.

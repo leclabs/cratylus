@@ -39,12 +39,15 @@ accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
 COMPOSED(a) : ir(a)=⟨S_on⟩_{on∈dom catalog} ∧ ∀on: S_on⊆catalog(on) ∧ |S_on|∈arity(on) ∧ ∄ superfluous S_on
 
 Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ ENFORCED ∧ REGENERABLE
+  terminology ≜ the corpus's core agent dimension names and values ⟨⊂ Corpus ; the terms the cold-decode oracle was built to discover⟩
+                ⟨every other term is the industry's own, used as the industry understands it, ∉ terminology ∧ ∉ the oracle⟩
+                ⟨nothing the corpus ships holds a consumer's own surfaces to the oracle⟩
   CANONICAL   : ∀c∈concepts(a): ¬orphan(c) ∧ ¬private(c) ∧ ¬palimpsest(c)
-  SIGNIFIED   : ∀c∈concepts(a): α(c)=σ*(c)
+  SIGNIFIED   : ∀c∈concepts(a) ∩ terminology: α(c)=σ*(c)
   COLD-BLIND  : core(f) ≜ f ∖ human-prose
                 decode_cold(f)   ≜ decode(f, LLM-priors ∪ Corpus, ∅)
                 decode_warm(f,K) ≜ decode(f, LLM-priors ∪ Corpus, K)
-                ∀f∈fragments(a), ∀K≠∅: decode_cold(core f) = intent(f) = decode_warm(core f, K)
+                ∀f∈fragments(a) ∩ terminology, ∀K≠∅: decode_cold(core f) = intent(f) = decode_warm(core f, K)
                 self-sufficient(f): core(f) grounds in inline-≜(f) ∪ Corpus ∪ LLM-priors ∧ ¬external-cite
   PARTITIONED : ∀c∈Corpus: |home(c)|=1 ∧ disjoint(homes) ∧ ⋃ home = Corpus
   PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
@@ -68,11 +71,11 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   REGENERABLE : ∀t∈Target: (∃c:cell, adapter: t=deploy(c,adapter)) ∧ deterministic(deploy) ∧ deploy-owned(t) ∧ ¬hand-edit(t)
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
   BEING/FACE  : a cell is a BEING ; deploy projects it to MANY per-harness Targets = its FACES
-                ⟨one being → {face_h}_{h∈harness}⟩ ; the being's MEMORY-HOME is single-per-being ∧
-                harness-independent ∧ ∉ any face — the continuity that makes the faces one being
-                ⟨extends SelfAuthored ∉ Target: memory is neither projected nor per-harness⟩
+                ⟨one being → {face_h}_{h∈harness}⟩ ; what would make the faces one individual across sessions
+                — a persona's memory and continuity — is OUTSIDE cratylus for now : the runtime ships eventTap · design · plan · note and no memory, so no face carries one
+                ⟨extends SelfAuthored ∉ Target: whatever memory a host keeps is neither projected nor per-harness⟩
 
 Corpus ≜ lfp( S ↦ { c ∣ grounded(c,S) } ) ; grounded(c,S) ⇔ defn(c) resolves-in (inline-≜(c) ∪ S ∪ LLM-priors)
 REFLEXIVE : ∀x:cell, class(x)∈{skill,rule} ⇒ accept(x)
-REPAIR    : (∃K≠∅: decode_cold(core f) ≠ decode_warm(core f,K)) ⇒ defect ; repair the cell toward decode_cold
+REPAIR    : (∃f∈terminology, ∃K≠∅: decode_cold(core f) ≠ decode_warm(core f,K)) ⇒ defect ; repair the cell toward decode_cold
 ```

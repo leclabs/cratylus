@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3WAXM9YGEV4Y21XSCF3H3DC",
+    "entity": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W8ZZKFCZD810RMJSGZCT38"
+    ],
+    "author": "DocsPlanner",
+    "time": "2026-10-01T18:16:41.534Z",
+    "reason": "every unit completed: persona-residue, stale-comments, consumer-path, contributor-docs, ground-documents, author-readmes",
+    "cause": "author-readmes completed, the last unit"
+  },
+  "payload": {
+    "name": "docs-and-persona",
+    "realizes": [
+      "01M3W846Q2NS8ENRDTY9929N0E",
+      "01M3W846YWG5Z3CYWN0W5F4W6Q"
+    ],
+    "state": "closed"
+  }
+}

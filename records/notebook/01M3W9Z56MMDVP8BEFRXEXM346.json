@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W9Z56MMDVP8BEFRXEXM346",
+    "entity": "01M3W9Z56MMDVP8BEFRXEXM345",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ContributorDocs",
+    "time": "2026-10-01T18:00:03.028Z",
+    "reason": "the proposal's standing thesis had no home once its file was removed",
+    "cause": "contributor-docs of docs-and-persona removed docs/research/cold-decode-as-a-skill.md"
+  },
+  "payload": {
+    "title": "cold-decode wants one skill, not a probe per use",
+    "kind": "idea",
+    "topic": "cold-decode oracle",
+    "body": "Carried here from docs/research/cold-decode-as-a-skill.md (a plan-mode proposal of 2026-08-05, never executed, removed by contributor-docs of docs-and-persona). Two claims of it were still true of the tree at removal. (1) The isolation condition of a cold decode is worded separately in packages/canon/tooling/cold-oracle/cold-oracle.sh, the probe, exemplify and introspect skills and the cold-decode-oracle engineering principle, and none of them cites the script that realizes it. (2) decodeCold (packages/forge/src/validate/oracle.ts) is called only by nonceControl, which decodes a nonce to test the isolation, never a corpus fragment; the live authority the accept() cold-blind leg names is not called by accept(). The proposal's remedy was one cold-decode skill declaring the meaning and reaching a runner by a runtime capability, with the probe, signify, exemplify and introspect skills binding to it. It also found that 'decode_cold' names two measurements, one admitting the corpus (acceptance) and one priors only (discovery), and that only the first has a sign. Its step of restoring a deleted plan record from git was superseded and should not be taken. The rest of its file list named a tree that has since moved.",
+    "blocks": []
+  }
+}

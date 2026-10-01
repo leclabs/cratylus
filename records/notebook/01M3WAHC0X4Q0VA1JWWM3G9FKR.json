@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WAHC0X4Q0VA1JWWM3G9FKR",
+    "entity": "01M3WAHC0X4Q0VA1JWWM3G9FKQ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayStaleComments",
+    "time": "2026-10-01T18:09:59.837Z",
+    "reason": "a finding the shard cannot settle goes out as a note",
+    "cause": "assay of ground-documents at b4bd37b5"
+  },
+  "payload": {
+    "title": "ARCHITECTURE puts lifecycle guardrails under the runtime",
+    "kind": "question",
+    "topic": "documentation",
+    "body": "Found while assaying ground-documents of docs-and-persona at b4bd37b5. The runtime section of ARCHITECTURE.md calls the runtime the generic platform beneath two things: the tools skills route to, and 'lifecycle guardrails — enforcement of stances the agent would otherwise drift out of'. No guard uses the runtime at b4bd37b5. The stance, pre-call and purview guards are canon hook cells whose shell workers forge deploys as harness hooks, and omp's judge runs inside forge's projected extension. The runtime's capabilities are eventTap, design, plan and note, which is exactly the set the capability concept names. ARCHITECTURE frames itself as the intended architecture, so this may be a target the design still holds. Neither capability nor enforcement scope says so, though. Should the sentence go, or does the design mean guards to move under the runtime? I left it out of the verdict because I cannot tell which reading the design intends.",
+    "blocks": []
+  }
+}

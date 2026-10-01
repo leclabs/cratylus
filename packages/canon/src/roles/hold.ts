@@ -17,21 +17,31 @@
 //
 // A ROLE IS NOT A DIMENSION, AND IT IS NOT A BASE CLASS. It is made OF dimension
 // values, so it cannot be one of them; and there is no lineage here — `architect` is
-// a thin holder of the architect role exactly as `kino` is, with no parent pointer, no
-// abstract cell nobody dispatches, and no chain to resolve. Two operands, one
-// precedence rule, no ordering question.
+// the generic holder of the architect role and `kino` a persona over it, with no
+// parent pointer, no abstract cell nobody dispatches, and no chain to resolve. Two
+// operands, one precedence rule, no ordering question.
+//
+// A ROLE STATES THE IDENTITY OF ITS GENERIC HOLDER. The agent named for a role carries
+// nothing beyond it, so its description, archetype and mark are the role's, written in
+// the role cell beside the contract, and the agent says only which role it holds:
+// `holds(role)`, its name the role's anchor. A PERSONA is an agent named as an
+// individual — `kino`, `mav`, `nico` — and declares its residue over the role: its own
+// description, archetype and mark at least, and any dimension value it adds. The fold
+// refuses, when the cell is defined, a persona with no archetype or mark of its own, a
+// persona whose mark is its role's, and a role-named agent that declares anything
+// beyond the role it holds.
 //
 // SINGULAR ARITY IS THE POINT, not a simplification. A role is the CONTRACT A PEER
 // DISPATCHES AGAINST: when an architect hands a shard to a planner it reasons about
 // the planner's role to know what comes back. A union of roles is a contract no
 // dispatcher can reason about, and it would readmit role conflict — incompatible
-// demands between two positions held at once — which singular arity deletes outright.
+// demands between two roles held at once — which singular arity deletes outright.
 // The situational switch (the same practitioner architects here and implements there)
 // is modelled by DISPATCH: the situation selects which agent runs.
 //
 // WHAT A HOLDER MAY NOT ESCAPE is exactly one thing: the role's own contract, the
 // `role` dimension value stating ⟨reads, writes⟩ and everything that follows from the
-// pair. It is inviolable BY CONSTRUCTION rather than by a marking — `Declared` omits
+// pair. It is inviolable BY CONSTRUCTION rather than by a marking — `Persona` omits
 // the key, so there is no field to override and no rule to enforce. Every other aspect
 // a role supplies is a DEFAULT: a scalar the holder may override, a set the holder may
 // extend. A general constitutive/default marking was considered and rejected: with the
@@ -42,6 +52,7 @@
 import type {
   Agent as AgentIdentity,
   DimensionFieldsOf,
+  Mark,
 } from '@cratylus/schema';
 import { anchorOf, kebabToCamel } from '@cratylus/schema';
 import { DIMENSION_NAMES, MANIFEST } from '../manifest.js';
@@ -53,45 +64,62 @@ type DimensionFields = DimensionFieldsOf<typeof MANIFEST>;
 /**
  * What a role SUPPLIES — a partial dimension vector, minus `role` (which is the
  * role's own `sign`) and plus `guardrails`, which is `required: true` in the
- * manifest and is therefore the position's to state. A position that confines
- * nobody is not a lesser position, it is an unconfined one, and the catch-all
+ * manifest and is therefore the role's to state. A role that confines
+ * nobody is not a lesser role, it is an unconfined one, and the catch-all
  * belongs where every holder inherits it rather than on each holder in turn.
  */
 export type RoleVector = Partial<Omit<DimensionFields, 'role' | 'guardrails'>> &
   Pick<DimensionFields, 'guardrails'>;
 
-/** The expectations attached to one position. */
+/** The expectations attached to one role, and the identity of its generic holder. */
 export interface RoleCell {
   /**
-   * The `role` dimension value — the position's CONTRACT, not merely its name. It
+   * The `role` dimension value — the role's CONTRACT, not merely its name. It
    * states the pair ⟨reads, writes⟩ over the ladder and the acts the pair reserves;
    * delegation is a theorem of the pair rather than a second declaration beside it.
    */
   readonly sign: Role;
+  /** The description of the agent named for this role, the generic holder. */
+  readonly description: string;
+  /** The archetype of the generic holder. */
+  readonly archetype: string;
+  /**
+   * The mark of the generic holder. A persona over this role declares a mark of its
+   * own and `holds` refuses it the role's, because two agents sharing a mark are
+   * indistinguishable in the one place an operator reads them.
+   */
+  readonly provenance: { readonly mark: Mark };
   /** The apparatus every holder operates through. Holders may add; see `holds`. */
   readonly skills?: readonly string[];
   /**
-   * The roles whose holders THIS position's holders hand work to — stated as data
+   * The roles whose holders THIS role's holders hand work to — stated as data
    * because the role text says it only in prose, and an install that placed the
    * dispatcher without the dispatched would fail when run. `[]` is the statement
-   * that the position dispatches none: a dispatching position states its roles and
+   * that the role dispatches none: a dispatching role states its roles and
    * a leaf states none, so no cell leaves the question unanswered. The fold copies
    * their anchors to `Agent.dispatches`, as it does the held role to `Agent.holds`.
    */
   readonly dispatches: readonly Role[];
-  /** The aspects expected of anyone holding the position — DEFAULTS, every one. */
+  /** The aspects expected of anyone holding the role — DEFAULTS, every one. */
   readonly vector: RoleVector;
 }
 
 /**
- * What the HOLDER declares: its identity, and any dimension value of its own.
+ * What a PERSONA declares: its identity, and the residue it adds over the role.
  *
- * Unbounded in size — `kino` declares an entire domain over the architect role — and
- * bounded in exactly one way: `role` is absent, because the contract is the position's.
- * An aspect stated here OVERRIDES a scalar the role supplies and EXTENDS a set.
+ * A persona is an agent named as an individual rather than for the role it holds. Its
+ * description, archetype and mark are required — the mark being its own, never the
+ * role's — and it may add any dimension value besides. Unbounded in size — `kino`
+ * declares an entire domain over the architect role — and bounded in exactly one way:
+ * `role` is absent, because the contract is the role's. An aspect stated here
+ * OVERRIDES a scalar the role supplies and EXTENDS a set.
  */
-export type Declared = Omit<AgentIdentity, 'holds' | 'dispatches'> &
-  Partial<Omit<DimensionFields, 'role'>>;
+export type Persona = Omit<
+  AgentIdentity,
+  'holds' | 'dispatches' | 'provenance'
+> & { readonly provenance: { readonly mark: Mark } } & Partial<
+    Omit<DimensionFields, 'role'>
+  >;
 
 /**
  * `select(a) = hold(a) ⊕ declare(a)` — the two-operand fold, run at authoring time so
@@ -105,24 +133,56 @@ export type Declared = Omit<AgentIdentity, 'holds' | 'dispatches'> &
  *              inviolability marking: union already guarantees it.
  *   · scalar → the holder's value when the KEY IS PRESENT, else the role's — OVERRIDE.
  *              Present-with-`null` is an explicit suppression and is honoured as one;
- *              absent means "whatever the position says", which is the common case.
+ *              absent means "whatever the role says", which is the common case.
  *
  * A dimension neither operand states is `null` — omit-to-inherit, exactly as a
  * hand-written vector spells it.
  *
  * `provenance.mark` NEVER folds: it is instance-bound, minted per agent at
  * `create-agent`, and two agents sharing a mark are indistinguishable in the one place
- * an operator reads them. It arrives on `declared` and leaves untouched.
+ * an operator reads them. A persona's own arrives on `persona` and leaves untouched; the
+ * generic holder's is the role's, and `holds` refuses a persona the role's.
  */
-export function holds(role: RoleCell, declared: Declared): Agent {
+export function holds(role: RoleCell): Agent;
+export function holds(role: RoleCell, persona: Persona): Agent;
+export function holds(role: RoleCell, persona?: Persona): Agent {
+  const anchor = anchorOf(role.sign);
+  if (persona !== undefined) {
+    // A role-named agent is the generic holder and is built by `holds(role)`; one that
+    // declares anything is two agents under one name.
+    if (persona.name === anchor) {
+      throw new Error(
+        `${anchor} is named for the role it holds, so it declares nothing beyond the role: build it with holds(role), or give the persona a name of its own`,
+      );
+    }
+    if (!persona.archetype?.trim()) {
+      throw new Error(
+        `persona ${persona.name} declares no archetype of its own`,
+      );
+    }
+    const mark = persona.provenance?.mark;
+    if (mark === undefined) {
+      throw new Error(`persona ${persona.name} declares no mark of its own`);
+    }
+    if (
+      mark.emoji === role.provenance.mark.emoji &&
+      mark.hue === role.provenance.mark.hue
+    ) {
+      throw new Error(
+        `persona ${persona.name} declares the mark of the ${anchor} role it holds, not a mark of its own`,
+      );
+    }
+  }
+  const declared: Partial<Persona> = persona ?? {};
+  const own = persona ?? role;
   const resolved: Record<string, unknown> = {
-    name: declared.name,
-    description: declared.description,
-    archetype: declared.archetype,
-    provenance: declared.provenance,
+    name: persona?.name ?? anchor,
+    description: own.description,
+    archetype: own.archetype,
+    provenance: own.provenance,
     // The held role's anchor, on the identity face: forge is blind to the `role`
-    // dimension, so this is the one place the position reaches a harness.
-    holds: anchorOf(role.sign),
+    // dimension, so this is the one place the role reaches a harness.
+    holds: anchor,
     ...(role.dispatches.length > 0
       ? { dispatches: role.dispatches.map((r) => anchorOf(r)) }
       : {}),

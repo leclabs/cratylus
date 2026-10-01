@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W9KDX050J8CSZB1WBBRBDK",
+    "entity": "01M3W9KDX050J8CSZB1WBBRBDJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayStaleComments",
+    "time": "2026-10-01T17:53:38.720Z",
+    "reason": "a finding beside the assayed unit, bearing on other concepts, goes out as a note",
+    "cause": "assay of persona-residue at e79b4b0b"
+  },
+  "payload": {
+    "title": "install calls every agent a persona",
+    "kind": "question",
+    "topic": "persona",
+    "body": "Found while assaying persona-residue of docs-and-persona at e79b4b0b. The persona concept now holds that an agent named for its role (architect, planner, implementer, assayer, integrator) is that role's generic holder and is not a persona. Forge's consumer surface still applies 'persona' to every installed agent. install links a 'persona command' for each dropped agent and says 'launch a persona by its name: architect, planner, ...' (packages/forge/src/cli/commands/install.ts, around lines 699 and 851); the flags are --link-persona-commands; persona-commands.ts:6 says '`planner -p hi` starts the `planner` persona'; and the badge each agent shows is the 'persona badge'. These realize the live concepts persona launch and persona badge, whose anchors use the word, so this is a question for the design: either those concepts cover every agent and are named for agents, or their realizations narrow to personas. I left it out of the verdict because it bears on concepts the unit does not realize.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W8SSS2CGVWK89Z7HZ2Q1Q9",
+    "entity": "01M3W8SSS2CGVWK89Z7HZ2Q1Q8",
+    "operation": "create",
+    "supersedes": [],
+    "author": "DocsPlanner",
+    "time": "2026-10-01T17:39:38.914Z",
+    "reason": "a part of the persona shard cannot be planned without a ruling on consumer-visible behaviour and public names",
+    "cause": "planning shard persona at a67c4816"
+  },
+  "payload": {
+    "title": "persona spelled for every agent in forge and schema",
+    "kind": "question",
+    "topic": "persona",
+    "body": "Found while planning docs-and-persona. The persona concept says an agent named for its role is the generic holder of that role and is not a persona; only mav, nico and kino are. Outside the canon's agent cells, the code spells persona for every projected agent. Census at a67c4816: 848 case-insensitive occurrences of 'persona' in 63 tracked files outside records and changelogs, 15 of them under packages/forge/src. Three kinds of use cannot change without a ruling, so plan docs-and-persona leaves them alone. First, the launch and the badge: install links a command for every installed agent, so 'planner -p hi' starts the planner as a 'persona' (forge/src/deploy/persona-commands.ts header), and the badge shows for any launched agent. The design's 'persona launch' and 'persona badge' are spelled on persona but do not factor it, and under its gloss a planner session is a session running no persona. Either those two concepts narrow to personas, which is a behaviour change for consumers who now get a command and a badge for every agent, or their anchors change. Second, consumer surface that spells it: the install flags --link-persona-commands and --no-link-persona-commands, the deploy-manifest key personaLinks, and the on-host scope directories .claude/personas/<agent>/ and omp's agent/personas/<agent>/, which hold every agent's stance manifest and badge. Renaming any of them is a breaking change, and 'agents' is already taken on Claude Code. Third, the schema's public names: Genus = 'Persona' | 'Constitution', the axis of autonomy, role, formality, transparency and audience-adaptation for every agent (also canon/src/manifest.ts and genus/persona.md, the per-turn 'persona drift' block every agent carries), and the hook-cell fact harness-persona-root, which canon's guard hooks read. Until this is ruled, units of docs-and-persona use 'persona' in prose only for mav, nico and kino, and quote these identifiers verbatim. Unit persona-residue realizes persona in the canon's agent and role cells only, so the planner's law that a unit's outputs cover every place its concept is spelled is unmet for the sites above.",
+    "blocks": []
+  }
+}

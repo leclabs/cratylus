@@ -5,12 +5,12 @@ import type { Role } from '../../manifest.js';
 // operation at all. An implementer holding the design would be checking its own work
 // against its own terms, which is the closed loop the ladder exists to open.
 //
-// WHAT LEAVES THIS POSITION IS THE ARTIFACT AND A NAME, NEVER AN ACCOUNT. The artifact is
+// WHAT LEAVES THIS ROLE IS THE ARTIFACT AND A NAME, NEVER AN ACCOUNT. The artifact is
 // committed in the implementer's own worktree, isolated and off the plan's line, never on main, and
 // the return is `landed <unit> of <plan> at <commit>` or `blocked <unit> of <plan>: spec`
 // and nothing else, so the layer above
 // holds an address and nothing to be persuaded by. Acceptance rests on the assayer, who
-// reads the shard and the files at that commit and never the spec or this position's
+// reads the shard and the files at that commit and never the spec or this role's
 // words: a description of its own work handed up by the builder is one description
 // judging itself, which is the closed loop again. What the implementer could not prove,
 // and any finding it meets beside the path, is still owed to someone; it goes out as a
@@ -19,10 +19,10 @@ import type { Role } from '../../manifest.js';
 // unit.
 //
 // THE LANDING IS WRITTEN BY THE PARTY IT HAPPENS TO. The commit that holds the unit's
-// work is recorded in the unit's own history by this position, once the commit exists,
+// work is recorded in the unit's own history by this role, once the commit exists,
 // and again for each amended commit; the return that follows is only the name. So where
 // the unit stands, and at which commit, is read from its ledger, and no party needs this
-// position's message or memory to know it.
+// role's message or memory to know it.
 
 export const implementer: Role = `implementer ≜ reads⟨spec · artifact⟩ → writes⟨artifact · landing · note⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩

@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3W8476MKSZVG2FFV8V8P4DW",
+    "entity": "01M3RCRQBZHNFJ7N175ZQ9WH5Y",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RCYKC96BY5PJH0MCE8A2SA"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T17:27:51.764Z",
+    "reason": "the operator's ruling separates role-named agents from personas",
+    "cause": "operator: architect vs mav deserves its own ideation round"
+  },
+  "payload": {
+    "title": "mav duplicates the architect",
+    "kind": "question",
+    "topic": "persona",
+    "body": "Answered in part by the persona concept: the generic architect is the role's holder with no residue, and mav is a persona whose residue is its archetype above the architect, so the two are not duplicates by definition. Still open for a future ideation round with the operator: what mav's residue is beyond its archetype, and whether the generic architect should be dispatchable at all, since the design is not delegable.",
+    "blocks": []
+  }
+}

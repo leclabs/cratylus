@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3W846YWG5Z3CYWN0W5F4W6R",
+    "entity": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T17:27:51.517Z",
+    "reason": "first-share piece 4 is the docs rewrite; the ground documents still bind every sign to cold decode against the operator's scoping ruling",
+    "cause": "operator: bring the ground documents in line within the docs rewrite"
+  },
+  "payload": {
+    "anchor": "documentation",
+    "gloss": "what cratylus says about itself in prose, written from the finished tree. Each fact has one home, and every other place that needs it links there. The consumer's path (install, the practices, the command line, uninstall) comes first and reads as plain instructions; the corpus author's and contributor's material is kept apart. Every statement matches what the shipped code does, and the ground documents (vision, model, engine, architecture) agree with the current design, including the cold-decode oracle's scope. Why: the docs were written while the design moved and now contradict it and each other in places; a stranger trusts or dismisses cratylus on what the docs say before running anything.",
+    "factors": []
+  }
+}

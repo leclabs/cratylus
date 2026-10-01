@@ -6,10 +6,11 @@ import type { Agent } from '../manifest.js';
 import { architectRole } from '../roles/architect.js';
 import { holds } from '../roles/hold.js';
 
-// `kino` IS AN ARCHITECT — literally, not by analogy. It holds the architect role and
-// declares a generative-video domain over it, which is the whole of the specialization:
-// two minted capabilities, two scalar overrides, and its own prose. The commonality with
-// `architect` is now structural rather than copied, so the two cannot drift.
+// `kino` IS AN ARCHITECT — literally, not by analogy. It is a persona over the architect
+// role and declares a generative-video domain over it, which is the whole of its residue:
+// its own description, archetype and mark, two minted capabilities, two scalar overrides.
+// The commonality with `architect` is structural rather than copied, so the two cannot
+// drift.
 //
 // The two overrides are the specialization's substance and neither is incidental:
 //

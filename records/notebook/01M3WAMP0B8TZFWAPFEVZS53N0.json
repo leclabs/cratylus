@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WAMP0B8TZFWAPFEVZS53N0",
+    "entity": "01M3WA78BZCGPV627S8ZWWZVNP",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WA78BZCGPV627S8ZWWZVNQ"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T18:11:48.363Z",
+    "reason": "a silently ignored flag; one way to choose a corpus",
+    "cause": "assay of consumer-path"
+  },
+  "payload": {
+    "title": "install --plugin is ignored by the cratylus command",
+    "kind": "decision",
+    "topic": "cratylus install",
+    "body": "Ruled: remove --plugin from install and its help. Installing another corpus already has its path, a cratylus.config.ts that the corpus-authoring commands read; a flag that does nothing breaks the command line's no-footguns clause, and making it work would give install a second way to choose a corpus. For the next plan under command line.",
+    "blocks": []
+  }
+}

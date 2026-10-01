@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3W9AC6KB441KYMW65638TNV",
+    "entity": "01M3W95S7Z0BB58VRQ8HATKSBH",
+    "operation": "retract",
+    "supersedes": [
+      "01M3W95X1PYQ6YHFCF9M5PCPDA"
+    ],
+    "author": "StaleComments",
+    "time": "2026-10-01T17:48:42.067Z",
+    "reason": "fixed in amended commit",
+    "cause": "assayer finding"
+  },
+  "payload": null
+}
