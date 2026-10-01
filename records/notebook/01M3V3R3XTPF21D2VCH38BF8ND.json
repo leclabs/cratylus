@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V3R3XTPF21D2VCH38BF8ND",
+    "entity": "01M3V3R3XTPF21D2VCH38BF8NC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ProjectCommandsOutput",
+    "time": "2026-10-01T06:52:06.458Z",
+    "reason": "census item 8 left the exit code alone",
+    "cause": "project-commands-output build"
+  },
+  "payload": {
+    "title": "add wires a package it never checks",
+    "kind": "question",
+    "topic": "command-line",
+    "body": "cratylus add nonexistent-pkg edits the config and exits 0; the first failure comes later, from the commands that load it, now as one line naming the package. Whether add should check the package resolves is not decided by this unit.",
+    "blocks": []
+  }
+}
