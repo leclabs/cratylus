@@ -1429,7 +1429,8 @@ export function look(
  * A write about a plan that has a line lands on the line's worktree, whichever
  * checkout ran it, and the view ends by naming where. `cut` names the plan
  * entity, if `done` binds one, whose line the act cuts (`RecordStore.cut`)
- * and fills with the records about it this checkout holds and the line lacks.
+ * and moves onto it the records about it this checkout holds and the line
+ * lacks (`RecordStore.move`).
  */
 export function act<T>(
   capability: string,
@@ -1457,7 +1458,7 @@ export function act<T>(
     const cutLine =
       placing.cut === undefined ? undefined : lines.get(placing.cut);
     if (cutting !== undefined && cutLine !== undefined)
-      staged.copy(cutLine, after.recordsAbout(cutting));
+      staged.move(cutLine, after.recordsAbout(cutting));
     staged.flush((_, record) => {
       const name = placing.of.get(record.envelope.id);
       return name === undefined ? undefined : lines.get(name)?.path;

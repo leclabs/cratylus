@@ -7,7 +7,9 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -643,12 +645,50 @@ describe('record store — a plan’s line', () => {
     // The line reads what it holds and other lines hold, never a checkout's
     // own uncommitted records.
     expect(ids(fromLine.read(DOMAIN))).toEqual(ids([there]));
-    // A record both hold reads once.
-    new RecordStore(repo).copy(line, [
+    // A record moved onto the line reads once, from the line alone.
+    new RecordStore(repo).move(line, [
       { domain: DOMAIN, id: here.envelope.id },
     ]);
+    expect(readdirSync(dir(repo))).toEqual([`${beside.envelope.id}.json`]);
     expect(ids(new RecordStore(repo).read(DOMAIN))).toEqual(
       ids([here, there, beside]),
+    );
+  });
+
+  it('move takes an untracked record off this checkout onto the line, and leaves one this checkout’s HEAD tracks, one the line holds, and one it was not asked for', () => {
+    const repo = committed();
+    const tracked = new RecordStore(repo).create(DOMAIN, { name: 't' }, BY);
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'a record');
+    const loose = new RecordStore(repo).create(DOMAIN, { name: 'l' }, BY);
+    const kept = new RecordStore(repo).create(DOMAIN, { name: 'k' }, BY);
+    const line = new RecordStore(repo).cut('p');
+    const both = new RecordStore(repo).create(DOMAIN, { name: 'b' }, BY);
+    const dir = (top: string) => join(top, RECORDS_ROOT, DOMAIN);
+    mkdirSync(dir(line.path), { recursive: true });
+    copyFileSync(
+      join(dir(repo), `${both.envelope.id}.json`),
+      join(dir(line.path), `${both.envelope.id}.json`),
+    );
+    new RecordStore(repo).move(
+      line,
+      [tracked, loose, both].map((r) => ({
+        domain: DOMAIN,
+        id: r.envelope.id,
+      })),
+    );
+    const named = (records: readonly Record<unknown>[]) =>
+      records.map((r) => `${r.envelope.id}.json`).sort();
+    expect(readdirSync(dir(repo)).sort()).toEqual(named([tracked, kept, both]));
+    expect(readdirSync(dir(line.path)).sort()).toEqual(
+      named([tracked, loose, both]),
+    );
+    // The line's own checkout is never emptied.
+    new RecordStore(line.path).move(line, [
+      { domain: DOMAIN, id: loose.envelope.id },
+    ]);
+    expect(readdirSync(dir(line.path)).sort()).toEqual(
+      named([tracked, loose, both]),
     );
   });
 

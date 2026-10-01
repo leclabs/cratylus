@@ -38,6 +38,7 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -403,19 +404,37 @@ export class RecordStore {
     return { plan, branch, path: realpathSync(at) };
   }
 
-  /** Copy into `line` each record, named by domain and id, this checkout holds
-   *  and the line lacks. */
-  copy(
+  /** Move onto `line` each record, named by domain and id, this checkout holds
+   *  and the line lacks: the file is copied there and then no longer stands
+   *  here, unless the HEAD of this checkout tracks it — a committed record is
+   *  never removed from a checkout. A record the line holds already is left
+   *  where it is. Nothing is moved when this checkout is the line's. */
+  move(
     line: Line,
     records: readonly { readonly domain: string; readonly id: RecordId }[],
   ): void {
     if (line.path === this.top) return;
+    let tracked: ReadonlySet<string> | undefined;
     for (const { domain, id } of records) {
       const from = join(this.#dir(domain), `${id}.json`);
       const to = join(this.#dir(domain, line.path), `${id}.json`);
       if (!existsSync(from) || existsSync(to)) continue;
       mkdirSync(this.#dir(domain, line.path), { recursive: true });
       copyFileSync(from, to, constants.COPYFILE_EXCL);
+      tracked ??= new Set(
+        git(
+          this.top,
+          'ls-tree',
+          '-r',
+          '--name-only',
+          'HEAD',
+          '--',
+          RECORDS_ROOT,
+        )
+          .split('\n')
+          .map((name) => join(this.top, name)),
+      );
+      if (!tracked.has(from)) rmSync(from);
     }
   }
 

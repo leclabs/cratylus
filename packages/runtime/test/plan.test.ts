@@ -11,6 +11,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
+import { dispatchNote } from '../src/capabilities/note/dispatch.js';
 import { VERBS, dispatchPlan } from '../src/capabilities/plan/dispatch.js';
 import * as verbFlags from '../src/verb-flags.js';
 import {
@@ -35,6 +36,8 @@ const plan = (repo: string, ...argv: string[]): string =>
   dispatchPlan(argv, { from: repo });
 const design = (repo: string, ...argv: string[]): string =>
   dispatchDesign(argv, { from: repo });
+const note = (repo: string, ...argv: string[]): string =>
+  dispatchNote(argv, { from: repo });
 
 const refused = (repo: string, ...argv: string[]): string =>
   refusal(repo, () => plan(repo, ...argv));
@@ -1472,7 +1475,7 @@ describe('plan — a bound plan’s records live on its line', () => {
     return { repo, line: `${repo}.plan-p`, before, bound };
   }
 
-  it('bind cuts the line from the checkout it runs in, copies the plan’s records into it, writes the bind there, and names both', () => {
+  it('bind cuts the line from the checkout it runs in, moves the plan’s records onto it, writes the bind there, and names both', () => {
     const { repo, line, before, bound } = lined();
     expect(bound).toContain(`wrote to plan/p, worktree ${line}`);
     expect(git(repo, 'worktree', 'list', '--porcelain')).toContain(
@@ -1483,8 +1486,72 @@ describe('plan — a bound plan’s records live on its line', () => {
     const added = held.filter((f) => !before.includes(f));
     expect(added).toHaveLength(1);
     expect(records(line, 'plan')).toContain(added[0]);
-    expect(everyRecord(repo)).toEqual(before);
-    expect(status(repo)).not.toContain(added[0]);
+    expect(everyRecord(repo)).toEqual(records(repo, 'design'));
+    expect(status(repo)).toBe('');
+  });
+
+  it('bind moves the records of the plan, its units and the notes blocking either onto the line, so the main checkout lists none of them, and the same state prints from both', () => {
+    const repo = repository();
+    concepts(repo);
+    commit(repo, 'design');
+    add(repo, 'u', 'p');
+    add(repo, 'v', 'p');
+    note(
+      repo,
+      'capture',
+      'hold',
+      '--kind',
+      'ask',
+      '--topic',
+      'scope',
+      '--body',
+      'about the plan',
+      '--blocks',
+      'u',
+      ...BY,
+    );
+    const line = `${repo}.plan-p`;
+    const wrote = everyRecord(repo);
+    plan(repo, 'bind', 'p', ...BY);
+    expect(status(repo)).toBe('');
+    expect(records(repo, 'notebook')).toEqual([]);
+    expect(records(repo, 'unit')).toEqual([]);
+    expect(records(repo, 'plan')).toEqual([]);
+    expect(wrote.every((f) => everyRecord(line).includes(f))).toBe(true);
+    expect(records(line, 'notebook')).toHaveLength(1);
+    expect(records(line, 'unit')).toHaveLength(2);
+    for (const read of [
+      (at: string) => plan(at, 'show', 'p'),
+      (at: string) => plan(at, 'show', 'u', '--plan', 'p'),
+      (at: string) => note(at, 'show'),
+    ])
+      expect(read(line)).toBe(read(repo));
+  });
+
+  it('bind leaves in the main checkout a record of the plan its HEAD tracks, and a design record written there', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u', 'p');
+    commit(repo, 'the plan proposed');
+    const committed = records(repo, 'design');
+    const tracked = [...records(repo, 'plan'), ...records(repo, 'unit')];
+    expect(tracked).toHaveLength(2);
+    add(repo, 'v', 'p');
+    design(repo, 'define', 'c3', '--gloss', 'three', ...BY);
+    const designs = records(repo, 'design');
+    plan(repo, 'bind', 'p', ...BY);
+    const line = `${repo}.plan-p`;
+    expect(records(repo, 'design')).toEqual(designs);
+    expect([...records(repo, 'plan'), ...records(repo, 'unit')]).toEqual(
+      tracked,
+    );
+    expect(records(line, 'unit')).toHaveLength(2);
+    expect(records(line, 'plan')).toHaveLength(2);
+    expect(status(repo).trim().split('\n')).toEqual(
+      records(repo, 'design')
+        .filter((f) => !committed.includes(f))
+        .map((f) => `?? records/design/${f}`),
+    );
   });
 
   it('a write about the plan lands on the line from any checkout and says where; design and unbound plans land where they run', () => {
