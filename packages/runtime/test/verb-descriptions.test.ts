@@ -22,6 +22,28 @@ const SURFACES: Record<(typeof CAPABILITIES)[number], VerbFlags> = {
 /** A line of words: something is said, and all of it on one line. */
 const LINE = /^\S[^\n\r]*\S$/;
 
+/** A positional: none, `<name>` where it must be given, `[name]` where it may be. */
+const POSITIONAL = /^(?:<[a-z]+(?:-[a-z]+)*>|\[[a-z]+(?:-[a-z]+)*\])$/;
+
+/** What `verbs` of `capability` leave unsaid: each verb without a one-line
+ *  summary or a positional, each flag without a one-line description or a
+ *  known way of taking its value. */
+function unsaid(capability: string, verbs: VerbFlags): string[] {
+  const missing: string[] = [];
+  for (const [name, verb] of Object.entries(verbs)) {
+    const at = `${capability} ${name}`;
+    if (!LINE.test(verb.summary)) missing.push(`${at}: summary`);
+    if (verb.positional !== null && !POSITIONAL.test(verb.positional))
+      missing.push(`${at}: positional ${verb.positional}`);
+    for (const [flag, spec] of Object.entries(verb.flags)) {
+      if (!LINE.test(spec.description)) missing.push(`${at} --${flag}`);
+      if (spec.takes !== 'value' && spec.takes !== 'switch')
+        missing.push(`${at} --${flag}: takes`);
+    }
+  }
+  return missing;
+}
+
 describe('every capability, verb and flag is described', () => {
   it('each capability has a one-line summary', () => {
     expect(Object.keys(CAPABILITY_SUMMARIES)).toEqual([...CAPABILITIES]);
@@ -32,32 +54,40 @@ describe('every capability, verb and flag is described', () => {
   it.each(CAPABILITIES)(
     '%s: each verb has a one-line summary and a positional, each flag a one-line description',
     (capability) => {
-      const verbs = Object.entries(SURFACES[capability]);
-      expect(verbs.length, `${capability} verbs`).toBeGreaterThan(0);
-      for (const [name, verb] of verbs) {
-        const at = `${capability} ${name}`;
-        expect(verb.summary, `${at} summary`).toMatch(LINE);
-        expect(
-          verb.positional === null ||
-            /^(?:<[a-z]+(?:-[a-z]+)*>|\[[a-z]+(?:-[a-z]+)*\])$/.test(
-              verb.positional,
-            ),
-          `${at} positional ${verb.positional}`,
-        ).toBe(true);
-        for (const [flag, spec] of Object.entries(verb.flags)) {
-          expect(spec.description, `${at} --${flag}`).toMatch(LINE);
-          expect(['value', 'switch'], `${at} --${flag}`).toContain(spec.takes);
-        }
-      }
+      expect(
+        Object.keys(SURFACES[capability]).length,
+        `${capability} verbs`,
+      ).toBeGreaterThan(0);
+      expect(unsaid(capability, SURFACES[capability])).toEqual([]);
     },
   );
 
-  it('a verb that takes no flags and no positional says so', () => {
-    expect(EVENT_TAP.status.positional).toBeNull();
-    expect(DESIGN.show.flags).toEqual({});
+  it('FLAGS each verb and flag left unsaid, and none that is said', () => {
+    const verb = (over: Partial<Verb>, flags: Verb['flags']): Verb => ({
+      summary: 'Do a thing',
+      positional: '<unit>',
+      ...over,
+      flags,
+    });
+    const said = { takes: 'value', description: 'A flag' } as const;
+    expect(
+      unsaid('x', {
+        ok: verb({}, { a: said }),
+        quiet: verb({ summary: '' }, { a: said }),
+        wrapped: verb({ summary: 'One\nand two' }, { a: said }),
+        bare: verb({ positional: 'unit' }, { a: said }),
+        none: verb({ positional: null }, {}),
+        flag: verb({}, { a: said, b: { takes: 'value', description: '' } }),
+      }),
+    ).toEqual([
+      'x quiet: summary',
+      'x wrapped: summary',
+      'x bare: positional unit',
+      'x flag --b',
+    ]);
   });
 
-  it('a flag left undescribed does not compile', () => {
+  it('REFUSES to compile a flag left undescribed', () => {
     const described: Verb = {
       summary: 'Do a thing',
       positional: null,

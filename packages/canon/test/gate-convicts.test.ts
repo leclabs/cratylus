@@ -355,6 +355,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/record-store.test.ts': 'BEHAVIORAL',
   'runtime/runtime-config.test.ts': 'BEHAVIORAL',
   'runtime/ulid.test.ts': 'BEHAVIORAL',
+  // the live capabilities' verbs are each checked for a summary, a positional and a
+  // description of every flag; a verb and a flag it leaves unsaid are its fixtures.
+  'runtime/verb-descriptions.test.ts': 'GATE',
 
   // ── schema ───────────────────────────────────────────────────────────
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
