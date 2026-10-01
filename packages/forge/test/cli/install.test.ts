@@ -903,6 +903,31 @@ describe('the guided install', () => {
     expect(files(claude())).toEqual([]);
   });
 
+  it.each([
+    [
+      'extends nothing',
+      'export default { extends: [], patches: [] };\n',
+      'extends no plugins',
+    ],
+    [
+      'extends a plugin carrying no manifest',
+      "export default { extends: [{ name: 'bare' }], patches: [] };\n",
+      'declares a dimension manifest (bare)',
+    ],
+  ])(
+    'ends in one line where the cwd config %s',
+    async (_case, source, said) => {
+      writeFileSync(join(cwd, 'cratylus.config.ts'), source);
+      expect(await install({ harness: 'claude', all: true })).toBe(1);
+      expect(out).toBe('');
+      const lines = err.trimEnd().split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^cratylus install: .*cratylus\.config\.ts/);
+      expect(lines[0]).toContain(said);
+      expect(files(claude())).toEqual([]);
+    },
+  );
+
   it('ends in one line where the cwd config exports no config', async () => {
     writeFileSync(join(cwd, 'cratylus.config.ts'), 'export default 3;\n');
     expect(await install({ harness: 'claude', all: true })).toBe(1);

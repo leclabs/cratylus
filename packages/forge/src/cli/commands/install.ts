@@ -52,6 +52,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
+import { mergeManifest } from '@cratylus/schema';
 import {
   CLAUDE_MODEL_TIERS,
   CLAUDE_ROLE_TIERS,
@@ -66,8 +67,10 @@ import {
   ConfigLoadError,
   ConfigShapeError,
   type CratylusConfig,
+  EmptyExtendsError,
   MissingPackageError,
   loadConfig,
+  requirePlugins,
 } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import { keepsHostModel } from '../../deploy/deploy.js';
@@ -265,21 +268,33 @@ function parseModelRoles(
  * The cwd's config, or a refusal carrying the loader's message. `cratylus init` writes
  * a config whose packages are not yet installed, so an unloadable config is an
  * ordinary state of the directory: the loader's errors each already say what is wrong
- * and what to do, and that line is the whole of the run's output.
+ * and what to do, and that line is the whole of the run's output. A config that loads
+ * but names no usable corpus (it extends nothing, or no plugin it extends carries the
+ * dimension manifest) is refused the same way, before the render that would otherwise
+ * end in a stack trace.
  */
 async function loadConfigOrRefuse(configPath: string): Promise<CratylusConfig> {
+  let config: CratylusConfig;
   try {
-    return await loadConfig(configPath);
+    config = await loadConfig(configPath);
+    requirePlugins(config, configPath);
   } catch (e) {
     if (
       e instanceof MissingPackageError ||
       e instanceof ConfigLoadError ||
-      e instanceof ConfigShapeError
+      e instanceof ConfigShapeError ||
+      e instanceof EmptyExtendsError
     ) {
       throw new Refusal(e.message);
     }
     throw e;
   }
+  try {
+    mergeManifest(config.extends);
+  } catch (e) {
+    throw new Refusal(`${configPath}: ${(e as Error).message}`);
+  }
+  return config;
 }
 
 export async function runInstall(
