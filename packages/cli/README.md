@@ -316,6 +316,7 @@ changes nothing. `cratylus uninstall` removes them again (below).
 ```sh
 cratylus uninstall --harness claude            # or omp
 cratylus uninstall --harness claude --dry-run  # the same report, nothing written
+cratylus uninstall --harness claude --verbose  # also list every item removed
 ```
 
 `cratylus uninstall --harness <claude|omp>` removes from that harness what `install` placed there, and
@@ -335,8 +336,8 @@ the status line layout), and the persona commands it linked or adopted. Uninstal
   file itself when that was the last harness's;
 - the manifest, last, so a run that stops early can be run again.
 
-It prints two lists: what it removed, and what it left because the host placed or changed it, each with
-its reason. A placed file you edited since install is left, and so is one recorded before digests were
+It prints a count of what it removed and, always, each thing it left because the host placed or changed
+it, with its reason; `--verbose` lists every item removed too. A placed file you edited since install is left, and so is one recorded before digests were
 kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours, a
 status line you have pointed at another command, a persona command you replaced, and a file another
 harness's install still records. A `config.yml` line you rewrote is left too, and only that line: every

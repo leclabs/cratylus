@@ -187,6 +187,7 @@ cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 | `--only <names>`     | comma-separated names to deploy                                             |
 | `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`                            |
 | `--dry-run`          | print the actions and change nothing                                        |
+| `--verbose`          | also print the per-file detail (the default is a short summary)             |
 
 Which directories are required depends on `--kind`: `all` requires all three, `hooks` requires only
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
@@ -440,8 +441,8 @@ the `statusLine` block it finds there byte for byte as it would write them (`ado
 and `ensureStatusSegment`, recorded through `adoptedHunk`), so the uninstall after it takes them.
 `removePersonaCommands` takes the recorded persona commands. A path outside the harness home and the
 neutral `.agents` root, and a path another harness's manifest records, are left; so is everything that
-is `changed` or `unverified`. The report is two lists, removed and left, each left entry with its
-reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
+is `changed` or `unverified`. The report counts what was removed (`--verbose` lists it) and names each left entry
+with its reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
 or foreign-version manifest is refused rather than read as empty.
 
 ### `cratylus explain [agent]`

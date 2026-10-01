@@ -189,6 +189,7 @@ describe('runDeploy with the models an operator chose', () => {
     const skillsDir = join(root, 'skills');
     const home = tmp('forge-host-');
     const warnings: string[] = [];
+    const failures: string[] = [];
     const render = (model: string | undefined) =>
       writeFileSync(join(agentsDir, 'planner.md'), def(model), 'utf-8');
     const deploy = (models?: Record<string, string>) =>
@@ -202,10 +203,11 @@ describe('runDeploy with the models an operator chose', () => {
         ...(models === undefined ? {} : { models }),
         log: () => {},
         warn: (l) => warnings.push(l),
+        fail: (l) => failures.push(l),
       });
     const harnessDir = join(home, harness === 'omp' ? '.omp' : '.claude');
     const placed = join(harnessDir, 'agents', 'planner.md');
-    return { render, deploy, placed, harnessDir, warnings };
+    return { render, deploy, placed, harnessDir, warnings, failures };
   }
 
   it('places the chosen model, records the rendered one, and the choice outlives a deploy without models', async () => {
@@ -317,8 +319,9 @@ describe('runDeploy with the models an operator chose', () => {
     const f = fixture('omp');
     f.render('opus');
     expect(await f.deploy({ planner: 'haiku' })).not.toBe(0);
-    expect(f.warnings).toHaveLength(1);
-    expect(f.warnings[0]).toContain('omp');
+    expect(f.failures).toHaveLength(1);
+    expect(f.failures[0]).toContain('omp');
+    expect(f.warnings).toEqual([]);
     expect(existsSync(f.harnessDir)).toBe(false);
   });
 
@@ -423,7 +426,7 @@ describe('scope resolution', () => {
   it('userScope: bare home self-corrects (.claude appended) with a loud NOTE', () => {
     const r = userScope('/Users/lex');
     expect(r.harnessDir.endsWith('/.claude')).toBe(true);
-    expect(r.note?.message).toMatch(/is a home dir -> deploying to/);
+    expect(r.note?.message).toMatch(/is a home dir; deploying to/);
   });
 
   it('userScope: a path already ending in .claude is used verbatim (no NOTE)', () => {

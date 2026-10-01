@@ -2,7 +2,7 @@
 // greenfield `scaffoldProject` engine. The engine itself is covered exhaustively
 // elsewhere; these assert the command layer threads opts → engine and reports the rc.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
@@ -97,6 +97,169 @@ describe('runDeploy (local)', () => {
     // skill + hooks kinds were NOT touched
     expect(existsSync(join(cd, 'skills'))).toBe(false);
     expect(existsSync(join(cd, 'settings.json'))).toBe(false);
+  });
+
+  describe('the report', () => {
+    const run = async (extra: { verbose?: boolean; dryRun?: boolean } = {}) => {
+      const root = tmp('forge-render-');
+      const { agentsDir, skillsDir } = buildRenderTree(root);
+      const { hooksDir } = buildHooksTree(root);
+      const home = tmp('forge-home-');
+      const lines: string[] = [];
+      const warnings: string[] = [];
+      const rc = await runDeploy({
+        agentsDir,
+        skillsDir,
+        hooksDir,
+        kind: 'all',
+        scope: 'user',
+        home,
+        ...extra,
+        log: (l) => lines.push(l),
+        warn: (m) => warnings.push(m),
+      });
+      return { rc, lines, warnings, home };
+    };
+
+    it('is a short summary by default: counts, the target and the next step, no per-file line', async () => {
+      const { rc, lines, home } = await run();
+      expect(rc).toBe(0);
+      expect(lines.length).toBeLessThanOrEqual(6);
+      expect(lines[0]).toMatch(
+        /^deployed \d+ agents?, \d+ skills?, 1 hook to claude/,
+      );
+      expect(lines[0]).toContain(join(home, '.claude'));
+      expect(lines.join('\n')).not.toMatch(/===| -> /);
+      expect(lines.at(-1)).toBe('next: start or restart claude');
+    });
+
+    it('says a bare --home once, whatever the number of kinds', async () => {
+      const { warnings } = await run();
+      expect(warnings.filter((m) => m.includes('is a home dir'))).toHaveLength(
+        1,
+      );
+    });
+
+    it('lists each file placed only under --verbose', async () => {
+      const { lines } = await run({ verbose: true });
+      const said = lines.join('\n');
+      expect(said).toMatch(/skill wake -> /);
+      expect(said).toMatch(/hook stance-guardrail -> /);
+      expect(said).not.toContain('===');
+    });
+
+    it('a dry run says what it would do, and the next step is to run it', async () => {
+      const { lines, home } = await run({ dryRun: true });
+      expect(lines[0]).toMatch(/^would deploy /);
+      expect(lines.at(-1)).toMatch(/without --dry-run/);
+      expect(existsSync(join(home, '.claude'))).toBe(false);
+    });
+  });
+
+  describe('refuses what it cannot read, and changes nothing', () => {
+    /** Every file under `dir`, by its bytes. */
+    const bytes = (dir: string, at = ''): Record<string, string> =>
+      Object.fromEntries(
+        readdirSync(join(dir, at), { withFileTypes: true }).flatMap((e) => {
+          const rel = at === '' ? e.name : `${at}/${e.name}`;
+          return e.isDirectory()
+            ? Object.entries(bytes(dir, rel))
+            : [[rel, readFileSync(join(dir, rel), 'utf-8')]];
+        }),
+      );
+
+    async function deployed() {
+      const root = tmp('forge-render-');
+      const tree = buildRenderTree(root);
+      const hooks = buildHooksTree(root);
+      const home = tmp('forge-home-');
+      const base = {
+        ...tree,
+        hooksDir: hooks.hooksDir,
+        scope: 'user' as const,
+        home,
+      };
+      expect(await runDeploy({ ...base, kind: 'all' })).toBe(0);
+      const failures: string[] = [];
+      const lines: string[] = [];
+      const again = (extra: Partial<Parameters<typeof runDeploy>[0]>) =>
+        runDeploy({
+          ...base,
+          kind: 'all',
+          ...extra,
+          log: (l) => lines.push(l),
+          warn: () => {},
+          fail: (m) => failures.push(m),
+        });
+      return {
+        again,
+        failures,
+        lines,
+        harnessDir: join(home, '.claude'),
+        root,
+        home,
+      };
+    }
+
+    it.each([
+      [
+        'an --agents-dir that does not exist',
+        'all',
+        { agentsDir: '<nope>/agents' },
+      ],
+      ['the same, for --kind agent', 'agent', { agentsDir: '<nope>/agents' }],
+      [
+        'a --skills-dir that does not exist, for --kind skill',
+        'skill',
+        { skillsDir: '<nope>/skills' },
+      ],
+      [
+        'a --from that does not exist',
+        'all',
+        {
+          agentsDir: '<nope>/agents',
+          skillsDir: '<nope>/skills',
+          hooksDir: '<nope>',
+        },
+      ],
+    ] as const)('%s', async (_name, kind, dirs) => {
+      const h = await deployed();
+      const nope = join(h.root, 'nope');
+      const before = bytes(h.harnessDir);
+      const rc = await h.again({
+        kind,
+        ...Object.fromEntries(
+          Object.entries(dirs).map(([k, v]) => [k, v.replace('<nope>', nope)]),
+        ),
+      });
+      expect(rc).not.toBe(0);
+      expect(h.lines).toEqual([]);
+      expect(h.failures).toHaveLength(1);
+      expect(h.failures[0]).toContain(nope);
+      expect(bytes(h.harnessDir)).toEqual(before);
+    });
+
+    it('does not ask after a dir the --kind does not read', async () => {
+      const h = await deployed();
+      const rc = await h.again({
+        kind: 'skill',
+        agentsDir: join(h.root, 'nope', 'agents'),
+      });
+      expect(rc).toBe(0);
+      expect(h.failures).toEqual([]);
+      expect(existsSync(join(h.harnessDir, 'agents', 'mav.md'))).toBe(true);
+    });
+
+    it('refuses a kind it does not know instead of deploying a kind of nothing', async () => {
+      const h = await deployed();
+      const before = bytes(h.harnessDir);
+      expect(await h.again({ kind: 'bogus' as never })).not.toBe(0);
+      expect(h.lines).toEqual([]);
+      expect(h.failures).toEqual([
+        "unknown kind 'bogus'; pass --kind <agent|skill|hooks|all>",
+      ]);
+      expect(bytes(h.harnessDir)).toEqual(before);
+    });
   });
 });
 

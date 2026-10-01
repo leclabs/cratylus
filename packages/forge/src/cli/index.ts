@@ -24,6 +24,7 @@ import { runInstall } from './commands/install.js';
 import { runOptimize } from './commands/optimize.js';
 import { runProject } from './commands/project.js';
 import { runUninstall } from './commands/uninstall.js';
+import { fail } from './style.js';
 
 /**
  * This package's version, read from the manifest that DEFINES it.
@@ -249,15 +250,19 @@ export async function runCli(
     )
     .option('--harness <name>', 'harness to remove from (required)')
     .option('--dry-run', 'print what would be removed and left; write nothing')
-    .action((opts: { harness?: string; dryRun?: boolean }) => {
-      process.exit(
-        runUninstall({
-          harness: opts.harness,
-          dryRun: opts.dryRun,
-          home: homedir(),
-        }),
-      );
-    });
+    .option('--verbose', 'also list every item removed')
+    .action(
+      (opts: { harness?: string; dryRun?: boolean; verbose?: boolean }) => {
+        process.exit(
+          runUninstall({
+            harness: opts.harness,
+            dryRun: opts.dryRun,
+            verbose: opts.verbose,
+            home: homedir(),
+          }),
+        );
+      },
+    );
 
   cli
     .command(
@@ -301,6 +306,7 @@ export async function runCli(
     )
     .option('--only <names>', 'comma-separated names to deploy')
     .option('--dry-run', 'print actions, change nothing')
+    .option('--verbose', 'also print the per-file detail of the run')
     .option(
       '--check',
       'report where the DEPLOYED tree diverges from the rendered one (stale / absent / foreign); changes nothing',
@@ -320,6 +326,7 @@ export async function runCli(
         config?: string;
         only?: string;
         dryRun?: boolean;
+        verbose?: boolean;
         check?: boolean;
       }) => {
         // A USAGE ERROR IS THE CHECK'S OWN FAILURE, NEVER THE HOST'S. Under
@@ -356,8 +363,9 @@ export async function runCli(
         const defaulted =
           !opts.from && !opts.agentsDir && !opts.skillsDir && !opts.hooksDir;
         if (defaulted && !existsSync(from)) {
-          console.error(
-            `${CLI_BIN} deploy: no render tree at ${from} — run \`${CLI_BIN} project\` first, or pass --from <dir>`,
+          fail(
+            'deploy',
+            `no render tree at ${from}; run \`${CLI_BIN} project\` first, or pass --from <dir>`,
           );
           process.exit(usage);
         }
@@ -365,7 +373,10 @@ export async function runCli(
         try {
           companions = parseCompanions(opts.assets ?? null);
         } catch (e) {
-          console.error(`${CLI_BIN} deploy: ${(e as Error).message}`);
+          fail(
+            'deploy',
+            `${(e as Error).message}; fix the --assets declaration and run it again`,
+          );
           process.exit(usage);
         }
         process.exit(
@@ -382,6 +393,7 @@ export async function runCli(
             config: opts.config ?? null,
             only: opts.only ?? null,
             dryRun: opts.dryRun,
+            verbose: opts.verbose,
             check: opts.check,
           }),
         );
