@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W95S7Z0BB58VRQ8HATKSBJ",
+    "entity": "01M3W95S7Z0BB58VRQ8HATKSBH",
+    "operation": "create",
+    "supersedes": [],
+    "author": "StaleComments",
+    "time": "2026-10-01T17:46:11.583Z",
+    "reason": "finding beside the path",
+    "cause": "stale-comments unit grep for 'cut to 14'"
+  },
+  "payload": {
+    "title": "omp.test.ts comment still says rubric cut to 14 KB",
+    "kind": "idea",
+    "topic": "stale",
+    "body": "packages/forge/test/adapters/omp.test.ts:576 says 'the rubric is now cut to 14 KB and the payload capped at ...'; the rubrics are 2037 and 1908 bytes. The render.ts comment was corrected in unit stale-comments of docs-and-persona; this test comment was outside its outputs.",
+    "blocks": []
+  }
+}

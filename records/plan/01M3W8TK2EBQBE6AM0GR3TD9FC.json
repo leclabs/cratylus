@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3W8TK2EBQBE6AM0GR3TD9FC",
+    "entity": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "operation": "create",
+    "supersedes": [],
+    "author": "DocsPlanner",
+    "time": "2026-10-01T17:40:04.814Z",
+    "reason": "the role-named agents carry an archetype and a mark of their own, which the persona concept gives only to personas",
+    "cause": "shard persona handed to the planner"
+  },
+  "payload": {
+    "name": "docs-and-persona",
+    "realizes": [
+      "01M3W846Q2NS8ENRDTY9929N0E",
+      "01M3W846YWG5Z3CYWN0W5F4W6Q"
+    ],
+    "state": "proposed"
+  }
+}

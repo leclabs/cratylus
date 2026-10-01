@@ -1,0 +1,91 @@
+{
+  "envelope": {
+    "id": "01M3W9EB5VAHT9DQ8QGXMVCCP9",
+    "entity": "01M3W8V33FC1W9DH83AQ5A4RZB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W9CDQB5XP5K87R0SM954ED"
+    ],
+    "author": "DocsIntegrator",
+    "time": "2026-10-01T17:50:52.091Z",
+    "reason": "gate green on the combined tree: immutability-gate main..HEAD, build, lint, project every harness, test (14/14), typecheck (10/10), pack smoke",
+    "cause": "assay achieved for stale-comments at 7243ce59; merged onto plan/docs-and-persona"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "stale-comments",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Make the code comments that the notebook found stale say what the code does now, and change nothing else. Sites: (1) packages/forge/src/adapters/omp/render.ts:722-740, a comment emitted into the omp guard module, says the stance rubric 'is now cut to 14 KB and every worker caps what it sends at 12 KB'; the rubrics at packages/canon/targets/guardrail/ measure 2037 bytes (stance-judge-prompt.md) and 1908 bytes (purview-judge-prompt.md). Check the workers' send cap in canon/src/hooks and state both as they are, or drop the figures. This settles the omp part of the note 'stale comments describe removed guard caps'. (2) packages/canon/test/support/guardrail/test-stance-guardrail.sh, the HERMETIC STATE comment at :131-138: the same note says it calls the per-session state a block budget a no-progress detector suppresses; at a67c4816 it already describes the run bound (3 blocks in a run, or a repeat of the last blocked turn). Confirm it against the worker in canon/src/hooks/stance-guardrail.ts and correct only what is still untrue. (3) packages/forge/src/deploy/index.ts:174 says the host's settings.statusLine command is 'wrapped only on request'; install now wraps the host's command in the badge (forge/src/cli/commands/install.ts:1037-1041). Say what deploy and install do. This settles the comment part of the note 'Non-command statusLine has no badge surface; deploy/index.ts comment stale'. Leave the comment's use of persona and the rest of that file's wording about persona commands alone: it waits on the note 'persona spelled for every agent in forge and schema'. (4) the comments in packages/canon/src/dimensions/role/architect.ts:4, implementer.ts:13,22,25 and integrator.ts:18,22,24 call a role a position; call it a role. This settles the dimensions part of the note 'integration-line: the integrator is still called a position in prose'. Only the // comments: the dimension values these files export are projected and stay byte for byte. (5) packages/forge/test/adapters/omp.test.ts:574-578, the comment beside the JUDGE_TIMEOUT_MS test, repeats the rubric 'is now cut to 14 KB' and the 12 KB payload cap; state the same facts as the corrected render.ts comment, or drop the figures (the assay of b3cb9924 found it still false). Add a patch changeset for @cratylus/forge, since the omp comment is emitted into a projected module.",
+      "static": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-judge-prompt.md",
+        "packages/canon/targets/guardrail/purview-judge-prompt.md",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/deploy/status-line.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        ".changeset/stale-comments.md",
+        "packages/forge/test/adapters/omp.test.ts"
+      ],
+      "accept": [
+        "`git grep -n -E \"14 KB|only on request\" -- packages/forge/src packages/forge/test/adapters/omp.test.ts` prints nothing",
+        "`git grep -n -i -w -E \"positions?\" -- packages/canon/src/dimensions/role` prints nothing",
+        "every line that `git diff -U0 <the commit the unit's work starts from> <the commit that lands it> -- packages/forge/src/adapters/omp/render.ts packages/forge/src/deploy/index.ts packages/forge/test/adapters/omp.test.ts packages/canon/test/support/guardrail/test-stance-guardrail.sh packages/canon/src/dimensions/role` adds or removes is a comment line: a // or * line, a # line in the .sh file, or an element of render.ts's emitted comment array whose string starts with //",
+        "`pnpm --filter @cratylus/forge test -- test/adapters/omp.test.ts` and `pnpm --filter @cratylus/canon test -- test/stance-guardrail-dark.test.ts` exit 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+      "version": "01M3W846YWG5Z3CYWN0W5F4W6R",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "b3cb992462b38e78d2d482eac9cc46302aa5987c",
+        "author": "StaleComments",
+        "time": "2026-10-01T17:46:05.299Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b3cb992462b38e78d2d482eac9cc46302aa5987c",
+        "verdict": "not-achieved",
+        "missing": [
+          "documentation, clause 'every statement matches what the shipped code does' and 'each fact has one home': packages/forge/test/adapters/omp.test.ts lines 575-577 (the JUDGE_TIMEOUT_MS deadline test) still says the rubric is now cut to 14 KB, the same fact this commit corrected in packages/forge/src/adapters/omp/render.ts; the shipped rubrics are stance-judge-prompt.md 2037 bytes and purview-judge-prompt.md 1908 bytes, so that comment is false and contradicts the corrected one"
+        ],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T17:48:01.830Z"
+      },
+      {
+        "kind": "land",
+        "commit": "7243ce59cf3a43a258d28fba859a1dc4477b4feb",
+        "author": "StaleComments",
+        "time": "2026-10-01T17:48:52.836Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7243ce59cf3a43a258d28fba859a1dc4477b4feb",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T17:49:13.797Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "22e4aa57",
+        "author": "DocsIntegrator",
+        "time": "2026-10-01T17:50:52.090Z"
+      }
+    ]
+  }
+}

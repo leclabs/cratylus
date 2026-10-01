@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W95SF7Y7E5S02AX6Q8A58V",
+    "entity": "01M3W95SF7Y7E5S02AX6Q8A58T",
+    "operation": "create",
+    "supersedes": [],
+    "author": "StaleComments",
+    "time": "2026-10-01T17:46:11.815Z",
+    "reason": "finding beside the path",
+    "cause": "full canon suite run"
+  },
+  "payload": {
+    "title": "canon practices.test.ts fails 4 tests on main a40a72fe",
+    "kind": "question",
+    "topic": "canon",
+    "body": "Running the whole canon suite at main a40a72fe (with only comment edits applied) fails 4 tests in packages/canon/test/practices.test.ts: cdd places 8 agents instead of 6, carry-on places agents, plumbing lists 4 skills, and the architect-without-dispatch case resolves instead of rejecting. Not investigated; unrelated to stale-comments (comments only). Not seen at plan line a67c4816 (not run there).",
+    "blocks": []
+  }
+}

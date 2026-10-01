@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W99AD193G53AWM48VY1R2W",
+    "entity": "01M3W99AD193G53AWM48VY1R2V",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayStaleComments",
+    "time": "2026-10-01T17:48:07.457Z",
+    "reason": "a finding beside the assayed unit goes out as a note, never as part of the verdict",
+    "cause": "assay of stale-comments at b3cb9924"
+  },
+  "payload": {
+    "title": "role comments still say position",
+    "kind": "idea",
+    "topic": "documentation",
+    "body": "Found while assaying stale-comments of docs-and-persona at b3cb9924. That commit replaced 'position' with the design's anchor 'role' in the comments of packages/canon/src/dimensions/role/{architect,implementer,integrator}.ts, but the same usage, 'position' meaning a role, is still in the comments of packages/canon/src/roles/{hold,architect,assayer,implementer,integrator,planner}.ts, packages/canon/src/agents/{implementer,integrator,planner,mav}.ts and packages/canon/src/hooks/purview-guardrail.ts. These comments are not false, but they spell the role concept with a word that is not its anchor. The files lie where persona-residue is working, so whichever unit owns them after it lands could bring the wording into line.",
+    "blocks": []
+  }
+}

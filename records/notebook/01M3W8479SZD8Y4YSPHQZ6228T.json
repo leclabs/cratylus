@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W8479SZD8Y4YSPHQZ6228T",
+    "entity": "01M3W8479SZD8Y4YSPHQZ6228S",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T17:27:51.865Z",
+    "reason": "operator: self-constancy implies scope outside the cell, out of scope for now",
+    "cause": "persona defined"
+  },
+  "payload": {
+    "title": "persona self-constancy",
+    "kind": "idea",
+    "topic": "persona",
+    "body": "Future scope, not planned: a persona is meant as an individual with self-constancy (mind, body and soul in the operator's words), which needs machinery beyond its cell: its own memory, continuity across sessions, presence outside a session. The oikos project (~/workspaces/oikos, product Bozwell; packages agent-identity, memory, agent-archetypes) is where the first experiments live; there an agent is a person with its own name, never the product's. Whether that machinery belongs in cratylus is undecided.",
+    "blocks": []
+  }
+}

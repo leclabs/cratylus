@@ -1,0 +1,53 @@
+{
+  "envelope": {
+    "id": "01M3W8W4YD6TZDP7YSNF0K4NSD",
+    "entity": "01M3W8VWBHD1B7T2T5H75XREYG",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W8VWBHD1B7T2T5H75XREYH"
+    ],
+    "author": "DocsPlanner",
+    "time": "2026-10-01T17:40:55.885Z",
+    "reason": "the heading criterion was anchored to a `## Capabilities` heading the rewrite may rename, which would leave it unmeasurable",
+    "cause": "planner self-review before binding"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "consumer-path",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Write the consumer's path from the finished tree, as plain instructions, with each consumer fact in one home. README.md (86 lines) is the repository's front door and today gives a consumer nothing to do: it opens on the thesis, carries an HTML comment recording how the name was found, restates VISION's inversion table and the package table, and its Status section says the unscoped cratylus CLI and @cratylus/canon are not published. Rewrite it to open with what cratylus is in a few plain sentences and then the consumer's path: install the command (npm install -g cratylus), cratylus install (the guided run, the practices, linking launch commands), starting an installed agent by its name, and cratylus uninstall --harness <h>, each pointing to packages/cli/README.md for the detail. After that, where each reader goes: corpus authors to the package READMEs (packages/forge, packages/schema, packages/canon, packages/runtime), contributors to ARCHITECTURE.md, the ground documents and AGENTS.md. The thesis's home is VISION.md and the package map's is ARCHITECTURE.md: link them, do not restate them. Anything the README says about publication matches `npm view cratylus version` and `npm view @cratylus/canon version` when the unit lands, or is cut. Keep thesis.png only if the page still uses it. packages/cli/README.md (1001 lines) is the one home of every fact a consumer meets: the guided install with its questions, flags and practices, starting an agent by its name and its launcher, the badge, where Claude Code and omp differ, the host runtime config and model routing as they bear on the consumer, and uninstall with what it leaves. Order it consumer first: that material, then the command reference. The reference's entries are pinned by packages/cli/test/command-tree.test.ts to the help's order (Commands, then Capabilities, then Corpus authoring), each `### \\`cratylus <name>\\`` once, with its flag table matching the help; keep that test green and keep the capability verbs, which agents and skills call, and the corpus-author commands after the consumer's material. Today the consumer's explanatory sections (The guided install :677, The host runtime config :724, Where Claude Code and omp differ :749, The host's model routing on omp :832, The persona badge on the status line :866, Running a persona by its name :933, Taking it away again :958) sit after Corpus authoring. Write for the consumer: what to type, what happens, what to do when it refuses. Internals a consumer does not act on (file layouts, worker mechanics, port fields) belong to the corpus author's packages/forge/README.md, which another unit of this plan trims to link here; leave them out or keep only what a consumer needs to act. Every statement matches what the code does when the unit lands: check flags, prompts, paths and outputs against packages/forge/src/cli/commands and packages/cli/src, and run the commands where a claim is about their output. Persona wording: prose says persona only for an agent named as an individual (mav, nico, kino) and agent for any installed agent; a shipped identifier, flag, manifest key or path that spells persona for every agent (--link-persona-commands, --no-link-persona-commands, personaLinks, personas/ scope directories, cratylus-persona-badge, harness-persona-root, the Persona axis) is quoted verbatim as the code spells it, since renaming it waits on the ruling asked for in the note 'persona spelled for every agent in forge and schema'. A link into a file another unit of this plan writes (the ground documents, the package READMEs, docs/, packages/cli/README.md, README.md) names the file only, never a #fragment. Add a patch changeset for the cratylus package, whose README is published.",
+      "static": [
+        "packages/cli/src",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/deploy",
+        "packages/forge/src/adapters",
+        "packages/canon/src/practices.ts",
+        "packages/cli/test/command-tree.test.ts",
+        "VISION.md",
+        "ARCHITECTURE.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "README.md",
+        "packages/cli/README.md",
+        ".changeset/consumer-path.md"
+      ],
+      "accept": [
+        "the first `## ` section of README.md contains `npm install -g cratylus`, `cratylus install` and `cratylus uninstall`",
+        "in packages/cli/README.md every `## ` heading whose text matches /install|practice|launch|by its name|badge|harness|routing|runtime config|taking it away/i stands above the reference entry headed `cratylus eventTap`, the first capability the help lists",
+        "every line of README.md and packages/cli/README.md that matches /persona/i also matches /\\b(mav|nico|kino)\\b|persona-commands|personaLinks|personas\\/|persona-badge/",
+        "every relative link in README.md and packages/cli/README.md resolves to a path tracked at the landing commit, and none that points into VISION.md, MODEL.md, ENGINE.md, ARCHITECTURE.md, CANON.md, AGENTS.md, docs/ or a package README carries a #fragment",
+        "README.md contains no `<!--`",
+        "`pnpm --filter cratylus test` exits 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+      "version": "01M3W846YWG5Z3CYWN0W5F4W6R",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}
