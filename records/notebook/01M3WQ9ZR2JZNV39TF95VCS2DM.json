@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WQ9ZR2JZNV39TF95VCS2DM",
+    "entity": "01M3WQ9ZR2JZNV39TF95VCS2DK",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T21:53:09.378Z",
+    "reason": "the assayer asked whether indent-and-trailer fidelity is enough",
+    "cause": "assay of tap-uninstall-restores at fbc9e34e"
+  },
+  "payload": {
+    "title": "uninstall restores host files byte for byte",
+    "kind": "decision",
+    "topic": "uninstall",
+    "body": "Ruled: under uninstall ('nothing the host placed or changed itself'), a file the host had before install comes back byte for byte, line endings and layout included, as the top-level uninstall already does. Restoring only its indent and trailer leaves a file the host never wrote. Applies to eventTap uninstall's settings restore (tap-uninstall-restores of remaining-gaps).",
+    "blocks": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WQFA1QM611ZSX96D5XXDPR",
+    "entity": "01M3WQFA1QM611ZSX96D5XXDPQ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T21:56:03.767Z",
+    "reason": "residual beside an achieved unit",
+    "cause": "assay of tap-uninstall-restores at 3d71969c"
+  },
+  "payload": {
+    "title": "eventTap install rewrites a host settings file's layout",
+    "kind": "idea",
+    "topic": "uninstall",
+    "body": "Beside tap-uninstall-restores: eventTap install rewrites a pre-existing settings.json in 2-space JSON. A file the host leaves untouched comes back byte for byte at uninstall, but one the host edits while the tap is installed keeps install's layout. The fix is on the install side: edit the host's file in its own layout. For a later plan.",
+    "blocks": []
+  }
+}
