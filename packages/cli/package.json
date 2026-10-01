@@ -26,6 +26,7 @@
     "commander": "catalog:"
   },
   "devDependencies": {
+    "@cratylus/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
