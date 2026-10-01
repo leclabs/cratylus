@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WHE0QJHH3Y1E73RWBFKWHW",
+    "entity": "01M3WHE0QHMNR4V00ACNWD9S3N",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T20:10:30.002Z",
+    "reason": "the persona principle applies to every persona",
+    "cause": "assay note 'kino's archetype restates a narrower architect role'"
+  },
+  "payload": {
+    "title": "every persona keeps only its residue",
+    "kind": "decision",
+    "topic": "persona",
+    "body": "Ruled, extending 'mav's cell restates its role' to every persona: kino and nico carry the architect role and add only their residue (archetype, domain, voice, mark); every restatement of the role's reads and routes is dropped, since a restatement drifts, as kino's already had. Realized in notebook-gaps by kino-residue and nico-residue.",
+    "blocks": []
+  }
+}

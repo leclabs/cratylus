@@ -1,0 +1,84 @@
+{
+  "envelope": {
+    "id": "01M3WHE334XWB0AHWC2K052K3G",
+    "entity": "01M3WH72S2EEP9G65CCCXXB193",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WHBJ6QCD22HECH6DX0JTFD"
+    ],
+    "author": "GapsIntegrator",
+    "time": "2026-10-01T20:10:32.420Z",
+    "reason": "merged onto plan/notebook-gaps and the whole gate (build, typecheck, typecheck:test, lint, project, test) passed on the combined tree",
+    "cause": "assay achieved at 96fa8129 by AssayGaps2"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "archetype-closed-plan-route",
+      "intent": "Census @2d8096ae (the plan line after act-skip-names-deploy; design at 2d8096ae); every path is repo-relative on the plan's line. A line number cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file. Realize architect role in the role cell's restatement of it. Ruled (decision note 'the close report has no sender and no restatement'): the architect role cell's archetype names the closed-plan route beside the unit routes. The contract (packages/canon/src/dimensions/role/architect.ts, landed by closed-plan-route) routes a closed plan to the integrator, which makes its line whole and asks for release; the archetype of architectRole in packages/canon/src/roles/architect.ts (:67) enumerates the routes of the loop (a unit to an implementer, its commit to the assayer, an achieved verdict to the integrator, a not-achieved verdict or a broken whole back to the same implementer) and leaves the closed plan out, so it is narrower than the contract. Add that route to the archetype's enumeration in the archetype's own prose register, and change nothing else in the cell: the description, mark, skills and vector stay. The generic architect's projected agent changes by that clause alone; mav, kino and nico declare archetypes of their own and do not change. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/agents/mav.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/roles/architect.ts",
+        ".changeset/archetype-closed-plan-route.md"
+      ],
+      "accept": [
+        "the `archetype` of architectRole in packages/canon/src/roles/architect.ts names routing a closed plan to the integrator; at 2d8096ae it does not (`grep -c 'closed plan' packages/canon/src/roles/architect.ts` prints 0)",
+        "`git diff <the commit the unit's work starts from>` changes only the archetype line of packages/canon/src/roles/architect.ts among source files",
+        "in packages/canon, `pnpm exec vitest run test/reader-density.test.ts test/persona.test.ts test/purview-guardrail.test.ts` exits 0 (the RESIDUE gate admits only σ* anchors in a dimension value; a free connective broke the whole once on this plan) and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3RFJ0M8RK6K703A30SP8QMC",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "96fa8129eaf3a4cbdb7b6767af2e68cfc92b816a",
+        "author": "ArchetypeClosedPlanRoute",
+        "time": "2026-10-01T20:08:30.533Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "96fa8129",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T20:09:09.591Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "6b25b258",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T20:10:32.420Z"
+      }
+    ]
+  }
+}
