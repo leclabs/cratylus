@@ -5,7 +5,8 @@
 // wanted. The command line does so by ending on the EPIPE its stdout raises
 // (`endOnClosedStdout` in src/cratylus.ts). That is a fact about the process, not
 // about the in-process program command-tree.test.ts builds, so it is held here on the
-// BUILT bin, spawned with its stdout on a pipe this test reads one line of and closes.
+// BUILT bin, spawned with its stdout on a pipe this test closes at once: the reader is
+// gone before the first write, so a command that does not end on EPIPE fails each case.
 //
 // The bin is `dist/cratylus.js`; the cli package's test task depends on its own build
 // (turbo.json), so it is there on a cold tree.
@@ -28,9 +29,11 @@ interface Ended {
   readonly stderr: string;
 }
 
-/** Run the bin on `words` in `cwd` with stdout on a pipe, read the first line off it
- *  and close it, and wait for the process to end. (The executor form of a promise:
- *  this package's `lib` predates `Promise.withResolvers`.) */
+/** Run the bin on `words` in `cwd` with stdout on a pipe whose read end is closed as
+ *  soon as the child is spawned — before the child's first write can reach it, so
+ *  every write raises EPIPE, a one-write `--help` among them — and wait for the process
+ *  to end. (The executor form of a promise: this package's `lib` predates
+ *  `Promise.withResolvers`.) */
 function endedByReader(words: string[], cwd: string): Promise<Ended> {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [bin, ...words], {
@@ -38,11 +41,7 @@ function endedByReader(words: string[], cwd: string): Promise<Ended> {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     const stderr: Buffer[] = [];
-    let seen = '';
-    child.stdout.on('data', (chunk: Buffer) => {
-      seen += chunk.toString('utf8');
-      if (seen.includes('\n')) child.stdout.destroy();
-    });
+    child.stdout.destroy();
     child.stderr.on('data', (chunk: Buffer) => stderr.push(chunk));
     child.on('error', reject);
     child.on('close', (code) =>
