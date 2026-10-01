@@ -19,7 +19,10 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
 
 /** Every package whose source declares a `VERSION`, and the manifest that defines it. */
-const DECLARERS = ['runtime', 'forge'] as const;
+const DECLARERS = ['cli'] as const;
+
+/** The name each declarer's manifest answers to, which it reads itself by. */
+const MANIFEST_NAME = { cli: 'cratylus' } as const;
 
 function manifestVersion(pkg: string): string {
   return JSON.parse(
@@ -36,10 +39,7 @@ function hardcodesVersion(src: string): boolean {
 }
 
 function sourceOf(pkg: string): string {
-  const rel = {
-    runtime: 'src/main.ts',
-    forge: 'src/cli/index.ts',
-  }[pkg] as string;
+  const rel = { cli: 'src/cratylus.ts' }[pkg] as string;
   return readFileSync(join(repoRoot, 'packages', pkg, rel), 'utf8');
 }
 
@@ -57,7 +57,7 @@ describe('a version has one home — the manifest', () => {
   it('every declarer reads it by package self-reference', () => {
     for (const p of DECLARERS)
       expect(sourceOf(p), `${p} does not read its own manifest`).toContain(
-        `@cratylus/${p}/package.json`,
+        `'${MANIFEST_NAME[p]}/package.json'`,
       );
   });
 
@@ -68,14 +68,9 @@ describe('a version has one home — the manifest', () => {
     const reported = execFileSync('node', [bin, '--version'], {
       encoding: 'utf8',
     }).trim();
-    // ONE COMMAND, SO THE OUTPUT IS cac's BRANDED LINE — `<name>/<version> <platform>
-    // <node>` — not the bare string the run-time bin used to print. The subject is
-    // unchanged: the version the ARTIFACT reports must be the version its MANIFEST
-    // declares. Parsed rather than compared whole, because the branding around it is
-    // not this gate's business and pinning it would make the leg fail on a node bump.
-    const version = reported.match(/\/(\d+\.\d+\.\d+)/)?.[1];
-    expect(version, `no version in ${reported}`).toBeDefined();
-    expect(version).toBe(manifestVersion('cli'));
+    // The bare version, which is all `--version` prints: the version the ARTIFACT
+    // reports must be the version its MANIFEST declares.
+    expect(reported).toBe(manifestVersion('cli'));
   });
 
   it('is non-vacuous — CONVICTS a hardcoded version and SPARES a derived one', () => {

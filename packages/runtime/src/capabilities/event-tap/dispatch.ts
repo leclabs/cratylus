@@ -40,6 +40,7 @@ import {
   nativeEventsOf,
 } from '../../runtime-config.js';
 import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
+import { verbOf } from '../plan/argv.js';
 import { EventTapHostClaude } from './claude.js';
 import {
   EVENT_TAP_HARNESSES,
@@ -184,18 +185,8 @@ export function dispatchEventTap(
   argv: string[],
   opts: EventTapDispatchOpts = {},
 ): EventTapResult {
-  const [verb, ...rest] = argv;
-  if (verb === undefined || !Object.hasOwn(VERBS, verb)) {
-    throw new Error(
-      `eventTap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
-    );
-  }
-  const { flags } = readArgv(
-    rest,
-    'eventTap',
-    verb,
-    VERBS[verb as EventTapVerb],
-  );
+  const verb = verbOf(argv, 'eventTap', VERBS);
+  const { flags } = readArgv(argv.slice(1), 'eventTap', verb, VERBS[verb]);
   const flag = (name: string) => flags.get(name)?.at(-1);
   // WHO IS CALLING is settled before the host config is read or anything is
   // touched: a harness with no tap strategy is refused as the arguments are read,

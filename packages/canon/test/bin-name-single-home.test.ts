@@ -67,6 +67,7 @@
 // not converged; `CLI_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -75,8 +76,7 @@ import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { runCli } from '@cratylus/runtime/main';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 import canonPlugin from '../src/index.js';
@@ -251,25 +251,15 @@ describe('the bin name has exactly one home', () => {
     expect(Object.keys(manifest.bin)).toEqual([CLI_BIN]);
   });
 
-  it("the runtime's Commander branding is CLI_BIN", async () => {
-    // Commander's help is written through `process.stdout.write`.
-    const chunks: string[] = [];
-    const write = vi
-      .spyOn(process.stdout, 'write')
-      .mockImplementation((chunk: string | Uint8Array) => {
-        chunks.push(String(chunk));
-        return true;
-      });
-    const exitCode = process.exitCode;
-    try {
-      await runCli(['--help']);
-    } finally {
-      write.mockRestore();
-      process.exitCode = exitCode;
-    }
-    const help = chunks.join('');
-    // Capture the brand the help printed, then compare — not `toContain`, which
-    // would still pass if the help named a stale bin alongside the right one.
+  it("the BUILT command's help is branded CLI_BIN", () => {
+    // The emitted bin run the way a shell runs it. Capture the brand the help
+    // printed, then compare — not `toContain`, which would still pass if the help
+    // named a stale bin alongside the right one.
+    const help = execFileSync(
+      'node',
+      [join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js'), '--help'],
+      { encoding: 'utf8' },
+    );
     expect(help.match(/^Usage: (\S+) /m)?.[1]).toBe(CLI_BIN);
   });
 
@@ -488,18 +478,15 @@ describe('the forge bin has exactly one authored home', () => {
   });
 
   it('the CLI brands its help with the name it is installed under', () => {
-    // `cac('forge')` printed `$ forge <command>` in every help block — the same
-    // class of defect as a stale bin in a shim, except it never needed a rename to
-    // become false. Captured off the source's cac call, compared to the manifest.
-    // Anchored at the DECLARATION, not the first `cac(` in the file: the header
-    // above it quotes the defect it retires, and an unanchored match read the
-    // comment — a gate reporting on prose about the code instead of the code.
-    // Leading whitespace is allowed because the CLI is a FUNCTION now — it used to
-    // build its `cac` instance at module scope and parse `process.argv` on import,
-    // which is why the anchor was column-zero. The subject is unchanged: the one
-    // `const cli = cac(...)` declaration, not the prose above it.
-    const branded = read('packages/forge/src/cli/index.ts').match(
-      /^\s*const cli = cac\(([^)]+)\)/m,
+    // A program named for a name no host installs printed `$ forge <command>` in
+    // every help block — the same class of defect as a stale bin in a shim, except
+    // it never needed a rename to become false. Captured off the source's program
+    // declaration, compared to the derived name. Anchored at the DECLARATION, not
+    // the first `new Command(` in the file: the headers above it quote the defect
+    // they retire, and an unanchored match reads prose about the code instead of
+    // the code.
+    const branded = read('packages/cli/src/cratylus.ts').match(
+      /^\s*const program = new Command\(([^)]+)\)/m,
     )?.[1];
     expect(branded, 'the CLI must brand itself from the derived name').toBe(
       'CLI_BIN',

@@ -134,13 +134,13 @@ three concerns at once. `forge` projects and depends on no corpus; `canon` is a 
 projector; something has to hold both for a consumer to type one command, and this is it. It owns
 the `bin` key — the one copy of the command's name no TypeScript can compute.
 
-Everything it composes is an ordinary ESM library. `forge` exports `runCli` for the build surface,
-`runtime` exports `runCli` for capability dispatch, `canon` default-exports the corpus. The entry
-imports all three statically and routes: capability verbs to the runtime, everything else to the
-projector.
+Everything it composes is an ordinary ESM library. `forge` exports the projector's commands,
+`runtime` exports one command per capability, `canon` default-exports the corpus. The entry
+imports all three statically and builds one Commander program from them, so its `--help` lists every
+command and capability there is.
 
 **One command, not two.** `cratylus` and `cratylus-run` were separate bins because the two surfaces
-lived in two packages and each built its own `cac`. The two DAGs that split defended are a fact
+lived in two packages and each built its own command-line program. The two DAGs that split defended are a fact
 about **imports** — which the bundler and the package manager already handle — not a fact that has
 to surface as two names a consumer must learn. A capability verb is `cratylus design show`, and
 the generated shims that invoke it spell one name.
