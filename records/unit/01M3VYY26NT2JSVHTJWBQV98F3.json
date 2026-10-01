@@ -1,0 +1,84 @@
+{
+  "envelope": {
+    "id": "01M3VYY26NT2JSVHTJWBQV98F3",
+    "entity": "01M3VXJG5V1JCWQ22KWG18Q7JB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VYVNRMWCCTQ5YJGV6K0PMH"
+    ],
+    "author": "PracticesIntegrator",
+    "time": "2026-10-01T14:47:12.853Z",
+    "reason": "gate green on the combined tree a0efcc5f (e76d756f + 57fd456f): build, lint, canon:project, canon:project:omp, test, typecheck and pack:smoke all exit 0",
+    "cause": "integration of practice at 57fd456f"
+  },
+  "payload": {
+    "plan": "01M3VXJG57793F706D3RBE6P6Q",
+    "spec": {
+      "name": "practice",
+      "intent": "Census @c8760f92 (design at c8760f92); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. The root package.json, pnpm-lock.yaml and AGENTS.md carry uncommitted edits that are the operator's; no unit of this plan touches them.\nRealize `practice`: a way of working cratylus offers as one installable choice, the agents, skills and hooks that carry it, installed together. A practice is closed under skill composition and agent dispatch, so every agent it installs finds every skill it composes and every agent it dispatches. Which practices exist is declared by the corpus, and install only offers them. Plumbing other parts need, such as the event tap, is installed as a dependency and never offered on its own.\nAT CENSUS. (1) Nothing declares a practice. The sign occurs only in other senses: the compound 'industry practice' (agent descriptions, packages/canon/src/roles/architect.ts, dimensions/engineering-principles/trust-but-verify.ts, the design skill's 'the field's practice'), a distinct established term this unit leaves alone; and packages/canon/README.md:6 'The practice is latent lexicography', the discipline. (2) packages/schema/src/index.ts: AgentPlugin (:765-793) carries manifest and events as data; Agent carries holds (:567) and optional (:577). (3) The dispatch relation exists only as prose: the architect role hands work to the planner, implementer, assayer and integrator (packages/canon/src/dimensions/role/architect.ts:24; roles/architect.ts:99); no cell states it as data, so closure under dispatch cannot be checked. (4) canon has 8 agents (architect, assayer, implementer, integrator, kino, mav, nico, planner; architect, kino, mav and nico hold the architect role), 16 skills (carry-on, conceptualize, create-agent, create-skill, deliver, design, elicit, event-tap, exemplify, formalize, introspect, materialize, note, plan, probe, signify) and 4 harness hook cells: deploy-drift-notice (session-wide, binds nothing), purview-guardrail (binds the role dimension), stance-guardrail and stance-guardrail-pre (bind autonomy handoff). Role skills: architect and assayer design, note; implementer note; integrator deliver; planner plan. Compositions: deliver composes design, plan, note; plan composes design, note; event-tap composes introspect; conceptualize, exemplify, materialize, signify, probe, elicit and formalize compose each other; carry-on, create-agent, design, note and introspect compose nothing. (5) packages/forge/src/project/index.ts renders every contributed skill (:747-783) and registers every harness hook cell (:785-952) whatever agents are rendered; omitAgents (:195-201, :544-558) leaves agents out by name and optionalAgents (:247-250, :557) reports Agent.optional. [observed, packages/cli/dist built 2026-10-01 09:16] a non-terminal `cratylus install --harness omp` into an empty HOME places 6 agents, 16 skills and 4 hooks (62 files).\nTHE PRACTICES CANON DECLARES (the architect's ruling and the operator's). `cdd` (concept-driven development), the one practice a fresh install preselects: mav, architect, planner, implementer, assayer, integrator and the skills they are given. `corpus-authoring`: nico, the naming and cell-authoring skills (signify, probe, elicit, conceptualize, exemplify, materialize, formalize, create-agent, create-skill, introspect) and whatever nico dispatches. `film-production`: kino and whatever it dispatches. `carry-on`: the carry-on skill alone, independent of the delivery family. Each carries a one-line description written for a consumer. Plumbing: the event tap (the event-tap skill with what it composes) and the session-wide deploy-drift-notice hook, installed with any practice and never offered. A guard, a hook cell that binds a composition, travels with the agents that compose what it binds: it is registered only when a rendered agent composes it.\nCHANGE (how, this plan's). @cratylus/schema: a practice shape and a plugin field declaring the practices and the plumbing as data, the way `events` rides the plugin; the dispatch relation as data on the agent's identity face (the roles the agent dispatches), set by canon's `holds` fold from the role cell the way `holds` is. @cratylus/canon: each role cell states the roles its holders dispatch (architect: planner, implementer, assayer, integrator; every other role as its role text says, none where it dispatches none); the plugin declares the practices and the plumbing above, in one module. @cratylus/forge projection takes the practices to render; absent, it renders every practice and the plumbing, so `cratylus project` and every whole-corpus render are unchanged byte for byte, and a plugin set declaring no practices renders as today. Given practices, it renders exactly the union of their agents and skills, the skills those compose, the plumbing, and the guards a rendered agent composes; it reports the declared practices (name, description, whether preselected) on ProjectedTree for install to offer. A chosen set that is not closed is refused before anything is rendered, by one error naming the practice, the agent, and the role it dispatches that no agent of the set holds or the skill it composes that the set does not carry; a name that is no declared practice is refused, naming the declared ones. Leave Agent.optional, omitAgents and optionalAgents in place: install still reads them, and unit install-practices of this plan retires them. Document the declaration in packages/schema/README.md (what is here), packages/canon/README.md (its plugin-field table; reword :6 so the bare sign 'practice' holds only the installable sense in that file) and packages/forge/README.md (Rendering a tree). One changeset, .changeset/practice.md (@cratylus/schema, @cratylus/canon and @cratylus/forge minor). Every new test file is registered in packages/canon/test/gate-convicts.test.ts's REGISTRY. Temp directories a check creates are removed by their exact paths, never by a glob.",
+      "static": [
+        "packages/forge/src/cli/commands/project.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/core/enrollment.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/src/skills"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/schema/README.md",
+        "packages/canon/src/index.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "packages/canon/README.md",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/test/project/practices.test.ts",
+        "packages/forge/test/project/fixtures/practices",
+        "packages/forge/README.md",
+        ".changeset/practice.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/forge exec vitest run test/project`, `pnpm --filter @cratylus/canon exec vitest run test/practices.test.ts test/projection-stability.test.ts test/gate-convicts.test.ts` and `pnpm typecheck` exit 0. packages/forge/test/project/practices.test.ts and packages/canon/test/practices.test.ts do not exist at census.",
+        "packages/forge/test/project/practices.test.ts, over a fixture plugin set declaring practices, plumbing and a dispatch relation, convicts each of: a render of one practice places exactly its agents, the skills they are given with what those compose, the plumbing, and the guards those agents compose, and no other agent, skill or hook; a render naming no practice places every cell; a set whose agent dispatches a role no agent of the set holds is refused, naming the practice, the agent and the role, with nothing rendered; a set whose agent composes a skill the set does not carry is refused, naming the skill; an undeclared practice name is refused, naming the declared ones.",
+        "packages/canon/test/practices.test.ts holds canon: its declared practices are exactly cdd, corpus-authoring, film-production and carry-on, cdd the only preselected one; every agent, skill and harness hook cell of canon belongs to at least one practice or to the plumbing; event-tap and deploy-drift-notice are plumbing and in no practice; each practice rendered alone through forge projection on claude and on omp is not refused; rendering cdd alone places exactly mav, architect, planner, implementer, assayer and integrator, and rendering carry-on alone places no agent; the architect role's holders dispatch planner, implementer, assayer and integrator.",
+        "A whole-corpus render is unchanged: `git diff --stat c8760f92 -- packages/canon/targets packages/canon/test/projection-stability.test.ts` prints nothing after `pnpm canon:project:targets` is run on the landed tree."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3VX45GDGE56ZNVZETWDFXF8",
+      "version": "01M3VX45GDGE56ZNVZETWDFXF9",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "57fd456f",
+        "author": "Practice",
+        "time": "2026-10-01T14:42:45.185Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "57fd456f",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayPractice",
+        "time": "2026-10-01T14:45:54.579Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "a0efcc5f",
+        "author": "PracticesIntegrator",
+        "time": "2026-10-01T14:47:12.853Z"
+      }
+    ]
+  }
+}

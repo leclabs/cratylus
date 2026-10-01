@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3VYVWW7BNNMR5ADQNGRHHYS",
+    "entity": "01M3VYVWW7BNNMR5ADQNGRHHYR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayPractice",
+    "time": "2026-10-01T14:46:01.863Z",
+    "reason": "a finding beside unit practice of plan practices, outside its shard",
+    "cause": "assay of practice at 57fd456f"
+  },
+  "payload": {
+    "title": "persona optionality stands beside practices",
+    "kind": "question",
+    "topic": "install",
+    "body": "At 57fd456f the corpus declares practices, yet Agent.optional (on nico and kino), ProjectedTree.optionalAgents, ProjectOpts.omitAgents and install's --personas still offer agents one by one, and the forge README still says every agent but the optional personas is always installed. That is a second, per-agent way of choosing what install places, the file-list choice the practice gloss says a consumer does not adopt. It is not a realization of practice, so it did not bear on the practice verdict; whether it retires is install's to settle when install offers practices.",
+    "blocks": []
+  }
+}
