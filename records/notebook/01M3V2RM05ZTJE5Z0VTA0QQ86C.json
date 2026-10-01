@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3V2RM05ZTJE5Z0VTA0QQ86C",
+    "entity": "01M3V2P3067JN0G35YYB2XBEJJ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3V2P3067JN0G35YYB2XBEJK"
+    ],
+    "author": "CommandLinePlanner2",
+    "time": "2026-10-01T06:34:54.341Z",
+    "reason": "answered and placed: this is a question of how, so it belongs to the plan. The library guard stays, because the dispatchers are exported, and it says what the command line says: verbOf becomes the refusal's one home, dispatchEventTap and the program both refuse through it, and unit command-tree of plan command-line carries it as an accept criterion with the three sites in its outputs",
+    "cause": "Main asked the planner to place the finding beside capability-commands or answer the note"
+  },
+  "payload": null
+}

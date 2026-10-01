@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V2P3067JN0G35YYB2XBEJK",
+    "entity": "01M3V2P3067JN0G35YYB2XBEJJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayCapabilityCommands",
+    "time": "2026-10-01T06:33:31.398Z",
+    "reason": "a finding beside the unit assayed, which does not bear on its verdict",
+    "cause": "assay of capability-commands of command-line at d969e08a"
+  },
+  "payload": {
+    "title": "dispatchers keep a second unknown-verb refusal",
+    "kind": "idea",
+    "topic": "command line",
+    "body": "With capability-commands at d969e08a, runCli refuses an unknown verb itself, saying what to do (the verbs and cratylus <capability> --help). The dispatchers keep their own older refusal, worded without a way forward: packages/runtime/src/capabilities/event-tap/dispatch.ts:190 and packages/runtime/src/capabilities/plan/argv.ts:77 ('<cap>: unknown verb ... (expected a|b|c)'). It cannot be reached from the command line any more, only by calling dispatch* directly as a library, so the command line still has one refusal. Open question for the design holder: should the library guard go, or say the same thing as the command line.",
+    "blocks": []
+  }
+}
