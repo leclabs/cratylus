@@ -1,5 +1,12 @@
 # @cratylus/runtime
 
+## 0.9.3
+
+### Patch Changes
+
+- 0742c59: `cratylus eventTap install` no longer says Claude Code fires no native event for an act event when the host's claude stanza merely predates act bindings. On a stanza that carries no act bindings at all (one written by a deploy before `claude-act-natives`), an event with no native name is skipped, and refused when nothing else can be tapped, with a reason that says the stanza may lack its binding and names the commands that write it, `cratylus install --harness claude` or `cratylus deploy --harness claude`, besides the case that Claude Code has no native peer for it. A stanza that does carry act bindings, but not the requested event's, keeps the reason 'Claude Code fires no native event for it'. Exit codes and what is written are unchanged.
+- 2a51381: `cratylus eventTap install` now taps Claude Code's act events. The claude stanza of the host runtime config carries each act's native binding beside its names, `harnesses.claude.acts`: `operator.consult.pre` is `PreToolUse` matching `AskUserQuestion`, and `subagent.dispatch.pre` is `PreToolUse` matching `Agent|SendMessage`, taken from the claude adapter as the projection binds them. Deploy emits them from a new optional `HarnessAdapter.nativeActs`. The runtime reads them with `nativeActsOf`, installs a matcher-narrowed `PreToolUse` entry for such an event, keeps foreign entries, and reads a capture back as the act it was. Before, the tap refused both events as ones Claude Code fires no event for. A stanza an earlier deploy wrote, names only, still reads, and its act events are skipped as before; deploy again to tap them.
+
 ## 0.9.2
 
 ### Patch Changes

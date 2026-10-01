@@ -1,5 +1,17 @@
 # @cratylus/canon
 
+## 0.13.2
+
+### Patch Changes
+
+- 96fa812: The architect role's archetype names the closed-plan route beside the unit routes: a closed plan goes to the integrator, which makes its line whole and asks for release. The archetype was narrower than the contract; the generic architect's projected agent changes by that clause alone.
+- 714b57b: The `planner` role's contract now states that it sends what the `architect` role reads from it. Its `returns` line named only the plan's name and the names of units ready to start; it now returns the plan's name, `route-names` (the names of units ready to start or waiting on a route, which it reads from each unit's ledger), and, on `close(P)`, `plan-closed(P)`, the report that plan P has closed. The architect role already lists `route-names` and `plan-closed` among its reads, and no role value named their sender. `¬ spec ∨ plan-view` stays: the planner still returns names and nothing behind them.
+- 03bdff1: The `architect` role's contract now states what reaches the architect from below as the design's `architect role` shard words it. Among its reads it lists `plan-closed`, the planner's report that a plan has closed, and its `route(…)` clause sends a closed plan to the integrator, which makes the plan's line whole and asks the operator for release. The names the planner hands it are now `route-names`, formerly `ready-names`: units ready to start or waiting on a route, which the planner reads from each unit's ledger so a lost session resumes from the ledger and not from memory. The purview guard already passed the closed-plan route and the deliver skill already stated it, but the role value the architect acts from and the guard reads as the law named neither it nor the waiting units.
+- f675f0a: `kino` declares only its residue over the architect role: its description and archetype no longer restate who plans, builds, judges and combines, what it routes or how an ad hoc request is handed out, and keep what is kino's own — the film craft and generative-video practice held as the design, teaching the layman operator and rectifying every utterance against industry practice, and the three failures a production surface guards against.
+- 7e99a95: `mav` declares only its residue over the architect role: its description and archetype no longer restate who plans, builds, judges and combines, what it routes or how an ad hoc request is handed out, and keep what is mav's own — the architect of whatever repository it is given, answering for the design being realized in the system.
+- a2ec086: `nico` declares only its residue over the architect role: its description and archetype no longer say it hands out the cells and the engine or hands the cells to the planner and implementer, and keep what is nico's own — the project seen whole, its conceptual architecture and canon, and the empirical ontologist of a foundation model's concept-space who discovers and canonizes σ* signs.
+- 3f40cdd: signify's exclusion law now names the reason that covers most concepts: a concept that is no core agent dimension name or value is the industry's own term, used as the industry understands it, and gets no anchor.
+
 ## 0.13.1
 
 ### Patch Changes
