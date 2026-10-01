@@ -1,0 +1,73 @@
+{
+  "envelope": {
+    "id": "01M3TY648D0D9AQ9KT8ZTGKE98",
+    "entity": "01M3TWQVF4P4KWDDWC94D4PYDD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TY21NCFEQHTPNEG2JGP6XY"
+    ],
+    "author": "WayForwardIntegrator2",
+    "time": "2026-10-01T05:14:54.093Z",
+    "reason": "a6a6a7e3 merged onto plan/refusal-way-forward at eebb26e1; gate green on the combined tree: immutability-gate, build, lint, project (claude, omp), test (schema 1, runtime 13, forge 49, canon 35 files passed), typecheck, typecheck:test, pack:smoke, stance-guard:test, targets projection clean",
+    "cause": "achieved stance-workers-lean of refusal-way-forward at a6a6a7e3"
+  },
+  "payload": {
+    "plan": "01M3TWQ60F9V1VKNVRVSNZWHSN",
+    "spec": {
+      "name": "stance-workers-lean",
+      "intent": "Census @dd055a7b (main); re-derive any line cited below if its path changed since.\nRealize on the two stance workers the note 'guard workers are bloated' (topic enforcement scope), under the shard `enforcement scope`: the operator measured the pre-call stance worker at about 14 KB and the turn-end worker at about 47 KB, while a guard is a small act (read the event, decide whether it applies, ask the judge, relay the verdict), so their shell is cut to what that act needs. This unit changes how the workers are written, never what they do: unit stance-contest changes what they do after it.\nAT CENSUS. packages/canon/src/hooks/stance-guardrail-pre.ts holds the pre-call worker (content L47-267), projected by `pnpm canon:project:targets` to packages/canon/targets/guardrail/stance-guardrail-pre.sh: 14364 bytes, 8261 of them in comment lines and 6082 in code. packages/canon/src/hooks/stance-guardrail.ts holds the turn-end worker (cell from L68), projected to packages/canon/targets/guardrail/stance-guardrail.sh: 49568 bytes, 33364 in comment lines and 16163 in code; it also holds `judgePayloadCapBytes` (L20) and `judgeClipShell` (L29-66, its first lines a comment), interpolated into both stance workers (stance-guardrail.ts L361, stance-guardrail-pre.ts L197) and exported as `stanceGuardrailJudgeCap`/`stanceGuardrailJudgeClip` (L999-1000). The turn-end worker reads its transcript in five jq passes (.sh L363-381, L385-395, L415-429 each recompute the index of the last operator message; L451-470 and L497-519 repeat one user-message selection). packages/canon/test/command-veracity.test.ts L386-394 pins the payload banner `=== OPERATOR (most recent instruction — the authorization context) ===` in stance-guardrail.sh.\nCHANGE. Cut both workers to what their act needs: a comment only where a line cannot say why itself (the history of how a line came to be belongs to git, not to the shell a host runs), one transcript read where several recompute the same thing, no function or variable nothing uses. What either worker does stays byte for byte: every stdout (verdict JSON, deny and block reasons, notices), every payload handed the judge, every state file and log line it writes, every exit status and every environment variable it reads. The cells' residues and every cell field other than the worker contents stay; stance-judge.sh and stance-judge-prompt.md stay. `judgeClipShell`'s comment may be cut, its shell may not; keep `stanceGuardrailJudgeCap` and `stanceGuardrailJudgeClip` exported, since unit purview-contest stops importing them in this wave and unit stance-contest moves them to packages/canon/src/guard-shell.ts after it. Change no test file and no purview file (unit purview-contest owns purview in this wave). Add .changeset/stance-workers-lean.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/command-veracity.test.ts",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        "packages/canon/tooling/project-targets.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        ".changeset/stance-workers-lean.md"
+      ],
+      "accept": [
+        "LEAN: `wc -c < packages/canon/targets/guardrail/stance-guardrail-pre.sh` prints at most 6656 (14364 at dd055a7b) and `wc -c < packages/canon/targets/guardrail/stance-guardrail.sh` at most 15360 (49568 at dd055a7b); print both.",
+        "SAME PAYLOADS: under STANCE_EMIT_PAYLOAD, with a stance manifest in scope, the payload each worker emits is byte-identical from the worker at dd055a7b and at the landed commit for: turn end, the transcripts of operator `hi` with turn `Done.`, of operator `/carry-on` with turn `I will look. I'll run the tests next.`, of a 200000-byte turn, and of a `<command-message>carry-on</command-message>` operator message followed by a later plain operator instruction and a turn ending `Want me to run the tests?`; pre-call, the AskUserQuestion MENU_INREMIT and the Agent DISPATCH_ECHO of packages/canon/test/support/guardrail/test-stance-guardrail.sh and an Agent dispatch whose prompt is 200000 bytes. Print each pair's cksum.",
+        "SAME OUTCOMES: `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts test/command-veracity.test.ts test/hook-rule-boundary.test.ts test/hook-act-selector.test.ts test/harness-independence.test.ts test/reader-density.test.ts` exit 0, and `git diff --name-only <the unit's base> <landed commit> -- packages/canon/test` prints nothing.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon typecheck` exits 0.",
+        "`.changeset/stance-workers-lean.md` exists and names @cratylus/canon.",
+        "`git diff --name-only <the unit's base> <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3TVG4Z8PEWY4YMEDQYAH97Q",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "a6a6a7e35affcb245c04487a71474a6e20c9482a",
+        "author": "StanceWorkersLean",
+        "time": "2026-10-01T05:07:47.086Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "a6a6a7e35affcb245c04487a71474a6e20c9482a",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStanceWorkersLean",
+        "time": "2026-10-01T05:12:40.364Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "eebb26e1",
+        "author": "WayForwardIntegrator2",
+        "time": "2026-10-01T05:14:54.093Z"
+      }
+    ]
+  }
+}
