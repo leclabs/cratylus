@@ -1112,7 +1112,11 @@ function showPersonaBadge(
   if (worker !== undefined) {
     const { harnessDir } = run;
     const path = join(harnessDir, adapter.hooksFile);
-    const result = ensureBadgeStatusLine(path, worker.command, { dry });
+    const recorded = readManifest(harnessDir).statusLine;
+    const result = ensureBadgeStatusLine(path, worker.command, {
+      dry,
+      ...(recorded !== null ? { recorded } : {}),
+    });
     const tag = `statusLine${dry ? ' (dry-run)' : ''}: ${path}`;
     if (result.state === 'refused') {
       refused(

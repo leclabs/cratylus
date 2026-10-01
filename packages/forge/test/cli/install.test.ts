@@ -1044,6 +1044,39 @@ describe('the guided install', () => {
     });
   });
 
+  it('takes the status line an earlier install recorded placing, spelled as a former release wrote it, for its own: the worker becomes the current one, never wrapped, and uninstall removes it', async () => {
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    const settingsFile = join(claude(), 'settings.json');
+    const manifestFile = join(claude(), '.forge', 'deploy-manifest.json');
+    const current = JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine
+      .command as string;
+    // The host as an install from before the change left it.
+    const former =
+      'sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"';
+    expect(current).not.toBe(former);
+    const settings = JSON.parse(readFileSync(settingsFile, 'utf8'));
+    settings.statusLine.command = former;
+    writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+    manifest.statusLine = { placed: former, host: null };
+    writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));
+
+    out = '';
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine).toEqual({
+      ...settings.statusLine,
+      command: current,
+    });
+    expect(out).not.toContain('wrapped in the persona badge');
+    expect(JSON.parse(readFileSync(manifestFile, 'utf8')).statusLine).toEqual({
+      placed: current,
+      host: null,
+    });
+
+    expect(runUninstall({ harness: 'claude', home })).toBe(0);
+    expect(existsSync(settingsFile)).toBe(false);
+  });
+
   it.each([
     ['not valid JSON', 'not json', 'is not valid JSON'],
     ['a JSON array', '[1]', 'is not a JSON object'],

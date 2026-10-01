@@ -78,6 +78,9 @@ export interface BadgeStatusLineResult {
 export interface EnsureBadgeStatusLineOpts {
   /** Report what would change and write nothing. */
   readonly dry?: boolean;
+  /** The line an earlier install recorded placing (`DeployManifest.statusLine`): the
+   *  command it wrote and the host command inside it, `null` where the host had none. */
+  readonly recorded?: { readonly placed: string; readonly host: string | null };
 }
 
 /** A string as ONE shell word, single-quoted — the only quoting with nothing to
@@ -117,7 +120,10 @@ function shellUnquote(word: string): string | undefined {
  *  - it is anything else (not an object, not a `command` line, no command), or the
  *    file is not a JSON object ⇒ nothing is written and `refused` says why.
  *
- * `workerCommand` is the adapter's own (`HarnessAdapter.statusLine.command`).
+ * `workerCommand` is the adapter's own (`HarnessAdapter.statusLine.command`). A line
+ * that is `opts.recorded.placed` — what an earlier install recorded placing — is that
+ * install's own: it becomes `workerCommand` (over the recorded host command, if any),
+ * so a worker that is spelled differently now is not taken for the host's command.
  */
 export function ensureBadgeStatusLine(
   path: string,
@@ -187,6 +193,22 @@ export function ensureBadgeStatusLine(
   const command = host.command;
   if (command === workerCommand) {
     return { path, state: 'kept', wrote: false, placed: command, host: null };
+  }
+  // A line install itself placed and recorded under another spelling of the worker —
+  // the command a former release wrote — is ours and not the host's: it is made the
+  // current worker again, over the same host command, and never wrapped.
+  const { recorded } = opts;
+  if (recorded !== undefined && command === recorded.placed) {
+    const moved =
+      recorded.host === null
+        ? workerCommand
+        : `${workerCommand} ${shellQuote(recorded.host)}`;
+    return write(
+      { ...settings, statusLine: { ...host, command: moved } },
+      recorded.host === null ? 'set' : 'wrapped',
+      moved,
+      recorded.host,
+    );
   }
   if (command.startsWith(`${workerCommand} `)) {
     const wrapped = shellUnquote(command.slice(workerCommand.length + 1));

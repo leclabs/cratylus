@@ -8,3 +8,5 @@
 Every command the Claude Code adapter writes into `settings.json` (the guard hook commands, the persona status line, and the hook that prints a persona's skills into a `--agent` session) now resolves that directory when Claude Code runs it, the way Claude Code does: `$CLAUDE_CONFIG_DIR` when set, else `$HOME/.claude`. The size of the skills hook, which `install` weighs against the cap on what one hook may print, is that of the directory the hook will print. The variable's name is declared on the Claude Code adapter beside its `home` (`HarnessAdapter.homeEnv`), and the deploy engine reads it from there.
 
 A host installed before this change uninstalls as before: uninstall removes the hook commands and status line its deploy record holds, as they were written.
+
+Running `install` again over a host installed before this change converges: the status line command that host's deploy record says install placed is install's own, and becomes the current worker command in place, over the same host command if it wrapped one, where it used to be taken for the host's and wrapped, leaving a command that failed once uninstall removed the worker.
