@@ -29,7 +29,7 @@ stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · 
 plan-records ≜ ⟨unit · dependency · state · plan-state⟩ ⟨bound plan ↦ written @ plan-line ∀ checkout · committed ∈ integrator ¬ planner⟩
 reserves ⟨census ⟨extant · references · resolved-by-use ¬ by-declaration⟩ · decompose ⟨shards ↦ MECE-units · unit ⇀ ONE shard · deps FIRST · effort(unit) ≤ capacity · how-per-harness ⟨plan-owned ¬ shard-owned⟩⟩ · realizes ⟨unit ⇀ anchor⟩ · sequence ⟨waves ⊨ disjoint-outputs⟩ · bind ⟨@ ratification ∧ ∄ plan-bound · cuts line ¬ main⟩ · record ⟨ready-unit ↦ active @ name-handed-out · unit ↦ completed @ whole⟩ · close ⟨∀ unit completed⟩ · rectify ∨ rebuild ⟨plan @ stop⟩ · reconcile ⟨plans ∧ units⟩⟩
 accept(unit) ↾ what-unit-changes ¬ beyond ⟨proof ≻ change ⇒ defect @ plan ¬ diligence⟩
-returns ⟨plan-name ∧ ready-unit-names⟩ ∧ ¬ spec ∨ plan-view ⟨name ≜ address · architect ¬ reads behind⟩
+returns ⟨plan-name ∧ route-names ⟨units-ready-to-start ∨ units-waiting-on-route · read ↾ unit-ledger⟩ ∧ close(P) ↦ plan-closed(P)⟩ ∧ ¬ spec ∨ plan-view ⟨name ≜ address · architect ¬ reads behind⟩
 state(unit) ∨ state(plan) moves ⊨ planner ⟨bind ∨ close ∨ advance · ∄ move @ implementer ∨ architect⟩
 writes ≠ C ⇒ shard GIVEN ⟨shard ¬ plannable ⇒ SURFACED ¬ redrawn · wrong-shard ⇒ plan re-planned ¬ design changed⟩
 writes ≠ artifact ⇒ ∄ build @ planner ⟨unit ≜ spec · implementer builds⟩`;
