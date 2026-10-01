@@ -1,5 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  // agentGuidance — OFF. turbo (>=2.11) otherwise writes a managed "turborepo-agent-rules"
+  // block into the repo-root AGENTS.md before repository-scoped commands when an AI agent is
+  // detected. That file is a PROJECTED TARGET of `cell(repo-preamble)`, and the hook-rule-
+  // boundary gate demands the committed bytes equal the cell exactly, so a turbo-written block
+  // is drift. The opt-out does not remove an existing block; none is committed.
+  "agentGuidance": false,
   "tasks": {
     // build — NOT CACHED, on the same reasoning `test` already carries.
     //
