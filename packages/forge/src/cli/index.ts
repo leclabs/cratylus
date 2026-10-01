@@ -305,12 +305,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     )
     .addOption(
       new Option(
-        '--plugin <pkg>',
-        'The corpus package to install (default: the bundled corpus)',
-      ),
-    )
-    .addOption(
-      new Option(
         '--practices <names>',
         'The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)',
       ),
@@ -352,7 +346,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .action(
       async (opts: {
         harness?: string;
-        plugin?: string;
         practices?: string;
         all?: boolean;
         linkPersonaCommands?: boolean;
@@ -363,7 +356,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
       }) => {
         process.exitCode = await runInstall({
           harness: opts.harness,
-          plugin: opts.plugin,
           corpus: options.defaultCorpus,
           practices: opts.practices,
           all: opts.all,

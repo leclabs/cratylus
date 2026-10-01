@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WG2J225RXR3K5MGH7R2S51",
+    "entity": "01M3WG2J225RXR3K5MGH7R2S50",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayGaps2",
+    "time": "2026-10-01T19:46:45.955Z",
+    "reason": "a finding beside the unit belongs in a note, not the verdict",
+    "cause": "assay of closed-plan-route of notebook-gaps at 03bdff17"
+  },
+  "payload": {
+    "title": "the close report has no sender and no restatement",
+    "kind": "question",
+    "topic": "architect role",
+    "body": "Beside the assay of closed-plan-route of notebook-gaps at 03bdff17 (not-achieved). The architect role contract now reads the planner's report that a plan has closed and routes the closed plan to the integrator, but two neighbouring surfaces still leave that report out. The planner role contract (packages/canon/src/dimensions/role/planner.ts) returns only a plan name and ready unit names, so nothing states that the planner sends the close report the architect now reads. The architect role cell's archetype (packages/canon/src/roles/architect.ts) enumerates the architect's routes and lists every unit route but not the closed plan to the integrator. The first bears on planner role, not architect role; the second is a restatement of architect role that is now narrower than its contract.",
+    "blocks": []
+  }
+}

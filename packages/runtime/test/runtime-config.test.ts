@@ -6,7 +6,11 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadRuntimeConfig, nativeEventsOf } from '../src/runtime-config.js';
+import {
+  loadRuntimeConfig,
+  nativeActsOf,
+  nativeEventsOf,
+} from '../src/runtime-config.js';
 
 const ENV = 'AGENT_RUNTIME_CONFIG';
 afterEach(() => {
@@ -65,6 +69,50 @@ describe('the host runtime config', () => {
           `install --harness ${none}[\\s\\S]*deploy --harness ${none}`,
         ),
       );
+  });
+
+  it('a stanza’s act bindings arrive beside its names; a names-only stanza has none', () => {
+    // The shape deploy now writes (`acts`, each ⟨event, matcher⟩) and the shape an
+    // earlier deploy wrote (names only): both read, the second with no acts and
+    // without being refused. A binding that is not an event is dropped.
+    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const cfg = join(root, 'runtime.json');
+    writeFileSync(
+      cfg,
+      JSON.stringify({
+        events: { vocabulary: ['tool.use.pre', 'operator.consult.pre'] },
+        harnesses: {
+          claude: {
+            native: { 'tool.use.pre': 'PreToolUse' },
+            acts: {
+              'operator.consult.pre': {
+                event: 'PreToolUse',
+                matcher: 'AskUserQuestion',
+              },
+              'subagent.dispatch.pre': { matcher: 'Agent' },
+            },
+          },
+          old: { native: { 'tool.use.pre': 'PreToolUse' } },
+        },
+      }),
+    );
+    process.env[ENV] = cfg;
+
+    const loaded = loadRuntimeConfig();
+    expect(nativeActsOf(loaded, 'claude')).toEqual({
+      'operator.consult.pre': {
+        event: 'PreToolUse',
+        matcher: 'AskUserQuestion',
+      },
+    });
+    expect(nativeEventsOf(loaded, 'claude')).toEqual({
+      'tool.use.pre': 'PreToolUse',
+    });
+    expect(nativeEventsOf(loaded, 'old')).toEqual({
+      'tool.use.pre': 'PreToolUse',
+    });
+    expect(nativeActsOf(loaded, 'old')).toEqual({});
+    expect(nativeActsOf(loaded, 'unconfigured')).toEqual({});
   });
 
   it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {

@@ -37,13 +37,13 @@ import {
   type RuntimeConfig,
   type RuntimeEvents,
   loadRuntimeConfig,
+  nativeActsOf,
   nativeEventsOf,
 } from '../../runtime-config.js';
 import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
 import { EventTapHostClaude } from './claude.js';
 import {
-  EVENT_TAP_HARNESSES,
   hasEventTapStrategy,
   invokingHarness,
   noEventTapStrategy,
@@ -209,6 +209,7 @@ export function dispatchEventTap(
     new EventTapHostClaude(
       flag('settings') || undefined,
       nativeEventsOf(config, EventTapHostClaude.harness),
+      nativeActsOf(config, EventTapHostClaude.harness),
     );
 
   switch (verb as EventTapVerb) {
@@ -224,15 +225,15 @@ export function dispatchEventTap(
       // it is taken to have tapped what was asked.
       let tapped = events;
       let skipped: EventName[] = [];
+      let reason = '';
       if (tap instanceof EventTapHostClaude) {
         ({ tapped, skipped } = tap.install(events, { path: sink }));
+        reason = tap.skipReason('it');
       } else {
         tap.install(events, { path: sink });
       }
       const warn =
         opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
-      const label = EVENT_TAP_HARNESSES[EventTapHostClaude.harness];
-      const reason = `${label} fires no native event for it`;
       for (const event of skipped) {
         warn(`eventTap install: '${event}' is not tapped — ${reason}.`);
       }

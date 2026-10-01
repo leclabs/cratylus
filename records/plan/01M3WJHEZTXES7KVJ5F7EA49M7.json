@@ -1,0 +1,29 @@
+{
+  "envelope": {
+    "id": "01M3WJHEZTXES7KVJ5F7EA49M7",
+    "entity": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WH71DXGBPX23SWM8NYKT90"
+    ],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T20:29:51.482Z",
+    "reason": "every unit completed: each made whole on the line after an achieved assay",
+    "cause": "whole launched-persona-routes of notebook-gaps"
+  },
+  "payload": {
+    "name": "notebook-gaps",
+    "realizes": [
+      "01M3NBKGAEMWHE61KYRA703KGR",
+      "01M3NCQZNYGWQJJBY9E36C9PSK",
+      "01M3Q4H5EY0JRSHR12V308QAS8",
+      "01M3QBG00Z13RG3P9110NBW9X8",
+      "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3R07G7ZCK24TEDA78HW4VRM",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "01M3W846Q2NS8ENRDTY9929N0E"
+    ],
+    "state": "closed"
+  }
+}

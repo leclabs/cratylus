@@ -1,0 +1,58 @@
+{
+  "envelope": {
+    "id": "01M3WFRJX4F04A5Q50Y8KJCPNG",
+    "entity": "01M3WFR494QCH5B8MZ47A9NWK7",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WFR494QCH5B8MZ47A9NWK8"
+    ],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T19:41:19.140Z",
+    "reason": "canon/test/event-vocabulary.test.ts pins the claude stanza (19 name-only natives), so the unit writes it; it was declared static",
+    "cause": "operator approved the next plan: persona, command line and the open notebook's realization gaps"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "claude-act-natives",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize runtime config for Claude Code's act events: the runtime config holds each harness's native names for the corpus's events, one stanza per harness, and a reader asks for one harness's. At 8d0a7283 the claude stanza holds the name-only natives (the claude adapter's nativeEvents is canonicalToClaude, packages/forge/src/adapters/claude/render.ts:589; the stanza is built by harnessStanza, packages/forge/src/deploy/runtime-config.ts:144-160) and none of the act bindings the projection itself uses (canonicalActToClaude, packages/forge/src/adapters/claude/events.ts:95-101: operator.consult.pre is PreToolUse matching AskUserQuestion, subagent.dispatch.pre is PreToolUse matching Agent|SendMessage). So `cratylus eventTap install` refuses those two events as ones 'Claude Code fires no native event' for (packages/runtime/src/capabilities/event-tap/claude.ts:150, dispatch.ts:235), although Claude Code fires one (note 'event-tap cannot reach claude's act events'). Make the claude stanza carry each act event's native binding, its native event and its matcher, taken from the claude adapter as the projection binds it; make the runtime read it (packages/runtime/src/runtime-config.ts, nativeEventsOf and the stanza reader around :181-200), still reading a stanza an 8d0a7283 deploy wrote (names only, its act events skipped as today); and make the event tap install a matcher-narrowed PreToolUse entry for such an event, keep foreign entries as it does now, and read back what it captured. Any change to the HarnessAdapter port (packages/forge/src/core/harness-adapter.ts) is additive: no existing member renamed, retyped or removed, so packages/forge/src/adapters/omp/render.ts and every other site compiled against the port stay as they are; deploy's exported signatures stay. The note's other part (eventTap uninstall in a cwd with no .claude leaving {} in .claude/settings.json) is not this unit's. packages/runtime/README.md 'The host runtime config' says what a stanza holds. packages/cli/README.md is not this unit's: its 'Lifecycle events' and 'eventTap' lines stay true. Add patch changesets for @cratylus/runtime and @cratylus/forge.",
+      "static": [
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/cli/README.md",
+        "packages/forge/test/deploy/integrate-smoke.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/capabilities/event-tap/claude.ts",
+        "packages/runtime/src/capabilities/event-tap/claude-serialize.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/harness.ts",
+        "packages/runtime/README.md",
+        "packages/runtime/test/event-tap.test.ts",
+        "packages/runtime/test/event-tap-skipped.test.ts",
+        "packages/runtime/test/runtime-config.test.ts",
+        "packages/forge/test/deploy/local.test.ts",
+        "packages/canon/test/event-vocabulary.test.ts",
+        ".changeset/claude-act-natives.md"
+      ],
+      "accept": [
+        "in packages/runtime, `pnpm exec vitest run test/event-tap.test.ts test/event-tap-skipped.test.ts test/runtime-config.test.ts` exits 0, including a case that installs the tap for operator.consult.pre and subagent.dispatch.pre from a claude stanza shaped as deploy now writes it and finds PreToolUse entries narrowed to AskUserQuestion and to Agent|SendMessage (that case fails at 8d0a7283, where the tap refuses both), and a case reading a names-only stanza as an 8d0a7283 deploy wrote it",
+        "in packages/forge, `pnpm exec vitest run test/deploy/local.test.ts` exits 0, including a case whose emitted claude stanza carries both act bindings with their matchers; in packages/canon, `pnpm exec vitest run test/event-vocabulary.test.ts` exits 0 with its round trip of the claude stanza holding both act bindings",
+        "`git diff <the commit the unit's work starts from> -- packages/forge/src/core/harness-adapter.ts` removes no line that declares a member of the port, and `git diff` of the same range shows no change to packages/forge/src/adapters/omp/render.ts",
+        "`pnpm --filter @cratylus/runtime --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3NCQZNYGWQJJBY9E36C9PSK",
+      "version": "01M3NCQZNYGWQJJBY9E36C9PSM",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

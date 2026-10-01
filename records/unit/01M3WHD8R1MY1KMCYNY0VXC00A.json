@@ -1,0 +1,42 @@
+{
+  "envelope": {
+    "id": "01M3WHD8R1MY1KMCYNY0VXC00A",
+    "entity": "01M3WHD8R1MY1KMCYNY0VXC009",
+    "operation": "create",
+    "supersedes": [],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T20:10:05.441Z",
+    "reason": "the ruled gap under persona, one unit per persona cell",
+    "cause": "decision note \"kino's archetype restates a narrower architect role\", covering kino and nico"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "nico-residue",
+      "intent": "Census @7c5725cc (the plan line; design at 7c5725cc); every path is repo-relative on the plan's line. A line number cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file. Realize persona for nico. Ruled (decision note \"kino's archetype restates a narrower architect role\", covering kino and nico, after the ruling \"mav's cell restates its role\" that mav-residue realized): a persona carries its role and declares only its residue, so its cell keeps exactly what goes beyond the architect role and drops every restatement of the role's value. The role (packages/canon/src/roles/architect.ts's description and archetype, and the contract in packages/canon/src/dimensions/role/architect.ts) already states who plans, builds, judges a unit and makes approved work whole, what reaches the architect (assay verdicts, the integrator's report of a unit that broke the whole, units ready to start or waiting on a route, the planner's closed-plan report), what it routes where (a closed plan to the integrator among them), that it reads no unit, spec, diff or artifact, and how an ad hoc request is handed out; a persona restating any of it carries a second, drifting copy (kino's already omits the closed-plan route and units waiting on a route). packages/canon/src/agents/mav.ts, as mav-residue left it, is the worked example. nico's description says it 'Holds the design; hands out the cells and the engine that carry it', its archetype ends 'handing the cells that write them down to the planner and implementer', and the comment above the cell (:13-23) says it hands the cell to the planner and the implementer like every other build: each restates the role's delegation. nico's own residue: the project seen whole, its conceptual architecture and canon (dimension catalogs, agent and skill composites, repo-wide naming, whole-system structure); the empirical ontologist of a foundation model's concept-space, discovering and canonizing σ* signs, never inventing them, and composing those primitives in the design; and its declared dimension values (maintenance, parsimony, the cold-decode-oracle, invoke-the-canonical and zero-trust principles, harm-avoidance, helpfulness and input-untrusted guardrails, analytical framing, satisfice), its mark 📐 cyan. Rewrite the description and the archetype to state only that residue, and the comment where it restates the role; the comments giving why each override is nico's stay. Keep every dimension value, the mark and the export name. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/agents/mav.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/agents/nico.ts",
+        ".changeset/nico-residue.md"
+      ],
+      "accept": [
+        "`git grep -n -i -E 'planner|implementer|assayer|integrator|rout(e|es|ed|ing)\\b|hands? (out|the)' -- packages/canon/src/agents/nico.ts` prints nothing; at 7c5725cc it prints the description, archetype and comment lines that restate the role",
+        "nico.ts still declares its own description, archetype, mark 📐 cyan and every dimension value it declares at 7c5725cc, and nothing else beside its name",
+        "in packages/canon, `pnpm exec vitest run test/persona.test.ts test/practices.test.ts test/reader-density.test.ts` exits 0 (practices needs @cratylus/forge built) and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3W846Q2NS8ENRDTY9929N0E",
+      "version": "01M3W846Q2NS8ENRDTY9929N0F",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

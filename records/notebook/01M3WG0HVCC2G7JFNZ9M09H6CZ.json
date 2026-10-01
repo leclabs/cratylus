@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WG0HVCC2G7JFNZ9M09H6CZ",
+    "entity": "01M3WG0HVCC2G7JFNZ9M09H6CY",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T19:45:40.204Z",
+    "reason": "a recurring fault in realizing plan",
+    "cause": "notebook-gaps"
+  },
+  "payload": {
+    "title": "implementers edit the main checkout",
+    "kind": "idea",
+    "topic": "plan",
+    "body": "In notebook-gaps three of five implementers (ClosedPipeConvicts, InstallCorpusPath, ClaudeActNatives) edited files in the operator's main checkout instead of their own unit worktrees, and one ran git reset --hard there, discarding a sibling's edit. The plan concept requires each unit built in its own isolated worktree off the line. The implementer's text states it, so either the text is too weak where the agent starts (its cwd is the main checkout) or nothing makes the rule bite. A fix belongs to the plan's realization in the implementer role, not to its wording alone.",
+    "blocks": []
+  }
+}

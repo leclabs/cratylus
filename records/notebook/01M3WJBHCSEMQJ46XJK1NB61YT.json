@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WJBHCSEMQJ46XJK1NB61YT",
+    "entity": "01M3WJBHCSEMQJ46XJK1NB61YS",
+    "operation": "create",
+    "supersedes": [],
+    "author": "LaunchedPersonaRoutes",
+    "time": "2026-10-01T20:26:37.337Z",
+    "reason": "what the unit could not prove",
+    "cause": "launched-persona-routes of notebook-gaps"
+  },
+  "payload": {
+    "title": "launcher model route: project modelRoles and thinking suffix unproven",
+    "kind": "question",
+    "topic": "persona launch",
+    "body": "The omp-agent launcher keeps an @role in the definition's model list only when 'omp config get modelRoles' (the global config, measured on omp 18.4.9 to ignore a project-level override) lists it. A role mapped only in a project's settings is therefore dropped and omp chooses its own model. Also unmeasured: whether --model @role carries the role value's :thinking suffix as a dispatched spawn does (no API credentials here to observe it).",
+    "blocks": []
+  }
+}

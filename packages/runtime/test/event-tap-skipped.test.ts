@@ -14,13 +14,20 @@ import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 import type { RuntimeConfig } from '../src/runtime-config.js';
 
 const CONFIG: RuntimeConfig = {
-  events: { vocabulary: ['turn.end', 'agent.idle', 'session.resume'] },
+  events: {
+    vocabulary: [
+      'turn.end',
+      'agent.idle',
+      'session.resume',
+      'operator.consult.pre',
+    ],
+  },
   harnesses: {
     claude: { native: { 'turn.end': 'Stop', 'agent.idle': 'TeammateIdle' } },
   },
 };
 
-function install(events: string) {
+function install(events: string, config: RuntimeConfig = CONFIG) {
   const dir = mkdtempSync(join(tmpdir(), 'cratylus-event-tap-skipped-'));
   const settings = join(dir, '.claude', 'settings.json');
   const warnings: string[] = [];
@@ -35,7 +42,7 @@ function install(events: string) {
         '--settings',
         settings,
       ],
-      { config: CONFIG, env: {}, warn: (line) => warnings.push(line) },
+      { config, env: {}, warn: (line) => warnings.push(line) },
     );
   return { run, settings, warnings };
 }
@@ -82,5 +89,82 @@ describe('eventTap install, by how much of the request Claude Code can tap', () 
     );
     expect(existsSync(settings)).toBe(false);
     expect(warnings).toEqual([]);
+  });
+
+  it('skips an act event for a stanza an earlier deploy wrote, which holds names only', () => {
+    // Before the stanza carried `acts`, `operator.consult.pre` had no binding to
+    // read; the stanza below is that deploy's, and the act is skipped as it was.
+    const { run, settings, warnings } = install(
+      'turn.end,operator.consult.pre',
+    );
+    expect(run()).toMatchObject({
+      events: ['turn.end'],
+      skipped: [{ event: 'operator.consult.pre' }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(
+      Object.keys(JSON.parse(readFileSync(settings, 'utf8')).hooks),
+    ).toEqual(['Stop']);
+  });
+
+  it('names the missing binding and the deploy that writes it when a names-only stanza skips an act', () => {
+    const { run, warnings } = install('turn.end,operator.consult.pre');
+    const result = run();
+    if (result.verb !== 'install')
+      throw new Error('expected an install result');
+    for (const text of [warnings[0], result.skipped?.[0]?.reason]) {
+      expect(text).toMatch(/binding/);
+      expect(text).toContain('cratylus install --harness claude');
+      expect(text).toContain('cratylus deploy --harness claude');
+      expect(text).not.toContain('fires no native event');
+    }
+  });
+
+  it('names them in the refusal too when the only event asked for is such an act', () => {
+    const { run, settings } = install('operator.consult.pre');
+    let refusal = '';
+    try {
+      run();
+    } catch (error) {
+      refusal = error instanceof Error ? error.message : String(error);
+    }
+    expect(refusal).toMatch(
+      /^eventTap install: .*operator\.consult\.pre.*cratylus install --harness claude.*nothing was written/,
+    );
+    expect(refusal).not.toContain('fires no native event');
+    expect(existsSync(settings)).toBe(false);
+  });
+
+  it('keeps the plain reason on a stanza that carries act bindings but not this event', () => {
+    const current: RuntimeConfig = {
+      ...CONFIG,
+      harnesses: {
+        claude: {
+          native: { 'turn.end': 'Stop' },
+          acts: {
+            'operator.consult.pre': {
+              event: 'PreToolUse',
+              matcher: 'AskUserQuestion',
+            },
+          },
+        },
+      },
+    };
+    const { run, warnings } = install(
+      'operator.consult.pre,session.resume',
+      current,
+    );
+    expect(run()).toMatchObject({
+      events: ['operator.consult.pre'],
+      skipped: [
+        {
+          event: 'session.resume',
+          reason: 'Claude Code fires no native event for it',
+        },
+      ],
+    });
+    expect(warnings).toEqual([
+      "eventTap install: 'session.resume' is not tapped — Claude Code fires no native event for it.",
+    ]);
   });
 });

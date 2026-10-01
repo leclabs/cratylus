@@ -1,0 +1,78 @@
+{
+  "envelope": {
+    "id": "01M3WH72VH37QB971RW7HA8HFK",
+    "entity": "01M3WGK4FT8E1SN0S7JXPVX738",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WH513YHV8BBKNXMAHKDJR6"
+    ],
+    "author": "GapsIntegrator",
+    "time": "2026-10-01T20:06:42.801Z",
+    "reason": "merged onto plan/notebook-gaps and the whole gate (build, typecheck, typecheck:test, lint, project, test) passed on the combined tree",
+    "cause": "assay achieved at 0742c592 by AssayGaps2"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "act-skip-names-deploy",
+      "intent": "Census @2a51381c (claude-act-natives as landed; design at 8d0a7283); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize the command line's 'every error says what went wrong and what to do' for `cratylus eventTap install` on a host whose claude stanza predates act bindings (note 'a names-only claude stanza misreports act events as unfired'). claude-act-natives (2a51381c) made deploy write each act's binding into the claude stanza and the runtime read it (nativeActsOf, packages/runtime/src/runtime-config.ts), and kept a names-only stanza readable, its act events skipped as before. On such a stanza `cratylus eventTap install --events operator.consult.pre` skips the event saying 'Claude Code fires no native event for it' (packages/runtime/src/capabilities/event-tap/dispatch.ts, around :237), which is false: Claude Code fires it (PreToolUse on AskUserQuestion); what the host lacks is the stanza's binding, and the deploy that writes it goes unnamed. Where a requested event is an act the stanza holds no binding for because the stanza carries no act bindings at all (written before them), say that the host's claude stanza lacks its binding and name the command that writes it, `cratylus install --harness claude` (or `cratylus deploy --harness claude`), in the skip warning and in the refusal when nothing can be tapped. An event Claude Code has no native peer for, and any event on a stanza that does carry act bindings but not that one, keep today's reason. Exit codes and what is written do not change. packages/cli/README.md is not this unit's: its eventTap lines stay true. Add a patch changeset for @cratylus/runtime.",
+      "static": [
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/cli/README.md"
+      ],
+      "deps": [
+        "01M3WFR494QCH5B8MZ47A9NWK7"
+      ],
+      "outputs": [
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/claude.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/test/event-tap-skipped.test.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        ".changeset/act-skip-names-deploy.md"
+      ],
+      "accept": [
+        "in packages/runtime, `pnpm exec vitest run test/event-tap-skipped.test.ts test/event-tap.test.ts` exits 0, including a case that installs the tap for operator.consult.pre from a names-only claude stanza and finds the skip (or, with nothing else requested, the refusal) naming the missing binding and `cratylus install --harness claude`, with no 'fires no native event' for it; at 2a51381c that case fails",
+        "in the same run, an event Claude Code has no native peer for still gives 'Claude Code fires no native event for it', and the exit codes and written settings of the existing cases are unchanged",
+        "`pnpm --filter @cratylus/runtime typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "0742c59255d5965db84a9f02e7e62e34e4d01259",
+        "author": "ActSkipNamesDeploy",
+        "time": "2026-10-01T20:03:04.279Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "0742c592",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T20:05:35.486Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "2d8096ae",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T20:06:42.800Z"
+      }
+    ]
+  }
+}

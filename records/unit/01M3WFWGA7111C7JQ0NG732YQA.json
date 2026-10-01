@@ -1,0 +1,63 @@
+{
+  "envelope": {
+    "id": "01M3WFWGA7111C7JQ0NG732YQA",
+    "entity": "01M3WFR3ZZAQ9DTEW4F7ZZNCQW",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WFVFF7N08RT5SGSFEVTRME"
+    ],
+    "author": "closed-pipe-convicts",
+    "time": "2026-10-01T19:43:27.559Z",
+    "reason": "first landing 665e4cd1 was committed on main by mistake; same change recommitted on the unit branch off the plan line",
+    "cause": "implementer committed in the main tree; main reset to 8d0a7283"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "closed-pipe-convicts",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. The command line follows the conventions of any Unix tool, and packages/cli/test/closed-pipe.test.ts holds one of them on the built bin: a reader that closes the pipe early ends the command quietly, with success. Its `--help` and `plan --help` cases pass with the line installing endOnClosedStdout removed from packages/cli/src/cratylus.ts, because commander writes the help in one write that lands before the reader closes; only the `project --verbose` case raises EPIPE (note 'closed-pipe help cases convict nothing'). Make every case convict: the reader closes before the child's first write reaches it (for instance the pipe's read end closed as soon as the child is spawned), so a command that does not end on EPIPE fails each of the three cases. Keep the three cases and their names. Change no source file: the behaviour holds and the proof is what is weak. No changeset (a test alone changes).",
+      "static": [
+        "packages/cli/src/cratylus.ts",
+        "packages/cli/package.json",
+        "turbo.json"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/cli/test/closed-pipe.test.ts"
+      ],
+      "accept": [
+        "with packages/cli and the packages it depends on built, `pnpm exec vitest run test/closed-pipe.test.ts` in packages/cli exits 0",
+        "with the line that installs endOnClosedStdout removed from packages/cli/src/cratylus.ts and packages/cli rebuilt, the same run fails all three cases, `--help` and `plan --help` among them (at 8d0a7283 only the project case fails); the line is restored afterwards and `git diff` shows no change under packages/cli/src"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "665e4cd1cf9110e601cf76d0751cc0c9d87100df",
+        "author": "closed-pipe-convicts",
+        "time": "2026-10-01T19:42:53.927Z"
+      },
+      {
+        "kind": "land",
+        "commit": "4c24abc45491f14d7f6d4501e64213f472f07066",
+        "author": "closed-pipe-convicts",
+        "time": "2026-10-01T19:43:27.559Z"
+      }
+    ]
+  }
+}

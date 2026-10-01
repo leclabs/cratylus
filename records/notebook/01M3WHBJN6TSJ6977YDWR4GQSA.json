@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WHBJN6TSJ6977YDWR4GQSA",
+    "entity": "01M3WHBJN6TSJ6977YDWR4GQS9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayGaps2",
+    "time": "2026-10-01T20:09:10.054Z",
+    "reason": "a finding beside the unit belongs in a note, not the verdict",
+    "cause": "assay of archetype-closed-plan-route of notebook-gaps at 96fa8129"
+  },
+  "payload": {
+    "title": "kino's archetype restates a narrower architect role",
+    "kind": "question",
+    "topic": "persona",
+    "body": "Beside the assay of archetype-closed-plan-route of notebook-gaps at 96fa8129 (achieved). packages/canon/src/agents/kino.ts's archetype restates the architect role rather than only its residue. It names the routes (ready unit, unachieved or broken whole, achieved) and what reaches the architect (verdict, broke-the-whole, units ready to start). It omits the closed-plan route and units waiting on a route, both now in the role's contract and the generic archetype. This is the shape the ruling 'mav's cell restates its role' removed from mav; under persona, kino would declare only its residue (film craft, teaching the operator).",
+    "blocks": []
+  }
+}

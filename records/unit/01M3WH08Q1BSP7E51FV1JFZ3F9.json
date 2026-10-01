@@ -1,0 +1,69 @@
+{
+  "envelope": {
+    "id": "01M3WH08Q1BSP7E51FV1JFZ3F9",
+    "entity": "01M3WFR54VR8F2CQ1K4WPKJT7T",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WGQX4QY78APS99TFSQPPGX"
+    ],
+    "author": "RuntimeConfigFollowsHome",
+    "time": "2026-10-01T20:02:59.425Z",
+    "reason": "runtime config path follows the home a deploy, install or uninstall is given",
+    "cause": "unit spec: nothing is written where the consumer did not ask"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "runtime-config-follows-home",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize the command line's 'nothing is written where the consumer did not ask' for the runtime config. Every deploy writes it at runtimeConfigTarget() (packages/forge/src/deploy/runtime-config.ts:50-57): $AGENT_RUNTIME_CONFIG, else the PROCESS's homedir()/.cratylus.json, whatever home the run was given (emitHostRuntimeConfig, packages/forge/src/cli/commands/deploy.ts:397-442, passes no home). So `cratylus deploy --scope user --home <dir>` places the harness under <dir> and writes the runtime config into the operator's own ~/.cratylus.json; and runUninstall({home}) (packages/forge/src/cli/commands/uninstall.ts:436) removes a stanza from the process home's file, not <home>'s, although its own option comment (:69-70) says the runtime config hangs from home; a test calling it once deleted the operator's real ~/.cratylus.json (note 'uninstall in a test reaches the real runtime config'). Make the runtime config's path follow the home the run is given: <home>/.cratylus.json for a user-scope deploy with --home, for install (its home, the user's, not the harness directory it hands deploy at install.ts:637-639) and for uninstall (its home); $AGENT_RUNTIME_CONFIG still wins wherever it is set; a project-scope deploy, and a run given no home, keep the process home. The runtime's own reading ($AGENT_RUNTIME_CONFIG, else $HOME/.cratylus.json) does not change. Do not change any flag's help text (the README's reference is the help, and the README is not this unit's). Keep the exported names of runtime-config.ts; harnessStanza and what a stanza holds are not this unit's. Add a patch changeset for @cratylus/forge.",
+      "static": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/cli/README.md"
+      ],
+      "deps": [
+        "01M3WFR3Q0GH4CPK7MCW6G28PZ",
+        "01M3WFR494QCH5B8MZ47A9NWK7"
+      ],
+      "outputs": [
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/deploy/index.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/forge/test/deploy/cli.test.ts",
+        ".changeset/runtime-config-follows-home.md"
+      ],
+      "accept": [
+        "in packages/forge, `pnpm exec vitest run test/deploy/cli.test.ts test/deploy/uninstall.test.ts test/cli/install.test.ts` exits 0, including: a user-scope deploy with home <B> under process HOME <A> and AGENT_RUNTIME_CONFIG unset writes <B>/.cratylus.json and creates no <A>/.cratylus.json; an install with home <B> under HOME <A> does the same; runUninstall({home: <B>}) under HOME <A> leaves an existing <A>/.cratylus.json byte-identical and removes the stanza from <B>/.cratylus.json; with AGENT_RUNTIME_CONFIG set, each writes and removes at that path. The first three fail at 8d0a7283",
+        "`git diff <the commit the unit's work starts from>` changes no `new Option(` description line in packages/forge/src/cli/index.ts",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "dcf26dba8aaeee9fdbb62844c741c4b708816403",
+        "author": "RuntimeConfigFollowsHome",
+        "time": "2026-10-01T20:02:59.424Z"
+      }
+    ]
+  }
+}

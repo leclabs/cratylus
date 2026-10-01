@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WJJYHS6TBFE5A4PTAWBJGY",
+    "entity": "01M3WJJYHS6TBFE5A4PTAWBJGX",
+    "operation": "create",
+    "supersedes": [],
+    "author": "GapsIntegrator",
+    "time": "2026-10-01T20:30:40.185Z",
+    "reason": "met while making the line whole at the close of notebook-gaps",
+    "cause": "release check for plan notebook-gaps"
+  },
+  "payload": {
+    "title": "a merge on the notebook-gaps line has a non-conventional subject",
+    "kind": "idea",
+    "topic": "signify-outside-core of plan notebook-gaps",
+    "body": "Merge commit e2f3460f on plan/notebook-gaps has the subject 'merge: signify-outside-core of notebook-gaps'. config-conventional refuses that subject (type-enum), and .github/workflows/release.yml says main's history is conventional by policy. The commit-msg hook did not run because the line worktree had no node_modules when the merge was made. Every later merge on the line uses 'chore(merge): ...'. A squash or rebase merge at release would avoid carrying it to main. Rewriting the line is the operator's decision.",
+    "blocks": []
+  }
+}

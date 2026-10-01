@@ -157,6 +157,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
       ['install', '--harnes', 'claude'],
       ['--harnes', '--harness'],
     ],
+    [['install', '--plugin', 'x'], ['--plugin']],
     [['compose', '--bogus'], ['--bogus']],
     [['--versoin'], ['--versoin', '--version']],
     [

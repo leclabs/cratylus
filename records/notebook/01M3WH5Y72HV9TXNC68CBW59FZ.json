@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WH5Y72HV9TXNC68CBW59FZ",
+    "entity": "01M3WG2J225RXR3K5MGH7R2S50",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WG2J225RXR3K5MGH7R2S51"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T20:06:05.282Z",
+    "reason": "the architect reads a report nothing states is sent",
+    "cause": "assay of closed-plan-route of notebook-gaps"
+  },
+  "payload": {
+    "title": "the close report has no sender and no restatement",
+    "kind": "decision",
+    "topic": "architect role",
+    "body": "Ruled: both are realization gaps of concepts already settled. The architect role reads the planner's report that a plan has closed and the names of units waiting on a route; the planner is the one that sends them, so the planner role's contract states that it returns those, and the architect role cell's archetype names the closed-plan route beside the unit routes. Added to notebook-gaps: shard planner role.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "envelope": {
+    "id": "01M3WH9HHAPYN4MENNDQWSDM5H",
+    "entity": "01M3WFR5DZKQCSXM4M9JVN76R6",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WGQWP1Q7RWJT87NJGXQ6AX"
+    ],
+    "author": "OmpBadgeAlwaysShows",
+    "time": "2026-10-01T20:08:03.370Z",
+    "reason": "badge module guards ctx.agent, shows on ctx.mode tui without it, and sets a widget where the status row is hidden by an alias",
+    "cause": "unit spec omp-badge-always-shows of notebook-gaps"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "omp-badge-always-shows",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize persona badge on omp: the running persona's name and mark visible in its own top-level interactive session, and where it cannot appear in place, somewhere visible rather than not at all. Two gaps at 8d0a7283 in the badge module, ompPersonaBadgeExtensions (packages/forge/src/adapters/omp/render.ts:1659-1692). (1) Its session_start handler reads ctx.agent.kind unguarded (:1684); omp added ctx.agent in 18.3.2, so on an older omp the handler throws 'undefined is not an object (evaluating ctx.agent.kind)' at launch (note 'persona badge needs omp 18.3.2 or later'); the guard modules already read ctx.agent?.kind (:672). On an omp without ctx.agent the module throws nothing: it shows the badge where it can still tell a top-level interactive session, and where it cannot, it says once, in one line, why it shows none. (2) Where the host's statusLine is an alias to a mapping written elsewhere that sets showHookStatus: false, install cannot show the hook status row (packages/forge/src/deploy/status-line.ts:669-680: state refused, hookRowShown false), and the badge, which omp draws in that row, shows nowhere (finding 'badge-always-visible rework (f8732965): shard achieved; alias-to-anchor statusLine is the one shape left out of reach'). Make the badge reach such a session another visible way omp offers, taking nothing away from what the host shows there. Decide it in what omp loads, the module: packages/forge/src/cli/commands/install.ts and status-line.ts are not this unit's. packages/cli/README.md:215-219 says the badge shows nowhere in that case: say what the operator sees now. Keep the exported names and signatures of render.ts. Add a patch changeset for @cratylus/forge and cratylus.",
+      "static": [
+        "packages/forge/src/deploy/status-line.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/core/harness-adapter.ts"
+      ],
+      "deps": [
+        "01M3WFR3Q0GH4CPK7MCW6G28PZ",
+        "01M3WFR494QCH5B8MZ47A9NWK7"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/cli/README.md",
+        ".changeset/omp-badge-always-shows.md"
+      ],
+      "accept": [
+        "in packages/forge, `pnpm exec vitest run test/adapters/omp.test.ts` exits 0, including a case that runs the emitted badge module's session_start handler against a stub context with hasUI true and no `agent` and sees it throw nothing (at 8d0a7283 it throws), and a case where the host's status row is hidden by a statusLine alias and the handler, for a top-level interactive session, puts the badge text on a UI surface other than setStatus's row (at 8d0a7283 setStatus is its only surface)",
+        "a subagent context (agent.kind 'sub') still gets no badge on any surface, in the same test run",
+        "`git diff <the commit the unit's work starts from> --stat` lists no file under packages/forge/src but packages/forge/src/adapters/omp/render.ts",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3NBKGAEMWHE61KYRA703KGR",
+      "version": "01M3QZDRJNXSW0YJ8TW1413KAP",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "0fa76f93",
+        "author": "OmpBadgeAlwaysShows",
+        "time": "2026-10-01T20:08:03.370Z"
+      }
+    ]
+  }
+}

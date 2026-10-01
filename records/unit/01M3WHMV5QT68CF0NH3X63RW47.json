@@ -1,0 +1,54 @@
+{
+  "envelope": {
+    "id": "01M3WHMV5QT68CF0NH3X63RW47",
+    "entity": "01M3WFR5ZTZKJQ4G7XD1985EJX",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WH500X0AT33QCQDKHPN6N9"
+    ],
+    "author": "HostRuntimeConfigKept",
+    "time": "2026-10-01T20:14:13.687Z",
+    "reason": "install and deploy carry the host's own runtime-config keys; uninstall takes out only cratylus's parts (stanza, and with the last harness the vocabulary and the recorded capability configuration) and removes the file only when nothing is left, naming what stands",
+    "cause": "the unit's spec: a host's runtime config was replaced whole by install and deleted by uninstall"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "host-runtime-config-kept",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize uninstall for the runtime config: uninstall removes what cratylus placed and nothing the host placed, which is left and reported. At 8d0a7283 a runtime config the host wrote before any install (observed: {\"x\":1}, and {\"configuration\":{\"mine\":{\"a\":1}}}) is replaced whole by install (emitRuntimeConfig, packages/forge/src/deploy/runtime-config.ts:196-222: 'Nothing else in an existing config is carried'), so its keys are gone, and uninstall of the last harness then deletes the file (removeRuntimeStanza, packages/forge/src/cli/commands/uninstall.ts:429-470): the host's content is lost for good (note 'install replaces a host's own ~/.cratylus.json and uninstall then deletes it'). Make every deploy carry each key of an existing runtime config that is none of cratylus's parts (the event vocabulary, the capability configuration it writes, the harness stanzas) as it found it, and make uninstall take out only cratylus's parts: this harness's stanza, and the corpus's parts with the last harness's stanza; it removes the file only when nothing else is left in it, and otherwise leaves the file and reports what it left and why, as it reports every other thing the host placed. A host edit made after install and two harnesses sharing the file keep working as they do. packages/cli/README.md 'The host runtime config' (:306-314) and 'Taking it away again' (:338-339) say so. Add a patch changeset for @cratylus/forge and cratylus.",
+      "static": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/forge/src/cli/commands/install.ts"
+      ],
+      "deps": [
+        "01M3WFR54VR8F2CQ1K4WPKJT7T"
+      ],
+      "outputs": [
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/cli/README.md",
+        ".changeset/host-runtime-config-kept.md"
+      ],
+      "accept": [
+        "in packages/forge, `pnpm exec vitest run test/deploy/uninstall.test.ts` exits 0, including a case where a runtime config holding {\"x\":1} before install still holds \"x\": 1 after install, and after uninstall of the only harness the file still exists holding exactly {\"x\":1} and the report names it as left; that case fails at 8d0a7283",
+        "in the same run, a runtime config that install created is removed whole by the uninstall of its last harness, and two harnesses sharing the file each take out only their own stanza",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "version": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "40d159ed",
+        "author": "HostRuntimeConfigKept",
+        "time": "2026-10-01T20:14:13.686Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3WGJQFPBK0KT2CNH7JMZ6TE",
+    "entity": "01M3WFR5PY3ARH77YNBDDKHY5F",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WGFXMRC2YKBM4104KEA06P"
+    ],
+    "author": "AssayGaps2",
+    "time": "2026-10-01T19:55:35.798Z",
+    "reason": "persona: mav is now the architect role with only its own residue above it. Folded at this commit, mav differs from the generic architect in exactly its name, description, archetype, mark and voice (maintenance), and its role contract is the architect's own. Its description and archetype carry what is mav's (the hero of the design-holder, pointed at whatever repository it is given, answering for the design made real in the system) and no longer restate who plans, builds, judges or combines, what it routes, or how ad hoc requests are handed out. The cell is the one place mav's residue is declared, and no other artifact restates mav's role",
+    "cause": "assay of mav-residue of notebook-gaps (implementer MavResidue) at 7e99a95e against persona at version 01M3W846Q2NS8ENRDTY9929N0F"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "mav-residue",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize persona for mav: a persona holds its role and adds only its residue. Ruled (decision note \"mav's cell restates its role\"): mav's cell keeps exactly what goes beyond the architect role, its archetype and whatever else is mav's own, and drops every field that duplicates the role's value. packages/canon/src/agents/mav.ts at 8d0a7283 is holds(architectRole, …) declaring a description, an archetype, a mark and audienceAdaptation: maintenance. The mark (✈️ green) and maintenance (over the role's convergence: its interlocutor is the system's own author) are its own and stay. Its description (:29-30) and archetype (:31-32) mostly restate the role (packages/canon/src/roles/architect.ts's description and archetype, and the contract in packages/canon/src/dimensions/role/architect.ts): who plans, builds, judges a unit and makes approved work whole, what it routes where, that it reads no code, how an ad hoc request is handed out. What is mav's own: it is pointed at whatever repository it is given, so its lattice is that project's and not a standing domain of its own; it is the Hero archetype of the design-holder, answering for the design being realized; its standing drive is the design made real in the system (a green suite beside a system that did not move is not progress). Rewrite the description (what mav is for, in its own terms, so it can be chosen) and the archetype to state only that residue, and the comment above the cell to say so without restating the role. holds() still requires a persona's own archetype and mark. This unit realizes persona for mav alone: kino, nico, and the notes held for the operator's persona ideation round ('mav duplicates the architect', 'persona spelled for every agent in forge and schema', 'persona self-constancy') are not its. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/hold.ts"
+      ],
+      "deps": [
+        "01M3WFR4JM0JD5PZYVYBSB5FMY"
+      ],
+      "outputs": [
+        "packages/canon/src/agents/mav.ts",
+        ".changeset/mav-residue.md"
+      ],
+      "accept": [
+        "`git grep -n -i -E 'planner|implementer|assayer|integrator|rout(e|es|ed|ing)\\b' -- packages/canon/src/agents/mav.ts` prints nothing; at 8d0a7283 it prints the description, archetype and comment lines that restate the role",
+        "mav.ts still declares its own description, archetype, mark ✈️ green and audienceAdaptation maintenance, and nothing else beside its name",
+        "in packages/canon, `pnpm exec vitest run test/persona.test.ts` exits 0 and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846Q2NS8ENRDTY9929N0E",
+      "version": "01M3W846Q2NS8ENRDTY9929N0F",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "81446f2901f138d4b9c784c50453fc911f152c20",
+        "author": "MavResidue",
+        "time": "2026-10-01T19:53:41.552Z"
+      },
+      {
+        "kind": "land",
+        "commit": "7e99a95e",
+        "author": "MavResidue",
+        "time": "2026-10-01T19:54:03.800Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7e99a95e",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T19:55:35.797Z"
+      }
+    ]
+  }
+}

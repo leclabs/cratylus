@@ -1,0 +1,65 @@
+{
+  "envelope": {
+    "id": "01M3WHKXF1ZCXHAHGWFGVEC0W2",
+    "entity": "01M3WHD7QDA0RE4DT1ATY70JXN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WHHTHTQHNP39WDG66CJY0Q"
+    ],
+    "author": "GapsIntegrator",
+    "time": "2026-10-01T20:13:43.265Z",
+    "reason": "merged onto plan/notebook-gaps and the whole gate (build, typecheck, typecheck:test, lint, project, test) passed on the combined tree",
+    "cause": "assay achieved at f675f0aa by AssayGaps2"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "kino-residue",
+      "intent": "Census @7c5725cc (the plan line; design at 7c5725cc); every path is repo-relative on the plan's line. A line number cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file. Realize persona for kino. Ruled (decision note \"kino's archetype restates a narrower architect role\", covering kino and nico, after the ruling \"mav's cell restates its role\" that mav-residue realized): a persona carries its role and declares only its residue, so its cell keeps exactly what goes beyond the architect role and drops every restatement of the role's value. The role (packages/canon/src/roles/architect.ts's description and archetype, and the contract in packages/canon/src/dimensions/role/architect.ts) already states who plans, builds, judges a unit and makes approved work whole, what reaches the architect (assay verdicts, the integrator's report of a unit that broke the whole, units ready to start or waiting on a route, the planner's closed-plan report), what it routes where (a closed plan to the integrator among them), that it reads no unit, spec, diff or artifact, and how an ad hoc request is handed out; a persona restating any of it carries a second, drifting copy (kino's already omits the closed-plan route and units waiting on a route). packages/canon/src/agents/mav.ts, as mav-residue left it, is the worked example. kino's description (:33) and archetype (:35) restate the role at length: cutting the vision into shards for planners, routing the units of the loop by name on verdicts and the integrator's reports, the four roles' work, what reaches kino and what it never reads, ad hoc requests. kino's own residue: the film craft and what the film industry and the generative-video community already standardize, held as the design; teaching the layman operator rather than taking dictation, every operator utterance a hypothesis rectified against that industry's practice; duplication, palimpsest and machine vocabulary on a production surface as the failures it guards against; a green suite beside a film that did not move is not progress; and its declared dimension values (film-production and generative-video capabilities, provenance-attribution transparency, user-centered framing), its mark 🎬 magenta. Rewrite the description (what kino is for, in its own terms, so it can be chosen) and the archetype to state only that residue, and the comment above the cell where it restates the role. Keep every dimension value, the mark and the export name. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/agents/mav.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/agents/kino.ts",
+        ".changeset/kino-residue.md"
+      ],
+      "accept": [
+        "`git grep -n -i -E 'planner|implementer|assayer|integrator|rout(e|es|ed|ing)\\b|shards?\\b' -- packages/canon/src/agents/kino.ts` prints nothing; at 7c5725cc it prints the description and archetype lines",
+        "kino.ts still declares its own description, archetype, mark 🎬 magenta, transparency provenance-attribution, framing user-centered and capabilities film-production and generative-video, and nothing else beside its name",
+        "in packages/canon, `pnpm exec vitest run test/persona.test.ts test/practices.test.ts test/reader-density.test.ts` exits 0 (practices needs @cratylus/forge built) and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846Q2NS8ENRDTY9929N0E",
+      "version": "01M3W846Q2NS8ENRDTY9929N0F",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "f675f0aae3b4a40380805e50c79b9007c01fec28",
+        "author": "KinoResidue",
+        "time": "2026-10-01T20:11:55.784Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "f675f0aa",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps2",
+        "time": "2026-10-01T20:12:34.746Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "0a1f9383",
+        "author": "GapsIntegrator",
+        "time": "2026-10-01T20:13:43.265Z"
+      }
+    ]
+  }
+}

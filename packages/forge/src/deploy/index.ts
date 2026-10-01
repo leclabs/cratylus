@@ -77,6 +77,7 @@ export {
   runtimeConfigDocument,
   runtimeConfigTarget,
   serializeRuntimeConfig,
+  withoutRuntimeParts,
 } from './runtime-config.js';
 
 export {
@@ -103,6 +104,7 @@ export {
   readManifest,
   recordedLines,
   retargetHostEdit,
+  type RuntimeConfigRecord,
   staleFiles,
   unattributable,
   undoHunks,

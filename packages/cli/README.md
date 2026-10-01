@@ -34,9 +34,11 @@ cratylus install
 Code or omp. It needs no project and no config. It looks for a harness by its home directory,
 `~/.claude` for Claude Code and `~/.omp` for omp. Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
-bundled one, and fails if that file imports a package that is not installed there. The help also
-lists `--plugin <pkg>`, but `cratylus` installs the bundled corpus whatever it names, so to install
-another corpus, name it in a `cratylus.config.ts`.
+bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
+it. Where that file cannot be loaded, because a package it imports is not installed there yet (the
+file `cratylus init` writes is one until you install its package) or because it does not parse,
+install ends with the one line the loader gives, `cratylus install: <what is wrong>; <what to do>`,
+writes nothing, and does not fall back to the bundled corpus.
 
 The run is short. It asks only what you have not said, shows what it will place before it places
 anything, places it once you confirm, and ends with a few lines saying what was done and what to do
@@ -129,6 +131,9 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 - `--practices and --all were both given`: give one.
 - `--model-roles: …`: an entry must be `<role>=<model>`, a role must be one the installed agents
   hold (the refusal lists them), and a model must be a name the harness accepts.
+- `<path>/cratylus.config.ts imports '<package>', which is not installed; run …`, or
+  `… does not parse`: the `cratylus.config.ts` in this directory cannot be loaded. Do what the line
+  says, or run install from a directory with no config.
 - `cancelled; nothing was written, so run it again to install`: you cancelled a question.
 
 ## Starting an agent by its name
@@ -215,8 +220,17 @@ install turns that one value to `true`, changes no other byte, and says so.
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow
 mapping, an alias, a list split across lines in flow style) is reported and left as it is, apart
 from that one value, and the install still succeeds. Where `statusLine` is an alias to a mapping
-written elsewhere, the badge shows nowhere until `showHookStatus` is true or `status` is listed,
-which the report says.
+written elsewhere, install cannot turn the row back on or list `status` there, and the report says
+so. The badge is not lost: when omp starts the session, the badge module reads the host's
+`config.yml` as text, and where `showHookStatus: false` is written and no `status` segment is
+listed, it also sets the badge in a widget beneath the editor, which no status setting hides. You
+see `✈️ mav` there in place of the status row; setting `showHookStatus` to true or listing `status`
+puts it back in the status line, and the widget is no longer set. Where the row is shown or `status`
+is listed, the badge appears once, in the status line, as before.
+
+The badge needs omp 18.3.2 or later to tell a top-level session from a subagent's (`ctx.agent`). On
+an older omp it shows only where omp reports its interactive terminal host, and where it cannot
+tell, omp shows one line saying so, once, instead of the badge.
 
 ## Where Claude Code and omp differ
 
@@ -311,7 +325,9 @@ configuration, and the stanza of the harness it installed, `harnesses.claude` or
 that harness's name for each event it can fire. It leaves the other harness's stanza as it found it,
 so installing for Claude Code and then for omp leaves both in the same file. A capability that needs
 a harness's stanza and finds none refuses, and `cratylus install --harness <h>` writes it.
-`cratylus eventTap` needs `claude`'s.
+`cratylus eventTap` needs `claude`'s. The file is yours as much as cratylus's: a key you wrote in it,
+at the top or under `events`, or a capability's configuration the corpus does not write, is carried
+as you left it by every install and deploy.
 
 ## Taking it away again
 
@@ -326,8 +342,9 @@ and nothing the host placed or changed. `--harness` is required. What is `instal
 the harness's deploy manifest (`.forge/deploy-manifest.json`) and by nothing else: the manifest
 records a sha-256 digest of every file it wrote, the hook commands it registered in `settings.json`,
 the status line it set or wrapped (with your original command), the lines it added to omp's
-`config.yml` (the `modelRoles` entries and the status line layout), and the launch commands it
-linked or adopted. Uninstall removes:
+`config.yml` (the `modelRoles` entries and the status line layout), a digest of each part it
+wrote into the runtime config, and the launch commands it linked or adopted.
+Uninstall removes:
 
 - every recorded file whose bytes still hash to that digest, and any directory that leaves empty;
 - the hook registrations it added, and your status line back as it was, your own command and every
@@ -336,7 +353,9 @@ linked or adopted. Uninstall removes:
   `modelRoles` entries included (a `config.yml` install created goes with its last line);
 - the launch commands it placed or adopted, and only those;
 - this harness's stanza of the runtime config (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and
-  the file itself when that was the last harness's;
+  with the last installed harness's stanza the corpus's parts too, the event vocabulary and the
+  configuration of each capability the corpus configured, each while it is still what install
+  wrote, and the file itself only when nothing else is left in it;
 - the manifest, last, so a run that stops early can be run again.
 
 It prints a count of what it removed and each thing it left because the host placed or changed it,
@@ -344,7 +363,9 @@ with its reason; `--verbose` lists every item removed too. It ends by telling yo
 harness. A placed file you edited since install is left, and so is one recorded before digests were
 kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours,
 a status line you have pointed at another command, a launch command you replaced, and a file the
-other harness's install still records. A `config.yml` line you rewrote is left too, and only that
+other harness's install still records. A part of the runtime config you changed since install (a
+capability's configuration you edited, an event you added to the vocabulary) is left too, and so is
+every key you placed in it, each named. A `config.yml` line you rewrote is left too, and only that
 line: every other line install added there still comes out, one at a time, and a line of yours
 beneath a block install added keeps the headers it sits under. Left files are yours from then on:
 the manifest goes, so a later uninstall no longer names them. `--dry-run` runs every step and writes
@@ -386,7 +407,6 @@ cratylus install [options]
 | Flag                         | What it does                                                                                                                                                                                   |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
-| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus)                                                                                                                                    |
 | `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
 | `--all`                      | Install every practice, without asking                                                                                                                                                         |
 | `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                |

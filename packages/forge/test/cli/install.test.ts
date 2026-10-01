@@ -872,4 +872,110 @@ describe('the guided install', () => {
     expect(out).toContain(`wrote the runtime config ${config}`);
     expect(existsSync(config)).toBe(true);
   });
+
+  it('writes the runtime config under the home it is given, and creates none under the process’s', async () => {
+    const processHome = join(tmpRoot(), 'process-home');
+    mkdirSync(processHome, { recursive: true });
+    vi.stubEnv('HOME', processHome);
+    vi.stubEnv('AGENT_RUNTIME_CONFIG', undefined);
+    expect(
+      await install({
+        corpus: { ...plugin, events: ['session.start'] } as never,
+        harness: 'claude',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(existsSync(join(home, '.cratylus.json'))).toBe(true);
+    expect(existsSync(join(processHome, '.cratylus.json'))).toBe(false);
+    expect(out).toContain(
+      `wrote the runtime config ${join(home, '.cratylus.json')}`,
+    );
+  });
+
+  it('writes it at $AGENT_RUNTIME_CONFIG wherever that is set, whatever the home', async () => {
+    const set = join(tmpRoot(), 'elsewhere.json');
+    vi.stubEnv('AGENT_RUNTIME_CONFIG', set);
+    expect(
+      await install({
+        corpus: { ...plugin, events: ['session.start'] } as never,
+        harness: 'claude',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(existsSync(set)).toBe(true);
+    expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
+  });
+
+  it('ends in one line, writing nothing, where the cwd config names a package that is not installed', async () => {
+    // What `cratylus init` writes, before its package is installed: the loader's
+    // MissingPackageError, not a stack trace, and no fallback to the bundled corpus.
+    writeFileSync(
+      join(cwd, 'cratylus.config.ts'),
+      "import canon from 'not-installed-corpus-package';\nexport default { extends: [canon], patches: [] };\n",
+    );
+    expect(
+      await install({ harness: 'claude', all: true, practices: undefined }),
+    ).toBe(1);
+    expect(out).toBe('');
+    const lines = err.trimEnd().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^cratylus install: /);
+    expect(lines[0]).toContain('not-installed-corpus-package');
+    expect(files(claude())).toEqual([]);
+  });
+
+  it('ends in one line where the cwd config does not parse', async () => {
+    writeFileSync(join(cwd, 'cratylus.config.ts'), 'export default {{\n');
+    expect(await install({ harness: 'claude', all: true })).toBe(1);
+    expect(out).toBe('');
+    const lines = err.trimEnd().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(
+      /^cratylus install: .*cratylus\.config\.ts( failed to load| does not parse)/,
+    );
+    expect(files(claude())).toEqual([]);
+  });
+
+  it.each([
+    [
+      'extends nothing',
+      'export default { extends: [], patches: [] };\n',
+      'extends no plugins',
+    ],
+    [
+      'extends a plugin carrying no manifest',
+      "export default { extends: [{ name: 'bare' }], patches: [] };\n",
+      'declares a dimension manifest (bare)',
+    ],
+  ])(
+    'ends in one line where the cwd config %s',
+    async (_case, source, said) => {
+      writeFileSync(join(cwd, 'cratylus.config.ts'), source);
+      expect(await install({ harness: 'claude', all: true })).toBe(1);
+      expect(out).toBe('');
+      const lines = err.trimEnd().split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^cratylus install: .*cratylus\.config\.ts/);
+      expect(lines[0]).toContain(said);
+      expect(files(claude())).toEqual([]);
+    },
+  );
+
+  it('ends in one line where the cwd config exports no config', async () => {
+    writeFileSync(join(cwd, 'cratylus.config.ts'), 'export default 3;\n');
+    expect(await install({ harness: 'claude', all: true })).toBe(1);
+    const lines = err.trimEnd().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^cratylus install: .*not a valid/);
+    expect(files(claude())).toEqual([]);
+  });
+
+  it('refuses, naming a config and not a flag, where no corpus was given at all', async () => {
+    expect(
+      await install({ harness: 'claude', all: true, corpus: undefined }),
+    ).toBe(1);
+    expect(err).toContain('cratylus install: no corpus; write a');
+    expect(err).not.toContain('--plugin');
+    expect(files(claude())).toEqual([]);
+  });
 });

@@ -22,11 +22,14 @@ import type {
   EventTapHost,
   EventTapStatus,
 } from '../../ports/event-tap.js';
+import type { RuntimeActBinding } from '../../runtime-config.js';
 import {
   type ClaudeHooksBlock,
   buildEventTapBlock,
+  eventOfNative,
   mergeJsonKeys,
   reverseNativeEvents,
+  selectsTool,
 } from './claude-serialize.js';
 
 /**
@@ -101,6 +104,7 @@ export class EventTapHostClaude implements EventTapHost {
 
   readonly #settingsPathOverride: string | undefined;
   readonly #native: Readonly<Record<EventName, string>>;
+  readonly #acts: Readonly<Record<EventName, RuntimeActBinding>>;
   readonly #toEvent: Readonly<Record<string, EventName>>;
   #sinkPath: string | undefined;
 
@@ -113,18 +117,47 @@ export class EventTapHostClaude implements EventTapHost {
    *  REQUIRED, and injected rather than known: this class held a private copy of
    *  forge's map, which is the duplication the vocabulary repair closed. A strategy
    *  that defaulted it would reopen the copy behind an optional parameter.
+   * @param nativeActs canonical act → the claude ⟨event, matcher⟩ it realizes as, from
+   *  the same stanza (`harnesses.claude.acts`, read by `nativeActsOf`). Empty for a
+   *  stanza an earlier deploy wrote, whose act events are then skipped. REQUIRED for
+   *  the reason `nativeEvents` is: an omitted map is one more place to know a binding.
    */
   constructor(
     settingsPath: string | undefined,
     nativeEvents: Readonly<Record<EventName, string>>,
+    nativeActs: Readonly<Record<EventName, RuntimeActBinding>>,
   ) {
     this.#settingsPathOverride = settingsPath;
     this.#native = nativeEvents;
+    this.#acts = nativeActs;
     this.#toEvent = reverseNativeEvents(nativeEvents);
   }
 
   get #settingsPath(): string {
     return resolveSettingsPath(this.#settingsPathOverride);
+  }
+
+  /**
+   * Why an event this host cannot bind is skipped, said of `subject` (the event, or
+   * the list of them).
+   *
+   * A stanza that carries NO act bindings is one an earlier deploy wrote, before they
+   * existed — and then an event with no entry in `native` is either one Claude Code
+   * fires nothing for or an act whose binding the stanza was never given. The runtime
+   * cannot tell which (which events are acts is the corpus's to say, and arrives only
+   * in the stanza's `acts`), so it names both and the deploy that writes the binding,
+   * rather than assert the first of a case that may be the second. A stanza that
+   * carries act bindings but not this one is current, and the first is then the fact.
+   */
+  skipReason(subject: string): string {
+    if (Object.keys(this.#acts).length === 0) {
+      return (
+        `this host's ${EventTapHostClaude.harness} stanza holds no act bindings (it was written before them), ` +
+        `so the binding for ${subject} may be missing from it: \`${CLI_BIN} install --harness ${EventTapHostClaude.harness}\` ` +
+        `(or \`${CLI_BIN} deploy --harness ${EventTapHostClaude.harness}\`) writes it; failing that, Claude Code has no native peer for ${subject}`
+      );
+    }
+    return `Claude Code fires no native event for ${subject}`;
   }
 
   /**
@@ -141,13 +174,14 @@ export class EventTapHostClaude implements EventTapHost {
     const { block: tapBlock, skipped } = buildEventTapBlock(
       events,
       this.#native,
+      this.#acts,
       loggerCommand(sink.path),
       EVENT_TAP_ID,
     );
     const tapped = events.filter((e) => !skipped.includes(e));
     if (tapped.length === 0) {
       throw new Error(
-        `eventTap install: Claude Code fires no native event for ${skipped.join(', ')} — there is nothing to tap; nothing was written.`,
+        `eventTap install: ${this.skipReason(skipped.join(', '))} — there is nothing to tap; nothing was written.`,
       );
     }
     this.#sinkPath = sink.path;
@@ -221,9 +255,21 @@ export class EventTapHostClaude implements EventTapHost {
     for (const line of readFileSync(sinkPath, 'utf8').split('\n')) {
       if (line.trim() === '') continue;
       const payload = safeJson(line);
-      const native = (payload as { hook_event_name?: string } | undefined)
-        ?.hook_event_name;
-      const event = native !== undefined ? this.#toEvent[native] : undefined;
+      const { hook_event_name: native, tool_name: tool } = (payload ?? {}) as {
+        hook_event_name?: string;
+        tool_name?: string;
+      };
+      const event =
+        native !== undefined
+          ? eventOfNative(
+              this.#toEvent,
+              this.#acts,
+              native,
+              tool === undefined
+                ? undefined
+                : (matcher) => selectsTool(matcher, tool),
+            )
+          : undefined;
       if (event === undefined) continue; // not a recognizable capture row
       rows.push({ event, payload });
     }
@@ -238,12 +284,18 @@ export class EventTapHostClaude implements EventTapHost {
     const base = JSON.parse(text) as { hooks?: ClaudeHooksBlock };
     const events = new Set<EventName>();
     for (const [native, entries] of Object.entries(base.hooks ?? {})) {
-      const owns = entries.some((e) =>
-        e.hooks.some((h) => h.id === EVENT_TAP_ID),
-      );
-      if (!owns) continue;
-      const event = this.#toEvent[native];
-      if (event !== undefined) events.add(event);
+      for (const entry of entries) {
+        if (!entry.hooks.some((h) => h.id === EVENT_TAP_ID)) continue;
+        const event = eventOfNative(
+          this.#toEvent,
+          this.#acts,
+          native,
+          entry.matcher === undefined
+            ? undefined
+            : (matcher) => matcher === entry.matcher,
+        );
+        if (event !== undefined) events.add(event);
+      }
     }
     return { attached: events.size > 0, events: [...events] };
   }

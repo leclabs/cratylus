@@ -1152,6 +1152,7 @@ interface ResolvedFixture {
 function deployedHome(
   defs: Record<string, string>,
   skills: Record<string, ResolvedFixture> = {},
+  modelRoles: Record<string, string> | null = {},
 ): DeployedHome {
   const sandbox = mkdtempSync(join(tmpdir(), 'omp-home-'));
   tmp.push(sandbox);
@@ -1184,6 +1185,8 @@ function deployedHome(
   mkdirSync(bin, { recursive: true });
   const argv = join(sandbox, 'argv');
   const reads = join(sandbox, 'reads');
+  const roles = join(sandbox, 'roles');
+  if (modelRoles !== null) place(roles, JSON.stringify(modelRoles));
   // NUL-DELIMITED, because one of these arguments is the composed system
   // prompt and it is MULTI-LINE. A newline-separated sink read the prompt back
   // as a dozen unrelated arguments, which is the shape that would let a
@@ -1201,6 +1204,10 @@ function deployedHome(
       '  esac',
       '  [ -f "$f" ] || { echo "Unknown skill" >&2; exit 1; }',
       '  cat "$f"; exit 0',
+      'fi',
+      'if [ "$1" = config ]; then',
+      `  [ -f ${roles} ] || exit 1`,
+      `  cat ${roles}; exit 0`,
       'fi',
       `printf '%s\\0' "$@" > ${argv}`,
       '',
@@ -1510,6 +1517,115 @@ describe('omp launch spec', () => {
     });
   });
 
+  describe('a MAIN session starts on the model route its role gives a spawn', () => {
+    // A dispatched architect runs on the host's `modelRoles.architect`; the
+    // launcher used to pass no model, so the same persona launched by name ran
+    // on whatever omp defaults to. The definition is the one source: the
+    // projector's own `model:` line is what the launcher routes by.
+    const ARCHITECT = agentToOmpMd(
+      { ...(AGENT as object), holds: 'architect' } as never,
+      CTX,
+    );
+    const HOST = {
+      default: 'anthropic/claude-opus-5-5:high',
+      architect: 'anthropic/claude-sonnet-5-5:high',
+    };
+
+    /** The `--model` values omp was started with. */
+    const models = (argv: string): string[] => {
+      const args = recordedArgv(argv);
+      return args.flatMap((a, i) =>
+        a === '--model' ? [args[i + 1] as string] : [],
+      );
+    };
+
+    it('routes by the held role, then the default role, as the definition does', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, HOST);
+      expect(launch(home.bin, home.launcher, ['mav'])).toEqual({
+        status: 0,
+        stderr: '',
+      });
+      expect(models(home.argv)).toEqual(['@architect,@default']);
+    });
+
+    it('keeps only the roles the host maps: omp refuses an unmapped one a spawn would fall through', () => {
+      const noArchitect = deployedHome(
+        { mav: ARCHITECT },
+        {},
+        { default: HOST.default },
+      );
+      launch(noArchitect.bin, noArchitect.launcher, ['mav']);
+      expect(models(noArchitect.argv)).toEqual(['@default']);
+
+      const noDefault = deployedHome(
+        { mav: ARCHITECT },
+        {},
+        { architect: HOST.architect },
+      );
+      launch(noDefault.bin, noDefault.launcher, ['mav']);
+      expect(models(noDefault.argv)).toEqual(['@architect']);
+    });
+
+    it('passes no model where the host maps neither, or the definition routes none', () => {
+      const unmapped = deployedHome({ mav: ARCHITECT }, {}, { slow: 'x/y' });
+      launch(unmapped.bin, unmapped.launcher, ['mav']);
+      expect(recordedArgv(unmapped.argv)).not.toContain('--model');
+
+      const holdsNothing = deployedHome(
+        { mav: agentToOmpMd(AGENT, CTX) },
+        {},
+        HOST,
+      );
+      launch(holdsNothing.bin, holdsNothing.launcher, ['mav']);
+      expect(recordedArgv(holdsNothing.argv)).not.toContain('--model');
+    });
+
+    it('lets a model the operator names win, in either spelling', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, HOST);
+      launch(home.bin, home.launcher, ['mav', '--model', 'openai/gpt-5.2']);
+      expect(models(home.argv)).toEqual(['openai/gpt-5.2']);
+
+      launch(home.bin, home.launcher, ['mav', '--model=opus']);
+      const args = recordedArgv(home.argv);
+      expect(args).toContain('--model=opus');
+      expect(models(home.argv)).toEqual([]);
+    });
+
+    it('reads a hand-edited definition in YAML’s other spellings, models as written', () => {
+      const BLOCK = [
+        '---',
+        'name: scribe',
+        'description: "writes"',
+        'model:',
+        '  - "@architect:high"',
+        '  - "@missing"',
+        '  - openai/gpt-5.2',
+        '---',
+        '',
+        'BODY',
+        '',
+      ].join('\n');
+      const SCALAR = BLOCK.replace(
+        /model:\n(?: {2}- .*\n)+/,
+        'model: "@architect, @default"\n',
+      );
+      const home = deployedHome({ block: BLOCK, scalar: SCALAR }, {}, HOST);
+      launch(home.bin, home.launcher, ['block']);
+      expect(models(home.argv)).toEqual(['@architect:high,openai/gpt-5.2']);
+      launch(home.bin, home.launcher, ['scalar']);
+      expect(models(home.argv)).toEqual(['@architect,@default']);
+    });
+
+    it('says so, and passes no model, when omp will not report the host’s roles', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, null);
+      const { status, stderr } = launch(home.bin, home.launcher, ['mav']);
+      expect(status).toBe(0);
+      expect(stderr.split('\n').filter(Boolean)).toHaveLength(1);
+      expect(stderr).toMatch(/^omp-agent: agent mav: .*modelRoles/);
+      expect(recordedArgv(home.argv)).not.toContain('--model');
+    });
+  });
+
   it('the overlay names the DIRECTORY, so it covers the guardrail module too', () => {
     // A single named file here would silently stop loading whichever module was
     // NOT named the day a second one is added — the exact enforcement loss the
@@ -1558,15 +1674,20 @@ describe('omp persona badge', () => {
       (f) => f.filename === OMP_PERSONA_BADGE_MODULE,
     );
 
+  type Surfaces = {
+    status: string[];
+    widgets: string[];
+    notices: string[];
+  };
+
   /**
-   * Load an emitted badge module and fire its `session_start` under `ctx`,
-   * returning the text of every status it set. RUN, not read: the guard and
-   * the baked text are observed the way omp would observe them.
+   * Load an emitted badge module once and return a function that fires its
+   * `session_start` under a `ctx`, returning what it put on every UI surface.
+   * RUN, not read: the guard and the baked text are observed the way omp would
+   * observe them. The host's agent dir is a temp dir holding `config` as its
+   * `config.yml` (none when undefined), so no test reads the machine's own.
    */
-  async function statusesSet(
-    content: string,
-    ctx: { hasUI: boolean; kind: string },
-  ): Promise<string[]> {
+  async function load(content: string) {
     const dir = mkdtempSync(join(tmpdir(), 'omp-badge-'));
     tmp.push(dir);
     const file = join(dir, OMP_PERSONA_BADGE_MODULE);
@@ -1578,19 +1699,73 @@ describe('omp persona badge', () => {
     };
     const handlers = new Map<string, Handler>();
     mod.default({ on: (event, h) => handlers.set(event, h) });
-    const set: string[] = [];
-    handlers.get('session_start')?.(
-      {},
-      {
-        hasUI: ctx.hasUI,
-        // omp names a LAUNCHED persona `main` — which is why the module cannot
-        // read its own name and must carry it baked in.
-        agent: { kind: ctx.kind, name: 'main' },
-        ui: { setStatus: (_key: string, text: string) => set.push(text) },
-      },
-    );
-    return set;
+    return (
+      ctx: { hasUI: boolean; agent?: { kind: string }; mode?: string },
+      config?: string,
+      ui?: object,
+    ): Surfaces => {
+      const agentDir = join(dir, 'agent');
+      rmSync(agentDir, { recursive: true, force: true });
+      mkdirSync(agentDir);
+      if (config !== undefined)
+        writeFileSync(join(agentDir, 'config.yml'), config);
+      const seen: Surfaces = { status: [], widgets: [], notices: [] };
+      vi.stubEnv('PI_CODING_AGENT_DIR', agentDir);
+      try {
+        handlers.get('session_start')?.(
+          {},
+          {
+            hasUI: ctx.hasUI,
+            // omp names a LAUNCHED persona `main` — which is why the module cannot
+            // read its own name and must carry it baked in. An omp before 18.3.2
+            // has no `agent` at all.
+            ...(ctx.agent ? { agent: { ...ctx.agent, name: 'main' } } : {}),
+            ...(ctx.mode ? { mode: ctx.mode } : {}),
+            ui: ui ?? {
+              setStatus: (_key: string, text: string) => seen.status.push(text),
+              setWidget: (_key: string, lines: string[]) =>
+                seen.widgets.push(...lines),
+              notify: (message: string) => seen.notices.push(message),
+            },
+          },
+        );
+      } finally {
+        vi.unstubAllEnvs();
+      }
+      return seen;
+    };
   }
+
+  /** One module, one session. */
+  async function run(
+    content: string,
+    ctx: { hasUI: boolean; agent?: { kind: string }; mode?: string },
+    config?: string,
+  ): Promise<Surfaces> {
+    return (await load(content))(ctx, config);
+  }
+
+  const MAIN = { hasUI: true, agent: { kind: 'main' } };
+
+  /** A `statusLine` that is an alias to a mapping written elsewhere in the file,
+   *  which hides the row — the one shape install cannot reach. */
+  const ALIASED_HIDDEN_ROW = [
+    'defaults: &line',
+    '  preset: default',
+    '  showHookStatus: false',
+    'statusLine: *line',
+    '',
+  ].join('\n');
+  /** What install writes where it can: the segment inline, the row off. */
+  const INLINE_SEGMENT = [
+    'statusLine:',
+    '  preset: custom',
+    '  leftSegments:',
+    '    - model',
+    '    - status',
+    '  showHookStatus: false',
+    '',
+  ].join('\n');
 
   it('lands ONE badge per persona in its own extensions dir, none in the session', () => {
     const out = badges([NICO, MAV]);
@@ -1604,9 +1779,9 @@ describe('omp persona badge', () => {
 
   it('shows the mark emoji and the name — and never the hue', async () => {
     const [nico] = badges([NICO]);
-    expect(
-      await statusesSet(nico?.content as string, { hasUI: true, kind: 'main' }),
-    ).toEqual(['📐 nico']);
+    expect((await run(nico?.content as string, MAIN)).status).toEqual([
+      '📐 nico',
+    ]);
   });
 
   it('shows the name ALONE for an agent with no provenance', async () => {
@@ -1614,23 +1789,83 @@ describe('omp persona badge', () => {
     expect(out.map((f) => [f.filename, f.scope])).toEqual([
       [OMP_PERSONA_BADGE_MODULE, 'x'],
     ]);
-    expect(
-      await statusesSet(out[0]?.content as string, {
-        hasUI: true,
-        kind: 'main',
-      }),
-    ).toEqual(['x']);
+    expect((await run(out[0]?.content as string, MAIN)).status).toEqual(['x']);
   });
 
-  it("shows only in a top-level interactive session, never a subagent's", async () => {
+  it("shows only in a top-level interactive session, never a subagent's — on any surface", async () => {
     const [nico] = badges([NICO]);
     const content = nico?.content as string;
-    expect(await statusesSet(content, { hasUI: false, kind: 'main' })).toEqual(
-      [],
-    );
+    const none = { status: [], widgets: [], notices: [] };
     expect(
-      await statusesSet(content, { hasUI: true, kind: 'subagent' }),
-    ).toEqual([]);
+      await run(content, { hasUI: false, agent: { kind: 'main' } }),
+    ).toEqual(none);
+    // The hidden-row config is the case that adds the widget: a subagent gets
+    // neither it nor the status.
+    expect(
+      await run(
+        content,
+        { hasUI: true, agent: { kind: 'sub' } },
+        ALIASED_HIDDEN_ROW,
+      ),
+    ).toEqual(none);
+    // And with no `ctx.agent` to say so, a session omp runs headless (`print`).
+    expect(await run(content, { hasUI: true, mode: 'print' })).toEqual(none);
+  });
+
+  it('puts the badge on a second surface where the status row is hidden by an alias', async () => {
+    const [nico] = badges([NICO]);
+    const seen = await run(nico?.content as string, MAIN, ALIASED_HIDDEN_ROW);
+    expect(seen.status).toEqual(['📐 nico']);
+    expect(seen.widgets).toEqual(['📐 nico']);
+  });
+
+  it('sets the status alone where the row is shown or the segment draws it inline', async () => {
+    const [nico] = badges([NICO]);
+    const content = nico?.content as string;
+    for (const config of [
+      undefined,
+      'statusLine:\n  preset: custom\n',
+      'statusLine:\n  showHookStatus: true\n',
+      '# showHookStatus: false\nmodelRoles: {}\n',
+      INLINE_SEGMENT,
+    ]) {
+      const seen = await run(content, MAIN, config);
+      expect(seen.status).toEqual(['📐 nico']);
+      expect(seen.widgets).toEqual([]);
+    }
+  });
+
+  describe('on an omp without ctx.agent (before 18.3.2)', () => {
+    it('throws nothing and shows the badge where ctx.mode still says it is the terminal host', async () => {
+      const [nico] = badges([NICO]);
+      const seen = await run(nico?.content as string, {
+        hasUI: true,
+        mode: 'tui',
+      });
+      expect(seen.status).toEqual(['📐 nico']);
+      expect(seen.notices).toEqual([]);
+    });
+
+    it('says once, in one line, why it shows none where nothing can tell', async () => {
+      const [nico] = badges([NICO]);
+      // ONE module instance, two sessions: the second says nothing.
+      const session = await load(nico?.content as string);
+      const first = session({ hasUI: true });
+      expect(first.status).toEqual([]);
+      expect(first.widgets).toEqual([]);
+      expect(first.notices).toHaveLength(1);
+      expect(first.notices[0]).toMatch(/18\.3\.2/);
+      expect(first.notices[0]).not.toMatch(/\n/);
+      expect(session({ hasUI: true }).notices).toEqual([]);
+    });
+
+    it('throws nothing against a context whose ui carries only setStatus', async () => {
+      const [nico] = badges([NICO]);
+      const session = await load(nico?.content as string);
+      expect(() =>
+        session({ hasUI: true }, undefined, { setStatus: () => {} }),
+      ).not.toThrow();
+    });
   });
 });
 

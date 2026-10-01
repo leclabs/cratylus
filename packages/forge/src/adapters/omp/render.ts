@@ -331,8 +331,9 @@ export const ompStatusSegment: StatusSegmentHost = {
  * ({@link Agent.holds}) emits `model: ["@<role>", "@default"]`: omp's own
  * model-role alias for the held role, then the harness's default role as the
  * fallback, so a host that never configured the role runs the agent on the
- * default role (`modelRoles.default`). Which model fills a role is the host's `modelRoles` entry — the
- * definition carries no model id. Both aliases are quoted, because a YAML value
+ * default role (`modelRoles.default`). Which model fills a role is the host's
+ * `modelRoles` entry — the definition carries no model id. Both aliases are
+ * quoted, because a YAML value
  * starting with `@` is a scanner error unquoted. An agent holding no role emits
  * no `model` key.
  *
@@ -1441,6 +1442,22 @@ export function ompOverlayYaml(): string {
  * `--no-skills` inlines none, and a `--skills` filter, which is not mirrored,
  * earns one stderr line.
  *
+ * THE MODEL ROUTE IS READ FROM THE SAME DEFINITION, so a persona launched by
+ * name starts where a dispatched holder of its role runs: on the definition's
+ * `model` list ({@link agentToOmpMd}), one definition and two readers. omp's
+ * `--model` takes a role alias, and takes a comma-separated list of them with
+ * the first it resolves winning (both measured on omp 18.4.9) — but where a
+ * dispatched agent falls through a role the host never mapped, `--model` on one
+ * is `Model "@architect" not found` and no session starts. So the launcher asks
+ * omp which roles the host maps (`omp config get modelRoles`) and passes only
+ * the `@role` selectors among them, a selector naming a model as written. Where
+ * the definition routes nothing, or the host maps none of its roles, no model
+ * is passed and omp chooses as it always did: `--model @default` against a host
+ * with no default role is not that choice (measured: it picks a provider with no
+ * credentials). A `--model` the operator passes wins, and nothing is added.
+ *
+ * THE SAME READER serves the `model` list and `autoloadSkills` (`fm_list`).
+ *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
  * FLOW sequence from the skill closure projection hands it; an operator
  * hand-editing a definition writes YAML's BLOCK sequence. Reading only one of
@@ -1511,29 +1528,33 @@ export const OMP_LAUNCHER_SCRIPT = [
   '  exit 1',
   'fi',
   '',
-  '# The one front-matter field read here, in either YAML spelling: one name per',
-  '# line. `\\047` spells the apostrophe the surrounding quotes cannot; awk',
-  '# unescapes it before the string is used as a regex.',
-  `skills=$(awk '`,
-  '  function clean(s) { gsub(strip, "", s); return s }',
-  '  BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
-  '  NR == 1 { if ($0 == "---") next; exit }',
-  '  $0 == "---" { exit }',
-  '  list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
-  '    s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
-  '    if (s != "") print s',
-  '    next',
-  '  }',
-  '  { list = 0 }',
-  '  /^autoloadSkills:/ {',
-  '    rest = $0',
-  '    sub(/^autoloadSkills:[ \\t]*/, "", rest)',
-  '    gsub(/^\\[|\\]$/, "", rest)',
-  '    if (rest == "") { list = 1; next }',
-  '    m = split(rest, part, ",")',
-  '    for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
-  '  }',
-  `' "$def")`,
+  '# A front-matter field read here, in either YAML spelling: one value per line.',
+  '# `\\047` spells the apostrophe the surrounding quotes cannot; awk unescapes it',
+  '# before the string is used as a regex.',
+  'fm_list() {',
+  `  awk -v key="$1" '`,
+  '    function clean(s) { gsub(strip, "", s); return s }',
+  '    BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
+  '    NR == 1 { if ($0 == "---") next; exit }',
+  '    $0 == "---" { exit }',
+  '    list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
+  '      s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
+  '      if (s != "") print s',
+  '      next',
+  '    }',
+  '    { list = 0 }',
+  '    index($0, key ":") == 1 {',
+  '      rest = substr($0, length(key) + 2)',
+  '      sub(/^[ \\t]+/, "", rest)',
+  '      gsub(/^\\[|\\]$/, "", rest)',
+  '      if (rest == "") { list = 1; next }',
+  '      m = split(rest, part, ",")',
+  '      for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
+  '    }',
+  `  ' "$def"`,
+  '}',
+  'skills=$(fm_list autoloadSkills)',
+  'model=$(fm_list model)',
   '',
   "# THE SKILL BODIES, as a spawn would have them, read through omp's OWN",
   "# resolver from the launch directory — see this script's doc.",
@@ -1583,6 +1604,45 @@ export const OMP_LAUNCHER_SCRIPT = [
   '# stay literal rather than becoming a command substitution.',
   "id='You are `%s`. That is your name and the identity you answer as in this session, superseding any other name this system prompt gave you.'",
   'append=$(printf "$id\\n\\n%s\\n" "$name" "$composed")',
+  '',
+  '# THE MODEL ROUTE: the SAME `model` list a DISPATCHED holder of this role routes',
+  "# by, read from the definition this script already read. omp's --model takes a",
+  '# role alias and a comma-separated list, first one it resolves wins - but a role',
+  '# the host never mapped is "Model not found", where a dispatched agent falls',
+  "# through. So each `@role` is kept only when the host's modelRoles has it, as",
+  '# omp itself reports them; a selector that names a model is kept as written.',
+  '# A definition routing nothing, a host mapping none of its roles, and an',
+  '# operator-given --model each leave omp to choose.',
+  'operator=',
+  'for arg in "$@"; do',
+  '  case $arg in',
+  '    --model | --model=*) operator=1 ;;',
+  '  esac',
+  'done',
+  'route=',
+  'if [ -z "$operator" ] && [ -n "$model" ]; then',
+  '  if ! roles=$(omp config get modelRoles </dev/null 2>/dev/null); then',
+  '    roles=',
+  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp would not report the host modelRoles; starting on omp default model, not on the route its definition names\\n' "$name" >&2`,
+  '  fi',
+  '  while IFS= read -r selector; do',
+  '    [ -n "$selector" ] || continue',
+  '    case $selector in',
+  '      @*)',
+  '        role=${selector#@}',
+  '        role=${role%%:*}',
+  '        case $roles in',
+  '          *"\\"$role\\":"*) ;;',
+  '          *) continue ;;',
+  '        esac',
+  '        ;;',
+  '    esac',
+  '    route="$route${route:+,}$selector"',
+  '  done <<EOF',
+  '$model',
+  'EOF',
+  '  [ -z "$route" ] || set -- --model "$route" "$@"',
+  'fi',
   '',
   "# The persona's OWN extensions, named by its OWN overlay: the placement that",
   '# makes a mechanism module load under this persona and under no other. Absent',
@@ -1641,9 +1701,9 @@ export function ompLaunchSurface(
 
 /**
  * The persona badge: ONE module per projected agent, in that persona's own
- * scope, that puts the persona's mark emoji and name in the status line of a
- * session it runs. Never the SESSION scope — a bare launch runs no persona, so
- * there is nothing to badge.
+ * scope, that puts the persona's mark emoji and name where the operator of a
+ * session it runs can see it. Never the SESSION scope — a bare launch runs no
+ * persona, so there is nothing to badge.
  *
  * THE NAME IS BAKED AT PROJECTION. omp calls a launched persona `main`
  * (`ctx.agent.name`), so the running session cannot say which persona it is;
@@ -1653,8 +1713,27 @@ export function ompLaunchSurface(
  * THE HUE IS NEVER READ: omp strips ANSI from an extension's status text, so a
  * hue could reach the status line only as a word nobody asked for.
  *
- * Shown only where `ctx.hasUI` and `ctx.agent.kind === "main"` — the top-level
- * interactive session, never a dispatched subagent's.
+ * WHERE IT SHOWS. Only in the top-level interactive session, never a dispatched
+ * subagent's. `ctx.agent.kind === "main"` says so on an omp that has `ctx.agent`
+ * (18.3.2 and later) — and the module reads `ctx.agent?.kind`, so an older omp
+ * does not make it throw at launch. Without `ctx.agent`, omp still says `ctx.mode
+ * === "tui"` only of the interactive terminal host (a subagent session runs in
+ * `print`), so the badge shows there on `hasUI` and `mode` together; where
+ * neither is there to tell by, the module says so once, in one line, on
+ * `ctx.ui.notify`, and shows no badge.
+ *
+ * WHERE IT SHOWS ITS TEXT. Always in the status (`ctx.ui.setStatus`), which omp
+ * draws inline where the layout lists `status` and on a row beneath the editor
+ * otherwise. That row is the host's to hide (`statusLine.showHookStatus:
+ * false`), and install can turn it back on only where it can read the host's
+ * `statusLine` — not where that is an alias to a mapping written elsewhere in
+ * the file. So the module reads the host's config text the way install does
+ * (as text, never as a layout) and, where the row is hidden and no `status`
+ * segment is listed to draw the badge inline, ALSO puts the badge in a widget
+ * beneath the editor, which no status setting reaches. Where the row is shown
+ * or `status` is listed, the widget is not set, so the badge is never twice.
+ * That decision lives here, in what omp loads, because deploy cannot know the
+ * state of a file the host edits after it.
  */
 export function ompPersonaBadgeExtensions(
   agents: readonly Agent[],
@@ -1670,20 +1749,75 @@ export function ompPersonaBadgeExtensions(
         scope: a.name,
         content: [
           `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-          `// The persona badge of \`${a.name}\`: its mark and name in the status line.`,
+          `// The persona badge of \`${a.name}\`: its mark and name, in the status line.`,
           '//',
           ...personaPlacement(a.name),
           '// The name is baked in below, never asked for: omp calls a launched persona',
           '// `main`, so what this badge shows is known only at projection. It shows only',
-          "// in a top-level interactive session, never in a subagent's.",
+          "// in a top-level interactive session, never in a subagent's. Where the host hid",
+          '// the status row and lists no `status` segment, it is also set in a widget',
+          '// beneath the editor, so it is somewhere visible rather than nowhere.',
           '',
+          "import { existsSync, readFileSync } from 'node:fs';",
+          "import { homedir } from 'node:os';",
+          "import { join } from 'node:path';",
           "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+          '',
+          `const KEY = ${JSON.stringify(OMP_PERSONA_BADGE_KEY)};`,
+          `const BADGE = ${JSON.stringify(text)};`,
+          'const NOTICE =',
+          `  ${JSON.stringify(`${CLI_BIN} persona badge: this omp does not say which agent a session is, so no badge is shown; it needs omp 18.3.2 or later.`)};`,
+          '',
+          '// The host config text, comments removed — the file omp reads its settings from',
+          '// (`config.yml`, or `config.yaml` where that is the only one), or undefined.',
+          'function hostConfig(): string | undefined {',
+          '  const dir =',
+          "    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.omp', 'agent');",
+          "  const file = ['config.yml', 'config.yaml']",
+          '    .map((name) => join(dir, name))',
+          '    .find((path) => existsSync(path));',
+          '  if (file === undefined) return undefined;',
+          '  try {',
+          "    return readFileSync(file, 'utf8')",
+          '      .split(/\\r?\\n/)',
+          '      .map((line) => line.replace(/(^|[ \\t])#.*$/, "$1"))',
+          "      .join('\\n');",
+          '  } catch {',
+          '    return undefined;',
+          '  }',
+          '}',
+          '',
+          '// True where the status row is hidden (`showHookStatus: false`, found as text',
+          '// wherever it is written, an alias target included) and no `status` segment is',
+          '// listed to draw the status inline: there setStatus reaches nobody.',
+          'function statusUnseen(): boolean {',
+          '  const text = hostConfig();',
+          '  if (text === undefined) return false;',
+          '  const hidden =',
+          '    /\\bshowHookStatus["\']?[ \\t]*:[ \\t]*(?:false|False|FALSE)(?=[ \\t,}\\]]|$)/m;',
+          '  const listed =',
+          '    /^[ \\t]*-[ \\t]+["\']?status["\']?[ \\t]*$/m.test(text) ||',
+          '    /\\b(?:left|right)Segments["\']?[ \\t]*:[ \\t]*\\[[^\\]]*\\bstatus\\b/.test(text);',
+          '  return hidden.test(text) && !listed;',
+          '}',
+          '',
+          'let said = false;',
           '',
           'export default function (pi: ExtensionAPI) {',
           '  pi.on("session_start", (_event, ctx) => {',
-          '    if (ctx.hasUI && ctx.agent.kind === "main") {',
-          `      ctx.ui.setStatus(${JSON.stringify(OMP_PERSONA_BADGE_KEY)}, ${JSON.stringify(text)});`,
+          '    if (!ctx.hasUI) return;',
+          '    const agent = ctx.agent as { kind?: string } | undefined;',
+          '    const topLevel =',
+          '      agent !== undefined ? agent.kind === "main" : ctx.mode === "tui";',
+          '    if (!topLevel) {',
+          '      if (agent === undefined && ctx.mode === undefined && !said) {',
+          '        said = true;',
+          '        ctx.ui.notify?.(NOTICE, "info");',
+          '      }',
+          '      return;',
           '    }',
+          '    ctx.ui.setStatus(KEY, BADGE);',
+          '    if (statusUnseen()) ctx.ui.setWidget(KEY, [BADGE], { placement: "belowEditor" });',
           '  });',
           '}',
           '',

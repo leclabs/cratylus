@@ -8,24 +8,28 @@
 // Neither is a stage, so neither is here.
 
 import { existsSync, statSync } from 'node:fs';
-import { join, resolve as resolvePath } from 'node:path';
+import { dirname, join, resolve as resolvePath } from 'node:path';
 import type { AgentPlugin } from '@cratylus/schema';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { keepsHostModel } from '../../deploy/deploy.js';
 import {
   DEPLOY_CHECK_EXIT,
   type DeployKind,
   type RenderTree,
+  type RuntimeConfigRecord,
   type Scope,
   type SkillCompanions,
   deploySingle,
   emitRuntimeConfig,
   projectScope,
+  readManifest,
   resolveNames,
   userScope,
+  writeManifest,
 } from '../../deploy/index.js';
 import { type DriftReport, auditLocal } from '../../deploy/local.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
@@ -303,13 +307,31 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
         outcome.outside[root] = (outcome.outside[root] ?? 0) + 1;
       }
     }
-    outcome.runtimeConfig = await emitHostRuntimeConfig(
+    const emitted = await emitHostRuntimeConfig(
       opts,
       harnessAdapter.name,
       harnessAdapter.nativeEvents,
+      harnessAdapter.nativeActs,
+      // The home the harness directory hangs from, when the run was given one: the
+      // runtime config follows it. A project-scope deploy, and a run given no home,
+      // leave it to the process's.
+      opts.scope === 'user' && opts.home
+        ? dirname(scopeRes.harnessDir)
+        : undefined,
       log,
       warn,
     );
+    outcome.runtimeConfig =
+      emitted === null ? null : { path: emitted.path, wrote: emitted.wrote };
+    // What this deploy wrote into the file, kept with the record of what it placed: the
+    // host may hold keys of its own there and may change a part later, which an uninstall
+    // must tell from what was written.
+    if (emitted?.wrote === true) {
+      writeManifest(outcome.harnessDir, {
+        ...readManifest(outcome.harnessDir),
+        runtimeConfig: emitted.record,
+      });
+    }
     return outcome;
   } catch (e) {
     fail((e as Error).message);
@@ -398,9 +420,15 @@ async function emitHostRuntimeConfig(
   opts: DeployCmdOpts,
   harness: string,
   nativeEvents: Readonly<Record<string, string>>,
+  nativeActs: HarnessAdapter['nativeActs'],
+  home: string | undefined,
   log: (line: string) => void,
   warn: (message: string) => void,
-): Promise<{ path: string; wrote: boolean } | null> {
+): Promise<{
+  path: string;
+  wrote: boolean;
+  record: RuntimeConfigRecord;
+} | null> {
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
@@ -426,20 +454,22 @@ async function emitHostRuntimeConfig(
     );
     return null;
   }
-  const { path, wrote, doc, stanza } = emitRuntimeConfig({
+  const { path, wrote, doc, stanza, record } = emitRuntimeConfig({
     events,
     harness,
     nativeEvents,
+    ...(nativeActs === undefined ? {} : { nativeActs }),
     skills: (await resolveSkills(plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
+    ...(home === undefined ? {} : { home }),
   });
   log(
     `runtime config${wrote ? '' : ' (dry-run)'}: ${path}: ` +
       `${doc.events.vocabulary.length} event(s), ` +
       `harnesses.${harness}: ${Object.keys(stanza.native).length} with a native peer, ` +
-      `${Object.keys(doc.configuration ?? {}).length} configured capability(ies)`,
+      `${Object.keys(record.capabilities).length} configured capability(ies)`,
   );
-  return { path, wrote };
+  return { path, wrote, record };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

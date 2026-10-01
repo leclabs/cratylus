@@ -44,7 +44,11 @@ import {
   type HarnessProjection,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
-import { canonicalToClaude, claudeBindingOf } from './events.js';
+import {
+  canonicalActToClaude,
+  canonicalToClaude,
+  claudeBindingOf,
+} from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 import {
   CLAUDE_HOOK_OUTPUT_CAP,
@@ -585,8 +589,11 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // The 1:1 map, declared on the port so deploy can EMIT it into the host config the
   // runtime reads. It stays 1:1 deliberately: the runtime REVERSES it (native →
   // canonical) to name what it observed, and the ACT bindings — many acts onto one
-  // native event — have no reverse. An act is narrowed at emission, not observed.
+  // native event — have no reverse, so they travel beside it as `nativeActs`.
   nativeEvents: canonicalToClaude,
+  // The act bindings the projection itself narrows by (`claudeBindingOf` consults
+  // them first), emitted so the runtime binds the same ⟨event, matcher⟩ pair.
+  nativeActs: canonicalActToClaude,
   // Realizable ⇔ `claudeBindingOf` answers — the 1:1 map OR an act binding, asked as
   // one question so no site consults half the answer. Asking the realization map IS
   // asking the mechanism itself; there is no second list to drift. A git-substrate
