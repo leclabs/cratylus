@@ -41,7 +41,7 @@
 //
 // WHAT A HOLDER MAY NOT ESCAPE is exactly one thing: the role's own contract, the
 // `role` dimension value stating ⟨reads, writes⟩ and everything that follows from the
-// pair. It is inviolable BY CONSTRUCTION rather than by a marking — `Declared` omits
+// pair. It is inviolable BY CONSTRUCTION rather than by a marking — `Persona` omits
 // the key, so there is no field to override and no rule to enforce. Every other aspect
 // a role supplies is a DEFAULT: a scalar the holder may override, a set the holder may
 // extend. A general constitutive/default marking was considered and rejected: with the
