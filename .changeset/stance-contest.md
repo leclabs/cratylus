@@ -1,5 +1,0 @@
----
-'@cratylus/canon': patch
----
-
-A stance refusal no longer strands the agent, before a call or at the turn end. A deny or block gives the judge's reason (at the turn end with the verified span) followed by the way forward: act on it, or, if the agent holds it wrong, write why into the file the reason names with the one shell command it spells out, then repeat the call or end the turn again. That act goes through unjudged, a line naming `STANCE GUARDRAIL` and the agent's reason is said where the operator reads it, and the contest is appended as one JSON line to `~/.agents/guardrail/contests.log` for the operator to review; a contested stop goes through whatever the run of blocks. A retry with no contest is judged again, and the turn-end bound (a repeated stop, or a fourth refused stop in a run, goes through said) stands. Both stance workers now take the contest and the judge-payload clip from `guard-shell.ts`, and drop the long paragraphs of instruction their refusals carried, so the pre-call worker stays under 7.7 KB and the turn-end worker under 16 KB.
