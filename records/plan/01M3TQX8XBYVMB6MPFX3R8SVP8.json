@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3TQX8XBYVMB6MPFX3R8SVP8",
+    "entity": "01M3TQCCBMY40PMZTG76GTZ308",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TQCQFATF7CM0F90XJ4K6JK"
+    ],
+    "author": "TurnEndPlanner2",
+    "time": "2026-10-01T03:25:12.491Z",
+    "reason": "every unit completed: turn-end-loop-bounded whole at 3abb1c3b",
+    "cause": "whole recorded by TurnEndIntegrator"
+  },
+  "payload": {
+    "name": "turn-end-loop",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "closed"
+  }
+}
