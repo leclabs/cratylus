@@ -496,6 +496,18 @@ describe('uninstall', () => {
         expect(removed).not.toContain(configFile());
         expect(left).toContain(configFile());
         expect(left).toContain('the runtime config is not');
+        expect(left).toContain('install --harness claude');
+
+        // The remedy the report gives: the first uninstall took the record away, so a
+        // second one alone finds nothing; repaired, install records it again, and the
+        // uninstall after that takes the harness's stanza out.
+        expect(uninstall('claude')).toBe(0);
+        expect(readFileSync(configFile(), 'utf8')).toBe(held);
+        writeFileSync(configFile(), '{}\n');
+        expect(await install('claude')).toBe(0);
+        expect(readConfig().harnesses.claude).toBeDefined();
+        expect(uninstall('claude')).toBe(0);
+        expect(snapshot(home)).toEqual({});
       },
     );
 

@@ -448,7 +448,7 @@ function removeRuntimeStanza(
     // and the report says so.
     tally.left.push({
       what: file,
-      why: `the runtime config ${unreadable}, so what ${adapter.name}'s install wrote there cannot be told from the host's; repair it, then run \`${CLI_BIN} uninstall --harness ${adapter.name}\` again, or remove ${adapter.name}'s parts from it by hand`,
+      why: `the runtime config ${unreadable}, so what ${adapter.name}'s install wrote there cannot be told from the host's; this uninstall removes the record of what was written, so to take it out, repair the file or move it away, run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records it, then uninstall; or remove ${adapter.name}'s parts from it by hand`,
     });
     return;
   }
