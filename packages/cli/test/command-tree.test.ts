@@ -20,14 +20,16 @@ const manifest = JSON.parse(
 ) as { version: string };
 const readme = readFileSync(join(packageRoot, 'README.md'), 'utf8');
 
-const COMMANDS = [
+/** The consumer's commands, which the help lists first. */
+const CONSUMER_COMMANDS = ['install', 'uninstall'] as const;
+
+/** The corpus author's commands, which the help lists last, apart. */
+const AUTHOR_COMMANDS = [
   'init',
   'add',
   'compose',
   'project',
   'optimize',
-  'install',
-  'uninstall',
   'deploy',
   'explain',
   'catalog',
@@ -97,10 +99,20 @@ describe('the top-level help lists every command and capability', () => {
     expect(code).toBe(0);
     expect(err).toBe('');
     const program = commandLine();
-    expect(listed(out, 'Commands')).toEqual([...COMMANDS]);
+    expect(listed(out, 'Commands')).toEqual([...CONSUMER_COMMANDS]);
     expect(listed(out, 'Capabilities')).toEqual([...CAPABILITIES]);
+    expect(listed(out, 'Corpus authoring')).toEqual([...AUTHOR_COMMANDS]);
     for (const command of program.commands)
       expect(out, command.name()).toContain(command.description());
+  });
+
+  it('lists the consumer’s commands, then the capabilities, then the corpus author’s', async () => {
+    const { out } = await run('--help');
+    const at = (heading: string) => out.indexOf(`\n${heading}:\n`);
+    expect(at('Commands')).toBeGreaterThan(-1);
+    expect(at('Commands')).toBeLessThan(at('Capabilities'));
+    expect(at('Capabilities')).toBeLessThan(at('Corpus authoring'));
+    expect(listed(out, 'Commands').slice(0, 2)).toEqual(['install', 'uninstall']);
   });
 
   it('holds no blank spacer line and wraps no line', async () => {
@@ -260,17 +272,20 @@ describe('a deploy flag that would take no effect is refused, never accepted and
 });
 
 describe('the README reference names exactly what the help lists, each once', () => {
-  /** Every name the program's help lists: its commands and capabilities, and each
-   *  capability's verbs as `<capability> <verb>`. */
+  /** Every name the program's help lists, in the order it lists them: its commands
+   *  and capabilities, each capability followed by its verbs as `<capability> <verb>`. */
   async function inHelp(): Promise<string[]> {
     const names: string[] = [];
     const top = (await run('--help')).out;
-    names.push(...listed(top, 'Commands'), ...listed(top, 'Capabilities'));
-    for (const capability of listed(top, 'Capabilities')) {
-      const help = (await run(capability, '--help')).out;
-      for (const verb of listed(help, 'Commands'))
-        names.push(`${capability} ${verb}`);
-    }
+    const capabilities = listed(top, 'Capabilities');
+    for (const heading of ['Commands', 'Capabilities', 'Corpus authoring'])
+      for (const name of listed(top, heading)) {
+        names.push(name);
+        if (!capabilities.includes(name)) continue;
+        const help = (await run(name, '--help')).out;
+        for (const verb of listed(help, 'Commands'))
+          names.push(`${name} ${verb}`);
+      }
     return names;
   }
 
@@ -280,14 +295,18 @@ describe('the README reference names exactly what the help lists, each once', ()
   );
 
   /** What `documented` gets wrong of `listing`: the entries it lacks, names it holds
-   *  twice, and names the listing does not have. */
+   *  twice, names the listing does not have, and, of the names both hold, those that
+   *  stand in another place than the listing puts them. */
   function discrepancies(listing: readonly string[], documented: string[]) {
+    const shared = [...new Set(documented)].filter((n) => listing.includes(n));
+    const expected = listing.filter((n) => shared.includes(n));
     return {
       missing: listing.filter((name) => !documented.includes(name)),
       twice: [
         ...new Set(documented.filter((n, i) => documented.indexOf(n) !== i)),
       ],
       unlisted: documented.filter((name) => !listing.includes(name)),
+      misplaced: shared.filter((name, i) => name !== expected[i]),
     };
   }
 
@@ -296,6 +315,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       missing: [],
       twice: [],
       unlisted: [],
+      misplaced: [],
     });
   });
 
@@ -305,6 +325,29 @@ describe('the README reference names exactly what the help lists, each once', ()
         ['init', 'plan show', 'note'],
         ['plan show', 'plan show', 'frob', 'note'],
       ),
-    ).toEqual({ missing: ['init'], twice: ['plan show'], unlisted: ['frob'] });
+    ).toEqual({
+      missing: ['init'],
+      twice: ['plan show'],
+      unlisted: ['frob'],
+      misplaced: [],
+    });
+  });
+
+  it('convicts a reference with init moved ahead of install', () => {
+    const listing = ['install', 'uninstall', 'plan', 'plan show', 'init'];
+    expect(
+      discrepancies(listing, [
+        'init',
+        'install',
+        'uninstall',
+        'plan',
+        'plan show',
+      ]),
+    ).toEqual({
+      missing: [],
+      twice: [],
+      unlisted: [],
+      misplaced: ['init', 'install', 'uninstall', 'plan', 'plan show'],
+    });
   });
 });
