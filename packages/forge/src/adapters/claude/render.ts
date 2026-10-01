@@ -134,6 +134,7 @@ function agentFrontMatter(
       ? CLAUDE_ROLE_TIERS[a.holds]
       : undefined;
   if (tier !== undefined) fm.push(`model: ${tier}`);
+  if (a.isolation !== undefined) fm.push(`isolation: ${a.isolation}`);
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
@@ -572,6 +573,8 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   judgeBin: 'claude',
   // The subagent `skills` field preloads each named skill into the agent.
   preloadsSkills: true,
+  // The subagent `isolation: worktree` field starts the agent in a worktree of its own.
+  startsInWorktree: true,
   // A `--agent` MAIN session preloads none of them, so a hook prints each skill; the
   // cap on what one hook may print is Claude Code's. The output holds each skill's
   // directory, so the size is measured with the host's real home where the caller knows

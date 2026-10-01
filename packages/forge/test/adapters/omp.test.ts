@@ -194,6 +194,18 @@ describe('omp agent definition', () => {
     }
   });
 
+  it('emits nothing for an agent declaring worktree isolation — omp has no field that starts one', () => {
+    // omp's agent definition reader takes no key that isolates an agent, so the
+    // declaration is dropped from the bytes and projection warns instead.
+    const md = agentToOmpMd(
+      { ...(AGENT as object), isolation: 'worktree' } as never,
+      CTX,
+    );
+    expect(md).not.toMatch(/^isolation:/m);
+    expect(frontMatter(md)).toEqual(frontMatter(agentToOmpMd(AGENT, CTX)));
+    expect(ompHarnessAdapter.startsInWorktree).toBe(false);
+  });
+
   it('survives a description carrying the characters YAML reserves', () => {
     // A plain scalar may not contain `: `, and a real corpus description does
     // ("…and canon: dimension catalogs") — unquoted, the document is a scanner

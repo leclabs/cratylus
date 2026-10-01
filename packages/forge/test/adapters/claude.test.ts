@@ -733,3 +733,32 @@ describe('the claude model tier — the role an agent holds, as a tier alias', (
     expect(claudeHarnessAdapter.roleRouting).toBeUndefined();
   });
 });
+
+describe('the claude worktree isolation — an agent that declares it starts in one', () => {
+  const def = (isolation?: 'worktree') =>
+    agentToClaudeMd(
+      {
+        name: 'mav',
+        description: 'd',
+        archetype: 'a',
+        guardrails: ['honesty ≜ assert from evidence'],
+        ...(isolation === undefined ? {} : { isolation }),
+      } as never,
+      { manifest: FIXTURE_MANIFEST },
+    );
+  const frontMatter = (md: string) => md.split('---')[1] ?? '';
+
+  it('emits `isolation: worktree` for an agent declaring it', () => {
+    expect(frontMatter(def('worktree')).split('\n')).toContain(
+      'isolation: worktree',
+    );
+  });
+
+  it('emits no `isolation` key for an agent that does not', () => {
+    expect(frontMatter(def())).not.toMatch(/^isolation:/m);
+  });
+
+  it('answers that a definition can start an agent in a worktree', () => {
+    expect(claudeHarnessAdapter.startsInWorktree).toBe(true);
+  });
+});

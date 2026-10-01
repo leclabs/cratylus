@@ -737,6 +737,18 @@ export async function projectPluginSet(
     }
   }
 
+  // A HARNESS THAT CANNOT START AN AGENT IN A WORKTREE OF ITS OWN runs the agent
+  // where its dispatcher runs. The declaration is not carried, and the shortfall is
+  // reported once per agent it costs, beside the skill-preload shortfall above.
+  if (!opts.adapter.startsInWorktree) {
+    for (const { name, agent } of composed) {
+      if (agent.isolation === undefined) continue;
+      warn(
+        `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`,
+      );
+    }
+  }
+
   // A SKILL THE MAIN-SESSION HOOK CANNOT CARRY. Where a harness carries a persona's
   // skills into its main session by a hook that prints each one, the harness caps
   // what one hook may print — and a body over the cap arrives as a preview the

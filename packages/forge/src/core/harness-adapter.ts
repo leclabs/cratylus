@@ -295,6 +295,18 @@ export interface HarnessAdapter {
    */
   readonly preloadsSkills: boolean;
   /**
+   * Whether an agent definition on this harness can START the agent in a git
+   * worktree of its own — claude's subagent `isolation: worktree`. An answer about
+   * the harness, not about any agent.
+   *
+   * REQUIRED, because the answer decides what `Agent.isolation` becomes here. Yes
+   * ⇒ `agentDef` emits the native field for an agent declaring it, and nothing for
+   * one that does not. No ⇒ it emits nothing, and projection warns once per
+   * declaring agent: the agent still runs, in the checkout its dispatcher runs in,
+   * and the rule it was meant to have by construction rests on it alone.
+   */
+  readonly startsInWorktree: boolean;
+  /**
    * How this harness carries a persona's composed skills into a MAIN session, where
    * its native preload (`preloadsSkills`) does not reach — by a hook that prints each
    * skill. Absent for a harness whose main session already has them.
