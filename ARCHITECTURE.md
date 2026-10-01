@@ -82,11 +82,8 @@ admitted body with a boundary. The right reason, not the convenient one.
 
 ### `runtime` — mechanism
 
-The generic platform beneath the two things that need programmatic support:
-
-1. **the tools skills route to** — the implementations behind the semantic surface;
-2. **lifecycle guardrails** — enforcement of stances the agent would otherwise drift out of, the same
-   species as a harness's own goal check.
+The generic platform beneath **the tools skills route to** — the implementations behind the semantic
+surface.
 
 Its capabilities — `eventTap`, `design`, `plan` and `note` — are **built into the runtime** and known
 when it is built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider.
@@ -100,6 +97,10 @@ each capability's configuration reach it in the host config that deploy writes.
 It knows no harness beyond the event tap's Claude strategy, which writes Claude's settings format, and
 the tap refuses a caller whose harness has no strategy of its own; `design`, `plan` and `note` are
 repository-scoped and know no harness at all.
+
+A lifecycle guardrail is not the runtime's. It is a canon hook cell that forge projects as the
+harness's own hook — on omp, as an extension module — so the runtime hosts the capabilities above and
+no guard.
 
 ### `forge` — projection
 
