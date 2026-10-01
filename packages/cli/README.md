@@ -220,8 +220,17 @@ install turns that one value to `true`, changes no other byte, and says so.
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow
 mapping, an alias, a list split across lines in flow style) is reported and left as it is, apart
 from that one value, and the install still succeeds. Where `statusLine` is an alias to a mapping
-written elsewhere, the badge shows nowhere until `showHookStatus` is true or `status` is listed,
-which the report says.
+written elsewhere, install cannot turn the row back on or list `status` there, and the report says
+so. The badge is not lost: when omp starts the session, the badge module reads the host's
+`config.yml` as text, and where `showHookStatus: false` is written and no `status` segment is
+listed, it also sets the badge in a widget beneath the editor, which no status setting hides. You
+see `✈️ mav` there in place of the status row; setting `showHookStatus` to true or listing `status`
+puts it back in the status line, and the widget is no longer set. Where the row is shown or `status`
+is listed, the badge appears once, in the status line, as before.
+
+The badge needs omp 18.3.2 or later to tell a top-level session from a subagent's (`ctx.agent`). On
+an older omp it shows only where omp reports its interactive terminal host, and where it cannot
+tell, omp shows one line saying so, once, instead of the badge.
 
 ## Where Claude Code and omp differ
 
