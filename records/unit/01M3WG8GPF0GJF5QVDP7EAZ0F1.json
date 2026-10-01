@@ -1,0 +1,88 @@
+{
+  "envelope": {
+    "id": "01M3WG8GPF0GJF5QVDP7EAZ0F1",
+    "entity": "01M3WFR3Q0GH4CPK7MCW6G28PZ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WG766H9J3K5NKVZH205R7N"
+    ],
+    "author": "AssayGaps4",
+    "time": "2026-10-01T19:50:01.167Z",
+    "reason": "Assayed against the command line shard: install no longer lists --plugin and refuses it in one line; every cwd cratylus.config.ts that cannot give install a corpus (missing package, parse error, bad shape, empty extends, no plugin carrying a manifest) now ends in one stderr line saying what is wrong and what to do, exit 1, nothing written; a valid config and the no-config bundled path still install; README documents the config as the one way to choose a corpus. The entry-2 gap is closed.",
+    "cause": "install-corpus-path reworked and landed again at 280ae777 by InstallCorpusPath on the entry-2 finding"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "install-corpus-path",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize the command line's no-footguns clause (no flag silently ignored; every error says what went wrong and what to do) for how `cratylus install` chooses its corpus. Two defects at 8d0a7283. (1) `--plugin <pkg>` is accepted and ignored: packages/forge/src/cli/index.ts:307-311 declares it and the action passes it beside corpus: options.defaultCorpus (:365-367); install() in packages/forge/src/cli/commands/install.ts:325-347 takes a cratylus.config.ts in the cwd, else opts.corpus, and only else the named package, so from the cratylus command the flag never acts. Ruled (decision note 'install --plugin is ignored by the cratylus command'): remove --plugin from install and its help; another corpus is installed by naming it in a cratylus.config.ts. Remove the option, the `plugin` field of install's options and the dynamic-import branch it fed (:332-340), and reword the no-corpus refusal (:344-346) and the header comment (:12-16) so neither names --plugin. `cratylus init --plugin` is a different flag and stays. (2) In a directory whose cratylus.config.ts cannot be loaded (the file `cratylus init` writes, before its packages are installed), install ends in an uncaught stack trace (note 'install in a directory with an unresolvable cratylus.config.ts prints a stack trace'): loadConfig (:326) throws MissingPackageError, ConfigLoadError or ConfigShapeError (packages/forge/src/config/loader.ts), each already carrying a one-line message saying what is wrong and what to do, and runInstall (:259-268) rethrows anything that is not a Refusal. Make install end such a run with that one line as `cratylus install: <message>`, exit 1, nothing written. packages/cli/README.md: drop the install --plugin row (:389) and the sentences about it (:37-39), and say what install does where the cwd's config cannot be loaded. Add a patch changeset for @cratylus/forge and cratylus.",
+      "static": [
+        "packages/forge/src/config/loader.ts",
+        "packages/forge/src/cli/commands/init.ts",
+        "packages/cli/src/cratylus.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/cli/README.md",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/cli/test/command-tree.test.ts",
+        ".changeset/install-corpus-path.md"
+      ],
+      "accept": [
+        "with packages/cli and the packages it depends on built, `node packages/cli/dist/cratylus.js install --help` lists no `--plugin`, and `node packages/cli/dist/cratylus.js install --harness claude --plugin x --all --dry-run` (HOME a temp dir holding .claude) exits 1 with one stderr line naming --plugin as an option install does not take (at 8d0a7283 the flag is accepted)",
+        "in a temp directory holding only the cratylus.config.ts that `cratylus init` writes (no node_modules), with HOME a temp dir holding .claude, `node <repo>/packages/cli/dist/cratylus.js install --harness claude --all --dry-run` exits 1, prints nothing on stdout and exactly one stderr line, which starts `cratylus install: ` and names the package to install; no stderr line starts with spaces and `at ` (at 8d0a7283 it ends in a stack trace)",
+        "`git grep -n -e '--plugin' -- packages/forge/src/cli/commands/install.ts` prints nothing, and every line `git grep -n -e '--plugin' -- packages/cli/README.md` prints lies in the `cratylus init` entry",
+        "in packages/cli, `pnpm exec vitest run test/command-tree.test.ts` exits 0; in packages/forge, `pnpm exec vitest run test/cli/install.test.ts` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "8a3227d9d8351a51c85fa0dd4e6eb092dc7896d6",
+        "author": "InstallCorpusPath",
+        "time": "2026-10-01T19:45:16.019Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "8a3227d9d8351a51c85fa0dd4e6eb092dc7896d6",
+        "verdict": "not-achieved",
+        "missing": [
+          "command line, clause 'every error says what went wrong and what to do', on install's corpus path: a cratylus.config.ts that loads but names no usable corpus (extends: [], or a plugin carrying no manifest) still ends cratylus install in a raw Node stack trace, exit 1, where cratylus compose refuses the same file in one line (the loader's requirePlugins / EmptyExtendsError refusal already exists); locus packages/forge/src/cli/commands/install.ts, the WHICH CORPUS config branch and the render it feeds"
+        ],
+        "author": "AssayGaps4",
+        "time": "2026-10-01T19:47:42.525Z"
+      },
+      {
+        "kind": "land",
+        "commit": "280ae777d7ff2de7f4ad29d694eef0b0ecc7a713",
+        "author": "InstallCorpusPath",
+        "time": "2026-10-01T19:49:17.649Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "280ae777d7ff2de7f4ad29d694eef0b0ecc7a713",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps4",
+        "time": "2026-10-01T19:50:01.167Z"
+      }
+    ]
+  }
+}
