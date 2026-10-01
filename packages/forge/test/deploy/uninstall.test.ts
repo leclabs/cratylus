@@ -333,6 +333,59 @@ describe('uninstall', () => {
     });
   });
 
+  describe('the runtime config is the home it is given', () => {
+    const stanza = { native: { 'tool.use.pre': 'PreToolUse' } };
+    /** A host runtime config holding a stanza for each of claude and omp. */
+    const config = `${JSON.stringify(
+      {
+        events: { vocabulary: ['tool.use.pre'] },
+        harnesses: { claude: stanza, omp: stanza },
+      },
+      null,
+      2,
+    )}\n`;
+    const withoutClaude = `${JSON.stringify(
+      {
+        events: { vocabulary: ['tool.use.pre'] },
+        harnesses: { omp: stanza },
+      },
+      null,
+      2,
+    )}\n`;
+
+    it('takes the stanza from the home it is given and leaves the process home’s file byte-identical', async () => {
+      const processHome = join(tmpRoot(), 'process-home');
+      mkdirSync(processHome, { recursive: true });
+      vi.stubEnv('HOME', processHome);
+      vi.stubEnv('AGENT_RUNTIME_CONFIG', undefined);
+      writeFileSync(join(processHome, '.cratylus.json'), config);
+      expect(await install('claude')).toBe(0);
+      writeFileSync(join(home, '.cratylus.json'), config);
+
+      expect(uninstall('claude')).toBe(0);
+
+      expect(readFileSync(join(processHome, '.cratylus.json'), 'utf8')).toBe(
+        config,
+      );
+      expect(readFileSync(join(home, '.cratylus.json'), 'utf8')).toBe(
+        withoutClaude,
+      );
+    });
+
+    it('takes it from $AGENT_RUNTIME_CONFIG wherever that is set, whatever the home', async () => {
+      const set = join(tmpRoot(), 'elsewhere.json');
+      vi.stubEnv('AGENT_RUNTIME_CONFIG', set);
+      expect(await install('claude')).toBe(0);
+      writeFileSync(set, config);
+      writeFileSync(join(home, '.cratylus.json'), config);
+
+      expect(uninstall('claude')).toBe(0);
+
+      expect(readFileSync(set, 'utf8')).toBe(withoutClaude);
+      expect(readFileSync(join(home, '.cratylus.json'), 'utf8')).toBe(config);
+    });
+  });
+
   describe('what a record cannot vouch for is left', () => {
     /** A claude root with one placed file, recorded by hand. */
     function seed(

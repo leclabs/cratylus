@@ -23,8 +23,9 @@
 // WHY IT LANDS OUTSIDE THE HARNESS HOME. Every other deploy target is a file inside
 // `.claude/` or `.omp/`. This one is not a harness artifact at all: it configures
 // the runtime, which is harness-independent and installed globally, so it lands
-// where the runtime looks (`$AGENT_RUNTIME_CONFIG`, else `~/.<bin>.json`). The
-// placers own the harness home; this owns exactly one file beside it.
+// where the runtime looks (`$AGENT_RUNTIME_CONFIG`, else `<home>/.<bin>.json` of the
+// home the run was given, the process's when it was given none). The placers own the
+// harness home; this owns exactly one file beside it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -35,11 +36,15 @@ import type { JsonValue, Skill } from '@cratylus/schema';
 import type { EventName, NativeBinding } from '@cratylus/schema/hook';
 
 /**
- * Where the emitted config lands: `$AGENT_RUNTIME_CONFIG` ▸ `~/.<runtime-bin>.json`.
+ * Where the emitted config lands: `$AGENT_RUNTIME_CONFIG` ▸ `<home>/.<runtime-bin>.json`,
+ * where `<home>` is the home the run was given (the user's, which the harness
+ * directory hangs from) and, for a run given none, the process's.
  *
  * The resolution the RUNTIME performs, performed here — the two ends of one channel
  * must agree on the file or the write is to nowhere. The env var is honoured because
- * that is what makes the round trip testable without writing into a real home.
+ * that is what makes the round trip testable without writing into a real home. The
+ * home follows the run: a deploy or uninstall given another home reads and writes
+ * that home's file and leaves the process's untouched.
  */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
 
@@ -49,11 +54,12 @@ export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 /** Resolve the emission target the same way the runtime resolves its read. */
 export function runtimeConfigTarget(
   env: NodeJS.ProcessEnv = process.env,
+  home: string = homedir(),
 ): string {
   const override = env[RUNTIME_CONFIG_ENV];
   return override && override !== ''
     ? override
-    : join(homedir(), RUNTIME_CONFIG_NAME);
+    : join(home, RUNTIME_CONFIG_NAME);
 }
 
 /**
@@ -236,9 +242,12 @@ export function emitRuntimeConfig(
     readonly path?: string;
     readonly dry?: boolean;
     readonly env?: NodeJS.ProcessEnv;
+    /** The home the run was given, whose `<home>/.<bin>.json` is the target when
+     *  neither `path` nor `$AGENT_RUNTIME_CONFIG` names one. Absent ⇒ the process's. */
+    readonly home?: string;
   },
 ): EmitRuntimeConfigResult {
-  const path = opts.path ?? runtimeConfigTarget(opts.env);
+  const path = opts.path ?? runtimeConfigTarget(opts.env, opts.home);
   const doc = runtimeConfigDocument({
     ...opts,
     harnesses: opts.harnesses ?? priorHarnesses(path),

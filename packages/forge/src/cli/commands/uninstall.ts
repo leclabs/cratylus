@@ -426,14 +426,16 @@ function removePlacedFiles(
   applyPrune(harnessDir, removable, opts.dryRun ?? false, [neutral]);
 }
 
-/** This harness's stanza of the runtime config. The file is emitted whole by deploy,
+/** This harness's stanza of the runtime config in `home`'s file (or, where
+ *  `$AGENT_RUNTIME_CONFIG` is set, that path). The file is emitted whole by deploy,
  *  one stanza per harness, so it goes with the last stanza and not before. */
 function removeRuntimeStanza(
   adapter: HarnessAdapter,
+  home: string,
   dry: boolean,
   tally: Tally,
 ): void {
-  const file = runtimeConfigTarget();
+  const file = runtimeConfigTarget(process.env, home);
   if (!existsSync(file)) return;
   let doc: Record<string, unknown>;
   try {
@@ -566,7 +568,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
     if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
     undoHostEdits(harnessDir, manifest, dry, tally);
     removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
-    removeRuntimeStanza(adapter, dry, tally);
+    removeRuntimeStanza(adapter, opts.home, dry, tally);
     tally.removed.push({ what: `${manifestFile} (the deploy record)` });
     if (!dry) dropFile(harnessDir, manifestFile);
   } catch (e) {
