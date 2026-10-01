@@ -1,0 +1,40 @@
+{
+  "envelope": {
+    "id": "01M3WFSCD1G4WY0C52FPP1D2Z8",
+    "entity": "01M3WFR4VK4HKNJBCAXP441404",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WFR4VK4HKNJBCAXP441405"
+    ],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T19:41:45.249Z",
+    "reason": "ready: no dependency, no owed ruling; name handed out",
+    "cause": "plan notebook-gaps bound"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "signify-outside-core",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize prime principle in the signify skill: the cold-decode oracle decides signs only for the corpus's core agent dimension names and values, and every other term is the industry's own, used as the industry understands it. packages/canon/src/skills/signify/skill.ts states dom(α) that way (:38), but its exclusion law (:55-58), opened by `c ∉ dom(α) ⇒ c ∉ Anchors :`, lists only two reasons a concept falls outside, no circumscribing name with no mint, and two concepts colliding on one name, and not the reason that now covers most concepts: c is no core agent dimension name or value, so it is the industry's own term and gets no anchor (note \"signify's exclusion law omits outside the core\"). Add that reason to the law, first among its cases, in the cell's own notation, and change no other line. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/dimensions/engineering-principles/cratylism.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/signify/skill.ts",
+        ".changeset/signify-outside-core.md"
+      ],
+      "accept": [
+        "`git diff <the commit the unit's work starts from> -- packages/canon/src/skills/signify/skill.ts` removes no line and adds lines only directly under `c ∉ dom(α) ⇒ c ∉ Anchors :`, and the first case under that line now names a concept that is no core agent dimension name or value as the industry's own term; at 8d0a7283 the block holds no such case",
+        "in packages/canon, `pnpm exec vitest run test/reader-density.test.ts test/cratylism.test.ts` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3Q4H5EY0JRSHR12V308QAS8",
+      "version": "01M3RWCXDY5EENS7G4MQQD9663",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

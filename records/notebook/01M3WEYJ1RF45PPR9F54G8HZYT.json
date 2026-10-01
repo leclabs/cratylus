@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WEYJ1RF45PPR9F54G8HZYT",
+    "entity": "01M3WEYJ1RF45PPR9F54G8HZYS",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T19:27:06.296Z",
+    "reason": "operator: clean up mav's cell, preserving its residue beyond the architect role",
+    "cause": "operator approved the next plan"
+  },
+  "payload": {
+    "title": "mav's cell restates its role",
+    "kind": "decision",
+    "topic": "persona",
+    "body": "Operator ruling: mav's cell declares fields whose values the architect role already provides. Under persona, a persona carries its role and adds only its residue, so mav's cell keeps exactly what goes beyond the architect role (its archetype and whatever else is mav's own) and drops every field that duplicates the role's value.",
+    "blocks": []
+  }
+}

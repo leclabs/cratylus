@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WG20C0SMMYN49VACX8YW1T",
+    "entity": "01M3W07CM4NPZ2VNYQSBWCS5KY",
+    "operation": "retract",
+    "supersedes": [
+      "01M3W07CM4NPZ2VNYQSBWCS5KZ"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T19:46:27.840Z",
+    "reason": "answered: closed-pipe-convicts at 4c24abc4 makes every closed-pipe case convict; the lost edit was redone by InstallCorpusPath in its worktree (landed 8a3227d9), and the cause is recorded in 'implementers edit the main checkout'",
+    "cause": "assay of closed-pipe-convicts"
+  },
+  "payload": null
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WFWN2AY4P7NYVFGDEWJF31",
+    "entity": "01M3WFWN29PZB86HQ89ZN05SC4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "closed-pipe-convicts",
+    "time": "2026-10-01T19:43:32.426Z",
+    "reason": "record what could not be undone",
+    "cause": "accidental commit on main"
+  },
+  "payload": {
+    "title": "main-tree edit lost to a reset",
+    "kind": "question",
+    "topic": "notebook-gaps",
+    "body": "While undoing its own commit on main, closed-pipe-convicts ran git reset --hard in the main tree and discarded an uncommitted edit to packages/forge/src/cli/commands/install.ts (not its own; probably InstallCorpusPath's, made in main instead of its worktree). The owner has been messaged to redo it in the unit worktree. The first landing 665e4cd1 on the ledger is a main-line commit that no longer exists on main; the second landing 4c24abc4 is the real one.",
+    "blocks": []
+  }
+}

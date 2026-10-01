@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3WFR4JM0JD5PZYVYBSB5FMZ",
+    "entity": "01M3WFR4JM0JD5PZYVYBSB5FMY",
+    "operation": "create",
+    "supersedes": [],
+    "author": "CleanupPlanner",
+    "time": "2026-10-01T19:41:04.468Z",
+    "reason": "unit realizing architect role: the gap the notebook names, specified for one implementer",
+    "cause": "operator approved the next plan: persona, command line and the open notebook's realization gaps"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "closed-plan-route",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize architect role in its contract: what reaches the architect from below includes the planner's report that a plan has closed, and it routes a closed plan to the integrator, which makes its line whole and asks for release. The contract is the `architect` role value in packages/canon/src/dimensions/role/architect.ts:17-25, the text the architect acts from and the purview guard reads as the law; it names neither (note 'the architect's role contract names no closed-plan route'): reads⟨intent · C · note · verdict · broke-the-whole · ready-names⟩ has no closed-plan report, and route(name ↾ unit-of-loop) routes ¬achieved ∨ broke-the-whole, achieved and ready, and no closed plan. State both in the value's own notation: the planner's closed-plan report among the reads (defined beside ready-names), and a closed plan ↦ integrator ⟨line made whole · release asked of the operator⟩ among the routes. Change nothing else in the value and no other file's source: the purview rubric (packages/canon/src/hooks/purview-guardrail.ts:223) already passes the route, and the deliver skill (packages/canon/src/skills/deliver/skill.ts:119-121) already states it. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/skills/deliver/skill.ts",
+        "packages/canon/src/roles/architect.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        ".changeset/closed-plan-route.md"
+      ],
+      "accept": [
+        "the reads⟨…⟩ on the first line of the `architect` value names the planner's closed-plan report, and its route(…) clause routes a closed plan to the integrator; at 8d0a7283 neither holds (the value's only 'clos' is amend's 'plan-closes')",
+        "`git diff <the commit the unit's work starts from> --stat` lists no source file but packages/canon/src/dimensions/role/architect.ts",
+        "in packages/canon, `pnpm exec vitest run test/purview-guardrail.test.ts test/persona.test.ts` exits 0 and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3RFJ0M8RK6K703A30SP8QMC",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}
