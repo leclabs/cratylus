@@ -345,16 +345,26 @@ Both honour `--dry-run`.
 ### How install places a corpus
 
 `cli/commands/install.ts` is the guided run over the deploy layer. Four decisions are the operator's — the
-harness, the corpus's optional personas (`Agent.optional`, offered by `ProjectedTree.optionalAgents`;
-every other agent is always installed), whether to link the persona commands, and the model each held
-role routes to — and each has a flag (`--harness`, `--personas <name,…|none>`, `--link-persona-commands`
-/ `--no-link-persona-commands`, `--model-roles <role=model,…|default>`), which is never asked. The
-questions sit behind `InstallPrompts` (`cli/commands/install-prompts.ts`; `@clack/prompts` on a
-terminal), so `runInstall` takes `prompts` and `interactive` and a test answers them. `--yes`, or no
-terminal on stdin and stdout, asks nothing: each decision not given takes its default (the personas
-already installed, no links, cratylus's routing; an ambiguous harness is refused). An omitted persona is
-`omitAgents` to the projection, and one installed before and now omitted is pruned by the deploy, its
-command unlinked by `removePersonaCommands({ only })`.
+harness, the corpus's practices (declared on the plugin as `practices`, reported by the projection as
+`ProjectedTree.practices`; `projectPluginSet({ practices })` renders only the ones chosen, with the
+plumbing), whether to link the persona commands, and the model each held role routes to — and each has a
+flag (`--harness`, `--practices <name,…>` or `--all`, `--link-persona-commands` / `--no-link-persona-commands`,
+`--model-roles <role=model,…|default>`), which is never asked. The questions sit behind
+`InstallPrompts` (`cli/commands/install-prompts.ts`; `@clack/prompts` on a terminal), so `runInstall`
+takes `prompts` and `interactive` and a test answers them. The practices are the one decision no run
+takes for the operator. With neither flag a terminal is asked one multiselect of the declared practices
+(never the plumbing), the practices already installed here preselected, else on a fresh host the
+corpus's preselected ones; `--yes` on a terminal takes that preselection. With no terminal on stdin and
+stdout install refuses before writing anything, under `--yes` and over an existing install alike, naming
+`--practices` and `--all`. `--practices` and `--all` together are refused, as is a name the corpus
+declares no practice of, and so is an empty choice (`--practices ''`, or none ticked): no practice is
+not every practice, and projection itself refuses `practices: []` where absent renders every cell. A
+corpus that declares no practices has nothing to decide and places all it has. The other decisions, with
+no terminal or under `--yes`, take their default (no links, cratylus's routing; an ambiguous harness is
+refused). The practices chosen are recorded in `DeployManifest.practices` for the next run to
+preselect; one installed before and not chosen now is pruned by the deploy with whatever no chosen
+practice still carries, and the commands of the agents it drops are unlinked by
+`removePersonaCommands({ only })`.
 
 A role's model is placed where the harness keeps it. On omp it is a `modelRoles` entry, written by
 `addModelRoles` as the nearest built-in alias is and recorded through `noteHostEdit` for uninstall;
@@ -370,7 +380,7 @@ install asks for a seed's role again and moves the line to the answer (`addModel
 the record moved with it by `retargetHostEdit`), so an uninstall still takes out exactly what install
 put there; an entry the host edited or added, or the operator chose, is left as it is.
 
-Before anything is written the run shows a preview — the harness and its home, the personas, the
+Before anything is written the run shows a preview — the harness and its home, the practices, the
 counts, each host file edited and what changes in it, the models chosen, the commands to link — and, on
 a terminal where a decision was left open, asks once to go ahead; declining writes nothing. The
 preview is the placement run with `dry` set, so it cannot differ from what is then placed. `--dry-run`

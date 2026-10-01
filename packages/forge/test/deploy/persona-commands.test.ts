@@ -38,7 +38,7 @@ import {
 } from '../../src/deploy/persona-commands.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import { answers } from './helpers.js';
+import { FIXTURE_PRACTICE, answers, fixturePractices } from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -338,7 +338,12 @@ function corpus(): ProjectablePlugin {
       'utf8',
     );
   }
-  return { name: 'persona-fixture', manifest: FIXTURE_MANIFEST, agents };
+  return {
+    name: 'persona-fixture',
+    manifest: FIXTURE_MANIFEST,
+    agents,
+    practices: fixturePractices(['alpha', 'beta']),
+  };
 }
 
 describe('install — persona commands', () => {
@@ -357,6 +362,7 @@ describe('install — persona commands', () => {
       cwd,
       corpus: plugin as never,
       pathEnv: '/usr/bin',
+      practices: FIXTURE_PRACTICE,
       verbose: true,
       ...extra,
     });

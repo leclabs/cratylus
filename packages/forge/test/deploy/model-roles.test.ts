@@ -26,6 +26,7 @@ import {
 } from '../../src/deploy/model-roles.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -331,7 +332,12 @@ function corpus(): ProjectablePlugin {
       'utf8',
     );
   }
-  return { name: 'roles-fixture', manifest: FIXTURE_MANIFEST, agents };
+  return {
+    name: 'roles-fixture',
+    manifest: FIXTURE_MANIFEST,
+    agents,
+    practices: fixturePractices(Object.keys(held)),
+  };
 }
 
 describe('install — the host modelRoles', () => {
@@ -347,6 +353,7 @@ describe('install — the host modelRoles', () => {
       home,
       cwd,
       corpus: plugin as never,
+      practices: FIXTURE_PRACTICE,
       dryRun,
       verbose: true,
     });

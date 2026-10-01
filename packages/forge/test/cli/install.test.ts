@@ -2,8 +2,8 @@
 // places — driven through `runInstall` with the prompts injected, over a corpus written
 // to a tmp dir at run time and a tmp HOME, so no real host is ever read or written.
 //
-// The operator's decisions are four (harness, optional personas, launch commands, the
-// model each role routes to); each case is a claim about one of them, or about the one
+// The operator's decisions are four (harness, practices, launch commands, the model
+// each role routes to); each case is a claim about one of them, or about the one
 // confirmation before the first byte is written.
 
 import {
@@ -55,21 +55,39 @@ function snapshot(dir: string, at = ''): Record<string, string> {
   return out;
 }
 
-/** Roles held by planner, assayer and implementer; nico and kino are optional. */
+/** Roles held by planner, assayer and implementer, the practice `build`; nico is the
+ *  practice `authoring` and kino `films`. `tap` is plumbing: installed with any of
+ *  them and offered as none. */
 function corpus(): ProjectablePlugin {
-  const agents = join(tmpRoot(), 'agents');
+  const root = tmpRoot();
+  const agents = join(root, 'agents');
+  const skills = join(root, 'skills');
   mkdirSync(agents, { recursive: true });
+  mkdirSync(join(skills, 'tap'), { recursive: true });
+  writeFileSync(
+    join(skills, 'tap', 'skill.ts'),
+    [
+      'export const tap = {',
+      "  name: 'tap',",
+      "  description: 'fixture plumbing',",
+      "  formalBlock: 'tap ≜ ⟨fixture⟩',",
+      '  composition: () => [],',
+      '};',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
   const nulls = Object.keys(FIXTURE_MANIFEST)
     .map((k) => `  ${kebabToCamel(k)}: null,`)
     .join('\n');
-  const spec: Record<string, { holds?: string; optional?: true }> = {
+  const spec: Record<string, { holds?: string }> = {
     planner: { holds: 'planner' },
     assayer: { holds: 'assayer' },
     implementer: { holds: 'implementer' },
-    nico: { optional: true },
-    kino: { optional: true },
+    nico: {},
+    kino: {},
   };
-  for (const [name, { holds, optional }] of Object.entries(spec)) {
+  for (const [name, { holds }] of Object.entries(spec)) {
     writeFileSync(
       join(agents, `${name}.ts`),
       [
@@ -78,7 +96,6 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds ? [`  holds: '${holds}',`] : []),
-        ...(optional ? ['  optional: true,'] : []),
         nulls,
         '};',
         '',
@@ -86,7 +103,27 @@ function corpus(): ProjectablePlugin {
       'utf8',
     );
   }
-  return { name: 'install-fixture', manifest: FIXTURE_MANIFEST, agents };
+  return {
+    name: 'install-fixture',
+    manifest: FIXTURE_MANIFEST,
+    agents,
+    skills,
+    practices: [
+      {
+        name: 'build',
+        description: 'plans, builds and judges',
+        agents: ['planner', 'assayer', 'implementer'],
+        preselected: true,
+      },
+      {
+        name: 'authoring',
+        description: 'writes the corpus',
+        agents: ['nico'],
+      },
+      { name: 'films', description: 'makes films', agents: ['kino'] },
+    ],
+    plumbing: { skills: ['tap'] },
+  };
 }
 
 describe('the guided install', () => {
@@ -105,12 +142,15 @@ describe('the guided install', () => {
     /^model: (.*)$/m.exec(readFileSync(path, 'utf8'))?.[1];
   const files = (dir: string) => Object.keys(snapshot(dir));
 
+  /** A run naming its practices (`build`) unless a case says otherwise, since a run
+   *  that is not told them and has no terminal to ask is refused. */
   const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     runInstall({
       home,
       cwd,
       corpus: plugin as never,
       pathEnv: '/usr/bin',
+      practices: 'build',
       ...extra,
     });
   /** A terminal run: every question goes to `prompts`, and one that a case does not
@@ -121,8 +161,8 @@ describe('the guided install', () => {
       harness: async () => {
         throw new Error('asked which harness');
       },
-      personas: async () => {
-        throw new Error('asked which personas');
+      practices: async () => {
+        throw new Error('asked which practices');
       },
       linkCommands: async () => {
         throw new Error('asked whether to link');
@@ -171,7 +211,7 @@ describe('the guided install', () => {
       await install({
         ...asked({}),
         harness: 'omp',
-        personas: 'nico',
+        practices: 'build,authoring',
         linkPersonaCommands: false,
         modelRoles: 'planner=@slow',
       }),
@@ -186,11 +226,11 @@ describe('the guided install', () => {
     expect(
       await install({
         ...asked({
-          personas: async (offered, initial) => {
+          practices: async (offered, initial) => {
             questions.push(
-              `personas ${offered.join('+')} from ${initial.join('+')}`,
+              `practices ${offered.map((p) => p.name).join('+')} from ${initial.join('+')}`,
             );
-            return ['kino'];
+            return ['build', 'films'];
           },
           routes: async (roles) => {
             questions.push(`routes ${roles.map((r) => r.role).join('+')}`);
@@ -198,16 +238,45 @@ describe('the guided install', () => {
           },
           confirm: async () => true,
         }),
+        practices: undefined,
         harness: 'omp',
         linkPersonaCommands: false,
       }),
     ).toBe(0);
     expect(questions).toEqual([
-      'personas kino+nico from ',
+      'practices build+authoring+films from build',
       'routes assayer+implementer+planner',
     ]);
     expect(snapshot(omp())).toHaveProperty(['agent/agents/kino.md']);
     expect(snapshot(omp())).not.toHaveProperty(['agent/agents/nico.md']);
+  });
+
+  it('offers the declared practices each with its description, and never the plumbing they are all installed with', async () => {
+    let offered: readonly { name: string; description: string }[] = [];
+    expect(
+      await install({
+        ...asked({
+          practices: async (o) => {
+            offered = o;
+            return ['films'];
+          },
+          confirm: async () => true,
+        }),
+        practices: undefined,
+        harness: 'omp',
+        modelRoles: 'default',
+        linkPersonaCommands: false,
+      }),
+    ).toBe(0);
+    expect(
+      offered.map(({ name, description }) => ({ name, description })),
+    ).toEqual([
+      { name: 'build', description: 'plans, builds and judges' },
+      { name: 'authoring', description: 'writes the corpus' },
+      { name: 'films', description: 'makes films' },
+    ]);
+    // The plumbing was placed all the same.
+    expect(files(join(home, '.agents'))).toContain('skills/tap/SKILL.md');
   });
 
   it('writes nothing before the confirmation, shows what it would place, and writes nothing on a decline', async () => {
@@ -216,15 +285,16 @@ describe('the guided install', () => {
     expect(
       await install({
         ...asked({
-          personas: async () => ['nico'],
+          practices: async () => ['build', 'authoring'],
           linkCommands: async () => true,
           confirm: async () => {
             seenBefore = files(home);
             expect(out).toContain('cratylus would install');
-            expect(out).toContain('optional personas: nico');
+            expect(out).toContain('practices: build, authoring');
             return false;
           },
         }),
+        practices: undefined,
         harness: 'omp',
         modelRoles: 'default',
       }),
@@ -237,7 +307,11 @@ describe('the guided install', () => {
   it('places on a yes and then summarises what it did and what to do next', async () => {
     expect(
       await install({
-        ...asked({ personas: async () => ['nico'], confirm: async () => true }),
+        ...asked({
+          practices: async () => ['build', 'authoring'],
+          confirm: async () => true,
+        }),
+        practices: undefined,
         harness: 'omp',
         modelRoles: 'default',
         linkPersonaCommands: false,
@@ -247,22 +321,69 @@ describe('the guided install', () => {
     expect(out).toContain('cratylus is installed');
     expect(out).toContain('cratylus uninstall --harness omp');
     // The summary is a few lines; the deploy log is verbose's.
-    expect(out.split('\n').length).toBeLessThan(16);
+    expect(out.split('\n').length).toBeLessThan(20);
   });
 
-  it('asks nothing and places without a confirmation where there is no terminal', async () => {
+  it('asks nothing and places without a confirmation where there is no terminal, the practices named', async () => {
     expect(
       await install({
         harness: 'omp',
+        practices: 'build',
         interactive: false,
         prompts: asked({}).prompts,
       }),
     ).toBe(0);
     expect(files(omp())).toContain('agent/agents/planner.md');
-    // A fresh host has no optional persona to keep.
     expect(files(omp())).not.toContain('agent/agents/nico.md');
     expect(files(omp())).not.toContain('agent/agents/kino.md');
     expect(files(home)).not.toContain('.local/bin/planner');
+  });
+
+  it('installs every practice, without a terminal, when told --all', async () => {
+    expect(
+      await install({
+        harness: 'omp',
+        practices: undefined,
+        all: true,
+        interactive: false,
+        prompts: asked({}).prompts,
+      }),
+    ).toBe(0);
+    for (const name of ['planner', 'nico', 'kino']) {
+      expect(files(omp())).toContain(`agent/agents/${name}.md`);
+    }
+  });
+
+  it('with no terminal and neither --practices nor --all refuses on one line before writing, under --yes and over an existing install', async () => {
+    const check = async (extra: Partial<Parameters<typeof install>[0]>) => {
+      const before = snapshot(home);
+      err = '';
+      out = '';
+      expect(
+        await install({
+          harness: 'omp',
+          practices: undefined,
+          interactive: false,
+          prompts: asked({}).prompts,
+          ...extra,
+        }),
+      ).toBe(1);
+      expect(out).toBe('');
+      expect(err.trim().split('\n')).toHaveLength(1);
+      expect(err).toMatch(/^cratylus install: /);
+      expect(err).toContain('--practices <build,authoring,films>');
+      expect(err).toContain('--all');
+      expect(snapshot(home)).toEqual(before);
+    };
+    await check({});
+    await check({ yes: true });
+    await check({ dryRun: true });
+
+    expect(
+      await install({ harness: 'omp', practices: 'build,authoring' }),
+    ).toBe(0);
+    await check({});
+    await check({ yes: true });
   });
 
   it('--yes takes every default and asks nothing even on a terminal', async () => {
@@ -291,7 +412,6 @@ describe('the guided install', () => {
             offered = found;
             return 'claude';
           },
-          personas: async () => [],
           routes: async () => ({}),
           linkCommands: async () => false,
           confirm: async () => false,
@@ -313,7 +433,6 @@ describe('the guided install', () => {
             roles = questions.map((q) => q.role);
             return {};
           },
-          personas: async () => [],
           linkCommands: async () => false,
           confirm: async () => true,
         }),
@@ -359,7 +478,6 @@ describe('the guided install', () => {
     expect(
       await install({
         ...asked({
-          personas: async () => [],
           routes: async (questions) => {
             roles = questions.map((q) => q.role);
             return { assayer: '@slow' };
@@ -441,38 +559,113 @@ describe('the guided install', () => {
     expect(files(omp())).toEqual([]);
   });
 
-  it('preselects the personas installed before, and drops one the operator unticks', async () => {
-    expect(await install({ harness: 'omp', personas: 'nico', yes: true })).toBe(
-      0,
-    );
+  it('preselects the practices installed before, and drops one the operator unticks', async () => {
+    expect(
+      await install({
+        harness: 'omp',
+        practices: 'build,authoring',
+        yes: true,
+      }),
+    ).toBe(0);
     expect(files(omp())).toContain('agent/agents/nico.md');
 
     let preselected: readonly string[] = [];
     expect(
       await install({
         ...asked({
-          personas: async (_offered, initial) => {
+          practices: async (_offered, initial) => {
             preselected = initial;
-            return [];
+            return ['build'];
           },
           routes: async () => ({}),
           linkCommands: async () => false,
           confirm: async () => true,
         }),
+        practices: undefined,
         harness: 'omp',
       }),
     ).toBe(0);
-    expect(preselected).toEqual(['nico']);
+    expect(preselected).toEqual(['build', 'authoring']);
     expect(files(omp())).not.toContain('agent/agents/nico.md');
-    expect(out).toContain('removed nico');
+    expect(out).toContain('removed authoring');
   });
 
-  it('keeps a persona installed before when nothing is asked', async () => {
-    expect(await install({ harness: 'omp', personas: 'nico', yes: true })).toBe(
-      0,
-    );
-    expect(await install({ harness: 'omp', yes: true })).toBe(0);
+  it('takes the launch commands of a practice it drops out with it, the last agent’s included', async () => {
+    const withQuiet = {
+      corpus: {
+        ...plugin,
+        practices: [
+          ...(plugin.practices ?? []),
+          { name: 'quiet', description: 'no agent at all', agents: [] },
+        ],
+      } as never,
+    };
+    expect(
+      await install({
+        ...withQuiet,
+        harness: 'omp',
+        practices: 'build,authoring',
+        linkPersonaCommands: true,
+      }),
+    ).toBe(0);
+    expect(files(home)).toContain('.local/bin/nico');
+    expect(files(home)).toContain('.local/bin/planner');
+
+    out = '';
+    expect(
+      await install({
+        ...withQuiet,
+        harness: 'omp',
+        practices: 'build',
+        linkPersonaCommands: false,
+      }),
+    ).toBe(0);
+    expect(files(home)).not.toContain('.local/bin/nico');
+    expect(files(home)).toContain('.local/bin/planner');
+    expect(out).toContain('unlinked the command of nico');
+
+    expect(
+      await install({
+        ...withQuiet,
+        harness: 'omp',
+        practices: 'quiet',
+        linkPersonaCommands: false,
+      }),
+    ).toBe(0);
+    expect(files(home)).not.toContain('.local/bin/planner');
+    expect(files(omp())).not.toContain('agent/agents/planner.md');
+  });
+
+  it('--yes on a terminal takes the practices installed before, and on a fresh host the preselected ones', async () => {
+    expect(
+      await install({
+        ...asked({}),
+        practices: undefined,
+        yes: true,
+        harness: 'omp',
+      }),
+    ).toBe(0);
+    expect(files(omp())).toContain('agent/agents/planner.md');
+    expect(files(omp())).not.toContain('agent/agents/nico.md');
+
+    expect(
+      await install({
+        harness: 'omp',
+        practices: 'build,authoring',
+        yes: true,
+      }),
+    ).toBe(0);
     expect(files(omp())).toContain('agent/agents/nico.md');
+    expect(
+      await install({
+        ...asked({}),
+        practices: undefined,
+        yes: true,
+        harness: 'omp',
+      }),
+    ).toBe(0);
+    expect(files(omp())).toContain('agent/agents/nico.md');
+    expect(files(omp())).toContain('agent/agents/planner.md');
   });
 
   it('writes a role the operator chose to omp as the host would, and uninstall takes it out again', async () => {
@@ -494,13 +687,13 @@ describe('the guided install', () => {
     expect(snapshot(home)).toEqual(before);
   });
 
-  it('places the chosen models on claude as the host’s from then on, drops a persona on re-install, and uninstall restores the host', async () => {
+  it('places the chosen models on claude as the host’s from then on, drops a practice on re-install, and uninstall restores the host', async () => {
     writeFileSync(join(claude(), 'settings.json'), '{"theme":"dark"}\n');
     const before = snapshot(home);
     expect(
       await install({
         harness: 'claude',
-        personas: 'nico',
+        practices: 'build,authoring',
         linkPersonaCommands: false,
         modelRoles: 'planner=sonnet,assayer=opus',
       }),
@@ -517,7 +710,7 @@ describe('the guided install', () => {
     );
 
     expect(
-      await install({ harness: 'claude', personas: 'none', yes: true }),
+      await install({ harness: 'claude', practices: 'build', yes: true }),
     ).toBe(0);
     expect(files(claude())).not.toContain('agents/nico.md');
     expect(modelLine(claudeAgent('planner'))).toBe('sonnet');
@@ -544,7 +737,6 @@ describe('the guided install', () => {
             roles = questions.map((q) => q.role);
             return { assayer: 'haiku' };
           },
-          personas: async () => [],
           linkCommands: async () => false,
           confirm: async () => true,
         }),
@@ -559,10 +751,10 @@ describe('the guided install', () => {
 
   it('refuses what it cannot honour before writing a byte', async () => {
     const before = snapshot(home);
-    expect(await install({ harness: 'omp', personas: 'mav', yes: true })).toBe(
+    expect(await install({ harness: 'omp', practices: 'mav', yes: true })).toBe(
       1,
     );
-    expect(err).toContain("--personas: 'mav'");
+    expect(err).toContain("--practices: 'mav'");
     expect(
       await install({ harness: 'omp', modelRoles: 'ghost=@slow', yes: true }),
     ).toBe(1);
@@ -573,11 +765,57 @@ describe('the guided install', () => {
     expect(snapshot(home)).toEqual(before);
   });
 
+  it('refuses a name that is no declared practice on one line naming the declared ones, and writes nothing', async () => {
+    const before = snapshot(home);
+    expect(
+      await install({ harness: 'omp', practices: 'build,bogus', yes: true }),
+    ).toBe(1);
+    expect(err.trim().split('\n')).toEqual([
+      "cratylus install: --practices: 'bogus' is no practice of this corpus (declared: build, authoring, films); name only declared practices",
+    ]);
+    expect(snapshot(home)).toEqual(before);
+  });
+
+  it('refuses --practices and --all together, and writes nothing', async () => {
+    const before = snapshot(home);
+    expect(
+      await install({ harness: 'omp', practices: 'build', all: true }),
+    ).toBe(1);
+    expect(err.trim().split('\n')).toHaveLength(1);
+    expect(err).toMatch(/^cratylus install: --practices and --all/);
+    expect(snapshot(home)).toEqual(before);
+  });
+
+  it('never takes no practice for every practice: an empty choice is refused, saying how to remove it all', async () => {
+    const before = snapshot(home);
+    for (const practices of ['', ' , ']) {
+      err = '';
+      expect(await install({ harness: 'omp', practices, yes: true })).toBe(1);
+      expect(err.trim().split('\n')).toHaveLength(1);
+      expect(err).toMatch(/^cratylus install: no practice was chosen/);
+      expect(err).toContain('cratylus uninstall --harness omp');
+      expect(snapshot(home)).toEqual(before);
+    }
+
+    // The same on a terminal: the question is answered with none.
+    err = '';
+    expect(
+      await install({
+        ...asked({ practices: async () => [] }),
+        practices: undefined,
+        harness: 'omp',
+      }),
+    ).toBe(1);
+    expect(err).toMatch(/^cratylus install: no practice was chosen/);
+    expect(snapshot(home)).toEqual(before);
+  });
+
   it('writes nothing when the operator cancels a question', async () => {
     const before = snapshot(home);
     expect(
       await install({
-        ...asked({ personas: async () => undefined }),
+        ...asked({ practices: async () => undefined }),
+        practices: undefined,
         harness: 'omp',
       }),
     ).toBe(1);
@@ -590,14 +828,14 @@ describe('the guided install', () => {
     expect(
       await install({
         harness: 'omp',
-        personas: 'nico',
+        practices: 'build,authoring',
         modelRoles: 'planner=@slow',
         dryRun: true,
       }),
     ).toBe(0);
     expect(snapshot(home)).toEqual(before);
     expect(out).toContain('cratylus would install');
-    expect(out).toContain('optional personas: nico');
+    expect(out).toContain('practices: build, authoring');
     expect(out).toContain('would edit');
     expect(out).not.toContain('cratylus is installed');
   });

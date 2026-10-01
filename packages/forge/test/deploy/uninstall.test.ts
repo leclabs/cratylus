@@ -38,6 +38,7 @@ import {
 import { PERSONA_BIN_REL } from '../../src/deploy/persona-commands.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -88,7 +89,12 @@ function corpus(): ProjectablePlugin {
       'utf8',
     );
   }
-  return { name: 'uninstall-fixture', manifest: FIXTURE_MANIFEST, agents };
+  return {
+    name: 'uninstall-fixture',
+    manifest: FIXTURE_MANIFEST,
+    agents,
+    practices: fixturePractices(Object.keys(held)),
+  };
 }
 
 describe('uninstall', () => {
@@ -107,6 +113,7 @@ describe('uninstall', () => {
       home,
       cwd,
       corpus: plugin as never,
+      practices: FIXTURE_PRACTICE,
       linkPersonaCommands: true,
       pathEnv: '/usr/bin',
     });

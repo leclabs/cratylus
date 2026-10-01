@@ -190,14 +190,26 @@ describe.each(HARNESSES)(
 describe.each(HARNESSES)(
   'practices — a render naming none on %s',
   (harness) => {
-    it('places every cell, whether the practices are absent or empty', async () => {
-      const whole = {
+    it('places every cell where the practices are absent', async () => {
+      expect(placed(await project(harness))).toEqual({
         agents: ALL_AGENTS,
         skills: ALL_SKILLS,
         hooks: ALL_HOOKS,
-      };
-      expect(placed(await project(harness))).toEqual(whole);
-      expect(placed(await project(harness, []))).toEqual(whole);
+      });
+    });
+
+    it('refuses an empty choice before rendering anything, naming that no practice was chosen', async () => {
+      const logged: string[] = [];
+      await expect(
+        projectPluginSet({
+          plugins: [declaring],
+          adapter: adapterByName(harness),
+          practices: [],
+          log: (line) => logged.push(line),
+          warn: () => {},
+        }),
+      ).rejects.toThrow(/no practice was chosen/);
+      expect(logged).toEqual([]);
     });
 
     it('renders a plugin set declaring no practices as it renders one declaring them', async () => {

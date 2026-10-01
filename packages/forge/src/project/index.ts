@@ -199,17 +199,11 @@ export interface ProjectOpts {
    */
   readonly hostHome?: string;
   /**
-   * Names of agents LEFT OUT of the render entirely: no definition, no launcher, no
-   * scoped enforcing artifact, no stance manifest and no hook registration of theirs,
-   * and none of them counted in the report. A name that is no agent of the plugin set
-   * throws, naming it — an omission that silently matched nothing would read as one
-   * that held.
-   */
-  readonly omitAgents?: readonly string[];
-  /**
-   * The practices to render, by name. Absent or empty ⇒ every cell is rendered, as
-   * a plugin set declaring no practices renders: this is what keeps `project` and
-   * every whole-corpus render byte-for-byte what they were.
+   * The practices to render, by name. ABSENT ⇒ every cell is rendered, as a plugin
+   * set declaring no practices renders: this is what keeps `project` and every
+   * whole-corpus render byte-for-byte what they were. EMPTY ⇒ refused, before
+   * anything is rendered: no practice chosen is not every practice, and a caller
+   * that means the whole corpus leaves this absent.
    *
    * Given names, exactly the union of those practices' agents and skills is
    * rendered, with the skills those compose, the plumbing, and the guards a
@@ -263,10 +257,6 @@ export interface ProjectedTree extends ProjectReport {
   /** Each held role → the sorted names of the rendered agents holding it: where a
    *  consumer that routes by role must act on the agents, not the role. */
   readonly roleHolders: Readonly<Record<string, readonly string[]>>;
-  /** The sorted names of the plugin set's agents that declare `optional`
-   *  ({@link Agent.optional}), rendered or omitted — what an install offers
-   *  without preselecting. */
-  readonly optionalAgents: readonly string[];
   /** The practices the plugin set declares, in declaration order: what an install
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
@@ -649,6 +639,13 @@ async function selectPractices(
 export async function projectPluginSet(
   opts: ProjectOpts,
 ): Promise<ProjectedTree> {
+  // NO PRACTICE IS NOT EVERY PRACTICE. An empty choice is refused before a byte is
+  // rendered; only an ABSENT one renders the whole corpus.
+  if (opts.practices?.length === 0) {
+    throw new Error(
+      'no practice was chosen: name at least one, or leave practices absent to render every cell',
+    );
+  }
   const log = opts.log ?? (() => {});
   const warn =
     opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
@@ -688,7 +685,7 @@ export async function projectPluginSet(
   // chosen set is proven closed — before an agent is composed or a byte rendered.
   const offered = declaredPractices(opts.plugins, log);
   const selection =
-    opts.practices && opts.practices.length > 0
+    opts.practices !== undefined
       ? await selectPractices(
           opts.practices,
           opts.plugins,
@@ -713,22 +710,11 @@ export async function projectPluginSet(
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
-  const omitted = new Set(opts.omitAgents ?? []);
-  for (const name of omitted) {
-    if (!agentSrc.has(name)) {
-      throw new Error(
-        `omitAgents names '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
-      );
-    }
-  }
-  const optionalAgents: string[] = [];
   for (const [name, { dir }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const authored = await agentOf(modPath);
-    if (authored.optional) optionalAgents.push(name);
     if (selection && !selection.agents.has(name)) continue;
-    if (omitted.has(name)) continue;
     const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
     // with everything they compose, and every adapter renders the list it is
@@ -1167,7 +1153,6 @@ export async function projectPluginSet(
     hooks,
     heldRoles: Object.keys(roleHolders).sort(),
     roleHolders,
-    optionalAgents: optionalAgents.sort(),
     practices: offered.map((p) => ({
       name: p.name,
       description: p.description,
