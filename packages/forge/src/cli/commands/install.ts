@@ -669,6 +669,7 @@ async function install(
         // The harness's home itself, which deploy takes verbatim: a bare home dir would
         // make it print its self-correcting NOTE on every run of every kind.
         home: harnessDir,
+        command: 'install',
         project: null,
         config: existsSync(configPath) ? configPath : null,
         only: null,

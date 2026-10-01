@@ -906,6 +906,40 @@ describe('the guided install', () => {
     expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
   });
 
+  it.each([
+    ['not valid JSON', 'not json', 'is not valid JSON'],
+    ['a JSON array', '[1]', 'is not a JSON object'],
+  ])(
+    'refuses a runtime config holding %s in one line, leaving its bytes and placing nothing',
+    async (_case, held, said) => {
+      const config = join(home, '.cratylus.json');
+      writeFileSync(config, held);
+      const before = snapshot(home);
+      for (const dryRun of [false, true]) {
+        err = '';
+        out = '';
+        expect(
+          await install({
+            corpus: { ...plugin, events: ['session.start'] } as never,
+            harness: 'claude',
+            yes: true,
+            dryRun,
+          }),
+        ).toBe(1);
+        expect(out).toBe('');
+        const lines = err.trimEnd().split('\n');
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatch(/^cratylus install: /);
+        expect(lines[0]).toContain(`${config} ${said}`);
+        expect(lines[0]).toContain(
+          'repair the file or move it away, then run cratylus install again',
+        );
+        expect(readFileSync(config, 'utf8')).toBe(held);
+        expect(snapshot(home)).toEqual(before);
+      }
+    },
+  );
+
   it('ends in one line, writing nothing, where the cwd config names a package that is not installed', async () => {
     // What `cratylus init` writes, before its package is installed: the loader's
     // MissingPackageError, not a stack trace, and no fallback to the bundled corpus.

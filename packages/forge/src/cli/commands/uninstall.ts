@@ -56,6 +56,7 @@ import {
   unregisterHookCommands,
   withoutRuntimeParts,
 } from '../../deploy/index.js';
+import { unreadableRuntimeConfig } from '../../deploy/runtime-config.js';
 import { settingsJson } from '../../deploy/settings-json.js';
 import { containingRoot } from '../../prune/index.js';
 import { fail as failLine, say } from '../style.js';
@@ -441,15 +442,19 @@ function removeRuntimeStanza(
   tally: Tally,
 ): void {
   const file = runtimeConfigTarget(process.env, home);
-  if (!existsSync(file)) return;
-  let doc: unknown;
-  try {
-    doc = JSON.parse(readFileSync(file, 'utf8'));
-  } catch {
-    return; // not ours to interpret, and never rewritten unread
+  const unreadable = unreadableRuntimeConfig(file);
+  if (unreadable !== undefined) {
+    // Not ours to interpret, and never rewritten unread: it stands, byte for byte,
+    // and the report says so.
+    tally.left.push({
+      what: file,
+      why: `the runtime config ${unreadable}, so what ${adapter.name}'s install wrote there cannot be told from the host's; repair it, then run \`${CLI_BIN} uninstall --harness ${adapter.name}\` again, or remove ${adapter.name}'s parts from it by hand`,
+    });
+    return;
   }
-  if (typeof doc !== 'object' || doc === null || Array.isArray(doc)) return;
-  const removal = withoutRuntimeParts(doc as Record<string, unknown>, {
+  if (!existsSync(file)) return;
+  const doc = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  const removal = withoutRuntimeParts(doc, {
     harness: adapter.name,
     installed: HARNESS_NAMES.filter(
       (name) =>

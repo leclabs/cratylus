@@ -32,6 +32,10 @@ import {
   writeManifest,
 } from '../../deploy/index.js';
 import { type DriftReport, auditLocal } from '../../deploy/local.js';
+import {
+  runtimeConfigTarget,
+  unreadableRuntimeConfig,
+} from '../../deploy/runtime-config.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
 import { fail as failLine, say, warn as warnLine } from '../style.js';
 
@@ -71,6 +75,9 @@ export interface DeployCmdOpts {
   check?: boolean;
   /** `--verbose`: also report the per-file detail of the run. */
   verbose?: boolean;
+  /** The command this deploy runs in, named where an error says what to run again.
+   *  Absent ⇒ `deploy`. */
+  command?: 'deploy' | 'install';
   /** Where the report goes: the summary, and under `verbose` the per-file detail.
    *  Absent ⇒ stdout. */
   log?: (line: string) => void;
@@ -259,6 +266,16 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
       warn(scopeRes.note.message);
     }
 
+    // THE RUNTIME CONFIG IS SETTLED BEFORE ANYTHING IS PLACED. One this run would write
+    // over and cannot read is refused here, with nothing yet written. It follows the
+    // home the run was given, when it was given one: a project-scope deploy, and a run
+    // given no home, leave it to the process's.
+    const runtimeHome =
+      opts.scope === 'user' && opts.home
+        ? dirname(scopeRes.harnessDir)
+        : undefined;
+    const plan = await planRuntimeConfig(opts, runtimeHome, warn);
+
     // Expand the `all` sugar to the concrete kinds; a single kind runs a
     // one-element loop. Every kind reuses the EXISTING per-kind engine path with
     // IDENTICAL target opts. The overall rc is the first non-zero kind's rc.
@@ -307,20 +324,18 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
         outcome.outside[root] = (outcome.outside[root] ?? 0) + 1;
       }
     }
-    const emitted = await emitHostRuntimeConfig(
-      opts,
-      harnessAdapter.name,
-      harnessAdapter.nativeEvents,
-      harnessAdapter.nativeActs,
-      // The home the harness directory hangs from, when the run was given one: the
-      // runtime config follows it. A project-scope deploy, and a run given no home,
-      // leave it to the process's.
-      opts.scope === 'user' && opts.home
-        ? dirname(scopeRes.harnessDir)
-        : undefined,
-      log,
-      warn,
-    );
+    const emitted =
+      plan === null
+        ? null
+        : await emitHostRuntimeConfig(
+            opts,
+            plan,
+            harnessAdapter.name,
+            harnessAdapter.nativeEvents,
+            harnessAdapter.nativeActs,
+            runtimeHome,
+            log,
+          );
     outcome.runtimeConfig =
       emitted === null ? null : { path: emitted.path, wrote: emitted.wrote };
     // What this deploy wrote into the file, kept with the record of what it placed: the
@@ -398,37 +413,23 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
   return outcome.rc;
 }
 
+/** What the host runtime config is emitted from: the plugin set, and the corpus's
+ *  events that its vocabulary is. */
+interface RuntimeConfigPlan {
+  readonly plugins: readonly AgentPlugin[];
+  readonly events: string[];
+}
+
 /**
- * Emit the host runtime config — ARCHITECTURE property 4's producer.
- *
- * The corpus's vocabulary and its skills' capability configuration reach the
- * projector as DATA on the plugin set (property 3) and the harness's native map
- * comes off the adapter, so this step decides nothing and carries facts it was
- * handed. It runs once per deploy invocation, not once per kind: the config is a
- * property of the corpus and the harness, not of whether agents or skills were the
- * thing being placed.
- *
- * A MISSING CONFIG FILE IS A WARNING, NOT A FAILURE. `deploy` is reachable with a
- * bare render tree and no corpus in sight (that is what `--agents-dir` is for), and
- * refusing the whole deploy over a step that did not apply would be a refusal where
- * the shortfall is legible. It warns and names exactly what the host will lack.
- *
- * It returns where the config went (or, dry, would go): the file is written outside
- * the harness directory, so a caller that names what it writes names this too.
+ * Whether, and from what, this deploy emits the host config — settled before anything
+ * is placed, so that a runtime config this deploy would write over and cannot read is
+ * refused with nothing yet written. `null` ⇒ none is emitted (and a warning says why).
  */
-async function emitHostRuntimeConfig(
+async function planRuntimeConfig(
   opts: DeployCmdOpts,
-  harness: string,
-  nativeEvents: Readonly<Record<string, string>>,
-  nativeActs: HarnessAdapter['nativeActs'],
   home: string | undefined,
-  log: (line: string) => void,
   warn: (message: string) => void,
-): Promise<{
-  path: string;
-  wrote: boolean;
-  record: RuntimeConfigRecord;
-} | null> {
+): Promise<RuntimeConfigPlan | null> {
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
@@ -454,12 +455,53 @@ async function emitHostRuntimeConfig(
     );
     return null;
   }
+  const target = runtimeConfigTarget(process.env, home);
+  const why = unreadableRuntimeConfig(target);
+  if (why !== undefined) {
+    throw new Error(
+      `${target} ${why}; repair the file or move it away, then run ${CLI_BIN} ${opts.command ?? 'deploy'} again`,
+    );
+  }
+  return { plugins, events };
+}
+
+/**
+ * Emit the host runtime config — ARCHITECTURE property 4's producer.
+ *
+ * The corpus's vocabulary and its skills' capability configuration reach the
+ * projector as DATA on the plugin set (property 3) and the harness's native map
+ * comes off the adapter, so this step decides nothing and carries facts it was
+ * handed. It runs once per deploy invocation, not once per kind: the config is a
+ * property of the corpus and the harness, not of whether agents or skills were the
+ * thing being placed.
+ *
+ * A MISSING CONFIG FILE IS A WARNING, NOT A FAILURE. `deploy` is reachable with a
+ * bare render tree and no corpus in sight (that is what `--agents-dir` is for), and
+ * refusing the whole deploy over a step that did not apply would be a refusal where
+ * the shortfall is legible. It warns and names exactly what the host will lack.
+ *
+ * It returns where the config went (or, dry, would go): the file is written outside
+ * the harness directory, so a caller that names what it writes names this too.
+ */
+async function emitHostRuntimeConfig(
+  opts: DeployCmdOpts,
+  plan: RuntimeConfigPlan,
+  harness: string,
+  nativeEvents: Readonly<Record<string, string>>,
+  nativeActs: HarnessAdapter['nativeActs'],
+  home: string | undefined,
+  log: (line: string) => void,
+): Promise<{
+  path: string;
+  wrote: boolean;
+  record: RuntimeConfigRecord;
+}> {
   const { path, wrote, doc, stanza, record } = emitRuntimeConfig({
-    events,
+    events: plan.events,
     harness,
     nativeEvents,
     ...(nativeActs === undefined ? {} : { nativeActs }),
-    skills: (await resolveSkills(plugins)).map((s) => s.skill),
+    skills: (await resolveSkills(plan.plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
     ...(home === undefined ? {} : { home }),
   });
