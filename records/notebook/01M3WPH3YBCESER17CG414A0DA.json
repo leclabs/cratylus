@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WPH3YBCESER17CG414A0DA",
+    "entity": "01M3WPH3YBCESER17CG414A0D9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ImplementerReturnFixture",
+    "time": "2026-10-01T21:39:34.475Z",
+    "reason": "assay of implementer-return-fixture at 7a2306b7 found the paired dispatch fixture inconsistent; spec forbids touching it",
+    "cause": "assay not-achieved entry 2 locus includes delegation-prompt.md"
+  },
+  "payload": {
+    "title": "delegation-prompt fixture still dispatches to the implementer under the old return contract",
+    "kind": "idea",
+    "topic": "implementer role",
+    "body": "At 7a2306b7, packages/canon/test/fixtures/generated/delegation-prompt.md opens '# dispatch: add-endpoint — plan healthz, wave(0), agent: implementer' and is the pair of subagent-return.md. It requires a return carrying files, evidence, gates and deviations, names 'plan lead' as the judge, decides acceptance from the return alone, and builds off main — all contrary to the implementer role (returns only a name; judged by the assayer from the shard and the files at the commit; isolated worktree off the plan line). Unit implementer-return-fixture, whose spec says 'Change no other file' and whose accept line permits only subagent-return.md to change, renamed the return's delegate to 'contractor', so the pair now dispatches to an implementer and is answered by a contractor. The pair needs one coherent revision (same non-corpus delegate in both headers at least, and the dispatch's return contract/judge/base brought in line or the fixture shown as a non-corpus delegate's), which needs a unit that owns delegation-prompt.md and re-pins reader-reach.test.ts if required.",
+    "blocks": []
+  }
+}

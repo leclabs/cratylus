@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WPG15CZKDKHFGW75ATDP54",
+    "entity": "01M3WPG15CZKDKHFGW75ATDP53",
+    "operation": "create",
+    "supersedes": [],
+    "author": "TapUninstallRestores",
+    "time": "2026-10-01T21:38:58.860Z",
+    "reason": "finding beside the path",
+    "cause": "edits of tap-uninstall-restores"
+  },
+  "payload": {
+    "title": "edit tool writes relative paths into the session cwd, not the unit worktree",
+    "kind": "idea",
+    "topic": "isolation",
+    "body": "While building tap-uninstall-restores in its own worktree, an edit given a repo-relative path landed in the main checkout (the session cwd), not in the unit worktree; absolute worktree paths landed correctly. The edit was reverted from main. An implementer in a worktree must address files by absolute worktree path unless its cwd is the worktree.",
+    "blocks": []
+  }
+}

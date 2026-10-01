@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WPMAC66ZGC5CB1FM4FCZDM",
+    "entity": "01M3WPH3YBCESER17CG414A0D9",
+    "operation": "retract",
+    "supersedes": [
+      "01M3WPH3YBCESER17CG414A0DA"
+    ],
+    "author": "ImplementerReturnFixture",
+    "time": "2026-10-01T21:41:19.366Z",
+    "reason": "resolved by the amended landing",
+    "cause": "commit adb51ded rewrote the pair"
+  },
+  "payload": null
+}
