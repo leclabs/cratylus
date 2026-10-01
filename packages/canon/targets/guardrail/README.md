@@ -104,12 +104,16 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   names its way forward: act on the judge's reason, or, holding the refusal wrong, contest it.
   The refusal spells out one shell command that writes why into the file it names,
   `$TMPDIR/guardrail-contest/<guard>/<session>/<key>.contest` (`stop.contest` at the turn end,
-  the cksum of the call for a call), and the agent repeats the act. A fire that finds a non-empty
-  contest is not judged: the act goes through, the guard says so (`STANCE GUARDRAIL` with the
-  agent's reason), and one JSON line is appended to `~/.agents/guardrail/contests.log`
-  (`$GUARD_CONTEST_LOG` overrides it) for the operator to review. A log that cannot be written
-  never holds the act back; the notice says the contest was not recorded. A repeat with no
-  contest is judged again, and a BLOCK blocks it again. The stance workers judge no shell call and
+  the cksum of the call for a call), and the agent repeats the act. A refusal of a key stands from
+  the fire that refused it until the next fire of that key, and a contest answers only a refusal
+  that stands: a fire that finds the refusal of its key and a non-empty contest is not judged. The
+  act goes through, the guard says so (`STANCE GUARDRAIL` with the agent's reason), and one JSON
+  line is appended to `~/.agents/guardrail/contests.log` (`$GUARD_CONTEST_LOG` overrides it) for
+  the operator to review. A log that cannot be written never holds the act back; the notice says
+  the contest was not recorded. A contest written before the refusal it would answer, or after
+  the refusal lapsed (a fire that passed, or went unrefused, leaves neither file), is discarded
+  unheard, neither logged nor said, and the act is judged as usual. A repeat with no contest is
+  judged again, and a BLOCK blocks it again. The stance workers judge no shell call and
   no file write, so writing a contest is never refused. A contested stop goes through whatever
   the run of blocks. Without a contest the turn end is the one place a refused act is let through:
   refusing it holds back no effect, it only makes the agent redo its turn. A stop that follows a
