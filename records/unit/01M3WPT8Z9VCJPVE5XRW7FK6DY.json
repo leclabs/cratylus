@@ -1,0 +1,83 @@
+{
+  "envelope": {
+    "id": "01M3WPT8Z9VCJPVE5XRW7FK6DY",
+    "entity": "01M3WM8YYKYNC19M5E90CTHVFR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPR3Y99248G9H75Y2P57Z7"
+    ],
+    "author": "UnreadableRuntimeConfig",
+    "time": "2026-10-01T21:44:34.537Z",
+    "reason": "amended per assay: the uninstall remedy named a rerun that cannot work once the record is gone; it now names install-then-uninstall, proven in the test",
+    "cause": "assay entry 2: not-achieved on command line every-error-says-what-to-do"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "unreadable-runtime-config",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Sequenced after isolated-implementer and isolated-landing by the operator's ruling that the note 'implementers edit the main checkout' is realized first. Realize the command line's no-footguns clause, nothing written where the consumer did not ask and every error saying what went wrong and what to do, for a runtime config cratylus cannot read (note 'install replaces an unparseable runtime config unread'). At 2f2a0238 emitRuntimeConfig reads a runtime config that is not valid JSON, or not a JSON object, as empty (priorConfig, packages/forge/src/deploy/runtime-config.ts:344-353, 'A corrupt config must not wedge a deploy'), so install and deploy rewrite the file whole and the host's bytes are lost without a word; uninstall's removeRuntimeStanza (packages/forge/src/cli/commands/uninstall.ts:436-450) leaves such a file unread and says nothing. CHANGE. Install (its dry run included) and deploy, when the runtime config they would write exists and cannot be read as a JSON object, refuse before anything is placed: one line `cratylus install: <file> <what is wrong>; <what to do>` (repair the file or move it away, then run install again), the same shape the command uses for a cratylus.config.ts it cannot load, exit 1, nothing written anywhere; deploy the same in its own name. Uninstall leaves such a file byte for byte and names it among what it left, saying why. A missing file and a readable one behave as today. Every test sets AGENT_RUNTIME_CONFIG to a file of its own, so none reaches the operator's real ~/.cratylus.json (note 'uninstall in a test reaches the real runtime config'). packages/cli/README.md, where it describes the host runtime config, says so. .changeset/unreadable-runtime-config.md: patch for @cratylus/forge and cratylus.",
+      "static": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/forge/src/deploy/index.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7",
+        "01M3WM7EGXV0AKN88688Z6TVNK"
+      ],
+      "outputs": [
+        "packages/forge/src/deploy/runtime-config.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/cli/README.md",
+        ".changeset/unreadable-runtime-config.md"
+      ],
+      "accept": [
+        "in packages/forge, with the packages its tests need built, `pnpm exec vitest run test/cli/install.test.ts` exits 0, including a case: AGENT_RUNTIME_CONFIG names a file holding `not json`; install exits 1, prints one stderr line naming that file and what to do, leaves the file's bytes unchanged and places nothing under the target home; the same with a file holding `[1]`; at 2f2a0238 the case fails (the file is rewritten)",
+        "in packages/forge, `pnpm exec vitest run test/deploy/uninstall.test.ts` exits 0, including a case where uninstall meets a runtime config holding `not json`: the file is left byte for byte and the report names it as left; at 2f2a0238 the report does not name it",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "b3113a82ae5dbce81ba46f00aa7fdf900d1ed277",
+        "author": "UnreadableRuntimeConfig",
+        "time": "2026-10-01T21:40:52.030Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b3113a82ae5dbce81ba46f00aa7fdf900d1ed277",
+        "verdict": "not-achieved",
+        "missing": [
+          "command line: every error says what to do — the uninstall line naming an unreadable runtime config tells the operator to repair it and run `cratylus uninstall --harness <h>` again, but that same uninstall has already removed the deploy record, so the rerun reports 'no deploy record … nothing is removed' and the harness's stanza stays in the repaired file; the remedy it gives does not work (the packages/cli README repeats it as 'then run the command again')"
+        ],
+        "author": "AssayRemaining3",
+        "time": "2026-10-01T21:43:23.849Z"
+      },
+      {
+        "kind": "land",
+        "commit": "40e6a1bf0a52ad09e341e30c71570c5c82da6614",
+        "author": "UnreadableRuntimeConfig",
+        "time": "2026-10-01T21:44:34.536Z"
+      }
+    ]
+  }
+}

@@ -329,6 +329,14 @@ a harness's stanza and finds none refuses, and `cratylus install --harness <h>` 
 at the top or under `events`, or a capability's configuration the corpus does not write, is carried
 as you left it by every install and deploy.
 
+A file there that is not valid JSON, or is JSON but not an object, is not rewritten: `cratylus install`
+(its `--dry-run` too) and `cratylus deploy` end with one line naming the file and what is wrong with
+it, exit 1 and nothing written anywhere. Repair the file or move it away, then run the command again.
+`cratylus uninstall` leaves such a file byte for byte and names it among what it left. That uninstall
+removes the record of what install wrote, so a second uninstall cannot take the harness's stanza out
+of the repaired file: run `cratylus install --harness <h>` again, which records it, then uninstall, or
+take `harnesses.<h>` out by hand.
+
 ## Taking it away again
 
 ```sh

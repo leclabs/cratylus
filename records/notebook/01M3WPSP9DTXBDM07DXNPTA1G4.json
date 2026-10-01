@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WPSP9DTXBDM07DXNPTA1G4",
+    "entity": "01M3WPG15CZKDKHFGW75ATDP53",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPG15CZKDKHFGW75ATDP54"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T21:44:15.405Z",
+    "reason": "the planner surfaced omp isolation as a design question; it is a realization gap",
+    "cause": "IsolationPlanner on the note"
+  },
+  "payload": {
+    "title": "edit tool writes relative paths into the session cwd, not the unit worktree",
+    "kind": "decision",
+    "topic": "isolation",
+    "body": "Ruled: not a design change. plan already requires each unit built in its own isolated worktree off its line, and supported harness requires each harness to realize a cell at the highest fidelity it offers, degrading and warning where it falls short. On omp the isolation is unrealized, not excluded: the harness side (the omp adapter or its extension, which already intercepts dispatch) should start the implementer in its unit worktree if omp allows any way to do so. Only if omp offers none is it a stated shortfall, warned at install and in the docs, with the land gate as the remaining guard. Teaching the agent absolute paths stays excluded.",
+    "blocks": []
+  }
+}

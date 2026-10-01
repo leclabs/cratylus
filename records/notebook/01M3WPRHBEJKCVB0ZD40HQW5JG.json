@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WPRHBEJKCVB0ZD40HQW5JG",
+    "entity": "01M3WPRHBEJKCVB0ZD40HQW5JF",
+    "operation": "create",
+    "supersedes": [],
+    "author": "TapUninstallRestores",
+    "time": "2026-10-01T21:43:37.582Z",
+    "reason": "spec excludes the reporting half of the assay finding",
+    "cause": "assay f95d1f92 of tap-uninstall-restores"
+  },
+  "payload": {
+    "title": "eventTap uninstall reports nothing it leaves in place",
+    "kind": "question",
+    "topic": "uninstall",
+    "body": "Assay of tap-uninstall-restores wants uninstall to name what it leaves in place (a settings file install made but the host added keys to; a directory install made but the host put a file in). EventTapHostClaude.remove() returns void (port ports/event-tap.ts) and dispatch.ts builds {verb:'uninstall'}; reporting needs a change to the port's remove return, dispatch.ts's uninstall result and EventTapResult, which the unit's outputs exclude (dispatch.ts is static there). Needs a unit or a revised spec that owns ports/event-tap.ts, dispatch.ts and their tests; the claude.ts side is a small return of the kept paths.",
+    "blocks": []
+  }
+}

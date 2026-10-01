@@ -477,6 +477,40 @@ describe('uninstall', () => {
       expect(snapshot(home)).toEqual({});
     });
 
+    it.each([
+      ['not valid JSON', 'not json'],
+      ['a JSON array', '[1]'],
+    ])(
+      'a config holding %s is left byte for byte, and the report names it as left',
+      async (_case, held) => {
+        expect(await install('claude')).toBe(0);
+        // Guard the guard: install wrote the file the host then spoiled.
+        expect(readConfig().harnesses.claude).toBeDefined();
+        writeFileSync(configFile(), held);
+        out = '';
+
+        expect(uninstall('claude')).toBe(0);
+
+        expect(readFileSync(configFile(), 'utf8')).toBe(held);
+        const [removed, left] = splitLeft(out);
+        expect(removed).not.toContain(configFile());
+        expect(left).toContain(configFile());
+        expect(left).toContain('the runtime config is not');
+        expect(left).toContain('install --harness claude');
+
+        // The remedy the report gives: the first uninstall took the record away, so a
+        // second one alone finds nothing; repaired, install records it again, and the
+        // uninstall after that takes the harness's stanza out.
+        expect(uninstall('claude')).toBe(0);
+        expect(readFileSync(configFile(), 'utf8')).toBe(held);
+        writeFileSync(configFile(), '{}\n');
+        expect(await install('claude')).toBe(0);
+        expect(readConfig().harnesses.claude).toBeDefined();
+        expect(uninstall('claude')).toBe(0);
+        expect(snapshot(home)).toEqual({});
+      },
+    );
+
     describe('the parts cratylus placed, taken out only while they are what was placed', () => {
       /** The config deploy emits over a host's own, for a corpus that configures `plan`,
        *  and — when `recorded` — the record deploy keeps of what it wrote. */
