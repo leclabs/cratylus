@@ -199,7 +199,7 @@ describe('assertShimsResolvable', () => {
         env: strandedHost().env,
         fresh: true,
       }),
-    ).toMatch(/REFUSED/);
+    ).toMatch(/does not run on this host/);
     resetRuntimeBinProbe();
     expect(
       assertShimsResolvable(srcDir, files, {
@@ -230,7 +230,7 @@ describe('assertShimsResolvable', () => {
     const msg = text as string;
     // what was placed, and that it is inert
     expect(msg).toMatch(/scripts\/note\.mjs/);
-    expect(msg).toMatch(/INERT/);
+    expect(msg).toMatch(/inert/);
     // the probe that was actually run
     expect(msg).toMatch(new RegExp(`${BIN} --version`));
     // the lesson, at the point of failure
@@ -295,7 +295,7 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     }
   }
 
-  it('rc 2 + a loud warning on the STRANDED host — the files still land and are recorded', () => {
+  it('rc 2 + a refusal on the STRANDED host — the files still land and are recorded', () => {
     const tree = treeWithShim();
     const claude = join(tmp('forge-host-'), '.claude');
     const warns: string[] = [];
@@ -309,7 +309,8 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     );
 
     expect(r.rc).toBe(2);
-    expect(warns.join('\n')).toMatch(/REFUSED/);
+    expect(r.refusal).toMatch(/does not run on this host/);
+    expect(warns).toEqual([]);
     expect(r.report.warnings.join('\n')).toMatch(/deployed shims are inert/);
     // Testimony is still complete: the placer records what it laid down so the
     // next deploy can converge. A refusal must not cost attributability.
@@ -330,7 +331,8 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     );
 
     expect(r.rc).toBe(0);
-    expect(warns.join('\n')).not.toMatch(/REFUSED/);
+    expect(r.refusal).toBeUndefined();
+    expect(warns).toEqual([]);
   });
 
   it('a shim-free skill deploys clean even on the stranded host (no false conviction)', () => {

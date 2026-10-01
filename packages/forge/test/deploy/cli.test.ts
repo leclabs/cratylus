@@ -98,6 +98,63 @@ describe('runDeploy (local)', () => {
     expect(existsSync(join(cd, 'skills'))).toBe(false);
     expect(existsSync(join(cd, 'settings.json'))).toBe(false);
   });
+
+  describe('the report', () => {
+    const run = async (extra: { verbose?: boolean; dryRun?: boolean } = {}) => {
+      const root = tmp('forge-render-');
+      const { agentsDir, skillsDir } = buildRenderTree(root);
+      const { hooksDir } = buildHooksTree(root);
+      const home = tmp('forge-home-');
+      const lines: string[] = [];
+      const warnings: string[] = [];
+      const rc = await runDeploy({
+        agentsDir,
+        skillsDir,
+        hooksDir,
+        kind: 'all',
+        scope: 'user',
+        home,
+        ...extra,
+        log: (l) => lines.push(l),
+        warn: (m) => warnings.push(m),
+      });
+      return { rc, lines, warnings, home };
+    };
+
+    it('is a short summary by default: counts, the target and the next step, no per-file line', async () => {
+      const { rc, lines, home } = await run();
+      expect(rc).toBe(0);
+      expect(lines.length).toBeLessThanOrEqual(6);
+      expect(lines[0]).toMatch(
+        /^deployed \d+ agents?, \d+ skills?, 1 hook to claude/,
+      );
+      expect(lines[0]).toContain(join(home, '.claude'));
+      expect(lines.join('\n')).not.toMatch(/===| -> /);
+      expect(lines.at(-1)).toBe('next: start or restart claude');
+    });
+
+    it('says a bare --home once, whatever the number of kinds', async () => {
+      const { warnings } = await run();
+      expect(warnings.filter((m) => m.includes('is a home dir'))).toHaveLength(
+        1,
+      );
+    });
+
+    it('lists each file placed only under --verbose', async () => {
+      const { lines } = await run({ verbose: true });
+      const said = lines.join('\n');
+      expect(said).toMatch(/skill wake -> /);
+      expect(said).toMatch(/hook stance-guardrail -> /);
+      expect(said).not.toContain('===');
+    });
+
+    it('a dry run says what it would do, and the next step is to run it', async () => {
+      const { lines, home } = await run({ dryRun: true });
+      expect(lines[0]).toMatch(/^would deploy /);
+      expect(lines.at(-1)).toMatch(/without --dry-run/);
+      expect(existsSync(join(home, '.claude'))).toBe(false);
+    });
+  });
 });
 
 describe('scaffoldProject (greenfield scaffold)', () => {

@@ -130,22 +130,22 @@ export function scaffoldProject(
   const agentsMd = resolvePath(target, 'AGENTS.md');
   if (existsSync(agentsMd) && !opts.force) {
     warn(
-      `REFUSE  ${agentsMd} already exists -- this dir may already be a project; pass --force to overwrite the project marker`,
+      `${agentsMd} already exists, so this dir may already be a project; pass --force to overwrite the project marker`,
     );
     return { rc: 1, agents: 0, skills: 0, agentsMd };
   }
 
   mkdirSync(target, { recursive: true });
-  log(`=== scaffolding a project in ${target} ===`);
+  log(`scaffolding a project in ${target}`);
 
   const [nAgents, nSkills] = projectCulture(target, opts.tree, harnessHome);
   log(
-    `  culture projected: ${nAgents} agents + ${nSkills} skills -> ${target}/${harnessHome}/`,
+    `culture projected: ${nAgents} agents + ${nSkills} skills -> ${target}/${harnessHome}/`,
   );
 
   writeFileSync(agentsMd, template.agentsMd(subject), 'utf-8');
-  log(`  project marker:    ${agentsMd}`);
+  log(`project marker: ${agentsMd}`);
 
-  log(`=== scaffolded: ${nAgents} agents, culture projected ===`);
+  log(`scaffolded: ${nAgents} agents, culture projected`);
   return { rc: 0, agents: nAgents, skills: nSkills, agentsMd };
 }

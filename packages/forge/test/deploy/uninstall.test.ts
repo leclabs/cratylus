@@ -110,8 +110,15 @@ describe('uninstall', () => {
       linkPersonaCommands: true,
       pathEnv: '/usr/bin',
     });
-  const uninstall = (harness: string, dryRun = false) =>
-    runUninstall({ harness, home, dryRun });
+  // Verbose by default: most of these assert on WHAT was removed, which the quiet
+  // report counts and does not list.
+  const uninstall = (harness: string, dryRun = false, verbose = true) =>
+    runUninstall({ harness, home, dryRun, verbose });
+  /** The report split at the line that opens what was left. */
+  const splitLeft = (text: string): [string, string] => {
+    const at = text.search(/^left \d+ items?/m);
+    return at < 0 ? [text, ''] : [text.slice(0, at), text.slice(at)];
+  };
 
   beforeEach(() => {
     const root = tmpRoot();
@@ -185,7 +192,7 @@ describe('uninstall', () => {
       expect(readFileSync(join(claude, 'settings.json'), 'utf8')).toBe(
         hostSettings,
       );
-      const [removed, left] = out.split('left (');
+      const [removed, left] = splitLeft(out);
       expect(left).toContain(join(claude, placed));
       expect(left).toContain('the host changed it since install');
       expect(removed).not.toContain(join(claude, placed));
@@ -242,7 +249,7 @@ describe('uninstall', () => {
       expect(uninstall('claude', true)).toBe(0);
 
       expect(snapshot(home)).toEqual(installed);
-      expect(out).toContain('would remove (');
+      expect(out).toMatch(/would remove \d+ items/);
       expect(out).toContain(join(claude, 'agents', 'alpha.md'));
       expect(out).toContain(join(bin, 'alpha'));
       expect(out).toContain("unwrapped to the host's own command (echo host)");
@@ -251,6 +258,27 @@ describe('uninstall', () => {
       expect(snapshot(home)).toEqual({
         '.claude/settings.json': `${JSON.stringify({ theme: 'dark', statusLine: { type: 'command', command: 'echo host' } }, null, 2)}\n`,
       });
+    });
+
+    it('is quiet by default: it counts what it removed, lists it only under --verbose, and still names what it left', async () => {
+      const claude = harnessDir('claude');
+      expect(await install('claude')).toBe(0);
+      const placed = readManifest(claude).kinds.agent?.alpha?.[0] as string;
+      writeFileSync(join(claude, placed), 'host rewrote this agent\n');
+      out = '';
+
+      expect(uninstall('claude', true, false)).toBe(0);
+
+      expect(out).toMatch(/^would remove \d+ items from claude/m);
+      expect(out).not.toContain(join(claude, 'agents', 'beta.md'));
+      // What the host changed is named whatever the verbosity: the operator must see
+      // what remains and why.
+      expect(out).toContain(join(claude, placed));
+      expect(out).toContain('the host changed it since install');
+
+      out = '';
+      expect(uninstall('claude', true, true)).toBe(0);
+      expect(out).toContain(join(claude, 'agents', 'beta.md'));
     });
 
     it('leaves a persona command the host replaced, and says so', async () => {
@@ -417,7 +445,7 @@ describe('uninstall', () => {
         },
       });
       expect(out).toContain(`hook registration ${ours}`);
-      const left = out.split('left (')[1] as string;
+      const [, left] = splitLeft(out);
       expect(left).toContain(`hook registration ${mixed}`);
       expect(left).not.toContain(ours);
     });
@@ -475,7 +503,7 @@ describe('uninstall', () => {
       expect(readFileSync(file, 'utf8')).toBe(
         `${original}  planner: "anthropic/mine"\n`,
       );
-      const [removed, left] = out.split('left (') as [string, string];
+      const [removed, left] = splitLeft(out);
       expect(removed).toContain('architect: "@default"');
       expect(removed).toContain('implementer: "@task"');
       expect(left).toContain('planner: "@plan"');
@@ -572,7 +600,7 @@ describe('uninstall', () => {
       out = '';
       expect(uninstall('omp')).toBe(0);
       expect(readFileSync(config, 'utf8')).toBe(installed);
-      const left = out.split('left (')[1] as string;
+      const [, left] = splitLeft(out);
       expect(left).toContain(config);
       expect(left).toContain(
         'installed before install recorded its edits to this file',
@@ -618,7 +646,7 @@ describe('uninstall', () => {
       expect(readFileSync(config, 'utf8')).toBe(
         host.replace('showHookStatus: false', 'showHookStatus: true'),
       );
-      const left = out.split('left (')[1] as string;
+      const [, left] = splitLeft(out);
       expect(left).toContain(config);
       expect(left).toContain('showHookStatus');
     });

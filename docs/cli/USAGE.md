@@ -230,7 +230,8 @@ you edited since is **left**, named, with the reason. It also takes back the hoo
 added, unwraps your status line to your own command (byte for byte), removes the persona commands it
 placed or adopted, takes the lines it added out of omp's `config.yml` so the file is what you wrote
 (your `modelRoles` entries included), and removes its stanza of the runtime config. The manifest goes
-last. `--dry-run` prints the same two lists and writes nothing; `--harness` is required.
+last. It counts what it removed (`--verbose` lists each item) and always names what it left. `--dry-run`
+prints the same report and writes nothing; `--harness` is required.
 
 ### 4.11 "Put my agents on this machine, guided"
 

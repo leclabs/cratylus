@@ -32,7 +32,6 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import pc from 'picocolors';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
@@ -58,12 +57,15 @@ import {
 } from '../../deploy/index.js';
 import { settingsJson } from '../../deploy/settings-json.js';
 import { containingRoot } from '../../prune/index.js';
+import { fail as failLine, say } from '../style.js';
 
 export interface UninstallCmdOpts {
   /** Harness adapter name. Required: removing is not something to guess a target for. */
   harness?: string;
   /** Say what would be removed and left; write nothing. */
   dryRun?: boolean;
+  /** List every item removed, not only how many. */
+  verbose?: boolean;
   /** The user's HOME — the harness's home, the bin dir and the runtime config hang
    *  from it. */
   home: string;
@@ -447,55 +449,66 @@ function removeRuntimeStanza(
   }
 }
 
-function print(tally: Tally, dry: boolean): void {
-  const say = (line: string): void => {
-    process.stdout.write(`${line}\n`);
-  };
+const plural = (n: number, noun: string): string =>
+  `${n} ${noun}${n === 1 ? '' : 's'}`;
+
+/** The report: counts always, what was left always (the host's, so the operator
+ *  sees what remains and why), and each item removed only under `--verbose`. */
+function print(
+  tally: Tally,
+  run: { dry: boolean; verbose: boolean; harness: string; harnessDir: string },
+): void {
+  const { dry, verbose } = run;
   say(
-    dry
-      ? `${pc.bold(`would remove (${tally.removed.length}):`)}`
-      : `${pc.bold(`removed (${tally.removed.length}):`)}`,
+    `${dry ? 'would remove' : 'removed'} ${plural(tally.removed.length, 'item')} from ${run.harness} (${run.harnessDir})`,
   );
-  for (const r of tally.removed) say(`  ${r.what}`);
-  say(
-    `${pc.bold(`left (${tally.left.length}) — the host placed or changed these, so they are not touched:`)}`,
-  );
-  for (const l of tally.left) say(`  ${l.what} — ${l.why}`);
+  if (verbose) {
+    for (const r of tally.removed) say(`  ${r.what}`);
+  }
+  if (tally.left.length > 0) {
+    say(
+      `left ${plural(tally.left.length, 'item')} the host placed or changed, which are not touched:`,
+    );
+    for (const l of tally.left) say(`  ${l.what} — ${l.why}`);
+  }
 }
 
 export function runUninstall(opts: UninstallCmdOpts): number {
   const fail = (message: string): number => {
-    process.stderr.write(`${pc.red('✗')} ${CLI_BIN} uninstall: ${message}\n`);
+    failLine('uninstall', message);
     return 1;
   };
   if (opts.harness === undefined) {
     return fail(
-      `name the harness to remove from with --harness <${HARNESS_NAMES.join('|')}>.`,
+      `no harness named; pass --harness <${HARNESS_NAMES.join('|')}>`,
     );
   }
   if (!(HARNESS_NAMES as readonly string[]).includes(opts.harness)) {
     return fail(
-      `unknown harness '${opts.harness}' (known: ${HARNESS_NAMES.join(', ')}).`,
+      `unknown harness '${opts.harness}'; pass one of --harness <${HARNESS_NAMES.join('|')}>`,
     );
   }
   const adapter = adapterByName(opts.harness);
   const dry = opts.dryRun ?? false;
   const harnessDir = join(opts.home, adapter.home);
   const manifestFile = join(harnessDir, MANIFEST_REL);
+  const run = {
+    dry,
+    verbose: opts.verbose ?? false,
+    harness: adapter.name,
+    harnessDir,
+  };
 
-  process.stdout.write(
-    `${pc.gray(`harness: ${adapter.name} → ${harnessDir}${dry ? ' (dry-run: nothing is written)' : ''}`)}\n`,
-  );
   if (!existsSync(manifestFile)) {
-    process.stdout.write(
-      `no deploy record at ${manifestFile} — nothing is recorded there as placed by ${CLI_BIN}, so nothing is removed.\n`,
+    say(
+      `no deploy record at ${manifestFile}, so nothing there is recorded as placed by ${CLI_BIN} and nothing is removed`,
     );
     return 0;
   }
   const fault = recordFault(harnessDir);
   if (fault !== undefined) {
     return fail(
-      `the deploy record ${manifestFile} is not usable: ${fault}. Nothing was removed.`,
+      `the deploy record ${manifestFile} is not usable: ${fault}; nothing was removed, so repair or delete the record and run it again`,
     );
   }
 
@@ -514,11 +527,16 @@ export function runUninstall(opts: UninstallCmdOpts): number {
     tally.removed.push({ what: `${manifestFile} (the deploy record)` });
     if (!dry) dropFile(harnessDir, manifestFile);
   } catch (e) {
-    print(tally, dry);
+    print(tally, run);
     return fail(
-      `stopped: ${(e as Error).message}. The deploy record is kept, so running it again continues.`,
+      `stopped: ${(e as Error).message}; the deploy record is kept, so running it again continues`,
     );
   }
-  print(tally, dry);
+  print(tally, run);
+  say(
+    dry
+      ? 'next: run it again without --dry-run to remove them'
+      : `next: restart ${adapter.name} to drop what it still has loaded`,
+  );
   return 0;
 }

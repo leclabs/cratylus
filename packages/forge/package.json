@@ -65,6 +65,7 @@
     "@cratylus/runtime": "workspace:*",
     "@cratylus/schema": "workspace:*",
     "cac": "catalog:",
+    "chalk": "catalog:",
     "picocolors": "catalog:",
     "zod": "catalog:"
   },

@@ -27,6 +27,7 @@ catalog:
   gray-matter: ^4.0.3
   cac: ^6.7.14
   picocolors: ^1.1.0
+  chalk: ^5.4.0
   chokidar: ^4.0.1
   "@clack/prompts": ^1.8.1
 

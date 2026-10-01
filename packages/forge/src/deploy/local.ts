@@ -174,7 +174,7 @@ export function placeAgentsLocal(
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
-      warn(`  WARN  no def for ${name} at ${src}`);
+      warn(`no def for ${name} at ${src}; the agent was not placed`);
       report.warnings.push(`no def for ${name}`);
       report.skipped.push(name);
       continue;
@@ -200,7 +200,7 @@ export function placeAgentsLocal(
         if (kept !== def) {
           def = kept;
           log(
-            `  ${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
+            `${opts.dry ? 'would keep' : 'kept'} the host's model for ${name}: ` +
               `${host === undefined ? 'no model' : host.line} ` +
               `(deploy renders ${rendered === undefined ? 'no model' : rendered.line})`,
           );
@@ -211,7 +211,7 @@ export function placeAgentsLocal(
         def = withModelLine(def, `model: ${chosen}`);
         owned = true;
         log(
-          `  ${opts.dry ? 'would place' : 'placed'} the chosen model for ${name}: model: ${chosen}`,
+          `${opts.dry ? 'would place' : 'placed'} the chosen model for ${name}: model: ${chosen}`,
         );
       }
       report.models[name] = rendered?.value ?? null;
@@ -236,7 +236,7 @@ export function placeAgentsLocal(
     // exist can never converge — the real file becomes permanently unattributable.
     report.written[name] = [agentRel(name)];
   }
-  log(`  defs copied: ${report.copied}`);
+  log(`defs copied: ${report.copied}`);
   return { rc: 0, report };
 }
 
@@ -272,7 +272,7 @@ export function placeSkillsLocal(
     const srcDir = resolvePath(tree.skillsDir, name);
     if (!existsSync(resolvePath(srcDir, 'SKILL.md'))) {
       warn(
-        `  WARN  no SKILL.md for ${name} at ${resolvePath(srcDir, 'SKILL.md')}`,
+        `no SKILL.md for ${name} at ${resolvePath(srcDir, 'SKILL.md')}; the skill was not placed`,
       );
       report.warnings.push(`no SKILL.md for ${name}`);
       report.skipped.push(name);
@@ -320,7 +320,7 @@ export function placeSkillsLocal(
       : '';
     const scopes = rels.length > 1 ? ` × ${rels.length} scopes` : '';
     log(
-      `  skill ${name} -> ${resolvePath(harnessDir, rels[0] ?? `skills/${name}`)}/SKILL.md${tail}${scopes}`,
+      `skill ${name} -> ${resolvePath(harnessDir, rels[0] ?? `skills/${name}`)}/SKILL.md${tail}${scopes}`,
     );
     // AFTER placing: the shims are on the host now, so the binding they spawn is
     // this deploy's problem. `--version`, never `which`.
@@ -328,13 +328,12 @@ export function placeSkillsLocal(
       refusal = assertShimsResolvable(srcDir, files, { dry: opts.dry });
     }
   }
-  log(`  skills copied: ${report.copied}`);
+  log(`skills copied: ${report.copied}`);
   if (refusal !== null) {
-    warn(refusal);
     report.warnings.push(
       'runtime bin unresolvable on this host — deployed shims are inert',
     );
-    return { rc: 2, report };
+    return { rc: 2, report, refusal };
   }
   return { rc: 0, report };
 }
