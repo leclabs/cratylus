@@ -19,6 +19,7 @@
 import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -27,15 +28,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, isAbsolute, join } from 'node:path';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { hookIrOf, resolveWorker } from '@cratylus/schema';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { mav } from '../src/agents/mav.js';
+import { judgePayloadCapBytes } from '../src/guard-shell.js';
 import { purviewGuardrail } from '../src/hooks/purview-guardrail.js';
-import { stanceGuardrailJudgeCap } from '../src/hooks/stance-guardrail.js';
 
 let root: string;
 let worker: string;
@@ -211,7 +212,7 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     );
     const { payload } = JSON.parse(stdout) as { payload: string };
     expect(Buffer.byteLength(payload)).toBeLessThanOrEqual(
-      stanceGuardrailJudgeCap,
+      judgePayloadCapBytes,
     );
     // The law is the holder's own contract and is never what gets cut.
     expect(payload).toContain(architect.role);
@@ -559,6 +560,215 @@ describe.each(FORMS)(
       mkdirSync(bare);
       expect(fire({}, { stance_scope: bare, agent_type: '' }).stdout).toBe('');
       expect(fire({}, { tool_name: 'Read' }).stdout).toBe('');
+    });
+
+    // A REFUSAL NEVER STRANDS THE AGENT. The judge here is a stub that counts its calls and
+    // always BLOCKs, so a contested fire that is not judged shows as a count that did not move.
+    describe('a refusal can be contested', () => {
+      const REASON = 'the dispatch carries a spec, which this arrow excludes';
+      const NOTICE = 'the unit is routed by name';
+      let tmp: string;
+      let env: Record<string, string>;
+      let counter: string;
+      let session: string;
+
+      beforeEach(() => {
+        tmp = mkdtempSync(join(home, 'contest-'));
+        counter = join(tmp, 'judged');
+        const judge = join(tmp, 'judge.sh');
+        writeFileSync(
+          judge,
+          `#!/bin/sh\ncat >/dev/null\necho x >> "${counter}"\nprintf 'VERDICT: BLOCK\\nREASON: ${REASON}\\nEVIDENCE: build the fold exactly as written\\n'\n`,
+        );
+        env = {
+          STANCE_JUDGE_CMD: `sh ${judge}`,
+          TMPDIR: tmp,
+          GUARD_CONTEST_LOG: join(tmp, 'logs', 'contests.log'),
+        };
+        session = `contest-${Math.random()}`;
+      });
+
+      const judged = (): number =>
+        existsSync(counter)
+          ? readFileSync(counter, 'utf8').trim().split('\n').length
+          : 0;
+      const fireDispatch = (prompt = DISPATCH.prompt, over = env) =>
+        fire(over, {
+          session_id: session,
+          tool_input: { ...DISPATCH, prompt },
+        });
+      /** The deny, and the absolute path of the `.contest` file its reason spells out. */
+      const refusedAt = (r: SpawnSyncReturns<string>): string => {
+        const out = JSON.parse(r.stdout) as {
+          hookSpecificOutput: {
+            permissionDecision: string;
+            permissionDecisionReason: string;
+          };
+        };
+        expect(out.hookSpecificOutput.permissionDecision).toBe('deny');
+        const reason = out.hookSpecificOutput.permissionDecisionReason;
+        expect(
+          reason.startsWith(
+            `PURVIEW GUARDRAIL — denied this Task call: ${REASON}`,
+          ),
+        ).toBe(true);
+        const path = reason.match(/> '([^']+\.contest)'/)?.[1] ?? '';
+        expect(isAbsolute(path)).toBe(true);
+        const dir = join(
+          tmp,
+          'guardrail-contest',
+          'purview-guardrail',
+          session,
+        );
+        expect(dirname(path)).toBe(dir);
+        expect(basename(path)).toMatch(/^\d+\.contest$/);
+        return path;
+      };
+      const logged = (): Record<string, string>[] =>
+        readFileSync(env.GUARD_CONTEST_LOG as string, 'utf8')
+          .trim()
+          .split('\n')
+          .map((l) => JSON.parse(l) as Record<string, string>);
+
+      it('names the way forward in the refusal, records the judge’s reason, and lets the contested call through unjudged — once', () => {
+        const path = refusedAt(fireDispatch());
+        expect(judged()).toBe(1);
+        expect(
+          readFileSync(path.replace(/contest$/, 'refused'), 'utf8').trim(),
+        ).toBe(REASON);
+
+        writeFileSync(path, `${NOTICE}\n`);
+        const contested = fireDispatch();
+        expect(contested.status).toBe(0);
+        expect(contested.stdout).not.toContain('permissionDecision');
+        const said = form.notice(contested.stdout);
+        expect(said).toContain('PURVIEW GUARDRAIL');
+        expect(said).toContain(NOTICE);
+        expect(said).toContain(env.GUARD_CONTEST_LOG as string);
+        expect(judged()).toBe(1);
+        expect(existsSync(path)).toBe(false);
+        expect(existsSync(path.replace(/contest$/, 'refused'))).toBe(false);
+        const [line, ...more] = logged();
+        expect(more).toEqual([]);
+        expect(Object.keys(line ?? {}).sort()).toEqual([
+          'act',
+          'agent',
+          'contest',
+          'guard',
+          'refusal',
+          'session',
+          'time',
+        ]);
+        expect(line).toMatchObject({
+          guard: 'purview-guardrail',
+          session,
+          agent: architect.name,
+          act: 'Task',
+          refusal: REASON,
+          contest: NOTICE,
+        });
+        expect(line?.time).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
+
+        // The contest was spent: the same call is judged again and refused again.
+        refusedAt(fireDispatch());
+        expect(judged()).toBe(2);
+      });
+
+      it('leaves a call judged when the contest was written for another call', () => {
+        const other = refusedAt(fireDispatch());
+        writeFileSync(other, `${NOTICE}\n`);
+        refusedAt(fireDispatch(`${DISPATCH.prompt} and then some`));
+        expect(judged()).toBe(2);
+        expect(existsSync(other)).toBe(true);
+      });
+
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the act is judged as usual.
+      it('judges a call whose contest was written before any refusal, discards that contest, and judges the same call again', () => {
+        const path = refusedAt(fireDispatch());
+        rmSync(path.replace(/contest$/, 'refused'));
+        expect(judged()).toBe(1);
+
+        writeFileSync(path, `${NOTICE}\n`);
+        const ahead = fireDispatch();
+        expect(refusedAt(ahead)).toBe(path);
+        expect(ahead.stdout).not.toContain('contested');
+        expect(judged()).toBe(2);
+        expect(existsSync(env.GUARD_CONTEST_LOG as string)).toBe(false);
+        expect(existsSync(path)).toBe(false);
+
+        const next = fireDispatch();
+        expect(refusedAt(next)).toBe(path);
+        expect(judged()).toBe(3);
+        expect(existsSync(env.GUARD_CONTEST_LOG as string)).toBe(false);
+      });
+
+      it('does not take an empty contest for one', () => {
+        const path = refusedAt(fireDispatch());
+        writeFileSync(path, '');
+        refusedAt(fireDispatch());
+        expect(judged()).toBe(2);
+      });
+
+      it('reads a session id that is not one path segment as nosession', () => {
+        session = '../escape';
+        const reason = JSON.parse(fireDispatch().stdout).hookSpecificOutput
+          .permissionDecisionReason as string;
+        expect(reason).toContain(
+          `${join(tmp, 'guardrail-contest', 'purview-guardrail', 'nosession')}/`,
+        );
+      });
+
+      it('lets a write under the contest directory through without asking the judge', () => {
+        const r = fire(env, {
+          session_id: session,
+          tool_name: 'Write',
+          tool_input: {
+            file_path: join(
+              tmp,
+              'guardrail-contest',
+              'purview-guardrail',
+              session,
+              '1.contest',
+            ),
+            content: 'why',
+          },
+        });
+        expect(r.status).toBe(0);
+        expect(r.stdout).toBe('');
+        expect(judged()).toBe(0);
+      });
+
+      it('does not let a path that climbs out of the contest directory through', () => {
+        const r = fire(env, {
+          session_id: session,
+          tool_name: 'Write',
+          tool_input: {
+            file_path: `${join(tmp, 'guardrail-contest')}/../elsewhere.ts`,
+            content: 'build the fold exactly as written',
+          },
+        });
+        expect(r.status).toBe(0);
+        expect(judged()).toBe(1);
+      });
+
+      it('still lets the contested call through, and says it was not recorded, when the log cannot be written', () => {
+        const file = join(tmp, 'a-file');
+        writeFileSync(file, '');
+        const unwritable = {
+          ...env,
+          GUARD_CONTEST_LOG: join(file, 'contests.log'),
+        };
+        const path = refusedAt(fireDispatch(DISPATCH.prompt, unwritable));
+        writeFileSync(path, `${NOTICE}\n`);
+        const contested = fireDispatch(DISPATCH.prompt, unwritable);
+        expect(contested.status).toBe(0);
+        expect(contested.stdout).not.toContain('permissionDecision');
+        const said = form.notice(contested.stdout);
+        expect(said).toContain(NOTICE);
+        expect(said).toMatch(/was not recorded/);
+        expect(judged()).toBe(1);
+      });
     });
   },
 );

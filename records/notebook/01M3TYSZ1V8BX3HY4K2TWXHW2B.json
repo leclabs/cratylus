@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3TYSZ1V8BX3HY4K2TWXHW2B",
+    "entity": "01M3TXSC9J46YPEDAQBSX9NENN",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TXSJKXHGGXWZFQM3KWS47M"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T05:25:44.123Z",
+    "reason": "stance-contest gave the judge clip one home in guard-shell.ts",
+    "cause": "assay of stance-contest at 3d8a735a"
+  },
+  "payload": null
+}

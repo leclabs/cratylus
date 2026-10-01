@@ -1,69 +1,16 @@
 import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
+import {
+  contestShell,
+  judgeClipShell,
+  judgeTailShell,
+} from '../guard-shell.js';
 import type { HookCell } from '../manifest.js';
 
-// stance-guardrail — the harness-half of the principal stance. A source
-// `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified
-// identity that `accept()` gates; its `workers[].content` are the VERBATIM
-// byte-anchors the committed workers under `targets/guardrail/` regenerate
-// from (byte-locked by `test/hook-rule-boundary.test.ts`). The claude adapter
-// realizes `event` → a `settings.json` `{hooks}` merge + `hooks/<id>/` workers.
-
-// THE ONE CAP ON WHAT A GUARD'S JUDGE IS SENT, declared here and stamped into all three
-// workers (this one, `stance-guardrail-pre`, `purview-guardrail`). A judgement has to fit
-// the time its harness allows a guard — omp kills an extension handler at 30 s, a Claude
-// Code cell runs 60 s — and the payload was unbounded: the Stop worker sent every assistant
-// message since the last operator message and the whole operator message, the pre and purview
-// workers the whole dispatch prompt or menu. Bytes, not characters: the limit is the size of
-// what crosses to the judge. The pre and purview workers take the shell below from the
-// exports at the foot of this module rather than restating either.
-const judgePayloadCapBytes = 12_000;
-
-// The shell every worker carries to honour the cap. Written with `String.raw` so its
-// backslashes reach the worker verbatim, and free of backticks and `${` for the same reason.
-// `jq` does the cutting because it is already a dependency of every worker and counts a
-// string in characters and in bytes (`utf8bytelength`), so a cut never lands inside a
-// character: the result is valid UTF-8 and never over the bound. Text over its share is
-// cut and MARKED where it was cut — the judge is told it reads an excerpt and cannot take
-// the seam for the agent's own words.
-const judgeClipShell = String.raw`# THE JUDGE IS SENT A BOUNDED EXCERPT, never the whole text. A judgement has to fit inside the
-# time its harness allows a guard, and the text a turn or a dispatch carries has no bound of its own.
-# One cap, declared once in the stance cell, bounds everything sent together: the standing
-# directive, the operator's message, the agent turn and any layer-1 note. Text over its share is
-# cut on a character boundary and marked where it was cut.
-JUDGE_PAYLOAD_CAP=${judgePayloadCapBytes}
-judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
-JUDGE_JQ='
-def pre($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| $s[:.lo] end;
-def suf($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| if .lo == 0 then "" else $s[-.lo:] end end;
-'
-# Text is read with --rawfile from stdin and never with -R: jq 1.7's raw reader corrupts a
-# multibyte character that straddles one of its read boundaries, on anything over a few KB.
-# The final N bytes of stdin, or all of it when it fits — no marker, so a caller can count them.
-judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
-# Stdin cut to at most N bytes by keeping its head and its tail, the seam marked. For a dispatch
-# prompt or a menu, whose instruction may sit at either end.
-judge_ends() {
-	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
-		$text | . as $s | ($s | utf8bytelength) as $t
-		| if $t <= $n then $s else
-			((($n - 200) / 2) | floor) as $k
-			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
-			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
-			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
-		end'
-}
-# The marker for text cut off its front: judge_cut WHAT TOTAL-BYTES SHOWN-BYTES.
-judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
-`;
+// stance-guardrail — the turn-end guard of the principal stance. Its `workers[].content` are
+// the byte-anchors the committed workers under `targets/guardrail/` regenerate from
+// (`test/hook-rule-boundary.test.ts` byte-locks them); the claude adapter realizes `event`
+// as a `settings.json` hook merge plus `hooks/<id>/` workers.
 
 export const stanceGuardrail: HookCell = {
   id: 'stance-guardrail',
@@ -84,88 +31,16 @@ export const stanceGuardrail: HookCell = {
       targetPath: 'packages/canon/targets/guardrail/stance-guardrail.sh',
       executable: true,
       content: `#!/usr/bin/env sh
-# stance-guardrail — a Stop hook that STRUCTURALLY REFUSES a turn in which an
-# agent collapses out of the intent-driven-expert (fiduciary-agent) stance.
-#
-# WHY THIS EXISTS (the harness half of the principal stance):
-#   Encoding the principal stance as IDENTITY (Nico's half) raises the threshold but is not
-#   truly invariant — enough operator pushback erodes any prompt-level stance. NOTE the original
-#   justification here blamed "RLHF corrigibility reads a correction as 'defer more'"; that is
-#   OVER-ATTRIBUTED and is corrected rather than deleted, since it was load-bearing for the cap
-#   that has now been removed. Perez et al. measure sycophancy as "similar for models trained
-#   with various numbers of RL steps, including 0" — it is not RLHF-specific — and the stronger
-#   claim, that a correction RAISES deference on later unrelated work, is unmeasured. The nearest
-#   result finds carryover that dissolves across topic change and is SYMMETRIC: non-deferential
-#   states self-perpetuate too. So a corrective gate is not self-defeating by construction.
-#   TRUE invariance needs the harness to
-#   refuse the collapsed turn. This is that refusal: on Stop, it judges the last assistant turn
-#   against the stance rubric and BLOCKS (Claude Code Stop-hook \`{"decision":"block"}\`) when it
-#   detects collapse, feeding corrective feedback that tells the agent to re-assume the stance.
-#
-# WHAT IT BLOCKS (collapse signals — see stance-judge-prompt.md for the full rubric):
-#   - permission-seeking for in-remit, reversible work ("should I…?", option-menus)
-#   - deferring the agent's own expert judgment (naming/design/architecture/how) to the operator
-#   - echoing / order-taking the operator's literal words instead of extracting+serving intent
-# WHAT IT DOES NOT BLOCK (the reserved set):
-#   - surfacing a genuine irreversible-outward act (deploy/push/publish) for consent
-#   - routing a genuine INTENT ambiguity to /elicit
-#   - surfacing an ABSENT mandate (no objective in the input AND an empty inherited work-set):
-#     electing the session's objective is supplying intent, not sequencing — the operator's to own
-#
-# SAFETY MODEL:
-#   - SCOPE-ENROLLED. Fires for a scope carrying a stance manifest, and for no other. Enrollment
-#     is PRESENCE: the projection places a manifest in each persona's own scope, so composing the
-#     cell enrolls the persona and nothing central lists anybody. A bare launch carries the
-#     dispatcher and no manifest, and is therefore silent by placement.
-#   - NO REPO OPT-IN. There was one, per-repo in .git/config, and it asked the wrong question:
-#     whether a guard may run in a DIRECTORY. The off switch is launching \`omp\` rather than a
-#     persona — declining to BE the agent, instead of being it unjudged.
-#   - FAILS OPEN, BUT NEVER SILENTLY-CLEAN. Any error → exit 0 (allow stop): a guardrail that
-#     wedges work on its own flakiness is worse than a missed block. But a turn let through
-#     WITHOUT A VERDICT says so where the operator reads it (\`say\`: Claude Code's JSON
-#     \`systemMessage\`, omp's relayed line), naming this guard and why it could not judge —
-#     no jq, no input, an unreadable transcript or rubric, a judge that does not answer or
-#     answers unparseably, a block it could not verify, an unexpected error. Silence is reserved for
-#     "judged, no collapse" and for "not enrolled" (no persona manifest in scope, or nothing
-#     judgeable in the turn): there, not-checking is the correct answer, not a failure to report.
-#   - A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP. Judges every turn, one
-#     identical to a refused turn included, and a BLOCK blocks the stop. The turn end is the one
-#     exception to a refused act staying refused: refusing it holds back no effect, it only makes
-#     the agent redo its turn. So a stop that follows a block of this guard (\`stop_hook_active\`)
-#     continues a RUN of blocks, and a BLOCK that would be the repeat of the turn last blocked in
-#     the run, or the one after the run's third block, is let through, SAID, UNRESOLVED. The bound
-#     is on one stop and never on the session: a stop that follows no block starts a new run at 0.
-#   - POSITION-SOUND. Every rubric rule that can fire is a claim about the turn's CLOSE. So the
-#     L1 window and the EVIDENCE check both run against \`asst_close\` — the text AFTER the last
-#     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
-#     a verdict about how the turn ended, however genuinely present those characters are.
-#
-# INPUT  : Claude Code Stop hook JSON on stdin (transcript_path, stop_hook_active,
-#          agent_type, session_id, cwd, …).
-# OUTPUT : on collapse → stdout \`{"decision":"block","reason":"…"}\` + exit 0 (Stop-hook block).
-#          judged, no collapse → no stdout + exit 0 (allow stop).
-#          let through with no verdict, or a refused stop let through UNRESOLVED → the notice \`say\`
-#          prints + exit 0 (allow stop).
-#
-# POSIX sh. Depends on: jq (transcript parse). Missing jq → the guard says so and allows the stop.
-
+# stance-guardrail: a Stop hook that blocks a turn collapsing out of the intent-driven-expert stance.
+# FAILS OPEN, BUT NEVER SILENTLY-CLEAN: what stops it judging lets the stop through with a notice and a DARK row.
 set -eu
 
-# WHAT AN OPERATOR READS WHEN THE GUARD CANNOT JUDGE, defined before anything that needs a
-# command. The first thing that can be missing is \`jq\`, and a worker run with a PATH holding
-# little beyond \`sh\` and \`cat\` must still say it did not judge — so \`esc\`, \`say\` and \`dark\`
-# are builtins only, and nothing external runs above the jq check.
-#
-# Claude Code shows the operator a hook's JSON \`systemMessage\` and NOT its plain stdout on
-# exit 0, so a notice printed as a bare line reaches nobody there. omp's extension bridge
-# reads the worker's plain stdout and relays a line naming this guard and DARK to the
-# session, and would relay a JSON object as raw JSON — hence one form per harness, chosen at
-# projection by the harness's own name.
+# esc, say and dark use builtins only: they must work when jq is missing.
 esc() {
 	_in="$1"
 	_out=""
-	_nl="$(printf '\\nx')"
-	_nl="\${_nl%x}"
+	_nl='
+'
 	_tab="$(printf '\\t')"
 	_cr="$(printf '\\r')"
 	while [ -n "$_in" ]; do
@@ -190,97 +65,29 @@ say() {
 	esac
 }
 
-# A Stop hook must never break a session. An unexpected error (a nonzero status reaching the
-# trap) is let through AND SAID; every deliberate \`exit 0\` arrives here with status 0 and stays
-# as quiet as it chose to be.
 trap 'rc=$?; [ -z "\${view:-}" ] || rm -f "$view" 2>/dev/null; [ "$rc" -eq 0 ] || dark "an unexpected error stopped it (exit status $rc)"; exit 0' EXIT
 
-allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
-
-# A VERDICT and a FAILURE are different facts, and silence can only carry one of them.
-# \`allow_stop\` means "checked, no collapse". It must never also be the answer to "could
-# not check" — that is a bypass by omission: with the judge unreachable the guardrail
-# reports a clean turn forever and nothing ever says the guardrail went dark. Exactly the
-# defect fixed one file over in the memory nudge ("a broken runtime read as a clean bill
-# of health, silently and forever"); the inversion is the same — \`if signal absent then
-# pass\` becomes \`if signal absent then SAY SO\` — and, as there, it still never wedges the
-# turn. Reached only for a guard that is IN SCOPE and could not judge: a scope carrying no
-# persona manifest stays silent.
+allow_stop() { exit 0; }
+row() { [ -z "\${verdict_log:-}" ] || printf '%s\\t%s\\t%s\\n' "$1" "$2" "$3" >> "$verdict_log" 2>/dev/null || true; }
 dark() {
-	# THE HEARTBEAT, and the reason the log is worth keeping. A VERDICT row and a
-	# DARK row are both evidence the guard RAN; only an EMPTY log means it never
-	# did. Recording judged turns alone made "not judged" and "no session" read
-	# identically — measured on a live host: an endpoint behind the advisor role
-	# accepted connections and never answered, and five hours of one session were
-	# unjudged while leaving no trace whatsoever to notice it by.
-	if [ -n "\${verdict_log:-}" ]; then
-		printf 'DARK\\t\\t%s\\n' "$1" >> "$verdict_log" 2>/dev/null || true
-	fi
+	row DARK "" "$1"
 	say "STANCE GUARDRAIL — DARK: $1. This turn was NOT judged; the absence of a block is an absence of a verdict, not a clean one."
 	exit 0
 }
 
-# --- read hook input ------------------------------------------------------------------------
 input="$(cat)"
 [ -n "$input" ] || dark "the hook received no input"
-
 command -v jq >/dev/null 2>&1 || dark "jq is not installed, so the hook payload cannot be read"
+field() { printf '%s' "$input" | jq -r "$1" 2>/dev/null || true; }
 
-# A GUARD BINDS A PERSONA'S OWN MAIN SESSION AND NO SUBAGENT IT DISPATCHES. A subagent is bounded
-# by what it was handed, judged by its assay and the whole check, and supervised by the main
-# session. Claude Code fires this hook inside a subagent too (settings hooks and the subagent's
-# own front-matter hooks), and there the payload carries \`agent_id\` — present only inside a
-# subagent. A guard that does not bind there is not dark: it exits before it judges and says
-# nothing.
-[ -z "$(printf '%s' "$input" | jq -r '.agent_id // empty' 2>/dev/null || true)" ] || allow_stop
+# Only a subagent's payload carries agent_id; the guard binds main sessions.
+[ -z "$(field '.agent_id // empty')" ] || allow_stop
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
-
-# THE RUBRIC LIVES AT THE VENDOR-NEUTRAL ROOT, and is reached by DERIVATION so it
-# follows whatever home this copy was deployed under (a real \$HOME, or a test's
-# \`--home\`). This worker sits at \`<harness-home>/hooks/<id>/\`, and \`.agents\` is
-# the SIBLING of every harness home — the same relation deploy already uses to
-# place agents and skills — so three \`dirname\`s and a name is the whole address.
-#
-# Derived rather than baked: a literal \`\$HOME/.agents\` would expand correctly on
-# a host and point outside a sandboxed deploy, which is the class of bug that put
-# \`\$HOME/.claude\` in the sibling worker and made it read another harness's tree.
 NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
-# The DEFAULT rubric. A persona's own manifest may name another — that is the
-# strategy seam: one opinionated implementation, each persona free to bind a
-# different contract without the dispatcher learning anything about either.
 RUBRIC="\${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
-# --- loop safety: a refusal holds, but the turn end is bounded --------------------------------
-# EVERY TURN IS JUDGED, and a BLOCK blocks the stop. What follows a BLOCK is the only thing bounded.
-# The turn end is the one exception to a refused act staying refused: refusing it holds back no
-# effect, it only makes the agent redo its turn, so a stop the judge keeps blocking would lock the
-# session in an endless loop if every one of them blocked. The bound is on ONE STOP, never on the
-# session — it is not a budget spent over the session's life and not a switch that stays thrown:
-#
-#   - A stop that follows a block of this guard (\`stop_hook_active\` true) CONTINUES the run of
-#     blocks. A stop with \`stop_hook_active\` false or absent follows no block and STARTS A NEW
-#     RUN AT 0, whatever came before, so a let-through never leaves enforcement off.
-#   - After the judge gives a BLOCK that survives the evidence checks, the stop is let through
-#     instead of blocked — and SAID, naming the finding as standing and unresolved — when either
-#     (a) the run already holds a block and this turn's text is byte-identical to the turn last
-#     blocked in it (a repeated stop: blocking it again cannot help), or (b) the run already holds
-#     RUN_CAP blocks (a several-times-refused stop). Otherwise it blocks and records the run and the
-#     blocked turn's hash.
-#   - A stop that follows a block but whose run cannot be read or written (a run record that is
-#     unreadable, or a state dir that is unwritable) is let through on a BLOCK, and said: a bound
-#     that cannot be counted cannot hold. A fresh stop there still blocks. No record at all, in a
-#     dir that can be written, is a run of 0: nothing was blocked, so the stop blocks and starts one.
-#
-# RUN_CAP is a constant of this cell; no environment variable sets it. A judged PASS stays silent
-# and the DARK and BLOCK DISCARDED paths are untouched. Nor is the old \`stop_hook_active=true →
-# allow_stop\` short-circuit back: that let the agent be blocked, emit anything, and end again
-# UNJUDGED, which made the rubric's judgement of a response to a verdict dead code. The re-fired
-# stop is judged like any other; only the BLOCK that follows the bound is waved through, and said.
-#
-# The state in the tmp dir, keyed by session id, is the run: the blocks it holds and the hash of
-# the turn last blocked in it.
 RUN_CAP=3
 session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 state_dir="\${TMPDIR:-/tmp}/stance-guardrail"
@@ -288,7 +95,7 @@ mkdir -p "$state_dir" 2>/dev/null || true
 run_file="$state_dir/$session.run"
 verdict_log="$state_dir/$session.verdicts"
 
-stop_active="$(printf '%s' "$input" | jq -r 'if .stop_hook_active == true then "yes" else "" end' 2>/dev/null || true)"
+stop_active="$(field 'if .stop_hook_active == true then "yes" else "" end')"
 run=0
 run_hash=none
 run_known=1
@@ -299,81 +106,42 @@ if [ -n "$stop_active" ] && [ -e "$run_file" ]; then
 	case "$run" in '' | *[!0-9]*) run=0; run_hash=none; run_known=0 ;; esac
 fi
 
-# The per-repo opt-in is GONE, and its absence is the point. It answered "may a guard run in this
-# DIRECTORY", which is a category error: a stance is a property of the agent, not of the checkout
-# it happens to be standing in. Worse, it made the stance OPTIONAL AT RUNTIME for an agent already
-# launched as itself — the ambient form, when the whole reason this harness half exists is that
-# identity alone erodes. The off switch is launching \`omp\` instead of \`mav\`: declining to be the
-# persona, rather than being it unjudged.
-cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
+cwd="$(field '.cwd // empty')"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
 
-# --- scope gate: the persona's OWN stance manifest -------------------------------------------
-# COMPOSITION IS THE SCOPE, NOT A RUNTIME SELF-FILTER — MODEL.md's ENFORCED clause, and this
-# gate used to violate it outright. It read an allowlist, \`nico mav\` by default and overridable
-# by \`STANCE_GUARD_AGENTS\`, which is precisely the runtime self-filter that clause forbids: a
-# module asking WHO IS RUNNING rather than being placed where only the right launch reaches it.
-#
-# It had already drifted, in the direction such a list always drifts. Every agent in the corpus
-# composes \`handoff\`, so \`Binding.agents\` DERIVES all six as bound, and six persona scopes are
-# deployed to prove it — while the list enforced two. \`architect\` and \`kino\` held principal
-# authority and were never once judged, and nothing surfaced the gap because the two facts were
-# written in different languages in different files.
-#
-# Enrollment is now PRESENCE. Each bound persona's projection lands a manifest in that persona's
-# own scope, and the scope reaches this worker in the one form its harness offers. omp's dispatcher
-# lives in that same scope and therefore already knows it — it passes it in the envelope as
-# \`stance_scope\`. Claude Code places no dispatcher; its hook payload NAMES the running agent as
-# \`agent_type\` (on the main thread of a \`--agent\` session, and on neither for a
-# bare session), so the scope is the persona's directory under this harness's own home, one hop
-# above the hooks root this worker was deployed into. Either way the scope is then read the same:
-# A manifest means enrolled, and carries THIS agent's contract: its rubric, its moments, its
-# handoff laws. No manifest means not enrolled, which is silence rather than an error, so a plain
-# session, a built-in agent or a host's own agent — none of which declared itself anything — stays
-# untouched exactly as it was. Adding a persona enrolls it; adding a gated dimension edits one
-# persona's manifest; neither is a line in this file, and this file carries no agent list.
-stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
+# A stance manifest in the persona's scope enrolls it: omp passes the scope, Claude Code the agent_type.
+stance_scope="$(field '.stance_scope // empty')"
 if [ -z "$stance_scope" ]; then
-	named="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
+	named="$(field '.agent_type // empty')"
 	case "$named" in '' | */* | . | ..) allow_stop ;; esac
 	stance_scope="$(dirname -- "$(dirname -- "$SELF_DIR")")/{{fact:harness-persona-root}}/$named"
 fi
 manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow_stop
 
-# The persona's own contract, each field falling back to the shipped default. A manifest that
-# names nothing still enrolls: presence is the assertion, the fields are the refinement.
-agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 manifest_rubric="$(jq -r '.rubric // empty' "$manifest" 2>/dev/null || true)"
-# An OVERRIDE that does not resolve is a defect and goes DARK — a persona that asked to be judged
-# against its own contract and is silently judged against someone else's has been mis-scored, not
-# spared. The DEFAULT is not checked here: a judge backend need not read the file at all (the
-# fixture judge does not), and refusing to run because a path the manifest never named is absent
-# would fail closed on a case the manifest made no claim about.
 case "$manifest_rubric" in
 	'') ;;
 	/*) RUBRIC="$manifest_rubric" ;;
 	*) RUBRIC="$(dirname -- "$manifest")/$manifest_rubric" ;;
 esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \\
-	dark "the rubric named by $manifest is not readable at '\$RUBRIC'"
+	dark "the rubric named by $manifest is not readable at '$RUBRIC'"
 
-${judgeClipShell}
+GUARD_ID=stance-guardrail
+GUARD_NAME="STANCE GUARDRAIL"
+GUARD_SESSION="$session"
+GUARD_AGENT="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
+GUARD_ACT=stop
+${contestShell}
+contest_heard
 
-# --- extract the last assistant turn from the transcript ------------------------------------
-# WHICH TRANSCRIPT. This worker binds a main session only (the \`agent_id\` gate above), so the
-# payload's \`transcript_path\` is the whole of it: the session's own.
-session_transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
-transcript="$session_transcript"
-[ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '\$transcript'"
+${judgeClipShell}${judgeTailShell}
 
-# THE CLOSE IS IN THE PAYLOAD, NOT YET IN THE TRANSCRIPT. On Claude Code a Stop hook fires before the
-# final assistant message is written, so the transcript ends one message short: a turn that is only
-# text had NO assistant text to judge (fired, and passed in silence), and a tool turn was judged
-# without its close. The payload carries that message as \`last_assistant_message\`. It is appended
-# to a private copy as the last assistant record — unless the transcript already ends with exactly
-# that text — so every extraction below sees the whole turn and the original file is never touched.
-last="$(printf '%s' "$input" | jq -r '.last_assistant_message // empty' 2>/dev/null || true)"
+transcript="$(field '.transcript_path // empty')"
+[ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '$transcript'"
+
+last="$(field '.last_assistant_message // empty')"
 if [ -n "$last" ]; then
 	present="$(jq -rs --arg t "$last" '
 		[ .[] | select(.type == "assistant") ] | last
@@ -389,254 +157,73 @@ if [ -n "$last" ]; then
 	fi
 fi
 
-# The transcript is JSONL: each line has top-level .type ("assistant"/"user"), .isSidechain
-# (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use)
-# — or, for a user line, a plain string. We judge the AGENT's last assistant text, but the
-# judge cannot tell an operator-ORDERED irreversible act (fine) from a unilateral one without the
-# operator's instruction — so we also extract the most recent operator message and pass it
-# alongside as authorization context. A tool_result-only user line carries no text — skipped.
-# THE WHOLE TURN, not its last fragment — and with tool activity marked.
-#
-# This used to take \`last\` non-empty text block. In a tool-heavy turn that is one block out of
-# twenty, and it is usually a MID-TURN PREAMBLE, not the close. Measured on a live session: the
-# judge was seeing 47% of one turn, 1 text block of 20. Both live false blocks came from exactly
-# this — it judged "Adding the false-positive fixtures", a preamble whose very next assistant
-# message was a \`tool_use\` performing the work, and called it announce-without-act because the
-# tool call was invisible to it. The evidence was verbatim and the verdict was still wrong.
-#
-# So: take every assistant message since the last real user turn, and mark which ones carried
-# tool calls. The judge can then see that a forward commitment was followed by action, which is
-# the single fact it needs and never had. \`[tools: …]\` markers are not text the agent wrote, so
-# the EVIDENCE check below greps the text-only projection to avoid matching a marker.
-asst="$(jq -rs '
-	[ .[] ] as $all
-	| ( [ range(0; ($all|length))
-	      | select( $all[.].type=="user"
-	                and ( ($all[.].message.content | type) == "string"
-	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
-	    | last // -1 ) as $lastuser
-	| [ $all[($lastuser+1):][]
-	    | select(.type == "assistant")
-	    | (.message.content // []) as $c
-	    | ( $c | map(select(.type == "text") | .text) | join("\\n") ) as $t
-	    | ( $c | map(select(.type == "tool_use") | .name) | join(", ") ) as $tools
-	    | if $t == "" and $tools == "" then empty
-	      elif $tools == "" then $t
-	      elif $t == "" then "[tools: \\($tools)]"
-	      else "\\($t)\\n[tools: \\($tools)]" end
-	  ]
-	| join("\\n\\n")
+# One transcript read: asst is the turn with tool calls marked, text its words alone, operator the
+# last real operator message, standing the utterance that set the loop position.
+parts="$(jq -rsc '
+	def blocks(k): (.message.content // []) | map(select(.type == k));
+	def said: blocks("text") | map(.text) | join("\\n");
+	def texts: if type == "string" then . elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\\n")) else "" end;
+	def keep(re): map(select(test(re) | not));
+	. as $all
+	| ([ range(0; length) | select($all[.].type == "user" and (($all[.].message.content | type) == "string" or ($all[.].message.content | map(.type) | index("text") != null))) ] | last // -1) as $u
+	| [ $all[$u + 1:][] | select(.type == "assistant") | { t: said, tools: (blocks("tool_use") | map(.name) | join(", ")) } ] as $turn
+	| ([ $all[] | select(.type == "user") | .message.content | texts ] | map(select(. != ""))
+	   | keep("^\\\\s*<system-reminder>") | keep("\\\\[SYSTEM NOTIFICATION - NOT USER INPUT\\\\]") | keep("<task-notification>")) as $users
+	| ($users | map(select(test("(^|[^[:alpha:]])(carry[- ]?on|weitermachen|proceed)([^[:alpha:]]|$)"; "i"))) | last) as $hit
+	| {
+	    asst: ($turn | map(select(.t != "" or .tools != "") | if .tools == "" then .t else (if .t == "" then "" else .t + "\\n" end) + "[tools: \\(.tools)]" end) | join("\\n\\n")),
+	    text: ($turn | map(.t) | map(select(. != "")) | join("\\n\\n")),
+	    operator: ($users | keep("<command-name>") | keep("<command-message>") | keep("^\\\\s*Base directory for this skill:") | keep("\\\\n---\\\\n\\\\nSkill: [^\\\\n]*SKILL\\\\.md\\\\s*$") | last // ""),
+	    standing: (if $hit == null then "" else
+	        ($hit
+	         | if test("<command-message>") then (capture("<command-message>(?<m>[^<]*)").m)
+	           elif test("<command-name>") then (capture("<command-name>(?<m>[^<]*)").m)
+	           else . end
+	         | gsub("\\\\s+"; " ")) end)
+	  }
 ' "$transcript" 2>/dev/null || true)"
-
-# Text-only projection of the same turn — what the agent actually WROTE. The EVIDENCE check must
-# grep this, never the tool-annotated form, so a fabricated span cannot be satisfied by a marker.
-asst_text="$(jq -rs '
-	[ .[] ] as $all
-	| ( [ range(0; ($all|length))
-	      | select( $all[.].type=="user"
-	                and ( ($all[.].message.content | type) == "string"
-	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
-	    | last // -1 ) as $lastuser
-	| [ $all[($lastuser+1):][] | select(.type == "assistant")
-	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\\n") ]
-	| map(select(. != "")) | join("\\n\\n")
-' "$transcript" 2>/dev/null || true)"
+part() { printf '%s' "$parts" | jq -r ".$1 // empty" 2>/dev/null || true; }
+asst="$(part asst)"
+[ -n "$asst" ] || allow_stop
+asst_text="$(part text)"
 [ -n "$asst_text" ] || asst_text="$asst"
 
-# THE CLOSE — assistant text appearing AFTER the last message that carried a tool_use.
-#
-# Every rubric rule that can actually fire is POSITIONAL ("read the turn's FINAL sentences in
-# isolation"; "and the turn is ending"; "POSITION IS THE LAW"). \`asst_text\` is the whole turn
-# flattened to one blob and encodes no position at all, so the judge was asked a positional
-# question about a payload from which position had been deleted, and the EVIDENCE check then
-# authenticated the span against that same blob — establishing only that the characters occur
-# SOMEWHERE. A mid-turn preamble followed by four tool calls and a 3000-char report satisfied
-# it exactly as well as a genuine dangling close.
-#
-# Measured, on the three blocks this hook fired in its own authoring session: every cited span
-# preceded the last tool call, and every turn ended with a 2983-3458 char report. All three
-# reasons were false about what followed the span. An independent audit reproduced the live
-# judge n=15 and the stated reason reproduced 0/15.
-#
-# Empty close (the turn ended ON a tool call) ⇒ fall back to the whole turn: that is the one
-# case where "no text after the tools" is the truth, not a projection artefact.
 asst_close="$(jq -rs '
-	[ .[] ] as $all
-	| ( [ range(0; ($all|length))
-	      | select( $all[.].type=="user"
-	                and ( ($all[.].message.content | type) == "string"
-	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
-	    | last // -1 ) as $lastuser
-	| [ $all[($lastuser+1):][] | select(.type == "assistant") ] as $turn
-	| ( [ range(0; ($turn|length))
-	      | select( ($turn[.].message.content // []) | map(.type) | index("tool_use") != null ) ]
-	    | last // -1 ) as $lasttool
-	| [ $turn[($lasttool+1):][]
-	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\\n") ]
+	. as $all
+	| ([ range(0; length) | select($all[.].type == "user" and (($all[.].message.content | type) == "string" or ($all[.].message.content | map(.type) | index("text") != null))) ] | last // -1) as $u
+	| [ $all[$u + 1:][] | select(.type == "assistant") ] as $turn
+	| ([ range(0; ($turn | length)) | select(($turn[.].message.content // []) | map(.type) | index("tool_use") != null) ] | last // -1) as $t
+	| [ $turn[$t + 1:][] | (.message.content // []) | map(select(.type == "text") | .text) | join("\\n") ]
 	| map(select(. != "")) | join("\\n\\n")
 ' "$transcript" 2>/dev/null || true)"
 close_fallback=""
 [ -n "$asst_close" ] || { asst_close="$asst_text"; close_fallback=1; }
 
-[ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
-
-# THE OPERATOR SLOT — and it must actually hold the operator.
-#
-# A skill invocation (\`/carry-on\`, \`/introspect\`, …) enters the transcript as a user-type
-# message carrying the SKILL BODY. Taking the last user message therefore handed the judge
-# 2.8 kB of the /wake skill definition (since retired) as "the operator's most recent
-# instruction" — measured on two of six live fixtures. The judge then reasoned about
-# authorization from a document the operator never wrote, which is worse than having no
-# context: it is confidently wrong context, and the rubric leans on this slot to decide
-# whether an irreversible act was authorized.
-#
-# Skill bodies are recognizable by the wrapper the HARNESS puts on them, never by their prose:
-# claude injects one as a meta user message opening "Base directory for this skill: <dir>", after
-# a <command-name>/<command-message> invocation message; omp's \`skill-prompt\` message closes with
-# a "---" rule and "Skill: <path>/SKILL.md". An operator message that merely looks like a skill
-# (an H1 over a fenced block) carries neither, and stays. Fall back to the most recent message
-# that survives the filter.
-operator="$(jq -rs '
-	[ .[]
-	  | select(.type == "user")
-	  | (.message.content)
-	  | if type == "string" then .
-	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\\n"))
-	    else "" end
-	]
-	| map(select(. != ""))
-	| map(select(
-	      (test("<command-name>") | not)
-	      and (test("<command-message>") | not)
-	      and (test("^\\\\s*Base directory for this skill:") | not)
-	      and (test("\\\\n---\\\\n\\\\nSkill: [^\\\\n]*SKILL\\\\.md\\\\s*$") | not)
-	      and (test("^\\\\s*<system-reminder>") | not)
-	      and (test("\\\\[SYSTEM NOTIFICATION - NOT USER INPUT\\\\]") | not)
-	      and (test("<task-notification>") | not)
-	  ))
-	| last // ""
-' "$transcript" 2>/dev/null || true)"
+operator="$(part operator)"
 [ -n "$operator" ] || operator="(no operator instruction found in transcript)"
 
-# --- THE LOOP POSITION IN FORCE, and the utterance that set it --------------------------------
-#
-# THE GUARD'S OLDEST BLIND SPOT, and the reason it reads as crude. \`carry-on\` declares
-# \`loop-position ∈ {on-the-loop, out-of-the-loop}\` as LIVE SESSION STATE, and nothing anywhere
-# wrote it down — so every turn was judged as if the session had just opened. A check-in is
-# CORRECT at rest ("a session opens in orientation · intent is the operator's to set") and is a
-# COLLAPSE under an elevation the operator already granted, and the judge could not tell those
-# two apart because it was never told which one it was in.
-#
-# DERIVED, NOT STORED. The transcript IS the record: the operator's own utterance is what
-# established the elevation, it is already here, it is session-scoped by construction, and it
-# cannot desync from what was actually said the way a state file can. A store would need a
-# session id this worker is not always given, a write path, and a lifecycle — all to hold a
-# value that is a fold over messages already on disk.
-#
-# SCANNED BEFORE THE FILTER ABOVE, which is the whole repair. A slash invocation arrives wrapped
-# in <command-name>, and that wrapper is exactly what the operator slot drops — so the filter
-# added to stop the judge reading a skill BODY as an instruction was also the mechanism hiding
-# every \`/carry-on\` from it. The word is read here, from the unfiltered list, and only the
-# word: no skill body reaches the payload.
-#
-# MECHANICAL EXTRACTION, SEMANTIC WEIGHING — the same split as layer 1. This reports WHICH
-# position is in force and the verbatim utterance that set it; the rubric decides what follows.
-# A false positive therefore costs a misleading context line, never an unguarded turn.
-standing="$(jq -rs '
-	[ .[]
-	  | select(.type == "user")
-	  | (.message.content)
-	  | if type == "string" then .
-	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\\n"))
-	    else "" end
-	]
-	| map(select(. != ""))
-	| map(select(
-	      (test("^\\\\s*<system-reminder>") | not)
-	      and (test("\\\\[SYSTEM NOTIFICATION - NOT USER INPUT\\\\]") | not)
-	      and (test("<task-notification>") | not)
-	  ))
-	| (map(select(test("(^|[^[:alpha:]])(carry[- ]?on|weitermachen|proceed)([^[:alpha:]]|$)"; "i")))
-	   | last) as $hit
-	| if $hit == null then "" else
-	    ($hit
-	     | if test("<command-message>") then (capture("<command-message>(?<m>[^<]*)").m)
-	       elif test("<command-name>") then (capture("<command-name>(?<m>[^<]*)").m)
-	       else . end
-	     | gsub("\\\\s+"; " ")) end
-' "\${session_transcript:-$transcript}" 2>/dev/null || true)"
-
-# The position is a fact under a plain label: which one is in force and, for the elevation, the
-# utterance that set it. What each position means is the rubric's to say.
+standing="$(part standing)"
 if [ -n "$standing" ]; then
 	loop_position="out-of-the-loop, set by the operator's \\"$(printf '%s' "$standing" | cut -c1-300)\\""
 else
 	loop_position="on-the-loop"
 fi
 
-# The judged payload is assembled after the layer-1 note below, because the cap covers both.
-
-# --- LAYER 1: deterministic checks (no LLM) --------------------------------------------------
-# The judge is one sample from a small model — a noisy signal, and unfit to carry an invariant on
-# its own. Anything decidable by inspection is decided HERE, where it is reproducible and free.
-# The judge is reserved for the semantic residue that regex provably cannot reach.
-#
-# L1a · ANNOUNCE-WITHOUT-ACT. A Stop hook fires when the agent has produced text and no further
-# tool call. So a first-person forward commitment in the FINAL text is, by construction, a
-# commitment the turn did not honour: had the agent done the thing, the doing would precede the
-# text and the text would report it ("I ran X"), not promise it ("I'll run X").
-#
-# The rubric could never catch this. Its turn-close rule asks only whether the close OFFERS the
-# next action ("say the word") versus STATES it — and a bare statement PASSES. Replayed through
-# the judge, a real turn reading "Proceeding to #2. I'll run the research and author the plan."
-# came back PASS, with the judge commending the agent for "proceeding with a declared approach"
-# while the agent had in fact proceeded with nothing. Stating and stopping is the collapse in its
-# most fluent disguise, and it is invisible to a rule that only inspects the shape of the close.
-#
-# Contingent commitments are NOT this: waiting on a dispatched agent, on an operator's sign-off,
-# or on an external event is legitimate, and the turn genuinely cannot proceed. Those are carved
-# out below. Everything else routes to the judge with the offending span quoted, so the block
-# names the evidence rather than restating the rule.
-# Windowed off THE CLOSE, not the whole-turn blob. Taking the last 700 bytes of the
-# concatenation reaches BACKWARD ACROSS TOOL BOUNDARIES whenever the final text block is short —
-# reintroducing the very bug this section claims to have fixed ("it judged 'Adding the
-# false-positive fixtures', a preamble whose very next assistant message was a tool_use").
-# It has not fired yet only because the offending turns happened to close with ~3000 chars.
 final_span="$(printf '%s' "$asst_close" | tail -c 700)"
 l1_evidence=""
 if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
-	# Carve-outs: the commitment is contingent on something outside this turn.
 	if ! printf '%s' "$final_span" | grep -Eqi "when (it|they|that|the .*) (returns?|completes?|finishes?|lands?)|once (you|the operator|it|that)|awaiting|still running|report back when|on your (sign-?off|go|word)|if you|unless you|pending your"; then
-		# Extract by SENTENCE, not by a windowed match. \`grep -Eo ".{0,90}…{0,90}"\` looks
-		# obvious and is not portable: ugrep (the default grep on some hosts) rejects the nested
-		# bounded quantifier with "exceeds complexity limits", the command fails, and the
-		# substitution yields EMPTY — so the evidence clause silently vanishes and the block
-		# degrades to the restated-rule feedback this rewrite exists to replace. A gate whose
-		# evidence path fails open is a gate that lies about why it fired.
+		# By sentence: ugrep rejects a windowed \`.{0,90}\` match.
 		l1_evidence="$(printf '%s' "$final_span" | tr '\\n' ' ' | tr '.' '\\n' \\
 			| grep -Eim1 "(i'?ll|i will|i'?m going to|let me|proceeding to|moving on to|starting (on|with))" \\
 			| sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-200)"
 	fi
 fi
-
-# --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
-# The judge contract: payload on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
-# Non-zero judge exit, an empty answer or a verdict that is neither PASS nor BLOCK → dark.
-# THE JUDGE IS HANDED FACTS UNDER PLAIN LABELS, and no sentence telling it what to conclude: the
-# rubric is the one place the test is stated, and a payload that restates it in its own words is a
-# second home for it. The Layer-1 span is one such fact, quoted from the turn by this worker.
 l1_block=""
 [ -z "$l1_evidence" ] || l1_block="
 
 Layer-1 span: \\"$l1_evidence\\""
 
-# THE JUDGED PAYLOAD, BOUNDED: the standing directive, the operator's instruction, THEN the
-# agent turn, and the layer-1 note when there is one — all together at most JUDGE_PAYLOAD_CAP
-# bytes. The operator's message keeps its TAIL (a quarter of the cap at most: the instruction
-# that governs the turn is the last thing said). The agent turn keeps what remains after
-# every fixed part, and it keeps its END: the close is the text after the last tool call, every
-# rule that can fire reads it, and it is the last thing in the turn. Whatever is cut is marked
-# where it was cut.
 op_room=$((JUDGE_PAYLOAD_CAP / 4))
 op_total="$(judge_bytes "$operator")"
 if [ "$op_total" -gt "$op_room" ]; then
@@ -661,31 +248,14 @@ else
 	asst_sent="$(judge_cut 'the agent turn' "$asst_total" "$(judge_bytes "$asst_shown")")
 $asst_shown"
 	if [ -n "$close_fallback" ]; then
-		# The turn ended ON a tool call, so the whole turn stood in for the close: what it
-		# showed, less the tool markers, which are not the agent's words.
 		close_seen="$(printf '%s\\n' "$asst_shown" | sed '/^\\[tools: .*\\]$/d')"
 	else
-		# The close ends the turn, so what the excerpt shows of it is its own final bytes.
 		close_seen="$(printf '%s' "$asst_close" | judge_keep "$(judge_bytes "$asst_shown")")"
 	fi
 fi
 judged="$turn_head
 $asst_sent$l1_block"
 
-# THE JUDGE MAY LIVE OUTSIDE THIS PROCESS, and on a harness that already holds a
-# model it MUST. Spawning another vendor's CLI to answer a question the host can
-# answer in-process is a cross-harness dependency wearing a plugin's clothes: it
-# needs that vendor installed, separately authenticated, and warm — and when its
-# OAuth lapses, every verdict on every harness fails open in silence.
-#
-# So the seam is explicit and the PROCEDURE stays here, in one home. A host that
-# can judge runs this worker twice: once with \`STANCE_EMIT_PAYLOAD\` to receive the
-# gated, layer-1-annotated payload and the rubric that scores it, then again with
-# \`STANCE_VERDICT_FILE\` naming its answer. Everything either pass touches before
-# this line is read-only, so the first pass mutates no counter and no hash — the
-# gate, the extraction and the pre-filter simply run twice and agree.
-#
-# A host with no model of its own changes nothing and keeps the subprocess judge.
 if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
 	jq -cn --arg r "$RUBRIC" --arg p "$judged" '{rubric:$r, payload:$p}'
 	exit 0
@@ -697,91 +267,34 @@ else
 	verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
 fi
 
-decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1 | sed 's/[[:space:]]*$//')"
+tag() { printf '%s\\n' "$verdict" | sed -n "s/^$1:[[:space:]]*//p" | head -1; }
+decision="$(tag VERDICT | sed 's/[[:space:]]*$//')"
 case "$decision" in
-	PASS) allow_stop ;;  # judged, no collapse: the one silent verdict
+	PASS) allow_stop ;;
 	BLOCK) ;;
 	*) dark "the judge's verdict was unparseable (no VERDICT: PASS or VERDICT: BLOCK line)" ;;
 esac
 
-reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
+reason="$(tag REASON)"
 [ -n "$reason" ] || reason="This turn collapsed out of the intent-driven-expert stance."
 
-# --- EVIDENCE VERIFICATION: a block must quote text that is actually in the turn --------------
-# The judge is one sample from a small model, and a wrong block costs exactly what a missed one
-# does: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
-# salient signal instead of on argument — the collapse wearing the guardrail's uniform.
-#
-# Observed live: the judge blocked a turn and quoted "Authoring the plan" as the offending span.
-# That string was not in the turn it judged — it was the close of an EARLIER turn, and that turn
-# had honoured it. Pure confabulation, and unfalsifiable from inside the model.
-#
-# So the quote is checked against the transcript MECHANICALLY. The judge must emit
-# \`EVIDENCE: <verbatim span>\`; if that span does not literally occur in the judged turn, the
-# block is discarded. A model cannot quote what is not there, which makes this cheap and total.
-# EVIDENCE IS MANDATORY FOR A BLOCK. A missing line does not get the benefit of the doubt: the
-# first cut of this check let an absent EVIDENCE line mean "verdict stands", and that exemption
-# was immediately exercised — a fabricated block reached the agent because the span it should
-# have been checked against had been stripped upstream by the judge's own output filter. An
-# unevidenced block is indistinguishable from a fabricated one, so it is discarded either way.
-# Layer-1 blocks are unaffected: they carry a span this hook extracted from the turn itself.
-evidence="$(printf '%s\\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1 \\
-	| sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
+evidence="$(tag EVIDENCE | sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
 if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
-	printf 'DARK\\t\\t%s\\n' "$reason" >> "$verdict_log" 2>/dev/null || true
+	row DARK "" "$reason"
 	say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted no EVIDENCE line, and an unevidenced block cannot be told from a fabricated one. No verdict stands; this turn was NOT judged clean. The judge's reason was: $reason"
 	allow_stop
 fi
 if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
-	# Checked against THE CLOSE, not the whole turn. Existence-somewhere was never the
-	# proposition worth authenticating: every rule that can fire is a claim about the turn's
-	# FINAL text, so a span drawn from a mid-turn preamble is out of scope for the verdict
-	# built on it even though the characters are genuinely present. Measured on this hook's
-	# own three blocks — all three spans preceded the last tool call, all three reasons were
-	# false about what followed, and all three passed the old whole-turn check.
-# THE ONE MECHANICALLY-CHECKED ARTIFACT, RECORDED. \`$evidence\` is the only part of a block
-# that survives a check against the turn; \`$reason\` is unverified model prose. Both were
-# discarded, so a block could not be audited afterwards without re-running a judge measured at
-# 3/5 on identical payloads — i.e. the record of WHY a turn was blocked was reconstructible only
-# by a non-deterministic process. Appended, never rotated by this hook; the state dir is tmp.
-printf '%s\\t%s\\t%s\\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev/null || true
-	# NORMALIZED ON BOTH SIDES, and with \`--\`, because this check had two ways to
-	# throw away a correct block — and both of them fired on the SAME shape, which is
-	# the one shape this guard most exists to catch.
-	#
-	# 1. \`grep -qF "$evidence"\` with no \`--\`: an evidence span opening with a markdown
-	#    bullet is read as an OPTION. \`grep: invalid option -- ' '\`, non-zero, block
-	#    discarded. A tail-enumeration collapse IS a bullet list, so its evidence always
-	#    begins \`- \`, and the rule could never convict the shape it was written for.
-	# 2. A judge quoting several bullets joins them with spaces and drops the markers,
-	#    so a verbatim-substring test fails on punctuation while every word is present.
-	#
-	# The proposition worth authenticating is that the judge quoted THIS TURN'S WORDS,
-	# not that it reproduced its list syntax. So both sides are flattened the same way:
-	# newlines to spaces, runs of whitespace to one, list markers dropped. Symmetric, so
-	# nothing is accepted on one side that would be rejected on the other.
-	# AND AGAINST WHAT THE JUDGE WAS ACTUALLY SENT. \`close_seen\` is the close as far as the
-	# bounded excerpt showed it (the whole close when nothing was cut). A span from text the
-	# excerpt elided cannot be a quotation of anything the judge read, however genuinely it is
-	# in the transcript, so it is discarded exactly as a fabricated one is.
-	ev_norm="$(printf '%s' "$evidence" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
-	close_norm="$(printf '%s' "$close_seen" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
-	if ! printf '%s' "$close_norm" | grep -qF -- "$ev_norm"; then
-		printf 'DARK\\t\\t%s\\n' "$evidence" >> "$verdict_log" 2>/dev/null || true
+	row "$decision" "$evidence" "$reason"
+	norm() { printf '%s' "$1" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g'; }
+	if ! printf '%s' "$(norm "$close_seen")" | grep -qF -- "$(norm "$evidence")"; then
+		row DARK "" "$evidence"
 		say "STANCE GUARDRAIL — BLOCK DISCARDED: the judge blocked this turn but quoted a span that is not in the turn's CLOSE as the judge was sent it (mid-turn preamble, text the excerpt elided, or confabulated): $evidence. No verdict stands; this turn was NOT judged clean."
 		allow_stop
 	fi
 fi
 
-# --- A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP ---------------------
-# A block blocks the stop. The turn end is the one exception to a refused act staying refused: a
-# refused stop holds back no effect, it only makes the agent redo its turn, so the bound below lets
-# a repeated or several-times-refused stop through rather than lock the session in an endless loop.
-# It lets through ONE STOP — the next stop that follows no block starts a new run at 0 and is
-# judged and blocked like any other — and it SAYS SO: the finding stands and the stop is
-# UNRESOLVED. Two caps once let a refused turn through silently, and a counter that never reset
-# turned a one-turn escape into a session-wide disable; neither is restored. What ends a run of
-# blocks is a turn the judge passes, or this bound, said aloud.
+# A refused stop holds back no effect: a repeat of the turn last blocked, or a block after RUN_CAP, is let through said.
 turn_hash="$(printf '%s' "$asst_text" | cksum)"
 run_next=$((run + 1))
 let_through=""
@@ -799,43 +312,16 @@ if [ -z "$let_through" ] && ! printf '%s %s' "$run_next" "$turn_hash" > "$run_fi
 fi
 if [ -n "$let_through" ]; then
 	rm -f "$run_file" 2>/dev/null || true
-	printf 'UNRESOLVED\\t%s\\t%s\\n' "$evidence" "$reason" >> "$verdict_log" 2>/dev/null || true
+	row UNRESOLVED "$evidence" "$reason"
 	say "STANCE GUARDRAIL — stop let through UNRESOLVED: the judge blocked this stop, and the finding STANDS and is unaddressed — $let_through. The next stop that follows no block is judged and blocked again. The judge's reason was: $reason"
 	allow_stop
 fi
-reason="$reason (stance-guardrail block $run_next in this run of refused stops.)"
-
-# --- BLOCK ----------------------------------------------------------------------------------
-# Emit the Stop-hook block decision. The \`reason\` is fed back to the agent as a corrective
-# instruction; it must re-assume the stance (own the call / extract the intent) and continue.
-#
-# The feedback QUOTES THE OFFENDING SPAN when Layer 1 found one. A model corrects far better
-# against a concrete diff than against a restated rule — and the restated rule is what this
-# guardrail used to send, which is why an agent could absorb the correction, agree with it in
-# detail, and reproduce the same failure in its very next sentence.
 evidence_clause=""
-[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \\"$l1_evidence\\" — \\
-you committed to an action and then ended the turn without taking it. Stating a next action is not \\
-performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \\
-is done. "
-# Ship the VERIFIED span on a judge block too. Only \`\$evidence\` survived a mechanical check
-# against the close; \`\$reason\` is unverified model prose. Sending the reason alone leaves the
-# recipient able to argue only with the one string nothing authenticated — and an agent that
-# refutes a fabricated reason has dodged a verdict that may still be correct, which is exactly
-# what happened three times in this hook's authoring session.
-[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span this was checked \\
-against, verbatim from your close: \\"$evidence\\" — the REASON above is the judge's unverified \\
-wording; THIS span is what mechanically matched. Argue with the span, not the wording. "
+[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \\"$l1_evidence\\" — you committed to an action and then ended the turn without taking it; do it now, with tool calls. "
+[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span checked against your close, verbatim: \\"$evidence\\". "
 
-feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \\
-\${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \\
-on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking \\
-permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and \\
-extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate \\
-exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT \\
-ambiguity to /elicit.)"
+feedback="STANCE GUARDRAIL — blocked: $reason \${evidence_clause}Decide the in-remit call yourself and continue. $(contest_refused "$reason")"
 
-# jq builds valid JSON regardless of quotes/newlines in the feedback.
 jq -cn --arg r "$feedback" '{decision:"block", reason:$r}'
 exit 0
 `,
@@ -991,10 +477,3 @@ A record starting "Agent dispatch" is judged by this alone: BLOCK only if it pas
     },
   ],
 };
-
-// EXPORTED AFTER THE CELL, ON PURPOSE. `allHookCells` (tooling/project-targets.ts) takes the
-// FIRST export of a `hooks/*.ts` module to be its cell, by name order and by definition order
-// alike, so anything else this module exports must sort and be defined after `stanceGuardrail`.
-// These are the cap and the shell that honours it, for the two workers that share the judge.
-export const stanceGuardrailJudgeCap = judgePayloadCapBytes;
-export const stanceGuardrailJudgeClip = judgeClipShell;

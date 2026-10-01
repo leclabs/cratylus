@@ -660,6 +660,18 @@ if [ -f "$PRE_WORKER" ]; then
 	out2="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"
 	is_deny "$out2" && pass "refusal holds: identical dispatch-echo denied again on retry" || bad "retry waved through: identical dispatch-echo not denied on 2nd try"
 
+	# P5b — a refusal names its way forward: the agent states why in the file the deny names, repeats
+	#       the dispatch, and it goes through unjudged with the contest logged; the next retry is judged.
+	export GUARD_CONTEST_LOG="$WORK/contests.log"
+	path="$(printf '%s' "$out2" | jq -r '.hookSpecificOutput.permissionDecisionReason' | sed -n "s/.*> '\([^']*\.contest\)'.*/\1/p")"
+	[ -n "$path" ] && printf '%s\n' "the operator quoted this prompt to be sent verbatim" > "$path"
+	out3="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"
+	if [ -n "$path" ] && ! is_deny "$out3" && grep -q 'verbatim' "$GUARD_CONTEST_LOG" 2>/dev/null; then
+		pass "contest: the contested dispatch goes through unjudged and is logged"
+	else bad "a contested dispatch was denied, or its contest not logged"; fi
+	is_deny "$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)" && pass "contest: the next retry of the dispatch is judged and denied" || bad "a spent contest still waved a retry through"
+	unset GUARD_CONTEST_LOG
+
 	# P6 — an UNENROLLED scope (no manifest) → no deny, the twin of case 4.
 	out="$(run_pre AskUserQuestion "$MENU_INREMIT" unenrolled s6)"
 	is_deny "$out" && bad "an unenrolled scope was denied" || pass "scope gate: no manifest, no deny"

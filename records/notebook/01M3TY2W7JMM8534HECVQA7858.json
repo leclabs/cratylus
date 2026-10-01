@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TY2W7JMM8534HECVQA7858",
+    "entity": "01M3TY2W7JMM8534HECVQA7857",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T05:13:07.570Z",
+    "reason": "an assay found worker size unmeasured by any concept",
+    "cause": "assay of stance-workers-lean"
+  },
+  "payload": {
+    "title": "a guard is no larger than its one act",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Held while refusal-way-forward realizes enforcement scope; amend when it closes. enforcement scope bounds what a guard hands its judge but says nothing about the guard itself, so the operator's ask (guard workers are bloated) is measured by no shard. Add: a guard carries only what its one act needs (read the event, decide whether it applies, ask the judge, relay the verdict and the way forward); everything else it carries is a defect. stance-workers-lean cut the workers from 14 KB to 6 KB and 50 KB to 15 KB with byte-identical behaviour; the clause makes that the standard, not a one-off.",
+    "blocks": []
+  }
+}

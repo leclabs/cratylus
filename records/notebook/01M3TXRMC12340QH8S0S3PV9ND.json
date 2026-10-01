@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3TXRMC12340QH8S0S3PV9ND",
+    "entity": "01M3TXPV1APV85HE9NDAHTF2D9",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TXPV1APV85HE9NDAHTF2DA"
+    ],
+    "author": "WayForwardPlanner2",
+    "time": "2026-10-01T05:07:31.841Z",
+    "reason": "Carried by unit stance-contest of refusal-way-forward, unchanged: its CHANGE (a) folds both stance workers onto guard-shell.ts's judgeClipShell and judgePayloadCapBytes, removes stance-guardrail.ts's copies and the stanceGuardrailJudgeCap/Clip exports, and repoints the stance test; its ONE HOME criterion fails while either copy or export remains. Every site spelling these names at 31a7cfce (guard-shell.ts, stance-guardrail.ts, stance-guardrail-pre.ts, stance-guardrail-dark.test.ts) lies in its outputs. Not stance-workers-lean: wave 0 beside purview-contest, its outputs exclude guard-shell.ts and the stance test, and it is held to keep the exports. The two clips differ at 31a7cfce in layout and comments only, so the fold leaves stance payloads unchanged.",
+    "cause": "assay of purview-contest at 31a7cfce found the clip defined in guard-shell.ts and stance-guardrail.ts"
+  },
+  "payload": null
+}

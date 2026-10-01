@@ -36,17 +36,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, isAbsolute, join } from 'node:path';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { resolveWorker } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { handoff } from '../src/dimensions/autonomy/handoff.js';
+import { judgePayloadCapBytes } from '../src/guard-shell.js';
 import { stanceGuardrailPre } from '../src/hooks/stance-guardrail-pre.js';
-import {
-  stanceGuardrail,
-  stanceGuardrailJudgeCap,
-} from '../src/hooks/stance-guardrail.js';
+import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 
 let root: string;
 let worker: string;
@@ -516,7 +514,7 @@ describe('STANCE GUARDRAIL (pre) — a guard binds a main session only', () => {
 // 30 s and a Claude Code cell at 60 s, while the payload had no bound of its own: the Stop
 // worker sent every assistant message since the last operator message and the whole operator
 // message, the pre worker the whole menu or dispatch prompt. A judge that is merely slow was
-// then reported as one that could not run. One cap, declared once in the stance cell, bounds
+// then reported as one that could not run. One cap, declared once in `guard-shell.ts`, bounds
 // all three workers; the purview worker is held to it in `purview-guardrail.test.ts`.
 //
 // The workers are run in the omp form, whose bridge asks for the payload with
@@ -524,7 +522,7 @@ describe('STANCE GUARDRAIL (pre) — a guard binds a main session only', () => {
 // pass is the one that checks a block's EVIDENCE, and it must check it against what the first
 // pass SENT, not against the transcript the first pass cut down.
 describe('STANCE GUARDRAIL — the judge is sent a bounded excerpt', () => {
-  const cap = stanceGuardrailJudgeCap;
+  const cap = judgePayloadCapBytes;
   const big = 200_000;
   let home: string;
   let scope: string;
@@ -928,6 +926,35 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
       expect(r.stdout).toBe('');
     });
 
+    // A refusal never strands the agent: each worker names the file where the agent states why it
+    // holds a refusal wrong. The judge is a stub that counts its calls and always BLOCKs, quoting a
+    // span that is in the close, so a contested fire that was judged shows as a count that moved.
+    const REASON = 'the guard holds this act collapsed';
+    const WHY = 'the operator asked for exactly this';
+    const closing = 'the close has this exact span in it';
+    const contesting = (name: string) => {
+      const calls = join(home, `${name}-calls`);
+      const judge = join(home, `${name}-judge.sh`);
+      const log = join(tmp, `${name}-contests.log`);
+      writeFileSync(
+        judge,
+        `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\nprintf 'VERDICT: BLOCK\\nREASON: ${REASON}\\nEVIDENCE: ${closing}\\n'\n`,
+      );
+      return {
+        env: { STANCE_JUDGE_CMD: `sh ${judge}`, GUARD_CONTEST_LOG: log },
+        log,
+        calls: () =>
+          existsSync(calls) ? readFileSync(calls, 'utf8').length : 0,
+        logged: (): Record<string, string>[] =>
+          existsSync(log)
+            ? readFileSync(log, 'utf8')
+                .trim()
+                .split('\n')
+                .map((l) => JSON.parse(l) as Record<string, string>)
+            : [],
+      };
+    };
+
     if (w.subject === 'call') {
       it('judges a retried refused call again and denies it again', () => {
         const calls = join(home, 'judge-calls');
@@ -952,8 +979,101 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
       it('says so when the payload names no tool', () => {
         expect(said(fire({}, { tool_name: '' }))).toMatch(/names no tool/);
       });
+
+      // A refusal never strands the agent: the call an agent contests goes through unjudged, the
+      // contest is logged for the operator, and the same call afterwards is judged again.
+      const deniedAt = (
+        r: SpawnSyncReturns<string>,
+        session: string,
+      ): string => {
+        expect(r.status).toBe(0);
+        const out = JSON.parse(r.stdout).hookSpecificOutput as {
+          permissionDecision: string;
+          permissionDecisionReason: string;
+        };
+        expect(out.permissionDecision).toBe('deny');
+        expect(out.permissionDecisionReason).toContain(`${REASON} `);
+        const path =
+          out.permissionDecisionReason.match(/> '([^']+\.contest)'/)?.[1] ?? '';
+        expect(isAbsolute(path)).toBe(true);
+        expect(dirname(path)).toBe(
+          join(tmp, 'guardrail-contest', w.dir, session),
+        );
+        expect(basename(path)).toMatch(/^\d+\.contest$/);
+        return path;
+      };
+
+      it('lets a contested call through unjudged, said and logged, and judges the same call again after', () => {
+        const j = contesting('call');
+        const session = `contest-${w.dir}-${form.harness}-call`;
+        const same = { ...payload(), session_id: session };
+        const path = deniedAt(fire(j.env, same), session);
+        expect(readFileSync(path.replace(/contest$/, 'refused'), 'utf8')).toBe(
+          `${REASON}\n`,
+        );
+        expect(j.calls()).toBe(1);
+
+        writeFileSync(path, `${WHY}\n`);
+        const contested = fire(j.env, same);
+        expect(contested.status).toBe(0);
+        expect(contested.stdout).not.toContain('permissionDecision');
+        const text = form.notice(contested.stdout);
+        expect(text).toContain(w.guard);
+        expect(text).toContain(WHY);
+        expect(text).toContain(j.log);
+        expect(j.calls()).toBe(1);
+        expect(j.logged()).toMatchObject([
+          {
+            guard: w.dir,
+            act: 'AskUserQuestion',
+            session,
+            agent: 'nico',
+            refusal: REASON,
+            contest: WHY,
+          },
+        ]);
+        expect(existsSync(path)).toBe(false);
+
+        deniedAt(fire(j.env, same), session);
+        expect(j.calls()).toBe(2);
+      });
+
+      it('leaves a call denied when the contest was written for another call', () => {
+        const j = contesting('other');
+        const session = `contest-${w.dir}-${form.harness}-other`;
+        const path = deniedAt(
+          fire(j.env, { ...payload(), session_id: session }),
+          session,
+        );
+        writeFileSync(path, `${WHY}\n`);
+        deniedAt(fire(j.env, { ...payload(), session_id: session }), session);
+        expect(j.calls()).toBe(2);
+        expect(existsSync(path)).toBe(true);
+      });
+
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the call is judged as usual.
+      it('judges a call whose contest was written before any refusal, discards that contest, and judges the same call again', () => {
+        const j = contesting('ahead');
+        const session = `ahead-${w.dir}-${form.harness}-call`;
+        const same = { ...payload(), session_id: session };
+        const path = deniedAt(fire(j.env, same), session);
+        rmSync(path.replace(/contest$/, 'refused'));
+        expect(j.calls()).toBe(1);
+
+        writeFileSync(path, `${WHY}\n`);
+        const ahead = fire(j.env, same);
+        expect(deniedAt(ahead, session)).toBe(path);
+        expect(ahead.stdout).not.toContain('contested');
+        expect(j.calls()).toBe(2);
+        expect(existsSync(j.log)).toBe(false);
+        expect(existsSync(path)).toBe(false);
+
+        expect(deniedAt(fire(j.env, same), session)).toBe(path);
+        expect(j.calls()).toBe(3);
+        expect(existsSync(j.log)).toBe(false);
+      });
     } else {
-      const closing = 'the close has this exact span in it';
       const closed = (name: string, text: string = closing): string => {
         const t = join(home, name);
         writeFileSync(
@@ -1177,6 +1297,144 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
           'a stop after a block with no state',
         );
         expect(j.calls()).toBe(2);
+      });
+
+      // A refusal never strands the agent: the stop an agent contests goes through whatever the run
+      // of blocks, and the next stop that follows no contest is judged and blocked again.
+      it('lets a contested stop through unjudged, said and logged, and blocks the next stop that carries no contest', () => {
+        const j = contesting('stop');
+        const session = `contest-${w.dir}-${form.harness}-stop`;
+        const at = join(tmp, 'guardrail-contest', w.dir, session, 'stop');
+        const turn = { session_id: session };
+        const first = fire(j.env, {
+          ...turn,
+          transcript_path: closed('tcontest1.jsonl'),
+          stop_hook_active: false,
+        });
+        blocked(first, 'the first stop');
+        const reason = String(JSON.parse(first.stdout).reason);
+        expect(reason).toContain(`${REASON} `);
+        expect(reason).toContain(`> '${at}.contest'`);
+        expect(readFileSync(`${at}.refused`, 'utf8').trim()).toBe(REASON);
+        expect(j.calls()).toBe(1);
+
+        writeFileSync(`${at}.contest`, `${WHY}\n`);
+        const contested = fire(j.env, {
+          ...turn,
+          transcript_path: closed('tcontest2.jsonl', `${closing} again`),
+          stop_hook_active: true,
+        });
+        expect(contested.status).toBe(0);
+        expect(contested.stdout).not.toContain('"decision":"block"');
+        const text = form.notice(contested.stdout);
+        expect(text).toContain(w.guard);
+        expect(text).toContain(WHY);
+        expect(text).toContain(j.log);
+        expect(j.calls()).toBe(1);
+        expect(j.logged()).toMatchObject([
+          {
+            guard: w.dir,
+            act: 'stop',
+            session,
+            agent: 'nico',
+            refusal: REASON,
+            contest: WHY,
+          },
+        ]);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+
+        blocked(
+          fire(j.env, {
+            ...turn,
+            transcript_path: closed('tcontest3.jsonl', `${closing} once more`),
+            stop_hook_active: false,
+          }),
+          'a stop that follows the spent contest',
+        );
+        expect(j.calls()).toBe(2);
+      });
+
+      // A contest answers a refusal that stands: written before the refusal it would answer, it is
+      // discarded unheard and the stop is judged as usual.
+      it('judges a stop whose contest was written before any refusal, discards that contest, and blocks the next stop again', () => {
+        const j = contesting('stop-ahead');
+        const session = `ahead-${w.dir}-${form.harness}-stop`;
+        const at = join(tmp, 'guardrail-contest', w.dir, session, 'stop');
+        mkdirSync(dirname(at), { recursive: true });
+        writeFileSync(`${at}.contest`, `${WHY}\n`);
+        const turn = { session_id: session };
+
+        const ahead = fire(j.env, {
+          ...turn,
+          transcript_path: closed('tahead1.jsonl'),
+          stop_hook_active: false,
+        });
+        blocked(ahead, 'a stop that follows a contest written ahead');
+        expect(String(JSON.parse(ahead.stdout).reason)).toContain(
+          `> '${at}.contest'`,
+        );
+        expect(ahead.stdout).not.toContain('contested');
+        expect(j.calls()).toBe(1);
+        expect(existsSync(j.log)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+
+        blocked(
+          fire(j.env, {
+            ...turn,
+            transcript_path: closed('tahead2.jsonl', `${closing} again`),
+            stop_hook_active: true,
+          }),
+          'the next stop, with no contest written',
+        );
+        expect(j.calls()).toBe(2);
+        expect(existsSync(j.log)).toBe(false);
+      });
+
+      // A refusal stands from the fire that refused it until the next fire of that key: a stop the
+      // agent complied with, and the judge then passed, leaves no refusal for a later contest.
+      it('lets a refusal lapse at the next stop, so a contest written after it answers nothing', () => {
+        const calls = join(home, 'lapse-calls');
+        const verdict = join(home, 'lapse-verdict');
+        const judge = join(home, 'lapse-judge.sh');
+        const log = join(tmp, 'lapse-contests.log');
+        writeFileSync(
+          judge,
+          `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\ncat "${verdict}"\n`,
+        );
+        const env = { STANCE_JUDGE_CMD: `sh ${judge}`, GUARD_CONTEST_LOG: log };
+        const count = (): number =>
+          existsSync(calls) ? readFileSync(calls, 'utf8').length : 0;
+        const session = `lapse-${w.dir}-${form.harness}-stop`;
+        const at = join(tmp, 'guardrail-contest', w.dir, session, 'stop');
+        const stop = (name: string, active: boolean) =>
+          fire(env, {
+            session_id: session,
+            transcript_path: closed(name, `${closing} ${name}`),
+            stop_hook_active: active,
+          });
+
+        writeFileSync(verdict, BLOCK_VERDICT(closing));
+        blocked(stop('tlapse1.jsonl', false), 'the stop the judge blocks');
+        expect(count()).toBe(1);
+        expect(existsSync(`${at}.refused`)).toBe(true);
+
+        writeFileSync(verdict, 'VERDICT: PASS\nREASON: nothing collapsed\n');
+        const passed = stop('tlapse2.jsonl', true);
+        expect(passed.status).toBe(0);
+        expect(passed.stdout).toBe('');
+        expect(count()).toBe(2);
+        expect(existsSync(`${at}.refused`)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+
+        writeFileSync(verdict, BLOCK_VERDICT(closing));
+        writeFileSync(`${at}.contest`, `${WHY}\n`);
+        const after = stop('tlapse3.jsonl', false);
+        blocked(after, 'a stop after the refusal lapsed');
+        expect(after.stdout).not.toContain('contested');
+        expect(count()).toBe(3);
+        expect(existsSync(log)).toBe(false);
+        expect(existsSync(`${at}.contest`)).toBe(false);
+        expect(existsSync(`${at}.refused`)).toBe(true);
       });
     }
   },

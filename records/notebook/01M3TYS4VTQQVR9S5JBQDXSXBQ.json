@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TYS4VTQQVR9S5JBQDXSXBQ",
+    "entity": "01M3TYS4VTQQVR9S5JBQDXSXBP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayStanceContest",
+    "time": "2026-10-01T05:25:17.306Z",
+    "reason": "a finding beside the unit: the shared contest shell predates stance-contest and the verdict on that unit does not turn on it",
+    "cause": "assay of stance-contest at 3d8a735a, turn-end worker fired with a pre-written stop.contest"
+  },
+  "payload": {
+    "title": "a contest needs no standing refusal",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Observed at 3d8a735a (assay of stance-contest), in contestShell (packages/canon/src/guard-shell.ts), which the purview worker and both stance workers share: contest_heard lets the act through unjudged whenever <key>.contest holds text, whether or not a refusal of that act stands (<key>.refused absent). At the turn end the key is the fixed name 'stop', so once an agent has seen the path in one block it can write stop.contest ahead of any later stop in the session and that stop goes through unjudged; I fired the turn-end worker this way and the judge stub was not called, the notice said 'contested' and the log row carried refusal \"\". enforcement scope says a guard judges every turn it fires on and that an agent contests a refusal it holds wrong; whether a contest with no refusal behind it should be judged instead is the architect's ruling. It is said and logged with an empty refusal, so it is visible to the operator.",
+    "blocks": []
+  }
+}
