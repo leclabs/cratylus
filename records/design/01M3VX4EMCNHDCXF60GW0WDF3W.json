@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3VX4EMCNHDCXF60GW0WDF3W",
+    "entity": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V08TM6NB9PGN3HZ4R2VYYN"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:15:45.036Z",
+    "reason": "the help still leads with corpus-author commands (init, add, compose, project, optimize, catalog, explain) a consumer never needs",
+    "cause": "note 'a cli fit for strangers'"
+  },
+  "payload": {
+    "anchor": "command line",
+    "gloss": "the cratylus command as a consumer meets it: every command and verb it has is listed by --help at its own level and documented once to match, so nothing a consumer uses daily is hidden; the commands a consumer needs come first and the commands a corpus author needs are grouped apart, so a stranger sees their own path before anyone else's; its output follows the conventions of any Unix tool, quiet by default and plain, one fact per line, results on stdout and diagnostics on stderr, exit codes that mean success or failure, colour only where it marks what matters and never when the output is not a terminal or NO_COLOR is set; and it has no footguns: no flag is silently ignored, nothing is written where the consumer did not ask, and every error says what went wrong and what to do. Why: the command is the product's front door, and a cluttered, inconsistent or hiding surface costs every consumer on every use and teaches them to distrust the rest.",
+    "factors": [
+      "01M3NK67ET848PWDE5M474EV55",
+      "01M3S9QXFG2PS1VAE275Y7PB7C"
+    ]
+  }
+}

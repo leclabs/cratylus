@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M3VX45GDGE56ZNVZETWDFXF9",
+    "entity": "01M3VX45GDGE56ZNVZETWDFXF8",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T14:15:35.693Z",
+    "reason": "first-share piece 3 calls for install to offer practices; the operator's note had settled closure, declaration by the corpus and plumbing as a dependency",
+    "cause": "note 'install offers practices, not the whole corpus'"
+  },
+  "payload": {
+    "anchor": "practice",
+    "gloss": "a way of working cratylus offers as one installable choice: the agents, skills and hooks that carry it, installed together. A practice is closed under skill composition and agent dispatch, so every agent it installs finds every skill it composes and every agent it dispatches; a set that is not closed ships a broken agent. Which practices exist is meaning, so the corpus declares them and install only offers them. Plumbing that other parts need, such as the event tap, is installed as a dependency and never offered on its own. Why: a consumer adopts a way of working, not a file list, and installing the whole corpus by default puts agents and skills on a host that no one there will use.",
+    "factors": []
+  }
+}

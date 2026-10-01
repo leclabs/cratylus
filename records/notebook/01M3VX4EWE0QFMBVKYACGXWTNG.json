@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VX4EWE0QFMBVKYACGXWTNG",
+    "entity": "01M3Q30T9CB68RP66ZX0S3EHH5",
+    "operation": "retract",
+    "supersedes": [
+      "01M3Q30YP9TH6R6EP59R30QYZ7"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:15:45.294Z",
+    "reason": "entered the design as practice and install",
+    "cause": "first-share piece 3"
+  },
+  "payload": null
+}
