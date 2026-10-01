@@ -89,7 +89,7 @@ interface HookCommand {
 interface Settings {
   permissions?: { allow?: string[] };
   env?: Record<string, string>;
-  hooks?: Record<string, Array<{ hooks: HookCommand[] }>>;
+  hooks?: Record<string, Array<{ matcher?: string; hooks: HookCommand[] }>>;
 }
 
 function fixture(): { settingsPath: string; sinkPath: string } {
@@ -317,7 +317,7 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
             hooks: [{ type: 'command', command: 'echo foreign' }],
           },
         ],
-      } as Settings['hooks'],
+      },
     });
 
     expect(
@@ -336,10 +336,7 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
       sink: sinkPath,
     });
 
-    const entries = (read(settingsPath).hooks?.PreToolUse ?? []) as Array<{
-      matcher?: string;
-      hooks: HookCommand[];
-    }>;
+    const entries = read(settingsPath).hooks?.PreToolUse ?? [];
     expect(entries.map((e) => e.matcher)).toEqual([
       'Bash',
       'AskUserQuestion',
@@ -413,9 +410,7 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
       '--settings',
       settingsPath,
     ]);
-    const entries = (read(settingsPath).hooks?.PreToolUse ?? []) as Array<{
-      matcher?: string;
-    }>;
+    const entries = read(settingsPath).hooks?.PreToolUse ?? [];
     expect(entries.map((e) => e.matcher)).toEqual([
       undefined,
       'AskUserQuestion',
