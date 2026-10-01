@@ -1,0 +1,86 @@
+{
+  "envelope": {
+    "id": "01M3TGMW2D0R4RZB9N6NBHKJ5F",
+    "entity": "01M3T47JBC4TCC9FZ1MTW6GBGY",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TGKM5ZRYBWMR32V6EKP5YD"
+    ],
+    "author": "GuardPrecisionPlanner4",
+    "time": "2026-10-01T01:18:17.165Z",
+    "reason": "integrator reported whole at c1272c1b after assay achieved at e7fcc909",
+    "cause": "whole stance-guard-precise of guard-precision from GuardPrecisionIntegrator4"
+  },
+  "payload": {
+    "plan": "01M3T44MAJE841D05809ZJN9NP",
+    "spec": {
+      "name": "stance-guard-precise",
+      "intent": "Census @15d0a621 (main; plan/purview-routes changes none of this unit's files); re-derive any line cited below if its path changed since.\nRealize on the turn-end stance guard, and on the stance rubric it shares with the pre-call guard, two clauses of `enforcement scope` as amended 2026-09-30T21:21: a refused act stays refused however often it is retried, a retry judged again and never waved through; and what a guard hands its judge is only what its one decision needs, the test stated in a few sentences and the act and contract it applies to.\nAT CENSUS. The cell is packages/canon/src/hooks/stance-guardrail.ts; its workers project to packages/canon/targets/guardrail/stance-guardrail.sh, stance-judge.sh and stance-judge-prompt.md through `pnpm canon:project:targets`. Two caps let a refused turn through: the no-progress detector (L796-801) allows a turn byte-identical to the one last blocked (`NO PROGRESS … Allowing the stop UNRESOLVED`), and the one-shot bypass (L803-823, cap from STANCE_BLOCK_CAP, default 3, L795) allows a turn judged collapsed after that many consecutive blocks (`BYPASS SPENT`). The worker header (L129-133), the loop-safety block (L250-275) and packages/canon/targets/guardrail/README.md (L103) describe them; stance-guardrail-dark.test.ts (L255-303 and the per-harness cases from L1049) and test-stance-guardrail.sh (cases 5b and 5c, L240-254, and the header L11-12) pin them. The rubric (from L1029, 14327 bytes projected) carries the stance, six collapse signals, a reserved set, boundary tests, the handoff laws L1-L4 quoting `handoff` from its cell (L1139), the turn-close, announce-without-act and tail-enumeration rules, a tiebreak and a section on re-fires; README L104-115 describes its cut. The Stop payload adds prose addressed to the judge: the STANDING DIRECTIVE block (L549-566) and the LAYER-1 SIGNAL block (L616-625) besides the OPERATOR and AGENT headers (L641-646); measured through STANCE_EMIT_PAYLOAD, a transcript of operator `hi` and turn `Done.` gives a 545-byte payload, and one of operator `/carry-on` and turn `I will look. I'll run the tests next.` a 1283-byte one. stance-judge.sh wraps the payload as `=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) === … Apply the rubric. Output ONLY the verdict block.` (L920-930). The pre-call and purview workers import stanceGuardrailJudgeClip from this cell (L1234). Calibration: packages/canon/test/support/guardrail/calibrate-stance-judge.sh over packages/canon/test/fixtures/guardrail, whose turn-193, 282, 554, 600, 730, 772 and dispatch-echo payloads are expected BLOCK and whose controls/ (consent-gate-with-a-pick, operator-authorized-push, plain-done-report, route-units-by-name) are expected PASS, with prior measurements in expected.json.\nCHANGE. Remove both caps: every turn is judged, one identical to a refused turn included, and a BLOCK on it blocks the stop however many blocks came before; STANCE_BLOCK_CAP is no longer read; the block count may stay in the reason as a count. State the retry law where the caps were described (header, loop-safety block, README). Rewrite the rubric as the stance test in a few sentences, over the contract it applies to (the `handoff` value quoted from its cell, as now), and the output block; what the fixtures convict and the controls clear is the bar it holds. The Stop payload hands the judge facts under plain labels and no sentence telling it what to conclude: the loop position in force with the utterance that set it, the operator's latest instruction, the agent's turn, and the Layer-1 span when there is one. stance-judge.sh hands the judge the rubric and the payload alone, no wrapper. Keep stanceGuardrailJudgeClip, stanceGuardrailJudgeCap, the payload cap, the evidence check, the scope gate, the subagent skip and the fail-open notices. Record the new measurements in packages/canon/test/fixtures/guardrail/expected.json. Add .changeset/stance-guard-precise.md (@cratylus/canon patch).\nJUDGE, for every judged criterion: omp headless, `omp -p --config <a file setting memory.backend: off> --no-tools --no-session --no-skills --no-rules --no-extensions --no-lsp --thinking off --model anthropic/claude-haiku-4-5 --system-prompt <rubric>` with the payload alone as the prompt, no wrapper around it (unit omp-guard-precise makes the omp bridge send it so), the first answer carrying a `VERDICT:` line taken and an answer without one asked again up to 3 times, named to the worker or the calibration script through STANCE_JUDGE_CMD; `claude -p` could not reach its API at the last census that tried it.",
+      "static": [
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/dimensions/autonomy/handoff.ts",
+        "packages/canon/test/support/guardrail/calibrate-stance-judge.sh",
+        "packages/canon/test/fixtures/guardrail/turn-193.txt",
+        "packages/canon/test/fixtures/guardrail/controls/route-units-by-name.txt",
+        "packages/canon/tooling/project-targets.ts"
+      ],
+      "deps": [
+        "01M3T44MB8RX7QH1V93MA4R39C",
+        "01M3T45B4NA95Y4KWCBQYEV0NC",
+        "01M3T45XNDS3TG4K4YQ8H4MVVK"
+      ],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-judge.sh",
+        "packages/canon/targets/guardrail/stance-judge-prompt.md",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/canon/test/fixtures/guardrail/expected.json",
+        ".changeset/stance-guard-precise.md"
+      ],
+      "accept": [
+        "RETRY: in packages/canon/test/stance-guardrail-dark.test.ts, for each harness form, with a fixture judge answering BLOCK with EVIDENCE present in the close, the same collapsed turn fired twice in one session blocks both times, four different collapsed turns fired in one session all block, and a collapsed turn fired with STANCE_BLOCK_CAP=0 blocks. At 15d0a621 the second identical turn prints NO PROGRESS and allows the stop, and the STANCE_BLOCK_CAP=0 turn prints BYPASS SPENT, so the cases fail there.",
+        "`grep -c -E 'NO PROGRESS|BYPASS SPENT|STANCE_BLOCK_CAP' packages/canon/targets/guardrail/stance-guardrail.sh` prints 0 (3 at 15d0a621).",
+        "RUBRIC: `wc -c < packages/canon/targets/guardrail/stance-judge-prompt.md` prints at most 2048 (14327 at census), and the existing case 'quotes `handoff` exactly as the autonomy cell declares it' in stance-guardrail-dark.test.ts stays green.",
+        "PAYLOAD: run through STANCE_EMIT_PAYLOAD as at census, the transcript of operator `hi` and turn `Done.` gives a payload of at most 200 bytes (545 at census), and the transcript of operator `/carry-on` and turn `I will look. I'll run the tests next.` gives one of at most 400 bytes (1283 at census) that still contains `carry-on`, `I'll run the tests next` and the Layer-1 span `I will look`. Print both payloads.",
+        "WRAPPER: packages/canon/targets/guardrail/stance-judge.sh run with a `claude` stub first on PATH that records its stdin sends the rubric and the payload and neither `TRANSCRIPT EXCERPT` nor `Apply the rubric`; at 15d0a621 it sends both.",
+        "CALIBRATION: `STANCE_JUDGE_CMD=<the judge below> sh packages/canon/test/support/guardrail/calibrate-stance-judge.sh 5` prints every fixture ok with 0 flips and 0 misses and each control BLOCKed 0 of 5; and each fixture and control judged 20 times concurrently through the same judge: every fixture BLOCKed at least 19 of 20 and every control at most 1 of 20. Print every tally and the judge; a judge that cannot be reached prints `could not look: <why>` and the criterion is not met.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts test/purview-guardrail.test.ts test/hook-rule-boundary.test.ts`, `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/stance-guard-precise.md` exists and names @cratylus/canon.",
+        "`git diff --name-only <the unit's base> <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3T339F0BPZAHZ96T0EFN9TY",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "e7fcc9096e75ceea9a562ba1ff23c6cae116c884",
+        "author": "StanceGuardPrecise",
+        "time": "2026-10-01T01:13:12.376Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "e7fcc909",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStanceGuardPrecise",
+        "time": "2026-10-01T01:16:21.119Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "c1272c1b",
+        "author": "GuardPrecisionIntegrator4",
+        "time": "2026-10-01T01:17:36.319Z"
+      }
+    ]
+  }
+}
