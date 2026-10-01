@@ -50,6 +50,8 @@ let config: string;
 /** A PATH holding the tools the worker needs and the runtime shim, and nothing else. */
 let toolbin: string;
 let withRuntime: string;
+/** A PATH with the runtime shim and no jq. */
+let noJq: string;
 
 const identity = {
   GIT_AUTHOR_NAME: 'fixture',
@@ -95,22 +97,35 @@ function cli(cwd: string, ...args: string[]): string {
 
 const by = ['--author', 't', '--reason', 'r', '--cause', 'c'];
 
-/** A PATH dir holding exactly the tools the worker uses, and the runtime shim if asked. */
-function toolDir(name: string, runtime: boolean): string {
+/** What stands for `cratylus` on a PATH: the real CLI, nothing, or a stub with an answer. */
+type Runtime = 'real' | 'absent' | { readonly prints: string };
+
+/** A PATH dir holding exactly the tools the worker uses, the runtime as asked, jq if asked. */
+function toolDir(
+  name: string,
+  { runtime, jq }: { runtime: Runtime; jq: boolean },
+): string {
   const dir = join(root, name);
   mkdirSync(dir, { recursive: true });
-  for (const tool of ['git', 'jq', 'sed', 'cat', 'mkdir']) {
+  for (const tool of ['git', 'sed', 'cat', 'mkdir', ...(jq ? ['jq'] : [])]) {
     symlinkSync(resolved(tool), join(dir, tool));
   }
-  if (runtime) {
+  if (runtime !== 'absent') {
     put(
       join(dir, 'cratylus'),
-      `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(cratylusCli)} "$@"\n`,
+      runtime === 'real'
+        ? `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(cratylusCli)} "$@"\n`
+        : `#!/bin/sh\nprintf '%s\\n' ${JSON.stringify(runtime.prints)}\n`,
     );
     chmodSync(join(dir, 'cratylus'), 0o755);
   }
   return dir;
 }
+
+/** A PATH whose `cratylus` answers `plan show` with this and nothing else. */
+let stubs = 0;
+const answering = (prints: string): string =>
+  toolDir(`stub-${stubs++}`, { runtime: { prints }, jq: true });
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'line-worktree-'));
@@ -131,8 +146,9 @@ beforeEach(() => {
     skills: [plan],
   });
 
-  toolbin = toolDir('toolbin', false);
-  withRuntime = toolDir('with-runtime', true);
+  toolbin = toolDir('toolbin', { runtime: 'absent', jq: true });
+  withRuntime = toolDir('with-runtime', { runtime: 'real', jq: true });
+  noJq = toolDir('no-jq', { runtime: 'real', jq: false });
 
   mkdirSync(repo, { recursive: true });
   git(repo, 'init', '-q', '-b', 'main');
@@ -224,31 +240,91 @@ const isAncestor = (cwd: string, ancestor: string): boolean =>
   spawnSync('git', ['merge-base', '--is-ancestor', ancestor, 'HEAD'], { cwd })
     .status === 0;
 
-describe('line-worktree — a plan is bound', () => {
-  it('cuts the worktree from the tip of the line, on a branch that is neither main nor the line', () => {
+/** The names Claude Code gives a subagent's worktree, which is how the implementer's is told. */
+const implementerNames = ['agent-a1b2c3d4', 'agent-a0123456789abcdef'];
+/** A background session's, a --worktree session's, and names a hair off the subagent's. */
+const otherNames = [
+  'bridge-3f9a1c',
+  'swift-otter-3f2a',
+  'u1',
+  'agent-a123456',
+  'agent-a12345678',
+  'agent-b1234567',
+  'agent-aABCDEF0',
+];
+
+/** The worktree the harness would have made: where, on which branch, from what. */
+function expectMadeAsHarness(r: Run, name: string, from: string): string {
+  expect(r.status, r.stderr).toBe(0);
+  const lines = r.stdout.split('\n').filter((l) => l !== '');
+  expect(lines).toHaveLength(1);
+  const path = lines[0] as string;
+  expect(path).toBe(join(repo, '.claude', 'worktrees', name));
+  expect(worktrees()).toContain(path);
+  expect(git(path, 'rev-parse', '--abbrev-ref', 'HEAD')).toBe(
+    `worktree-${name}`,
+  );
+  expect(git(path, 'rev-parse', 'HEAD')).toBe(from);
+  return path;
+}
+
+describe("line-worktree — a plan is bound, the implementer's worktree", () => {
+  it.each(implementerNames)(
+    'cuts %s from the tip of the line, on a branch that is neither main nor the line',
+    (name) => {
+      const tip = bindLineWithCommit();
+      expect(isAncestor(repo, tip)).toBe(false);
+
+      const { stdout, status, stderr } = run(request(name));
+      expect(status, stderr).toBe(0);
+
+      // STDOUT IS THE PATH AND NOTHING ELSE: one line, absolute, a worktree of the repo.
+      const lines = stdout.split('\n').filter((l) => l !== '');
+      expect(lines).toHaveLength(1);
+      const path = lines[0] as string;
+      expect(isAbsolute(path)).toBe(true);
+      expect(worktrees()).toContain(path);
+
+      const branch = git(path, 'rev-parse', '--abbrev-ref', 'HEAD');
+      expect(branch).not.toBe('main');
+      expect(branch).not.toBe('plan/p');
+      expect(isAncestor(path, tip)).toBe(true);
+      // The control: what only the line holds is in the worktree.
+      expect(readFileSync(join(path, 'line.txt'), 'utf8')).toBe(
+        'on the line\n',
+      );
+    },
+  );
+});
+
+describe('line-worktree — a plan is bound, every other worktree', () => {
+  it.each(otherNames)(
+    'makes %s as the harness would, from HEAD and not from the line, without asking the runtime',
+    (name) => {
+      const tip = bindLineWithCommit();
+      // No runtime on PATH: a worktree that is not the implementer's never needs one.
+      const path = expectMadeAsHarness(
+        run(request(name), toolbin),
+        name,
+        git(repo, 'rev-parse', 'HEAD'),
+      );
+      expect(isAncestor(path, tip)).toBe(false);
+      expect(existsSync(join(path, 'line.txt'))).toBe(false);
+    },
+  );
+
+  it('makes a background session’s worktree from HEAD even with the runtime present', () => {
     const tip = bindLineWithCommit();
-    expect(isAncestor(repo, tip)).toBe(false);
-
-    const { stdout, status, stderr } = run(request('u1'));
-    expect(status, stderr).toBe(0);
-
-    // STDOUT IS THE PATH AND NOTHING ELSE: one line, absolute, a worktree of the repo.
-    const lines = stdout.split('\n').filter((l) => l !== '');
-    expect(lines).toHaveLength(1);
-    const path = lines[0] as string;
-    expect(isAbsolute(path)).toBe(true);
-    expect(worktrees()).toContain(path);
-
-    const branch = git(path, 'rev-parse', '--abbrev-ref', 'HEAD');
-    expect(branch).not.toBe('main');
-    expect(branch).not.toBe('plan/p');
-    expect(isAncestor(path, tip)).toBe(true);
-    // The control: what only the line holds is in the worktree.
-    expect(readFileSync(join(path, 'line.txt'), 'utf8')).toBe('on the line\n');
+    const path = expectMadeAsHarness(
+      run(request('bridge-0a1b2c3d')),
+      'bridge-0a1b2c3d',
+      git(repo, 'rev-parse', 'HEAD'),
+    );
+    expect(isAncestor(path, tip)).toBe(false);
   });
 });
 
-describe('line-worktree — no plan is bound', () => {
+describe("line-worktree — no line to cut the implementer's worktree from", () => {
   /** A line main lacks, left unbound: the control that nothing is cut from it. */
   function unboundLine(): string {
     git(repo, 'branch', 'plan/p');
@@ -262,44 +338,106 @@ describe('line-worktree — no plan is bound', () => {
     return tip;
   }
 
-  it('cuts from the checkout HEAD where the host sets worktree.baseRef to head, and from nothing on the line', () => {
-    const tip = unboundLine();
-    put(
-      join(repo, '.claude', 'settings.json'),
-      `${JSON.stringify({ worktree: { baseRef: 'head' } })}\n`,
-    );
-
-    const { stdout, status, stderr } = run(request('u1'));
-    expect(status, stderr).toBe(0);
-    const path = stdout.trim();
-    expect(path).toBe(join(repo, '.claude', 'worktrees', 'u1'));
-    expect(worktrees()).toContain(path);
-    expect(git(path, 'rev-parse', 'HEAD')).toBe(git(repo, 'rev-parse', 'HEAD'));
-    expect(isAncestor(path, tip)).toBe(false);
-  });
-
-  it("cuts from origin's default branch where baseRef is not head, as the harness does", () => {
+  /** An origin whose default branch the session's HEAD has moved past. */
+  function originBehindHead(): string {
     const origin = join(root, 'origin.git');
     git(root, 'clone', '-q', '--bare', repo, origin);
     git(repo, 'remote', 'add', 'origin', origin);
     git(repo, 'fetch', '-q', 'origin');
     git(repo, 'remote', 'set-head', 'origin', 'main');
     const originTip = git(repo, 'rev-parse', 'origin/main');
-    // The session's HEAD moves past origin, so HEAD and origin's default branch differ.
     put(join(repo, 'ahead.txt'), 'ahead\n');
     git(repo, 'add', '-A');
     git(repo, 'commit', '-q', '-m', 'ahead of origin');
     expect(git(repo, 'rev-parse', 'HEAD')).not.toBe(originTip);
+    return originTip;
+  }
 
-    const { stdout, status, stderr } = run(request('u2'));
-    expect(status, stderr).toBe(0);
-    const path = stdout.trim();
-    expect(git(path, 'rev-parse', 'HEAD')).toBe(originTip);
-    expect(existsSync(join(path, 'ahead.txt'))).toBe(false);
+  const setBaseRefHead = (): void =>
+    put(
+      join(repo, '.claude', 'settings.json'),
+      `${JSON.stringify({ worktree: { baseRef: 'head' } })}\n`,
+    );
+
+  describe.each([...implementerNames, 'bridge-3f9a1c'])('for %s', (name) => {
+    it('with no plan bound, cuts from the checkout HEAD where the host sets worktree.baseRef to head, and from nothing on the line', () => {
+      const tip = unboundLine();
+      setBaseRefHead();
+
+      const path = expectMadeAsHarness(
+        run(request(name)),
+        name,
+        git(repo, 'rev-parse', 'HEAD'),
+      );
+      expect(isAncestor(path, tip)).toBe(false);
+    });
+
+    it("with no plan bound, cuts from origin's default branch where baseRef is not head, as the harness does", () => {
+      const originTip = originBehindHead();
+      const path = expectMadeAsHarness(run(request(name)), name, originTip);
+      expect(existsSync(join(path, 'ahead.txt'))).toBe(false);
+    });
+  });
+
+  describe.each(implementerNames)('for the implementer %s', (name) => {
+    /** Every way the line cannot be had leaves a bound plan's tip uncut-from. */
+    function expectNotFromLine(r: Run, tip: string): void {
+      const path = expectMadeAsHarness(r, name, git(repo, 'rev-parse', 'HEAD'));
+      expect(isAncestor(path, tip)).toBe(false);
+      expect(existsSync(join(path, 'line.txt'))).toBe(false);
+    }
+
+    it('with cratylus missing from PATH, makes it as the harness would', () => {
+      const tip = bindLineWithCommit();
+      expectNotFromLine(run(request(name), toolbin), tip);
+    });
+
+    it('with jq missing from PATH, makes it as the harness would, reading the request and baseRef without jq', () => {
+      const tip = bindLineWithCommit();
+      setBaseRefHead();
+      const originTip = originBehindHead();
+      const r = run(request(name), noJq);
+      const path = expectMadeAsHarness(r, name, git(repo, 'rev-parse', 'HEAD'));
+      expect(git(path, 'rev-parse', 'HEAD')).not.toBe(originTip);
+      expect(isAncestor(path, tip)).toBe(false);
+    });
+
+    it('with the runtime failing, makes it as the harness would', () => {
+      const tip = bindLineWithCommit();
+      expectNotFromLine(
+        run(request(name), withRuntime, {
+          AGENT_RUNTIME_CONFIG: join(root, 'absent.json'),
+        }),
+        tip,
+      );
+    });
+
+    it.each([
+      'plan p (bound) with nothing committed yet',
+      'plans a, b at 0123abc: 2 units',
+      '',
+    ])(
+      'with plan show answering a first line it does not know (%j), makes it as the harness would',
+      (answer) => {
+        const tip = bindLineWithCommit();
+        expectNotFromLine(run(request(name), answering(answer)), tip);
+      },
+    );
+
+    it("with the line's commit unknown to the repository, makes it as the harness would", () => {
+      const tip = bindLineWithCommit();
+      expectNotFromLine(
+        run(
+          request(name),
+          answering('plan p (bound) at 0123456789abcdef: 1 units'),
+        ),
+        tip,
+      );
+    });
   });
 });
 
-describe('line-worktree — a creation it cannot make fails loudly', () => {
+describe('line-worktree — a creation the harness could not make either fails loudly', () => {
   /** The failure's whole footprint: a non-zero exit, no path, no worktree on disk. */
   function expectFailedClean(r: Run): void {
     expect(r.status).not.toBe(0);
@@ -308,25 +446,6 @@ describe('line-worktree — a creation it cannot make fails loudly', () => {
     expect(worktrees()).toEqual([repo]);
     expect(existsSync(join(repo, '.claude', 'worktrees'))).toBe(false);
   }
-
-  it('with the runtime unreachable, it does not guess that no plan is bound', () => {
-    bindLineWithCommit();
-    const worktreesBefore = worktrees();
-    const r = run(request('u1'), toolbin);
-    expect(r.status).not.toBe(0);
-    expect(r.stdout).toBe('');
-    expect(r.stderr).toMatch(/^line-worktree: .*cannot be known/m);
-    expect(worktrees()).toEqual(worktreesBefore);
-    expect(existsSync(join(repo, '.claude', 'worktrees'))).toBe(false);
-  });
-
-  it('with the runtime failing, it does not guess either', () => {
-    expectFailedClean(
-      run(request('u1'), withRuntime, {
-        AGENT_RUNTIME_CONFIG: join(root, 'absent.json'),
-      }),
-    );
-  });
 
   it.each(['../escape', 'a/../b', '/abs', '-flag', 'trailing/', 'a b', ''])(
     'refuses the worktree name %j',
@@ -342,5 +461,20 @@ describe('line-worktree — a creation it cannot make fails loudly', () => {
     expect(r.status).not.toBe(0);
     expect(r.stdout).toBe('');
     expect(r.stderr).toMatch(/not inside a git repository/);
+  });
+
+  it('refuses a name whose path is taken, leaving what is there alone', () => {
+    put(join(repo, '.claude', 'worktrees', 'u1', 'keep.txt'), 'mine\n');
+    const r = run(request('u1'));
+    expect(r.status).not.toBe(0);
+    expect(r.stdout).toBe('');
+    expect(r.stderr).toMatch(/already exists/);
+    expect(worktrees()).toEqual([repo]);
+    expect(
+      readFileSync(
+        join(repo, '.claude', 'worktrees', 'u1', 'keep.txt'),
+        'utf8',
+      ),
+    ).toBe('mine\n');
   });
 });
