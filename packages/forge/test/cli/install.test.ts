@@ -873,6 +873,39 @@ describe('the guided install', () => {
     expect(existsSync(config)).toBe(true);
   });
 
+  it('writes the runtime config under the home it is given, and creates none under the process’s', async () => {
+    const processHome = join(tmpRoot(), 'process-home');
+    mkdirSync(processHome, { recursive: true });
+    vi.stubEnv('HOME', processHome);
+    vi.stubEnv('AGENT_RUNTIME_CONFIG', undefined);
+    expect(
+      await install({
+        corpus: { ...plugin, events: ['session.start'] } as never,
+        harness: 'claude',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(existsSync(join(home, '.cratylus.json'))).toBe(true);
+    expect(existsSync(join(processHome, '.cratylus.json'))).toBe(false);
+    expect(out).toContain(
+      `wrote the runtime config ${join(home, '.cratylus.json')}`,
+    );
+  });
+
+  it('writes it at $AGENT_RUNTIME_CONFIG wherever that is set, whatever the home', async () => {
+    const set = join(tmpRoot(), 'elsewhere.json');
+    vi.stubEnv('AGENT_RUNTIME_CONFIG', set);
+    expect(
+      await install({
+        corpus: { ...plugin, events: ['session.start'] } as never,
+        harness: 'claude',
+        yes: true,
+      }),
+    ).toBe(0);
+    expect(existsSync(set)).toBe(true);
+    expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
+  });
+
   it('ends in one line, writing nothing, where the cwd config names a package that is not installed', async () => {
     // What `cratylus init` writes, before its package is installed: the loader's
     // MissingPackageError, not a stack trace, and no fallback to the bundled corpus.

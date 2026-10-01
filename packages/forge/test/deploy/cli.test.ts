@@ -4,7 +4,7 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
 import {
   DEFAULT_PROJECT_TEMPLATE,
@@ -153,6 +153,75 @@ describe('runDeploy (local)', () => {
       expect(lines[0]).toMatch(/^would deploy /);
       expect(lines.at(-1)).toMatch(/without --dry-run/);
       expect(existsSync(join(home, '.claude'))).toBe(false);
+    });
+  });
+
+  describe('the runtime config follows the home the run is given', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    /** A user-scope deploy to `home`, with the process's HOME another directory and
+     *  `$AGENT_RUNTIME_CONFIG` as given; returns where the process's own config would be. */
+    const deployTo = async (
+      home: string | null,
+      scope: 'user' | 'project',
+      override: string | undefined,
+    ) => {
+      const root = tmp('forge-render-');
+      const { agentsDir, skillsDir } = buildRenderTree(root);
+      const processHome = tmp('forge-process-home-');
+      const project = tmp('forge-project-');
+      vi.stubEnv('HOME', processHome);
+      vi.stubEnv('AGENT_RUNTIME_CONFIG', override);
+      const rc = await runDeploy({
+        agentsDir,
+        skillsDir,
+        kind: 'agent',
+        scope,
+        home,
+        project,
+        plugins: [{ name: 'corpus', events: ['session.start'] }],
+        log: () => {},
+        warn: () => {},
+        fail: () => {},
+      });
+      expect(rc).toBe(0);
+      return join(processHome, '.cratylus.json');
+    };
+
+    it('writes <home>/.cratylus.json and creates none under the process’s HOME', async () => {
+      const home = tmp('forge-home-');
+      const processConfig = await deployTo(home, 'user', undefined);
+      expect(existsSync(join(home, '.cratylus.json'))).toBe(true);
+      expect(existsSync(processConfig)).toBe(false);
+    });
+
+    it('takes the home dir of a --home that already names the harness directory', async () => {
+      const home = tmp('forge-home-');
+      const processConfig = await deployTo(
+        join(home, '.claude'),
+        'user',
+        undefined,
+      );
+      expect(existsSync(join(home, '.cratylus.json'))).toBe(true);
+      expect(existsSync(processConfig)).toBe(false);
+    });
+
+    it('writes at $AGENT_RUNTIME_CONFIG wherever that is set, whatever the home', async () => {
+      const home = tmp('forge-home-');
+      const set = join(tmp('forge-set-'), 'elsewhere.json');
+      const processConfig = await deployTo(home, 'user', set);
+      expect(existsSync(set)).toBe(true);
+      expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
+      expect(existsSync(processConfig)).toBe(false);
+    });
+
+    it('keeps the process’s home for a project-scope deploy and for a run given no home', async () => {
+      const project = await deployTo(null, 'project', undefined);
+      expect(existsSync(project)).toBe(true);
+      const none = await deployTo(null, 'user', undefined);
+      expect(existsSync(none)).toBe(true);
     });
   });
 

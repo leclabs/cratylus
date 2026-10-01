@@ -8,7 +8,7 @@
 // Neither is a stage, so neither is here.
 
 import { existsSync, statSync } from 'node:fs';
-import { join, resolve as resolvePath } from 'node:path';
+import { dirname, join, resolve as resolvePath } from 'node:path';
 import type { AgentPlugin } from '@cratylus/schema';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
@@ -309,6 +309,12 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
       harnessAdapter.name,
       harnessAdapter.nativeEvents,
       harnessAdapter.nativeActs,
+      // The home the harness directory hangs from, when the run was given one: the
+      // runtime config follows it. A project-scope deploy, and a run given no home,
+      // leave it to the process's.
+      opts.scope === 'user' && opts.home
+        ? dirname(scopeRes.harnessDir)
+        : undefined,
       log,
       warn,
     );
@@ -401,6 +407,7 @@ async function emitHostRuntimeConfig(
   harness: string,
   nativeEvents: Readonly<Record<string, string>>,
   nativeActs: HarnessAdapter['nativeActs'],
+  home: string | undefined,
   log: (line: string) => void,
   warn: (message: string) => void,
 ): Promise<{ path: string; wrote: boolean } | null> {
@@ -436,6 +443,7 @@ async function emitHostRuntimeConfig(
     ...(nativeActs === undefined ? {} : { nativeActs }),
     skills: (await resolveSkills(plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
+    ...(home === undefined ? {} : { home }),
   });
   log(
     `runtime config${wrote ? '' : ' (dry-run)'}: ${path}: ` +
