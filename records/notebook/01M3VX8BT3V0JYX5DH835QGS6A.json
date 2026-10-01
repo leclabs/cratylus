@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VX8BT3V0JYX5DH835QGS6A",
+    "entity": "01M3QHW579NA0VXPYYM46V7ZSG",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QHW579NA0VXPYYM46V7ZSH"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:17:53.219Z",
+    "reason": "settled: concept-driven development (cdd), the operator's own name for the workflow, shaped like TDD/BDD/DDD; practice names are outside the cold-decode oracle's scope",
+    "cause": "PracticesPlanner needed the general practice's name"
+  },
+  "payload": null
+}
