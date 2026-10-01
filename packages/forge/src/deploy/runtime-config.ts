@@ -28,12 +28,14 @@
 // harness home; this owns exactly one file beside it.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { JsonValue, Skill } from '@cratylus/schema';
 import type { EventName, NativeBinding } from '@cratylus/schema/hook';
+import type { RuntimeConfigRecord } from './manifest.js';
 
 /**
  * Where the emitted config lands: `$AGENT_RUNTIME_CONFIG` ▸ `<home>/.<runtime-bin>.json`,
@@ -215,8 +217,12 @@ function configurationOf(
   return configuration;
 }
 
-/** Serialize the document exactly as it lands on disk (2-space, trailing newline). */
-export function serializeRuntimeConfig(doc: EmittedRuntimeConfig): string {
+/** Serialize the document exactly as it lands on disk (2-space, trailing newline). A
+ *  document an uninstall has cut down is not an `EmittedRuntimeConfig`, hence the
+ *  plain object. */
+export function serializeRuntimeConfig(
+  doc: EmittedRuntimeConfig | Readonly<Record<string, unknown>>,
+): string {
   return `${JSON.stringify(doc, null, 2)}\n`;
 }
 
@@ -224,18 +230,53 @@ export function serializeRuntimeConfig(doc: EmittedRuntimeConfig): string {
 export interface EmitRuntimeConfigResult {
   readonly path: string;
   readonly wrote: boolean;
+  /** The document as it stands (or, dry, would stand): cratylus's parts and every
+   *  part of the host's that was carried. */
   readonly doc: EmittedRuntimeConfig;
   /** The stanza this emission wrote — `doc.harnesses[harness]`. */
   readonly stanza: EmittedHarness;
+  /** What this emission wrote, by digest of each part's value: the part of the file
+   *  that is cratylus's, which an uninstall takes out while it is still what was
+   *  written and leaves once the host has changed it. The deploy records it. */
+  readonly record: RuntimeConfigRecord;
+}
+
+/** The sha-256 (hex) of a value as JSON, its object keys in order, so that a part the
+ *  host re-serialized with the same content is the part that was written. */
+export function digestOf(value: unknown): string {
+  const canonical = JSON.stringify(value, (_key, v: unknown) =>
+    isPlain(v)
+      ? Object.fromEntries(
+          Object.entries(v).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+        )
+      : v,
+  );
+  return createHash('sha256').update(canonical).digest('hex');
+}
+
+type Plain = Record<string, unknown>;
+
+const isPlain = (v: unknown): v is Plain =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/** `from` less the named keys. */
+function omit(from: Plain, keys: readonly string[]): Plain {
+  return Object.fromEntries(
+    Object.entries(from).filter(([k]) => !keys.includes(k)),
+  );
 }
 
 /**
  * Emit the host config.
  *
- * The corpus's parts (`events`, `configuration`) and this harness's stanza are
- * regenerated. Every OTHER harness's stanza is carried over as found: it is that
- * harness's deploy's to write, and replacing it here is how a claude deploy used to
- * erase omp's native names. Nothing else in an existing config is carried.
+ * What is cratylus's in the file is the event vocabulary (`events.vocabulary`), the
+ * configuration of each capability the corpus configures (`configuration.<capability>`)
+ * and each harness's stanza (`harnesses.<harness>`). The vocabulary, the configuration
+ * and this harness's stanza are regenerated. Every OTHER harness's stanza is carried
+ * over as found: it is that harness's deploy's to write, and replacing it here is how a
+ * claude deploy used to erase omp's native names. Everything else in an existing config
+ * is the host's and is carried as found: a key of its own at the top, another key under
+ * `events`, a capability's configuration the corpus does not write.
  */
 export function emitRuntimeConfig(
   opts: EmitRuntimeConfigOpts & {
@@ -248,37 +289,197 @@ export function emitRuntimeConfig(
   },
 ): EmitRuntimeConfigResult {
   const path = opts.path ?? runtimeConfigTarget(opts.env, opts.home);
-  const doc = runtimeConfigDocument({
+  const prior = priorConfig(path);
+  const ours = runtimeConfigDocument({
     ...opts,
-    harnesses: opts.harnesses ?? priorHarnesses(path),
+    harnesses:
+      opts.harnesses ??
+      (isPlain(prior.harnesses)
+        ? (prior.harnesses as Record<string, EmittedHarness>)
+        : {}),
   });
+  const record: RuntimeConfigRecord = {
+    stanza: digestOf(ours.harnesses[opts.harness]),
+    vocabulary: digestOf(ours.events.vocabulary),
+    capabilities: Object.fromEntries(
+      Object.entries(ours.configuration ?? {}).map(([capability, value]) => [
+        capability,
+        digestOf(value),
+      ]),
+    ),
+  };
+  const { events, harnesses: _stanzas, configuration, ...hostKeys } = prior;
+  const mergedConfiguration = {
+    ...(isPlain(configuration)
+      ? omit(configuration, Object.keys(record.capabilities))
+      : {}),
+    ...ours.configuration,
+  };
+  // The host's parts ride in the document beside the typed ones, which is why the
+  // result is cast: `EmittedRuntimeConfig` names what cratylus emits, not what a host
+  // keeps in its own file.
+  const doc = {
+    events: {
+      ...(isPlain(events) ? omit(events, ['vocabulary']) : {}),
+      ...ours.events,
+    },
+    harnesses: ours.harnesses,
+    ...(Object.keys(mergedConfiguration).length > 0
+      ? { configuration: mergedConfiguration }
+      : {}),
+    ...hostKeys,
+  } as unknown as EmittedRuntimeConfig;
   const stanza = harnessStanza(opts);
-  if (opts.dry === true) return { path, wrote: false, doc, stanza };
+  if (opts.dry === true) return { path, wrote: false, doc, stanza, record };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
-  return { path, wrote: true, doc, stanza };
+  return { path, wrote: true, doc, stanza, record };
 }
 
 /**
- * Every harness's stanza in an existing config, empty when absent or corrupt.
- * Stanzas are carried as found, not re-read: they are other deploys' output, and
- * this one has no business normalizing them.
+ * The existing config as an object, empty when absent, corrupt or not an object.
+ * Its harness stanzas are carried as found, not re-read: they are other deploys'
+ * output, and this one has no business normalizing them.
  */
-function priorHarnesses(
-  path: string,
-): Readonly<Record<string, EmittedHarness>> {
+function priorConfig(path: string): Plain {
   if (!existsSync(path)) return {};
   try {
-    const { harnesses } = JSON.parse(readFileSync(path, 'utf8')) as {
-      harnesses?: unknown;
-    };
-    return harnesses !== null &&
-      typeof harnesses === 'object' &&
-      !Array.isArray(harnesses)
-      ? (harnesses as Record<string, EmittedHarness>)
-      : {};
+    const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    return isPlain(parsed) ? parsed : {};
   } catch {
     // A corrupt config must not wedge a deploy; the vocabulary is re-emitted.
     return {};
   }
+}
+
+/** What an uninstall of one harness does to a runtime config. */
+export interface RuntimeConfigRemoval {
+  /** Whether no other installed harness has a stanza in the file, so that the corpus's
+   *  parts went with this one's. */
+  readonly last: boolean;
+  /** The document once cratylus's parts are out; `null` when nothing is left in it. */
+  readonly rest: Plain | null;
+  /** The parts of cratylus's that were taken out, as dotted paths. */
+  readonly removed: readonly string[];
+  /** Parts cratylus placed that the host has changed since, which stand. */
+  readonly changed: readonly string[];
+  /** Parts of cratylus's that stand because the deploy recorded nothing of what it wrote,
+   *  so a change by the host cannot be ruled out. */
+  readonly unrecorded: readonly string[];
+  /** What stands because the host placed it; reported only for the last harness, for
+   *  the others share the file with their own parts. */
+  readonly left: readonly string[];
+}
+
+/**
+ * Take cratylus's parts out of a runtime config for one harness's uninstall, and
+ * nothing the host placed or changed. A part is cratylus's to take out while it is what
+ * the deploy recorded writing (`record`, by digest of its value): this harness's stanza,
+ * and — when no other harness of `installed` still has a stanza in the file — the
+ * vocabulary and the configuration of each capability the deploy wrote. A part the host
+ * has changed since stands and is named, as does every part when `record` is `null`, a
+ * deploy from before it was kept. `undefined` when the config holds no stanza of this
+ * harness, so there is nothing of its to remove.
+ */
+export function withoutRuntimeParts(
+  doc: Plain,
+  opts: {
+    readonly harness: string;
+    /** The harnesses other than this one that are installed — each has a deploy record. */
+    readonly installed: readonly string[];
+    readonly record: RuntimeConfigRecord | null;
+  },
+): RuntimeConfigRemoval | undefined {
+  const { harness, record } = opts;
+  if (!isPlain(doc.harnesses) || !Object.hasOwn(doc.harnesses, harness)) {
+    return undefined;
+  }
+  const last = !opts.installed.some(
+    (name) => name !== harness && Object.hasOwn(doc.harnesses as Plain, name),
+  );
+  const removed: string[] = [];
+  const changed: string[] = [];
+  const unrecorded: string[] = [];
+  /** Whether the part at `path` is cratylus's to take out, said once either way. */
+  const settle = (
+    path: string,
+    value: unknown,
+    recorded: string | undefined,
+  ): boolean => {
+    if (record === null) unrecorded.push(path);
+    else if (recorded !== undefined && digestOf(value) === recorded) {
+      removed.push(path);
+      return true;
+    } else changed.push(path);
+    return false;
+  };
+
+  let harnesses: Plain = doc.harnesses;
+  let events = doc.events;
+  let configuration = doc.configuration;
+  if (settle(`harnesses.${harness}`, harnesses[harness], record?.stanza)) {
+    harnesses = omit(harnesses, [harness]);
+  }
+  if (last) {
+    if (
+      isPlain(events) &&
+      Object.hasOwn(events, 'vocabulary') &&
+      settle('events.vocabulary', events.vocabulary, record?.vocabulary)
+    ) {
+      events = omit(events, ['vocabulary']);
+    }
+    if (isPlain(configuration)) {
+      const present = configuration;
+      const capabilities =
+        record === null
+          ? Object.keys(present)
+          : Object.keys(record.capabilities).filter((c) =>
+              Object.hasOwn(present, c),
+            );
+      configuration = omit(
+        present,
+        capabilities.filter((capability) =>
+          settle(
+            `configuration.${capability}`,
+            present[capability],
+            record?.capabilities[capability],
+          ),
+        ),
+      );
+    }
+  }
+
+  // What is left of each block stays; a block this took the last entry out of goes, for
+  // deploy added it whole.
+  const rest: Plain = Object.fromEntries(
+    Object.entries({ ...doc, harnesses, events, configuration }).filter(
+      ([key, block]) =>
+        block !== undefined &&
+        !(
+          isPlain(block) &&
+          Object.keys(block).length === 0 &&
+          removed.some((path) => path.startsWith(`${key}.`))
+        ),
+    ),
+  );
+
+  const left: string[] = [];
+  if (last) {
+    const named = new Set([...changed, ...unrecorded]);
+    for (const [key, value] of Object.entries(rest)) {
+      const paths =
+        isPlain(value) && ['events', 'harnesses', 'configuration'].includes(key)
+          ? Object.keys(value).map((k) => `${key}.${k}`)
+          : [key];
+      for (const path of paths) if (!named.has(path)) left.push(path);
+    }
+  }
+  return {
+    last,
+    rest: Object.keys(rest).length > 0 ? rest : null,
+    removed,
+    changed,
+    unrecorded,
+    left,
+  };
 }

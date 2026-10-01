@@ -325,7 +325,9 @@ configuration, and the stanza of the harness it installed, `harnesses.claude` or
 that harness's name for each event it can fire. It leaves the other harness's stanza as it found it,
 so installing for Claude Code and then for omp leaves both in the same file. A capability that needs
 a harness's stanza and finds none refuses, and `cratylus install --harness <h>` writes it.
-`cratylus eventTap` needs `claude`'s.
+`cratylus eventTap` needs `claude`'s. The file is yours as much as cratylus's: a key you wrote in it,
+at the top or under `events`, or a capability's configuration the corpus does not write, is carried
+as you left it by every install and deploy.
 
 ## Taking it away again
 
@@ -340,8 +342,9 @@ and nothing the host placed or changed. `--harness` is required. What is `instal
 the harness's deploy manifest (`.forge/deploy-manifest.json`) and by nothing else: the manifest
 records a sha-256 digest of every file it wrote, the hook commands it registered in `settings.json`,
 the status line it set or wrapped (with your original command), the lines it added to omp's
-`config.yml` (the `modelRoles` entries and the status line layout), and the launch commands it
-linked or adopted. Uninstall removes:
+`config.yml` (the `modelRoles` entries and the status line layout), a digest of each part it
+wrote into the runtime config, and the launch commands it linked or adopted.
+Uninstall removes:
 
 - every recorded file whose bytes still hash to that digest, and any directory that leaves empty;
 - the hook registrations it added, and your status line back as it was, your own command and every
@@ -350,7 +353,9 @@ linked or adopted. Uninstall removes:
   `modelRoles` entries included (a `config.yml` install created goes with its last line);
 - the launch commands it placed or adopted, and only those;
 - this harness's stanza of the runtime config (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and
-  the file itself when that was the last harness's;
+  with the last installed harness's stanza the corpus's parts too, the event vocabulary and the
+  configuration of each capability the corpus configured, each while it is still what install
+  wrote, and the file itself only when nothing else is left in it;
 - the manifest, last, so a run that stops early can be run again.
 
 It prints a count of what it removed and each thing it left because the host placed or changed it,
@@ -358,7 +363,9 @@ with its reason; `--verbose` lists every item removed too. It ends by telling yo
 harness. A placed file you edited since install is left, and so is one recorded before digests were
 kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours,
 a status line you have pointed at another command, a launch command you replaced, and a file the
-other harness's install still records. A `config.yml` line you rewrote is left too, and only that
+other harness's install still records. A part of the runtime config you changed since install (a
+capability's configuration you edited, an event you added to the vocabulary) is left too, and so is
+every key you placed in it, each named. A `config.yml` line you rewrote is left too, and only that
 line: every other line install added there still comes out, one at a time, and a line of yours
 beneath a block install added keeps the headers it sits under. Left files are yours from then on:
 the manifest goes, so a later uninstall no longer names them. `--dry-run` runs every step and writes

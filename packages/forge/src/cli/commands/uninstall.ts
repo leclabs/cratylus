@@ -54,6 +54,7 @@ import {
   serializeRuntimeConfig,
   undoHunks,
   unregisterHookCommands,
+  withoutRuntimeParts,
 } from '../../deploy/index.js';
 import { settingsJson } from '../../deploy/settings-json.js';
 import { containingRoot } from '../../prune/index.js';
@@ -426,50 +427,73 @@ function removePlacedFiles(
   applyPrune(harnessDir, removable, opts.dryRun ?? false, [neutral]);
 }
 
-/** This harness's stanza of the runtime config in `home`'s file (or, where
- *  `$AGENT_RUNTIME_CONFIG` is set, that path). The file is emitted whole by deploy,
- *  one stanza per harness, so it goes with the last stanza and not before. */
+/** What cratylus put in the runtime config in `home`'s file (or, where
+ *  `$AGENT_RUNTIME_CONFIG` is set, that path): this harness's stanza, and — when no other
+ *  installed harness has one — the corpus's parts too, the event vocabulary and the
+ *  configuration of the capabilities the deploy recorded writing. A part is taken out
+ *  while it is what the deploy recorded; one the host has changed since stands, as does
+ *  every key the host placed, each named. The file goes only when nothing is left in it. */
 function removeRuntimeStanza(
   adapter: HarnessAdapter,
+  manifest: DeployManifest,
   home: string,
   dry: boolean,
   tally: Tally,
 ): void {
   const file = runtimeConfigTarget(process.env, home);
   if (!existsSync(file)) return;
-  let doc: Record<string, unknown>;
+  let doc: unknown;
   try {
-    doc = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+    doc = JSON.parse(readFileSync(file, 'utf8'));
   } catch {
     return; // not ours to interpret, and never rewritten unread
   }
-  const harnesses = doc.harnesses as Record<string, unknown> | undefined;
-  if (
-    harnesses === undefined ||
-    harnesses === null ||
-    typeof harnesses !== 'object' ||
-    !Object.hasOwn(harnesses, adapter.name)
-  ) {
-    return;
-  }
-  const { [adapter.name]: _gone, ...others } = harnesses;
-  const known = new Set(['events', 'harnesses', 'configuration']);
-  const foreign = Object.keys(doc).some((k) => !known.has(k));
-  const whole = Object.keys(others).length === 0 && !foreign;
-  tally.removed.push({
-    what: whole
-      ? `${file} (the runtime config: ${adapter.name} was its last harness)`
-      : `${file}: the ${adapter.name} stanza`,
-    outside: { area: file, noun: 'runtime config' },
+  if (typeof doc !== 'object' || doc === null || Array.isArray(doc)) return;
+  const removal = withoutRuntimeParts(doc as Record<string, unknown>, {
+    harness: adapter.name,
+    installed: HARNESS_NAMES.filter(
+      (name) =>
+        name !== adapter.name &&
+        existsSync(join(home, adapterByName(name).home, MANIFEST_REL)),
+    ),
+    record: manifest.runtimeConfig,
   });
+  if (removal === undefined) return;
+  const { rest, removed, changed, unrecorded, left } = removal;
+  if (rest === null) {
+    tally.removed.push({
+      what: `${file} (the runtime config: ${adapter.name} was its last harness)`,
+      outside: { area: file, noun: 'runtime config' },
+    });
+  } else if (removed.length > 0) {
+    tally.removed.push({
+      what: `${file}: ${removed.join(', ')}`,
+      outside: { area: file, noun: 'runtime config' },
+    });
+  }
+  if (changed.length > 0) {
+    tally.left.push({
+      what: `${file}: ${changed.join(', ')}`,
+      why: 'the host changed what install wrote there since install',
+    });
+  }
+  if (unrecorded.length > 0) {
+    tally.left.push({
+      what: `${file}: ${unrecorded.join(', ')}`,
+      why: `no record was kept of what ${adapter.name}'s deploy wrote there, so a change by the host cannot be ruled out; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records it, then uninstall`,
+    });
+  }
+  if (left.length > 0) {
+    tally.left.push({
+      what: `${file}: ${left.join(', ')}`,
+      why: 'the host placed them, so the file stays with them',
+    });
+  }
   if (dry) return;
-  if (whole) {
+  if (rest === null) {
     unlinkSync(file);
-  } else {
-    writeFileSync(
-      file,
-      serializeRuntimeConfig({ ...doc, harnesses: others } as never),
-    );
+  } else if (removed.length > 0) {
+    writeFileSync(file, serializeRuntimeConfig(rest));
   }
 }
 
@@ -568,7 +592,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
     if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
     undoHostEdits(harnessDir, manifest, dry, tally);
     removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
-    removeRuntimeStanza(adapter, opts.home, dry, tally);
+    removeRuntimeStanza(adapter, manifest, opts.home, dry, tally);
     tally.removed.push({ what: `${manifestFile} (the deploy record)` });
     if (!dry) dropFile(harnessDir, manifestFile);
   } catch (e) {

@@ -97,6 +97,24 @@ export interface DeployManifest {
   // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
   // are never recorded; an uninstall takes these lines out and touches nothing else.
   hostEdits: Record<string, HostEdit>;
+  // What this harness's last deploy wrote into the host runtime config, by digest of each
+  // part's value: the event vocabulary, this harness's stanza and the configuration of each
+  // capability it wrote. The file is shared with the host, which may keep keys of its own
+  // in it and may change a part after deploy, so an uninstall takes out a part only while
+  // it is still what is recorded, and leaves one that is not. `null` ⇒ none recorded (a
+  // deploy from before this was kept, or one that emitted no runtime config), and no part
+  // is then taken out, as a change by the host cannot be ruled out.
+  runtimeConfig: RuntimeConfigRecord | null;
+}
+
+/** The parts of the host runtime config a deploy wrote, each as the sha-256 of its value. */
+export interface RuntimeConfigRecord {
+  /** `events.vocabulary`. */
+  vocabulary: string;
+  /** `harnesses.<this harness>`. */
+  stanza: string;
+  /** `configuration.<capability>`, per capability the deploy configured. */
+  capabilities: Record<string, string>;
 }
 
 /** One run of lines install put into a host-owned text file, kept WITH their line
@@ -135,6 +153,7 @@ export function emptyManifest(): DeployManifest {
     statusLine: null,
     digests: {},
     hostEdits: {},
+    runtimeConfig: null,
   };
 }
 
@@ -165,6 +184,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},
+      runtimeConfig: parsed.runtimeConfig ?? null,
     };
   } catch {
     return emptyManifest();
