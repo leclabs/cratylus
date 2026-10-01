@@ -10,18 +10,27 @@ It **depends on nothing** in this system — zero `@cratylus/*` dependencies —
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
+What every package is for is [ARCHITECTURE.md](../../ARCHITECTURE.md)'s. The commands a consumer
+types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for the
+author of a corpus whose skills route here, and for a library user of the package.
+
 ## Capabilities
 
 The runtime ships exactly four capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `eventTap`, `design`, `plan` and `note`.
+names them: `eventTap`, `design`, `plan` and `note`. A corpus's skill names one of them as
+`runtime: { capability: … }`.
 
-## Ports and strategies
+| capability | port           | verbs                                                                                                          |
+| ---------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
+| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                       |
+| `design`   | `DesignHost`   | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                                                     |
+| `plan`     | `PlanHost`     | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile`, `land`, `assay`, `whole`, `broke` |
+| `note`     | `NoteHost`     | `show`, `capture`, `revise`, `retract`, `reconcile`                                                            |
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
-against its port: `EventTapHost` (whose Claude strategy is `EventTapHostClaude`), `DesignHost`,
-`PlanHost` and `NoteHost`. `MailboxHost` is a port too, under a provisional path, and is no
-capability.
+against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is pure
+contracts: no implementation.
 
 ## Subpaths
 
@@ -39,19 +48,11 @@ capability.
 | `./verb-flags`             | `VerbFlags`, `Verb`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's summary, positional and flags (whether each takes a value, and its description), the one reader (a flag that takes no value never takes the next token), and the one refusal of an untaken flag or surplus word |
 | `./package.json`           | the manifest                                                                                                                                                                                                                                                                                                                            |
 
-The `.` barrel is pure contracts: no implementation.
-
 ## The three domains
 
 Notes, design and plans are immutable records in the repository, folded when someone asks. Agents
-and users meet them only through three capabilities that ship inside the runtime, each routed by
-`capabilityCommands` to its own verb surface and each with its port in the `.` barrel:
-
-| capability | port         | verbs                                                                                                          |
-| ---------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
-| `design`   | `DesignHost` | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                                                     |
-| `plan`     | `PlanHost`   | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile`, `land`, `assay`, `whole`, `broke` |
-| `note`     | `NoteHost`   | `show`, `capture`, `revise`, `retract`, `reconcile`                                                            |
+and users meet them only through the `design`, `plan` and `note` capabilities, each routed by
+`capabilityCommands` to its own verb surface and each with its port in the `.` barrel.
 
 Every input names an entity by name, and every output is the domain's view, in the domain's own
 words. Where a merge left one name held by more than one entity, the view prints each holder's
@@ -59,29 +60,25 @@ identity beside it as `name (identity <id>)`, and that printed form is exactly t
 addresses one holder. A write is all or nothing: it is checked and its view rendered before anything
 reaches the repository, so a refusal writes nothing and exits `1` naming the verb that would succeed.
 A view's header says when it includes writes not yet committed. Where no plan is in view, a unit is
-printed with its plan, `u of plan p`, and that form is accepted wherever a unit is named. What
-must be resolved first names its cause and what moved — withdrawn, diverged or amended, and for an
-amendment which of anchor, gloss and factors differ from the pinned version, factors named as those
-added and removed, or that none differ — lists a plan view's own items only, and
-never asks of a closed plan's frozen units. When the store itself fails — no repository, a damaged
-stored entry — the capability says so plainly and names what to repair. `plan show <plan>` shows any plan
-whole; a unit's pin is kept by every revise until one says `--repin` with a reason. The plan lifecycle
-arrives as `configuration.plan` in the host runtime config, which deploy emits; without it `plan`
-refuses and names the deploy, and `design show` shows the lattice and says the plans standing on it
-wait for that deploy.
+printed with its plan, `u of plan p`, and that form is accepted wherever a unit is named. When the
+store itself fails — no repository, a damaged stored entry — the capability says so plainly and names
+what to repair.
 
-A unit carries a ledger of what happens to it while it is worked, written as it happens: `plan land
-<unit> --plan <p> --commit <sha>` records the commit that holds its work, `plan assay <unit> --plan
+`plan show <plan>` shows any plan whole, and a unit's pin is kept by every revise until one says
+`--repin` with a reason. The plan lifecycle arrives as `configuration.plan` in the host runtime
+config, which deploy emits; without it `plan` refuses and names the deploy, and `design show` shows
+the lattice and says the plans standing on it wait for that deploy.
 
-<p> --commit <sha> --verdict <achieved|not-achieved> [--missing <what>]…` an assay's verdict (a
-verdict not achieved names what was missing, one achieved names nothing), `plan whole <unit> --plan
-<p> --commit <sha>` the line's commit holding it, and `plan broke <unit> --plan <p> --check <check>`
-the failing check when it broke the whole. Each event carries its author and time, and is admitted
-only while the unit's plan is bound and the unit is in flight — past its lifecycle's first state and
-short of the one that satisfies a dependency. `plan show <unit> --plan <p>` prints the ledger in
-order, each unit's line in `plan show` carries its latest event, and an event's own output is the
-unit's line and its ledger, none of its spec. A revise, an advance and a reconcile carry the ledger
-over, a reconcile of units that recorded different events carrying their union in time order.
+A unit carries a ledger of what happens to it while it is worked, written as it happens: `plan land`
+records the commit that holds its work, `plan assay` an assay's verdict on a commit (`--verdict`
+`achieved` or `not-achieved`, with `--missing` once per part a not-achieved verdict names),
+`plan whole` the line's commit holding it, and `plan broke` the failing `--check` when it broke the
+whole.
+Each event carries its author and time, and is admitted only while the unit's plan is bound and the
+unit is in flight — past its lifecycle's first state and short of the one that satisfies a
+dependency. `plan show <unit> --plan <p>` prints the ledger in order, and each unit's line in
+`plan show` carries its latest event. A revise, an advance and a reconcile carry the ledger over, a
+reconcile of units that recorded different events carrying their union in time order.
 
 A bound plan's records live on its line, the branch `plan/<plan>`. `plan bind` cuts it from the
 HEAD of the checkout it runs in into a worktree named `<main worktree path>.plan-<plan>` (or uses
@@ -90,18 +87,17 @@ the notes blocking either that the checkout holds and the line lacks, and writes
 the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
 note write whose blocks name the plan or one of its units, before or after the write — is written
 into the line's worktree from whichever checkout runs it, and its output ends by naming the branch
-and worktree it wrote to. A bound plan with no worktree holding its line — the branch kept and its
-worktree removed, or no branch at all, as when it was merged early, deleted, or bound before lines
-existed — refuses the write, writes nothing, and says what is missing, the worktree of a line that
-exists or the line itself, without saying how to make it; `bind` refuses a branch no worktree holds
-the same way.
+and worktree it wrote to. A bound plan with no worktree holding its line refuses the write, writes
+nothing, and says what is missing; `bind` refuses a branch no worktree holds the same way.
+
 The runtime commits nothing: committing the line stays with whoever works it, and the main line
 receives the records only when the closed plan is released. A read is the union of the checkout's
 records and those of every line's worktree (a line no worktree holds is read from what its branch
 commits), so `plan show` and `note show` print the same state from the main checkout, from the
-line and from a branch cut from it; while lines exist their header names the first line's commit and
-whether its records are committed. Design writes, writes about a plan that is not bound and notes
+line and from a branch cut from it. Design writes, writes about a plan that is not bound and notes
 naming no bound plan are written where they run.
+
+## Verbs and their flags
 
 Each verb declares, beside it, a one-line summary, the positional it acts on, and the flags it
 takes, each with whether it takes a value and a one-line description; a flag cannot be taken
@@ -126,8 +122,9 @@ again, or for the verb's `--help`, in one line.
 `<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
 route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`
 prints its JSON result, and `design`, `plan` and `note` print their view. A refusal exits `1` as
-`cratylus <message>` (the message opens with the capability and the verb, as `cratylus plan assay: …`), and a verb the capability does not declare is refused by `verbOf` in the one
-wording every dispatcher throws when called as a library. Never a silent no-op.
+`cratylus <message>` (the message opens with the capability and the verb, as `cratylus plan assay: …`),
+and a verb the capability does not declare is refused by `verbOf` in the one wording every dispatcher
+throws when called as a library. Never a silent no-op.
 
 `capabilityCommands` exports commands and builds no program. The program lives in
 [`cratylus`](../cli/README.md), which adds them to one tree beside the projector's commands, so its
