@@ -404,38 +404,44 @@ export class RecordStore {
     return { plan, branch, path: realpathSync(at) };
   }
 
-  /** Move onto `line` each record, named by domain and id, this checkout holds
-   *  and the line lacks: the file is copied there and then no longer stands
-   *  here, unless the HEAD of this checkout tracks it — a committed record is
-   *  never removed from a checkout. A record the line holds already is left
-   *  where it is. Nothing is moved when this checkout is the line's. */
+  /** Move onto `line` each record, named by domain and id, this checkout holds:
+   *  the file is copied there when the line lacks it, and then no longer stands
+   *  here — nor in this checkout's index — unless the HEAD of this checkout
+   *  tracks it, since a committed record is never removed from a checkout.
+   *  A record the line holds already, byte for byte, is taken off this
+   *  checkout the same way. Nothing is moved when this checkout is the line's. */
   move(
     line: Line,
     records: readonly { readonly domain: string; readonly id: RecordId }[],
   ): void {
     if (line.path === this.top) return;
-    let tracked: ReadonlySet<string> | undefined;
-    for (const { domain, id } of records) {
-      const from = join(this.#dir(domain), `${id}.json`);
-      const to = join(this.#dir(domain, line.path), `${id}.json`);
-      if (!existsSync(from) || existsSync(to)) continue;
-      mkdirSync(this.#dir(domain, line.path), { recursive: true });
-      copyFileSync(from, to, constants.COPYFILE_EXCL);
-      tracked ??= new Set(
-        git(
-          this.top,
-          'ls-tree',
-          '-r',
-          '--name-only',
-          'HEAD',
-          '--',
-          RECORDS_ROOT,
-        )
+    const listed = (...args: string[]): ReadonlySet<string> =>
+      new Set(
+        git(this.top, ...args, '--', RECORDS_ROOT)
           .split('\n')
           .map((name) => join(this.top, name)),
       );
-      if (!tracked.has(from)) rmSync(from);
+    let committed: ReadonlySet<string> | undefined;
+    const taken: string[] = [];
+    for (const { domain, id } of records) {
+      const from = join(this.#dir(domain), `${id}.json`);
+      const to = join(this.#dir(domain, line.path), `${id}.json`);
+      if (!existsSync(from)) continue;
+      if (existsSync(to)) {
+        if (!readFileSync(from).equals(readFileSync(to))) continue;
+      } else {
+        mkdirSync(this.#dir(domain, line.path), { recursive: true });
+        copyFileSync(from, to, constants.COPYFILE_EXCL);
+      }
+      committed ??= listed('ls-tree', '-r', '--name-only', 'HEAD');
+      if (!committed.has(from)) taken.push(from);
     }
+    if (taken.length === 0) return;
+    const staged = listed('ls-files');
+    const unstage = taken.filter((from) => staged.has(from));
+    if (unstage.length > 0)
+      git(this.top, 'rm', '-q', '-f', '--cached', '--', ...unstage);
+    for (const from of taken) rmSync(from);
   }
 
   /**

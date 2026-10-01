@@ -15,6 +15,7 @@ import {
   readdirSync,
   realpathSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -655,40 +656,45 @@ describe('record store — a plan’s line', () => {
     );
   });
 
-  it('move takes an untracked record off this checkout onto the line, and leaves one this checkout’s HEAD tracks, one the line holds, and one it was not asked for', () => {
+  it('move takes an untracked, a staged and an already-held record off this checkout and its index, and leaves one this checkout’s HEAD tracks, one the line holds differently, and one it was not asked for', () => {
     const repo = committed();
     const tracked = new RecordStore(repo).create(DOMAIN, { name: 't' }, BY);
     git(repo, 'add', '-A');
     git(repo, 'commit', '-q', '-m', 'a record');
+    const staged = new RecordStore(repo).create(DOMAIN, { name: 's' }, BY);
+    git(repo, 'add', '-A');
     const loose = new RecordStore(repo).create(DOMAIN, { name: 'l' }, BY);
     const kept = new RecordStore(repo).create(DOMAIN, { name: 'k' }, BY);
     const line = new RecordStore(repo).cut('p');
     const both = new RecordStore(repo).create(DOMAIN, { name: 'b' }, BY);
+    const odd = new RecordStore(repo).create(DOMAIN, { name: 'o' }, BY);
     const dir = (top: string) => join(top, RECORDS_ROOT, DOMAIN);
+    const file = (r: Record<unknown>) => `${r.envelope.id}.json`;
     mkdirSync(dir(line.path), { recursive: true });
-    copyFileSync(
-      join(dir(repo), `${both.envelope.id}.json`),
-      join(dir(line.path), `${both.envelope.id}.json`),
-    );
+    copyFileSync(join(dir(repo), file(both)), join(dir(line.path), file(both)));
+    writeFileSync(join(dir(line.path), file(odd)), '{}\n');
     new RecordStore(repo).move(
       line,
-      [tracked, loose, both].map((r) => ({
+      [tracked, loose, both, odd, staged].map((r) => ({
         domain: DOMAIN,
         id: r.envelope.id,
       })),
     );
     const named = (records: readonly Record<unknown>[]) =>
-      records.map((r) => `${r.envelope.id}.json`).sort();
-    expect(readdirSync(dir(repo)).sort()).toEqual(named([tracked, kept, both]));
+      records.map(file).sort();
+    expect(readdirSync(dir(repo)).sort()).toEqual(named([tracked, kept, odd]));
     expect(readdirSync(dir(line.path)).sort()).toEqual(
-      named([tracked, loose, both]),
+      named([tracked, loose, both, odd, staged]),
+    );
+    expect(git(repo, 'status', '--porcelain', 'records/').trim()).toBe(
+      [kept, odd].map((r) => `?? records/${DOMAIN}/${file(r)}`).join('\n'),
     );
     // The line's own checkout is never emptied.
     new RecordStore(line.path).move(line, [
       { domain: DOMAIN, id: loose.envelope.id },
     ]);
     expect(readdirSync(dir(line.path)).sort()).toEqual(
-      named([tracked, loose, both]),
+      named([tracked, loose, both, odd, staged]),
     );
   });
 

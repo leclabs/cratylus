@@ -1554,6 +1554,21 @@ describe('plan — a bound plan’s records live on its line', () => {
     );
   });
 
+  it('bind takes the plan’s records off the main checkout’s index as well, so its next commit carries none of them', () => {
+    const repo = repository();
+    concepts(repo);
+    commit(repo, 'design');
+    add(repo, 'u', 'p');
+    git(repo, 'add', 'records/');
+    plan(repo, 'bind', 'p', ...BY);
+    expect(status(repo)).toBe('');
+    git(repo, 'commit', '-q', '--allow-empty', '-m', 'main goes on');
+    expect(
+      git(repo, 'ls-tree', '-r', '--name-only', 'HEAD', 'records/'),
+    ).not.toMatch(/records\/(plan|unit)\//);
+    expect(records(`${repo}.plan-p`, 'unit')).toHaveLength(1);
+  });
+
   it('a write about the plan lands on the line from any checkout and says where; design and unbound plans land where they run', () => {
     const { repo, line } = lined();
     const mainBefore = status(repo);
