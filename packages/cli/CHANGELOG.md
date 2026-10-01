@@ -1,5 +1,23 @@
 # @cratylus/invoke
 
+## 0.10.0
+
+### Minor Changes
+
+- 526ccc2: `cratylus --help` lists the consumer's commands first, `install` then `uninstall`, then the capabilities, then the corpus author's commands (`init`, `add`, `compose`, `project`, `optimize`, `deploy`, `explain`, `catalog`) in a group of their own, `Corpus authoring:`. The README follows the same order. `@cratylus/forge/cli`'s `projectorCommands` returns `{ consumer, author }` — the commands each audience uses — in place of one list.
+- 1e5fd22: `cratylus install` offers practices where it offered optional personas. `--practices <name,…>` names the practices to install and `--all` installs every one; on a terminal with neither, install asks one multiselect of the declared practices, each with its description, preselecting the ones already installed here (on a fresh host, the corpus's preselected `cdd`), and `--yes` takes that preselection. With no terminal on stdin and stdout and neither flag, install refuses before writing anything and names `--practices` and `--all`, under `--yes` and over an existing install too; it used to place the whole corpus. An empty choice is refused, saying that removing everything is `cratylus uninstall`, and `projectPluginSet` refuses `practices: []` instead of rendering every cell (absent still renders every cell). A practice installed before and not chosen now is removed with the agents, skills, hooks and persona commands no chosen practice still carries, and the chosen practices are recorded in the deploy manifest for the next run to preselect. The persona decision is retired: `--personas`, `Agent.optional`, `ProjectOpts.omitAgents` and `ProjectedTree.optionalAgents` are gone, and `kino` and `nico` are installed with their practices, `film-production` and `corpus-authoring`.
+
+### Patch Changes
+
+- f0b8693: A `design`, `note`, `plan` or `eventTap` verb no longer drops a word it does not take: a second positional where the verb declares one, any positional where it declares none, is refused before the verb acts, in one line naming the word, the verb's usage and its `--help`, together with any flag the verb does not take. Nothing is written.
+- Updated dependencies [526ccc2]
+- Updated dependencies [1e5fd22]
+- Updated dependencies [57fd456]
+- Updated dependencies [f0b8693]
+  - @cratylus/forge@0.14.0
+  - @cratylus/canon@0.13.0
+  - @cratylus/runtime@0.9.1
+
 ## 0.9.0
 
 ### Minor Changes

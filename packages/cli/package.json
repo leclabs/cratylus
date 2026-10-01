@@ -1,6 +1,6 @@
 {
   "name": "cratylus",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "The cratylus command line: install a corpus of agent semantics on Claude Code and omp and work through the capabilities it installs, or write and project a corpus of your own.",
   "license": "MIT",
   "engines": {

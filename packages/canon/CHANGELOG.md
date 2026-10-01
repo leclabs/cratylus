@@ -1,5 +1,18 @@
 # @cratylus/canon
 
+## 0.13.0
+
+### Minor Changes
+
+- 1e5fd22: `cratylus install` offers practices where it offered optional personas. `--practices <name,…>` names the practices to install and `--all` installs every one; on a terminal with neither, install asks one multiselect of the declared practices, each with its description, preselecting the ones already installed here (on a fresh host, the corpus's preselected `cdd`), and `--yes` takes that preselection. With no terminal on stdin and stdout and neither flag, install refuses before writing anything and names `--practices` and `--all`, under `--yes` and over an existing install too; it used to place the whole corpus. An empty choice is refused, saying that removing everything is `cratylus uninstall`, and `projectPluginSet` refuses `practices: []` instead of rendering every cell (absent still renders every cell). A practice installed before and not chosen now is removed with the agents, skills, hooks and persona commands no chosen practice still carries, and the chosen practices are recorded in the deploy manifest for the next run to preselect. The persona decision is retired: `--personas`, `Agent.optional`, `ProjectOpts.omitAgents` and `ProjectedTree.optionalAgents` are gone, and `kino` and `nico` are installed with their practices, `film-production` and `corpus-authoring`.
+- 57fd456: A practice: a way of working a corpus offers as one installable choice, with the agents, skills and hooks that carry it. The schema gains `Practice`, `Plumbing`, `AgentPlugin.practices` and `AgentPlugin.plumbing`, and `Agent.dispatches`, the roles an agent hands work to. Canon's role cells state the roles their holders dispatch, and canon declares `cdd` (preselected), `corpus-authoring`, `film-production` and `carry-on`, with the event tap and the drift notice as plumbing. Forge projection takes `practices` to render; absent, every cell renders as before, and given names it renders only what they place, refusing a set not closed under skill composition and agent dispatch. `ProjectedTree.practices` reports the declared practices for an install to offer.
+
+### Patch Changes
+
+- Updated dependencies [1e5fd22]
+- Updated dependencies [57fd456]
+  - @cratylus/schema@0.8.0
+
 ## 0.12.4
 
 ### Patch Changes
