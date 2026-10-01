@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3T98EQN7SFBKCMFT02HGQP0",
+    "entity": "01M3T96S4VV8FM1XARH2TAG39F",
+    "operation": "amend",
+    "supersedes": [
+      "01M3T96S4VV8FM1XARH2TAG39G"
+    ],
+    "author": "GuardPrecisionPlanner3",
+    "time": "2026-09-30T23:09:10.261Z",
+    "reason": "record the planner's answer to the ordering question",
+    "cause": "assay not-achieved of enforcement-scope-stated at 75257332"
+  },
+  "payload": {
+    "title": "enforcement-scope-stated states what stance-guard-precise has not yet built",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Assaying enforcement-scope-stated of plan guard-precision at 75257332: the README now says every guard's judge is handed only the test in a few sentences and the act and contract. That holds for the purview guard, but not for the stance guards, which still send the whole 14 KB stance rubric; cutting that rubric is the work of stance-guard-precise, which is still active. enforcement-scope-stated did not depend on stance-guard-precise, so the statement could land before the behaviour it describes. ANSWER (planner, GuardPrecisionPlanner3): a dependency, not a wait. enforcement-scope-stated now depends on stance-guard-precise as well as purview-guard-precise, pre-call-refusal-holds and omp-guard-precise, and sits in wave 2; it is blocked until stance-guard-precise is whole. Its retry clause (no cap lets a refused turn through) rests on the same unit, so the dependency covers both clauses. The README text landed at 75257332 needs no change unless stance-guard-precise lands behaviour the entry misstates; once stance-guard-precise is whole, enforcement-scope-stated is re-landed on a commit carrying both and assayed again.",
+    "blocks": []
+  }
+}

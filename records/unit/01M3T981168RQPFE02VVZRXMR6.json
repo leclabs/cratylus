@@ -1,0 +1,59 @@
+{
+  "envelope": {
+    "id": "01M3T981168RQPFE02VVZRXMR6",
+    "entity": "01M3T47Y38Y4F6PXHM2DJRXVQW",
+    "operation": "amend",
+    "supersedes": [
+      "01M3T96JTNE3DDMH37KH78CXS9"
+    ],
+    "author": "GuardPrecisionPlanner3",
+    "time": "2026-09-30T23:08:56.230Z",
+    "reason": "The entry states that a refused act's retry is judged again and that every guard hands its judge only its test with the act and contract; both hold for the stance guards only once stance-guard-precise removes the caps and cuts the stance rubric, so the statement must follow that behaviour, not race it",
+    "cause": "assay not-achieved at 7525733270b208263d72e3be90319f7acfcd3324 (ledger entry 2) and note 'enforcement-scope-stated states what stance-guard-precise has not yet built'"
+  },
+  "payload": {
+    "plan": "01M3T44MAJE841D05809ZJN9NP",
+    "spec": {
+      "name": "enforcement-scope-stated",
+      "intent": "Census @15d0a621 (main; plan/guided-install and plan/purview-routes, both unreleased, leave this entry's lines untouched); re-derive any line cited below if its path changed since.\nRealize in the user-facing statement of `enforcement scope` the three clauses amended 2026-09-30T21:21: a guard judges an act against the contract of the agent that performs it; a refused act stays refused however often it is retried, a retry judged again and never waved through; and a guard hands its judge only the test in a few sentences and the act and contract it applies to.\nAT CENSUS. The Enforcement scope entry of packages/cli/README.md (L102-120) says whom a guard binds, that it skips a subagent (and how on Claude Code), how a persona is enrolled, what a harness that cannot name the agent does, that a guard whose judge cannot run says so and asks again, and that a judgement fits its harness's time with `the judge is sent a rubric cut to what it needs to decide` (L118). It says nothing of whose contract an act is judged against, of a retried act, or of what the judge is handed beyond that rubric sentence.\nCHANGE. In that entry, say that a guard judges an act against the contract of the agent that performs it, and that on omp a session the module cannot tell to be the persona's main session is not judged and the guard says so (unit omp-guard-precise); that a refused act stays refused, its retry judged again, with no cap that lets it through (units purview-guard-precise, pre-call-refusal-holds and stance-guard-precise); and that the judge is handed the test in a few sentences with the act and the contract, and nothing else, replacing the `rubric cut` sentence. Plain prose in the entry's register; change no other entry.",
+      "static": [],
+      "deps": [
+        "01M3T44MB8RX7QH1V93MA4R39C",
+        "01M3T45B4NA95Y4KWCBQYEV0NC",
+        "01M3T45XNDS3TG4K4YQ8H4MVVK",
+        "01M3T47JBC4TCC9FZ1MTW6GBGY"
+      ],
+      "outputs": [
+        "packages/cli/README.md"
+      ],
+      "accept": [
+        "Printed, the Enforcement scope entry of packages/cli/README.md (from `- **Enforcement scope.**` to the next `- **` entry) states the three clauses: the performing agent's contract, a retry judged again and never waved through, and the judge handed only its test with the act and the contract; and `grep -c 'rubric cut' packages/cli/README.md` prints 0. At 15d0a621 the entry states none of the three and the grep prints 1.",
+        "`git diff --name-only <the unit's base> <landed commit>` prints only packages/cli/README.md (records/ excepted)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3T339F0BPZAHZ96T0EFN9TY",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "7525733270b208263d72e3be90319f7acfcd3324",
+        "author": "EnforcementScopeStated",
+        "time": "2026-09-30T23:05:39.338Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7525733270b208263d72e3be90319f7acfcd3324",
+        "verdict": "not-achieved",
+        "missing": [
+          "enforcement scope, clause 'what a guard hands its judge is only what its one decision needs, the test stated in a few sentences and the act and contract it applies to': packages/cli/README.md:120-124 states every guard's judge is handed that and nothing else, but at 75257332 both stance guards hand their judge the whole 14,327-byte stance rubric (packages/canon/targets/guardrail/stance-judge-prompt.md, authored in packages/canon/src/hooks/stance-guardrail.ts; sent whole by stance-judge.sh and stance-guardrail-pre.sh), so the statement is not the product's behaviour at this commit"
+        ],
+        "author": "AssayEnforcementScopeStated",
+        "time": "2026-09-30T23:08:08.917Z"
+      }
+    ]
+  }
+}
