@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3WM71FGKJ63YDKC0D68ZJ9X",
+    "entity": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IsolationPlanner",
+    "time": "2026-10-01T20:59:07.120Z",
+    "reason": "realize the plan's own-worktree clause where the implementer starts (note 'implementers edit the main checkout'), first by the operator's ruling",
+    "cause": "architect's shards: plan, implementer role, and the concepts the notebook's remaining realization gaps fall under, the worktree note first"
+  },
+  "payload": {
+    "name": "remaining-gaps",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "01M3R07GCQ2FM8D4CE4044A5J9",
+      "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM"
+    ],
+    "state": "proposed"
+  }
+}

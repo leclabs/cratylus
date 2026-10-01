@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WMZ0XTVRDR0ZKMG86WC0MV",
+    "entity": "01M3WMZ0XTVRDR0ZKMG86WC0MT",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IsolatedImplementer",
+    "time": "2026-10-01T21:12:12.987Z",
+    "reason": "assay not-achieved asks for what the spec excludes and the agent definition cannot express",
+    "cause": "ledger entry 2 of isolated-implementer"
+  },
+  "payload": {
+    "title": "isolated-implementer worktree cannot be placed off the plan's line by the agent definition",
+    "kind": "question",
+    "topic": "isolation",
+    "body": "The spec for isolated-implementer of remaining-gaps makes the harness start the implementer in a worktree (claude front matter 'isolation: worktree', landed at 8d36288d) and says it branches from the default branch or the dispatcher's HEAD, so moving its work onto plan/<plan> stays the implementer's competence. The assay (ledger entry 2) asks the worktree itself to be off the plan's line. Claude Code's per-agent front matter carries no base ref: baseRef is a session setting (worktree.baseRef: fresh|head), and anything per-plan would need a WorktreeCreate hook that replaces worktree creation and resolves the bound plan, none of which the spec names or its outputs cover. Ruling needed: accept the spec as built (isolation starts a worktree; landing on the plan's line stays the implementer's competence and isolated-landing enforces it at land), or widen the unit to a WorktreeCreate hook or baseRef route.",
+    "blocks": [
+      "01M3WM71G577PCR3X4PWB0JCQ7"
+    ]
+  }
+}

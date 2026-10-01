@@ -1,0 +1,94 @@
+{
+  "envelope": {
+    "id": "01M3WMXFG4TQZFTW3Z487C55NE",
+    "entity": "01M3WM7EGXV0AKN88688Z6TVNK",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WMW75MVHM4HGVRRV9KRZHS"
+    ],
+    "author": "AssayRemaining2",
+    "time": "2026-10-01T21:11:22.372Z",
+    "reason": "assayed against shard plan: while the plan is bound a land refuses, writing nothing, a commit the main checkout holds, one the line holds, one whose history does not run from the line (no shared history, or cut from main after it moved past the line, or main merged in) and an unresolvable name, and records a commit built in a worktree of its own off the line, including off the fork point or the moved line tip; spells plan, and no other artifact gates a land",
+    "cause": "re-assay of isolated-landing at 00738dbf after the entry-2 not-achieved finding, requested by Main"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "isolated-landing",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Realize the plan's clauses 'each unit is built in its own isolated worktree off that line' and 'never on the main line' at the one plan write every implementer makes, so the rule bites on every harness (note 'implementers edit the main checkout': three of five notebook-gaps implementers built in the operator's main checkout; nothing refused them). At 2f2a0238 `plan land <unit> --plan <p> --commit <c>` records any string as the commit (packages/runtime/src/capabilities/plan/dispatch.ts:406-407; verb surface :633; dispatch :769). CHANGE. While the unit's plan is bound, land refuses, writing nothing, (a) a commit the repository cannot resolve, (b) a commit the HEAD of the main checkout contains (the main worktree is RecordStore.main, packages/runtime/src/record-store/store.ts:218-236; a commit made there, on main or on a branch switched to in that checkout, is built in the main checkout), and (c) a commit the plan's line already contains (a unit built in the line's own worktree is not built in a worktree of its own); a commit made in another worktree on a branch off the line is recorded as today. The refusal says, in the plan's words, which of the three holds for which unit and commit, and that nothing was written; it names no git command, no branch and no worktree path, as the line refusal does (store.ts `lineless`, :301-312), because the design says how an agent uses worktrees is its own competence and nothing it reads teaches it. assay, whole and broke are unchanged, and land on a unit of a plan that is not bound refuses as today. packages/runtime/README.md says what land refuses where it describes land. .changeset/isolated-landing.md: patch for @cratylus/runtime and cratylus.",
+      "static": [
+        "packages/runtime/src/capabilities/plan/unit.ts",
+        "packages/canon/src/dimensions/role/implementer.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/record-store/store.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/isolated-landing.md"
+      ],
+      "accept": [
+        "in packages/runtime, `pnpm exec vitest run test/plan.test.ts` exits 0, including cases on a temp repository with a bound plan: a land of a commit made on the main checkout's branch, a land of a commit the line's worktree made on the line, and a land of a name that resolves to no commit each refuse; each output says nothing was written and contains none of `git `, `plan/<plan>` and the line's worktree path, and the unit's ledger is the same after as before; a land of a commit made in a separate worktree on a branch cut from the line is recorded in the ledger",
+        "the three refusal cases, run against packages/runtime/src at 2f2a0238 (the unit's test file over the old source), fail; print that failing run",
+        "in packages/runtime, `pnpm exec vitest run test/note.test.ts test/record-store.test.ts` exits 0, and `pnpm --filter @cratylus/runtime typecheck` exits 0",
+        "`grep -n -i 'land' packages/runtime/README.md` prints a line saying land refuses a commit the main checkout or the plan's line already holds; at 2f2a0238 no line says so"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "eeb334ba7c58603daf8569ff1a92224d3d969619",
+        "author": "IsolatedLanding",
+        "time": "2026-10-01T21:05:53.508Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "eeb334ba7c58603daf8569ff1a92224d3d969619",
+        "verdict": "not-achieved",
+        "missing": [
+          "plan: 'built ... off that line' — a land of a commit built in a worktree of its own whose history does not run from the plan's line (a branch with no shared history; a branch cut from main after main moved past the line) is recorded, so the land gate holds the commit to a worktree of its own but not to one off that line; locus: the land refusal in packages/runtime (RecordStore.builtIn / Reading.unitBuilt)"
+        ],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T21:08:36.904Z"
+      },
+      {
+        "kind": "land",
+        "commit": "00738dbf36cb05ca0664d48e3f616ab79c62f382",
+        "author": "IsolatedLanding",
+        "time": "2026-10-01T21:10:41.076Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "00738dbf36cb05ca0664d48e3f616ab79c62f382",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T21:11:22.372Z"
+      }
+    ]
+  }
+}
