@@ -7,7 +7,7 @@
 // and iterating hosts is the operator's outer loop around the whole pipeline.
 // Neither is a stage, so neither is here.
 
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join, resolve as resolvePath } from 'node:path';
 import type { AgentPlugin } from '@cratylus/schema';
 import { adapterByName } from '../../adapters/registry/index.js';
@@ -165,6 +165,42 @@ const KIND_NOUN: Readonly<Record<DeployKind, string>> = {
 const plural = (n: number, noun: string): string =>
   `${n} ${noun}${n === 1 ? '' : 's'}`;
 
+/** The concrete kinds `--kind` names. Anything else is refused: it was run as a kind
+ *  of nothing, and reported "deployed 2 undefineds". */
+function kindsOf(kind: DeployKindArg): readonly DeployKind[] {
+  if (kind === 'all') return ALL_KINDS;
+  if (ALL_KINDS.includes(kind)) return [kind];
+  throw new Error(
+    `unknown kind '${String(kind)}'; pass --kind <${[...ALL_KINDS, 'all'].join('|')}>`,
+  );
+}
+
+/** Refuse a render dir that these kinds read and that is not a directory. A missing
+ *  dir read as an empty tree places nothing, and the prune then removes everything a
+ *  prior deploy placed for want of a render to match it against. A dir the kinds do
+ *  not read is not asked about. */
+function assertRenderDirs(
+  opts: DeployCmdOpts,
+  kinds: readonly DeployKind[],
+): void {
+  const reads: Record<DeployKind, string | undefined> = {
+    agent: opts.agentsDir,
+    skill: opts.skillsDir,
+    hooks: opts.hooksDir,
+  };
+  const missing = kinds
+    .map((kind) => reads[kind])
+    .filter(
+      (dir): dir is string =>
+        dir !== undefined && !(existsSync(dir) && statSync(dir).isDirectory()),
+    );
+  if (missing.length > 0) {
+    throw new Error(
+      `no render dir at ${[...new Set(missing)].join(', ')}; run \`${CLI_BIN} project\` first, or pass the right --from, --agents-dir, --skills-dir or --hooks-dir`,
+    );
+  }
+}
+
 /** Place the render tree and say nothing but through the sinks: `log` takes the
  *  per-file detail, `warn` and `fail` the diagnostics. The result is returned, for
  *  the caller to report in its own words. */
@@ -185,6 +221,8 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
     outside: {},
   };
   try {
+    const kinds = kindsOf(opts.kind);
+    assertRenderDirs(opts, kinds);
     // WHICH harness's home the tree lands in. Resolved by NAME through the same
     // registry `project` uses, so `deploy --harness <name>` and `project --harness
     // <name>` cannot disagree about where that harness lives. Unknown name fails
@@ -220,8 +258,6 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
     // Expand the `all` sugar to the concrete kinds; a single kind runs a
     // one-element loop. Every kind reuses the EXISTING per-kind engine path with
     // IDENTICAL target opts. The overall rc is the first non-zero kind's rc.
-    const kinds: readonly DeployKind[] =
-      opts.kind === 'all' ? ALL_KINDS : [opts.kind];
     for (const kind of kinds) {
       const r = deploySingle({
         kind,
@@ -503,9 +539,9 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     hooksDir: opts.hooksDir,
     companions: opts.companions,
   };
-  const kinds: readonly DeployKind[] =
-    opts.kind === 'all' ? ALL_KINDS : [opts.kind];
   try {
+    const kinds = kindsOf(opts.kind);
+    assertRenderDirs(opts, kinds);
     // INSIDE THE TRY, and it was not. An unknown `--harness` threw straight out of
     // this function, past the catch that owns the exit contract — so the process
     // died on an uncaught error and its status was whatever the runtime chose,

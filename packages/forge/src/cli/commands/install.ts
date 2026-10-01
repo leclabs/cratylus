@@ -36,7 +36,13 @@
 // routes itself is left as it is, named as the host's, and a `--model-roles` entry for
 // it is left as the host set it and said so.
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -291,6 +297,11 @@ async function install(
       );
     }
   }
+  if (!(HARNESS_NAMES as readonly string[]).includes(harness)) {
+    throw new Refusal(
+      `unknown harness '${harness}'; pass one of --harness <${HARNESS_NAMES.join('|')}>`,
+    );
+  }
   const adapter = adapterByName(harness);
   const harnessDir = join(opts.home, adapter.home);
 
@@ -507,6 +518,11 @@ async function install(
       agentsDir: resolve(stage, 'agents'),
       skillsDir: resolve(stage, 'skills'),
     };
+    // A corpus with no skills (or no agents) renders no such dir. This is install's own
+    // scratch tree, so an empty one is the truth about it; deploy refuses a render dir
+    // that is absent, as it must for one an operator named.
+    mkdirSync(stageTree.agentsDir, { recursive: true });
+    mkdirSync(stageTree.skillsDir, { recursive: true });
     const agentNames = treeNames('agent', stageTree, adapter.agentExt);
 
     const commandsCtx = personaCommandsOf(adapter, agentNames, opts);

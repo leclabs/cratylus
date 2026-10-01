@@ -270,6 +270,14 @@ describe('the guided install', () => {
     expect(files(omp())).toContain('agent/agents/planner.md');
   });
 
+  it('refuses an unknown harness on one line naming the known ones, never with a stack', async () => {
+    expect(await install({ yes: true, harness: 'nope' })).toBe(1);
+    expect(err.trim().split('\n')).toEqual([
+      "cratylus install: unknown harness 'nope'; pass one of --harness <claude|omp>",
+    ]);
+    expect(files(claude())).toEqual([]);
+  });
+
   it('refuses an ambiguous host without a terminal, and asks which on one', async () => {
     expect(await install({ interactive: false })).toBe(1);
     expect(err).toContain('name one with --harness');

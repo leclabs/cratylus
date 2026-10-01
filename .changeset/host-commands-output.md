@@ -10,3 +10,5 @@
 - A bare `--home` is noted once, not once per kind.
 - `install`'s preview and summary now name the runtime config it writes (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and any other directory outside the harness's own it places files in.
 - A deploy refused because a placed shim cannot run is reported as the failure it is, on the failure line, not as a warning.
+- `uninstall` names, by default, what it takes back outside the harness directory: persona commands, the shared files under `~/.agents`, and the runtime config.
+- `deploy` refuses a render directory it reads that does not exist (the dirs its `--kind` reads, no others), instead of reading it as an empty tree and pruning what an earlier deploy placed. It also refuses an unknown `--kind`. `install` refuses an unknown `--harness` on one line.

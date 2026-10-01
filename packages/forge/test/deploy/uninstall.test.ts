@@ -271,6 +271,10 @@ describe('uninstall', () => {
 
       expect(out).toMatch(/^would remove \d+ items from claude/m);
       expect(out).not.toContain(join(claude, 'agents', 'beta.md'));
+      // What install placed outside the harness directory is named by default, as
+      // install names what it wrote there.
+      expect(out).toMatch(/would remove \d+ persona commands? from /);
+      expect(out).toContain(bin);
       // What the host changed is named whatever the verbosity: the operator must see
       // what remains and why.
       expect(out).toContain(join(claude, placed));

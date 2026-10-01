@@ -74,6 +74,19 @@ export interface UninstallCmdOpts {
 /** Something this run took away, or would. */
 interface Removal {
   readonly what: string;
+  /** Set where the removal is outside the harness directory: the directory or file it
+   *  is in, and what to call it. The default report names these, as install and deploy
+   *  name what they write there. */
+  readonly outside?: { readonly area: string; readonly noun: string };
+}
+
+/** The top directory outside `harnessDir` that a recorded `../…` path is in. */
+function outsideRoot(harnessDir: string, rel: string): string {
+  const parts = rel.split('/');
+  return resolve(
+    harnessDir,
+    ...parts.slice(0, parts.findIndex((p) => p !== '..') + 1),
+  );
 }
 
 /** Something this run left alone, and why. */
@@ -165,7 +178,10 @@ function removePersonaLinks(
   });
   for (const l of report.links) {
     if (l.state === 'removed' || l.state === 'remove') {
-      tally.removed.push({ what: `${l.link} (persona command)` });
+      tally.removed.push({
+        what: `${l.link} (persona command)`,
+        outside: { area: dirname(l.link), noun: 'persona command' },
+      });
     } else if (l.state === 'kept') {
       tally.left.push({
         what: l.link,
@@ -400,7 +416,12 @@ function removePlacedFiles(
       continue;
     }
     removable.push(rel);
-    tally.removed.push({ what: abs });
+    tally.removed.push({
+      what: abs,
+      ...(rel.startsWith('../')
+        ? { outside: { area: outsideRoot(harnessDir, rel), noun: 'file' } }
+        : {}),
+    });
   }
   applyPrune(harnessDir, removable, opts.dryRun ?? false, [neutral]);
 }
@@ -437,6 +458,7 @@ function removeRuntimeStanza(
     what: whole
       ? `${file} (the runtime config: ${adapter.name} was its last harness)`
       : `${file}: the ${adapter.name} stanza`,
+    outside: { area: file, noun: 'runtime config' },
   });
   if (dry) return;
   if (whole) {
@@ -452,18 +474,39 @@ function removeRuntimeStanza(
 const plural = (n: number, noun: string): string =>
   `${n} ${noun}${n === 1 ? '' : 's'}`;
 
-/** The report: counts always, what was left always (the host's, so the operator
- *  sees what remains and why), and each item removed only under `--verbose`. */
+/** The report: counts always, what was removed outside the harness directory always
+ *  (install and deploy name every write there, so uninstall names what it takes back),
+ *  what was left always (the host's, so the operator sees what remains and why), and
+ *  each item removed only under `--verbose`. */
 function print(
   tally: Tally,
   run: { dry: boolean; verbose: boolean; harness: string; harnessDir: string },
 ): void {
   const { dry, verbose } = run;
+  const verb = dry ? 'would remove' : 'removed';
+  const inside = tally.removed.filter((r) => r.outside === undefined);
   say(
-    `${dry ? 'would remove' : 'removed'} ${plural(tally.removed.length, 'item')} from ${run.harness} (${run.harnessDir})`,
+    `${verb} ${plural(inside.length, 'item')} from ${run.harness} (${run.harnessDir})`,
   );
   if (verbose) {
     for (const r of tally.removed) say(`  ${r.what}`);
+  } else {
+    const groups = new Map<string, Removal[]>();
+    for (const r of tally.removed) {
+      if (r.outside === undefined) continue;
+      const key = `${r.outside.noun}\0${r.outside.area}`;
+      groups.set(key, [...(groups.get(key) ?? []), r]);
+    }
+    for (const items of groups.values()) {
+      const { area, noun } = items[0]?.outside as NonNullable<
+        Removal['outside']
+      >;
+      say(
+        noun === 'runtime config'
+          ? `${verb} ${items[0]?.what}`
+          : `${verb} ${plural(items.length, noun)} from ${area}`,
+      );
+    }
   }
   if (tally.left.length > 0) {
     say(

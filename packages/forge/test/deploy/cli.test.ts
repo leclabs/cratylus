@@ -2,7 +2,7 @@
 // greenfield `scaffoldProject` engine. The engine itself is covered exhaustively
 // elsewhere; these assert the command layer threads opts → engine and reports the rc.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
@@ -153,6 +153,112 @@ describe('runDeploy (local)', () => {
       expect(lines[0]).toMatch(/^would deploy /);
       expect(lines.at(-1)).toMatch(/without --dry-run/);
       expect(existsSync(join(home, '.claude'))).toBe(false);
+    });
+  });
+
+  describe('refuses what it cannot read, and changes nothing', () => {
+    /** Every file under `dir`, by its bytes. */
+    const bytes = (dir: string, at = ''): Record<string, string> =>
+      Object.fromEntries(
+        readdirSync(join(dir, at), { withFileTypes: true }).flatMap((e) => {
+          const rel = at === '' ? e.name : `${at}/${e.name}`;
+          return e.isDirectory()
+            ? Object.entries(bytes(dir, rel))
+            : [[rel, readFileSync(join(dir, rel), 'utf-8')]];
+        }),
+      );
+
+    async function deployed() {
+      const root = tmp('forge-render-');
+      const tree = buildRenderTree(root);
+      const hooks = buildHooksTree(root);
+      const home = tmp('forge-home-');
+      const base = {
+        ...tree,
+        hooksDir: hooks.hooksDir,
+        scope: 'user' as const,
+        home,
+      };
+      expect(await runDeploy({ ...base, kind: 'all' })).toBe(0);
+      const failures: string[] = [];
+      const lines: string[] = [];
+      const again = (extra: Partial<Parameters<typeof runDeploy>[0]>) =>
+        runDeploy({
+          ...base,
+          kind: 'all',
+          ...extra,
+          log: (l) => lines.push(l),
+          warn: () => {},
+          fail: (m) => failures.push(m),
+        });
+      return {
+        again,
+        failures,
+        lines,
+        harnessDir: join(home, '.claude'),
+        root,
+        home,
+      };
+    }
+
+    it.each([
+      [
+        'an --agents-dir that does not exist',
+        'all',
+        { agentsDir: '<nope>/agents' },
+      ],
+      ['the same, for --kind agent', 'agent', { agentsDir: '<nope>/agents' }],
+      [
+        'a --skills-dir that does not exist, for --kind skill',
+        'skill',
+        { skillsDir: '<nope>/skills' },
+      ],
+      [
+        'a --from that does not exist',
+        'all',
+        {
+          agentsDir: '<nope>/agents',
+          skillsDir: '<nope>/skills',
+          hooksDir: '<nope>',
+        },
+      ],
+    ] as const)('%s', async (_name, kind, dirs) => {
+      const h = await deployed();
+      const nope = join(h.root, 'nope');
+      const before = bytes(h.harnessDir);
+      const rc = await h.again({
+        kind,
+        ...Object.fromEntries(
+          Object.entries(dirs).map(([k, v]) => [k, v.replace('<nope>', nope)]),
+        ),
+      });
+      expect(rc).not.toBe(0);
+      expect(h.lines).toEqual([]);
+      expect(h.failures).toHaveLength(1);
+      expect(h.failures[0]).toContain(nope);
+      expect(bytes(h.harnessDir)).toEqual(before);
+    });
+
+    it('does not ask after a dir the --kind does not read', async () => {
+      const h = await deployed();
+      const rc = await h.again({
+        kind: 'skill',
+        agentsDir: join(h.root, 'nope', 'agents'),
+      });
+      expect(rc).toBe(0);
+      expect(h.failures).toEqual([]);
+      expect(existsSync(join(h.harnessDir, 'agents', 'mav.md'))).toBe(true);
+    });
+
+    it('refuses a kind it does not know instead of deploying a kind of nothing', async () => {
+      const h = await deployed();
+      const before = bytes(h.harnessDir);
+      expect(await h.again({ kind: 'bogus' as never })).not.toBe(0);
+      expect(h.lines).toEqual([]);
+      expect(h.failures).toEqual([
+        "unknown kind 'bogus'; pass --kind <agent|skill|hooks|all>",
+      ]);
+      expect(bytes(h.harnessDir)).toEqual(before);
     });
   });
 });
