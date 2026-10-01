@@ -20,6 +20,7 @@ import {
   DEPLOY_CHECK_EXIT,
   type DeployKind,
   type RenderTree,
+  type RuntimeConfigRecord,
   type Scope,
   type SkillCompanions,
   deploySingle,
@@ -322,13 +323,13 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
     );
     outcome.runtimeConfig =
       emitted === null ? null : { path: emitted.path, wrote: emitted.wrote };
-    // What this deploy put in the file's `configuration` block, kept with the record of
-    // what it placed: the host may hold entries of its own there, which an uninstall
-    // must tell from these.
+    // What this deploy wrote into the file, kept with the record of what it placed: the
+    // host may hold keys of its own there and may change a part later, which an uninstall
+    // must tell from what was written.
     if (emitted?.wrote === true) {
       writeManifest(outcome.harnessDir, {
         ...readManifest(outcome.harnessDir),
-        runtimeCapabilities: [...emitted.configured],
+        runtimeConfig: emitted.record,
       });
     }
     return outcome;
@@ -426,7 +427,7 @@ async function emitHostRuntimeConfig(
 ): Promise<{
   path: string;
   wrote: boolean;
-  configured: readonly string[];
+  record: RuntimeConfigRecord;
 } | null> {
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
@@ -453,7 +454,7 @@ async function emitHostRuntimeConfig(
     );
     return null;
   }
-  const { path, wrote, doc, stanza, configured } = emitRuntimeConfig({
+  const { path, wrote, doc, stanza, record } = emitRuntimeConfig({
     events,
     harness,
     nativeEvents,
@@ -466,9 +467,9 @@ async function emitHostRuntimeConfig(
     `runtime config${wrote ? '' : ' (dry-run)'}: ${path}: ` +
       `${doc.events.vocabulary.length} event(s), ` +
       `harnesses.${harness}: ${Object.keys(stanza.native).length} with a native peer, ` +
-      `${configured.length} configured capability(ies)`,
+      `${Object.keys(record.capabilities).length} configured capability(ies)`,
   );
-  return { path, wrote, configured };
+  return { path, wrote, record };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

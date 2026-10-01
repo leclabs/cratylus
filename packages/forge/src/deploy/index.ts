@@ -104,6 +104,7 @@ export {
   readManifest,
   recordedLines,
   retargetHostEdit,
+  type RuntimeConfigRecord,
   staleFiles,
   unattributable,
   undoHunks,

@@ -428,10 +428,11 @@ function removePlacedFiles(
 }
 
 /** What cratylus put in the runtime config in `home`'s file (or, where
- *  `$AGENT_RUNTIME_CONFIG` is set, that path): this harness's stanza, and with the last
- *  harness's stanza the corpus's parts too, the event vocabulary and the configuration of
- *  the capabilities the deploy recorded writing. The host's keys are its own and stay,
- *  named; the file goes only when nothing else is left in it. */
+ *  `$AGENT_RUNTIME_CONFIG` is set, that path): this harness's stanza, and — when no other
+ *  installed harness has one — the corpus's parts too, the event vocabulary and the
+ *  configuration of the capabilities the deploy recorded writing. A part is taken out
+ *  while it is what the deploy recorded; one the host has changed since stands, as does
+ *  every key the host placed, each named. The file goes only when nothing is left in it. */
 function removeRuntimeStanza(
   adapter: HarnessAdapter,
   manifest: DeployManifest,
@@ -450,35 +451,48 @@ function removeRuntimeStanza(
   if (typeof doc !== 'object' || doc === null || Array.isArray(doc)) return;
   const removal = withoutRuntimeParts(doc as Record<string, unknown>, {
     harness: adapter.name,
-    harnesses: HARNESS_NAMES,
-    capabilities: manifest.runtimeCapabilities,
+    installed: HARNESS_NAMES.filter(
+      (name) =>
+        name !== adapter.name &&
+        existsSync(join(home, adapterByName(name).home, MANIFEST_REL)),
+    ),
+    record: manifest.runtimeConfig,
   });
   if (removal === undefined) return;
-  const { last, rest, left, unrecorded } = removal;
-  const parts = last ? 'stanza and the corpus’s parts' : 'stanza';
-  tally.removed.push({
-    what:
-      rest === null
-        ? `${file} (the runtime config: ${adapter.name} was its last harness)`
-        : `${file}: the ${adapter.name} ${parts}`,
-    outside: { area: file, noun: 'runtime config' },
-  });
+  const { rest, removed, changed, unrecorded, left } = removal;
+  if (rest === null) {
+    tally.removed.push({
+      what: `${file} (the runtime config: ${adapter.name} was its last harness)`,
+      outside: { area: file, noun: 'runtime config' },
+    });
+  } else if (removed.length > 0) {
+    tally.removed.push({
+      what: `${file}: ${removed.join(', ')}`,
+      outside: { area: file, noun: 'runtime config' },
+    });
+  }
+  if (changed.length > 0) {
+    tally.left.push({
+      what: `${file}: ${changed.join(', ')}`,
+      why: 'the host changed what install wrote there since install',
+    });
+  }
+  if (unrecorded.length > 0) {
+    tally.left.push({
+      what: `${file}: ${unrecorded.join(', ')}`,
+      why: `no record was kept of what ${adapter.name}'s deploy wrote there, so a change by the host cannot be ruled out; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records it, then uninstall`,
+    });
+  }
   if (left.length > 0) {
     tally.left.push({
       what: `${file}: ${left.join(', ')}`,
       why: 'the host placed them, so the file stays with them',
     });
   }
-  if (unrecorded.length > 0) {
-    tally.left.push({
-      what: `${file}: ${unrecorded.join(', ')}`,
-      why: `${adapter.name} was deployed before the capabilities it configures were recorded, so an entry it wrote cannot be told from one of yours; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records them, then uninstall`,
-    });
-  }
   if (dry) return;
   if (rest === null) {
     unlinkSync(file);
-  } else {
+  } else if (removed.length > 0) {
     writeFileSync(file, serializeRuntimeConfig(rest));
   }
 }

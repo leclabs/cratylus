@@ -36,7 +36,10 @@ import {
   writeManifest,
 } from '../../src/deploy/manifest.js';
 import { PERSONA_BIN_REL } from '../../src/deploy/persona-commands.js';
-import { emitRuntimeConfig } from '../../src/deploy/runtime-config.js';
+import {
+  digestOf,
+  emitRuntimeConfig,
+} from '../../src/deploy/runtime-config.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
@@ -353,6 +356,19 @@ describe('uninstall', () => {
       null,
       2,
     )}\n`;
+    /** The record claude's deploy keeps of that config, with omp installed beside it, so
+     *  that claude's stanza is the one to go and the corpus's parts stay for omp. */
+    function recordConfig(): void {
+      writeManifest(harnessDir('claude'), {
+        ...readManifest(harnessDir('claude')),
+        runtimeConfig: {
+          vocabulary: digestOf(['tool.use.pre']),
+          stanza: digestOf(stanza),
+          capabilities: {},
+        },
+      });
+      writeManifest(harnessDir('omp'), emptyManifest());
+    }
 
     it('takes the stanza from the home it is given and leaves the process home’s file byte-identical', async () => {
       const processHome = join(tmpRoot(), 'process-home');
@@ -362,6 +378,7 @@ describe('uninstall', () => {
       writeFileSync(join(processHome, '.cratylus.json'), config);
       expect(await install('claude')).toBe(0);
       writeFileSync(join(home, '.cratylus.json'), config);
+      recordConfig();
 
       expect(uninstall('claude')).toBe(0);
 
@@ -379,6 +396,7 @@ describe('uninstall', () => {
       expect(await install('claude')).toBe(0);
       writeFileSync(set, config);
       writeFileSync(join(home, '.cratylus.json'), config);
+      recordConfig();
 
       expect(uninstall('claude')).toBe(0);
 
@@ -397,13 +415,16 @@ describe('uninstall', () => {
         events: ['tool.use.pre', 'session.start'],
       } as never;
     });
-    const readConfig = () =>
-      JSON.parse(readFileSync(configFile(), 'utf8')) as {
-        x?: number;
-        events: { vocabulary: string[]; note?: string };
-        harnesses: Record<string, unknown>;
-        configuration: Record<string, unknown>;
+    interface ConfigFile {
+      x?: number;
+      events: { vocabulary: string[]; note?: string };
+      harnesses: Record<string, { native: Record<string, string> }> & {
+        claude: { native: Record<string, string> };
       };
+      configuration: Record<string, unknown>;
+    }
+    const readConfig = () =>
+      JSON.parse(readFileSync(configFile(), 'utf8')) as ConfigFile;
 
     it('a config the host wrote before install still holds its keys after install, and is what the host wrote after uninstall', async () => {
       writeFileSync(configFile(), '{"x":1}\n');
@@ -456,10 +477,10 @@ describe('uninstall', () => {
       expect(snapshot(home)).toEqual({});
     });
 
-    describe('the corpus’s capability configuration', () => {
-      /** The config deploy emits over a host's own, for a corpus that configures
-       *  `plan`; then a record of what that deploy wrote, as deploy keeps it. */
-      function emitted(recorded: boolean): void {
+    describe('the parts cratylus placed, taken out only while they are what was placed', () => {
+      /** The config deploy emits over a host's own, for a corpus that configures `plan`,
+       *  and — when `recorded` — the record deploy keeps of what it wrote. */
+      function emitted(recorded = true): void {
         writeFileSync(
           configFile(),
           JSON.stringify({
@@ -467,7 +488,7 @@ describe('uninstall', () => {
             events: { note: 'the host’s' },
           }),
         );
-        const result = emitRuntimeConfig({
+        const { record } = emitRuntimeConfig({
           path: configFile(),
           events: ['tool.use.pre'],
           harness: 'claude',
@@ -479,7 +500,7 @@ describe('uninstall', () => {
             },
           ] as never,
         });
-        expect(result.configured).toEqual(['plan']);
+        expect(Object.keys(record.capabilities)).toEqual(['plan']);
         expect(readConfig().configuration).toEqual({
           mine: { a: 1 },
           plan: { b: 2 },
@@ -487,12 +508,18 @@ describe('uninstall', () => {
         expect(readConfig().events.note).toBe('the host’s');
         writeManifest(harnessDir('claude'), {
           ...emptyManifest(),
-          runtimeCapabilities: recorded ? [...result.configured] : null,
+          runtimeConfig: recorded ? record : null,
         });
       }
+      /** The host edits the file after deploy. */
+      function hostEdits(change: (doc: ConfigFile) => void): void {
+        const doc = JSON.parse(readFileSync(configFile(), 'utf8'));
+        change(doc);
+        writeFileSync(configFile(), JSON.stringify(doc));
+      }
 
-      it('is taken out with the last stanza, and the host’s own entry beside it stays', () => {
-        emitted(true);
+      it('are all taken out with the last stanza, and what the host placed beside them stays', () => {
+        emitted();
 
         expect(uninstall('claude')).toBe(0);
 
@@ -500,23 +527,65 @@ describe('uninstall', () => {
           configuration: { mine: { a: 1 } },
           events: { note: 'the host’s' },
         });
-        expect(splitLeft(out)[1]).toContain('configuration.mine');
-        expect(splitLeft(out)[1]).not.toContain('configuration.plan');
+        const [, left] = splitLeft(out);
+        expect(left).toContain('configuration.mine');
+        expect(left).toContain('events.note');
+        expect(left).not.toContain('configuration.plan');
       });
 
-      it('is left, and named, where the deploy recorded none: an entry of the host’s cannot be told from it', () => {
-        emitted(false);
+      it('leave a capability’s configuration the host has edited since, and name it', () => {
+        emitted();
+        hostEdits((doc) => {
+          doc.configuration.plan = { b: 3 };
+        });
 
         expect(uninstall('claude')).toBe(0);
 
         expect(readConfig()).toEqual({
-          configuration: { mine: { a: 1 }, plan: { b: 2 } },
+          configuration: { mine: { a: 1 }, plan: { b: 3 } },
           events: { note: 'the host’s' },
         });
-        expect(splitLeft(out)[1]).toContain(
-          'configuration.mine, configuration.plan',
+        const [removed, left] = splitLeft(out);
+        expect(removed).toContain('harnesses.claude, events.vocabulary');
+        expect(left).toContain('configuration.plan');
+        expect(left).toContain('the host changed what install wrote there');
+      });
+
+      it('leave a vocabulary the host has extended, and a stanza the host has changed, and name them', () => {
+        emitted();
+        hostEdits((doc) => {
+          doc.events.vocabulary.push('host.event');
+          doc.harnesses.claude.native['host.event'] = 'HostEvent';
+        });
+
+        expect(uninstall('claude')).toBe(0);
+
+        const after = readConfig();
+        expect(after.events.vocabulary).toEqual(['tool.use.pre', 'host.event']);
+        expect(after.harnesses.claude).toBeDefined();
+        expect(after.configuration).toEqual({ mine: { a: 1 } });
+        const [, left] = splitLeft(out);
+        expect(left).toContain('harnesses.claude, events.vocabulary');
+        expect(left).toContain('the host changed what install wrote there');
+      });
+
+      it('are not taken out where the deploy recorded none: a change by the host cannot be ruled out', () => {
+        emitted(false);
+
+        expect(uninstall('claude')).toBe(0);
+
+        expect(readConfig().configuration).toEqual({
+          mine: { a: 1 },
+          plan: { b: 2 },
+        });
+        expect(readConfig().harnesses.claude).toBeDefined();
+        expect(readConfig().events.vocabulary).toEqual(['tool.use.pre']);
+        const [removed, left] = splitLeft(out);
+        expect(removed).not.toContain(configFile());
+        expect(left).toContain(
+          'harnesses.claude, events.vocabulary, configuration.mine, configuration.plan',
         );
-        expect(splitLeft(out)[1]).toContain('cannot be told from one of yours');
+        expect(left).toContain('no record was kept');
       });
     });
   });
