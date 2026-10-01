@@ -1,0 +1,79 @@
+{
+  "envelope": {
+    "id": "01M3TYR7R9X3CPA99491BPFSYQ",
+    "entity": "01M3TWRQ8SMTEB4XGSHZSJX2W1",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TYMCDCZHDGWVNV3H7N270V"
+    ],
+    "author": "AssayStanceContest",
+    "time": "2026-10-01T05:24:47.497Z",
+    "reason": "enforcement scope as amended 2026-10-01T04:27 holds on both stance guards: every deny and block carries the judge's reason, a direction to continue and the one command that contests it; an uncontested retry before a call is asked of the judge again and refused again; a contested call or stop proceeds unjudged, the guard says so, and the contest (refusal, reason, agent, act, session) is appended to the contest log; the turn-end bound still lets a byte-identical repeat through, said; the contest lives once in guard-shell.ts, shared by purview and both stance workers, and no other artifact realizes it",
+    "cause": "assay of stance-contest at 3d8a735a: read both workers at the commit, fired them with a counting BLOCK judge stub, and ran the stance, purview, harness-independence, hook-rule-boundary and reader-density suites (185 passing)"
+  },
+  "payload": {
+    "plan": "01M3TWQ60F9V1VKNVRVSNZWHSN",
+    "spec": {
+      "name": "stance-contest",
+      "intent": "Census @dd055a7b (main). Units purview-contest and stance-workers-lean land before this one and change every stance and purview file cited here; re-derive each cited line on this unit's base before acting on it.\nRealize on both stance guards, the pre-call worker and the turn-end worker, the clause of `enforcement scope` as amended 2026-10-01T04:27: a refusal never strands the agent; every refusal leaves it a way to continue on its own; a retry is judged again rather than waved through, and an agent that holds a refusal wrong contests it by stating why, the contested act then proceeding and the contest recorded for the operator to review, never left waiting on the operator. At the turn end a repeated or several-times-refused stop still goes through, saying so. Then state the amended clause where the operator reads it.\nTHE CONTRACT is the CONTEST CONTRACT in unit purview-contest's intent (`cratylus plan show purview-contest --plan refusal-way-forward`), realized there as `contestShell` in packages/canon/src/guard-shell.ts beside `judgeClipShell` and `judgePayloadCapBytes`. This unit honours it on the stance workers through that one fragment: the pre-call worker keys a contest by its call, the turn-end worker by `stop`.\nAT CENSUS. The pre-call deny (stance-guardrail-pre.sh L249-256) and the turn-end block (stance-guardrail.sh L782-791) relay the judge's reason inside a paragraph of instructions and offer no way forward but compliance. The turn-end bound (stance-guardrail.sh L728-757: a stop byte-identical to the turn last refused, or a fourth refused stop in a run, goes through UNRESOLVED and says so) is the amended clause's last sentence and stays. The pre cell's residue ends `refusal-holds ⟨a retried refusal is judged again ¬ waved-through⟩` (stance-guardrail-pre.ts L32). packages/cli/README.md's Enforcement scope entry (L135-160) says 'A refused act stays refused: its retry is judged again, with no cap that lets it through' (L151-152); packages/canon/targets/guardrail/README.md L103-111 ('A REFUSAL HOLDS, EXCEPT AT THE TURN END…') states no contest. The stance cells import the clip from stance-guardrail.ts, and packages/canon/test/stance-guardrail-dark.test.ts imports `stanceGuardrailJudgeCap` from it (L48).\nCHANGE. (a) Both stance workers interpolate `contestShell`, `judgeClipShell` and `judgePayloadCapBytes` from guard-shell.ts; remove `judgePayloadCapBytes`, `judgeClipShell` and the `stanceGuardrailJudgeCap`/`stanceGuardrailJudgeClip` exports from stance-guardrail.ts, and point the stance test's import at guard-shell.ts. guard-shell.ts may change where the turn end needs it, provided the purview worker's behaviour and its tests stay as they are; regenerate purview-guardrail.sh if its projection moves. (b) Each worker honours the contract; its deny or block reason is the judge's reason (with the verified span, at the turn end) followed by the way forward, any further text kept only where the agent needs it to act. A contested stop goes through whatever the run of blocks; the turn-end bound stays as it is. (c) The pre cell's residue states the contest in place of `refusal-holds`, and passes the reader-density gate. (d) In packages/cli/README.md's Enforcement scope entry and in packages/canon/targets/guardrail/README.md, replace the 'stays refused' statements, in each file's own register, with: every refusal names its way forward; the agent acts on the judge's reason or contests the refusal by writing why into the file the refusal names and repeating the act; a contested act goes through unjudged, the guard says so, and the contest is appended to ~/.agents/guardrail/contests.log for the operator to review; a repeat without a contest is judged again; and the turn-end bound, as now. Change no other entry. (e) The workers stay lean: the bounds below hold after the contest is in. Add .changeset/stance-contest.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/command-veracity.test.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/src/adapters/omp/render.ts"
+      ],
+      "deps": [
+        "01M3TWQ60X90EQPKARZEV993MH",
+        "01M3TWQVF4P4KWDDWC94D4PYDD"
+      ],
+      "outputs": [
+        "packages/canon/src/guard-shell.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/cli/README.md",
+        ".changeset/stance-contest.md"
+      ],
+      "accept": [
+        "CONTESTED CALL: new cases in packages/canon/test/stance-guardrail-dark.test.ts, for each harness form, on the pre-call worker, with STANCE_JUDGE_CMD naming a stub that counts its calls and answers `VERDICT: BLOCK` with a REASON, and TMPDIR and GUARD_CONTEST_LOG under a temp dir: an AskUserQuestion menu is denied and its deny reason contains the absolute path `<TMPDIR>/guardrail-contest/stance-guardrail-pre/<session>/<key>.contest`; after a reason is written there, the identical fire exits 0 with no deny, prints the harness's notice naming STANCE GUARDRAIL and containing the written reason, the stub's count is unchanged, and GUARD_CONTEST_LOG holds one line whose JSON has guard `stance-guardrail-pre`, act `AskUserQuestion`, the judge's REASON as refusal and the written reason as contest; a third identical fire is judged and denied; a `.contest` written for a different tool_input leaves the call denied. On this unit's base the first fire's reason names no path and the contested fire is denied, so the cases fail there.",
+        "CONTESTED STOP: new cases in the same file, for each harness form, on the turn-end worker, with the counting stub answering a BLOCK whose EVIDENCE is in the close: a collapsed turn with stop_hook_active false blocks and its reason contains `<TMPDIR>/guardrail-contest/stance-guardrail/<session>/stop.contest`; after a reason is written there, a different collapsed turn fired with stop_hook_active true exits 0, prints no `\"decision\":\"block\"`, prints the notice naming STANCE GUARDRAIL and containing the written reason, the stub's count is unchanged, and GUARD_CONTEST_LOG holds one line with guard `stance-guardrail` and act `stop`; a collapsed turn fired next with stop_hook_active false and no contest file blocks. On this unit's base the contested stop blocks, so the case fails there.",
+        "BOUND KEPT: the existing repeated-stop, fourth-refused-stop, re-arm and uncountable cases of stance-guardrail-dark.test.ts and the matching ok lines of `pnpm stance-guard:test` still pass unchanged.",
+        "ONE HOME: `grep -rn 'contests.log' packages/canon/src` prints lines in packages/canon/src/guard-shell.ts only; `grep -n -E 'judgeClipShell =|judgePayloadCapBytes =' packages/canon/src/hooks/stance-guardrail.ts` prints nothing (2 lines at dd055a7b); `git grep -n stanceGuardrailJudge -- packages ':!**/CHANGELOG.md'` prints nothing (10 lines at dd055a7b). Print each count.",
+        "LEAN: `wc -c` prints at most 7680 for packages/canon/targets/guardrail/stance-guardrail-pre.sh (14364 at dd055a7b), at most 16384 for packages/canon/targets/guardrail/stance-guardrail.sh (49568 at dd055a7b) and still at most 8192 for packages/canon/targets/guardrail/purview-guardrail.sh (15407 at dd055a7b); print all three.",
+        "STATED: printed, the Enforcement scope entry of packages/cli/README.md (from `- **Enforcement scope.**` to the next `- **` entry) says that a refusal names its way forward, that the agent contests it by writing why into the file the refusal names and repeating the act, that a contested act goes through and is recorded in ~/.agents/guardrail/contests.log for the operator, that a repeat without a contest is judged again, and that the turn-end bound stands; `grep -c -E 'stays refused|staying refused'` prints 0 for packages/cli/README.md and for packages/canon/targets/guardrail/README.md (1 and 1 at dd055a7b), and `grep -c 'contests.log'` prints at least 1 for each (0 and 0 at dd055a7b).",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts test/purview-guardrail.test.ts test/command-veracity.test.ts test/hook-rule-boundary.test.ts test/hook-act-selector.test.ts test/harness-independence.test.ts test/reader-density.test.ts`, `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/stance-contest.md` exists and names @cratylus/canon.",
+        "`git diff --name-only <the unit's base> <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3TVG4Z8PEWY4YMEDQYAH97Q",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "3d8a735a",
+        "author": "StanceContest",
+        "time": "2026-10-01T05:22:41.196Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "3d8a735a",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStanceContest",
+        "time": "2026-10-01T05:24:47.497Z"
+      }
+    ]
+  }
+}
