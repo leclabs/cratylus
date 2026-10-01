@@ -29,7 +29,10 @@ import {
   type EventTapVerb,
   VERBS,
 } from '../src/capabilities/event-tap/dispatch.js';
-import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
+import {
+  EVENT_TAP_ID,
+  dispatchEventTap,
+} from '../src/capabilities/event-tap/index.js';
 import {
   RUNTIME_CONFIG_ENV,
   type RuntimeConfig,
@@ -257,6 +260,168 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
     expect(r.records[0]?.payload).toEqual({
       hook_event_name: 'Stop',
       turns: 1,
+    });
+  });
+});
+
+describe('tap on an ACT event (a native event narrowed to the tool that performs it)', () => {
+  /** The claude stanza as `deploy` writes it: plain names under `native`, and each
+   *  act's ⟨event, matcher⟩ under `acts`; read back by the runtime's own loader. */
+  function deployedConfig(): RuntimeConfig {
+    const path = join(
+      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
+      'config.json',
+    );
+    writeFileSync(
+      path,
+      JSON.stringify({
+        events: {
+          vocabulary: [
+            'tool.use.pre',
+            'operator.consult.pre',
+            'subagent.dispatch.pre',
+          ],
+        },
+        harnesses: {
+          claude: {
+            native: { 'tool.use.pre': 'PreToolUse' },
+            acts: {
+              'operator.consult.pre': {
+                event: 'PreToolUse',
+                matcher: 'AskUserQuestion',
+              },
+              'subagent.dispatch.pre': {
+                event: 'PreToolUse',
+                matcher: 'Agent|SendMessage',
+              },
+            },
+          },
+        },
+      }),
+    );
+    const config = loadRuntimeConfig(path);
+    if (config === null) throw new Error('the stanza read as no config');
+    return config;
+  }
+
+  const act = (argv: string[]) =>
+    dispatchEventTap(argv, { config: deployedConfig() });
+
+  it('installs a PreToolUse entry narrowed to the act’s matcher, sparing foreign entries', () => {
+    const { settingsPath, sinkPath } = fixture();
+    seed(settingsPath, {
+      hooks: {
+        PreToolUse: [
+          {
+            matcher: 'Bash',
+            hooks: [{ type: 'command', command: 'echo foreign' }],
+          },
+        ],
+      } as Settings['hooks'],
+    });
+
+    expect(
+      act([
+        'install',
+        '--events',
+        'operator.consult.pre,subagent.dispatch.pre',
+        '--sink',
+        sinkPath,
+        '--settings',
+        settingsPath,
+      ]),
+    ).toEqual({
+      verb: 'install',
+      events: ['operator.consult.pre', 'subagent.dispatch.pre'],
+      sink: sinkPath,
+    });
+
+    const entries = (read(settingsPath).hooks?.PreToolUse ?? []) as Array<{
+      matcher?: string;
+      hooks: HookCommand[];
+    }>;
+    expect(entries.map((e) => e.matcher)).toEqual([
+      'Bash',
+      'AskUserQuestion',
+      'Agent|SendMessage',
+    ]);
+    expect(entries[0]?.hooks[0]?.command).toBe('echo foreign');
+    for (const ours of entries.slice(1))
+      expect(ours.hooks).toEqual([
+        { type: 'command', command: expect.any(String), id: EVENT_TAP_ID },
+      ]);
+
+    // Teardown drops the two narrowed entries and nothing else.
+    act(['uninstall', '--settings', settingsPath]);
+    expect(read(settingsPath).hooks?.PreToolUse).toEqual([
+      {
+        matcher: 'Bash',
+        hooks: [{ type: 'command', command: 'echo foreign' }],
+      },
+    ]);
+  });
+
+  it('reports the acts as attached, and reads each capture back as the act it was', () => {
+    const { settingsPath, sinkPath } = fixture();
+    act([
+      'install',
+      '--events',
+      'operator.consult.pre,subagent.dispatch.pre',
+      '--sink',
+      sinkPath,
+      '--settings',
+      settingsPath,
+    ]);
+    expect(act(['status', '--settings', settingsPath])).toEqual({
+      verb: 'status',
+      status: {
+        attached: true,
+        events: ['operator.consult.pre', 'subagent.dispatch.pre'],
+      },
+    });
+
+    const row = (tool: string) => ({
+      hook_event_name: 'PreToolUse',
+      tool_name: tool,
+    });
+    writeFileSync(
+      sinkPath,
+      [row('AskUserQuestion'), row('SendMessage'), row('Agent'), row('Bash')]
+        .map((r) => `${JSON.stringify(r)}\n`)
+        .join(''),
+      'utf8',
+    );
+    const r = act(['read', '--settings', settingsPath]);
+    if (r.verb !== 'read') throw new Error('unreachable');
+    // `Bash` is the plain `tool.use.pre`: an act claims only the tools it names.
+    expect(r.records.map((x) => x.event)).toEqual([
+      'operator.consult.pre',
+      'subagent.dispatch.pre',
+      'subagent.dispatch.pre',
+      'tool.use.pre',
+    ]);
+  });
+
+  it('keeps the plain event and an act on one native event as distinct entries', () => {
+    const { settingsPath, sinkPath } = fixture();
+    act([
+      'install',
+      '--events',
+      'tool.use.pre,operator.consult.pre',
+      '--sink',
+      sinkPath,
+      '--settings',
+      settingsPath,
+    ]);
+    const entries = (read(settingsPath).hooks?.PreToolUse ?? []) as Array<{
+      matcher?: string;
+    }>;
+    expect(entries.map((e) => e.matcher)).toEqual([
+      undefined,
+      'AskUserQuestion',
+    ]);
+    expect(act(['status', '--settings', settingsPath])).toMatchObject({
+      status: { events: ['tool.use.pre', 'operator.consult.pre'] },
     });
   });
 });

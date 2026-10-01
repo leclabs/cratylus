@@ -37,6 +37,7 @@ import {
   type RuntimeConfig,
   type RuntimeEvents,
   loadRuntimeConfig,
+  nativeActsOf,
   nativeEventsOf,
 } from '../../runtime-config.js';
 import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
@@ -209,6 +210,7 @@ export function dispatchEventTap(
     new EventTapHostClaude(
       flag('settings') || undefined,
       nativeEventsOf(config, EventTapHostClaude.harness),
+      nativeActsOf(config, EventTapHostClaude.harness),
     );
 
   switch (verb as EventTapVerb) {

@@ -347,6 +347,67 @@ describe('runDeploy with the models an operator chose', () => {
   });
 });
 
+describe('runDeploy’s host runtime config stanza', () => {
+  /** Deploy one agent for `harness` with a plugin set declaring `events`, the host
+   *  config pointed at a temp file; return the stanza deploy wrote for it. */
+  async function stanzaOf(harness: 'claude' | 'omp', events: string[]) {
+    const root = tmp('forge-render-');
+    const agentsDir = join(root, 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, 'planner.md'),
+      '---\nname: planner\ndescription: "d"\ncolor: blue\n---\nbody\n',
+      'utf-8',
+    );
+    const config = join(tmp('forge-host-'), 'runtime.json');
+    vi.stubEnv('AGENT_RUNTIME_CONFIG', config);
+    try {
+      const rc = await runDeploy({
+        agentsDir,
+        skillsDir: join(root, 'skills'),
+        kind: 'agent',
+        scope: 'user',
+        home: tmp('forge-host-'),
+        harness,
+        plugins: [{ name: 'corpus', events }],
+        log: () => {},
+        warn: () => {},
+        fail: () => {},
+      });
+      expect(rc).toBe(0);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    return JSON.parse(readFileSync(config, 'utf-8')).harnesses[harness];
+  }
+
+  it('carries claude’s act bindings with their matchers, beside its names', async () => {
+    const stanza = await stanzaOf('claude', [
+      'tool.use.pre',
+      'operator.consult.pre',
+      'subagent.dispatch.pre',
+    ]);
+    expect(stanza.native).toEqual({ 'tool.use.pre': 'PreToolUse' });
+    expect(stanza.acts).toEqual({
+      'operator.consult.pre': {
+        event: 'PreToolUse',
+        matcher: 'AskUserQuestion',
+      },
+      'subagent.dispatch.pre': {
+        event: 'PreToolUse',
+        matcher: 'Agent|SendMessage',
+      },
+    });
+  });
+
+  it('carries only the acts the corpus declares, and none for a harness that exposes none', async () => {
+    const claude = await stanzaOf('claude', ['tool.use.pre']);
+    expect(claude.acts).toBeUndefined();
+    const omp = await stanzaOf('omp', ['tool.use.pre', 'operator.consult.pre']);
+    expect(omp.acts).toBeUndefined();
+  });
+});
+
 describe('placeSkillsLocal', () => {
   it('copies each skill dir SKILL.md to the host skills root', () => {
     const src = tmp('forge-render-');
