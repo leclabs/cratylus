@@ -63,6 +63,9 @@ export function emptyReport(): PlaceReport {
 export interface PlaceResult {
   rc: 0 | 2;
   report: PlaceReport;
+  /** Why `rc` is 2: the account a caller reports as the deploy's failure. Not
+   *  written to the placer's `warn` sink, which is for what does not fail the run. */
+  refusal?: string;
 }
 
 export type DeployKind = 'agent' | 'skill' | 'hooks';

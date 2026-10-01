@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V5TH4Q7SJK84PZ4P9X2WDT",
+    "entity": "01M3V5TH4Q7SJK84PZ4P9X2WDS",
+    "operation": "create",
+    "supersedes": [],
+    "author": "CommandLineIntegrator",
+    "time": "2026-10-01T07:28:22.679Z",
+    "reason": "met while confirming that changesets cover the release of line command-line",
+    "cause": "close of plan command-line"
+  },
+  "payload": {
+    "title": "canon README changed with no changeset",
+    "kind": "question",
+    "topic": "command line",
+    "body": "On line plan/command-line, unit command-tree (d041f735) rewrote the Install section of packages/canon/README.md: it now says to install cratylus alongside canon and to import defineConfig from 'cratylus'. No changeset names @cratylus/canon. Nothing in canon's dist changed, but npm always ships the README, so the canon page on npm keeps the old setup text until canon is next released. The old text still works, because @cratylus/forge still exports ./config. Every other package whose published files changed (cratylus, @cratylus/forge, @cratylus/runtime) is named by a changeset. Question for the architect: should a patch changeset release canon's new README, or should it wait for canon's next release?",
+    "blocks": []
+  }
+}

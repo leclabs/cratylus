@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V3R3M282VRST6MMFMG1GXD",
+    "entity": "01M3V3R3M282VRST6MMFMG1GXC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ProjectCommandsOutput",
+    "time": "2026-10-01T06:52:06.146Z",
+    "reason": "found while moving the scaffold to cratylus",
+    "cause": "project-commands-output build"
+  },
+  "payload": {
+    "title": "canon README imports defineConfig from forge",
+    "kind": "idea",
+    "topic": "command-line",
+    "body": "packages/canon/README.md:25 shows a config importing defineConfig from '@cratylus/forge/config', the package a consumer does not have; the scaffold now imports from 'cratylus'. Outside project-commands-output's outputs, so left.",
+    "blocks": []
+  }
+}

@@ -23,6 +23,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { CLI_BIN } from '../src/bin-name.js';
 import {
   type EventTapResult,
   type EventTapVerb,
@@ -293,8 +294,10 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
 });
 
 describe('unknown input fails LOUD (no silent no-op)', () => {
-  it('throws on an unknown verb', () => {
-    expect(() => tap(['frobnicate'])).toThrow(/^eventTap: unknown verb/);
+  it('throws on an undeclared verb, naming it, the verbs and the help to ask for', () => {
+    expect(() => tap(['frobnicate'])).toThrow(
+      `eventTap: unknown verb 'frobnicate'; the verbs are ${Object.keys(VERBS).join(', ')}; run ${CLI_BIN} eventTap --help`,
+    );
   });
   it('throws on an unknown lifecycle event', () => {
     expect(() =>

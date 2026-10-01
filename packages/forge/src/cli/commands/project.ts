@@ -1,4 +1,4 @@
-// `cratylus project [--out <dir>] [--config <path>] [--harness <name>]` — the
+// `cratylus project [--out <dir>] [--config <path>] [--harness <name>] [--verbose]` — the
 // step that was missing between `compose` and `deploy`.
 //
 // `compose` resolved the plugin set and wrote nothing; `deploy` required a render
@@ -9,10 +9,9 @@
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
-import { loadConfig } from '../../config/index.js';
+import { loadConfig, requirePlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type ProjectablePlugin,
@@ -21,41 +20,73 @@ import {
   resolveFragmentBodies,
   writeRenderTree,
 } from '../../project/index.js';
+import { fail, say, warn } from '../style.js';
+
+/** The harness `project` and `deploy` both default to. */
+const DEFAULT_HARNESS = 'claude';
 
 export interface ProjectCmdOpts {
   /** Path to `cratylus.config.ts`; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
-  /** Render-tree root; defaults to `<cwd>/.render`. */
+  /** Render-tree root; defaults to `<cwd>/.cratylus/<harness>`, the tree `deploy` reads. */
   out?: string;
   /** Harness adapter name; defaults to `claude`. */
   harness?: string;
+  /** Also print one line per file rendered and per stale file pruned. */
+  verbose?: boolean;
   cwd?: string;
+}
+
+/** The `deploy` invocation that ships a tree this command wrote: bare when the tree
+ *  is where `deploy` looks by default, else with the flags that point it there. */
+function deployCommand(
+  out: string,
+  defaultOut: string,
+  harness: string,
+): string {
+  const flags = [
+    out === defaultOut ? '' : `--from ${out}`,
+    harness === DEFAULT_HARNESS ? '' : `--harness ${harness}`,
+  ].filter((f) => f !== '');
+  return [CLI_BIN, 'deploy', ...flags].join(' ');
 }
 
 export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
   const configPath = resolve(opts.config ?? join(cwd, CONFIG_FILE));
   if (!existsSync(configPath)) {
-    process.stderr.write(
-      `${pc.red('✗')} no ${CONFIG_FILE} at ${configPath} — run ${pc.cyan('forge init')} first\n`,
+    fail(
+      'project',
+      `no ${CONFIG_FILE} at ${configPath}; run \`${CLI_BIN} init\` first`,
     );
     return 1;
   }
+  try {
+    return await project(opts, cwd, configPath);
+  } catch (e) {
+    fail('project', (e as Error).message);
+    return 1;
+  }
+}
 
+async function project(
+  opts: ProjectCmdOpts,
+  cwd: string,
+  configPath: string,
+): Promise<number> {
   const config = await loadConfig(configPath);
+  requirePlugins(config, configPath);
   // No cast: `AgentPlugin` now satisfies `ProjectablePlugin` structurally, because
   // projection consumes the `fragments` dir too. The cast this line used to carry
   // was the census's tell — it silently DISCARDED the one field the fold needs.
   const plugins: readonly ProjectablePlugin[] = config.extends;
-  if (plugins.length === 0) {
-    process.stderr.write(
-      `${pc.yellow('!')} ${CONFIG_FILE} extends no plugins — nothing to project\n`,
-    );
-    return 1;
-  }
-
-  const out = resolve(opts.out ?? join(cwd, '.render'));
-  const adapter = adapterByName(opts.harness ?? 'claude');
+  const harness = opts.harness ?? DEFAULT_HARNESS;
+  // THE ONE TREE `deploy` READS: `.cratylus/<harness>`, named after the tool and so
+  // derived from the bin. A default of any other name is a render `deploy` refuses.
+  const defaultOut = resolve(cwd, `.${CLI_BIN}`, harness);
+  const out = resolve(opts.out ?? defaultOut);
+  const adapter = adapterByName(harness);
+  const detail = opts.verbose ? say : () => {};
 
   // RESOLVE, then render, then write.
   //
@@ -79,37 +110,27 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
     plugins,
     adapter,
     resolvedBodies,
-    log: (line) => process.stdout.write(`${line}\n`),
+    log: detail,
+    warn: (line) => warn('project', line),
   });
   // The writer CONVERGES `out` — it writes the tree and removes what a prior
   // projection into this same dir left behind. It reports what it removed; the
   // removal is not announced by the writer itself, because a library that prints
   // is a library a consumer cannot embed quietly.
   const { removed, bootstrap } = writeRenderTree(out, report.files);
-  for (const rel of removed) {
-    process.stdout.write(`  prune: removed stale ${rel}\n`);
-  }
+  for (const rel of removed) detail(`pruned stale ${rel}`);
   if (bootstrap) {
-    process.stdout.write(
-      `${pc.gray(
-        '  prune: no prior render record in this dir — nothing here is ' +
-          'attributable to this command, so nothing was removed; this run ' +
-          'establishes the record and the next one converges.',
-      )}\n`,
+    detail(
+      'no prior render record in this dir, so nothing here is attributable to this command and nothing was pruned; this run establishes the record and the next one converges',
     );
   }
 
-  process.stdout.write(
-    `\n${pc.green('✓')} projected ${report.agents} agent(s) + ${report.skills} skill(s)` +
+  say(
+    `projected ${report.agents} agent(s) + ${report.skills} skill(s)` +
       `${report.shims > 0 ? ` + ${report.shims} runtime shim(s)` : ''}` +
-      `${report.hooks > 0 ? ` + ${report.hooks} hook(s)` : ''} → ${out}\n` +
-      // `--hooks-dir` is NOT optional here and it is the render ROOT, not `<out>/hooks`.
-      // `deploy --kind` defaults to `all`, and `all` requires all three dirs or exits 1
-      // — so the hint printed without it failed on EVERY run, in the one place the
-      // printer knows a consumer is following it. `command-veracity` cannot see this
-      // class: its extractor reads `pnpm|npm|yarn` invocations against package.json
-      // script keys, and an `forge <verb> <flags>` line never enters that stream.
-      `${pc.gray(`ship it with: ${CLI_BIN} deploy`)}\n`,
+      `${report.hooks > 0 ? ` + ${report.hooks} hook(s)` : ''}` +
+      `${removed.length > 0 ? `, pruned ${removed.length} stale file(s)` : ''} into ${out}`,
   );
+  say(`ship it with: ${deployCommand(out, defaultOut, harness)}`);
   return 0;
 }

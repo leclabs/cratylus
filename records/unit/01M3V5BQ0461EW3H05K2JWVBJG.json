@@ -1,0 +1,108 @@
+{
+  "envelope": {
+    "id": "01M3V5BQ0461EW3H05K2JWVBJG",
+    "entity": "01M3V18MDVJKT21ND24Q72E7JH",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V56AB55Q188GD2MYCZ49AZ"
+    ],
+    "author": "assayer",
+    "time": "2026-10-01T07:20:17.156Z",
+    "reason": "command line: cratylus is now one program whose --help lists every command and capability, each capability's --help its verbs and each verb's --help its flags, documented once in the cli README to match flag for flag; unknown commands and options, values outside their choices, missing and excess arguments are refused on one stderr line naming the nearest word and the --help to read, with no stack trace; a closed pipe ends quietly. But deploy still takes flags it then ignores without a word: --home under --scope project, --from beside all three dir flags, and --config, --verbose and --dry-run under --check",
+    "cause": "assay of command-tree at d041f735 against shard command line, built and run as a consumer"
+  },
+  "payload": {
+    "plan": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "spec": {
+      "name": "command-tree",
+      "intent": "Census @d8907e0c (design at d8907e0c, working tree clean); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. THE REGISTER every unit of plan command-line writes to (plan-owned, so the command reads as one tool): a result goes to stdout, and anything that is not the result (a failure, a warning, a note, a hint) goes to stderr. A failure is one stderr line `cratylus <command>: <what went wrong>; <what to do>`, and the exit code is non-zero; success exits 0. A capability refusal keeps its `cratylus: <capability>: …` form. A warning is a stderr line `cratylus <command>: warning: <message>`. There are no decorative glyphs (✓ ✗ ! • ·), no `===` banners and no blank spacer lines, and each line holds one fact. Colour marks only the failure or warning prefix. It is decided per stream: only when that stream is a terminal and NO_COLOR is unset (CI and FORCE_COLOR never turn it on for a pipe or a file). Per-file detail appears only under --verbose. \nRealize `command line` as one command. `cratylus` is a single Commander program (the operator's choice, retracted note 'the cli is cluttered, bloated and ugly'). Its --help, at every level, lists every command and capability it has. No flag or argument is silently ignored or left unvalidated, every usage error says what went wrong and what to do, and the commands are documented once, in packages/cli/README.md, to match the help.\nAT 70c93e73, re-measured after units host-commands-output, project-commands-output and capability-commands landed. [observed] marks behaviour seen with packages/cli/dist built at d8907e0c and not re-run since; [read] marks what was read from the source at 70c93e73. (1) [observed] `cratylus --help` lists the 10 projector commands (init, add, compose, project, optimize, install, uninstall, deploy, explain, catalog) and none of the four capabilities, so `cratylus plan show` is undiscoverable. [read] packages/cli/src/cratylus.ts:43-52 routes on argv[2] to two programs: a capability goes to runtime's runCli (@cratylus/runtime/main, a Commander surface since unit capability-commands), anything else to forge's runCli (packages/forge/src/cli/index.ts, 477 lines, still a cac program). (2) [observed] An unknown option to a projector command (`cratylus install --harnes claude`, `compose --bogus`, `explain --jsn`, `catalog --bogus`) dies with an uncaught CACError stack trace, and an unknown top-level option (`cratylus --versoin`) prints nothing and exits 0. (3) [read] deploy now refuses an unknown --kind and an unknown --harness, but at run time inside runDeploy (commands/deploy.ts:170-176 and :230, from unit host-commands-output), not at parse time. --scope is not validated anywhere, so `--scope porject` means user scope (deploy.ts:249-252, :553-556). optimize's required --plan is declared as an optional option (index.ts:160). [observed] explain's and catalog's `[agent]` filters fragment ids by substring, which their help does not say. (4) The commands are documented three times: packages/cli/README.md, packages/forge/README.md (9 command headings at 70c93e73) and docs/cli/USAGE.md. docs/cli/ holds dated reports that stay as they are, by nico's ruling recorded in plan capability-set, so this unit leaves them alone, USAGE.md:85's `@cratylus/forge/config` import included. (5) The anchor `command line` is spelled once in code, in packages/cli/package.json:4 (description). (6) No source file imports cac or picocolors any more, but forge's package.json (:67, :69) and the catalog (pnpm-workspace.yaml:28, :30) still list them. (7) [read] packages/canon/README.md:16-31 tells a consumer to `npm install @cratylus/canon`, to project it with `@cratylus/forge`, and shows a cratylus.config.ts importing defineConfig from '@cratylus/forge/config' (:25), a package a consumer of cratylus does not have; init's scaffold imports it from 'cratylus' and prints `npm i -D cratylus @cratylus/canon` (note 'canon README imports defineConfig from forge'). Its :68, about what a plugin author builds against, is not consumer config and stays. (8) A closed stdout ends quietly only for the capabilities: runtime main.ts:171-201 installs endOnClosedStdout on process.stdout, while forge's style.ts `say` writes with no error handler, so `cratylus project --verbose | head` dies with an unhandled EPIPE stack trace (note 'say does not survive a closed pipe', observed at 4f3244ee by unit project-commands-output's implementer).\nCHANGE. Build the one program in packages/cli/src/cratylus.ts. Forge exports its projector commands as Commander commands from '@cratylus/forge/cli', replacing its runCli. The runtime's capability commands come from '@cratylus/runtime/main' (unit capability-commands), and its runCli goes. This is a clean cutover: no shim, alias or second entry is left. The program brands itself with CLI_BIN and reports the cratylus package's version for `--version` and `-v`. Its help lists every command and capability with a one-line summary written for a consumer. Rewrite jargon such as optimize's 'R=LLM artifacts + the R3 routing manifest'. Each command's help lists its flags with their true defaults and their choices, and states what each flag does. Every default lives in the Commander declaration and is shown by it. Validate values at parse time: deploy `--kind` agent|skill|hooks|all, `--scope` user|project, and `--harness` claude|omp wherever it is taken (project, deploy, install, uninstall); optimize's `<source>` and `--plan` are required. Unknown commands, unknown options at any level, and invalid or missing values are refused through Commander's errors, rewritten into the register: one stderr line naming the token, its nearest match when one is close, and `cratylus <command> --help`, with no stack trace and exit 1. The exception is that under `deploy --check` a usage error exits DEPLOY_CHECK_EXIT.noVerdict, as index.ts:346-348 does at 70c93e73. Usage-error colour goes through style.ts. Bare `cratylus` prints the top-level help to stderr and exits 1, as a capability with no verb does. Skill shims' `cratylus <capability> …` argv keeps working unchanged. Add commander to forge and cli. Remove cac and picocolors from forge's package.json and the catalog. Give packages/cli a `test` script and a test that builds the program and asserts that the top-level help names every command and capability, that each capability's help names every verb, and that README's command reference names exactly those commands and capability verbs, each once. Write that reference in packages/cli/README.md and move the forge README's command sections there, so the forge README keeps its library material and links to the cli README for the command. Update packages/runtime/README.md's `./main` row, packages/runtime/test/main.test.ts, and the forge-branding case of packages/canon/test/bin-name-single-home.test.ts (it reads `const cli = cac(` in forge's index.ts). The one program installs the closed-stdout ending once, before any command runs, so every command, projector or capability, stops quietly with exit 0 when its reader closes the pipe; endOnClosedStdout moves there from runtime main.ts rather than being copied. Rewrite packages/canon/README.md's consumer setup to the command line: install `cratylus` with the corpus, import defineConfig from 'cratylus', and link the cli README for projecting. Out of scope: each command's own output (units host-commands-output and project-commands-output) and the verbs' words (unit verb-descriptions).\nONE UNKNOWN-VERB REFUSAL (note 'dispatchers keep a second unknown-verb refusal'; measured at d969e08a). The refusal of a verb a capability does not declare is spelled in three places: packages/runtime/src/main.ts:235 (the command line's, which names the verb, the capability's verbs and `cratylus <capability> --help`), packages/runtime/src/capabilities/plan/argv.ts:77 (verbOf, which the design, plan and note dispatchers call) and packages/runtime/src/capabilities/event-tap/dispatch.ts:190 (eventTap's own copy). The two dispatcher copies give no way forward. Give the refusal one home: verbOf composes it in the command line's wording, every dispatcher (eventTap included) refuses through verbOf, and the program refuses an unknown verb with that same text instead of spelling its own. The dispatchers keep the guard, because they are exported and called directly as a library.",
+      "static": [
+        "packages/forge/src/cli/style.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/commands/init.ts",
+        "packages/forge/src/cli/commands/add.ts",
+        "packages/forge/src/cli/commands/compose.ts",
+        "packages/forge/src/cli/commands/project.ts",
+        "packages/forge/src/cli/commands/explain.ts",
+        "packages/forge/src/cli/commands/catalog.ts",
+        "packages/forge/src/cli/commands/optimize.ts",
+        "packages/forge/src/deploy/check-exit.ts",
+        "packages/runtime/src/capability.ts",
+        "packages/runtime/src/bin-name.ts",
+        "docs/cli/USAGE.md"
+      ],
+      "deps": [
+        "01M3V163P4A2QGNFDS7434AM02",
+        "01M3V172ADKP3Q6NN0CE4WHPEM"
+      ],
+      "outputs": [
+        "packages/cli/src/cratylus.ts",
+        "packages/cli/package.json",
+        "packages/cli/README.md",
+        "packages/cli/test/command-tree.test.ts",
+        "packages/cli/tsconfig.json",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/package.json",
+        "packages/forge/README.md",
+        "packages/runtime/src/main.ts",
+        "packages/runtime/test/main.test.ts",
+        "packages/runtime/README.md",
+        "packages/canon/README.md",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        "packages/canon/test/bin-name-single-home.test.ts",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        ".changeset/command-tree.md"
+      ],
+      "accept": [
+        "With packages built, `cratylus --help` exits 0 and its stdout names each of init, add, compose, project, optimize, install, uninstall, deploy, explain, catalog, eventTap, design, plan and note with a summary (census: the four capabilities absent). `cratylus` alone exits 1, with the same listing on stderr and empty stdout. `cratylus --version` and `cratylus -v` print the version in packages/cli/package.json.",
+        "Each of `cratylus frobnicate`, `cratylus install --harnes claude`, `cratylus compose --bogus` and `cratylus --versoin` exits 1 with empty stdout. Its stderr is one line beginning `cratylus`, naming the token and `--help`; for --harnes it also names `--harness`. No stderr line begins with ` at ` or contains `CACError`. At census: stack traces, and exit 0 for --versoin.",
+        "In a temp HOME with a rendered tree at $T/r, `cratylus deploy --from $T/r --home $T --kind bogus`, `--scope porject` and `--harness nope` each exit 1 naming the allowed values, and $T/.claude stays absent (at 70c93e73 --kind and --harness are refused only at run time, and `--scope porject` deploys to user scope). `cratylus deploy --check --from $T/r --home $T --kind bogus` exits with DEPLOY_CHECK_EXIT.noVerdict. `cratylus optimize x` exits 1 naming --plan.",
+        "`grep -rnE \"from '(cac|picocolors)'\" packages/*/src` and `grep -nwE \"cac|picocolors\" packages/*/package.json pnpm-workspace.yaml` print nothing (at 70c93e73: 0 and 4 lines); packages/forge/src/cli/index.ts exports no runCli and packages/runtime/src/main.ts exports no runCli; and `node ~/.agents/skills/plan/scripts/plan.mjs show`, run in this repository against the built bin on PATH, exits 0 with the plan view.",
+        "`pnpm --filter cratylus test` exits 0. Its test fails when the README reference lacks a command or capability verb that the program's help lists, or names one twice, or names one the help does not list. In packages/forge/README.md, `grep -nE \"^#{2,4} .(cratylus|forge) (init|add|compose|project|optimize|install|uninstall|deploy|explain|catalog)\"` prints nothing (census: 9 headings), and the file links to the cli README.",
+        "One unknown-verb refusal. `grep -rn \"unknown verb\" packages/runtime/src` prints exactly one line, which is not in main.ts (at d969e08a it prints 3: event-tap/dispatch.ts:190, plan/argv.ts:77 and main.ts:235). With packages built, for each capability c of eventTap, design, plan and note, the message that `dispatch<C>(['frob'])` throws when it is called directly is byte-identical to the stderr line of `cratylus c frob` with its leading `cratylus: ` removed, and that line names `frob`, the verbs of c and `cratylus c --help`. At d969e08a, `dispatchEventTap(['frob'])` throws `eventTap: unknown verb 'frob' (expected install|uninstall|read|status)`, which differs from the command line's.",
+        "A closed pipe ends a command quietly. In this repository with packages built, each of `cratylus project --verbose --out $T/r | head -1`, `cratylus --help | head -1` and `cratylus plan --help | head -1`, run with `set -o pipefail` off and stderr to a file, leaves cratylus's exit status (`${PIPESTATUS[0]}`) 0 and that file holding no line that begins with ` at ` or contains `EPIPE`. At 70c93e73, the project run dies with an unhandled EPIPE stack trace.",
+        "`grep -n \"@cratylus/forge/config\" packages/canon/README.md` prints nothing, and its consumer config example imports defineConfig from 'cratylus' and its install line names `cratylus` (at 70c93e73: :25 imports from '@cratylus/forge/config' and :17 installs @cratylus/canon alone).",
+        "`pnpm --filter @cratylus/runtime exec vitest run test/main.test.ts`, `pnpm --filter @cratylus/canon exec vitest run test/bin-name-single-home.test.ts` and `pnpm --filter @cratylus/forge exec vitest run test/cli` exit 0; `pnpm typecheck` and `pnpm build` exit 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3V08TM6NB9PGN3HZ4R2VYYN",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3S9QXFG2PS1VAE275Y7PB7D",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "d041f73558aa30cd0f3fe44bde8f8e3bd9e6b787",
+        "author": "CommandTree",
+        "time": "2026-10-01T07:17:20.357Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "d041f735",
+        "verdict": "not-achieved",
+        "missing": [
+          "command line, no flag is silently ignored: 'cratylus deploy --scope project --home <dir>' accepts --home, places into the project's .claude and exits 0 without a word, though --home is the user scope's (locus: packages/forge/src/cli/index.ts, deploy action; packages/forge/src/cli/commands/deploy.ts, deployTree)",
+          "command line, no flag is silently ignored: 'cratylus deploy --from <dir>' given with all three of --agents-dir, --skills-dir and --hooks-dir is ignored, even when <dir> does not exist, and the deploy proceeds and exits 0 (locus: packages/forge/src/cli/index.ts, deploy action)",
+          "command line, no flag is silently ignored: under 'cratylus deploy --check', --config, --verbose and --dry-run are accepted and have no effect; runDeployCheck reads none of them (locus: packages/forge/src/cli/commands/deploy.ts, runDeployCheck; packages/forge/src/cli/index.ts, deploy action)"
+        ],
+        "author": "assayer",
+        "time": "2026-10-01T07:20:17.156Z"
+      }
+    ]
+  }
+}

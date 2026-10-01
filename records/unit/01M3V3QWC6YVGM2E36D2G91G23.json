@@ -1,0 +1,82 @@
+{
+  "envelope": {
+    "id": "01M3V3QWC6YVGM2E36D2G91G23",
+    "entity": "01M3V163P4A2QGNFDS7434AM02",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V30FNPZQ8XJ60ACTCVGE29"
+    ],
+    "author": "ProjectCommandsOutput",
+    "time": "2026-10-01T06:51:58.726Z",
+    "reason": "project commands onto the register; scaffold imports cratylus; missing package one line; project defaults to .cratylus/<harness>",
+    "cause": "unit project-commands-output first build"
+  },
+  "payload": {
+    "plan": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "spec": {
+      "name": "project-commands-output",
+      "intent": "Census @d8907e0c (design at d8907e0c, working tree clean); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. THE REGISTER every unit of plan command-line writes to (plan-owned, so the command reads as one tool): a result goes to stdout, and anything that is not the result (a failure, a warning, a note, a hint) goes to stderr. A failure is one stderr line `cratylus <command>: <what went wrong>; <what to do>`, and the exit code is non-zero; success exits 0. A capability refusal keeps its `cratylus: <capability>: …` form. A warning is a stderr line `cratylus <command>: warning: <message>`. There are no decorative glyphs (✓ ✗ ! • ·), no `===` banners and no blank spacer lines, and each line holds one fact. Colour marks only the failure or warning prefix. It is decided per stream: only when that stream is a terminal and NO_COLOR is unset (CI and FORCE_COLOR never turn it on for a pipe or a file). Per-file detail appears only under --verbose. \nRealize `command line`'s output conventions and footguns for the commands that work on a project's cratylus.config.ts: init, add, compose, project, explain, catalog and optimize. This unit builds on packages/forge/src/cli/style.ts (say, warn, fail), which unit host-commands-output creates as the only module that imports chalk.\nAT CENSUS (observed with packages/cli/dist built at d8907e0c, in a temp dir). (1) `cratylus init` scaffolds a config that imports `defineConfig` from '@cratylus/forge/config' (config/scaffold.ts:59). A consumer who installed `cratylus` does not have that package; the repository's own cratylus.config.ts imports it from 'cratylus'. The scaffold's comments also say `forge — config is code` and `forge add <package>` (:62-63). After init, compose, explain and catalog each fail with `Cannot find package '@cratylus/forge' imported from …`, which does not say what to do. (2) `cratylus project` on that config dies with an uncaught ERR_MODULE_NOT_FOUND stack trace (19 stderr lines, exit 1): loadConfig and adapterByName are not caught (commands/project.ts:56-58). (3) project's default render root is `<cwd>/.render` (project.ts:57; help at cli/index.ts:132), while deploy reads `.cratylus/<harness>` by default (cli/index.ts:343). So `cratylus project` followed by `cratylus deploy` is refused with `no render tree at .cratylus/claude — run cratylus project first`. The repository's own scripts pass `--out .cratylus/<harness>` (package.json:27-28), and the deploy-drift-notice hook looks there. (4) project prints an `EMIT …` line for every file it renders (51 stdout lines), and has no --verbose. (5) compose's `--dry-run` does nothing except hide a stale note ('materializing … lands in a later shard; nothing was written', compose.ts:84-88), because compose never writes. explain prints 'forward seam' notes on stdout (explain.ts:170-185). compose, explain and catalog print a bold header and a blank line before their results. (6) `catalog <agent> --corpus <dir>` ignores <agent> without saying so (AUDIT #15; re-derive in catalog.ts). (7) The command calls itself `forge` in output: optimize.ts:91,103,111,117 (`forge optimize: …`), add.ts:25 (`forge add: …`), project.ts:40 (`run forge init first`). (8) `cratylus add nonexistent-pkg` wires the package and exits 0, then advises `cratylus compose --dry-run`, a flag this unit removes.\nCHANGE. Move the seven command files onto style.ts and the register, so no file under packages/forge/src imports picocolors. The scaffold imports from 'cratylus' (and the corpus package it names), carries no `forge` wording, and init's output says what to install next for the config to load (for example `npm i -D cratylus @cratylus/canon`). When a config fails to load because a package it imports is missing, loader.ts reports one failure line that names the package and the install command, and every command that loads a config reports it that way. Nothing reaches the consumer as a stack trace. project's default render root becomes `.cratylus/<harness>`, the one deploy reads. Its help in cli/index.ts says so, and its success line's `ship it with: cratylus deploy` holds true. project is quiet by default: one summary line and the next step. Its EMIT lines appear only under a new `--verbose` declared in cli/index.ts. Remove compose's --dry-run and the stale note, and remove explain's forward-seam notes. compose, explain and catalog print their results with no header or spacer lines. catalog refuses an <agent> it would ignore. Every user-facing string names the command `cratylus`, through CLI_BIN. Keep: each command's JSON output (`--json`) byte-shape, init's idempotence, add's idempotence. Out of scope: the cac→Commander port and the wording of help summaries (unit command-tree), install/uninstall/deploy (unit host-commands-output), and removing picocolors from package.json and the catalog (unit command-tree, so that this unit never touches the lockfile).",
+      "static": [
+        "packages/forge/src/cli/style.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/resolve/index.ts",
+        "packages/forge/src/catalog/index.ts",
+        "packages/forge/src/core/exemplify/index.ts",
+        "packages/canon/src/hooks/deploy-drift-notice.ts",
+        "package.json"
+      ],
+      "deps": [
+        "01M3V159KE7F16TE190KK64237"
+      ],
+      "outputs": [
+        "packages/forge/src/cli/commands/init.ts",
+        "packages/forge/src/cli/commands/add.ts",
+        "packages/forge/src/cli/commands/compose.ts",
+        "packages/forge/src/cli/commands/project.ts",
+        "packages/forge/src/cli/commands/explain.ts",
+        "packages/forge/src/cli/commands/catalog.ts",
+        "packages/forge/src/cli/commands/optimize.ts",
+        "packages/forge/src/config/scaffold.ts",
+        "packages/forge/src/config/loader.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/forge/test/cli/cli.test.ts",
+        "packages/forge/test/cli/compose.test.ts",
+        "packages/forge/test/cli/explain.test.ts",
+        "packages/forge/test/cli/catalog.test.ts",
+        "packages/forge/test/config/scaffold.test.ts",
+        "packages/forge/test/config/loader.test.ts",
+        ".changeset/project-commands-output.md"
+      ],
+      "accept": [
+        "In an empty temp dir, `cratylus init` writes a cratylus.config.ts whose import of defineConfig is from 'cratylus' and in which `grep -c forge` is 0, and init's output names what to install. With `cratylus` and `@cratylus/canon` resolvable from the dir (for example a `node_modules` symlink to the workspace packages), `cratylus compose` then exits 0. At census the scaffold imports '@cratylus/forge/config' and compose fails.",
+        "In a temp dir whose cratylus.config.ts imports a package that is not installed, each of `cratylus compose`, `cratylus project`, `cratylus explain` and `cratylus catalog` exits 1 with exactly one stderr line. That line begins `cratylus <command>:`, names the missing package and names an install command, and contains no line beginning with `    at ` or `file://`. At census, project prints a 19-line stack.",
+        "In this repository, with packages built, `cratylus project` with no --out writes `.cratylus/claude` and prints no line beginning `EMIT` and at most 3 stdout lines. Then `cratylus deploy --dry-run --home $T` (temp HOME) finds the tree and exits 0. `cratylus project --verbose --out $T/r` prints the EMIT lines. At census the default is .render, 51 lines are printed, and the deploy is refused.",
+        "`cratylus compose --help` lists no --dry-run; `cratylus compose` stdout holds only the resolved fragments, one per line, with no header line and no `note:` line; `cratylus explain` stdout holds no `note:` line; `cratylus catalog someagent --corpus packages/canon/src/dimensions` exits 1 saying <agent> is not used with --corpus.",
+        "`grep -rn picocolors packages/forge/src` prints nothing; `grep -rnE \"forge (init|add|optimize)|forge (add|optimize):\" packages/forge/src/cli/commands packages/forge/src/config | grep -vE \"^[^:]+:[0-9]+:\\s*(//|\\*|/\\*)\"` prints nothing (census: 6 lines; the scaffold's `forge add` comment is caught by the init criterion instead).",
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli test/config` exits 0 and `pnpm --filter @cratylus/forge typecheck` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3V08TM6NB9PGN3HZ4R2VYYN",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3S9QXFG2PS1VAE275Y7PB7D",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "4cd276dd",
+        "author": "ProjectCommandsOutput",
+        "time": "2026-10-01T06:51:58.726Z"
+      }
+    ]
+  }
+}

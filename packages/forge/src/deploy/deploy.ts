@@ -195,6 +195,9 @@ function place(
   );
 }
 
+/** What `deployLocal` did beyond placing: the facts a summary reports. */
+type LocalOutcome = Omit<DeploySingleResult, 'rc' | 'names'>;
+
 /**
  * CONVERGE the deploy root to the render tree: place, then subtract whatever a
  * PRIOR deploy of this tree left behind and this one did not re-write.
@@ -206,18 +209,18 @@ function place(
  *   - `--only` ⇒ a subset intent, so the prune stays inside the subset;
  *   - `--dry-run` ⇒ print the exact deletion set, delete nothing.
  */
-function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
+function deployLocal(names: string[], opts: DeployOpts): LocalOutcome {
   const log = opts.log ?? (() => {});
   const dry = opts.dry ?? false;
+  // The bare-home note is the CALLER's to say, once: this runs once per kind, and a
+  // note repeated per kind is the same fact stated three times.
   const scopeRes =
     opts.scope === 'project'
       ? projectScope(opts.project, opts.harnessHome ?? undefined)
       : userScope(opts.home, opts.harnessHome ?? undefined);
-  if (scopeRes.note) {
-    (opts.warn ?? (() => {}))(scopeRes.note.message);
-  }
   const harnessDir = scopeRes.harnessDir;
-  log(`=== LOCAL deploy -> ${harnessDir} ===`);
+  let pruned: string[] = [];
+  let unregistered = 0;
 
   const bootstrap = !hasManifest(harnessDir);
   // `agentExt` is the same fact `place` reads (`placeOpts`) — the harness's, from
@@ -242,9 +245,9 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
 
   if (bootstrap) {
     log(
-      '  prune: no prior deploy manifest in this root — nothing here is ' +
-        'attributable to this tool, so nothing is removed; this deploy ' +
-        'establishes the record and the next one can converge.',
+      'prune: no prior deploy manifest in this root, so nothing here is ' +
+        'attributable to this tool and nothing is removed; this deploy ' +
+        'establishes the record and the next one can converge',
     );
   } else {
     const stale = staleFiles(priorKind, written, skipped, narrowed);
@@ -254,17 +257,17 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
     // silently, since nothing skipped is a candidate and a prune that removed
     // nothing prints nothing. Measured: a 10-agent host redeployed from a 2-agent
     // corpus kept all ten faces, all ten launch specs and the retired skills.
-    const removed = applyPrune(harnessDir, stale, dry, [
+    pruned = applyPrune(harnessDir, stale, dry, [
       resolvePath(harnessDir, '..', NEUTRAL_AGENT_ROOT),
     ]);
-    if (removed.length > 0) {
+    if (pruned.length > 0) {
       log(
         dry
-          ? `  prune (dry-run): ${removed.length} orphan(s) WOULD be removed:`
-          : `  prune: removed ${removed.length} orphan(s):`,
+          ? `prune (dry-run): ${pruned.length} orphan(s) would be removed:`
+          : `prune: removed ${pruned.length} orphan(s):`,
       );
-      for (const rel of removed) {
-        log(`    - ${rel}`);
+      for (const rel of pruned) {
+        log(`  - ${rel}`);
       }
     }
     // A registration whose worker this prune just deleted would still fire.
@@ -272,16 +275,16 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
       const staleCmds = prior.hookCommands.filter(
         (c) => !registered.includes(c),
       );
-      const n = unregisterHookCommandsAt(
+      unregistered = unregisterHookCommandsAt(
         resolvePath(harnessDir, 'settings.json'),
         staleCmds,
         dry,
       );
-      if (n > 0) {
+      if (unregistered > 0) {
         log(
           dry
-            ? `  prune (dry-run): ${n} settings.json hook registration(s) WOULD be unregistered`
-            : `  prune: unregistered ${n} stale settings.json hook entr${n === 1 ? 'y' : 'ies'}`,
+            ? `prune (dry-run): ${unregistered} settings.json hook registration(s) would be unregistered`
+            : `prune: unregistered ${unregistered} stale settings.json hook entr${unregistered === 1 ? 'y' : 'ies'}`,
         );
       }
     }
@@ -293,13 +296,10 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   // decides, not us.
   if (unaccounted.length > 0) {
     log(
-      `  prune (dry-run): ${unaccounted.length} ${opts.kind} name(s) in the target are UNATTRIBUTABLE`,
-    );
-    log(
-      '    (not in the render tree, not in the manifest — never pruned; retire any orphan by hand)',
+      `prune (dry-run): ${unaccounted.length} ${opts.kind} name(s) in the target are unattributable (not in the render tree, not in the manifest): never pruned; retire any orphan by hand`,
     );
     for (const n of unaccounted) {
-      log(`    ? ${n}`);
+      log(`  ? ${n}`);
     }
   }
 
@@ -348,7 +348,7 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
             ],
     });
   }
-  return result;
+  return { result, pruned, unregistered, unaccounted };
 }
 
 export type DeploySingleOpts = DeployOpts;
@@ -356,6 +356,14 @@ export type DeploySingleOpts = DeployOpts;
 export interface DeploySingleResult {
   rc: number;
   result: PlaceResult;
+  /** The names of this kind that were deployed. */
+  names: string[];
+  /** The recorded paths a prior deploy placed that this one removed (or, dry, would). */
+  pruned: string[];
+  /** The stale `settings.json` hook registrations removed (or, dry, to be). */
+  unregistered: number;
+  /** Dry run only: names in the target this tool cannot account for and never prunes. */
+  unaccounted: string[];
 }
 
 /** Deploy the render tree into the local `.claude/` root for one kind. */
@@ -370,8 +378,12 @@ export function deploySingle(opts: DeploySingleOpts): DeploySingleResult {
   log(
     `${opts.kind.endsWith('s') ? opts.kind : `${opts.kind}s`} (${names.length}): ${names.join(', ')}`,
   );
-  const result = deployLocal(names, opts);
-  return { rc: result.rc === 2 ? 2 : 0, result };
+  const local = deployLocal(names, opts);
+  return {
+    rc: local.result.rc === 2 ? 2 : 0,
+    names,
+    ...local,
+  };
 }
 
 export type { PlaceReport, PlaceResult };

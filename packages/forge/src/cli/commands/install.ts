@@ -36,10 +36,15 @@
 // routes itself is left as it is, named as the host's, and a `--model-roles` entry for
 // it is left as the host set it and said so.
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import pc from 'picocolors';
 import {
   CLAUDE_MODEL_TIERS,
   CLAUDE_ROLE_TIERS,
@@ -86,7 +91,8 @@ import {
   writeRenderTree,
 } from '../../project/index.js';
 import type { AgentPlugin } from '../../resolve/index.js';
-import { runDeploy } from './deploy.js';
+import { fail as failLine, say, warn as warnLine } from '../style.js';
+import { deployTree } from './deploy.js';
 import {
   type InstallPrompts,
   type RoleQuestion,
@@ -158,6 +164,14 @@ interface Findings {
   detail: string[];
   /** Each on its own line, always shown. */
   warnings: string[];
+  /** What a deploy that failed said, as its own lines, always shown. */
+  failures: string[];
+  /** The runtime config the deploy wrote (or would), which lives outside the
+   *  harness directory. */
+  runtimeConfig: string | undefined;
+  /** Directories outside the harness directory the deploy placed files in, with
+   *  how many. */
+  outside: Record<string, number>;
   /** Host files edited: the path and what changed in it. */
   edits: { path: string; what: string }[];
   /** The models the operator chose for roles, as `role → model`. */
@@ -180,6 +194,9 @@ function emptyFindings(): Findings {
   return {
     detail: [],
     warnings: [],
+    failures: [],
+    runtimeConfig: undefined,
+    outside: {},
     edits: [],
     routes: [],
     left: [],
@@ -217,12 +234,12 @@ function parseModelRoles(
     const model = eq < 0 ? '' : entry.slice(eq + 1).trim();
     if (role === '' || model === '') {
       throw new Refusal(
-        `--model-roles: '${entry}' must be <role>=<model> (or the single word 'default').`,
+        `--model-roles: '${entry}' must be <role>=<model>; pass <role>=<model>,… or the single word 'default'`,
       );
     }
     if (!valid.test(model)) {
       throw new Refusal(
-        `--model-roles: '${model}' is not a usable model name.`,
+        `--model-roles: '${model}' is not a usable model name; pass a model name the harness accepts`,
       );
     }
     chosen[role] = model;
@@ -237,7 +254,7 @@ export async function runInstall(
     return await install(opts);
   } catch (e) {
     if (!(e instanceof Refusal)) throw e;
-    process.stderr.write(`${pc.red('✗')} ${CLI_BIN} install: ${e.message}\n`);
+    failLine('install', e.message);
     return 1;
   }
 }
@@ -246,16 +263,15 @@ async function install(
   opts: InstallCmdOpts & { home: string },
 ): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
-  const say = (line: string): void => {
-    process.stdout.write(`${line}\n`);
-  };
   const interactive = opts.yes !== true && (opts.interactive ?? hasTerminal());
   const prompts = opts.prompts ?? terminalPrompts;
   /** An answer, or the run ends: nothing has been written yet. */
   const answered = async <T>(pending: Promise<T | undefined>): Promise<T> => {
     const value = await pending;
     if (value === undefined) {
-      throw new Refusal('cancelled — nothing was written.');
+      throw new Refusal(
+        'cancelled; nothing was written, so run it again to install',
+      );
     }
     return value;
   };
@@ -273,13 +289,18 @@ async function install(
       harness = await answered(prompts.harness(found, HARNESS_NAMES));
     } else if (found.length === 0) {
       throw new Refusal(
-        `no harness found under ${opts.home} — looked for ${HARNESS_NAMES.map((n) => adapterByName(n).home).join(', ')}. Name one with --harness <${HARNESS_NAMES.join('|')}>.`,
+        `no harness found under ${opts.home} (looked for ${HARNESS_NAMES.map((n) => adapterByName(n).home).join(', ')}); name one with --harness <${HARNESS_NAMES.join('|')}>`,
       );
     } else {
       throw new Refusal(
-        `found ${found.join(' and ')} — name one with --harness <${found.join('|')}>.`,
+        `found ${found.join(' and ')}; name one with --harness <${found.join('|')}>`,
       );
     }
+  }
+  if (!(HARNESS_NAMES as readonly string[]).includes(harness)) {
+    throw new Refusal(
+      `unknown harness '${harness}'; pass one of --harness <${HARNESS_NAMES.join('|')}>`,
+    );
   }
   const adapter = adapterByName(harness);
   const harnessDir = join(opts.home, adapter.home);
@@ -301,7 +322,7 @@ async function install(
     const mod = (await import(specifier)) as { default?: AgentPlugin };
     if (mod.default === undefined) {
       throw new Refusal(
-        `'${specifier}' has no default export — a corpus package default-exports its plugin.`,
+        `'${specifier}' has no default export; a corpus package default-exports its plugin, so name one that does`,
       );
     }
     plugins = [mod.default];
@@ -310,7 +331,7 @@ async function install(
     // The refusal a LIBRARY owes: no corpus was named, and inventing one is the one
     // thing this package may never do.
     throw new Refusal(
-      `no corpus — write a ${CONFIG_FILE}, pass --plugin <package>, or mount this CLI from a package that names one.`,
+      `no corpus; write a ${CONFIG_FILE}, pass --plugin <package>, or mount this CLI from a package that names one`,
     );
   }
 
@@ -353,7 +374,7 @@ async function install(
     const unknown = personas.filter((n) => !optional.includes(n));
     if (unknown.length > 0) {
       throw new Refusal(
-        `--personas: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no optional persona of this corpus (optional: ${optional.length === 0 ? 'none' : list(optional)}). Every other agent is always installed.`,
+        `--personas: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no optional persona of this corpus (optional: ${optional.length === 0 ? 'none' : list(optional)}); name only optional personas, since every other agent is always installed`,
       );
     }
   } else if (optional.length === 0) {
@@ -433,7 +454,7 @@ async function install(
   if (opts.modelRoles !== undefined) {
     if (routing === undefined && !routesDefs) {
       throw new Refusal(
-        `--model-roles: the '${adapter.name}' harness routes no roles.`,
+        `--model-roles: the '${adapter.name}' harness routes no roles; drop --model-roles`,
       );
     }
     const given = parseModelRoles(opts.modelRoles, validModel);
@@ -443,7 +464,7 @@ async function install(
       );
       if (unknown.length > 0) {
         throw new Refusal(
-          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no role the installed agents hold (roles: ${list(tree.heldRoles)}).`,
+          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no role the installed agents hold (roles: ${list(tree.heldRoles)}); name one of those roles`,
         );
       }
       for (const [role, model] of Object.entries(given)) {
@@ -476,7 +497,9 @@ async function install(
         const model = picked[q.role];
         if (model === undefined || model === q.initial) continue;
         if (!validModel.test(model)) {
-          throw new Refusal(`'${model}' is not a usable model name.`);
+          throw new Refusal(
+            `'${model}' is not a usable model name; pass a name the harness accepts`,
+          );
         }
         choices[q.role] = model;
       }
@@ -495,6 +518,11 @@ async function install(
       agentsDir: resolve(stage, 'agents'),
       skillsDir: resolve(stage, 'skills'),
     };
+    // A corpus with no skills (or no agents) renders no such dir. This is install's own
+    // scratch tree, so an empty one is the truth about it; deploy refuses a render dir
+    // that is absent, as it must for one an operator named.
+    mkdirSync(stageTree.agentsDir, { recursive: true });
+    mkdirSync(stageTree.skillsDir, { recursive: true });
     const agentNames = treeNames('agent', stageTree, adapter.agentExt);
 
     const commandsCtx = personaCommandsOf(adapter, agentNames, opts);
@@ -538,10 +566,10 @@ async function install(
       found.warnings.push(...rendered.warnings);
       found.left.push(...left);
       found.detail.push(
-        pc.gray(`corpus: ${source}`),
-        pc.gray(`harness: ${harness} → ${harnessDir}`),
+        `corpus: ${source}`,
+        `harness: ${harness} → ${harnessDir}`,
       );
-      const rc = await runDeploy({
+      const deployed = await deployTree({
         agentsDir: stageTree.agentsDir,
         skillsDir: stageTree.skillsDir,
         hooksDir: stage,
@@ -564,10 +592,14 @@ async function install(
         dryRun: dry,
         check: false,
         log: (line) => found.detail.push(line),
-        warn: (line) => found.warnings.push(line),
+        warn: (message) => found.warnings.push(message),
+        fail: (message) => found.failures.push(message),
         ...(Object.keys(models).length > 0 ? { models } : {}),
       });
+      const rc = deployed.rc;
       if (rc !== 0) return { rc, found };
+      found.runtimeConfig = deployed.runtimeConfig?.path;
+      found.outside = deployed.outside;
       // The routes the definitions just placed name roles; the host maps a role to a
       // model. Deploy is unchanged — this is install's own step, and a deploy that
       // failed places no routes to back.
@@ -616,7 +648,7 @@ async function install(
     const confirming = interactive && open && opts.dryRun !== true;
     if (opts.dryRun === true || confirming) {
       const planned = await apply(true);
-      if (planned.rc !== 0) return fail(planned.found, planned.rc);
+      if (planned.rc !== 0) return failed(planned.found, planned.rc, opts);
       for (const line of describe(planned.found, {
         adapter,
         harnessDir,
@@ -629,7 +661,7 @@ async function install(
         say(line);
       }
       if (opts.verbose) for (const line of planned.found.detail) say(line);
-      warn(planned.found);
+      warnAll(planned.found);
       if (opts.dryRun === true) return 0;
       const go = await answered(prompts.confirm('Install this?'));
       if (!go) {
@@ -639,7 +671,7 @@ async function install(
     }
 
     const placed = await apply(false);
-    if (placed.rc !== 0) return fail(placed.found, placed.rc);
+    if (placed.rc !== 0) return failed(placed.found, placed.rc, opts);
     if (opts.verbose) for (const line of placed.found.detail) say(line);
     for (const line of describe(placed.found, {
       adapter,
@@ -652,27 +684,31 @@ async function install(
     })) {
       say(line);
     }
-    warn(placed.found);
+    warnAll(placed.found);
     return 0;
   } finally {
     rmSync(stage, { recursive: true, force: true });
   }
 }
 
-/** A run that failed: what the deploy said, and its code. */
-function fail(found: Findings, rc: number): number {
-  for (const line of found.detail) process.stderr.write(`${line}\n`);
-  warn(found);
+/** A run that failed: what the deploy said, its detail under `--verbose`, and its
+ *  code. */
+function failed(
+  found: Findings,
+  rc: number,
+  opts: Pick<InstallCmdOpts, 'verbose'>,
+): number {
+  for (const message of found.failures) failLine('install', message);
+  if (opts.verbose) {
+    for (const line of found.detail) process.stderr.write(`${line}\n`);
+  }
+  warnAll(found);
   return rc;
 }
 
 /** Every warning, one line each, after the rest: a warning is never verbose's. */
-function warn(found: Findings): void {
-  for (const line of new Set(found.warnings)) {
-    process.stderr.write(
-      `${pc.yellow('!')} ${line.replace(/\s*\n\s*/g, ' ').trim()}\n`,
-    );
-  }
+function warnAll(found: Findings): void {
+  for (const message of new Set(found.warnings)) warnLine('install', message);
 }
 
 /**
@@ -696,8 +732,8 @@ function describe(
   const { adapter, tree, dry } = ctx;
   const lines = [
     dry
-      ? `${pc.bold(`${CLI_BIN} would install`)} into ${adapter.name} (${ctx.harnessDir}):`
-      : `${pc.green('✓')} ${pc.bold(`${CLI_BIN} is installed`)} in ${adapter.name} (${ctx.harnessDir}):`,
+      ? `${CLI_BIN} would install into ${adapter.name} (${ctx.harnessDir}):`
+      : `${CLI_BIN} is installed in ${adapter.name} (${ctx.harnessDir}):`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (ctx.optional.length > 0) {
@@ -710,6 +746,18 @@ function describe(
   }
   for (const edit of found.edits) {
     lines.push(`  ${dry ? 'would edit' : 'edited'} ${edit.path}: ${edit.what}`);
+  }
+  // EVERY FILE WRITTEN OUTSIDE THE HARNESS DIRECTORY IS NAMED, the runtime config
+  // included: the operator reads this to learn what the run touches.
+  for (const [root, count] of Object.entries(found.outside)) {
+    lines.push(
+      `  ${dry ? 'would write' : 'wrote'} ${plural(count, 'file')} in ${root}`,
+    );
+  }
+  if (found.runtimeConfig !== undefined) {
+    lines.push(
+      `  ${dry ? 'would write' : 'wrote'} the runtime config ${found.runtimeConfig}`,
+    );
   }
   if (found.routes.length > 0) {
     lines.push(

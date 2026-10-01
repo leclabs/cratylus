@@ -12,15 +12,16 @@
 // and what caused it.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { CLI_BIN } from '../../bin-name.js';
 import type { Invocation } from '../../ports/design.js';
-import type { Argv, VerbFlags } from '../../verb-flags.js';
+import { type Argv, type VerbFlags, valueFlag } from '../../verb-flags.js';
 
 /** The flags every write takes, each taking a value: who wrote it, why, and
  *  what caused it. */
 export const INVOCATION = {
-  author: 'value',
-  reason: 'value',
-  cause: 'value',
+  author: valueFlag('Who makes this write'),
+  reason: valueFlag('Why this write is made'),
+  cause: valueFlag('What caused this write'),
 } as const;
 
 /** The last value of `flag`, `undefined` when it is not given. */
@@ -64,7 +65,9 @@ export function invocation(
   return { author, reason, cause };
 }
 
-/** The verb `argv` opens with, refusing one `verbs` does not declare. */
+/** The verb `argv` opens with, refusing one `verbs` does not declare. This is
+ *  the refusal's ONE spelling: the command line prints this text, and every
+ *  dispatcher, called as a library or from the command line, throws it. */
 export function verbOf<V extends string>(
   argv: readonly string[],
   capability: string,
@@ -74,7 +77,7 @@ export function verbOf<V extends string>(
   const declared = Object.keys(verbs);
   if (verb === undefined || !declared.includes(verb))
     throw new Error(
-      `${capability}: unknown verb '${verb ?? ''}' (expected ${declared.join('|')})`,
+      `${capability}: unknown verb '${verb ?? ''}'; the verbs are ${declared.join(', ')}; run ${CLI_BIN} ${capability} --help`,
     );
   return verb as V;
 }

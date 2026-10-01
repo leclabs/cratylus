@@ -64,7 +64,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "cac": "catalog:"
+    "commander": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

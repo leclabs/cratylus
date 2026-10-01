@@ -25,19 +25,19 @@ capability.
 
 ## Subpaths
 
-| subpath                    | what it carries                                                                                                                                                                                                             |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`                        | `EventName` and the `EventTapHost`, `DesignHost`, `PlanHost` and `NoteHost` ports                                                                                                                                           |
-| `./events`                 | `EventName` — an event is a name; which names are valid is the corpus's, read from the host runtime config                                                                                                                  |
-| `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                |
-| `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                          |
-| `./capability`             | `CAPABILITIES`, `Capability` — the four capabilities the runtime ships                                                                                                                                                      |
-| `./main`                   | `runCli` — the thin `cac` CLI that routes each capability to its verb surface                                                                                                                                               |
-| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `RuntimeConfig`                                                                                                                                                 |
-| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                  |
-| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                      |
-| `./verb-flags`             | `VerbFlags`, `Flags`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's flags and whether each takes a value, the one reader (a flag that takes no value never takes the next token), and the one unknown-flag refusal |
-| `./package.json`           | the manifest                                                                                                                                                                                                                |
+| subpath                    | what it carries                                                                                                                                                                                                                                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                        | `EventName` and the `EventTapHost`, `DesignHost`, `PlanHost` and `NoteHost` ports                                                                                                                                                                                                                                 |
+| `./events`                 | `EventName` — an event is a name; which names are valid is the corpus's, read from the host runtime config                                                                                                                                                                                                        |
+| `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                                                                                                      |
+| `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                                                                                                                |
+| `./capability`             | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the four capabilities the runtime ships, and a line on each                                                                                                                                                                                                |
+| `./main`                   | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                       |
+| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `RuntimeConfig`                                                                                                                                                                                                                                       |
+| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                        |
+| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                            |
+| `./verb-flags`             | `VerbFlags`, `Verb`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's summary, positional and flags (whether each takes a value, and its description), the one reader (a flag that takes no value never takes the next token), and the one unknown-flag refusal |
+| `./package.json`           | the manifest                                                                                                                                                                                                                                                                                                      |
 
 The `.` barrel is pure contracts: no implementation.
 
@@ -45,7 +45,7 @@ The `.` barrel is pure contracts: no implementation.
 
 Notes, design and plans are immutable records in the repository, folded when someone asks. Agents
 and users meet them only through three capabilities that ship inside the runtime, each routed by
-`runCli` to its own verb surface and each with its port in the `.` barrel:
+`capabilityCommands` to its own verb surface and each with its port in the `.` barrel:
 
 | capability | port         | verbs                                                                                                          |
 | ---------- | ------------ | -------------------------------------------------------------------------------------------------------------- |
@@ -103,7 +103,10 @@ line and from a branch cut from it; while lines exist their header names the fir
 whether its records are committed. Design writes, writes about a plan that is not bound and notes
 naming no bound plan are written where they run.
 
-Each verb declares, beside it, the flags it takes and whether each takes a value, and one reader in
+Each verb declares, beside it, a one-line summary, the positional it acts on, and the flags it
+takes, each with whether it takes a value and a one-line description; a flag cannot be taken
+undescribed, since the declaration does not compile without it, and each capability's one-line
+summary is declared once in `CAPABILITY_SUMMARIES` (`./capability`). One reader in
 `./verb-flags` reads the verb's arguments against that declaration. A flag that takes a value is
 given as `--flag value` or `--flag=value`, taking the next token unless it begins with `--`; a flag
 that takes no value (`plan`'s `--repin`) is given alone and never takes the next token, so in
@@ -116,14 +119,16 @@ verb takes, and asks for the call to be corrected and run again.
 
 ## Routing
 
-`runCli` routes `<capability> <verb> [args]` through one table typed over `Capability`, so a
-capability without a route does not compile. Each capability's verb surface owns its verbs' flag
-grammar: `eventTap` prints its JSON result, and `design`, `plan` and `note` print their view.
-A refusal exits `1` as `cratylus: <message>`; a first word that is no capability exits `1` naming
-the four. Never a silent no-op.
+`capabilityCommands` builds one Commander command per capability, and routes
+`<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
+route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`
+prints its JSON result, and `design`, `plan` and `note` print their view. A refusal exits `1` as
+`cratylus <message>` (the message opens with the capability and the verb, as `cratylus plan assay: …`), and a verb the capability does not declare is refused by `verbOf` in the one
+wording every dispatcher throws when called as a library. Never a silent no-op.
 
-`runCli` exports but does not invoke. The invoking bin lives in [`cratylus`](../cli/README.md),
-which hands the runtime every command whose first word is a member of `CAPABILITIES`.
+`capabilityCommands` exports commands and builds no program. The program lives in
+[`cratylus`](../cli/README.md), which adds them to one tree beside the projector's commands, so its
+`--help` lists every command and capability there is.
 
 ## The host runtime config
 

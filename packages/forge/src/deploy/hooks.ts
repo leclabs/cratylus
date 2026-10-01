@@ -148,14 +148,14 @@ export function placeHooksLocal(
   const report = emptyReport();
   const hooksDir = tree.hooksDir;
   if (!hooksDir) {
-    warn('  WARN  no hooksDir in render tree; nothing to place');
+    warn('no hooksDir in the render tree; no hook was placed');
     return { rc: 0, report };
   }
   const destRoot = resolvePath(harnessDir, 'hooks');
   for (const name of names) {
     const srcDir = resolvePath(hooksDir, 'hooks', name);
     if (!existsSync(srcDir)) {
-      warn(`  WARN  no hook dir for ${name} at ${srcDir}`);
+      warn(`no hook dir for ${name} at ${srcDir}; the hook was not placed`);
       report.warnings.push(`no hook dir for ${name}`);
       report.skipped.push(name);
       continue;
@@ -173,7 +173,7 @@ export function placeHooksLocal(
     report.copied += 1;
     // Testimony: the worker assets are prunable when the hook retires.
     report.written[name] = files.map((f) => `hooks/${name}/${f}`);
-    log(`  hook ${name} -> ${destDir}/ (+${files.length} worker asset(s))`);
+    log(`hook ${name} -> ${destDir}/ (+${files.length} worker asset(s))`);
   }
   // ── SHARED ASSETS → the vendor-neutral root ──────────────────────────────────
   // A `HookWorker.shared` asset is byte-identical on every projection, so it has
@@ -205,7 +205,7 @@ export function placeHooksLocal(
         written.push(rel);
       }
       report.written[`${SHARED_STAGE_DIR}:${id}`] = written;
-      log(`  shared ${id} -> ${written.join(', ')}`);
+      log(`shared ${id} -> ${written.join(', ')}`);
     }
   }
   // Merge the hooks block into the host settings.json.
@@ -236,7 +236,7 @@ export function placeHooksLocal(
       writeFileSync(settingsFile, settingsJson(settings, before));
     }
     log(
-      `  ${hooksFile}: merged hooks for [${Object.keys(incoming).join(', ')}] ` +
+      `${hooksFile}: merged hooks for [${Object.keys(incoming).join(', ')}] ` +
         `(+${added} new entr${added === 1 ? 'y' : 'ies'}) -> ${settingsFile}`,
     );
   }
@@ -306,11 +306,11 @@ export function placeHooksLocal(
       // the only thing a scope carries — so the log names it as what it is.
       const modules = written.filter((rel) => !manifests.includes(rel));
       if (modules.length > 0)
-        log(`  mechanism ${scope} -> ${modules.join(', ')}`);
+        log(`mechanism ${scope} -> ${modules.join(', ')}`);
       if (manifests.length > 0)
-        log(`  stance manifest ${scope} -> ${manifests.join(', ')}`);
+        log(`stance manifest ${scope} -> ${manifests.join(', ')}`);
     }
   }
-  log(`  hooks copied: ${report.copied}`);
+  log(`hooks copied: ${report.copied}`);
   return { rc: 0, report };
 }

@@ -171,12 +171,12 @@ catalogs:
     '@types/node':
       specifier: ^22.0.0
       version: 22.19.21
-    cac:
-      specifier: ^6.7.14
-      version: 6.7.14
-    picocolors:
-      specifier: ^1.1.0
-      version: 1.1.1
+    chalk:
+      specifier: ^5.4.0
+      version: 5.6.2
+    commander:
+      specifier: ^14.0.3
+      version: 14.0.3
     tsup:
       specifier: ^8.3.0
       version: 8.5.1
@@ -264,6 +264,9 @@ importers:
       '@cratylus/runtime':
         specifier: workspace:*
         version: link:../runtime
+      commander:
+        specifier: 'catalog:'
+        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -274,6 +277,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.19.21)
 
   packages/forge:
     dependencies:
@@ -286,12 +292,12 @@ importers:
       '@cratylus/schema':
         specifier: workspace:*
         version: link:../schema
-      cac:
+      chalk:
         specifier: 'catalog:'
-        version: 6.7.14
-      picocolors:
+        version: 5.6.2
+      commander:
         specifier: 'catalog:'
-        version: 1.1.1
+        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 3.25.76
@@ -317,9 +323,9 @@ importers:
 
   packages/runtime:
     dependencies:
-      cac:
+      commander:
         specifier: 'catalog:'
-        version: 6.7.14
+        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1364,6 +1370,10 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
+
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
+    engines: {node: '>=20'}
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
@@ -3015,6 +3025,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  commander@14.0.3: {}
 
   commander@4.1.1: {}
 

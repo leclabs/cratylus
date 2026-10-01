@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3V5WTR955393QM9YB217F7Q",
+    "entity": "01M3V5TH4Q7SJK84PZ4P9X2WDS",
+    "operation": "retract",
+    "supersedes": [
+      "01M3V5TH4Q7SJK84PZ4P9X2WDT"
+    ],
+    "author": "CanonChangeset",
+    "time": "2026-10-01T07:29:38.057Z",
+    "reason": "a patch changeset for @cratylus/canon now releases the README",
+    "cause": "the architect's ruling to add .changeset/canon-readme-install.md"
+  },
+  "payload": null
+}

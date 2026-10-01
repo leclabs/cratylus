@@ -1,23 +1,20 @@
-// `cratylus compose [--dry-run] [--config <path>]` — the config-is-code skin
-// of `resolve()`. Loads `cratylus.config.ts` (no build step), runs THE LOAD STEP +
-// `resolve()`, and prints the RESOLVED SET. `--dry-run` prints and writes nothing
-// (the pre-publish `file:`-link workflow — inspect a locally-linked plugin's
-// contribution before publishing). Materializing the resolved set into the render
-// tree (the compile-unification) is a forward seam; only the dry inspection ships.
+// `cratylus compose [--config <path>]` — the config-is-code skin of `resolve()`.
+// Loads `cratylus.config.ts` (no build step), runs THE LOAD STEP + `resolve()`, and
+// prints the RESOLVED SET: one fragment per line, nothing else on stdout. It is a
+// read-only inspection (the pre-publish `file:`-link workflow — see what a
+// locally-linked plugin contributes before it ships); writing the resolved set into
+// a render tree is `project`'s job, not this command's.
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import pc from 'picocolors';
 import { CLI_BIN } from '../../bin-name.js';
 import { composeFromFile } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import type { ResolvedAgentSet } from '../../resolve/index.js';
+import { fail, say } from '../style.js';
 
 export interface ComposeOpts {
   /** Path to the config; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
-  /** Print the resolved set and write nothing. */
-  dryRun?: boolean;
   cwd?: string;
 }
 
@@ -36,34 +33,15 @@ function preview(value: unknown): string {
   return String(value);
 }
 
-function printResolved(
-  config: { extends: readonly { name: string }[] },
-  set: ResolvedAgentSet,
-): void {
-  const names = config.extends.map((p) => p.name).join(' › ') || '(none)';
-  const rows = [...set.fragments.values()]
-    .map((r) => ({ id: r.fragment.id, value: r.value }))
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  console.log(
-    pc.bold(`${CLI_BIN} compose`),
-    pc.gray(`(extends: ${names} — ${rows.length} resolved fragments)`),
-  );
-  console.log('');
-  for (const r of rows) {
-    console.log(`  ${pc.gray('·')} ${r.id}  ${pc.gray(preview(r.value))}`);
-  }
-}
-
 export async function runCompose(opts: ComposeOpts): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
   const configPath = opts.config
     ? resolve(opts.config)
     : join(cwd, CONFIG_FILE);
   if (!existsSync(configPath)) {
-    console.error(
-      pc.red(
-        `${CLI_BIN} compose: no ${CONFIG_FILE} at ${configPath} — run \`${CLI_BIN} init\` first`,
-      ),
+    fail(
+      'compose',
+      `no ${CONFIG_FILE} at ${configPath}; run \`${CLI_BIN} init\` first`,
     );
     return 1;
   }
@@ -72,22 +50,13 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   try {
     composed = await composeFromFile(configPath);
   } catch (e) {
-    console.error(pc.red(`${CLI_BIN} compose: ${(e as Error).message}`));
+    fail('compose', (e as Error).message);
     return 1;
   }
 
-  printResolved(composed.config, composed.resolved);
-
-  if (!opts.dryRun) {
-    // Only the dry inspection ships; projecting the resolved set into a render
-    // tree is the compile-unification (forward seam). Say so — never write silently.
-    console.log('');
-    console.log(
-      pc.yellow(
-        'note: materializing the resolved set (compose → render tree) lands in a later shard; ' +
-          'nothing was written. Use --dry-run to make the read-only intent explicit.',
-      ),
-    );
-  }
+  const rows = [...composed.resolved.fragments.values()]
+    .map((r) => ({ id: r.fragment.id, value: r.value }))
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const r of rows) say(`${r.id}  ${preview(r.value)}`);
   return 0;
 }

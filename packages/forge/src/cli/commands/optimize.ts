@@ -1,5 +1,5 @@
 /**
- * `forge optimize <source> --plan <file>` — the exemplify leg of the
+ * `cratylus optimize <source> --plan <file>` — the exemplify leg of the
  * documented import → optimize → compile flow.
  *
  * The plan file carries the LLM passes' output (conceptualize → signify →
@@ -21,6 +21,7 @@ import {
   optimize,
   readManifest,
 } from '../../core/exemplify/index.js';
+import { fail, say } from '../style.js';
 
 export interface OptimizeCommandOptions {
   source: string;
@@ -28,6 +29,8 @@ export interface OptimizeCommandOptions {
   out?: string;
   manifest?: string;
   prior?: string;
+  /** Also list every file written. */
+  verbose?: boolean;
 }
 
 /** The plan's serialized register doctrine — patterns as source strings, since
@@ -54,13 +57,12 @@ function compileRegisterPolicy(
   file: RegisterPolicyFile | undefined,
 ): RegisterPolicy | string {
   if (!file) {
-    return [
-      '--plan carries no `register` block, and there is no default.',
-      "`conform` is judged against YOUR corpus's human-register doctrine:",
-      '  "register": { "humanMarkers": ["\\\\bplease\\\\b", …],',
-      '                "markerFlags": "gi", "humanHitFloor": 3,',
-      '                "humanDensityFloor": 0.02 }',
-    ].join('\n');
+    return (
+      '--plan carries no `register` block, and there is no default; `conform` is judged ' +
+      "against YOUR corpus's human-register doctrine, so add " +
+      '"register": { "humanMarkers": ["\\\\bplease\\\\b", …], "markerFlags": "gi", ' +
+      '"humanHitFloor": 3, "humanDensityFloor": 0.02 }'
+    );
   }
   const { humanMarkers, humanHitFloor, humanDensityFloor } = file;
   if (!humanMarkers?.length) return 'plan.register.humanMarkers is empty';
@@ -86,37 +88,33 @@ export async function runOptimize(
   opts: OptimizeCommandOptions,
 ): Promise<number> {
   if (!opts.plan) {
-    console.error(
-      [
-        'forge optimize: --plan is required.',
-        'The semantic stages (conceptualize → signify → materialize) are LLM',
-        'passes: author the plan — { register, concepts: [{ gloss, anchor,',
-        'home | delta, factors?, rank? }], artifacts: [{ path, body }] } — and',
-        'pass it here.',
-        'No permissive default (s = ∅ ⇒ ⊥).',
-      ].join('\n'),
+    fail(
+      'optimize',
+      '--plan is required, and there is no default; the semantic stages (conceptualize → signify → materialize) are LLM passes, so author the plan { register, concepts: [{ gloss, anchor, home | delta, factors?, rank? }], artifacts: [{ path, body }] } and pass it with --plan <file>',
     );
     return 1;
   }
   const source = resolve(opts.source);
   if (!existsSync(source)) {
-    console.error(`forge optimize: source not found: ${source}`);
+    fail('optimize', `source not found: ${source}; check the <source> path`);
     return 1;
   }
   let plan: PlanFile;
   try {
     plan = JSON.parse(readFileSync(resolve(opts.plan), 'utf8')) as PlanFile;
   } catch (e) {
-    console.error(
-      `forge optimize: unreadable plan '${opts.plan}': ${(e as Error).message}`,
+    fail(
+      'optimize',
+      `unreadable plan '${opts.plan}': ${(e as Error).message}; check the --plan path and that it is JSON`,
     );
     return 1;
   }
   const register = compileRegisterPolicy(plan.register);
   if (typeof register === 'string') {
-    console.error(`forge optimize: ${register}`);
+    fail('optimize', register);
     return 1;
   }
+  const outDir = resolve(opts.out ?? 'optimized');
   try {
     const { manifest, written } = optimize({
       source,
@@ -124,26 +122,29 @@ export async function runOptimize(
       register,
       concepts: plan.concepts ?? [],
       artifacts: plan.artifacts ?? [],
-      outDir: resolve(opts.out ?? 'optimized'),
+      outDir,
       manifestPath: opts.manifest ? resolve(opts.manifest) : undefined,
       prior: opts.prior ? readManifest(resolve(opts.prior)) : undefined,
     });
     const reused = manifest.routes.filter(
       (r) => r.disposition === 'reuse',
     ).length;
-    console.log(
-      `optimize: ACCEPTED — ${manifest.routes.length} routed (${reused} reuse, ${
+    say(
+      `accepted: ${manifest.routes.length} routed (${reused} reuse, ${
         manifest.routes.length - reused
-      } mint), ${manifest.delta.length} delta; ${written.length} file(s) written`,
+      } mint), ${manifest.delta.length} delta; ${written.length} file(s) written to ${outDir}`,
     );
-    for (const w of written) console.log(`  ${w}`);
+    if (opts.verbose) for (const w of written) say(w);
     return 0;
   } catch (e) {
     if (e instanceof ExemplifyRefusal) {
-      console.error('optimize: REFUSED —');
-      for (const r of e.reasons) console.error(`  - ${r}`);
+      fail(
+        'optimize',
+        `plan refused: ${e.reasons.join('; ')}; amend the plan and run it again`,
+      );
       return 1;
     }
-    throw e;
+    fail('optimize', (e as Error).message);
+    return 1;
   }
 }

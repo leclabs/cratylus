@@ -7,6 +7,7 @@
 // confirmation before the first byte is written.
 
 import {
+  existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -246,7 +247,6 @@ describe('the guided install', () => {
     expect(out).toContain('cratylus is installed');
     expect(out).toContain('cratylus uninstall --harness omp');
     // The summary is a few lines; the deploy log is verbose's.
-    expect(out).not.toContain('=== LOCAL deploy');
     expect(out.split('\n').length).toBeLessThan(16);
   });
 
@@ -268,6 +268,14 @@ describe('the guided install', () => {
   it('--yes takes every default and asks nothing even on a terminal', async () => {
     expect(await install({ ...asked({}), yes: true, harness: 'omp' })).toBe(0);
     expect(files(omp())).toContain('agent/agents/planner.md');
+  });
+
+  it('refuses an unknown harness on one line naming the known ones, never with a stack', async () => {
+    expect(await install({ yes: true, harness: 'nope' })).toBe(1);
+    expect(err.trim().split('\n')).toEqual([
+      "cratylus install: unknown harness 'nope'; pass one of --harness <claude|omp>",
+    ]);
+    expect(files(claude())).toEqual([]);
   });
 
   it('refuses an ambiguous host without a terminal, and asks which on one', async () => {
@@ -596,11 +604,34 @@ describe('the guided install', () => {
 
   it('prints the per-file detail only when asked for', async () => {
     expect(await install({ harness: 'omp', yes: true })).toBe(0);
-    expect(out).not.toContain('=== LOCAL deploy');
     expect(out).not.toContain('defs copied');
     rmSync(join(omp(), '.forge'), { recursive: true, force: true });
     out = '';
     expect(await install({ harness: 'omp', yes: true, verbose: true })).toBe(0);
-    expect(out).toContain('=== LOCAL deploy');
+    expect(out).toContain('defs copied');
+  });
+
+  it('names the runtime config it writes outside the harness, in the preview and in the summary', async () => {
+    const config = join(home, '.cratylus.json');
+    // The runtime config is emitted for a corpus that declares events.
+    const withEvents = {
+      corpus: { ...plugin, events: ['session.start'] } as never,
+    };
+    expect(
+      await install({
+        ...withEvents,
+        harness: 'claude',
+        yes: true,
+        dryRun: true,
+      }),
+    ).toBe(0);
+    expect(out).toContain(`would write the runtime config ${config}`);
+    expect(existsSync(config)).toBe(false);
+    out = '';
+    expect(await install({ ...withEvents, harness: 'claude', yes: true })).toBe(
+      0,
+    );
+    expect(out).toContain(`wrote the runtime config ${config}`);
+    expect(existsSync(config)).toBe(true);
   });
 });

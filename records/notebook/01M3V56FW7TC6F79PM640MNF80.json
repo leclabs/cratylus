@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V56FW7TC6F79PM640MNF80",
+    "entity": "01M3V56FW7TC6F79PM640MNF7Z",
+    "operation": "create",
+    "supersedes": [],
+    "author": "CommandTree",
+    "time": "2026-10-01T07:17:26.023Z",
+    "reason": "what the unit could not prove with its own test is recorded beside the path",
+    "cause": "unit command-tree landed at d041f735"
+  },
+  "payload": {
+    "title": "closed pipe ending is smoke-proved, not tested",
+    "kind": "idea",
+    "topic": "command-tree",
+    "body": "Unit command-tree installs endOnClosedStdout once in packages/cli/src/cratylus.ts; 'project --verbose | head -1', '--help | head -1' and 'plan --help | head -1' were run by hand (exit 0, no EPIPE on stderr), but no permanent test spawns the built bin against a closed pipe, because packages/cli test builds the program in-process and the cli test task does not depend on its own build in turbo. The README-vs-help test also names commands and verbs only, not their flags.",
+    "blocks": []
+  }
+}

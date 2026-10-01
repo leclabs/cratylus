@@ -303,7 +303,7 @@ describe('deploy prune — convergence to the render tree', () => {
       warn: () => {},
     });
     const out = lines.join('\n');
-    expect(out).toMatch(/UNATTRIBUTABLE/);
+    expect(out).toMatch(/unattributable/);
     expect(out).toMatch(/\? legacy-orphan/);
     // reported, NOT taken
     expect(
@@ -419,7 +419,7 @@ describe('deploy prune — convergence to the render tree', () => {
       warn: () => {},
     });
     const out = lines.join('\n');
-    expect(out).toMatch(/UNATTRIBUTABLE/);
+    expect(out).toMatch(/unattributable/);
     expect(out).toMatch(/\? legacy-orphan$/m);
     expect(out).not.toMatch(/\? NOTES$/m);
     // reported, never taken
@@ -443,7 +443,7 @@ describe('deploy prune — convergence to the render tree', () => {
       warn: () => {},
     });
     const out = lines.join('\n');
-    expect(out).toMatch(/UNATTRIBUTABLE/);
+    expect(out).toMatch(/unattributable/);
     expect(out).toMatch(/\? legacy-orphan$/m);
     expect(out).not.toMatch(/\? draft$/m);
     expect(existsSync(join(claude, 'agents', 'legacy-orphan.md'))).toBe(true);

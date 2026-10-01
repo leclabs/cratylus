@@ -7,10 +7,9 @@
 // and iterating hosts is the operator's outer loop around the whole pipeline.
 // Neither is a stage, so neither is here.
 
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { join, resolve as resolvePath } from 'node:path';
 import type { AgentPlugin } from '@cratylus/schema';
-import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
@@ -30,6 +29,7 @@ import {
 } from '../../deploy/index.js';
 import { type DriftReport, auditLocal } from '../../deploy/local.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
+import { fail as failLine, say, warn as warnLine } from '../style.js';
 
 /** The CLI `--kind` argument: a real `DeployKind`, or the `all` sugar that
  *  expands to every kind in ONE invocation (agent → skill → hooks) under the
@@ -65,11 +65,17 @@ export interface DeployCmdOpts {
   /** REPORT ONLY: compare the deployed tree against the render tree and print
    *  every divergence. Places nothing, prunes nothing, repairs nothing. */
   check?: boolean;
-  /** Sink for the report (tests, and any caller that is not a terminal). */
+  /** `--verbose`: also report the per-file detail of the run. */
+  verbose?: boolean;
+  /** Where the report goes: the summary, and under `verbose` the per-file detail.
+   *  Absent ⇒ stdout. */
   log?: (line: string) => void;
-  /** Where warnings go — every warning line `runDeploy` and its placers print, and
-   *  the line it fails with. Absent ⇒ `console.error`. */
-  warn?: (line: string) => void;
+  /** Where a warning goes — the message alone, which the sink prefixes. Absent ⇒
+   *  stderr as `cratylus deploy: warning: <message>`. */
+  warn?: (message: string) => void;
+  /** Where the failure goes — the message alone, which the sink prefixes. Absent ⇒
+   *  stderr as `cratylus deploy: <message>`. */
+  fail?: (message: string) => void;
   /** Per-agent model the operator chose (agent name → `model:` value), placed on
    *  the def where the harness keeps a host's model line (claude). A harness whose
    *  routes live in its own config (omp) refuses a non-empty map. */
@@ -128,44 +134,130 @@ export function parseCompanions(
   return Object.keys(map).length ? map : undefined;
 }
 
-export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
-  if (opts.check) {
-    return runDeployCheck(opts);
-  }
-  // WHICH harness's home the tree lands in. Resolved by NAME through the same
-  // registry `project` uses, so `deploy --harness <name>` and `project --harness
-  // <name>` cannot disagree about where that harness lives. Unknown name fails
-  // loudly here rather than silently deploying into `.claude`.
-  const harnessAdapter = adapterByName(opts.harness ?? 'claude');
-  const tree: RenderTree = {
-    agentsDir: opts.agentsDir,
-    skillsDir: opts.skillsDir,
-    hooksDir: opts.hooksDir,
-    companions: opts.companions,
+/** What a deploy did, for whoever reports it. */
+export interface DeployOutcome {
+  /** The exit code: 0 landed; 1 refused or failed; 2 a placed shim is inert. */
+  rc: number;
+  harness: string;
+  harnessDir: string;
+  dry: boolean;
+  /** Per kind run: how many names it placed. */
+  placed: { kind: DeployKind; count: number }[];
+  /** Orphans a prior deploy placed that this one removed (or, dry, would). */
+  pruned: number;
+  /** Stale `settings.json` hook registrations removed (or, dry, to be). */
+  unregistered: number;
+  /** Dry run: names in the target this tool cannot account for, never pruned. */
+  unaccounted: number;
+  /** The runtime config this deploy wrote, or (dry) would write; null ⇒ none. */
+  runtimeConfig: { path: string; wrote: boolean } | null;
+  /** Directories outside the harness directory this deploy placed files in (or, dry,
+   *  would), each with how many files. omp's vendor-neutral root is one. */
+  outside: Record<string, number>;
+}
+
+const KIND_NOUN: Readonly<Record<DeployKind, string>> = {
+  agent: 'agent',
+  skill: 'skill',
+  hooks: 'hook',
+};
+
+const plural = (n: number, noun: string): string =>
+  `${n} ${noun}${n === 1 ? '' : 's'}`;
+
+/** The concrete kinds `--kind` names. Anything else is refused: it was run as a kind
+ *  of nothing, and reported "deployed 2 undefineds". */
+function kindsOf(kind: DeployKindArg): readonly DeployKind[] {
+  if (kind === 'all') return ALL_KINDS;
+  if (ALL_KINDS.includes(kind)) return [kind];
+  throw new Error(
+    `unknown kind '${String(kind)}'; pass --kind <${[...ALL_KINDS, 'all'].join('|')}>`,
+  );
+}
+
+/** Refuse a render dir that these kinds read and that is not a directory. A missing
+ *  dir read as an empty tree places nothing, and the prune then removes everything a
+ *  prior deploy placed for want of a render to match it against. A dir the kinds do
+ *  not read is not asked about. */
+function assertRenderDirs(
+  opts: DeployCmdOpts,
+  kinds: readonly DeployKind[],
+): void {
+  const reads: Record<DeployKind, string | undefined> = {
+    agent: opts.agentsDir,
+    skill: opts.skillsDir,
+    hooks: opts.hooksDir,
   };
-  const log = opts.log ?? ((line: string) => console.log(line));
-  const warn = opts.warn ?? ((line: string) => console.error(line));
-  if (
-    opts.models !== undefined &&
-    Object.keys(opts.models).length > 0 &&
-    !keepsHostModel(harnessAdapter.home)
-  ) {
-    warn(
-      pc.red(
-        `${CLI_BIN} deploy: the '${harnessAdapter.name}' harness routes models in its own config, so a per-agent model cannot be placed on its agent defs`,
-      ),
+  const missing = kinds
+    .map((kind) => reads[kind])
+    .filter(
+      (dir): dir is string =>
+        dir !== undefined && !(existsSync(dir) && statSync(dir).isDirectory()),
     );
-    return 1;
+  if (missing.length > 0) {
+    throw new Error(
+      `no render dir at ${[...new Set(missing)].join(', ')}; run \`${CLI_BIN} project\` first, or pass the right --from, --agents-dir, --skills-dir or --hooks-dir`,
+    );
   }
+}
 
-  // Expand the `all` sugar to the concrete kinds; a single kind runs a
-  // one-element loop. Every kind reuses the EXISTING per-kind engine path with
-  // IDENTICAL target opts. The overall rc is the first non-zero kind's rc.
-  const kinds: readonly DeployKind[] =
-    opts.kind === 'all' ? ALL_KINDS : [opts.kind];
-
+/** Place the render tree and say nothing but through the sinks: `log` takes the
+ *  per-file detail, `warn` and `fail` the diagnostics. The result is returned, for
+ *  the caller to report in its own words. */
+export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
+  const log = opts.log ?? (() => {});
+  const warn = opts.warn ?? ((message: string) => warnLine('deploy', message));
+  const fail = opts.fail ?? ((message: string) => failLine('deploy', message));
+  const outcome: DeployOutcome = {
+    rc: 0,
+    harness: opts.harness ?? 'claude',
+    harnessDir: '',
+    dry: opts.dryRun ?? false,
+    placed: [],
+    pruned: 0,
+    unregistered: 0,
+    unaccounted: 0,
+    runtimeConfig: null,
+    outside: {},
+  };
   try {
-    let rc = 0;
+    const kinds = kindsOf(opts.kind);
+    assertRenderDirs(opts, kinds);
+    // WHICH harness's home the tree lands in. Resolved by NAME through the same
+    // registry `project` uses, so `deploy --harness <name>` and `project --harness
+    // <name>` cannot disagree about where that harness lives. Unknown name fails
+    // loudly here rather than silently deploying into `.claude`.
+    const harnessAdapter = adapterByName(outcome.harness);
+    const tree: RenderTree = {
+      agentsDir: opts.agentsDir,
+      skillsDir: opts.skillsDir,
+      hooksDir: opts.hooksDir,
+      companions: opts.companions,
+    };
+    if (
+      opts.models !== undefined &&
+      Object.keys(opts.models).length > 0 &&
+      !keepsHostModel(harnessAdapter.home)
+    ) {
+      fail(
+        `the '${harnessAdapter.name}' harness routes models in its own config, so a per-agent model cannot be placed on its agent defs; set the model in that config`,
+      );
+      return { ...outcome, rc: 1 };
+    }
+    // THE SCOPE IS RESOLVED ONCE, and a bare home is said once: it was said by each
+    // kind in turn, the same fact three times over.
+    const scopeRes =
+      opts.scope === 'project'
+        ? projectScope(opts.project ?? null, harnessAdapter.home ?? undefined)
+        : userScope(opts.home ?? null, harnessAdapter.home ?? undefined);
+    outcome.harnessDir = scopeRes.harnessDir;
+    if (scopeRes.note) {
+      warn(scopeRes.note.message);
+    }
+
+    // Expand the `all` sugar to the concrete kinds; a single kind runs a
+    // one-element loop. Every kind reuses the EXISTING per-kind engine path with
+    // IDENTICAL target opts. The overall rc is the first non-zero kind's rc.
     for (const kind of kinds) {
       const r = deploySingle({
         kind,
@@ -184,26 +276,104 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         project: opts.project ?? null,
         ...(opts.models ? { models: opts.models } : {}),
         only: splitList(opts.only),
-        dry: opts.dryRun ?? false,
+        dry: outcome.dry,
         log,
         warn,
       });
-      if (r.rc !== 0 && rc === 0) {
-        rc = r.rc;
+      if (r.result.refusal !== undefined) {
+        fail(r.result.refusal);
+      }
+      if (r.rc !== 0 && outcome.rc === 0) {
+        outcome.rc = r.rc;
+      }
+      outcome.placed.push({
+        kind,
+        count: r.names.length - r.result.report.skipped.length,
+      });
+      outcome.pruned += r.pruned.length;
+      outcome.unregistered += r.unregistered;
+      outcome.unaccounted += r.unaccounted.length;
+      for (const rel of Object.values(r.result.report.written).flat()) {
+        if (!rel.startsWith('../')) continue;
+        const parts = rel.split('/');
+        const root = resolvePath(
+          outcome.harnessDir,
+          ...parts.slice(0, parts.findIndex((p) => p !== '..') + 1),
+        );
+        outcome.outside[root] = (outcome.outside[root] ?? 0) + 1;
       }
     }
-    await emitHostRuntimeConfig(
+    outcome.runtimeConfig = await emitHostRuntimeConfig(
       opts,
       harnessAdapter.name,
       harnessAdapter.nativeEvents,
       log,
       warn,
     );
-    return rc;
+    return outcome;
   } catch (e) {
-    warn(pc.red(`${CLI_BIN} deploy: ${(e as Error).message}`));
-    return 1;
+    fail((e as Error).message);
+    return { ...outcome, rc: 1 };
   }
+}
+
+/** A deploy's report, as lines: what was placed and where, what was pruned, the
+ *  runtime config, and the next step. Per-file detail is `--verbose`'s. */
+function summarize(outcome: DeployOutcome): string[] {
+  const { dry, harness, harnessDir } = outcome;
+  const placed = outcome.placed
+    .map((p) => plural(p.count, KIND_NOUN[p.kind]))
+    .join(', ');
+  const lines = [
+    `${dry ? 'would deploy' : 'deployed'} ${placed} to ${harness} (${harnessDir})`,
+  ];
+  if (outcome.pruned > 0) {
+    lines.push(
+      `${dry ? 'would prune' : 'pruned'} ${plural(outcome.pruned, 'orphan')} a prior deploy placed`,
+    );
+  }
+  if (outcome.unregistered > 0) {
+    lines.push(
+      `${dry ? 'would unregister' : 'unregistered'} ${plural(outcome.unregistered, 'stale hook registration')}`,
+    );
+  }
+  if (outcome.unaccounted > 0) {
+    lines.push(
+      `left alone ${plural(outcome.unaccounted, 'name')} in the target that this tool did not place and cannot account for (--verbose names them)`,
+    );
+  }
+  for (const [root, count] of Object.entries(outcome.outside)) {
+    lines.push(
+      `${dry ? 'would place' : 'placed'} ${plural(count, 'file')} in ${root}, outside ${harnessDir}`,
+    );
+  }
+  if (outcome.runtimeConfig !== null) {
+    const { path, wrote } = outcome.runtimeConfig;
+    lines.push(`${wrote ? 'wrote' : 'would write'} the runtime config ${path}`);
+  }
+  lines.push(
+    dry
+      ? 'next: run it again without --dry-run to place them'
+      : `next: start or restart ${harness}`,
+  );
+  return lines;
+}
+
+export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
+  if (opts.check) {
+    return runDeployCheck(opts);
+  }
+  const log = opts.log ?? say;
+  const outcome = await deployTree({
+    ...opts,
+    log: opts.verbose ? log : () => {},
+  });
+  if (outcome.rc === 0) {
+    for (const line of summarize(outcome)) {
+      log(line);
+    }
+  }
+  return outcome.rc;
 }
 
 /**
@@ -220,14 +390,17 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
  * bare render tree and no corpus in sight (that is what `--agents-dir` is for), and
  * refusing the whole deploy over a step that did not apply would be a refusal where
  * the shortfall is legible. It warns and names exactly what the host will lack.
+ *
+ * It returns where the config went (or, dry, would go): the file is written outside
+ * the harness directory, so a caller that names what it writes names this too.
  */
 async function emitHostRuntimeConfig(
   opts: DeployCmdOpts,
   harness: string,
   nativeEvents: Readonly<Record<string, string>>,
   log: (line: string) => void,
-  warn: (line: string) => void,
-): Promise<void> {
+  warn: (message: string) => void,
+): Promise<{ path: string; wrote: boolean } | null> {
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
@@ -240,18 +413,18 @@ async function emitHostRuntimeConfig(
       opts.config ?? join(opts.project ?? process.cwd(), CONFIG_FILE);
     if (!existsSync(configPath)) {
       warn(
-        `  runtime config: no ${CONFIG_FILE} at ${configPath} — the corpus's event vocabulary is unavailable, so the host config was NOT emitted and runtime capabilities on this host cannot validate an event name`,
+        `runtime config not emitted: no ${CONFIG_FILE} at ${configPath}, so the corpus's event vocabulary is unavailable and runtime capabilities on this host cannot validate an event name; pass --config <path> to the corpus's config`,
       );
-      return;
+      return null;
     }
     plugins = (await loadConfig(configPath)).extends;
   }
   const events = [...new Set(plugins.flatMap((p) => p.events ?? []))];
   if (events.length === 0) {
     warn(
-      '  runtime config: the plugin set declares no `events` — the host config was NOT emitted',
+      'runtime config not emitted: the plugin set declares no `events`, so runtime capabilities on this host cannot validate an event name; declare the corpus’s events',
     );
-    return;
+    return null;
   }
   const { path, wrote, doc, stanza } = emitRuntimeConfig({
     events,
@@ -261,11 +434,12 @@ async function emitHostRuntimeConfig(
     dry: opts.dryRun ?? false,
   });
   log(
-    `  runtime config${wrote ? '' : ' (dry-run)'}: ${path} — ` +
+    `runtime config${wrote ? '' : ' (dry-run)'}: ${path}: ` +
       `${doc.events.vocabulary.length} event(s), ` +
       `harnesses.${harness}: ${Object.keys(stanza.native).length} with a native peer, ` +
       `${Object.keys(doc.configuration ?? {}).length} configured capability(ies)`,
   );
+  return { path, wrote };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -356,16 +530,18 @@ export function driftVerdict(reports: readonly DriftReport[]): {
 
 /** Compare the deployed tree against the render tree; report, change nothing. */
 export function runDeployCheck(opts: DeployCmdOpts): number {
-  const log = opts.log ?? ((line: string) => console.log(line));
+  const log = opts.log ?? say;
+  const fail =
+    opts.fail ?? ((message: string) => failLine('deploy --check', message));
   const tree: RenderTree = {
     agentsDir: opts.agentsDir,
     skillsDir: opts.skillsDir,
     hooksDir: opts.hooksDir,
     companions: opts.companions,
   };
-  const kinds: readonly DeployKind[] =
-    opts.kind === 'all' ? ALL_KINDS : [opts.kind];
   try {
+    const kinds = kindsOf(opts.kind);
+    assertRenderDirs(opts, kinds);
     // INSIDE THE TRY, and it was not. An unknown `--harness` threw straight out of
     // this function, past the catch that owns the exit contract — so the process
     // died on an uncaught error and its status was whatever the runtime chose,
@@ -379,9 +555,7 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
         ? projectScope(opts.project ?? null, harnessAdapter.home ?? undefined)
         : userScope(opts.home ?? null, harnessAdapter.home ?? undefined);
     const harnessDir = scopeRes.harnessDir;
-    log(
-      `=== deploy CHECK (reports only, changes nothing) -> ${harnessDir} ===`,
-    );
+    log(`deploy --check of ${harnessDir} (reports only, changes nothing)`);
 
     const reports: DriftReport[] = [];
     for (const kind of kinds) {
@@ -432,9 +606,7 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
       return DEPLOY_CHECK_EXIT.inSync;
     }
     log(
-      pc.red(
-        `DRIFT: ${v.stale} stale, ${v.absent} absent (+${v.foreign} foreign) — this host is NOT running what the corpus renders.`,
-      ),
+      `DRIFT: ${v.stale} stale, ${v.absent} absent (+${v.foreign} foreign) — this host is NOT running what the corpus renders.`,
     );
     // RELAYED VERBATIM INTO AN AGENT'S CONTEXT by the SessionStart drift
     // advisory, so this line is a command someone runs on the strength of
@@ -446,7 +618,7 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     // the check could not run — an unknown harness, an unreadable scope, a tree
     // that is not one. Returning `drift` here would report a crash as a stale
     // host: a fabricated verdict, relayed by every caller that trusts the code.
-    console.error(pc.red(`${CLI_BIN} deploy --check: ${(e as Error).message}`));
+    fail((e as Error).message);
     return DEPLOY_CHECK_EXIT.noVerdict;
   }
 }

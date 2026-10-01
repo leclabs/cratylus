@@ -42,8 +42,8 @@
 // template-derived from this value and moved without being touched.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** THE command's name on PATH — there is exactly one now. Every other site — cac
- *  branding, error prefixes, the projected thin shim, the event-tap hook id —
+/** THE command's name on PATH — there is exactly one now. Every other site — the
+ *  program's branding, error prefixes, the projected thin shim, the event-tap hook id —
  *  interpolates this rather than repeating the literal.
  *
  *  IT LIVES HERE because the runtime is the contract leaf: it depends on nothing, so

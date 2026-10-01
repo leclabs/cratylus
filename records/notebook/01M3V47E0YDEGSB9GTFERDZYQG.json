@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3V47E0YDEGSB9GTFERDZYQG",
+    "entity": "01M3V3R3RXAGHZR47DA816Q3SV",
+    "operation": "retract",
+    "supersedes": [
+      "01M3V3R3RXAGHZR47DA816Q3SW"
+    ],
+    "author": "CommandLinePlanner2",
+    "time": "2026-10-01T07:00:28.318Z",
+    "reason": "placed: unit command-tree of plan command-line builds the one program, which installs the closed-stdout ending once (endOnClosedStdout moved from runtime main.ts) so every command stops quietly on a closed pipe; it carries this as an accept criterion",
+    "cause": "Main asked the planner to place the finding beside project-commands-output"
+  },
+  "payload": null
+}

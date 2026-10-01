@@ -14,7 +14,7 @@
 //
 //   (1) `cratylus`'s `bin` MANIFEST KEY — the one irreducible second copy
 //       (npm reads it with no TypeScript in the loop, so it cannot be computed).
-//   (2) the runtime's cac BRANDING (`main.ts`) — read out of `--help`.
+//   (2) the runtime's Commander BRANDING (`main.ts`) — read out of `--help`.
 //   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
 //       of a real `scripts/<cap>.mjs` in a real render tree.
 //   (4) EVERY hook worker that names the bin — swept, not enumerated: every
@@ -67,6 +67,7 @@
 // not converged; `CLI_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -75,7 +76,6 @@ import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { runCli } from '@cratylus/runtime/main';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
@@ -251,23 +251,16 @@ describe('the bin name has exactly one home', () => {
     expect(Object.keys(manifest.bin)).toEqual([CLI_BIN]);
   });
 
-  it("the runtime's cac branding is CLI_BIN", async () => {
-    // cac prints help through `console.log`, not `process.stdout.write`.
-    const chunks: string[] = [];
-    const log = console.log;
-    console.log = (...args: unknown[]) => {
-      chunks.push(args.map(String).join(' '));
-    };
-    try {
-      await runCli(['--help']);
-    } finally {
-      console.log = log;
-    }
-    const help = chunks.join('\n');
-    // Capture the brand cac printed, then compare — not `toContain`, which would
-    // still pass if the help named a stale bin alongside the right one.
-    expect(help.match(/^(\S+)\//)?.[1]).toBe(CLI_BIN);
-    expect(help.match(/^ {2}\$ (\S+) /m)?.[1]).toBe(CLI_BIN);
+  it("the BUILT command's help is branded CLI_BIN", () => {
+    // The emitted bin run the way a shell runs it. Capture the brand the help
+    // printed, then compare — not `toContain`, which would still pass if the help
+    // named a stale bin alongside the right one.
+    const help = execFileSync(
+      'node',
+      [join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js'), '--help'],
+      { encoding: 'utf8' },
+    );
+    expect(help.match(/^Usage: (\S+) /m)?.[1]).toBe(CLI_BIN);
   });
 
   it('the PROJECTED thin shim spawns CLI_BIN — the operative site', () => {
@@ -485,18 +478,15 @@ describe('the forge bin has exactly one authored home', () => {
   });
 
   it('the CLI brands its help with the name it is installed under', () => {
-    // `cac('forge')` printed `$ forge <command>` in every help block — the same
-    // class of defect as a stale bin in a shim, except it never needed a rename to
-    // become false. Captured off the source's cac call, compared to the manifest.
-    // Anchored at the DECLARATION, not the first `cac(` in the file: the header
-    // above it quotes the defect it retires, and an unanchored match read the
-    // comment — a gate reporting on prose about the code instead of the code.
-    // Leading whitespace is allowed because the CLI is a FUNCTION now — it used to
-    // build its `cac` instance at module scope and parse `process.argv` on import,
-    // which is why the anchor was column-zero. The subject is unchanged: the one
-    // `const cli = cac(...)` declaration, not the prose above it.
-    const branded = read('packages/forge/src/cli/index.ts').match(
-      /^\s*const cli = cac\(([^)]+)\)/m,
+    // A program named for a name no host installs printed `$ forge <command>` in
+    // every help block — the same class of defect as a stale bin in a shim, except
+    // it never needed a rename to become false. Captured off the source's program
+    // declaration, compared to the derived name. Anchored at the DECLARATION, not
+    // the first `new Command(` in the file: the headers above it quote the defect
+    // they retire, and an unanchored match reads prose about the code instead of
+    // the code.
+    const branded = read('packages/cli/src/cratylus.ts').match(
+      /^\s*const program = new Command\(([^)]+)\)/m,
     )?.[1];
     expect(branded, 'the CLI must brand itself from the derived name').toBe(
       'CLI_BIN',

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3V147STDMDZCEWGFQSEQ9ZJ",
+    "entity": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-01T06:06:17.914Z",
+    "reason": "every capability verb and flag needs words its help can print, declared once beside it",
+    "cause": "shard command line handed down by the architect"
+  },
+  "payload": {
+    "name": "command-line",
+    "realizes": [
+      "01M3V08TM6NB9PGN3HZ4R2VYYM"
+    ],
+    "state": "proposed"
+  }
+}

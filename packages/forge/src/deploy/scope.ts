@@ -21,7 +21,7 @@ export interface ScopeNote {
 
 export interface ScopeResult {
   harnessDir: string;
-  // A loud NOTE the caller prints to stderr when the bare-home guard fired.
+  // The warning the caller prints once when the bare-home guard fired.
   note: ScopeNote | null;
 }
 
@@ -60,7 +60,7 @@ export function userScope(
   return {
     harnessDir,
     note: {
-      message: `  NOTE --home '${home}' is a home dir -> deploying to ${harnessDir}`,
+      message: `--home '${home}' is a home dir; deploying to ${harnessDir}`,
     },
   };
 }

@@ -7,10 +7,11 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runCatalog } from '../../src/cli/commands/catalog.js';
 import { runExplain } from '../../src/cli/commands/explain.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+import { capture } from './streams.js';
 
 /** Write `export const <name> = <literal>;` under `<root>/<dimension>/<file>.ts`. */
 function writeModule(
@@ -22,32 +23,6 @@ function writeModule(
   const d = join(root, dimension);
   mkdirSync(d, { recursive: true });
   writeFileSync(join(d, `${file}.ts`), source);
-}
-
-/** Capture console.log output while running `fn`. */
-async function capture(fn: () => Promise<number>): Promise<{
-  rc: number;
-  out: string;
-}> {
-  const logs: string[] = [];
-  const spy = vi
-    .spyOn(console, 'log')
-    .mockImplementation((...a) => void logs.push(a.join(' ')));
-  const stdout: string[] = [];
-  const wspy = vi
-    .spyOn(process.stdout, 'write')
-    .mockImplementation((s: string | Uint8Array) => {
-      stdout.push(String(s));
-      return true;
-    });
-  let rc: number;
-  try {
-    rc = await fn();
-  } finally {
-    spy.mockRestore();
-    wspy.mockRestore();
-  }
-  return { rc, out: [...logs, ...stdout].join('\n') };
 }
 
 describe('P5 inspection — explain + first-class catalog', () => {
@@ -99,7 +74,10 @@ describe('P5 inspection — explain + first-class catalog', () => {
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
   it('explain reports per-fragment provenance: source plugin + applied patch + value', async () => {
-    const { rc, out } = await capture(() => runExplain({ config: configPath }));
+    const { rc, out: lines } = await capture(() =>
+      runExplain({ config: configPath }),
+    );
+    const out = lines.join('\n');
     expect(rc).toBe(0);
 
     // Every extended fragment appears, attributed to its source plugin.
@@ -121,7 +99,7 @@ describe('P5 inspection — explain + first-class catalog', () => {
       runExplain({ config: configPath, json: true }),
     );
     expect(rc).toBe(0);
-    const parsed = JSON.parse(out) as Array<{
+    const parsed = JSON.parse(out.join('\n')) as Array<{
       id: string;
       value: unknown;
       provenance: Array<{ source: { kind: string }; op: string }>;
@@ -137,32 +115,65 @@ describe('P5 inspection — explain + first-class catalog', () => {
   });
 
   it('explain [agent] filters the resolved fragments by id token', async () => {
-    const { rc, out } = await capture(() =>
+    const { rc, out, err } = await capture(() =>
       runExplain({ agent: 'guardrails', config: configPath }),
     );
     expect(rc).toBe(0);
-    expect(out).toContain('alpha:guardrails/harm');
-    expect(out).not.toContain('beta:role/builder');
+    expect(out.join('\n')).toContain('alpha:guardrails/harm');
+    expect(out.join('\n')).not.toContain('beta:role/builder');
+    // The filter is explained by its result: no forward-seam note, on either stream.
+    expect([...out, ...err].filter((l) => l.startsWith('note:'))).toEqual([]);
+  });
+
+  it('explain prints the report with no header and no spacer line', async () => {
+    const { out, err } = await capture(() =>
+      runExplain({ config: configPath }),
+    );
+    expect(err).toEqual([]);
+    expect(out.every((l) => l.trim() !== '')).toBe(true);
+    // The first line is a fragment, not a banner naming the command.
+    expect(out[0]).toMatch(/^\S+:\S+ \[\w+\]$/);
+  });
+
+  it('explain [agent] that matches nothing says so on stderr, not in the result', async () => {
+    const { rc, out, err } = await capture(() =>
+      runExplain({ agent: 'no-such-fragment', config: configPath }),
+    );
+    expect(rc).toBe(0);
+    expect(out).toEqual([]);
+    expect(err).toEqual([
+      "cratylus explain: warning: no resolved fragment id contains 'no-such-fragment'",
+    ]);
   });
 
   it('catalog lists extendable fragment ids across BOTH extended plugins', async () => {
-    const { rc, out } = await capture(() =>
-      runCatalog({ config: configPath, cwd }),
-    );
+    const {
+      rc,
+      out: lines,
+      err,
+    } = await capture(() => runCatalog({ config: configPath, cwd }));
+    const out = lines.join('\n');
     expect(rc).toBe(0);
+    expect(err).toEqual([]);
     // Cross-plugin: ids from alpha AND beta, grouped by plugin.
     expect(out).toContain('alpha:guardrails/harm');
     expect(out).toContain('alpha:objective/insight');
     expect(out).toContain('beta:role/builder');
+    // Grouped under a plugin line each, with no header and no spacer line.
+    expect(lines.filter((l) => !l.startsWith('  '))).toEqual([
+      'alpha (2)',
+      'beta (1)',
+    ]);
   });
 
-  it('explain errors (rc 1) when no config is present', async () => {
+  it('explain fails with one stderr line when no config is present', async () => {
     const empty = mkdtempSync(join(tmpdir(), 'forge-inspect-empty-'));
     try {
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const rc = await runExplain({ cwd: empty });
-      spy.mockRestore();
+      const { rc, out, err } = await capture(() => runExplain({ cwd: empty }));
       expect(rc).toBe(1);
+      expect(out).toEqual([]);
+      expect(err).toHaveLength(1);
+      expect(err[0]).toMatch(/^cratylus explain: no cratylus\.config\.ts at /);
     } finally {
       rmSync(empty, { recursive: true, force: true });
     }

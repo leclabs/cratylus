@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3V5RDG6QVZMYHB3J4YSJFHR",
+    "entity": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V19M9W2WP6PD87JXNH1ATK"
+    ],
+    "author": "CommandLinePlanner2",
+    "time": "2026-10-01T07:27:13.414Z",
+    "reason": "every unit of the plan is completed",
+    "cause": "whole command-tree of command-line, the last unit"
+  },
+  "payload": {
+    "name": "command-line",
+    "realizes": [
+      "01M3V08TM6NB9PGN3HZ4R2VYYM"
+    ],
+    "state": "closed"
+  }
+}

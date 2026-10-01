@@ -1,0 +1,88 @@
+{
+  "envelope": {
+    "id": "01M3V2TDHD3Z948MMN4Q2KFK72",
+    "entity": "01M3V172ADKP3Q6NN0CE4WHPEM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V2RGTP6R3GSK464JRF5FGS"
+    ],
+    "author": "CommandLinePlanner2",
+    "time": "2026-10-01T06:35:53.261Z",
+    "reason": "the integrator recorded the unit whole on the plan's line",
+    "cause": "whole capability-commands of command-line at 1ca9c852, reported by the integrator"
+  },
+  "payload": {
+    "plan": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "spec": {
+      "name": "capability-commands",
+      "intent": "Census @d8907e0c (design at d8907e0c, working tree clean); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. THE REGISTER every unit of plan command-line writes to (plan-owned, so the command reads as one tool): a result goes to stdout, and anything that is not the result (a failure, a warning, a note, a hint) goes to stderr. A failure is one stderr line `cratylus <command>: <what went wrong>; <what to do>`, and the exit code is non-zero; success exits 0. A capability refusal keeps its `cratylus: <capability>: …` form. A warning is a stderr line `cratylus <command>: warning: <message>`. There are no decorative glyphs (✓ ✗ ! • ·), no `===` banners and no blank spacer lines, and each line holds one fact. Colour marks only the failure or warning prefix. It is decided per stream: only when that stream is a terminal and NO_COLOR is unset (CI and FORCE_COLOR never turn it on for a pipe or a file). Per-file detail appears only under --verbose. \nRealize `command line` for the capabilities. `cratylus <capability> --help` lists every verb the capability has. `cratylus <capability> <verb> --help` documents the verb's positional and every flag it takes. A missing or unknown verb says what to do. All of it is built on Commander, the operator's choice for the command surface (retracted note 'the cli is cluttered, bloated and ugly'), from the declarations unit verb-descriptions put beside each verb.\nAT CENSUS. packages/runtime/src/main.ts (119 lines) builds a cac program (:88-94) that only brands top-level help and version. Every `<capability> …` argv goes to ROUTES (:58-63), whose dispatchers read the tokens with readArgv. Observed with packages/cli/dist built: `cratylus plan --help` is refused (`cratylus: plan: unknown verb '--help' …`, exit 1); `cratylus plan show --help` is refused as a flag show does not take; `cratylus design` with no verb gives `unknown verb ''`. The bin packages/cli/src/cratylus.ts:48-53 hands every argv whose first word is in CAPABILITIES to runtime `runCli(argv.slice(2))`. Projected skill shims spawn `cratylus <capability> …` (for example ~/.agents/skills/plan/scripts/plan.mjs), so this argv grammar is a contract. eventTap prints JSON, and design, plan and note print their views. A refusal is `cratylus: <message>` on stderr with exit 1 (main.ts:79-82, pinned by test/main.test.ts:108-134). packages/canon/test/bin-name-single-home.test.ts:254-273 reads the runtime's cac help branding.\nCHANGE. Add commander to the pnpm catalog and to packages/runtime/package.json, and remove cac from runtime's dependencies (not from the catalog, which forge still uses until unit command-tree). Build one Commander command per capability, its summary from the capability declarations, with one subcommand per verb. Each verb's summary, its positional and its flags (each flag's description, and whether it takes a value) are rendered into that verb's help from the declarations. Nothing is retyped in main.ts. Commander does not parse a verb's flags. The tokens after the verb reach that verb's dispatcher exactly as given, so readArgv stays their one reader, and every `verb flags` refusal (the flag, its nearest flag, every flag the verb takes) is byte-identical. `--help` or `-h` asks for help only as a token of its own that is not the value of a value-taking flag. This means `--body -h` keeps `-h` as the body, as readArgv already reads it. `cratylus <capability>` with no verb prints that capability's help to stderr and exits 1. An unknown verb is one stderr line naming it, the verbs and `cratylus <capability> --help`, with exit 1. Export the capability commands (for example `capabilityCommands(): Command[]` from '@cratylus/runtime/main') so the bin can mount them in its one program; that is unit command-tree's job. Until then, `runCli(argv)` keeps the bin working, built on the same commands, so its stdout, stderr and exit codes keep the census contract for every verb. Update test/main.test.ts and the runtime-branding case of bin-name-single-home.test.ts to read Commander's help, and update runtime/README.md's `./main` row. Out of scope: forge, the bin, and the declarations' words (unit verb-descriptions).",
+      "static": [
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/src/capability.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/src/bin-name.ts",
+        "packages/cli/src/cratylus.ts",
+        "packages/forge/src/project/runtime-shim.ts"
+      ],
+      "deps": [
+        "01M3V147T9YH7TWQQTZMEJ1YAC"
+      ],
+      "outputs": [
+        "packages/runtime/src/main.ts",
+        "packages/runtime/package.json",
+        "pnpm-workspace.yaml",
+        "pnpm-lock.yaml",
+        "packages/runtime/test/main.test.ts",
+        "packages/canon/test/bin-name-single-home.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/capability-commands.md"
+      ],
+      "accept": [
+        "With packages built, `cratylus <c> --help` for each c of eventTap, design, plan and note exits 0 with empty stderr, and its stdout names every verb of that capability's VERBS together with its declared summary (census: refused, exit 1).",
+        "`cratylus plan add --help` exits 0, and its stdout names `<unit>` and every flag of VERBS.add (plan, realizes, plan-realizes, intent, static, deps, outputs, accept, author, reason, cause), each with its declared description. `cratylus eventTap install --help` does the same for events, sink and settings.",
+        "`cratylus plan` exits 1 with empty stdout, and its stderr holds every plan verb's summary. `cratylus plan frob` exits 1 with one stderr line that contains `frob`, the verb names and `cratylus plan --help` (census: no `--help` cure).",
+        "In a temp git repository: `cratylus design define x --glos y --author a --reason r --cause c` exits 1, its stderr is exactly `cratylus: ` followed by verb-flags' `refused('design','define',['--glos'],VERBS.define)`, and records/ is unchanged. `cratylus note capture t --kind idea --topic x --body -h --author a --reason r --cause c` exits 0 and `cratylus note show t` shows the body `-h`. `cratylus eventTap status --settings $T/settings.json` prints JSON on stdout and exits 0.",
+        "`pnpm --filter @cratylus/runtime exec vitest run` exits 0, `pnpm --filter @cratylus/canon exec vitest run test/bin-name-single-home.test.ts` exits 0, `pnpm --filter @cratylus/runtime typecheck` exits 0, and `grep -nw cac packages/runtime/package.json packages/runtime/src/main.ts` prints nothing."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3V08TM6NB9PGN3HZ4R2VYYN",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3S9QXFG2PS1VAE275Y7PB7D",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "d969e08a5581f41fe765b5ca35a6e0efea949262",
+        "author": "CapabilityCommands",
+        "time": "2026-10-01T06:30:00.693Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "d969e08a",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayCapabilityCommands",
+        "time": "2026-10-01T06:33:25.872Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "1ca9c852",
+        "author": "CommandLineIntegrator",
+        "time": "2026-10-01T06:34:51.094Z"
+      }
+    ]
+  }
+}

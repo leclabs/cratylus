@@ -104,13 +104,13 @@ export function stageAssets(
   for (const name of specs.map((s) => s.trim()).filter(Boolean)) {
     const src = resolvePath(opts.assetBaseDir, name);
     if (!existsSync(src)) {
-      warn(`  WARN  asset ${skill}/${name} not found at ${src}`);
+      warn(`asset ${skill}/${name} not found at ${src}; it was not staged`);
       continue;
     }
     const base = basename(src);
     copyFileSync(src, resolvePath(destDir, base));
     staged.push(base);
-    log(`ASSET  ${skill}/${base} -> ${resolvePath(destDir, base)}`);
+    log(`asset ${skill}/${base} -> ${resolvePath(destDir, base)}`);
   }
   return staged;
 }
@@ -286,35 +286,24 @@ export function runtimeBinRefusal(
   probe: RuntimeBinProbe,
   shims: readonly string[],
 ): string {
+  const probed = [
+    `probe \`${probe.bin} --version\` found ${probe.found ?? '(nothing on PATH)'}`,
+    `result ${probe.reason ?? 'unresolvable'}`,
+    ...(probe.detail ? [`stderr ${probe.detail}`] : []),
+  ].join(', ');
   const lines = [
-    `  REFUSED  ${probe.bin} does not run on this host, and the shims just placed spawn it.`,
-    '',
-    `    shims    ${shims.join(', ')}`,
-    `    probe    ${probe.bin} --version`,
-    `    found    ${probe.found ?? '(nothing on PATH)'}`,
-    `    result   ${probe.reason ?? 'unresolvable'}`,
+    `${probe.bin} does not run on this host, and the shims just placed (${shims.join(', ')}) spawn it: ${probed}.`,
   ];
-  if (probe.detail) {
-    lines.push(`    stderr   ${probe.detail}`);
-  }
   if (probe.found !== null) {
     lines.push(
-      '',
-      '  Presence on PATH is not resolvability. `which` was satisfied by that file',
-      '  the entire time the capability was dead — only executing it tells them apart.',
+      'Presence on PATH is not resolvability. `which` was satisfied by that file the entire time the capability was dead; only executing it tells them apart.',
     );
   }
   lines.push(
-    '',
-    '  These shims are deployed and INERT: each would die inside node, in a skill,',
-    '  on this host — not here. Install the CLI, then deploy again:',
-    '',
-    `    npm i -g ${CLI_BIN}`,
-    '',
-    '  (the package manager owns PATH; this tool no longer authors its own binding)',
-    '',
+    'These shims are deployed and inert: each would die inside node, in a skill, on this host, not here.',
+    `Install the CLI with \`npm i -g ${CLI_BIN}\`, then deploy again (the package manager owns PATH; this tool does not author its own binding).`,
   );
-  return lines.join('\n');
+  return lines.join(' ');
 }
 
 /** Which of `relFiles` (dest-relative POSIX paths under `srcDir`) are shims that
@@ -396,16 +385,12 @@ export function assertShimsResolvable(
   const stale = found.filter((f) => f.spawns !== bin);
   if (stale.length > 0) {
     return [
-      `  REFUSED  ${stale.length} shim(s) spawn a command this build does not ship:`,
-      ...stale.map(
-        (f) => `    ${f.rel} spawns \`${f.spawns}\`, not \`${bin}\``,
-      ),
-      '',
-      '  A deployed shim naming a retired command dies inside node, in a skill, on a',
-      '  host — and it does so LATER, when someone runs the skill, not here.',
-      '  Re-project so the shims name the command this build actually installs.',
-      '',
-    ].join('\n');
+      `${stale.length} shim(s) spawn a command this build does not ship: ${stale
+        .map((f) => `${f.rel} spawns \`${f.spawns}\`, not \`${bin}\``)
+        .join('; ')}.`,
+      'A deployed shim naming a retired command dies inside node, in a skill, on a host, and it does so later, when someone runs the skill, not here.',
+      'Re-project so the shims name the command this build actually installs.',
+    ].join(' ');
   }
 
   const probe = probeRuntimeBin(opts);

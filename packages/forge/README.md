@@ -35,11 +35,12 @@ and `project` runs on the consumer's machine.
 
 ## Install
 
-The CLI and the plugins are ordinary npm packages. Install the CLI globally, and each plugin into the
-project that extends it:
+The command is the [`cratylus`](../cli/README.md) package, and its README is the one reference for what
+each command takes. `@cratylus/forge` is the library the command is built from; a plugin is an ordinary
+npm package, installed into the project that extends it:
 
 ```bash
-npm install -g @cratylus/forge     # the CLI
+npm install -g cratylus          # the command
 npm install @cratylus/canon        # a plugin — the canon
 ```
 
@@ -54,13 +55,11 @@ npm i @cratylus/canon@file:../canon
 ```bash
 cd ~/myproject
 
-forge init            # scaffolds cratylus.config.ts (extends: [canon])
+cratylus init            # scaffolds cratylus.config.ts (extends: [canon]) and names what to install
+npm i -D cratylus @cratylus/canon
 cratylus compose         # inspect the resolved fragment set
-cratylus project         # render into ./.render
-cratylus deploy \
-  --agents-dir .render/agents \
-  --skills-dir .render/skills \
-  --hooks-dir  .render       # place into ~/.claude (add --harness omp for ~/.omp)
+cratylus project         # render into ./.cratylus/claude
+cratylus deploy          # place into ~/.claude (add --harness omp for ~/.omp)
 ```
 
 `init` writes a config that already extends the canon, so the shortest useful path skips `add`
@@ -69,7 +68,7 @@ entirely. Adding a second plugin is what `add` is for.
 The scaffolded config is real, type-checked TypeScript — `extends` entries are imports, not strings:
 
 ```ts
-import { defineConfig } from '@cratylus/forge/config';
+import { defineConfig } from 'cratylus';
 import canon from '@cratylus/canon';
 
 export default defineConfig({
@@ -80,15 +79,19 @@ export default defineConfig({
 
 ## Commands
 
-### `forge init`
+The commands are documented once, in [the `cratylus` README](../cli/README.md#commands), to match their
+`--help`: what each takes, its defaults and its choices. What stays here is what the library does
+beneath them.
 
-Scaffolds `cratylus.config.ts` with the zero-config default `extends: [canon]`. The default is a
+### Scaffolding a config
+
+`init` scaffolds `cratylus.config.ts` with the zero-config default `extends: [canon]`. The default is a
 package resolved through the ordinary resolver, not a baked-in template. An existing config is left
 untouched.
 
-```
-forge init
-```
+Writing the config does not install what it imports. `init` prints the install command the config needs
+to load (`npm i -D cratylus @cratylus/canon`); until it has run, a command that loads the config fails on
+one line that names the missing package and that command.
 
 `@cratylus/canon` is the **default**, not the only corpus this scaffolds against — a projector that
 could name only one corpus would be deciding what the design is. The plugin is a parameter of the
@@ -101,49 +104,17 @@ await scaffoldConfig(cwd); // extends: [canon]  — DEFAULT_PLUGIN_PACKAGE
 await scaffoldConfig(cwd, { plugin: '@acme/corpus' }); // extends: [corpus]
 ```
 
-The binding name is derived from the package specifier, and `forge add` edits either config the
+The binding name is derived from the package specifier, and `cratylus add` edits either config the
 same way — it reads the config's shape, not any particular corpus's name.
 
-### `forge add <plugin>`
+### Rendering a tree
 
-Inserts a real `import` for the package and appends its binding to `extends`. Idempotent — re-adding a
-wired plugin reports no change. The npm install is deliberately left to you rather than run, and is
-printed as the next step.
-
-```
-forge add @acme/agent-plugin
-```
-
-### `cratylus compose`
-
-Loads the config, resolves the plugin set, and prints every resolved fragment with its value. Writes
-nothing.
-
-```
-cratylus compose
-cratylus compose --dry-run                     # same, stated explicitly
-cratylus compose --config ./other.config.ts
-```
-
-### `cratylus project`
-
-Materializes the resolved set into a render tree: `agents/`, `skills/`, and the harness's hook surface.
+`project` materializes the resolved set into a render tree: `agents/`, `skills/`, and the harness's hook surface.
 On claude that includes a `settings.json` carrying the hook registrations. omp has no hook
 config, so its hooks are emitted as `enforcing/<scope>/` modules and there is no `settings.json`.
 Skills that need a runtime companion get their shim emitted alongside them. A shim forwards its
 arguments to `cratylus <capability>` with the caller's environment, and it needs no session from any
 harness.
-
-```
-cratylus project [--config <path>] [--out <dir>] [--harness claude|omp]
-```
-
-Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
-the counts it wrote and the exact `deploy` invocation that ships them.
-
-```
-cratylus project --out ./build --harness omp
-```
 
 #### An agent is given its skills' closure
 
@@ -162,35 +133,13 @@ Where it lands depends on whether the harness's agent definition can name skills
 | omp     | yes      | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                                                                                                                                           |
 | claude  | yes      | subagent: front-matter `skills`; for a main session, a `SessionStart` hook per skill in the definition prints its body (a skill over the hook's output cap is named under `## Required reading` by the hook instead, with a warning) |
 
-### `cratylus deploy`
+### How deploy places a tree
 
-Places an already-projected render tree into the **local** root of the harness named by `--harness`
-(`claude` or `omp`, default `claude`): `.claude/` or `.omp/`. Agent definitions and skill
+`deploy` places an already-projected render tree into the **local** root of the harness named by
+`--harness` (`claude` or `omp`, default `claude`): `.claude/` or `.omp/`. Agent definitions and skill
 directories are copied. On claude, `settings.json` hook registrations are merged into any existing
 file rather than replacing it; on omp, the `enforcing/<scope>/` modules are placed instead, since omp has no
 hook config to merge.
-
-```
-cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
-```
-
-| Option               | Effect                                                                      |
-| -------------------- | --------------------------------------------------------------------------- |
-| `--harness <name>`   | `claude` \| `omp` (default `claude`): whose root and layout                 |
-| `--agents-dir <dir>` | render tree `agents/` — the projected definitions                           |
-| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories                     |
-| `--hooks-dir <dir>`  | hooks: claude `settings.json`, omp `enforcing/<scope>/`, both `hooks/<id>/` |
-| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)                      |
-| `--scope <scope>`    | `user` \| `project` (default `user`)                                        |
-| `--home <dir>`       | user-scope parent of the harness home (`.claude` or `.omp`), instead of `~` |
-| `--project <dir>`    | project root for `--scope project` (default cwd)                            |
-| `--only <names>`     | comma-separated names to deploy                                             |
-| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`                            |
-| `--dry-run`          | print the actions and change nothing                                        |
-
-Which directories are required depends on `--kind`: `all` requires all three, `hooks` requires only
-`--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
-refusal, not a partial run.
 
 Deploy stops at the harness's agent, skill and hook destinations (and the runtime config). A harness's
 own model routing — omp's `modelRoles` — is host configuration, not a deployed artifact: `deploy` never
@@ -374,7 +323,7 @@ ever changes, found as text so a flow mapping is reached too, and the result say
 Other than that a shape it cannot extend is reported and left.
 Both honour `--dry-run`.
 
-### `cratylus install [--harness <name>]`
+### How install places a corpus
 
 `cli/commands/install.ts` is the guided run over the deploy layer. Four decisions are the operator's — the
 harness, the corpus's optional personas (`Agent.optional`, offered by `ProjectedTree.optionalAgents`;
@@ -410,7 +359,7 @@ prints it and stops. The summary that follows a placement is a few lines: what w
 had set that was left alone, each warning (through `runDeploy`'s `warn` sink and install's own, one line
 each, on stderr), and what to do next. `--verbose` also prints the per-file detail.
 
-### `cratylus uninstall --harness <name>`
+### How uninstall removes it
 
 Removes from a harness's home what install placed there, and leaves what the host placed or changed.
 `cli/commands/uninstall.ts` reads the deploy manifest and nothing else to say what is install's, and the
@@ -440,32 +389,9 @@ the `statusLine` block it finds there byte for byte as it would write them (`ado
 and `ensureStatusSegment`, recorded through `adoptedHunk`), so the uninstall after it takes them.
 `removePersonaCommands` takes the recorded persona commands. A path outside the harness home and the
 neutral `.agents` root, and a path another harness's manifest records, are left; so is everything that
-is `changed` or `unverified`. The report is two lists, removed and left, each left entry with its
-reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
+is `changed` or `unverified`. The report counts what was removed (`--verbose` lists it) and names each left entry
+with its reason. `--dry-run` runs every step and writes nothing. The manifest is removed last, and an unreadable
 or foreign-version manifest is refused rather than read as empty.
-
-### `cratylus explain [agent]`
-
-Reports each resolved fragment's provenance — the contributing plugin or patch, the operation, and the
-final value. The optional argument is declared `[agent]`, and today it acts as a substring filter over
-fragment ids, so pass a fragment id fragment rather than an agent name.
-
-```
-cratylus explain                       # every fragment
-cratylus explain fileOps               # just the ones whose id contains 'fileOps'
-cratylus explain --json
-```
-
-### `cratylus catalog [agent]`
-
-Lists the extendable fragment ids across every extended plugin — what `add` and `patches` have to aim
-at.
-
-```
-cratylus catalog
-cratylus catalog --json
-cratylus catalog --corpus <dir>        # per-dimension corpus census instead
-```
 
 ## Where the boundaries are
 
@@ -499,17 +425,6 @@ import { adapterByName } from '@cratylus/forge/adapters/registry';
 consumer depends on the adapter port and this selector rather than on a concrete harness module.
 Plugin authors also want `@cratylus/schema` for the cell types — they are no longer forge's, and
 importing them from the projector was the inversion `schema` exists to end.
-
-## Exit codes
-
-Every command above exits `0` on success and `1` on failure. Refusals — a missing config, an empty
-`extends`, a missing required directory — are failures, reported on stderr with the reason.
-
-## Also in the binary
-
-`forge optimize <source> --plan <file>` gates an LLM-authored exemplify plan: it checks the
-accept laws (`REC ≽` · `minimal` · `conform`), writes the accepted R=LLM artifacts, and emits the R3
-routing manifest. It is opt-in and stands beside the pipeline rather than inside it.
 
 ## What used to be here
 
