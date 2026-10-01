@@ -75,12 +75,10 @@ export default defineAgentPlugin({
 });
 ```
 
-`AgentPlugin` is a `Layout` (the four package-relative directories a projector scans:
-`fragments`, `agents`, `skills` and `hooks`) plus what the plugin contributes: the `manifest`, the
-`events` vocabulary, the `practices` it offers and the `plumbing` every practice is installed with.
-A plugin object loses its package-root provenance when a consumer imports it, so a plugin resolves
-its own directories to absolute paths against its `import.meta.url` (`dir` above) and the loader
-uses them verbatim.
+`AgentPlugin` is a `Layout` (the four directories a projector scans: `fragments`, `agents`,
+`skills` and `hooks`) plus what the plugin contributes: the `manifest`, the `events` vocabulary,
+the `practices` it offers and the `plumbing` every practice is installed with. A plugin gives its
+directories as absolute paths; [`@cratylus/canon`](../canon/README.md) shows one locating its own.
 
 ## What is here
 
@@ -111,8 +109,7 @@ harness. It imports nothing.
 
 `SkillDeploy.runtime` names the runtime capability a skill is a face of and, optionally, the
 `configuration` that capability receives: a `JsonValue`, with no opinion here about any
-capability's keys. A skill that sets it is projected with a thin shim, `scripts/<capability>.mjs`,
-that forwards to the host's `cratylus <capability>` command. `deploy` gathers the `configuration`
+capability's keys. `deploy` gathers the `configuration`
 from every skill of the resolved plugin set and emits it into the host runtime config keyed by
 capability, beside the event vocabulary; the runtime's `loadRuntimeConfig` lifts it. Meaning a
 capability needs therefore lives in the corpus and reaches the runtime as configuration, never as a

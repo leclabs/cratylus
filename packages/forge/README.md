@@ -131,9 +131,8 @@ merged into any existing file rather than replacing it; on omp, the `enforcing/<
 placed instead, since omp has no hook config to merge.
 
 Deploy stops at the harness's agent, skill and hook destinations (and the runtime config). A
-harness's own model routing — omp's `modelRoles` — is host configuration, not a deployed artifact:
-`deploy` never writes it, and only `cratylus install` seeds the missing entries for the roles the
-installed agents hold.
+harness's own model routing is host configuration, not a deployed artifact, and `deploy` never
+writes it.
 
 Every adapter that declares `scopedRel` also receives one stance manifest per agent that composes a
 guard, staged at `enforcing/<agent>/stance/manifest.json` by the projector (`core/enrollment.ts`, one
@@ -167,31 +166,11 @@ vendor-neutral `.agents` root. Deploy asks the adapter where each artifact belon
 `agent/personas/<agent>/` for a projected agent — a directory omp scans for nothing, so what lands
 there is reachable only from that agent's own `--config` overlay and never from a bare `omp`.
 
-**The definition is the single source of truth.** `~/.omp/agent/agents/<name>.md` is omp's USER-level
-task-agent root: YAML front-matter carrying the `name` and `description` omp requires, and a body that
-IS the system prompt. Dispatched as a subagent, omp reads it natively. Launched as a MAIN session —
-for which omp has no `--agent` flag at all — `omp-agent <name>` (or a symlink named after the agent,
-busybox-style) reads the same bytes, prepends the identity assertion omp's own base prompt would
-otherwise win, appends the body of each `autoloadSkills` skill, and hands the result to
-`--append-system-prompt`. One definition, two readers, nothing to drift — and ONE launcher on the
-host rather than one per agent.
-
-**The definition names a role, never a model.** An agent that holds a role (`Agent.holds`, the held
-role's anchor, which the corpus's own fold sets) carries `model: ["@<role>", "@default"]` after its
-`description` on omp: omp's model-role alias for the held role, then omp's default role as the
-fallback, so a host that never configured the role runs the agent on the default role
-(`modelRoles.default`). An agent holding no role has no `model` key. Which model fills a role is the
-host's `modelRoles` entry in `~/.omp/agent/config.yml` (or `config.yaml`, which omp reads only when
-config.yml is absent).
-
-**On Claude Code the definition names a tier, never a model version.** Claude Code has no
-host-configurable role aliases: a definition's `model` takes an id, a tier alias or `inherit`. The
-claude adapter therefore holds its own table from the held role to a tier alias, and an agent's
-definition carries `model: <tier>` right after its `description`: `sonnet` for an implementer or
-integrator, `opus` for a planner, assayer or architect. An agent holding any other role, or none, has
-no `model` and runs on the session's model. The host's own choice outranks the definition: `--model`
-on a `claude --agent` main session, and for a dispatched subagent
-`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`.
+**The definition is the single source of truth.** An agent's definition is staged and placed once,
+and both readers take it from there: omp reads `agent/agents/<name>.md` natively when it dispatches
+the agent as a subagent, and its one launcher reads the same bytes to start the agent as a main
+session. One definition, two readers, nothing to drift — and ONE launcher on the host rather than one
+per agent. A definition names the role an agent holds and never a model.
 
 ## The harness adapter port
 
@@ -237,11 +216,8 @@ hold the layout, the segment an extension's status renders in, the layout in eff
 names no preset, and the left list the `custom` preset falls back to. How the badge is made to show
 is install's, and the `cratylus` README holds it.
 
-`roleRouting` is optional: claude leaves it absent, since it has no host role map to seed. omp's
-offers `default`, `smol`, `slow`, `plan` and `task`, and names `task` the nearest role to an
-implementer or integrator, `plan` to a planner, and `default` to any other. Install reads the held
-roles off the projected agents and inserts the `modelRoles` entries the host lacks from it, and
-[the `cratylus` README](../cli/README.md) holds that.
+`roleRouting` is optional: claude leaves it absent, since it has no host role map to seed. How each
+harness routes a held role to a model is [the `cratylus` README](../cli/README.md)'s.
 
 ## Where the boundaries are
 

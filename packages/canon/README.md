@@ -39,16 +39,16 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field       | what it is                                                                          |
-| ----------- | ----------------------------------------------------------------------------------- |
-| `manifest`  | **which dimensions exist** — 22, across the `'Persona'` and `'Constitution'` axes   |
-| `events`    | **which lifecycle events exist** — the corpus's harness-agnostic event vocabulary   |
-| `fragments` | the dimension value modules, filed one per dimension directory                      |
-| `agents`    | the agent vectors                                                                   |
-| `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes |
-| `hooks`     | the hook cells, each carrying its verbatim worker payload                           |
-| `practices` | **which ways of working exist** — each an installable choice, declared as data      |
-| `plumbing`  | what every practice is installed with and none is offered as                        |
+| field       | what it is                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------------- |
+| `manifest`  | **which dimensions exist** — 22, across the `'Persona'` and `'Constitution'` axes                    |
+| `events`    | **which lifecycle events exist** — the corpus's harness-agnostic event vocabulary                    |
+| `fragments` | the dimension value modules, filed one per dimension directory                                       |
+| `agents`    | the agent vectors                                                                                    |
+| `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes                  |
+| `hooks`     | the hook cells, each carrying its verbatim worker payload                                            |
+| `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
+| `plumbing`  | what every practice is installed with and none is offered as, declared beside them                   |
 
 Canon owns the catalog because a dimension is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
@@ -71,18 +71,6 @@ role itself, since the contract is the role's. `holds` refuses, when the cell is
 individual agent with no archetype or mark of its own, one whose mark is its role's, and an agent
 named for its role that declares anything beyond it. The architect role also states which roles its
 holders dispatch to, and the `holds` fold copies that to `Agent.dispatches`.
-
-## Practices
-
-A **practice** is a way of working this corpus offers as one installable choice: the agents, skills
-and hooks that carry it, installed together. `src/practices.ts` declares four — `cdd` (concept-driven
-development, the one a fresh install preselects), `corpus-authoring`, `film-production` and `carry-on` —
-each with a one-line description written for a consumer, and the plumbing, the event tap and the
-session-wide drift notice, that every practice is installed with and none is offered as. A practice
-is closed under skill composition and agent dispatch: it lists the agents its agents dispatch to, and
-the dispatch relation is data (`Agent.dispatches`), so projection refuses a chosen set that places a
-dispatcher without the roles it dispatches. A guard is listed nowhere: it is registered when a
-rendered agent composes what it binds.
 
 ## The first principle
 
@@ -112,8 +100,3 @@ never its implementation, and a cell that emits shell invoking the binary carrie
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
 and mechanism never referencing each other — and [ARCHITECTURE.md](../../ARCHITECTURE.md) records
 how it came to hold.
-
-## Tests
-
-`pnpm --filter @cratylus/canon test` builds first, deliberately: the suite drives the shipped
-`cratylus project` over this repository's own config, which extends this package's `dist`.
