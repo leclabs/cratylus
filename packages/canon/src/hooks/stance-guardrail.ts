@@ -1,61 +1,16 @@
 import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
+import {
+  contestShell,
+  judgeClipShell,
+  judgeTailShell,
+} from '../guard-shell.js';
 import type { HookCell } from '../manifest.js';
 
 // stance-guardrail — the turn-end guard of the principal stance. Its `workers[].content` are
 // the byte-anchors the committed workers under `targets/guardrail/` regenerate from
 // (`test/hook-rule-boundary.test.ts` byte-locks them); the claude adapter realizes `event`
 // as a `settings.json` hook merge plus `hooks/<id>/` workers.
-
-// The one cap on what a guard's judge is sent, in bytes: a judgement has to fit the time its
-// harness allows a guard (omp kills an extension handler at 30 s, a Claude Code cell runs 60 s).
-const judgePayloadCapBytes = 12_000;
-
-// The shell that honours the cap, written with `String.raw` so its backslashes reach the worker
-// verbatim, and free of backticks and `${`. `jq` does the cutting because every worker already
-// needs it and it counts bytes (`utf8bytelength`), so a cut never lands inside a character.
-const judgeClipShell = String.raw`# THE JUDGE IS SENT A BOUNDED EXCERPT, never the whole text. A judgement has to fit inside the
-# time its harness allows a guard, and the text a turn or a dispatch carries has no bound of its own.
-# One cap, declared once in the stance cell, bounds everything sent together: the standing
-# directive, the operator's message, the agent turn and any layer-1 note. Text over its share is
-# cut on a character boundary and marked where it was cut.
-JUDGE_PAYLOAD_CAP=${judgePayloadCapBytes}
-judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
-JUDGE_JQ='
-def pre($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| $s[:.lo] end;
-def suf($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| if .lo == 0 then "" else $s[-.lo:] end end;
-'
-# Text is read with --rawfile from stdin and never with -R: jq 1.7's raw reader corrupts a
-# multibyte character that straddles one of its read boundaries, on anything over a few KB.
-# The final N bytes of stdin, or all of it when it fits — no marker, so a caller can count them.
-judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
-# Stdin cut to at most N bytes by keeping its head and its tail, the seam marked. For a dispatch
-# prompt or a menu, whose instruction may sit at either end.
-judge_ends() {
-	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
-		$text | . as $s | ($s | utf8bytelength) as $t
-		| if $t <= $n then $s else
-			((($n - 200) / 2) | floor) as $k
-			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
-			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
-			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
-		end'
-}
-# The marker for text cut off its front: judge_cut WHAT TOTAL-BYTES SHOWN-BYTES.
-judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
-`;
-
-// The clip as the stance workers carry it, its comment lines left to this file: the purview
-// worker still carries the commented shell above.
-const judgeClipLean = judgeClipShell.replace(/^#.*\n/gm, '');
 
 export const stanceGuardrail: HookCell = {
   id: 'stance-guardrail',
@@ -173,7 +128,15 @@ esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \\
 	dark "the rubric named by $manifest is not readable at '$RUBRIC'"
 
-${judgeClipLean}
+GUARD_ID=stance-guardrail
+GUARD_NAME="STANCE GUARDRAIL"
+GUARD_SESSION="$session"
+GUARD_AGENT="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
+GUARD_ACT=stop
+${contestShell}
+contest_heard
+
+${judgeClipShell}${judgeTailShell}
 
 transcript="$(field '.transcript_path // empty')"
 [ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '$transcript'"
@@ -353,24 +316,11 @@ if [ -n "$let_through" ]; then
 	say "STANCE GUARDRAIL — stop let through UNRESOLVED: the judge blocked this stop, and the finding STANDS and is unaddressed — $let_through. The next stop that follows no block is judged and blocked again. The judge's reason was: $reason"
 	allow_stop
 fi
-reason="$reason (stance-guardrail block $run_next in this run of refused stops.)"
-
 evidence_clause=""
-[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \\"$l1_evidence\\" — \\
-you committed to an action and then ended the turn without taking it. Stating a next action is not \\
-performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \\
-is done. "
-[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span this was checked \\
-against, verbatim from your close: \\"$evidence\\" — the REASON above is the judge's unverified \\
-wording; THIS span is what mechanically matched. Argue with the span, not the wording. "
+[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \\"$l1_evidence\\" — you committed to an action and then ended the turn without taking it; do it now, with tool calls. "
+[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span checked against your close, verbatim: \\"$evidence\\". "
 
-feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \\
-\${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \\
-on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking \\
-permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and \\
-extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate \\
-exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT \\
-ambiguity to /elicit.)"
+feedback="STANCE GUARDRAIL — blocked: $reason \${evidence_clause}Decide the in-remit call yourself and continue. $(contest_refused "$reason")"
 
 jq -cn --arg r "$feedback" '{decision:"block", reason:$r}'
 exit 0
@@ -527,10 +477,3 @@ A record starting "Agent dispatch" is judged by this alone: BLOCK only if it pas
     },
   ],
 };
-
-// EXPORTED AFTER THE CELL, ON PURPOSE. `allHookCells` (tooling/project-targets.ts) takes the
-// FIRST export of a `hooks/*.ts` module to be its cell, so anything else this module exports
-// must sort and be defined after `stanceGuardrail`.
-export const stanceGuardrailJudgeCap = judgePayloadCapBytes;
-export const stanceGuardrailJudgeClip = judgeClipShell;
-export const stanceGuardrailJudgeClipLean = judgeClipLean;

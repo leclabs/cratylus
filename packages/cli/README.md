@@ -149,10 +149,15 @@ degrades and warns where it falls short; they are not the same, and this is what
   omp a run of misses pauses the judge for a cooldown and the first ask after it is the probe.
   A guard judges an act against the contract of the agent that performs it. On omp a session the
   module cannot tell to be the persona's main session is not judged, and the guard says so. A
-  refused act stays refused: its retry is judged again, with no cap that lets it through. The turn
-  end is the one exception: refusing it holds back no effect, it only makes the agent redo its
-  turn, so the turn-end guard lets a repeated stop, or a stop it has refused three times in a row,
-  through, and says so, rather than lock a session in an endless loop.
+  refusal never strands the agent: every refusal names its way forward, to act on the judge's
+  reason or to contest it. An agent that holds a refusal wrong writes why into the file the
+  refusal names, with the one shell command it spells out, and repeats the act; a contested act
+  goes through unjudged, the guard says so, and the contest is appended to
+  `~/.agents/guardrail/contests.log` for the operator to review. A repeat without a contest is
+  judged again. The turn end is bounded all the same: refusing it holds back no effect, it only
+  makes the agent redo its turn, so the turn-end guard lets a repeated stop, or a stop it has
+  refused three times in a row, through, and says so, rather than lock a session in an endless
+  loop.
   A judgement fits the time its harness allows a guard, so a judge that is merely slow is never
   reported as one that could not run: the judge is handed the test in a few sentences and the act
   and the contract it applies to, and nothing else, the act an excerpt bounded by one cap, an

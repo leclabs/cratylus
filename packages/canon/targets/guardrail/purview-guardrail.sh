@@ -68,7 +68,6 @@ def suf($n): . as $s | if $n <= 0 then "" else {lo: 0, hi: ($s | length)} | unti
 | if .lo == 0 then "" else $s[-.lo:] end end;
 '
 # --rawfile, never -R: jq 1.7's raw reader corrupts a multibyte character straddling a read boundary.
-judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
 judge_ends() {
 jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
 $text | . as $s | ($s | utf8bytelength) as $t | if $t <= $n then $s else
@@ -76,7 +75,6 @@ $text | . as $s | ($s | utf8bytelength) as $t | if $t <= $n then $s else
 | ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
 | $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e end'
 }
-judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
 
 GUARD_ACT="$(field '.tool_name // empty')"
 [ -n "$GUARD_ACT" ] || open "the payload names no tool"
