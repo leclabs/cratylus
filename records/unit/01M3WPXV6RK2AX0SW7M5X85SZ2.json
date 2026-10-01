@@ -1,0 +1,86 @@
+{
+  "envelope": {
+    "id": "01M3WPXV6RK2AX0SW7M5X85SZ2",
+    "entity": "01M3WPBBR2M5YVMP2GKA795XSN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPTQH07BB553M03BMEKSRX"
+    ],
+    "author": "LineWorktreeScope",
+    "time": "2026-10-01T21:46:31.512Z",
+    "reason": "jq missing no longer stops the implementer's worktree being cut from the line; only reading the request and baseRef falls back to sed",
+    "cause": "assay of line-worktree-scope at 795ea1cb: not-achieved, jq gated the line cut"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "line-worktree-scope",
+      "intent": "Census @0ff3de68 (isolated-implementer as achieved; design and notebook as at 6c5c6657); every path is repo-relative on the plan's line once isolated-implementer is whole there. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Run one test file inside its package with `pnpm exec vitest run <file>`. Realize the plan's clause 'each unit is built in its own isolated worktree off that line' within its bound, by the ruling on the note 'line-worktree governs every Claude worktree on the host' (decision): the plan places a unit's worktree off its plan's line and says nothing about any other worktree, so the line-worktree hook acts only for the implementer's worktree in the repository whose plan is bound, and for every other worktree, every other repository and every failure (cratylus or jq missing, no plan bound, a plan show answer it does not recognise, such as 'with nothing committed yet') it leaves creation exactly as the harness would do it and never fails it. AT CENSUS the cell (packages/canon/src/hooks/line-worktree.ts, worker packages/canon/targets/guardrail/line-worktree.sh, test packages/canon/test/line-worktree.test.ts) is registered for WorktreeCreate with sh \"$HOME/.claude/hooks/line-worktree/line-worktree.sh\", so it fires for every worktree Claude Code creates on the host: claude --worktree sessions, background sessions isolated in a worktree (this repository's .claude/settings.json sets worktree.bgIsolation), and every subagent declaring isolation: worktree; it cuts each from the line while a plan is bound, and fails creation outright on the failures above. HARNESS FACTS (Claude Code 2.1.285, read from its binary, not run): WorktreeCreate's input is the common hook fields plus name; a subagent's worktree is named agent-<id> (agent-a followed by 7 or 16 hex digits), a background session's bridge-<id>, and a --worktree session's is the name it was given or a random adjective-noun-xxxx; the input's agent_type is the session's main-thread agent, the dispatcher, never the subagent being started [INFERENCE from the input builder taking no subagent context]; in this corpus only the implementer declares isolation: worktree. How the worker tells the implementer's worktree from another is the implementer's to decide from these facts; where it cannot tell, it passes through. Passing through means creating the worktree exactly as Claude Code's own creation would (at <project>/.claude/worktrees/<name>, from origin's default branch, or from HEAD where the host's worktree.baseRef is head) and printing its path, because a WorktreeCreate hook that prints no path fails the creation. Add a patch changeset for @cratylus/canon and cratylus.",
+      "static": [
+        "packages/canon/src/practices.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7"
+      ],
+      "outputs": [
+        "packages/canon/src/hooks/line-worktree.ts",
+        "packages/canon/targets/guardrail/line-worktree.sh",
+        "packages/canon/test/line-worktree.test.ts",
+        ".changeset/line-worktree-scope.md"
+      ],
+      "accept": [
+        "in packages/canon, `pnpm exec vitest run test/line-worktree.test.ts` exits 0, running the committed worker on a temp repository with a bound plan whose line holds a commit main lacks: for the implementer's subagent worktree it prints a worktree whose HEAD runs from the line tip (`git merge-base --is-ancestor <line tip> HEAD`); for a background-session worktree (bridge-<id>) and a --worktree session's it prints a worktree under <project>/.claude/worktrees/<name> whose HEAD does not contain the line's commit; print the run",
+        "in the same run, with cratylus missing from PATH, with jq missing from PATH, with no plan bound, and with plan show answering a first line the worker does not recognise, the worker exits 0 and prints the path of a worktree created as Claude Code would create it; at 0ff3de68 the missing-cratylus and unrecognised-answer cases exit non-zero and print no path",
+        "with packages built and the renders projected (`pnpm project`), in packages/canon `pnpm exec vitest run test/harness-parity.test.ts test/hook-rule-boundary.test.ts test/gate-convicts.test.ts test/practices.test.ts` exits 0, and `pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "795ea1cb0af5a5b93a289958490e10665a1d683b",
+        "author": "LineWorktreeScope",
+        "time": "2026-10-01T21:43:29.442Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "795ea1cb0af5a5b93a289958490e10665a1d683b",
+        "verdict": "not-achieved",
+        "missing": [
+          "plan: 'each unit is built in its own isolated worktree off that line': when a plan is bound, the runtime is present and answers the line's commit, but jq is not on PATH, the implementer's worktree is cut from the checkout's HEAD or origin's default branch instead of the line, even though finding the line's tip does not use jq. The unit's own test 'with jq missing from PATH, makes it as the harness would' pins this, asserting the worktree does not run from the line; locus: the WHERE FROM step of the line-worktree worker (packages/canon/src/hooks/line-worktree.ts, regenerated into targets/guardrail/line-worktree.sh)"
+        ],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T21:44:49.440Z"
+      },
+      {
+        "kind": "land",
+        "commit": "5602176e4e4a27a54778b431fb4cd1cdee2effff",
+        "author": "LineWorktreeScope",
+        "time": "2026-10-01T21:46:31.512Z"
+      }
+    ]
+  }
+}
