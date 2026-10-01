@@ -1152,6 +1152,7 @@ interface ResolvedFixture {
 function deployedHome(
   defs: Record<string, string>,
   skills: Record<string, ResolvedFixture> = {},
+  modelRoles: Record<string, string> | null = {},
 ): DeployedHome {
   const sandbox = mkdtempSync(join(tmpdir(), 'omp-home-'));
   tmp.push(sandbox);
@@ -1184,6 +1185,8 @@ function deployedHome(
   mkdirSync(bin, { recursive: true });
   const argv = join(sandbox, 'argv');
   const reads = join(sandbox, 'reads');
+  const roles = join(sandbox, 'roles');
+  if (modelRoles !== null) place(roles, JSON.stringify(modelRoles));
   // NUL-DELIMITED, because one of these arguments is the composed system
   // prompt and it is MULTI-LINE. A newline-separated sink read the prompt back
   // as a dozen unrelated arguments, which is the shape that would let a
@@ -1201,6 +1204,10 @@ function deployedHome(
       '  esac',
       '  [ -f "$f" ] || { echo "Unknown skill" >&2; exit 1; }',
       '  cat "$f"; exit 0',
+      'fi',
+      'if [ "$1" = config ]; then',
+      `  [ -f ${roles} ] || exit 1`,
+      `  cat ${roles}; exit 0`,
       'fi',
       `printf '%s\\0' "$@" > ${argv}`,
       '',
@@ -1507,6 +1514,115 @@ describe('omp launch spec', () => {
       expect(prompt).not.toContain('# Skill:');
       expect(prompt).not.toContain('## Required reading');
       expect(() => readFileSync(home.reads)).toThrow();
+    });
+  });
+
+  describe('a MAIN session starts on the model route its role gives a spawn', () => {
+    // A dispatched architect runs on the host's `modelRoles.architect`; the
+    // launcher used to pass no model, so the same persona launched by name ran
+    // on whatever omp defaults to. The definition is the one source: the
+    // projector's own `model:` line is what the launcher routes by.
+    const ARCHITECT = agentToOmpMd(
+      { ...(AGENT as object), holds: 'architect' } as never,
+      CTX,
+    );
+    const HOST = {
+      default: 'anthropic/claude-opus-5-5:high',
+      architect: 'anthropic/claude-sonnet-5-5:high',
+    };
+
+    /** The `--model` values omp was started with. */
+    const models = (argv: string): string[] => {
+      const args = recordedArgv(argv);
+      return args.flatMap((a, i) =>
+        a === '--model' ? [args[i + 1] as string] : [],
+      );
+    };
+
+    it('routes by the held role, then the default role, as the definition does', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, HOST);
+      expect(launch(home.bin, home.launcher, ['mav'])).toEqual({
+        status: 0,
+        stderr: '',
+      });
+      expect(models(home.argv)).toEqual(['@architect,@default']);
+    });
+
+    it('keeps only the roles the host maps: omp refuses an unmapped one a spawn would fall through', () => {
+      const noArchitect = deployedHome(
+        { mav: ARCHITECT },
+        {},
+        { default: HOST.default },
+      );
+      launch(noArchitect.bin, noArchitect.launcher, ['mav']);
+      expect(models(noArchitect.argv)).toEqual(['@default']);
+
+      const noDefault = deployedHome(
+        { mav: ARCHITECT },
+        {},
+        { architect: HOST.architect },
+      );
+      launch(noDefault.bin, noDefault.launcher, ['mav']);
+      expect(models(noDefault.argv)).toEqual(['@architect']);
+    });
+
+    it('passes no model where the host maps neither, or the definition routes none', () => {
+      const unmapped = deployedHome({ mav: ARCHITECT }, {}, { slow: 'x/y' });
+      launch(unmapped.bin, unmapped.launcher, ['mav']);
+      expect(recordedArgv(unmapped.argv)).not.toContain('--model');
+
+      const holdsNothing = deployedHome(
+        { mav: agentToOmpMd(AGENT, CTX) },
+        {},
+        HOST,
+      );
+      launch(holdsNothing.bin, holdsNothing.launcher, ['mav']);
+      expect(recordedArgv(holdsNothing.argv)).not.toContain('--model');
+    });
+
+    it('lets a model the operator names win, in either spelling', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, HOST);
+      launch(home.bin, home.launcher, ['mav', '--model', 'openai/gpt-5.2']);
+      expect(models(home.argv)).toEqual(['openai/gpt-5.2']);
+
+      launch(home.bin, home.launcher, ['mav', '--model=opus']);
+      const args = recordedArgv(home.argv);
+      expect(args).toContain('--model=opus');
+      expect(models(home.argv)).toEqual([]);
+    });
+
+    it('reads a hand-edited definition in YAML’s other spellings, models as written', () => {
+      const BLOCK = [
+        '---',
+        'name: scribe',
+        'description: "writes"',
+        'model:',
+        '  - "@architect:high"',
+        '  - "@missing"',
+        '  - openai/gpt-5.2',
+        '---',
+        '',
+        'BODY',
+        '',
+      ].join('\n');
+      const SCALAR = BLOCK.replace(
+        /model:\n(?: {2}- .*\n)+/,
+        'model: "@architect, @default"\n',
+      );
+      const home = deployedHome({ block: BLOCK, scalar: SCALAR }, {}, HOST);
+      launch(home.bin, home.launcher, ['block']);
+      expect(models(home.argv)).toEqual(['@architect:high,openai/gpt-5.2']);
+      launch(home.bin, home.launcher, ['scalar']);
+      expect(models(home.argv)).toEqual(['@architect,@default']);
+    });
+
+    it('says so, and passes no model, when omp will not report the host’s roles', () => {
+      const home = deployedHome({ mav: ARCHITECT }, {}, null);
+      const { status, stderr } = launch(home.bin, home.launcher, ['mav']);
+      expect(status).toBe(0);
+      expect(stderr.split('\n').filter(Boolean)).toHaveLength(1);
+      expect(stderr).toMatch(/^omp-agent: agent mav: .*modelRoles/);
+      expect(recordedArgv(home.argv)).not.toContain('--model');
     });
   });
 

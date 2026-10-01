@@ -331,8 +331,9 @@ export const ompStatusSegment: StatusSegmentHost = {
  * ({@link Agent.holds}) emits `model: ["@<role>", "@default"]`: omp's own
  * model-role alias for the held role, then the harness's default role as the
  * fallback, so a host that never configured the role runs the agent on the
- * default role (`modelRoles.default`). Which model fills a role is the host's `modelRoles` entry — the
- * definition carries no model id. Both aliases are quoted, because a YAML value
+ * default role (`modelRoles.default`). Which model fills a role is the host's
+ * `modelRoles` entry — the definition carries no model id. Both aliases are
+ * quoted, because a YAML value
  * starting with `@` is a scanner error unquoted. An agent holding no role emits
  * no `model` key.
  *
@@ -1441,6 +1442,22 @@ export function ompOverlayYaml(): string {
  * `--no-skills` inlines none, and a `--skills` filter, which is not mirrored,
  * earns one stderr line.
  *
+ * THE MODEL ROUTE IS READ FROM THE SAME DEFINITION, so a persona launched by
+ * name starts where a dispatched holder of its role runs: on the definition's
+ * `model` list ({@link agentToOmpMd}), one definition and two readers. omp's
+ * `--model` takes a role alias, and takes a comma-separated list of them with
+ * the first it resolves winning (both measured on omp 18.4.9) — but where a
+ * dispatched agent falls through a role the host never mapped, `--model` on one
+ * is `Model "@architect" not found` and no session starts. So the launcher asks
+ * omp which roles the host maps (`omp config get modelRoles`) and passes only
+ * the `@role` selectors among them, a selector naming a model as written. Where
+ * the definition routes nothing, or the host maps none of its roles, no model
+ * is passed and omp chooses as it always did: `--model @default` against a host
+ * with no default role is not that choice (measured: it picks a provider with no
+ * credentials). A `--model` the operator passes wins, and nothing is added.
+ *
+ * THE SAME READER serves the `model` list and `autoloadSkills` (`fm_list`).
+ *
  * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
  * FLOW sequence from the skill closure projection hands it; an operator
  * hand-editing a definition writes YAML's BLOCK sequence. Reading only one of
@@ -1511,29 +1528,33 @@ export const OMP_LAUNCHER_SCRIPT = [
   '  exit 1',
   'fi',
   '',
-  '# The one front-matter field read here, in either YAML spelling: one name per',
-  '# line. `\\047` spells the apostrophe the surrounding quotes cannot; awk',
-  '# unescapes it before the string is used as a regex.',
-  `skills=$(awk '`,
-  '  function clean(s) { gsub(strip, "", s); return s }',
-  '  BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
-  '  NR == 1 { if ($0 == "---") next; exit }',
-  '  $0 == "---" { exit }',
-  '  list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
-  '    s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
-  '    if (s != "") print s',
-  '    next',
-  '  }',
-  '  { list = 0 }',
-  '  /^autoloadSkills:/ {',
-  '    rest = $0',
-  '    sub(/^autoloadSkills:[ \\t]*/, "", rest)',
-  '    gsub(/^\\[|\\]$/, "", rest)',
-  '    if (rest == "") { list = 1; next }',
-  '    m = split(rest, part, ",")',
-  '    for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
-  '  }',
-  `' "$def")`,
+  '# A front-matter field read here, in either YAML spelling: one value per line.',
+  '# `\\047` spells the apostrophe the surrounding quotes cannot; awk unescapes it',
+  '# before the string is used as a regex.',
+  'fm_list() {',
+  `  awk -v key="$1" '`,
+  '    function clean(s) { gsub(strip, "", s); return s }',
+  '    BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
+  '    NR == 1 { if ($0 == "---") next; exit }',
+  '    $0 == "---" { exit }',
+  '    list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
+  '      s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
+  '      if (s != "") print s',
+  '      next',
+  '    }',
+  '    { list = 0 }',
+  '    index($0, key ":") == 1 {',
+  '      rest = substr($0, length(key) + 2)',
+  '      sub(/^[ \\t]+/, "", rest)',
+  '      gsub(/^\\[|\\]$/, "", rest)',
+  '      if (rest == "") { list = 1; next }',
+  '      m = split(rest, part, ",")',
+  '      for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
+  '    }',
+  `  ' "$def"`,
+  '}',
+  'skills=$(fm_list autoloadSkills)',
+  'model=$(fm_list model)',
   '',
   "# THE SKILL BODIES, as a spawn would have them, read through omp's OWN",
   "# resolver from the launch directory — see this script's doc.",
@@ -1583,6 +1604,45 @@ export const OMP_LAUNCHER_SCRIPT = [
   '# stay literal rather than becoming a command substitution.',
   "id='You are `%s`. That is your name and the identity you answer as in this session, superseding any other name this system prompt gave you.'",
   'append=$(printf "$id\\n\\n%s\\n" "$name" "$composed")',
+  '',
+  '# THE MODEL ROUTE: the SAME `model` list a DISPATCHED holder of this role routes',
+  "# by, read from the definition this script already read. omp's --model takes a",
+  '# role alias and a comma-separated list, first one it resolves wins - but a role',
+  '# the host never mapped is "Model not found", where a dispatched agent falls',
+  "# through. So each `@role` is kept only when the host's modelRoles has it, as",
+  '# omp itself reports them; a selector that names a model is kept as written.',
+  '# A definition routing nothing, a host mapping none of its roles, and an',
+  '# operator-given --model each leave omp to choose.',
+  'operator=',
+  'for arg in "$@"; do',
+  '  case $arg in',
+  '    --model | --model=*) operator=1 ;;',
+  '  esac',
+  'done',
+  'route=',
+  'if [ -z "$operator" ] && [ -n "$model" ]; then',
+  '  if ! roles=$(omp config get modelRoles </dev/null 2>/dev/null); then',
+  '    roles=',
+  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp would not report the host modelRoles; starting on omp default model, not on the route its definition names\\n' "$name" >&2`,
+  '  fi',
+  '  while IFS= read -r selector; do',
+  '    [ -n "$selector" ] || continue',
+  '    case $selector in',
+  '      @*)',
+  '        role=${selector#@}',
+  '        role=${role%%:*}',
+  '        case $roles in',
+  '          *"\\"$role\\":"*) ;;',
+  '          *) continue ;;',
+  '        esac',
+  '        ;;',
+  '    esac',
+  '    route="$route${route:+,}$selector"',
+  '  done <<EOF',
+  '$model',
+  'EOF',
+  '  [ -z "$route" ] || set -- --model "$route" "$@"',
+  'fi',
   '',
   "# The persona's OWN extensions, named by its OWN overlay: the placement that",
   '# makes a mechanism module load under this persona and under no other. Absent',
