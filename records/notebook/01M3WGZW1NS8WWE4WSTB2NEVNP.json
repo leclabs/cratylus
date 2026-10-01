@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WGZW1NS8WWE4WSTB2NEVNP",
+    "entity": "01M3WGZW1NS8WWE4WSTB2NEVNN",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ActSkipNamesDeploy",
+    "time": "2026-10-01T20:02:46.453Z",
+    "reason": "what the unit could not prove",
+    "cause": "unit act-skip-names-deploy of notebook-gaps"
+  },
+  "payload": {
+    "title": "a names-only claude stanza cannot tell an act from an event with no peer",
+    "kind": "question",
+    "topic": "event-tap",
+    "body": "act-skip-names-deploy: on a stanza with no act bindings the runtime cannot know which unbound event is an act (that is the corpus's to say and arrives only in the stanza's acts), so the skip and refusal for ANY unbound event name both causes: the stanza may lack the binding (cratylus install --harness claude) or Claude Code has no native peer. Event with no peer on such a stanza therefore no longer reads 'fires no native event for it' (the spec asked it to). Resolving it exactly needs the stanza to say which events are acts or which have no peer, which is forge's emission, not this unit's.",
+    "blocks": []
+  }
+}
