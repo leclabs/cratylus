@@ -80,14 +80,14 @@ function corpus(): ProjectablePlugin {
   const nulls = Object.keys(FIXTURE_MANIFEST)
     .map((k) => `  ${kebabToCamel(k)}: null,`)
     .join('\n');
-  const spec: Record<string, { holds?: string }> = {
+  const spec: Record<string, { holds?: string; isolation?: 'worktree' }> = {
     planner: { holds: 'planner' },
     assayer: { holds: 'assayer' },
-    implementer: { holds: 'implementer' },
+    implementer: { holds: 'implementer', isolation: 'worktree' },
     nico: {},
     kino: {},
   };
-  for (const [name, { holds }] of Object.entries(spec)) {
+  for (const [name, { holds, isolation }] of Object.entries(spec)) {
     writeFileSync(
       join(agents, `${name}.ts`),
       [
@@ -96,6 +96,7 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds ? [`  holds: '${holds}',`] : []),
+        ...(isolation ? [`  isolation: '${isolation}',`] : []),
         nulls,
         '};',
         '',
@@ -321,7 +322,7 @@ describe('the guided install', () => {
     expect(out).toContain('cratylus is installed');
     expect(out).toContain('cratylus uninstall --harness omp');
     // The summary is a few lines; the deploy log is verbose's.
-    expect(out.split('\n').length).toBeLessThan(20);
+    expect(out.split('\n').length).toBeLessThan(24);
   });
 
   it('asks nothing and places without a confirmation where there is no terminal, the practices named', async () => {
@@ -838,6 +839,82 @@ describe('the guided install', () => {
     expect(out).toContain('practices: build, authoring');
     expect(out).toContain('would edit');
     expect(out).not.toContain('cratylus is installed');
+  });
+
+  it('says in its summary, dry or not, that omp runs the implementer in an isolated copy and not in a worktree off the line, and keeps the warning', async () => {
+    const said =
+      "not realized: the implementer is not started in a worktree of its own on omp; it runs in an isolated copy of its dispatcher's checkout, never writing the main checkout, cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line";
+    const before = snapshot(home);
+    expect(
+      await install({ harness: 'omp', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+    expect(out).toContain(
+      `would edit ${ompConfig()}: task.isolation sets enabled: true, apply: false, merge: branch`,
+    );
+    expect(err).toContain("agent 'implementer' runs in a git worktree");
+    expect(err).toContain('isolated copy');
+    expect(snapshot(home)).toEqual(before);
+    out = '';
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+  });
+
+  it('sets the host settings an isolated task needs, where the host keeps its own, and lets an uninstall put them back', async () => {
+    const host = [
+      '# host config',
+      'task:',
+      '  disabledAgents:',
+      '    []',
+      '  isolation:',
+      '    apply: true # keep what the copy built',
+      '    backend: auto',
+      'theme: dark',
+      '',
+    ].join('\n');
+    writeFileSync(ompConfig(), host);
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    const set = readFileSync(ompConfig(), 'utf8');
+    expect(set).toContain(
+      '  isolation:\n    apply: false\n    backend: auto\n    enabled: true\n    merge: branch\n',
+    );
+    expect(set).not.toContain('apply: true');
+    expect(set).toContain('theme: dark');
+    // The module that sets `isolated` is placed where a bare session and a persona's
+    // own session each load it.
+    expect(files(omp())).toEqual(
+      expect.arrayContaining([
+        'agent/extensions/cratylus-isolation.ts',
+        'agent/personas/implementer/extensions/cratylus-isolation.ts',
+      ]),
+    );
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toBe(host);
+  });
+
+  it('leaves a config it cannot edit safely as it is, and says which lines to write', async () => {
+    const host = 'task: { isolation: { enabled: false } }\n';
+    writeFileSync(ompConfig(), host);
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8').startsWith(host)).toBe(true);
+    expect(err).toContain(`did not edit ${ompConfig()}`);
+    expect(err).toContain(
+      'task.isolation.enabled: true, task.isolation.apply: false, task.isolation.merge: branch',
+    );
+  });
+
+  it('leaves the worktree shortfall out of the summary where the harness starts the agent in one', async () => {
+    expect(
+      await install({ harness: 'claude', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).not.toContain('not realized');
+    expect(err).not.toContain('worktree');
   });
 
   it('prints the per-file detail only when asked for', async () => {

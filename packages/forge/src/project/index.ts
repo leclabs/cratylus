@@ -257,6 +257,10 @@ export interface ProjectedTree extends ProjectReport {
   /** Each held role → the sorted names of the rendered agents holding it: where a
    *  consumer that routes by role must act on the agents, not the role. */
   readonly roleHolders: Readonly<Record<string, readonly string[]>>;
+  /** The sorted names of the rendered agents that declare a worktree of their own
+   *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
+   *  the loss an install tells the operator of, beside the projection's warning. */
+  readonly unisolated: readonly string[];
   /** The practices the plugin set declares, in declaration order: what an install
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
@@ -741,13 +745,21 @@ export async function projectPluginSet(
   }
 
   // A HARNESS THAT CANNOT START AN AGENT IN A WORKTREE OF ITS OWN runs the agent
-  // where its dispatcher runs. The declaration is not carried, and the shortfall is
-  // reported once per agent it costs, beside the skill-preload shortfall above.
+  // where its dispatcher runs — or, where it can isolate a dispatched agent by other
+  // means (`dispatchIsolation`), in the copy that isolation makes. The declaration is
+  // not carried as a worktree, and the shortfall is reported once per agent it
+  // costs, beside the skill-preload shortfall above, and named in the tree for a
+  // consumer that tells the operator what the harness lacks.
+  const unisolated: string[] = [];
   if (!opts.adapter.startsInWorktree) {
+    const { dispatchIsolation } = opts.adapter;
     for (const { name, agent } of composed) {
       if (agent.isolation === undefined) continue;
+      unisolated.push(name);
       warn(
-        `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`,
+        dispatchIsolation === undefined
+          ? `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`
+          : `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; a dispatch of it is made an isolated task, so it runs in an isolated copy of its dispatcher's checkout, ${dispatchIsolation.lacks}.`,
       );
     }
   }
@@ -1186,6 +1198,7 @@ export async function projectPluginSet(
     hooks,
     heldRoles: Object.keys(roleHolders).sort(),
     roleHolders,
+    unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,
       description: p.description,

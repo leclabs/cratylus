@@ -21,6 +21,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_AGENT_DEF_DIR,
   OMP_GUARDRAIL_MODULE,
+  OMP_ISOLATION_MODULE,
   OMP_LAUNCHER_FILE,
   OMP_OVERLAY_FILE,
   OMP_PERSONA_BADGE_MODULE,
@@ -1949,5 +1950,119 @@ describe('omp role routing', () => {
   it('is omp alone — claude leaves the member absent', () => {
     expect(adapterByName('claude').roleRouting).toBeUndefined();
     expect(adapterByName('omp').roleRouting).toBeDefined();
+  });
+});
+
+// ── Dispatch isolation ───────────────────────────────────────────────────────
+//
+// omp starts no agent in a worktree of its own, but an isolated task runs in a copy of
+// the dispatcher's checkout, and a `tool_call` handler may revise a call's input. So a
+// dispatch of an agent declaring a worktree becomes an isolated task, and these legs RUN
+// the emitted handler the way omp calls it.
+describe('omp dispatch isolation', () => {
+  const agent = (name: string, isolation?: 'worktree') =>
+    ({
+      ...(AGENT as object),
+      name,
+      ...(isolation ? { isolation } : {}),
+    }) as never;
+  const implementer = agent('implementer', 'worktree');
+  const planner = agent('planner');
+
+  const modules = (agents: never[]) =>
+    (ompHarnessAdapter.launchSurface?.(agents) ?? []).filter(
+      (f) => f.filename === OMP_ISOLATION_MODULE,
+    );
+
+  type Revision = { input: Record<string, unknown> } | undefined;
+  type Handler = (event: {
+    toolName: string;
+    input: Record<string, unknown>;
+  }) => Promise<Revision>;
+
+  /** The handler an emitted module registers on `tool_call`, loaded as omp loads it. */
+  async function handlerOf(content: string): Promise<Handler> {
+    const dir = mkdtempSync(join(tmpdir(), 'omp-isolation-'));
+    tmp.push(dir);
+    const file = join(dir, OMP_ISOLATION_MODULE);
+    writeFileSync(file, content);
+    const registered: Record<string, Handler> = {};
+    // Dynamic by necessity: the module is the projection's OUTPUT, written above.
+    const mod = (await import(file)) as {
+      default: (pi: { on: (event: string, h: Handler) => void }) => void;
+    };
+    mod.default({
+      on: (event, h) => Object.assign(registered, { [event]: h }),
+    });
+    expect(Object.keys(registered)).toEqual(['tool_call']);
+    return registered.tool_call as Handler;
+  }
+
+  it('places one module in the session scope and one in each persona, and none where no agent declares a worktree', () => {
+    expect(modules([implementer, planner]).map((m) => m.scope)).toEqual([
+      SESSION_SCOPE,
+      'implementer',
+      'planner',
+    ]);
+    expect(modules([planner])).toEqual([]);
+  });
+
+  it('sets isolated on the spawns of an agent declaring a worktree, in a batch, and on no other spawn', async () => {
+    const [session] = modules([implementer, planner]);
+    const handle = await handlerOf(session?.content as string);
+    const batch = {
+      context: 'c',
+      tasks: [
+        { agent: 'implementer', task: 'build' },
+        { agent: 'planner', task: 'plan' },
+        { task: 'default agent' },
+      ],
+    };
+    const revised = await handle({ toolName: 'task', input: batch });
+    expect(revised?.input).toEqual({
+      context: 'c',
+      tasks: [
+        { agent: 'implementer', task: 'build', isolated: true },
+        { agent: 'planner', task: 'plan' },
+        { task: 'default agent' },
+      ],
+    });
+    // The call's own object is not the one revised.
+    expect(batch.tasks[0]).toEqual({ agent: 'implementer', task: 'build' });
+  });
+
+  it('sets isolated on a flat call, overrides an explicit false, and leaves what needs no revision', async () => {
+    const [session] = modules([implementer, planner]);
+    const handle = await handlerOf(session?.content as string);
+    expect(
+      (
+        await handle({
+          toolName: 'task',
+          input: { agent: 'implementer', task: 't', isolated: false },
+        })
+      )?.input,
+    ).toEqual({ agent: 'implementer', task: 't', isolated: true });
+    for (const input of [
+      { agent: 'implementer', task: 't', isolated: true },
+      { agent: 'planner', task: 't' },
+      { task: 't' },
+    ]) {
+      expect(await handle({ toolName: 'task', input })).toBeUndefined();
+    }
+    expect(
+      await handle({
+        toolName: 'bash',
+        input: { agent: 'implementer', command: 'ls' },
+      }),
+    ).toBeUndefined();
+  });
+
+  it('names what the host must hold for the flag to exist and keep the copy out of the dispatcher’s checkout', () => {
+    expect(ompHarnessAdapter.startsInWorktree).toBe(false);
+    expect(ompHarnessAdapter.dispatchIsolation?.settings).toEqual({
+      parent: ['task', 'isolation'],
+      entries: { enabled: 'true', apply: 'false', merge: 'branch' },
+    });
+    expect(adapterByName('claude').dispatchIsolation).toBeUndefined();
   });
 });

@@ -65,8 +65,9 @@ function snapshot(dir: string, at = ''): Record<string, string> {
   return out;
 }
 
-/** Agents that hold each role omp maps, one that holds none — written at run time. */
-function corpus(): ProjectablePlugin {
+/** Agents that hold each role omp maps, one that holds none — written at run time;
+ *  with `isolating`, the implementer also declares a worktree of its own. */
+function corpus(isolating = false): ProjectablePlugin {
   const agents = join(tmpRoot(), 'agents');
   mkdirSync(agents, { recursive: true });
   const nulls = Object.keys(FIXTURE_MANIFEST)
@@ -86,6 +87,7 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds === null ? [] : [`  holds: '${holds}',`]),
+        ...(isolating && name === 'alpha' ? ["  isolation: 'worktree',"] : []),
         nulls,
         '};',
         '',
@@ -237,6 +239,42 @@ describe('uninstall', () => {
         ...before,
         [`.omp/${placed}`]: 'host rewrote this agent\n',
       });
+    });
+
+    it('omp: the settings an isolated task needs come out again, a value the host held is back as it was, and the modules go with them', async () => {
+      plugin = corpus(true);
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      const config = join(omp, 'agent', 'config.yml');
+      const hostConfig =
+        '# host config\ntask:\n  isolation:\n    apply: true # keep\n  disabledAgents: []\ntheme: dark\n';
+      writeFileSync(config, hostConfig);
+      const before = snapshot(home);
+
+      expect(await install('omp')).toBe(0);
+      const after = readFileSync(config, 'utf8');
+      expect(after).toContain(
+        '  isolation:\n    apply: false\n    enabled: true\n    merge: branch\n',
+      );
+      expect(after).not.toContain('apply: true');
+      expect(Object.keys(snapshot(home))).toContain(
+        '.omp/agent/extensions/cratylus-isolation.ts',
+      );
+
+      expect(uninstall('omp')).toBe(0);
+
+      expect(readFileSync(config, 'utf8')).toBe(hostConfig);
+      expect(snapshot(home)).toEqual(before);
+    });
+
+    it('omp: a config.yml created for the isolation settings is removed with what it put in', async () => {
+      plugin = corpus(true);
+      expect(await install('omp')).toBe(0);
+      expect(
+        readFileSync(join(harnessDir('omp'), 'agent', 'config.yml'), 'utf8'),
+      ).toContain('merge: branch');
+      expect(uninstall('omp')).toBe(0);
+      expect(snapshot(home)).toEqual({});
     });
 
     it('omp: a config.yml install created is removed with what it put in', async () => {
