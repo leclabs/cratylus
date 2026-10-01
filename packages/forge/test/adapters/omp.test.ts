@@ -206,6 +206,13 @@ describe('omp agent definition', () => {
     expect(ompHarnessAdapter.startsInWorktree).toBe(false);
   });
 
+  it('has no peer for the moment a worktree is created, so a cell bound to it is not realized here', () => {
+    expect(ompHarnessAdapter.realizes('worktree.create')).toBe(false);
+    expect(ompHarnessAdapter.nativeEvents).not.toHaveProperty(
+      'worktree.create',
+    );
+  });
+
   it('survives a description carrying the characters YAML reserves', () => {
     // A plain scalar may not contain `: `, and a real corpus description does
     // ("…and canon: dimension catalogs") — unquoted, the document is a scanner
