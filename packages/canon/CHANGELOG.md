@@ -1,5 +1,13 @@
 # @cratylus/canon
 
+## 0.12.1
+
+### Patch Changes
+
+- c00b261: The pre-call stance guard no longer lets a refused call through when it is retried. It kept a marker per session and tool input and waved an identical second call through unjudged under a re-entry cap, so a refusal held once and then lapsed. Now every call is judged, a repeat of a refused call included, and a block on it denies it again however often it comes; the worker writes no marker. The worker header and the cell's residue state this as the retry law where the cap was. The rubric, the payload, the scope gate, the subagent skip and the fail-open notices are unchanged, and the turn-end guard is untouched.
+- 9e0e85e: The purview guard now keeps a refusal: a call it denied is judged again however often it is retried, and a BLOCK on the retry denies it, where before the identical second call went through unjudged under a re-entry cap. The judge is handed only what its one decision needs: a rubric of a few sentences (under 2 KB, from about 6.6 KB) that says what an act produces and lets it pass only when the contract's `writes` lists it or `reserves` names it, and an act line that names only the act and its target (`DISPATCH to <recipient>`, `WRITE to <path>`). The rubric asks for an `EVIDENCE:` line, the one the shared judge backend keeps, and the worker checks that line, so a fabricated block is discarded on Claude Code too.
+- e7fcc90: The turn-end stance guard keeps a refusal and sends its judge less. Every turn is judged, a turn identical to one already blocked included, and a BLOCK blocks the stop however many blocks came before it: the no-progress detector that let a byte-identical turn through and the one-shot bypass that let a turn through after a run of blocks are gone, `STANCE_BLOCK_CAP` is no longer read, and the block count stays in the reason as a count. The rubric, shared with the pre-call guard, is the stance test in a few sentences over the `handoff` contract and the output block, at most 2 KB instead of 14 KB. The Stop payload is facts under plain labels with no sentence telling the judge what to conclude (the loop position in force with the utterance that set it, the operator's latest instruction, the agent's turn and the Layer-1 span when there is one), and `stance-judge.sh` hands the judge the rubric and that payload with nothing around them.
+
 ## 0.12.0
 
 ### Minor Changes
