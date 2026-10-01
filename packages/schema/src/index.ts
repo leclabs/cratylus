@@ -566,16 +566,6 @@ export interface Agent {
    */
   readonly holds?: string;
   /**
-   * OPTIONAL — `true` ⇒ an install OFFERS this agent without preselecting it.
-   * Absent ⇒ the agent is installed by default. Modelled on `holds` above:
-   * optional, carried on the identity face, and copied by the corpus's own fold.
-   *
-   * A fact about the agent, not a dimension: it says nothing about who the agent
-   * is, only whether a fresh install places it unless the operator asks. Forge
-   * reads it off the identity face and never branches on which agent declares it.
-   */
-  readonly optional?: true;
-  /**
    * OPTIONAL — the anchors of the roles this agent DISPATCHES work to. Absent ⇒
    * the agent dispatches none. Modelled on `holds` above: optional, carried on the
    * identity face, and copied by the corpus's own fold from the role cell.

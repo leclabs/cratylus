@@ -3,10 +3,25 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { Practice } from '@cratylus/schema';
 import type { InstallPrompts } from '../../src/cli/commands/install-prompts.js';
 
 export function tmp(prefix: string): string {
   return mkdtempSync(join(tmpdir(), prefix));
+}
+
+/** The one practice a fixture corpus declares: every agent it has, preselected. A
+ *  run that installs it takes the whole fixture, as a run without practices would. */
+export const FIXTURE_PRACTICE = 'fixture';
+export function fixturePractices(agents: readonly string[]): Practice[] {
+  return [
+    {
+      name: FIXTURE_PRACTICE,
+      description: 'every agent of the fixture',
+      agents: [...agents],
+      preselected: true,
+    },
+  ];
 }
 
 /** The prompts of a guided install, answering as an operator who accepts every
@@ -14,7 +29,7 @@ export function tmp(prefix: string): string {
 export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
   return {
     harness: async (found) => found[0],
-    personas: async (_offered, initial) => [...initial],
+    practices: async (_offered, initial) => [...initial],
     linkCommands: async () => false,
     routes: async () => ({}),
     confirm: async () => true,
