@@ -274,6 +274,15 @@ and warns where it falls short; they are not the same, and this is what a user m
   judges against the design). An agent holding any other role, or none, has no `model` and runs on
   the session's model. On omp the integrator routes to the built-in `@task`, as the implementer
   does.
+- **The implementer's worktree.** On omp the implementer is not started in a worktree of its own;
+  the land gate refuses work built in the main checkout, not in a worktree off the plan's line.
+  Claude Code starts the implementer in a worktree cut from the tip of the bound plan's line. On
+  omp it builds in the checkout that dispatches it, so a unit built there has to be moved into a
+  worktree off the plan's line before it lands. Projection warns once per such agent and install
+  prints the same in its summary. omp's own task isolation does not close the gap: it copies the
+  dispatcher's checkout (its HEAD and its uncommitted work), takes no ref to cut from, and when
+  the checkout has uncommitted work it rewrites the agent's commits onto the dispatcher's HEAD, so
+  the history no longer runs from the line.
 
 On Claude Code the model of a role is the `model:` line of each agent holding it, and install keeps
 your choice: a model you choose at install (`--model-roles`, or picked when asked) is yours from

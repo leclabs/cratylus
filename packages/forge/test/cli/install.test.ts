@@ -80,14 +80,14 @@ function corpus(): ProjectablePlugin {
   const nulls = Object.keys(FIXTURE_MANIFEST)
     .map((k) => `  ${kebabToCamel(k)}: null,`)
     .join('\n');
-  const spec: Record<string, { holds?: string }> = {
+  const spec: Record<string, { holds?: string; isolation?: 'worktree' }> = {
     planner: { holds: 'planner' },
     assayer: { holds: 'assayer' },
-    implementer: { holds: 'implementer' },
+    implementer: { holds: 'implementer', isolation: 'worktree' },
     nico: {},
     kino: {},
   };
-  for (const [name, { holds }] of Object.entries(spec)) {
+  for (const [name, { holds, isolation }] of Object.entries(spec)) {
     writeFileSync(
       join(agents, `${name}.ts`),
       [
@@ -96,6 +96,7 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds ? [`  holds: '${holds}',`] : []),
+        ...(isolation ? [`  isolation: '${isolation}',`] : []),
         nulls,
         '};',
         '',
@@ -838,6 +839,29 @@ describe('the guided install', () => {
     expect(out).toContain('practices: build, authoring');
     expect(out).toContain('would edit');
     expect(out).not.toContain('cratylus is installed');
+  });
+
+  it('says in its summary, dry or not, that omp does not start the implementer in a worktree of its own, and keeps the warning', async () => {
+    const said =
+      'not realized: the implementer is not started in a worktree of its own on omp, so it builds in the checkout that dispatches it, and the land gate refuses work built in the main checkout';
+    expect(
+      await install({ harness: 'omp', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+    expect(err).toContain("agent 'implementer' runs in a git worktree");
+    out = '';
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+  });
+
+  it('leaves the worktree shortfall out of the summary where the harness starts the agent in one', async () => {
+    expect(
+      await install({ harness: 'claude', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).not.toContain('not realized');
+    expect(err).not.toContain('worktree');
   });
 
   it('prints the per-file detail only when asked for', async () => {

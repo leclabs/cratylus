@@ -873,6 +873,19 @@ function describe(
       `  ${dry ? 'would unlink' : 'unlinked'} the command${commands.unlinked.length === 1 ? '' : 's'} of ${list(commands.unlinked)}`,
     );
   }
+  // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
+  // does, not only in the warning under it: an agent declaring a worktree of its own
+  // that this harness cannot start builds in its dispatcher's checkout.
+  if (tree.unisolated.length > 0) {
+    const [only] = tree.unisolated;
+    const subject =
+      tree.unisolated.length === 1
+        ? `the ${only} is not started in a worktree of its own`
+        : `${list(tree.unisolated)} are not started in a worktree of their own`;
+    lines.push(
+      `  not realized: ${subject} on ${adapter.name}, so ${tree.unisolated.length === 1 ? 'it builds' : 'they build'} in the checkout that dispatches ${tree.unisolated.length === 1 ? 'it' : 'them'}, and the land gate refuses work built in the main checkout`,
+    );
+  }
   for (const item of found.left) {
     lines.push(`  left alone: ${item}`);
   }
