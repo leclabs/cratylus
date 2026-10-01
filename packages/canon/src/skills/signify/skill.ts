@@ -53,6 +53,7 @@ cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ)
 ≺ ≜ shortlex over (C, <_N)
 
 c ∉ dom(α) ⇒ c ∉ Anchors :
+    c is no core agent dimension name or value ⇒ c is the industry's own term, used as the industry understands it ⇒ exclude, logged
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the cut was wrong ↦ conceptualize
         ⟨α(cᵢ), α(cⱼ) taken at DIFFERENT altitudes is still this collision⟩
