@@ -20,7 +20,7 @@
 
 import type { NoteChange, NoteHost, NoteInput } from '../../ports/note.js';
 import { bare, parsed } from '../../record-store/names.js';
-import { type VerbFlags, readArgv } from '../../verb-flags.js';
+import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { notebookView } from '../../view/notebook.js';
 import {
   INVOCATION,
@@ -127,33 +127,50 @@ export function noteHost(from: string = process.cwd()): NoteHost {
   };
 }
 
-/** The notebook's verbs, in the order its header lists them, and the flags
- *  each takes. */
+/** The flags of a note’s fields besides its title, each described once. */
+const FIELDS = {
+  kind: valueFlag('What the note is: an idea, a question or a decision'),
+  topic: valueFlag('What the note is about'),
+  body: valueFlag('The note’s whole statement'),
+  blocks: valueFlag(
+    'A plan, or a unit as `u of plan p`, the note blocks; repeat once per block, or give an empty one for none',
+  ),
+} as const;
+
+/** The flag that retitles a note. */
+const TITLE = {
+  title: valueFlag('The title the note is renamed to'),
+} as const;
+
+/** The notebook's verbs, in the order its header lists them, each with what
+ *  it does, the positional it acts on and the flags it takes. */
 export const VERBS = {
-  show: {},
+  show: {
+    summary:
+      'Show the notebook by kind and topic, owed rulings first, or one note in full',
+    positional: '[title]',
+    flags: {},
+  },
   capture: {
-    kind: 'value',
-    topic: 'value',
-    body: 'value',
-    blocks: 'value',
-    ...INVOCATION,
+    summary: 'Capture a note of a title, kind, topic and body',
+    positional: '<title>',
+    flags: { ...FIELDS, ...INVOCATION },
   },
   revise: {
-    title: 'value',
-    kind: 'value',
-    topic: 'value',
-    body: 'value',
-    blocks: 'value',
-    ...INVOCATION,
+    summary: 'Write a new version of a note; a field left out carries over',
+    positional: '<title>',
+    flags: { ...TITLE, ...FIELDS, ...INVOCATION },
   },
-  retract: { ...INVOCATION },
+  retract: {
+    summary: 'Retract a note',
+    positional: '<title>',
+    flags: { ...INVOCATION },
+  },
   reconcile: {
-    title: 'value',
-    kind: 'value',
-    topic: 'value',
-    body: 'value',
-    blocks: 'value',
-    ...INVOCATION,
+    summary:
+      'Settle a diverged note with one version over every version; give each field the versions disagree on',
+    positional: '<title>',
+    flags: { ...TITLE, ...FIELDS, ...INVOCATION },
   },
 } as const satisfies VerbFlags;
 

@@ -25,7 +25,7 @@ import type {
   DesignHost,
 } from '../../ports/design.js';
 import { type Name, parsed } from '../../record-store/names.js';
-import { type VerbFlags, readArgv } from '../../verb-flags.js';
+import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { designView, traceView } from '../../view/design.js';
 import {
   INVOCATION,
@@ -159,20 +159,55 @@ export function designHost(from: string = process.cwd()): DesignHost {
   };
 }
 
-/** The design's verbs, in the order its header lists them, and the flags each
- *  takes. */
+/** The flags of a concept’s fields, each described once. */
+const FIELDS = {
+  gloss: valueFlag('What the concept is, in one line'),
+  factors: valueFlag(
+    'A concept it decomposes into; repeat once per factor, or give an empty one for none',
+  ),
+} as const;
+
+/** The flag that relabels a concept. */
+const ANCHOR = {
+  anchor: valueFlag('The anchor the concept is relabelled to'),
+} as const;
+
+/** The design's verbs, in the order its header lists them, each with what it
+ *  does, the positional it acts on and the flags it takes. */
 export const VERBS = {
-  show: {},
-  define: { gloss: 'value', factors: 'value', ...INVOCATION },
-  amend: { anchor: 'value', gloss: 'value', factors: 'value', ...INVOCATION },
-  retract: { ...INVOCATION },
-  reconcile: {
-    anchor: 'value',
-    gloss: 'value',
-    factors: 'value',
-    ...INVOCATION,
+  show: {
+    summary: 'Show the whole lattice root to primitive, or one concept in full',
+    positional: '[concept]',
+    flags: {},
   },
-  trace: {},
+  define: {
+    summary: 'Define a new concept, naming its gloss and its factors',
+    positional: '<concept>',
+    flags: { ...FIELDS, ...INVOCATION },
+  },
+  amend: {
+    summary:
+      'Write a new version of a concept; a field left out carries over, and amending a withdrawn concept reinstates it',
+    positional: '<concept>',
+    flags: { ...ANCHOR, ...FIELDS, ...INVOCATION },
+  },
+  retract: {
+    summary: 'Withdraw a concept that nothing live factors on',
+    positional: '<concept>',
+    flags: { ...INVOCATION },
+  },
+  reconcile: {
+    summary:
+      'Settle a diverged concept with one version over every version; give each field the versions disagree on',
+    positional: '<concept>',
+    flags: { ...ANCHOR, ...FIELDS, ...INVOCATION },
+  },
+  trace: {
+    summary:
+      'Show how a concept came to be, what it stands on and what stands on it',
+    positional: '<concept>',
+    flags: {},
+  },
 } as const satisfies VerbFlags;
 
 /** Route `design <verb> [args]` to the design capability over the repository

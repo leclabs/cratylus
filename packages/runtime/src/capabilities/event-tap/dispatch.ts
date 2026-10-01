@@ -39,7 +39,7 @@ import {
   loadRuntimeConfig,
   nativeEventsOf,
 } from '../../runtime-config.js';
-import { type VerbFlags, readArgv } from '../../verb-flags.js';
+import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { EventTapHostClaude } from './claude.js';
 import {
   EVENT_TAP_HARNESSES,
@@ -65,12 +65,42 @@ export type EventTapResult =
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
 
-/** The event-tap's verbs, and the flags each takes. */
+/** The flag every verb takes, naming where the tap is attached. */
+const SETTINGS = {
+  settings: valueFlag(
+    'The harness settings file the tap is attached in, in place of the default',
+  ),
+} as const;
+
+/** The event-tap's verbs, each with what it does, the positional it acts on
+ *  (none) and the flags it takes. */
 export const VERBS = {
-  install: { events: 'value', sink: 'value', settings: 'value' },
-  uninstall: { settings: 'value' },
-  read: { settings: 'value' },
-  status: { settings: 'value' },
+  install: {
+    summary: 'Attach the tap to lifecycle events, capturing them to a sink',
+    positional: null,
+    flags: {
+      events: valueFlag(
+        'The lifecycle events to tap, comma-separated, from the host’s vocabulary',
+      ),
+      sink: valueFlag('The append-only file the captures are written to'),
+      ...SETTINGS,
+    },
+  },
+  uninstall: {
+    summary: 'Detach the tap, leaving no residue',
+    positional: null,
+    flags: { ...SETTINGS },
+  },
+  read: {
+    summary: 'Read back what the tap captured, in the order observed',
+    positional: null,
+    flags: { ...SETTINGS },
+  },
+  status: {
+    summary: 'Report whether the tap is attached, and to which events',
+    positional: null,
+    flags: { ...SETTINGS },
+  },
 } as const satisfies VerbFlags<EventTapVerb>;
 
 /**
