@@ -37,14 +37,10 @@ import type { RuntimeActBinding } from '../../runtime-config.js';
  *
  * - `created`: there was no file; the install made it, and this many directories to
  *   hold it (0 when the directory already existed).
- * - `blank`: the file held only whitespace, this text.
- * - `indent` / `trailer`: the file held a JSON document laid out with this indent
- *   (empty for one line) and ended with this trailing whitespace.
+ * - `text`: the file held this text, byte for byte. Teardown writes it back when the
+ *   host has changed nothing since; otherwise it takes out only the tap's entries.
  */
-export type TapRestore =
-  | { created: number }
-  | { blank: string }
-  | { indent: string; trailer: string };
+export type TapRestore = { created: number } | { text: string };
 
 /**
  * The claude `settings.json` `hooks` block shape: native-event → entries, each

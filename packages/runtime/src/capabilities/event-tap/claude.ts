@@ -115,18 +115,11 @@ function restoreOf(
   if (existing === undefined) {
     return { created: missingDirectories(dirname(settingsPath)) };
   }
-  if (existing.trim() === '') return { blank: existing };
-  return {
-    indent: /\n([ \t]+)\S/.exec(existing)?.[1] ?? '',
-    trailer: /\s*$/.exec(existing)?.[0] ?? '',
-  };
+  return { text: existing };
 }
 
-/** Serialize `value` in the layout the host's file had, else 2-space with a newline. */
-function render(value: unknown, restore: TapRestore | undefined): string {
-  if (restore !== undefined && 'indent' in restore) {
-    return `${JSON.stringify(value, null, restore.indent)}${restore.trailer}`;
-  }
+/** Serialize a document as install writes one: 2-space indent, a trailing newline. */
+function render(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
@@ -330,19 +323,17 @@ export class EventTapHostClaude implements EventTapHost {
     }
     this.#sinkPath = undefined;
 
-    if (Object.keys(cleaned).length > 0) {
-      writeFileSync(
-        settingsPath,
-        render({ ...base, hooks: cleaned }, restore),
-        'utf8',
-      );
-      return keptFile;
-    }
-    // No foreign entries remain: drop the whole key so nothing residual is left
-    // behind (a bare `hooks: {}` would be residue).
+    // What the file holds once the tap's entries are gone. No foreign entries left
+    // means the whole `hooks` key goes: a bare `hooks: {}` would be residue.
     const { hooks: _removed, ...rest } = base;
-    const nothingElse = Object.keys(rest).length === 0;
-    if (nothingElse && restore !== undefined && 'created' in restore) {
+    const after =
+      Object.keys(cleaned).length > 0 ? { ...base, hooks: cleaned } : rest;
+
+    if (restore !== undefined && 'created' in restore) {
+      if (Object.keys(after).length > 0) {
+        writeFileSync(settingsPath, render(after), 'utf8');
+        return keptFile;
+      }
       // The tap's entries were all the file held and install made the file: put the
       // host back as it was before install, file and the directories made for it.
       unlinkSync(settingsPath);
@@ -359,12 +350,24 @@ export class EventTapHostClaude implements EventTapHost {
             },
           ];
     }
-    if (nothingElse && restore !== undefined && 'blank' in restore) {
-      writeFileSync(settingsPath, restore.blank, 'utf8');
-      return [];
+    // A file the host had: its own bytes when the host has changed nothing since
+    // (either with `hooks` gone or with the emptied key the host had), else only the
+    // tap's entries taken out of what it holds now.
+    if (restore !== undefined && 'text' in restore) {
+      const held = JSON.stringify(
+        restore.text.trim() === '' ? {} : JSON.parse(restore.text),
+      );
+      if (
+        [after, { ...base, hooks: cleaned }].some(
+          (doc) => JSON.stringify(doc) === held,
+        )
+      ) {
+        writeFileSync(settingsPath, restore.text, 'utf8');
+        return [];
+      }
     }
-    writeFileSync(settingsPath, render(rest, restore), 'utf8');
-    return keptFile;
+    writeFileSync(settingsPath, render(after), 'utf8');
+    return [];
   }
 
   readCapture(): CaptureRow[] {
