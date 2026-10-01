@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW97AAGVQJTXA1PWK2J1D",
+    "entity": "01M3RJJ8Q5ZX2C5E7DFZ0B6D0X",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RJJ8Q5ZX2C5E7DFZ0B6D0Y"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.930Z",
+    "reason": "resolved at 5b5f7213: the runtime now writes every record about a bound plan into the line's worktree from any checkout (plan/reading.ts:1402), so land and assay are on the line before whole",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

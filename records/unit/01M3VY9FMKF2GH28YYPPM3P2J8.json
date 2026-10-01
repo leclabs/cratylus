@@ -1,0 +1,72 @@
+{
+  "envelope": {
+    "id": "01M3VY9FMKF2GH28YYPPM3P2J8",
+    "entity": "01M3VXZ9VA6H62DNC7MMFC61ER",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VY6RTZV5A60R0W4M191ZCG"
+    ],
+    "author": "AssayConsumerCommandsFirst",
+    "time": "2026-10-01T14:35:58.483Z",
+    "reason": "Judged against the command line shard: built at f0b8693f and run in a scratch repository, a word a design, note, plan or eventTap verb does not take (a second positional, or any where the verb declares none) is refused with exit 1 on stderr in one line naming the word, alongside any untaken flag with its nearest, the verb's positional and flags, and its --help, and nothing is written; valid calls still run; the projector commands already refuse an unexpected argument; the one refusal stays in verb-flags; the runtime README describes it once; runtime tests pass 205 of 205",
+    "cause": "implementer SurplusPositionals landed f0b8693f for this unit"
+  },
+  "payload": {
+    "plan": "01M3VXJG57793F706D3RBE6P6Q",
+    "spec": {
+      "name": "surplus-positionals",
+      "intent": "Census @5b5f7213 (design at c8760f92; 5b5f7213 adds one notebook record and nothing else); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. The root package.json, pnpm-lock.yaml and AGENTS.md carry uncommitted edits that are the operator's; no unit of this plan touches them.\nRealize `command line`'s clause that it has no footguns, for a capability verb's arguments: nothing a consumer types is silently dropped, and the refusal says what went wrong and what to do. This answers the note 'surplus positionals are ignored'.\nAT CENSUS. [observed, packages/cli/dist built 2026-10-01 09:16] `cratylus design show plan extra`, `cratylus note show 'a cli fit for strangers' extra` and `cratylus plan show practices extra` each exit 0 and drop `extra`. [read] packages/runtime/src/verb-flags.ts readArgv (:165-204) pushes every word that is not flag-shaped into `positionals` (:174-177) and refuses only flags the verb does not take (:201-202); each verb declares at most one positional (Verb.positional, :61-63: a name such as '<unit>' or '[title]', or null), and every caller reads positionals[0] alone (plan/argv.ts:45 subject; the show verbs at design/dispatch.ts:237, note/dispatch.ts:199, plan/dispatch.ts:728). eventTap's four verbs declare no positional (event-tap/dispatch.ts:81-102). packages/runtime/README.md:106 says what each verb declares.\nCHANGE. readArgv refuses a positional the verb does not take, in the refusal it already makes for an untaken flag, before the verb reads anything else or writes: a second positional where the verb declares one, any positional where it declares none. The refusal is one line naming the capability and verb, the surplus word or words, and the verb's usage (its positional, or that it takes none), ending with the verb's --help, in the register the command line already writes (`cratylus <capability> <verb>: …`, exit 1, nothing on stdout). An untaken flag and a surplus positional given together are refused in that one line. packages/runtime/README.md says a verb takes at most its declared positional. One changeset, .changeset/surplus-positionals.md (@cratylus/runtime patch, cratylus patch). Leave packages/runtime/src/main.ts as it is: the refusal is the dispatchers' own, through readArgv, so a dispatcher called as a library refuses the same way.",
+      "static": [
+        "packages/runtime/src/main.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/test/main.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/surplus-positionals.md"
+      ],
+      "accept": [
+        "With packages built, in a temp git repository holding no records, `cratylus design show plan extra`, `cratylus note show t extra`, `cratylus plan show p extra` and `cratylus eventTap status extra` each exit 1 with empty stdout and one stderr line beginning `cratylus <capability> <verb>:` that names `extra` and ends naming the verb's --help. At census the first three exit 0 and drop `extra`.",
+        "A write given a surplus positional writes nothing: in a temp git repository, `cratylus design define a b --gloss g --author x --reason r --cause c` exits 1 and the repository holds no records afterwards.",
+        "`pnpm --filter @cratylus/runtime exec vitest run test/main.test.ts test/design.test.ts test/note.test.ts test/plan.test.ts test/event-tap.test.ts` and `pnpm typecheck` exit 0; main.test.ts gains the cases above, failing at census."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "f0b8693f",
+        "author": "SurplusPositionals",
+        "time": "2026-10-01T14:34:29.599Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "f0b8693f",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayConsumerCommandsFirst",
+        "time": "2026-10-01T14:35:58.483Z"
+      }
+    ]
+  }
+}

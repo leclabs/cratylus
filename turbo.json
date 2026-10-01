@@ -111,6 +111,20 @@
       "dependsOn": ["^build", "typecheck:test", "cratylus#build"],
       "cache": false
     },
+    // the cli's suite spawns its OWN bin, so its test task names its own build.
+    //
+    // `closed-pipe.test.ts` runs `packages/cli/dist/cratylus.js` with its stdout on a
+    // pipe it closes after the first line: that a reader which closes the pipe ends the
+    // command quietly is a fact about the emitted process, which the in-process program
+    // `command-tree.test.ts` builds cannot be asked. The generic `test` task reaches
+    // the package's own `build` only through `typecheck:test`, so a suite that ran
+    // before that edge changed, or a task graph that reordered it, would run against a
+    // `dist` a previous build left behind. Declared here, the way forge's and canon's
+    // are, because the dependency is a fact about the task graph.
+    "cratylus#test": {
+      "dependsOn": ["^build", "build", "typecheck:test"],
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true,

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW7JEAPR1HS9N6EAKWBDB",
+    "entity": "01M3R0XX1X6WX9E2BXQJFV7M30",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R0XX1X6WX9E2BXQJFV7M31"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.238Z",
+    "reason": "resolved at 5b5f7213: the planner role, agent and hold.ts:25 all speak of shards now; no 'cut piece' or 'closed piece' remains",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

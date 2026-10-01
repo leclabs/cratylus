@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW7PVWE1K37R1Y8H40RED",
+    "entity": "01M3R14WT87PERWDPQDP7NPT0W",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R14WT87PERWDPQDP7NPT0X"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.379Z",
+    "reason": "resolved at 5b5f7213: design/first-share merged to main (PR #31); bind now cuts the line from the checkout's HEAD, where the units stand",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

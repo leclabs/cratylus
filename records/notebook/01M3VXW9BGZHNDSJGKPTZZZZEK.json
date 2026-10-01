@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW9BGZHNDSJGKPTZZZZEK",
+    "entity": "01M3SGQEEGZ3GM7AMTET402K74",
+    "operation": "retract",
+    "supersedes": [
+      "01M3SGQEEGZ3GM7AMTET402K75"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.064Z",
+    "reason": "resolved at 5b5f7213: later lines use 'chore(merge): â¦' (refusal-way-forward, command-line); the one bad subject is already released history",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

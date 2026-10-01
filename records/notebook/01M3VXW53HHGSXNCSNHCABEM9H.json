@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW53HHGSXNCSNHCABEM9H",
+    "entity": "01M3R4Y7VJCEVK7R0MDJY1YHVM",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R4Y7VJCEVK7R0MDJY1YHVN"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.713Z",
+    "reason": "resolved at 5b5f7213: 1b22cfe3 relays every non-JSON worker line from either pass, which the companion note confirms live",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

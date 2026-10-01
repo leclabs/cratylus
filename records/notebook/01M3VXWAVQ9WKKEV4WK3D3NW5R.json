@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWAVQ9WKKEV4WK3D3NW5R",
+    "entity": "01M3R57BQKHNE44EPDMH0327BE",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R57BQKHNE44EPDMH0327BF"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.607Z",
+    "reason": "resolved at 5b5f7213: superseded by f8732965, which closed the flow-mapping and preset-alias gap",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

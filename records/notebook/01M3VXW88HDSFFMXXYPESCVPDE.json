@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW88HDSFFMXXYPESCVPDE",
+    "entity": "01M3R2KA2F81E8881Q0PYRBWRD",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R2KA2F81E8881Q0PYRBWRE"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.945Z",
+    "reason": "resolved at 5b5f7213: the design skill now states both rectify and 'for a following plan', and architects route to the top tier. Not re-measured [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

@@ -294,3 +294,70 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
     expect(out).toContain('Usage: cratylus note capture');
   });
 });
+
+describe('the capability commands refuse a word the verb does not take', () => {
+  const cases: [Capability, string, string[]][] = [
+    ['design', 'show', ['plan', 'extra']],
+    ['note', 'show', ['t', 'extra']],
+    ['plan', 'show', ['p', 'extra']],
+    ['eventTap', 'status', ['extra']],
+  ];
+
+  it.each(cases)(
+    '%s %s given a surplus word exits 1 with one line naming it and the verb’s --help',
+    async (capability, verb, words) => {
+      const { code, out, err } = await run([capability, verb, ...words]);
+      expect(out).toBe('');
+      expect(code).toBe(1);
+      expect(err.trimEnd().split('\n')).toHaveLength(1);
+      expect(err).toMatch(new RegExp(`^cratylus ${capability} ${verb}: `));
+      expect(err).toContain("'extra'");
+      expect(err.trimEnd()).toMatch(
+        new RegExp(`cratylus ${capability} ${verb} --help\\.$`),
+      );
+    },
+  );
+
+  it('a write given a surplus word writes nothing', async () => {
+    const before = everyRecord(repo);
+    const { code, out, err } = await run([
+      'design',
+      'define',
+      'a',
+      'b',
+      '--gloss',
+      'g',
+      ...BY,
+    ]);
+    expect(out).toBe('');
+    expect(code).toBe(1);
+    expect(err).toBe(
+      `cratylus ${refused('design', 'define', [], DESIGN.define, ['b'])}\n`,
+    );
+    expect(everyRecord(repo)).toEqual(before);
+  });
+
+  it('an untaken flag and a surplus word are refused together in the one line', async () => {
+    const { code, out, err } = await run([
+      'note',
+      'show',
+      't',
+      'extra',
+      '--bogus',
+    ]);
+    expect(out).toBe('');
+    expect(code).toBe(1);
+    expect(err.trimEnd().split('\n')).toHaveLength(1);
+    expect(err).toContain('--bogus');
+    expect(err).toContain("'extra'");
+    expect(err).toBe(
+      `cratylus ${refused('note', 'show', ['--bogus'], NOTE.show, ['extra'])}\n`,
+    );
+  });
+
+  it('a verb with a positional still takes it, once', async () => {
+    const { code, err } = await run(['plan', 'show', 'p']);
+    expect(err).toBe('');
+    expect(code).toBe(0);
+  });
+});

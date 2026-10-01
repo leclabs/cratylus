@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW8HCP5P551TVR7H7AA81",
+    "entity": "01M3R69511KFT9HE97RMBGF511",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R69511KFT9HE97RMBGF512"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.228Z",
+    "reason": "resolved at 5b5f7213: moot: a process deviation on a closed plan that has been released. The edits are in the tree and nothing is pending",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3VYP6SWZG08WHP2C8VX55NH",
+    "entity": "01M3VYP6SWZG08WHP2C8VX55NG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "Practice",
+    "time": "2026-10-01T14:42:55.420Z",
+    "reason": "a spec edge the unit settled one way and a downstream unit depends on",
+    "cause": "building unit practice"
+  },
+  "payload": {
+    "title": "ProjectOpts.practices empty list renders every cell",
+    "kind": "decision",
+    "topic": "practice",
+    "body": "Unit practice treats an absent or empty ProjectOpts.practices alike: both render every cell, because the spec says a render naming no practice places every cell. An install where the operator deselects every practice therefore must not pass an empty list expecting plumbing alone; unit install-practices decides what that case means and may need a distinct signal.",
+    "blocks": []
+  }
+}

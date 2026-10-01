@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW8D09H9B34Q36PSRD9G1",
+    "entity": "01M3R5N7TM5FCCWDEFV6HNNWD1",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R5N7TM5FCCWDEFV6HNNWD2"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.088Z",
+    "reason": "resolved at 5b5f7213: deliver now has the close routed to the integrator, which gathers and commits the close records and asks for release only once lacks(P) finds none",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

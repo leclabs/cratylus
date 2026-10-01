@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4KBKNCVNKNFRSJYMQ2G",
+    "entity": "01M3QS6QY5120EQQHQM7B0JX27",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QS6QY5120EQQHQM7B0JX28"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.195Z",
+    "reason": "resolved at 5b5f7213: the architect role now declares skills design and note only (roles/architect.ts:58); deliver is the integrator's skill",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

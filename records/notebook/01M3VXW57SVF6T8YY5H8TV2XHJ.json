@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW57SVF6T8YY5H8TV2XHJ",
+    "entity": "01M3R54VMV19BPTHSJ5STKA56B",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R5PETTWQYP5GQZ79Y730KG"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.849Z",
+    "reason": "resolved at 5b5f7213: answered by 1b22cfe3. The residual it names is still in the code: the Stop worker calls allow_stop silently when there is no assistant text (stance-guardrail.sh:194). That is a 'nothing to judge' case, not a judge that could not run [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

@@ -24,6 +24,8 @@ import type { RoleCell } from './hold.js';
 export const integratorRole: RoleCell = {
   sign: integrator_role,
   skills: ['deliver'],
+  // Dispatches no role: it combines the unit it is given and returns a report.
+  dispatches: [],
   vector: {
     // `mission-command` and no `principal-self`: it is dispatched with a unit and a
     // commit, acts inside that intent, and answers with a fact. The one decision that

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW9FX4R66CQ85VBNJ8JET",
+    "entity": "01M3Q30TM4NVVP938Z6GYM8GGT",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QAX4SAW917WKDHH6W31F05"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.205Z",
+    "reason": "resolved at 5b5f7213: realized: both carry optional:true, and install offers optional personas without preselecting them (install.ts:363-391)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

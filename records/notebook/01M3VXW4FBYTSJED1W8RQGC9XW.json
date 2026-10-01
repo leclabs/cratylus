@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4FBYTSJED1W8RQGC9XW",
+    "entity": "01M3MHEF0ED63919DHZ1D25M0C",
+    "operation": "retract",
+    "supersedes": [
+      "01M3MHEF0ED63919DHZ1D25M0D"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.067Z",
+    "reason": "resolved at 5b5f7213: deliver no longer has a 'concept nothing builds is surfaced' rule, and the design shard concept defines a shard as a concept together with its whole closure",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

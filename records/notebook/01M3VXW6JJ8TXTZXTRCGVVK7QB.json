@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW6JJ8TXTZXTRCGVVK7QB",
+    "entity": "01M3Q30TEXFQVB9WW88BE4GJYT",
+    "operation": "retract",
+    "supersedes": [
+      "01M3Q30TEXFQVB9WW88BE4GJYV"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.218Z",
+    "reason": "resolved at 5b5f7213: the prime principle concept was amended, and primePrinciple is now prepended only to the naming/design skills (design, plan, deliver, signify, probe, â¦), not to note or the agents",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

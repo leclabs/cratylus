@@ -20,14 +20,16 @@ const manifest = JSON.parse(
 ) as { version: string };
 const readme = readFileSync(join(packageRoot, 'README.md'), 'utf8');
 
-const COMMANDS = [
+/** The consumer's commands, which the help lists first. */
+const CONSUMER_COMMANDS = ['install', 'uninstall'] as const;
+
+/** The corpus author's commands, which the help lists last, apart. */
+const AUTHOR_COMMANDS = [
   'init',
   'add',
   'compose',
   'project',
   'optimize',
-  'install',
-  'uninstall',
   'deploy',
   'explain',
   'catalog',
@@ -97,10 +99,23 @@ describe('the top-level help lists every command and capability', () => {
     expect(code).toBe(0);
     expect(err).toBe('');
     const program = commandLine();
-    expect(listed(out, 'Commands')).toEqual([...COMMANDS]);
+    expect(listed(out, 'Commands')).toEqual([...CONSUMER_COMMANDS]);
     expect(listed(out, 'Capabilities')).toEqual([...CAPABILITIES]);
+    expect(listed(out, 'Corpus authoring')).toEqual([...AUTHOR_COMMANDS]);
     for (const command of program.commands)
       expect(out, command.name()).toContain(command.description());
+  });
+
+  it('lists the consumer’s commands, then the capabilities, then the corpus author’s', async () => {
+    const { out } = await run('--help');
+    const at = (heading: string) => out.indexOf(`\n${heading}:\n`);
+    expect(at('Commands')).toBeGreaterThan(-1);
+    expect(at('Commands')).toBeLessThan(at('Capabilities'));
+    expect(at('Capabilities')).toBeLessThan(at('Corpus authoring'));
+    expect(listed(out, 'Commands').slice(0, 2)).toEqual([
+      'install',
+      'uninstall',
+    ]);
   });
 
   it('holds no blank spacer line and wraps no line', async () => {
@@ -260,18 +275,25 @@ describe('a deploy flag that would take no effect is refused, never accepted and
 });
 
 describe('the README reference names exactly what the help lists, each once', () => {
-  /** Every name the program's help lists: its commands and capabilities, and each
-   *  capability's verbs as `<capability> <verb>`. */
-  async function inHelp(): Promise<string[]> {
-    const names: string[] = [];
+  /** Every page the program's help has, in the order it lists them: each command and
+   *  capability, each capability followed by its verbs as `<capability> <verb>`, and
+   *  for each the help it answers. */
+  async function helpPages(): Promise<{ name: string; help: string }[]> {
+    const pages: { name: string; help: string }[] = [];
     const top = (await run('--help')).out;
-    names.push(...listed(top, 'Commands'), ...listed(top, 'Capabilities'));
-    for (const capability of listed(top, 'Capabilities')) {
-      const help = (await run(capability, '--help')).out;
-      for (const verb of listed(help, 'Commands'))
-        names.push(`${capability} ${verb}`);
-    }
-    return names;
+    const capabilities = listed(top, 'Capabilities');
+    for (const heading of ['Commands', 'Capabilities', 'Corpus authoring'])
+      for (const name of listed(top, heading)) {
+        const help = (await run(name, '--help')).out;
+        pages.push({ name, help });
+        if (!capabilities.includes(name)) continue;
+        for (const verb of listed(help, 'Commands'))
+          pages.push({
+            name: `${name} ${verb}`,
+            help: (await run(name, verb, '--help')).out,
+          });
+      }
+    return pages;
   }
 
   /** Every name the README's reference gives a heading: `### \`cratylus <name>\``. */
@@ -279,23 +301,99 @@ describe('the README reference names exactly what the help lists, each once', ()
     (match) => match[1] as string,
   );
 
+  /** The flags a help lists under `Options:`, each as the help spells it (`-y`,
+   *  `--yes`); `--help`, which every help lists and no entry repeats, is left out. */
+  function flagsInHelp(help: string): string[] {
+    const lines = help.split('\n');
+    const flags: string[] = [];
+    for (const line of lines.slice(lines.indexOf('Options:') + 1)) {
+      if (!line.startsWith(' ')) break;
+      const spec = /^ {2}(-.*?)(?: {2,}|$)/.exec(line)?.[1];
+      if (spec !== undefined)
+        flags.push(
+          ...spec.split(', ').map((part) => part.split(' ')[0] as string),
+        );
+    }
+    return flags.filter((flag) => flag !== '-h' && flag !== '--help');
+  }
+
+  /** The README's entries by name: the text under each `### \`cratylus <name>\``
+   *  heading, up to the next heading. */
+  function entries(markdown: string): Map<string, string> {
+    const byName = new Map<string, string>();
+    let name: string | undefined;
+    for (const line of markdown.split('\n')) {
+      const heading = /^#{1,6} (.*)$/.exec(line);
+      if (heading !== null) {
+        name = /^`cratylus ([^`]+)`$/.exec(heading[1] as string)?.[1];
+        continue;
+      }
+      if (name !== undefined)
+        byName.set(name, `${byName.get(name) ?? ''}${line}\n`);
+    }
+    return byName;
+  }
+
+  /** The flags an entry's `Flag` table names, each as the table spells it. */
+  function flagsInEntry(entry: string): string[] {
+    const flags: string[] = [];
+    let inFlagTable = false;
+    for (const line of entry.split('\n')) {
+      if (line.startsWith('| Flag ')) inFlagTable = true;
+      else if (!line.startsWith('|')) inFlagTable = false;
+      const spec = inFlagTable ? /^\| `([^`]+)` /.exec(line)?.[1] : undefined;
+      if (spec !== undefined)
+        flags.push(
+          ...spec.split(', ').map((part) => part.split(' ')[0] as string),
+        );
+    }
+    return flags;
+  }
+
+  /** What an entry gets wrong of its help's flags: those the help lists and the entry
+   *  does not name, and those the entry names and the help does not list. */
+  interface FlagDiscrepancies {
+    missing: string[];
+    unlisted: string[];
+  }
+
+  function flagDiscrepancies(
+    inHelp: string[],
+    inEntry: string[],
+  ): FlagDiscrepancies {
+    return {
+      missing: inHelp.filter((flag) => !inEntry.includes(flag)),
+      unlisted: inEntry.filter((flag) => !inHelp.includes(flag)),
+    };
+  }
+
   /** What `documented` gets wrong of `listing`: the entries it lacks, names it holds
-   *  twice, and names the listing does not have. */
+   *  twice, names the listing does not have, and, of the names both hold, those that
+   *  stand in another place than the listing puts them. */
   function discrepancies(listing: readonly string[], documented: string[]) {
+    const shared = [...new Set(documented)].filter((n) => listing.includes(n));
+    const expected = listing.filter((n) => shared.includes(n));
     return {
       missing: listing.filter((name) => !documented.includes(name)),
       twice: [
         ...new Set(documented.filter((n, i) => documented.indexOf(n) !== i)),
       ],
       unlisted: documented.filter((name) => !listing.includes(name)),
+      misplaced: shared.filter((name, i) => name !== expected[i]),
     };
   }
 
   it('lacks nothing the help lists, names nothing twice, and names nothing it does not', async () => {
-    expect(discrepancies(await inHelp(), inReadme)).toEqual({
+    expect(
+      discrepancies(
+        (await helpPages()).map((page) => page.name),
+        inReadme,
+      ),
+    ).toEqual({
       missing: [],
       twice: [],
       unlisted: [],
+      misplaced: [],
     });
   });
 
@@ -305,6 +403,80 @@ describe('the README reference names exactly what the help lists, each once', ()
         ['init', 'plan show', 'note'],
         ['plan show', 'plan show', 'frob', 'note'],
       ),
-    ).toEqual({ missing: ['init'], twice: ['plan show'], unlisted: ['frob'] });
+    ).toEqual({
+      missing: ['init'],
+      twice: ['plan show'],
+      unlisted: ['frob'],
+      misplaced: [],
+    });
+  });
+
+  it('convicts a reference with init moved ahead of install', () => {
+    const listing = ['install', 'uninstall', 'plan', 'plan show', 'init'];
+    expect(
+      discrepancies(listing, [
+        'init',
+        'install',
+        'uninstall',
+        'plan',
+        'plan show',
+      ]),
+    ).toEqual({
+      missing: [],
+      twice: [],
+      unlisted: [],
+      misplaced: ['init', 'install', 'uninstall', 'plan', 'plan show'],
+    });
+  });
+
+  it('names in each entry the flags its help lists, and no others', async () => {
+    const documented = entries(readme);
+    const wrong: Record<string, FlagDiscrepancies> = {};
+    for (const { name, help } of await helpPages()) {
+      const found = flagDiscrepancies(
+        flagsInHelp(help),
+        flagsInEntry(documented.get(name) ?? ''),
+      );
+      if (found.missing.length > 0 || found.unlisted.length > 0)
+        wrong[name] = found;
+    }
+    expect(wrong).toEqual({});
+  });
+
+  it('convicts an entry lacking a flag its help lists, and one naming a flag its help does not', () => {
+    const help = [
+      'Usage: cratylus install [options]',
+      'Install the bundled corpus',
+      'Options:',
+      '  --harness <name>            The harness to install into',
+      '  --no-link-persona-commands  Link no persona commands',
+      '  -y, --yes                   Take the default of every decision',
+      '  -h, --help                  display help for command',
+      '',
+    ].join('\n');
+    const reference = [
+      '### `cratylus install`',
+      '',
+      '| Flag               | What it does                   |',
+      '| ------------------ | ------------------------------ |',
+      '| `--harness <name>` | The harness to install into    |',
+      '| `--frob`           | A flag the help does not list  |',
+      '',
+      '### `cratylus uninstall`',
+      '',
+      '| Flag      | What it does |',
+      '| --------- | ------------ |',
+      '| `--other` | Not this one |',
+      '',
+    ].join('\n');
+    expect(
+      flagDiscrepancies(
+        flagsInHelp(help),
+        flagsInEntry(entries(reference).get('install') ?? ''),
+      ),
+    ).toEqual({
+      missing: ['--no-link-persona-commands', '-y', '--yes'],
+      unlisted: ['--frob'],
+    });
   });
 });

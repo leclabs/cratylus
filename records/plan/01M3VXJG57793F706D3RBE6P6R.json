@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3VXJG57793F706D3RBE6P6R",
+    "entity": "01M3VXJG57793F706D3RBE6P6Q",
+    "operation": "create",
+    "supersedes": [],
+    "author": "PracticesPlanner",
+    "time": "2026-10-01T14:23:25.351Z",
+    "reason": "plan the shards practice, install and command line handed down by the architect",
+    "cause": "design amended at c8760f92: practice defined, install offers practices, consumer commands first"
+  },
+  "payload": {
+    "name": "practices",
+    "realizes": [
+      "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "01M3VX45GDGE56ZNVZETWDFXF8"
+    ],
+    "state": "proposed"
+  }
+}

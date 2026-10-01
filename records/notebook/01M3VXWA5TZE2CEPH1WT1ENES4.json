@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWA5TZE2CEPH1WT1ENES4",
+    "entity": "01M3R22JYAYYSB25R5FG7EKZC2",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R2KFYPRAFFZ7S1WHGT12BA"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.906Z",
+    "reason": "resolved at 5b5f7213: plan corrected-shards is closed",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

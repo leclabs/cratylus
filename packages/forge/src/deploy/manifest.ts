@@ -77,6 +77,10 @@ export interface DeployManifest {
   // move to a model the operator now chooses. A manifest written before this list reads
   // as `[]`.
   hostRoutes: string[];
+  // The practices the last install chose, by name, for the next to preselect. `null` ⇒
+  // none recorded (a host installed before practices, or a deploy that is not an install),
+  // which an install reads as a fresh host.
+  practices: string[] | null;
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -127,6 +131,7 @@ export function emptyManifest(): DeployManifest {
     agentModels: {},
     hostModels: [],
     hostRoutes: [],
+    practices: null,
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -156,6 +161,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       agentModels: parsed.agentModels ?? {},
       hostModels: parsed.hostModels ?? [],
       hostRoutes: parsed.hostRoutes ?? [],
+      practices: parsed.practices ?? null,
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},

@@ -170,8 +170,18 @@ function unusedFlag(opts: {
   return undefined;
 }
 
-/** The projector's commands, in the order their help lists them. */
-export function projectorCommands(options: ProjectorOptions = {}): Command[] {
+/**
+ * The projector's commands, each under the audience it serves — the one place that is
+ * said. The consumer installs a corpus and takes it away again (`install`,
+ * `uninstall`); the corpus author writes and renders one (`init`, `add`, `compose`,
+ * `project`, `optimize`, `deploy`, `explain`, `catalog`). Each list is in the order
+ * its help lists it, and the program that owns the `bin` places the two groups from
+ * this split, so it holds no list of command names of its own.
+ */
+export function projectorCommands(options: ProjectorOptions = {}): {
+  readonly consumer: Command[];
+  readonly author: Command[];
+} {
   const init = new Command('init')
     .description(`Create ${CONFIG_FILE}, extending a plugin package`)
     .addOption(
@@ -301,10 +311,11 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
     )
     .addOption(
       new Option(
-        '--personas <names>',
-        "The optional personas to install, comma-separated, or 'none' (default: asked; else the ones already installed)",
+        '--practices <names>',
+        'The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)',
       ),
     )
+    .addOption(new Option('--all', 'Install every practice, without asking'))
     .addOption(
       new Option(
         '--link-persona-commands',
@@ -326,7 +337,7 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
     .addOption(
       new Option(
         '-y, --yes',
-        'Take the default of every decision not given, and place without asking to go ahead',
+        'Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)',
       ),
     )
     .addOption(
@@ -342,7 +353,8 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
       async (opts: {
         harness?: string;
         plugin?: string;
-        personas?: string;
+        practices?: string;
+        all?: boolean;
         linkPersonaCommands?: boolean;
         modelRoles?: string;
         yes?: boolean;
@@ -353,7 +365,8 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
           harness: opts.harness,
           plugin: opts.plugin,
           corpus: options.defaultCorpus,
-          personas: opts.personas,
+          practices: opts.practices,
+          all: opts.all,
           linkPersonaCommands: opts.linkPersonaCommands,
           modelRoles: opts.modelRoles,
           yes: opts.yes,
@@ -622,16 +635,8 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
       },
     );
 
-  return [
-    init,
-    add,
-    compose,
-    project,
-    optimize,
-    install,
-    uninstall,
-    deploy,
-    explain,
-    catalog,
-  ];
+  return {
+    consumer: [install, uninstall],
+    author: [init, add, compose, project, optimize, deploy, explain, catalog],
+  };
 }

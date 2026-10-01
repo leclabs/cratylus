@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW654ZGTC0AN0Q6SBWN96",
+    "entity": "01M3NCQZSM2CAWX1H4FHNQJGST",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NNXJ4DGX0KB7YMBXE3G75W"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.788Z",
+    "reason": "resolved at 5b5f7213: codex was dropped. supported harness is Claude Code and omp, and adapters/ holds only claude, omp and registry",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

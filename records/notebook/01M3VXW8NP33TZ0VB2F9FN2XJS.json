@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW8NP33TZ0VB2F9FN2XJS",
+    "entity": "01M3R6XYBX9MAQX96B8JTJS1SH",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R6XYBX9MAQX96B8JTJS1SJ"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.366Z",
+    "reason": "resolved at 5b5f7213: superseded by the assays at 367b8914 and 111feb54 (shard achieved). Its known limit is documented in packages/cli/README.md:972",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

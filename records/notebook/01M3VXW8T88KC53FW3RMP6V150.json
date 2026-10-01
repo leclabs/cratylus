@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW8T88KC53FW3RMP6V150",
+    "entity": "01M3REYQWJKN8EF6NSYF7DN1NC",
+    "operation": "retract",
+    "supersedes": [
+      "01M3REYQWJKN8EF6NSYF7DN1ND"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.512Z",
+    "reason": "resolved at 5b5f7213: the architect role gloss puts that reading on the planner ('which the planner reads from each unit's ledger'), not on the architect",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

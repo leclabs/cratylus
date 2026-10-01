@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW9WX9H9ZZB6JF3JH98WK",
+    "entity": "01M3QS6QW3EFWD8C2FEGG2P1G9",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QS9BVB263ZJK718GQ41T3C"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.621Z",
+    "reason": "resolved at 5b5f7213: realized: roles/architect.ts objective is conceptualIntegrity_objective",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

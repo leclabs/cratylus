@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW7V87HVS91V9WT86XXAS",
+    "entity": "01M3R1RGNDDGVREXWD0JV33S1M",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R1RGNDDGVREXWD0JV33S1N"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.520Z",
+    "reason": "resolved at 5b5f7213: the design skill now spells it as 'capture a decision note â¦ blocking nothing â§ amend(C) when that plan completes', and architects route to the top tier, not haiku. Not re-measured [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

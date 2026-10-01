@@ -3,7 +3,7 @@
 The **meaning** concern of [cratylus](../../README.md) — the canonical corpus of discovered
 optimal-signifiers, authored as typed TypeScript.
 
-The practice is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
+The discipline is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
 therefore not a prompt. It is a **dimension-selection vector** over signified values, and the
 markdown a harness reads is a projection of these modules.
@@ -44,11 +44,23 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | `agents`    | the agent vectors                                                                   |
 | `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes |
 | `hooks`     | the hook cells, each carrying its verbatim worker payload                           |
+| `practices` | **which ways of working exist** — each an installable choice, declared as data      |
+| `plumbing`  | what every practice is installed with and none is offered as                        |
 
 Canon owns the catalog because a dimension is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
 consumer can extend this design — or add a dimension to it — without editing the tool that renders
 it. The shapes those cells are authored against are [`@cratylus/schema`](../schema/README.md)'s.
+
+A **practice** is a way of working this corpus offers as one installable choice: the agents, skills
+and hooks that carry it, installed together. `src/practices.ts` declares four — `cdd` (concept-driven
+development, the one a fresh install preselects), `corpus-authoring`, `film-production` and `carry-on` —
+each with a one-line description written for a consumer, and the plumbing, the event tap and the
+session-wide drift notice, that every practice is installed with and none is offered as. A practice
+is closed under skill composition and agent dispatch: it lists the agents its agents dispatch to, and
+the dispatch relation is data (`Agent.dispatches`, copied by the `holds` fold from the role cell's
+`dispatches`), so projection refuses a chosen set that places a dispatcher without the roles it
+dispatches. A guard is listed nowhere: it is registered when a rendered agent composes what it binds.
 
 The first principle (`dimensions/engineering-principles/cratylism.ts`) is not stamped on every cell.
 It rides only the cells whose laws apply it: the ten skills that name concepts by anchor, optimal

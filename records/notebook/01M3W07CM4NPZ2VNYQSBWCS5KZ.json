@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3W07CM4NPZ2VNYQSBWCS5KZ",
+    "entity": "01M3W07CM4NPZ2VNYQSBWCS5KY",
+    "operation": "create",
+    "supersedes": [],
+    "author": "CommandTreeProofs",
+    "time": "2026-10-01T15:09:47.012Z",
+    "reason": "finding beside the path",
+    "cause": "unit command-tree-proofs of plan practices"
+  },
+  "payload": {
+    "title": "closed-pipe help cases convict nothing",
+    "kind": "question",
+    "topic": "command line",
+    "body": "closed-pipe.test.ts's --help and plan --help cases pass with endOnClosedStdout removed: commander writes the help in one write that lands before the reader closes, so only project --verbose raises EPIPE. The spec asks for the three cases, so they stand; closing the reader before the child's first write would make the help cases convict too.",
+    "blocks": []
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4QCBKDM7DWVN3CY1SG3",
+    "entity": "01M3QSMAYRXPRF1XB07CJD5TWQ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QSMAYRXPRF1XB07CJD5TWR"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.324Z",
+    "reason": "resolved at 5b5f7213: all three are settled in deliver: the line is born once at bind; a red leaves the unit's work off the line and records broke; release is a PR when there is a forge remote and gh, otherwise the exact git command",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

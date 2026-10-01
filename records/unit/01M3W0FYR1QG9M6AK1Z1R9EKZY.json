@@ -1,0 +1,99 @@
+{
+  "envelope": {
+    "id": "01M3W0FYR1QG9M6AK1Z1R9EKZY",
+    "entity": "01M3VXZA8QGKDGRSK3X8J30Z7W",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W0E18Q36934JCWCMNWMRW2"
+    ],
+    "author": "PracticesIntegrator",
+    "time": "2026-10-01T15:14:27.714Z",
+    "reason": "gate green on the combined tree 58996292 (2363c694 + de5cdcff): build, lint, canon:project, canon:project:omp, test, typecheck and pack:smoke all exit 0",
+    "cause": "integration of command-tree-proofs at de5cdcff, the repair of the red at 6bb52176"
+  },
+  "payload": {
+    "plan": "01M3VXJG57793F706D3RBE6P6Q",
+    "spec": {
+      "name": "command-tree-proofs",
+      "intent": "Census @5b5f7213 (design at c8760f92); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since; units consumer-commands-first and install-practices of this plan land first and change packages/cli/src/cratylus.ts, packages/cli/README.md, packages/cli/test/command-tree.test.ts and the install flags. The root package.json, pnpm-lock.yaml and AGENTS.md carry uncommitted edits that are the operator's; no unit of this plan touches them.\nRealize two clauses of `command line` as proof the next change cannot silently break: its output follows the conventions of any Unix tool (a reader that closes the pipe early ends the command quietly with success), and every command and verb is documented once to match its --help, flags included. This answers the note 'closed pipe ending is smoke-proved, not tested'.\nAT CENSUS. [read] packages/cli/src/cratylus.ts installs endOnClosedStdout once (:136-139, :145-146). Unit command-tree of plan command-line proved it only by hand ('project --verbose | head -1', '--help | head -1', 'plan --help | head -1': exit 0, no EPIPE on stderr): packages/cli/test/command-tree.test.ts builds the program in-process (it imports commandLine), and turbo.json's generic `test` task depends on '^build' and typecheck:test but not on the package's own build, so no cli test may spawn packages/cli/dist/cratylus.js on a cold tree (forge's and canon's test tasks already depend on 'cratylus#build', turbo.json :66-73). command-tree.test.ts holds the README reference to the help by command and verb names alone (:262-310); no test compares a command's or verb's flags with its README entry.\nCHANGE. A permanent cli test spawns the built bin with stdout on a pipe its reader closes after the first line, for `project --verbose --out <temp dir>` (run where a cratylus.config.ts resolves, as the repository root does), `--help` and `plan --help`, and holds that each exits 0 with no stderr line containing EPIPE or beginning with ' at '. The cli package's test task depends on its own build in turbo.json, the way forge's and canon's depend on cratylus#build. command-tree.test.ts also holds each command's and each capability verb's flags, as its help lists them, to that command's or verb's README entry: a flag the help lists that the entry does not name, or one the entry names that the help does not list, fails, and a case convicts a reference with a flag missing. Where the README reference lacks a flag the help lists, or names one it does not, correct the README to the help. A changeset, .changeset/command-tree-proofs.md (cratylus patch), only if the README changes. Temp directories a check creates are removed by their exact paths, never by a glob.",
+      "static": [
+        "packages/cli/src/cratylus.ts",
+        "packages/forge/src/cli/index.ts",
+        "packages/runtime/src/main.ts"
+      ],
+      "deps": [
+        "01M3VXM2F29MCWCMXGPJRHBY86"
+      ],
+      "outputs": [
+        "packages/cli/test/closed-pipe.test.ts",
+        "packages/cli/test/command-tree.test.ts",
+        "packages/cli/README.md",
+        "turbo.json",
+        ".changeset/command-tree-proofs.md"
+      ],
+      "accept": [
+        "`pnpm turbo run test --filter cratylus` exits 0 on a tree whose packages/cli/dist has been removed first (the cli test task builds its own bin before it runs); at census turbo.json gives the cli test no dependency on its own build.",
+        "packages/cli/test/closed-pipe.test.ts exists (absent at census) and fails when the line installing endOnClosedStdout in packages/cli/src/cratylus.ts is removed and the bin rebuilt: shown once by hand, the change not kept.",
+        "command-tree.test.ts fails on a README reference whose entry for a command or verb lacks a flag its help lists, or names one its help does not, shown by a convicting case beside the existing one; and `pnpm --filter cratylus test` exits 0 on the landed tree.",
+        "`pnpm typecheck` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "6bb52176",
+        "author": "CommandTreeProofs",
+        "time": "2026-10-01T15:09:42.418Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "6bb52176",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayConsumerCommandsFirst",
+        "time": "2026-10-01T15:10:36.705Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm test (@cratylus/canon test/positional-path.test.ts > POSITIONAL-PATH gate — no unpinned file builds a path from a hop count): packages/cli/test/closed-pipe.test.ts builds 1 path from a hop count; use tooling/repo-root",
+        "author": "PracticesIntegrator",
+        "time": "2026-10-01T15:11:32.519Z"
+      },
+      {
+        "kind": "land",
+        "commit": "de5cdcff",
+        "author": "CommandTreeProofs",
+        "time": "2026-10-01T15:12:55.813Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "de5cdcff",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayConsumerCommandsFirst",
+        "time": "2026-10-01T15:13:24.759Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "58996292",
+        "author": "PracticesIntegrator",
+        "time": "2026-10-01T15:14:27.713Z"
+      }
+    ]
+  }
+}

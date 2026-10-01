@@ -22,12 +22,8 @@ install. That composition is the whole of what this package adds.
 ## Use
 
 ```sh
-cratylus install              # put the default corpus on this machine, no project needed
-cratylus init                 # write a cratylus.config.ts naming a corpus
-cratylus project              # render the resolved corpus into .cratylus/<harness>
-cratylus deploy               # place a render tree into a harness
-cratylus deploy --check       # is the deployed tree still what the corpus says?
-cratylus explain <filter>     # where each resolved value came from
+cratylus install                     # put the default corpus on this machine, no project needed
+cratylus uninstall --harness claude  # take away what install placed (or omp)
 ```
 
 Capability verbs route to the runtime and are what deployed skills invoke. Its four
@@ -44,80 +40,19 @@ cratylus note show
 cratylus note capture 'a title' --kind … --topic … --body '…' --blocks 'u1 of plan p' --author … --reason … --cause …
 ```
 
+To write and render a corpus of your own instead:
+
+```sh
+cratylus init                 # write a cratylus.config.ts naming a corpus
+cratylus project              # render the resolved corpus into .cratylus/<harness>
+cratylus deploy               # place a render tree into a harness
+cratylus deploy --check       # is the deployed tree still what the corpus says?
+cratylus explain <filter>     # where each resolved value came from
+```
+
 ## Commands
 
 Every command and every capability verb answers `--help`; this reference is that help, once.
-
-### `cratylus init`
-
-Create cratylus.config.ts, extending a plugin package.
-
-```sh
-cratylus init [options]
-```
-
-| Flag             | What it does                                                           |
-| ---------------- | ---------------------------------------------------------------------- |
-| `--plugin <pkg>` | The plugin package the new config extends (default: "@cratylus/canon") |
-
-### `cratylus add`
-
-Add a plugin package to the extends list of cratylus.config.ts.
-
-```sh
-cratylus add [options] <plugin>
-```
-
-| Argument | What it is                |
-| -------- | ------------------------- |
-| `plugin` | The plugin package to add |
-
-### `cratylus compose`
-
-Print the fragments your config resolves to, one per line.
-
-```sh
-cratylus compose [options]
-```
-
-| Flag              | What it does                                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
-
-### `cratylus project`
-
-Render the plugins your config extends into a tree of harness files.
-
-```sh
-cratylus project [options]
-```
-
-| Flag               | What it does                                                                                  |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| `--config <path>`  | The config file to load (default: cratylus.config.ts in the current directory)                |
-| `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
-| `--harness <name>` | The harness to render for (choices: "claude", "omp", default: "claude")                       |
-| `--verbose`        | Also print one line per file rendered or pruned                                               |
-
-### `cratylus optimize`
-
-Check a rewrite plan for a source you wrote, and write the artifacts and routing manifest it passes.
-
-```sh
-cratylus optimize [options] <source>
-```
-
-| Argument | What it is                                     |
-| -------- | ---------------------------------------------- |
-| `source` | The source file or directory the plan rewrites |
-
-| Flag                | What it does                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| `--plan <file>`     | The JSON plan: its register, concepts and artifacts, which an agent writes (required) |
-| `--out <dir>`       | The directory the artifacts are written to (default: "optimized")                     |
-| `--manifest <path>` | Where the routing manifest is written (default: .manifests/<source>.json)             |
-| `--prior <path>`    | A manifest accepted earlier; artifacts whose digests match it are reused              |
-| `--verbose`         | Also list every file written                                                          |
 
 ### `cratylus install`
 
@@ -127,17 +62,18 @@ Install the bundled corpus into a harness on this machine, asking what you have 
 cratylus install [options]
 ```
 
-| Flag                         | What it does                                                                                                                                 |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                       |
-| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus)                                                                                  |
-| `--personas <names>`         | The optional personas to install, comma-separated, or 'none' (default: asked; else the ones already installed)                               |
-| `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                              |
-| `--no-link-persona-commands` | Link no persona commands, without asking                                                                                                     |
-| `--model-roles <roles>`      | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is) |
-| `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead                                                           |
-| `--verbose`                  | Also print the per-file detail of the run                                                                                                    |
-| `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                         |
+| Flag                         | What it does                                                                                                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
+| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus)                                                                                                                                    |
+| `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
+| `--all`                      | Install every practice, without asking                                                                                                                                                         |
+| `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                |
+| `--no-link-persona-commands` | Link no persona commands, without asking                                                                                                                                                       |
+| `--model-roles <roles>`      | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)                                                   |
+| `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
+| `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                      |
+| `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                           |
 
 ### `cratylus uninstall`
 
@@ -152,67 +88,6 @@ cratylus uninstall [options]
 | `--harness <name>` | The harness to remove from (required) (choices: "claude", "omp") |
 | `--dry-run`        | Print what would be removed and left, writing nothing            |
 | `--verbose`        | Also list every item removed                                     |
-
-### `cratylus deploy`
-
-Place a rendered tree's agents, skills and hooks into a harness.
-
-```sh
-cratylus deploy [options]
-```
-
-| Flag                 | What it does                                                                                                                                                                                                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--from <dir>`       | The render tree to deploy (default: .cratylus/<harness>, what `cratylus project` writes)                                                                                                                                                                                           |
-| `--agents-dir <dir>` | The agents directory, where it is not agents/ in the render tree                                                                                                                                                                                                                   |
-| `--skills-dir <dir>` | The skills directory, where it is not skills/ in the render tree                                                                                                                                                                                                                   |
-| `--hooks-dir <dir>`  | The hooks root, where it is not the render tree itself                                                                                                                                                                                                                             |
-| `--assets <decls>`   | Files to ship with a skill, as <skill>=<file>[,…]; one that is absent is a warning                                                                                                                                                                                                 |
-| `--kind <kind>`      | What to place (choices: "agent", "skill", "hooks", "all", default: "all")                                                                                                                                                                                                          |
-| `--scope <scope>`    | Where to place it: your home, or a project (choices: "user", "project", default: "user")                                                                                                                                                                                           |
-| `--harness <name>`   | The harness to place into (choices: "claude", "omp", default: "claude")                                                                                                                                                                                                            |
-| `--home <dir>`       | The directory the harness's home is under, for --scope user (default: your home directory)                                                                                                                                                                                         |
-| `--project <dir>`    | The project root, for --scope project (default: the current directory)                                                                                                                                                                                                             |
-| `--config <path>`    | The config file the corpus's lifecycle events are read from (default: cratylus.config.ts in the project root)                                                                                                                                                                      |
-| `--only <names>`     | Place only these names, comma-separated                                                                                                                                                                                                                                            |
-| `--dry-run`          | Print the actions and change nothing                                                                                                                                                                                                                                               |
-| `--verbose`          | Also print the per-file detail of the run                                                                                                                                                                                                                                          |
-| `--check`            | Report where the deployed tree differs from the rendered one (stale, absent or foreign), changing nothing; exits 0 in sync, 1 on drift, 2 when the check could not run; it reads no config and writes nothing to narrate, so --config, --verbose and --dry-run are refused with it |
-
-### `cratylus explain`
-
-Show where each resolved fragment got its value.
-
-```sh
-cratylus explain [options] [agent]
-```
-
-| Argument | What it is                                                    |
-| -------- | ------------------------------------------------------------- |
-| `agent`  | Only the fragments whose id contains this text, ignoring case |
-
-| Flag              | What it does                                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
-| `--json`          | Print the machine-readable report instead of text                              |
-
-### `cratylus catalog`
-
-List the fragment ids your plugins let you extend, or count what the corpus holds.
-
-```sh
-cratylus catalog [options] [agent]
-```
-
-| Argument | What it is                                                    |
-| -------- | ------------------------------------------------------------- |
-| `agent`  | Only the fragments whose id contains this text, ignoring case |
-
-| Flag              | What it does                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory)                                |
-| `--corpus <dir>`  | Count the fragments of each dimension in this corpus instead (default with no config: canon's src/dimensions) |
-| `--json`          | Print the machine-readable report instead of a table                                                          |
 
 ## Capabilities
 
@@ -648,6 +523,142 @@ cratylus note reconcile [options] <title>
 | `--reason <value>` | Why this write is made                                                                                    |
 | `--cause <value>`  | What caused this write                                                                                    |
 
+## Corpus authoring
+
+These write and render a corpus. A consumer who only installs one needs none of them; each answers `--help` like the rest.
+
+### `cratylus init`
+
+Create cratylus.config.ts, extending a plugin package.
+
+```sh
+cratylus init [options]
+```
+
+| Flag             | What it does                                                           |
+| ---------------- | ---------------------------------------------------------------------- |
+| `--plugin <pkg>` | The plugin package the new config extends (default: "@cratylus/canon") |
+
+### `cratylus add`
+
+Add a plugin package to the extends list of cratylus.config.ts.
+
+```sh
+cratylus add [options] <plugin>
+```
+
+| Argument | What it is                |
+| -------- | ------------------------- |
+| `plugin` | The plugin package to add |
+
+### `cratylus compose`
+
+Print the fragments your config resolves to, one per line.
+
+```sh
+cratylus compose [options]
+```
+
+| Flag              | What it does                                                                   |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
+
+### `cratylus project`
+
+Render the plugins your config extends into a tree of harness files.
+
+```sh
+cratylus project [options]
+```
+
+| Flag               | What it does                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `--config <path>`  | The config file to load (default: cratylus.config.ts in the current directory)                |
+| `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
+| `--harness <name>` | The harness to render for (choices: "claude", "omp", default: "claude")                       |
+| `--verbose`        | Also print one line per file rendered or pruned                                               |
+
+### `cratylus optimize`
+
+Check a rewrite plan for a source you wrote, and write the artifacts and routing manifest it passes.
+
+```sh
+cratylus optimize [options] <source>
+```
+
+| Argument | What it is                                     |
+| -------- | ---------------------------------------------- |
+| `source` | The source file or directory the plan rewrites |
+
+| Flag                | What it does                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `--plan <file>`     | The JSON plan: its register, concepts and artifacts, which an agent writes (required) |
+| `--out <dir>`       | The directory the artifacts are written to (default: "optimized")                     |
+| `--manifest <path>` | Where the routing manifest is written (default: .manifests/<source>.json)             |
+| `--prior <path>`    | A manifest accepted earlier; artifacts whose digests match it are reused              |
+| `--verbose`         | Also list every file written                                                          |
+
+### `cratylus deploy`
+
+Place a rendered tree's agents, skills and hooks into a harness.
+
+```sh
+cratylus deploy [options]
+```
+
+| Flag                 | What it does                                                                                                                                                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--from <dir>`       | The render tree to deploy (default: .cratylus/<harness>, what `cratylus project` writes)                                                                                                                                                                                           |
+| `--agents-dir <dir>` | The agents directory, where it is not agents/ in the render tree                                                                                                                                                                                                                   |
+| `--skills-dir <dir>` | The skills directory, where it is not skills/ in the render tree                                                                                                                                                                                                                   |
+| `--hooks-dir <dir>`  | The hooks root, where it is not the render tree itself                                                                                                                                                                                                                             |
+| `--assets <decls>`   | Files to ship with a skill, as <skill>=<file>[,…]; one that is absent is a warning                                                                                                                                                                                                 |
+| `--kind <kind>`      | What to place (choices: "agent", "skill", "hooks", "all", default: "all")                                                                                                                                                                                                          |
+| `--scope <scope>`    | Where to place it: your home, or a project (choices: "user", "project", default: "user")                                                                                                                                                                                           |
+| `--harness <name>`   | The harness to place into (choices: "claude", "omp", default: "claude")                                                                                                                                                                                                            |
+| `--home <dir>`       | The directory the harness's home is under, for --scope user (default: your home directory)                                                                                                                                                                                         |
+| `--project <dir>`    | The project root, for --scope project (default: the current directory)                                                                                                                                                                                                             |
+| `--config <path>`    | The config file the corpus's lifecycle events are read from (default: cratylus.config.ts in the project root)                                                                                                                                                                      |
+| `--only <names>`     | Place only these names, comma-separated                                                                                                                                                                                                                                            |
+| `--dry-run`          | Print the actions and change nothing                                                                                                                                                                                                                                               |
+| `--verbose`          | Also print the per-file detail of the run                                                                                                                                                                                                                                          |
+| `--check`            | Report where the deployed tree differs from the rendered one (stale, absent or foreign), changing nothing; exits 0 in sync, 1 on drift, 2 when the check could not run; it reads no config and writes nothing to narrate, so --config, --verbose and --dry-run are refused with it |
+
+### `cratylus explain`
+
+Show where each resolved fragment got its value.
+
+```sh
+cratylus explain [options] [agent]
+```
+
+| Argument | What it is                                                    |
+| -------- | ------------------------------------------------------------- |
+| `agent`  | Only the fragments whose id contains this text, ignoring case |
+
+| Flag              | What it does                                                                   |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
+| `--json`          | Print the machine-readable report instead of text                              |
+
+### `cratylus catalog`
+
+List the fragment ids your plugins let you extend, or count what the corpus holds.
+
+```sh
+cratylus catalog [options] [agent]
+```
+
+| Argument | What it is                                                    |
+| -------- | ------------------------------------------------------------- |
+| `agent`  | Only the fragments whose id contains this text, ignoring case |
+
+| Flag              | What it does                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory)                                |
+| `--corpus <dir>`  | Count the fragments of each dimension in this corpus instead (default with no config: canon's src/dimensions) |
+| `--json`          | Print the machine-readable report instead of a table                                                          |
+
 ## Exit codes and streams
 
 A command writes its result to stdout and everything that is not the result, a failure, a warning or a
@@ -667,21 +678,33 @@ and refuses without `--plan`.
 
 `cratylus install` is a short guided run. It asks only what you must decide, shows what it will
 place before placing anything, places it once you confirm, and ends with a few lines saying what
-was done and what to do next. Per-file detail is `--verbose`'s. Given every decision up front, or
-run without a terminal (stdin and stdout), it asks nothing and places without asking to go ahead.
+was done and what to do next. Per-file detail is `--verbose`'s. Given every decision up front it
+asks nothing and places without asking to go ahead; run without a terminal (stdin and stdout), it
+installs only the practices it is named, or every practice when told `--all`, and never waits on
+a question.
 
 The decisions, each with the flag that settles it (a decision given by flag is never asked):
 
-| Decision                                 | Flag                                                     | Asked when                                                       | Default where nothing is asked                         |
-| ---------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
-| Which harness                            | `--harness <claude\|omp>`                                | absent, and the host does not have exactly one supported harness | none: refused                                          |
-| Which optional personas (`kino`, `nico`) | `--personas <name,…\|none>`                              | the corpus declares optional personas                            | the ones already installed here (none on a fresh host) |
-| Whether to link their launch commands    | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                                            |
-| Which model each role routes to          | `--model-roles <role=model,…\|default>`                  | there are held roles the host has not routed itself              | cratylus's own routing                                 |
+| Decision                              | Flag                                                     | Asked when                                                       | Where nothing is asked               |
+| ------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ |
+| Which harness                         | `--harness <claude\|omp>`                                | absent, and the host does not have exactly one supported harness | none: refused                        |
+| Which practices                       | `--practices <name,…>` / `--all`                         | neither is given, on a terminal                                  | none: refused, whatever `--yes` says |
+| Whether to link their launch commands | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                          |
+| Which model each role routes to       | `--model-roles <role=model,…\|default>`                  | there are held roles the host has not routed itself              | cratylus's own routing               |
 
-Every agent not declared optional is always installed, since the personas dispatch them. An
-optional persona you do not choose is left out of what is placed, and one installed before and
-not chosen now is removed, with its launch command. `--model-roles` given at all settles the
+A practice is a way of working install offers as one choice: the agents, skills and guards that
+carry it, installed together. The corpus declares `cdd` (preselected), `corpus-authoring`,
+`film-production` and `carry-on`; the event tap and the drift notice are installed with any of
+them and offered as none. On a terminal, `install` asks one question, each practice shown with its
+description and the practices already installed here ticked (on a fresh host, the preselected
+one). `--practices` names the practices to install and `--all` takes every one; they are refused
+together, and so is a name no practice answers to, naming the declared ones. Without a terminal
+and with neither, `install` refuses before writing anything and says to add `--practices` or
+`--all`: what it installed last time is a default for a question, never an answer to one. An
+empty choice is refused too (`--practices ''`, or every practice unticked), since none is not
+every; to take it all out, run `cratylus uninstall --harness <h>`. A practice installed before
+and not chosen now is removed, with what no chosen practice still carries and its launch commands.
+`--model-roles` given at all settles the
 decision: a role it does not name keeps cratylus's routing. On omp a model is a `modelRoles`
 entry in the host's config (`planner=@slow`, or a model such as `anthropic/claude-opus-5-5:high`);
 on Claude Code it is the `model:` line of each agent holding the role (`planner=sonnet`). A role
@@ -691,8 +714,10 @@ install asks that role again and moves the entry to your answer. A role the host
 itself is never asked and never changed, is named as the host's in the preview, and a
 `--model-roles` entry for it is left as the host set it and said so.
 
-Also: `--yes` (`-y`) takes the default of every decision not given and places without asking;
-`--dry-run` prints what would be placed and stops, writing nothing; `--verbose` also prints the
+Also: `--yes` (`-y`) takes the default of every decision not given and places without asking (on a
+terminal it takes the practices already installed here, else the preselected ones; it is no
+answer to the practices question where there is no terminal); `--dry-run` prints what would be
+placed and stops, writing nothing; `--verbose` also prints the
 per-file detail; `--plugin <package>` installs another corpus. `cratylus uninstall --harness <h>`
 removes exactly what install placed.
 

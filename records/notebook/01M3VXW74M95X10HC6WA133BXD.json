@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW74M95X10HC6WA133BXD",
+    "entity": "01M3Q44XEPFKB4YFT3M623S6FG",
+    "operation": "retract",
+    "supersedes": [
+      "01M3Q44XEPFKB4YFT3M623S6FH"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.796Z",
+    "reason": "resolved at 5b5f7213: realized: install wraps a host statusLine without a flag. A live assay saw 'âï¸ mav HOSTLINE nobash', which also settles whether the line can name the --agent persona",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

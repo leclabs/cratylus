@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4ZEGSCNQZ4RNXY2MKWC",
+    "entity": "01M3R14FQYHGRBFDVA6SGG61AY",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R14FQZ5N1SBB01R41HMP3N"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.582Z",
+    "reason": "resolved at 5b5f7213: the architect role gloss now lists 'names of units â¦ waiting on a route, which the planner reads from each unit's ledger' as an input",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

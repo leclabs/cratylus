@@ -92,7 +92,9 @@ function register(command: Command): void {
 /**
  * The command line: the projector's commands and the capabilities under one
  * program, which stops reading options at its first command so each command's flags
- * are its own.
+ * are its own. The help lists the consumer's commands first, then the capabilities,
+ * then the corpus author's commands in a group of their own; which commands are whose
+ * is forge's to say, not this file's.
  */
 export function commandLine(): Command {
   const program = new Command(CLI_BIN)
@@ -101,10 +103,13 @@ export function commandLine(): Command {
     )
     .version(VERSION, '-v, --version', 'Print the version and exit')
     .enablePositionalOptions();
-  for (const command of projectorCommands({ defaultCorpus: canon }))
+  const { consumer, author } = projectorCommands({ defaultCorpus: canon });
+  for (const command of consumer)
     program.addCommand(command.helpGroup('Commands:'));
   for (const command of capabilityCommands())
     program.addCommand(command.helpGroup('Capabilities:'));
+  for (const command of author)
+    program.addCommand(command.helpGroup('Corpus authoring:'));
   register(program);
   return program;
 }

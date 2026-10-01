@@ -193,6 +193,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
   'canon/pack-smoke.test.ts': 'GATE',
+  // holds the declared practices against the LIVE corpus: the set is exactly the four,
+  // every agent, skill and harness hook cell is placed by a practice or the plumbing,
+  // and each practice renders alone on both harnesses. Its convicting fixtures feed the
+  // placement predicate a cell no practice lists and a practice that places an
+  // architect without the roles it dispatches.
+  'canon/practices.test.ts': 'GATE',
   'canon/version-single-home.test.ts': 'GATE',
   // BEHAVIORAL, not GATE: it exercises a helper's four resolution cases. It polices no
   // property of the corpus — the law that no path is built from a hop COUNT is a gate
@@ -244,8 +250,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/cli/explain.test.ts': 'BEHAVIORAL',
   // drives `runInstall` through injected prompts over a corpus and a tmp HOME it writes
   // itself, and asserts on the host's bytes: nothing is written before the confirmation
-  // or on a decline, a decision given by flag or a run with no terminal asks nothing, and
-  // a role the host already routed is neither asked nor changed — it polices no corpus.
+  // or on a decline, a decision given by flag asks nothing, a run with no terminal and
+  // no practices named is refused before a byte is written, and a role the host already
+  // routed is neither asked nor changed — it polices no corpus.
   'forge/cli/install.test.ts': 'BEHAVIORAL',
   'forge/config/loader.test.ts': 'BEHAVIORAL',
   'forge/config/scaffold.test.ts': 'BEHAVIORAL',
@@ -293,6 +300,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // projects a fixture plugin it owns under both adapters and reads the warnings.
   'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
+  // projects a fixture plugin set it owns, declaring practices, plumbing and a dispatch
+  // relation, and reads the placed cells back; its refusals (an unclosed dispatch or
+  // skill, an undeclared name, an empty choice) ARE its fixtures.
+  'forge/project/practices.test.ts': 'BEHAVIORAL',
   // projects a fixture plugin it owns whose skills straddle the claude hook cap, and
   // asserts the oversized one is unhooked, named as required reading and warned once;
   // its boundary cases (exactly the cap, one over) ARE its fixtures.

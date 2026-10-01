@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW700K2H6XAJE1KCNZS1E",
+    "entity": "01M3Q44XC6W7N3Z046PETDXM75",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QCH2DC497CMNAVHHPQ0TSC"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.648Z",
+    "reason": "resolved at 5b5f7213: realized: Claude definitions carry a tier per role (opus for architect, planner and assayer; sonnet for implementer and integrator), and the role routing gloss states it",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

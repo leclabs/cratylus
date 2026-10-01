@@ -39,6 +39,8 @@ export const plannerRole: RoleCell = {
   // ABOVE, which cuts them; the rung BELOW declares none at all, because an
   // implementer's decisions are made for it by its spec.
   skills: ['plan'],
+  // Dispatches no role: it plans what it is handed and returns names.
+  dispatches: [],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

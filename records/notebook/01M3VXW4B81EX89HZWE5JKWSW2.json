@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4B81EX89HZWE5JKWSW2",
+    "entity": "01M3RNSEC8F6M1T9213P59Q6X0",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RNSEC8F6M1T9213P59Q6X1"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:40.936Z",
+    "reason": "resolved at 5b5f7213: deliver skill now says bind cuts line(P) once and the integrator 'finds line(P), cuts none'; docs/role.md no longer carries the `worktree add -b plan/` step",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

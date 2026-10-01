@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW5GDVZJKBPA4E74D3BMR",
+    "entity": "01M3RE32FMC47PC769A5BWS56E",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RE32FMC47PC769A5BWS56F"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.125Z",
+    "reason": "resolved at 5b5f7213: moot: the evidence belongs to a closed plan whose unit is now drifted under later architect-role amendments, so nothing current rests on that rerun",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

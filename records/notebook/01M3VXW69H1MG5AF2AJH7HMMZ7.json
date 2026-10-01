@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW69H1MG5AF2AJH7HMMZ7",
+    "entity": "01M3QSFFWZMY05FT54VAC0Y0QT",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QSFFWZMY05FT54VAC0Y0QV"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.929Z",
+    "reason": "resolved at 5b5f7213: packages/cli/README.md:799-805 and forge/README.md:255 state the precedence, including that CLAUDE_CODE_SUBAGENT_MODEL alone leaves the tier standing and FORCE=1 overrides it",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

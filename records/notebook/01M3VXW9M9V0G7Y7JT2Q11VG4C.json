@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW9M9V0G7Y7JT2Q11VG4C",
+    "entity": "01M3QC8NXP0VCRWD3R8JGJ8DF7",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QC8NXP0VCRWD3R8JGJ8DF8"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.345Z",
+    "reason": "resolved at 5b5f7213: realized: install asks 'whether to link their launch commands' as one of its four decisions (install.ts:22-26)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

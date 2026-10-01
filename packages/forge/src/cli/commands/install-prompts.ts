@@ -11,6 +11,7 @@
 // nothing is written after.
 
 import * as clack from '@clack/prompts';
+import type { OfferedPractice } from '../../project/index.js';
 
 /** One held role whose model the operator may route, and what is offered for it. */
 export interface RoleQuestion {
@@ -31,10 +32,11 @@ export interface InstallPrompts {
     found: readonly string[],
     supported: readonly string[],
   ): Promise<string | undefined>;
-  /** Which of the optional personas to install; `initial` are the ones already
-   *  installed here. */
-  personas(
-    offered: readonly string[],
+  /** Which practices to install, each offered with its description; `initial` are
+   *  preselected: those already installed here, or on a fresh host the corpus's own.
+   *  At least one is required. */
+  practices(
+    offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
   /** Whether to link the launch commands; `question` says what a yes does. */
@@ -106,14 +108,17 @@ export const terminalPrompts: InstallPrompts = {
     );
   },
 
-  async personas(offered, initial) {
+  async practices(offered, initial) {
     return answer(
       await clack.multiselect({
         message:
-          'Which optional personas should be installed? (space toggles, enter accepts; every other agent is always installed)',
-        options: offered.map((value) => ({ value, label: value })),
+          'Which practices should be installed? (space toggles, enter accepts)',
+        options: offered.map((p) => ({
+          value: p.name,
+          label: `${p.name} — ${p.description}`,
+        })),
         initialValues: [...initial],
-        required: false,
+        required: true,
       }),
     );
   },

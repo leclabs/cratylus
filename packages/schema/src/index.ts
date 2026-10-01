@@ -566,15 +566,17 @@ export interface Agent {
    */
   readonly holds?: string;
   /**
-   * OPTIONAL — `true` ⇒ an install OFFERS this agent without preselecting it.
-   * Absent ⇒ the agent is installed by default. Modelled on `holds` above:
-   * optional, carried on the identity face, and copied by the corpus's own fold.
+   * OPTIONAL — the anchors of the roles this agent DISPATCHES work to. Absent ⇒
+   * the agent dispatches none. Modelled on `holds` above: optional, carried on the
+   * identity face, and copied by the corpus's own fold from the role cell.
    *
-   * A fact about the agent, not a dimension: it says nothing about who the agent
-   * is, only whether a fresh install places it unless the operator asks. Forge
-   * reads it off the identity face and never branches on which agent declares it.
+   * The relation exists so that a practice can be CLOSED under it: an agent that
+   * hands work to a role is useless in an install where no agent holds that role,
+   * and prose in the agent's body cannot be checked. Each name is an anchor in the
+   * same vocabulary as {@link Agent.holds}, so projection matches the two with no
+   * knowledge of what either role is.
    */
-  readonly optional?: true;
+  readonly dispatches?: readonly string[];
 }
 
 /**
@@ -751,6 +753,49 @@ export interface Layout {
 }
 
 /**
+ * A PRACTICE — a way of working a corpus offers as one installable choice: the
+ * agents, skills and hooks that carry it, installed together.
+ *
+ * A practice is CLOSED under skill composition and agent dispatch: every agent it
+ * installs finds every skill it composes and every agent it dispatches. So it lists
+ * the agents it carries INCLUDING the ones its agents dispatch to, and projection
+ * refuses a chosen set that is not closed rather than render one that would fail
+ * when run.
+ *
+ * It is data, not a dimension and not a cell: nothing about WHO an agent is
+ * changes by being in one.
+ */
+export interface Practice {
+  /** The name an install offers and a render is asked for. Unique in the set. */
+  readonly name: string;
+  /** σ_human* — the one line an install shows a consumer deciding whether to take it. */
+  readonly description: string;
+  /** The agents this practice installs, by name — the roles they dispatch included. */
+  readonly agents: readonly string[];
+  /**
+   * The skills this practice installs BEYOND those its agents are given. A skill
+   * an agent is given (`Agent.skills`) travels with the agent and need not be
+   * repeated here; a skill no agent carries (a practice made of skills alone) is
+   * named here. Whatever the skills compose comes with them.
+   */
+  readonly skills?: readonly string[];
+  /** `true` ⇒ a fresh install selects this practice unless the operator declines. */
+  readonly preselected?: true;
+}
+
+/**
+ * The PLUMBING a corpus's practices depend on: installed with any practice, offered
+ * as none. A cell here belongs to no practice, and names what other parts need
+ * rather than a way of working.
+ */
+export interface Plumbing {
+  /** Skills installed with any practice; whatever they compose comes with them. */
+  readonly skills?: readonly string[];
+  /** Hook cells, by id, registered with any practice and bound to no agent. */
+  readonly hooks?: readonly string[];
+}
+
+/**
  * A package's plugin declaration: its {@link Layout}, plus what it contributes.
  *
  * `name` stays on the wrapper because uniqueness is a registry-level property no
@@ -790,6 +835,22 @@ export interface AgentPlugin extends Layout {
    * or a corpus could not name a moment without editing the projector.
    */
   readonly events?: readonly EventName[];
+  /**
+   * WHICH practices the corpus offers — each a way of working an install offers as
+   * ONE choice. Absent ⇒ the corpus declares none and projects every cell, as
+   * before.
+   *
+   * It rides the plugin the way `events` does, and for the same reason: which
+   * practices exist is the corpus's to say, so the projector receives them as data
+   * and an install only OFFERS what is declared. Plugins compose: a later plugin's
+   * practice of the same name replaces an earlier one's.
+   */
+  readonly practices?: readonly Practice[];
+  /**
+   * What every practice is installed with and none is offered as — see
+   * {@link Plumbing}. Plugins compose: the set's plumbing is the union.
+   */
+  readonly plumbing?: Plumbing;
 }
 
 /**
