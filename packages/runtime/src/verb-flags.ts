@@ -3,7 +3,7 @@
 // capability: what each does, the positional it acts on, and the flags it
 // takes, each with the line its help prints; the one reader of a verb's
 // arguments against that declaration, and the one refusal of a flag the verb
-// does not take.
+// does not take or a word beyond the positional it declares.
 //
 // A capability declares, for each of its verbs, a one-line summary, its
 // positional, and the flags it takes (named without their leading `--`), each
@@ -22,18 +22,23 @@
 // given without `=value`, takes the next token as its value unless that token
 // is flag-shaped: `--` anything, or a single dash, a letter, then letters,
 // digits and dashes, with an optional `=value`. So `--bdy '- a list'` and
-// `--snk -s.jsonl` name one flag each, and `--bdy -x` names two. Every flag
-// given that the verb does not take is refused, in one refusal, as the
+// `--snk -s.jsonl` name one flag each, and `--bdy -x` names two. A verb takes
+// at most its declared positional: a second word where it declares one, any
+// word where it declares none, is surplus. Every flag given that the verb
+// does not take and every surplus word is refused, in one refusal, as the
 // arguments are read and so before the verb acts: nothing is written. The
 // refusal names each such flag as it was given, the verb's nearest flag to
-// each when one is close, and every flag the verb takes, and asks the caller
-// to correct the call and run it again.
+// each when one is close, each surplus word, the verb's positional and every
+// flag it takes, and asks the caller to correct the call and run it again, or
+// to ask the verb for its --help.
 //
 // Close means within one edit for every three letters of the flag's name, and
 // at least one; an edit inserts, deletes or changes a letter, or swaps two
 // neighbours. A flag farther than that from every flag the verb takes gets no
 // suggestion.
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { CLI_BIN } from './bin-name.js';
 
 /** One flag a verb takes: whether it `takes` a value or is a `switch`, taking
  *  none, and the line its help prints for it. */
@@ -127,29 +132,41 @@ function listed(items: readonly string[], last: 'and' | 'or'): string {
 }
 
 /** The refusal of `flags`, spelled as given, which `verb` of `capability`
- *  does not take, `declared` being the verb and so every flag it does. */
+ *  does not take, and of the `surplus` words, the positionals past the one it
+ *  declares (none, where it declares none), `declared` being the verb and so
+ *  its positional and every flag it takes. One line: what was not taken, what
+ *  is, and where to ask for the verb's help. */
 export function refused(
   capability: string,
   verb: string,
   flags: readonly string[],
   declared: Verb,
+  surplus: readonly string[] = [],
 ): string {
-  const named = flags.map((flag) => {
+  const not = flags.map((flag) => {
     const near = nearest(flag, declared);
     return near === undefined
       ? flag
       : `${flag} (the nearest flag it takes is --${near})`;
   });
-  const every = Object.keys(declared.flags);
+  if (surplus.length > 0)
+    not.push(
+      `the extra ${surplus.length === 1 ? 'word' : 'words'} ${listed(
+        surplus.map((word) => `'${word}'`),
+        'and',
+      )}`,
+    );
+  const every = Object.keys(declared.flags).map((f) => `--${f}`);
   return [
-    `${capability} ${verb}: it does not take ${listed(named, 'or')}.`,
-    every.length === 0
-      ? ' It takes no flags.'
-      : ` It takes ${listed(
-          every.map((f) => `--${f}`),
-          'and',
-        )}.`,
-    ' Nothing was written; correct the call and run it again.',
+    `${capability} ${verb}: it does not take ${listed(not, 'or')}.`,
+    ` It takes ${listed(
+      [
+        declared.positional ?? 'no positional',
+        ...(every.length === 0 ? ['no flags'] : every),
+      ],
+      'and',
+    )}.`,
+    ` Nothing was written; correct the call and run it again, or run ${CLI_BIN} ${capability} ${verb} --help.`,
   ].join('');
 }
 
@@ -161,7 +178,7 @@ const FLAG_SHAPED = /^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/;
 /** Read `argv`, the tail of `verb` of `capability`, against `declared`, the
  *  verb and so every flag it takes: its positionals and each flag's values in
  *  the order given. Refuses, in one refusal, every flag given that the verb
- *  does not take. */
+ *  does not take and every positional past the one it declares. */
 export function readArgv(
   argv: readonly string[],
   capability: string,
@@ -198,7 +215,8 @@ export function readArgv(
       if (eq === -1 && !FLAG_SHAPED.test(argv[i + 1] ?? '--')) i++;
     }
   }
-  if (untaken.size > 0)
-    throw new Error(refused(capability, verb, [...untaken], declared));
+  const surplus = positionals.slice(declared.positional === null ? 0 : 1);
+  if (untaken.size > 0 || surplus.length > 0)
+    throw new Error(refused(capability, verb, [...untaken], declared, surplus));
   return { positionals, flags };
 }
