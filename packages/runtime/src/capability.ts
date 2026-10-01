@@ -20,3 +20,15 @@ export const CAPABILITIES = ['eventTap', 'design', 'plan', 'note'] as const;
 
 /** A capability name — one member of {@link CAPABILITIES}. */
 export type Capability = (typeof CAPABILITIES)[number];
+
+/**
+ * What each capability is, in one line — the summary its help prints. Keyed by
+ * {@link Capability}, so a capability cannot be added undescribed nor a
+ * description left without its capability.
+ */
+export const CAPABILITY_SUMMARIES = {
+  eventTap: 'Attach a passive observer to the host harness’s lifecycle events',
+  design: 'Define, amend and trace the concepts a design is made of',
+  plan: 'Decompose a design into units of work and keep each unit’s ledger',
+  note: 'Capture, revise and retract notes, the ideas, questions and decisions not yet canonical',
+} as const satisfies Readonly<Record<Capability, string>>;

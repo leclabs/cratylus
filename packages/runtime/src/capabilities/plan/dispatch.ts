@@ -34,7 +34,13 @@ import type { Invocation } from '../../ports/design.js';
 import type { Fields, PlanHost } from '../../ports/plan.js';
 import type { Fold } from '../../record-store/fold.js';
 import { type Name, bare, parsed, printed } from '../../record-store/names.js';
-import { type Argv, type VerbFlags, readArgv } from '../../verb-flags.js';
+import {
+  type Argv,
+  type VerbFlags,
+  readArgv,
+  switchFlag,
+  valueFlag,
+} from '../../verb-flags.js';
 import { planView } from '../../view/plan.js';
 import { INVOCATION, invocation, many, one, subject, verbOf } from './argv.js';
 import type { Pin } from './pin.js';
@@ -49,8 +55,45 @@ import {
 } from './reading.js';
 import * as unitDomain from './unit.js';
 
+/** The flags for the fields of a unit that a plan does not have, each
+ *  described once. */
+const UNIT_ONLY_FLAGS = {
+  intent: valueFlag('What the unit is to build, in full'),
+  static: valueFlag(
+    'A path the unit reads but does not write; repeat once per path',
+  ),
+  deps: valueFlag('A unit this one depends on; repeat once per dependency'),
+  outputs: valueFlag('A path the unit writes; repeat once per path'),
+  accept: valueFlag(
+    'A mechanical criterion the finished unit must meet; repeat once per criterion',
+  ),
+} as const;
+
 /** The fields of a unit that a plan does not have. */
-const UNIT_ONLY = ['intent', 'static', 'deps', 'outputs', 'accept'] as const;
+const UNIT_ONLY = Object.keys(
+  UNIT_ONLY_FLAGS,
+) as (keyof typeof UNIT_ONLY_FLAGS)[];
+
+/** The flags a unit write takes for its fields, each taking a value: the
+ *  concept it realizes, and what a plan does not have. */
+const UNIT_FIELDS = {
+  realizes: valueFlag(
+    'The concept the unit realizes, or each concept a plan realizes; repeat once per concept',
+  ),
+  ...UNIT_ONLY_FLAGS,
+} as const;
+
+/** The flag that renames a unit or plan. */
+const NAME = {
+  name: valueFlag('The name the unit or plan is renamed to'),
+} as const;
+
+/** The flag that retakes a unit’s pin. */
+const REPIN = {
+  repin: switchFlag(
+    'Pin the unit anew to the concept it realizes; give a --reason',
+  ),
+} as const;
 
 /** What a write leaves the view to show: the plans, and the name drilled. */
 interface Shown {
@@ -506,51 +549,130 @@ export function planHost(from: string = process.cwd()): PlanHost {
   };
 }
 
-/** The flags a unit write takes for its fields, each taking a value: the
- *  concept it realizes, and what a plan does not have. */
-const UNIT_FIELDS = Object.fromEntries(
-  ['realizes', ...UNIT_ONLY].map((field) => [field, 'value']),
-) as { readonly [F in 'realizes' | (typeof UNIT_ONLY)[number]]: 'value' };
+/** The flag that says whose unit a verb acts on, described once: every verb
+ *  but `bind` and `close`, which act on a plan, takes it. */
+const PLAN = {
+  plan: valueFlag(
+    'The plan the unit is in, or joins when it is added; it says which where a name is both a plan and a unit',
+  ),
+} as const;
 
-/** The plan's verbs, in the order its header lists them, and the flags each
- *  takes; `--repin` alone takes no value. */
+/** The plan's verbs, in the order its header lists them, each with what it
+ *  does, the positional it acts on and the flags it takes; `--repin` alone
+ *  takes no value. */
 export const VERBS = {
-  show: { plan: 'value' },
+  show: {
+    summary:
+      'Show the bound plan in wave order, a named plan whole, or one unit in full',
+    positional: '[plan-or-unit]',
+    flags: { ...PLAN },
+  },
   add: {
-    plan: 'value',
-    'plan-realizes': 'value',
-    ...UNIT_FIELDS,
-    ...INVOCATION,
+    summary:
+      'Add a unit to a plan, pinned to the concept it realizes; the first add naming an absent plan proposes it',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      'plan-realizes': valueFlag(
+        'A concept the plan realizes, when this add proposes it; repeat once per concept',
+      ),
+      ...UNIT_FIELDS,
+      ...INVOCATION,
+    },
   },
-  advance: { plan: 'value', to: 'value', ...INVOCATION },
-  retract: { plan: 'value', ...INVOCATION },
+  advance: {
+    summary: 'Move a unit one step forward in its lifecycle',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      to: valueFlag('The state the unit advances to, the one step forward'),
+      ...INVOCATION,
+    },
+  },
+  retract: {
+    summary: 'Withdraw a unit that no live unit depends on',
+    positional: '<unit>',
+    flags: { ...PLAN, ...INVOCATION },
+  },
   revise: {
-    plan: 'value',
-    name: 'value',
-    ...UNIT_FIELDS,
-    repin: 'switch',
-    ...INVOCATION,
+    summary:
+      'Write a new version of a unit’s spec, or of a plan’s name and concepts; a field left out carries over',
+    positional: '<unit-or-plan>',
+    flags: {
+      ...PLAN,
+      ...NAME,
+      ...UNIT_FIELDS,
+      ...REPIN,
+      ...INVOCATION,
+    },
   },
-  bind: { ...INVOCATION },
-  close: { ...INVOCATION },
+  bind: {
+    summary:
+      'Bind a plan, bringing its integration line into being and returning the plan bound before',
+    positional: '<plan>',
+    flags: { ...INVOCATION },
+  },
+  close: {
+    summary: 'Close a plan for good: it and its units are never written again',
+    positional: '<plan>',
+    flags: { ...INVOCATION },
+  },
   reconcile: {
-    plan: 'value',
-    name: 'value',
-    ...UNIT_FIELDS,
-    state: 'value',
-    repin: 'switch',
-    ...INVOCATION,
+    summary:
+      'Settle a diverged unit or plan with one version over every version; give each field the versions disagree on',
+    positional: '<unit-or-plan>',
+    flags: {
+      ...PLAN,
+      ...NAME,
+      ...UNIT_FIELDS,
+      state: valueFlag('The state the unit or plan is settled in'),
+      ...REPIN,
+      ...INVOCATION,
+    },
   },
-  land: { plan: 'value', commit: 'value', ...INVOCATION },
+  land: {
+    summary: 'Record the commit that holds a unit’s work in its ledger',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      commit: valueFlag('The commit that holds the unit’s work'),
+      ...INVOCATION,
+    },
+  },
   assay: {
-    plan: 'value',
-    commit: 'value',
-    verdict: 'value',
-    missing: 'value',
-    ...INVOCATION,
+    summary:
+      'Record the verdict on a commit assayed against a unit, and what it misses, in its ledger',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      commit: valueFlag('The commit assayed'),
+      verdict: valueFlag(
+        `The verdict on the commit: ${unitDomain.VERDICTS.join(' or ')}`,
+      ),
+      missing: valueFlag(
+        'A part of the unit the commit does not achieve; repeat once per part',
+      ),
+      ...INVOCATION,
+    },
   },
-  whole: { plan: 'value', commit: 'value', ...INVOCATION },
-  broke: { plan: 'value', check: 'value', ...INVOCATION },
+  whole: {
+    summary: 'Record the plan line’s commit that holds a unit, in its ledger',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      commit: valueFlag('The plan line’s commit that holds the unit'),
+      ...INVOCATION,
+    },
+  },
+  broke: {
+    summary: 'Record the check a unit broke the whole by, in its ledger',
+    positional: '<unit>',
+    flags: {
+      ...PLAN,
+      check: valueFlag('The check that failed'),
+      ...INVOCATION,
+    },
+  },
 } as const satisfies VerbFlags;
 
 /** The value of the flag `verb` needs, refusing its absence and saying what it

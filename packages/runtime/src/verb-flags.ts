@@ -1,16 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// VERB FLAGS — the flags each capability verb takes, declared once beside the
-// verb, the one reader of a verb's arguments against that declaration, and the
-// one refusal of a flag the verb does not take.
+// VERB FLAGS — the verbs each capability has, declared once beside the
+// capability: what each does, the positional it acts on, and the flags it
+// takes, each with the line its help prints; the one reader of a verb's
+// arguments against that declaration, and the one refusal of a flag the verb
+// does not take.
 //
-// A capability declares, for each of its verbs, the flags it takes (named
-// without their leading `--`) and whether each takes a value. A flag that
-// takes a value is given as `--flag value` or `--flag=value`; it takes the
-// next token unless that token begins with `--`, so `-` and `-5` are values,
-// and given bare it holds `''`. A flag that takes no value (a switch) is given
-// as `--flag` alone and never takes the next token. Either may be repeated;
-// the reader keeps each flag's values in the order given. A token not spelled
-// with a dash, or a lone `-`, is a positional.
+// A capability declares, for each of its verbs, a one-line summary, its
+// positional, and the flags it takes (named without their leading `--`), each
+// with whether it takes a value and a one-line description. A flag cannot be
+// taken without being described: the declaration does not compile otherwise.
+// A flag that takes a value is given as `--flag value` or `--flag=value`; it
+// takes the next token unless that token begins with `--`, so `-` and `-5` are
+// values, and given bare it holds `''`. A flag that takes no value (a switch)
+// is given as `--flag` alone and never takes the next token. Either may be
+// repeated; the reader keeps each flag's values in the order given. A token
+// not spelled with a dash, or a lone `-`, is a positional.
 //
 // A verb takes a flag only as `--name`; one spelled with a single dash (`-x`,
 // `-gloss`) is an attempted flag no verb takes, and a switch given a value
@@ -31,13 +35,38 @@
 // suggestion.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The flags one verb takes, in the order its refusal lists them, and whether
- *  each takes a `value` or is a `switch`, taking none. */
-export type Flags = { readonly [flag: string]: 'value' | 'switch' };
+/** One flag a verb takes: whether it `takes` a value or is a `switch`, taking
+ *  none, and the line its help prints for it. */
+export interface Flag {
+  readonly takes: 'value' | 'switch';
+  readonly description: string;
+}
 
-/** The flags each verb of a capability takes, by verb. */
+/** A flag that takes a value, with the line its help prints for it. */
+export const valueFlag = (description: string) =>
+  ({ takes: 'value', description }) as const;
+
+/** A flag that takes no value, with the line its help prints for it. */
+export const switchFlag = (description: string) =>
+  ({ takes: 'switch', description }) as const;
+
+/** The flags one verb takes, in the order its refusal lists them, each with
+ *  the line its help prints for it: a flag cannot be taken undescribed. */
+export type Flags = { readonly [flag: string]: Flag };
+
+/** One verb, declared once: what it does in a line, the positional it acts on
+ *  (`<unit>` where it must be given, `[plan]` where it may be, `null` for
+ *  none), and the flags it takes. Its help is printed from this, and its
+ *  arguments are read against it. */
+export interface Verb {
+  readonly summary: string;
+  readonly positional: string | null;
+  readonly flags: Flags;
+}
+
+/** The verbs of a capability, by verb. */
 export type VerbFlags<V extends string = string> = {
-  readonly [verb in V]: Flags;
+  readonly [verb in V]: Verb;
 };
 
 /** An argv tail: its positionals, and each flag's values in the order given;
@@ -74,13 +103,14 @@ function edits(a: string, b: string): number {
   return (d[a.length] as number[])[b.length] as number;
 }
 
-/** The flag of `takes` nearest `flag`, spelled as given, when one is close,
- *  measured on its name without any `=value`; the first declared wins a tie. */
-export function nearest(flag: string, takes: Flags): string | undefined {
+/** The flag `declared` takes nearest `flag`, spelled as given, when one is
+ *  close, measured on its name without any `=value`; the first declared wins a
+ *  tie. */
+export function nearest(flag: string, declared: Verb): string | undefined {
   const name = flag.replace(/^-+/, '').split('=')[0] as string;
   const within = Math.max(1, Math.floor(name.length / 3));
   let best: { flag: string; edits: number } | undefined;
-  for (const taken of Object.keys(takes)) {
+  for (const taken of Object.keys(declared.flags)) {
     const n = edits(name, taken);
     if (n <= within && (best === undefined || n < best.edits))
       best = { flag: taken, edits: n };
@@ -97,20 +127,20 @@ function listed(items: readonly string[], last: 'and' | 'or'): string {
 }
 
 /** The refusal of `flags`, spelled as given, which `verb` of `capability`
- *  does not take, `takes` being every flag it does. */
+ *  does not take, `declared` being the verb and so every flag it does. */
 export function refused(
   capability: string,
   verb: string,
   flags: readonly string[],
-  takes: Flags,
+  declared: Verb,
 ): string {
   const named = flags.map((flag) => {
-    const near = nearest(flag, takes);
+    const near = nearest(flag, declared);
     return near === undefined
       ? flag
       : `${flag} (the nearest flag it takes is --${near})`;
   });
-  const every = Object.keys(takes);
+  const every = Object.keys(declared.flags);
   return [
     `${capability} ${verb}: it does not take ${listed(named, 'or')}.`,
     every.length === 0
@@ -128,14 +158,15 @@ export function refused(
  *  dashes, with an optional `=value`. */
 const FLAG_SHAPED = /^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/;
 
-/** Read `argv`, the tail of `verb` of `capability`, against `takes`, every
- *  flag it takes: its positionals and each flag's values in the order given.
- *  Refuses, in one refusal, every flag given that the verb does not take. */
+/** Read `argv`, the tail of `verb` of `capability`, against `declared`, the
+ *  verb and so every flag it takes: its positionals and each flag's values in
+ *  the order given. Refuses, in one refusal, every flag given that the verb
+ *  does not take. */
 export function readArgv(
   argv: readonly string[],
   capability: string,
   verb: string,
-  takes: Flags,
+  declared: Verb,
 ): Argv {
   const positionals: string[] = [];
   const flags = new Map<string, string[]>();
@@ -150,8 +181,8 @@ export function readArgv(
     const flag = eq === -1 ? token : token.slice(0, eq);
     const name = token.startsWith('--') ? flag.slice(2) : undefined;
     const kind =
-      name !== undefined && Object.hasOwn(takes, name)
-        ? takes[name]
+      name !== undefined && Object.hasOwn(declared.flags, name)
+        ? declared.flags[name]?.takes
         : undefined;
     if (name !== undefined && kind === 'value') {
       let value = '';
@@ -168,6 +199,6 @@ export function readArgv(
     }
   }
   if (untaken.size > 0)
-    throw new Error(refused(capability, verb, [...untaken], takes));
+    throw new Error(refused(capability, verb, [...untaken], declared));
   return { positionals, flags };
 }

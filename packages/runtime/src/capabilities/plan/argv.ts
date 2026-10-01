@@ -13,14 +13,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Invocation } from '../../ports/design.js';
-import type { Argv, VerbFlags } from '../../verb-flags.js';
+import { type Argv, type VerbFlags, valueFlag } from '../../verb-flags.js';
 
 /** The flags every write takes, each taking a value: who wrote it, why, and
  *  what caused it. */
 export const INVOCATION = {
-  author: 'value',
-  reason: 'value',
-  cause: 'value',
+  author: valueFlag('Who makes this write'),
+  reason: valueFlag('Why this write is made'),
+  cause: valueFlag('What caused this write'),
 } as const;
 
 /** The last value of `flag`, `undefined` when it is not given. */
