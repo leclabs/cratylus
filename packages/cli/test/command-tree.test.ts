@@ -275,27 +275,97 @@ describe('a deploy flag that would take no effect is refused, never accepted and
 });
 
 describe('the README reference names exactly what the help lists, each once', () => {
-  /** Every name the program's help lists, in the order it lists them: its commands
-   *  and capabilities, each capability followed by its verbs as `<capability> <verb>`. */
-  async function inHelp(): Promise<string[]> {
-    const names: string[] = [];
+  /** Every page the program's help has, in the order it lists them: each command and
+   *  capability, each capability followed by its verbs as `<capability> <verb>`, and
+   *  for each the help it answers. */
+  async function helpPages(): Promise<{ name: string; help: string }[]> {
+    const pages: { name: string; help: string }[] = [];
     const top = (await run('--help')).out;
     const capabilities = listed(top, 'Capabilities');
     for (const heading of ['Commands', 'Capabilities', 'Corpus authoring'])
       for (const name of listed(top, heading)) {
-        names.push(name);
-        if (!capabilities.includes(name)) continue;
         const help = (await run(name, '--help')).out;
+        pages.push({ name, help });
+        if (!capabilities.includes(name)) continue;
         for (const verb of listed(help, 'Commands'))
-          names.push(`${name} ${verb}`);
+          pages.push({
+            name: `${name} ${verb}`,
+            help: (await run(name, verb, '--help')).out,
+          });
       }
-    return names;
+    return pages;
   }
 
   /** Every name the README's reference gives a heading: `### \`cratylus <name>\``. */
   const inReadme = [...readme.matchAll(/^#{2,4} `cratylus ([^`]+)`$/gm)].map(
     (match) => match[1] as string,
   );
+
+  /** The flags a help lists under `Options:`, each as the help spells it (`-y`,
+   *  `--yes`); `--help`, which every help lists and no entry repeats, is left out. */
+  function flagsInHelp(help: string): string[] {
+    const lines = help.split('\n');
+    const flags: string[] = [];
+    for (const line of lines.slice(lines.indexOf('Options:') + 1)) {
+      if (!line.startsWith(' ')) break;
+      const spec = /^ {2}(-.*?)(?: {2,}|$)/.exec(line)?.[1];
+      if (spec !== undefined)
+        flags.push(
+          ...spec.split(', ').map((part) => part.split(' ')[0] as string),
+        );
+    }
+    return flags.filter((flag) => flag !== '-h' && flag !== '--help');
+  }
+
+  /** The README's entries by name: the text under each `### \`cratylus <name>\``
+   *  heading, up to the next heading. */
+  function entries(markdown: string): Map<string, string> {
+    const byName = new Map<string, string>();
+    let name: string | undefined;
+    for (const line of markdown.split('\n')) {
+      const heading = /^#{1,6} (.*)$/.exec(line);
+      if (heading !== null) {
+        name = /^`cratylus ([^`]+)`$/.exec(heading[1] as string)?.[1];
+        continue;
+      }
+      if (name !== undefined)
+        byName.set(name, `${byName.get(name) ?? ''}${line}\n`);
+    }
+    return byName;
+  }
+
+  /** The flags an entry's `Flag` table names, each as the table spells it. */
+  function flagsInEntry(entry: string): string[] {
+    const flags: string[] = [];
+    let inFlagTable = false;
+    for (const line of entry.split('\n')) {
+      if (line.startsWith('| Flag ')) inFlagTable = true;
+      else if (!line.startsWith('|')) inFlagTable = false;
+      const spec = inFlagTable ? /^\| `([^`]+)` /.exec(line)?.[1] : undefined;
+      if (spec !== undefined)
+        flags.push(
+          ...spec.split(', ').map((part) => part.split(' ')[0] as string),
+        );
+    }
+    return flags;
+  }
+
+  /** What an entry gets wrong of its help's flags: those the help lists and the entry
+   *  does not name, and those the entry names and the help does not list. */
+  interface FlagDiscrepancies {
+    missing: string[];
+    unlisted: string[];
+  }
+
+  function flagDiscrepancies(
+    inHelp: string[],
+    inEntry: string[],
+  ): FlagDiscrepancies {
+    return {
+      missing: inHelp.filter((flag) => !inEntry.includes(flag)),
+      unlisted: inEntry.filter((flag) => !inHelp.includes(flag)),
+    };
+  }
 
   /** What `documented` gets wrong of `listing`: the entries it lacks, names it holds
    *  twice, names the listing does not have, and, of the names both hold, those that
@@ -314,7 +384,12 @@ describe('the README reference names exactly what the help lists, each once', ()
   }
 
   it('lacks nothing the help lists, names nothing twice, and names nothing it does not', async () => {
-    expect(discrepancies(await inHelp(), inReadme)).toEqual({
+    expect(
+      discrepancies(
+        (await helpPages()).map((page) => page.name),
+        inReadme,
+      ),
+    ).toEqual({
       missing: [],
       twice: [],
       unlisted: [],
@@ -351,6 +426,57 @@ describe('the README reference names exactly what the help lists, each once', ()
       twice: [],
       unlisted: [],
       misplaced: ['init', 'install', 'uninstall', 'plan', 'plan show'],
+    });
+  });
+
+  it('names in each entry the flags its help lists, and no others', async () => {
+    const documented = entries(readme);
+    const wrong: Record<string, FlagDiscrepancies> = {};
+    for (const { name, help } of await helpPages()) {
+      const found = flagDiscrepancies(
+        flagsInHelp(help),
+        flagsInEntry(documented.get(name) ?? ''),
+      );
+      if (found.missing.length > 0 || found.unlisted.length > 0)
+        wrong[name] = found;
+    }
+    expect(wrong).toEqual({});
+  });
+
+  it('convicts an entry lacking a flag its help lists, and one naming a flag its help does not', () => {
+    const help = [
+      'Usage: cratylus install [options]',
+      'Install the bundled corpus',
+      'Options:',
+      '  --harness <name>            The harness to install into',
+      '  --no-link-persona-commands  Link no persona commands',
+      '  -y, --yes                   Take the default of every decision',
+      '  -h, --help                  display help for command',
+      '',
+    ].join('\n');
+    const reference = [
+      '### `cratylus install`',
+      '',
+      '| Flag               | What it does                   |',
+      '| ------------------ | ------------------------------ |',
+      '| `--harness <name>` | The harness to install into    |',
+      '| `--frob`           | A flag the help does not list  |',
+      '',
+      '### `cratylus uninstall`',
+      '',
+      '| Flag      | What it does |',
+      '| --------- | ------------ |',
+      '| `--other` | Not this one |',
+      '',
+    ].join('\n');
+    expect(
+      flagDiscrepancies(
+        flagsInHelp(help),
+        flagsInEntry(entries(reference).get('install') ?? ''),
+      ),
+    ).toEqual({
+      missing: ['--no-link-persona-commands', '-y', '--yes'],
+      unlisted: ['--frob'],
     });
   });
 });
