@@ -11,7 +11,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
-import { loadConfig } from '../../config/index.js';
+import { loadConfig, requirePlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type ProjectablePlugin,
@@ -75,18 +75,11 @@ async function project(
   configPath: string,
 ): Promise<number> {
   const config = await loadConfig(configPath);
+  requirePlugins(config, configPath);
   // No cast: `AgentPlugin` now satisfies `ProjectablePlugin` structurally, because
   // projection consumes the `fragments` dir too. The cast this line used to carry
   // was the census's tell — it silently DISCARDED the one field the fold needs.
   const plugins: readonly ProjectablePlugin[] = config.extends;
-  if (plugins.length === 0) {
-    fail(
-      'project',
-      `${CONFIG_FILE} extends no plugins, so there is nothing to project; add one with \`${CLI_BIN} add <package>\``,
-    );
-    return 1;
-  }
-
   const harness = opts.harness ?? DEFAULT_HARNESS;
   // THE ONE TREE `deploy` READS: `.cratylus/<harness>`, named after the tool and so
   // derived from the bin. A default of any other name is a render `deploy` refuses.

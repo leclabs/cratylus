@@ -211,12 +211,32 @@ describe('loadConfig — a package the config imports is not installed', () => {
     expect(failure?.message).not.toMatch(/\n|file:\/\//);
   });
 
-  it('leaves any other failure to speak for itself', () => {
+  it('names the file a config that does not parse, and where', () => {
+    const failure = loadFailure(
+      'export default {\n  extends: [],\n  patches: { a: 1 b: 2 },\n};\n',
+    );
+    expect(failure?.name).toBe('ConfigLoadError');
+    expect(failure?.message).toMatch(
+      /cratylus\.config\.ts:3:\d+ does not parse: .*; fix the syntax there$/,
+    );
+    expect(failure?.message).not.toMatch(/\n|file:\/\//);
+  });
+
+  it('names the file when a config throws as it loads', () => {
+    const failure = loadFailure("throw new Error('boom');\n");
+    expect(failure?.name).toBe('ConfigLoadError');
+    expect(failure?.message).toMatch(
+      /cratylus\.config\.ts failed to load: boom; /,
+    );
+  });
+
+  it('does not read a missing local file as a package to install', () => {
     // A missing LOCAL file is not an install problem, and `npm i` would not cure it.
     const failure = loadFailure(
       "import x from './absent.ts';\nexport default { extends: [x], patches: [] };\n",
     );
-    expect(failure?.name).not.toBe('MissingPackageError');
+    expect(failure?.name).toBe('ConfigLoadError');
     expect(failure?.message).toContain('absent.ts');
+    expect(failure?.message).not.toContain('npm i');
   });
 });

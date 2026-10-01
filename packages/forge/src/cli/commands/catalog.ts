@@ -24,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { type DimensionManifest, mergeManifest } from '@cratylus/schema';
 import { CLI_BIN } from '../../bin-name.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
-import { loadConfig, loadPlugins } from '../../config/index.js';
+import { loadConfig, loadPlugins, requirePlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import { fail, say } from '../style.js';
 
@@ -101,6 +101,7 @@ async function runCrossPlugin(
   opts: CatalogCmdOpts,
 ): Promise<number> {
   const config = await loadConfig(configPath);
+  requirePlugins(config, configPath);
   const loaded = await loadPlugins(config.extends, dirname(configPath));
   const filter = opts.agent?.toLowerCase();
   const plugins: PluginCatalog[] = loaded.map((p) => ({
@@ -136,6 +137,7 @@ async function corpusManifest(
 ): Promise<DimensionManifest> {
   if (existsSync(configPath)) {
     const config = await loadConfig(configPath);
+    requirePlugins(config, configPath);
     return mergeManifest(config.extends ?? []);
   }
   for (const entry of ['index.ts', 'index.js']) {

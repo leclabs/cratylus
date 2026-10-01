@@ -32,6 +32,7 @@ import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mergeManifest } from '@cratylus/schema';
+import { CLI_BIN } from '../bin-name.js';
 import {
   type PluginFragmentRoot,
   enumeratePluginFragmentCatalogs,
@@ -73,6 +74,65 @@ export class MissingPackageError extends Error {
   }
 }
 
+/**
+ * A config that does not load for any other reason: it does not parse, or it throws
+ * when evaluated, or it imports a local file that is not there. The runtime's own
+ * message is a bare parser line ("Expected ',', got 'ident'") that names no file,
+ * so this one names the file — and, for a syntax error, the line and column — and
+ * says to fix it there.
+ */
+export class ConfigLoadError extends Error {
+  constructor(
+    readonly configPath: string,
+    cause: unknown,
+  ) {
+    super(describeLoadFailure(configPath, cause), { cause });
+    this.name = 'ConfigLoadError';
+  }
+}
+
+/** `<file>:<line>:<column>` of a syntax error, read off the head of its stack — node
+ *  prints `<file>:<line>`, the source around it, then a caret under the column. */
+function syntaxLocus(stack: string): string | undefined {
+  const lines = stack.split('\n');
+  const at = /^(.+):(\d+)$/.exec(lines[0] ?? '');
+  if (!at) return undefined;
+  const caret = lines.find((l) => /^\s*\^+\s*$/.test(l));
+  return caret === undefined
+    ? `${at[1]}:${at[2]}`
+    : `${at[1]}:${at[2]}:${caret.indexOf('^') + 1}`;
+}
+
+function describeLoadFailure(configPath: string, cause: unknown): string {
+  const error = cause instanceof Error ? cause : new Error(String(cause));
+  if (error.name === 'SyntaxError') {
+    const locus = syntaxLocus(error.stack ?? '') ?? configPath;
+    return `${locus} does not parse: ${error.message}; fix the syntax there`;
+  }
+  return `${configPath} failed to load: ${error.message}; fix what it names`;
+}
+
+/** A config that extends nothing: there is no corpus in it to compose, explain,
+ *  list or project. The resolver's own refusal speaks to a corpus author. */
+export class EmptyExtendsError extends Error {
+  constructor(readonly configPath: string) {
+    super(
+      `${configPath} extends no plugins, so there is nothing to work on; add one with \`${CLI_BIN} add <package>\``,
+    );
+    this.name = 'EmptyExtendsError';
+  }
+}
+
+/** Refuse a config whose `extends` is empty, in the consumer's terms. */
+export function requirePlugins(
+  config: CratylusConfig,
+  configPath: string,
+): void {
+  if (config.extends.length === 0) {
+    throw new EmptyExtendsError(resolvePath(configPath));
+  }
+}
+
 /** The package a failed `import()` could not find, or undefined when the failure is
  *  anything else (a missing relative file, a syntax error, a throwing config). */
 function missingPackage(e: unknown): string | undefined {
@@ -104,7 +164,7 @@ export async function loadConfig(configPath: string): Promise<CratylusConfig> {
   } catch (e) {
     const pkg = missingPackage(e);
     if (pkg !== undefined) throw new MissingPackageError(abs, pkg);
-    throw e;
+    throw new ConfigLoadError(abs, e);
   }
   if (!isConfig(mod.default)) {
     throw new ConfigShapeError(abs);
@@ -188,6 +248,7 @@ export async function composeFromFile(
 ): Promise<{ config: CratylusConfig; resolved: ResolvedAgentSet }> {
   const abs = resolvePath(configPath);
   const config = await loadConfig(abs);
+  requirePlugins(config, abs);
   const resolved = await resolveConfig(config, dirname(abs));
   return { config, resolved };
 }

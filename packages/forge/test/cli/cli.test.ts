@@ -226,8 +226,9 @@ describe('project writes the tree deploy reads, and says little', () => {
     expect(out).toEqual([]);
     expect(err).toHaveLength(1);
     expect(err[0]).toMatch(
-      /^cratylus project: cratylus\.config\.ts extends no plugins/,
+      /^cratylus project: .*cratylus\.config\.ts extends no plugins/,
     );
+    expect(err[0]).toContain('cratylus add <package>');
   });
 });
 
@@ -276,6 +277,43 @@ describe('the built command, in a project directory', () => {
       expect(lines[0]).toContain("'not-installed-corpus'");
       expect(lines[0]).toContain('npm i -D not-installed-corpus');
       expect(lines[0]).not.toContain('file://');
+    },
+  );
+
+  it.each(['compose', 'project', 'explain', 'catalog'])(
+    '%s names the file, line and column of a config that does not parse',
+    (command) => {
+      writeFileSync(
+        join(dir, 'cratylus.config.ts'),
+        'export default {\n  extends: [],\n  patches: { a: 1 b: 2 },\n};\n',
+      );
+      const run = cratylus(command);
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe('');
+      const lines = run.stderr.split('\n').filter((l) => l !== '');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(new RegExp(`^cratylus ${command}: `));
+      expect(lines[0]).toContain(`${join(dir, 'cratylus.config.ts')}:3:`);
+      expect(lines[0]).toContain('does not parse');
+      expect(lines[0]).toContain('fix the syntax');
+    },
+  );
+
+  it.each(['compose', 'project', 'explain', 'catalog'])(
+    '%s tells a config that extends nothing to add a plugin',
+    (command) => {
+      writeFileSync(
+        join(dir, 'cratylus.config.ts'),
+        'export default { extends: [], patches: [] };\n',
+      );
+      const run = cratylus(command);
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe('');
+      const lines = run.stderr.split('\n').filter((l) => l !== '');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(new RegExp(`^cratylus ${command}: `));
+      expect(lines[0]).toContain('extends no plugins');
+      expect(lines[0]).toContain('cratylus add <package>');
     },
   );
 

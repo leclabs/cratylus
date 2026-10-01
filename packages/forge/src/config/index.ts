@@ -3,11 +3,14 @@
 // are what the CLI (and any programmatic caller) drives.
 export { type CratylusConfig, defineConfig } from './config.js';
 export {
+  ConfigLoadError,
   ConfigShapeError,
+  EmptyExtendsError,
   MissingPackageError,
   composeFromFile,
   loadConfig,
   loadPlugins,
+  requirePlugins,
   resolveConfig,
 } from './loader.js';
 export {
