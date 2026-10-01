@@ -293,6 +293,40 @@ describe('tap uninstall restores what install placed', () => {
     expect(read(settingsPath)).toEqual({ env: { FOO: 'bar' } });
   });
 
+  it.each([
+    ['an empty file', ''],
+    ['a whitespace-only file', '  \n'],
+    ['a one-line document with no newline', '{"env":{"FOO":"bar"}}'],
+    ['a 4-space document', '{\n    "env": {\n        "FOO": "bar"\n    }\n}\n'],
+    ['a tab-indented document', '{\n\t"env": {\n\t\t"FOO": "bar"\n\t}\n}\n'],
+    [
+      'a 4-space document with hooks of its own',
+      '{\n    "hooks": {\n        "Stop": [\n            {\n                "hooks": [\n                    {\n                        "type": "command",\n                        "command": "echo foreign"\n                    }\n                ]\n            }\n        ]\n    },\n    "env": {\n        "FOO": "bar"\n    }\n}\n',
+    ],
+  ])('puts back %s exactly as the host laid it out', (_name, before) => {
+    const { settingsPath, sinkPath } = fixture();
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(settingsPath, before, 'utf8');
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(readFileSync(settingsPath, 'utf8')).toBe(before);
+  });
+
+  it('puts back the host layout after a second install over the first', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const before = '{\n    "env": {\n        "FOO": "bar"\n    }\n}\n';
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(settingsPath, before, 'utf8');
+    install(settingsPath, sinkPath);
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(readFileSync(settingsPath, 'utf8')).toBe(before);
+  });
+
   it('removes the file after a second install over the first', () => {
     const { settingsPath, sinkPath } = fixture();
     install(settingsPath, sinkPath);
@@ -446,7 +480,12 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
     expect(entries[0]?.hooks[0]?.command).toBe('echo foreign');
     for (const ours of entries.slice(1))
       expect(ours.hooks).toEqual([
-        { type: 'command', command: expect.any(String), id: EVENT_TAP_ID },
+        {
+          type: 'command',
+          command: expect.any(String),
+          id: EVENT_TAP_ID,
+          restore: expect.any(Object),
+        },
       ]);
 
     // Teardown drops the two narrowed entries and nothing else.

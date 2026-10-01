@@ -29,6 +29,24 @@ import type { EventName } from '../../events.js';
 import type { RuntimeActBinding } from '../../runtime-config.js';
 
 /**
+ * What the host held at the settings path before the install that stamps it, so that
+ * teardown — a separate process — can put back what the host had and nothing else.
+ * Stamped on the tap's own hook entries, ONLY by an install that finds none of the
+ * tap's entries in the file already (a second install must not record the first's
+ * output as what the host held).
+ *
+ * - `created`: there was no file; the install made it, and this many directories to
+ *   hold it (0 when the directory already existed).
+ * - `blank`: the file held only whitespace, this text.
+ * - `indent` / `trailer`: the file held a JSON document laid out with this indent
+ *   (empty for one line) and ended with this trailing whitespace.
+ */
+export type TapRestore =
+  | { created: number }
+  | { blank: string }
+  | { indent: string; trailer: string };
+
+/**
  * The claude `settings.json` `hooks` block shape: native-event → entries, each
  * entry an optional matcher + one-or-more hook commands. The tap only ever emits
  * a single `command` hook stamped with its own id, but foreign entries under the
@@ -46,14 +64,8 @@ export type ClaudeHooksBlock = Record<
       timeout?: number;
       /** The stable id a tap entry is stamped with, so teardown finds it. */
       id?: string;
-      /**
-       * Stamped on a tap entry ONLY by an install that created the settings file: how
-       * many directories it made to hold it (0 when the directory already existed).
-       * Install and uninstall are separate processes, so what install created has to
-       * travel in the file itself; teardown reads it to remove exactly what the
-       * install placed, and nothing the host did.
-       */
-      createdDirectories?: number;
+      /** What the host held before the install that stamped this entry. */
+      restore?: TapRestore;
       env?: Record<string, string>;
     }>;
   }>
