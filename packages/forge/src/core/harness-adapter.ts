@@ -22,6 +22,7 @@ import type {
   EventName,
   HarnessMechanism,
   Hook,
+  NativeBinding,
   Substrate,
 } from '@cratylus/schema/hook';
 import type { ResolvedSkill } from './body.js';
@@ -327,6 +328,19 @@ export interface HarnessAdapter {
    * `declare` rung, never a fabricated binding.
    */
   readonly nativeEvents: Readonly<Record<EventName, string>>;
+  /**
+   * This harness's ACT BINDINGS: canonical act → the native ⟨event, selector⟩ pair it
+   * realizes as, for the acts that are not a plain name in {@link nativeEvents}.
+   *
+   * Declared on the port beside the 1:1 map for the reason that map is 1:1: the
+   * runtime REVERSES it (native → canonical) to name what it observed, and several
+   * acts share one native event (`PreToolUse`), so they cannot be rows of it. Deploy
+   * emits both into the harness's stanza, and a runtime that attaches to the harness
+   * reads the pair back to bind the act exactly as the projection does. Optional: a
+   * harness that does not expose its acts to the runtime declares none, and its
+   * stanza carries names only.
+   */
+  readonly nativeActs?: Readonly<Record<EventName, NativeBinding>>;
   /**
    * Whether this adapter can realize `event`.
    *

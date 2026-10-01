@@ -26,6 +26,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { EventName } from '../../events.js';
+import type { RuntimeActBinding } from '../../runtime-config.js';
 
 /**
  * The claude `settings.json` `hooks` block shape: native-event → entries, each
@@ -66,31 +67,83 @@ export function reverseNativeEvents(
 }
 
 /**
- * Build the tap's own `hooks` block: one `command` entry per event with a native
- * peer in `native`, each stamped with `tapId` so surgical teardown can find exactly
- * it. An event with no peer is skipped (returned in `skipped`) and never
- * fabricated — a passive observer that invented a binding would be reporting on
- * something the harness does not fire.
+ * Build the tap's own `hooks` block: one `command` entry per event the harness fires,
+ * each stamped with `tapId` so surgical teardown can find exactly it. An event with
+ * no binding is skipped (returned in `skipped`) and never fabricated — a passive
+ * observer that invented a binding would be reporting on something the harness does
+ * not fire.
+ *
+ * AN ACT IS BOUND BEFORE A PLAIN NAME, as the projection binds it: an act in `acts`
+ * becomes an entry on its native event NARROWED by its matcher, so the tap observes
+ * the act and not every tool call. Two acts with one ⟨event, matcher⟩ share the one
+ * entry — the same command twice under one matcher would run twice.
  */
 export function buildEventTapBlock(
   events: readonly EventName[],
   native: Readonly<Record<EventName, string>>,
+  acts: Readonly<Record<EventName, RuntimeActBinding>>,
   command: string,
   tapId: string,
 ): { block: ClaudeHooksBlock; skipped: EventName[] } {
   const block: ClaudeHooksBlock = {};
   const skipped: EventName[] = [];
   for (const event of events) {
-    const nativeName = native[event];
+    const act = acts[event];
+    const nativeName = act?.event ?? native[event];
     if (nativeName === undefined) {
       skipped.push(event);
       continue;
     }
     const entries = block[nativeName] ?? [];
-    entries.push({ hooks: [{ type: 'command', command, id: tapId }] });
     block[nativeName] = entries;
+    if (act?.matcher !== undefined) {
+      if (entries.some((e) => e.matcher === act.matcher)) continue;
+      entries.push({
+        matcher: act.matcher,
+        hooks: [{ type: 'command', command, id: tapId }],
+      });
+    } else {
+      entries.push({ hooks: [{ type: 'command', command, id: tapId }] });
+    }
   }
   return { block, skipped };
+}
+
+/** Whether Claude Code's `matcher` selects `toolName` — the whole name, as a pattern. */
+export function selectsTool(matcher: string, toolName: string): boolean {
+  try {
+    return new RegExp(`^(?:${matcher})$`).test(toolName);
+  } catch {
+    return matcher === toolName;
+  }
+}
+
+/**
+ * The event a native event stands for, given what narrows it: the first act whose
+ * binding is that native event and whose matcher `selects` the occurrence, else the
+ * plain canonical name of the native event. The act wins because it is the narrower
+ * claim — `PreToolUse` on `AskUserQuestion` is `operator.consult.pre` before it is
+ * `tool.use.pre`. A caller with nothing to narrow by passes no `selects`, and gets
+ * the plain name. For a captured occurrence `selects` is {@link selectsTool} of the
+ * tool it carried; for an installed entry it is equality with the entry's matcher.
+ */
+export function eventOfNative(
+  toEvent: Readonly<Record<string, EventName>>,
+  acts: Readonly<Record<EventName, RuntimeActBinding>>,
+  nativeName: string,
+  selects?: (matcher: string) => boolean,
+): EventName | undefined {
+  if (selects !== undefined) {
+    for (const [event, act] of Object.entries(acts)) {
+      if (
+        act.event === nativeName &&
+        act.matcher !== undefined &&
+        selects(act.matcher)
+      )
+        return event;
+    }
+  }
+  return toEvent[nativeName];
 }
 
 /**

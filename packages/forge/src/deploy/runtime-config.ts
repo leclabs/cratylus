@@ -32,7 +32,7 @@ import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { JsonValue, Skill } from '@cratylus/schema';
-import type { EventName } from '@cratylus/schema/hook';
+import type { EventName, NativeBinding } from '@cratylus/schema/hook';
 
 /**
  * Where the emitted config lands: `$AGENT_RUNTIME_CONFIG` ▸ `~/.<runtime-bin>.json`.
@@ -70,11 +70,24 @@ export interface EmittedEvents {
 }
 
 /**
+ * The native ⟨event, selector⟩ pair an act realizes as on one harness — the pair the
+ * projection itself emits, so a runtime that binds it binds the same moment.
+ */
+export interface EmittedActBinding {
+  readonly event: string;
+  readonly matcher?: string;
+}
+
+/**
  * One harness's stanza, `harnesses.<harness>`: its native name for each event in
- * the vocabulary it can actually fire.
+ * the vocabulary it can actually fire, and — for an act, which is a native event
+ * narrowed to the tool that performs it — the binding that narrows it. An act is
+ * under `acts` and never under `native`: `native` reverses (native → canonical) and
+ * several acts share one native event.
  */
 export interface EmittedHarness {
   readonly native: Readonly<Record<EventName, string>>;
+  readonly acts?: Readonly<Record<EventName, EmittedActBinding>>;
 }
 
 /** What `deploy` writes, and `loadRuntimeConfig` reads back. */
@@ -103,6 +116,8 @@ export interface EmitRuntimeConfigOpts {
   readonly harness: string;
   /** That harness's native map — `HarnessAdapter.nativeEvents`. */
   readonly nativeEvents: Readonly<Record<EventName, string>>;
+  /** That harness's act bindings — `HarnessAdapter.nativeActs`, when it has any. */
+  readonly nativeActs?: Readonly<Record<EventName, NativeBinding>>;
   /** Every other harness's stanza, carried over unchanged. */
   readonly harnesses?: Readonly<Record<string, EmittedHarness>>;
   /** The resolved plugin set's skills; their runtime faces carry the configuration. */
@@ -129,28 +144,43 @@ export function runtimeConfigDocument(
     events: { vocabulary: [...opts.events] },
     harnesses: {
       ...opts.harnesses,
-      [opts.harness]: harnessStanza(opts.events, opts.nativeEvents),
+      [opts.harness]: harnessStanza(opts),
     },
     ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
   };
 }
 
 /**
- * One harness's stanza: its native map FILTERED to the vocabulary. A harness peer
- * for a name the corpus does not signify is not a fact about this corpus, and
- * emitting it would let a second vocabulary in through the map's keys — the exact
- * re-entry the vocabulary repair exists to close.
+ * One harness's stanza: its native map and its act bindings, each FILTERED to the
+ * vocabulary. A harness peer for a name the corpus does not signify is not a fact
+ * about this corpus, and emitting it would let a second vocabulary in through the
+ * map's keys — the exact re-entry the vocabulary repair exists to close.
+ *
+ * `acts` is absent when the harness binds none (or none the corpus signifies): an
+ * empty block and no block are one fact, and a names-only stanza is what an earlier
+ * deploy wrote. Only the pair the runtime binds by — event and matcher — is emitted;
+ * the adapter's own prose about a loss (`NativeBinding.unnarrowed`) is the
+ * projection's report, not the host's configuration.
  */
 function harnessStanza(
-  events: readonly EventName[],
-  nativeEvents: Readonly<Record<EventName, string>>,
+  opts: Pick<EmitRuntimeConfigOpts, 'events' | 'nativeEvents' | 'nativeActs'>,
 ): EmittedHarness {
-  const declared = new Set(events);
+  const declared = new Set(opts.events);
   const native: Record<string, string> = {};
-  for (const [event, nativeName] of Object.entries(nativeEvents)) {
+  for (const [event, nativeName] of Object.entries(opts.nativeEvents)) {
     if (declared.has(event)) native[event] = nativeName;
   }
-  return { native };
+  const acts: Record<string, EmittedActBinding> = {};
+  for (const [event, { event: nativeName, matcher }] of Object.entries(
+    opts.nativeActs ?? {},
+  )) {
+    if (declared.has(event))
+      acts[event] = {
+        event: nativeName,
+        ...(matcher === undefined ? {} : { matcher }),
+      };
+  }
+  return { native, ...(Object.keys(acts).length > 0 ? { acts } : {}) };
 }
 
 /**
@@ -213,7 +243,7 @@ export function emitRuntimeConfig(
     ...opts,
     harnesses: opts.harnesses ?? priorHarnesses(path),
   });
-  const stanza = harnessStanza(opts.events, opts.nativeEvents);
+  const stanza = harnessStanza(opts);
   if (opts.dry === true) return { path, wrote: false, doc, stanza };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');

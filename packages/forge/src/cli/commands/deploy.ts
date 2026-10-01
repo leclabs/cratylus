@@ -14,6 +14,7 @@ import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { keepsHostModel } from '../../deploy/deploy.js';
 import {
   DEPLOY_CHECK_EXIT,
@@ -307,6 +308,7 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
       opts,
       harnessAdapter.name,
       harnessAdapter.nativeEvents,
+      harnessAdapter.nativeActs,
       log,
       warn,
     );
@@ -398,6 +400,7 @@ async function emitHostRuntimeConfig(
   opts: DeployCmdOpts,
   harness: string,
   nativeEvents: Readonly<Record<string, string>>,
+  nativeActs: HarnessAdapter['nativeActs'],
   log: (line: string) => void,
   warn: (message: string) => void,
 ): Promise<{ path: string; wrote: boolean } | null> {
@@ -430,6 +433,7 @@ async function emitHostRuntimeConfig(
     events,
     harness,
     nativeEvents,
+    ...(nativeActs === undefined ? {} : { nativeActs }),
     skills: (await resolveSkills(plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
   });

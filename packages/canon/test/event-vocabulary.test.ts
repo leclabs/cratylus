@@ -62,6 +62,7 @@ import {
 import {
   type RuntimeConfig,
   loadRuntimeConfig,
+  nativeActsOf,
   nativeEventsOf,
 } from '@cratylus/runtime/runtime-config';
 import type { Skill } from '@cratylus/schema';
@@ -314,7 +315,13 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
 describe("(c) the config deploy emits, parsed back by the runtime's own reader", () => {
   /** One adapter's emission inputs, by its own `name` and map. */
   const harness = (adapter: typeof claudeHarnessAdapter) =>
-    ({ harness: adapter.name, nativeEvents: adapter.nativeEvents }) as const;
+    ({
+      harness: adapter.name,
+      nativeEvents: adapter.nativeEvents,
+      ...(adapter.nativeActs === undefined
+        ? {}
+        : { nativeActs: adapter.nativeActs }),
+    }) as const;
   const CLAUDE = harness(claudeHarnessAdapter);
 
   /** An adapter's map, filtered to the vocabulary — what its stanza must hold. */
@@ -353,6 +360,38 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     expect(nativeEventsOf(roundTrip(), CLAUDE.harness)).toEqual({
       ...canonicalToClaude,
     });
+  });
+
+  it("the act bindings that arrive are the claude adapter's, matcher for matcher", () => {
+    expect(nativeActsOf(roundTrip(), CLAUDE.harness)).toEqual({
+      'operator.consult.pre': {
+        event: 'PreToolUse',
+        matcher: 'AskUserQuestion',
+      },
+      'subagent.dispatch.pre': {
+        event: 'PreToolUse',
+        matcher: 'Agent|SendMessage',
+      },
+    });
+    // They are claude's own table, not a second copy of it …
+    expect(nativeActsOf(roundTrip(), CLAUDE.harness)).toEqual(
+      canonicalActToClaude,
+    );
+    // … an act is never a row of the reversible 1:1 map …
+    for (const act of Object.keys(canonicalActToClaude))
+      expect(nativeEventsOf(roundTrip(), CLAUDE.harness)).not.toHaveProperty(
+        act,
+      );
+  });
+
+  it('the act bindings are FILTERED to the vocabulary like the names are', () => {
+    const doc = runtimeConfigDocument({
+      events: CANONICAL_EVENTS.filter((e) => e !== 'subagent.dispatch.pre'),
+      ...CLAUDE,
+    });
+    expect(Object.keys(doc.harnesses[CLAUDE.harness]?.acts ?? {})).toEqual([
+      'operator.consult.pre',
+    ]);
   });
 
   it('the emission FILTERS to the vocabulary — a stray map key never reaches a host', () => {

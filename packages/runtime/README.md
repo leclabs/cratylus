@@ -42,7 +42,7 @@ contracts: no implementation.
 | `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                                                                                                                                      |
 | `./capability`             | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the four capabilities the runtime ships, and a line on each                                                                                                                                                                                                                      |
 | `./main`                   | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                                             |
-| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `RuntimeConfig`                                                                                                                                                                                                                                                             |
+| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `nativeActsOf`, `RuntimeConfig`                                                                                                                                                                                                                                             |
 | `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                                              |
 | `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                                                  |
 | `./verb-flags`             | `VerbFlags`, `Verb`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's summary, positional and flags (whether each takes a value, and its description), the one reader (a flag that takes no value never takes the next token), and the one refusal of an untaken flag or surplus word |
@@ -133,10 +133,18 @@ throws when called as a library. Never a silent no-op.
 ## The host runtime config
 
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`, which deploy and
-install write: the corpus's lifecycle-event vocabulary (`events`), each harness's native event
-names (`harnesses.<harness>.native`) and each capability's configuration (`configuration`). Any one
-of the three is a live config. A capability that needs a part the host lacks refuses and names the
-command that writes it.
+install write: the corpus's lifecycle-event vocabulary (`events`), each harness's stanza
+(`harnesses.<harness>`) and each capability's configuration (`configuration`). Any one of the three
+is a live config. A capability that needs a part the host lacks refuses and names the command that
+writes it.
+
+A stanza holds the harness's native event names (`native`, canonical name → native name) and, where
+the harness fires an event only as a native event narrowed to the tool that performs it, that act's
+binding (`acts`, canonical act → `{ event, matcher }`). Claude Code's `operator.consult.pre` is
+`PreToolUse` matching `AskUserQuestion`, and `subagent.dispatch.pre` is `PreToolUse` matching
+`Agent|SendMessage`; deploy writes both from the claude adapter, as the projection itself binds
+them. `nativeEventsOf` and `nativeActsOf` each ask for one harness's. A stanza an older deploy wrote
+holds names only and reads with no acts, so an act event is skipped on it, as it was.
 
 ## The bin name
 

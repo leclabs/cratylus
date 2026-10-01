@@ -58,6 +58,19 @@ export interface RuntimeEvents {
 export interface RuntimeHarness {
   /** Canonical name → this harness's native name, for the events it can fire. */
   readonly native: Readonly<Record<string, string>>;
+  /**
+   * Canonical act → the native ⟨event, matcher⟩ it realizes as. An act is a native
+   * event narrowed to the tool that performs it, so it has no row in `native` (which
+   * reverses, and several acts share one native event). Absent on a stanza an
+   * earlier deploy wrote, which holds names only. Read through {@link nativeActsOf}.
+   */
+  readonly acts?: Readonly<Record<string, RuntimeActBinding>>;
+}
+
+/** The native event an act realizes as and the selector that narrows it to the act. */
+export interface RuntimeActBinding {
+  readonly event: string;
+  readonly matcher?: string;
 }
 
 /** The host's config: the corpus's parts and each harness's native names. */
@@ -159,6 +172,22 @@ export function nativeEventsOf(
 }
 
 /**
+ * One harness's ACT bindings — the native ⟨event, matcher⟩ each act the harness can
+ * narrow realizes as — or an empty map when its stanza holds none.
+ *
+ * Empty is an answer here, not a refusal, and that is the difference from
+ * {@link nativeEventsOf}: a stanza an earlier deploy wrote holds names only, and the
+ * act events it cannot bind are then skipped as ever. A capability that is asked to
+ * attach to such an act reports it unbound; it does not fail the names it does hold.
+ */
+export function nativeActsOf(
+  config: RuntimeConfig | null,
+  harness: string,
+): Readonly<Record<string, RuntimeActBinding>> {
+  return config?.harnesses?.[harness]?.acts ?? {};
+}
+
+/**
  * Lift the `events` block, or `undefined` when it is absent or says nothing.
  *
  * An EMPTY vocabulary reads as absent on purpose. A present-but-empty block would
@@ -178,10 +207,12 @@ function parseEvents(raw: unknown): RuntimeEvents | undefined {
 /**
  * Lift the `harnesses` block, or `undefined` when it holds no stanza.
  *
- * A stanza is `{ native: { <event>: <native name> } }`; an entry without a `native`
- * object is no stanza at all. Non-string names are dropped, as `events` drops
- * non-string words, so a stanza may lift with an empty map — the reader refuses
- * that harness exactly as it does one never deployed.
+ * A stanza is `{ native: { <event>: <native name> }, acts?: { <event>: { event,
+ * matcher? } } }`; an entry without a `native` object is no stanza at all. Non-string
+ * names are dropped, as `events` drops non-string words, so a stanza may lift with an
+ * empty map — the reader refuses that harness exactly as it does one never deployed.
+ * `acts` is read the same way: an entry that is not a binding is dropped, and a
+ * stanza without the block (an earlier deploy wrote names only) lifts with none.
  */
 function parseHarnesses(
   raw: unknown,
@@ -190,16 +221,44 @@ function parseHarnesses(
     return undefined;
   const harnesses: Record<string, RuntimeHarness> = {};
   for (const [harness, stanza] of Object.entries(raw)) {
-    const native = (stanza as { native?: unknown } | null)?.native;
+    const { native, acts } = (stanza ?? {}) as {
+      native?: unknown;
+      acts?: unknown;
+    };
     if (native === null || typeof native !== 'object' || Array.isArray(native))
       continue;
     const map: Record<string, string> = {};
     for (const [event, nativeName] of Object.entries(native)) {
       if (typeof nativeName === 'string') map[event] = nativeName;
     }
-    harnesses[harness] = { native: map };
+    const bindings = parseActs(acts);
+    harnesses[harness] = {
+      native: map,
+      ...(bindings === undefined ? {} : { acts: bindings }),
+    };
   }
   return Object.keys(harnesses).length === 0 ? undefined : harnesses;
+}
+
+/** Lift a stanza's `acts`, or `undefined` when it holds no binding. */
+function parseActs(
+  raw: unknown,
+): Readonly<Record<string, RuntimeActBinding>> | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
+    return undefined;
+  const acts: Record<string, RuntimeActBinding> = {};
+  for (const [act, binding] of Object.entries(raw)) {
+    const { event, matcher } = (binding ?? {}) as {
+      event?: unknown;
+      matcher?: unknown;
+    };
+    if (typeof event !== 'string') continue;
+    acts[act] = {
+      event,
+      ...(typeof matcher === 'string' ? { matcher } : {}),
+    };
+  }
+  return Object.keys(acts).length === 0 ? undefined : acts;
 }
 
 /**

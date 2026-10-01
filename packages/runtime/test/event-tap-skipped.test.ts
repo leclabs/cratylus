@@ -14,7 +14,14 @@ import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 import type { RuntimeConfig } from '../src/runtime-config.js';
 
 const CONFIG: RuntimeConfig = {
-  events: { vocabulary: ['turn.end', 'agent.idle', 'session.resume'] },
+  events: {
+    vocabulary: [
+      'turn.end',
+      'agent.idle',
+      'session.resume',
+      'operator.consult.pre',
+    ],
+  },
   harnesses: {
     claude: { native: { 'turn.end': 'Stop', 'agent.idle': 'TeammateIdle' } },
   },
@@ -82,5 +89,21 @@ describe('eventTap install, by how much of the request Claude Code can tap', () 
     );
     expect(existsSync(settings)).toBe(false);
     expect(warnings).toEqual([]);
+  });
+
+  it('skips an act event for a stanza an earlier deploy wrote, which holds names only', () => {
+    // Before the stanza carried `acts`, `operator.consult.pre` had no binding to
+    // read; the stanza below is that deploy's, and the act is skipped as it was.
+    const { run, settings, warnings } = install(
+      'turn.end,operator.consult.pre',
+    );
+    expect(run()).toMatchObject({
+      events: ['turn.end'],
+      skipped: [{ event: 'operator.consult.pre' }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(
+      Object.keys(JSON.parse(readFileSync(settings, 'utf8')).hooks),
+    ).toEqual(['Stop']);
   });
 });
