@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3TZ0T6WD6MYE2R1F9JVDK6F",
+    "entity": "01M3TYS4VTQQVR9S5JBQDXSXBP",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TYS4VTQQVR9S5JBQDXSXBQ"
+    ],
+    "author": "WayForwardPlanner5",
+    "time": "2026-10-01T05:29:28.540Z",
+    "reason": "answered: a contest answers a refusal that stands; one with no refusal behind it answers nothing, so the act is judged as usual (enforcement scope). Carried by unit contest-answers-refusal of refusal-way-forward: a refusal of a key stands until that key's next fire, and a contest written before it is discarded unheard",
+    "cause": "ruling relayed by Main on the assay finding of stance-contest at 3d8a735a"
+  },
+  "payload": null
+}

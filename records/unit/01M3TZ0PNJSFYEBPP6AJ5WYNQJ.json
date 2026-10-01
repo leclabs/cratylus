@@ -1,0 +1,60 @@
+{
+  "envelope": {
+    "id": "01M3TZ0PNJSFYEBPP6AJ5WYNQJ",
+    "entity": "01M3TZ0F0Z60ER67QGBDCMNYVX",
+    "operation": "amend",
+    "supersedes": [
+      "01M3TZ0F0Z60ER67QGBDCMNYVY"
+    ],
+    "author": "WayForwardPlanner5",
+    "time": "2026-10-01T05:29:24.914Z",
+    "reason": "ready: its one dep stance-contest is completed; name handed out",
+    "cause": "stance-contest completed"
+  },
+  "payload": {
+    "plan": "01M3TWQ60F9V1VKNVRVSNZWHSN",
+    "spec": {
+      "name": "contest-answers-refusal",
+      "intent": "Census @1fb7fdd0 (plan/refusal-way-forward, stance-contest merged); re-derive any line cited below if its path changed since.\nRealize the clause of `enforcement scope` that an agent contests a refusal it holds wrong, held together with its clause that a guard judges every turn it fires on: a contest answers a refusal that stands, so a contest with no refusal behind it answers nothing and the act is judged as usual. This answers the note 'a contest needs no standing refusal' (assay of stance-contest at 3d8a735a).\nAT CENSUS. `contestShell` (packages/canon/src/guard-shell.ts L63-84) is interpolated by the purview worker and both stance workers, each of which calls `contest_heard` once, before judging (purview-guardrail.ts L158-159, stance-guardrail-pre.ts L135-136, stance-guardrail.ts L136-137). `contest_heard` (L67-78) lets the act through unjudged whenever <key>.contest holds text, logging refusal \"\" when <key>.refused is absent; `contest_refused` (L79-83) writes <key>.refused on each refusal, and nothing but a heard contest ever removes it. At the turn end the key is the fixed `stop`, so a stop.contest written ahead of any stop, or one written after a stop.refused left by a block the agent then complied with, lets a later stop through unjudged. packages/canon/targets/guardrail/README.md (L102-113) says 'A fire that finds a non-empty contest is not judged'.\nTHE RULE (amends clause (2) of the CONTEST CONTRACT in unit purview-contest's intent; stated nowhere else in this plan): a refusal of a key stands from the fire that refused it until the next fire of that key. A fire is contested, and goes through unjudged as clause (2) says, only when a refusal of its key stands (its <key>.refused exists, whatever it holds) and a non-empty <key>.contest exists. Every other fire that reaches `contest_heard` leaves neither file of its key behind and is judged as usual, a BLOCK recording its refusal anew. So a contest written before the refusal it would answer is discarded unheard, neither logged nor said, and clause (4)'s refusal \"\" no longer arises from a missing refusal.\nCHANGE. (a) `contestShell` alone carries the rule; the three workers keep calling `contest_heard` where they do. (b) guard-shell.ts's doc comment, the A REFUSAL NEVER STRANDS THE AGENT entry of packages/canon/targets/guardrail/README.md and the Enforcement scope entry of packages/cli/README.md say it. (c) Regenerate the three workers with `pnpm canon:project:targets`, each within its size cap; the pre-call stance worker has 31 bytes of room at census, so whatever the rule adds is paid for inside guard-shell.ts. (d) Add .changeset/contest-answers-refusal.md, a patch for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh"
+      ],
+      "deps": [
+        "01M3TWRQ8SMTEB4XGSHZSJX2W1"
+      ],
+      "outputs": [
+        "packages/canon/src/guard-shell.ts",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/cli/README.md",
+        ".changeset/contest-answers-refusal.md"
+      ],
+      "accept": [
+        "AHEAD OF THE REFUSAL: new cases, for each harness form, on each of the three workers (the purview worker in the architect's scope with a `Task` dispatch to implementer carrying a spec, as in its contest cases in packages/canon/test/purview-guardrail.test.ts; the stance pre-call worker with an AskUserQuestion menu and the turn-end worker with a collapsed turn whose EVIDENCE is in the close, in packages/canon/test/stance-guardrail-dark.test.ts), with STANCE_JUDGE_CMD naming a stub that counts its calls and answers `VERDICT: BLOCK` with a REASON, and TMPDIR and GUARD_CONTEST_LOG under a temp dir: with no `<key>.refused` present, a non-empty `<key>.contest` is written at the path the worker's refusal names, then the act is fired: the stub's count rises by 1, the act is refused (a deny before a call, `\"decision\":\"block\"` at the turn end) and its reason names that `.contest` path, no notice says `contested`, GUARD_CONTEST_LOG does not exist, and `<key>.contest` no longer exists. The same act fired next with no contest written (at the turn end a different collapsed turn with stop_hook_active true) raises the count by 1 again and is refused again, the log still absent. On this unit's base (1fb7fdd0) the first fire goes through unjudged with the count unchanged (observed at the turn end by the assay of stance-contest at 3d8a735a).",
+        "A REFUSAL LAPSES: new cases in packages/canon/test/stance-guardrail-dark.test.ts, for each harness form, on the turn-end worker, with a stub whose verdict the test sets per fire and that counts its calls: a stop the stub BLOCKs leaves `stop.refused`; the next stop, which the stub PASSes, goes through and leaves neither `stop.refused` nor `stop.contest`; then, the stub answering BLOCK again, a `stop.contest` written before the following stop does not let it through: that stop raises the count by 1, is blocked, and GUARD_CONTEST_LOG does not exist. On this unit's base that last stop goes through unjudged.",
+        "HEARD KEPT: the existing contest cases of packages/canon/test/purview-guardrail.test.ts and packages/canon/test/stance-guardrail-dark.test.ts and the `contest:` ok line of `pnpm stance-guard:test` still pass unchanged, so a contest written after the refusal it answers still goes through unjudged, said, and logged with the judge's reason as `refusal`.",
+        "LEAN: `wc -c` prints at most 7680 for packages/canon/targets/guardrail/stance-guardrail-pre.sh (7649 at 1fb7fdd0), at most 16384 for packages/canon/targets/guardrail/stance-guardrail.sh (15997 at 1fb7fdd0) and at most 8192 for packages/canon/targets/guardrail/purview-guardrail.sh (7918 at 1fb7fdd0); print all three.",
+        "STATED: printed, the Enforcement scope entry of packages/cli/README.md (from `- **Enforcement scope.**` to the next `- **` entry) and the A REFUSAL NEVER STRANDS THE AGENT entry of packages/canon/targets/guardrail/README.md each say that a contest answers only a refusal that stands and that a contest written before the refusal is discarded, the act judged as usual; `grep -c 'finds a non-empty' packages/canon/targets/guardrail/README.md` prints 0 (1 at 1fb7fdd0).",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/purview-guardrail.test.ts test/stance-guardrail-dark.test.ts test/hook-rule-boundary.test.ts test/command-veracity.test.ts test/harness-independence.test.ts test/reader-density.test.ts`, `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/contest-answers-refusal.md` exists and names @cratylus/canon.",
+        "`git diff --name-only <the unit's base> <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3TVG4Z8PEWY4YMEDQYAH97Q",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}
