@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3W9KE1MSQABAT3MGR1BMKM3",
+    "entity": "01M3W99AD193G53AWM48VY1R2V",
+    "operation": "retract",
+    "supersedes": [
+      "01M3W99AD193G53AWM48VY1R2W"
+    ],
+    "author": "AssayStaleComments",
+    "time": "2026-10-01T17:53:38.868Z",
+    "reason": "persona-residue at e79b4b0b replaced 'position' with 'role' in roles/*.ts, agents/*.ts and purview-guardrail.ts, and stale-comments did the same in dimensions/role/*.ts; together they leave no instance",
+    "cause": "assay of persona-residue at e79b4b0b"
+  },
+  "payload": null
+}

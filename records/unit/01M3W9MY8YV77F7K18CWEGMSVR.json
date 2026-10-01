@@ -1,0 +1,92 @@
+{
+  "envelope": {
+    "id": "01M3W9MY8YV77F7K18CWEGMSVR",
+    "entity": "01M3W8TK2ZGCA7YCGFPT08X6FB",
+    "operation": "amend",
+    "supersedes": [
+      "01M3W9K58WXXN519Z0JJ3KR74W"
+    ],
+    "author": "PersonaResidue",
+    "time": "2026-10-01T17:54:28.254Z",
+    "reason": "amended after the assay: hold.ts:44 named the retired Declared",
+    "cause": "assay verdict not achieved"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "persona-residue",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Realize persona in the canon's agent and role cells. packages/canon/src/agents holds 8 agents: architect, planner, implementer, assayer and integrator are named for the role they hold; kino, mav and nico are named as individuals and hold the architect role. Each role-named agent declares its own description, archetype and provenance mark in agents/<role>.ts, which makes it carry something beyond its role. Make the role state them instead: move each role-named agent's description, archetype and mark into its role cell in roles/<role>.ts, so the role-named agent is the role's generic holder and agents/<role>.ts says only which role it holds, its name being the role's anchor. A persona (an agent whose name is not its role's anchor) declares its residue over the role: its own description, archetype and mark at least, and any specialty, domain or voice dimension values it adds (mav: maintenance; nico: its principles, guardrails, framing and the rest it declares now; kino: its film capabilities, framing and transparency). The fold in roles/hold.ts gives a generic holder its role's identity and refuses, at type level or by throwing when the cell is defined, a persona with no archetype or mark of its own, a persona whose mark is its role's, and a role-named agent that declares anything beyond the role it holds. Where the code builds or names an individually named agent it spells the concept by its anchor, persona. Rewrite the comments in agents/*.ts, roles/*.ts and roles/hold.ts to say the same, and to call a role a role rather than a position. That settles the note 'mav's comment quotes a narrower architect arrow' (agents/mav.ts:13 quotes reads⟨intent · C⟩ → writes⟨C⟩) and the agents and roles part of the note 'integration-line: the integrator is still called a position in prose'. Leave the comment at hold.ts:25 as it is: it already says shard. The same sweep covers packages/canon/src/hooks/purview-guardrail.ts:6, a comment saying a role value states 'the arrow the position is over the ladder': call it the role (note 'role comments still say position'); change no other line of that file, whose rubric is projected. packages/canon/src/practices.ts:63 says the carry-on practice installs 'no other persona' where it means any agent; say agent. Leave forge, schema, the hook cells under canon/src/hooks, genus/persona.md and the Persona axis in canon/src/manifest.ts alone: they spell persona for every agent and wait on the note 'persona spelled for every agent in forge and schema'. The agents' projected bytes must not change. The tests that import the agent and role cells by their exported names (practices.test.ts, null-dimension.test.ts, purview-guardrail.test.ts) keep working; keep the export names. A new test file must be classified in packages/canon/test/gate-convicts.test.ts, or the meta-gate goes red. Add a patch changeset for @cratylus/canon.",
+      "static": [
+        "packages/canon/src/manifest.ts",
+        "packages/schema/src/index.ts",
+        "packages/canon/src/dimensions/role",
+        "packages/canon/src/skills/create-agent/skill.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/omp/render.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/agents/architect.ts",
+        "packages/canon/src/agents/assayer.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/agents/integrator.ts",
+        "packages/canon/src/agents/planner.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/canon/src/agents/mav.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/assayer.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/roles/integrator.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/test/persona.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/null-dimension.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        ".changeset/persona-residue.md",
+        "packages/canon/src/hooks/purview-guardrail.ts"
+      ],
+      "accept": [
+        "the 8 agent files that `cratylus project` renders from this repository's config, for claude and for omp, are byte-identical to the ones it renders at a67c4816 (diff -r of the two agent outputs prints nothing)",
+        "`git grep -n -E \"archetype|description|provenance\" -- packages/canon/src/agents/architect.ts packages/canon/src/agents/planner.ts packages/canon/src/agents/implementer.ts packages/canon/src/agents/assayer.ts packages/canon/src/agents/integrator.ts` prints nothing",
+        "a canon test fails a persona declared with no archetype of its own, one with no mark of its own, one whose mark is its role's, and a role-named agent declaring a dimension value, and passes for the 8 shipped agents; `pnpm --filter @cratylus/canon test` exits 0",
+        "`git grep -n -i -w -E \"positions?\" -- packages/canon/src/agents packages/canon/src/roles` and `git grep -n -i persona -- packages/canon/src/practices.ts` print nothing, and `git diff <the commit the unit's work starts from> <the commit that lands it> -- packages/canon/src/hooks/purview-guardrail.ts` changes exactly one comment line, which no longer says position",
+        "`git grep -n -w persona -- packages/canon/src/roles/hold.ts` prints at least one line of code (not only comments) that builds or types an individually named agent",
+        "`pnpm --filter @cratylus/canon typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846Q2NS8ENRDTY9929N0E",
+      "version": "01M3W846Q2NS8ENRDTY9929N0F",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "e79b4b0b",
+        "author": "PersonaResidue",
+        "time": "2026-10-01T17:51:09.113Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "e79b4b0ba9c1768c89cb324cdefa2cd1323986b3",
+        "verdict": "not-achieved",
+        "missing": [
+          "persona, spells: packages/canon/src/roles/hold.ts:44 says the role's contract is inviolable because '`Declared` omits the key', but this commit renamed what a persona declares to `Persona` and no `Declared` exists any more; the module that defines the persona fold names the persona's declaration by a retired sign, so the artifact spells the concept two ways"
+        ],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T17:53:29.884Z"
+      },
+      {
+        "kind": "land",
+        "commit": "15ca6422",
+        "author": "PersonaResidue",
+        "time": "2026-10-01T17:54:28.253Z"
+      }
+    ]
+  }
+}
