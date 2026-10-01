@@ -16,7 +16,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { claudeHarnessAdapter } from '../../src/adapters/claude/render.js';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import type { HarnessAdapter } from '../../src/core/harness-adapter.js';
@@ -28,6 +28,14 @@ import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(here, 'fixtures-hook-cap');
+
+// Whatever directory the shell this runs in names is not the one weighed or run against.
+beforeEach(() => {
+  vi.stubEnv('CLAUDE_CONFIG_DIR', '');
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 const plugin: ProjectablePlugin = {
   name: 'fixture-hook-cap',
@@ -78,7 +86,7 @@ function run(
     }
     return spawnSync('sh', ['-c', command], {
       encoding: 'utf8',
-      env: { ...process.env, HOME: home },
+      env: { ...process.env, CLAUDE_CONFIG_DIR: '', HOME: home },
     });
   } finally {
     rmSync(home, { recursive: true, force: true });

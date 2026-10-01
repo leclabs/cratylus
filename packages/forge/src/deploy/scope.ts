@@ -2,7 +2,9 @@
 // the explicit input that scope requires. The artifact is identical across
 // scopes; scope is the accident (`scope-grant`).
 //
-//   user     home resolver    -> <home>/.claude    (home defaults to $HOME)
+//   user     home resolver    -> <home>/.claude    (no home: the harness's own
+//                                environment variable when it has one and it is
+//                                set, else $HOME/.claude)
 //   project  project resolver -> <project>/.claude  (project defaults to cwd)
 //
 // The bare-home guard: `--home` is the user's HOME dir, so a bare home
@@ -13,7 +15,8 @@
 // beside the real `~/.claude`.
 
 import { homedir } from 'node:os';
-import { basename, resolve as resolvePath } from 'node:path';
+import { basename, join, resolve as resolvePath } from 'node:path';
+import type { HarnessAdapter } from '../core/harness-adapter.js';
 
 export interface ScopeNote {
   message: string;
@@ -37,20 +40,49 @@ function expanduser(p: string): string {
 }
 
 /**
- * User scope: `<home>/<harnessHome>`. No `--home` → `$HOME/<harnessHome>`. A bare
- * home self-corrects (the dot-dir is appended, with a loud NOTE); a path already
- * ending in it is used verbatim.
+ * The directory a harness reads when no home was named: the directory its
+ * environment variable names, whole, when the adapter declares one and it is set and
+ * non-empty; else `<$HOME>/<harnessHome>`. The variable's NAME is the adapter's
+ * (`HarnessAdapter.homeEnv`) and is never spelled here.
+ */
+function unnamedHomeDir(harnessHome: string, homeEnv?: string): string {
+  const named = homeEnv === undefined ? undefined : process.env[homeEnv];
+  return named
+    ? resolvePath(expanduser(named))
+    : resolvePath(homedir(), harnessHome);
+}
+
+/**
+ * The directory a harness's files are in: `<home>/<harnessHome>` for a named home,
+ * and for none what {@link unnamedHomeDir} says. A named home is verbatim here —
+ * install and uninstall name a real home and no guard corrects it.
+ */
+export function harnessDirIn(
+  adapter: Pick<HarnessAdapter, 'home' | 'homeEnv'>,
+  home?: string | null,
+): string {
+  return home
+    ? join(home, adapter.home)
+    : unnamedHomeDir(adapter.home, adapter.homeEnv);
+}
+
+/**
+ * User scope: `<home>/<harnessHome>`. No `--home` → the harness's own directory
+ * (`unnamedHomeDir`). A bare home self-corrects (the dot-dir is appended, with a
+ * loud NOTE); a path already ending in it is used verbatim.
  *
- * `harnessHome` is the ADAPTER's (`HarnessAdapter.home`), never a literal. It
- * defaults to `.claude` for callers that predate the parameter — a default, not an
- * assumption: pass the adapter's and a second harness lands where it belongs.
+ * `harnessHome` and `homeEnv` are the ADAPTER's (`HarnessAdapter.home`,
+ * `HarnessAdapter.homeEnv`), never a literal. `harnessHome` defaults to `.claude`
+ * for callers that predate the parameter — a default, not an assumption: pass the
+ * adapter's and a second harness lands where it belongs.
  */
 export function userScope(
   home?: string | null,
   harnessHome = '.claude',
+  homeEnv?: string,
 ): ScopeResult {
   if (!home) {
-    return { harnessDir: resolvePath(homedir(), harnessHome), note: null };
+    return { harnessDir: unnamedHomeDir(harnessHome, homeEnv), note: null };
   }
   const p = resolvePath(expanduser(home));
   if (basename(p) === harnessHome) {

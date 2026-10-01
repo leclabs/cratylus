@@ -798,7 +798,7 @@ describe('install — the status line', () => {
         .command as string;
       const r = spawnSync('sh', ['-c', command], {
         input: stdin,
-        env: { ...process.env, HOME: home },
+        env: { ...process.env, CLAUDE_CONFIG_DIR: '', HOME: home },
         encoding: 'utf8',
       });
       expect(r.status).toBe(0);

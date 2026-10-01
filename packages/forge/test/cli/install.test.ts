@@ -983,6 +983,67 @@ describe('the guided install', () => {
     expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
   });
 
+  describe('where Claude Code reads', () => {
+    let processHome: string;
+    let configDir: string;
+    beforeEach(() => {
+      processHome = join(tmpRoot(), 'process-home');
+      configDir = join(tmpRoot(), 'claude-config');
+      mkdirSync(processHome, { recursive: true });
+      mkdirSync(configDir, { recursive: true });
+      vi.stubEnv('HOME', processHome);
+      vi.stubEnv('CLAUDE_CONFIG_DIR', configDir);
+    });
+    /** A claude run given no home, as the command line gives it. */
+    const unhomed = () =>
+      runInstall({
+        cwd,
+        corpus: plugin as never,
+        pathEnv: '/usr/bin',
+        practices: 'build',
+        harness: 'claude',
+        yes: true,
+      });
+
+    it('places its files under CLAUDE_CONFIG_DIR when no home is given, nothing under $HOME/.claude, and uninstall removes them from there', async () => {
+      expect(await unhomed()).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(files(configDir).some((f) => f.endsWith('manifest.json'))).toBe(
+        true,
+      );
+      const settings = readFileSync(join(configDir, 'settings.json'), 'utf8');
+      expect(settings).toContain('statusLine');
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+
+      expect(runUninstall({ harness: 'claude', verbose: true })).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(false);
+      expect(files(configDir).filter((f) => f !== 'settings.json')).toEqual([]);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('finds the harness to install into where CLAUDE_CONFIG_DIR is, when none is named', async () => {
+      expect(
+        await runInstall({
+          cwd,
+          corpus: plugin as never,
+          pathEnv: '/usr/bin',
+          practices: 'build',
+          yes: true,
+        }),
+      ).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('puts a run given a home under that home’s .claude, whatever CLAUDE_CONFIG_DIR says', async () => {
+      expect(await install({ harness: 'claude', yes: true })).toBe(0);
+      expect(claudeAgent('planner')).toSatisfy(existsSync);
+      expect(files(configDir)).toEqual([]);
+      expect(runUninstall({ harness: 'claude', home })).toBe(0);
+      expect(existsSync(claudeAgent('planner'))).toBe(false);
+    });
+  });
+
   it.each([
     ['not valid JSON', 'not json', 'is not valid JSON'],
     ['a JSON array', '[1]', 'is not a JSON object'],

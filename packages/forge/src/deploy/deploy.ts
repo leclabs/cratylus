@@ -53,6 +53,11 @@ export interface DeployOpts {
    * seam and not its concern.
    */
   harnessHome?: string | null;
+  /**
+   * The environment variable that names that home whole when no `home` is given
+   * (`HarnessAdapter.homeEnv`). Omitted ⇒ the harness reads `<$HOME>/<harnessHome>`.
+   */
+  harnessHomeEnv?: string | null;
   /** The harness's agent-definition extension (`HarnessAdapter.agentExt`). */
   agentExt?: string | null;
   /** The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`). */
@@ -217,7 +222,11 @@ function deployLocal(names: string[], opts: DeployOpts): LocalOutcome {
   const scopeRes =
     opts.scope === 'project'
       ? projectScope(opts.project, opts.harnessHome ?? undefined)
-      : userScope(opts.home, opts.harnessHome ?? undefined);
+      : userScope(
+          opts.home,
+          opts.harnessHome ?? undefined,
+          opts.harnessHomeEnv ?? undefined,
+        );
   const harnessDir = scopeRes.harnessDir;
   let pruned: string[] = [];
   let unregistered = 0;

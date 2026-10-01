@@ -31,6 +31,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
   HARNESS_NAMES,
@@ -57,6 +58,7 @@ import {
   withoutRuntimeParts,
 } from '../../deploy/index.js';
 import { unreadableRuntimeConfig } from '../../deploy/runtime-config.js';
+import { harnessDirIn } from '../../deploy/scope.js';
 import { settingsJson } from '../../deploy/settings-json.js';
 import { containingRoot } from '../../prune/index.js';
 import { fail as failLine, say } from '../style.js';
@@ -68,9 +70,11 @@ export interface UninstallCmdOpts {
   dryRun?: boolean;
   /** List every item removed, not only how many. */
   verbose?: boolean;
-  /** The user's HOME — the harness's home, the bin dir and the runtime config hang
-   *  from it. */
-  home: string;
+  /** The user's HOME, when the run is for another: the harness's directory is that
+   *  home's, and the bin dir and the runtime config hang from it. Absent, the
+   *  harness's own directory — its environment variable's where it has one and that
+   *  is set, else under the process's HOME — and the process's HOME for the rest. */
+  home?: string;
 }
 
 /** Something this run took away, or would. */
@@ -155,15 +159,15 @@ function removePersonaLinks(
   adapter: HarnessAdapter,
   harnessDir: string,
   manifest: DeployManifest,
-  opts: UninstallCmdOpts & { home: string },
+  opts: UninstallCmdOpts,
   tally: Tally,
 ): void {
   if (manifest.personaLinks.length === 0) return;
-  const self = personaLauncherOf(opts.home, adapter);
+  const self = personaLauncherOf(harnessDir, adapter);
   if (self === undefined) {
     for (const rel of manifest.personaLinks) {
       tally.left.push({
-        what: join(opts.home, rel),
+        what: join(opts.home ?? homedir(), rel),
         why: `recorded as a persona command, but ${adapter.name} has no launcher to check it against`,
       });
     }
@@ -172,7 +176,7 @@ function removePersonaLinks(
   // Only the recorded links are candidates: no persona names are passed, so a command
   // this install did not place is never even looked at.
   const report = removePersonaCommands({
-    home: opts.home,
+    home: opts.home ?? homedir(),
     harnessDir,
     self,
     personas: [],
@@ -372,7 +376,7 @@ function removePlacedFiles(
   adapter: HarnessAdapter,
   harnessDir: string,
   manifest: DeployManifest,
-  opts: UninstallCmdOpts & { home: string },
+  opts: UninstallCmdOpts,
   tally: Tally,
 ): void {
   const neutral = resolve(harnessDir, '..', NEUTRAL_AGENT_ROOT);
@@ -382,7 +386,7 @@ function removePlacedFiles(
   const elsewhere = new Map<string, string>();
   for (const name of HARNESS_NAMES) {
     if (name === adapter.name) continue;
-    const otherDir = join(opts.home, adapterByName(name).home);
+    const otherDir = harnessDirIn(adapterByName(name), opts.home);
     for (const rel of recordedPaths(readManifest(otherDir))) {
       elsewhere.set(resolve(otherDir, rel), name);
     }
@@ -437,7 +441,7 @@ function removePlacedFiles(
 function removeRuntimeStanza(
   adapter: HarnessAdapter,
   manifest: DeployManifest,
-  home: string,
+  home: string | undefined,
   dry: boolean,
   tally: Tally,
 ): void {
@@ -459,7 +463,7 @@ function removeRuntimeStanza(
     installed: HARNESS_NAMES.filter(
       (name) =>
         name !== adapter.name &&
-        existsSync(join(home, adapterByName(name).home, MANIFEST_REL)),
+        existsSync(join(harnessDirIn(adapterByName(name), home), MANIFEST_REL)),
     ),
     record: manifest.runtimeConfig,
   });
@@ -564,7 +568,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   }
   const adapter = adapterByName(opts.harness);
   const dry = opts.dryRun ?? false;
-  const harnessDir = join(opts.home, adapter.home);
+  const harnessDir = harnessDirIn(adapter, opts.home);
   const manifestFile = join(harnessDir, MANIFEST_REL);
   const run = {
     dry,
