@@ -1,4 +1,4 @@
-# return: add-endpoint — agent: implementer, branch healthz/add-endpoint
+# return: add-endpoint — agent: contractor, branch healthz/add-endpoint
 
 ## files
 
