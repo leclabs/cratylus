@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TVFKSJ3E0KGZ9Z0TZTXA9A",
+    "entity": "01M3TVFKSJ3E0KGZ9Z0TZTXA99",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T04:27:39.186Z",
+    "reason": "operator: undocumented subcommands and footguns",
+    "cause": "operator note after guard-precision"
+  },
+  "payload": {
+    "title": "the cli hides its own commands",
+    "kind": "idea",
+    "topic": "consumer surface",
+    "body": "Operator: the top-level help does not list subcommands that exist and are used every day, e.g. `cratylus plan show`, and the other capability verbs (design, plan, note and theirs). Every command and verb must be discoverable from --help at each level, documented once in the CLI README to match, and the CLI's footguns fixed: verbs that write where the operator does not expect, flags that are silently ignored, errors that do not say what to do.",
+    "blocks": []
+  }
+}

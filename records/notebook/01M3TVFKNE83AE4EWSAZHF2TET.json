@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TVFKNE83AE4EWSAZHF2TET",
+    "entity": "01M3TVFKNE83AE4EWSAZHF2TES",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T04:27:39.054Z",
+    "reason": "operator: the CLI still fails its consumer",
+    "cause": "operator note after guard-precision"
+  },
+  "payload": {
+    "title": "the cli is cluttered, bloated and ugly",
+    "kind": "idea",
+    "topic": "consumer surface",
+    "body": "Operator: after guided-install the CLI is still cluttered, bloated and ugly. Direction: Commander.js for the command surface and help, chalk for sparing, strategic colour, and output whose register and shape follow Unix conventions (quiet by default, one fact per line, data to stdout and diagnostics to stderr, exit codes that mean something, --help and --version everywhere, no colour when not a TTY or when NO_COLOR is set). Rectified: Commander and chalk are the established choices for a Node CLI; @clack/prompts already serves the interactive install and stays for that.",
+    "blocks": []
+  }
+}

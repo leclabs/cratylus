@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TVFKXP9M1X6QJR7QCK53VH",
+    "entity": "01M3TVFKXP9M1X6QJR7QCK53VG",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T04:27:39.318Z",
+    "reason": "operator: worker size is an obvious signal of bloat",
+    "cause": "operator note after guard-precision"
+  },
+  "payload": {
+    "title": "guard workers are bloated",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "Operator: the pre-call stance worker is still about 14 KB (14,990 to 14,364 bytes after guard-precision) and the turn-end worker about 47 KB. A guard is a small act: read the event, decide whether it applies, ask the judge, relay the verdict. Shell this large is bloat in its own right, apart from what the judge reads, and must be cut to what that act needs.",
+    "blocks": []
+  }
+}

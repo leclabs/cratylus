@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TVFM1V1TD8GZEPWZ7G0TC8",
+    "entity": "01M3TVFM1V1TD8GZEPWZ7G0TC7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T04:27:39.451Z",
+    "reason": "operator: refusals with no escape are a regression for unattended work",
+    "cause": "operator note after guard-precision"
+  },
+  "payload": {
+    "title": "a refusal with no way forward stalls the work",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "Operator ruling, rectified and adopted: guard-precision made refusals permanent (a refused act is refused on every retry, no cap) while the judge still returns false positives. An agent working with no human present is then stuck until someone notices, possibly hours later. That defeats the purpose: guards exist so agents can keep working unattended within their remit, not to halt them. A refusal must always leave the agent a way to continue on its own: it can act on the judge's reason, or contest a refusal it believes wrong by stating why, which lets the act through and records the contest for the operator to review later. The held ruling that guard-precision's 'a refused act stays refused' is a regression is the operator's; the design's enforcement scope must be amended accordingly before the next guard plan.",
+    "blocks": []
+  }
+}
