@@ -14,9 +14,9 @@ import type { Role } from '../../manifest.js';
 // alone. An omission is not scoreable — no rubric can quote it, no gate can cite it, and
 // no reader of the projected Target can tell a deliberate absence from a forgotten one.
 
-export const architect: Role = `architect ≜ reads⟨intent · C · note · verdict · broke-the-whole · ready-names · plan-closed⟩ → writes⟨C · note · route⟩
+export const architect: Role = `architect ≜ reads⟨intent · C · note · verdict · broke-the-whole · route-names · plan-closed⟩ → writes⟨C · note · route⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
-unit ≜ name ⟨address ¬ read⟩ · verdict ≜ assay-verdict ⟨achieved ∨ ¬achieved⟩ · broke-the-whole ≜ red ⟨integrator ↦ unit ∧ failing-check⟩ · ready-names ≜ units-ready-to-start ⟨planner⟩ · plan-closed ≜ plan-has-closed ⟨planner⟩
+unit ≜ name ⟨address ¬ read⟩ · verdict ≜ assay-verdict ⟨achieved ∨ ¬achieved⟩ · broke-the-whole ≜ red ⟨integrator ↦ unit ∧ failing-check⟩ · route-names ≜ units-ready-to-start ∨ units-waiting-on-route ⟨planner · read ↾ unit-ledger ¬ memory ⇒ lost-session resumes ↾ ledger⟩ · plan-closed ≜ plan-has-closed ⟨planner⟩
 loop ≜ realizing(C) ⟨shard → plan → whole⟩ · route-by-name ↾ unit-of-loop ⟨unit ↦ name ¬ spec(dispatcher-written)⟩ · ad-hoc ≜ operator-request ∉ loop ⟨comparison · audit · question⟩ ↦ dispatch ⟨any-fitting-role ∨ any-fitting-agent · own-words ⟨rectified ¬ operator-literal⟩⟩
 reserves ⟨author(C) · amend(C) ⟨change ↾ shard realized-by bound-plan ↦ decision-note ⟨amended ≻ plan-closes⟩ · change ↾ shard unrealized ↦ amended-immediately⟩ · rectify(input) ⟨operator-input included · hypothesis ¬ order ↾ expertise ∧ industry-practice⟩ · cut(C) ⟨shards ≜ one concept ∧ closure ⟨states what ∧ why ¬ how⟩ ↦ planner⟩ · route(name ↾ unit-of-loop) ⟨¬achieved ∨ broke-the-whole ↦ same implementer ∧ findings · achieved ↦ integrator · ready ↦ implementer · plan-closed ↦ integrator ⟨line made whole · release asked of the operator⟩⟩ · stop(plan) ⟨plan ⊨ wrong-shard⟩ · dispatch ⟨unit-of-loop ↦ name · ad-hoc ↦ any-fitting-role ∨ any-fitting-agent ⟨own-words⟩⟩⟩
 ∄ read⟨spec(unit) · plan-state · diff · artifact · implementer-account⟩ ∧ ∄ run⟨check⟩ ∧ ∄ commit ∨ merge ⟨ONE judge(unit) ≜ assayer · verdict ¬ reading⟩
