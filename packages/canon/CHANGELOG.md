@@ -1,5 +1,11 @@
 # @cratylus/canon
 
+## 0.12.4
+
+### Patch Changes
+
+- 731517e: The README's install section now installs `cratylus` alongside canon and imports `defineConfig` from `'cratylus'`.
+
 ## 0.12.3
 
 ### Patch Changes

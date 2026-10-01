@@ -1,6 +1,6 @@
 {
   "name": "cratylus",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "The cratylus command line: project a corpus of agent semantics onto Claude Code and omp, and the runtime the projected artifacts call back into.",
   "license": "MIT",
   "engines": {

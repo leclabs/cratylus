@@ -1,5 +1,55 @@
 # @cratylus/forge
 
+## 0.13.0
+
+### Minor Changes
+
+- d041f73: `cratylus` is one program, and its help lists every command and every capability
+
+  `cratylus --help` lists `init`, `add`, `compose`, `project`, `optimize`, `install`, `uninstall`, `deploy`, `explain` and `catalog` with `eventTap`, `design`, `plan` and `note`, each with a one-line summary, and `cratylus <command> --help` lists a command's flags with their defaults and choices. `cratylus` with no command prints that help on stderr and exits 1. `--version` and `-v` print the version of the `cratylus` package.
+
+  A word the program does not know is refused on one stderr line, `cratylus <command>: <what went wrong>; <what to do>`, naming the word, the nearest match when one is close and the `--help` to read, with exit 1 and no stack trace: an unknown command (`cratylus frobnicate`), an unknown option (`install --harnes`, and `--versoin`, which used to exit 0 and print nothing), a value outside its choices, a missing required value, an argument too many. Under `deploy --check` a usage error exits with the check's no-verdict code, not drift. `deploy --kind`, `--scope` and `--harness` (and `--harness` of `project`, `install` and `uninstall`) are checked where they are parsed and name the allowed values, so `deploy --scope porject` no longer deploys to user scope; `optimize` requires `<source>` and `--plan` at parse time.
+
+  A capability's failure carries the same prefix as every other command's: `cratylus plan assay: …`, where it was `cratylus: plan assay: …`. The program's own failure, which names no command, stays `cratylus: <message>`.
+
+  A flag that would change nothing is refused on one line instead of being accepted and dropped: `deploy --scope project --home`, `deploy --from` with all three directory flags, a directory or `--assets` flag the chosen `--kind` never reads, and `--config`, `--verbose` and `--dry-run` with `--check`.
+
+  A reader that closes the pipe ends any command quietly with its exit code: `cratylus project --verbose | head -1` no longer dies with an unhandled EPIPE.
+
+  The refusal of a verb a capability does not declare has one home, `verbOf`, in the command line's wording: the verb, the capability's verbs and `cratylus <capability> --help`. Every dispatcher, `eventTap` included, throws that text when called as a library, byte for byte what the command line prints.
+
+  The commands are documented once, in the `cratylus` README, and a test holds that reference to the help: it fails when a command or verb the help lists is missing, named twice, or named without being listed. `docs/cli/USAGE.md`, a proposal for the command surface, is deleted, so the `cratylus` README is the one reference. The forge README keeps the library material and links there; the canon README's consumer setup installs `cratylus` and imports `defineConfig` from it.
+
+  `@cratylus/forge/cli` now exports `projectorCommands`, the projector's commands as Commander commands, in place of `runCli`; `@cratylus/runtime/main` exports `capabilityCommands` in place of `runCli`. `cac` and `picocolors` are no longer dependencies; `commander` is, of `cratylus` and `@cratylus/forge`.
+
+- 42718fd: `install`, `uninstall` and `deploy` now speak in one register, and two of them are quiet by default.
+
+  - A result goes to stdout. A failure is one stderr line, `cratylus <command>: <what went wrong>; <what to do>`, and exits non-zero. A warning is one stderr line, `cratylus <command>: warning: <message>`. The `✓`, `✗` and `!` markers, the `===` banners and the blank spacer lines are gone.
+  - Colour marks only the prefix of a failure or warning, and is decided per stream: only when that stream is a terminal and `NO_COLOR` is unset. `CI` and `FORCE_COLOR` no longer put escape bytes into a pipe or a redirected stderr. The colour comes from `chalk`, imported by one module, `src/cli/style.ts`.
+  - `deploy` and `uninstall` print a short summary with counts and the next step. The per-file lines are behind a new `--verbose`. What `uninstall` leaves because the host placed or changed it is still named by default.
+  - A bare `--home` is noted once, not once per kind.
+  - `install`'s preview and summary now name the runtime config it writes (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and any other directory outside the harness's own it places files in.
+  - A deploy refused because a placed shim cannot run is reported as the failure it is, on the failure line, not as a warning.
+  - `uninstall` names, by default, what it takes back outside the harness directory: persona commands, the shared files under `~/.agents`, and the runtime config.
+  - `deploy` refuses a render directory it reads that does not exist (the dirs its `--kind` reads, no others), instead of reading it as an empty tree and pruning what an earlier deploy placed. It also refuses an unknown `--kind`. `install` refuses an unknown `--harness` on one line.
+
+- 4cd276d: `init`, `add`, `compose`, `project`, `explain`, `catalog` and `optimize` speak in the same register as `install`, `uninstall` and `deploy`, and the project commands stop failing in ways a consumer cannot act on.
+
+  - `init` scaffolds a config that imports `defineConfig` from `cratylus`, not from `@cratylus/forge/config`, which a consumer does not have. The scaffold no longer says `forge`, and `init` prints what to install for the config to load: `npm i -D cratylus @cratylus/canon`.
+  - A config that imports a package that is not installed fails every command that loads it, `compose`, `project`, `explain` and `catalog` among them, with one stderr line that names the package and the install command. `project` used to die with a 19-line stack trace. A config that does not parse is reported with its file, line and column and the instruction to fix the syntax there, rather than the parser's bare line. A config that extends nothing tells `compose`, `explain`, `catalog` and `project` alike to add a plugin with `cratylus add <package>`, instead of a corpus author's message from the resolver. A harness `project` does not know is reported the same way.
+  - `project` writes to `.cratylus/<harness>` by default, the tree `deploy` reads, so `cratylus project` then `cratylus deploy` works. It was `.render`, which `deploy` refused. It prints one summary line and the next step; the `EMIT` line for every file is behind a new `--verbose`. When `--out` names another directory, the next step is `cratylus deploy --from <dir>`.
+  - `compose` loses `--dry-run`, which did nothing but hide a stale note, and the note. `compose`, `explain` and `catalog` print their results with no header and no blank lines, one fact to a line; `compose` prints one resolved fragment per line. `explain` no longer prints its forward-seam notes, and an `[agent]` filter that matches nothing is a warning on stderr.
+  - `catalog <agent> --corpus <dir>` fails, saying `<agent>` is not used with `--corpus`, instead of ignoring it. The same goes for an `<agent>` given where the corpus census is the fallback.
+  - `optimize` failures are one stderr line each, and its written files are listed only under a new `--verbose`. The commands name themselves `cratylus`, not `forge`, in everything they print. `add` advises `cratylus compose` rather than the removed `--dry-run`.
+  - No glyphs or colour in results. Colour marks only the prefix of a failure or warning, decided per stream.
+
+### Patch Changes
+
+- Updated dependencies [d969e08]
+- Updated dependencies [d041f73]
+- Updated dependencies [15a0b3a]
+  - @cratylus/runtime@0.9.0
+
 ## 0.12.1
 
 ### Patch Changes
