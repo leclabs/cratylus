@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WPREDQZZR43B4T63ZQHCNE",
+    "entity": "01M3R11W9DQNPYKN22WCPAH13W",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R11W9DQNPYKN22WCPAH13X"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T21:43:34.583Z",
+    "reason": "implementer-return-fixture at adb51ded, whole on the line: the dispatch and return fixtures now depict a name-only return judged by the assayer",
+    "cause": "remaining-gaps"
+  },
+  "payload": null
+}

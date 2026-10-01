@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WPS45MZEK01SP98JEZ9XJT",
+    "entity": "01M3WPS45MZEK01SP98JEZ9XJS",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T21:43:56.852Z",
+    "reason": "a shipped skill is truncated on Claude Code",
+    "cause": "assay of unreadable-runtime-config"
+  },
+  "payload": {
+    "title": "the plan skill exceeds claude's per-hook cap",
+    "kind": "idea",
+    "topic": "supported harness",
+    "body": "Seen beside the assay of unreadable-runtime-config: installing the bundled corpus on Claude Code warns that skill 'plan' prints 10012 characters, over Claude Code's 10000-character per-hook cap, so the tail of the skill is cut where the harness injects it. Under supported harness (each harness receives every shipped cell at the highest fidelity it offers), the plan skill should fit, or the cut should not fall on meaning. Related: 'a longer home at run time than at install'.",
+    "blocks": []
+  }
+}
