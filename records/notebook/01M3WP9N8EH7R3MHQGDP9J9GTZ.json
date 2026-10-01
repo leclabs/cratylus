@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WP9N8EH7R3MHQGDP9J9GTZ",
+    "entity": "01M3WP7R8PH223037NX7BHNPT4",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WP7R8PH223037NX7BHNPT5"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T21:35:30.062Z",
+    "reason": "the hook's reach exceeds the concept and can fail unrelated work",
+    "cause": "assay of isolated-implementer at 0ff3de68"
+  },
+  "payload": {
+    "title": "line-worktree governs every Claude worktree on the host",
+    "kind": "decision",
+    "topic": "isolation",
+    "body": "Ruled: (b), and pass creation through on every failure. The plan concept places a unit's worktree off its plan's line and says nothing about any other worktree. The hook acts only for the implementer's worktree in the repository whose plan is bound; for every other worktree, repository or failure (cratylus or jq missing, no plan bound, an unrecognized line) it leaves creation exactly as the harness would do it, never failing it.",
+    "blocks": []
+  }
+}

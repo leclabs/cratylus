@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WN0YTQ227D74Y515HT5CN9",
+    "entity": "01M3WMZ0XTVRDR0ZKMG86WC0MT",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WMZ0XTVRDR0ZKMG86WC0MV"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T21:13:16.375Z",
+    "reason": "the plan concept states isolation and the line as one clause; the land gate now enforces the line",
+    "cause": "blocked isolated-implementer of remaining-gaps"
+  },
+  "payload": {
+    "title": "isolated-implementer worktree cannot be placed off the plan's line by the agent definition",
+    "kind": "decision",
+    "topic": "isolation",
+    "body": "Ruled: the worktree the harness gives the implementer starts off the plan's line wherever the harness can be made to do so (on Claude Code the worktree's creation can be hooked or its base configured); 'off that line' is part of the same clause as 'isolated', and a worktree cut from main is refused at land by isolated-landing, so starting off main only wastes the build. Where a harness cannot place the worktree (omp gives none), the agent's own competence and the land gate carry it. Realized by isolated-implementer, re-planned.",
+    "blocks": []
+  }
+}

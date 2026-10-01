@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WP7R8PH223037NX7BHNPT5",
+    "entity": "01M3WP7R8PH223037NX7BHNPT4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayRemaining",
+    "time": "2026-10-01T21:34:27.606Z",
+    "reason": "a finding beside the unit, met while assaying isolated-implementer at 0ff3de68; a note rather than part of the verdict",
+    "cause": "assay of isolated-implementer of remaining-gaps at 0ff3de68"
+  },
+  "payload": {
+    "title": "line-worktree governs every Claude worktree on the host",
+    "kind": "question",
+    "topic": "isolation",
+    "body": "Observed at 0ff3de68 (isolated-implementer of remaining-gaps): the line-worktree cell is registered for WorktreeCreate with the command sh \"$HOME/.claude/hooks/line-worktree/line-worktree.sh\", and Claude Code fires WorktreeCreate for claude --worktree sessions, for every isolation: worktree subagent and for background sessions isolated in a worktree, not only for the implementer. So while a plan is bound in a repository, every such worktree there is cut from the plan's line, including an architect background session where worktree.bgIsolation is worktree (this repo's .claude/settings.json sets it). In every repository on the host, worktree creation also fails when jq or cratylus is not on PATH, or when cratylus plan show answers with a first line the hook does not recognize (for example 'with nothing committed yet'). The shard plan asks only that each unit be built off the line. Is the hook's reach beyond the implementer's worktree intended? The host-wide reach is [INFERENCE] from the $HOME path in the registered command.",
+    "blocks": []
+  }
+}
