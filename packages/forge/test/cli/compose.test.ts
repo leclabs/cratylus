@@ -1,4 +1,5 @@
-// P4 — `cratylus compose --dry-run` prints the resolved set and WRITES NOTHING.
+// `cratylus compose` prints the resolved set — one fragment to a line, nothing else
+// on stdout — and WRITES NOTHING; a failure is one stderr line that says what to do.
 
 import {
   mkdirSync,
@@ -9,9 +10,10 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runCompose } from '../../src/cli/commands/compose.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+import { capture } from './streams.js';
 
 /** Recursive listing of a dir (relative paths), to assert nothing was written. */
 function listing(dir: string): string[] {
@@ -29,7 +31,7 @@ function listing(dir: string): string[] {
   return out;
 }
 
-describe('compose --dry-run', () => {
+describe('compose', () => {
   let cwd: string;
   beforeEach(() => {
     cwd = mkdtempSync(join(tmpdir(), 'forge-compose-'));
@@ -53,36 +55,27 @@ describe('compose --dry-run', () => {
   });
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
-  it('prints the resolved set and writes nothing', async () => {
+  it('prints only the resolved fragments, one per line, and writes nothing', async () => {
     const before = listing(cwd);
-    const logs: string[] = [];
-    const spy = vi.spyOn(console, 'log').mockImplementation((...a) => {
-      logs.push(a.join(' '));
-    });
-    let rc: number;
-    try {
-      rc = await runCompose({
-        config: join(cwd, 'cratylus.config.ts'),
-        dryRun: true,
-      });
-    } finally {
-      spy.mockRestore();
-    }
+    const { rc, out, err } = await capture(() =>
+      runCompose({ config: join(cwd, 'cratylus.config.ts') }),
+    );
     expect(rc).toBe(0);
-    const out = logs.join('\n');
-    expect(out).toContain('cratylus compose');
-    expect(out).toContain('syn:objective/insight');
-    // Dry-run: the tree is byte-identical — nothing written.
+    // No header, no spacer, no note: every stdout line is a fragment.
+    expect(out).toEqual(['syn:objective/insight  insight']);
+    expect(err).toEqual([]);
     expect(listing(cwd)).toEqual(before);
   });
 
-  it('errors (rc 1) when no config is present', async () => {
+  it('fails with one stderr line when no config is present', async () => {
     const empty = mkdtempSync(join(tmpdir(), 'forge-compose-empty-'));
     try {
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const rc = await runCompose({ cwd: empty, dryRun: true });
-      spy.mockRestore();
+      const { rc, out, err } = await capture(() => runCompose({ cwd: empty }));
       expect(rc).toBe(1);
+      expect(out).toEqual([]);
+      expect(err).toHaveLength(1);
+      expect(err[0]).toMatch(/^cratylus compose: no cratylus\.config\.ts at /);
+      expect(err[0]).toContain('cratylus init');
     } finally {
       rmSync(empty, { recursive: true, force: true });
     }

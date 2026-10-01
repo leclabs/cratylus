@@ -26,9 +26,10 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runCatalog } from '../../src/cli/commands/catalog.js';
 import { CONFIG_FILE } from '../../src/config/scaffold.js';
+import { capture as captureLines } from './streams.js';
 
 /**
  * A catalog NO other corpus in this repo declares — `veridicality`/`plumbline` appear
@@ -56,36 +57,14 @@ function writeModule(
   writeFileSync(join(d, `${file}.ts`), source);
 }
 
-/** Capture console.log + stdout + console.error while running `fn`. */
+/** The streams joined, for the assertions that ask whether a string is in one. */
 async function capture(fn: () => Promise<number>): Promise<{
   rc: number;
   out: string;
   err: string;
 }> {
-  const logs: string[] = [];
-  const errs: string[] = [];
-  const stdout: string[] = [];
-  const lspy = vi
-    .spyOn(console, 'log')
-    .mockImplementation((...a) => void logs.push(a.join(' ')));
-  const espy = vi
-    .spyOn(console, 'error')
-    .mockImplementation((...a) => void errs.push(a.join(' ')));
-  const wspy = vi
-    .spyOn(process.stdout, 'write')
-    .mockImplementation((s: string | Uint8Array) => {
-      stdout.push(String(s));
-      return true;
-    });
-  let rc: number;
-  try {
-    rc = await fn();
-  } finally {
-    lspy.mockRestore();
-    espy.mockRestore();
-    wspy.mockRestore();
-  }
-  return { rc, out: [...logs, ...stdout].join('\n'), err: errs.join('\n') };
+  const { rc, out, err } = await captureLines(fn);
+  return { rc, out: out.join('\n'), err: err.join('\n') };
 }
 
 describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () => {
@@ -145,9 +124,15 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
     // module declared (axis · repertoire · arity), which is the half only it can supply.
     expect(out).toContain('ground-truth');
     expect(out).toContain('true-vertical');
-    expect(out).toContain('Constitution · latent · scalar');
-    expect(out).toContain('Persona · curated · set');
-    expect(out).toContain('2 dimensions, 2 values');
+    expect(out).toContain('veridicality [Constitution, latent, scalar] (1)');
+    expect(out).toContain('plumbline [Persona, curated, set] (1)');
+    // The census is the whole of stdout: no header line, no spacer line.
+    expect(out.split('\n')).toEqual([
+      'veridicality [Constitution, latent, scalar] (1)',
+      '  ground-truth',
+      'plumbline [Persona, curated, set] (1)',
+      '  true-vertical',
+    ]);
   });
 
   it('--json emits the entry-module catalog as the machine contract', async () => {
@@ -244,5 +229,36 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
     // passes against the core refusal, which is the state being fixed.
     expect(err).toContain('manifest');
     expect(err).toContain('--config');
+  });
+
+  it('REFUSES an <agent> that --corpus would ignore, as one stderr line', async () => {
+    writeFileSync(
+      join(cwd, 'corpus', 'index.ts'),
+      [
+        `export default { name: 'zeroconf', manifest: ${JSON.stringify(ZEROCONF_ANATOMY)} };`,
+        '',
+      ].join('\n'),
+    );
+    assertNoDiscoverableConfig();
+
+    const { rc, out, err } = await capture(() =>
+      runCatalog({ agent: 'someagent', corpus: dimensions, cwd }),
+    );
+    expect(rc).toBe(1);
+    expect(out).toBe('');
+    expect(err.split('\n')).toHaveLength(1);
+    expect(err).toMatch(/^cratylus catalog: /);
+    expect(err).toContain('<agent> is not used with --corpus');
+  });
+
+  it('REFUSES an <agent> when the census it would filter is the fallback one', async () => {
+    assertNoDiscoverableConfig();
+    const { rc, out, err } = await capture(() =>
+      runCatalog({ agent: 'someagent', cwd }),
+    );
+    expect(rc).toBe(1);
+    expect(out).toBe('');
+    expect(err.split('\n')).toHaveLength(1);
+    expect(err).toContain('<agent>');
   });
 });

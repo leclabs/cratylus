@@ -11,15 +11,12 @@
 // it — no re-derivation, no second resolve pass.
 //
 // The `[agent]` positional is an optional FILTER over the resolved fragment ids
-// (substring, case-insensitive) — a discovery convenience. Resolving a preset
-// (agent) to the SUBSET of fragments it draws from is a forward seam (presets join
-// the resolved set in a later shard); until then `explain` reports the whole
-// resolved fragment graph, optionally narrowed by the filter. Said in the output,
-// never silently.
+// (substring, case-insensitive) — a discovery convenience. It narrows the report to
+// the ids that contain it; it does not scope the report to the fragments a preset
+// draws from.
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import pc from 'picocolors';
 import { CLI_BIN } from '../../bin-name.js';
 import { composeFromFile } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
@@ -28,6 +25,7 @@ import type {
   FragmentContribution,
   ResolvedFragment,
 } from '../../resolve/index.js';
+import { fail, say, warn } from '../style.js';
 
 export interface ExplainOpts {
   /** Optional filter: keep only fragments whose id contains this token (ci). */
@@ -81,26 +79,23 @@ function roles(provenance: readonly FragmentContribution[]): string[] {
   });
 }
 
-/** Render the full human report for the (already-filtered, sorted) fragments. */
-function renderReport(rows: readonly ResolvedFragment[]): string {
+/** The human report for the (already-filtered, sorted) fragments, one fact to a line:
+ *  the fragment, its resolved value, then each contribution in fold order. */
+function renderReport(rows: readonly ResolvedFragment[]): string[] {
   const lines: string[] = [];
   for (const r of rows) {
-    lines.push(
-      `${pc.bold(r.fragment.id)} ${pc.gray(`[${r.fragment.valueShape}]`)}`,
-    );
-    lines.push(`  ${pc.green('=')} ${preview(r.value)}`);
+    lines.push(`${r.fragment.id} [${r.fragment.valueShape}]`);
+    lines.push(`  value ${preview(r.value)}`);
     const role = roles(r.provenance);
     r.provenance.forEach((c, i) => {
-      const force =
-        c.force !== undefined ? pc.magenta(` force:${c.force}`) : '';
+      const force = c.force !== undefined ? ` force:${c.force}` : '';
       lines.push(
-        `    ${pc.gray('←')} ${sourceCell(c.source).padEnd(16)} ` +
-          `${c.op.padEnd(7)} ${preview(c.value)}${force}  ${pc.gray(role[i] ?? '')}`,
+        `  from ${sourceCell(c.source).padEnd(16)} ` +
+          `${c.op.padEnd(7)} ${preview(c.value)}${force}  ${role[i] ?? ''}`,
       );
     });
-    lines.push('');
   }
-  return lines.join('\n').replace(/\n+$/, '\n');
+  return lines;
 }
 
 /** The machine contract for `--json`: one record per fragment, provenance verbatim. */
@@ -125,10 +120,9 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
     ? resolve(opts.config)
     : join(cwd, CONFIG_FILE);
   if (!existsSync(configPath)) {
-    console.error(
-      pc.red(
-        `${CLI_BIN} explain: no ${CONFIG_FILE} at ${configPath} — run \`${CLI_BIN} init\` first`,
-      ),
+    fail(
+      'explain',
+      `no ${CONFIG_FILE} at ${configPath}; run \`${CLI_BIN} init\` first`,
     );
     return 1;
   }
@@ -137,7 +131,7 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
   try {
     composed = await composeFromFile(configPath);
   } catch (e) {
-    console.error(pc.red(`${CLI_BIN} explain: ${(e as Error).message}`));
+    fail('explain', (e as Error).message);
     return 1;
   }
 
@@ -157,32 +151,10 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
     return 0;
   }
 
-  const names =
-    composed.config.extends.map((p) => p.name).join(' › ') || '(none)';
-  console.log(
-    pc.bold(`${CLI_BIN} explain`),
-    pc.gray(
-      `(extends: ${names} — ${rows.length} fragment${rows.length === 1 ? '' : 's'}` +
-        `${filter ? ` matching '${opts.agent}'` : ''})`,
-    ),
-  );
   if (filter && rows.length === 0) {
-    console.log('');
-    console.log(
-      pc.yellow(`  no resolved fragment id contains '${opts.agent}'`),
-    );
+    warn('explain', `no resolved fragment id contains '${opts.agent}'`);
     return 0;
   }
-  console.log('');
-  process.stdout.write(renderReport(rows));
-  if (opts.agent) {
-    console.log('');
-    console.log(
-      pc.gray(
-        'note: [agent] filters resolved fragment ids; scoping to the exact fragment ' +
-          'set a preset draws from lands when presets join the resolved set (forward seam).',
-      ),
-    );
-  }
+  for (const line of renderReport(rows)) say(line);
   return 0;
 }

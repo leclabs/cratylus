@@ -22,11 +22,11 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { type DimensionManifest, mergeManifest } from '@cratylus/schema';
-import pc from 'picocolors';
 import { CLI_BIN } from '../../bin-name.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
-import { loadConfig, loadPlugins } from '../../config/index.js';
+import { loadConfig, loadPlugins, requirePlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import { fail, say } from '../style.js';
 
 export interface CatalogCmdOpts {
   /** Optional filter: keep only fragment ids containing this token (cross-plugin view). */
@@ -66,42 +66,33 @@ function defaultCorpus(): string | undefined {
   return existsSync(candidate) ? candidate : undefined;
 }
 
-/** Render the corpus census as a human-readable table grouped by dimension. */
-function renderTable(entries: CatalogEntry[]): string {
+/** The corpus census as lines, grouped by dimension. */
+function renderTable(entries: CatalogEntry[]): string[] {
   const lines: string[] = [];
   for (const e of entries) {
-    const head = `${pc.bold(e.dimension)} ${pc.gray(
-      `[${e.axis} · ${e.repertoire} · ${e.arity}]`,
-    )} ${pc.gray(`(${e.values.length})`)}`;
-    lines.push(head);
-    if (e.values.length === 0) {
-      lines.push(`  ${pc.gray('(no value modules)')}`);
-    }
+    lines.push(
+      `${e.dimension} [${e.axis}, ${e.repertoire}, ${e.arity}] (${e.values.length})`,
+    );
+    if (e.values.length === 0) lines.push('  (no value modules)');
     for (const v of e.values) {
       const oneLine = v.replace(/\s+/g, ' ').trim();
-      const clipped =
-        oneLine.length > 80 ? `${oneLine.slice(0, 79)}…` : oneLine;
-      lines.push(`  ${pc.gray('·')} ${clipped}`);
+      lines.push(
+        `  ${oneLine.length > 80 ? `${oneLine.slice(0, 79)}…` : oneLine}`,
+      );
     }
-    lines.push('');
   }
-  return lines.join('\n').replace(/\n+$/, '\n');
+  return lines;
 }
 
-/** Render the cross-plugin extendable fragment ids, grouped by plugin. */
-function renderCrossPlugin(plugins: readonly PluginCatalog[]): string {
+/** The cross-plugin extendable fragment ids as lines, grouped by plugin. */
+function renderCrossPlugin(plugins: readonly PluginCatalog[]): string[] {
   const lines: string[] = [];
   for (const p of plugins) {
-    lines.push(`${pc.bold(p.name)} ${pc.gray(`(${p.fragments.length})`)}`);
-    if (p.fragments.length === 0) {
-      lines.push(`  ${pc.gray('(no fragments)')}`);
-    }
-    for (const id of p.fragments) {
-      lines.push(`  ${pc.gray('·')} ${id}`);
-    }
-    lines.push('');
+    lines.push(`${p.name} (${p.fragments.length})`);
+    if (p.fragments.length === 0) lines.push('  (no fragments)');
+    for (const id of p.fragments) lines.push(`  ${id}`);
   }
-  return lines.join('\n').replace(/\n+$/, '\n');
+  return lines;
 }
 
 /** The CROSS-PLUGIN view: enumerate extendable fragment ids across all extended plugins. */
@@ -110,6 +101,7 @@ async function runCrossPlugin(
   opts: CatalogCmdOpts,
 ): Promise<number> {
   const config = await loadConfig(configPath);
+  requirePlugins(config, configPath);
   const loaded = await loadPlugins(config.extends, dirname(configPath));
   const filter = opts.agent?.toLowerCase();
   const plugins: PluginCatalog[] = loaded.map((p) => ({
@@ -119,7 +111,6 @@ async function runCrossPlugin(
       .filter((id) => !filter || id.toLowerCase().includes(filter))
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
   }));
-  const total = plugins.reduce((n, p) => n + p.fragments.length, 0);
 
   if (opts.json) {
     process.stdout.write(
@@ -127,16 +118,7 @@ async function runCrossPlugin(
     );
     return 0;
   }
-  const names = plugins.map((p) => p.name).join(' › ') || '(none)';
-  console.log(
-    pc.bold(`${CLI_BIN} catalog`),
-    pc.gray(
-      `(extends: ${names} — ${total} extendable fragment${total === 1 ? '' : 's'}` +
-        `${filter ? ` matching '${opts.agent}'` : ''})`,
-    ),
-  );
-  console.log('');
-  process.stdout.write(renderCrossPlugin(plugins));
+  for (const line of renderCrossPlugin(plugins)) say(line);
   return 0;
 }
 
@@ -155,6 +137,7 @@ async function corpusManifest(
 ): Promise<DimensionManifest> {
   if (existsSync(configPath)) {
     const config = await loadConfig(configPath);
+    requirePlugins(config, configPath);
     return mergeManifest(config.extends ?? []);
   }
   for (const entry of ['index.ts', 'index.js']) {
@@ -186,8 +169,9 @@ async function runCorpus(
   opts: CatalogCmdOpts,
 ): Promise<number> {
   if (!existsSync(corpus)) {
-    console.error(
-      `${CLI_BIN} catalog: corpus dimensions dir not found: ${corpus}`,
+    fail(
+      'catalog',
+      `corpus dimensions dir not found: ${corpus}; check the --corpus path`,
     );
     return 1;
   }
@@ -199,13 +183,7 @@ async function runCorpus(
     process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
     return 0;
   }
-  const total = entries.reduce((n, e) => n + e.values.length, 0);
-  console.log(
-    pc.bold(`${CLI_BIN} catalog`),
-    pc.gray(`(${entries.length} dimensions, ${total} values — ${corpus})`),
-  );
-  console.log('');
-  process.stdout.write(renderTable(entries));
+  for (const line of renderTable(entries)) say(line);
   return 0;
 }
 
@@ -215,12 +193,21 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     ? resolve(opts.config)
     : join(cwd, CONFIG_FILE);
 
-  // `--corpus` forces the per-dimension corpus census (doctrine-agnostic view).
+  // `--corpus` forces the per-dimension corpus census (doctrine-agnostic view). The
+  // census lists every dimension, so an <agent> filter has nothing to narrow: refuse
+  // it rather than print a census that looks filtered and is not.
   if (opts.corpus) {
+    if (opts.agent !== undefined) {
+      fail(
+        'catalog',
+        `<agent> is not used with --corpus (got '${opts.agent}'); drop one of them`,
+      );
+      return 1;
+    }
     try {
       return await runCorpus(resolve(opts.corpus), configPath, opts);
     } catch (e) {
-      console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
+      fail('catalog', (e as Error).message);
       return 1;
     }
   }
@@ -231,23 +218,32 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     try {
       return await runCrossPlugin(configPath, opts);
     } catch (e) {
-      console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
+      fail('catalog', (e as Error).message);
       return 1;
     }
   }
 
-  // Else fall back to the default canon corpus (zero-arg keeps working).
+  // Else fall back to the default canon corpus (zero-arg keeps working) — the same
+  // census, so the same refusal of an <agent> it would ignore.
+  if (opts.agent !== undefined) {
+    fail(
+      'catalog',
+      `no ${CONFIG_FILE} at ${configPath}, so the corpus census is shown and <agent> ('${opts.agent}') does not filter it; run \`${CLI_BIN} init\` or drop <agent>`,
+    );
+    return 1;
+  }
   const fallback = defaultCorpus();
   if (!fallback) {
-    console.error(
-      `${CLI_BIN} catalog: no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found`,
+    fail(
+      'catalog',
+      `no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found; run \`${CLI_BIN} init\` or pass --corpus <dir>`,
     );
     return 1;
   }
   try {
     return await runCorpus(fallback, configPath, opts);
   } catch (e) {
-    console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
+    fail('catalog', (e as Error).message);
     return 1;
   }
 }

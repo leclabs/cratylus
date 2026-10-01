@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  CONFIG_PACKAGE,
   ConfigEditError,
   DEFAULT_PLUGIN_PACKAGE,
   addPlugin,
@@ -37,6 +38,17 @@ describe('scaffoldConfig — the init zero-config default', () => {
     expect(src).toContain(`import canon from '${DEFAULT_PLUGIN_PACKAGE}'`);
     expect(src).toMatch(/extends:\s*\[canon\]/);
     expect(src).toMatch(/patches:\s*\[\]/);
+  });
+
+  it('imports defineConfig from the package a consumer installs, and says nothing of forge', async () => {
+    // A consumer installs `cratylus`; `@cratylus/forge` is not among the packages
+    // they have, so a scaffold importing from it fails to load on first use.
+    await scaffoldConfig(cwd);
+    const src = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
+    expect(CONFIG_PACKAGE).toBe('cratylus');
+    expect(src).toContain(`import { defineConfig } from '${CONFIG_PACKAGE}';`);
+    expect(src).not.toMatch(/forge/i);
+    expect(src).toContain('cratylus add <package>');
   });
 
   it('scaffolds against a plugin that is NOT this corpus', async () => {
@@ -108,6 +120,9 @@ describe('addPlugin — wire a plugin into extends', () => {
   });
 
   it('refuses loudly when no cratylus.config.ts exists', async () => {
+    await expect(addPlugin(cwd, '@acme/agent-x')).rejects.toThrow(
+      /^no cratylus\.config\.ts at .*; run `cratylus init` first$/,
+    );
     await expect(addPlugin(cwd, '@acme/agent-x')).rejects.toBeInstanceOf(
       ConfigEditError,
     );

@@ -24,7 +24,7 @@ install. That composition is the whole of what this package adds.
 ```sh
 cratylus install              # put the default corpus on this machine, no project needed
 cratylus init                 # write a cratylus.config.ts naming a corpus
-cratylus project              # render the resolved corpus into a render tree
+cratylus project              # render the resolved corpus into .cratylus/<harness>
 cratylus deploy               # place a render tree into a harness
 cratylus deploy --check       # is the deployed tree still what the corpus says?
 cratylus explain <filter>     # where each resolved value came from

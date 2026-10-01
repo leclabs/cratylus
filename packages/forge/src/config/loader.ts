@@ -32,6 +32,7 @@ import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mergeManifest } from '@cratylus/schema';
+import { CLI_BIN } from '../bin-name.js';
 import {
   type PluginFragmentRoot,
   enumeratePluginFragmentCatalogs,
@@ -56,6 +57,91 @@ export class ConfigShapeError extends Error {
   }
 }
 
+/**
+ * A config (or a plugin it imports) names a package that is not installed. Node's
+ * own `ERR_MODULE_NOT_FOUND` is a stack trace that names the package and says
+ * nothing of what to do; this is the one line a consumer can act on.
+ */
+export class MissingPackageError extends Error {
+  constructor(
+    readonly configPath: string,
+    readonly packageName: string,
+  ) {
+    super(
+      `${configPath} imports '${packageName}', which is not installed; run \`npm i -D ${packageName}\``,
+    );
+    this.name = 'MissingPackageError';
+  }
+}
+
+/**
+ * A config that does not load for any other reason: it does not parse, or it throws
+ * when evaluated, or it imports a local file that is not there. The runtime's own
+ * message is a bare parser line ("Expected ',', got 'ident'") that names no file,
+ * so this one names the file — and, for a syntax error, the line and column — and
+ * says to fix it there.
+ */
+export class ConfigLoadError extends Error {
+  constructor(
+    readonly configPath: string,
+    cause: unknown,
+  ) {
+    super(describeLoadFailure(configPath, cause), { cause });
+    this.name = 'ConfigLoadError';
+  }
+}
+
+/** `<file>:<line>:<column>` of a syntax error, read off the head of its stack — node
+ *  prints `<file>:<line>`, the source around it, then a caret under the column. */
+function syntaxLocus(stack: string): string | undefined {
+  const lines = stack.split('\n');
+  const at = /^(.+):(\d+)$/.exec(lines[0] ?? '');
+  if (!at) return undefined;
+  const caret = lines.find((l) => /^\s*\^+\s*$/.test(l));
+  return caret === undefined
+    ? `${at[1]}:${at[2]}`
+    : `${at[1]}:${at[2]}:${caret.indexOf('^') + 1}`;
+}
+
+function describeLoadFailure(configPath: string, cause: unknown): string {
+  const error = cause instanceof Error ? cause : new Error(String(cause));
+  if (error.name === 'SyntaxError') {
+    const locus = syntaxLocus(error.stack ?? '') ?? configPath;
+    return `${locus} does not parse: ${error.message}; fix the syntax there`;
+  }
+  return `${configPath} failed to load: ${error.message}; fix what it names`;
+}
+
+/** A config that extends nothing: there is no corpus in it to compose, explain,
+ *  list or project. The resolver's own refusal speaks to a corpus author. */
+export class EmptyExtendsError extends Error {
+  constructor(readonly configPath: string) {
+    super(
+      `${configPath} extends no plugins, so there is nothing to work on; add one with \`${CLI_BIN} add <package>\``,
+    );
+    this.name = 'EmptyExtendsError';
+  }
+}
+
+/** Refuse a config whose `extends` is empty, in the consumer's terms. */
+export function requirePlugins(
+  config: CratylusConfig,
+  configPath: string,
+): void {
+  if (config.extends.length === 0) {
+    throw new EmptyExtendsError(resolvePath(configPath));
+  }
+}
+
+/** The package a failed `import()` could not find, or undefined when the failure is
+ *  anything else (a missing relative file, a syntax error, a throwing config). */
+function missingPackage(e: unknown): string | undefined {
+  if ((e as { code?: unknown } | null)?.code !== 'ERR_MODULE_NOT_FOUND') {
+    return undefined;
+  }
+  return /^Cannot find package '([^']+)'/.exec((e as Error).message)?.[1];
+}
+
 /** Structural guard: a default export carrying an `extends` array is an `CratylusConfig`. */
 function isConfig(v: unknown): v is CratylusConfig {
   return (
@@ -72,7 +158,14 @@ function isConfig(v: unknown): v is CratylusConfig {
  */
 export async function loadConfig(configPath: string): Promise<CratylusConfig> {
   const abs = resolvePath(configPath);
-  const mod = (await import(pathToFileURL(abs).href)) as { default?: unknown };
+  let mod: { default?: unknown };
+  try {
+    mod = (await import(pathToFileURL(abs).href)) as { default?: unknown };
+  } catch (e) {
+    const pkg = missingPackage(e);
+    if (pkg !== undefined) throw new MissingPackageError(abs, pkg);
+    throw new ConfigLoadError(abs, e);
+  }
   if (!isConfig(mod.default)) {
     throw new ConfigShapeError(abs);
   }
@@ -155,6 +248,7 @@ export async function composeFromFile(
 ): Promise<{ config: CratylusConfig; resolved: ResolvedAgentSet }> {
   const abs = resolvePath(configPath);
   const config = await loadConfig(abs);
+  requirePlugins(config, abs);
   const resolved = await resolveConfig(config, dirname(abs));
   return { config, resolved };
 }

@@ -117,11 +117,8 @@ export async function runCli(
       `Load ${CONFIG_FILE}, resolve the plugin set, and print it (config-is-code)`,
     )
     .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
-    .option('--dry-run', 'print the resolved set; write nothing')
-    .action(async (opts: { config?: string; dryRun?: boolean }) => {
-      process.exit(
-        await runCompose({ config: opts.config, dryRun: opts.dryRun }),
-      );
+    .action(async (opts: { config?: string }) => {
+      process.exit(await runCompose({ config: opts.config }));
     });
 
   cli
@@ -130,15 +127,25 @@ export async function runCli(
       'Materialize the resolved plugin set into a render tree (compose → render tree)',
     )
     .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
-    .option('--out <dir>', 'render-tree root (default: <cwd>/.render)')
+    .option(
+      '--out <dir>',
+      `render-tree root (default: .${CLI_BIN}/<harness>, the tree \`${CLI_BIN} deploy\` reads)`,
+    )
     .option('--harness <name>', 'harness adapter (default: claude)')
+    .option('--verbose', 'also print one line per file rendered or pruned')
     .action(
-      async (opts: { config?: string; out?: string; harness?: string }) => {
+      async (opts: {
+        config?: string;
+        out?: string;
+        harness?: string;
+        verbose?: boolean;
+      }) => {
         process.exit(
           await runProject({
             config: opts.config,
             out: opts.out,
             harness: opts.harness,
+            verbose: opts.verbose,
           }),
         );
       },
@@ -162,6 +169,7 @@ export async function runCli(
       '--prior <path>',
       'prior accepted manifest — matching digests route as reuse',
     )
+    .option('--verbose', 'also list every file written')
     .action(
       async (
         source: string,
@@ -170,6 +178,7 @@ export async function runCli(
           out?: string;
           manifest?: string;
           prior?: string;
+          verbose?: boolean;
         },
       ) => {
         process.exit(
@@ -179,6 +188,7 @@ export async function runCli(
             out: opts.out,
             manifest: opts.manifest,
             prior: opts.prior,
+            verbose: opts.verbose,
           }),
         );
       },
