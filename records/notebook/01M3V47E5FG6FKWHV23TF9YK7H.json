@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3V47E5FG6FKWHV23TF9YK7H",
+    "entity": "01M3V3R3XTPF21D2VCH38BF8NC",
+    "operation": "retract",
+    "supersedes": [
+      "01M3V3R3XTPF21D2VCH38BF8ND"
+    ],
+    "author": "CommandLinePlanner2",
+    "time": "2026-10-01T07:00:28.463Z",
+    "reason": "answered: add does not check that the package resolves. Its documented order is add, then install (it prints 'next: npm i <package>', and the file-link workflow installs a local plugin after wiring it), so a resolve check would refuse the workflow add is built for. Nothing is left silent: add says what it wired and what to run next, and a config whose package is missing now fails every loading command with one line naming the package and the install command",
+    "cause": "Main asked the planner to place the finding beside project-commands-output or answer the note"
+  },
+  "payload": null
+}
