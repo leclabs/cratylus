@@ -29,6 +29,20 @@ import type { EventName } from '../../events.js';
 import type { RuntimeActBinding } from '../../runtime-config.js';
 
 /**
+ * What the host held at the settings path before the install that stamps it, so that
+ * teardown — a separate process — can put back what the host had and nothing else.
+ * Stamped on the tap's own hook entries, ONLY by an install that finds none of the
+ * tap's entries in the file already (a second install must not record the first's
+ * output as what the host held).
+ *
+ * - `created`: there was no file; the install made it, and this many directories to
+ *   hold it (0 when the directory already existed).
+ * - `text`: the file held this text, byte for byte. Teardown writes it back when the
+ *   host has changed nothing since; otherwise it takes out only the tap's entries.
+ */
+export type TapRestore = { created: number } | { text: string };
+
+/**
  * The claude `settings.json` `hooks` block shape: native-event → entries, each
  * entry an optional matcher + one-or-more hook commands. The tap only ever emits
  * a single `command` hook stamped with its own id, but foreign entries under the
@@ -46,6 +60,8 @@ export type ClaudeHooksBlock = Record<
       timeout?: number;
       /** The stable id a tap entry is stamped with, so teardown finds it. */
       id?: string;
+      /** What the host held before the install that stamped this entry. */
+      restore?: TapRestore;
       env?: Record<string, string>;
     }>;
   }>

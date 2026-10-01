@@ -43,6 +43,17 @@ export interface EventTapStatus {
 }
 
 /**
+ * Something `remove` left in place rather than take out: it is the host's now, and
+ * the operator is told so rather than left to find it.
+ */
+export interface EventTapLeft {
+  /** Where it is. */
+  path: string;
+  /** Why it was left. */
+  why: string;
+}
+
+/**
  * Harness-neutral port: attach a passive observer to a set of lifecycle events,
  * read back what it captured, and detach it cleanly (zero residue). The
  * dependency-inversion contract a runtime domain module codes against; each
@@ -54,7 +65,7 @@ export interface EventTapStatus {
  */
 export interface EventTapHost {
   install(events: EventName[], sink: CaptureSink): void;
-  remove(): void;
+  remove(): EventTapLeft[];
   readCapture(): CaptureRow[];
   status(): EventTapStatus;
 }

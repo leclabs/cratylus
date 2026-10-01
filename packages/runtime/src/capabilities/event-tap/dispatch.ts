@@ -31,6 +31,7 @@ import type { EventName } from '../../events.js';
 import type {
   CaptureRow,
   EventTapHost,
+  EventTapLeft,
   EventTapStatus,
 } from '../../ports/event-tap.js';
 import {
@@ -62,7 +63,11 @@ export type EventTapResult =
       skipped?: { event: EventName; reason: string }[];
       sink: string;
     }
-  | { verb: 'uninstall' }
+  | {
+      verb: 'uninstall';
+      /** What uninstall left in place, each with why. Absent when it left nothing. */
+      left?: EventTapLeft[];
+    }
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
 
@@ -246,9 +251,10 @@ export function dispatchEventTap(
         sink,
       };
     }
-    case 'uninstall':
-      tap.remove();
-      return { verb: 'uninstall' };
+    case 'uninstall': {
+      const left = tap.remove();
+      return { verb: 'uninstall', ...(left.length > 0 ? { left } : {}) };
+    }
     case 'read':
       return { verb: 'read', records: tap.readCapture() };
     case 'status':
