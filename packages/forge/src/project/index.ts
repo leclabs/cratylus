@@ -745,16 +745,21 @@ export async function projectPluginSet(
   }
 
   // A HARNESS THAT CANNOT START AN AGENT IN A WORKTREE OF ITS OWN runs the agent
-  // where its dispatcher runs. The declaration is not carried, and the shortfall is
-  // reported once per agent it costs, beside the skill-preload shortfall above, and
-  // named in the tree for a consumer that tells the operator what the harness lacks.
+  // where its dispatcher runs — or, where it can isolate a dispatched agent by other
+  // means (`dispatchIsolation`), in the copy that isolation makes. The declaration is
+  // not carried as a worktree, and the shortfall is reported once per agent it
+  // costs, beside the skill-preload shortfall above, and named in the tree for a
+  // consumer that tells the operator what the harness lacks.
   const unisolated: string[] = [];
   if (!opts.adapter.startsInWorktree) {
+    const { dispatchIsolation } = opts.adapter;
     for (const { name, agent } of composed) {
       if (agent.isolation === undefined) continue;
       unisolated.push(name);
       warn(
-        `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`,
+        dispatchIsolation === undefined
+          ? `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`
+          : `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; a dispatch of it is made an isolated task, so it runs in an isolated copy of its dispatcher's checkout, ${dispatchIsolation.lacks}.`,
       );
     }
   }

@@ -276,13 +276,20 @@ and warns where it falls short; they are not the same, and this is what a user m
   does.
 - **The implementer's worktree.** On omp the implementer is not started in a worktree of its own;
   the land gate refuses work built in the main checkout, not in a worktree off the plan's line.
-  Claude Code starts the implementer in a worktree cut from the tip of the bound plan's line. On
-  omp it builds in the checkout that dispatches it, so a unit built there has to be moved into a
-  worktree off the plan's line before it lands. Projection warns once per such agent and install
-  prints the same in its summary. omp's own task isolation does not close the gap: it copies the
-  dispatcher's checkout (its HEAD and its uncommitted work), takes no ref to cut from, and when
-  the checkout has uncommitted work it rewrites the agent's commits onto the dispatcher's HEAD, so
-  the history no longer runs from the line.
+  Claude Code starts the implementer in a worktree cut from the tip of the bound plan's line. omp's
+  agent definition has no field for that, so install does what omp offers: a dispatch of the
+  implementer is made an isolated task, which runs in an isolated copy of the dispatcher's checkout
+  and never writes the main checkout. What it built is kept as the branch `omp/task/<id>` in your
+  repository, not applied. That is as far as omp goes: the copy is cut from the dispatcher's HEAD
+  and its uncommitted work, and omp takes no ref to cut it from, so it is not cut from the plan's
+  line, and the land gate refuses the work until it is moved onto the line. Where the checkout has
+  uncommitted work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection
+  warns once per such agent and install prints the same in its summary.
+
+  For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in
+  `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the
+  isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied,
+  until you change the settings.
 
 On Claude Code the model of a role is the `model:` line of each agent holding it, and install keeps
 your choice: a model you choose at install (`--model-roles`, or picked when asked) is yours from

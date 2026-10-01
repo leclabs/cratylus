@@ -81,6 +81,7 @@ import {
   addModelRoles,
   describePersonaCommands,
   ensureBadgeStatusLine,
+  ensureHostSettings,
   ensureStatusSegment,
   hasManifest,
   hostModelClaim,
@@ -706,6 +707,12 @@ async function install(
         dry,
         adopt: migrating,
       });
+      // The settings a dispatched agent's isolation needs: install's own step, for the
+      // agents the projection could not start in a worktree.
+      seedDispatchIsolation(found, adapter, tree.unisolated, {
+        home: opts.home,
+        dry,
+      });
       if (routesDefs) {
         describeClaudeRoles(found, adapter, tree.heldRoles);
         for (const [role, model] of Object.entries(choices)) {
@@ -875,15 +882,22 @@ function describe(
   }
   // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
   // does, not only in the warning under it: an agent declaring a worktree of its own
-  // that this harness cannot start builds in its dispatcher's checkout.
+  // that this harness cannot start builds in its dispatcher's checkout — or, where the
+  // harness isolates a dispatched agent another way, in the copy that makes, which
+  // keeps the main checkout unwritten and lacks only what the adapter says.
   if (tree.unisolated.length > 0) {
+    const one = tree.unisolated.length === 1;
     const [only] = tree.unisolated;
-    const subject =
-      tree.unisolated.length === 1
-        ? `the ${only} is not started in a worktree of its own`
-        : `${list(tree.unisolated)} are not started in a worktree of their own`;
+    const subject = one
+      ? `the ${only} is not started in a worktree of its own`
+      : `${list(tree.unisolated)} are not started in a worktree of their own`;
+    const { dispatchIsolation } = adapter;
+    const rest =
+      dispatchIsolation === undefined
+        ? `so ${one ? 'it builds' : 'they build'} in the checkout that dispatches ${one ? 'it' : 'them'}, and the land gate refuses work built in the main checkout`
+        : `${one ? 'it runs' : 'they run'} in an isolated copy of ${one ? 'its' : 'their'} dispatcher's checkout, never writing the main checkout, ${dispatchIsolation.lacks}`;
     lines.push(
-      `  not realized: ${subject} on ${adapter.name}, so ${tree.unisolated.length === 1 ? 'it builds' : 'they build'} in the checkout that dispatches ${tree.unisolated.length === 1 ? 'it' : 'them'}, and the land gate refuses work built in the main checkout`,
+      `  not realized: ${subject} on ${adapter.name}${dispatchIsolation === undefined ? ', ' : '; '}${rest}`,
     );
   }
   for (const item of found.left) {
@@ -1003,6 +1017,56 @@ function hostConfigPath(
 ): string {
   const candidates = configRels.map((rel) => join(home, adapter.home, rel));
   return candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
+}
+
+/**
+ * Make the host hold the settings its isolation of a dispatched agent needs, for the
+ * agents the projection could not start in a worktree of their own, and say what was
+ * done. A harness without such an isolation, or an install that places no such agent,
+ * touches no host config.
+ *
+ * The file is the host's, so the settings are written as the lines they are, a value
+ * the host held is replaced in place, and the edit is recorded in the deploy manifest
+ * for an uninstall to take back: an inserted line goes, a replaced one is the host's
+ * original again. A file this cannot edit safely is left as it is and reported, with the
+ * lines to write by hand, and the install itself still succeeds.
+ */
+function seedDispatchIsolation(
+  found: Findings,
+  adapter: HarnessAdapter,
+  isolated: readonly string[],
+  run: { home: string; dry: boolean },
+): void {
+  const isolation = adapter.dispatchIsolation;
+  if (isolation === undefined || isolated.length === 0) return;
+  const { home, dry } = run;
+  const harnessDir = join(home, adapter.home);
+  const path = hostConfigPath(adapter, isolation.configRels, home);
+  const result = ensureHostSettings(path, isolation.settings, { dry });
+  if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
+  const parent = isolation.settings.parent.join('.');
+  if (result.refused !== undefined) {
+    const wanted = Object.entries(isolation.settings.entries).map(
+      ([key, value]) => `${parent}.${key}: ${value}`,
+    );
+    found.warnings.push(
+      `did not edit ${path} — ${result.refused}. Set ${list(wanted)} there yourself, or ${adapter.name} refuses a dispatch of ${list(isolated)}.`,
+    );
+    return;
+  }
+  if (result.changed.length === 0) {
+    found.detail.push(`  ${parent}: ${path} — already holds the settings`);
+    return;
+  }
+  const said = result.changed.map(
+    (c) =>
+      `${c.setting.slice(parent.length + 1)}: ${c.to}${c.from === undefined ? '' : ` (was ${c.from})`}`,
+  );
+  found.detail.push(
+    `  ${parent}${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'set' : 'would set'}`,
+  );
+  for (const line of said) found.detail.push(`    ${line}`);
+  found.edits.push({ path, what: `${parent} sets ${list(said)}` });
 }
 
 /**

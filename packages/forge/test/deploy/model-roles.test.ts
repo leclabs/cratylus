@@ -20,6 +20,8 @@ import { dirname, join } from 'node:path';
 import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInstall } from '../../src/cli/commands/install.js';
+import { ensureHostSettings } from '../../src/deploy/host-settings.js';
+import { undoHunks } from '../../src/deploy/manifest.js';
 import {
   type ModelRoleEntry,
   addModelRoles,
@@ -496,5 +498,128 @@ describe('install — the host modelRoles', () => {
     expect(await install()).toBe(0);
     expect(readFileSync(config(), 'utf8')).toBe(once);
     expect(out).toMatch(/no entry was missing/);
+  });
+});
+
+// ── Scalar settings nested in the host's YAML ────────────────────────────────
+
+describe('ensureHostSettings — task.isolation in a host-owned config', () => {
+  const SETTINGS = {
+    parent: ['task', 'isolation'],
+    entries: { enabled: 'true', apply: 'false', merge: 'branch' },
+  } as const;
+  const BLOCK =
+    '  isolation:\n    enabled: true\n    apply: false\n    merge: branch\n';
+
+  /** Run the editor over a file holding `host` (absent when undefined); returns what
+   *  it did and the file's bytes after, and checks the recorded edit undoes to `host`. */
+  function edit(host: string | undefined, dry = false) {
+    const path = join(tmpRoot(), 'agent', 'config.yml');
+    if (host !== undefined) {
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, host);
+    }
+    const result = ensureHostSettings(path, SETTINGS, { dry });
+    const after = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+    if (result.edit !== undefined) {
+      expect(undoHunks(after as string, result.edit.hunks).text).toBe(
+        host ?? '',
+      );
+      expect(result.edit.created).toBe(host === undefined);
+    }
+    return { result, after };
+  }
+
+  it('creates the file, with the whole mapping, where the host has none', () => {
+    const { result, after } = edit(undefined);
+    expect(after).toBe(`task:\n${BLOCK}`);
+    expect(result.changed.map((c) => c.setting)).toEqual([
+      'task.isolation.enabled',
+      'task.isolation.apply',
+      'task.isolation.merge',
+    ]);
+  });
+
+  it('appends a `task` mapping to a file without one, and ends a last line that had no terminator', () => {
+    const { after } = edit('# host\ntheme: dark');
+    expect(after).toBe(`# host\ntheme: dark\ntask:\n${BLOCK}`);
+  });
+
+  it('adds `isolation` inside a `task` mapping, below its last entry and at its indentation', () => {
+    const host =
+      'task:\n    disabledAgents:\n      []\n    agentPrewalk:\n      spark: "on"\ntheme: dark\n';
+    const { after } = edit(host);
+    expect(after).toBe(
+      'task:\n    disabledAgents:\n      []\n    agentPrewalk:\n      spark: "on"\n' +
+        '    isolation:\n      enabled: true\n      apply: false\n      merge: branch\n' +
+        'theme: dark\n',
+    );
+  });
+
+  it('inserts only the missing keys and moves only the line holding another value, keeping the rest', () => {
+    const host =
+      'task:\n  isolation:\n    apply: true # keep\n    backend: auto\n  other: 1\n';
+    const { result, after } = edit(host);
+    expect(after).toBe(
+      'task:\n  isolation:\n    apply: false\n    backend: auto\n    enabled: true\n    merge: branch\n  other: 1\n',
+    );
+    expect(result.changed).toEqual([
+      { setting: 'task.isolation.enabled', to: 'true', from: undefined },
+      { setting: 'task.isolation.apply', to: 'false', from: 'true' },
+      { setting: 'task.isolation.merge', to: 'branch', from: undefined },
+    ]);
+  });
+
+  it('writes nothing when the host already holds every value', () => {
+    const host = `# mine\ntask:\n${BLOCK}`;
+    const { result, after } = edit(host);
+    expect(result).toEqual({
+      path: expect.any(String),
+      changed: [],
+      wrote: false,
+    });
+    expect(after).toBe(host);
+  });
+
+  it('reports what it would change and writes nothing under dry', () => {
+    const host = 'task:\n  isolation:\n    enabled: false\n';
+    const { result, after } = edit(host, true);
+    expect(result.wrote).toBe(false);
+    expect(result.changed.map((c) => c.setting)).toEqual([
+      'task.isolation.enabled',
+      'task.isolation.apply',
+      'task.isolation.merge',
+    ]);
+    expect(after).toBe(host);
+  });
+
+  it('keeps the file’s CRLF line endings', () => {
+    const { after } = edit(
+      'task:\r\n  isolation:\r\n    enabled: false\r\nx: 1\r\n',
+    );
+    expect(after).toBe(
+      'task:\r\n  isolation:\r\n    enabled: true\r\n    apply: false\r\n    merge: branch\r\nx: 1\r\n',
+    );
+  });
+
+  it.each([
+    ['a flow mapping', 'task: { a: 1 }\n', 'inline value'],
+    [
+      'a flow mapping below',
+      'task:\n  isolation: { enabled: false }\n',
+      'inline value',
+    ],
+    ['a dotted key', 'task.isolation.enabled: false\n', 'dotted key'],
+    [
+      'a value on the lines beneath',
+      'task:\n  isolation:\n    apply:\n      true\n',
+      'beneath',
+    ],
+    ['a list at the top', '- a\n- b\n', 'not a block mapping'],
+  ])('leaves %s as it is, and says why', (_name, host, why) => {
+    const { result, after } = edit(host);
+    expect(result.wrote).toBe(false);
+    expect(result.refused).toContain(why);
+    expect(after).toBe(host);
   });
 });
