@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3W0GJ6FNT4PXWH438RS20RY",
+    "entity": "01M3VXJG57793F706D3RBE6P6Q",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VXMHATX9YSEQC7TXM7JG0F"
+    ],
+    "author": "PracticesPlanner",
+    "time": "2026-10-01T15:14:47.631Z",
+    "reason": "every unit completed: consumer-commands-first, practice, surplus-positionals, install-practices, command-tree-proofs",
+    "cause": "command-tree-proofs completed, the last unit"
+  },
+  "payload": {
+    "name": "practices",
+    "realizes": [
+      "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "01M3VX45GDGE56ZNVZETWDFXF8"
+    ],
+    "state": "closed"
+  }
+}
