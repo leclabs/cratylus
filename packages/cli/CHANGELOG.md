@@ -1,5 +1,30 @@
 # @cratylus/invoke
 
+## 0.10.2
+
+### Patch Changes
+
+- 40d159e: A runtime config the host wrote before install keeps its content. `cratylus install` and `cratylus deploy` used to replace an existing `~/.cratylus.json` (or `$AGENT_RUNTIME_CONFIG`) whole, so a key of the host's own, such as `{"x":1}` or a capability's configuration the corpus does not write (`configuration.mine`), was gone after the run, and the uninstall of the last harness then deleted the file. Every deploy now writes only cratylus's parts of the file, the event vocabulary, the configuration of each capability the corpus configures, and its harness's stanza, and carries every other key as it found it, recording in the deploy manifest (`runtimeConfig`) a digest of each part it wrote. `cratylus uninstall` takes out only those parts, and only while each is still what was written: this harness's stanza, and with the last installed harness's the vocabulary and the capability configuration. A part the host changed since install, such as an edited `configuration.plan` or a vocabulary with an event of the host's added, stays and is named in what was left, as does every key the host placed. The file goes only when nothing else is left in it. A harness deployed before the record was kept leaves all its parts, named, since a change by the host cannot be ruled out; `cratylus install --harness <h>` writes the record. Two harnesses sharing the file each take out only their own stanza, as before.
+- 8a3227d: `cratylus install` no longer lists or accepts `--plugin <pkg>`, a flag the command took and never acted on; it now refuses it as an option install does not take. Another corpus is installed by naming it in a `cratylus.config.ts`. In a directory whose `cratylus.config.ts` cannot be loaded (the file `cratylus init` writes, before its package is installed, or one that does not parse), install ends with one `cratylus install: <what is wrong>; <what to do>` line, exit 1 and nothing written, where it used to end in a stack trace.
+- 0fa76f9: The persona badge on omp no longer throws at launch on an omp before 18.3.2, which has no `ctx.agent`: it shows the badge where omp's `ctx.mode` still says the session is the interactive terminal host, and where nothing can tell, it says once, in one line, why it shows none. Where the host's `statusLine` is an alias to a mapping written elsewhere and that mapping hides the status row (`showHookStatus: false`) with no `status` segment listed, the badge, which used to show nowhere, is also set in a widget beneath the editor; where the row is shown or `status` is listed it still appears once, in the status line. A subagent's session still gets no badge on any surface.
+- Updated dependencies [0742c59]
+- Updated dependencies [96fa812]
+- Updated dependencies [2a51381]
+- Updated dependencies [714b57b]
+- Updated dependencies [03bdff1]
+- Updated dependencies [40d159e]
+- Updated dependencies [8a3227d]
+- Updated dependencies [f675f0a]
+- Updated dependencies [4386211]
+- Updated dependencies [7e99a95]
+- Updated dependencies [a2ec086]
+- Updated dependencies [0fa76f9]
+- Updated dependencies [dcf26db]
+- Updated dependencies [3f40cdd]
+  - @cratylus/runtime@0.9.3
+  - @cratylus/canon@0.13.2
+  - @cratylus/forge@0.14.2
+
 ## 0.10.1
 
 ### Patch Changes
