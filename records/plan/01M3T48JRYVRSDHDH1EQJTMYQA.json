@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3T48JRYVRSDHDH1EQJTMYQA",
+    "entity": "01M3T44MAJE841D05809ZJN9NP",
+    "operation": "amend",
+    "supersedes": [
+      "01M3T44MAJE841D05809ZJN9NQ"
+    ],
+    "author": "GuardPromptPlanner",
+    "time": "2026-09-30T21:41:51.518Z",
+    "reason": "ratified: five units realizing the amended enforcement scope, wave 0 disjoint in outputs and references",
+    "cause": "note \"kino's supply is halted by the purview guard\"; shard enforcement scope, amended 2026-09-30T21:21, handed down by the architect"
+  },
+  "payload": {
+    "name": "guard-precision",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "bound"
+  }
+}

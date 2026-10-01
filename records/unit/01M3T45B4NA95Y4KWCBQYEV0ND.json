@@ -1,0 +1,46 @@
+{
+  "envelope": {
+    "id": "01M3T45B4NA95Y4KWCBQYEV0ND",
+    "entity": "01M3T45B4NA95Y4KWCBQYEV0NC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "GuardPromptPlanner",
+    "time": "2026-09-30T21:40:05.397Z",
+    "reason": "the pre-call stance guard waves a refused call through on its identical retry; enforcement scope now says a refusal holds on retry",
+    "cause": "note \"kino's supply is halted by the purview guard\"; shard enforcement scope, amended 2026-09-30T21:21, handed down by the architect"
+  },
+  "payload": {
+    "plan": "01M3T44MAJE841D05809ZJN9NP",
+    "spec": {
+      "name": "pre-call-refusal-holds",
+      "intent": "Census @15d0a621 (main; plan/purview-routes changes none of this unit's files); re-derive any line cited below if its path changed since.\nRealize on the pre-call stance guard the clause of `enforcement scope` as amended 2026-09-30T21:21 that a refused act stays refused however often it is retried: a retry is judged again, never waved through.\nAT CENSUS. The cell is packages/canon/src/hooks/stance-guardrail-pre.ts; its worker projects to packages/canon/targets/guardrail/stance-guardrail-pre.sh through `pnpm canon:project:targets`. The worker keeps a marker per session and tool_input (L232-237, written at L264-265, with the comment at L242 saying the emit pass writes none) and lets an identical second call through unjudged with the notice 'the re-entry cap lets it through unjudged'. The worker header (L68-70) and the residue (L32, `loop-safe ⟨re-entry-cap : ¬deny identical twice⟩`) state the cap as loop safety. Two tests pin it: packages/canon/test/stance-guardrail-dark.test.ts L977-986 ('says so when the re-entry cap lets the second identical call through', for each harness form) and packages/canon/test/support/guardrail/test-stance-guardrail.sh case P5 (L616-619), whose marker comments are L582-585.\nCHANGE. Remove the cap: every call is judged, a repeat of a refused call included, and a BLOCK on it denies it; no marker is written. State the retry law in the header and residue where the cap was. Replace the two tests that pin the cap with ones proving the repeat is judged and denied. Keep the rubric, the payload, the scope gate, the subagent skip and the fail-open notices unchanged, and change no file of the turn-end guard (packages/canon/src/hooks/stance-guardrail.ts and its targets), which unit stance-guard-precise owns. Add .changeset/pre-call-refusal-holds.md (@cratylus/canon patch).",
+      "static": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/tooling/project-targets.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        ".changeset/pre-call-refusal-holds.md"
+      ],
+      "accept": [
+        "RETRY: in packages/canon/test/stance-guardrail-dark.test.ts, for each harness form, the same session_id and tool_input dispatch fired twice at the pre-call worker, with STANCE_JUDGE_CMD naming a stub that counts its calls and answers `VERDICT: BLOCK`, prints a PreToolUse deny both times and the stub counts 2; test-stance-guardrail.sh case P5 asserts the second identical dispatch-echo is denied. At 15d0a621 the second fire prints the re-entry-cap notice and the stub counts 1, so both fail there.",
+        "`grep -c -i 're-entry' packages/canon/targets/guardrail/stance-guardrail-pre.sh` prints 0; print the count at 15d0a621 beside it.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts`, `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/pre-call-refusal-holds.md` exists and names @cratylus/canon.",
+        "`git diff --name-only <the unit's base> <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3T339F0BPZAHZ96T0EFN9TY",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

@@ -245,51 +245,6 @@ describe('STANCE GUARDRAIL — a mid-turn preamble is not the turn s close', () 
   });
 });
 
-// BUDGET EXHAUSTION IS NOT A CLEAN TURN — the same defect, third site.
-//
-// The cap exists so a block loop cannot wedge work, and that property is real. But exhaustion
-// used to print to stderr and allow the stop, and stderr reaches neither agent nor operator —
-// so an exhausted budget was observationally identical to a clean turn, for the rest of the
-// session. Enforcement switched off precisely when violation density was highest (three
-// convictions already), and said nothing. Observed live in this cell's own authoring session.
-describe('STANCE GUARDRAIL — a spent bypass announces itself', () => {
-  it('says BYPASS SPENT on stdout instead of going quiet, and still allows the stop', () => {
-    const src = workerSource();
-    // The notice must reach a reader: stdout, not stderr.
-    expect(src).toMatch(/BYPASS SPENT/);
-    expect(src).not.toMatch(/block budget %s exhausted[^\n]*>&2/);
-    // It must NOT convert the bypass into a block — the escape valve is the reason it exists.
-    const spent = src.slice(src.indexOf('BYPASS SPENT'));
-    expect(spent.slice(0, 400)).toMatch(/allow_stop/);
-    expect(spent.slice(0, 400)).not.toMatch(/"decision"\s*:\s*"block"/);
-  });
-});
-
-// THE BYPASS MUST RE-ARM — a one-shot escape, never a session-wide disable.
-//
-// The original code compared the block count to the cap and allowed the stop WITHOUT zeroing the
-// counter, so the count stayed at the cap forever and every subsequent turn passed. A one-turn
-// escape valve silently became a session-wide off switch. Measured in this cell's own authoring
-// session: the counter sat at 3 while collapse after collapse went unpoliced, and the two an
-// operator eventually caught both fell inside that window.
-describe('STANCE GUARDRAIL — spending the bypass re-arms the gate', () => {
-  it('ZEROES the counter when the bypass is spent, so the next collapsed turn blocks again', () => {
-    const src = workerSource();
-    const i = src.indexOf('BYPASS SPENT');
-    expect(i, 'no bypass branch found').toBeGreaterThan(-1);
-    // The reset must be in the SAME branch, before the stop is allowed.
-    const branch = src.slice(src.lastIndexOf('if [', i), i + 400);
-    expect(
-      branch,
-      'bypass does not reset the counter — it is a session-wide disable',
-    ).toMatch(/printf '0' > "\$count_file"/);
-    expect(branch).toMatch(/allow_stop/);
-    // And it must say the gate is re-armed, not that enforcement is off.
-    expect(src).toMatch(/RE-ARMED as of now/);
-    expect(src).not.toMatch(/enforcement is now OFF for this session/);
-  });
-});
-
 // THE DECLARED CONTRACT MUST BE THE DECLARED CONTRACT — not a copy of it.
 //
 // The rubric's "handoff laws" section is headed "the agent's DECLARED contract — judge against
@@ -974,15 +929,24 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
     });
 
     if (w.subject === 'call') {
-      it('says so when the re-entry cap lets the second identical call through', () => {
-        const file = join(home, 'deny-pre');
-        writeFileSync(file, 'VERDICT: BLOCK\nREASON: a menu\n');
-        const same = payload();
-        const once = fire({ STANCE_VERDICT_FILE: file }, same);
-        expect(once.stdout).toContain('permissionDecision');
-        expect(said(fire({ STANCE_VERDICT_FILE: file }, same))).toMatch(
-          /re-entry cap/,
+      it('judges a retried refused call again and denies it again', () => {
+        const calls = join(home, 'judge-calls');
+        const counting = join(home, 'counting-judge.sh');
+        writeFileSync(
+          counting,
+          `#!/bin/sh\ncat >/dev/null\nprintf x >> "${calls}"\nprintf 'VERDICT: BLOCK\\nREASON: a menu\\n'\n`,
         );
+        const same = payload();
+        const env = { STANCE_JUDGE_CMD: `sh ${counting}` };
+        for (const attempt of [1, 2]) {
+          const r = fire(env, same);
+          expect(r.status, `attempt ${attempt}`).toBe(0);
+          expect(r.stdout, `attempt ${attempt}`).toContain(
+            'permissionDecision',
+          );
+          expect(r.stdout, `attempt ${attempt}`).toContain('deny');
+        }
+        expect(readFileSync(calls, 'utf8')).toBe('xx');
       });
 
       it('says so when the payload names no tool', () => {
@@ -990,14 +954,14 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
       });
     } else {
       const closing = 'the close has this exact span in it';
-      const closed = (name: string): string => {
+      const closed = (name: string, text: string = closing): string => {
         const t = join(home, name);
         writeFileSync(
           t,
           `${JSON.stringify({ type: 'user', message: { content: 'go' } })}\n${JSON.stringify(
             {
               type: 'assistant',
-              message: { content: [{ type: 'text', text: closing }] },
+              message: { content: [{ type: 'text', text }] },
             },
           )}\n`,
           'utf8',
@@ -1033,7 +997,52 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
         expect(said(r)).toMatch(/transcript/);
       });
 
-      it('says so, and does not block, when its state cannot be written', () => {
+      it('blocks the same collapsed turn every time it is fired in one session', () => {
+        const file = join(home, 'block-same');
+        writeFileSync(file, BLOCK_VERDICT(closing));
+        const same = {
+          transcript_path: closed('tsame.jsonl'),
+          session_id: `same-${form.harness}`,
+        };
+        for (const attempt of [1, 2, 3]) {
+          const r = fire({ STANCE_VERDICT_FILE: file }, same);
+          expect(r.status, `attempt ${attempt}`).toBe(0);
+          expect(r.stdout, `attempt ${attempt}`).toContain(
+            '"decision":"block"',
+          );
+        }
+      });
+
+      it('blocks four different collapsed turns in one session', () => {
+        const session = `four-${form.harness}`;
+        for (const i of [1, 2, 3, 4]) {
+          const span = `collapsed close number ${i} with its own span`;
+          const file = join(home, `block-four-${i}`);
+          writeFileSync(file, BLOCK_VERDICT(span));
+          const r = fire(
+            { STANCE_VERDICT_FILE: file },
+            {
+              transcript_path: closed(`tfour${i}.jsonl`, span),
+              session_id: session,
+            },
+          );
+          expect(r.status, `turn ${i}`).toBe(0);
+          expect(r.stdout, `turn ${i}`).toContain('"decision":"block"');
+        }
+      });
+
+      it('reads no block cap: a collapsed turn blocks whatever STANCE_BLOCK_CAP says', () => {
+        const file = join(home, 'block-uncapped');
+        writeFileSync(file, BLOCK_VERDICT(closing));
+        const r = fire(
+          { STANCE_VERDICT_FILE: file, STANCE_BLOCK_CAP: '0' },
+          { transcript_path: closed('tuncapped.jsonl') },
+        );
+        expect(r.status).toBe(0);
+        expect(r.stdout).toContain('"decision":"block"');
+      });
+
+      it('blocks a collapsed turn even when its state cannot be written', () => {
         const file = join(home, 'block-turn');
         writeFileSync(file, BLOCK_VERDICT(closing));
         const notDir = join(home, 'a-file-not-a-dir');
@@ -1042,34 +1051,8 @@ describe.each(SAYS.flatMap((form) => WORKERS.map((w) => ({ form, w }))))(
           { STANCE_VERDICT_FILE: file, TMPDIR: notDir },
           { transcript_path: closed('tstate.jsonl') },
         );
-        expect(said(r)).toMatch(/state directory/);
-        expect(r.stdout).not.toContain('decision');
-      });
-
-      it('says so at the no-progress cap', () => {
-        const file = join(home, 'block-noprogress');
-        writeFileSync(file, BLOCK_VERDICT(closing));
-        const same = {
-          transcript_path: closed('tnp.jsonl'),
-          session_id: `np-${form.harness}`,
-        };
-        const first = fire({ STANCE_VERDICT_FILE: file }, same);
-        expect(first.stdout).toContain('decision');
-        const second = fire({ STANCE_VERDICT_FILE: file }, same);
-        expect(second.status).toBe(0);
-        expect(form.notice(second.stdout)).toMatch(/NO PROGRESS/);
-        expect(second.stdout).not.toMatch(/"decision"|decision":"block/);
-      });
-
-      it('says so when the block cap is spent', () => {
-        const file = join(home, 'block-spent');
-        writeFileSync(file, BLOCK_VERDICT(closing));
-        const r = fire(
-          { STANCE_VERDICT_FILE: file, STANCE_BLOCK_CAP: '0' },
-          { transcript_path: closed('tspent.jsonl') },
-        );
         expect(r.status).toBe(0);
-        expect(form.notice(r.stdout)).toMatch(/BYPASS SPENT/);
+        expect(r.stdout).toContain('"decision":"block"');
       });
     }
   },

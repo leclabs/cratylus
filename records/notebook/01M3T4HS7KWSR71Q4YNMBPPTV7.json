@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T4HS7KWSR71Q4YNMBPPTV7",
+    "entity": "01M3T4HS7KWSR71Q4YNMBPPTV6",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayPreCallRefusalHolds",
+    "time": "2026-09-30T21:46:53.043Z",
+    "reason": "a behaviour at odds with a clause of the enforcement scope shard, outside the assayed unit",
+    "cause": "assay of pre-call-refusal-holds at c00b2618"
+  },
+  "payload": {
+    "title": "turn-end guard waves a refused stop through on retry",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Found beside the assay of pre-call-refusal-holds of guard-precision at c00b2618. Enforcement scope says a refused act stays refused however often it is retried and a retry is judged again, never waved through. The turn-end stance guard (packages/canon/targets/guardrail/stance-guardrail.sh, lines 747-775 at c00b2618) judges every turn but then lets a refused stop through in two cases: a turn byte-identical to the one it just blocked is allowed 'UNRESOLVED' (no-progress), and after STANCE_BLOCK_CAP (3) consecutive blocks the next collapsed turn is allowed once (one-shot bypass). Both are announced, not silent. Whether the plan's other units cover this is not visible to the assayer; it bears on the shard if the turn end counts as a refused act.",
+    "blocks": []
+  }
+}

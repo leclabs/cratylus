@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T4P5YYEPEWNBN9VNSCP98M",
+    "entity": "01M3T4P5YYEPEWNBN9VNSCP98K",
+    "operation": "create",
+    "supersedes": [],
+    "author": "GuardPrecisionIntegrator",
+    "time": "2026-09-30T21:49:17.150Z",
+    "reason": "a finding beside the path, filed not chased",
+    "cause": "git merge-base unit/omp-guard-precise plan/purview-routes = cbac6a5f while merge-base with plan/guard-precision = 15d0a621"
+  },
+  "payload": {
+    "title": "omp-guard-precise and purview-guard-precise built off plan/purview-routes, not line(guard-precision)",
+    "kind": "question",
+    "topic": "omp-guard-precise of plan guard-precision",
+    "body": "Met while integrating pre-call-refusal-holds of plan guard-precision. Branches unit/omp-guard-precise (79e6f36c) and unit/purview-guard-precise (cbac6a5f) stand on cbac6a5f, the head of plan/purview-routes, which is closed but not released (8 commits not in main). line(guard-precision) = plan/guard-precision was cut at 15d0a621. Merging either unit onto the line would carry purview-routes' unreleased commits (its records and closed-plan-route work) onto the guard-precision line. The integrator neither rebases nor repairs; the unit's implementer or the architect decides whether to rebuild off plan/guard-precision or release purview-routes first.",
+    "blocks": []
+  }
+}

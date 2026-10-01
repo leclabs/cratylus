@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T96S4VV8FM1XARH2TAG39G",
+    "entity": "01M3T96S4VV8FM1XARH2TAG39F",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayEnforcementScopeStated",
+    "time": "2026-09-30T23:08:15.387Z",
+    "reason": "a finding beside the unit: the plan's ordering, not the README, is why the stated clause is false at the commit",
+    "cause": "assay of enforcement-scope-stated of guard-precision at 75257332"
+  },
+  "payload": {
+    "title": "enforcement-scope-stated states what stance-guard-precise has not yet built",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Assaying enforcement-scope-stated of plan guard-precision at 75257332: the README now says every guard's judge is handed only the test in a few sentences and the act and contract. That holds for the purview guard, but not for the stance guards, which still send the whole 14 KB stance rubric; cutting that rubric looks like the work of stance-guard-precise, which is still active. enforcement-scope-stated depends on purview-guard-precise, pre-call-refusal-holds and omp-guard-precise, but not on stance-guard-precise, so the statement can land before the behaviour it describes. The verdict is not-achieved on that clause alone. How the unit reaches achieved (waiting for stance-guard-precise, or a dependency on it) is the planner's to decide.",
+    "blocks": []
+  }
+}

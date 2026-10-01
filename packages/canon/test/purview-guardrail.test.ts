@@ -14,13 +14,14 @@
 // THE NEGATIVE CONTROLS ARE THE POINT. A gate that denied everything would pass a
 // block-only suite, and a gate that denies nothing is what we are guarding against, so
 // both directions are asserted: a read is never judged, a fabricated citation is
-// discarded, an unenrolled scope is silent, and an identical input is never denied twice.
+// discarded, an unenrolled scope is silent, and a refused call is refused again on retry.
 
 import { type SpawnSyncReturns, spawnSync } from 'node:child_process';
 import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -147,26 +148,31 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     );
   });
 
-  it('classifies the act by codomain — a dispatch writes spec, a write writes artifact', () => {
-    const dispatch = JSON.parse(
-      run(architect.name, 'Task', DISPATCH, { STANCE_EMIT_PAYLOAD: '1' })
-        .stdout,
-    ) as { payload: string };
-    expect(dispatch.payload).toContain('DISPATCH to');
-    expect(dispatch.payload).toContain('implementer');
+  it('names the act and its target and nothing else — the definitions of what an act produces are the rubric’s', () => {
+    const actLine = (
+      agent: string,
+      tool: string,
+      input: Record<string, unknown>,
+    ): string => {
+      const { payload } = JSON.parse(
+        run(agent, tool, input, { STANCE_EMIT_PAYLOAD: '1' }).stdout,
+      ) as { payload: string };
+      const lines = payload.split('\n');
+      return lines[lines.indexOf('=== THE ACT ABOUT TO FIRE ===') + 1] ?? '';
+    };
+    expect(actLine(architect.name, 'Task', DISPATCH)).toBe(
+      'DISPATCH to `implementer`',
+    );
+    expect(actLine(mav.name, 'Write', { file_path: '/repo/src/a.ts' })).toBe(
+      'WRITE to /repo/src/a.ts',
+    );
+  });
 
-    const write = JSON.parse(
-      run(
-        mav.name,
-        'Write',
-        { file_path: '/repo/src/a.ts' },
-        {
-          STANCE_EMIT_PAYLOAD: '1',
-        },
-      ).stdout,
-    ) as { payload: string };
-    expect(write.payload).toContain('codomain: artifact');
-    expect(write.payload).toContain('/repo/src/a.ts');
+  it('hands the judge a rubric of a few sentences, not a treatise', () => {
+    const rubric = purviewGuardrail.workers?.find(
+      (w) => w.filename === 'purview-judge-prompt.md',
+    );
+    expect(Buffer.byteLength(rubric?.content ?? '')).toBeLessThanOrEqual(2048);
   });
 
   it('reads a route by name off both spellings of a dispatch — Agent by its role, SendMessage by the running agent’s name', () => {
@@ -219,7 +225,9 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     const prompt = `HEAD-SPAN-KEPT ${'y'.repeat(50_000)} MIDDLE-SPAN-ELIDED ${'y'.repeat(50_000)} TAIL-SPAN-KEPT`;
     const dispatch = { subagent_type: 'planner', prompt };
     const verdict = (span: string): string =>
-      verdictFile(`VERDICT: BLOCK\nREASON: outside the arrow\nSPAN: ${span}\n`);
+      verdictFile(
+        `VERDICT: BLOCK\nREASON: outside the arrow\nEVIDENCE: ${span}\n`,
+      );
     const elided = run(architect.name, 'Task', dispatch, {
       STANCE_VERDICT_FILE: verdict('MIDDLE-SPAN-ELIDED'),
     });
@@ -242,10 +250,10 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     expect(status).toBe(0);
   });
 
-  it('DENIES a BLOCK whose cited span is in the payload', () => {
+  it('DENIES a BLOCK whose evidence is in the payload', () => {
     const { stdout, status } = run(architect.name, 'Task', DISPATCH, {
       STANCE_VERDICT_FILE: verdictFile(
-        'VERDICT: BLOCK\nREASON: the dispatch writes spec, which this arrow excludes\nSPAN: build the fold exactly as written\n',
+        'VERDICT: BLOCK\nREASON: the dispatch writes spec, which this arrow excludes\nEVIDENCE: build the fold exactly as written\n',
       ),
     });
     const out = JSON.parse(stdout) as {
@@ -261,10 +269,10 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     expect(status).toBe(0);
   });
 
-  it('DISCARDS a BLOCK citing a span the payload does not contain', () => {
+  it('DISCARDS a BLOCK citing evidence the payload does not contain', () => {
     const { stdout } = run(architect.name, 'Task', DISPATCH, {
       STANCE_VERDICT_FILE: verdictFile(
-        'VERDICT: BLOCK\nREASON: fabricated\nSPAN: this text never appeared anywhere\n',
+        'VERDICT: BLOCK\nREASON: fabricated\nEVIDENCE: this text never appeared anywhere\n',
       ),
     });
     expect(stdout).not.toContain('permissionDecision');
@@ -300,34 +308,43 @@ describe('purview guardrail — the holder’s own arrow is the law', () => {
     expect(stdout).toBe('');
   });
 
-  it('caps re-entry — an identical input is never denied twice', () => {
-    const file = verdictFile(
-      'VERDICT: BLOCK\nREASON: outside the arrow\nSPAN: build the fold exactly as written\n',
+  it('judges a retry of a refused call again and denies it again — the refusal stays', () => {
+    // The stub counts how often the judge is reached. A guard that remembers a denial and
+    // lets the identical second call through unjudged would leave the count at 1.
+    const counter = join(root, `judged-${Math.random()}.log`);
+    const stub = join(root, `judge-stub-${Math.random()}.sh`);
+    writeFileSync(
+      stub,
+      `#!/bin/sh\ncat >/dev/null\necho x >> "${counter}"\nprintf 'VERDICT: BLOCK\\nREASON: outside the arrow\\nEVIDENCE: build the fold exactly as written\\n'\n`,
+      'utf8',
     );
-    // The cap's marker is keyed by ⟨session, tool_input⟩ and lives in TMPDIR, which
-    // OUTLIVES the suite. A fixed session id would therefore pass on a clean machine
-    // and fail on the second run of the day — so the id is fresh per run and the two
-    // calls below share it, which is the only sharing the cap is about.
     const input = JSON.stringify({
       stance_scope: scopeOf(architect.name),
       tool_name: 'Task',
       tool_input: DISPATCH,
-      session_id: `cap-${process.pid}-${Date.now()}`,
+      session_id: `retry-${process.pid}-${Date.now()}`,
       cwd: root,
     });
-    const once = spawnSync('sh', [worker], {
-      input,
-      encoding: 'utf8',
-      env: { ...process.env, STANCE_VERDICT_FILE: file },
+    const fireOnce = (): string =>
+      spawnSync('sh', [worker], {
+        input,
+        encoding: 'utf8',
+        env: { ...process.env, STANCE_JUDGE_CMD: `sh ${stub}` },
+      }).stdout;
+    const once = fireOnce();
+    const twice = fireOnce();
+    expect(once).toMatch(/"permissionDecision":"deny"/);
+    expect(twice).toMatch(/"permissionDecision":"deny"/);
+    expect(readFileSync(counter, 'utf8').trim().split('\n')).toHaveLength(2);
+  });
+
+  it('denies a BLOCK that carries no evidence line', () => {
+    const { stdout } = run(architect.name, 'Task', DISPATCH, {
+      STANCE_VERDICT_FILE: verdictFile(
+        'VERDICT: BLOCK\nREASON: the dispatch writes spec, which this arrow excludes\n',
+      ),
     });
-    const twice = spawnSync('sh', [worker], {
-      input,
-      encoding: 'utf8',
-      env: { ...process.env, STANCE_VERDICT_FILE: file },
-    });
-    expect(once.stdout).toContain('deny');
-    expect(twice.stdout).not.toContain('permissionDecision');
-    expect(twice.stdout).toMatch(/re-entry cap/);
+    expect(stdout).toMatch(/"permissionDecision":"deny"/);
   });
 });
 
@@ -493,24 +510,24 @@ describe.each(FORMS)(
       expect(said(fire({}, { tool_name: '' }))).toMatch(/names no tool/);
     });
 
-    it('says so when the re-entry cap lets the second identical call through', () => {
+    it('denies the same call every time it is retried, and says nothing about a cap', () => {
       const file = verdictFile(
-        'VERDICT: BLOCK\nREASON: outside the arrow\nSPAN: build the fold exactly as written\n',
+        'VERDICT: BLOCK\nREASON: outside the arrow\nEVIDENCE: build the fold exactly as written\n',
       );
       const session = {
-        session_id: `cap-${form.harness}-${process.pid}-${Date.now()}`,
+        session_id: `retry-${form.harness}-${process.pid}-${Date.now()}`,
       };
-      const once = fire({ STANCE_VERDICT_FILE: file }, session);
-      expect(once.stdout).toContain('permissionDecision');
-      expect(said(fire({ STANCE_VERDICT_FILE: file }, session))).toMatch(
-        /re-entry cap/,
-      );
+      for (const attempt of [1, 2, 3]) {
+        const r = fire({ STANCE_VERDICT_FILE: file }, session);
+        expect(r.stdout, `attempt ${attempt}`).toContain('permissionDecision');
+        expect(r.stdout).not.toMatch(/re-entry cap/);
+      }
     });
 
-    it('says so when a block is discarded for citing a span the call does not contain', () => {
+    it('says so when a block is discarded for citing evidence the call does not contain', () => {
       const r = fire({
         STANCE_VERDICT_FILE: verdictFile(
-          'VERDICT: BLOCK\nREASON: fabricated\nSPAN: this text never appeared anywhere\n',
+          'VERDICT: BLOCK\nREASON: fabricated\nEVIDENCE: this text never appeared anywhere\n',
         ),
       });
       expect(said(r)).toMatch(/BLOCK DISCARDED/);
@@ -521,7 +538,7 @@ describe.each(FORMS)(
       const span = 'he said "no" \\ and left';
       const r = fire({
         STANCE_VERDICT_FILE: verdictFile(
-          `VERDICT: BLOCK\nREASON: fabricated\nSPAN: ${span}\n`,
+          `VERDICT: BLOCK\nREASON: fabricated\nEVIDENCE: ${span}\n`,
         ),
       });
       expect(said(r)).toContain(span);
@@ -778,7 +795,8 @@ describe('purview guardrail — omp’s tool.use.pre reaches the worker with the
 
   const fire = async (toolName: string, input: Record<string, unknown>) => {
     const before = stubbed.length;
-    for (const h of handlers) await h({ toolName, input }, { model: {} });
+    const ctx = { model: {}, agent: { kind: 'main', id: '0-main', depth: 0 } };
+    for (const h of handlers) await h({ toolName, input }, ctx);
     return stubbed.slice(before);
   };
 
@@ -786,8 +804,7 @@ describe('purview guardrail — omp’s tool.use.pre reaches the worker with the
     const judged = await fire('write', { path: '/repo/src/a.ts' });
     expect(judged).toHaveLength(1);
     expect(judged[0]).toContain('agent: mav');
-    expect(judged[0]).toContain('codomain: artifact');
-    expect(judged[0]).toContain('/repo/src/a.ts');
+    expect(judged[0]).toContain('WRITE to /repo/src/a.ts');
   });
 
   it('judges one dispatch once, though two of the cell’s registrations match a task call', async () => {

@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TGHZJ28R27642MJ30V0CCW",
+    "entity": "01M3TGHZJ28R27642MJ30V0CCV",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T01:16:42.434Z",
+    "reason": "assayer's finding beside stance-guard-precise",
+    "cause": "assay of stance-guard-precise at e7fcc909"
+  },
+  "payload": {
+    "title": "stale comments describe removed guard caps",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "Beside stance-guard-precise: test-stance-guardrail.sh (lines 136-139 and its HERMETIC STATE comment) still calls the per-session state a block budget a no-progress detector suppresses, and forge's omp render.ts (around line 731, emitted into the module) still says the rubric is cut to 14 KB. Both mechanisms are gone. Small cleanup for a following plan.",
+    "blocks": []
+  }
+}

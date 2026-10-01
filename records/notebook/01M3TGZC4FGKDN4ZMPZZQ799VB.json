@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3TGZC4FGKDN4ZMPZZQ799VB",
+    "entity": "01M3T4HS7KWSR71Q4YNMBPPTV6",
+    "operation": "retract",
+    "supersedes": [
+      "01M3T4JG52B2DR9GF5AS7271NE"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T01:24:01.295Z",
+    "reason": "entered the design as enforcement scope",
+    "cause": "guard-precision closed"
+  },
+  "payload": null
+}

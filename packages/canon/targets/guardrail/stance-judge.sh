@@ -3,7 +3,7 @@
 #
 # Contract (the guardrail worker depends ONLY on this contract, so the backend is
 # swappable via $STANCE_JUDGE_CMD):
-#   stdin   : the agent's last assistant turn (plain text).
+#   stdin   : the payload (plain text): loop position, operator instruction, agent turn.
 #   argv[1] : path to the rubric markdown (the stance contract).
 #   stdout  : a verdict block —
 #               VERDICT: PASS
@@ -48,19 +48,17 @@ command -v "$judge_bin" >/dev/null 2>&1 || {
 	exit 4
 }
 
-# Compose the judge invocation. The rubric IS the system instruction; the turn is the input.
-# `-p` is headless print mode. A small fast model keeps the Stop-hook latency low and the
-# judgment is a narrow classification, not generation. The bare `haiku` alias tracks the
-# current fast model so the default never goes stale on a model retirement (a dated pin does).
+# Compose the judge invocation: the rubric, then the payload, and nothing else. The payload is facts
+# under plain labels and the rubric states the test and how to answer, so a wrapper restating the
+# task around the payload would be a second home for it. `-p` is headless print mode. A small fast
+# model keeps the Stop-hook latency low and the judgment is a narrow classification, not
+# generation. The bare `haiku` alias tracks the current fast model so the default never goes stale
+# on a model retirement (a dated pin does).
 judge_model="${STANCE_JUDGE_MODEL:-haiku}"
 
 prompt="$(cat "$rubric")
 
-=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) ===
-$turn
-=== END TRANSCRIPT EXCERPT ===
-
-Apply the rubric. Output ONLY the verdict block."
+$turn"
 
 # Run the judge. Any failure (network, auth, timeout) → non-zero → caller fails open.
 verdict="$(printf '%s' "$prompt" | "$judge_bin" -p --model "$judge_model" 2>/dev/null)" || {

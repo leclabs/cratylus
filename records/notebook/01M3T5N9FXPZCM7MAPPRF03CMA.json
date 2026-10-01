@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T5N9FXPZCM7MAPPRF03CMA",
+    "entity": "01M3T5N9FXPZCM7MAPPRF03CM9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "PurviewGuardPrecise",
+    "time": "2026-09-30T22:06:16.573Z",
+    "reason": "finding beside the path of unit purview-guard-precise",
+    "cause": "the re-entry cap was removed from the purview guard"
+  },
+  "payload": {
+    "title": "docs/role.md still calls the purview guard re-entry-capped",
+    "kind": "idea",
+    "topic": "purview-guard",
+    "body": "docs/role.md line ~228 describes the purview guard as fail-open, evidence-checked and re-entry-capped inherited from the sibling. After unit purview-guard-precise (commit 9e0e85ef) the guard has no cap: a refused call is judged again on every retry. The doc sits outside that unit's outputs, so it was left unchanged.",
+    "blocks": []
+  }
+}

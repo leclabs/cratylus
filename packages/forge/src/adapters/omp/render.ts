@@ -635,14 +635,12 @@ function renderRegistration(
   // subagent whose turn collapsed is reported by queueing a continuation, which is
   // the nearest thing to refusing a stop that omp offers there. Delivered once per
   // DISTINCT reason, because delivery re-opens the turn and a worker repeating
-  // itself would otherwise re-open it forever; a block's reason carries a
-  // per-session count and the worker's no-progress detector turns a genuine repeat
-  // into different text, so a real block is never suppressed.
+  // itself would otherwise re-open it forever.
   //
   // `turn.end` USED TO LIVE ON THIS BRANCH, and that was the whole degradation:
   // `agent_end` is notification-only, so the corpus's one turn-end BOUND could
   // only ever steer here. `session_stop` refuses for real, and carries the
-  // `stop_hook_active` re-entry flag the worker's own loop-safety needs.
+  // `stop_hook_active` flag, which the bridge passes on to the worker.
   const act =
     refusal === 'stop'
       ? `
@@ -665,11 +663,15 @@ function renderRegistration(
   // registry come from, and an unused parameter in a generated file reads as a
   // leftover rather than a contract.
   const args = kind ? '(event, ctx: JudgeContext)' : '(event)';
-  // A subagent session is judged by nothing here — the return comes BEFORE the
-  // worker is run, so no judge is asked and no notice is printed. See
-  // `inSubagent` in the bridge for the signal and where it was established.
-  const subagent = kind ? '\n    if (inSubagent(ctx)) return;' : '';
-  return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${subagent}${act}
+  // Only the main session is judged. The return comes BEFORE the worker is run, so
+  // no judge is asked. A subagent says nothing; a context with no `agent` cannot
+  // say which session it is, so the call goes unjudged AND the notice is relayed.
+  // See "A GUARD BINDS A PERSONA’S MAIN SESSION ONLY" in the bridge for the signal.
+  const unjudged = `${r.anchor} guard — could not tell which session is running, so this call was NOT judged.`;
+  const session = kind
+    ? `\n    if (ctx.agent?.kind !== "main") {\n      if (ctx.agent === undefined) relay(${JSON.stringify(unjudged)});\n      return;\n    }`
+    : '';
+  return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${session}${act}
   });
   // ${r.anchor}`;
 }
@@ -789,10 +791,11 @@ const TURN_BRIDGE: readonly string[] = [
   '// carries `{ kind: "sub", parentId, depth }`. ESTABLISHED against the omp 18.4.4',
   '// binary (`~/.local/bin/omp`: the extension runner is built with',
   '// `kind: un ? "sub" : "main"`, and `createContext()` returns `agent: this.agent`).',
-  '// Anything that is not `main` is not the main session. A context with no `agent`',
-  '// is judged, as before.',
-  'const inSubagent = (ctx: JudgeContext): boolean =>',
-  '  ctx.agent !== undefined && ctx.agent.kind !== "main";',
+  '// Only `main` is judged; a subagent is judged by nothing and says nothing. A',
+  '// context carrying no `agent` is judged by nothing either, but that one is',
+  '// SAID: which session is running cannot be told, so the guard is not in force',
+  '// for the call and each registration relays that through the same path as any',
+  '// let-through notice.',
   '',
   '/** omp messages as the JSONL transcript lines the workers parse. */',
   'function transcriptOf(messages: readonly TurnMessage[]): string {',
@@ -1061,7 +1064,7 @@ const TURN_EXEC: readonly string[] = [
   '            messages: [',
   '              {',
   '                role: "user",',
-  '                content: `=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) ===\\n${payload}\\n=== END TRANSCRIPT EXCERPT ===\\n\\nApply the rubric. Output ONLY the verdict block.`,',
+  '                content: payload,',
   '                timestamp: Date.now(),',
   '              },',
   '            ],',
@@ -1148,8 +1151,8 @@ const TURN_EXEC: readonly string[] = [
   '      const head = asked.stdout.trim();',
   '      // THE ONLY THING THIS PASS ASKS FOR IS THE PAYLOAD ENVELOPE, so any other',
   '      // line is the worker saying it let this fire through with no verdict (no',
-  '      // `jq`, no input, a scope it could not read, a re-entry cap already spent)',
-  '      // before the judge was ever reached. Dropping it here made every such path',
+  '      // `jq`, no input, a scope it could not read) before the judge was ever',
+  '      // reached. Dropping it here made every such path',
   '      // silent on omp, whatever the worker printed. Relay it, and judge nothing.',
   '      if (head !== "" && !head.startsWith("{")) {',
   '        relay(head);',
@@ -1184,8 +1187,8 @@ const TURN_EXEC: readonly string[] = [
   '      const out = answered.stdout.trim();',
   '      // A line that is not a verdict is the worker saying this fire went through',
   '      // WITHOUT one: the judge did not answer, the verdict did not parse, a block',
-  '      // was discarded, a cap was spent. Every guard notice is relayed, whatever',
-  '      // words it opens with, so the operator reads that the guard was not in force.',
+  '      // was discarded. Every guard notice is relayed, whatever words it opens',
+  '      // with, so the operator reads that the guard was not in force.',
   '      // A verdict is JSON and travels through `verdictOf`.',
   '      if (answered.code === 0 && out !== "" && !out.startsWith("{")) {',
   '        relay(out);',
@@ -1243,7 +1246,7 @@ function ompExtensionModule(
     ...placement,
     '// There is no PERSONA identity check below and there must not be one: composition',
     '// is realized by WHERE this file is, not by what it asks at runtime. The one',
-    '// runtime question is whether the session is a subagent, which no judge reaches.',
+    '// runtime question is which session is running, and only the main one is judged.',
     '',
     ...(needsTurn
       ? [

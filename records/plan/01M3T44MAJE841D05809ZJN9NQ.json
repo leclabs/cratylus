@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3T44MAJE841D05809ZJN9NQ",
+    "entity": "01M3T44MAJE841D05809ZJN9NP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "GuardPromptPlanner",
+    "time": "2026-09-30T21:39:42.034Z",
+    "reason": "the purview guard waves a refused call through on retry and hands its judge a long rubric and an act line carrying definitions; enforcement scope now says a refusal holds on retry and the judge is handed its test in a few sentences with the act and the contract",
+    "cause": "note \"kino's supply is halted by the purview guard\"; shard enforcement scope, amended 2026-09-30T21:21, handed down by the architect"
+  },
+  "payload": {
+    "name": "guard-precision",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "proposed"
+  }
+}

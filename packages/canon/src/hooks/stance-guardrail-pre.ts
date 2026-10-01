@@ -29,7 +29,7 @@ import { stanceGuardrailJudgeClip } from './stance-guardrail.js';
 export const stanceGuardrailPre: HookCell = {
   id: 'stance-guardrail-pre',
   residue:
-    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
+    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · refusal-holds ⟨a retried refusal is judged again ¬ waved-through⟩',
   substrate: 'harness',
   // Bound by the same composition as its turn-end twin: the stance it enforces is the
   // one `handoff` declares.
@@ -65,9 +65,9 @@ export const stanceGuardrailPre: HookCell = {
 #     unexpected error) -> exit 0 (allow the call), and the call goes through WITH A NOTICE the
 #     operator reads (\`say\`: Claude Code's JSON \`systemMessage\`, omp's relayed line) naming this
 #     guard and why it could not judge. Silence is reserved for "judged, pass" and "not enrolled".
-#   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice (there is no
-#     stop_hook_active analog for PreToolUse), so it can never wedge a call. The second,
-#     identical call goes through unjudged, and says so.
+#   - A REFUSAL HOLDS. Every call is judged, a repeat of a refused call included: an identical
+#     tool_input retried is judged again and, when the judge blocks it, denied again, however
+#     often it comes. Nothing remembers a prior denial, so no retry is waved through unjudged.
 #   - OBSERVABLE. Every notice is also a line in the miss log.
 #
 # INPUT  : Claude Code PreToolUse hook JSON on stdin (tool_name, tool_input, agent_type,
@@ -229,17 +229,10 @@ esac
 body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$prefix")))")"
 payload="$prefix$body"
 
-# --- loop-safety: never deny an identical tool_input twice ----------------------------------
-# No stop_hook_active analog exists for PreToolUse; a per-(session,input) marker caps re-deny.
-session_id="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
-sig="$(printf '%s' "$input" | jq -c '.tool_input' 2>/dev/null | cksum | cut -d' ' -f1 2>/dev/null || echo 0)"
-seen="\${TMPDIR:-/tmp}/.stance-pre-$session_id-$sig"
-[ -f "$seen" ] && open "this exact call was already denied once, so the re-entry cap lets it through unjudged"
-
 # --- judge (SHARED backend + rubric) --------------------------------------------------------
 # The same out-of-process seam the Stop worker carries, and for the same reason: a
 # host that already holds a model must not be made to spawn another vendor's CLI.
-# The deny-once marker is written AFTER this point, so the emit pass mutates nothing.
+# No marker is written anywhere: the emit pass and the verdict pass mutate nothing.
 if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
 	jq -cn --arg r "$RUBRIC" --arg p "$payload" '{rubric:$r, payload:$p}'
 	exit 0
@@ -260,9 +253,6 @@ esac
 
 reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This tool call collapsed out of the intent-driven-expert stance."
-
-# mark this exact input as denied-once (the cap) before emitting the deny
-: > "$seen" 2>/dev/null || true
 
 # --- DENY -----------------------------------------------------------------------------------
 feedback="STANCE GUARDRAIL (pre) — denied this $tool_name call: it collapses out of the \\
