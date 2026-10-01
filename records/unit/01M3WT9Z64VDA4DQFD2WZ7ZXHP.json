@@ -1,0 +1,111 @@
+{
+  "envelope": {
+    "id": "01M3WT9Z64VDA4DQFD2WZ7ZXHP",
+    "entity": "01M3WM9MH1FV7J08PRFGY3R37K",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WT7RPZ0MNGT5P0HRT7DH0B"
+    ],
+    "author": "ClaudeConfigDir",
+    "time": "2026-10-01T22:45:34.532Z",
+    "reason": "commit 849100b4 amends the unit: a rerun over a status line install recorded placing reports no edit and writes nothing",
+    "cause": "the assay of bbed3eb1 found the recorded-line branch rewriting a current line equal to its record"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "claude-config-dir",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Sequenced after isolated-implementer and isolated-landing by the operator's ruling that the note 'implementers edit the main checkout' is realized first. It also follows unreadable-runtime-config, which shares install.ts, uninstall.ts, cli/commands/deploy.ts, their tests and packages/cli/README.md, and isolated-implementer, which shares harness-adapter.ts, adapters/claude/render.ts and test/adapters/claude.test.ts. Realize install, placing cratylus on a host for one supported harness, where Claude Code actually reads (note 'claude hooks resolve through HOME, not the config dir'). Claude Code reads its user-level settings, agents, skills and hooks from $CLAUDE_CONFIG_DIR when that is set, else from ~/.claude. At 2f2a0238 cratylus places Claude Code's files under <home>/.claude whatever the environment (packages/forge/src/cli/commands/install.ts:359, 909, 990, 1029, 1089, 1092, 1168; packages/forge/src/cli/commands/uninstall.ts:453-457, 562; packages/forge/src/deploy/deploy.ts:220 through userScope, packages/forge/src/deploy/scope.ts:48-66; packages/forge/src/cli/commands/deploy.ts:256, 586), and every command it writes into settings.json addresses `$HOME/.claude` (CLAUDE_HOME_EXPR, packages/forge/src/adapters/claude/render.ts:441-445, used at :254, :584, :617, :625), so with CLAUDE_CONFIG_DIR set a session runs whatever hooks and status line sit in the real home, not the deployed ones. CHANGE. (1) Every command the claude adapter writes resolves Claude Code's directory at run time as Claude Code does: $CLAUDE_CONFIG_DIR when set, else $HOME/.claude; the main-session skill hook's size, weighed at install against the host's real directory (:578-584), weighs the directory it will print. (2) install, uninstall and deploy, given no --home, place and remove Claude Code's files under $CLAUDE_CONFIG_DIR when it is set; a --home given still means <home>/.claude, as today. (3) The variable's name is the claude adapter's fact, declared on the adapter beside its `home`, never spelled in the engine; omp is unchanged. (4) A host installed before this change still uninstalls: uninstall removes the hook commands its record holds, as they were written. Every test sets CLAUDE_CONFIG_DIR (or unsets it) itself and points HOME at a temp directory, so none reaches the operator's real Claude directory. packages/cli/README.md says where Claude Code's files go. .changeset/claude-config-dir.md: patch for @cratylus/forge and cratylus.",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/validate/oracle.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7",
+        "01M3WM7EGXV0AKN88688Z6TVNK",
+        "01M3WM8YYKYNC19M5E90CTHVFR",
+        "01M3WPWXP3BFWAJRRP5FPC45XW"
+      ],
+      "outputs": [
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/persona-launch.ts",
+        "packages/forge/src/deploy/scope.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/cli/commands/deploy.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/forge/test/deploy/hooks.test.ts",
+        "packages/forge/test/deploy/status-line.test.ts",
+        "packages/forge/test/deploy/helpers.ts",
+        "packages/forge/test/deploy/local.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/cli/README.md",
+        ".changeset/claude-config-dir.md"
+      ],
+      "accept": [
+        "in packages/forge, `pnpm exec vitest run test/adapters/claude.test.ts` exits 0, including a case that runs the status-line command and a hook command the claude adapter writes, through `sh -c`, with CLAUDE_CONFIG_DIR at a temp directory holding the worker and HOME at another that holds none, and sees the worker under CLAUDE_CONFIG_DIR run; and with CLAUDE_CONFIG_DIR unset, the one under $HOME/.claude; at 2f2a0238 the first run reaches no worker",
+        "in packages/forge, `pnpm exec vitest run test/cli/install.test.ts test/deploy/uninstall.test.ts` exits 0, including a case: with HOME at one temp directory, CLAUDE_CONFIG_DIR at another and no --home, install --harness claude places its files under CLAUDE_CONFIG_DIR and nothing under $HOME/.claude, and uninstall then removes them from there; at 2f2a0238 install places them under $HOME/.claude",
+        "in packages/forge, `pnpm exec vitest run test/deploy/hooks.test.ts test/deploy/status-line.test.ts test/deploy/local.test.ts test/deploy/persona-commands.test.ts` exits 0",
+        "`git grep -n CLAUDE_CONFIG_DIR -- packages/forge/src ':!packages/forge/src/validate'` prints at least one line, and every line it prints is under packages/forge/src/adapters/claude/; at 2f2a0238 it prints nothing",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "version": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+      "closure": {
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "355dd974",
+        "author": "ClaudeConfigDir",
+        "time": "2026-10-01T22:37:56.623Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "355dd974c07570091b8a89cea66fd98098dcfc98",
+        "verdict": "not-achieved",
+        "missing": [
+          "install: what install places is exactly what uninstall later removes — on a host installed before this change (statusLine 'sh \"$HOME/.claude/personas/_session/cratylus-status-line.sh\"', placed by cratylus), running install again takes cratylus's own earlier status line for the host's, reports 'your status line command is wrapped in the persona badge', and wraps it; the uninstall that follows removes the worker but leaves settings.json holding statusLine = the old cratylus command, which now fails (sh: cannot open …/cratylus-status-line.sh). The host's settings.json is not restored. Re-installing with the plan line's own build over the same host converges and uninstalls clean, so the change regressed it (install.ts showPersonaBadge / the badge status-line recognition of a previously placed command)"
+        ],
+        "author": "AssayRemaining3",
+        "time": "2026-10-01T22:40:34.560Z"
+      },
+      {
+        "kind": "land",
+        "commit": "bbed3eb1",
+        "author": "ClaudeConfigDir",
+        "time": "2026-10-01T22:43:13.413Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "bbed3eb1108d4e5ef1a98df1a02240e03cbbd9f0",
+        "verdict": "not-achieved",
+        "missing": [
+          "install: shows what it will place before placing anything and ends with a summary of what was done — on a host whose own status line install wrapped, every later run of install (from a fresh new install as much as from an upgraded one) rewrites the host's settings.json with identical bytes and reports 'edited …/settings.json: your status line command is wrapped in the persona badge', and --dry-run says 'would edit …' the same, though nothing changes; the plan line's build reports nothing on that rerun. The recorded-line branch added in status-line.ts ensureBadgeStatusLine matches the current wrapped command (it equals recorded.placed) before the 'kept' branch is reached"
+        ],
+        "author": "AssayRemaining3",
+        "time": "2026-10-01T22:44:22.367Z"
+      },
+      {
+        "kind": "land",
+        "commit": "849100b4",
+        "author": "ClaudeConfigDir",
+        "time": "2026-10-01T22:45:34.532Z"
+      }
+    ]
+  }
+}
