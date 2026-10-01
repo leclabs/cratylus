@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW5WNCZ8NG06E1S9DH8W1",
+    "entity": "01M3T8X5ZFVAR37Q5YD4WH83MX",
+    "operation": "retract",
+    "supersedes": [
+      "01M3T8X5ZFVAR37Q5YD4WH83MY"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.517Z",
+    "reason": "resolved at 5b5f7213: neither seam wraps the payload in a 'TRANSCRIPT EXCERPT' frame any more: stance-judge.sh sends rubric+payload, and the omp judge sends the rubric as system prompt and the payload as the user message",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

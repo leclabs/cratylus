@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWB03J1X68V54TWBZJG84",
+    "entity": "01M3R6EYCH92SEB10CVS510AK2",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R6EYCH92SEB10CVS510AK3"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.747Z",
+    "reason": "resolved at 5b5f7213: superseded: 367b8914 undoes line by line, and 111feb54 closes the pre-record upgrade path (shard achieved)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

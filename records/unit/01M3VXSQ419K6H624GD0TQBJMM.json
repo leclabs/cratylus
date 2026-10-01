@@ -1,0 +1,62 @@
+{
+  "envelope": {
+    "id": "01M3VXSQ419K6H624GD0TQBJMM",
+    "entity": "01M3VXK2RCVTPDDE2FY879EVD8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VXMNT782VH6HZ61QE69GJ5"
+    ],
+    "author": "ConsumerCommandsFirst",
+    "time": "2026-10-01T14:27:21.857Z",
+    "reason": "help, README, test and forge export now put the consumer's commands first and the author's apart",
+    "cause": "unit consumer-commands-first of plan practices"
+  },
+  "payload": {
+    "plan": "01M3VXJG57793F706D3RBE6P6Q",
+    "spec": {
+      "name": "consumer-commands-first",
+      "intent": "Census @c8760f92 (design at c8760f92); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. The root package.json, pnpm-lock.yaml and AGENTS.md carry uncommitted edits that are the operator's; no unit of this plan touches them.\nRealize `command line` as its amended gloss states it. The amendment is what this unit changes: the commands a consumer needs come first and the commands a corpus author needs are grouped apart, so a stranger sees their own path before anyone else's. Every other clause (every command and verb listed by --help at its own level and documented once to match; quiet, plain Unix output; no footguns) was realized by plan command-line (closed) and must keep holding, and packages/cli/test/command-tree.test.ts already holds the help to the README.\nAT CENSUS. [observed, packages/cli/dist built 2026-10-01 09:16] `cratylus --help` lists under `Commands:` init, add, compose, project, optimize, install, uninstall, deploy, explain and catalog, install sixth, then under `Capabilities:` eventTap, design, plan and note. [read] packages/cli/src/cratylus.ts:104-107 puts every projector command in one help group and the capabilities in another; packages/forge/src/cli/index.ts:173-174 returns the projector's commands as one list, 'in the order their help lists them'. packages/cli/README.md: the 'Use' block (:22-45) opens with install and goes on to init, project, deploy and explain before the capabilities; '## Commands' (:47-216) documents init through catalog, install at :122 and uninstall at :142; '## Capabilities' runs :217-650. command-tree.test.ts reads the help groups 'Commands' and 'Capabilities' (:100, :268). The anchor's one spelling in code is packages/cli/package.json:4 (description).\nTHE AUDIENCES (this plan's). A consumer installs a corpus, takes it away again, and works through the capabilities it installs: install, uninstall, and the capabilities eventTap, design, plan and note. A corpus author writes and renders a corpus: init, add, compose, project, optimize, deploy (it places a rendered tree, and its --check is the drift check an author's project runs), explain and catalog.\nCHANGE. The top-level help lists the consumer's commands first (install, then uninstall), then the capabilities, then the corpus author's commands in a group of their own whose heading names the corpus author (for example `Corpus authoring:`). Which audience a command serves is stated once, where forge builds its commands: its export says which commands are the consumer's and which the author's, so the program places them without a list of names of its own, and the comment at index.ts:173 says what is now true. The README follows the same order: the 'Use' block shows the consumer's path first and the author's after it, apart; the reference documents install and uninstall, then the capabilities, then the corpus author's commands under a heading of their own; nothing is documented twice. command-tree.test.ts holds the help's groups and their order, and holds the order of the README's reference to the help's. packages/cli/package.json's description leads with the consumer's use if it reads otherwise. One changeset, .changeset/consumer-commands-first.md (@cratylus/forge patch, cratylus minor). Out of scope: any command's flags, words or output.",
+      "static": [
+        "packages/runtime/src/main.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/cli/src/cratylus.ts",
+        "packages/cli/package.json",
+        "packages/cli/README.md",
+        "packages/cli/test/command-tree.test.ts",
+        "packages/forge/src/cli/index.ts",
+        ".changeset/consumer-commands-first.md"
+      ],
+      "accept": [
+        "With packages built, `node packages/cli/dist/cratylus.js --help` exits 0, and in its stdout the first two commands listed are install and uninstall, the capabilities eventTap, design, plan and note follow them, and init, add, compose, project, optimize, deploy, explain and catalog come after all of those, under a group heading of their own that is neither `Commands:` nor `Capabilities:`. At census init is listed first and install sixth, in one group with the author's commands.",
+        "In packages/cli/README.md the heading ### `cratylus install` comes before every capability heading, every capability heading comes before ### `cratylus init`, and the author's command headings sit under a `##` heading of their own; in the 'Use' block every author command line (init, project, deploy, explain) comes after every install, uninstall and capability line. At census ### `cratylus init` is at :51, ahead of install at :122.",
+        "`pnpm --filter cratylus test` exits 0, and command-tree.test.ts fails when the README reference departs from the help's order, shown by a case beside the existing one that convicts a reference with an entry missing, one twice and one it should not have (e.g. a reference with init moved ahead of install is convicted).",
+        "`pnpm --filter @cratylus/forge exec vitest run test/cli` and `pnpm typecheck` exit 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3VX4EMCNHDCXF60GW0WDF3W",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3VX45ZZ9RXJ2N0NXSGD3JFJ",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+        "01M3VX45GDGE56ZNVZETWDFXF8": "01M3VX45GDGE56ZNVZETWDFXF9"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "526ccc2d",
+        "author": "ConsumerCommandsFirst",
+        "time": "2026-10-01T14:27:21.857Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW79DH1PZC7T86M57BWNZ",
+    "entity": "01M3QRTFB6BM5SCXNQ788R3GHR",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QRTFB6BM5SCXNQ788R3GHS"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.949Z",
+    "reason": "resolved at 5b5f7213: integrator role exists (dimensions/role/integrator.ts, roles/integrator.ts, agents/integrator.ts)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

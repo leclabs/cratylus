@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW5RGN59446M0Y6DB4PDF",
+    "entity": "01M3SAWFDFTE9TKR4QFC81K5F8",
+    "operation": "retract",
+    "supersedes": [
+      "01M3SAWFDFTE9TKR4QFC81K5F9"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.384Z",
+    "reason": "resolved at 5b5f7213: the omp bridge now sends write-to-agent:// as SendMessage{agent,message} (omp/render.ts:864-887); Claude Code already sends SendMessage",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

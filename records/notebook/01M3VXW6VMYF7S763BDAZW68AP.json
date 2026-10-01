@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW6VMYF7S763BDAZW68AP",
+    "entity": "01M3Q44X9GTCWATKKKMGMSZDFW",
+    "operation": "retract",
+    "supersedes": [
+      "01M3Q4CJDWKN3EXJN2Z1R5N83P"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.508Z",
+    "reason": "resolved at 5b5f7213: realized by claude-parity (persona-commands, claude-main-session-skills). Skills reach a --agent main session through per-skill SessionStart hooks (claude/persona-launch.ts)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

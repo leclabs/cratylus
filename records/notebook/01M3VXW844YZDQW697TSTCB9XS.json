@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW844YZDQW697TSTCB9XS",
+    "entity": "01M3R1W3F8DR4267NPBFCWXJ8T",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R1Z7WG1554XVXWR0YY6K5Y"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.804Z",
+    "reason": "resolved at 5b5f7213: the only stale item it names, .changeset/kino-position.md, has been consumed by a release",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

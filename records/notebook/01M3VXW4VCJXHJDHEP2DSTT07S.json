@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW4VCJXHJDHEP2DSTT07S",
+    "entity": "01M3R11D8EZR9ZRCSM3JBT2W96",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R14XZ51NXZ9AJWM44DQENW"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.452Z",
+    "reason": "resolved at 5b5f7213: answered by aa46281e, which shipped in the same release as the tier lines (406cd7d0). The only remaining case is a root installed from an unreleased build between those commits",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

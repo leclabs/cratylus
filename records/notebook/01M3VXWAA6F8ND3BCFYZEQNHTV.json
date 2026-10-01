@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWAA6F8ND3BCFYZEQNHTV",
+    "entity": "01M3T339W2KP7Q99MXB73T6XF4",
+    "operation": "retract",
+    "supersedes": [
+      "01M3T339W2KP7Q99MXB73T6XF5"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.046Z",
+    "reason": "resolved at 5b5f7213: all three faults are fixed and released: subagents are unguarded (loop-friction), agent:// writes are messages (purview-routes, #42), and a refused retry is judged again (purview-guard-precise; the re-entry cap is gone)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

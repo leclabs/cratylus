@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWAJRTWHJBJB0CYDFD34C",
+    "entity": "01M3R4RA7CGZVMY682W0Q133EE",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R4RA7CGZVMY682W0Q133EF"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.321Z",
+    "reason": "resolved at 5b5f7213: deliver now defers it: 'when a finding enters the design is the law of yield â  â @ design' (skill.ts:113)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

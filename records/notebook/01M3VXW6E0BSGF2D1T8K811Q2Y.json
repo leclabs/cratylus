@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW6E0BSGF2D1T8K811Q2Y",
+    "entity": "01M3NNWQGK101V74G3B9E17GK7",
+    "operation": "retract",
+    "supersedes": [
+      "01M3NNWQGK101V74G3B9E17GK8"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.072Z",
+    "reason": "resolved at 5b5f7213: `cratylus --help` now lists eventTap, design, plan and note under 'Capabilities:'",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

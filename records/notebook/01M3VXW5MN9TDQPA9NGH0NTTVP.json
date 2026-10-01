@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW5MN9TDQPA9NGH0NTTVP",
+    "entity": "01M3RPWN8DPAGTTVNDB5SAECS7",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RPWN8DPAGTTVNDB5SAECS8"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.261Z",
+    "reason": "resolved at 5b5f7213: deliver now defines lacks(P) as the release check and gather at every act, which answers the hedge on missing records. file-ops' 'main â green' is compatible with 'â commit @ main while bound', not overridden by it [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW9RJRKCMRBY9G8WDXX8J",
+    "entity": "01M3QRTF96R7TCY487ZPHBQVWK",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QRTF96R7TCY487ZPHBQVWM"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.482Z",
+    "reason": "resolved at 5b5f7213: realized in mav.ts:6-11 and the generic architect agent. The later question 'mav duplicates the architect' reopens it",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

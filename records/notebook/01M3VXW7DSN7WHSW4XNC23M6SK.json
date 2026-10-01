@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW7DSN7WHSW4XNC23M6SK",
+    "entity": "01M3R0VNZBNBRRKAN0MQM6363F",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R0VNZBNBRRKAN0MQM6363G"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.089Z",
+    "reason": "resolved at 5b5f7213: deliver now says integrate(unit) â merge onto line(P), pre achieved(unit), and that plan state moves are the planner's",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

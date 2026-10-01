@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW6Q2J5KKAWBS3T9BVJKR",
+    "entity": "01M3Q30THG0YE312BJ6JTF6F66",
+    "operation": "retract",
+    "supersedes": [
+      "01M3Q30THG0YE312BJ6JTF6F67"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:43.362Z",
+    "reason": "resolved at 5b5f7213: realized by plan what-ships: the codex adapter, gates and documentation claims are gone",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

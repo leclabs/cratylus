@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW60QRQP8CRKNMWBF6Y0P",
+    "entity": "01M3SBBBFZHM2Y48VSW98KF7Y4",
+    "operation": "retract",
+    "supersedes": [
+      "01M3SBBBFZHM2Y48VSW98KF7Y5"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:42.647Z",
+    "reason": "resolved at 5b5f7213: install now asks for personas (--personas) and models (--model-roles), and on omp moves the seeded modelRoles entries to the chosen models (install.ts:1145)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

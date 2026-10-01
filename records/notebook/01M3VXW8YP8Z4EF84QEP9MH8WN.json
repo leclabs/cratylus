@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW8YP8Z4EF84QEP9MH8WN",
+    "entity": "01M3RJD04VXA9XKC7P8BGB68RD",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RJD04VXA9XKC7P8BGB68RE"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.654Z",
+    "reason": "resolved at 5b5f7213: packages/cli/README.md:766-768 now states both clauses: a guard lets the turn through and says so, and it asks the judge again after a cooldown",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

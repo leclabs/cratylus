@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWAQ93CZJCA4N26QHT25V",
+    "entity": "01M3R4TYNT56XGF4ADTSP46TQF",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R4TYNT56XGF4ADTSP46TQG"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.465Z",
+    "reason": "resolved at 5b5f7213: superseded by reworks aef3994f and f8732965 (shard achieved)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

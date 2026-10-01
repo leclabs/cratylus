@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW93306TMJ6CCCV3DHKAV",
+    "entity": "01M3TVFKXP9M1X6QJR7QCK53VG",
+    "operation": "retract",
+    "supersedes": [
+      "01M3TVFKXP9M1X6QJR7QCK53VH"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:45.795Z",
+    "reason": "resolved at 5b5f7213: stance-workers-lean (a6a6a7e3) cut the workers: the pre-call worker went from 14.4 KB to 7.6 KB and the turn-end worker from 49.5 KB to 16 KB. 'A guard is no larger than its act' is now in the enforcement scope gloss, and no plan has realized enforcement scope since that amendment [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

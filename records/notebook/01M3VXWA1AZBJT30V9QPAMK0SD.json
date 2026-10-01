@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWA1AZBJT30V9QPAMK0SD",
+    "entity": "01M3QSMAWKRM9QXFPNW9QRZFJD",
+    "operation": "retract",
+    "supersedes": [
+      "01M3QSNYDXRGRPGF3RN6EN7SJ8"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:46.762Z",
+    "reason": "resolved at 5b5f7213: realized: integrator routes to @task on omp and sonnet on Claude (role routing gloss; cli README:790-793)",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

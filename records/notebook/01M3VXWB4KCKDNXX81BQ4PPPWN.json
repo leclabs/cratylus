@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXWB4KCKDNXX81BQ4PPPWN",
+    "entity": "01M3R6ZYYWCFTSTNKT69DVHQ2Q",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R6ZYYWCFTSTNKT69DVHQ2R"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:47.891Z",
+    "reason": "resolved at 5b5f7213: superseded by 111feb54, which closes case C. Case D is now reported, and is carried by the 111feb54 note",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

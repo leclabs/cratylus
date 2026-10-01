@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW5C3JCHZP0NHFQ4FAX37",
+    "entity": "01M3RDSPFV2M10MNRB9PTVN1A5",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RDSPFV2M10MNRB9PTVN1A6"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:41.987Z",
+    "reason": "resolved at 5b5f7213: plan concept, deliver and the implementer contract now require each unit to be built in its own worktree off the line, with no commit on main while bound; loop-ledger has been released (PR #33), so whether to reset main is moot",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}

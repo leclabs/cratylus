@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3VXMHATX9YSEQC7TXM7JG0F",
+    "entity": "01M3VXJG57793F706D3RBE6P6Q",
+    "operation": "amend",
+    "supersedes": [
+      "01M3VXJG57793F706D3RBE6P6R"
+    ],
+    "author": "PracticesPlanner",
+    "time": "2026-10-01T14:24:32.090Z",
+    "reason": "ratified: three units, two waves, wave 0 outputs disjoint; no plan bound",
+    "cause": "the architect handed down shards practice, install and command line"
+  },
+  "payload": {
+    "name": "practices",
+    "realizes": [
+      "01M3S9QXFG2PS1VAE275Y7PB7C",
+      "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "01M3VX45GDGE56ZNVZETWDFXF8"
+    ],
+    "state": "bound"
+  }
+}

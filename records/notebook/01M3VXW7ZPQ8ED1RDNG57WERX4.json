@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VXW7ZPQ8ED1RDNG57WERX4",
+    "entity": "01M3R1RWKYM22XTJXPFMMXPG5H",
+    "operation": "retract",
+    "supersedes": [
+      "01M3R1RWKYM22XTJXPFMMXPG5J"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T14:28:44.662Z",
+    "reason": "resolved at 5b5f7213: the design skill now names rectification ('a hypothesis self rectifies â¦'); the uncommitted cold-decode-oracle.ts edit is gone (tree clean, clause absent). Haiku not re-measured [inference]",
+    "cause": "notebook triage by NotebookTriage"
+  },
+  "payload": null
+}
