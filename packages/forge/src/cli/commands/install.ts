@@ -10,14 +10,18 @@
 // removes.
 //
 // WHAT MAKES IT SAFE TO DEFAULT A CORPUS HERE, when `project` must not. The corpus is
-// not INVENTED by the projector — it arrives as `--plugin`, an ordinary flag. `forge`
-// still knows no corpus: it installs what it was told to and refuses when it was told
-// nothing. The hub package supplies the default because it is the only package
-// permitted to know both halves.
+// not INVENTED by the projector — it is handed in by the hub package that mounts this
+// verb. `forge` still knows no corpus: it installs what it was told to and refuses
+// when it was told nothing. The hub package supplies the default because it is the
+// only package permitted to know both halves. Another corpus is installed by naming
+// it in a `cratylus.config.ts`, which is the one way to choose.
 //
 // A CONFIG STILL WINS. If the cwd has one, `install` uses it — otherwise the operator
 // who wrote a config would be silently ignored by the friendliest command on the
-// surface, which is the sharpest way to lose their trust.
+// surface, which is the sharpest way to lose their trust. A config that cannot be
+// loaded (its packages are not installed yet, it does not parse) ends the run with
+// the loader's own one-line message, writing nothing: falling back to the default
+// corpus there would install something other than what the config names.
 //
 // THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
 // which harness, which of the corpus's practices, whether to link their launch
@@ -48,6 +52,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
+import { mergeManifest } from '@cratylus/schema';
 import {
   CLAUDE_MODEL_TIERS,
   CLAUDE_ROLE_TIERS,
@@ -58,7 +63,15 @@ import {
   adapterByName,
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
-import { loadConfig } from '../../config/index.js';
+import {
+  ConfigLoadError,
+  ConfigShapeError,
+  type CratylusConfig,
+  EmptyExtendsError,
+  MissingPackageError,
+  loadConfig,
+  requirePlugins,
+} from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import { keepsHostModel } from '../../deploy/deploy.js';
 import {
@@ -106,10 +119,6 @@ import {
 export interface InstallCmdOpts {
   /** Harness adapter name (`--harness`). Absent: the one the host has, or asked. */
   harness?: string;
-  /** A corpus package to resolve at run time — the operator's explicit `--plugin`.
-   *  Naming a foreign package by string is the one case that genuinely requires a
-   *  dynamic import; the DEFAULT never takes this path. */
-  plugin?: string;
   /** The corpus this CLI was composed with, imported statically by its owner. */
   corpus?: AgentPlugin;
   /** Show what would be placed and stop; write nothing. */
@@ -255,6 +264,39 @@ function parseModelRoles(
   return chosen;
 }
 
+/**
+ * The cwd's config, or a refusal carrying the loader's message. `cratylus init` writes
+ * a config whose packages are not yet installed, so an unloadable config is an
+ * ordinary state of the directory: the loader's errors each already say what is wrong
+ * and what to do, and that line is the whole of the run's output. A config that loads
+ * but names no usable corpus (it extends nothing, or no plugin it extends carries the
+ * dimension manifest) is refused the same way, before the render that would otherwise
+ * end in a stack trace.
+ */
+async function loadConfigOrRefuse(configPath: string): Promise<CratylusConfig> {
+  let config: CratylusConfig;
+  try {
+    config = await loadConfig(configPath);
+    requirePlugins(config, configPath);
+  } catch (e) {
+    if (
+      e instanceof MissingPackageError ||
+      e instanceof ConfigLoadError ||
+      e instanceof ConfigShapeError ||
+      e instanceof EmptyExtendsError
+    ) {
+      throw new Refusal(e.message);
+    }
+    throw e;
+  }
+  try {
+    mergeManifest(config.extends);
+  } catch (e) {
+    throw new Refusal(`${configPath}: ${(e as Error).message}`);
+  }
+  return config;
+}
+
 export async function runInstall(
   opts: InstallCmdOpts & { home: string },
 ): Promise<number> {
@@ -318,31 +360,21 @@ async function install(
 
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
   const configPath = join(cwd, CONFIG_FILE);
-  const specifier = opts.plugin;
   let plugins: readonly AgentPlugin[];
   let source: string;
 
   if (existsSync(configPath)) {
-    const config = await loadConfig(configPath);
+    const config = await loadConfigOrRefuse(configPath);
     plugins = config.extends;
     source = configPath;
   } else if (opts.corpus !== undefined) {
     plugins = [opts.corpus];
     source = 'the corpus this command was built with';
-  } else if (specifier !== undefined && specifier !== '') {
-    const mod = (await import(specifier)) as { default?: AgentPlugin };
-    if (mod.default === undefined) {
-      throw new Refusal(
-        `'${specifier}' has no default export; a corpus package default-exports its plugin, so name one that does`,
-      );
-    }
-    plugins = [mod.default];
-    source = specifier;
   } else {
     // The refusal a LIBRARY owes: no corpus was named, and inventing one is the one
     // thing this package may never do.
     throw new Refusal(
-      `no corpus; write a ${CONFIG_FILE}, pass --plugin <package>, or mount this CLI from a package that names one`,
+      `no corpus; write a ${CONFIG_FILE} that names one, or mount this CLI from a package that names one`,
     );
   }
 

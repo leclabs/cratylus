@@ -34,9 +34,11 @@ cratylus install
 Code or omp. It needs no project and no config. It looks for a harness by its home directory,
 `~/.claude` for Claude Code and `~/.omp` for omp. Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
-bundled one, and fails if that file imports a package that is not installed there. The help also
-lists `--plugin <pkg>`, but `cratylus` installs the bundled corpus whatever it names, so to install
-another corpus, name it in a `cratylus.config.ts`.
+bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
+it. Where that file cannot be loaded, because a package it imports is not installed there yet (the
+file `cratylus init` writes is one until you install its package) or because it does not parse,
+install ends with the one line the loader gives, `cratylus install: <what is wrong>; <what to do>`,
+writes nothing, and does not fall back to the bundled corpus.
 
 The run is short. It asks only what you have not said, shows what it will place before it places
 anything, places it once you confirm, and ends with a few lines saying what was done and what to do
@@ -129,6 +131,9 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 - `--practices and --all were both given`: give one.
 - `--model-roles: …`: an entry must be `<role>=<model>`, a role must be one the installed agents
   hold (the refusal lists them), and a model must be a name the harness accepts.
+- `<path>/cratylus.config.ts imports '<package>', which is not installed; run …`, or
+  `… does not parse`: the `cratylus.config.ts` in this directory cannot be loaded. Do what the line
+  says, or run install from a directory with no config.
 - `cancelled; nothing was written, so run it again to install`: you cancelled a question.
 
 ## Starting an agent by its name
@@ -386,7 +391,6 @@ cratylus install [options]
 | Flag                         | What it does                                                                                                                                                                                   |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
-| `--plugin <pkg>`             | The corpus package to install (default: the bundled corpus)                                                                                                                                    |
 | `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
 | `--all`                      | Install every practice, without asking                                                                                                                                                         |
 | `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                |
