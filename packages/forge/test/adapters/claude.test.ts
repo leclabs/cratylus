@@ -22,7 +22,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { claudeBindingOf } from '../../src/adapters/claude/events.js';
 import { personaSkillOutputSize } from '../../src/adapters/claude/persona-launch.js';
 import {
@@ -388,10 +388,7 @@ describe('the claude persona badge', () => {
     expect(
       claudeHarnessAdapter.scopedRel?.(CLAUDE_PERSONA_BADGE_FILE, 'nico'),
     ).toBe(`personas/nico/${CLAUDE_PERSONA_BADGE_FILE}`);
-    expect(claudeHarnessAdapter.statusLine).toEqual({
-      file: CLAUDE_STATUS_LINE_FILE,
-      command: `sh "$HOME/.claude/personas/${SESSION_SCOPE}/${CLAUDE_STATUS_LINE_FILE}"`,
-    });
+    expect(claudeHarnessAdapter.statusLine?.file).toBe(CLAUDE_STATUS_LINE_FILE);
   });
 
   it('bakes the mark emoji and name, the name alone with no provenance, and never a hue or an escape', () => {
@@ -593,7 +590,7 @@ describe('the claude persona launch — skills into a --agent main session', () 
       const runs = commandsOf(agentDef(skills)).map((command) =>
         spawnSync('sh', ['-c', command], {
           encoding: 'utf8',
-          env: { ...process.env, HOME: home },
+          env: { ...process.env, CLAUDE_CONFIG_DIR: undefined, HOME: home },
         }),
       );
       return {
@@ -678,6 +675,115 @@ describe('the claude persona launch — skills into a --agent main session', () 
         printed.length - skillDir('probe').length + expr.length,
       );
     });
+  });
+});
+
+// THE DIRECTORY CLAUDE CODE READS. It reads $CLAUDE_CONFIG_DIR when that is set and
+// non-empty, else ~/.claude; a command written into settings.json that named
+// `$HOME/.claude` regardless ran whatever sat in the real home, not what was deployed.
+// Each case runs the command the adapter writes, through `sh -c`, with HOME at a temp
+// directory so none reaches the operator's real Claude directory.
+describe('the claude config directory — commands resolve it as Claude Code does', () => {
+  let root: string;
+  let cfg: string;
+  let home: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'claude-config-dir-'));
+    cfg = join(root, 'cfg');
+    home = join(root, 'home');
+    mkdirSync(cfg, { recursive: true });
+    mkdirSync(home, { recursive: true });
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  /** `command` through `sh -c` with HOME at `home` and the variable as given. */
+  const run = (command: string, configDir: string | undefined) => {
+    const { CLAUDE_CONFIG_DIR: _ambient, ...env } = process.env;
+    return spawnSync('sh', ['-c', command], {
+      encoding: 'utf8',
+      env: {
+        ...env,
+        HOME: home,
+        ...(configDir === undefined ? {} : { CLAUDE_CONFIG_DIR: configDir }),
+      },
+    });
+  };
+  /** A worker at `rel` under `dir` that prints `says`. */
+  const worker = (dir: string, rel: string, says: string) => {
+    mkdirSync(dirname(join(dir, rel)), { recursive: true });
+    writeFileSync(join(dir, rel), `printf '${says}'\n`);
+  };
+  const hookRel = 'hooks/anchor/worker.sh';
+  const statusRel = `personas/${SESSION_SCOPE}/${CLAUDE_STATUS_LINE_FILE}`;
+  const commands = {
+    hook: () => claudeHarnessAdapter.hookCommand('anchor', 'worker.sh'),
+    statusLine: () => claudeHarnessAdapter.statusLine?.command ?? '',
+  };
+
+  it.each([
+    ['a hook', 'hook', hookRel],
+    ['the status line', 'statusLine', statusRel],
+  ] as const)(
+    'runs the worker under CLAUDE_CONFIG_DIR for %s when it is set, though HOME holds none',
+    (_, which, rel) => {
+      worker(cfg, rel, 'config dir');
+      const r = run(commands[which](), cfg);
+      expect(r.stderr).toBe('');
+      expect(r.stdout).toBe('config dir');
+    },
+  );
+
+  it.each([
+    ['a hook', 'hook', hookRel],
+    ['the status line', 'statusLine', statusRel],
+  ] as const)(
+    'runs the worker under $HOME/.claude for %s when CLAUDE_CONFIG_DIR is unset, and when it is empty',
+    (_, which, rel) => {
+      worker(join(home, '.claude'), rel, 'home');
+      worker(cfg, rel, 'config dir');
+      expect(run(commands[which](), undefined).stdout).toBe('home');
+      expect(run(commands[which](), '').stdout).toBe('home');
+    },
+  );
+
+  it('prints the skill hook’s base directory under CLAUDE_CONFIG_DIR, and weighs exactly what it prints', () => {
+    const md = '---\nname: probe\n---\n# Probe\n\nbody\n';
+    const dir = join(cfg, claudeSkillRel('probe'));
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'SKILL.md'), md);
+    const agent = agentToClaudeMd(
+      {
+        name: 'mav',
+        description: 'd',
+        archetype: 'a',
+        guardrails: ['honesty ≜ assert from evidence'],
+        skills: ['probe'],
+      } as never,
+      { manifest: FIXTURE_MANIFEST },
+    );
+    const command = agent
+      .split('\n')
+      .filter((l) => /^ +command: /.test(l))
+      .map(
+        (l) => JSON.parse(l.replace(/^ +command: /, '')) as string,
+      )[0] as string;
+    const printed = run(command, cfg).stdout;
+    expect(printed).toBe(
+      `Base directory for this skill: ${dir}\n\n# Probe\n\nbody\n`,
+    );
+
+    const hook = claudeHarnessAdapter.mainSessionSkillHook;
+    vi.stubEnv('CLAUDE_CONFIG_DIR', cfg);
+    expect(hook?.size('probe', md, home)).toBe(printed.length);
+    // Unset, the hook prints the directory under the home it was weighed for.
+    vi.stubEnv('CLAUDE_CONFIG_DIR', '');
+    const under = join(home, '.claude', claudeSkillRel('probe'));
+    expect(hook?.size('probe', md, home)).toBe(
+      printed.length - dir.length + under.length,
+    );
   });
 });
 

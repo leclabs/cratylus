@@ -31,8 +31,8 @@ cratylus install
 ```
 
 `cratylus install` puts the bundled corpus's agents, skills and guards on this machine, for Claude
-Code or omp. It needs no project and no config. It looks for a harness by its home directory,
-`~/.claude` for Claude Code and `~/.omp` for omp. Run it from a directory with no
+Code or omp. It needs no project and no config. It looks for a harness by its directory: Claude
+Code's (`$CLAUDE_CONFIG_DIR` when that is set, else `~/.claude`) and omp's (`~/.omp`). Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
 bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
 it. Where that file cannot be loaded, because a package it imports is not installed there yet (the
@@ -112,6 +112,16 @@ also links launch commands into `~/.local/bin`. The run names every host file it
 directory outside the harness's home that it writes to, and records all of it in the harness's
 deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away exactly that.
 
+Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
+and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
+`CLAUDE_CONFIG_DIR` set, the Claude Code files above are placed in and removed from that directory,
+and `~/.claude` is not touched; the shared files the hooks read stay in a `.agents` directory beside
+it, as they sit beside `~/.claude`. Every command install writes into `settings.json` (the guard hooks,
+the status line, the hook that loads a persona's skills) makes the same choice when Claude Code runs
+it, so it runs what is deployed in the directory Claude Code reads. omp has no such variable and keeps
+`~/.omp`. A host installed before this uninstalls as before: uninstall removes the commands its
+deploy manifest recorded, as they were written.
+
 Running it again is safe: it converges on what you choose then, and a model a role already has from
 you or the host is left as it is.
 
@@ -122,7 +132,7 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 
 - `found claude and omp; name one with --harness <claude|omp>`: the host has both harnesses and
   install cannot ask (there is no terminal, or `--yes` was given). Name one.
-- `no harness found under <home> (looked for .claude, .omp)`: neither harness has a home here. Run
+- `no harness found (looked for <dir>, <dir>)`: neither harness has a directory here. Run
   one once, or name the one to install into with `--harness`.
 - `no terminal to ask which practices to install; …`: add `--practices` with the names it lists, or
   `--all`.
@@ -182,7 +192,7 @@ configuration is only ever added to. `--dry-run` says what would be set and writ
 
 **On Claude Code** the status line is one command, `statusLine` in `settings.json`. Where the host
 has none, install sets the badge worker as that command
-(`sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
+(`sh "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
 own, install wraps it: the worker runs the host's command and puts the badge and a space in front of
 the first line it prints, and in a session that runs no installed agent its output reaches the status
 line byte for byte, so nothing the host shows is taken away. Every other key of `statusLine`,

@@ -50,7 +50,7 @@ import {
   readFileSync,
   rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { mergeManifest } from '@cratylus/schema';
 import {
@@ -100,6 +100,7 @@ import {
   treeNames,
   writeManifest,
 } from '../../deploy/index.js';
+import { harnessDirIn } from '../../deploy/scope.js';
 import {
   type ProjectedTree,
   discoverFragments,
@@ -152,18 +153,24 @@ export interface InstallCmdOpts {
   interactive?: boolean;
   /** `PATH`, for the on-PATH report. Default: the process's. */
   pathEnv?: string;
+  /** The user's HOME, when the run is for another: the harness's files go in
+   *  `<home>/<its dot-directory>`. Absent, each harness's own directory — its
+   *  environment variable's where it has one and that is set, else under the
+   *  process's HOME. */
+  home?: string;
 }
 
-/** Which harnesses this host actually has, by the home each adapter declares.
+/** Which harnesses this host actually has, by the directory each adapter reads (`home`
+ *  names the home they are looked for in; absent, each harness's own default).
  *
  *  DETECTION IS OFFERED, NEVER ASSUMED. `project` may not guess a harness — a render
  *  tree that depends on which harness happens to be installed is not `REGENERABLE`,
  *  and that is a property about ARTIFACTS. `install` writes no artifact a build
  *  reproduces; it acts on THIS machine, where "which harnesses are here" is the
  *  question being asked rather than a variable leaking into an output. */
-export function detectHarnesses(home: string): string[] {
+export function detectHarnesses(home?: string): string[] {
   return HARNESS_NAMES.filter((name) =>
-    existsSync(join(home, adapterByName(name).home)),
+    existsSync(harnessDirIn(adapterByName(name), home)),
   );
 }
 
@@ -298,9 +305,7 @@ async function loadConfigOrRefuse(configPath: string): Promise<CratylusConfig> {
   return config;
 }
 
-export async function runInstall(
-  opts: InstallCmdOpts & { home: string },
-): Promise<number> {
+export async function runInstall(opts: InstallCmdOpts): Promise<number> {
   try {
     return await install(opts);
   } catch (e) {
@@ -310,9 +315,7 @@ export async function runInstall(
   }
 }
 
-async function install(
-  opts: InstallCmdOpts & { home: string },
-): Promise<number> {
+async function install(opts: InstallCmdOpts): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
   // Whether anyone is there to ask, and whether this run asks: `--yes` is a terminal
   // that is told to take the defaults, which is not a run without one.
@@ -343,7 +346,7 @@ async function install(
       harness = await answered(prompts.harness(found, HARNESS_NAMES));
     } else if (found.length === 0) {
       throw new Refusal(
-        `no harness found under ${opts.home} (looked for ${HARNESS_NAMES.map((n) => adapterByName(n).home).join(', ')}); name one with --harness <${HARNESS_NAMES.join('|')}>`,
+        `no harness found (looked for ${HARNESS_NAMES.map((n) => harnessDirIn(adapterByName(n), opts.home)).join(', ')}); name one with --harness <${HARNESS_NAMES.join('|')}>`,
       );
     } else {
       throw new Refusal(
@@ -357,7 +360,7 @@ async function install(
     );
   }
   const adapter = adapterByName(harness);
-  const harnessDir = join(opts.home, adapter.home);
+  const harnessDir = harnessDirIn(adapter, opts.home);
 
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
   const configPath = join(cwd, CONFIG_FILE);
@@ -397,7 +400,7 @@ async function install(
       warn: (line) => warnings.push(line),
       // The hooks print each skill's directory, so what fits the harness's output cap
       // depends on this path; the projection cannot know it, install does.
-      hostHome: opts.home,
+      hostHome: opts.home ?? homedir(),
       ...(practices !== undefined ? { practices } : {}),
     });
     return { report, warnings };
@@ -487,7 +490,7 @@ async function install(
   let routable = tree.heldRoles;
   let configRefused = false;
   if (routing !== undefined) {
-    const path = hostConfigPath(adapter, routing.configRels, opts.home);
+    const path = hostConfigPath(routing.configRels, harnessDir);
     const probe = addModelRoles(
       path,
       tree.heldRoles.map((role) => ({ role, value: '' })),
@@ -667,9 +670,10 @@ async function install(
         kind: 'all',
         scope: 'user',
         harness,
-        // The harness's home itself, which deploy takes verbatim: a bare home dir would
-        // make it print its self-correcting NOTE on every run of every kind.
-        home: harnessDir,
+        // The harness's own directory, which deploy takes verbatim when this run was
+        // given a home (a bare home dir would make it print its self-correcting NOTE
+        // on every run of every kind), and resolves as this run did when it was not.
+        home: opts.home === undefined ? null : harnessDir,
         command: 'install',
         project: null,
         config: existsSync(configPath) ? configPath : null,
@@ -703,14 +707,14 @@ async function install(
       // model. Deploy is unchanged — this is install's own step, and a deploy that
       // failed places no routes to back.
       seedModelRoles(found, adapter, tree.heldRoles, choices, seeded, {
-        home: opts.home,
+        harnessDir,
         dry,
         adopt: migrating,
       });
       // The settings a dispatched agent's isolation needs: install's own step, for the
       // agents the projection could not start in a worktree.
       seedDispatchIsolation(found, adapter, tree.unisolated, {
-        home: opts.home,
+        harnessDir,
         dry,
       });
       if (routesDefs) {
@@ -725,7 +729,7 @@ async function install(
       // Then the badge, which is what the operator sees of those personas: the host's
       // own status line, made to show it.
       showPersonaBadge(found, adapter, agentNames, {
-        home: opts.home,
+        harnessDir,
         dry,
         adopt: migrating,
       });
@@ -928,17 +932,21 @@ function describe(
 function personaCommandsOf(
   adapter: HarnessAdapter,
   personas: readonly string[],
-  opts: InstallCmdOpts & { home: string },
+  opts: InstallCmdOpts,
 ): PersonaCommandsOpts | undefined {
-  const self = personaLauncherOf(opts.home, adapter);
+  const harnessDir = harnessDirIn(adapter, opts.home);
+  const self = personaLauncherOf(harnessDir, adapter);
   if (self === undefined) return undefined;
   return {
-    home: opts.home,
-    harnessDir: join(opts.home, adapter.home),
+    home: opts.home ?? homedir(),
+    harnessDir,
     self,
     personas,
     peers: HARNESS_NAMES.filter((n) => n !== adapter.name).flatMap((n) => {
-      const peer = personaLauncherOf(opts.home, adapterByName(n));
+      const peer = personaLauncherOf(
+        harnessDirIn(adapterByName(n), opts.home),
+        adapterByName(n),
+      );
       return peer ? [peer] : [];
     }),
     ...(opts.pathEnv !== undefined ? { pathEnv: opts.pathEnv } : {}),
@@ -1011,11 +1019,10 @@ function linkPersonaCommands(
  *  FIRST that exists, because the harness ignores the rest; a host with none gets the
  *  first, and never a file that would shadow one it already has. */
 function hostConfigPath(
-  adapter: HarnessAdapter,
   configRels: readonly string[],
-  home: string,
+  harnessDir: string,
 ): string {
-  const candidates = configRels.map((rel) => join(home, adapter.home, rel));
+  const candidates = configRels.map((rel) => join(harnessDir, rel));
   return candidates.find((p) => existsSync(p)) ?? (candidates[0] as string);
 }
 
@@ -1035,13 +1042,12 @@ function seedDispatchIsolation(
   found: Findings,
   adapter: HarnessAdapter,
   isolated: readonly string[],
-  run: { home: string; dry: boolean },
+  run: { harnessDir: string; dry: boolean },
 ): void {
   const isolation = adapter.dispatchIsolation;
   if (isolation === undefined || isolated.length === 0) return;
-  const { home, dry } = run;
-  const harnessDir = join(home, adapter.home);
-  const path = hostConfigPath(adapter, isolation.configRels, home);
+  const { harnessDir, dry } = run;
+  const path = hostConfigPath(isolation.configRels, harnessDir);
   const result = ensureHostSettings(path, isolation.settings, { dry });
   if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
   const parent = isolation.settings.parent.join('.');
@@ -1091,7 +1097,7 @@ function showPersonaBadge(
   found: Findings,
   adapter: HarnessAdapter,
   personas: readonly string[],
-  run: { home: string; dry: boolean; adopt: boolean },
+  run: { harnessDir: string; dry: boolean; adopt: boolean },
 ): void {
   if (personas.length === 0) return;
   const { dry, adopt } = run;
@@ -1104,9 +1110,13 @@ function showPersonaBadge(
 
   const worker = adapter.statusLine;
   if (worker !== undefined) {
-    const harnessDir = join(run.home, adapter.home);
+    const { harnessDir } = run;
     const path = join(harnessDir, adapter.hooksFile);
-    const result = ensureBadgeStatusLine(path, worker.command, { dry });
+    const recorded = readManifest(harnessDir).statusLine;
+    const result = ensureBadgeStatusLine(path, worker.command, {
+      dry,
+      ...(recorded !== null ? { recorded } : {}),
+    });
     const tag = `statusLine${dry ? ' (dry-run)' : ''}: ${path}`;
     if (result.state === 'refused') {
       refused(
@@ -1161,13 +1171,13 @@ function showPersonaBadge(
   // in, in the file the harness reads its layout from.
   const host = adapter.statusSegment;
   if (host !== undefined) {
-    const path = hostConfigPath(adapter, host.configRels, run.home);
+    const path = hostConfigPath(host.configRels, run.harnessDir);
     const result = ensureStatusSegment(path, host, { dry, adopt });
     if (result.edit !== undefined) {
-      noteHostEdit(join(run.home, adapter.home), path, result.edit);
+      noteHostEdit(run.harnessDir, path, result.edit);
     }
     if (adopt && !dry && existsSync(path)) {
-      markMigratedConfig(join(run.home, adapter.home), path);
+      markMigratedConfig(run.harnessDir, path);
     }
     // The row beneath the editor is the badge's place wherever the layout has none of
     // its own; a host that had hidden it is told it is shown now, and why.
@@ -1238,13 +1248,12 @@ function seedModelRoles(
   heldRoles: readonly string[],
   choices: Readonly<Record<string, string>>,
   seeded: ReadonlySet<string>,
-  run: { home: string; dry: boolean; adopt: boolean },
+  run: { harnessDir: string; dry: boolean; adopt: boolean },
 ): void {
   const routing = adapter.roleRouting;
   if (routing === undefined || heldRoles.length === 0) return;
-  const { home, dry, adopt } = run;
-  const harnessDir = join(home, adapter.home);
-  const path = hostConfigPath(adapter, routing.configRels, home);
+  const { harnessDir, dry, adopt } = run;
+  const path = hostConfigPath(routing.configRels, harnessDir);
   const wanted: ModelRoleEntry[] = heldRoles.map((role) => ({
     role,
     value: choices[role] ?? `@${routing.nearest(role)}`,

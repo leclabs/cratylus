@@ -206,6 +206,17 @@ export interface HarnessAdapter {
    */
   readonly home: string;
   /**
+   * The environment variable, when the harness has one, that names the directory it
+   * reads its deployed artifacts from, whole: set and non-empty, it IS the harness
+   * directory, and `home` is not looked for under `$HOME`. Absent ⇒ the harness reads
+   * `<$HOME>/<home>` whatever the environment.
+   *
+   * It decides where a run given NO home places and removes the harness's files. A
+   * run given a home still means that home's `home` directory: naming a home is
+   * naming where the files go, and the environment does not overrule it.
+   */
+  readonly homeEnv?: string;
+  /**
    * The file EXTENSION this harness's agent definitions carry — `.md`.
    *
    * `agentDef` already returns a full filename, but DEPLOY reads a render tree
@@ -321,9 +332,10 @@ export interface HarnessAdapter {
    *
    * `hostHome` is the home the definitions will be installed under, when the caller
    * knows it (`install` does; `project` does not). The hook prints each skill's
-   * directory, and that path is part of its output, so a longer home is a longer
-   * output. Absent, the size counts the path as the definition spells it, which is a
-   * LOWER BOUND: a host with a longer home prints more.
+   * directory, and that path is part of its output, so a longer directory is a longer
+   * output. The adapter weighs the directory the hook will print, resolved from that
+   * home as the hook resolves it. Absent, the size counts the path as the definition
+   * spells it, which is a LOWER BOUND: a host whose directory is longer prints more.
    */
   readonly mainSessionSkillHook?: {
     readonly cap: number;

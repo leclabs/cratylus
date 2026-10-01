@@ -439,11 +439,31 @@ export const CLAUDE_PERSONA_BADGE_FILE = `${CLI_BIN}-persona-badge.txt`;
  *  it is a `.sh` like every worker this harness runs. Derived from the bin. */
 export const CLAUDE_STATUS_LINE_FILE = `${CLI_BIN}-status-line.sh`;
 
-/** `$HOME` and not a resolved path: a command written into `settings.json` is read
- *  at RUN time on whatever host it lands on, so it must not bake in the projecting
- *  machine's home. The ONE spelling of it, shared by the hook and status-line
- *  commands. */
-const CLAUDE_HOME_EXPR = '$HOME/.claude';
+/** The environment variable Claude Code reads its configuration directory from. */
+const CLAUDE_HOME_ENV = 'CLAUDE_CONFIG_DIR';
+
+/** Where Claude Code reads when that variable is not set. */
+const CLAUDE_DEFAULT_DIR_EXPR = '$HOME/.claude';
+
+/** The directory Claude Code reads, as the shell resolves it at run time, the way
+ *  Claude Code does: the variable when it is set and non-empty, else `$HOME/.claude`.
+ *  A command written into `settings.json` is read at RUN time on whatever host it
+ *  lands on, so it must bake in neither the projecting machine's home nor its
+ *  environment. The ONE spelling of it, shared by the hook and status-line commands. */
+const CLAUDE_HOME_EXPR = `\${${CLAUDE_HOME_ENV}:-${CLAUDE_DEFAULT_DIR_EXPR}}`;
+
+/** The directory the main-session skill hook prints for a host whose home is
+ *  `hostHome`: the one the shell resolves to — the variable's, when this process has
+ *  it set, since that is the directory install places the skills in — else
+ *  `<hostHome>/.claude`. Unknown host ⇒ the default as written, which the shell
+ *  prints verbatim. */
+function claudeDirPrinted(hostHome: string | undefined): string {
+  if (hostHome === undefined) return CLAUDE_DEFAULT_DIR_EXPR;
+  return (
+    process.env[CLAUDE_HOME_ENV] ||
+    CLAUDE_DEFAULT_DIR_EXPR.replace('$HOME', hostHome)
+  );
+}
 
 /** Where a persona's badge file is, relative to the worker's OWN directory — derived
  *  from `scopedRel`'s two answers, so the layout has no third home in shell. `$name`
@@ -567,6 +587,8 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
   substrate: 'harness',
   home: '.claude',
+  // Claude Code reads its directory from this variable when it is set.
+  homeEnv: CLAUDE_HOME_ENV,
   agentExt: '.md',
   hooksFile: 'settings.json',
   // This harness's own headless CLI answers its own model questions.
@@ -577,14 +599,14 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   startsInWorktree: true,
   // A `--agent` MAIN session preloads none of them, so a hook prints each skill; the
   // cap on what one hook may print is Claude Code's. The output holds each skill's
-  // directory, so the size is measured with the host's real home where the caller knows
-  // it, and with the `$HOME` expression as the definition spells it where not — the
-  // shell prints `$HOME` verbatim, so the substitution is the shell's own.
+  // directory, so the size is measured with the directory the host reads where the
+  // caller knows its home, and with `$HOME/.claude` as the definition spells it where
+  // not — the shell prints that verbatim, so the substitution is the shell's own.
   mainSessionSkillHook: {
     cap: CLAUDE_HOOK_OUTPUT_CAP,
     size: (name, skillMd, hostHome) =>
       personaSkillOutputSize(
-        `${hostHome === undefined ? CLAUDE_HOME_EXPR : CLAUDE_HOME_EXPR.replace('$HOME', hostHome)}/${claudeSkillRel(name)}`,
+        `${claudeDirPrinted(hostHome)}/${claudeSkillRel(name)}`,
         skillMd,
       ),
   },

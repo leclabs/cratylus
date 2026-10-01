@@ -983,6 +983,117 @@ describe('the guided install', () => {
     expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
   });
 
+  describe('where Claude Code reads', () => {
+    let processHome: string;
+    let configDir: string;
+    beforeEach(() => {
+      processHome = join(tmpRoot(), 'process-home');
+      configDir = join(tmpRoot(), 'claude-config');
+      mkdirSync(processHome, { recursive: true });
+      mkdirSync(configDir, { recursive: true });
+      vi.stubEnv('HOME', processHome);
+      vi.stubEnv('CLAUDE_CONFIG_DIR', configDir);
+    });
+    /** A claude run given no home, as the command line gives it. */
+    const unhomed = () =>
+      runInstall({
+        cwd,
+        corpus: plugin as never,
+        pathEnv: '/usr/bin',
+        practices: 'build',
+        harness: 'claude',
+        yes: true,
+      });
+
+    it('places its files under CLAUDE_CONFIG_DIR when no home is given, nothing under $HOME/.claude, and uninstall removes them from there', async () => {
+      expect(await unhomed()).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(files(configDir).some((f) => f.endsWith('manifest.json'))).toBe(
+        true,
+      );
+      const settings = readFileSync(join(configDir, 'settings.json'), 'utf8');
+      expect(settings).toContain('statusLine');
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+
+      expect(runUninstall({ harness: 'claude', verbose: true })).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(false);
+      expect(files(configDir).filter((f) => f !== 'settings.json')).toEqual([]);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('finds the harness to install into where CLAUDE_CONFIG_DIR is, when none is named', async () => {
+      expect(
+        await runInstall({
+          cwd,
+          corpus: plugin as never,
+          pathEnv: '/usr/bin',
+          practices: 'build',
+          yes: true,
+        }),
+      ).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('puts a run given a home under that home’s .claude, whatever CLAUDE_CONFIG_DIR says', async () => {
+      expect(await install({ harness: 'claude', yes: true })).toBe(0);
+      expect(claudeAgent('planner')).toSatisfy(existsSync);
+      expect(files(configDir)).toEqual([]);
+      expect(runUninstall({ harness: 'claude', home })).toBe(0);
+      expect(existsSync(claudeAgent('planner'))).toBe(false);
+    });
+  });
+
+  it('writes nothing and reports no edit when it runs again over a status line it wrapped, dry or not', async () => {
+    const settingsFile = join(claude(), 'settings.json');
+    writeFileSync(
+      settingsFile,
+      `${JSON.stringify({ statusLine: { type: 'command', command: 'printf host' } }, null, 2)}\n`,
+    );
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(out).toContain('your status line command is wrapped');
+    const wrapped = readFileSync(settingsFile, 'utf8');
+    for (const dryRun of [false, true]) {
+      out = '';
+      expect(await install({ harness: 'claude', yes: true, dryRun })).toBe(0);
+      expect(out).not.toContain('status line');
+      expect(readFileSync(settingsFile, 'utf8')).toBe(wrapped);
+    }
+  });
+
+  it('takes the status line an earlier install recorded placing, spelled as a former release wrote it, for its own: the worker becomes the current one, never wrapped, and uninstall removes it', async () => {
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    const settingsFile = join(claude(), 'settings.json');
+    const manifestFile = join(claude(), '.forge', 'deploy-manifest.json');
+    const current = JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine
+      .command as string;
+    // The host as an install from before the change left it.
+    const former =
+      'sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"';
+    expect(current).not.toBe(former);
+    const settings = JSON.parse(readFileSync(settingsFile, 'utf8'));
+    settings.statusLine.command = former;
+    writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+    manifest.statusLine = { placed: former, host: null };
+    writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));
+
+    out = '';
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine).toEqual({
+      ...settings.statusLine,
+      command: current,
+    });
+    expect(out).not.toContain('wrapped in the persona badge');
+    expect(JSON.parse(readFileSync(manifestFile, 'utf8')).statusLine).toEqual({
+      placed: current,
+      host: null,
+    });
+
+    expect(runUninstall({ harness: 'claude', home })).toBe(0);
+    expect(existsSync(settingsFile)).toBe(false);
+  });
+
   it.each([
     ['not valid JSON', 'not json', 'is not valid JSON'],
     ['a JSON array', '[1]', 'is not a JSON object'],

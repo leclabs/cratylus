@@ -260,7 +260,11 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
     const scopeRes =
       opts.scope === 'project'
         ? projectScope(opts.project ?? null, harnessAdapter.home ?? undefined)
-        : userScope(opts.home ?? null, harnessAdapter.home ?? undefined);
+        : userScope(
+            opts.home ?? null,
+            harnessAdapter.home ?? undefined,
+            harnessAdapter.homeEnv,
+          );
     outcome.harnessDir = scopeRes.harnessDir;
     if (scopeRes.note) {
       warn(scopeRes.note.message);
@@ -285,6 +289,7 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
         scope: opts.scope,
         tree,
         harnessHome: harnessAdapter.home,
+        harnessHomeEnv: harnessAdapter.homeEnv ?? null,
         agentExt: harnessAdapter.agentExt,
         agentRel: (n: string) => harnessAdapter.agentRel(n),
         skillRel: (n: string, agents: readonly string[]) =>
@@ -625,7 +630,11 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     const scopeRes =
       opts.scope === 'project'
         ? projectScope(opts.project ?? null, harnessAdapter.home ?? undefined)
-        : userScope(opts.home ?? null, harnessAdapter.home ?? undefined);
+        : userScope(
+            opts.home ?? null,
+            harnessAdapter.home ?? undefined,
+            harnessAdapter.homeEnv,
+          );
     const harnessDir = scopeRes.harnessDir;
     log(`deploy --check of ${harnessDir} (reports only, changes nothing)`);
 

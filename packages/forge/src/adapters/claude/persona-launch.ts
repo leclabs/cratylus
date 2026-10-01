@@ -50,7 +50,8 @@ function requiredReadingPrintf(skill: string): string {
 }
 
 /** Where the skills are, as SHELL text read at run time on the host the definition
- *  lands on (so `home` is `$HOME/.claude`, never the projecting machine's path). */
+ *  lands on (so `home` is the directory the harness resolves there, never the
+ *  projecting machine's path). */
 export interface PersonaSkillRoots {
   /** The harness home, as a shell expression. */
   readonly home: string;
@@ -134,9 +135,9 @@ function afterFrontMatter(text: string): string {
  * is `skillMd` and whose directory is `dir`: the base-directory line, the blank line
  * after it, and the body. Claude counts characters, not bytes.
  *
- * `dir` is the path as the hook will spell it. The adapter passes the `$HOME`
- * expression unexpanded, because the host's home is unknown at projection: a host
- * whose home is longer than `$HOME` adds the difference to every skill.
+ * `dir` is the path as the hook will spell it. Where the host's home is unknown at
+ * projection the adapter passes the default directory unexpanded: a host whose
+ * directory is longer than `$HOME/.claude` adds the difference to every skill.
  */
 export function personaSkillOutputSize(dir: string, skillMd: string): number {
   return (
