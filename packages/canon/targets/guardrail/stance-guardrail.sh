@@ -96,31 +96,53 @@ esac
 [ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \
 	dark "the rubric named by $manifest is not readable at '$RUBRIC'"
 
+GUARD_ID=stance-guardrail
+GUARD_NAME="STANCE GUARDRAIL"
+GUARD_SESSION="$session"
+GUARD_AGENT="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
+GUARD_ACT=stop
+case "$GUARD_SESSION" in '' | */* | . | ..) GUARD_SESSION=nosession ;; esac
+CONTEST_DIR="${TMPDIR:-/tmp}/guardrail-contest/$GUARD_ID/$GUARD_SESSION"
+CONTEST_AT="$CONTEST_DIR/stop"
+[ "$GUARD_ACT" = stop ] || CONTEST_AT="$CONTEST_DIR/$(printf '%s %s' "$GUARD_ACT" "${GUARD_CALL:-}" | cksum | cut -d' ' -f1)"
+contest_heard() {
+	contest="$(cat "$CONTEST_AT.contest" 2>/dev/null || true)"
+	[ -n "$contest" ] || return 0
+	refusal="$(cat "$CONTEST_AT.refused" 2>/dev/null || true)"
+	rm -f "$CONTEST_AT.contest" "$CONTEST_AT.refused"
+	log="${GUARD_CONTEST_LOG:-$NEUTRAL_ROOT/guardrail/contests.log}"
+	mkdir -p "$(dirname -- "$log")" 2>/dev/null && jq -cn --arg time "$(date -u +%FT%TZ)" --arg guard "$GUARD_ID" \
+		--arg session "$GUARD_SESSION" --arg agent "$GUARD_AGENT" --arg act "$GUARD_ACT" --arg refusal "$refusal" \
+		--arg contest "$contest" '$ARGS.named' 2>/dev/null >> "$log" && kept="logged in $log" || kept="the contest was not recorded: $log is not writable"
+	say "$GUARD_NAME — contested: this $GUARD_ACT went through unjudged on the agent's reason: $(printf '%s' "$contest" | tr '\n' ' ') ($kept)"
+	exit 0
+}
+contest_refused() {
+	mkdir -p "$CONTEST_DIR" 2>/dev/null && printf '%s\n' "$1" > "$CONTEST_AT.refused" 2>/dev/null || true
+	[ "$GUARD_ACT" = stop ] && again="end the turn again" || again="repeat the same call"
+	printf '%s' "Act on that reason, or if you hold it wrong state why with this command, then $again; it then goes through unjudged, your reason logged for the operator: printf '%s\\n' 'why' > '$CONTEST_AT.contest'"
+}
+
+contest_heard
+
 JUDGE_PAYLOAD_CAP=12000
 judge_bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
 JUDGE_JQ='
-def pre($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| $s[:.lo] end;
-def suf($n): . as $s | if $n <= 0 then "" else
-	{ lo: 0, hi: ($s | length) } | until(.lo >= .hi;
-		((.lo + .hi + 1) / 2 | floor) as $m
-		| if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
-	| if .lo == 0 then "" else $s[-.lo:] end end;
+def pre($n): . as $s | if $n <= 0 then "" else {lo: 0, hi: ($s | length)} | until(.lo >= .hi;
+((.lo + .hi + 1) / 2 | floor) as $m | if ($s[:$m] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end) | $s[:.lo] end;
+def suf($n): . as $s | if $n <= 0 then "" else {lo: 0, hi: ($s | length)} | until(.lo >= .hi;
+((.lo + .hi + 1) / 2 | floor) as $m | if ($s[-$m:] | utf8bytelength) <= $n then .lo = $m else .hi = $m - 1 end)
+| if .lo == 0 then "" else $s[-.lo:] end end;
 '
-judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
+# --rawfile, never -R: jq 1.7's raw reader corrupts a multibyte character straddling a read boundary.
 judge_ends() {
-	jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
-		$text | . as $s | ($s | utf8bytelength) as $t
-		| if $t <= $n then $s else
-			((($n - 200) / 2) | floor) as $k
-			| ($s | pre($k)) as $h | ($s | suf($k)) as $e
-			| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
-			| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e
-		end'
+jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"'
+$text | . as $s | ($s | utf8bytelength) as $t | if $t <= $n then $s else
+((($n - 200) / 2) | floor) as $k | ($s | pre($k)) as $h | ($s | suf($k)) as $e
+| ($t - ($h | utf8bytelength) - ($e | utf8bytelength)) as $gone
+| $h + "\n[ELIDED: \($gone) of \($t) bytes from the middle are not shown]\n" + $e end'
 }
+judge_keep() { jq -n -j --rawfile text /dev/stdin --argjson n "$1" "$JUDGE_JQ"' $text | suf($n)'; }
 judge_cut() { printf '[ELIDED: the first %s of %s bytes of %s are not shown; what follows is its final part]' "$(($2 - $3))" "$2" "$1"; }
 
 
@@ -302,24 +324,11 @@ if [ -n "$let_through" ]; then
 	say "STANCE GUARDRAIL — stop let through UNRESOLVED: the judge blocked this stop, and the finding STANDS and is unaddressed — $let_through. The next stop that follows no block is judged and blocked again. The judge's reason was: $reason"
 	allow_stop
 fi
-reason="$reason (stance-guardrail block $run_next in this run of refused stops.)"
-
 evidence_clause=""
-[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \"$l1_evidence\" — \
-you committed to an action and then ended the turn without taking it. Stating a next action is not \
-performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \
-is done. "
-[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span this was checked \
-against, verbatim from your close: \"$evidence\" — the REASON above is the judge's unverified \
-wording; THIS span is what mechanically matched. Argue with the span, not the wording. "
+[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \"$l1_evidence\" — you committed to an action and then ended the turn without taking it; do it now, with tool calls. "
+[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span checked against your close, verbatim: \"$evidence\". "
 
-feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \
-${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \
-on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking \
-permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and \
-extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate \
-exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT \
-ambiguity to /elicit.)"
+feedback="STANCE GUARDRAIL — blocked: $reason ${evidence_clause}Decide the in-remit call yourself and continue. $(contest_refused "$reason")"
 
 jq -cn --arg r "$feedback" '{decision:"block", reason:$r}'
 exit 0

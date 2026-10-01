@@ -100,19 +100,28 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   the stop, because a guardrail that wedges work on its own flakiness is worse than a missed
   block. But an enrolled scope whose judge could not answer announces itself via `dark` and
   records a DARK row in the verdict log: silence is reserved for NOT ENROLLED.
-- **A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP.** Every turn is judged,
-  a turn identical to a refused one included, and a BLOCK blocks the stop. The turn end is the one
-  exception to a refused act staying refused: refusing it holds back no effect, it only makes the
-  agent redo its turn. A stop that follows a block of this guard (`stop_hook_active`) continues a
-  run of blocks; a stop that follows none starts a new run at 0. When the judge's BLOCK survives
-  the evidence checks and the run already holds a block and this turn is byte-identical to the one
-  last blocked in it, or the run already holds 3 blocks, the stop is let through and the guard
-  says so: `STANCE GUARDRAIL` names the stop as let through UNRESOLVED, the finding standing, with
-  the judge's reason. A run that cannot be counted (its record unreadable or the state dir
-  unwritable) lets a following stop through the same way, because a bound that cannot be counted
-  cannot hold; a fresh stop there still blocks. The 3 is a constant in the cell, and no
-  environment variable sets it. The bound is on one stop, never on the session: the next stop that
-  follows no block is judged and blocked like any other.
+- **A REFUSAL NEVER STRANDS THE AGENT, AND THE TURN END IS BOUNDED ALL THE SAME.** Every refusal
+  names its way forward: act on the judge's reason, or, holding the refusal wrong, contest it.
+  The refusal spells out one shell command that writes why into the file it names,
+  `$TMPDIR/guardrail-contest/<guard>/<session>/<key>.contest` (`stop.contest` at the turn end,
+  the cksum of the call for a call), and the agent repeats the act. A fire that finds a non-empty
+  contest is not judged: the act goes through, the guard says so (`STANCE GUARDRAIL` with the
+  agent's reason), and one JSON line is appended to `~/.agents/guardrail/contests.log`
+  (`$GUARD_CONTEST_LOG` overrides it) for the operator to review. A log that cannot be written
+  never holds the act back; the notice says the contest was not recorded. A repeat with no
+  contest is judged again, and a BLOCK blocks it again. The stance workers judge no shell call and
+  no file write, so writing a contest is never refused. A contested stop goes through whatever
+  the run of blocks. Without a contest the turn end is the one place a refused act is let through:
+  refusing it holds back no effect, it only makes the agent redo its turn. A stop that follows a
+  block of this guard (`stop_hook_active`) continues a run of blocks; a stop that follows none
+  starts a new run at 0. When the judge's BLOCK survives the evidence checks and the run already
+  holds a block and this turn is byte-identical to the one last blocked in it, or the run already
+  holds 3 blocks, the stop is let through and the guard says so: `STANCE GUARDRAIL` names the stop
+  as let through UNRESOLVED, the finding standing, with the judge's reason. A run that cannot be
+  counted (its record unreadable or the state dir unwritable) lets a following stop through the
+  same way, because a bound that cannot be counted cannot hold; a fresh stop there still blocks.
+  The 3 is a constant in the cell, and no environment variable sets it. The bound is on one stop,
+  never on the session: the next stop that follows no block is judged and blocked like any other.
 - **A JUDGE IS SENT ONLY WHAT ITS ONE DECISION NEEDS.** The rubric is the stance test in a few
   sentences over the contract it applies to (the `handoff` value, quoted from its cell) and the
   output block, at most 2 KB. The Stop payload is facts under plain labels and no sentence
@@ -121,7 +130,7 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   `stance-judge.sh` adds nothing around it.
 - **A JUDGEMENT FITS THE TIME ITS HARNESS ALLOWS A GUARD.** omp kills an extension handler at
   30 s and a Claude Code cell runs 60 s, and the judge's time follows what it is sent. What each
-  worker sends is bounded by one cap, 12000 bytes, declared once in the stance cell: the Stop
+  worker sends is bounded by one cap, 12000 bytes, declared once in `src/guard-shell.ts`: the Stop
   worker keeps the close of the turn (the text after the last tool call, which every rule that
   can fire reads) and the tail of the operator message, and the pre and purview workers keep
   both ends of a menu or a dispatch prompt. Every cut is marked `[ELIDED: …]` in the payload,

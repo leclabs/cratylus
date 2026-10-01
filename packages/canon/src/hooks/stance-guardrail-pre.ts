@@ -1,7 +1,7 @@
 import { anchorOf } from '@cratylus/schema';
 import { handoff } from '../dimensions/autonomy/handoff.js';
+import { contestShell, judgeClipShell } from '../guard-shell.js';
 import type { HookCell } from '../manifest.js';
-import { stanceGuardrailJudgeClipLean } from './stance-guardrail.js';
 
 // stance-guardrail-pre — the before-the-call twin of `stance-guardrail`. It denies a mid-turn
 // call that collapses out of the intent-driven-expert stance, and binds the two acts that
@@ -13,7 +13,7 @@ import { stanceGuardrailJudgeClipLean } from './stance-guardrail.js';
 export const stanceGuardrailPre: HookCell = {
   id: 'stance-guardrail-pre',
   residue:
-    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · refusal-holds ⟨a retried refusal is judged again ¬ waved-through⟩',
+    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · refusal ↦ way-forward ⟨act on reason ∨ contest ≜ state why ↦ contested call proceeds unjudged ∧ contest logged ↦ operator review · a retry ¬ contested ↦ judged again⟩',
   substrate: 'harness',
   // Bound by the same composition as its turn-end twin: the stance it enforces is the
   // one `handoff` declares.
@@ -30,7 +30,8 @@ export const stanceGuardrailPre: HookCell = {
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-guardrail-pre: denies, before it fires, an AskUserQuestion menu on an in-remit call or an
-# Agent/SendMessage dispatch that echoes literal words. Every call is judged, a retry included.
+# Agent/SendMessage dispatch that echoes literal words. Every call is judged, a retry included, unless
+# the agent contested its refusal.
 # Fails open, never silently: what stops it judging lets the call through with a notice and a log line.
 set -eu
 
@@ -103,7 +104,7 @@ manifest="$stance_scope/{{fact:stance-manifest}}"
 [ -f "$manifest" ] || allow
 agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 
-${stanceGuardrailJudgeClipLean}
+${judgeClipShell}
 
 tool_name="$(field '.tool_name // empty')"
 [ -n "$tool_name" ] || open "the payload names no tool, so there is no call to judge"
@@ -124,6 +125,15 @@ case "$tool_name" in
 esac
 
 [ -n "\${body:-}" ] || allow
+
+GUARD_ID=stance-guardrail-pre
+GUARD_NAME="STANCE GUARDRAIL (pre)"
+GUARD_SESSION="$(field '.session_id // empty')"
+GUARD_AGENT="$agent_type"
+GUARD_ACT="$tool_name"
+GUARD_CALL="$(printf '%s' "$input" | jq -c '.tool_input' 2>/dev/null || true)"
+${contestShell}
+contest_heard
 
 body="$(printf '%s' "$body" | judge_ends "$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$prefix")))")"
 payload="$prefix$body"
@@ -150,12 +160,7 @@ esac
 reason="$(tag REASON)"
 [ -n "$reason" ] || reason="This tool call collapsed out of the intent-driven-expert stance."
 
-feedback="STANCE GUARDRAIL (pre) — denied this $tool_name call: it collapses out of the \\
-intent-driven-expert stance. $reason  Own the in-remit reversible call yourself instead of handing the \\
-operator a menu; extract and serve the underlying INTENT instead of transcribing literal words into a \\
-dispatch. Decide, note the call for review, and proceed. (Legitimate exceptions that should NOT be a menu \\
-here: a genuine irreversible-outward consent choice, a true INTENT ambiguity for /elicit, a substantive \\
-intent-extracted dispatch, or a unit or a closed plan routed by name, whose intent lives in its spec.)"
+feedback="STANCE GUARDRAIL (pre) — denied this $tool_name call: $reason Own the in-remit call, or serve the intent in a dispatch, instead. $(contest_refused "$reason")"
 
 jq -cn --arg r "$feedback" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0
