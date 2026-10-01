@@ -191,6 +191,74 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
   });
 });
 
+describe('a deploy flag that would take no effect is refused, never accepted and dropped', () => {
+  it.each([
+    [
+      ['--scope', 'project', '--home', '/h'],
+      ['--home', '--scope user'],
+    ],
+    [
+      [
+        '--from',
+        '/missing',
+        '--agents-dir',
+        '/a',
+        '--skills-dir',
+        '/s',
+        '--hooks-dir',
+        '/k',
+      ],
+      ['--from', '--agents-dir', '--skills-dir', '--hooks-dir'],
+    ],
+    [
+      ['--check', '--dry-run'],
+      ['--check', '--dry-run'],
+    ],
+    [
+      ['--check', '--verbose'],
+      ['--check', '--verbose'],
+    ],
+    [
+      ['--check', '--config', '/c.ts'],
+      ['--check', '--config'],
+    ],
+    [
+      ['--check', '--project', '/p'],
+      ['--project', '--check'],
+    ],
+    [
+      ['--config', '/c.ts', '--project', '/p'],
+      ['--project', '--config'],
+    ],
+    [
+      ['--kind', 'agent', '--skills-dir', '/s'],
+      ['--kind agent', '--skills-dir'],
+    ],
+    [
+      ['--kind', 'agent', '--assets', 's=x'],
+      ['--kind agent', '--assets'],
+    ],
+    [
+      ['--kind', 'hooks', '--agents-dir', '/a'],
+      ['--kind hooks', '--agents-dir'],
+    ],
+    [
+      ['--kind', 'skill', '--hooks-dir', '/k'],
+      ['--kind skill', '--hooks-dir'],
+    ],
+  ] as const)('deploy %j', async (flags, names) => {
+    const { code, out, err } = await run('deploy', ...flags);
+    expect(code).toBe(
+      flags.includes('--check' as never) ? DEPLOY_CHECK_EXIT.noVerdict : 1,
+    );
+    expect(out).toBe('');
+    const lines = err.trimEnd().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^cratylus deploy: /);
+    for (const name of names) expect(lines[0], name).toContain(name);
+  });
+});
+
 describe('the README reference names exactly what the help lists, each once', () => {
   /** Every name the program's help lists: its commands and capabilities, and each
    *  capability's verbs as `<capability> <verb>`. */

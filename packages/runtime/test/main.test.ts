@@ -140,11 +140,11 @@ describe('the capability commands route each capability to its own verb surface'
     expect(out).toMatch(says);
   });
 
-  it("a capability's refusal exits 1 as `cratylus: <message>`", async () => {
+  it("a capability's refusal exits 1 as `cratylus <message>`", async () => {
     const { code, out, err } = await run(['eventTap', 'frobnicate']);
     expect(out).toBe('');
     expect(code).toBe(1);
-    expect(err).toMatch(/^cratylus: eventTap: unknown verb 'frobnicate'/);
+    expect(err).toMatch(/^cratylus eventTap: unknown verb 'frobnicate'/);
   });
 });
 
@@ -244,7 +244,7 @@ describe('the capability commands answer a missing or undeclared verb with what 
       }
       expect(thrown).toBeInstanceOf(Error);
       const { err } = await run([c, 'frob']);
-      expect(err).toBe(`${CLI_BIN}: ${(thrown as Error).message}\n`);
+      expect(err).toBe(`${CLI_BIN} ${(thrown as Error).message}\n`);
     },
   );
 });
@@ -263,7 +263,7 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err).toBe(
-      `cratylus: ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
+      `cratylus ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
     );
     expect(everyRecord(repo)).toEqual(before);
   });

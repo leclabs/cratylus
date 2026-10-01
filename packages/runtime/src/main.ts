@@ -21,7 +21,8 @@
 // capability does not declare is refused by `verbOf`, the one home of that refusal.
 //
 // `eventTap` prints its JSON result; `design`, `plan` and `note` print their
-// view. A refusal is a loud code-1 failure, printed as `cratylus: <message>`.
+// view. A refusal is a loud code-1 failure, printed as `cratylus <message>`, a message opening with the
+// capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
 //
@@ -135,7 +136,7 @@ function asksForHelp(tokens: readonly string[], verb: Verb): boolean {
 }
 
 function refuse(message: string): void {
-  process.stderr.write(`${CLI_BIN}: ${message}\n`);
+  process.stderr.write(`${CLI_BIN} ${message}\n`);
   process.exitCode = 1;
 }
 

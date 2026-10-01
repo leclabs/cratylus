@@ -29,7 +29,11 @@ import { HARNESS_NAMES } from '../adapters/registry/index.js';
 import { CLI_BIN } from '../bin-name.js';
 import { DEFAULT_PLUGIN_PACKAGE } from '../config/index.js';
 import { CONFIG_FILE } from '../config/scaffold.js';
-import { DEPLOY_CHECK_EXIT, type SkillCompanions } from '../deploy/index.js';
+import {
+  DEPLOY_CHECK_EXIT,
+  type DeployKind,
+  type SkillCompanions,
+} from '../deploy/index.js';
 import type { ProjectablePlugin } from '../project/index.js';
 import { runAdd } from './commands/add.js';
 import { runCatalog } from './commands/catalog.js';
@@ -96,6 +100,75 @@ export function usageExitCode(
 
 /** What a usage error of `deploy --check` exits with: it has no verdict to give. */
 const CHECK_USAGE = DEPLOY_CHECK_EXIT.noVerdict;
+
+/** The render directories and companions each kind reads, and no others: a skill is
+ *  placed under the agents' names, so it reads both, and only a skill has companions. */
+const KIND_READS: Readonly<Record<DeployKind, readonly string[]>> = {
+  agent: ['--agents-dir'],
+  skill: ['--skills-dir', '--agents-dir', '--assets'],
+  hooks: ['--hooks-dir'],
+};
+
+/** The directory and asset flags given that the one kind asked for never reads;
+ *  none under `--kind all`, which reads every one. */
+function unreadByKind(opts: {
+  kind: DeployKindArg;
+  assets?: string;
+  agentsDir?: string;
+  skillsDir?: string;
+  hooksDir?: string;
+}): string[] {
+  if (opts.kind === 'all') return [];
+  const given: Record<string, string | undefined> = {
+    '--agents-dir': opts.agentsDir,
+    '--skills-dir': opts.skillsDir,
+    '--hooks-dir': opts.hooksDir,
+    '--assets': opts.assets,
+  };
+  return Object.entries(given)
+    .filter(
+      ([flag, value]) =>
+        value !== undefined &&
+        !KIND_READS[opts.kind as DeployKind].includes(flag),
+    )
+    .map(([flag]) => flag);
+}
+
+/** The flags a `deploy` was given that none of its other flags let take effect, as
+ *  the one line that names them and what to do, or `undefined` when each one does. */
+function unusedFlag(opts: {
+  kind: DeployKindArg;
+  assets?: string;
+  from?: string;
+  agentsDir?: string;
+  skillsDir?: string;
+  hooksDir?: string;
+  scope: string;
+  home?: string;
+  project?: string;
+  config?: string;
+  check?: boolean;
+}): string | undefined {
+  if (opts.scope === 'project' && opts.home !== undefined)
+    return '--home is where --scope user finds the harness home, and --scope project places under --project; drop --home, or use --scope user';
+  if (
+    opts.from !== undefined &&
+    opts.agentsDir !== undefined &&
+    opts.skillsDir !== undefined &&
+    opts.hooksDir !== undefined
+  )
+    return '--from only names the directories that --agents-dir, --skills-dir and --hooks-dir leave out, and all three are given; drop --from, or drop the directory flag you want it to name';
+  const unread = unreadByKind(opts);
+  if (unread.length > 0)
+    return `--kind ${opts.kind} does not read ${unread.join(' or ')}; drop ${unread.length === 1 ? 'it' : 'them'}, or give a --kind that does`;
+  if (
+    opts.scope === 'user' &&
+    opts.project !== undefined &&
+    (opts.check || opts.config !== undefined)
+  )
+    return `--project is read for --scope project and to find the config, and ${opts.check ? '--check reads no config' : '--config names it'}, so with --scope user it changes nothing; drop --project, or use --scope project`;
+  return undefined;
+}
 
 /** The projector's commands, in the order their help lists them. */
 export function projectorCommands(options: ProjectorOptions = {}): Command[] {
@@ -394,8 +467,8 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
     .addOption(
       new Option(
         '--check',
-        'Report where the deployed tree differs from the rendered one (stale, absent or foreign), changing nothing; exits 0 in sync, 1 on drift, 2 when the check could not run',
-      ),
+        'Report where the deployed tree differs from the rendered one (stale, absent or foreign), changing nothing; exits 0 in sync, 1 on drift, 2 when the check could not run; it reads no config and writes nothing to narrate, so --config, --verbose and --dry-run are refused with it',
+      ).conflicts(['config', 'verbose', 'dryRun']),
     )
     .action(
       async (opts: {
@@ -416,6 +489,18 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
         check?: boolean;
       }) => {
         const usage = opts.check ? CHECK_USAGE : 1;
+        // A FLAG THAT WOULD CHANGE NOTHING IS REFUSED, never accepted and dropped.
+        // Each of these is a value the command would otherwise read past: `--home`
+        // is where the USER scope's harness home lives, `--from` only names the
+        // directories no flag already names, and `--project` is read for the place
+        // `--scope project` deploys to and for the config the runtime config comes
+        // from, which `--check` never reads.
+        const refusal = unusedFlag(opts);
+        if (refusal !== undefined) {
+          fail('deploy', refusal);
+          process.exitCode = usage;
+          return;
+        }
         // THE RENDER ROOT IS THE DEFAULT INPUT, so the ordinary invocation is
         // `cratylus deploy` and nothing else. Three required path flags were a
         // default this CLI owed its users and did not pay: every caller — including

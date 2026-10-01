@@ -123,7 +123,7 @@ verb takes, and asks for the call to be corrected and run again.
 `<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
 route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`
 prints its JSON result, and `design`, `plan` and `note` print their view. A refusal exits `1` as
-`cratylus: <message>`, and a verb the capability does not declare is refused by `verbOf` in the one
+`cratylus <message>` (the message opens with the capability and the verb, as `cratylus plan assay: …`), and a verb the capability does not declare is refused by `verbOf` in the one
 wording every dispatcher throws when called as a library. Never a silent no-op.
 
 `capabilityCommands` exports commands and builds no program. The program lives in
