@@ -4,15 +4,25 @@
 // Driven the way the bin drives it: argv in, stdout, stderr and the exit code out,
 // in a scratch repository as the working directory, under a host config carrying
 // what each capability reads — the vocabulary and Claude's names for the event
-// tap, the plan lifecycle for `plan`.
+// tap, the plan lifecycle for `plan`. The help each capability and each verb
+// prints is read off the same declarations the verbs are read against.
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { CAPABILITIES, type Capability } from '../src/capability.js';
+import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
+import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
+import { VERBS as NOTE } from '../src/capabilities/note/dispatch.js';
+import { VERBS as PLAN } from '../src/capabilities/plan/dispatch.js';
+import {
+  CAPABILITIES,
+  CAPABILITY_SUMMARIES,
+  type Capability,
+} from '../src/capability.js';
 import { runCli } from '../src/main.js';
 import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
-import { CONFIG, repository } from './verb-surface.js';
+import { type VerbFlags, refused } from '../src/verb-flags.js';
+import { BY, CONFIG, everyRecord, repository } from './verb-surface.js';
 
 const repo = repository();
 
@@ -131,5 +141,133 @@ describe('runCli refuses a first word that is no capability', () => {
     expect(err).toMatch(new RegExp(`^cratylus: unknown capability '${word}'`));
     for (const capability of ['eventTap', 'design', 'plan', 'note'])
       expect(err).toContain(capability);
+  });
+});
+
+const SURFACES: { readonly [C in Capability]: VerbFlags } = {
+  eventTap: EVENT_TAP,
+  design: DESIGN,
+  plan: PLAN,
+  note: NOTE,
+};
+
+describe('runCli prints a capability’s help from its declarations', () => {
+  it.each(CAPABILITIES)(
+    '%s --help names every verb and its summary',
+    async (c) => {
+      const { code, out, err } = await run([c, '--help']);
+      expect(err).toBe('');
+      expect(code).toBe(0);
+      expect(out).toContain(CAPABILITY_SUMMARIES[c]);
+      for (const [verb, { summary }] of Object.entries(SURFACES[c])) {
+        const line = out.split('\n').find((l) => l.includes(summary));
+        expect(line, `${c} ${verb}`).toMatch(new RegExp(`^ +${verb}\\b`));
+      }
+    },
+  );
+
+  it('a capability’s help holds no blank spacer line', async () => {
+    const { out } = await run(['plan', '--help']);
+    expect(out.split('\n').slice(0, -1)).not.toContain('');
+  });
+
+  it.each([
+    ['plan', 'add', '<unit>'],
+    ['eventTap', 'install', null],
+    ['note', 'capture', '<title>'],
+  ] as const)(
+    '%s %s --help documents its positional and every flag',
+    async (c, verb, positional) => {
+      const declared = SURFACES[c][
+        verb as keyof (typeof SURFACES)[typeof c]
+      ] as VerbFlags[string];
+      const { code, out, err } = await run([c, verb, '--help']);
+      expect(err).toBe('');
+      expect(code).toBe(0);
+      expect(out).toContain(declared.summary);
+      if (positional !== null) expect(out).toContain(positional);
+      expect(Object.keys(declared.flags).length).toBeGreaterThan(0);
+      for (const [flag, { description, takes }] of Object.entries(
+        declared.flags,
+      )) {
+        const line = out.split('\n').find((l) => l.includes(`--${flag}`));
+        expect(line, flag).toContain(description);
+        expect(line?.includes('<value>'), flag).toBe(takes === 'value');
+      }
+    },
+  );
+
+  it('`-h` after a verb asks for the same help as `--help`', async () => {
+    const asked = await run(['plan', 'add', '--help']);
+    expect((await run(['plan', 'add', '-h'])).out).toBe(asked.out);
+    expect((await run(['plan', '-h'])).out).toBe(
+      (await run(['plan', '--help'])).out,
+    );
+  });
+});
+
+describe('runCli answers a missing or unknown verb with what to do', () => {
+  it('no verb prints the capability’s help on stderr and exits 1', async () => {
+    const { code, out, err } = await run(['plan']);
+    expect(out).toBe('');
+    expect(code).toBe(1);
+    for (const { summary } of Object.values(PLAN))
+      expect(err).toContain(summary);
+  });
+
+  it('an unknown verb is one line naming it, the verbs and the help to ask for', async () => {
+    const { code, out, err } = await run(['plan', 'frob']);
+    expect(out).toBe('');
+    expect(code).toBe(1);
+    expect(err.trimEnd().split('\n')).toHaveLength(1);
+    expect(err).toContain("'frob'");
+    for (const verb of Object.keys(PLAN)) expect(err).toContain(verb);
+    expect(err).toContain('cratylus plan --help');
+  });
+});
+
+describe('runCli leaves a verb’s flags to the verb’s own reader', () => {
+  it('a flag the verb does not take is refused as `refused` words it, and nothing is written', async () => {
+    const before = everyRecord(repo);
+    const { code, out, err } = await run([
+      'design',
+      'define',
+      'x',
+      '--glos',
+      'y',
+      ...BY,
+    ]);
+    expect(out).toBe('');
+    expect(code).toBe(1);
+    expect(err).toBe(
+      `cratylus: ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
+    );
+    expect(everyRecord(repo)).toEqual(before);
+  });
+
+  it('`-h` that is a flag’s value is that value, not a request for help', async () => {
+    const captured = await run([
+      'note',
+      'capture',
+      'dash-h',
+      '--kind',
+      'idea',
+      '--topic',
+      'x',
+      '--body',
+      '-h',
+      ...BY,
+    ]);
+    expect(captured.err).toBe('');
+    expect(captured.code).toBe(0);
+    const shown = await run(['note', 'show', 'dash-h']);
+    expect(shown.code).toBe(0);
+    expect(shown.out).toMatch(/^ *body: -h$/m);
+  });
+
+  it('`--help` after a flag that takes no value in its place is still a request for help', async () => {
+    const { code, out } = await run(['note', 'capture', '--body', '--help']);
+    expect(code).toBe(0);
+    expect(out).toContain('Usage: cratylus note capture');
   });
 });

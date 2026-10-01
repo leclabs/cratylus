@@ -14,7 +14,7 @@
 //
 //   (1) `cratylus`'s `bin` MANIFEST KEY — the one irreducible second copy
 //       (npm reads it with no TypeScript in the loop, so it cannot be computed).
-//   (2) the runtime's cac BRANDING (`main.ts`) — read out of `--help`.
+//   (2) the runtime's Commander BRANDING (`main.ts`) — read out of `--help`.
 //   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
 //       of a real `scripts/<cap>.mjs` in a real render tree.
 //   (4) EVERY hook worker that names the bin — swept, not enumerated: every
@@ -76,7 +76,7 @@ import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { runCli } from '@cratylus/runtime/main';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 import canonPlugin from '../src/index.js';
@@ -251,23 +251,26 @@ describe('the bin name has exactly one home', () => {
     expect(Object.keys(manifest.bin)).toEqual([CLI_BIN]);
   });
 
-  it("the runtime's cac branding is CLI_BIN", async () => {
-    // cac prints help through `console.log`, not `process.stdout.write`.
+  it("the runtime's Commander branding is CLI_BIN", async () => {
+    // Commander's help is written through `process.stdout.write`.
     const chunks: string[] = [];
-    const log = console.log;
-    console.log = (...args: unknown[]) => {
-      chunks.push(args.map(String).join(' '));
-    };
+    const write = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation((chunk: string | Uint8Array) => {
+        chunks.push(String(chunk));
+        return true;
+      });
+    const exitCode = process.exitCode;
     try {
       await runCli(['--help']);
     } finally {
-      console.log = log;
+      write.mockRestore();
+      process.exitCode = exitCode;
     }
-    const help = chunks.join('\n');
-    // Capture the brand cac printed, then compare — not `toContain`, which would
-    // still pass if the help named a stale bin alongside the right one.
-    expect(help.match(/^(\S+)\//)?.[1]).toBe(CLI_BIN);
-    expect(help.match(/^ {2}\$ (\S+) /m)?.[1]).toBe(CLI_BIN);
+    const help = chunks.join('');
+    // Capture the brand the help printed, then compare — not `toContain`, which
+    // would still pass if the help named a stale bin alongside the right one.
+    expect(help.match(/^Usage: (\S+) /m)?.[1]).toBe(CLI_BIN);
   });
 
   it('the PROJECTED thin shim spawns CLI_BIN — the operative site', () => {
