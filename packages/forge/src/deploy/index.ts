@@ -77,6 +77,7 @@ export {
   runtimeConfigDocument,
   runtimeConfigTarget,
   serializeRuntimeConfig,
+  withoutRuntimeParts,
 } from './runtime-config.js';
 
 export {

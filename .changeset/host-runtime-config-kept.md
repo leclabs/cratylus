@@ -1,0 +1,6 @@
+---
+'@cratylus/forge': patch
+'cratylus': patch
+---
+
+A runtime config the host wrote before install keeps its content. `cratylus install` and `cratylus deploy` used to replace an existing `~/.cratylus.json` (or `$AGENT_RUNTIME_CONFIG`) whole, so a key of the host's own, such as `{"x":1}` or a capability's configuration the corpus does not write (`configuration.mine`), was gone after the run, and the uninstall of the last harness then deleted the file. Every deploy now writes only cratylus's parts of the file, the event vocabulary, the configuration of each capability the corpus configures, and its harness's stanza, and carries every other key as it found it. `cratylus uninstall` takes out only those parts: this harness's stanza, and with the last harness's stanza the vocabulary and the capability configuration the deploy recorded writing (`runtimeCapabilities` in the deploy manifest). It removes the file only when nothing else is left in it; otherwise it leaves the file and names what stands there because the host placed it. A harness deployed before the capabilities were recorded leaves the `configuration` block, named, since an entry of the host's cannot be told from one cratylus wrote; `cratylus install --harness <h>` records them. A host edit made after install, and two harnesses sharing the file, work as before.

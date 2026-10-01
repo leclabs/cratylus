@@ -215,8 +215,12 @@ function configurationOf(
   return configuration;
 }
 
-/** Serialize the document exactly as it lands on disk (2-space, trailing newline). */
-export function serializeRuntimeConfig(doc: EmittedRuntimeConfig): string {
+/** Serialize the document exactly as it lands on disk (2-space, trailing newline). A
+ *  document an uninstall has cut down is not an `EmittedRuntimeConfig`, hence the
+ *  plain object. */
+export function serializeRuntimeConfig(
+  doc: EmittedRuntimeConfig | Readonly<Record<string, unknown>>,
+): string {
   return `${JSON.stringify(doc, null, 2)}\n`;
 }
 
@@ -224,18 +228,40 @@ export function serializeRuntimeConfig(doc: EmittedRuntimeConfig): string {
 export interface EmitRuntimeConfigResult {
   readonly path: string;
   readonly wrote: boolean;
+  /** The document as it stands (or, dry, would stand): cratylus's parts and every
+   *  part of the host's that was carried. */
   readonly doc: EmittedRuntimeConfig;
   /** The stanza this emission wrote — `doc.harnesses[harness]`. */
   readonly stanza: EmittedHarness;
+  /** The capabilities whose configuration this emission wrote — the corpus's, which is
+   *  the part of `doc.configuration` that is cratylus's. An uninstall takes out these
+   *  and no other, so the deploy records them. */
+  readonly configured: readonly string[];
+}
+
+type Plain = Record<string, unknown>;
+
+const isPlain = (v: unknown): v is Plain =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/** `from` less the named keys. */
+function omit(from: Plain, keys: readonly string[]): Plain {
+  return Object.fromEntries(
+    Object.entries(from).filter(([k]) => !keys.includes(k)),
+  );
 }
 
 /**
  * Emit the host config.
  *
- * The corpus's parts (`events`, `configuration`) and this harness's stanza are
- * regenerated. Every OTHER harness's stanza is carried over as found: it is that
- * harness's deploy's to write, and replacing it here is how a claude deploy used to
- * erase omp's native names. Nothing else in an existing config is carried.
+ * What is cratylus's in the file is the event vocabulary (`events.vocabulary`), the
+ * configuration of each capability the corpus configures (`configuration.<capability>`)
+ * and each harness's stanza (`harnesses.<harness>`). The vocabulary, the configuration
+ * and this harness's stanza are regenerated. Every OTHER harness's stanza is carried
+ * over as found: it is that harness's deploy's to write, and replacing it here is how a
+ * claude deploy used to erase omp's native names. Everything else in an existing config
+ * is the host's and is carried as found: a key of its own at the top, another key under
+ * `events`, a capability's configuration the corpus does not write.
  */
 export function emitRuntimeConfig(
   opts: EmitRuntimeConfigOpts & {
@@ -248,37 +274,146 @@ export function emitRuntimeConfig(
   },
 ): EmitRuntimeConfigResult {
   const path = opts.path ?? runtimeConfigTarget(opts.env, opts.home);
-  const doc = runtimeConfigDocument({
+  const prior = priorConfig(path);
+  const ours = runtimeConfigDocument({
     ...opts,
-    harnesses: opts.harnesses ?? priorHarnesses(path),
+    harnesses:
+      opts.harnesses ??
+      (isPlain(prior.harnesses)
+        ? (prior.harnesses as Record<string, EmittedHarness>)
+        : {}),
   });
+  const configured = Object.keys(ours.configuration ?? {});
+  const { events, harnesses: _stanzas, configuration, ...hostKeys } = prior;
+  const mergedConfiguration = {
+    ...(isPlain(configuration) ? omit(configuration, configured) : {}),
+    ...ours.configuration,
+  };
+  // The host's parts ride in the document beside the typed ones, which is why the
+  // result is cast: `EmittedRuntimeConfig` names what cratylus emits, not what a host
+  // keeps in its own file.
+  const doc = {
+    events: {
+      ...(isPlain(events) ? omit(events, ['vocabulary']) : {}),
+      ...ours.events,
+    },
+    harnesses: ours.harnesses,
+    ...(Object.keys(mergedConfiguration).length > 0
+      ? { configuration: mergedConfiguration }
+      : {}),
+    ...hostKeys,
+  } as unknown as EmittedRuntimeConfig;
   const stanza = harnessStanza(opts);
-  if (opts.dry === true) return { path, wrote: false, doc, stanza };
+  if (opts.dry === true) return { path, wrote: false, doc, stanza, configured };
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
-  return { path, wrote: true, doc, stanza };
+  return { path, wrote: true, doc, stanza, configured };
 }
 
 /**
- * Every harness's stanza in an existing config, empty when absent or corrupt.
- * Stanzas are carried as found, not re-read: they are other deploys' output, and
- * this one has no business normalizing them.
+ * The existing config as an object, empty when absent, corrupt or not an object.
+ * Its harness stanzas are carried as found, not re-read: they are other deploys'
+ * output, and this one has no business normalizing them.
  */
-function priorHarnesses(
-  path: string,
-): Readonly<Record<string, EmittedHarness>> {
+function priorConfig(path: string): Plain {
   if (!existsSync(path)) return {};
   try {
-    const { harnesses } = JSON.parse(readFileSync(path, 'utf8')) as {
-      harnesses?: unknown;
-    };
-    return harnesses !== null &&
-      typeof harnesses === 'object' &&
-      !Array.isArray(harnesses)
-      ? (harnesses as Record<string, EmittedHarness>)
-      : {};
+    const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
+    return isPlain(parsed) ? parsed : {};
   } catch {
     // A corrupt config must not wedge a deploy; the vocabulary is re-emitted.
     return {};
   }
+}
+
+/** What an uninstall of one harness does to a runtime config. */
+export interface RuntimeConfigRemoval {
+  /** Whether the harness's stanza was the last of the harnesses cratylus deploys for,
+   *  so that the corpus's parts went with it. */
+  readonly last: boolean;
+  /** The document once cratylus's parts are out; `null` when nothing is left in it. */
+  readonly rest: Plain | null;
+  /** What stands in `rest` because the host placed it, as dotted paths. */
+  readonly left: readonly string[];
+  /** Capabilities whose configuration stands because nothing records whether cratylus
+   *  wrote it, as dotted paths. */
+  readonly unrecorded: readonly string[];
+}
+
+/**
+ * Take cratylus's parts out of a runtime config for one harness's uninstall, and
+ * nothing the host placed: this harness's stanza, and — with the last stanza of the
+ * harnesses cratylus deploys for (`harnesses`) — the vocabulary and the configuration of
+ * each capability in `capabilities`, the ones the deploy recorded writing. `capabilities`
+ * is `null` for a deploy that recorded none, whose configuration is then left whole,
+ * since a host's entry cannot be told from one cratylus wrote. `undefined` when the
+ * config holds no stanza of this harness, so there is nothing of its to remove.
+ */
+export function withoutRuntimeParts(
+  doc: Plain,
+  opts: {
+    readonly harness: string;
+    readonly harnesses: readonly string[];
+    readonly capabilities: readonly string[] | null;
+  },
+): RuntimeConfigRemoval | undefined {
+  if (!isPlain(doc.harnesses) || !Object.hasOwn(doc.harnesses, opts.harness)) {
+    return undefined;
+  }
+  const others = omit(doc.harnesses, [opts.harness]);
+  if (Object.keys(others).some((name) => opts.harnesses.includes(name))) {
+    return {
+      last: false,
+      rest: { ...doc, harnesses: others },
+      left: [],
+      unrecorded: [],
+    };
+  }
+  const { events, harnesses: _stanzas, configuration, ...hostKeys } = doc;
+  const left: string[] = [];
+  const unrecorded: string[] = [];
+  const rest: Plain = {};
+  // `events` and `configuration` stay with what is left of them when that is not
+  // empty, and whole when they are not the objects cratylus wrote.
+  if (events !== undefined) {
+    const kept = isPlain(events) ? omit(events, ['vocabulary']) : events;
+    if (!isPlain(kept)) {
+      rest.events = kept;
+      left.push('events');
+    } else if (Object.keys(kept).length > 0) {
+      rest.events = kept;
+      for (const k of Object.keys(kept)) left.push(`events.${k}`);
+    }
+  }
+  if (Object.keys(others).length > 0) {
+    rest.harnesses = others;
+    for (const name of Object.keys(others)) left.push(`harnesses.${name}`);
+  }
+  if (configuration !== undefined) {
+    if (!isPlain(configuration)) {
+      rest.configuration = configuration;
+      left.push('configuration');
+    } else {
+      const kept =
+        opts.capabilities === null
+          ? configuration
+          : omit(configuration, opts.capabilities);
+      if (Object.keys(kept).length > 0) {
+        rest.configuration = kept;
+        for (const k of Object.keys(kept)) {
+          (opts.capabilities === null ? unrecorded : left).push(
+            `configuration.${k}`,
+          );
+        }
+      }
+    }
+  }
+  for (const k of Object.keys(hostKeys)) left.push(k);
+  Object.assign(rest, hostKeys);
+  return {
+    last: true,
+    rest: Object.keys(rest).length > 0 ? rest : null,
+    left,
+    unrecorded,
+  };
 }

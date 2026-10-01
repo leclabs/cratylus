@@ -25,8 +25,10 @@ import {
   deploySingle,
   emitRuntimeConfig,
   projectScope,
+  readManifest,
   resolveNames,
   userScope,
+  writeManifest,
 } from '../../deploy/index.js';
 import { type DriftReport, auditLocal } from '../../deploy/local.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
@@ -304,7 +306,7 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
         outcome.outside[root] = (outcome.outside[root] ?? 0) + 1;
       }
     }
-    outcome.runtimeConfig = await emitHostRuntimeConfig(
+    const emitted = await emitHostRuntimeConfig(
       opts,
       harnessAdapter.name,
       harnessAdapter.nativeEvents,
@@ -318,6 +320,17 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
       log,
       warn,
     );
+    outcome.runtimeConfig =
+      emitted === null ? null : { path: emitted.path, wrote: emitted.wrote };
+    // What this deploy put in the file's `configuration` block, kept with the record of
+    // what it placed: the host may hold entries of its own there, which an uninstall
+    // must tell from these.
+    if (emitted?.wrote === true) {
+      writeManifest(outcome.harnessDir, {
+        ...readManifest(outcome.harnessDir),
+        runtimeCapabilities: [...emitted.configured],
+      });
+    }
     return outcome;
   } catch (e) {
     fail((e as Error).message);
@@ -410,7 +423,11 @@ async function emitHostRuntimeConfig(
   home: string | undefined,
   log: (line: string) => void,
   warn: (message: string) => void,
-): Promise<{ path: string; wrote: boolean } | null> {
+): Promise<{
+  path: string;
+  wrote: boolean;
+  configured: readonly string[];
+} | null> {
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
@@ -436,7 +453,7 @@ async function emitHostRuntimeConfig(
     );
     return null;
   }
-  const { path, wrote, doc, stanza } = emitRuntimeConfig({
+  const { path, wrote, doc, stanza, configured } = emitRuntimeConfig({
     events,
     harness,
     nativeEvents,
@@ -449,9 +466,9 @@ async function emitHostRuntimeConfig(
     `runtime config${wrote ? '' : ' (dry-run)'}: ${path}: ` +
       `${doc.events.vocabulary.length} event(s), ` +
       `harnesses.${harness}: ${Object.keys(stanza.native).length} with a native peer, ` +
-      `${Object.keys(doc.configuration ?? {}).length} configured capability(ies)`,
+      `${configured.length} configured capability(ies)`,
   );
-  return { path, wrote };
+  return { path, wrote, configured };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
