@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3V19M9W2WP6PD87JXNH1ATK",
+    "entity": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "operation": "amend",
+    "supersedes": [
+      "01M3V147STDMDZCEWGFQSEQ9ZJ"
+    ],
+    "author": "planner",
+    "time": "2026-10-01T06:09:14.556Z",
+    "reason": "five units ratified: two waves of disjoint outputs and a terminal command tree",
+    "cause": "shard command line handed down by the architect"
+  },
+  "payload": {
+    "name": "command-line",
+    "realizes": [
+      "01M3V08TM6NB9PGN3HZ4R2VYYM"
+    ],
+    "state": "bound"
+  }
+}

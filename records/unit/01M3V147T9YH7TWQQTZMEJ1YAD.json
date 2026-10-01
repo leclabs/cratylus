@@ -1,0 +1,59 @@
+{
+  "envelope": {
+    "id": "01M3V147T9YH7TWQQTZMEJ1YAD",
+    "entity": "01M3V147T9YH7TWQQTZMEJ1YAC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-01T06:06:17.929Z",
+    "reason": "every capability verb and flag needs words its help can print, declared once beside it",
+    "cause": "shard command line handed down by the architect"
+  },
+  "payload": {
+    "plan": "01M3V147STDMDZCEWGFQSEQ9ZH",
+    "spec": {
+      "name": "verb-descriptions",
+      "intent": "Census @d8907e0c (design at d8907e0c, working tree clean); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Realize the clause of `command line` that has every capability verb listed and documented at its own level, on the side where it is declared. This unit gives each verb and each flag the words its help will print. Unit capability-commands renders them through Commander, and this unit renders nothing.\nAT CENSUS. The four capabilities in packages/runtime/src/capability.ts (CAPABILITIES: eventTap, design, plan, note) declare their verbs in `VERBS` beside each dispatcher: design/dispatch.ts:164-176 (6 verbs), plan/dispatch.ts:517-554 (12), note/dispatch.ts:132-158 (5) and event-tap/dispatch.ts:69-74 (4). That makes 27 verbs and 36 distinct capability:flag pairs, measured by importing each VERBS. INVOCATION (author, reason, cause) is shared from plan/argv.ts. A verb's flags are `Flags = { [flag]: 'value' | 'switch' }` (verb-flags.ts:36), which carries no words at all. No capability, verb, positional or flag has a description anywhere, and `cratylus plan --help` is refused as an unknown verb (observed, exit 1).\nCHANGE. Beside each verb's flags, in the same declaration, give: a one-line summary of what the verb does, the verb's positional (for example `<concept>`, `<unit>`, `<title>`, or none), and a one-line description of every flag it takes. Each capability gets a one-line summary declared once beside CAPABILITIES. The shape must make an undescribed flag or verb a compile error, so that a flag cannot be taken without being described. A second table keyed by the same names does not meet this, because it can drift from the first. Shared flags (INVOCATION, `--plan`) are described once where they are declared. readArgv, refused and nearest keep their behaviour, and every refusal text stays byte-identical, because the `verb flags` concept and its tests own that text. The words are for a consumer who has not read the skills: plain, no internal jargon, saying what the verb changes and what a flag holds. Where a flag may be given more than once, say so. Export the declarations so main.ts can read them. Out of scope: main.ts, the bin, help rendering, and any change to which flags a verb takes.",
+      "static": [
+        "packages/runtime/src/view/plan.ts",
+        "packages/runtime/test/verb-surface.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/verb-flags.ts",
+        "packages/runtime/src/capability.ts",
+        "packages/runtime/src/capabilities/design/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/runtime/test/verb-descriptions.test.ts",
+        "packages/runtime/test/design.test.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        ".changeset/verb-descriptions.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime exec vitest run test/verb-descriptions.test.ts` exits 0. The file asserts, for each of eventTap, design, plan and note, that the capability has a non-empty one-line summary (no newline), that every verb in its VERBS has a non-empty one-line summary and a declared positional (or none), and that every flag the verb takes has a non-empty one-line description. It fails at census, where no capability, verb or flag carries one.",
+        "`pnpm --filter @cratylus/runtime exec vitest run test/design.test.ts test/plan.test.ts test/note.test.ts test/event-tap.test.ts` exits 0, and `git diff d8907e0c -- packages/runtime/test` shows no expected refusal string changed: every `refused(…)` and `nearest(…)` assertion holds with the text it had at census.",
+        "`pnpm --filter @cratylus/runtime typecheck` exits 0. A verb entry that drops one flag's description, written as a `// @ts-expect-error` case in test/verb-descriptions.test.ts, is a type error that `pnpm --filter @cratylus/runtime exec tsc --noEmit -p tsconfig.json` or the package's test typecheck reports. If the package's tsconfig does not cover test/, the case lives where its typecheck does run, and the unit says where."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3V08TM6NB9PGN3HZ4R2VYYM",
+      "version": "01M3V08TM6NB9PGN3HZ4R2VYYN",
+      "closure": {
+        "01M3NK67ET848PWDE5M474EV55": "01M3NK67ET848PWDE5M474EV56",
+        "01M3S9QXFG2PS1VAE275Y7PB7C": "01M3S9QXFG2PS1VAE275Y7PB7D",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3PZ5AS51YWKS979SHJ4PD1A": "01M3RCXA6QKPK84RRZ5155W027",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3QBG00Z13RG3P9110NBW9X8": "01M3RCXAGWQC0RZ1A1C8398R78",
+        "01M3QGCVKW1FYB0TXVT8R5BB6K": "01M3QZDS4M8HDFWYDTW0Z64JW5"
+      }
+    },
+    "ledger": []
+  }
+}
