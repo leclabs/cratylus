@@ -203,6 +203,107 @@ describe('tap uninstall (accept 2: zero residue)', () => {
   });
 });
 
+describe('tap uninstall restores what install placed', () => {
+  const install = (settingsPath: string, sinkPath: string): void => {
+    tap([
+      'install',
+      '--events',
+      'turn.end',
+      '--sink',
+      sinkPath,
+      '--settings',
+      settingsPath,
+    ]);
+  };
+
+  it('removes the settings file and the .claude directory install created', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    expect(existsSync(settingsPath)).toBe(true);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(existsSync(dirname(settingsPath))).toBe(false);
+  });
+
+  it('removes every directory install made for a nested settings path', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const nested = join(
+      dirname(dirname(settingsPath)),
+      'a',
+      'b',
+      'settings.json',
+    );
+    install(nested, sinkPath);
+
+    tap(['uninstall', '--settings', nested]);
+
+    expect(existsSync(join(dirname(dirname(settingsPath)), 'a'))).toBe(false);
+    expect(existsSync(dirname(dirname(settingsPath)))).toBe(true);
+  });
+
+  it('keeps a settings file that held {} before install, holding {}', () => {
+    const { settingsPath, sinkPath } = fixture();
+    seed(settingsPath, {});
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(read(settingsPath)).toEqual({});
+  });
+
+  it('keeps a .claude directory that held another file before install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const other = join(dirname(settingsPath), 'CLAUDE.md');
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(other, 'host-owned\n', 'utf8');
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(readFileSync(other, 'utf8')).toBe('host-owned\n');
+  });
+
+  it('keeps a directory the host put a file in after install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    const other = join(dirname(settingsPath), 'CLAUDE.md');
+    writeFileSync(other, 'added later\n', 'utf8');
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(readFileSync(other, 'utf8')).toBe('added later\n');
+  });
+
+  it('keeps a settings file the host added keys to after install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    const installed = read(settingsPath);
+    writeFileSync(
+      settingsPath,
+      JSON.stringify({ ...installed, env: { FOO: 'bar' } }),
+      'utf8',
+    );
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(read(settingsPath)).toEqual({ env: { FOO: 'bar' } });
+  });
+
+  it('removes the file after a second install over the first', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(dirname(settingsPath))).toBe(false);
+  });
+});
+
 describe('tap status / read (accept 3: reflect state across processes)', () => {
   it('status reflects installed state, derived from the target file', () => {
     const { settingsPath, sinkPath } = fixture();

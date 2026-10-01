@@ -46,6 +46,14 @@ export type ClaudeHooksBlock = Record<
       timeout?: number;
       /** The stable id a tap entry is stamped with, so teardown finds it. */
       id?: string;
+      /**
+       * Stamped on a tap entry ONLY by an install that created the settings file: how
+       * many directories it made to hold it (0 when the directory already existed).
+       * Install and uninstall are separate processes, so what install created has to
+       * travel in the file itself; teardown reads it to remove exactly what the
+       * install placed, and nothing the host did.
+       */
+      createdDirectories?: number;
       env?: Record<string, string>;
     }>;
   }>

@@ -12,7 +12,14 @@
 // are correct across separate CLI invocations (no reliance on in-process state).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmdirSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { CLI_BIN } from '../../bin-name.js';
 import type { EventName } from '../../events.js';
@@ -81,6 +88,31 @@ function safeJson(line: string): unknown {
     return JSON.parse(line);
   } catch {
     return line;
+  }
+}
+
+/** How many directories, counted up from `dir`, do not yet exist. */
+function missingDirectories(dir: string): number {
+  let missing = 0;
+  for (let d = dir; !existsSync(d); d = dirname(d)) missing += 1;
+  return missing;
+}
+
+/**
+ * Remove `dir` and up to `count - 1` parents above it, stopping at the first that
+ * holds anything: a directory install made is the host's once the host puts
+ * something in it.
+ */
+function removeEmptyDirectories(dir: string, count: number): void {
+  let d = dir;
+  for (let i = 0; i < count; i += 1, d = dirname(d)) {
+    try {
+      rmdirSync(d);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'ENOTEMPTY' || code === 'EEXIST') return;
+      throw err;
+    }
   }
 }
 
@@ -195,6 +227,19 @@ export class EventTapHostClaude implements EventTapHost {
         ? (JSON.parse(existing) as { hooks?: ClaudeHooksBlock })
         : {};
 
+    // Install is what knows whether it made the file and its directories; uninstall
+    // runs in another process and learns it from the stamp, not from memory.
+    if (existing === undefined) {
+      const createdDirectories = missingDirectories(dirname(settingsPath));
+      for (const entries of Object.values(tapBlock)) {
+        for (const entry of entries) {
+          for (const hook of entry.hooks) {
+            hook.createdDirectories = createdDirectories;
+          }
+        }
+      }
+    }
+
     // Merge per native event so a foreign entry under the same event survives
     // (the top-level key merge below preserves permissions/env/etc.).
     const mergedHooks: ClaudeHooksBlock = { ...(base.hooks ?? {}) };
@@ -222,6 +267,14 @@ export class EventTapHostClaude implements EventTapHost {
     const hooks = base.hooks;
     if (!hooks) return;
 
+    // What an install that created the file stamped on its entries; any one will do.
+    const createdDirectories = Object.values(hooks)
+      .flat()
+      .flatMap((e) => e.hooks)
+      .find(
+        (h) => h.id === EVENT_TAP_ID && h.createdDirectories !== undefined,
+      )?.createdDirectories;
+
     const cleaned: ClaudeHooksBlock = {};
     for (const [event, entries] of Object.entries(hooks)) {
       const kept = entries
@@ -239,6 +292,14 @@ export class EventTapHostClaude implements EventTapHost {
         mergeJsonKeys(text, { hooks: cleaned }),
         'utf8',
       );
+    } else if (
+      createdDirectories !== undefined &&
+      Object.keys(base).every((k) => k === 'hooks')
+    ) {
+      // The tap's entries were all the file held and install made the file: put the
+      // host back as it was before install, file and the directories made for it.
+      unlinkSync(settingsPath);
+      removeEmptyDirectories(dirname(settingsPath), createdDirectories);
     } else {
       // No foreign entries remain: drop the whole key so nothing residual is
       // left behind (a bare `hooks: {}` would be residue).
