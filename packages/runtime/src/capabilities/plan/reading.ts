@@ -717,6 +717,27 @@ export class Reading {
       );
   }
 
+  /** Refuses the landing of `commit` on unit `unit` of plan `plan` unless the
+   *  commit was built in a worktree of its own: not one the repository cannot
+   *  resolve, not one the main checkout holds, not one the plan's line holds.
+   *  The refusal says which, and that nothing was written. */
+  unitBuilt(unit: string, plan: string, commit: string): void {
+    const built = this.store.builtIn(
+      this.#planNamed(this, plan) ?? printed(this.planName(plan)),
+      commit,
+    );
+    if (built === 'apart') return;
+    const of = `unit ${JSON.stringify(printed(this.unitName(unit)))} of plan ${JSON.stringify(printed(this.planName(plan)))}`;
+    const said = {
+      unresolved: 'is not a commit the repository holds',
+      main: 'is already held by the main checkout; a unit is built in a worktree of its own',
+      line: 'is already held by the plan’s line; a unit is built in a worktree of its own',
+    }[built];
+    throw new Error(
+      `plan land: ${of}: commit ${JSON.stringify(commit)} ${said}, so nothing was written`,
+    );
+  }
+
   /** Every unit realizing a concept its plan does not, with `unit` written as
    *  the one version of that unit (`null`: withdrawn) and `plan` as the one
    *  version of that plan. Every version of a diverged unit or plan is read. */

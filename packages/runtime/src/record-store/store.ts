@@ -97,6 +97,21 @@ function git(cwd: string, ...args: string[]): string {
   }
 }
 
+/** Whether the commit `ancestor` is `tip` or reachable from it. */
+function contains(cwd: string, ancestor: string, tip: string): boolean {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', ancestor, tip], {
+      cwd,
+      stdio: 'ignore',
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && error.status === 1)
+      return false;
+    throw error;
+  }
+}
+
 /** Every worktree of the repository holding `cwd`, the main one first, each with
  *  the branch it holds (none when detached). */
 function worktrees(cwd: string): { path: string; branch?: string }[] {
@@ -309,6 +324,39 @@ export class RecordStore {
         : `plan ${plan} is bound and its line does not exist, so nothing was written`,
       'line',
     );
+  }
+
+  /**
+   * Where the work of `commit` was built, as far as the repository says: it
+   * `unresolved` when no commit answers to the name; `main` when the HEAD of
+   * the main worktree contains it, so it was built in that checkout, whatever
+   * branch the checkout is on; `line` when the line of `plan` already contains
+   * it, so it was built in the line's own worktree; `apart` otherwise, built in
+   * a worktree of its own. Changes nothing.
+   */
+  builtIn(
+    plan: string,
+    commit: string,
+  ): 'unresolved' | 'main' | 'line' | 'apart' {
+    let id: string;
+    try {
+      id = git(
+        this.top,
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        '--end-of-options',
+        `${commit}^{commit}`,
+      );
+    } catch {
+      return 'unresolved';
+    }
+    if (contains(this.top, id, git(this.main, 'rev-parse', 'HEAD')))
+      return 'main';
+    const { branch, exists } = this.line(plan);
+    return exists && contains(this.top, id, `refs/heads/${branch}`)
+      ? 'line'
+      : 'apart';
   }
 
   /**

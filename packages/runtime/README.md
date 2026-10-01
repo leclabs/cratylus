@@ -74,6 +74,8 @@ records the commit that holds its work, `plan assay` an assay's verdict on a com
 `achieved` or `not-achieved`, with `--missing` once per part a not-achieved verdict names),
 `plan whole` the line's commit holding it, and `plan broke` the failing `--check` when it broke the
 whole.
+`plan land` refuses, writing nothing, a commit the main checkout or the plan's line already holds, and a
+commit the repository cannot resolve: a unit is built in a worktree of its own, off the line.
 Each event carries its author and time, and is admitted only while the unit's plan is bound and the
 unit is in flight — past its lifecycle's first state and short of the one that satisfies a
 dependency. `plan show <unit> --plan <p>` prints the ledger in order, and each unit's line in
