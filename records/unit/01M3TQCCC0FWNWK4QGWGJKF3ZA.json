@@ -1,0 +1,52 @@
+{
+  "envelope": {
+    "id": "01M3TQCCC0FWNWK4QGWGJKF3ZA",
+    "entity": "01M3TQCCC0FWNWK4QGWGJKF3Z9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "TurnEndPlanner",
+    "time": "2026-10-01T03:15:58.976Z",
+    "reason": "realize the turn-end exception of enforcement scope as amended 2026-10-01T01:24",
+    "cause": "shard enforcement scope handed to the planner after its amendment"
+  },
+  "payload": {
+    "plan": "01M3TQCCBMY40PMZTG76GTZ308",
+    "spec": {
+      "name": "turn-end-loop-bounded",
+      "intent": "Census @fa37bae7 (main); re-derive any line cited below if its path changed since.\nRealize on the turn-end stance guard the clause of `enforcement scope` as amended 2026-10-01T01:24: the turn end is the one exception to a refused act staying refused; refusing it holds back no effect, it only makes the agent redo its turn, so the turn-end guard may let a repeated or several-times-refused stop through, saying so, rather than lock a session in an endless loop. Every turn is still judged; only what follows a BLOCK changes.\nAT CENSUS. The one turn-end guard is the cell packages/canon/src/hooks/stance-guardrail.ts (events turn.end); its worker projects to packages/canon/targets/guardrail/stance-guardrail.sh through `pnpm canon:project:targets`, and the same worker serves both harnesses: Claude Code's Stop hook and omp's session_stop, whose bridge (packages/forge/src/adapters/omp/render.ts L616) hands the worker `stop_hook_active` and session_id and relays any non-JSON line the worker prints. Both harnesses re-fire the stop with stop_hook_active=true after a block. The worker has no bound: plan guard-precision (e7fcc909) removed the no-progress detector and the one-shot bypass, so a BLOCK blocks however many came before and a stop the judge keeps blocking loops forever. State: target L183-189 (session id, $TMPDIR/stance-guardrail/<session>.count, verdict log), the count bumped and stated in the reason at L713-715 ('a COUNT, not a budget: this gate does not stop enforcing'); the retry law is stated in the header (L46-48), the loop-safety block (L165-182) and the A REFUSAL HOLDS block (L703-712), and in packages/canon/targets/guardrail/README.md L103-107. The 15d0a621 form of the worker (L725-777 there) shows the removed caps; its counter never reset on an allowed stop, which is a defect not to restore.\nCHANGE. Bound one stop, never the session. A stop that follows a block of this guard (stop_hook_active true) continues the run of blocks; a stop with stop_hook_active false or absent starts a new run at 0. After the judge gives a BLOCK that survives the evidence checks, the worker lets the stop through instead of blocking, saying so on both harness forms through `say` (naming STANCE GUARDRAIL, that the stop is let through UNRESOLVED and the finding stands, and the judge's reason), when either (a) the run already holds a block and this turn's text is byte-identical to the turn last blocked in it (a repeated stop), or (b) the run already holds 3 blocks (a several-times-refused stop); 3 is a constant in the cell and no environment variable sets it. Otherwise it blocks and records the run and the blocked turn's hash in the per-session state. A stop that follows a block but whose run cannot be read or written (state dir unwritable) is let through on a BLOCK, saying so, because a bound that cannot be counted cannot hold; a fresh stop still blocks there. A judged PASS stays silent; DARK and BLOCK DISCARDED paths are unchanged. The reason the agent reads may keep the count but no longer claims the gate never stops enforcing. State the exception where the retry law is stated (header, loop-safety block, A REFUSAL HOLDS block, targets README item), as the turn end being the one exception to a refused act staying refused. Add the exception to the Enforcement scope entry of packages/cli/README.md beside 'A refused act stays refused' (L152), changing nothing else there. Correct the HERMETIC STATE comment of test-stance-guardrail.sh (L130-139) to the bound as built. Change no other guard (pre-call, purview), no rubric, no forge file. Add .changeset/turn-end-loop-bounded.md (@cratylus/canon patch).",
+      "static": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/canon/tooling/project-targets.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/cli/README.md",
+        ".changeset/turn-end-loop-bounded.md"
+      ],
+      "accept": [
+        "REPEAT: in packages/canon/test/stance-guardrail-dark.test.ts, for each harness form, with STANCE_JUDGE_CMD naming a stub that counts its calls and answers a BLOCK whose EVIDENCE is in the close: a collapsed turn fired in a session with stop_hook_active false blocks, and the same turn fired next in that session with stop_hook_active true exits 0, prints no `\"decision\":\"block\"`, prints the harness's notice naming STANCE GUARDRAIL and UNRESOLVED, and the stub counts 2. At fa37bae7 the second fire blocks, so the case fails there.",
+        "RUN: in the same file, for each harness form, four different collapsed turns fired in one session, the first with stop_hook_active false and the rest true: the first three block, the fourth exits 0 with no block decision and the notice naming STANCE GUARDRAIL and UNRESOLVED, and the counting stub counts 4. At fa37bae7 the fourth blocks.",
+        "RE-ARM: in the same file, after each let-through above, a collapsed turn fired in the same session with stop_hook_active false blocks; and three different collapsed turns each fired with stop_hook_active false in one session all block (a stop that follows no block is never let through by the bound).",
+        "UNCOUNTABLE: in the same file, with TMPDIR naming a file (state unwritable), a collapsed turn fired with stop_hook_active false blocks and one fired with stop_hook_active true exits 0 with no block decision and the notice naming STANCE GUARDRAIL. At fa37bae7 the second blocks.",
+        "`pnpm stance-guard:test` exits 0 and prints an ok line for a repeated stop let through and one for a fourth refused stop let through (cases added beside 5c, each with its own session id).",
+        "`grep -c 'does not stop enforcing' packages/canon/targets/guardrail/stance-guardrail.sh` prints 0 (1 at fa37bae7); `grep -c 'no turn is allowed through because of how many times' packages/canon/targets/guardrail/README.md` prints 0 (1 at fa37bae7); `grep -c -i -E 'turn end|turn-end' packages/cli/README.md` prints at least 1 (0 at fa37bae7). Print each count.",
+        "After the commit, `pnpm canon:project:targets` leaves `git status --porcelain packages/canon/targets` empty.",
+        "Green: `pnpm --filter @cratylus/canon exec vitest run test/stance-guardrail-dark.test.ts test/hook-rule-boundary.test.ts`, `pnpm --filter @cratylus/forge exec vitest run test/adapters/omp.test.ts`, `pnpm stance-guard:test` and `pnpm --filter @cratylus/canon typecheck` exit 0.",
+        "`.changeset/turn-end-loop-bounded.md` exists and names @cratylus/canon.",
+        "`git diff --name-only fa37bae7 <landed commit>` lists only paths in this unit's outputs (records/ excepted)."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3TGZBX4EHN5EE2RQ8VBCPX4",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

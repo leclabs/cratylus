@@ -8,8 +8,9 @@
 #   2. ON + collapse transcript + in-scope agent  → BLOCK with corrective reason.
 #   3. ON + legitimate transcript (deploy gate)   → no block (the reserved set passes).
 #   4. ON + collapse but OUT-OF-SCOPE agent       → no block (agent-scope gate).
-#   5. ON + collapse + stop_hook_active=true      → STILL BLOCKS (judging is never skipped);
-#      a refusal holds: a distinct collapsed turn (5b) and an identical one (5c) block again.
+#   5. ON + collapse + stop_hook_active=true      → STILL JUDGED, and a BLOCK still blocks until the
+#      turn-end bound: a distinct collapsed turn (5b) and an identical fresh one (5c) block again;
+#      a repeated stop (5c-i) and a fourth refused stop (5c-ii) are let through, said, UNRESOLVED.
 #   6. ON + collapse + no transcript file         → no block (fail open).
 #   5d. Confabulated EVIDENCE (a span absent from the turn) → block DISCARDED; 5e proves
 #      a verbatim span still blocks, so the check is non-vacuous.
@@ -127,16 +128,19 @@ mk_transcript "$COLLAPSE" "I've scaffolded the module. Should I name it stance-g
 mk_transcript "$LEGIT" "Done — I named it stance-guardrail, wrote the worker + judge + toggle, and added tests; all green. The one remaining step is irreversible: should I deploy this to the fleet? That needs your sign-off before I push."
 
 # --- helper: run the worker with a synthesized hook input, capture stdout -------------------
-# HERMETIC STATE: the worker keeps per-session block-budget state under $TMPDIR. Pointing TMPDIR
-# at the throwaway WORK dir keeps it out of the host's /tmp, and giving each case its own
-# session id keeps the budget from leaking between cases (a shared id would let case N's blocks
-# exhaust case N+1's budget and silently turn a real assertion green).
+# HERMETIC STATE: the worker keeps per-session RUN state under $TMPDIR: the blocks the current run
+# of refused stops holds and the hash of the turn last blocked in it. Pointing TMPDIR at the
+# throwaway WORK dir keeps it out of the host's /tmp, and giving each case its own session id keeps
+# one case's run from leaking into the next (a shared id would let case N's blocks make case N+1's
+# stop_hook_active stop look like the continuation of a refused run, and silently turn a real
+# assertion green). The bound is 3 blocks in a run, or a byte-identical repeat of the last blocked
+# turn in it, and is a constant in the worker.
 export TMPDIR="$WORK"
 # The counter lives in a FILE, not a shell variable: every call site is `out="$(run_worker …)"`,
 # a command substitution, so a `_sess=$((_sess+1))` would increment inside a subshell and be lost.
-# Every case would then share one session id, and the no-progress detector would correctly
-# suppress the repeats — turning independent assertions into false failures. (It did exactly
-# that on first run, which is how this was found.)
+# Every case would then share one session id, and the repeat bound would correctly let the repeats
+# through — turning independent assertions into false failures. (It did exactly that on first run,
+# which is how this was found.)
 _SESSC="$WORK/.sessc"; printf '0' > "$_SESSC"
 run_worker() {  # $1=transcript-path  $2=agent_type  $3=stop_hook_active  [$4=session_id]
 	if [ $# -ge 4 ]; then
@@ -231,7 +235,8 @@ is_block "$out" && bad "claude form: an agent_type that is not one directory nam
 #    turns and handed the agent a one-line escape — get blocked, emit anything, end again
 #    unjudged. Observed live: an agent blocked for deferring closed the next turn with a bare
 #    "Proceeding to #2, I'll do X" and stopped without doing X, unjudged, because of this rule.
-#    Loop safety now budgets BLOCKS (cases 5b/5c), never the judging.
+#    The turn-end bound (cases 5c-i/5c-ii) lets a repeated or several-times-refused stop through;
+#    it never skips the judging.
 out="$(run_worker "$COLLAPSE" mav true)"
 is_block "$out" && pass "stop_hook_active does NOT suppress judging (the alternating-turn hole is closed)" \
 	|| bad "stop_hook_active still suppresses judging — the escape hatch is open"
@@ -252,6 +257,44 @@ is_block "$out" || bad "retry: first block should fire"
 out="$(run_worker "$COLLAPSE" mav false nopcase)"
 is_block "$out" && pass "a refusal holds: an identical collapsed turn is judged again and blocked again" \
 	|| bad "retry waved through: an unchanged collapsed turn was allowed to stop"
+
+# 5c-i. A REPEATED STOP is let through, said. The first stop blocks; the same turn fired again with
+#       stop_hook_active=true (the harness re-firing after the block) is judged, blocked by the
+#       judge again, and let through UNRESOLVED because blocking it again cannot help.
+is_unresolved() { case "$1" in *"STANCE GUARDRAIL"*UNRESOLVED*) return 0 ;; *) return 1 ;; esac; }
+out="$(run_worker "$COLLAPSE" mav false repeatcase)"
+is_block "$out" || bad "repeat: the first stop should block"
+out="$(run_worker "$COLLAPSE" mav true repeatcase)"
+if ! is_block "$out" && is_unresolved "$out"; then
+	pass "a repeated stop (stop_hook_active, byte-identical) is let through and said UNRESOLVED"
+else
+	bad "a repeated stop was not let through UNRESOLVED: $out"
+fi
+# The bound is on one stop, never the session: a fresh stop afterwards blocks again.
+out="$(run_worker "$COLLAPSE" mav false repeatcase)"
+is_block "$out" && pass "after a let-through a fresh collapsed stop blocks again (re-armed)" \
+	|| bad "a let-through left the gate off for the next fresh stop"
+
+# 5c-ii. A FOURTH REFUSED STOP is let through, said. Four different collapsed turns in one run
+#        (the first fresh, the rest re-fired after a block): three block, the fourth is let through.
+for w in alpha beta gamma delta; do
+	mk_transcript "$WORK/run-$w.jsonl" "I've scaffolded the module. Should I name it $w? And do you want me to add tests?"
+done
+out="$(run_worker "$WORK/run-alpha.jsonl" mav false runcase)"
+is_block "$out" || bad "run: the first stop should block"
+out="$(run_worker "$WORK/run-beta.jsonl" mav true runcase)"
+is_block "$out" || bad "run: the second stop should block"
+out="$(run_worker "$WORK/run-gamma.jsonl" mav true runcase)"
+is_block "$out" || bad "run: the third stop should block"
+out="$(run_worker "$WORK/run-delta.jsonl" mav true runcase)"
+if ! is_block "$out" && is_unresolved "$out"; then
+	pass "a fourth refused stop in a run is let through and said UNRESOLVED"
+else
+	bad "a fourth refused stop was not let through UNRESOLVED: $out"
+fi
+out="$(run_worker "$WORK/run-alpha.jsonl" mav false runcase)"
+is_block "$out" && pass "after the fourth stop is let through a fresh collapsed stop blocks again (re-armed)" \
+	|| bad "a let-through fourth stop left the gate off for the next fresh stop"
 
 # 5d. CONFABULATED EVIDENCE is discarded. The judge is one sample from a small model; it has
 #     been observed blocking a turn while quoting a span from a DIFFERENT turn ("Authoring the

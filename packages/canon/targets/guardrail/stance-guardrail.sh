@@ -43,9 +43,13 @@
 #     answers unparseably, a block it could not verify, an unexpected error. Silence is reserved for
 #     "judged, no collapse" and for "not enrolled" (no persona manifest in scope, or nothing
 #     judgeable in the turn): there, not-checking is the correct answer, not a failure to report.
-#   - A REFUSAL HOLDS. Judges every turn, one identical to a refused turn included, and a BLOCK
-#     blocks the stop however many blocks came before: nothing remembers a refusal to wave a retry
-#     through, nothing counts blocks to stop blocking. The block count is a count in the reason.
+#   - A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP. Judges every turn, one
+#     identical to a refused turn included, and a BLOCK blocks the stop. The turn end is the one
+#     exception to a refused act staying refused: refusing it holds back no effect, it only makes
+#     the agent redo its turn. So a stop that follows a block of this guard (`stop_hook_active`)
+#     continues a RUN of blocks, and a BLOCK that would be the repeat of the turn last blocked in
+#     the run, or the one after the run's third block, is let through, SAID, UNRESOLVED. The bound
+#     is on one stop and never on the session: a stop that follows no block starts a new run at 0.
 #   - POSITION-SOUND. Every rubric rule that can fire is a claim about the turn's CLOSE. So the
 #     L1 window and the EVIDENCE check both run against `asst_close` — the text AFTER the last
 #     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
@@ -55,7 +59,8 @@
 #          agent_type, session_id, cwd, …).
 # OUTPUT : on collapse → stdout `{"decision":"block","reason":"…"}` + exit 0 (Stop-hook block).
 #          judged, no collapse → no stdout + exit 0 (allow stop).
-#          let through with no verdict → the notice `say` prints + exit 0 (allow stop).
+#          let through with no verdict, or a refused stop let through UNRESOLVED → the notice `say`
+#          prints + exit 0 (allow stop).
 #
 # POSIX sh. Depends on: jq (transcript parse). Missing jq → the guard says so and allows the stop.
 
@@ -162,32 +167,52 @@ NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
 # different contract without the dispatcher learning anything about either.
 RUBRIC="${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
-# --- loop safety: a refusal holds -------------------------------------------------------------
-# EVERY TURN IS JUDGED, AND A BLOCK BLOCKS THE STOP HOWEVER MANY BLOCKS CAME BEFORE IT. A turn
-# identical to one already refused is judged again like any other, and blocked again when the
-# judge blocks it; nothing remembers a refusal in order to wave a retry through, and nothing counts
-# blocks in order to stop blocking. The retry law is the same one the pre-call guard keeps.
+# --- loop safety: a refusal holds, but the turn end is bounded --------------------------------
+# EVERY TURN IS JUDGED, and a BLOCK blocks the stop. What follows a BLOCK is the only thing bounded.
+# The turn end is the one exception to a refused act staying refused: refusing it holds back no
+# effect, it only makes the agent redo its turn, so a stop the judge keeps blocking would lock the
+# session in an endless loop if every one of them blocked. The bound is on ONE STOP, never on the
+# session — it is not a budget spent over the session's life and not a switch that stays thrown:
 #
-# This SUPERSEDES the original `stop_hook_active=true → allow_stop` short-circuit, which was not a
-# loop guard but a hole: the agent got blocked, emitted anything, and ended again UNJUDGED — and it
-# made the rubric's judgement of a response to a verdict dead code, since that response was the one
-# turn guaranteed never to reach the judge. It also superseded two caps that let a refused turn
-# through (a turn byte-identical to the last blocked, and a turn judged collapsed after a run of
-# consecutive blocks). A safety check must never be a function of how many times it has fired:
-# Ethernet, TCP, systemd and CrashLoopBackOff cap EFFORT and end in a loud, typed refusal, and
-# permission is never what gets spent. What a block loop ends on is a turn the judge passes.
+#   - A stop that follows a block of this guard (`stop_hook_active` true) CONTINUES the run of
+#     blocks. A stop with `stop_hook_active` false or absent follows no block and STARTS A NEW
+#     RUN AT 0, whatever came before, so a let-through never leaves enforcement off.
+#   - After the judge gives a BLOCK that survives the evidence checks, the stop is let through
+#     instead of blocked — and SAID, naming the finding as standing and unresolved — when either
+#     (a) the run already holds a block and this turn's text is byte-identical to the turn last
+#     blocked in it (a repeated stop: blocking it again cannot help), or (b) the run already holds
+#     RUN_CAP blocks (a several-times-refused stop). Otherwise it blocks and records the run and the
+#     blocked turn's hash.
+#   - A stop that follows a block but whose run cannot be read or written (a run record that is
+#     unreadable, or a state dir that is unwritable) is let through on a BLOCK, and said: a bound
+#     that cannot be counted cannot hold. A fresh stop there still blocks. No record at all, in a
+#     dir that can be written, is a run of 0: nothing was blocked, so the stop blocks and starts one.
 #
-# The state in the tmp dir, keyed by session id, is a COUNT of the blocks, carried in the reason
-# the agent reads and in the verdict log. It decides nothing, so a dir it cannot write costs the
-# count and never a block.
+# RUN_CAP is a constant of this cell; no environment variable sets it. A judged PASS stays silent
+# and the DARK and BLOCK DISCARDED paths are untouched. Nor is the old `stop_hook_active=true →
+# allow_stop` short-circuit back: that let the agent be blocked, emit anything, and end again
+# UNJUDGED, which made the rubric's judgement of a response to a verdict dead code. The re-fired
+# stop is judged like any other; only the BLOCK that follows the bound is waved through, and said.
+#
+# The state in the tmp dir, keyed by session id, is the run: the blocks it holds and the hash of
+# the turn last blocked in it.
+RUN_CAP=3
 session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 state_dir="${TMPDIR:-/tmp}/stance-guardrail"
 mkdir -p "$state_dir" 2>/dev/null || true
-count_file="$state_dir/$session.count"
+run_file="$state_dir/$session.run"
 verdict_log="$state_dir/$session.verdicts"
 
-block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
-case "$block_count" in *[!0-9]*) block_count=0 ;; esac
+stop_active="$(printf '%s' "$input" | jq -r 'if .stop_hook_active == true then "yes" else "" end' 2>/dev/null || true)"
+run=0
+run_hash=none
+run_known=1
+if [ -n "$stop_active" ] && [ -e "$run_file" ]; then
+	run_state="$(cat "$run_file" 2>/dev/null || true)"
+	run="${run_state%% *}"
+	run_hash="${run_state#* }"
+	case "$run" in '' | *[!0-9]*) run=0; run_hash=none; run_known=0 ;; esac
+fi
 
 # The per-repo opt-in is GONE, and its absence is the point. It answered "may a guard run in this
 # DIRECTORY", which is a category error: a stance is a property of the agent, not of the checkout
@@ -700,19 +725,37 @@ printf '%s\t%s\t%s\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev
 	fi
 fi
 
-# --- A REFUSAL HOLDS --------------------------------------------------------------------------
-# A block blocks the stop however many blocks came before it. Nothing here remembers a refused turn
-# in order to wave its retry through, and nothing counts blocks in order to stop blocking: a turn
-# identical to one already blocked is judged again like any other and, when the judge blocks it and
-# the span it quotes is in the close, blocked again. Two caps once let a refused turn through — one
-# on a turn byte-identical to the last blocked, one after a run of consecutive blocks — and both
-# made the answer to "is this refused act refused?" a function of how often it had been tried. A
-# gate whose verdict depends on the number of attempts rewards the attempt, not the repair. What ends
-# a run of blocks is a turn the judge passes.
-# The count survives as a count, in the reason the agent reads; it decides nothing.
-block_count=$((block_count + 1))
-printf '%s' "$block_count" > "$count_file" 2>/dev/null || true
-reason="$reason (stance-guardrail block $block_count this session — a COUNT, not a budget: this gate does not stop enforcing, however many times it fires.)"
+# --- A REFUSAL HOLDS, EXCEPT AT THE TURN END, AND THERE ONLY FOR ONE STOP ---------------------
+# A block blocks the stop. The turn end is the one exception to a refused act staying refused: a
+# refused stop holds back no effect, it only makes the agent redo its turn, so the bound below lets
+# a repeated or several-times-refused stop through rather than lock the session in an endless loop.
+# It lets through ONE STOP — the next stop that follows no block starts a new run at 0 and is
+# judged and blocked like any other — and it SAYS SO: the finding stands and the stop is
+# UNRESOLVED. Two caps once let a refused turn through silently, and a counter that never reset
+# turned a one-turn escape into a session-wide disable; neither is restored. What ends a run of
+# blocks is a turn the judge passes, or this bound, said aloud.
+turn_hash="$(printf '%s' "$asst_text" | cksum)"
+run_next=$((run + 1))
+let_through=""
+if [ -n "$stop_active" ]; then
+	if [ "$run_known" -eq 0 ]; then
+		let_through="the run of refused stops it follows cannot be read, and a bound that cannot be counted cannot hold"
+	elif [ "$run" -ge 1 ] && [ "$turn_hash" = "$run_hash" ]; then
+		let_through="this stop is byte-identical to the turn it already refused, so refusing it again cannot help"
+	elif [ "$run" -ge "$RUN_CAP" ]; then
+		let_through="it has refused this run of stops $run times"
+	fi
+fi
+if [ -z "$let_through" ] && ! printf '%s %s' "$run_next" "$turn_hash" > "$run_file" 2>/dev/null; then
+	[ -z "$stop_active" ] || let_through="the run of refused stops cannot be written, and a bound that cannot be counted cannot hold"
+fi
+if [ -n "$let_through" ]; then
+	rm -f "$run_file" 2>/dev/null || true
+	printf 'UNRESOLVED\t%s\t%s\n' "$evidence" "$reason" >> "$verdict_log" 2>/dev/null || true
+	say "STANCE GUARDRAIL — stop let through UNRESOLVED: the judge blocked this stop, and the finding STANDS and is unaddressed — $let_through. The next stop that follows no block is judged and blocked again. The judge's reason was: $reason"
+	allow_stop
+fi
+reason="$reason (stance-guardrail block $run_next in this run of refused stops.)"
 
 # --- BLOCK ----------------------------------------------------------------------------------
 # Emit the Stop-hook block decision. The `reason` is fed back to the agent as a corrective
