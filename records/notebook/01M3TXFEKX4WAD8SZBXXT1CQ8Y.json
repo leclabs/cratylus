@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TXFEKX4WAD8SZBXXT1CQ8Y",
+    "entity": "01M3TXFEKX4WAD8SZBXXT1CQ8X",
+    "operation": "create",
+    "supersedes": [],
+    "author": "PurviewContest",
+    "time": "2026-10-01T05:02:31.037Z",
+    "reason": "what the unit could not prove and a finding beside the path",
+    "cause": "unit purview-contest of refusal-way-forward"
+  },
+  "payload": {
+    "title": "purview contest unproven on the omp bridge",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "purview-contest proves the contest on the worker in both harness forms, but not through the omp bridge itself: a contested fire consumes the .contest and prints its notice in the STANCE_EMIT_PAYLOAD pass, which render.ts relays as a non-JSON line (L1157-1160); no omp run was made. The unit also dropped the PURVIEW_GUARD_LOG misses.log from the purview worker (every fail-open already says so through say) to fit the 8192-byte bound; judge_keep and judge_cut remain in the shared clip though purview uses neither.",
+    "blocks": []
+  }
+}

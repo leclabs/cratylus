@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3TXSC9J46YPEDAQBSX9NENP",
+    "entity": "01M3TXSC9J46YPEDAQBSX9NENN",
+    "operation": "create",
+    "supersedes": [],
+    "author": "StanceWorkersLean",
+    "time": "2026-10-01T05:07:56.338Z",
+    "reason": "a seam this unit introduced that its successor must retire",
+    "cause": "purview.sh byte-lock forbade cutting the shared clip's comments in this wave"
+  },
+  "payload": {
+    "title": "stance workers carry a comment-stripped clip",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "unit stance-workers-lean left judgeClipShell byte-identical in stance-guardrail.ts because purview-guardrail.ts still interpolates it and purview-guardrail.sh is byte-locked and outside that unit's outputs. The two stance workers interpolate a derived stanceGuardrailJudgeClipLean (the same shell, full-line comments stripped), a third export beside stanceGuardrailJudgeCap and stanceGuardrailJudgeClip. When purview-contest has copied the clip into guard-shell.ts with its comments cut, unit stance-contest should move all three consumers to that one comment-free copy and delete the Clip and ClipLean exports with the derivation.",
+    "blocks": [
+      "01M3TWRQ8SMTEB4XGSHZSJX2W1"
+    ]
+  }
+}

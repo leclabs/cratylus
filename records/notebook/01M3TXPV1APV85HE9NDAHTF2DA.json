@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3TXPV1APV85HE9NDAHTF2DA",
+    "entity": "01M3TXPV1APV85HE9NDAHTF2D9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayPurviewContest",
+    "time": "2026-10-01T05:06:33.130Z",
+    "reason": "a finding beside the unit, not a defect of the shard it realizes",
+    "cause": "assay of purview-contest of refusal-way-forward at 31a7cfce"
+  },
+  "payload": {
+    "title": "the judge clip has two homes",
+    "kind": "idea",
+    "topic": "enforcement scope",
+    "body": "At 31a7cfce (unit purview-contest of refusal-way-forward) the judge-payload cap and clip are defined twice: guard-shell.ts exports judgePayloadCapBytes and judgeClipShell for the purview worker, while stance-guardrail.ts still defines its own judgePayloadCapBytes = 12_000 and judgeClipShell and exports them as stanceGuardrailJudgeCap and stanceGuardrailJudgeClip, which stance-guardrail-pre.ts imports. Before the unit there was one home. Two copies of the bound on what a guard hands its judge can drift apart; the stance units of the same plan are the natural place to fold the stance workers onto guard-shell.ts.",
+    "blocks": []
+  }
+}
