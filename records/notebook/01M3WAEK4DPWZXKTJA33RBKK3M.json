@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WAEK4DPWZXKTJA33RBKK3M",
+    "entity": "01M3WAEK4DPWZXKTJA33RBKK3K",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AuthorReadmes",
+    "time": "2026-10-01T18:08:28.813Z",
+    "reason": "finding beside the path while proving author-readmes",
+    "cause": "acceptance command for author-readmes narrowed nothing"
+  },
+  "payload": {
+    "title": "canon test filter runs whole suite",
+    "kind": "idea",
+    "topic": "unit acceptance commands",
+    "body": "pnpm --filter @cratylus/canon test -- test/command-veracity.test.ts runs all 37 canon test files, not the one named, and the suite needs a prior pnpm build and pnpm project to pass (harness-parity reads the renders). Seen while landing author-readmes; the one file passes alone via pnpm exec vitest run test/command-veracity.test.ts in packages/canon.",
+    "blocks": []
+  }
+}

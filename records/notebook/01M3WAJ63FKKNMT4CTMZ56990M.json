@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3WAJ63FKKNMT4CTMZ56990M",
+    "entity": "01M3WAHC0X4Q0VA1JWWM3G9FKQ",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WAHC0X4Q0VA1JWWM3G9FKR"
+    ],
+    "author": "nico",
+    "time": "2026-10-01T18:10:26.543Z",
+    "reason": "the guards never ran on the runtime, and nothing in the design places them there",
+    "cause": "assay of ground-documents at b4bd37b5"
+  },
+  "payload": {
+    "title": "ARCHITECTURE puts lifecycle guardrails under the runtime",
+    "kind": "decision",
+    "topic": "documentation",
+    "body": "Ruled: a stale claim, not a target. Guards are canon hook cells deployed as harness hooks, plus forge's omp extension; the runtime hosts the capabilities (eventTap, design, plan, note) and no guard. Under documentation, ARCHITECTURE states what ships, so the runtime section stops placing guardrails beneath the runtime.",
+    "blocks": []
+  }
+}

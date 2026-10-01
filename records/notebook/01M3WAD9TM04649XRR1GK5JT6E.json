@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WAD9TM04649XRR1GK5JT6E",
+    "entity": "01M3WAD9TK9J9Q4ESG57D1Z25P",
+    "operation": "create",
+    "supersedes": [],
+    "author": "GroundDocuments",
+    "time": "2026-10-01T18:07:46.516Z",
+    "reason": "a finding beside the path of ground-documents: another unit's file now contradicts the ground document",
+    "cause": "ARCHITECTURE.md section reduced to what holds"
+  },
+  "payload": {
+    "title": "README says ARCHITECTURE has a ratchet table",
+    "kind": "idea",
+    "topic": "documentation",
+    "body": "README.md:72-74 (Pre-release paragraph) says ARCHITECTURE.md reports where the source diverges from the intended architecture in a ratchet table. Unit ground-documents of docs-and-persona (b4bd37b5) replaced that section with 'How the properties are held': no table, and the gate's pin set ARCHITECTURE_RATCHET is empty. The README sentence is false against the ground document once that lands; the unit that owns README.md should drop or reword it.",
+    "blocks": []
+  }
+}
