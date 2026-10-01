@@ -1,5 +1,39 @@
 # @cratylus/forge
 
+## 0.14.3
+
+### Patch Changes
+
+- 355dd97: `install`, `uninstall` and `deploy` now place and remove Claude Code's files where Claude Code reads them. Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set, and from `~/.claude` otherwise; cratylus put them under `~/.claude` whatever the environment, so with the variable set a session ran whatever hooks and status line sat in the real home, not the deployed ones. Given no `--home`, a run for Claude Code now uses `$CLAUDE_CONFIG_DIR` when it is set and not empty, and `~/.claude` otherwise. A `--home` given still means `<home>/.claude`, and omp is unchanged.
+
+  Every command the Claude Code adapter writes into `settings.json` (the guard hook commands, the persona status line, and the hook that prints a persona's skills into a `--agent` session) now resolves that directory when Claude Code runs it, the way Claude Code does: `$CLAUDE_CONFIG_DIR` when set, else `$HOME/.claude`. The size of the skills hook, which `install` weighs against the cap on what one hook may print, is that of the directory the hook will print. The variable's name is declared on the Claude Code adapter beside its `home` (`HarnessAdapter.homeEnv`), and the deploy engine reads it from there.
+
+  A host installed before this change uninstalls as before: uninstall removes the hook commands and status line its deploy record holds, as they were written.
+
+  Running `install` again over a host installed before this change converges: the status line command that host's deploy record says install placed is install's own, and becomes the current worker command in place, over the same host command if it wrapped one, where it used to be taken for the host's and wrapped, leaving a command that failed once uninstall removed the worker.
+
+- 4c997d5: The implementer now starts in a git worktree of its own, cut from the tip of the bound plan's line, where its session used to begin in the operator's main checkout.
+
+  `@cratylus/schema`'s `Agent` gains the optional `isolation?: 'worktree'`, carried on the identity face beside `holds` and `dispatches`, and `Practice` gains the optional `hooks`, the hook cells a practice registers beyond the guards its agents' compositions bind.
+
+  `@cratylus/canon`'s `RoleCell` may state `isolation`, `holds` copies it to every holder of the role (a persona cannot state it), and only the implementer role does. The vocabulary gains `worktree.create`, the moment a worktree is made for an agent, and a new hook cell, `line-worktree`, is bound to it: while a plan is bound it creates the requested worktree on a new branch cut from the tip of that plan's line, which it asks the host `cratylus plan show` for and names nowhere itself; with no plan bound it creates the worktree as Claude Code would, from origin's default branch or, where the host's `worktree.baseRef` is `head`, from HEAD. A creation it cannot make, including one made while the runtime cannot say whether a plan is bound, exits non-zero with no path and no worktree, and never falls back to the main checkout. Worktrees it creates are kept on removal. Every practice that places the implementer lists the cell, so every install that places the implementer places it and uninstall removes its registration with the rest.
+
+  `@cratylus/forge`'s `HarnessAdapter` gains the required `startsInWorktree`: claude answers yes, emits `isolation: worktree` in the front matter of an agent declaring it and nothing for one that does not, and binds `worktree.create` to `WorktreeCreate`; omp answers no, since its agent definition has no field that isolates an agent and it fires no worktree-creation event, so it emits nothing and projection warns once per declaring agent. Projection also warns, once per moment, of a hook bound to a moment the harness does not fire, and no longer stages the worker of a hook none of whose moments it fires, where it used to stage the file with no registration beside it. A chosen practice's `hooks` are registered with the plumbing.
+
+- bb861f0: On omp a dispatch of the implementer is now an isolated task, so the implementer builds in an isolated copy of the dispatcher's checkout and no longer writes the main checkout. The copy is still cut from the dispatcher's HEAD and not from the plan's line, so the implementer is still not started in a worktree off the line, and the projection warns of that, in words that now say what it does get.
+
+  `@cratylus/forge`'s `HarnessAdapter` gains the optional `dispatchIsolation`, a harness's isolation of a dispatched agent where its agent definition has no field for one: the host config files, the scalar settings the host must hold, and what the isolation still lacks. omp declares it as `task.isolation.enabled: true`, `apply: false` and `merge: branch`. omp emits a `cratylus-isolation.ts` extension in the session scope and in each persona's, whose `tool_call` handler sets `isolated: true` on every spawn of an agent declaring a worktree, in a batch or a flat call, and on nothing else. Install sets the three settings in omp's `config.yml` by editing its lines, replacing a value the host held and recording the edit so that uninstall puts the file back byte for byte, and says in its summary what is not realized. A config it cannot edit safely is left as it is, with the lines to write by hand. `ProjectedTree` gains `unisolated`, the agents that declare a worktree the harness cannot start.
+
+  Measured on omp 18.4.9: a `tool_call` handler can revise a task's input, `task.isolation.apply: false` keeps the copy's changes out of the dispatcher's checkout (its `git status` is unchanged), and the copy is cut from the dispatcher's checkout as it stands, with no ref to give. The settings are the host's, so they hold for the isolated tasks you dispatch yourself as well: their changes are kept as the branch `omp/task/<id>`, not applied.
+
+- b3113a8: A runtime config cratylus cannot read is no longer replaced unread. `cratylus install` (its `--dry-run` too) and `cratylus deploy`, when the runtime config they would write (`$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`) exists and is not valid JSON or not a JSON object, used to read it as empty and rewrite it whole, losing the host's bytes without a word. They now refuse before anything is placed, with one line, `cratylus install: <file> <what is wrong>; repair the file or move it away, then run cratylus install again` (`deploy` in its own name), exit 1 and nothing written anywhere. `cratylus uninstall`, which already left such a file unread, now names it among what it left, and why. A missing config and a readable one behave as before.
+- Updated dependencies [2d5649c]
+- Updated dependencies [4c997d5]
+- Updated dependencies [eeb334b]
+- Updated dependencies [f95d1f9]
+  - @cratylus/runtime@0.9.4
+  - @cratylus/schema@0.9.0
+
 ## 0.14.2
 
 ### Patch Changes

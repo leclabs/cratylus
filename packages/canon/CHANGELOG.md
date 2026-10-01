@@ -1,5 +1,24 @@
 # @cratylus/canon
 
+## 0.13.3
+
+### Patch Changes
+
+- 4c997d5: The implementer now starts in a git worktree of its own, cut from the tip of the bound plan's line, where its session used to begin in the operator's main checkout.
+
+  `@cratylus/schema`'s `Agent` gains the optional `isolation?: 'worktree'`, carried on the identity face beside `holds` and `dispatches`, and `Practice` gains the optional `hooks`, the hook cells a practice registers beyond the guards its agents' compositions bind.
+
+  `@cratylus/canon`'s `RoleCell` may state `isolation`, `holds` copies it to every holder of the role (a persona cannot state it), and only the implementer role does. The vocabulary gains `worktree.create`, the moment a worktree is made for an agent, and a new hook cell, `line-worktree`, is bound to it: while a plan is bound it creates the requested worktree on a new branch cut from the tip of that plan's line, which it asks the host `cratylus plan show` for and names nowhere itself; with no plan bound it creates the worktree as Claude Code would, from origin's default branch or, where the host's `worktree.baseRef` is `head`, from HEAD. A creation it cannot make, including one made while the runtime cannot say whether a plan is bound, exits non-zero with no path and no worktree, and never falls back to the main checkout. Worktrees it creates are kept on removal. Every practice that places the implementer lists the cell, so every install that places the implementer places it and uninstall removes its registration with the rest.
+
+  `@cratylus/forge`'s `HarnessAdapter` gains the required `startsInWorktree`: claude answers yes, emits `isolation: worktree` in the front matter of an agent declaring it and nothing for one that does not, and binds `worktree.create` to `WorktreeCreate`; omp answers no, since its agent definition has no field that isolates an agent and it fires no worktree-creation event, so it emits nothing and projection warns once per declaring agent. Projection also warns, once per moment, of a hook bound to a moment the harness does not fire, and no longer stages the worker of a hook none of whose moments it fires, where it used to stage the file with no registration beside it. A chosen practice's `hooks` are registered with the plumbing.
+
+- 795ea1c: The `line-worktree` hook now cuts only the implementer's worktree from the bound plan's line, and leaves every other worktree on the host to be created as Claude Code would create it. It used to cut every worktree Claude Code makes — a `claude --worktree` session, a background session isolated in a worktree, any subagent declaring `isolation: worktree` — from the line whenever a plan was bound, and to fail the creation outright where `cratylus` or `jq` was not on `PATH`, or where `cratylus plan show` answered a first line the hook did not recognise (`with nothing committed yet`), in every repository on the host.
+
+  The hook tells the implementer's worktree by the name Claude Code gives a subagent's (`agent-a` and 7 or 16 hex digits), since the `WorktreeCreate` input names no subagent. For every other worktree, and for the implementer's when there is no line to cut from (no plan bound, `cratylus` missing, a `plan show` answer it does not know, a line commit the repository does not resolve), it creates the worktree at `<project>/.claude/worktrees/<name>` on `worktree-<name>`, from origin's default branch or, where the host's `worktree.baseRef` is `head` or there is no origin, from HEAD, and prints its path; without `jq` it reads the request and `baseRef` with `sed` and still cuts the implementer's worktree from the line, which needs no `jq`. It still fails, with no path and no worktree, a creation Claude Code's own would refuse: an unusable `cwd` or `name`, a `cwd` in no repository, a path already taken, a `git worktree add` that fails.
+
+- Updated dependencies [4c997d5]
+  - @cratylus/schema@0.9.0
+
 ## 0.13.2
 
 ### Patch Changes

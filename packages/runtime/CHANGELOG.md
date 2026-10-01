@@ -1,5 +1,17 @@
 # @cratylus/runtime
 
+## 0.9.4
+
+### Patch Changes
+
+- 2d5649c: `plan bind` now moves the plan's records onto its line instead of copying them. The records of the plan, its units and the notes blocking either, which the checkout it runs in holds, are written into the line's worktree when the line lacks them and are no longer in the checkout or its index afterwards, where they used to stay as untracked files that a commit of `records/` would have put on the main line and the release of the closed plan would have met as untracked paths. A record the line holds already is taken off the checkout the same way when the two files are identical. A record the checkout's HEAD tracks stays in it, since a committed record is never removed, and nothing else is removed: a design record and a note naming no plan stay where they were written. A bind run from the line's own worktree moves nothing. `plan show` and `note show` print the same state from the main checkout as from the line's worktree, as before.
+- eeb334b: `plan land` refuses, writing nothing, a commit its unit was not built apart for, while the unit's plan is bound: a commit the repository cannot resolve, a commit the main checkout's HEAD already contains (a unit built in the operator's checkout, on its branch or on one switched to there), a commit the plan's line already contains (a unit built in the line's own worktree), and a commit whose history does not run from the line (one sharing no history with it, or cut from the main checkout after it moved past the line). A commit made in another worktree on a branch off the line is recorded as before. The refusal says in the plan's words which holds for which unit and commit, and that nothing was written; it names no git command, branch or worktree path. `plan assay`, `plan whole` and `plan broke` are unchanged, and a land on a unit of a plan that is not bound refuses as before.
+- f95d1f9: `cratylus eventTap uninstall` now puts a Claude Code host back as it was before `install`, removing what `install` placed and nothing the host placed, and says what it left. A `settings.json` that install created, and the directories it made to hold it (the `.claude` directory in the usual case), are removed once the tap's entries are gone and nothing else is in them; before, the file stayed holding `{}` and the directory stayed. A settings file that existed before install comes back byte for byte when the host has changed nothing in it since (an empty file comes back empty; the host's indent, line endings, spacing and one-line hooks are kept) where it used to be rewritten in two-space JSON; where the host has changed it, only the tap's entries are taken out.
+
+  Where the host has since put something in a file or directory that install created, uninstall takes out only the tap's entries, keeps what the host put there, and names it: the result gains `left`, a list of `{ path, why }`, absent when nothing was left. The `EventTapHost` port's `remove` returns that list (`EventTapLeft[]`) where it returned nothing.
+
+  Install and uninstall run as separate processes, so an install stamps `restore` on the tap's own hook entries: that it created the file and how many directories, or the text of the file it found. Uninstall reads it back. A second install over a first leaves the first's stamp as the record of what the host held.
+
 ## 0.9.3
 
 ### Patch Changes
