@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3VYYDBCKJQ16PGXXEB949BZ",
+    "entity": "01M3VYVWW7BNNMR5ADQNGRHHYR",
+    "operation": "retract",
+    "supersedes": [
+      "01M3VYVWW7BNNMR5ADQNGRHHYS"
+    ],
+    "author": "PracticesPlanner",
+    "time": "2026-10-01T14:47:24.268Z",
+    "reason": "placed: unit install-practices of plan practices retires Agent.optional, optionalAgents, omitAgents and --personas and the README prose offering a persona on its own, with acceptance RETIRED and NO PERSONA ON ITS OWN",
+    "cause": "the architect routed the note to the unit that makes install offer practices"
+  },
+  "payload": null
+}
