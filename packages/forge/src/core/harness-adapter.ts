@@ -206,6 +206,17 @@ export interface HarnessAdapter {
    */
   readonly home: string;
   /**
+   * The environment variable, when the harness has one, that names the directory it
+   * reads its deployed artifacts from, whole: set and non-empty, it IS the harness
+   * directory, and `home` is not looked for under `$HOME`. Absent ⇒ the harness reads
+   * `<$HOME>/<home>` whatever the environment.
+   *
+   * It decides where a run given NO home places and removes the harness's files. A
+   * run given a home still means that home's `home` directory: naming a home is
+   * naming where the files go, and the environment does not overrule it.
+   */
+  readonly homeEnv?: string;
+  /**
    * The file EXTENSION this harness's agent definitions carry — `.md`.
    *
    * `agentDef` already returns a full filename, but DEPLOY reads a render tree
@@ -295,6 +306,20 @@ export interface HarnessAdapter {
    */
   readonly preloadsSkills: boolean;
   /**
+   * Whether an agent definition on this harness can START the agent in a git
+   * worktree of its own — claude's subagent `isolation: worktree`. An answer about
+   * the harness, not about any agent.
+   *
+   * REQUIRED, because the answer decides what `Agent.isolation` becomes here. Yes
+   * ⇒ `agentDef` emits the native field for an agent declaring it, and nothing for
+   * one that does not. No ⇒ it emits nothing, and projection warns once per
+   * declaring agent: the agent still runs, in the checkout its dispatcher runs in
+   * (or, where the adapter has a {@link HarnessAdapter.dispatchIsolation}, in the
+   * isolated copy of it), and the rule it was meant to have by construction rests
+   * on it alone.
+   */
+  readonly startsInWorktree: boolean;
+  /**
    * How this harness carries a persona's composed skills into a MAIN session, where
    * its native preload (`preloadsSkills`) does not reach — by a hook that prints each
    * skill. Absent for a harness whose main session already has them.
@@ -307,9 +332,10 @@ export interface HarnessAdapter {
    *
    * `hostHome` is the home the definitions will be installed under, when the caller
    * knows it (`install` does; `project` does not). The hook prints each skill's
-   * directory, and that path is part of its output, so a longer home is a longer
-   * output. Absent, the size counts the path as the definition spells it, which is a
-   * LOWER BOUND: a host with a longer home prints more.
+   * directory, and that path is part of its output, so a longer directory is a longer
+   * output. The adapter weighs the directory the hook will print, resolved from that
+   * home as the hook resolves it. Absent, the size counts the path as the definition
+   * spells it, which is a LOWER BOUND: a host whose directory is longer prints more.
    */
   readonly mainSessionSkillHook?: {
     readonly cap: number;
@@ -600,6 +626,35 @@ export interface HarnessAdapter {
    * per role), and the host's choice still outranks it.
    */
   roleRouting?: RoleRouting;
+  /**
+   * How this harness isolates a DISPATCHED agent without an agent-definition field —
+   * omp's task isolation: a per-dispatch flag the dispatcher's extension sets, over
+   * host settings that make the flag exist and keep what the copy built out of the
+   * dispatcher's checkout. It is the floor under {@link startsInWorktree} `false`:
+   * the agent that declares a worktree still does not get one off the plan's line,
+   * but it no longer builds in the checkout that dispatches it.
+   *
+   * Absent ⇒ no such mechanism: an agent declaring a worktree on a harness that
+   * cannot start one runs in the checkout its dispatcher runs in.
+   */
+  dispatchIsolation?: DispatchIsolation;
+}
+
+/** A harness's dispatch-time isolation. See {@link HarnessAdapter.dispatchIsolation}. */
+export interface DispatchIsolation {
+  /** The host config files that hold the settings, relative to the harness home, in
+   *  the harness's read order ({@link RoleRouting.configRels}). */
+  readonly configRels: readonly string[];
+  /** The scalar settings the host must hold, each as a key under the mapping at
+   *  `parent` (a path of nested keys), with the value as it is written. */
+  readonly settings: {
+    readonly parent: readonly string[];
+    readonly entries: Readonly<Record<string, string>>;
+  };
+  /** What the isolation still lacks against a worktree off the plan's line, in words
+   *  that complete "the implementer runs in an isolated copy of its dispatcher's
+   *  checkout, …": said by projection and by install. */
+  readonly lacks: string;
 }
 
 /** The status-line worker a harness ships. See {@link HarnessAdapter.statusLine}. */

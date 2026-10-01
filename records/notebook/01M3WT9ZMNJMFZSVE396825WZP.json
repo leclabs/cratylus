@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WT9ZMNJMFZSVE396825WZP",
+    "entity": "01M3WSW7STY1XVCJF6ZCZRCBJZ",
+    "operation": "retract",
+    "supersedes": [
+      "01M3WSW7STY1XVCJF6ZCZRCBK0"
+    ],
+    "author": "ClaudeConfigDir",
+    "time": "2026-10-01T22:45:34.997Z",
+    "reason": "the unit's amendments make install take the recorded line for its own",
+    "cause": "the assay named the same regression and the amendments close it"
+  },
+  "payload": null
+}

@@ -65,8 +65,9 @@ function snapshot(dir: string, at = ''): Record<string, string> {
   return out;
 }
 
-/** Agents that hold each role omp maps, one that holds none — written at run time. */
-function corpus(): ProjectablePlugin {
+/** Agents that hold each role omp maps, one that holds none — written at run time;
+ *  with `isolating`, the implementer also declares a worktree of its own. */
+function corpus(isolating = false): ProjectablePlugin {
   const agents = join(tmpRoot(), 'agents');
   mkdirSync(agents, { recursive: true });
   const nulls = Object.keys(FIXTURE_MANIFEST)
@@ -86,6 +87,7 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds === null ? [] : [`  holds: '${holds}',`]),
+        ...(isolating && name === 'alpha' ? ["  isolation: 'worktree',"] : []),
         nulls,
         '};',
         '',
@@ -237,6 +239,42 @@ describe('uninstall', () => {
         ...before,
         [`.omp/${placed}`]: 'host rewrote this agent\n',
       });
+    });
+
+    it('omp: the settings an isolated task needs come out again, a value the host held is back as it was, and the modules go with them', async () => {
+      plugin = corpus(true);
+      const omp = harnessDir('omp');
+      mkdirSync(join(omp, 'agent'), { recursive: true });
+      const config = join(omp, 'agent', 'config.yml');
+      const hostConfig =
+        '# host config\ntask:\n  isolation:\n    apply: true # keep\n  disabledAgents: []\ntheme: dark\n';
+      writeFileSync(config, hostConfig);
+      const before = snapshot(home);
+
+      expect(await install('omp')).toBe(0);
+      const after = readFileSync(config, 'utf8');
+      expect(after).toContain(
+        '  isolation:\n    apply: false\n    enabled: true\n    merge: branch\n',
+      );
+      expect(after).not.toContain('apply: true');
+      expect(Object.keys(snapshot(home))).toContain(
+        '.omp/agent/extensions/cratylus-isolation.ts',
+      );
+
+      expect(uninstall('omp')).toBe(0);
+
+      expect(readFileSync(config, 'utf8')).toBe(hostConfig);
+      expect(snapshot(home)).toEqual(before);
+    });
+
+    it('omp: a config.yml created for the isolation settings is removed with what it put in', async () => {
+      plugin = corpus(true);
+      expect(await install('omp')).toBe(0);
+      expect(
+        readFileSync(join(harnessDir('omp'), 'agent', 'config.yml'), 'utf8'),
+      ).toContain('merge: branch');
+      expect(uninstall('omp')).toBe(0);
+      expect(snapshot(home)).toEqual({});
     });
 
     it('omp: a config.yml install created is removed with what it put in', async () => {
@@ -476,6 +514,40 @@ describe('uninstall', () => {
       expect(uninstall('omp')).toBe(0);
       expect(snapshot(home)).toEqual({});
     });
+
+    it.each([
+      ['not valid JSON', 'not json'],
+      ['a JSON array', '[1]'],
+    ])(
+      'a config holding %s is left byte for byte, and the report names it as left',
+      async (_case, held) => {
+        expect(await install('claude')).toBe(0);
+        // Guard the guard: install wrote the file the host then spoiled.
+        expect(readConfig().harnesses.claude).toBeDefined();
+        writeFileSync(configFile(), held);
+        out = '';
+
+        expect(uninstall('claude')).toBe(0);
+
+        expect(readFileSync(configFile(), 'utf8')).toBe(held);
+        const [removed, left] = splitLeft(out);
+        expect(removed).not.toContain(configFile());
+        expect(left).toContain(configFile());
+        expect(left).toContain('the runtime config is not');
+        expect(left).toContain('install --harness claude');
+
+        // The remedy the report gives: the first uninstall took the record away, so a
+        // second one alone finds nothing; repaired, install records it again, and the
+        // uninstall after that takes the harness's stanza out.
+        expect(uninstall('claude')).toBe(0);
+        expect(readFileSync(configFile(), 'utf8')).toBe(held);
+        writeFileSync(configFile(), '{}\n');
+        expect(await install('claude')).toBe(0);
+        expect(readConfig().harnesses.claude).toBeDefined();
+        expect(uninstall('claude')).toBe(0);
+        expect(snapshot(home)).toEqual({});
+      },
+    );
 
     describe('the parts cratylus placed, taken out only while they are what was placed', () => {
       /** The config deploy emits over a host's own, for a corpus that configures `plan`,

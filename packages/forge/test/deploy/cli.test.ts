@@ -173,6 +173,7 @@ describe('runDeploy (local)', () => {
       const processHome = tmp('forge-process-home-');
       const project = tmp('forge-project-');
       vi.stubEnv('HOME', processHome);
+      vi.stubEnv('CLAUDE_CONFIG_DIR', undefined);
       vi.stubEnv('AGENT_RUNTIME_CONFIG', override);
       const rc = await runDeploy({
         agentsDir,

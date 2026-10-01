@@ -8,6 +8,7 @@
 export {
   OMP_AGENT_DEF_DIR,
   OMP_GUARDRAIL_MODULE,
+  OMP_ISOLATION_MODULE,
   OMP_LAUNCHER_FILE,
   OMP_LAUNCHER_SCRIPT,
   OMP_OVERLAY_FILE,
@@ -18,7 +19,9 @@ export {
   type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,
+  ompDispatchIsolation,
   ompGuardrailExtensions,
+  ompIsolationExtensions,
   ompHarnessAdapter,
   ompLaunchSurface,
   ompOverlayYaml,

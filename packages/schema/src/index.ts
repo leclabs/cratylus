@@ -577,6 +577,23 @@ export interface Agent {
    * knowledge of what either role is.
    */
   readonly dispatches?: readonly string[];
+  /**
+   * OPTIONAL — that this agent runs in a git worktree of its own. Absent ⇒ it runs
+   * where its dispatcher does. Modelled on `dispatches` above: optional, carried on
+   * the identity face, and copied by the corpus's own fold from the role cell.
+   *
+   * A DECLARATION, NOT A TEACHING. How an agent uses a worktree is its own
+   * competence and nothing it reads need explain it; what this states is only that
+   * the HARNESS starts the agent in one, so the rule does not depend on the agent
+   * remembering to follow it. The value names the kind of isolation rather than a
+   * flag, so a corpus that later needs another kind adds a member, not a field.
+   *
+   * A HARNESS whose agent definition can start an agent in a worktree of its own
+   * carries it natively — claude as the subagent `isolation` field. A harness with
+   * no such field emits nothing, and projection warns, as it does for skills a
+   * harness cannot preload.
+   */
+  readonly isolation?: 'worktree';
 }
 
 /**
@@ -779,6 +796,16 @@ export interface Practice {
    * named here. Whatever the skills compose comes with them.
    */
   readonly skills?: readonly string[];
+  /**
+   * The hook cells, by id, this practice registers BEYOND the guards its agents'
+   * compositions bind. A guard travels with the agents that compose what it binds
+   * and is named nowhere; a cell that binds no composition, and exists for what a
+   * practice's agents declare rather than compose (the worktree an agent that
+   * declares `Agent.isolation` is started in), is named here, so that every install
+   * that places those agents places the cell. A cell every practice needs is
+   * {@link Plumbing.hooks} instead.
+   */
+  readonly hooks?: readonly string[];
   /** `true` ⇒ a fresh install selects this practice unless the operator declines. */
   readonly preselected?: true;
 }

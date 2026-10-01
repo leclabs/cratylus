@@ -1,0 +1,116 @@
+{
+  "envelope": {
+    "id": "01M3WP7HZX0VN3G3ASF56MWVH0",
+    "entity": "01M3WM71G577PCR3X4PWB0JCQ7",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WP2BK25P87QADSMG5GS8JW"
+    ],
+    "author": "AssayRemaining",
+    "time": "2026-10-01T21:34:21.181Z",
+    "reason": "assayed isolated-implementer at 0ff3de68 against shard plan: spells (Agent.isolation 'worktree' on the implementer alone; the line-worktree cell cuts its worktree from the bound plan's line), covers (on Claude Code the implementer starts in a worktree of its own cut from the line's tip, observed end to end in a scratch repo with the runtime bound to a plan whose line stood ahead of main; with no plan bound it is cut as the harness would; a creation it cannot make fails with nothing on disk; on omp, which has no per-agent worktree, nothing is emitted and projection warns; no agent text teaches worktree use), sole (nothing else creates the unit's worktree; isolated-landing only refuses lands). Entry 2's missing clause 'off that line' is now held",
+    "cause": "dispatch: isolated-implementer of remaining-gaps re-planned and reworked on entry 2, landed at 0ff3de68, implementer IsolatedImplementer"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "isolated-implementer",
+      "intent": "Census @5e0f5524 (the plan's line; design and notebook as there); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Realize the plan's clause 'each unit is built in its own isolated worktree off that line' where the implementer starts: the worktree the harness starts the implementer in is itself cut from the bound plan's line, so its first commit already runs from the line. The design says how an agent uses worktrees is its own competence and nothing it reads teaches it, so add no wording that teaches worktrees and leave packages/canon/src/dimensions/role/implementer.ts and packages/canon/src/agents/implementer.ts as they are. STARTING STATE: the unit's landed commit 8d36288d (Agent.isolation 'worktree', stated by the implementer role cell and copied by holds; HarnessAdapter.startsInWorktree; claude emits `isolation: worktree`; omp emits nothing and projection warns once per declaring agent) stands and is built on. WHAT IS MISSING (assay of 8d36288d): Claude Code cuts that worktree from origin's default branch (host setting worktree.baseRef fresh, the default) or from the dispatching session's HEAD (baseRef head, as this repository's .claude/settings.json sets), and the dispatcher runs in the main checkout on main, so the worktree is not off the line. HARNESS FACTS (Claude Code 2.1.285, measured): an agent's front matter carries no base ref; a WorktreeCreate hook replaces Claude Code's own worktree creation: its input is the session fields plus `name`, a command hook prints the new worktree's absolute path on stdout, and a hook that prints none fails the creation; Claude Code's own creation places a worktree at <project>/.claude/worktrees/<name>; with a WorktreeCreate hook and no WorktreeRemove hook Claude Code keeps the worktree on removal and warns. omp 18.4.9 has no per-agent worktree and no worktree-creation event, so omp stays degraded and warned as landed, and the land refusal of isolated-landing (achieved) holds the rule there. CHANGE. (1) The corpus's event vocabulary (packages/canon/src/manifest.ts, the harness-substrate list ~L295-301) gains the moment a worktree is created for an agent, bound on Claude Code to WorktreeCreate (packages/forge/src/adapters/claude/events.ts canonicalToClaude, whose comment counts the pairs) and absent on omp (packages/forge/src/adapters/omp/events.ts), so it projects and warns as every event with no peer does. (2) A canon hook cell (packages/canon/src/hooks/, registered in packages/canon/src/hook-cells.ts, its committed worker under packages/canon/targets/guardrail/ as the others are) bound to it: while a plan is bound, it creates the requested worktree on a new branch cut from the tip of that plan's line and prints its path; with no plan bound, it creates the worktree as Claude Code's own creation would (at <project>/.claude/worktrees/<name>, from origin's default branch, or from HEAD where the host's worktree.baseRef is head) and prints its path. It asks the runtime which plan is bound through the host cratylus CLI, as deploy-drift-notice reaches cratylus, and never spells a plan name, branch or path the runtime does not give it. A creation it cannot make fails loudly (stderr, non-zero), never silently in the main checkout. (3) Removal: worktrees the cell creates are kept on removal (Claude Code's behaviour with no WorktreeRemove hook), or a WorktreeRemove binding removes exactly what the cell created; the implementer chooses, and the choice is stated in the cell's comment. (4) The cell ships in the practice that installs the implementer (packages/canon/src/practices.ts), so every install that places the implementer places it, and uninstall removes it as it removes every hook command the install recorded. (5) A new behavioural test file for the cell is admitted and classified in packages/canon/test/gate-convicts.test.ts. (6) .changeset/isolated-implementer.md (from 8d36288d) also names the worktree off the line for @cratylus/canon and @cratylus/forge.",
+      "static": [
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/hooks/deploy-drift-notice.ts",
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/src/deploy/runtime-config.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/src/hooks/",
+        "packages/canon/src/hook-cells.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/targets/guardrail/",
+        "packages/canon/test/event-vocabulary.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/canon/test/",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/project/",
+        "packages/forge/test/deploy/hooks.test.ts",
+        ".changeset/isolated-implementer.md"
+      ],
+      "accept": [
+        "RIG: from the unit's checkout `pnpm build` exits 0; T=$(mktemp -d); `pnpm exec cratylus project --harness claude --out $T` exits 0. $T/agents/implementer.md's front matter holds `isolation: worktree` and no other agent's does; $T/settings.json binds WorktreeCreate to a command running the cell's worker; at 5e0f5524 it binds no WorktreeCreate",
+        "in packages/canon, the cell's test file runs its committed worker on a temp repository with a bound plan whose line is a branch with a commit main lacks: given WorktreeCreate input naming `u1`, the worker exits 0 and prints one absolute path, that path is a worktree of the repository on a branch that is neither main nor the line, and `git merge-base --is-ancestor <line tip> HEAD` holds there; with no plan bound it prints a worktree whose HEAD is the main checkout's HEAD (worktree.baseRef head) and nothing on the line; with the runtime unreachable it exits non-zero, prints no path and creates no worktree; print the run",
+        "U=$(mktemp -d); `pnpm exec cratylus project --harness omp --out $U` exits 0, nothing under $U binds the new event, and its warnings name the event as one omp does not fire and the implementer as an agent omp cannot start in a worktree of its own",
+        "with packages built and the renders projected (`pnpm project`), in packages/canon `pnpm exec vitest run test/event-vocabulary.test.ts test/practices.test.ts test/harness-parity.test.ts test/hook-rule-boundary.test.ts test/gate-convicts.test.ts test/projection-stability.test.ts` and the cell's test file exit 0; in packages/forge `pnpm exec vitest run test/adapters/claude.test.ts test/adapters/omp.test.ts test/project/skill-closure.test.ts test/deploy/hooks.test.ts test/deploy/uninstall.test.ts` exits 0; `pnpm typecheck` exits 0",
+        "`git diff 2f2a0238 -- packages/canon/src/dimensions/role/implementer.ts packages/canon/src/agents/implementer.ts` prints nothing"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "8d36288df7410881ee1c558fa2578b91d213517c",
+        "author": "IsolatedImplementer",
+        "time": "2026-10-01T21:04:32.378Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "8d36288d",
+        "verdict": "not-achieved",
+        "missing": [
+          "plan: 'each unit is built in its own isolated worktree off that line' — the worktree the harness now starts the implementer in is not off the plan's line. Claude's isolation: worktree branches from the repository's default branch (worktree.baseRef fresh, the default for a projected consumer) or from the dispatching session's HEAD (baseRef head, as this repo's .claude/settings.json sets), and the dispatcher runs in the main checkout on main; nothing at packages/forge/src/adapters/claude/render.ts or in the projected plugin set (no baseRef, no WorktreeCreate hook) places it on plan/<plan>. Locus: the claude projection of Agent.isolation (packages/forge/src/adapters/claude/render.ts agentFrontMatter; packages/canon/src/roles/implementer.ts isolation)."
+        ],
+        "author": "AssayRemaining",
+        "time": "2026-10-01T21:11:08.288Z"
+      },
+      {
+        "kind": "land",
+        "commit": "0ff3de68e6300f03f06705a846c5f7a8564199a1",
+        "author": "IsolatedImplementer",
+        "time": "2026-10-01T21:31:30.786Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "0ff3de68",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRemaining",
+        "time": "2026-10-01T21:34:21.180Z"
+      }
+    ]
+  }
+}

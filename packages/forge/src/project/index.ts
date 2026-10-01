@@ -257,6 +257,10 @@ export interface ProjectedTree extends ProjectReport {
   /** Each held role → the sorted names of the rendered agents holding it: where a
    *  consumer that routes by role must act on the agents, not the role. */
   readonly roleHolders: Readonly<Record<string, readonly string[]>>;
+  /** The sorted names of the rendered agents that declare a worktree of their own
+   *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
+   *  the loss an install tells the operator of, beside the projection's warning. */
+  readonly unisolated: readonly string[];
   /** The practices the plugin set declares, in declaration order: what an install
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
@@ -509,8 +513,8 @@ function declaredPractices(
 }
 
 /** What a practice selection places, by name: the agents, the skills (closed under
- *  composition) and the plumbing hooks. Guards are not listed: they follow the
- *  agents that compose what they bind. */
+ *  composition), the plumbing hooks and the hooks the chosen practices name. Guards are
+ *  not listed: they follow the agents that compose what they bind. */
 interface PracticeSelection {
   readonly agents: ReadonlySet<string>;
   readonly skills: ReadonlySet<string>;
@@ -605,7 +609,10 @@ async function selectPractices(
   return {
     agents: new Set(placedBy.keys()),
     skills,
-    hooks: new Set(plumbing.flatMap((p) => p.hooks ?? [])),
+    hooks: new Set([
+      ...plumbing.flatMap((p) => p.hooks ?? []),
+      ...chosen.flatMap((practice) => practice.hooks ?? []),
+    ]),
   };
 }
 
@@ -733,6 +740,26 @@ export async function projectPluginSet(
       if (!agent.skills?.length) continue;
       warn(
         `agent '${name}' is given skills ${agent.skills.join(', ')}, but the '${opts.adapter.name}' adapter has no agent-definition field that preloads a skill. No native field is emitted; the skills reach the agent as a required-reading declaration in its definition — a steer, not a preload.`,
+      );
+    }
+  }
+
+  // A HARNESS THAT CANNOT START AN AGENT IN A WORKTREE OF ITS OWN runs the agent
+  // where its dispatcher runs — or, where it can isolate a dispatched agent by other
+  // means (`dispatchIsolation`), in the copy that isolation makes. The declaration is
+  // not carried as a worktree, and the shortfall is reported once per agent it
+  // costs, beside the skill-preload shortfall above, and named in the tree for a
+  // consumer that tells the operator what the harness lacks.
+  const unisolated: string[] = [];
+  if (!opts.adapter.startsInWorktree) {
+    const { dispatchIsolation } = opts.adapter;
+    for (const { name, agent } of composed) {
+      if (agent.isolation === undefined) continue;
+      unisolated.push(name);
+      warn(
+        dispatchIsolation === undefined
+          ? `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`
+          : `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; a dispatch of it is made an isolated task, so it runs in an isolated copy of its dispatcher's checkout, ${dispatchIsolation.lacks}.`,
       );
     }
   }
@@ -971,7 +998,7 @@ export async function projectPluginSet(
     for (const id of selection.hooks) {
       if (!discoveredHooks.some((cell) => cell.id === id)) {
         throw new Error(
-          `the plumbing names the hook '${id}', which is no harness hook cell of the plugin set (hooks: ${discoveredHooks.map((c) => c.id).join(', ')})`,
+          `the plumbing or a chosen practice names the hook '${id}', which is no harness hook cell of the plugin set (hooks: ${discoveredHooks.map((c) => c.id).join(', ')})`,
         );
       }
     }
@@ -1002,7 +1029,25 @@ export async function projectPluginSet(
       `guard '${cell.id}' cannot be scoped on '${opts.adapter.name}': this harness cannot name the running agent, so a hook registered for it would fire for every session and judge none. It is carried as a steer (the rule stays declared in the agents that compose it) and its mechanism is not deployed here.`,
     );
   }
-  const carried = hookCells.filter((cell) => !unscopable.includes(cell));
+
+  // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A cell bound
+  // to such a moment alone is carried as a declaration only: its worker is not staged,
+  // since bytes beside no registration read as coverage and deliver none, and the
+  // operator is told once per moment. A cell with a moment the harness does fire keeps
+  // the registrations it can make and is told of the ones it cannot.
+  const unfired = new Set<string>();
+  for (const cell of hookCells) {
+    const lost = cell.events.filter((event) => !opts.adapter.realizes(event));
+    if (lost.length === cell.events.length) unfired.add(cell.id);
+    for (const event of lost) {
+      warn(
+        `hook '${cell.id}' is bound to '${event}', a moment the '${opts.adapter.name}' harness does not fire. ${lost.length === cell.events.length ? 'The hook is not deployed here' : 'It is not registered for that moment'}.`,
+      );
+    }
+  }
+  const carried = hookCells.filter(
+    (cell) => !unscopable.includes(cell) && !unfired.has(cell.id),
+  );
 
   let hooks = 0;
   if (carried.length > 0) {
@@ -1153,6 +1198,7 @@ export async function projectPluginSet(
     hooks,
     heldRoles: Object.keys(roleHolders).sort(),
     roleHolders,
+    unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,
       description: p.description,

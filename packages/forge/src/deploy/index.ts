@@ -151,6 +151,14 @@ export {
   modelRoleLine,
 } from './model-roles.js';
 
+// Scalar settings the host must hold, set where they are nested in its YAML config.
+export {
+  type EnsureHostSettingsResult,
+  type HostSettingChange,
+  type HostSettings,
+  ensureHostSettings,
+} from './host-settings.js';
+
 // The persona commands: a command named after each installed persona, linked into the
 // user's bin dir to the harness's launcher — never over anything this install did not
 // place, and removed only as recorded.

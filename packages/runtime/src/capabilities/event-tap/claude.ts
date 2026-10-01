@@ -12,7 +12,14 @@
 // are correct across separate CLI invocations (no reliance on in-process state).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmdirSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { CLI_BIN } from '../../bin-name.js';
 import type { EventName } from '../../events.js';
@@ -20,11 +27,13 @@ import type {
   CaptureRow,
   CaptureSink,
   EventTapHost,
+  EventTapLeft,
   EventTapStatus,
 } from '../../ports/event-tap.js';
 import type { RuntimeActBinding } from '../../runtime-config.js';
 import {
   type ClaudeHooksBlock,
+  type TapRestore,
   buildEventTapBlock,
   eventOfNative,
   mergeJsonKeys,
@@ -82,6 +91,58 @@ function safeJson(line: string): unknown {
   } catch {
     return line;
   }
+}
+
+/** How many directories, counted up from `dir`, do not yet exist. */
+function missingDirectories(dir: string): number {
+  let missing = 0;
+  for (let d = dir; !existsSync(d); d = dirname(d)) missing += 1;
+  return missing;
+}
+
+/** Whether `hooks` already holds an entry of the tap's own. */
+function holdsTapEntry(hooks: ClaudeHooksBlock | undefined): boolean {
+  return Object.values(hooks ?? {}).some((entries) =>
+    entries.some((e) => e.hooks.some((h) => h.id === EVENT_TAP_ID)),
+  );
+}
+
+/** What the host holds at `settingsPath`, as {@link TapRestore} records it. */
+function restoreOf(
+  existing: string | undefined,
+  settingsPath: string,
+): TapRestore {
+  if (existing === undefined) {
+    return { created: missingDirectories(dirname(settingsPath)) };
+  }
+  return { text: existing };
+}
+
+/** Serialize a document as install writes one: 2-space indent, a trailing newline. */
+function render(value: unknown): string {
+  return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+/**
+ * Remove `dir` and up to `count - 1` parents above it, stopping at the first that
+ * holds anything: a directory install made is the host's once the host puts
+ * something in it. Returns that directory, if there was one.
+ */
+function removeEmptyDirectories(
+  dir: string,
+  count: number,
+): string | undefined {
+  let d = dir;
+  for (let i = 0; i < count; i += 1, d = dirname(d)) {
+    try {
+      rmdirSync(d);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'ENOTEMPTY' || code === 'EEXIST') return d;
+      throw err;
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -195,6 +256,18 @@ export class EventTapHostClaude implements EventTapHost {
         ? (JSON.parse(existing) as { hooks?: ClaudeHooksBlock })
         : {};
 
+    // Install is what knows what the host held; uninstall runs in another process and
+    // learns it from the stamp, not from memory. A file that already carries the
+    // tap's entries is a second install over a first, which stamped what the host held.
+    if (!holdsTapEntry(base.hooks)) {
+      const restore = restoreOf(existing, settingsPath);
+      for (const entries of Object.values(tapBlock)) {
+        for (const entry of entries) {
+          for (const hook of entry.hooks) hook.restore = restore;
+        }
+      }
+    }
+
     // Merge per native event so a foreign entry under the same event survives
     // (the top-level key merge below preserves permissions/env/etc.).
     const mergedHooks: ClaudeHooksBlock = { ...(base.hooks ?? {}) };
@@ -211,16 +284,32 @@ export class EventTapHostClaude implements EventTapHost {
     return { tapped, skipped };
   }
 
-  remove(): void {
+  remove(): EventTapLeft[] {
     const settingsPath = this.#settingsPath;
-    if (!existsSync(settingsPath)) return;
+    if (!existsSync(settingsPath)) return [];
     const text = readFileSync(settingsPath, 'utf8');
-    if (text.trim() === '') return;
+    if (text.trim() === '') return [];
     const base = JSON.parse(text) as Record<string, unknown> & {
       hooks?: ClaudeHooksBlock;
     };
     const hooks = base.hooks;
-    if (!hooks) return;
+    if (!hooks) return [];
+
+    // What the install stamped on its entries; any one will do.
+    const restore = Object.values(hooks)
+      .flat()
+      .flatMap((e) => e.hooks)
+      .find((h) => h.id === EVENT_TAP_ID && h.restore !== undefined)?.restore;
+    // A file install made, and now holds what the host put in it: kept, and said.
+    const keptFile: EventTapLeft[] =
+      restore !== undefined && 'created' in restore
+        ? [
+            {
+              path: settingsPath,
+              why: 'install created it, and the host has since put its own content in it',
+            },
+          ]
+        : [];
 
     const cleaned: ClaudeHooksBlock = {};
     for (const [event, entries] of Object.entries(hooks)) {
@@ -232,20 +321,53 @@ export class EventTapHostClaude implements EventTapHost {
         .filter((e) => e.hooks.length > 0);
       if (kept.length > 0) cleaned[event] = kept;
     }
-
-    if (Object.keys(cleaned).length > 0) {
-      writeFileSync(
-        settingsPath,
-        mergeJsonKeys(text, { hooks: cleaned }),
-        'utf8',
-      );
-    } else {
-      // No foreign entries remain: drop the whole key so nothing residual is
-      // left behind (a bare `hooks: {}` would be residue).
-      const { hooks: _removed, ...rest } = base;
-      writeFileSync(settingsPath, `${JSON.stringify(rest, null, 2)}\n`, 'utf8');
-    }
     this.#sinkPath = undefined;
+
+    // What the file holds once the tap's entries are gone. No foreign entries left
+    // means the whole `hooks` key goes: a bare `hooks: {}` would be residue.
+    const { hooks: _removed, ...rest } = base;
+    const after =
+      Object.keys(cleaned).length > 0 ? { ...base, hooks: cleaned } : rest;
+
+    if (restore !== undefined && 'created' in restore) {
+      if (Object.keys(after).length > 0) {
+        writeFileSync(settingsPath, render(after), 'utf8');
+        return keptFile;
+      }
+      // The tap's entries were all the file held and install made the file: put the
+      // host back as it was before install, file and the directories made for it.
+      unlinkSync(settingsPath);
+      const left = removeEmptyDirectories(
+        dirname(settingsPath),
+        restore.created,
+      );
+      return left === undefined
+        ? []
+        : [
+            {
+              path: left,
+              why: 'install created it, and the host has since put something in it',
+            },
+          ];
+    }
+    // A file the host had: its own bytes when the host has changed nothing since
+    // (either with `hooks` gone or with the emptied key the host had), else only the
+    // tap's entries taken out of what it holds now.
+    if (restore !== undefined && 'text' in restore) {
+      const held = JSON.stringify(
+        restore.text.trim() === '' ? {} : JSON.parse(restore.text),
+      );
+      if (
+        [after, { ...base, hooks: cleaned }].some(
+          (doc) => JSON.stringify(doc) === held,
+        )
+      ) {
+        writeFileSync(settingsPath, restore.text, 'utf8');
+        return [];
+      }
+    }
+    writeFileSync(settingsPath, render(after), 'utf8');
+    return [];
   }
 
   readCapture(): CaptureRow[] {

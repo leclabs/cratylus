@@ -38,6 +38,7 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -94,6 +95,21 @@ function git(cwd: string, ...args: string[]): string {
     const said =
       error instanceof Error && 'stderr' in error ? String(error.stderr) : '';
     throw new Error(said.trim() || String(error));
+  }
+}
+
+/** Whether the commit `ancestor` is `tip` or reachable from it. */
+function contains(cwd: string, ancestor: string, tip: string): boolean {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', ancestor, tip], {
+      cwd,
+      stdio: 'ignore',
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof Error && 'status' in error && error.status === 1)
+      return false;
+    throw error;
   }
 }
 
@@ -312,6 +328,61 @@ export class RecordStore {
   }
 
   /**
+   * Where the work of `commit` was built, as far as the repository says: it
+   * is `unresolved` when no commit answers to the name; `main` when the HEAD of
+   * the main worktree contains it, so it was built in that checkout, whatever
+   * branch the checkout is on; `line` when the line of `plan` already contains
+   * it, so it was built in the line's own worktree; `adrift` when its history
+   * does not run from the line, sharing none with it or holding a commit the
+   * main checkout has and the line lacks, so it was cut from elsewhere; and
+   * `apart` otherwise, built in a worktree of its own off the line. Changes
+   * nothing.
+   */
+  builtIn(
+    plan: string,
+    commit: string,
+  ): 'unresolved' | 'main' | 'line' | 'adrift' | 'apart' {
+    let id: string;
+    try {
+      id = git(
+        this.top,
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        '--end-of-options',
+        `${commit}^{commit}`,
+      );
+    } catch {
+      return 'unresolved';
+    }
+    const head = git(this.main, 'rev-parse', 'HEAD');
+    if (contains(this.top, id, head)) return 'main';
+    const { branch, exists } = this.line(plan);
+    if (!exists) return 'apart';
+    const tip = `refs/heads/${branch}`;
+    if (contains(this.top, id, tip)) return 'line';
+    return this.#offLine(id, tip, head) ? 'apart' : 'adrift';
+  }
+
+  /** Whether the history of commit `id` runs from the line at `tip`: it shares
+   *  history with the line, and everything it shares with the main checkout at
+   *  `head` the line holds too, so it was not cut from where main went on. */
+  #offLine(id: string, tip: string, head: string): boolean {
+    try {
+      git(this.top, 'merge-base', id, tip);
+    } catch {
+      return false;
+    }
+    let shared: string[];
+    try {
+      shared = git(this.top, 'merge-base', '--all', id, head).split('\n');
+    } catch {
+      return true;
+    }
+    return shared.every((base) => contains(this.top, base, tip));
+  }
+
+  /**
    * The line of `plan`, cut if it does not exist: the branch `plan/<plan>` from
    * the HEAD of this checkout, in a worktree named after the main one. The
    * worktree that already holds the branch is used as it stands. Refuses a
@@ -333,20 +404,44 @@ export class RecordStore {
     return { plan, branch, path: realpathSync(at) };
   }
 
-  /** Copy into `line` each record, named by domain and id, this checkout holds
-   *  and the line lacks. */
-  copy(
+  /** Move onto `line` each record, named by domain and id, this checkout holds:
+   *  the file is copied there when the line lacks it, and then no longer stands
+   *  here — nor in this checkout's index — unless the HEAD of this checkout
+   *  tracks it, since a committed record is never removed from a checkout.
+   *  A record the line holds already, byte for byte, is taken off this
+   *  checkout the same way. Nothing is moved when this checkout is the line's. */
+  move(
     line: Line,
     records: readonly { readonly domain: string; readonly id: RecordId }[],
   ): void {
     if (line.path === this.top) return;
+    const listed = (...args: string[]): ReadonlySet<string> =>
+      new Set(
+        git(this.top, ...args, '--', RECORDS_ROOT)
+          .split('\n')
+          .map((name) => join(this.top, name)),
+      );
+    let committed: ReadonlySet<string> | undefined;
+    const taken: string[] = [];
     for (const { domain, id } of records) {
       const from = join(this.#dir(domain), `${id}.json`);
       const to = join(this.#dir(domain, line.path), `${id}.json`);
-      if (!existsSync(from) || existsSync(to)) continue;
-      mkdirSync(this.#dir(domain, line.path), { recursive: true });
-      copyFileSync(from, to, constants.COPYFILE_EXCL);
+      if (!existsSync(from)) continue;
+      if (existsSync(to)) {
+        if (!readFileSync(from).equals(readFileSync(to))) continue;
+      } else {
+        mkdirSync(this.#dir(domain, line.path), { recursive: true });
+        copyFileSync(from, to, constants.COPYFILE_EXCL);
+      }
+      committed ??= listed('ls-tree', '-r', '--name-only', 'HEAD');
+      if (!committed.has(from)) taken.push(from);
     }
+    if (taken.length === 0) return;
+    const staged = listed('ls-files');
+    const unstage = taken.filter((from) => staged.has(from));
+    if (unstage.length > 0)
+      git(this.top, 'rm', '-q', '-f', '--cached', '--', ...unstage);
+    for (const from of taken) rmSync(from);
   }
 
   /**

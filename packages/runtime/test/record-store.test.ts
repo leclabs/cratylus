@@ -7,12 +7,15 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   realpathSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -643,12 +646,55 @@ describe('record store — a plan’s line', () => {
     // The line reads what it holds and other lines hold, never a checkout's
     // own uncommitted records.
     expect(ids(fromLine.read(DOMAIN))).toEqual(ids([there]));
-    // A record both hold reads once.
-    new RecordStore(repo).copy(line, [
+    // A record moved onto the line reads once, from the line alone.
+    new RecordStore(repo).move(line, [
       { domain: DOMAIN, id: here.envelope.id },
     ]);
+    expect(readdirSync(dir(repo))).toEqual([`${beside.envelope.id}.json`]);
     expect(ids(new RecordStore(repo).read(DOMAIN))).toEqual(
       ids([here, there, beside]),
+    );
+  });
+
+  it('move takes an untracked, a staged and an already-held record off this checkout and its index, and leaves one this checkout’s HEAD tracks, one the line holds differently, and one it was not asked for', () => {
+    const repo = committed();
+    const tracked = new RecordStore(repo).create(DOMAIN, { name: 't' }, BY);
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'a record');
+    const staged = new RecordStore(repo).create(DOMAIN, { name: 's' }, BY);
+    git(repo, 'add', '-A');
+    const loose = new RecordStore(repo).create(DOMAIN, { name: 'l' }, BY);
+    const kept = new RecordStore(repo).create(DOMAIN, { name: 'k' }, BY);
+    const line = new RecordStore(repo).cut('p');
+    const both = new RecordStore(repo).create(DOMAIN, { name: 'b' }, BY);
+    const odd = new RecordStore(repo).create(DOMAIN, { name: 'o' }, BY);
+    const dir = (top: string) => join(top, RECORDS_ROOT, DOMAIN);
+    const file = (r: Record<unknown>) => `${r.envelope.id}.json`;
+    mkdirSync(dir(line.path), { recursive: true });
+    copyFileSync(join(dir(repo), file(both)), join(dir(line.path), file(both)));
+    writeFileSync(join(dir(line.path), file(odd)), '{}\n');
+    new RecordStore(repo).move(
+      line,
+      [tracked, loose, both, odd, staged].map((r) => ({
+        domain: DOMAIN,
+        id: r.envelope.id,
+      })),
+    );
+    const named = (records: readonly Record<unknown>[]) =>
+      records.map(file).sort();
+    expect(readdirSync(dir(repo)).sort()).toEqual(named([tracked, kept, odd]));
+    expect(readdirSync(dir(line.path)).sort()).toEqual(
+      named([tracked, loose, both, odd, staged]),
+    );
+    expect(git(repo, 'status', '--porcelain', 'records/').trim()).toBe(
+      [kept, odd].map((r) => `?? records/${DOMAIN}/${file(r)}`).join('\n'),
+    );
+    // The line's own checkout is never emptied.
+    new RecordStore(line.path).move(line, [
+      { domain: DOMAIN, id: loose.envelope.id },
+    ]);
+    expect(readdirSync(dir(line.path)).sort()).toEqual(
+      named([tracked, loose, both, odd, staged]),
     );
   });
 

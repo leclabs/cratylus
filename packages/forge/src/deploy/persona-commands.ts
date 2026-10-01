@@ -56,13 +56,14 @@ export interface PersonaLauncher {
 }
 
 /**
- * Where `adapter`'s launcher lands under `home`, or `undefined` when it has none.
- * Asked of the adapter (`scopedRel`) rather than spelled, so it can never disagree
- * with where deploy placed the file.
+ * Where `adapter`'s launcher lands in `harnessDir` — the directory the harness reads
+ * (`harnessDirIn`) — or `undefined` when it has none. Asked of the adapter
+ * (`scopedRel`) rather than spelled, so it can never disagree with where deploy
+ * placed the file.
  */
 export function personaLauncherOf(
-  home: string,
-  adapter: Pick<HarnessAdapter, 'name' | 'home' | 'launcherFile' | 'scopedRel'>,
+  harnessDir: string,
+  adapter: Pick<HarnessAdapter, 'name' | 'launcherFile' | 'scopedRel'>,
 ): PersonaLauncher | undefined {
   if (adapter.launcherFile === undefined || adapter.scopedRel === undefined) {
     return undefined;
@@ -70,8 +71,7 @@ export function personaLauncherOf(
   return {
     harness: adapter.name,
     launcher: join(
-      home,
-      adapter.home,
+      harnessDir,
       adapter.scopedRel(adapter.launcherFile, SESSION_SCOPE),
     ),
   };
@@ -80,7 +80,7 @@ export function personaLauncherOf(
 export interface PersonaCommandsOpts {
   /** The user's HOME — the bin dir hangs from it, and so do recorded links. */
   readonly home: string;
-  /** This harness's deploy root (`<home>/<adapter.home>`), where its manifest lives. */
+  /** This harness's deploy root (`harnessDirIn`), where its manifest lives. */
   readonly harnessDir: string;
   /** This harness's launcher: the link target, and the owner of what is recorded. */
   readonly self: PersonaLauncher;

@@ -80,14 +80,14 @@ function corpus(): ProjectablePlugin {
   const nulls = Object.keys(FIXTURE_MANIFEST)
     .map((k) => `  ${kebabToCamel(k)}: null,`)
     .join('\n');
-  const spec: Record<string, { holds?: string }> = {
+  const spec: Record<string, { holds?: string; isolation?: 'worktree' }> = {
     planner: { holds: 'planner' },
     assayer: { holds: 'assayer' },
-    implementer: { holds: 'implementer' },
+    implementer: { holds: 'implementer', isolation: 'worktree' },
     nico: {},
     kino: {},
   };
-  for (const [name, { holds }] of Object.entries(spec)) {
+  for (const [name, { holds, isolation }] of Object.entries(spec)) {
     writeFileSync(
       join(agents, `${name}.ts`),
       [
@@ -96,6 +96,7 @@ function corpus(): ProjectablePlugin {
         `  description: 'fixture agent ${name}',`,
         `  archetype: '${name} probe',`,
         ...(holds ? [`  holds: '${holds}',`] : []),
+        ...(isolation ? [`  isolation: '${isolation}',`] : []),
         nulls,
         '};',
         '',
@@ -321,7 +322,7 @@ describe('the guided install', () => {
     expect(out).toContain('cratylus is installed');
     expect(out).toContain('cratylus uninstall --harness omp');
     // The summary is a few lines; the deploy log is verbose's.
-    expect(out.split('\n').length).toBeLessThan(20);
+    expect(out.split('\n').length).toBeLessThan(24);
   });
 
   it('asks nothing and places without a confirmation where there is no terminal, the practices named', async () => {
@@ -840,6 +841,82 @@ describe('the guided install', () => {
     expect(out).not.toContain('cratylus is installed');
   });
 
+  it('says in its summary, dry or not, that omp runs the implementer in an isolated copy and not in a worktree off the line, and keeps the warning', async () => {
+    const said =
+      "not realized: the implementer is not started in a worktree of its own on omp; it runs in an isolated copy of its dispatcher's checkout, never writing the main checkout, cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line";
+    const before = snapshot(home);
+    expect(
+      await install({ harness: 'omp', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+    expect(out).toContain(
+      `would edit ${ompConfig()}: task.isolation sets enabled: true, apply: false, merge: branch`,
+    );
+    expect(err).toContain("agent 'implementer' runs in a git worktree");
+    expect(err).toContain('isolated copy');
+    expect(snapshot(home)).toEqual(before);
+    out = '';
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    expect(out).toContain(said);
+  });
+
+  it('sets the host settings an isolated task needs, where the host keeps its own, and lets an uninstall put them back', async () => {
+    const host = [
+      '# host config',
+      'task:',
+      '  disabledAgents:',
+      '    []',
+      '  isolation:',
+      '    apply: true # keep what the copy built',
+      '    backend: auto',
+      'theme: dark',
+      '',
+    ].join('\n');
+    writeFileSync(ompConfig(), host);
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    const set = readFileSync(ompConfig(), 'utf8');
+    expect(set).toContain(
+      '  isolation:\n    apply: false\n    backend: auto\n    enabled: true\n    merge: branch\n',
+    );
+    expect(set).not.toContain('apply: true');
+    expect(set).toContain('theme: dark');
+    // The module that sets `isolated` is placed where a bare session and a persona's
+    // own session each load it.
+    expect(files(omp())).toEqual(
+      expect.arrayContaining([
+        'agent/extensions/cratylus-isolation.ts',
+        'agent/personas/implementer/extensions/cratylus-isolation.ts',
+      ]),
+    );
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8')).toBe(host);
+  });
+
+  it('leaves a config it cannot edit safely as it is, and says which lines to write', async () => {
+    const host = 'task: { isolation: { enabled: false } }\n';
+    writeFileSync(ompConfig(), host);
+    expect(
+      await install({ harness: 'omp', practices: 'build', yes: true }),
+    ).toBe(0);
+    expect(readFileSync(ompConfig(), 'utf8').startsWith(host)).toBe(true);
+    expect(err).toContain(`did not edit ${ompConfig()}`);
+    expect(err).toContain(
+      'task.isolation.enabled: true, task.isolation.apply: false, task.isolation.merge: branch',
+    );
+  });
+
+  it('leaves the worktree shortfall out of the summary where the harness starts the agent in one', async () => {
+    expect(
+      await install({ harness: 'claude', practices: 'build', dryRun: true }),
+    ).toBe(0);
+    expect(out).not.toContain('not realized');
+    expect(err).not.toContain('worktree');
+  });
+
   it('prints the per-file detail only when asked for', async () => {
     expect(await install({ harness: 'omp', yes: true })).toBe(0);
     expect(out).not.toContain('defs copied');
@@ -905,6 +982,151 @@ describe('the guided install', () => {
     expect(existsSync(set)).toBe(true);
     expect(existsSync(join(home, '.cratylus.json'))).toBe(false);
   });
+
+  describe('where Claude Code reads', () => {
+    let processHome: string;
+    let configDir: string;
+    beforeEach(() => {
+      processHome = join(tmpRoot(), 'process-home');
+      configDir = join(tmpRoot(), 'claude-config');
+      mkdirSync(processHome, { recursive: true });
+      mkdirSync(configDir, { recursive: true });
+      vi.stubEnv('HOME', processHome);
+      vi.stubEnv('CLAUDE_CONFIG_DIR', configDir);
+    });
+    /** A claude run given no home, as the command line gives it. */
+    const unhomed = () =>
+      runInstall({
+        cwd,
+        corpus: plugin as never,
+        pathEnv: '/usr/bin',
+        practices: 'build',
+        harness: 'claude',
+        yes: true,
+      });
+
+    it('places its files under CLAUDE_CONFIG_DIR when no home is given, nothing under $HOME/.claude, and uninstall removes them from there', async () => {
+      expect(await unhomed()).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(files(configDir).some((f) => f.endsWith('manifest.json'))).toBe(
+        true,
+      );
+      const settings = readFileSync(join(configDir, 'settings.json'), 'utf8');
+      expect(settings).toContain('statusLine');
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+
+      expect(runUninstall({ harness: 'claude', verbose: true })).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(false);
+      expect(files(configDir).filter((f) => f !== 'settings.json')).toEqual([]);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('finds the harness to install into where CLAUDE_CONFIG_DIR is, when none is named', async () => {
+      expect(
+        await runInstall({
+          cwd,
+          corpus: plugin as never,
+          pathEnv: '/usr/bin',
+          practices: 'build',
+          yes: true,
+        }),
+      ).toBe(0);
+      expect(existsSync(join(configDir, 'agents', 'planner.md'))).toBe(true);
+      expect(existsSync(join(processHome, '.claude'))).toBe(false);
+    });
+
+    it('puts a run given a home under that home’s .claude, whatever CLAUDE_CONFIG_DIR says', async () => {
+      expect(await install({ harness: 'claude', yes: true })).toBe(0);
+      expect(claudeAgent('planner')).toSatisfy(existsSync);
+      expect(files(configDir)).toEqual([]);
+      expect(runUninstall({ harness: 'claude', home })).toBe(0);
+      expect(existsSync(claudeAgent('planner'))).toBe(false);
+    });
+  });
+
+  it('writes nothing and reports no edit when it runs again over a status line it wrapped, dry or not', async () => {
+    const settingsFile = join(claude(), 'settings.json');
+    writeFileSync(
+      settingsFile,
+      `${JSON.stringify({ statusLine: { type: 'command', command: 'printf host' } }, null, 2)}\n`,
+    );
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(out).toContain('your status line command is wrapped');
+    const wrapped = readFileSync(settingsFile, 'utf8');
+    for (const dryRun of [false, true]) {
+      out = '';
+      expect(await install({ harness: 'claude', yes: true, dryRun })).toBe(0);
+      expect(out).not.toContain('status line');
+      expect(readFileSync(settingsFile, 'utf8')).toBe(wrapped);
+    }
+  });
+
+  it('takes the status line an earlier install recorded placing, spelled as a former release wrote it, for its own: the worker becomes the current one, never wrapped, and uninstall removes it', async () => {
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    const settingsFile = join(claude(), 'settings.json');
+    const manifestFile = join(claude(), '.forge', 'deploy-manifest.json');
+    const current = JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine
+      .command as string;
+    // The host as an install from before the change left it.
+    const former =
+      'sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"';
+    expect(current).not.toBe(former);
+    const settings = JSON.parse(readFileSync(settingsFile, 'utf8'));
+    settings.statusLine.command = former;
+    writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+    manifest.statusLine = { placed: former, host: null };
+    writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));
+
+    out = '';
+    expect(await install({ harness: 'claude', yes: true })).toBe(0);
+    expect(JSON.parse(readFileSync(settingsFile, 'utf8')).statusLine).toEqual({
+      ...settings.statusLine,
+      command: current,
+    });
+    expect(out).not.toContain('wrapped in the persona badge');
+    expect(JSON.parse(readFileSync(manifestFile, 'utf8')).statusLine).toEqual({
+      placed: current,
+      host: null,
+    });
+
+    expect(runUninstall({ harness: 'claude', home })).toBe(0);
+    expect(existsSync(settingsFile)).toBe(false);
+  });
+
+  it.each([
+    ['not valid JSON', 'not json', 'is not valid JSON'],
+    ['a JSON array', '[1]', 'is not a JSON object'],
+  ])(
+    'refuses a runtime config holding %s in one line, leaving its bytes and placing nothing',
+    async (_case, held, said) => {
+      const config = join(home, '.cratylus.json');
+      writeFileSync(config, held);
+      const before = snapshot(home);
+      for (const dryRun of [false, true]) {
+        err = '';
+        out = '';
+        expect(
+          await install({
+            corpus: { ...plugin, events: ['session.start'] } as never,
+            harness: 'claude',
+            yes: true,
+            dryRun,
+          }),
+        ).toBe(1);
+        expect(out).toBe('');
+        const lines = err.trimEnd().split('\n');
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatch(/^cratylus install: /);
+        expect(lines[0]).toContain(`${config} ${said}`);
+        expect(lines[0]).toContain(
+          'repair the file or move it away, then run cratylus install again',
+        );
+        expect(readFileSync(config, 'utf8')).toBe(held);
+        expect(snapshot(home)).toEqual(before);
+      }
+    },
+  );
 
   it('ends in one line, writing nothing, where the cwd config names a package that is not installed', async () => {
     // What `cratylus init` writes, before its package is installed: the loader's

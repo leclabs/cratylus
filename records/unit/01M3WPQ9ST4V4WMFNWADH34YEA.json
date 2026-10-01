@@ -1,0 +1,107 @@
+{
+  "envelope": {
+    "id": "01M3WPQ9ST4V4WMFNWADH34YEA",
+    "entity": "01M3WM8Z8D4XQ15XFMS6NMH0M1",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPN34HE66PXCSHEMWBVSVP"
+    ],
+    "author": "RemainingIntegrator",
+    "time": "2026-10-01T21:42:57.082Z",
+    "reason": "implementer-return-fixture merged onto plan/remaining-gaps and the whole gate (build, lint, canon:project claude+omp, test, typecheck, pack:smoke) passed on the combined tree",
+    "cause": "assay achieved at adb51ded by AssayRemaining2"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "implementer-return-fixture",
+      "intent": "Census @7a2306b7 (the unit's own landing; design and notebook as at 8742a725); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file. Run one test file inside its package with `pnpm exec vitest run <file>`. Realize the implementer role in the corpus's one worked example of a dispatch to it and its return: the implementer builds one unit from its spec alone, never the design; it returns only the unit's name, `landed <unit> of <plan> at <commit>` or `blocked <unit> of <plan>: spec`, never an account; the assayer judges the unit against its shard from the files at that commit; a verdict of not achieved comes back to the same implementer with the assayer's findings; and it builds in its own isolated worktree off the plan's line, never on main (packages/canon/src/dimensions/role/implementer.ts). The pair packages/canon/test/fixtures/generated/delegation-prompt.md and subagent-return.md (pinned by packages/canon/test/reader-reach.test.ts:42-48 as classes delegation-prompt and subagent-return; :96-102 requires the dispatch to show no human-register signal) contradicts it. AT 7a2306b7 the dispatch opens '# dispatch: add-endpoint — plan healthz, wave(0), agent: implementer', builds 'off main', names 'plan lead' as the judge, decides acceptance 'from the return alone' and requires a return of files, evidence, gates and deviations; the return, relabelled by the first landing to come from a 'contractor', still carries that account, so a dispatch to the implementer is answered by another agent (note 'delegation-prompt fixture still dispatches to the implementer under the old return contract'). CHANGE. Rewrite the pair as one dispatch to this corpus's implementer and its return under the role: the dispatch gives the unit's address (`add-endpoint of healthz`) and says to build it; it carries no inlined spec (the implementer reads it with `cratylus plan show <unit> --plan <plan>`), no branch off main, no judge other than the assayer, no acceptance decided from the return, and no return shape beyond the name; the return is the name alone, `landed add-endpoint of healthz at <a commit id>`, with the header naming the implementer. Both stay dense and still conform as their classes. Update the reader-reach.test.ts header comment where it says the fixtures were produced on consumer projects on 2026-07-01, so it says what this pair now depicts; change no assertion there. No changeset (test fixtures and a test comment alone change).",
+      "static": [
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/test/reader-register.ts",
+        "packages/canon/src/agents/implementer.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7",
+        "01M3WM7EGXV0AKN88688Z6TVNK"
+      ],
+      "outputs": [
+        "packages/canon/test/fixtures/generated/delegation-prompt.md",
+        "packages/canon/test/fixtures/generated/subagent-return.md",
+        "packages/canon/test/reader-reach.test.ts"
+      ],
+      "accept": [
+        "`grep -c -E 'off .main|plan lead|from the return alone|## files|## evidence|## gates|## deviations|contractor' packages/canon/test/fixtures/generated/delegation-prompt.md packages/canon/test/fixtures/generated/subagent-return.md` prints 0 for each file; at 7a2306b7 it prints a non-zero count for each",
+        "`grep -c 'agent: implementer' packages/canon/test/fixtures/generated/delegation-prompt.md packages/canon/test/fixtures/generated/subagent-return.md` prints 1 for each, and `grep -c -E '^landed add-endpoint of healthz at [0-9a-f]{7,40}$' packages/canon/test/fixtures/generated/subagent-return.md` prints 1; at 7a2306b7 the return prints 0 for both",
+        "in packages/canon, `pnpm exec vitest run test/reader-reach.test.ts` exits 0, and `git diff <the unit's starting commit> -- packages/canon/test/reader-reach.test.ts` touches comment lines only",
+        "`git diff --name-only <the commit the unit's work starts from> <landed commit>` lists only the unit's three outputs (records/ excepted)"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3R07GCQ2FM8D4CE4044A5J9",
+      "version": "01M3RCX9PZ8RD4PFBTBJY6AKX1",
+      "closure": {
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "7a2306b775daf03d288e138850f312f7393d83fa",
+        "author": "ImplementerReturnFixture",
+        "time": "2026-10-01T21:37:43.532Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7a2306b775daf03d288e138850f312f7393d83fa",
+        "verdict": "not-achieved",
+        "missing": [
+          "implementer role: 'handing its work on to be judged' and 'a verdict of not achieved comes back with the assayer's findings': the corpus's worked example still dispatches to the implementer (delegation-prompt.md, 'agent: implementer') under a return contract that requires an account (files, evidence, gates, deviations), has 'plan lead' as the judge, decides acceptance 'from the return alone', and builds off main. Its paired return is now relabelled as coming from a 'contractor', so the pair has a dispatch to an implementer answered by a different agent; locus: packages/canon/test/fixtures/generated/delegation-prompt.md together with subagent-return.md"
+        ],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T21:38:55.758Z"
+      },
+      {
+        "kind": "land",
+        "commit": "adb51dedc05c4dd889806871370b57952efb5108",
+        "author": "ImplementerReturnFixture",
+        "time": "2026-10-01T21:41:16.421Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "adb51dedc05c4dd889806871370b57952efb5108",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T21:41:44.720Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "00e9b165bfaf4cf6330fb90fcc4793560e588827",
+        "author": "RemainingIntegrator",
+        "time": "2026-10-01T21:42:57.082Z"
+      }
+    ]
+  }
+}

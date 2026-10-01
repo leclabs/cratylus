@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WPMWMAJH0246839N4FNVJE",
+    "entity": "01M3WPMWMAJH0246839N4FNVJD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "BindMovesRecords",
+    "time": "2026-10-01T21:41:38.058Z",
+    "reason": "spec cannot be built literally",
+    "cause": "bind-moves-records of remaining-gaps"
+  },
+  "payload": {
+    "title": "bind-moves-records test notes block a unit not the plan",
+    "kind": "idea",
+    "topic": "bind-moves-records",
+    "body": "The acceptance case names a note blocking the plan captured before bind, but plan bind refuses a plan an owed ruling names ('an owed ruling names plan p'), so the case in plan.test.ts captures a note blocking a unit of the plan instead; the note moves onto the line alike.",
+    "blocks": []
+  }
+}

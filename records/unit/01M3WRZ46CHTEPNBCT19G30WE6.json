@@ -1,0 +1,109 @@
+{
+  "envelope": {
+    "id": "01M3WRZ46CHTEPNBCT19G30WE6",
+    "entity": "01M3WPWXP3BFWAJRRP5FPC45XW",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WRYD4DXBF92Y7VGR2G97K2"
+    ],
+    "author": "AssayRemaining2",
+    "time": "2026-10-01T22:22:10.636Z",
+    "reason": "assayed against shard supported harness: the repair changes only a type cast in the omp dispatch-isolation test fixture and leaves the realization judged achieved at 7806a1ab unchanged. forge typecheck:test (tsc -p tsconfig.test.json) is clean, and the 223 tests across the omp adapter, install, model-roles and uninstall pass",
+    "cause": "re-assay of omp-implementer-worktree at ba81a4bc, the repair of the red typecheck:test at 7806a1ab, requested by Main"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "omp-implementer-worktree",
+      "intent": "Census @66154b42 (the plan's line; design and notebook as there); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Run one test file inside its package with `pnpm exec vitest run <file>`. Realize supported harness for the plan's clause 'each unit is built in its own isolated worktree off that line' on omp: omp receives that cell at the highest fidelity it offers, and degrades and warns only where it falls short (ruling on the note 'edit tool writes relative paths into the session cwd, not the unit worktree': on omp the isolation is unrealized, not excluded). AT CENSUS on omp the implementer starts in the dispatcher's checkout, the main one: isolated-implementer emits nothing on omp and projection warns once that omp cannot start it in a worktree of its own (packages/forge/src/adapters/omp/render.ts, startsInWorktree; packages/forge/src/project/index.ts), and the land gate of isolated-landing refuses work built in the main checkout or on the line, so the build happens off its worktree and an edit addressed by a repo-relative path lands in the operator's checkout. HARNESS FACTS (omp 18.4.9, read from its binary, not run): the task tool takes a per-task `isolated?: boolean` only when the host setting task.isolation.enabled is true, and refuses an isolated task otherwise ('Subagent isolated execution requires task.isolation.enabled'); an isolated task runs 'in an isolated copy of the checkout' and its changes are integrated afterwards, as a patch applied to the parent checkout or as a branch merged with --no-ff (task.isolation.merge), applied automatically unless task.isolation.apply is false, which keeps patch or branch artifacts; isolation.backend picks the copy mechanism (git worktree where available, else a copy). This corpus's omp extension already intercepts the dispatch act (the task tool's tool_call; packages/forge/src/adapters/omp/events.ts). Whether a tool_call handler may change a call's arguments, and on which base the isolated copy is cut, are unmeasured: measure them on omp first. CHANGE. If omp allows any way to start the implementer in a worktree of its own whose history runs from the bound plan's line (when a plan is bound), without its changes being applied back into the dispatcher's checkout, realize it in this corpus's omp side (the extension or the agent definition, and the host settings install records and uninstall takes back, as it does modelRoles), and the projection stops warning for it. Otherwise state the shortfall: install's summary for omp and packages/cli/README.md's 'Where Claude Code and omp differ' (~L235) say the implementer is not started in a worktree of its own on omp and that the land gate refuses work built in the main checkout, and the projection warning stays. Teach the agent nothing about worktrees or paths: packages/canon/src/dimensions/role/implementer.ts and packages/canon/src/agents/implementer.ts are unchanged. Every test points HOME and the omp config at temp directories. Add .changeset/omp-implementer-worktree.md (patch for @cratylus/forge and cratylus).",
+      "static": [
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/canon/src/hooks/line-worktree.ts"
+      ],
+      "deps": [
+        "01M3WM8YYKYNC19M5E90CTHVFR",
+        "01M3WPBBR2M5YVMP2GKA795XSN"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/deploy/model-roles.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/deploy/model-roles.test.ts",
+        "packages/forge/test/cli/install.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/cli/README.md",
+        ".changeset/omp-implementer-worktree.md"
+      ],
+      "accept": [
+        "print the omp measurement first: with task.isolation.enabled true in a temp omp config, whether an isolated task's copy runs from a ref the dispatcher chooses, whether the extension's tool_call handler can set a task's arguments, and whether task.isolation.apply false keeps the copy's changes out of the dispatcher's checkout; each answer cites the omp run or the omp source line it was read from",
+        "IF REALIZED: a test in packages/forge/test/adapters/omp.test.ts or packages/forge/test/deploy/ runs the projected omp side on a temp repository with a bound plan and shows the implementer's task started in a directory that is neither the main checkout nor the line's worktree, whose HEAD runs from the line tip (`git merge-base --is-ancestor <line tip> HEAD`), with the main checkout's `git status --porcelain` unchanged after the task; `pnpm exec cratylus project --harness omp --out $(mktemp -d)` no longer warns that omp cannot start the implementer in a worktree of its own; install then uninstall into a temp HOME leaves the omp config byte for byte as before. At 66154b42 the projection warns",
+        "IF A SHORTFALL: `grep -n -i 'worktree' packages/cli/README.md` prints a line under 'Where Claude Code and omp differ' saying the implementer is not started in a worktree of its own on omp and the land gate refuses work built in the main checkout; `cratylus install --harness omp --dry-run` into a temp HOME prints the same in its summary; the projection warning stays; at 66154b42 neither the README section nor the summary says so",
+        "in packages/forge, `pnpm exec vitest run test/adapters/omp.test.ts test/cli/install.test.ts test/deploy/uninstall.test.ts test/deploy/model-roles.test.ts` exits 0, `pnpm --filter @cratylus/forge typecheck` exits 0, and `git diff 2f2a0238 -- packages/canon/src/dimensions/role/implementer.ts packages/canon/src/agents/implementer.ts` prints nothing"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3Q4H5JNCJDB32Z9Y6JFBW1N",
+      "version": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "bb861f0657e9581b3c4eb69200733acdff60895e",
+        "author": "OmpImplementerWorktree",
+        "time": "2026-10-01T21:59:51.518Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "bb861f0657e9581b3c4eb69200733acdff60895e",
+        "verdict": "not-achieved",
+        "missing": [
+          "supported harness: 'each receives every shipped cell at the highest fidelity it offers, degrading and warning where it falls short': on omp the implementer cell still runs in the dispatcher's checkout, yet omp offers a workspace of its own for a task. Its task isolation (isolated, with task.isolation.apply false) is settable per dispatch by a tool_call handler that revises the input, and cratylus already projects tool_call extensions on the task tool. That would put the implementer in a copy of its own that never writes the main checkout, and the remaining shortfall would be that the copy is cut from the dispatcher's HEAD and not off the line. The unit instead states the shortfall at a floor below what omp offers; locus: the omp projection of the implementer's isolation (packages/forge/src/adapters/omp, startsInWorktree / the task tool_call extensions) and the install summary and README text that describe it"
+        ],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T22:01:41.210Z"
+      },
+      {
+        "kind": "land",
+        "commit": "7806a1abc723e19fb34468e985f766e69b1144db",
+        "author": "OmpImplementerWorktree",
+        "time": "2026-10-01T22:16:43.865Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "7806a1ab",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T22:17:18.765Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm test → @cratylus/forge#typecheck:test (tsc -p tsconfig.test.json): test/adapters/omp.test.ts(1964,8): error TS2698: Spread types may only be created from object types.",
+        "author": "RemainingIntegrator",
+        "time": "2026-10-01T22:18:42.778Z"
+      },
+      {
+        "kind": "land",
+        "commit": "ba81a4bc",
+        "author": "OmpImplementerWorktree",
+        "time": "2026-10-01T22:21:47.021Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "ba81a4bc558b17d238479841f6bfd4e6570b7f10",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRemaining2",
+        "time": "2026-10-01T22:22:10.636Z"
+      }
+    ]
+  }
+}

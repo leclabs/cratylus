@@ -31,10 +31,11 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * against. The pairs below are authoritative, and the census named at the end of this
  * comment is what checks them.
  *
- * NINETEEN pairs, leaving 9 of the corpus's 28 harness-substrate events with no
- * Claude peer. Both figures are measured here rather than quoted forward: the filing
- * that ordered this repair said 18 and 10, the second being the union over BOTH
- * shipped adapters — a different quantity wearing this one's name.
+ * TWENTY pairs, and the two ACTS below beside them, leaving 9 of the corpus's 31
+ * harness-substrate events with no Claude peer. Both figures are measured here rather
+ * than quoted forward: the filing that ordered this repair said 18 and 10, the second
+ * being the union over BOTH shipped adapters — a different quantity wearing this one's
+ * name.
  *
  * An event without a Claude equivalent is ABSENT from this map; emitting it yields a
  * warning + skip on write. Absent ≠ fabricated: an unmapped member is a real moment
@@ -60,6 +61,7 @@ export const canonicalToClaude: Readonly<Record<EventName, string>> = {
   'instructions.loaded': 'InstructionsLoaded',
   'permission.request': 'PermissionRequest',
   'permission.deny': 'PermissionDenied',
+  'worktree.create': 'WorktreeCreate',
 };
 
 /**

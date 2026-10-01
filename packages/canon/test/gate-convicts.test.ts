@@ -183,6 +183,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // `tool.use.pre` binding) and shows claude emitting it in total silence.
   'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
+  // BEHAVIORAL: it builds a repository and a host config itself, binds a plan through the
+  // real CLI and drives the committed WorktreeCreate worker over it, so its negative cases
+  // ARE its fixtures. Every leg that says where a worktree was cut from is paired with a
+  // commit the line holds and main lacks, and every failing leg reads stdout, the
+  // worktree list and the disk, so a failure that left a worktree behind is convicted.
+  'canon/line-worktree.test.ts': 'BEHAVIORAL',
   'canon/null-dimension.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   // BEHAVIORAL, on the same reading as `stance-guardrail-dark`: it drives the worker

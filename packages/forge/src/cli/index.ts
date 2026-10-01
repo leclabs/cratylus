@@ -22,7 +22,6 @@
 // close, not a `process.exit` that cuts it off.
 
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { Command, Option } from 'commander';
 import { HARNESS_NAMES } from '../adapters/registry/index.js';
@@ -364,7 +363,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           yes: opts.yes,
           verbose: opts.verbose,
           dryRun: opts.dryRun,
-          home: homedir(),
         });
       },
     );
@@ -391,7 +389,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           harness: opts.harness,
           dryRun: opts.dryRun,
           verbose: opts.verbose,
-          home: homedir(),
         });
       },
     );

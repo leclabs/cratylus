@@ -1,0 +1,71 @@
+{
+  "envelope": {
+    "id": "01M3WPRHTQ69BGV24CVJA3GWBC",
+    "entity": "01M3WM8YN1F3BQVX3EM2S7MHCF",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WPM8H1JK1EYJ4CWE25WWQ8"
+    ],
+    "author": "TapUninstallRestores",
+    "time": "2026-10-01T21:43:38.071Z",
+    "reason": "amend: pre-existing settings file comes back in the host's layout (empty, one-line, 4-space, tab); stamp is now a restore record",
+    "cause": "assay f95d1f92 missing: nothing the host placed or changed itself"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "tap-uninstall-restores",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Sequenced after isolated-implementer and isolated-landing by the operator's ruling that the note 'implementers edit the main checkout' is realized first. Realize uninstall, removing from a host everything cratylus placed there and nothing the host placed, for the event tap on Claude Code (note 'event-tap cannot reach claude's act events', its last part). `cratylus eventTap install` in a directory with no .claude creates .claude/ and .claude/settings.json (packages/runtime/src/capabilities/event-tap/claude.ts:189-210), and `eventTap uninstall` (remove, :214-249) drops the tap's entries and writes back what is left, so the file stays holding {} and the directory stays. CHANGE. Uninstall removes a settings file that install created, and a .claude directory that install created, when nothing else is in it once the tap's entries are gone; a settings file or directory that existed before install keeps exactly what it held (the byte-for-byte case at test/event-tap.test.ts:157-178 still passes). Install and uninstall run as separate processes, as `status` and `read` already do, so what install created is known to uninstall without in-memory state. .changeset/tap-uninstall-restores.md: patch for @cratylus/runtime and cratylus.",
+      "static": [
+        "packages/runtime/src/capabilities/event-tap/dispatch.ts",
+        "packages/canon/src/skills/event-tap/skill.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7",
+        "01M3WM7EGXV0AKN88688Z6TVNK"
+      ],
+      "outputs": [
+        "packages/runtime/src/capabilities/event-tap/claude.ts",
+        "packages/runtime/src/capabilities/event-tap/claude-serialize.ts",
+        "packages/runtime/test/event-tap.test.ts",
+        ".changeset/tap-uninstall-restores.md"
+      ],
+      "accept": [
+        "in packages/runtime, `pnpm exec vitest run test/event-tap.test.ts` exits 0, including a case: `install` then `uninstall` as separate dispatches with --settings at <dir>/.claude/settings.json where <dir> has no .claude leaves neither <dir>/.claude/settings.json nor <dir>/.claude; at 2f2a0238 the case fails (the file remains, holding {})",
+        "in the same run, a settings.json holding `{}` before install holds `{}` after uninstall, and a .claude directory holding another file before install still holds it after",
+        "in packages/runtime, `pnpm exec vitest run test/event-tap-harness.test.ts test/event-tap-skipped.test.ts` exits 0, and `pnpm --filter @cratylus/runtime typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QGCVKW1FYB0TXVT8R5BB6K",
+      "version": "01M3QZDS4M8HDFWYDTW0Z64JW5",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "f95d1f92670d75c7e3bac0b80c0fbf9de9a2e980",
+        "author": "TapUninstallRestores",
+        "time": "2026-10-01T21:38:53.731Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "f95d1f92",
+        "verdict": "not-achieved",
+        "missing": [
+          "uninstall: 'which is left in place and reported' — eventTap uninstall reports nothing it leaves. In every case run its whole result is {\"verb\":\"uninstall\"}: a settings file install made but kept because the host since added a key, and a .claude directory install made but kept because the host since put a file in it, are left unnamed. Locus: eventTap uninstall's result (packages/runtime/src/capabilities/event-tap/dispatch.ts, case 'uninstall'; EventTapHostClaude.remove in packages/runtime/src/capabilities/event-tap/claude.ts returns nothing).",
+          "uninstall: 'nothing the host placed or changed itself' — a settings file that existed before install does not come back as the host had it. An empty file is left holding {} (cratylus residue). A file in the host's own layout (4-space indent, or one line) comes back rewritten in 2-space JSON, whether or not the host has hooks of its own in it. Locus: EventTapHostClaude.remove, the branches that rewrite a pre-existing file (packages/runtime/src/capabilities/event-tap/claude.ts)."
+        ],
+        "author": "AssayRemaining",
+        "time": "2026-10-01T21:41:17.473Z"
+      },
+      {
+        "kind": "land",
+        "commit": "15c799dd0e07013b1ea1717bfef4ac9ee59b5192",
+        "author": "TapUninstallRestores",
+        "time": "2026-10-01T21:43:38.071Z"
+      }
+    ]
+  }
+}

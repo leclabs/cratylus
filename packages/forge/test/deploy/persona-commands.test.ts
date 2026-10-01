@@ -72,8 +72,11 @@ describe('persona commands — the placement API', () => {
   beforeEach(() => {
     home = tmpRoot();
     bin = join(home, PERSONA_BIN_REL);
-    const claude = personaLauncherOf(home, adapterByName('claude'));
-    const omp = personaLauncherOf(home, adapterByName('omp'));
+    const claude = personaLauncherOf(
+      join(home, '.claude'),
+      adapterByName('claude'),
+    );
+    const omp = personaLauncherOf(join(home, '.omp'), adapterByName('omp'));
     if (!claude || !omp) throw new Error('both harnesses declare a launcher');
     for (const l of [claude.launcher, omp.launcher]) {
       mkdirSync(join(l, '..'), { recursive: true });
@@ -90,13 +93,12 @@ describe('persona commands — the placement API', () => {
   });
 
   it('asks each adapter where its launcher landed, and none that has no launcher', () => {
-    expect(personaLauncherOf(home, adapterByName('omp'))?.launcher).toBe(
-      ompLauncher(),
-    );
     expect(
-      personaLauncherOf(home, {
+      personaLauncherOf(join(home, '.omp'), adapterByName('omp'))?.launcher,
+    ).toBe(ompLauncher());
+    expect(
+      personaLauncherOf(join(home, '.bare'), {
         name: 'bare',
-        home: '.bare',
       }),
     ).toBeUndefined();
   });
@@ -367,7 +369,10 @@ describe('install — persona commands', () => {
       ...extra,
     });
   const launcher = (harness: string) =>
-    personaLauncherOf(home, adapterByName(harness))?.launcher as string;
+    personaLauncherOf(
+      join(home, adapterByName(harness).home),
+      adapterByName(harness),
+    )?.launcher as string;
 
   beforeEach(() => {
     const root = tmpRoot();

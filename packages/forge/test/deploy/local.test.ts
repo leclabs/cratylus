@@ -496,6 +496,52 @@ describe('scope resolution', () => {
     expect(r.note).toBeNull();
   });
 
+  it('userScope: with no home, the directory the harness’s variable names when it is set and non-empty; a named home overrules it', () => {
+    const set = tmp('forge-config-');
+    const homeDir = tmp('forge-host-');
+    vi.stubEnv('HOME', homeDir);
+    vi.stubEnv('FIXTURE_HARNESS_DIR', set);
+    expect(userScope(null, '.fix', 'FIXTURE_HARNESS_DIR').harnessDir).toBe(set);
+    expect(
+      userScope('/Users/lex', '.fix', 'FIXTURE_HARNESS_DIR').harnessDir,
+    ).toBe('/Users/lex/.fix');
+    vi.stubEnv('FIXTURE_HARNESS_DIR', '');
+    expect(userScope(null, '.fix', 'FIXTURE_HARNESS_DIR').harnessDir).toBe(
+      join(homeDir, '.fix'),
+    );
+    expect(userScope(null, '.fix').harnessDir).toBe(join(homeDir, '.fix'));
+    vi.unstubAllEnvs();
+  });
+
+  it('deploy, given no home, places under the directory the claude adapter’s variable names, and nothing under $HOME/.claude', async () => {
+    const set = tmp('forge-config-');
+    const homeDir = tmp('forge-host-');
+    vi.stubEnv('HOME', homeDir);
+    vi.stubEnv('CLAUDE_CONFIG_DIR', set);
+    const root = tmp('forge-render-');
+    const agentsDir = join(root, 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, 'planner.md'),
+      '---\nname: planner\ndescription: "d"\n---\nbody\n',
+      'utf-8',
+    );
+    const rc = await runDeploy({
+      agentsDir,
+      skillsDir: join(root, 'skills'),
+      kind: 'agent',
+      scope: 'user',
+      harness: 'claude',
+      log: () => {},
+      warn: () => {},
+      fail: () => {},
+    });
+    vi.unstubAllEnvs();
+    expect(rc).toBe(0);
+    expect(existsSync(join(set, 'agents', 'planner.md'))).toBe(true);
+    expect(existsSync(join(homeDir, '.claude'))).toBe(false);
+  });
+
   it('projectScope: <project>/.claude', () => {
     const r = projectScope('/repo');
     expect(r.harnessDir).toBe('/repo/.claude');

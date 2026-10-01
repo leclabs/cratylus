@@ -54,6 +54,11 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * 3. **`agent_start`/`agent_end` are the MAIN loop, not subagents.** They do not
  *    realize `subagent.*`; the `task` tool's `tool_call`/`tool_result` does, which
  *    is why those live in the ACT table below and not here.
+ *
+ * ABSENT ON PURPOSE: `worktree.create`. omp 18.4.9 makes no worktree for a single
+ * agent and fires no event when one is made — its task isolation is a session-wide
+ * setting that applies a task's changes back to the parent checkout — so the moment
+ * has no omp peer and a cell bound to it is projected with the loss declared.
  */
 export const canonicalToOmp: Readonly<Record<EventName, string>> = {
   'session.start': 'session_start',

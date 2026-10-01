@@ -1,0 +1,70 @@
+{
+  "envelope": {
+    "id": "01M3WM71G577PCR3X4PWB0JCQ8",
+    "entity": "01M3WM71G577PCR3X4PWB0JCQ7",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IsolationPlanner",
+    "time": "2026-10-01T20:59:07.141Z",
+    "reason": "realize the plan's own-worktree clause where the implementer starts (note 'implementers edit the main checkout'), first by the operator's ruling",
+    "cause": "architect's shards: plan, implementer role, and the concepts the notebook's remaining realization gaps fall under, the worktree note first"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "isolated-implementer",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Realize the plan's clause 'each unit is built in its own isolated worktree off that line' where the implementer starts. Note 'implementers edit the main checkout': in notebook-gaps three of five implementers edited files in the operator's main checkout instead of a worktree of their own, and one ran git reset --hard there, discarding a sibling's edit; the implementer's text states the rule, but its session starts in the main checkout and nothing makes the rule bite. The design says how an agent uses worktrees is its own competence and nothing it reads teaches it, so add no wording that teaches worktrees and leave the implementer's role texts as they are (packages/canon/src/dimensions/role/implementer.ts, packages/canon/src/agents/implementer.ts); make the harness start the implementer in a worktree of its own. HARNESSES (measured at 2f2a0238). Claude Code 2.1.285 reads `isolation` in a subagent definition's front matter; `isolation: worktree` runs the subagent in a git worktree of its own, branched by default from origin's default branch, so moving its work onto the plan's line stays the implementer's competence. omp 18.4.9's agent definition reader takes name, description, tools, spawns, model, output, thinkingLevel, blocking, autoloadSkills, readSummarize, prewalk and advisor and nothing that isolates an agent (its task isolation is a session-wide setting that applies a task's changes back to the parent checkout), so on omp the projection degrades and warns, as it does for skills a harness cannot preload, and isolated-landing makes the rule bite at land on every harness. CHANGE. (1) packages/schema/src/index.ts: Agent gains an optional, doctrine-agnostic declaration that the agent runs in a git worktree of its own (for instance `isolation?: 'worktree'`), documented and carried on the identity face as `skills`, `holds` and `dispatches` are (L554-579). (2) packages/canon/src/roles/hold.ts: a RoleCell may state it, and `holds` copies it to every holder of the role, generic or persona, as it copies `dispatches` (L183-189). (3) packages/canon/src/roles/implementer.ts states it; no other role does. (4) packages/forge/src/core/harness-adapter.ts: the port answers, as it does `preloadsSkills` (L281-296), whether an agent definition on this harness can start the agent in a worktree of its own; claude answers yes and its `agentFrontMatter` (packages/forge/src/adapters/claude/render.ts L122-145) emits `isolation: worktree` for an agent declaring it and nothing for one that does not; omp (packages/forge/src/adapters/omp/render.ts) answers no and emits nothing; packages/forge/src/project/index.ts warns once per declaring agent on a harness that cannot, beside the skill-preload shortfall (~L730-740); the shortfall test double packages/forge/test/project/shortfall-adapter.ts answers no. (5) .changeset/isolated-implementer.md: minor for @cratylus/schema, patch for @cratylus/canon, @cratylus/forge and cratylus.",
+      "static": [
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/agents/implementer.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/test/practices.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/schema/src/index.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/project/shortfall-adapter.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        ".changeset/isolated-implementer.md"
+      ],
+      "accept": [
+        "RIG: from the unit's checkout `pnpm build` exits 0; T=$(mktemp -d); `pnpm exec cratylus project --harness claude --out $T` exits 0. `grep -l '^isolation:' $T/agents/*.md` prints exactly $T/agents/implementer.md, whose front matter holds `isolation: worktree`; at 2f2a0238 the grep prints nothing.",
+        "U=$(mktemp -d); `pnpm exec cratylus project --harness omp --out $U` exits 0, `grep -rl '^isolation:' $U` prints nothing, and its warnings (stderr) name the implementer as an agent omp cannot start in a worktree of its own; at 2f2a0238 no warning names it.",
+        "in packages/forge, `pnpm exec vitest run test/adapters/claude.test.ts test/adapters/omp.test.ts test/project/skill-closure.test.ts` exits 0, with a case that an agent declaring isolation gets `isolation: worktree` in its claude front matter and one that does not gets no `isolation` key, and a case that projecting through the shortfall adapter warns once for a declaring agent and not for another",
+        "with packages built and the renders projected (`pnpm project`), in packages/canon `pnpm exec vitest run test/practices.test.ts test/persona.test.ts test/projection-stability.test.ts test/harness-parity.test.ts` exits 0, and `pnpm typecheck` exits 0",
+        "`git diff 2f2a0238 -- packages/canon/src/dimensions/role/implementer.ts packages/canon/src/agents/implementer.ts` prints nothing"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

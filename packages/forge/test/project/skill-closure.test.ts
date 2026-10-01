@@ -132,3 +132,45 @@ describe('a harness with no preload field — the closure degrades to a declarat
     expect(warning).not.toContain('bare');
   });
 });
+
+describe('a harness that cannot start an agent in a worktree — the declaration degrades to a warning', () => {
+  // The `isolating` plugin ships `walled`, which declares worktree isolation; the
+  // base agents (`chain`, `bare`) declare none. claude is the harness that starts
+  // one in a worktree; omp and the test-local shortfall adapter cannot.
+  const isolating: ProjectablePlugin = {
+    name: 'fixture-closure-isolating',
+    agents: join(fixtures, 'isolating', 'agents'),
+  };
+  const isolationWarnings = (warnings: readonly string[]) =>
+    warnings.filter((w) => w.includes('worktree'));
+
+  it('warns once for the declaring agent, naming it and the adapter, and for no other', async () => {
+    const { warnings } = await project(shortfallAdapter, [base, isolating]);
+    const worktree = isolationWarnings(warnings);
+    expect(worktree).toHaveLength(1);
+    const [warning] = worktree as [string];
+    expect(warning).toContain("'walled'");
+    expect(warning).toContain(`'${SHORTFALL}'`);
+    expect(warning).not.toContain("'chain'");
+    expect(warning).not.toContain("'bare'");
+  });
+
+  it('emits no `isolation` key into the definition it degrades', async () => {
+    const { agent } = await project(shortfallAdapter, [base, isolating]);
+    expect(fence(agent('walled'))).not.toMatch(/^isolation:/m);
+  });
+
+  it('warns on omp, which has no such field, and emits no key', async () => {
+    const { warnings, agent } = await project('omp', [base, isolating]);
+    expect(isolationWarnings(warnings)).toHaveLength(1);
+    expect(isolationWarnings(warnings)[0]).toContain("'walled'");
+    expect(fence(agent('walled'))).not.toMatch(/^isolation:/m);
+  });
+
+  it('warns about nothing on claude, which carries it natively', async () => {
+    const { warnings, agent } = await project('claude', [base, isolating]);
+    expect(isolationWarnings(warnings)).toEqual([]);
+    expect(fence(agent('walled')).split('\n')).toContain('isolation: worktree');
+    expect(fence(agent('bare'))).not.toMatch(/^isolation:/m);
+  });
+});

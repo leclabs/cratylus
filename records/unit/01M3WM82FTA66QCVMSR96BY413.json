@@ -1,0 +1,63 @@
+{
+  "envelope": {
+    "id": "01M3WM82FTA66QCVMSR96BY413",
+    "entity": "01M3WM82FTA66QCVMSR96BY412",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IsolationPlanner",
+    "time": "2026-10-01T20:59:40.922Z",
+    "reason": "realize the plan's records-on-the-line clause for the records written before bind (note 'bind leaves the proposed plan's records untracked in main')",
+    "cause": "architect's shards: plan, implementer role, and the concepts the notebook's remaining realization gaps fall under, the worktree note first"
+  },
+  "payload": {
+    "plan": "01M3WM71FGKJ63YDKC0D68ZJ9W",
+    "spec": {
+      "name": "bind-moves-records",
+      "intent": "Census @2f2a0238 (design and notebook at 2f2a0238); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Run one test file inside its package with `pnpm exec vitest run <file>` (a `pnpm --filter <pkg> test -- <file>` runs the whole suite). Sequenced after isolated-implementer and isolated-landing by the operator's ruling that the note 'implementers edit the main checkout' is realized first. It also shares packages/runtime/src/record-store/store.ts, reading.ts, test/plan.test.ts and README.md with isolated-landing. Realize the plan's clause 'while a plan is bound, all of its work and every record written about it are written on its one line and never on the main line, which receives them only when the closed plan is released' for the records written before bind. At 2f2a0238 `plan bind` cuts the line and copies into its worktree every record of the plan, its units and the notes blocking either that the invoking checkout holds and the line lacks (packages/runtime/src/capabilities/plan/reading.ts:1429-1433; RecordStore.copy, packages/runtime/src/record-store/store.ts:336-350), and leaves the same files in the invoking checkout as untracked files (note 'bind leaves the proposed plan's records untracked in main', observed at guided-install's bind, 15d0a621). A commit of records/ on main then puts a bound plan's records on the main line, and the release of the line onto main meets the same paths as untracked files in the main checkout. CHANGE. bind moves what it places: each record file it brings onto the line is no longer in the invoking checkout afterwards, unless the invoking checkout is the line's worktree or that checkout's HEAD tracks the file (a committed record is never removed from a checkout: the record store's immutability gate refuses it). Nothing else is removed, a design record and a note naming no plan among them. Reads are unchanged: `plan show` and `note show` print the same state from the main checkout and from the line's worktree. packages/runtime/README.md's bind paragraph (~L83-91, 'copies into it every record ...') says bind moves them. .changeset/bind-moves-records.md: patch for @cratylus/runtime and cratylus.",
+      "static": [
+        "packages/runtime/src/capabilities/plan/dispatch.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts"
+      ],
+      "deps": [
+        "01M3WM71G577PCR3X4PWB0JCQ7",
+        "01M3WM7EGXV0AKN88688Z6TVNK"
+      ],
+      "outputs": [
+        "packages/runtime/src/record-store/store.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/test/plan.test.ts",
+        "packages/runtime/README.md",
+        ".changeset/bind-moves-records.md"
+      ],
+      "accept": [
+        "in packages/runtime, `pnpm exec vitest run test/plan.test.ts` exits 0, including a case on a temp repository: a plan with two units added and a note blocking the plan captured in the main checkout, then the plan bound from it; afterwards `git status --porcelain --untracked-files=all records/` in the main checkout lists none of those records, the line's worktree holds each, and `plan show <plan>` and `note show` print the same state from the main checkout as from the line's worktree; at 2f2a0238 the case fails on the porcelain listing",
+        "in the same run, a record of the plan that the main checkout's HEAD tracks before bind is still in the main checkout after it, and a design record written in the main checkout stays there",
+        "in packages/runtime, `pnpm exec vitest run test/record-store.test.ts test/note.test.ts` exits 0, and `pnpm --filter @cratylus/runtime typecheck` exits 0",
+        "`grep -n 'copies into it every record' packages/runtime/README.md` prints nothing, and the bind paragraph says bind moves the plan's records onto the line"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

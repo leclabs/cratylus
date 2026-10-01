@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WTBXCGMBHSM4EAPEX8TRF7",
+    "entity": "01M3WTBXCGMBHSM4EAPEX8TRF6",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-01T22:46:38.225Z",
+    "reason": "two small findings beside claude-config-dir",
+    "cause": "assay of claude-config-dir at 849100b4"
+  },
+  "payload": {
+    "title": "install rewrites settings.json with identical bytes",
+    "kind": "idea",
+    "topic": "install",
+    "body": "Install rewrites Claude Code's settings.json on every rerun even when its bytes do not change (the mtime moves). Under install ('places only once confirmed', nothing written the consumer did not ask for), a run that changes nothing should write nothing. Also: the hook-cap warning says 'Measured with the host home' even when the measured directory is CLAUDE_CONFIG_DIR. For a later plan.",
+    "blocks": []
+  }
+}

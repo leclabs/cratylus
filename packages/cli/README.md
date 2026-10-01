@@ -31,8 +31,8 @@ cratylus install
 ```
 
 `cratylus install` puts the bundled corpus's agents, skills and guards on this machine, for Claude
-Code or omp. It needs no project and no config. It looks for a harness by its home directory,
-`~/.claude` for Claude Code and `~/.omp` for omp. Run it from a directory with no
+Code or omp. It needs no project and no config. It looks for a harness by its directory: Claude
+Code's (`$CLAUDE_CONFIG_DIR` when that is set, else `~/.claude`) and omp's (`~/.omp`). Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
 bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
 it. Where that file cannot be loaded, because a package it imports is not installed there yet (the
@@ -112,6 +112,16 @@ also links launch commands into `~/.local/bin`. The run names every host file it
 directory outside the harness's home that it writes to, and records all of it in the harness's
 deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away exactly that.
 
+Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
+and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
+`CLAUDE_CONFIG_DIR` set, the Claude Code files above are placed in and removed from that directory,
+and `~/.claude` is not touched; the shared files the hooks read stay in a `.agents` directory beside
+it, as they sit beside `~/.claude`. Every command install writes into `settings.json` (the guard hooks,
+the status line, the hook that loads a persona's skills) makes the same choice when Claude Code runs
+it, so it runs what is deployed in the directory Claude Code reads. omp has no such variable and keeps
+`~/.omp`. A host installed before this uninstalls as before: uninstall removes the commands its
+deploy manifest recorded, as they were written.
+
 Running it again is safe: it converges on what you choose then, and a model a role already has from
 you or the host is left as it is.
 
@@ -122,7 +132,7 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 
 - `found claude and omp; name one with --harness <claude|omp>`: the host has both harnesses and
   install cannot ask (there is no terminal, or `--yes` was given). Name one.
-- `no harness found under <home> (looked for .claude, .omp)`: neither harness has a home here. Run
+- `no harness found (looked for <dir>, <dir>)`: neither harness has a directory here. Run
   one once, or name the one to install into with `--harness`.
 - `no terminal to ask which practices to install; …`: add `--practices` with the names it lists, or
   `--all`.
@@ -182,7 +192,7 @@ configuration is only ever added to. `--dry-run` says what would be set and writ
 
 **On Claude Code** the status line is one command, `statusLine` in `settings.json`. Where the host
 has none, install sets the badge worker as that command
-(`sh "$HOME/.claude/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
+(`sh "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
 own, install wraps it: the worker runs the host's command and puts the badge and a space in front of
 the first line it prints, and in a session that runs no installed agent its output reaches the status
 line byte for byte, so nothing the host shows is taken away. Every other key of `statusLine`,
@@ -274,6 +284,22 @@ and warns where it falls short; they are not the same, and this is what a user m
   judges against the design). An agent holding any other role, or none, has no `model` and runs on
   the session's model. On omp the integrator routes to the built-in `@task`, as the implementer
   does.
+- **The implementer's worktree.** On omp the implementer is not started in a worktree of its own;
+  the land gate refuses work built in the main checkout, not in a worktree off the plan's line.
+  Claude Code starts the implementer in a worktree cut from the tip of the bound plan's line. omp's
+  agent definition has no field for that, so install does what omp offers: a dispatch of the
+  implementer is made an isolated task, which runs in an isolated copy of the dispatcher's checkout
+  and never writes the main checkout. What it built is kept as the branch `omp/task/<id>` in your
+  repository, not applied. That is as far as omp goes: the copy is cut from the dispatcher's HEAD
+  and its uncommitted work, and omp takes no ref to cut it from, so it is not cut from the plan's
+  line, and the land gate refuses the work until it is moved onto the line. Where the checkout has
+  uncommitted work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection
+  warns once per such agent and install prints the same in its summary.
+
+  For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in
+  `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the
+  isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied,
+  until you change the settings.
 
 On Claude Code the model of a role is the `model:` line of each agent holding it, and install keeps
 your choice: a model you choose at install (`--model-roles`, or picked when asked) is yours from
@@ -328,6 +354,14 @@ a harness's stanza and finds none refuses, and `cratylus install --harness <h>` 
 `cratylus eventTap` needs `claude`'s. The file is yours as much as cratylus's: a key you wrote in it,
 at the top or under `events`, or a capability's configuration the corpus does not write, is carried
 as you left it by every install and deploy.
+
+A file there that is not valid JSON, or is JSON but not an object, is not rewritten: `cratylus install`
+(its `--dry-run` too) and `cratylus deploy` end with one line naming the file and what is wrong with
+it, exit 1 and nothing written anywhere. Repair the file or move it away, then run the command again.
+`cratylus uninstall` leaves such a file byte for byte and names it among what it left. That uninstall
+removes the record of what install wrote, so a second uninstall cannot take the harness's stanza out
+of the repaired file: run `cratylus install --harness <h>` again, which records it, then uninstall, or
+take `harnesses.<h>` out by hand.
 
 ## Taking it away again
 

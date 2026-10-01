@@ -74,6 +74,9 @@ records the commit that holds its work, `plan assay` an assay's verdict on a com
 `achieved` or `not-achieved`, with `--missing` once per part a not-achieved verdict names),
 `plan whole` the line's commit holding it, and `plan broke` the failing `--check` when it broke the
 whole.
+`plan land` refuses, writing nothing, a commit the main checkout or the plan's line already holds, a
+commit whose history does not run from the plan's line, and a commit the repository cannot resolve:
+a unit is built in a worktree of its own, off the line.
 Each event carries its author and time, and is admitted only while the unit's plan is bound and the
 unit is in flight — past its lifecycle's first state and short of the one that satisfies a
 dependency. `plan show <unit> --plan <p>` prints the ledger in order, and each unit's line in
@@ -82,8 +85,10 @@ reconcile of units that recorded different events carrying their union in time o
 
 A bound plan's records live on its line, the branch `plan/<plan>`. `plan bind` cuts it from the
 HEAD of the checkout it runs in into a worktree named `<main worktree path>.plan-<plan>` (or uses
-the worktree that already holds the branch), copies into it every record of the plan, its units and
-the notes blocking either that the checkout holds and the line lacks, and writes the bind there. While
+the worktree that already holds the branch), moves onto it every record of the plan, its units and
+the notes blocking either that the checkout holds — each is no longer in the checkout or its index
+afterwards, whether the line lacked it or already held it, unless the checkout's HEAD tracks it,
+since a committed record is never removed — and writes the bind there. While
 the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
 note write whose blocks name the plan or one of its units, before or after the write — is written
 into the line's worktree from whichever checkout runs it, and its output ends by naming the branch

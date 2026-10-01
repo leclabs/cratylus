@@ -138,6 +138,70 @@ describe('ensureBadgeStatusLine', () => {
     expect(bare.read()).toBe(before);
   });
 
+  describe('a line an earlier install recorded placing, spelled as a former release wrote it', () => {
+    const FORMER = 'sh "$HOME/.claude/personas/_session/worker.sh"';
+    const NOW =
+      'sh "${CLAUDE_HOME:-$HOME/.claude}/personas/_session/worker.sh"';
+    const line = (command: string) =>
+      `${JSON.stringify({ statusLine: { type: 'command', command, padding: 0 } }, null, 2)}\n`;
+
+    it('becomes the current worker where the host had no line of its own, and is not wrapped', () => {
+      const f = file('settings.json', line(FORMER));
+      const r = ensureBadgeStatusLine(f.path, NOW, {
+        recorded: { placed: FORMER, host: null },
+      });
+      expect(r).toMatchObject({
+        state: 'set',
+        wrote: true,
+        placed: NOW,
+        host: null,
+      });
+      expect(JSON.parse(f.read() as string).statusLine).toEqual({
+        type: 'command',
+        command: NOW,
+        padding: 0,
+      });
+    });
+
+    it('keeps the host command it wrapped, now inside the current worker', () => {
+      const hostCmd = "printf 'it''s'";
+      const wrapped = `${FORMER} 'printf '\\''it'\\'''\\''s'\\'''`;
+      const f = file('settings.json', line(wrapped));
+      const r = ensureBadgeStatusLine(f.path, NOW, {
+        recorded: { placed: wrapped, host: hostCmd },
+      });
+      expect(r).toMatchObject({ state: 'wrapped', host: hostCmd });
+      expect(r.placed).toBe(`${NOW} 'printf '\\''it'\\'''\\''s'\\'''`);
+      expect(JSON.parse(f.read() as string).statusLine.command).toBe(r.placed);
+    });
+
+    it('is the host’s again once the host has changed it from what was recorded', () => {
+      const f = file('settings.json', line('printf mine'));
+      const r = ensureBadgeStatusLine(f.path, NOW, {
+        recorded: { placed: FORMER, host: null },
+      });
+      expect(r).toMatchObject({ state: 'wrapped', host: 'printf mine' });
+    });
+  });
+
+  it('leaves a line it recorded placing, current and wrapped or bare, as it is: kept, nothing written', () => {
+    const hostCmd = 'printf host';
+    const NOW =
+      'sh "${CLAUDE_HOME:-$HOME/.claude}/personas/_session/worker.sh"';
+    for (const placed of [NOW, `${NOW} 'printf host'`]) {
+      const f = file(
+        'settings.json',
+        `${JSON.stringify({ statusLine: { type: 'command', command: placed } }, null, 2)}\n`,
+      );
+      const before = f.read();
+      const r = ensureBadgeStatusLine(f.path, NOW, {
+        recorded: { placed, host: placed === NOW ? null : hostCmd },
+      });
+      expect(r).toMatchObject({ state: 'kept', wrote: false });
+      expect(f.read()).toBe(before);
+    }
+  });
+
   it('keeps a hand-written wrap whose host command cannot be read back, and names no host', () => {
     const f = file(
       'settings.json',
@@ -798,7 +862,7 @@ describe('install — the status line', () => {
         .command as string;
       const r = spawnSync('sh', ['-c', command], {
         input: stdin,
-        env: { ...process.env, HOME: home },
+        env: { ...process.env, CLAUDE_CONFIG_DIR: '', HOME: home },
         encoding: 'utf8',
       });
       expect(r.status).toBe(0);

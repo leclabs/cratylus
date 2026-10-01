@@ -226,6 +226,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
       const of = read.unitVersion(entity)?.plan as string;
       read.unitWritable(of, verb);
       unitDomain.record(read.store, read.lifecycle.unit, entity, fact, by);
+      if (fact.kind === 'land') read.unitBuilt(entity, of, fact.commit);
       return {
         plans: [of],
         name: bare(read.unitName(entity)),

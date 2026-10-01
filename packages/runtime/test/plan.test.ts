@@ -7,10 +7,11 @@
 // frontier and the lifecycle's one step. The lifecycle arrives through
 // `$AGENT_RUNTIME_CONFIG`, in states invented here.
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
+import { dispatchNote } from '../src/capabilities/note/dispatch.js';
 import { VERBS, dispatchPlan } from '../src/capabilities/plan/dispatch.js';
 import * as verbFlags from '../src/verb-flags.js';
 import {
@@ -35,6 +36,8 @@ const plan = (repo: string, ...argv: string[]): string =>
   dispatchPlan(argv, { from: repo });
 const design = (repo: string, ...argv: string[]): string =>
   dispatchDesign(argv, { from: repo });
+const note = (repo: string, ...argv: string[]): string =>
+  dispatchNote(argv, { from: repo });
 
 const refused = (repo: string, ...argv: string[]): string =>
   refusal(repo, () => plan(repo, ...argv));
@@ -1073,6 +1076,16 @@ const ledger = (repo: string, of: string, unit: string): string[] =>
     ),
   ].map((m) => m[1] as string);
 
+/** A new commit made in a worktree of its own, cut from the line of plan `of`:
+ *  built where neither the main checkout nor the line holds it. */
+function built(repo: string, of = 'p'): string {
+  const work = `${repo}.built`;
+  if (!existsSync(work))
+    git(repo, 'worktree', 'add', '-q', '-b', 'built', work, `plan/${of}`);
+  commit(work, `built ${git(work, 'rev-list', '--count', 'HEAD').trim()}`);
+  return git(work, 'rev-parse', 'HEAD').trim();
+}
+
 describe('plan — the ledger of a unit worked', () => {
   it('each event is written in order with its fact, the plan view carries the latest, and the unit’s status stays its own', () => {
     const repo = repository();
@@ -1080,14 +1093,15 @@ describe('plan — the ledger of a unit worked', () => {
     const say = (...argv: string[]) =>
       plan(repo, ...argv, '--plan', 'p', ...BY);
     expect(show(repo, [], 'u', '--plan', 'p')).toContain('  ledger: none');
-    say('land', 'u', '--commit', 'c1');
+    const c1 = built(repo);
+    say('land', 'u', '--commit', c1);
     expect(marks(repo, 'p', 'u')).toBe('u-mid, frontier');
-    expect(show(repo, [], 'p')).toContain('· last: landed c1');
+    expect(show(repo, [], 'p')).toContain(`· last: landed ${c1}`);
     say(
       'assay',
       'u',
       '--commit',
-      'c1',
+      c1,
       '--verdict',
       'not-achieved',
       '--missing',
@@ -1096,16 +1110,17 @@ describe('plan — the ledger of a unit worked', () => {
       'm2',
     );
     expect(show(repo, [], 'p')).toMatch(/u — .* · last: not achieved$/m);
-    say('land', 'u', '--commit', 'c2');
-    say('assay', 'u', '--commit', 'c2', '--verdict', 'achieved');
+    const c2 = built(repo);
+    say('land', 'u', '--commit', c2);
+    say('assay', 'u', '--commit', c2, '--verdict', 'achieved');
     expect(show(repo, [], 'p')).toMatch(/u — .* · last: achieved$/m);
     say('whole', 'u', '--commit', 'c3');
     expect(show(repo, [], 'p')).toMatch(/u — .* · last: whole$/m);
     expect(ledger(repo, 'p', 'u')).toEqual([
-      'land c1',
-      'assay c1: not-achieved — missing: m1; m2',
-      'land c2',
-      'assay c2: achieved',
+      `land ${c1}`,
+      `assay ${c1}: not-achieved — missing: m1; m2`,
+      `land ${c2}`,
+      `assay ${c2}: achieved`,
       'whole c3',
     ]);
     say('broke', 'u', '--check', 'pnpm typecheck');
@@ -1130,7 +1145,7 @@ describe('plan — the ledger of a unit worked', () => {
       'SPECMARK accept',
     );
     const outputs = [
-      ['land', '--commit', 'c1'],
+      ['land', '--commit', built(repo)],
       [
         'assay',
         '--commit',
@@ -1221,10 +1236,108 @@ describe('plan — the ledger of a unit worked', () => {
     expect(event('v')).toMatch(/plan "p" is p-over, which is final/);
   });
 
+  /** The land of `commit` on unit `u` of the bound plan `p` in `repo`, refused:
+   *  the refusal says what holds and that nothing was written, and names no git
+   *  command, branch or worktree; the unit's ledger and the line's records are
+   *  the same after as before. */
+  function landRefused(repo: string, commit: string, holder: string): string {
+    const line = `${repo}.plan-p`;
+    const before = ledger(repo, 'p', 'u');
+    const held = everyRecord(line);
+    const said = refused(
+      repo,
+      'land',
+      'u',
+      '--plan',
+      'p',
+      '--commit',
+      commit,
+      ...BY,
+    );
+    expect(said).toContain('plan land: unit "u" of plan "p"');
+    expect(said).toContain(`commit "${commit}"`);
+    expect(said).toContain(holder);
+    expect(said).toContain('nothing was written');
+    for (const leak of ['git ', 'plan/p', line, repo])
+      expect(said).not.toContain(leak);
+    expect(ledger(repo, 'p', 'u')).toEqual(before);
+    expect(everyRecord(line)).toEqual(held);
+    return said;
+  }
+
+  /** A new empty commit on whatever `at` has checked out. */
+  const empty = (at: string, message: string): string => {
+    git(at, 'commit', '-q', '--allow-empty', '-m', message);
+    return git(at, 'rev-parse', 'HEAD').trim();
+  };
+
+  it('REFUSES a land of a commit the main checkout holds, on its branch or on one switched to there, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    landRefused(
+      repo,
+      empty(repo, 'built in the main checkout'),
+      'main checkout',
+    );
+    git(repo, 'checkout', '-q', '-b', 'switched');
+    landRefused(
+      repo,
+      empty(repo, 'built on a switched branch'),
+      'main checkout',
+    );
+  });
+
+  it('REFUSES a land of a commit the line’s own worktree holds, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    landRefused(
+      repo,
+      empty(`${repo}.plan-p`, 'built in the line’s worktree'),
+      'plan’s line',
+    );
+  });
+
+  it('REFUSES a land of a name that resolves to no commit, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    landRefused(repo, 'no-such-commit', 'not a commit');
+  });
+
+  it('REFUSES a land of a commit whose history shares nothing with the line, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    const apart = `${repo}.orphan`;
+    git(repo, 'worktree', 'add', '-q', '--orphan', '-b', 'orphan', apart);
+    landRefused(
+      repo,
+      empty(apart, 'a history of its own'),
+      'does not run from',
+    );
+  });
+
+  it('REFUSES a land of a commit cut from the main checkout after it moved past the line, in the plan’s words and writing nothing', () => {
+    const repo = repository();
+    working(repo);
+    empty(repo, 'main moves on');
+    const cut = `${repo}.cut`;
+    git(repo, 'worktree', 'add', '-q', '-b', 'cut', cut, 'main');
+    landRefused(repo, empty(cut, 'built off main'), 'does not run from');
+  });
+
+  it('records a land of a commit made in a worktree of its own, on a branch cut from the line, though the line has moved on since', () => {
+    const repo = repository();
+    working(repo);
+    const own = built(repo);
+    empty(`${repo}.plan-p`, 'the line moves on');
+    plan(repo, 'land', 'u', '--plan', 'p', '--commit', own, ...BY);
+    expect(ledger(repo, 'p', 'u')).toEqual([`land ${own}`]);
+  });
+
   it('revise and advance carry the ledger over; a unit written before the ledger reads as an empty one and takes events', () => {
     const repo = repository();
     working(repo);
-    plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY);
+    const landed = built(repo);
+    plan(repo, 'land', 'u', '--plan', 'p', '--commit', landed, ...BY);
     plan(
       repo,
       'assay',
@@ -1232,7 +1345,7 @@ describe('plan — the ledger of a unit worked', () => {
       '--plan',
       'p',
       '--commit',
-      'c1',
+      landed,
       '--verdict',
       'achieved',
       ...BY,
@@ -1254,18 +1367,20 @@ describe('plan — the ledger of a unit worked', () => {
       writeFileSync(path, `${JSON.stringify(stored, null, 2)}\n`);
     }
     expect(show(old, [], 'u', '--plan', 'p')).toContain('  ledger: none');
-    plan(old, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY);
-    expect(ledger(old, 'p', 'u')).toEqual(['land c1']);
+    const first = built(old);
+    plan(old, 'land', 'u', '--plan', 'p', '--commit', first, ...BY);
+    expect(ledger(old, 'p', 'u')).toEqual([`land ${first}`]);
   });
 
   it('events written on two branches diverge the unit, an event REFUSES until reconcile, and reconcile carries every event once, in time order', () => {
     const repo = repository();
     working(repo);
-    plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c0', ...BY);
+    const [c0, cl] = [built(repo), built(repo)];
+    plan(repo, 'land', 'u', '--plan', 'p', '--commit', c0, ...BY);
     diverged(
       repo,
       'p',
-      () => plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'cl', ...BY),
+      () => plan(repo, 'land', 'u', '--plan', 'p', '--commit', cl, ...BY),
       () => plan(repo, 'whole', 'u', '--plan', 'p', '--commit', 'cr', ...BY),
     );
     const shown = show(repo, [], 'p');
@@ -1275,7 +1390,11 @@ describe('plan — the ledger of a unit worked', () => {
     ).toMatch(/has diverged; `plan reconcile` settles it/);
     const settled = plan(repo, 'reconcile', 'u', '--plan', 'p', ...BY);
     expect(settled).not.toMatch(/ — diverged/);
-    expect(ledger(repo, 'p', 'u')).toEqual(['land c0', 'land cl', 'whole cr']);
+    expect(ledger(repo, 'p', 'u')).toEqual([
+      `land ${c0}`,
+      `land ${cl}`,
+      'whole cr',
+    ]);
   });
 });
 
@@ -1356,7 +1475,7 @@ describe('plan — a bound plan’s records live on its line', () => {
     return { repo, line: `${repo}.plan-p`, before, bound };
   }
 
-  it('bind cuts the line from the checkout it runs in, copies the plan’s records into it, writes the bind there, and names both', () => {
+  it('bind cuts the line from the checkout it runs in, moves the plan’s records onto it, writes the bind there, and names both', () => {
     const { repo, line, before, bound } = lined();
     expect(bound).toContain(`wrote to plan/p, worktree ${line}`);
     expect(git(repo, 'worktree', 'list', '--porcelain')).toContain(
@@ -1367,8 +1486,87 @@ describe('plan — a bound plan’s records live on its line', () => {
     const added = held.filter((f) => !before.includes(f));
     expect(added).toHaveLength(1);
     expect(records(line, 'plan')).toContain(added[0]);
-    expect(everyRecord(repo)).toEqual(before);
-    expect(status(repo)).not.toContain(added[0]);
+    expect(everyRecord(repo)).toEqual(records(repo, 'design'));
+    expect(status(repo)).toBe('');
+  });
+
+  it('bind moves the records of the plan, its units and the notes blocking either onto the line, so the main checkout lists none of them, and the same state prints from both', () => {
+    const repo = repository();
+    concepts(repo);
+    commit(repo, 'design');
+    add(repo, 'u', 'p');
+    add(repo, 'v', 'p');
+    note(
+      repo,
+      'capture',
+      'hold',
+      '--kind',
+      'ask',
+      '--topic',
+      'scope',
+      '--body',
+      'about the plan',
+      '--blocks',
+      'u',
+      ...BY,
+    );
+    const line = `${repo}.plan-p`;
+    const wrote = everyRecord(repo);
+    plan(repo, 'bind', 'p', ...BY);
+    expect(status(repo)).toBe('');
+    expect(records(repo, 'notebook')).toEqual([]);
+    expect(records(repo, 'unit')).toEqual([]);
+    expect(records(repo, 'plan')).toEqual([]);
+    expect(wrote.every((f) => everyRecord(line).includes(f))).toBe(true);
+    expect(records(line, 'notebook')).toHaveLength(1);
+    expect(records(line, 'unit')).toHaveLength(2);
+    for (const read of [
+      (at: string) => plan(at, 'show', 'p'),
+      (at: string) => plan(at, 'show', 'u', '--plan', 'p'),
+      (at: string) => note(at, 'show'),
+    ])
+      expect(read(line)).toBe(read(repo));
+  });
+
+  it('bind leaves in the main checkout a record of the plan its HEAD tracks, and a design record written there', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u', 'p');
+    commit(repo, 'the plan proposed');
+    const committed = records(repo, 'design');
+    const tracked = [...records(repo, 'plan'), ...records(repo, 'unit')];
+    expect(tracked).toHaveLength(2);
+    add(repo, 'v', 'p');
+    design(repo, 'define', 'c3', '--gloss', 'three', ...BY);
+    const designs = records(repo, 'design');
+    plan(repo, 'bind', 'p', ...BY);
+    const line = `${repo}.plan-p`;
+    expect(records(repo, 'design')).toEqual(designs);
+    expect([...records(repo, 'plan'), ...records(repo, 'unit')]).toEqual(
+      tracked,
+    );
+    expect(records(line, 'unit')).toHaveLength(2);
+    expect(records(line, 'plan')).toHaveLength(2);
+    expect(status(repo).trim().split('\n')).toEqual(
+      records(repo, 'design')
+        .filter((f) => !committed.includes(f))
+        .map((f) => `?? records/design/${f}`),
+    );
+  });
+
+  it('bind takes the plan’s records off the main checkout’s index as well, so its next commit carries none of them', () => {
+    const repo = repository();
+    concepts(repo);
+    commit(repo, 'design');
+    add(repo, 'u', 'p');
+    git(repo, 'add', 'records/');
+    plan(repo, 'bind', 'p', ...BY);
+    expect(status(repo)).toBe('');
+    git(repo, 'commit', '-q', '--allow-empty', '-m', 'main goes on');
+    expect(
+      git(repo, 'ls-tree', '-r', '--name-only', 'HEAD', 'records/'),
+    ).not.toMatch(/records\/(plan|unit)\//);
+    expect(records(`${repo}.plan-p`, 'unit')).toHaveLength(1);
   });
 
   it('a write about the plan lands on the line from any checkout and says where; design and unbound plans land where they run', () => {
@@ -1378,15 +1576,18 @@ describe('plan — a bound plan’s records live on its line', () => {
     expect(
       plan(repo, 'advance', 'u', '--plan', 'p', '--to', 'u-mid', ...BY),
     ).toContain(wrote);
+    const first = built(repo);
     expect(
-      plan(repo, 'land', 'u', '--plan', 'p', '--commit', 'c1', ...BY),
+      plan(repo, 'land', 'u', '--plan', 'p', '--commit', first, ...BY),
     ).toContain(wrote);
     expect(status(repo)).toBe(mainBefore);
-    expect(ledger(repo, 'p', 'u')).toEqual(['land c1']);
+    expect(ledger(repo, 'p', 'u')).toEqual([`land ${first}`]);
     const held = everyRecord(line).length;
     commit(line, 'the line');
     const work = `${repo}.work`;
     git(repo, 'worktree', 'add', '-q', '-b', 'work', work, 'plan/p');
+    git(work, 'commit', '-q', '--allow-empty', '-m', 'second');
+    const second = git(work, 'rev-parse', 'HEAD').trim();
     const landed = plan(
       work,
       'land',
@@ -1394,13 +1595,13 @@ describe('plan — a bound plan’s records live on its line', () => {
       '--plan',
       'p',
       '--commit',
-      'c2',
+      second,
       ...BY,
     );
     expect(landed).toContain(wrote);
     expect(everyRecord(line)).toHaveLength(held + 1);
     expect(status(work)).toBe('');
-    expect(ledger(repo, 'p', 'u')).toEqual(['land c1', 'land c2']);
+    expect(ledger(repo, 'p', 'u')).toEqual([`land ${first}`, `land ${second}`]);
     const out = add(repo, 'z', 'other');
     expect(out).not.toContain('wrote to');
     design(repo, 'define', 'c3', '--gloss', 'three', ...BY);

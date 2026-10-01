@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WSW7STY1XVCJF6ZCZRCBK0",
+    "entity": "01M3WSW7STY1XVCJF6ZCZRCBJZ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ClaudeConfigDir",
+    "time": "2026-10-01T22:38:04.602Z",
+    "reason": "a finding beside the claude-config-dir path, outside its outputs",
+    "cause": "reading ensureBadgeStatusLine while changing the command the adapter writes"
+  },
+  "payload": {
+    "title": "install over a pre-CLAUDE_CONFIG_DIR host wraps the old status line worker",
+    "kind": "question",
+    "topic": "install",
+    "body": "After claude-config-dir the status line worker command the claude adapter writes is sh \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/personas/_session/cratylus-status-line.sh\". ensureBadgeStatusLine (packages/forge/src/deploy/status-line.ts) takes a statusLine command that is neither that string nor starts with it for the host's own, so a re-install over a host installed before the change would wrap the old worker command (sh \"$HOME/.claude/personas/_session/...\") as if it were the host's, and a session would print the badge twice. Read from the code, not run. Uninstall of such a host is unaffected (it restores from the recorded placed/host pair). Open: should install recognise the superseded spelling (an adapter-declared prior command) and replace it in place?",
+    "blocks": []
+  }
+}

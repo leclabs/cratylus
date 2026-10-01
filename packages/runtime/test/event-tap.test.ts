@@ -203,6 +203,179 @@ describe('tap uninstall (accept 2: zero residue)', () => {
   });
 });
 
+describe('tap uninstall restores what install placed', () => {
+  const install = (settingsPath: string, sinkPath: string): void => {
+    tap([
+      'install',
+      '--events',
+      'turn.end',
+      '--sink',
+      sinkPath,
+      '--settings',
+      settingsPath,
+    ]);
+  };
+
+  it('removes the settings file and the .claude directory install created', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    expect(existsSync(settingsPath)).toBe(true);
+
+    const res = tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(existsSync(dirname(settingsPath))).toBe(false);
+    expect(res).toEqual({ verb: 'uninstall' });
+  });
+
+  it('removes every directory install made for a nested settings path', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const nested = join(
+      dirname(dirname(settingsPath)),
+      'a',
+      'b',
+      'settings.json',
+    );
+    install(nested, sinkPath);
+
+    tap(['uninstall', '--settings', nested]);
+
+    expect(existsSync(join(dirname(dirname(settingsPath)), 'a'))).toBe(false);
+    expect(existsSync(dirname(dirname(settingsPath)))).toBe(true);
+  });
+
+  it('keeps a settings file that held {} before install, holding {}', () => {
+    const { settingsPath, sinkPath } = fixture();
+    seed(settingsPath, {});
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(read(settingsPath)).toEqual({});
+  });
+
+  it('keeps a .claude directory that held another file before install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const other = join(dirname(settingsPath), 'CLAUDE.md');
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(other, 'host-owned\n', 'utf8');
+    install(settingsPath, sinkPath);
+
+    const res = tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(readFileSync(other, 'utf8')).toBe('host-owned\n');
+    expect(res).toEqual({ verb: 'uninstall' });
+  });
+
+  it('keeps a directory the host put a file in after install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    const other = join(dirname(settingsPath), 'CLAUDE.md');
+    writeFileSync(other, 'added later\n', 'utf8');
+
+    const res = tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(settingsPath)).toBe(false);
+    expect(readFileSync(other, 'utf8')).toBe('added later\n');
+    expect(res).toEqual({
+      verb: 'uninstall',
+      left: [
+        { path: dirname(settingsPath), why: expect.stringContaining('host') },
+      ],
+    });
+  });
+
+  it('keeps a settings file the host added keys to after install', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    const installed = read(settingsPath);
+    writeFileSync(
+      settingsPath,
+      JSON.stringify({ ...installed, env: { FOO: 'bar' } }),
+      'utf8',
+    );
+
+    const res = tap(['uninstall', '--settings', settingsPath]);
+
+    expect(read(settingsPath)).toEqual({ env: { FOO: 'bar' } });
+    expect(res).toEqual({
+      verb: 'uninstall',
+      left: [{ path: settingsPath, why: expect.stringContaining('host') }],
+    });
+  });
+
+  it.each([
+    ['an empty file', ''],
+    ['a whitespace-only file', '  \n'],
+    ['a one-line document with no newline', '{"env":{"FOO":"bar"}}'],
+    ['a 4-space document', '{\n    "env": {\n        "FOO": "bar"\n    }\n}\n'],
+    ['a tab-indented document', '{\n\t"env": {\n\t\t"FOO": "bar"\n\t}\n}\n'],
+    ['a CRLF document', '{\r\n  "env": {\r\n    "FOO": "bar"\r\n  }\r\n}\r\n'],
+    [
+      'a document with its own hooks on one line',
+      '{\n  "hooks": {"Stop": [{"hooks": [{"type": "command", "command": "echo foreign"}]}]},\n  "env": {"FOO": "bar"}\n}\n',
+    ],
+    ['a document with spaces before its colons', '{\n  "model" : "x"\n}\n'],
+    ['a document holding an emptied hooks key', '{\n  "hooks": {}\n}\n'],
+    [
+      'a 4-space document with hooks of its own',
+      '{\n    "hooks": {\n        "Stop": [\n            {\n                "hooks": [\n                    {\n                        "type": "command",\n                        "command": "echo foreign"\n                    }\n                ]\n            }\n        ]\n    },\n    "env": {\n        "FOO": "bar"\n    }\n}\n',
+    ],
+  ])('puts back %s exactly as the host laid it out', (_name, before) => {
+    const { settingsPath, sinkPath } = fixture();
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(settingsPath, before, 'utf8');
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(readFileSync(settingsPath, 'utf8')).toBe(before);
+  });
+
+  it('takes only its own entries out of a host file the host changed since', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const before = '{\n    "env": {\n        "FOO": "bar"\n    }\n}\n';
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(settingsPath, before, 'utf8');
+    install(settingsPath, sinkPath);
+    const installed = read(settingsPath);
+    writeFileSync(
+      settingsPath,
+      JSON.stringify({ ...installed, model: 'x' }),
+      'utf8',
+    );
+
+    const res = tap(['uninstall', '--settings', settingsPath]);
+
+    expect(read(settingsPath)).toEqual({ env: { FOO: 'bar' }, model: 'x' });
+    expect(res).toEqual({ verb: 'uninstall' });
+  });
+
+  it('puts back the host layout after a second install over the first', () => {
+    const { settingsPath, sinkPath } = fixture();
+    const before = '{\n    "env": {\n        "FOO": "bar"\n    }\n}\n';
+    mkdirSync(dirname(settingsPath), { recursive: true });
+    writeFileSync(settingsPath, before, 'utf8');
+    install(settingsPath, sinkPath);
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(readFileSync(settingsPath, 'utf8')).toBe(before);
+  });
+
+  it('removes the file after a second install over the first', () => {
+    const { settingsPath, sinkPath } = fixture();
+    install(settingsPath, sinkPath);
+    install(settingsPath, sinkPath);
+
+    tap(['uninstall', '--settings', settingsPath]);
+
+    expect(existsSync(dirname(settingsPath))).toBe(false);
+  });
+});
+
 describe('tap status / read (accept 3: reflect state across processes)', () => {
   it('status reflects installed state, derived from the target file', () => {
     const { settingsPath, sinkPath } = fixture();
@@ -345,7 +518,12 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
     expect(entries[0]?.hooks[0]?.command).toBe('echo foreign');
     for (const ours of entries.slice(1))
       expect(ours.hooks).toEqual([
-        { type: 'command', command: expect.any(String), id: EVENT_TAP_ID },
+        {
+          type: 'command',
+          command: expect.any(String),
+          id: EVENT_TAP_ID,
+          restore: expect.any(Object),
+        },
       ]);
 
     // Teardown drops the two narrowed entries and nothing else.
