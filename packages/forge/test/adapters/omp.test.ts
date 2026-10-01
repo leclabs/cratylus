@@ -1558,15 +1558,20 @@ describe('omp persona badge', () => {
       (f) => f.filename === OMP_PERSONA_BADGE_MODULE,
     );
 
+  type Surfaces = {
+    status: string[];
+    widgets: string[];
+    notices: string[];
+  };
+
   /**
-   * Load an emitted badge module and fire its `session_start` under `ctx`,
-   * returning the text of every status it set. RUN, not read: the guard and
-   * the baked text are observed the way omp would observe them.
+   * Load an emitted badge module once and return a function that fires its
+   * `session_start` under a `ctx`, returning what it put on every UI surface.
+   * RUN, not read: the guard and the baked text are observed the way omp would
+   * observe them. The host's agent dir is a temp dir holding `config` as its
+   * `config.yml` (none when undefined), so no test reads the machine's own.
    */
-  async function statusesSet(
-    content: string,
-    ctx: { hasUI: boolean; kind: string },
-  ): Promise<string[]> {
+  async function load(content: string) {
     const dir = mkdtempSync(join(tmpdir(), 'omp-badge-'));
     tmp.push(dir);
     const file = join(dir, OMP_PERSONA_BADGE_MODULE);
@@ -1578,19 +1583,73 @@ describe('omp persona badge', () => {
     };
     const handlers = new Map<string, Handler>();
     mod.default({ on: (event, h) => handlers.set(event, h) });
-    const set: string[] = [];
-    handlers.get('session_start')?.(
-      {},
-      {
-        hasUI: ctx.hasUI,
-        // omp names a LAUNCHED persona `main` — which is why the module cannot
-        // read its own name and must carry it baked in.
-        agent: { kind: ctx.kind, name: 'main' },
-        ui: { setStatus: (_key: string, text: string) => set.push(text) },
-      },
-    );
-    return set;
+    return (
+      ctx: { hasUI: boolean; agent?: { kind: string }; mode?: string },
+      config?: string,
+      ui?: object,
+    ): Surfaces => {
+      const agentDir = join(dir, 'agent');
+      rmSync(agentDir, { recursive: true, force: true });
+      mkdirSync(agentDir);
+      if (config !== undefined)
+        writeFileSync(join(agentDir, 'config.yml'), config);
+      const seen: Surfaces = { status: [], widgets: [], notices: [] };
+      vi.stubEnv('PI_CODING_AGENT_DIR', agentDir);
+      try {
+        handlers.get('session_start')?.(
+          {},
+          {
+            hasUI: ctx.hasUI,
+            // omp names a LAUNCHED persona `main` — which is why the module cannot
+            // read its own name and must carry it baked in. An omp before 18.3.2
+            // has no `agent` at all.
+            ...(ctx.agent ? { agent: { ...ctx.agent, name: 'main' } } : {}),
+            ...(ctx.mode ? { mode: ctx.mode } : {}),
+            ui: ui ?? {
+              setStatus: (_key: string, text: string) => seen.status.push(text),
+              setWidget: (_key: string, lines: string[]) =>
+                seen.widgets.push(...lines),
+              notify: (message: string) => seen.notices.push(message),
+            },
+          },
+        );
+      } finally {
+        vi.unstubAllEnvs();
+      }
+      return seen;
+    };
   }
+
+  /** One module, one session. */
+  async function run(
+    content: string,
+    ctx: { hasUI: boolean; agent?: { kind: string }; mode?: string },
+    config?: string,
+  ): Promise<Surfaces> {
+    return (await load(content))(ctx, config);
+  }
+
+  const MAIN = { hasUI: true, agent: { kind: 'main' } };
+
+  /** A `statusLine` that is an alias to a mapping written elsewhere in the file,
+   *  which hides the row — the one shape install cannot reach. */
+  const ALIASED_HIDDEN_ROW = [
+    'defaults: &line',
+    '  preset: default',
+    '  showHookStatus: false',
+    'statusLine: *line',
+    '',
+  ].join('\n');
+  /** What install writes where it can: the segment inline, the row off. */
+  const INLINE_SEGMENT = [
+    'statusLine:',
+    '  preset: custom',
+    '  leftSegments:',
+    '    - model',
+    '    - status',
+    '  showHookStatus: false',
+    '',
+  ].join('\n');
 
   it('lands ONE badge per persona in its own extensions dir, none in the session', () => {
     const out = badges([NICO, MAV]);
@@ -1604,9 +1663,9 @@ describe('omp persona badge', () => {
 
   it('shows the mark emoji and the name — and never the hue', async () => {
     const [nico] = badges([NICO]);
-    expect(
-      await statusesSet(nico?.content as string, { hasUI: true, kind: 'main' }),
-    ).toEqual(['📐 nico']);
+    expect((await run(nico?.content as string, MAIN)).status).toEqual([
+      '📐 nico',
+    ]);
   });
 
   it('shows the name ALONE for an agent with no provenance', async () => {
@@ -1614,23 +1673,83 @@ describe('omp persona badge', () => {
     expect(out.map((f) => [f.filename, f.scope])).toEqual([
       [OMP_PERSONA_BADGE_MODULE, 'x'],
     ]);
-    expect(
-      await statusesSet(out[0]?.content as string, {
-        hasUI: true,
-        kind: 'main',
-      }),
-    ).toEqual(['x']);
+    expect((await run(out[0]?.content as string, MAIN)).status).toEqual(['x']);
   });
 
-  it("shows only in a top-level interactive session, never a subagent's", async () => {
+  it("shows only in a top-level interactive session, never a subagent's — on any surface", async () => {
     const [nico] = badges([NICO]);
     const content = nico?.content as string;
-    expect(await statusesSet(content, { hasUI: false, kind: 'main' })).toEqual(
-      [],
-    );
+    const none = { status: [], widgets: [], notices: [] };
     expect(
-      await statusesSet(content, { hasUI: true, kind: 'subagent' }),
-    ).toEqual([]);
+      await run(content, { hasUI: false, agent: { kind: 'main' } }),
+    ).toEqual(none);
+    // The hidden-row config is the case that adds the widget: a subagent gets
+    // neither it nor the status.
+    expect(
+      await run(
+        content,
+        { hasUI: true, agent: { kind: 'sub' } },
+        ALIASED_HIDDEN_ROW,
+      ),
+    ).toEqual(none);
+    // And with no `ctx.agent` to say so, a session omp runs headless (`print`).
+    expect(await run(content, { hasUI: true, mode: 'print' })).toEqual(none);
+  });
+
+  it('puts the badge on a second surface where the status row is hidden by an alias', async () => {
+    const [nico] = badges([NICO]);
+    const seen = await run(nico?.content as string, MAIN, ALIASED_HIDDEN_ROW);
+    expect(seen.status).toEqual(['📐 nico']);
+    expect(seen.widgets).toEqual(['📐 nico']);
+  });
+
+  it('sets the status alone where the row is shown or the segment draws it inline', async () => {
+    const [nico] = badges([NICO]);
+    const content = nico?.content as string;
+    for (const config of [
+      undefined,
+      'statusLine:\n  preset: custom\n',
+      'statusLine:\n  showHookStatus: true\n',
+      '# showHookStatus: false\nmodelRoles: {}\n',
+      INLINE_SEGMENT,
+    ]) {
+      const seen = await run(content, MAIN, config);
+      expect(seen.status).toEqual(['📐 nico']);
+      expect(seen.widgets).toEqual([]);
+    }
+  });
+
+  describe('on an omp without ctx.agent (before 18.3.2)', () => {
+    it('throws nothing and shows the badge where ctx.mode still says it is the terminal host', async () => {
+      const [nico] = badges([NICO]);
+      const seen = await run(nico?.content as string, {
+        hasUI: true,
+        mode: 'tui',
+      });
+      expect(seen.status).toEqual(['📐 nico']);
+      expect(seen.notices).toEqual([]);
+    });
+
+    it('says once, in one line, why it shows none where nothing can tell', async () => {
+      const [nico] = badges([NICO]);
+      // ONE module instance, two sessions: the second says nothing.
+      const session = await load(nico?.content as string);
+      const first = session({ hasUI: true });
+      expect(first.status).toEqual([]);
+      expect(first.widgets).toEqual([]);
+      expect(first.notices).toHaveLength(1);
+      expect(first.notices[0]).toMatch(/18\.3\.2/);
+      expect(first.notices[0]).not.toMatch(/\n/);
+      expect(session({ hasUI: true }).notices).toEqual([]);
+    });
+
+    it('throws nothing against a context whose ui carries only setStatus', async () => {
+      const [nico] = badges([NICO]);
+      const session = await load(nico?.content as string);
+      expect(() =>
+        session({ hasUI: true }, undefined, { setStatus: () => {} }),
+      ).not.toThrow();
+    });
   });
 });
 
