@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WA78GMCSXHBTZPA5NT3SFX",
+    "entity": "01M3WA78GMCSXHBTZPA5NT3SFW",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ConsumerPath",
+    "time": "2026-10-01T18:04:28.564Z",
+    "reason": "a refusal the README promises as one line is a stack trace",
+    "cause": "smoke-running install from a directory with a scaffolded config"
+  },
+  "payload": {
+    "title": "install in a directory with an unresolvable cratylus.config.ts prints a stack trace",
+    "kind": "idea",
+    "topic": "cratylus install",
+    "body": "Observed on unit/consumer-path b5735e03: in a directory holding the cratylus.config.ts that cratylus init writes, with cratylus and @cratylus/canon not installed there, cratylus install --all --dry-run ends in an uncaught MissingPackageError stack trace rather than a one-line 'cratylus install: <what>; <what to do>' refusal. install() loads a config in the cwd before anything else (a config wins over the bundled corpus). packages/cli/README.md tells the consumer to run install from a directory without a cratylus.config.ts.",
+    "blocks": []
+  }
+}

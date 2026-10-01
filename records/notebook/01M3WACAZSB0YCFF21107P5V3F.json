@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3WACAZSB0YCFF21107P5V3F",
+    "entity": "01M3RX1W4YDB0REVW3WZKTTJSB",
+    "operation": "retract",
+    "supersedes": [
+      "01M3RX1W4YDB0REVW3WZKTTJSC"
+    ],
+    "author": "GroundDocuments",
+    "time": "2026-10-01T18:07:14.937Z",
+    "reason": "the ground documents now state the oracle's scope: the corpus's core agent dimension names and values, every other term the industry's own",
+    "cause": "unit ground-documents of docs-and-persona"
+  },
+  "payload": null
+}

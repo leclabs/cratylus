@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3WA78BZCGPV627S8ZWWZVNQ",
+    "entity": "01M3WA78BZCGPV627S8ZWWZVNP",
+    "operation": "create",
+    "supersedes": [],
+    "author": "ConsumerPath",
+    "time": "2026-10-01T18:04:28.415Z",
+    "reason": "a documented flag does nothing",
+    "cause": "writing the consumer path of packages/cli/README.md against the code"
+  },
+  "payload": {
+    "title": "install --plugin is ignored by the cratylus command",
+    "kind": "question",
+    "topic": "cratylus install",
+    "body": "Observed on unit/consumer-path b5735e03: cratylus install --plugin nonexistent-pkg --all --dry-run succeeds and installs the bundled corpus. install() in packages/forge/src/cli/commands/install.ts takes opts.corpus before opts.plugin, and packages/forge/src/cli/index.ts always passes corpus: options.defaultCorpus, so the flag the help describes as 'The corpus package to install' never takes effect from the cratylus command. packages/cli/README.md states what the code does (the flag row says the bundled corpus is installed whatever it names; a cratylus.config.ts is what installs another). Ruling owed: make the flag work, or remove it from install and its help.",
+    "blocks": []
+  }
+}

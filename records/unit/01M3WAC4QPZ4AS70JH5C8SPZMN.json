@@ -1,0 +1,82 @@
+{
+  "envelope": {
+    "id": "01M3WAC4QPZ4AS70JH5C8SPZMN",
+    "entity": "01M3W8Z2GB0W9W5XBBCR2FY8FN",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WAA1G4ZKBGHWERRJP5Z0WJ"
+    ],
+    "author": "DocsIntegrator",
+    "time": "2026-10-01T18:07:08.534Z",
+    "reason": "gate green on the combined tree: immutability-gate main..HEAD, build, lint, project every harness, test (14/14), typecheck (10/10), pack smoke",
+    "cause": "assay achieved for contributor-docs at 65bc3a8a; merged onto plan/docs-and-persona"
+  },
+  "payload": {
+    "plan": "01M3W8TK2EBQBE6AM0GR3TD9FB",
+    "spec": {
+      "name": "contributor-docs",
+      "intent": "Census @a67c4816 (design at a67c4816 plus documentation and persona, defined 2026-10-01T17:27Z); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Bring the contributor's material under docs/ and beside the corpus into line with the finished tree, kept apart from the consumer's and the corpus author's material. Files: docs/role.md (265 lines, the record of the roles' introduction), docs/cli/AUDIT.md (134, an audit of the CLI's help against its code, written before plans command-line and practices reshaped the CLI), docs/commit-gated-on-acceptance-hypothesis.md (141), docs/research/candidates.md (15), docs/research/cold-decode-as-a-skill.md (232), packages/canon/targets/guardrail/README.md (168, the stance guard's README) and packages/canon/references/canonical-semantic-factorization.v7.proposal.md (47). For each, decide by what it is: a document that describes the tree now is made true of it; a dated record of past work keeps only claims that are true as history and says plainly that it is one, with no present-tense claim the code contradicts; a document whose content already has its home in the design, the notebook or the commits is removed. Two must stay at their paths: packages/canon/targets/guardrail/README.md, which packages/canon/test/command-veracity.test.ts asserts is tracked, and docs/commit-gated-on-acceptance-hypothesis.md, which the comments of packages/canon/src/dimensions/actions/delegation.ts:5 and file-ops.ts:4 cite. If docs/research/ goes, drop its line from .claudeignore. Notes this settles, at their docs/role.md sites: 'docs/role.md still calls the purview guard re-entry-capped' (:225-229; the purview guard has had no cap since 9e0e85ef, a refused call is judged again on every retry); the docs part of 'acceptance still reserved outside the assayer at 9435068c' (the U2 entry at :190-194 gives the assayer the old contract, writes C and ¬emits verdict, where the assayer role now records and returns an assay verdict and writes no design); the docs part of 'architect's residual readers of the old position' (:24 quotes the architect's old arrow reads⟨intent · C · plan-view · note · assay · gate-result⟩ → writes⟨C · note · verdict⟩); and the docs part of 'integration-line: the integrator is still called a position in prose' (:64-65, :108 and :143 call a role a position). packages/canon/targets/guardrail/README.md:8-10 says the agent that carried the principal stance (Nico) has been retired; nico is a live persona today (packages/canon/src/agents/nico.ts). Check the rest of that README against packages/canon/src/hooks/stance-guardrail.ts and stance-guardrail-pre.ts. The roles and personas as persona-residue of this plan lands them: architect, planner, implementer, assayer and integrator are the generic holders of their roles, and mav, nico and kino are personas. Persona wording: prose says persona only for an agent named as an individual (mav, nico, kino) and agent for any installed agent; a shipped identifier, flag, manifest key or path that spells persona for every agent (--link-persona-commands, --no-link-persona-commands, personaLinks, personas/ scope directories, cratylus-persona-badge, harness-persona-root, the Persona axis) is quoted verbatim as the code spells it, since renaming it waits on the ruling asked for in the note 'persona spelled for every agent in forge and schema'. A link into a file another unit of this plan writes (the ground documents, the package READMEs, docs/, packages/cli/README.md, README.md) names the file only, never a #fragment. ",
+      "static": [
+        "packages/canon/src/hooks",
+        "packages/canon/src/agents",
+        "packages/canon/src/roles",
+        "packages/canon/src/dimensions/role",
+        "packages/canon/test/command-veracity.test.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/src/dimensions/actions/file-ops.ts",
+        "packages/cli/src",
+        "records/design",
+        "records/notebook"
+      ],
+      "deps": [
+        "01M3W8TK2ZGCA7YCGFPT08X6FB"
+      ],
+      "outputs": [
+        "docs/role.md",
+        "docs/cli/AUDIT.md",
+        "docs/commit-gated-on-acceptance-hypothesis.md",
+        "docs/research/candidates.md",
+        "docs/research/cold-decode-as-a-skill.md",
+        "packages/canon/targets/guardrail/README.md",
+        "packages/canon/references/canonical-semantic-factorization.v7.proposal.md",
+        ".claudeignore"
+      ],
+      "accept": [
+        "`git grep -n -E \"re-entry-capped|¬emits|plan-view · note · assay · gate-result\" -- docs` prints nothing",
+        "`git grep -n -i -w -E \"positions?\" -- docs/role.md` prints nothing, or docs/role.md is no longer tracked",
+        "`git grep -n \"has since been retired\" -- packages/canon/targets/guardrail/README.md` prints nothing, and that file and docs/commit-gated-on-acceptance-hypothesis.md are still tracked",
+        "every line of the tracked files under docs/ and of packages/canon/targets/guardrail/README.md that matches /persona/i also matches /\\b(mav|nico|kino)\\b|persona-commands|personaLinks|personas\\/|persona-badge|Persona'|harness-persona-root|persona drift/",
+        "every relative link in the tracked files under docs/, packages/canon/targets/guardrail/README.md and packages/canon/references/ resolves to a path tracked at the landing commit, and every `docs/…` path a tracked file outside docs/, records/ and changelogs names is tracked",
+        "`pnpm --filter @cratylus/canon test -- test/command-veracity.test.ts` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3W846YWG5Z3CYWN0W5F4W6Q",
+      "version": "01M3W846YWG5Z3CYWN0W5F4W6R",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "65bc3a8ac6c12714b3062f8ec89ffe18b5dff077",
+        "author": "ContributorDocs",
+        "time": "2026-10-01T18:03:46.121Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "65bc3a8ac6c12714b3062f8ec89ffe18b5dff077",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayStaleComments",
+        "time": "2026-10-01T18:05:59.684Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "2b9147e2",
+        "author": "DocsIntegrator",
+        "time": "2026-10-01T18:07:08.533Z"
+      }
+    ]
+  }
+}
