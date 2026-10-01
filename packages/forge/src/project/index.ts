@@ -37,6 +37,8 @@ import {
   type DimensionManifest,
   type Enforcing,
   type HookCell,
+  type Plumbing,
+  type Practice,
   type ProjectionFacts,
   type Skill,
   type Value,
@@ -57,6 +59,7 @@ import {
 import type { ResolvedSkill } from '../core/body.js';
 import {
   STANCE_MANIFEST,
+  composes,
   personaRootOf,
   stanceManifests,
 } from '../core/enrollment.js';
@@ -145,6 +148,10 @@ export interface ProjectablePlugin {
   readonly hooks?: string;
   /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
   readonly manifest?: DimensionManifest;
+  /** WHICH practices this plugin offers (`AgentPlugin.practices`). */
+  readonly practices?: readonly Practice[];
+  /** What every practice is installed with and none is offered as (`AgentPlugin.plumbing`). */
+  readonly plumbing?: Plumbing;
 }
 
 export interface ProjectOpts {
@@ -199,6 +206,18 @@ export interface ProjectOpts {
    * that held.
    */
   readonly omitAgents?: readonly string[];
+  /**
+   * The practices to render, by name. Absent or empty ⇒ every cell is rendered, as
+   * a plugin set declaring no practices renders: this is what keeps `project` and
+   * every whole-corpus render byte-for-byte what they were.
+   *
+   * Given names, exactly the union of those practices' agents and skills is
+   * rendered, with the skills those compose, the plumbing, and the guards a
+   * rendered agent composes. A set that is not CLOSED under skill composition and
+   * agent dispatch is refused before anything is rendered, and so is a name that is
+   * no declared practice.
+   */
+  readonly practices?: readonly string[];
 }
 
 interface Src {
@@ -248,6 +267,18 @@ export interface ProjectedTree extends ProjectReport {
    *  ({@link Agent.optional}), rendered or omitted — what an install offers
    *  without preselecting. */
   readonly optionalAgents: readonly string[];
+  /** The practices the plugin set declares, in declaration order: what an install
+   *  offers. Empty when the set declares none. Reported whether or not a render
+   *  named any. */
+  readonly practices: readonly OfferedPractice[];
+}
+
+/** A declared practice as an install offers it. */
+export interface OfferedPractice {
+  readonly name: string;
+  readonly description: string;
+  /** A fresh install selects it unless the operator declines. */
+  readonly preselected: boolean;
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -466,6 +497,129 @@ function resolvedSkillOf(cell: Skill): ResolvedSkill {
 }
 
 /**
+ * The practices a plugin set declares, in declaration order. A later plugin's practice
+ * of the same name REPLACES an earlier one's (and is logged), exactly as a later
+ * plugin's same-name cell does: the winner is the one that is offered.
+ */
+function declaredPractices(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Practice[] {
+  const byName = new Map<string, { practice: Practice; plugin: string }>();
+  for (const p of plugins) {
+    for (const practice of p.practices ?? []) {
+      const prev = byName.get(practice.name);
+      if (prev) {
+        log(`  override practice ${practice.name}: ${prev.plugin} → ${p.name}`);
+      }
+      byName.set(practice.name, { practice, plugin: p.name });
+    }
+  }
+  return [...byName.values()].map((e) => e.practice);
+}
+
+/** What a practice selection places, by name: the agents, the skills (closed under
+ *  composition) and the plumbing hooks. Guards are not listed: they follow the
+ *  agents that compose what they bind. */
+interface PracticeSelection {
+  readonly agents: ReadonlySet<string>;
+  readonly skills: ReadonlySet<string>;
+  readonly hooks: ReadonlySet<string>;
+}
+
+/**
+ * Resolve the practices NAMED into what they place, refusing a set that is not
+ * closed. Runs before anything is rendered, so a refusal leaves nothing behind.
+ *
+ * CLOSED means: every agent the set places finds every skill it is given and every
+ * role it dispatches. The role is matched against `Agent.holds` by anchor, which is
+ * the whole of what forge may know of a role. Each refusal names the practice
+ * that placed the agent, the agent, and the role or skill that is missing.
+ */
+async function selectPractices(
+  names: readonly string[],
+  plugins: readonly ProjectablePlugin[],
+  declared: readonly Practice[],
+  agentSrc: ReadonlyMap<string, Src>,
+  roster: ReadonlyMap<string, Skill>,
+): Promise<PracticeSelection> {
+  const chosen: Practice[] = [];
+  for (const name of names) {
+    const practice = declared.find((p) => p.name === name);
+    if (!practice) {
+      throw new Error(
+        `'${name}' is no declared practice (declared: ${declared.length === 0 ? 'none' : declared.map((p) => p.name).join(', ')})`,
+      );
+    }
+    if (!chosen.includes(practice)) chosen.push(practice);
+  }
+
+  // The first chosen practice to place an agent is the one a refusal names.
+  const placedBy = new Map<string, string>();
+  for (const practice of chosen) {
+    for (const agent of practice.agents) {
+      if (!placedBy.has(agent)) placedBy.set(agent, practice.name);
+    }
+  }
+  const authored = new Map<string, Agent>();
+  for (const [name, practice] of placedBy) {
+    const src = agentSrc.get(name);
+    if (!src) {
+      throw new Error(
+        `practice '${practice}' names the agent '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
+      );
+    }
+    const modPath = await resolveModulePath(src.dir, name);
+    if (!modPath) throw new Error(`agent module not found: ${name}`);
+    authored.set(name, await agentOf(modPath));
+  }
+
+  const held = new Set<string>();
+  for (const agent of authored.values()) {
+    if (agent.holds !== undefined) held.add(agent.holds);
+  }
+  for (const [name, agent] of authored) {
+    for (const role of agent.dispatches ?? []) {
+      if (held.has(role)) continue;
+      throw new Error(
+        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds`,
+      );
+    }
+  }
+
+  const plumbing = plugins.flatMap((p) => (p.plumbing ? [p.plumbing] : []));
+  const skills = new Set<string>();
+  const place = (given: readonly string[], who: string): void => {
+    for (const skill of skillClosure(given, roster)) {
+      if (!roster.has(skill)) {
+        throw new Error(
+          `${who} composes the skill '${skill}', which the plugin set does not carry`,
+        );
+      }
+      skills.add(skill);
+    }
+  };
+  for (const [name, agent] of authored) {
+    place(
+      agent.skills ?? [],
+      `practice '${placedBy.get(name)}' is not closed: agent '${name}'`,
+    );
+  }
+  for (const practice of chosen) {
+    place(practice.skills ?? [], `practice '${practice.name}'`);
+  }
+  place(
+    plumbing.flatMap((p) => p.skills ?? []),
+    'the plumbing',
+  );
+  return {
+    agents: new Set(placedBy.keys()),
+    skills,
+    hooks: new Set(plumbing.flatMap((p) => p.hooks ?? [])),
+  };
+}
+
+/**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
@@ -524,10 +678,28 @@ export async function projectPluginSet(
       }
     }
   }
-  const contributedSkills = await resolveSkills(opts.plugins, log);
+  const allSkills = await resolveSkills(opts.plugins, log);
   // The roster an agent's skill closure is read against: the cells that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
-  const roster = new Map(contributedSkills.map((s) => [s.name, s.skill]));
+  const roster = new Map(allSkills.map((s) => [s.name, s.skill]));
+
+  // PRACTICES. Naming none renders every cell. Naming some places exactly what they
+  // place (agents, the skills those are given and compose, the plumbing), after the
+  // chosen set is proven closed — before an agent is composed or a byte rendered.
+  const offered = declaredPractices(opts.plugins, log);
+  const selection =
+    opts.practices && opts.practices.length > 0
+      ? await selectPractices(
+          opts.practices,
+          opts.plugins,
+          offered,
+          agentSrc,
+          roster,
+        )
+      : undefined;
+  const contributedSkills = selection
+    ? allSkills.filter((s) => selection.skills.has(s.name))
+    : allSkills;
 
   let agents = 0;
   const agentNames: string[] = [];
@@ -555,6 +727,7 @@ export async function projectPluginSet(
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const authored = await agentOf(modPath);
     if (authored.optional) optionalAgents.push(name);
+    if (selection && !selection.agents.has(name)) continue;
     if (omitted.has(name)) continue;
     const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
@@ -785,22 +958,48 @@ export async function projectPluginSet(
   // Hooks. Only `harness`-substrate cells register in settings.json; a
   // `git`-substrate cell fires in git's own process and must never be serialized
   // here, so it is filtered BEFORE the lift (which refuses it loudly anyway).
-  const hookCells: HookCell[] = [];
+  const discoveredHooks: HookCell[] = [];
   for (const p of opts.plugins) {
     if (!p.hooks) continue;
     for (const n of await scanModuleNames(p.hooks)) {
       const modPath = await resolveModulePath(p.hooks, n);
       if (!modPath) continue;
       const cell = await hookOf(modPath);
-      if (cell && cell.substrate === 'harness') hookCells.push(cell);
+      if (cell && cell.substrate === 'harness') discoveredHooks.push(cell);
     }
   }
 
-  hookCells.sort(
+  discoveredHooks.sort(
     (a, b) =>
       (a.order ?? Number.MAX_SAFE_INTEGER) -
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
+
+  // A CHOSEN SET REGISTERS ITS PLUMBING AND ITS GUARDS, and no other hook. A guard is
+  // a cell that binds a composition, and it travels with the agents that compose what
+  // it binds: registered only when a rendered agent does, since one registered for
+  // nobody would fire in every session and judge none. A plumbing hook naming no cell
+  // is refused for the reason an omission that matched nothing is: it would read as
+  // one that held.
+  if (selection) {
+    for (const id of selection.hooks) {
+      if (!discoveredHooks.some((cell) => cell.id === id)) {
+        throw new Error(
+          `the plumbing names the hook '${id}', which is no harness hook cell of the plugin set (hooks: ${discoveredHooks.map((c) => c.id).join(', ')})`,
+        );
+      }
+    }
+  }
+  const hookCells = selection
+    ? discoveredHooks.filter((cell) => {
+        if (selection.hooks.has(cell.id)) return true;
+        const { binds } = cell;
+        return (
+          binds !== undefined &&
+          composed.some((c) => composes(c.agent, binds, manifest, cell.id))
+        );
+      })
+    : discoveredHooks;
 
   // A GUARD NEEDS A SCOPE, AND A HARNESS THAT CANNOT NAME THE RUNNING AGENT HAS NONE.
   // A cell that binds a composition is a guard, and a guard registered where no
@@ -969,6 +1168,11 @@ export async function projectPluginSet(
     heldRoles: Object.keys(roleHolders).sort(),
     roleHolders,
     optionalAgents: optionalAgents.sort(),
+    practices: offered.map((p) => ({
+      name: p.name,
+      description: p.description,
+      preselected: p.preselected === true,
+    })),
   };
 }
 

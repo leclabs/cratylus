@@ -116,6 +116,25 @@ Skills that need a runtime companion get their shim emitted alongside them. A sh
 arguments to `cratylus <capability>` with the caller's environment, and it needs no session from any
 harness.
 
+#### A render may name practices
+
+A plugin declares **practices** (`AgentPlugin.practices`): ways of working an install offers as one
+choice, each naming the agents it installs and any skills no agent carries, beside the **plumbing**
+(`AgentPlugin.plumbing`) every practice is installed with and none is offered as. `project` renders
+the practices it is given (`ProjectOpts.practices`); named none, it renders every cell exactly as a
+plugin set declaring no practice does, byte for byte. Given names, it renders the union of those
+practices' agents and skills, the skills those are given and compose, the plumbing, and the guards a
+rendered agent composes (a hook cell that binds a composition is registered only when a rendered
+agent composes what it binds; a hook cell that is neither plumbing nor such a guard is left out).
+
+A chosen set must be closed. Before anything is rendered, projection checks that every agent finds
+the roles it dispatches (`Agent.dispatches`, matched by anchor against `Agent.holds`) held by an
+agent of the set and every skill it is given, with what that composes, carried by the plugin set; a
+set that is not is refused by one error naming the practice, the agent, and the role or skill that
+is missing. A name that is no declared practice is refused, naming the declared ones. The tree
+reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected)
+for an install to offer, whatever was rendered.
+
 #### An agent is given its skills' closure
 
 An agent's `skills` are the names it declares; what projection gives it is their **closure** over

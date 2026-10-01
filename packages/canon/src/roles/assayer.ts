@@ -42,6 +42,8 @@ import type { RoleCell } from './hold.js';
 export const assayerRole: RoleCell = {
   sign: assayer_role,
   skills: ['design', 'note'],
+  // Dispatches no role: it judges the unit it is given and returns a verdict.
+  dispatches: [],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

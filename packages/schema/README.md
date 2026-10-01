@@ -58,6 +58,7 @@ keyed to its dimension.
 | `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                   |
 | `JsonValue`                                                             | the data a skill's runtime face may carry as `configuration`       |
 | `HookCell` · `RuleCell` · `hookIrOf`                                    | the doctrine-free source-cell kernel                               |
+| `Practice` · `Plumbing` · `Agent.dispatches`                            | a way of working, its shared plumbing, and an agent's dispatch     |
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic lifecycle-event vocabulary
 (`CanonicalEvent`, `Substrate`, `SubstrateEvent`), the `Hook` wire shape, and `HarnessMechanism` —
