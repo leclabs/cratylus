@@ -100,28 +100,35 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   the stop, because a guardrail that wedges work on its own flakiness is worse than a missed
   block. But an enrolled scope whose judge could not answer announces itself via `dark` and
   records a DARK row in the verdict log: silence is reserved for NOT ENROLLED.
-- **LOOP-SAFE.** A block budget bounds re-entry; judging itself is never skipped.
+- **A REFUSAL HOLDS.** Every turn is judged, a turn identical to a refused one included, and a
+  BLOCK blocks the stop however many blocks came before it. Nothing remembers a refusal to wave
+  a retry through and nothing counts blocks to stop blocking: the block count rides in the reason
+  as a count, and no turn is allowed through because of how many times it was refused. What ends
+  a run of blocks is a turn the judge passes.
+- **A JUDGE IS SENT ONLY WHAT ITS ONE DECISION NEEDS.** The rubric is the stance test in a few
+  sentences over the contract it applies to (the `handoff` value, quoted from its cell) and the
+  output block, at most 2 KB. The Stop payload is facts under plain labels and no sentence
+  telling the judge what to conclude: the loop position in force with the utterance that set it,
+  the operator's latest instruction, the agent's turn, and the Layer-1 span when there is one.
+  `stance-judge.sh` adds nothing around it.
 - **A JUDGEMENT FITS THE TIME ITS HARNESS ALLOWS A GUARD.** omp kills an extension handler at
-  30 s and a Claude Code cell runs 60 s, and the judge's time follows what it is sent. The
-  rubric is cut to what a judge needs to decide (about 14 KB, from 29 KB): its rules, boundary
-  tests and output protocol. The rationale, history and measurements that used to ride in it
-  are comments on the hook source, which no judge is sent. What each worker sends is bounded
-  by one cap, 12000 bytes, declared once in the stance cell: the Stop worker keeps the close of
-  the turn (the text after the last tool call, which every rule that can fire reads) and the
-  tail of the operator message, and the pre and purview workers keep both ends of a menu or a
-  dispatch prompt. Every cut is marked `[ELIDED: …]` in the payload, cuts fall on character
-  boundaries, and a BLOCK's EVIDENCE is checked against what the judge was sent, so a span in
-  elided text is discarded like any span that is not there. No deadline or cell timeout was
-  raised to make it fit.
+  30 s and a Claude Code cell runs 60 s, and the judge's time follows what it is sent. What each
+  worker sends is bounded by one cap, 12000 bytes, declared once in the stance cell: the Stop
+  worker keeps the close of the turn (the text after the last tool call, which every rule that
+  can fire reads) and the tail of the operator message, and the pre and purview workers keep
+  both ends of a menu or a dispatch prompt. Every cut is marked `[ELIDED: …]` in the payload,
+  cuts fall on character boundaries, and a BLOCK's EVIDENCE is checked against what the judge was
+  sent, so a span in elided text is discarded like any span that is not there. No deadline or
+  cell timeout was raised to make it fit.
 
 ## Components
 
-| file                       | role                                                                                                                                                                                                                                         |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stance-guardrail.sh`      | the Stop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                                |
-| `stance-judge.sh`          | the default **judge backend** (contract: turn on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Calls headless `claude -p --model haiku`. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
-| `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                      |
-| `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.    |
+| file                       | role                                                                                                                                                                                                                                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stance-guardrail.sh`      | the Stop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                                                                                         |
+| `stance-judge.sh`          | the default **judge backend** (contract: payload on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Sends the rubric and the payload to headless `claude -p --model haiku` and nothing around them. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
+| `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                                                                               |
+| `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.                                                             |
 
 > Retired: `stance-guard-toggle.sh` (the `jq` + `settings.local.json` hand-edit), when
 > installation moved to forge; then the runtime opt-in flag and the agent allowlist, when

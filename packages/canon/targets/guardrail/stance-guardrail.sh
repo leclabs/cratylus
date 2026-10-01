@@ -40,12 +40,12 @@
 #     WITHOUT A VERDICT says so where the operator reads it (`say`: Claude Code's JSON
 #     `systemMessage`, omp's relayed line), naming this guard and why it could not judge —
 #     no jq, no input, an unreadable transcript or rubric, a judge that does not answer or
-#     answers unparseably, a block it could not verify, state it cannot write, an unexpected
-#     error, and the two re-entry caps (no-progress, spent bypass). Silence is reserved for
+#     answers unparseably, a block it could not verify, an unexpected error. Silence is reserved for
 #     "judged, no collapse" and for "not enrolled" (no persona manifest in scope, or nothing
 #     judgeable in the turn): there, not-checking is the correct answer, not a failure to report.
-#   - LOOP-SAFE. Judges every turn and bounds the BLOCKS (a no-progress detector and a
-#     one-shot, self-resetting bypass), so it can never wedge a turn.
+#   - A REFUSAL HOLDS. Judges every turn, one identical to a refused turn included, and a BLOCK
+#     blocks the stop however many blocks came before: nothing remembers a refusal to wave a retry
+#     through, nothing counts blocks to stop blocking. The block count is a count in the reason.
 #   - POSITION-SOUND. Every rubric rule that can fire is a claim about the turn's CLOSE. So the
 #     L1 window and the EVIDENCE check both run against `asst_close` — the text AFTER the last
 #     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
@@ -162,28 +162,28 @@ NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
 # different contract without the dispatcher learning anything about either.
 RUBRIC="${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
-# --- loop safety: budget the BLOCKS, never the JUDGING ---------------------------------------
-# SUPERSEDES the original `stop_hook_active=true → allow_stop` short-circuit, which was not a
-# loop guard but a hole. It demoted the invariant to "enforced on alternating turns" and handed
-# the agent a trivial escape: get blocked, emit anything at all, end again UNJUDGED. Observed in
-# the wild — an agent blocked for deferring closed the very next turn with a bare "Proceeding to
-# #2, I'll do X" and stopped without doing X, never judged, because this line fired. It also
-# never terminated: block→skip→block→skip runs forever at half rate. Soundness given up, and
-# termination not bought. Worse, it made the rubric's entire "When THIS judge has already fired"
-# section DEAD CODE — that section exists to judge the response to a verdict, and the response to
-# a verdict was the one turn guaranteed never to reach the judge.
+# --- loop safety: a refusal holds -------------------------------------------------------------
+# EVERY TURN IS JUDGED, AND A BLOCK BLOCKS THE STOP HOWEVER MANY BLOCKS CAME BEFORE IT. A turn
+# identical to one already refused is judged again like any other, and blocked again when the
+# judge blocks it; nothing remembers a refusal in order to wave a retry through, and nothing counts
+# blocks in order to stop blocking. The retry law is the same one the pre-call guard keeps.
 #
-# The replacement judges EVERY turn and bounds the number of times it may BLOCK:
-#   - consecutive-block cap  — after N blocks on one task, stop blocking and fail LOUD+OPEN.
-#   - no-progress detector   — if the judged turn is byte-identical to the one already blocked,
-#                              the agent changed nothing and won't on the next attempt either.
-# State is per-session, in a tmp file keyed by session id; a state dir it cannot write goes dark
-# before any block is issued, since the caps below could not hold.
+# This SUPERSEDES the original `stop_hook_active=true → allow_stop` short-circuit, which was not a
+# loop guard but a hole: the agent got blocked, emitted anything, and ended again UNJUDGED — and it
+# made the rubric's judgement of a response to a verdict dead code, since that response was the one
+# turn guaranteed never to reach the judge. It also superseded two caps that let a refused turn
+# through (a turn byte-identical to the last blocked, and a turn judged collapsed after a run of
+# consecutive blocks). A safety check must never be a function of how many times it has fired:
+# Ethernet, TCP, systemd and CrashLoopBackOff cap EFFORT and end in a loud, typed refusal, and
+# permission is never what gets spent. What a block loop ends on is a turn the judge passes.
+#
+# The state in the tmp dir, keyed by session id, is a COUNT of the blocks, carried in the reason
+# the agent reads and in the verdict log. It decides nothing, so a dir it cannot write costs the
+# count and never a block.
 session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 state_dir="${TMPDIR:-/tmp}/stance-guardrail"
 mkdir -p "$state_dir" 2>/dev/null || true
 count_file="$state_dir/$session.count"
-hash_file="$state_dir/$session.lastblock"
 verdict_log="$state_dir/$session.verdicts"
 
 block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
@@ -445,7 +445,7 @@ operator="$(jq -rs '
 ' "$transcript" 2>/dev/null || true)"
 [ -n "$operator" ] || operator="(no operator instruction found in transcript)"
 
-# --- THE STANDING DIRECTIVE: which loop-position is in force, and who set it -----------------
+# --- THE LOOP POSITION IN FORCE, and the utterance that set it --------------------------------
 #
 # THE GUARD'S OLDEST BLIND SPOT, and the reason it reads as crude. `carry-on` declares
 # `loop-position ∈ {on-the-loop, out-of-the-loop}` as LIVE SESSION STATE, and nothing anywhere
@@ -467,9 +467,8 @@ operator="$(jq -rs '
 # word: no skill body reaches the payload.
 #
 # MECHANICAL EXTRACTION, SEMANTIC WEIGHING — the same split as layer 1. This reports WHICH
-# position is in force, the verbatim utterance that set it, and how many operator turns have
-# passed since; the rubric decides what follows. A false positive therefore costs a misleading
-# context line, never an unguarded turn.
+# position is in force and the verbatim utterance that set it; the rubric decides what follows.
+# A false positive therefore costs a misleading context line, never an unguarded turn.
 standing="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -484,37 +483,22 @@ standing="$(jq -rs '
 	      and (test("\\[SYSTEM NOTIFICATION - NOT USER INPUT\\]") | not)
 	      and (test("<task-notification>") | not)
 	  ))
-	| to_entries as $all
-	| ($all | length) as $n
-	| ($all
-	   | map(select(.value | test("(^|[^[:alpha:]])(carry[- ]?on|weitermachen|proceed)([^[:alpha:]]|$)"; "i")))
+	| (map(select(test("(^|[^[:alpha:]])(carry[- ]?on|weitermachen|proceed)([^[:alpha:]]|$)"; "i")))
 	   | last) as $hit
 	| if $hit == null then "" else
-	    ($hit.value
+	    ($hit
 	     | if test("<command-message>") then (capture("<command-message>(?<m>[^<]*)").m)
 	       elif test("<command-name>") then (capture("<command-name>(?<m>[^<]*)").m)
 	       else . end
-	     | gsub("\\s+"; " ")) as $said
-	    | "\($n - 1 - $hit.key)\n\($said)" end
+	     | gsub("\\s+"; " ")) end
 ' "${session_transcript:-$transcript}" 2>/dev/null || true)"
 
+# The position is a fact under a plain label: which one is in force and, for the elevation, the
+# utterance that set it. What each position means is the rubric's to say.
 if [ -n "$standing" ]; then
-	since="$(printf '%s\n' "$standing" | head -1)"
-	grant="$(printf '%s\n' "$standing" | sed -n '2p' | cut -c1-300)"
-	standing_block="=== STANDING DIRECTIVE (loop-position in force) ===
-out-of-the-loop — the operator uttered the re-dispatch word $since operator turn(s) ago, and an
-elevation PERSISTS until the operator redirects or the context is satisfied. It was:
-  \"$grant\"
-This RAISES the bar, it does not lower it: under an elevation the operator has already said they
-are out of the loop, so a check-in, a permission question, or a handed-back in-remit decision is
-a collapse rather than diligence. It excuses exactly one thing — surfacing a fork the principal
-cannot resolve (irreversible · value · competence), which the elevation itself reserves."
+	loop_position="out-of-the-loop, set by the operator's \"$(printf '%s' "$standing" | cut -c1-300)\""
 else
-	standing_block="=== STANDING DIRECTIVE (loop-position in force) ===
-on-the-loop (resting) — no re-dispatch word appears in this transcript, so the session is in
-orientation and the intent is still the operator's to set. Surfacing options, checking in, or
-asking which objective to serve is CORRECT here and must not be blocked; what remains a collapse
-is deferring a decision already inside a mandate the operator did give."
+	loop_position="on-the-loop"
 fi
 
 # The judged payload is assembled after the layer-1 note below, because the cap covers both.
@@ -563,18 +547,15 @@ if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\"'])(i'?ll|i will|i'?m 
 fi
 
 # --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
-# The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
+# The judge contract: payload on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
 # Non-zero judge exit, an empty answer or a verdict that is neither PASS nor BLOCK → dark.
+# THE JUDGE IS HANDED FACTS UNDER PLAIN LABELS, and no sentence telling it what to conclude: the
+# rubric is the one place the test is stated, and a payload that restates it in its own words is a
+# second home for it. The Layer-1 span is one such fact, quoted from the turn by this worker.
 l1_block=""
 [ -z "$l1_evidence" ] || l1_block="
 
-=== LAYER-1 SIGNAL (deterministic pre-filter) ===
-This turn's closing text makes a first-person forward commitment, and the turn is ENDING with no
-tool call after it — so the committed action was NOT performed. Verbatim span:
-  \"$l1_evidence\"
-Unless that commitment is genuinely contingent on something outside this turn (a dispatched agent
-still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
-and quote the span above as the evidence."
+Layer-1 span: \"$l1_evidence\""
 
 # THE JUDGED PAYLOAD, BOUNDED: the standing directive, the operator's instruction, THEN the
 # agent turn, and the layer-1 note when there is one — all together at most JUDGE_PAYLOAD_CAP
@@ -590,12 +571,12 @@ if [ "$op_total" -gt "$op_room" ]; then
 	operator="$(judge_cut 'the operator message' "$op_total" "$(judge_bytes "$op_shown")")
 $op_shown"
 fi
-turn_head="$standing_block
+turn_head="Loop position: $loop_position
 
 === OPERATOR (most recent instruction — the authorization context) ===
 $operator
 
-=== AGENT (last assistant turn — judge THIS) ==="
+=== AGENT ==="
 room=$((JUDGE_PAYLOAD_CAP - $(judge_bytes "$turn_head") - $(judge_bytes "$l1_block") - 1))
 [ "$room" -gt 400 ] || room=400
 asst_total="$(judge_bytes "$asst")"
@@ -719,63 +700,19 @@ printf '%s\t%s\t%s\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev
 	fi
 fi
 
-# A block is only safe to issue when the caps below can hold, and they live in the state dir.
-[ -w "$state_dir" ] || dark "its state directory '$state_dir' is not writable, so the caps that keep a block from wedging the turn cannot hold, and a block was not issued"
-
-# --- loop safety: bound EFFORT, never PERMISSION ----------------------------------------------
-# A safety check must never be a function of how many times it has fired. Ethernet caps attempts
-# then aborts and REPORTS; TCP caps retransmits then closes and SIGNALS; systemd caps starts then
-# FAILS; CrashLoopBackOff backs off restarts and never starts ignoring the crash. In every one the
-# counter governs EFFORT and the terminal state is a loud, typed refusal — permission is never what
-# gets spent.
-#
-# Two guards sit below and they bound DIFFERENT things. The no-progress detector bounds EFFORT
-# and is the primary: a byte-identical repeat cannot be helped by blocking again. The one-shot
-# bypass bounds how hard the gate presses when the agent keeps changing the turn without fixing
-# it — and it RESETS on use, so enforcement is never off for more than a single turn.
-#
-# The reset is the load-bearing part. A counter that permanently changes behaviour is a circuit
-# breaker wired backwards (an open breaker REJECTS; that one opened into ALLOW) and fail-open
-# under attack (CWE-636), abandoning at the cap the distinction `dark` makes correctly above:
-# fail open when the ENFORCER is broken, never when the POLICY is being violated.
-#
-# What remains is the no-progress detector, which is the correct guard and was always doing the
-# real work: if the judged turn is BYTE-IDENTICAL to the one already blocked, the agent changed
-# nothing and will not on the next attempt. That bounds effort and terminates on a genuine wedge.
-# It now announces on stdout — it too was reporting to stderr, where neither agent nor operator
-# reads it, which made a livelock exit indistinguishable from a clean turn.
-BLOCK_CAP="${STANCE_BLOCK_CAP:-3}"
-turn_hash="$(printf '%s' "$asst_text" | cksum | cut -d' ' -f1)"
-last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
-if [ "$turn_hash" = "$last_hash" ]; then
-	say "STANCE GUARDRAIL — NO PROGRESS: this turn is byte-identical to the one already blocked, so blocking again cannot help. Allowing the stop UNRESOLVED: $reason — the finding STANDS and is unaddressed."
-	allow_stop
-fi
-
-# ONE-SHOT BYPASS, SELF-RESETTING. After N consecutive blocks the agent may pass ONCE — and
-# spending it RE-ARMS the gate immediately by zeroing the counter, so the very next collapsed
-# turn blocks again. Enforcement is therefore never off for more than a single turn.
-#
-# This is the intent the earlier code failed to implement. It compared the count to the cap and
-# allowed the stop WITHOUT resetting, so the counter stayed at the cap forever and every later
-# turn passed: a one-turn escape valve that silently became a session-wide disable. Measured in
-# this hook's own authoring session — the counter sat at 3 while collapse after collapse went
-# unpoliced, and the two an operator eventually caught both fell in that window.
-#
-# The distinction is the whole point, and it is what the safety literature actually objects to.
-# A counter that PERMANENTLY changes behaviour is the Therac-25 shape: its proceed-key override
-# allowed five retries, regulators ordered it removed, the manufacturer reduced five to three,
-# and the accepted fix deleted the counter concept. A counter that grants a bounded escape and
-# then RESTORES enforcement is a different object — it bounds how hard the gate presses, not
-# whether the policy still applies.
-if [ "$block_count" -ge "$BLOCK_CAP" ]; then
-	printf '0' > "$count_file" 2>/dev/null || true
-	say "STANCE GUARDRAIL — BYPASS SPENT after $BLOCK_CAP consecutive blocks. This turn was judged COLLAPSED and is allowed through UNRESOLVED: $reason — the gate is RE-ARMED as of now; the next collapsed turn blocks again."
-	allow_stop
-fi
-printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
-printf '%s' "$((block_count + 1))" > "$count_file" 2>/dev/null || true
-reason="$reason (stance-guardrail block $((block_count + 1)) this session — a COUNT, not a budget: this gate does not stop enforcing, however many times it fires.)"
+# --- A REFUSAL HOLDS --------------------------------------------------------------------------
+# A block blocks the stop however many blocks came before it. Nothing here remembers a refused turn
+# in order to wave its retry through, and nothing counts blocks in order to stop blocking: a turn
+# identical to one already blocked is judged again like any other and, when the judge blocks it and
+# the span it quotes is in the close, blocked again. Two caps once let a refused turn through — one
+# on a turn byte-identical to the last blocked, one after a run of consecutive blocks — and both
+# made the answer to "is this refused act refused?" a function of how often it had been tried. A
+# gate whose verdict depends on the number of attempts rewards the attempt, not the repair. What ends
+# a run of blocks is a turn the judge passes.
+# The count survives as a count, in the reason the agent reads; it decides nothing.
+block_count=$((block_count + 1))
+printf '%s' "$block_count" > "$count_file" 2>/dev/null || true
+reason="$reason (stance-guardrail block $block_count this session — a COUNT, not a budget: this gate does not stop enforcing, however many times it fires.)"
 
 # --- BLOCK ----------------------------------------------------------------------------------
 # Emit the Stop-hook block decision. The `reason` is fed back to the agent as a corrective
