@@ -1,7 +1,7 @@
 import type { Role } from '../../manifest.js';
 
 // A ROLE STATES ITS CONTRACT; it does not merely name a job. The value was the bare
-// token `architect`, which named a position and said nothing about it — so everything
+// token `architect`, which named a role and said nothing about it — so everything
 // the name should have carried had to be retyped on every agent holding it, and three
 // agents drifted apart while all three claimed the same word.
 //
