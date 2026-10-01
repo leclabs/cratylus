@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3TGYW5P03DMN9WKV6ZYG14Y",
+    "entity": "01M3T44MAJE841D05809ZJN9NP",
+    "operation": "amend",
+    "supersedes": [
+      "01M3T48JRYVRSDHDH1EQJTMYQA"
+    ],
+    "author": "GuardPrecisionPlanner5",
+    "time": "2026-10-01T01:23:44.950Z",
+    "reason": "every unit completed",
+    "cause": "whole enforcement-scope-stated of guard-precision"
+  },
+  "payload": {
+    "name": "guard-precision",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV"
+    ],
+    "state": "closed"
+  }
+}
