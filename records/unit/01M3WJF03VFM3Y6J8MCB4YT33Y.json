@@ -1,0 +1,60 @@
+{
+  "envelope": {
+    "id": "01M3WJF03VFM3Y6J8MCB4YT33Y",
+    "entity": "01M3WFR68V0MCQK8AVD2A3GQAA",
+    "operation": "amend",
+    "supersedes": [
+      "01M3WJBBX89NSZRTTPZJCA8AKV"
+    ],
+    "author": "AssayGaps4",
+    "time": "2026-10-01T20:28:30.715Z",
+    "reason": "Assayed against the persona launch shard, clause 'begins exactly as a dispatched holder of its role would': the launcher now reads the definition's model list, the one a dispatched holder routes by, and starts omp with --model on the roles of it the host's modelRoles maps (planner -> @planner,@default; mav -> @architect,@default; only default mapped -> @default), passes none where the host maps none or omp cannot report its roles (saying so on stderr), and leaves an operator --model alone; measured on omp 18.4.9 that a role list resolves to the first mapped role and that a lone unmapped role is 'Model not found', which the filter avoids.",
+    "cause": "launched-persona-routes landed at 43862116 by LaunchedPersonaRoutes"
+  },
+  "payload": {
+    "plan": "01M3WFR3PDFGB42PPQ89D3TKXQ",
+    "spec": {
+      "name": "launched-persona-routes",
+      "intent": "Census @8d0a7283 (design at 8d0a7283; notebook at 8d0a7283 plus the decision note \"mav's cell restates its role\"); every path is repo-relative on the plan's line. A line number, count or observed behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Add no new test file: a new one must be classified in packages/canon/test/gate-convicts.test.ts, which no unit of this plan owns; extend the test files named in outputs. Realize persona launch on omp: a persona started by name as a main session begins exactly as a dispatched holder of its role would. A dispatched holder routes by its definition's model, [\"@<role>\", \"@default\"] (packages/forge/src/adapters/omp/render.ts:330-374), so a dispatched architect runs on the host's modelRoles.architect; the omp-agent launcher (:1590-1597, `exec omp --append-system-prompt \"$append\" ...`) passes no model, so a launched mav, nico or kino runs on the session default (note 'persona launch ignores its role's model'). Make the launcher start the session on the definition's own model route, read from the definition it already reads (one definition, two readers), falling back as the definition does, and passing no model where the host routes neither; a model the operator names on the launch command line wins. omp's --model takes a model pattern (omp 18.4.9 here); whether it takes the @<role> alias is to be established against the installed omp, and where it does not the launcher resolves the role through the host's own modelRoles. Claude Code's launcher (`claude --agent`) already applies the definition's model to a main session (packages/forge/src/adapters/claude/render.ts:113-116) and is not this unit's. Keep the exported names and signatures of render.ts. Add a patch changeset for @cratylus/forge.",
+      "static": [
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/deploy/model-roles.ts"
+      ],
+      "deps": [
+        "01M3WFR5DZKQCSXM4M9JVN76R6"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        ".changeset/launched-persona-routes.md"
+      ],
+      "accept": [
+        "in packages/forge, `pnpm exec vitest run test/adapters/omp.test.ts` exits 0, including a case that runs the emitted omp-agent launcher with a stub `omp` first on PATH recording its argv, for a persona holding the architect role on a host whose config maps modelRoles.architect to a model <m>, and finds omp started on <m>'s route (at 8d0a7283 no model is passed), and a case where the operator passes --model <x> and omp receives <x>",
+        "`git diff <the commit the unit's work starts from> --stat` lists no file under packages/forge/src but packages/forge/src/adapters/omp/render.ts",
+        "`pnpm --filter @cratylus/forge typecheck` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBG00Z13RG3P9110NBW9X8",
+      "version": "01M3RCXAGWQC0RZ1A1C8398R78",
+      "closure": {}
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "43862116",
+        "author": "LaunchedPersonaRoutes",
+        "time": "2026-10-01T20:26:31.720Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "4386211652ee1d658b2142379915e31c7bcf4307",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayGaps4",
+        "time": "2026-10-01T20:28:30.715Z"
+      }
+    ]
+  }
+}
