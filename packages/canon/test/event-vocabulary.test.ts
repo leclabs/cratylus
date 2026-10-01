@@ -269,7 +269,7 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
     });
   }
 
-  it('claude reaches 21 of 30 harness events, leaving 9 with no native peer', () => {
+  it('claude reaches 22 of 31 harness events, leaving 9 with no native peer', () => {
     // MEASURED, not quoted forward. The filing said 18 pairs and 10 unmapped; the
     // pairs were 19, and the 10 was the union over BOTH shipped adapters — a
     // different quantity wearing this one's name. The tuple then gained the two ACTS
@@ -277,8 +277,8 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
     // the act table rather than the 1:1 map — so REACHED and MAPPED are now different
     // counts, and both are asserted.
     const harness = CANONICAL_EVENTS.filter((e) => e !== 'vcs.commit.post');
-    expect(harness).toHaveLength(30);
-    expect(Object.keys(canonicalToClaude)).toHaveLength(19);
+    expect(harness).toHaveLength(31);
+    expect(Object.keys(canonicalToClaude)).toHaveLength(20);
     expect(Object.keys(canonicalActToClaude)).toHaveLength(2);
     expect(
       harness.filter((e) => claudeBindingOf(e) === undefined),
@@ -404,7 +404,7 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     });
     const native = doc.harnesses[CLAUDE.harness]?.native;
     expect(native?.['not.an.event']).toBeUndefined();
-    expect(Object.keys(native ?? {})).toHaveLength(19);
+    expect(Object.keys(native ?? {})).toHaveLength(20);
   });
 
   it('two harnesses deployed into one host file each keep their own stanza', () => {

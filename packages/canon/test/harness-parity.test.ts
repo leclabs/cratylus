@@ -20,12 +20,15 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { OMP_SESSION_MODULE } from '@cratylus/forge/adapters/omp';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
 import {
   ENFORCING_STAGE_DIR,
   SESSION_SCOPE,
 } from '@cratylus/forge/harness-adapter';
+import { projectPluginSet } from '@cratylus/forge/project';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
+import canon from '../src/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // The repo root is ASKED FOR, never counted in parent hops: a hop count encodes this
@@ -65,6 +68,36 @@ function hookDirs(root: string): string[] {
         .map((e) => e.name)
         .sort()
     : [];
+}
+
+/**
+ * The cells `reference` deploys that `deployed` does not, and that `warned` does not
+ * name. A cell the harness cannot realize is dropped WITH a warning; a cell dropped
+ * with none is the silent drop this gate exists to convict.
+ */
+function silentlyAbsent(
+  reference: readonly string[],
+  deployed: readonly string[],
+  warned: readonly string[],
+): string[] {
+  return reference.filter((c) => !deployed.includes(c) && !warned.includes(c));
+}
+
+/** The hook cells projection told the operator it does not deploy on `harness`. */
+async function warnedAbsent(harness: string): Promise<string[]> {
+  const warnings: string[] = [];
+  await projectPluginSet({
+    plugins: [canon],
+    adapter: adapterByName(harness),
+    warn: (line) => warnings.push(line),
+  });
+  return warnings.flatMap((w) => {
+    const m =
+      /^hook '([^']+)' is bound to '[^']+', a moment .* The hook is not deployed here\.$/.exec(
+        w,
+      );
+    return m ? [m[1] as string] : [];
+  });
 }
 
 /**
@@ -142,6 +175,11 @@ describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
     expect(parityViolations(bad)).not.toEqual([]);
   });
 
+  it('CONVICTS a cell dropped with no warning, and passes the same drop once it is warned of', () => {
+    expect(silentlyAbsent(['a', 'b'], ['a'], [])).toEqual(['b']);
+    expect(silentlyAbsent(['a', 'b'], ['a'], ['b'])).toEqual([]);
+  });
+
   it('CONVICTS a config carrying another harness’s home', () => {
     const bad = [
       ok[0] as Reading,
@@ -168,23 +206,26 @@ describe('GATE — no cell is silently absent from a harness', () => {
     ).toEqual(['claude', 'omp']);
   });
 
-  it('every harness deploys the SAME set of governance cells', () => {
-    const byHarness = present.map((r) => ({
-      harness: r.harness,
-      cells: hookDirs(r.root),
-    }));
-    const [first, ...rest] = byHarness;
+  it('every harness deploys the SAME set of governance cells, or is warned of each it does not', async () => {
+    const byHarness = await Promise.all(
+      present.map(async (r) => ({
+        harness: r.harness,
+        cells: hookDirs(r.root),
+        warned: await warnedAbsent(r.harness),
+      })),
+    );
     expect(
-      first?.cells.length,
+      byHarness[0]?.cells.length,
       'a render with zero hook cells',
     ).toBeGreaterThan(0);
-    for (const other of rest) {
+    const universe = [...new Set(byHarness.flatMap((h) => h.cells))].sort();
+    for (const h of byHarness) {
       expect(
-        other.cells,
-        `${other.harness} deploys a different cell set than ${first?.harness} — if a harness genuinely cannot realize one, the projector must WARN, never drop it silently`,
-      ).toEqual(first?.cells);
+        silentlyAbsent(universe, h.cells, h.warned),
+        `${h.harness} silently drops a cell another harness deploys — if a harness genuinely cannot realize one, the projector must WARN, never drop it silently`,
+      ).toEqual([]);
     }
-  });
+  }, 60_000);
 
   it('every harness emits its own hook config artifact', () => {
     for (const r of present) {

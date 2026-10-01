@@ -188,6 +188,86 @@ describe.each(HARNESSES)(
 );
 
 describe.each(HARNESSES)(
+  'practices — a hook a practice names, on %s',
+  (harness) => {
+    const hooking: ProjectablePlugin = {
+      ...declaring,
+      practices: [
+        ...PRACTICES,
+        {
+          name: 'hooked',
+          description: 'a practice naming a hook that binds no composition',
+          agents: [],
+          hooks: ['unrelated'],
+        },
+      ],
+    };
+
+    it('places the hook with the practice that names it, beside the plumbing', async () => {
+      const tree = await project(harness, ['hooked'], hooking);
+      expect(placed(tree).hooks).toEqual(['notice', 'unrelated']);
+    });
+
+    it('places it for no practice that does not name it', async () => {
+      const tree = await project(harness, ['gamma'], hooking);
+      expect(placed(tree).hooks).toEqual(['notice']);
+    });
+
+    it('REFUSES a practice naming a hook the set does not have', async () => {
+      const missing: ProjectablePlugin = {
+        ...declaring,
+        practices: [
+          {
+            name: 'hooked',
+            description: 'x',
+            agents: [],
+            hooks: ['nothing'],
+          },
+        ],
+      };
+      await expect(project(harness, ['hooked'], missing)).rejects.toThrow(
+        /practice.*hook 'nothing'/,
+      );
+    });
+  },
+);
+
+describe('a hook bound to a moment the harness does not fire — declared lost, not staged', () => {
+  // claude, with the one moment the `guard` fixture binds (`turn.end`) withdrawn: the
+  // hook is chosen, so the loss is the harness's alone.
+  const deaf = {
+    ...adapterByName('claude'),
+    name: 'deaf',
+    realizes: (event: string) => event !== 'turn.end',
+  };
+
+  async function projectDeaf(practices: readonly string[]) {
+    const warnings: string[] = [];
+    const tree = await projectPluginSet({
+      plugins: [declaring],
+      adapter: deaf,
+      practices,
+      warn: (line) => warnings.push(line),
+    });
+    return { tree, warnings };
+  }
+
+  it('warns once naming the hook, the moment and the harness, and stages no worker for it', async () => {
+    const { tree, warnings } = await projectDeaf(['alpha']);
+    const lost = warnings.filter((w) => w.includes("'turn.end'"));
+    expect(lost).toHaveLength(1);
+    expect(lost[0]).toContain("'guard'");
+    expect(lost[0]).toContain("'deaf'");
+    expect(placed(tree).hooks).toEqual(['notice']);
+  });
+
+  it('says nothing of a hook whose moment the harness does fire', async () => {
+    const { warnings } = await projectDeaf(['beta']);
+    expect(warnings.filter((w) => w.includes('does not fire'))).toEqual([]);
+  });
+});
+
+describe.each(HARNESSES)(
   'practices — a render naming none on %s',
   (harness) => {
     it('places every cell where the practices are absent', async () => {

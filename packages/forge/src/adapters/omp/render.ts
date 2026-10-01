@@ -1859,6 +1859,10 @@ export const ompHarnessAdapter: HarnessAdapter = {
   judgeBin: '',
   // `autoloadSkills` names skills omp preloads into the agent it defines.
   preloadsSkills: true,
+  // omp's agent definition reader takes no field that isolates an agent: its task
+  // isolation is a session-wide setting, so nothing here starts one agent in a
+  // worktree of its own. Projection warns.
+  startsInWorktree: false,
   // The role → model table: the definition names the role, install seeds the
   // host's `modelRoles` entry for it.
   roleRouting: ompRoleRouting,

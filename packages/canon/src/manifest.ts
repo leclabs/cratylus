@@ -291,6 +291,13 @@ export type { SkillExpression };
 // and `substrate` is a declared axis (`Substrate = 'harness' | 'git'`) that already
 // routes it. With an open `EventName` the union has nothing to widen, so it
 // dissolved on its own.
+//
+// `worktree.create` NAMES THE MOMENT A WORKTREE IS MADE FOR AN AGENT, and a hook bound to
+// it does not observe the moment, it PERFORMS it: the harness asks the hook to create the
+// worktree and take the path it answers with. Claude Code fires it as WorktreeCreate,
+// replacing its own creation; omp has no per-agent worktree and fires nothing here, so the
+// moment is absent from its map and projection declares the loss. There is no `.pre` or
+// `.post` in the name because there is no before and after: the hook IS the creation.
 export const CANONICAL_EVENTS = [
   // harness substrate — a session's shape
   'session.start',
@@ -319,6 +326,8 @@ export const CANONICAL_EVENTS = [
   'subagent.dispatch.pre',
   'subagent.start',
   'subagent.end',
+  // harness substrate — the working copy an agent is given
+  'worktree.create',
   // harness substrate — what the operator is asked and told
   'operator.consult.pre',
   'permission.request',

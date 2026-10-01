@@ -100,6 +100,13 @@ export interface RoleCell {
    * their anchors to `Agent.dispatches`, as it does the held role to `Agent.holds`.
    */
   readonly dispatches: readonly Role[];
+  /**
+   * That every holder of the role runs in a git worktree of its own. Absent for a
+   * role whose holders run where their dispatcher does. The fold copies it to
+   * `Agent.isolation`, as it does `dispatches`; a persona cannot state it, because
+   * where an agent runs is the role's to say.
+   */
+  readonly isolation?: 'worktree';
   /** The aspects expected of anyone holding the role — DEFAULTS, every one. */
   readonly vector: RoleVector;
 }
@@ -116,7 +123,7 @@ export interface RoleCell {
  */
 export type Persona = Omit<
   AgentIdentity,
-  'holds' | 'dispatches' | 'provenance'
+  'holds' | 'dispatches' | 'isolation' | 'provenance'
 > & { readonly provenance: { readonly mark: Mark } } & Partial<
     Omit<DimensionFields, 'role'>
   >;
@@ -186,6 +193,7 @@ export function holds(role: RoleCell, persona?: Persona): Agent {
     ...(role.dispatches.length > 0
       ? { dispatches: role.dispatches.map((r) => anchorOf(r)) }
       : {}),
+    ...(role.isolation !== undefined ? { isolation: role.isolation } : {}),
   };
   if (declared.preamble !== undefined) {
     resolved.preamble = declared.preamble;

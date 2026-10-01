@@ -23,6 +23,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { claudeBindingOf } from '../../src/adapters/claude/events.js';
 import { personaSkillOutputSize } from '../../src/adapters/claude/persona-launch.js';
 import {
   CLAUDE_LAUNCHER_FILE,
@@ -228,7 +229,9 @@ describe('the claude projection emits the stance manifests', () => {
     // none, which reads as coverage.
     const { scopedRel: _named, ...noScope } = claudeHarnessAdapter;
     const { tree, warnings } = await project(noScope);
-    const guardWarnings = warnings.filter((w) => w.includes('fixture-guard'));
+    const guardWarnings = warnings.filter(
+      (w) => w.includes('fixture-guard') && w.includes('cannot be scoped'),
+    );
     expect(guardWarnings).toHaveLength(1);
     expect(guardWarnings[0]).toContain('claude');
     expect(guardWarnings[0]).toContain('cannot name the running agent');
@@ -731,5 +734,41 @@ describe('the claude model tier — the role an agent holds, as a tier alias', (
 
   it('declares no host role table: install seeds no claude config', () => {
     expect(claudeHarnessAdapter.roleRouting).toBeUndefined();
+  });
+});
+
+describe('the claude worktree isolation — an agent that declares it starts in one', () => {
+  const def = (isolation?: 'worktree') =>
+    agentToClaudeMd(
+      {
+        name: 'mav',
+        description: 'd',
+        archetype: 'a',
+        guardrails: ['honesty ≜ assert from evidence'],
+        ...(isolation === undefined ? {} : { isolation }),
+      } as never,
+      { manifest: FIXTURE_MANIFEST },
+    );
+  const frontMatter = (md: string) => md.split('---')[1] ?? '';
+
+  it('emits `isolation: worktree` for an agent declaring it', () => {
+    expect(frontMatter(def('worktree')).split('\n')).toContain(
+      'isolation: worktree',
+    );
+  });
+
+  it('emits no `isolation` key for an agent that does not', () => {
+    expect(frontMatter(def())).not.toMatch(/^isolation:/m);
+  });
+
+  it('answers that a definition can start an agent in a worktree', () => {
+    expect(claudeHarnessAdapter.startsInWorktree).toBe(true);
+  });
+
+  it('fires the moment a worktree is created as WorktreeCreate, with no selector to narrow by', () => {
+    expect(claudeBindingOf('worktree.create')).toEqual({
+      event: 'WorktreeCreate',
+    });
+    expect(claudeHarnessAdapter.realizes('worktree.create')).toBe(true);
   });
 });
