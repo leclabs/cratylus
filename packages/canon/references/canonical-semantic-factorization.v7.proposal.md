@@ -1,5 +1,12 @@
 # Canonical Semantic Factorization
 
+> **A proposal, kept as a record.** This is the seventh statement of the factorization, in its
+> fullest notation: the reader R, its closure `cl_R`, its decoder `dec_R` and the round trip
+> `REC_R`. No code reads this file. The working form lives in the skills: `signify` states the
+> anchor α and the order `≺`, `materialize` states the factorization `F` and the normal form `CSF`,
+> and `conceptualize` and `exemplify` state the concept record they fill. Where this text and a
+> skill differ, the skill is what runs.
+
 ```text
 R              — the reader; the priors that fix every meaning here
 D_R            — the distinctions R draws; the identity-criterion atoms; finite

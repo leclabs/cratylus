@@ -6,13 +6,13 @@ stance _invariant_, not merely prompted.
 
 ## Why it exists
 
-Encoding the principal stance as **identity** (Nico's half — the `principal-ic` stance reworked into a
-constitutive `you-ARE` statement, `c8c451c`; that agent has since been retired, the stance it carried
-has not) raises the threshold but is **not truly invariant**: enough operator pushback erodes any
-prompt-level stance, because RLHF corrigibility reads a correction as _"defer more."_ True invariance
-needs the **harness** to refuse the collapsed turn. This is that refusal. (The embryo was this
-session's ad-hoc Stop-hook, which twice caught a principal-self agent collapsing into deference and
-blocked the turn; this generalizes it into a standing, gated guardrail.)
+Encoding the principal stance as **identity** (the agents' half, begun for `nico` in `c8c451c`, which
+made the founder genus a constitutive intent-driven-expert identity rather than a tag) raises the
+threshold but is **not truly invariant**: enough operator pushback erodes any prompt-level stance,
+because RLHF corrigibility reads a correction as _"defer more."_ True invariance needs the
+**harness** to refuse the collapsed turn. This is that refusal. (The embryo was an ad-hoc Stop hook
+that twice caught a principal-self agent collapsing into deference and blocked the turn; this
+generalizes it into a standing, gated guardrail.)
 
 Identity is the **carrier**; this guardrail makes it **invariant**.
 
@@ -39,11 +39,24 @@ detects:
 The judge is instructed to be **conservative**: when genuinely unsure between legitimate-consent and
 in-remit permission-seeking, it PASSes. A false block wedges real work; a missed block is recoverable.
 
+## Its before-the-call twin
+
+The Stop hook never fires on an act made mid-turn, so `stance-guardrail-pre`
+(`packages/canon/src/hooks/stance-guardrail-pre.ts`) denies the same collapse before the call fires,
+on the two acts that never reach a turn end: an `AskUserQuestion` menu on an in-remit reversible call
+(`operator.consult.pre`) and an `Agent` or `SendMessage` dispatch that transcribes the operator's
+literal words (`subagent.dispatch.pre`). It shares the rubric, the judge backend, the enrollment and
+the contest of this guard, and it answers with a `permissionDecision: deny` in place of a `block`.
+
+A third cell beside them, `purview-guardrail`, judges something else: whether an act falls outside the
+arrow the agent's own `## Role` contract declares. It has its own rubric, `purview-judge-prompt.md`,
+and the same enrollment, safety model and contest.
+
 ## How it's installed (forge-native)
 
 The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq` toggle:
 
-- **Source** — the forge `Hook` in `packages/canon/src/hook-cells.ts` (`turn.end` → Stop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
+- **Source** — the forge `Hook` in `packages/canon/src/hooks/stance-guardrail.ts` (`turn.end` → Stop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
 - **Project** — `pnpm canon:project` emits a `settings.json` `{hooks}` fragment + stages these workers
   under `.cratylus/claude/hooks/stance-guardrail/`.
@@ -54,11 +67,11 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
 ## Safety model (enrolled by placement, silent otherwise)
 
 - **SCOPE-ENROLLED — enrollment is PRESENCE.** The projection lands
-  `<scope>/stance/manifest.json` in each persona's own scope, and the worker judges a scope
-  carrying one and no other. Composing the cell enrolls the persona; nothing central lists
+  `<scope>/stance/manifest.json` in each composing agent's own scope, and the worker judges a scope
+  carrying one and no other. Composing the cell enrolls the agent; nothing central lists
   anybody. Each harness carries the scope in the form it offers, and the worker takes the first
   it finds:
-  - **omp** places a dispatcher inside the persona's own scope, so it passes `stance_scope` in the
+  - **omp** places a dispatcher inside the agent's own scope, so it passes `stance_scope` in the
     envelope. A bare launch carries the dispatcher and no manifest, so it is silent by placement
     rather than by a branch.
   - **Claude Code** places no dispatcher, and its hook payload names the running agent as
@@ -69,18 +82,18 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
     An `agent_type` that is not a single directory name is refused, never joined into a path.
 
   The stance manifest is staged once for both harnesses by forge's `core/enrollment.ts`, and the
-  persona root is read back from the adapter's own `scopedRel`, so no worker carries an agent list
+  scope root is read back from the adapter's own `scopedRel`, so no worker carries an agent list
   or spells the manifest's path. **Scope is fixed by composition**: a manifest lists exactly the
   guards its composed agent includes (a cell declares `binds`, the composition that binds an
   agent to it), and a cell that binds nothing, such as the drift notice, is never listed. A
   harness that cannot name the running agent carries a guard as a steer and warns once per cell
   at projection and install.
 
-- **WHERE A GUARD BINDS.** A composing persona's own main session, and no subagent it dispatches: a
+- **WHERE A GUARD BINDS.** A composing agent's own main session, and no subagent it dispatches: a
   subagent is bounded by what it was handed, judged by its assay and the whole check, and supervised
   by the main session. Claude Code fires settings hooks and a subagent's own front-matter hooks
   inside a subagent, and the payload there carries `agent_id`, present only inside a subagent. Each
-  of the three workers exits 0 on such a payload before it asks its judge and prints nothing: a guard
+  of the stop, pre and purview workers exits 0 on such a payload before it asks its judge and prints nothing: a guard
   that does not bind there is not dark. The Stop guard binds `turn.end` alone.
 
 - **WHAT THE STOP WORKER JUDGES.** The main session's `transcript_path`. A
@@ -92,10 +105,10 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   DIRECTORY, which is a category error — a stance belongs to the agent, not the checkout — and it
   made the stance optional at runtime for an agent already launched as itself, which is the
   ambient form this harness half exists to prevent. The allowlist was a runtime self-filter over
-  an enrollment the corpus already derives, and it had drifted: every projected persona carried
+  an enrollment the corpus already derives, and it had drifted: every projected agent carried
   the guard while the shell default named `nico mav`, leaving `architect` and `kino` holding
-  principal authority and never once judged. **The off switch is launching `omp` instead of a
-  persona** — declining to be the agent, rather than being it unjudged.
+  principal authority and never once judged. **The off switch is launching `omp` bare instead of
+  as the agent** — declining to be the agent, rather than being it unjudged.
 - **FAILS OPEN, NEVER SILENTLY-CLEAN.** Any error (no transcript, judge failure, no `jq`) → allow
   the stop, because a guardrail that wedges work on its own flakiness is worse than a missed
   block. But an enrolled scope whose judge could not answer announces itself via `dark` and
@@ -144,25 +157,33 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
 
 ## Components
 
-| file                       | role                                                                                                                                                                                                                                                                                                  |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stance-guardrail.sh`      | the Stop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                                                                                         |
-| `stance-judge.sh`          | the default **judge backend** (contract: payload on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Sends the rubric and the payload to headless `claude -p --model haiku` and nothing around them. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
-| `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                                                                               |
-| `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.                                                             |
+| file                      | role                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stance-guardrail.sh`     | the Stop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                                                                                                                                                  |
+| `stance-guardrail-pre.sh` | the before-the-call **worker** of the twin cell: the same gates, and the same judge and rubric, over an `AskUserQuestion` menu or an `Agent`/`SendMessage` dispatch; emits a `permissionDecision: deny` on collapse. Its miss log is `$STANCE_GUARD_LOG` (default `misses.log` beside it).                                                                     |
+| `stance-judge.sh`         | the default **judge backend** (contract: payload on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Sends the rubric and the payload to headless `claude -p --model haiku` and nothing around them; a harness that judges in-process (omp) never reaches it. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
+| `stance-judge-prompt.md`  | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                                                                                                                                        |
+| `purview-guardrail.sh`    | the worker of the `purview-guardrail` cell, and `purview-judge-prompt.md` its rubric: both belong to that cell, not to the stance.                                                                                                                                                                                                                             |
+| `deploy-drift-notice.sh`  | the worker of the `deploy-drift-notice` cell, an advisory that binds no agent and is never listed in a stance manifest.                                                                                                                                                                                                                                        |
+
+The proof that these workers bite is not in this directory: `packages/canon/test/support/guardrail/test-stance-guardrail.sh` is
+**prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an
+optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the
+**deployed** artifact.
 
 > Retired: `stance-guard-toggle.sh` (the `jq` + `settings.local.json` hand-edit), when
 > installation moved to forge; then the runtime opt-in flag and the agent allowlist, when
-> enrollment moved into each persona's own scope. Nothing is toggled by hand any more —
-> projecting a persona enrolls it.
+> enrollment moved into each agent's own scope. Nothing is toggled by hand any more —
+> projecting an agent that composes the cell enrolls it.
 
 ## Usage
 
 ```sh
 pnpm canon:deploy:hooks               # project + ship the workers (forge)
 pnpm stance-guard:test                # prove it bites (set STANCE_WORKER_DIR for the deployed artifact)
-cratylus deploy --harness omp --check # who is enrolled: one stance/manifest.json per persona scope
+cratylus deploy --harness omp --check # who is enrolled: one stance/manifest.json per agent scope
 ```
 
 Tuning env vars (all optional): `STANCE_JUDGE_CMD` (swap the whole backend), `STANCE_JUDGE_BIN`,
-`STANCE_JUDGE_MODEL`, `STANCE_RUBRIC`, `STANCE_WORKER_DIR`.
+`STANCE_JUDGE_MODEL`, `STANCE_RUBRIC`, `STANCE_WORKER_DIR`; the pre worker also reads
+`STANCE_GUARD_DIR` (where it finds `stance-judge.sh`) and `STANCE_GUARD_LOG`.

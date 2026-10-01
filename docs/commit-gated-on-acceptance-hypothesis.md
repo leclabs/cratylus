@@ -1,11 +1,13 @@
 # Hypothesis — orchestrators withhold lane commits because nothing they read defines a commit as durability
 
-Status: **RECTIFIED AND APPLIED 2026-09-25.** The original hypothesis (H1: the canon's design/deliver skills
-model a commit as the carrier of an acceptance, and orchestrators derive "no commit before
-acceptance" from that) is **falsified** as the cause. The session evidence and a controlled
-dispatch experiment both locate the cause elsewhere: in the boundary definition of the commit
+Status: **a dated record of work finished 2026-09-25.** It is not a description of the tree today:
+every claim about the canon below is a claim about the canon on that date, and the closing section
+says where the durability rule lives now. The original hypothesis (H1: the canon's design/deliver
+skills model a commit as the carrier of an acceptance, and orchestrators derive "no commit before
+acceptance" from that) was **falsified** as the cause. The session evidence and a controlled
+dispatch experiment both located the cause elsewhere: in the boundary definition of the commit
 rule the orchestrator was actually reading, in the harness's own delegation text, and in the
-canon projecting no commit duty at all. The canon-level lever is the original H3, not H1.
+canon projecting no commit duty at all. The canon-level lever was the original H3, not H1.
 
 ## The observed failure (verified)
 
@@ -91,12 +93,12 @@ pre-commit hook rejects unformatted or broken staged files, and concurrent lanes
 index. A commit rule that defines a boundary as "leaves the suite green" does not counter this.
 It ratifies it, because a cutover is green only at its end.
 
-- **H3 is confirmed, and it is the canon's lever.** The only canon cell that mentions committing
-  is `rules/repo-preamble.ts` (`scope: ''`, `targetPath: 'AGENTS.md'`), which reaches cratylus's
-  own workspace and nowhere else. No projected agent under `~/.claude/agents/` or
-  `~/.omp/agent/agents/` mentions a commit. Arms E–G show what that absence yields in any repo
-  that does not supply its own rule. Arm I shows that the text of `9a80d1f` overrides the
-  harness pressure when it is present.
+- **H3 is confirmed, and it is the canon's lever.** On 2026-09-25 the only canon cell that
+  mentioned committing was `rules/repo-preamble.ts` (`scope: ''`, `targetPath: 'AGENTS.md'`),
+  which reaches cratylus's own workspace and nowhere else. No projected agent under
+  `~/.claude/agents/` or `~/.omp/agent/agents/` mentioned a commit. Arms E–G show what that
+  absence yields in any repo that does not supply its own rule. Arm I shows that the text of
+  `9a80d1f` overrides the harness pressure when it is present.
 - **H2 is textually true but secondary.** The implementer's archetype makes the spec "the whole
   of the mandate", so a lane will not overrule its dispatch. The dispatch is where the defect is
   written, which means the duty must reach the dispatcher first. A duty carried by the
@@ -107,35 +109,46 @@ It ratifies it, because a cutover is green only at its end.
 
 ## Rectification
 
-- **Do not apply R1 as written.** Deleting `commit` and `accepts` from `design` would not change
-  behavior (arm F), and it would remove the carrier that the separation law depends on: the
-  design skill's `commit ≜ … ⟨the append-only carrier · attribution ∧ order⟩` is what makes a
-  retroactive amendment detectable, because the amendment postdates the artifact it excuses. A
-  real but unrelated defect sat beside it: the separation law `∀ k : amends(k, c) ⇒ ¬accepts(k)`
-  was stated twice, once in `design` ("two acts") and once in `deliver` ("two commits"), one law
-  with two homes and two wordings. **Repaired 2026-09-25:** `deliver` no longer restates it or
-  imports `commit`/`accepts`; it reaches the law through `amend(C) @ design`.
-- **R2 applied.** The durability duty lives in the existing `actions` value
-  `file-ops ⟨filesystem · vcs⟩`, whose `vcs` factor now states that a commit is durability and
+- **R1 was not applied as written.** Deleting `commit` and `accepts` from `design` would not have
+  changed behavior (arm F), and it would have removed the carrier that the separation law depends
+  on: the design skill's `commit` was what made a retroactive amendment detectable, because the
+  amendment postdates the artifact it excuses. A real but unrelated defect sat beside it: the
+  separation law `∀ k : amends(k, c) ⇒ ¬accepts(k)` was stated twice, once in `design` ("two
+  acts") and once in `deliver` ("two commits"), one law with two homes and two wordings.
+  **Repaired 2026-09-25:** `deliver` stopped restating it and reached the law through
+  `amend(C) @ design`.
+- **R2 was applied.** The durability duty went into the existing `actions` value
+  `file-ops ⟨filesystem · vcs⟩`, whose `vcs` factor then stated that a commit is durability and
   never acceptance, that on an isolated branch or worktree every coherent step is committed with
   the red named in the message, that a writer commits only its own paths by pathspec with the
   formatter run on those paths first, and that no dispatch withholds a writer's commit. The
-  `architect`, `planner` and `implementer` roles now hold it, so `architect`, `kino`, `mav`,
-  `nico`, `planner` and `implementer` all project it; `nico` no longer declares it separately.
-  The `assayer` writes nothing and does not hold it. No `delegation` clause was needed: the
-  dispatcher reads the same value. Cratylus's `AGENTS.md` convention stays as it is, because it
-  binds every session in this repository, including agents the canon did not project, so it
-  cannot cite a dimension value.
-- **R3 (no omp change) stands.**
+  `architect`, `planner` and `implementer` roles held it, so `architect`, `kino`, `mav`, `nico`,
+  `planner` and `implementer` all projected it, and `nico` stopped declaring it separately. The
+  `assayer` writes nothing and held it not. Cratylus's `AGENTS.md` convention stayed as it was,
+  because it binds every session in this repository, including agents the canon did not project,
+  so it cannot cite a dimension value.
+- **R3 (no omp change) stood.**
 
 ## Acceptance for the fix (measured 2026-09-25)
 
-- `pnpm verify` is green, and every projected agent except `assayer` carries the `file-ops`
+- `pnpm verify` was green, and every projected agent except `assayer` carried the `file-ops`
   value.
 - Arm E re-run with the value in the `mav` body (no repo commit rule, six dispatches): in 6 of
-  6, every lane commits its own paths at coherent steps with the red named, against 0 of 6
+  6, every lane committed its own paths at coherent steps with the red named, against 0 of 6
   before.
 - Arm H re-run with the value (cinematiclab's green-gated rule contradicting it, six
-  dispatches), as a precedence measurement: in 6 of 6, lanes commit before the unit is green,
-  and several dispatches add "never withhold a commit". A repo rule that gates commits on green
+  dispatches), as a precedence measurement: in 6 of 6, lanes committed before the unit was green,
+  and several dispatches added "never withhold a commit". A repo rule that gates commits on green
   is still that repo's defect to repair, as cinematiclab did in `9a80d1f`.
+
+## Where it stands now
+
+The rule survives and has two homes, one per reader. Writers read it in `file-ops`
+(`packages/canon/src/dimensions/actions/file-ops.ts`), which the `planner`, `implementer` and
+`integrator` roles hold. The dispatcher reads it in `delegation`
+(`packages/canon/src/dimensions/actions/delegation.ts`), which the `architect` role holds and so
+do `kino`, `mav` and `nico` through it, together with who commits what: a writer commits its own
+unit's work, the integrator commits the merge and the records, and the dispatcher commits nothing
+of what it writes. The `assayer` holds neither. The architect role holds `delegation` where it held
+`file-ops` on 2026-09-25: commit `7d53132e` (2026-09-29) swapped them when the architect stopped
+writing files, since a dispatcher that edits no file reads no `file-ops` value.
