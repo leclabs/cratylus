@@ -1,5 +1,12 @@
 # @cratylus/forge
 
+## 0.14.4
+
+### Patch Changes
+
+- Updated dependencies [9482980]
+  - @cratylus/schema@0.9.1
+
 ## 0.14.3
 
 ### Patch Changes
