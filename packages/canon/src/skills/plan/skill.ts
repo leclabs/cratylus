@@ -78,6 +78,7 @@ wave(0) ≜ { unit | ∄ u : (unit, u) ∈ R }
 wave(n+1) ≜ { unit | unit ∉ W(n) ∧ ∀ u : (unit, u) ∈ R ⇒ u ∈ W(n) }
 W(n) ≜ ⋃ { wave(i) | i ≤ n }
 owed @ note
+resolve @ note
 blocked(unit) ⇔ ∃ u ∈ deps(unit) : ¬satisfied(u)
 ready(unit) ⇔ bound(P) ∧ ¬blocked(unit) ∧ ∄ owed note blocking unit ∨ P ⟨computed, never stored · ready PROMISES an implementer can FINISH · conflating a dep with a ruling stalls a fan-out⟩
 frontier(P) ≜ { unit | ready(unit) ∧ state(unit) = ${UNIT.states[0]} } ∪ { unit | bound(P) ∧ ${UNIT.states[0]} ≺ state(unit) ≺ ${UNIT.satisfies} } ⟨where the plan IS · ¬ only what is dispatchable · ¬bound(P) ⇒ frontier(P) = ∅⟩
@@ -118,24 +119,24 @@ drifted(unit) ⇒ response ↾ what moved ⟨nothing ⇒ repin · gloss ⇒ repi
 suspect(unit) ⇒ the same response ↾ what moved beneath ⟨the concept that moved is a factor, ¬ the one unit spells ∴ its anchor moving alone ⇒ repin · a factor dropped beneath shows as the concept above it amended in factors⟩
 diverged(x) ⇒ reconcile(x) ⟨an ordinary write on x refuses⟩
 incoherent(P) ⇒ repaired by ordinary writes, one at a time
-reconcile ⊨ planner ⟨reconciliation of plans ∧ units is the planner's alone⟩
-slices(P) cut on shards ⟨¬ file-adjacency · files are a LAGGING proxy for modularity ∴ file-cut ⇒ ∀ unit ⊇ fragments of several c ⇒ implementer finishes ∧ system incoherent⟩
+reconcile ⊨ planner ⟨of plans ∧ units, the planner's alone⟩
+slices(P) cut on shards ⟨¬ file-adjacency · files LAG modularity ∴ a file-cut leaves each unit fragments of several c⟩
 ⋃ slices(P) = P ∧ ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
 ∄ swap improving cross(slices(P)) ⟨LOCAL argmin · a global one is ¬ decidable⟩
 ∀ n < m : |wave(n)| = 1 ⇒ slices mis-cut ⟨a singleton non-terminal wave is a CHAIN⟩
 ∀ unit, u ∈ wave(n) : unit ≠ u ⇒ outputs(unit) ∩ outputs(u) = ∅ ⟨the concurrency precondition⟩
-∀ unit, u ∈ wave(n) : unit ≠ u ⇒ outputs(unit) ∩ refs(u) = ∅ ⟨disjoint outputs is NECESSARY ¬ sufficient : a deletion in unit dangles a reference in u⟩
+∀ unit, u ∈ wave(n) : unit ≠ u ⇒ outputs(unit) ∩ refs(u) = ∅ ⟨disjoint outputs NECESSARY ¬ sufficient : a deletion dangles a reference⟩
 ⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation
-∀ unit : effort(unit) ≤ capacity ⟨a unit past capacity, or an implementer exhausted mid-unit (effort mis-estimated), hands its successor a re-read, ¬ progress⟩
+∀ unit : effort(unit) ≤ capacity ⟨past capacity, a unit hands its successor a re-read, ¬ progress⟩
 effort(unit) > capacity ⇒ split on factors(denotes(realizes(unit))) ⟨each part realizes a factor⟩ ≺ redispatch ; factors = ∅ ⇒ SURFACE ⟨a primitive no implementer finishes is ¬ primitive @ design⟩
-∀ unit : footprint(unit) ⊆ outputs(unit) ⟨outputs IS the contention set ∴ an under-declared array silently voids every disjointness proof above⟩
-∀ unit : occurs(realizes(unit)) ⊆ outputs(unit) ⟨a unit's footprint is its REFERENCE set, ¬ its definition site · resolve occurs BEFORE declaring outputs⟩
+∀ unit : footprint(unit) ⊆ outputs(unit) ⟨outputs IS the contention set ∴ under-declaring voids every disjointness proof above⟩
+∀ unit : occurs(realizes(unit)) ⊆ outputs(unit) ⟨footprint is the REFERENCE set, ¬ the definition site · resolve occurs BEFORE declaring outputs⟩
 ∀ unit : ∃ r : ¬accept(unit)(r) ∧ ¬accept(unit)(pre(unit)) ⟨criteria that cannot FAIL, ∧ that already pass before the work, test nothing⟩
 census(P) ⊨ once ∧ pinned⟨commit⟩ ∧ cited by every unit ⟨¬ re-derived per implementer⟩
 ∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨commit⟩ ∴ cite ⇔ ∄ change to its paths since that commit ; else re-derive ≺ cite ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree moves ∧ nothing reds⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 ∀ unit : conform(spec(unit))
-plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → bind(P) ⟨cuts the line, only when ¬∃ bound P⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩ ; on \`whole <unit>\` : advance(unit) ↦ ${UNIT.satisfies}, hand out the newly ready ; ∀ unit completed ⇒ close(P) ; on a stop ⟨an owed note blocking P⟩ : rectify ⟨repin ∨ revise ∨ retract ∨ add⟩ ∨ rebuild P ≺ the note is resolved ⟨the drift laws apply to a bound P⟩` as SkillExpression;
+plan ≜ the planner's procedure : take(shards ∧ their handed idea notes ⟨weighed by own judgment, ¬ a ruling, ¬ grounds to redraw⟩) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → resolve(each note taken up) --unit the unit carrying it → ratify @ planner → bind(P) ⟨cuts the line, only when ¬∃ bound P⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩ ; on \`whole <unit>\` : advance(unit) ↦ ${UNIT.satisfies}, hand out the newly ready ; ∀ unit completed ⇒ close(P) ; on a stop ⟨an owed note blocking P⟩ : rectify ⟨repin ∨ revise ∨ retract ∨ add⟩ ∨ rebuild P ≺ the note is resolved ⟨the drift laws apply to a bound P⟩` as SkillExpression;
 
 export const plan: Skill = {
   name: 'plan',
