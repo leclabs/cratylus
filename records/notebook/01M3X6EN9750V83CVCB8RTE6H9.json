@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3X6EN9750V83CVCB8RTE6H9",
+    "entity": "01M3X68AY7B7F57086QA291JFD",
+    "operation": "retract",
+    "supersedes": [
+      "01M3X68AY7B7F57086QA291JFE"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T02:17:51.143Z",
+    "reason": "that string names the line's own worktree in the integrator role, not the retired hook",
+    "cause": "assay of retire-line-worktree"
+  },
+  "payload": null
+}

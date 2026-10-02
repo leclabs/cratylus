@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3X68AY7B7F57086QA291JFE",
+    "entity": "01M3X68AY7B7F57086QA291JFD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "RetireLineWorktree",
+    "time": "2026-10-02T02:14:23.943Z",
+    "reason": "criterion conflicts with a kept path",
+    "cause": "projecting omp after the cutover"
+  },
+  "payload": {
+    "title": "omp render names line-worktree through the integrator text",
+    "kind": "question",
+    "topic": "harness-own-worktree",
+    "body": "Acceptance of retire-line-worktree says the omp projection output names no line-worktree. After the cutover the omp render still holds the string in agents/integrator.md, from packages/canon/src/dimensions/role/integrator.ts, which the spec keeps on purpose (it names the plan line's own worktree, not the cell). No hook, worker or registration of the cell remains in either render. The criterion's literal reading and the keep-integrator.ts clause cannot both hold; the assayer should read it as the cell/hook.",
+    "blocks": []
+  }
+}

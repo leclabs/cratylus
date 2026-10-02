@@ -1,0 +1,75 @@
+{
+  "envelope": {
+    "id": "01M3X63PYFDDSJEWGHKQVG6W8P",
+    "entity": "01M3X63D1W0RZ4EV9RBSAPAVAS",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X63D1W0RZ4EV9RBSAPAVAT"
+    ],
+    "author": "HookRetirePlanner",
+    "time": "2026-10-02T02:11:52.399Z",
+    "reason": "biome leg limited to source paths biome checks",
+    "cause": "planner ratification of retire-line-worktree"
+  },
+  "payload": {
+    "plan": "01M3X63D15Z7R82VM42EH8XHB4",
+    "spec": {
+      "name": "retire-line-worktree",
+      "intent": "Census @085912bc (main; design and notebook as there). Every path is repo-relative. A count, line or behaviour cited here is a measurement at that commit: re-derive it if its path changed since. Run one test file inside its package with `pnpm exec vitest run <file>`.\n\nRealize, under the plan's clause 'each unit is built in its own isolated worktree off that line; how an agent uses worktrees is its own competence', the decision note 'the harness's own worktree is enough': the `line-worktree` hook cell is retired. It is the Claude Code `WorktreeCreate` hook that takes over the harness's worktree creation to cut the implementer's worktree from the bound plan's line. Isolation stays the harness's own: the implementer keeps `isolation: 'worktree'` (Claude Code front matter) and stays an isolated task on omp; starting its work from the plan's line is the implementer's own competence on both harnesses, and `plan land` already refuses a commit not built off the line. Nothing replaces the hook.\n\nRemove, as one cutover: the cell `packages/canon/src/hooks/line-worktree.ts`, its committed worker `packages/canon/targets/guardrail/line-worktree.sh`, its test `packages/canon/test/line-worktree.test.ts`; its registration in `packages/canon/src/hook-cells.ts` (import and array member); `WRITER_HOOKS` and the three `hooks: WRITER_HOOKS` entries in `packages/canon/src/practices.ts`, and the header sentence there that names the cell as what the practices placing the implementer list; its id in the expected list of `packages/canon/test/hook-rule-boundary.test.ts`; its entry and comment in `packages/canon/test/gate-convicts.test.ts`. In `packages/canon/test/practices.test.ts` the test 'places line-worktree with each practice that places the implementer, and with no other' goes; its isolation legs stay as their own test (the implementer declares `isolation` 'worktree'; architect, mav, kino, nico, planner, assayer, integrator declare none), since the isolation is kept and nothing else pins it. In `packages/schema/src/index.ts` drop the parenthetical example in `Practice.hooks`'s doc comment that names the retired worktree cell; the field itself stays.\n\nKept unchanged, on purpose: `Practice.hooks` and its projection in `packages/forge/src/project/index.ts`, the projection warning of a hook bound to a moment a harness does not fire, and the `worktree.create` member of `CANONICAL_EVENTS` with claude's `WorktreeCreate` map entry and omp's absent one. They are general plugin surfaces (`--plugin` sets project through them, and `worktree.create` is in the runtime's event vocabulary), not the hook. `Agent.isolation`, `startsInWorktree`, omp's `dispatchIsolation` and its `lacks` text stay too. The `line-worktree` spelled in `packages/canon/src/dimensions/role/integrator.ts` names the plan line's own worktree, not this cell, and stays. CHANGELOG.md files are generated; never edit them.\n\nIn `packages/cli/README.md`, the bullet 'The implementer's worktree' says Claude Code starts the implementer in a worktree cut from the tip of the bound plan's line; that becomes false. Rewrite it so it says, for both harnesses alike, that the harness isolates the implementer by its own means (Claude Code: a worktree of its own, cut as Claude Code cuts any by its `worktree.baseRef`; omp: an isolated task over the settings install records), that neither is cut from the plan's line, that building off the line is the implementer's own work, and that the land gate refuses work not built off it. Keep the omp settings paragraph that follows. A host that installed the hook loses it on its next install, by the deploy prune of registrations the render tree no longer carries; no code is needed for that.\n\nAdd one changeset, `.changeset/retire-line-worktree.md`, patch for `@cratylus/canon`, `@cratylus/schema` and `cratylus`, saying the hook is retired and what replaces it (nothing: the harness's own isolation, the implementer's own move onto the line, the land gate).",
+      "static": [
+        "packages/forge/src/project/index.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/roles/implementer.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/deploy/manifest.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/hooks/line-worktree.ts",
+        "packages/canon/targets/guardrail/line-worktree.sh",
+        "packages/canon/test/line-worktree.test.ts",
+        "packages/canon/src/hook-cells.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/hook-rule-boundary.test.ts",
+        "packages/canon/test/gate-convicts.test.ts",
+        "packages/schema/src/index.ts",
+        "packages/cli/README.md",
+        ".changeset/retire-line-worktree.md"
+      ],
+      "accept": [
+        "`git grep -l line-worktree -- packages ':!**/CHANGELOG.md'` prints exactly `packages/canon/src/dimensions/role/integrator.ts`; at 085912bc it prints 9 paths",
+        "none of `packages/canon/src/hooks/line-worktree.ts`, `packages/canon/targets/guardrail/line-worktree.sh`, `packages/canon/test/line-worktree.test.ts` exists",
+        "RIG: from the unit's checkout `pnpm build` exits 0; T=$(mktemp -d); `pnpm exec cratylus project --harness claude --out $T` exits 0; `$T/settings.json` binds no `WorktreeCreate`, `$T/hooks/line-worktree` does not exist, `$T/agents/implementer.md`'s front matter holds `isolation: worktree` and no other `$T/agents/*.md` front matter does",
+        "U=$(mktemp -d); `pnpm exec cratylus project --harness omp --out $U` exits 0 and its output names no `line-worktree`",
+        "with packages built and the renders projected (`pnpm project`), in packages/canon `pnpm exec vitest run test/practices.test.ts test/hook-rule-boundary.test.ts test/gate-convicts.test.ts test/harness-parity.test.ts test/event-vocabulary.test.ts` exits 0, and test/practices.test.ts still fails if the implementer's `isolation` is removed; `pnpm --filter @cratylus/canon typecheck` and `pnpm --filter @cratylus/schema typecheck` exit 0; `pnpm exec biome check packages/canon/src packages/canon/test packages/schema/src` exits 0",
+        "`grep -c \"cut from the tip of the bound plan's line\" packages/cli/README.md` prints 0; at 085912bc it prints 1",
+        "`.changeset/retire-line-worktree.md` exists and its front matter names `@cratylus/canon`, `@cratylus/schema` and `cratylus`, each `patch`"
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}
