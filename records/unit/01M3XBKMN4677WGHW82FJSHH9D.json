@@ -1,0 +1,73 @@
+{
+  "envelope": {
+    "id": "01M3XBKMN4677WGHW82FJSHH9D",
+    "entity": "01M3XAD6AKRHJ4FD08P8BX9BQC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XAD6AKRHJ4FD08P8BX9BQD"
+    ],
+    "author": "SuggestionsAndResolve",
+    "time": "2026-10-02T03:47:57.220Z",
+    "reason": "its dependency resolved-notes is completed; its name is handed to the architect to route",
+    "cause": "resolved-notes made whole"
+  },
+  "payload": {
+    "plan": "01M3XAC88VRDH0M7DBH91MENZC",
+    "spec": {
+      "name": "handed-ideas",
+      "intent": "Census @25f9e3a1 (the source tree; the design records amending notebook, architect role and planner role were written after it and reach this plan's line with its bind). Every path is repo-relative on the plan's line. A line number, size or count below is a measurement at 25f9e3a1: re-derive it if its path changed since. Add no test file beyond what the acceptance names. Starts from the line after resolved-notes, which gives the note skill its `resolve` verb (`scripts/note.mjs resolve <title> --unit <u of plan p>` among its forms) and moves plan/skill.ts's stop clause to `≺ the note is resolved`.\n\nRealize `planner role` as amended at its newest version: the operator's suggestions about how to build a shard reach the planner handed WITH the shard as idea notes (by title; it does not search the notebook for them). It weighs them by its own judgment: never as rulings, never as grounds to redraw the shard. A note it takes up it resolves to the unit that carries it (note resolve with --unit); one it does not take up it leaves as it is. Everything else in the gloss is already realized (the plan end to end, re-planning on a wrong shard, proportionate acceptance) and stays as it is.\n\nHOMES. (1) The `planner` Role value, packages/canon/src/dimensions/role/planner.ts (3237 bytes at 25f9e3a1): reads gains the idea notes handed with the shards; the `writes ≠ C ⇒ shard GIVEN` law (or a sibling) says a handed idea note is weighed by own judgment, ¬ a ruling, ¬ grounds to redraw; and a taken-up note ↦ resolved to the unit carrying it (writes gains that resolution). (2) packages/canon/src/skills/plan/skill.ts: the procedure line `plan ≜ the planner's procedure : take(shards) → …` takes the shards with their handed idea notes and resolves each note taken up to its unit; bind `resolve` to the note skill (`@ note`) as symbol-altitude requires. HARD BUDGET: plan is 9998 of claude's 10,000-character per-hook cap at 25f9e3a1 (packages/canon/test/skill-hook-cap.test.ts prints it), and resolved-notes leaves it no larger; pay every added character with a cut in the same cell that drops no law, e.g. tightening a gloss that restates its neighbour. (3) packages/canon/src/roles/planner.ts: the description and the archetype each say it in one clause where they speak of the shards it is handed; update the cell comment only if it would otherwise be false.\n\nDeclare no new symbol another cell in the planner's session (plan, design, note) declares differently. .changeset/handed-ideas.md: '@cratylus/canon' minor.",
+      "static": [
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/test/skill-hook-cap.test.ts",
+        "packages/canon/test/symbol-altitude.test.ts"
+      ],
+      "deps": [
+        "01M3XAC89F7MDJZB60ZRK1SNM2"
+      ],
+      "outputs": [
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/roles/planner.ts",
+        ".changeset/handed-ideas.md"
+      ],
+      "accept": [
+        "In packages/canon, `pnpm exec vitest run test/skill-hook-cap.test.ts` exits 0 and prints plan at no more than 10000.",
+        "plan/skill.ts's `plan ≜ the planner's procedure` line names the idea notes taken with the shards and resolving each one taken up to the unit carrying it, by the note skill's resolve; `grep -c idea packages/canon/src/skills/plan/skill.ts` prints at least 1 (0 at 25f9e3a1). Any `scripts/note.mjs resolve` it spells uses only flags `cratylus note resolve --help` lists.",
+        "The `planner` value names the handed idea notes, weighed by its own judgment as no ruling and no grounds to redraw the shard, and their resolution to the unit carrying one taken up; `grep -c idea packages/canon/src/dimensions/role/planner.ts` prints at least 1 (0 at 25f9e3a1). `grep -c idea packages/canon/src/roles/planner.ts` prints at least 1 (0 at 25f9e3a1).",
+        "`git diff <the commit the unit's work starts from> --name-only` lists only this unit's outputs.",
+        "In packages/canon, `pnpm exec vitest run test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/formal-block-self-sufficiency.test.ts test/skill-shape.test.ts test/reader-density.test.ts test/persona.test.ts test/purview-guardrail.test.ts test/command-veracity.test.ts` exits 0 and `pnpm --filter @cratylus/canon typecheck` exits 0."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3R07G7ZCK24TEDA78HW4VRM",
+      "version": "01M3X9QRTSPQCW0FSNSQQWWA2K",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}
