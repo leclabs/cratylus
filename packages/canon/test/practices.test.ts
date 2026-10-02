@@ -199,9 +199,7 @@ describe('canon practices — every cell has a home', () => {
     expect(drift.binds).toBeUndefined();
   });
 
-  it('places line-worktree with each practice that places the implementer, and with no other', async () => {
-    // The cell serves what the implementer DECLARES (it runs in a worktree of its own),
-    // not a composition, so no agent's composition can place it: the practices must.
+  it('declares isolation worktree on the implementer and on no other agent', () => {
     expect(implementer.isolation).toBe('worktree');
     for (const a of [
       architect,
@@ -214,22 +212,7 @@ describe('canon practices — every cell has a home', () => {
     ]) {
       expect(a.isolation, a.name).toBeUndefined();
     }
-    const cell = await firstExport<HookCell>(
-      join(srcRoot, 'hooks', 'line-worktree.ts'),
-    );
-    expect(cell.binds).toBeUndefined();
-    const placing = practices.filter((p) => p.agents.includes('implementer'));
-    expect(placing.length).toBeGreaterThan(0);
-    for (const p of practices) {
-      const placed = (await render('claude', [p.name])).hooks;
-      expect(placed.includes('line-worktree'), p.name).toBe(
-        placing.includes(p),
-      );
-    }
-    expect(
-      (await render('claude', ['plumbing-only'], plumbingOnly)).hooks,
-    ).not.toContain('line-worktree');
-  }, 120_000);
+  });
 });
 
 describe('canon practices — what a render places', () => {

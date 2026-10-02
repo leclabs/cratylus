@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3X6DS5GH9N5TETJ7JZ1HM4T",
+    "entity": "01M3X6DS5GH9N5TETJ7JZ1HM4S",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayRetireHook",
+    "time": "2026-10-02T02:17:22.352Z",
+    "reason": "a stale claim met while assaying, outside the verdict",
+    "cause": "assay of retire-line-worktree"
+  },
+  "payload": {
+    "title": "implementer isolation comment still credits the harness with the line",
+    "kind": "idea",
+    "topic": "plan",
+    "body": "Found while assaying retire-line-worktree of harness-own-worktree at 9482980f, beside the unit and not part of its verdict. The source comment over isolation: 'worktree' in packages/canon/src/roles/implementer.ts still says the implementer is started in its worktree by the harness so that the rule that its unit is built off the plan's line holds from the first instruction and does not wait on the agent's own care. With the hook retired, neither harness cuts that worktree from the line; starting from the line is the implementer's own move and the land gate catches a miss. The comment is not rendered and changes no behaviour, but it now states the retired arrangement. Separately, the worktree.create moment stays in the canonical vocabulary and in the Claude Code event map with no cell bound to it.",
+    "blocks": []
+  }
+}

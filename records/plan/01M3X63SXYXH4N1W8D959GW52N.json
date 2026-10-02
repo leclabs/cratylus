@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3X63SXYXH4N1W8D959GW52N",
+    "entity": "01M3X63D15Z7R82VM42EH8XHB4",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X63D15Z7R82VM42EH8XHB5"
+    ],
+    "author": "HookRetirePlanner",
+    "time": "2026-10-02T02:11:55.454Z",
+    "reason": "ratified: one unit retires the line-worktree hook; no plan bound",
+    "cause": "decision note 'the harness's own worktree is enough' on shard plan"
+  },
+  "payload": {
+    "name": "harness-own-worktree",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ"
+    ],
+    "state": "bound"
+  }
+}

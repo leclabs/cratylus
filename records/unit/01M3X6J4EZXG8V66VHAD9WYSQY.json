@@ -1,0 +1,63 @@
+{
+  "envelope": {
+    "id": "01M3X6J4EZXG8V66VHAD9WYSQY",
+    "entity": "01M3X6FV6CSFG4DEJN9327BR9S",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X6G3KR9Q9RKM1S5G9VQRAP"
+    ],
+    "author": "ImplementerIsolationComment",
+    "time": "2026-10-02T02:19:44.992Z",
+    "reason": "Isolation comment rewritten: harness isolates by its own means; starting from the line is the implementer's move; plan land refuses a commit off the line",
+    "cause": "line-worktree hook retired in retire-line-worktree"
+  },
+  "payload": {
+    "plan": "01M3X63D15Z7R82VM42EH8XHB4",
+    "spec": {
+      "name": "implementer-isolation-comment",
+      "intent": "Census @085912bc (main; design and notebook as there). Every path is repo-relative; a line or count cited here is a measurement at that commit: re-derive it if the path changed since.\n\nRealize the note 'implementer isolation comment still credits the harness with the line', under the plan's clause 'each unit is built in its own isolated worktree off that line; how an agent uses worktrees is its own competence'. In `packages/canon/src/roles/implementer.ts` the three-line source comment over `isolation: 'worktree'` (lines 55-57) says the implementer runs in a worktree 'started there by the harness', so that the rule that its unit is built off the plan's line, and never in the operator's main checkout, 'holds from the first instruction and does not wait on the agent's own care'. With the `line-worktree` hook retired (unit retire-line-worktree of this plan), neither harness cuts that worktree from the line. Rewrite the comment to say what holds now: the harness isolates the implementer by its own means, which keeps it out of the operator's main checkout from the first instruction; starting the work from the plan's line is the implementer's own move, and `plan land` refuses a commit not built off the line. Change no code and no other comment: `isolation: 'worktree'` and every rendered string (sign, description, archetype) stay as they are. The comment is not rendered, so no changeset is owed.\n\nNot in scope: the note's second observation, that `worktree.create` stays in `CANONICAL_EVENTS` and claude's event map with no cell bound to it. That is kept on purpose (a general plugin surface and part of the runtime's event vocabulary), as unit retire-line-worktree states.",
+      "static": [
+        "packages/canon/src/dimensions/role/implementer.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/roles/implementer.ts"
+      ],
+      "accept": [
+        "`grep -c -E \"does not wait on the agent's own care|started there by the harness\" packages/canon/src/roles/implementer.ts` prints 0; at 085912bc it prints 2",
+        "`git diff 085912bc -U0 -- packages/canon/src/roles/implementer.ts | grep -E '^[+-][^+-]' | grep -vE '^[+-][[:space:]]*//'` prints nothing, and `grep -c \"isolation: 'worktree'\" packages/canon/src/roles/implementer.ts` prints 1",
+        "`pnpm --filter @cratylus/canon typecheck` exits 0 and `pnpm exec biome check packages/canon/src/roles/implementer.ts` exits 0"
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "version": "01M3RWCX2WZRZE58R55GA90PN7",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3PMNZCN59V1QACFEHGQXXYB",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "88d38cdeb090dd7edf7c32397589decb3c7f8361",
+        "author": "ImplementerIsolationComment",
+        "time": "2026-10-02T02:19:44.991Z"
+      }
+    ]
+  }
+}

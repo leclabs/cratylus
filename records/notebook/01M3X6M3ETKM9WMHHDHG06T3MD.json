@@ -1,0 +1,15 @@
+{
+  "envelope": {
+    "id": "01M3X6M3ETKM9WMHHDHG06T3MD",
+    "entity": "01M3X6DS5GH9N5TETJ7JZ1HM4S",
+    "operation": "retract",
+    "supersedes": [
+      "01M3X6DS5GH9N5TETJ7JZ1HM4T"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T02:20:49.498Z",
+    "reason": "the comment is fixed by implementer-isolation-comment; worktree.create stays in the vocabulary, which names the harness's moments whether or not a cell binds one, and the event tap can still tap it",
+    "cause": "assay of implementer-isolation-comment"
+  },
+  "payload": null
+}

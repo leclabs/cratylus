@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3X63D15Z7R82VM42EH8XHB5",
+    "entity": "01M3X63D15Z7R82VM42EH8XHB4",
+    "operation": "create",
+    "supersedes": [],
+    "author": "HookRetirePlanner",
+    "time": "2026-10-02T02:11:42.245Z",
+    "reason": "realize the decision note 'the harness's own worktree is enough': retire the line-worktree WorktreeCreate hook",
+    "cause": "architect handed shard plan with that decision note"
+  },
+  "payload": {
+    "name": "harness-own-worktree",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ"
+    ],
+    "state": "proposed"
+  }
+}

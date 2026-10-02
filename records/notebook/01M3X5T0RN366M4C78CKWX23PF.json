@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3X5T0RN366M4C78CKWX23PF",
+    "entity": "01M3X5T0RN366M4C78CKWX23PE",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-02T02:06:34.773Z",
+    "reason": "operator: the harnesses already have worktree tools; the hook replaces the harness's creation only to pick a base the agent can pick itself",
+    "cause": "operator question on the worktree hook"
+  },
+  "payload": {
+    "title": "the harness's own worktree is enough",
+    "kind": "decision",
+    "topic": "plan",
+    "body": "Revises the ruling on 'isolated-implementer worktree cannot be placed off the plan's line by the agent definition'. Isolation is the harness's own capability and is kept: the implementer declares isolation: worktree on Claude Code and runs as an isolated task on omp. The line-worktree WorktreeCreate hook, which takes over Claude Code's worktree creation and runs git itself only to choose the starting commit, is retired. Starting the work from the plan's line is the implementer's own competence, the same as on omp, and the land gate already refuses work not built off the line. One mechanism on both harnesses, no host-wide hook in the operator's settings, and nothing that does what the harness or the agent already does. The land gate stays.",
+    "blocks": []
+  }
+}

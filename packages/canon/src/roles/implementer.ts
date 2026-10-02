@@ -52,9 +52,10 @@ export const implementerRole: RoleCell = {
   skills: ['note'],
   // Dispatches no role: it builds its one unit and returns a name.
   dispatches: [],
-  // Runs in a git worktree of its own, started there by the harness: the rule that its
-  // unit is built off the plan's line, and never in the operator's main checkout, then
-  // holds from the first instruction and does not wait on the agent's own care.
+  // Runs in a git worktree of its own, which the harness provides by its own means: that
+  // keeps it out of the operator's main checkout from the first instruction. Starting the
+  // work from the plan's line is the implementer's own move, and `plan land` refuses a
+  // commit not built off the line.
   isolation: 'worktree',
   vector: {
     formality: plain_formality,

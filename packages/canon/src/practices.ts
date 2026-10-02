@@ -15,9 +15,7 @@
 // travels with it. A guard (a hook cell that binds a composition) is listed nowhere:
 // it is registered exactly when a rendered agent composes what it binds. A hook cell
 // that binds no composition but serves what an agent DECLARES is listed by the
-// practices that place that agent: the worktree the implementer is started in is cut
-// from the plan's line by `line-worktree`, so every practice that places the
-// implementer lists it.
+// practices that place that agent.
 //
 // The practice names are signs of THIS corpus's own making; the consumer-facing
 // description is the one line an install shows beside each.
@@ -29,17 +27,12 @@ import type { Plumbing, Practice } from '@cratylus/schema';
  *  architect-holder must also place. */
 const WRITERS = ['planner', 'implementer', 'assayer', 'integrator'] as const;
 
-/** The hook cells every practice placing the `WRITERS` lists: the implementer declares
- *  that it runs in a worktree of its own, and this cell makes that worktree off the line. */
-const WRITER_HOOKS = ['line-worktree'] as const;
-
 export const PRACTICES: readonly Practice[] = [
   {
     name: 'cdd',
     description:
       'Concept-driven development: an architect holds the design and hands it out, a planner cuts it into units, an implementer builds each one, an assayer judges it against the design, and an integrator makes the approved work whole.',
     agents: ['mav', 'architect', ...WRITERS],
-    hooks: WRITER_HOOKS,
     preselected: true,
   },
   {
@@ -47,7 +40,6 @@ export const PRACTICES: readonly Practice[] = [
     description:
       'Author the corpus of named concepts itself: discover the signs a model already holds, canonize them, and write the agents and skills that carry them.',
     agents: ['nico', ...WRITERS],
-    hooks: WRITER_HOOKS,
     skills: [
       'signify',
       'probe',
@@ -66,7 +58,6 @@ export const PRACTICES: readonly Practice[] = [
     description:
       'Make films with software: a film-floor architect holds what the craft requires and hands the building to the same planner-to-integrator line.',
     agents: ['kino', ...WRITERS],
-    hooks: WRITER_HOOKS,
   },
   {
     name: 'carry-on',
