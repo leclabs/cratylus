@@ -28,14 +28,31 @@ export interface NoteInput {
  *  note's, and each field left out carries over from it. */
 export type NoteChange = Partial<NoteInput>;
 
+/** What now carries a note taken up: a concept, by its anchor, or a unit, named
+ *  as `blocks` names one. Exactly one. */
+export type NoteCarrier =
+  | { readonly concept: string }
+  | { readonly unit: string };
+
 /** The notebook's verbs. `show` renders the whole notebook or, given a title,
  *  one note in full. Every write returns the view of what it wrote. */
 export interface NoteHost {
   show(title?: string): string;
   capture(note: NoteInput, by: Invocation): string;
   revise(title: string, change: NoteChange, by: Invocation): string;
+  /** A note taken up, resolved to what now carries it; a note withdrawn with
+   *  nothing carrying it is retracted. */
+  resolve(title: string, carrier: NoteCarrier, by: Invocation): string;
   retract(title: string, by: Invocation): string;
   /** One version over every version of a diverged note. A field its versions
-   *  agree on carries over; one they disagree on must be given. */
-  reconcile(title: string, change: NoteChange, by: Invocation): string;
+   *  agree on carries over; one they disagree on must be given. Given
+   *  `carrier`, the note ends resolved to it; versions that all name one
+   *  carrier keep it, and versions that disagree on whether the note is
+   *  resolved, or on what carries it, need `carrier` given. */
+  reconcile(
+    title: string,
+    change: NoteChange,
+    by: Invocation,
+    carrier?: NoteCarrier,
+  ): string;
 }

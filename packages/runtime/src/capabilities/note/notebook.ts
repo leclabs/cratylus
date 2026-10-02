@@ -7,26 +7,33 @@
 // that can change, never its identity, which the store mints — and the interface
 // addresses a note by it. One live note per title. A title is held by the live
 // note carrying it, and by a diverged note for every title its heads carry; a
-// withdrawn note holds none. One title held by two notes is incoherence, which a
+// withdrawn note and a settled resolved one hold none. One title held by two notes is incoherence, which a
 // merge alone produces: it is reported, never resolved by picking one. A write is
 // refused only when it introduces a duplicate — one whose notes were not already
 // bound together in a standing duplicate — so a write that shrinks or leaves a
 // duplicate standing proceeds, and every duplicate repairs one write at a time.
 //
-// Anyone may capture, revise, retract or reconcile a note. Capture has no
-// admission bar: it refuses only a malformed shape or an introduced duplicate,
-// never a judgement of content. Revising a note supersedes its heads; retracting it
-// writes a retraction that becomes its head. Heads carrying one payload have
-// converged and read as one note, so an ordinary write names every one of them. A
-// diverged note (heads carrying different payloads, left by merged branches) is
-// reported and never resolved by picking one: revise and retract refuse it and
-// point to reconcile, one whole-state version superseding every head.
+// Anyone may capture, revise, resolve, retract or reconcile a note. Capture has
+// no admission bar: it refuses only a malformed shape or an introduced
+// duplicate, never a judgement of content. Revising a note supersedes its heads;
+// retracting it writes a retraction that becomes its head; resolving it writes a
+// whole-state version, its fields kept, that names what now carries it — a
+// concept or a unit, by identity and domain. A retraction carries no payload and
+// so could not say what carries a note: a note taken up is resolved, and a note
+// withdrawn with nothing carrying it is retracted. Heads carrying one payload
+// have converged and read as one note, so an ordinary write names every one of
+// them. A diverged note (heads carrying different payloads, left by merged
+// branches) is reported and never resolved by picking one: revise, resolve and
+// retract refuse it and point to reconcile, one whole-state version superseding
+// every head.
 //
 // A note's kind is a label this module never interprets. An OWED RULING is a live
 // note that blocks a plan or unit; it blocks what it names until it no longer
-// does, by being retracted or revised to block nothing. A diverged note blocks
-// whatever any of its heads blocks until it is reconciled. What a note blocks are
-// opaque entity references; resolving them from names is the interface's.
+// does, by being resolved, retracted or revised to block nothing. A resolved
+// note, like a retracted one, is no longer live, holds no title and blocks
+// nothing. A diverged note blocks whatever any of its unresolved heads blocks
+// until it is reconciled. What a note blocks are opaque entity references;
+// resolving them from names is the interface's.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { canonicalOrder } from '../../record-store/canonical-order.js';
@@ -38,6 +45,13 @@ import type { RecordStore } from '../../record-store/store.js';
 /** The notebook's domain directory under the records root. */
 export const NOTEBOOK = 'notebook';
 
+/** What now carries a resolved note, by minted identity and by domain, never
+ *  by name, so a carrier renamed since still reads right. */
+export interface Carrier {
+  readonly domain: 'concept' | 'unit';
+  readonly entity: string;
+}
+
 /** A note's whole state: its payload. */
 export interface Note {
   /** Its name: one live note per title. */
@@ -48,11 +62,23 @@ export interface Note {
   readonly body: string;
   /** Entity references of the plans and units this note blocks. */
   readonly blocks: readonly string[];
+  /** What carries the note once it is taken up; absent while it is live. */
+  readonly resolved?: Carrier;
 }
 
 /** A live note: its minted entity identity and its current state. */
 export interface LiveNote extends Note {
   readonly entity: string;
+}
+
+/** A resolved note: taken up, and so no longer live; it names its carrier. */
+export interface ResolvedNote extends LiveNote {
+  readonly resolved: Carrier;
+}
+
+/** Whether `note` is resolved. */
+export function isResolved(note: LiveNote): note is ResolvedNote {
+  return note.resolved !== undefined;
 }
 
 /** A note whose heads carry more than one payload, reported with every head. */
@@ -75,6 +101,8 @@ export interface DuplicateTitle {
 export interface Notebook {
   /** Every live note, converged ones included, in record-id order. */
   readonly live: readonly LiveNote[];
+  /** Every resolved note, in record-id order: not live, holding no title. */
+  readonly resolved: readonly ResolvedNote[];
   readonly diverged: readonly DivergedNote[];
   readonly incoherence: readonly DuplicateTitle[];
 }
@@ -84,8 +112,10 @@ type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
 /** Refuse a malformed shape — a field missing or of the wrong type — and a
  *  reference blocked twice, since what a note blocks is a set; never judge
- *  content. Returns exactly the payload's fields, `blocks` in canonical order. */
+ *  content. Returns exactly the payload's fields, `blocks` in canonical order,
+ *  and its carrier when it is resolved. */
 function shape(note: Note): Note {
+  const carrier = note?.resolved;
   const malformed = [
     ...(['title', 'kind', 'topic', 'body'] as const).filter(
       (field) => typeof note?.[field] !== 'string',
@@ -94,6 +124,11 @@ function shape(note: Note): Note {
     note.blocks.every((ref) => typeof ref === 'string')
       ? []
       : ['blocks']),
+    ...(carrier === undefined ||
+    ((carrier.domain === 'concept' || carrier.domain === 'unit') &&
+      typeof carrier.entity === 'string')
+      ? []
+      : ['resolved']),
   ];
   if (malformed.length > 0)
     throw new Error(
@@ -105,11 +140,22 @@ function shape(note: Note): Note {
     throw new Error(
       `notebook: a note blocks ${twice} twice, and what a note blocks is a set`,
     );
-  return { title, kind, topic, body, blocks: canonicalOrder(blocks) };
+  return {
+    title,
+    kind,
+    topic,
+    body,
+    blocks: canonicalOrder(blocks),
+    ...(carrier === undefined
+      ? {}
+      : { resolved: { domain: carrier.domain, entity: carrier.entity } }),
+  };
 }
 
 /** The titles each note holds: a live note its title, a diverged note every
- *  title its version heads carry. A withdrawn note holds none. */
+ *  title its version heads carry, a resolved one among them included, so
+ *  divergence stays addressable by title and reconcilable. A withdrawn note and
+ *  a settled resolved one hold none. */
 function titles(
   folds: ReadonlyMap<string, Fold<Note>>,
 ): Map<string, ReadonlySet<string>> {
@@ -117,7 +163,7 @@ function titles(
   for (const f of folds.values()) {
     const names = f.diverged
       ? f.heads.flatMap((h) => (h.payload === null ? [] : [h.payload.title]))
-      : f.payload === undefined
+      : f.payload === undefined || f.payload.resolved !== undefined
         ? []
         : [f.payload.title];
     if (names.length > 0) held.set(f.entity, new Set(names));
@@ -143,7 +189,8 @@ function duplicates(
 
 /** Refuse writing `note` as `entity`'s next version when that introduces a
  *  duplicate: one whose notes are not a subset of a duplicate standing before
- *  the write. A capture's entity is not minted yet: `''`, which no ULID is. */
+ *  the write; a resolved version holds no title. A capture's entity is not
+ *  minted yet: `''`, which no ULID is. */
 function admit(
   folds: ReadonlyMap<string, Fold<Note>>,
   entity: string,
@@ -151,7 +198,10 @@ function admit(
   verb: string,
 ): void {
   const before = titles(folds);
-  const after = new Map(before).set(entity, new Set([note.title]));
+  const after = new Map(before).set(
+    entity,
+    new Set(note.resolved === undefined ? [note.title] : []),
+  );
   const kind = (d: DuplicateTitle) => ({ ...d, kind: 'title' });
   const [found] = introduced(
     duplicates(before).map(kind),
@@ -183,6 +233,7 @@ function settled(
 export function notebook(store: RecordStore): Notebook {
   const folds = fold(store.read<Note>(NOTEBOOK));
   const live: LiveNote[] = [];
+  const resolved: ResolvedNote[] = [];
   const diverged: DivergedNote[] = [];
   for (const f of folds.values()) {
     if (f.diverged)
@@ -193,10 +244,13 @@ export function notebook(store: RecordStore): Notebook {
         ),
         retracted: f.heads.some((h) => h.envelope.operation === 'retract'),
       });
-    else if (f.payload !== undefined)
-      live.push({ entity: f.entity, ...f.payload });
+    else if (f.payload !== undefined) {
+      const note = { entity: f.entity, ...f.payload };
+      if (isResolved(note)) resolved.push(note);
+      else live.push(note);
+    }
   }
-  return { live, diverged, incoherence: duplicates(titles(folds)) };
+  return { live, resolved, diverged, incoherence: duplicates(titles(folds)) };
 }
 
 /** Capture a note: write its first version, minting its identity. Refuses a
@@ -238,9 +292,45 @@ export function retract(store: RecordStore, entity: string, by: By): void {
   store.retract(NOTEBOOK, entity, by);
 }
 
+/** Resolve a note to what now carries it: a whole-state version superseding
+ *  its head, keeping its fields and naming the carrier by minted identity and
+ *  domain. Refuses a diverged note, pointing to `reconcile`, a withdrawn note
+ *  and a note already resolved. It holds no title afterwards, so it can
+ *  introduce no duplicate. */
+export function resolve(
+  store: RecordStore,
+  entity: string,
+  carrier: Carrier,
+  by: By,
+): ResolvedNote {
+  const { heads, payload: current } = settled(
+    fold(store.read<Note>(NOTEBOOK)),
+    entity,
+    'resolve',
+  );
+  if (current === undefined)
+    throw new Error(
+      `notebook: resolve refused — note ${entity} is withdrawn, and nothing is resolved that was withdrawn`,
+    );
+  if (current.resolved !== undefined)
+    throw new Error(
+      `notebook: resolve refused — note ${entity} is already resolved`,
+    );
+  const payload = shape({ ...current, resolved: carrier });
+  store.supersede(
+    NOTEBOOK,
+    entity,
+    heads.map((h) => h.envelope.id),
+    payload,
+    by,
+  );
+  return { entity, ...payload, resolved: carrier };
+}
+
 /** Reconcile a diverged note: one whole-state version superseding every head,
- *  a retraction among them included. Refuses a note that has not diverged, and
- *  refuses to introduce a duplicate title. */
+ *  a retraction among them included, and resolved when it names a carrier.
+ *  Refuses a note that has not diverged, and refuses to introduce a duplicate
+ *  title. */
 export function reconcile(
   store: RecordStore,
   entity: string,
@@ -261,8 +351,9 @@ export function reconcile(
 }
 
 /** The owed rulings: every plan or unit reference a live note blocks, or any
- *  head of a diverged note blocks, mapped to the entities of the notes
- *  blocking it. A note that blocks nothing is no owed ruling. */
+ *  unresolved head of a diverged note blocks, mapped to the entities of the
+ *  notes blocking it. A note that blocks nothing is no owed ruling, and a
+ *  resolved note, which blocks nothing, owes none. */
 export function owedRulings(
   book: Notebook,
 ): ReadonlyMap<string, readonly string[]> {
@@ -278,7 +369,9 @@ export function owedRulings(
   for (const note of book.diverged)
     owe(
       note.entity,
-      note.versions.flatMap((v) => v.blocks),
+      note.versions
+        .filter((v) => v.resolved === undefined)
+        .flatMap((v) => v.blocks),
     );
   return named;
 }

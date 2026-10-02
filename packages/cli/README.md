@@ -830,7 +830,7 @@ cratylus plan broke [options] <unit>
 
 ### `cratylus note`
 
-Capture, revise and retract notes, the ideas, questions and decisions not yet canonical.
+Capture, revise, resolve and retract notes, the ideas, questions and decisions not yet canonical.
 
 #### `cratylus note show`
 
@@ -877,9 +877,25 @@ cratylus note revise [options] <title>
 | `--reason <value>` | Why this write is made                                                                                    |
 | `--cause <value>`  | What caused this write                                                                                    |
 
+#### `cratylus note resolve`
+
+Resolve a note taken up to the concept or unit that now carries it.
+
+```sh
+cratylus note resolve [options] <title>
+```
+
+| Flag                | What it does                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| `--concept <value>` | The anchor of the live concept that now carries the note                                     |
+| `--unit <value>`    | The live unit, as `u of plan p` or bare where its name is its own, that now carries the note |
+| `--author <value>`  | Who makes this write                                                                         |
+| `--reason <value>`  | Why this write is made                                                                       |
+| `--cause <value>`   | What caused this write                                                                       |
+
 #### `cratylus note retract`
 
-Retract a note.
+Retract a note withdrawn with nothing carrying it.
 
 ```sh
 cratylus note retract [options] <title>
@@ -893,22 +909,24 @@ cratylus note retract [options] <title>
 
 #### `cratylus note reconcile`
 
-Settle a diverged note with one version over every version; give each field the versions disagree on.
+Settle a diverged note with one version over every version; give each field the versions disagree on, and the carrier where they disagree on it.
 
 ```sh
 cratylus note reconcile [options] <title>
 ```
 
-| Flag               | What it does                                                                                              |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `--title <value>`  | The title the note is renamed to                                                                          |
-| `--kind <value>`   | What the note is: an idea, a question or a decision                                                       |
-| `--topic <value>`  | What the note is about                                                                                    |
-| `--body <value>`   | The note’s whole statement                                                                                |
-| `--blocks <value>` | A plan, or a unit as `u of plan p`, the note blocks; repeat once per block, or give an empty one for none |
-| `--author <value>` | Who makes this write                                                                                      |
-| `--reason <value>` | Why this write is made                                                                                    |
-| `--cause <value>`  | What caused this write                                                                                    |
+| Flag                | What it does                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `--title <value>`   | The title the note is renamed to                                                                          |
+| `--kind <value>`    | What the note is: an idea, a question or a decision                                                       |
+| `--topic <value>`   | What the note is about                                                                                    |
+| `--body <value>`    | The note’s whole statement                                                                                |
+| `--blocks <value>`  | A plan, or a unit as `u of plan p`, the note blocks; repeat once per block, or give an empty one for none |
+| `--concept <value>` | The anchor of the live concept that now carries the note                                                  |
+| `--unit <value>`    | The live unit, as `u of plan p` or bare where its name is its own, that now carries the note              |
+| `--author <value>`  | Who makes this write                                                                                      |
+| `--reason <value>`  | Why this write is made                                                                                    |
+| `--cause <value>`   | What caused this write                                                                                    |
 
 ## Corpus authoring
 

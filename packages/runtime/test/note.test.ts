@@ -189,6 +189,210 @@ describe('note — owed rulings', () => {
   });
 });
 
+describe('note — resolved to what carries it', () => {
+  /** Every stored version of the notebook, in the checkout and on plan `pl`'s
+   *  line, so a refusal can be held to having written nothing. */
+  const stood = (repo: string): string[] => [
+    ...records(repo, 'notebook'),
+    ...records(`${repo}.plan-pl`, 'notebook'),
+  ];
+
+  it('a note blocking a unit, resolved to a unit, owes no ruling and frees it; the notebook neither lists nor counts it, and its title drills to it marked with its carrier by current name', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'hold a', '--blocks', 'a');
+    expect(frontier(repo, 'pl')).toEqual(['b']);
+    const done = note(
+      repo,
+      'resolve',
+      'hold a',
+      '--unit',
+      'b of plan pl',
+      ...BY,
+    );
+    expect(done).toContain('note: hold a — resolved to unit b of plan pl');
+    expect(done).toContain('wrote to plan/pl');
+    expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
+    const whole = show(repo);
+    expect(whole).toMatch(/: 0 notes · 0 owed rulings · 0 diverged/);
+    expect(whole).not.toContain('hold a');
+    expect(whole).not.toContain('owed ruling:');
+    plan(repo, 'revise', 'b', '--plan', 'pl', '--name', 'b2', ...BY);
+    expect(show(repo, [], 'hold a')).toContain(
+      'note: hold a — resolved to unit b2 of plan pl',
+    );
+  });
+
+  it('a note resolved to a concept is neither listed nor counted, and its title drills to the concept by the anchor it carries now', () => {
+    const repo = repository();
+    dispatchDesign(['define', 'c', '--gloss', 'a concept', ...BY], {
+      from: repo,
+    });
+    capture(repo, 'an idea');
+    expect(show(repo)).toMatch(/: 1 note · 0 owed rulings/);
+    const done = note(repo, 'resolve', 'an idea', '--concept', 'c', ...BY);
+    expect(done).toContain('note: an idea — resolved to concept c');
+    expect(show(repo)).toMatch(/: 0 notes · 0 owed rulings/);
+    expect(show(repo)).not.toContain('an idea');
+    dispatchDesign(['amend', 'c', '--anchor', 'c2', ...BY], { from: repo });
+    expect(show(repo, [], 'an idea')).toContain(
+      'note: an idea — resolved to concept c2',
+    );
+  });
+
+  it('resolving a note to a unit of a bound plan is written on that plan’s line, as a note blocking it is', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'free idea');
+    expect(records(`${repo}.plan-pl`, 'notebook')).toHaveLength(0);
+    expect(
+      note(repo, 'resolve', 'free idea', '--unit', 'a of plan pl', ...BY),
+    ).toContain(`wrote to plan/pl, worktree ${repo}.plan-pl`);
+    expect(records(`${repo}.plan-pl`, 'notebook')).toHaveLength(1);
+  });
+
+  it('holds no title: a new capture under the resolved title is admitted beside it', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'again', '--blocks', 'a');
+    note(repo, 'resolve', 'again', '--unit', 'a of plan pl', ...BY);
+    capture(repo, 'again', '--blocks', 'b');
+    expect(frontier(repo, 'pl')).toEqual(['a']);
+    const drilled = show(repo, [], 'again');
+    expect(drilled).toContain('note: again — resolved to unit a of plan pl');
+    expect(drilled).toMatch(/^note: again$/m);
+    expect(show(repo)).toMatch(/: 1 note · 1 owed ruling/);
+  });
+
+  it('REFUSES, writing nothing, with neither flag, both, an anchor or a name naming nothing live, and a title no note holds', () => {
+    const repo = repository();
+    plans(repo);
+    dispatchDesign(['define', 'gone', '--gloss', 'to be withdrawn', ...BY], {
+      from: repo,
+    });
+    dispatchDesign(['retract', 'gone', ...BY], { from: repo });
+    plan(repo, 'add', 'out', '--plan', 'pl', '--realizes', 'c', ...BY);
+    plan(repo, 'retract', 'out', ...BY);
+    capture(repo, 'held', '--blocks', 'a');
+    const before = stood(repo);
+    const resolve = (...argv: string[]) =>
+      refused(note, repo, 'resolve', ...argv, ...BY);
+    expect(resolve('held')).toMatch(/give exactly one of --concept and --unit/);
+    expect(resolve('held', '--concept', 'c', '--unit', 'a')).toMatch(
+      /give exactly one of --concept and --unit/,
+    );
+    expect(resolve('held', '--concept', 'nowhere')).toMatch(
+      /no live concept is named "nowhere"/,
+    );
+    expect(resolve('held', '--concept', 'gone')).toMatch(
+      /no live concept is named "gone"/,
+    );
+    expect(resolve('held', '--unit', 'nowhere')).toMatch(
+      /no live unit is named "nowhere"/,
+    );
+    expect(resolve('held', '--unit', 'out of plan pl')).toMatch(
+      /no live unit is named "out of plan pl"/,
+    );
+    expect(resolve('nothing', '--concept', 'c')).toMatch(
+      /no note is titled "nothing"/,
+    );
+    expect(stood(repo)).toEqual(before);
+    expect(frontier(repo, 'pl')).toEqual(['b']);
+  });
+
+  it('REFUSES a diverged note, naming reconcile, and writes nothing', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'split', '--blocks', 'a');
+    diverged(
+      repo,
+      'pl',
+      'notebook',
+      () => note(repo, 'revise', 'split', '--blocks', 'b', ...BY),
+      () => note(repo, 'revise', 'split', '--body', 'still a', ...BY),
+    );
+    const before = stood(repo);
+    expect(
+      refused(note, repo, 'resolve', 'split', '--concept', 'c', ...BY),
+    ).toMatch(/has diverged; reconcile it/);
+    expect(stood(repo)).toEqual(before);
+    expect(frontier(repo, 'pl')).toEqual([]);
+  });
+
+  it('a note resolved to two carriers on merged branches is diverged and shows each carrier; reconcile reaches it by its title and needs the carrier given', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'two ways');
+    diverged(
+      repo,
+      'pl',
+      'notebook',
+      () => note(repo, 'resolve', 'two ways', '--unit', 'a of plan pl', ...BY),
+      () => note(repo, 'resolve', 'two ways', '--unit', 'b of plan pl', ...BY),
+    );
+    const out = show(repo);
+    expect(out).toMatch(/: 0 notes · 0 owed rulings · 1 diverged/);
+    expect(out).toContain(
+      'two ways — about two ways · resolved to unit a of plan pl',
+    );
+    expect(out).toContain(
+      'two ways — about two ways · resolved to unit b of plan pl',
+    );
+    expect(
+      refused(note, repo, 'reconcile', 'two ways', '--body', 'x', ...BY),
+    ).toMatch(
+      /disagree on whether it is resolved, or on what carries it; give --concept or --unit/,
+    );
+    expect(
+      refused(
+        note,
+        repo,
+        'reconcile',
+        'two ways',
+        '--concept',
+        'c',
+        '--unit',
+        'a',
+        ...BY,
+      ),
+    ).toMatch(/give at most one of --concept and --unit/);
+    note(repo, 'reconcile', 'two ways', '--unit', 'b of plan pl', ...BY);
+    expect(show(repo)).toMatch(/: 0 notes · 0 owed rulings · 0 diverged/);
+    expect(show(repo, [], 'two ways')).toContain(
+      'note: two ways — resolved to unit b of plan pl',
+    );
+  });
+
+  it('a note resolved on one branch and revised on the other blocks only through the revised version, and reconciles to its resolution once the carrier is given', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'caught', '--blocks', 'a');
+    diverged(
+      repo,
+      'pl',
+      'notebook',
+      () => note(repo, 'resolve', 'caught', '--unit', 'b of plan pl', ...BY),
+      () => note(repo, 'revise', 'caught', '--body', 'still open', ...BY),
+    );
+    expect(frontier(repo, 'pl')).toEqual(['b']);
+    expect(show(repo)).toContain('resolved to unit b of plan pl');
+    note(
+      repo,
+      'reconcile',
+      'caught',
+      '--body',
+      'taken up',
+      '--unit',
+      'b of plan pl',
+      ...BY,
+    );
+    expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
+    expect(show(repo, [], 'caught')).toContain(
+      'note: caught — resolved to unit b of plan pl',
+    );
+  });
+});
+
 describe('note — what a note blocks, named so it addresses one', () => {
   it('prints a unit with its plan, and that printed form is the input that blocks it', () => {
     const repo = repository();
@@ -441,6 +645,7 @@ describe('note — the flags each verb takes', () => {
         ...BY,
       ],
       ['revise', 'bdy', 'n1', '--body', 'more', ...BY],
+      ['resolve', 'unitt', 'n1', '--concept', 'c', ...BY],
       ['retract', 'body', 'n1', ...BY],
       ['reconcile', 'topics', 'n1', ...BY],
     ];

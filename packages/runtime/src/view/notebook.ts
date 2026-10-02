@@ -3,7 +3,8 @@
 // note led by its title, behind the owed rulings that must be resolved first.
 //
 // A diverged note keeps its place, marked, under the kind and topic of every
-// version of it.
+// version of it. A resolved note, like a withdrawn one, is neither listed nor
+// counted; its title drills to it, marked with what carries it.
 //
 // A note's title is its name. Kinds are the `note` skill's; they arrive as
 // display text, are never interpreted, and group in the order they first
@@ -37,6 +38,12 @@ export interface Note {
   readonly body: string;
   /** The plans and units the note blocks. */
   readonly blocks: readonly Name[];
+  /** What carries the note once it is taken up: a concept, by its anchor, or a
+   *  unit, as `u of plan p`; absent while it is live. */
+  readonly carrier?: {
+    readonly domain: 'concept' | 'unit';
+    readonly name: Name;
+  };
 }
 
 /** The notebook view's input. */
@@ -49,15 +56,26 @@ export interface NotebookState extends Computed {
   /** Withdrawn notes, each its last version, so a withdrawn holder of a
    *  shared title drills to what the view is given of it. */
   readonly withdrawn: readonly Note[];
+  /** Resolved notes, each carrying the carrier it is resolved to, named as it
+   *  is now; drilled to by the title a resolved note carried. */
+  readonly resolved: readonly Note[];
   readonly incoherent: readonly Incoherence[];
 }
 
-/** What a note says, on one line, led by its title. */
+/** What a note taken up is resolved to, in words. */
+function carried({ domain, name }: NonNullable<Note['carrier']>): string {
+  return `resolved to ${domain} ${printed(name)}`;
+}
+
+/** What a note says, on one line, led by its title; a note taken up says what
+ *  carries it where a live one says what it blocks. */
 function said(note: Note): string {
-  const blocks = note.blocks.length
-    ? ` · blocks ${note.blocks.map(printed).join('; ')}`
-    : '';
-  return `${inline(printed(note.title))} — ${inline(note.body)}${blocks}`;
+  const tail = note.carrier
+    ? ` · ${carried(note.carrier)}`
+    : note.blocks.length
+      ? ` · blocks ${note.blocks.map(printed).join('; ')}`
+      : '';
+  return `${inline(printed(note.title))} — ${inline(note.body)}${tail}`;
 }
 
 /** One note on one line, wherever it stands outside its kind and topic. */
@@ -65,8 +83,14 @@ export function noteLine(note: Note): string {
   return `${said(note)} · ${note.kind} · ${note.topic}`;
 }
 
-/** One note in full; `mark` follows its title (` — withdrawn`). */
-function noteInFull(note: Note, mark = ''): string[] {
+/** What marks a note taken up, after its title. */
+function resolvedMark(note: Note): string {
+  return note.carrier ? ` — ${carried(note.carrier)}` : '';
+}
+
+/** One note in full; `mark` follows its title (` — withdrawn`), a note taken up
+ *  marked with what carries it. */
+function noteInFull(note: Note, mark = resolvedMark(note)): string[] {
   return [
     `note: ${printed(note.title)}${mark}`,
     `  kind: ${note.kind}`,
@@ -78,9 +102,10 @@ function noteInFull(note: Note, mark = ''): string[] {
 
 /**
  * The notebook's view: the whole notebook, or, given the `title` of a note,
- * every live or withdrawn note it names in full and every version of every
- * diverged note it names by any of its titles in full, beneath the header and
- * the resolve-first layer.
+ * every live, withdrawn or resolved note it names in full and every version of
+ * every diverged note it names by any of its titles in full, beneath the header
+ * and the resolve-first layer. A resolved note is never listed or counted in
+ * the whole notebook.
  */
 export function notebookView(state: NotebookState, title?: Name): string {
   const lines = [
@@ -107,6 +132,9 @@ export function notebookView(state: NotebookState, title?: Name): string {
         ...state.withdrawn
           .filter((n) => denotes(title, n.title))
           .map((n) => noteInFull(n, ' — withdrawn')),
+        ...state.resolved
+          .filter((n) => denotes(title, n.title))
+          .map((n) => noteInFull(n)),
         ...state.diverged
           .filter((d) => denotesAny(title, d.names))
           .map((d) => divergedLines(d, (n) => noteInFull(n))),
