@@ -45,6 +45,14 @@ export interface NoteHost {
   resolve(title: string, carrier: NoteCarrier, by: Invocation): string;
   retract(title: string, by: Invocation): string;
   /** One version over every version of a diverged note. A field its versions
-   *  agree on carries over; one they disagree on must be given. */
-  reconcile(title: string, change: NoteChange, by: Invocation): string;
+   *  agree on carries over; one they disagree on must be given. Given
+   *  `carrier`, the note ends resolved to it; versions that all name one
+   *  carrier keep it, and versions that disagree on whether the note is
+   *  resolved, or on what carries it, need `carrier` given. */
+  reconcile(
+    title: string,
+    change: NoteChange,
+    by: Invocation,
+    carrier?: NoteCarrier,
+  ): string;
 }

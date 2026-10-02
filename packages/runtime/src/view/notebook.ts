@@ -38,12 +38,9 @@ export interface Note {
   readonly body: string;
   /** The plans and units the note blocks. */
   readonly blocks: readonly Name[];
-}
-
-/** A note taken up, and what carries it: a concept, by its anchor, or a unit,
- *  as `u of plan p`. */
-export interface Resolved extends Note {
-  readonly carrier: {
+  /** What carries the note once it is taken up: a concept, by its anchor, or a
+   *  unit, as `u of plan p`; absent while it is live. */
+  readonly carrier?: {
     readonly domain: 'concept' | 'unit';
     readonly name: Name;
   };
@@ -59,18 +56,26 @@ export interface NotebookState extends Computed {
   /** Withdrawn notes, each its last version, so a withdrawn holder of a
    *  shared title drills to what the view is given of it. */
   readonly withdrawn: readonly Note[];
-  /** Resolved notes, each with the carrier it is resolved to, named as it is
-   *  now; drilled to by the title a resolved note carried. */
-  readonly resolved: readonly Resolved[];
+  /** Resolved notes, each carrying the carrier it is resolved to, named as it
+   *  is now; drilled to by the title a resolved note carried. */
+  readonly resolved: readonly Note[];
   readonly incoherent: readonly Incoherence[];
 }
 
-/** What a note says, on one line, led by its title. */
+/** What a note taken up is resolved to, in words. */
+function carried({ domain, name }: NonNullable<Note['carrier']>): string {
+  return `resolved to ${domain} ${printed(name)}`;
+}
+
+/** What a note says, on one line, led by its title; a note taken up says what
+ *  carries it where a live one says what it blocks. */
 function said(note: Note): string {
-  const blocks = note.blocks.length
-    ? ` · blocks ${note.blocks.map(printed).join('; ')}`
-    : '';
-  return `${inline(printed(note.title))} — ${inline(note.body)}${blocks}`;
+  const tail = note.carrier
+    ? ` · ${carried(note.carrier)}`
+    : note.blocks.length
+      ? ` · blocks ${note.blocks.map(printed).join('; ')}`
+      : '';
+  return `${inline(printed(note.title))} — ${inline(note.body)}${tail}`;
 }
 
 /** One note on one line, wherever it stands outside its kind and topic. */
@@ -78,9 +83,14 @@ export function noteLine(note: Note): string {
   return `${said(note)} · ${note.kind} · ${note.topic}`;
 }
 
-/** One note in full; `mark` follows its title (` — withdrawn`, or ` — resolved
- *  to` its carrier). */
-function noteInFull(note: Note, mark = ''): string[] {
+/** What marks a note taken up, after its title. */
+function resolvedMark(note: Note): string {
+  return note.carrier ? ` — ${carried(note.carrier)}` : '';
+}
+
+/** One note in full; `mark` follows its title (` — withdrawn`), a note taken up
+ *  marked with what carries it. */
+function noteInFull(note: Note, mark = resolvedMark(note)): string[] {
   return [
     `note: ${printed(note.title)}${mark}`,
     `  kind: ${note.kind}`,
@@ -124,12 +134,7 @@ export function notebookView(state: NotebookState, title?: Name): string {
           .map((n) => noteInFull(n, ' — withdrawn')),
         ...state.resolved
           .filter((n) => denotes(title, n.title))
-          .map((n) =>
-            noteInFull(
-              n,
-              ` — resolved to ${n.carrier.domain} ${printed(n.carrier.name)}`,
-            ),
-          ),
+          .map((n) => noteInFull(n)),
         ...state.diverged
           .filter((d) => denotesAny(title, d.names))
           .map((d) => divergedLines(d, (n) => noteInFull(n))),

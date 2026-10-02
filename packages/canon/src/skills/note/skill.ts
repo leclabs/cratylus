@@ -39,7 +39,7 @@ capture(n)   ≜ \`scripts/note.mjs capture <title> --kind <k> --topic <t> --bod
 revise(n)    ≜ \`scripts/note.mjs revise <title> [--title <new title>] [--kind <k>] [--topic <t>] [--body <b>] [--blocks <plan or unit>]… <by>\` ⟨a field left out carries over ; \`--blocks ''\` ↦ blocks(n) = ∅⟩
 resolve(n)   ≜ \`scripts/note.mjs resolve <title> (--concept <anchor> ∨ --unit <u of plan p>) <by>\` ⟨n taken up ↦ what now carries it : exactly one flag, a live concept or a live unit⟩
 retract(n)   ≜ \`scripts/note.mjs retract <title> <by>\` ⟨n withdrawn with nothing carrying it⟩
-reconcile(n) ≜ \`scripts/note.mjs reconcile <title> [--title …] [--kind …] [--topic …] [--body …] [--blocks …]… <by>\` ↦ one version over every version ⟨each field the versions disagree on is given⟩
+reconcile(n) ≜ \`scripts/note.mjs reconcile <title> [--title …] [--kind …] [--topic …] [--body …] [--blocks …]… [--concept … ∨ --unit …] <by>\` ↦ one version over every version ⟨each field the versions disagree on is given, a carrier included : versions that disagree on whether n is resolved, or on what carries it, need one⟩
 
 a note's title is its name ⟨one live note per title⟩ ∴ n is addressed by title(n) as show prints it ⟨∄ matching on a fragment of its body⟩
 anyone ⊨ capture ∧ revise ∧ resolve ∧ retract ∧ reconcile

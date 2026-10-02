@@ -282,7 +282,7 @@ export class Reading {
         hold(this.#unitHolders, unitKey(u.plan, u.spec.name), f.entity);
     for (const f of this.notes.values())
       for (const n of versions(f))
-        if (n.resolved === undefined)
+        if (f.diverged || n.resolved === undefined)
           hold(this.#noteHolders, n.title, f.entity);
   }
 
@@ -882,12 +882,24 @@ export class Reading {
   }
 
   shownNote(note: Note, entity: string): ShownNote {
+    const { resolved } = note;
     return {
       title: this.#label(this.#noteHolders.get(note.title), note.title, entity),
       kind: note.kind,
       topic: note.topic,
       body: note.body,
       blocks: note.blocks.map((b) => this.blocked(b)),
+      ...(resolved === undefined
+        ? {}
+        : {
+            carrier: {
+              domain: resolved.domain,
+              name:
+                resolved.domain === 'concept'
+                  ? this.concept(resolved.entity)
+                  : this.blocked(resolved.entity),
+            },
+          }),
     };
   }
 
@@ -1228,16 +1240,7 @@ export class Reading {
             .slice(0, 1)
             .map((n) => this.shownNote(n, f.entity)),
         ),
-      resolved: this.book.resolved.map((n) => ({
-        ...this.shownNote(n, n.entity),
-        carrier: {
-          domain: n.resolved.domain,
-          name:
-            n.resolved.domain === 'concept'
-              ? this.concept(n.resolved.entity)
-              : this.blocked(n.resolved.entity),
-        },
-      })),
+      resolved: this.book.resolved.map((n) => this.shownNote(n, n.entity)),
       incoherent: this.book.incoherence.map(
         ({ title, entities }): Incoherence => ({
           kind: 'name',

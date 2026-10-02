@@ -6,8 +6,8 @@
 // title, kind, topic, body and whatever it blocks. Its title is its name — a label
 // that can change, never its identity, which the store mints — and the interface
 // addresses a note by it. One live note per title. A title is held by the live
-// note carrying it, and by a diverged note for every title its unresolved heads
-// carry; a withdrawn note and a resolved one hold none. One title held by two notes is incoherence, which a
+// note carrying it, and by a diverged note for every title its heads carry; a
+// withdrawn note and a settled resolved one hold none. One title held by two notes is incoherence, which a
 // merge alone produces: it is reported, never resolved by picking one. A write is
 // refused only when it introduces a duplicate — one whose notes were not already
 // bound together in a standing duplicate — so a write that shrinks or leaves a
@@ -153,19 +153,16 @@ function shape(note: Note): Note {
 }
 
 /** The titles each note holds: a live note its title, a diverged note every
- *  title its unresolved version heads carry. A withdrawn note and a resolved
- *  one hold none. */
+ *  title its version heads carry, a resolved one among them included, so
+ *  divergence stays addressable by title and reconcilable. A withdrawn note and
+ *  a settled resolved one hold none. */
 function titles(
   folds: ReadonlyMap<string, Fold<Note>>,
 ): Map<string, ReadonlySet<string>> {
   const held = new Map<string, ReadonlySet<string>>();
   for (const f of folds.values()) {
     const names = f.diverged
-      ? f.heads.flatMap((h) =>
-          h.payload === null || h.payload.resolved !== undefined
-            ? []
-            : [h.payload.title],
-        )
+      ? f.heads.flatMap((h) => (h.payload === null ? [] : [h.payload.title]))
       : f.payload === undefined || f.payload.resolved !== undefined
         ? []
         : [f.payload.title];
@@ -192,7 +189,8 @@ function duplicates(
 
 /** Refuse writing `note` as `entity`'s next version when that introduces a
  *  duplicate: one whose notes are not a subset of a duplicate standing before
- *  the write. A capture's entity is not minted yet: `''`, which no ULID is. */
+ *  the write; a resolved version holds no title. A capture's entity is not
+ *  minted yet: `''`, which no ULID is. */
 function admit(
   folds: ReadonlyMap<string, Fold<Note>>,
   entity: string,
@@ -200,7 +198,10 @@ function admit(
   verb: string,
 ): void {
   const before = titles(folds);
-  const after = new Map(before).set(entity, new Set([note.title]));
+  const after = new Map(before).set(
+    entity,
+    new Set(note.resolved === undefined ? [note.title] : []),
+  );
   const kind = (d: DuplicateTitle) => ({ ...d, kind: 'title' });
   const [found] = introduced(
     duplicates(before).map(kind),
@@ -327,8 +328,9 @@ export function resolve(
 }
 
 /** Reconcile a diverged note: one whole-state version superseding every head,
- *  a retraction among them included. Refuses a note that has not diverged, and
- *  refuses to introduce a duplicate title. */
+ *  a retraction among them included, and resolved when it names a carrier.
+ *  Refuses a note that has not diverged, and refuses to introduce a duplicate
+ *  title. */
 export function reconcile(
   store: RecordStore,
   entity: string,

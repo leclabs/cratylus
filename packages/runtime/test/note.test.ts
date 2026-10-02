@@ -318,6 +318,79 @@ describe('note — resolved to what carries it', () => {
     expect(stood(repo)).toEqual(before);
     expect(frontier(repo, 'pl')).toEqual([]);
   });
+
+  it('a note resolved to two carriers on merged branches is diverged and shows each carrier; reconcile reaches it by its title and needs the carrier given', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'two ways');
+    diverged(
+      repo,
+      'pl',
+      'notebook',
+      () => note(repo, 'resolve', 'two ways', '--unit', 'a of plan pl', ...BY),
+      () => note(repo, 'resolve', 'two ways', '--unit', 'b of plan pl', ...BY),
+    );
+    const out = show(repo);
+    expect(out).toMatch(/: 0 notes · 0 owed rulings · 1 diverged/);
+    expect(out).toContain(
+      'two ways — about two ways · resolved to unit a of plan pl',
+    );
+    expect(out).toContain(
+      'two ways — about two ways · resolved to unit b of plan pl',
+    );
+    expect(
+      refused(note, repo, 'reconcile', 'two ways', '--body', 'x', ...BY),
+    ).toMatch(
+      /disagree on whether it is resolved, or on what carries it; give --concept or --unit/,
+    );
+    expect(
+      refused(
+        note,
+        repo,
+        'reconcile',
+        'two ways',
+        '--concept',
+        'c',
+        '--unit',
+        'a',
+        ...BY,
+      ),
+    ).toMatch(/give at most one of --concept and --unit/);
+    note(repo, 'reconcile', 'two ways', '--unit', 'b of plan pl', ...BY);
+    expect(show(repo)).toMatch(/: 0 notes · 0 owed rulings · 0 diverged/);
+    expect(show(repo, [], 'two ways')).toContain(
+      'note: two ways — resolved to unit b of plan pl',
+    );
+  });
+
+  it('a note resolved on one branch and revised on the other blocks only through the revised version, and reconciles to its resolution once the carrier is given', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'caught', '--blocks', 'a');
+    diverged(
+      repo,
+      'pl',
+      'notebook',
+      () => note(repo, 'resolve', 'caught', '--unit', 'b of plan pl', ...BY),
+      () => note(repo, 'revise', 'caught', '--body', 'still open', ...BY),
+    );
+    expect(frontier(repo, 'pl')).toEqual(['b']);
+    expect(show(repo)).toContain('resolved to unit b of plan pl');
+    note(
+      repo,
+      'reconcile',
+      'caught',
+      '--body',
+      'taken up',
+      '--unit',
+      'b of plan pl',
+      ...BY,
+    );
+    expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
+    expect(show(repo, [], 'caught')).toContain(
+      'note: caught — resolved to unit b of plan pl',
+    );
+  });
 });
 
 describe('note — what a note blocks, named so it addresses one', () => {
