@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3XH96WVTWKQ80GWHC7VDE22",
+    "entity": "01M3XA77XM4M24BAA7JXCRCKPV",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XA77XM4M24BAA7JXCRCKPW"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T05:27:06.907Z",
+    "reason": "Preserving the operator's report of disabling the extension and the additional authorized-merge false denials in the existing tuning note.",
+    "cause": "operator /note: cratylus-session disabled because guardrails block authorized actions"
+  },
+  "payload": {
+    "title": "guards misjudge conversational requests",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "The stance and purview guards are too rigid for ordinary conversation with the operator. Tune their conceptual contracts precisely rather than accumulating context patches, refinements and exceptions. Observed in this session: stance repeatedly pressed for execution during a recommendation-only conversation, including after the operator said they had not asked for action; purview classified cancelling the agent's own dispatch as writing an artifact, classified permitted ad-hoc delegations as dispatcher-written specs, and blocked the updated PR-merge route despite explicit authorization; stance-pre classified a rectified dispatch as pasted operator instructions. A call passing one contested guard could still be denied by another guard. On 2026-10-02 the operator reported disabling the cratylus-session extension because the guards continued incorrectly blocking actions they had authorized. This is an operational consequence, not just noisy feedback. Hypotheses to examine in conceptual design: conversational intent versus execution authority; current authorization versus earlier handoff boundaries; ad-hoc request versus unit realization; route versus artifact; intent versus spec. The investigation must test both false denials of authorized work and correct refusals of genuinely out-of-role work without a patch/refinement cascade.",
+    "blocks": []
+  }
+}
