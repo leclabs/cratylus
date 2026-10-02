@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3X6PM6G3KWSS6DZ1TGFKZAF",
+    "entity": "01M3X63D15Z7R82VM42EH8XHB4",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X63SXYXH4N1W8D959GW52N"
+    ],
+    "author": "HookRetirePlanner",
+    "time": "2026-10-02T02:22:12.176Z",
+    "reason": "every unit completed",
+    "cause": "implementer-isolation-comment completed after its whole; retire-line-worktree completed earlier"
+  },
+  "payload": {
+    "name": "harness-own-worktree",
+    "realizes": [
+      "01M3MEKHA5W8RJBDX72X37FZVJ"
+    ],
+    "state": "closed"
+  }
+}
