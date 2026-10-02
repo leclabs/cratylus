@@ -19,7 +19,6 @@
 // The lift is the projector's, per adapter, from `HarnessAdapter.hookCommand`.
 
 import { deployDriftNotice } from './hooks/deploy-drift-notice.js';
-import { lineWorktree } from './hooks/line-worktree.js';
 import { stanceGuardrailPre } from './hooks/stance-guardrail-pre.js';
 import { stanceGuardrail } from './hooks/stance-guardrail.js';
 import type { HookCell } from './manifest.js';
@@ -29,5 +28,4 @@ export const harnessHookCells: readonly HookCell[] = [
   stanceGuardrail,
   stanceGuardrailPre,
   deployDriftNotice,
-  lineWorktree,
 ];
