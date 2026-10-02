@@ -800,9 +800,8 @@ export interface Practice {
    * The hook cells, by id, this practice registers BEYOND the guards its agents'
    * compositions bind. A guard travels with the agents that compose what it binds
    * and is named nowhere; a cell that binds no composition, and exists for what a
-   * practice's agents declare rather than compose (the worktree an agent that
-   * declares `Agent.isolation` is started in), is named here, so that every install
-   * that places those agents places the cell. A cell every practice needs is
+   * practice's agents declare rather than compose, is named here, so that every
+   * install that places those agents places the cell. A cell every practice needs is
    * {@link Plumbing.hooks} instead.
    */
   readonly hooks?: readonly string[];
