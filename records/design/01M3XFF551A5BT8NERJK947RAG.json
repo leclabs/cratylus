@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XFF551A5BT8NERJK947RAG",
+    "entity": "01M3MEKGJNN7S61YZ8MF1JD16A",
+    "operation": "amend",
+    "supersedes": [
+      "01M3MEKGJNN7S61YZ8MF1JD16B"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T04:55:24.577Z",
+    "reason": "The notebook now distinguishes resolution from retraction. The note's whole-state payload must name its carrier; the approved resolved-notes realization already does. This clarification was held until suggestions-as-notes closed so its pinned design stayed fixed.",
+    "cause": "held decision: a resolved note's payload names its carrier; closed suggestions-as-notes"
+  },
+  "payload": {
+    "anchor": "payload",
+    "gloss": "the whole state of the entity as of this record; never a delta. A concept's payload is its anchor, gloss and factors; a plan's is its name, the concepts it realizes and its lifecycle state; a unit's is its plan, full spec and lifecycle state; a note's is its title, kind, topic, body and whatever it blocks, and, when resolved, the concept or unit that now carries it.",
+    "factors": []
+  }
+}
