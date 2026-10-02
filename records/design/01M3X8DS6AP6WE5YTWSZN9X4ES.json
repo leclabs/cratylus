@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3X8DS6AP6WE5YTWSZN9X4ES",
+    "entity": "01M3R07G7ZCK24TEDA78HW4VRM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3S9QXVJ07SZYRB0EKZ86GJ5"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T02:52:19.530Z",
+    "reason": "Implementation ideas about how a shard is realized belong to the plan, not the design, and the notebook is their home; but the planner read only the design and the codebase, so an idea note filed under a shard's concept reached it only by chance. The planner now reads them as hypotheses.",
+    "cause": "operator asked how to pass implementation thoughts to the planner and implementer"
+  },
+  "payload": {
+    "anchor": "planner role",
+    "gloss": "the role that turns the shards the architect hands down into a plan: units, each realizing exactly one shard, ordered so what a unit depends on comes first, sized so one implementer can finish each. It owns everything about the plan, including how each shard is to be realized on each harness, and re-plans, rectifying or rebuilding, when a shard it builds on is found wrong. It never changes the design. Before slicing a shard it reads every live note whose topic is a concept in that shard: an idea about how to realize it, the operator's included, is a hypothesis it weighs in its census, writing what survives into the spec and setting the rest aside with a stated reason, never treating such a note as a ruling or as grounds to redraw the shard. Each unit's acceptance proves what that unit changes and no more: a proof costlier than the change, such as a live multi-model run for a wording edit, is a defect of the plan, not diligence.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

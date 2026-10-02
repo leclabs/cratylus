@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3X9AF91SXQH49S27E3J8W4E",
+    "entity": "01M3R07G7ZCK24TEDA78HW4VRM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X8DS6AP6WE5YTWSZN9X4ES"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T03:07:59.649Z",
+    "reason": "Supersedes this session's earlier version, which had the planner search the notebook on its own: a second channel beside the architect's cut. Suggestions now reach the planner only as handed with the shard; it weighs them, records why one is set aside, and retracts each note it weighed so the notebook does not accrete handled ideas.",
+    "cause": "operator: the main agent should infer what is conceptual and what is consulting and dispatch the planner with that context"
+  },
+  "payload": {
+    "anchor": "planner role",
+    "gloss": "the role that turns the shards the architect hands down into a plan: units, each realizing exactly one shard, ordered so what a unit depends on comes first, sized so one implementer can finish each. It owns everything about the plan, including how each shard is to be realized on each harness, and re-plans, rectifying or rebuilding, when a shard it builds on is found wrong. It never changes the design. The operator's suggestions about how to build a shard, handed with it as idea notes, it weighs as hypotheses in its census: what survives it writes into the specs, the rest it sets aside with a stated reason, and it then retracts each note it has weighed; a suggestion is never a ruling nor grounds to redraw the shard. Each unit's acceptance proves what that unit changes and no more: a proof costlier than the change, such as a live multi-model run for a wording edit, is a defect of the plan, not diligence.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

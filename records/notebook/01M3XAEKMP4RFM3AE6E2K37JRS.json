@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XAEKMP4RFM3AE6E2K37JRS",
+    "entity": "01M3XAEKMP4RFM3AE6E2K37JRR",
+    "operation": "create",
+    "supersedes": [],
+    "author": "SuggestionsAndResolve",
+    "time": "2026-10-02T03:27:43.766Z",
+    "reason": "a finding from binding the plan, for the architect to rectify",
+    "cause": "binding suggestions-as-notes"
+  },
+  "payload": {
+    "title": "a pin naming an absent design version crashes plan show",
+    "kind": "question",
+    "topic": "plan",
+    "body": "Found binding suggestions-as-notes at 25f9e3a1. The plan's three units were pinned in the main checkout against six design records (the amendments to notebook, architect role and planner role) that were written but not yet committed. Bind cut plan/suggestions-as-notes and copied the plan's own records into its worktree, but not the design records the pins name, so on the line 'cratylus plan show suggestions-as-notes' failed with 'Cannot read properties of undefined (reading factors)' rather than naming the missing records. The planner copied the six records, unchanged and uncommitted, into the line's worktree, after which the line reads clean. Two questions are open. Should bind carry the uncommitted design records the plan's pins name onto the line, or refuse to bind while a pin names a version only the working tree holds? And should a reading whose pin names an absent version say which record is missing instead of throwing?",
+    "blocks": []
+  }
+}

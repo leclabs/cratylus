@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XAW44ME3ZS4BEBH95HA7MG",
+    "entity": "01M3XAW44ME3ZS4BEBH95HA7MF",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IntegrateSuggestionSorting",
+    "time": "2026-10-02T03:35:06.644Z",
+    "reason": "a defect met at integration, filed by the party that met it",
+    "cause": "gate red integrating suggestion-sorting at 01afe42d"
+  },
+  "payload": {
+    "title": "line base red: AGENTS.md drifts from cell(repo-preamble)",
+    "kind": "question",
+    "topic": "suggestion-sorting of plan suggestions-as-notes",
+    "body": "The gate is red at line(suggestions-as-notes)'s base 25f9e3a1 alone: commit 25f9e3a1 (docs(agents): declare green-field register convention) added '- **Green-field register:** …' to AGENTS.md but not to its source cell(repo-preamble), so packages/canon test/hook-rule-boundary.test.ts fails 2 (byte-identical target; regenerateTargets --check drift [AGENTS.md]). Reproduced at 25f9e3a1 with no unit merged. Every unit's combination on this line goes red until the cell carries the line (or AGENTS.md drops it). Also met: the line worktree /home/lex/workspaces/cratylus.plan-suggestions-as-notes holds uncommitted source edits on resolved-notes' outputs, i.e. a unit being built in the line's worktree rather than its own off the line; the integrator left them untouched and gated in a clean detached worktree.",
+    "blocks": []
+  }
+}

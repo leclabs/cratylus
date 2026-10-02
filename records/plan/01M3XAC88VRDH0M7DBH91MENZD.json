@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3XAC88VRDH0M7DBH91MENZD",
+    "entity": "01M3XAC88VRDH0M7DBH91MENZC",
+    "operation": "create",
+    "supersedes": [],
+    "author": "SuggestionsAndResolve",
+    "time": "2026-10-02T03:26:26.587Z",
+    "reason": "notes taken up end resolved, naming the concept or unit that carries them; the runtime has no such end and the corpus retracts taken-up notes",
+    "cause": "shards notebook, architect role and planner role handed to the planner"
+  },
+  "payload": {
+    "name": "suggestions-as-notes",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3R07G7ZCK24TEDA78HW4VRM"
+    ],
+    "state": "proposed"
+  }
+}

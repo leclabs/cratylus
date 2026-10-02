@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XA77XM4M24BAA7JXCRCKPW",
+    "entity": "01M3XA77XM4M24BAA7JXCRCKPV",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-02T03:23:42.388Z",
+    "reason": "operator asked to record that the guards need conceptual tuning rather than patches",
+    "cause": "operator /note during the suggestions-and-resolve dispatch"
+  },
+  "payload": {
+    "title": "guards misjudge conversational requests",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "The stance and purview guards are too rigid for ordinary conversation with the operator, and patching them prompt by prompt would only grow them. The fix is design work: define precisely what each guard is meant to judge, using concepts the design already holds. Evidence from one session (2026-10-01, nico): (1) Stance blocked four closes that left a decision to the operator, pushing the agent to act right after the operator said 'I wasn't asking you to act'. It judges against the role's standing autonomy and ignores the operator's current loop position (resting vs elevated by carry-on), and it reads a question as if it were a request. (2) Purview denied cancelling the agent's own dispatch, treating a proc:// kill as writing an artifact. It also twice read an ad-hoc dispatch, which states intent and leaves the wording to the agent and which the contract permits, as dispatcher-written spec. (3) Stance-pre denied the same dispatch as 'pasting the operator's instruction', though the text was the agent's own rectified words. (4) Guards judge the same call in sequence, and a contest clears only the guard it answers, so one call needed three contests and was re-denied in between. Open question: which concepts should the guards judge against? Candidates: loop position, ad-hoc request vs unit of the loop, route vs artifact, and spec vs intent.",
+    "blocks": []
+  }
+}

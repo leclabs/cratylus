@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+    "entity": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+    "operation": "amend",
+    "supersedes": [
+      "01M3PMNZCN59V1QACFEHGQXXYB"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T03:15:15.128Z",
+    "reason": "A note only ever ended retracted, which says it was withdrawn with no successor; a note taken up into a concept or a unit has a successor, so retracting it misstates its history. It now ends resolved, naming what carries it. The sign is resolved, not superseded: supersession here already means a new version of the same entity.",
+    "cause": "operator: retracting a weighed note is not conceptually coherent; it should point at the unit that carries it"
+  },
+  "payload": {
+    "anchor": "notebook",
+    "gloss": "the set of notes: ideas, questions and decisions not yet canonical, the intake that the design and plans take up. Anyone may capture, revise, resolve or retract a note. A note taken up ends resolved, naming what now carries it, a concept or a unit; a note withdrawn with nothing carrying it ends retracted. A note's title is its name, one live note per title. Its kind is one of the note skill's labels (idea, question, decision), which the runtime never interprets. A live note that blocks a plan or unit is an **owed ruling**, the one sense of that sign; it blocks what it names until it no longer does, by being resolved, retracted or revised to block nothing, and a diverged note blocks whatever any of its versions blocks until it is reconciled.",
+    "factors": [
+      "01M3MEKH4WNSY2RE9VRTXZH9PT"
+    ]
+  }
+}
