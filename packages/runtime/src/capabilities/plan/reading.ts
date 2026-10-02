@@ -29,6 +29,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
+import type { NoteCarrier } from '../../ports/note.js';
 import { type Fold, fold } from '../../record-store/fold.js';
 import {
   IDENTITY,
@@ -71,6 +72,7 @@ import {
   type Lattice,
 } from '../design/design.js';
 import {
+  type Carrier,
   NOTEBOOK,
   type Note,
   type Notebook,
@@ -279,7 +281,9 @@ export class Reading {
       for (const u of versions(f))
         hold(this.#unitHolders, unitKey(u.plan, u.spec.name), f.entity);
     for (const f of this.notes.values())
-      for (const n of versions(f)) hold(this.#noteHolders, n.title, f.entity);
+      for (const n of versions(f))
+        if (n.resolved === undefined)
+          hold(this.#noteHolders, n.title, f.entity);
   }
 
   /** The lifecycles; refuses, naming the deploy, when the host has none. */
@@ -648,6 +652,29 @@ export class Reading {
       );
     this.#unlined(this.#blockedPlans([entity]));
     return entity;
+  }
+
+  /** What now carries a note taken up: the live concept an anchor denotes, or
+   *  the live unit a name denotes, as the note records it. Refuses a name no
+   *  live concept or unit holds. */
+  resolveCarrier(carrier: NoteCarrier): Carrier {
+    if ('concept' in carrier) {
+      const entity = this.design.denotes(parsed(carrier.concept));
+      if (
+        entity === undefined ||
+        this.concepts.get(entity)?.payload === undefined
+      )
+        throw new Error(
+          `no live concept is named ${JSON.stringify(carrier.concept)}; a note is resolved to a live concept or a live unit`,
+        );
+      return { domain: 'concept', entity };
+    }
+    const entity = this.findUnit(carrier.unit);
+    if (entity === undefined || this.units.get(entity)?.payload === undefined)
+      throw new Error(
+        `no live unit is named ${JSON.stringify(carrier.unit)}; a note is resolved to a live concept or a live unit`,
+      );
+    return { domain: 'unit', entity };
   }
 
   // ── the ports, and the laws spanning domains ──
@@ -1088,7 +1115,10 @@ export class Reading {
         ...this.book.live.filter((n) => n.blocks.length > 0 && blocksOwn(n)),
         ...this.book.diverged.flatMap((d) =>
           d.versions
-            .filter((v) => v.blocks.length > 0 && blocksOwn(v))
+            .filter(
+              (v) =>
+                v.resolved === undefined && v.blocks.length > 0 && blocksOwn(v),
+            )
             .map((v) => ({ ...v, entity: d.entity })),
         ),
       ].map((n) => this.shownNote(n, n.entity)),
@@ -1198,6 +1228,16 @@ export class Reading {
             .slice(0, 1)
             .map((n) => this.shownNote(n, f.entity)),
         ),
+      resolved: this.book.resolved.map((n) => ({
+        ...this.shownNote(n, n.entity),
+        carrier: {
+          domain: n.resolved.domain,
+          name:
+            n.resolved.domain === 'concept'
+              ? this.concept(n.resolved.entity)
+              : this.blocked(n.resolved.entity),
+        },
+      })),
       incoherent: this.book.incoherence.map(
         ({ title, entities }): Incoherence => ({
           kind: 'name',
@@ -1231,9 +1271,19 @@ export class Reading {
         );
   }
 
+  /** Each unit the note `entity` has been resolved to, as entities. */
+  #noteCarriers(entity: string): string[] {
+    const f = this.notes.get(entity);
+    return f === undefined
+      ? []
+      : [...versions(f), ...withdrew(f, this.#noteRecords)].flatMap((n) =>
+          n.resolved?.domain === 'unit' ? [n.resolved.entity] : [],
+        );
+  }
+
   /** The plans a write to `entity` of `domain` is about, before it (`before`)
    *  or after it: a plan itself, a unit's plan, the plans and the units' plans a
-   *  note blocks. */
+   *  note blocks, and the plan of a unit it is resolved to. */
   #concerns(before: Reading, domain: string, entity: string): string[] {
     const readings = [this, before];
     switch (domain) {
@@ -1242,7 +1292,12 @@ export class Reading {
       case unitDomain.DOMAIN:
         return readings.flatMap((r) => r.#unitPlans(entity));
       case NOTEBOOK:
-        return readings.flatMap((r) => r.#blockedPlans(r.#noteBlocks(entity)));
+        return readings.flatMap((r) =>
+          r.#blockedPlans([
+            ...r.#noteBlocks(entity),
+            ...r.#noteCarriers(entity),
+          ]),
+        );
       default:
         return [];
     }
@@ -1329,14 +1384,16 @@ export class Reading {
   }
 
   /** Every record, by domain and id, about plan `plan`: its own, its units' and
-   *  the notes blocking it or one of its units. */
+   *  the notes blocking it or one of its units, or resolved to one of them. */
   recordsAbout(plan: string): { domain: string; id: string }[] {
     const units = new Set(
       [...this.units.keys()].filter((u) => this.#unitPlans(u).includes(plan)),
     );
     const notes = new Set(
       [...this.notes.keys()].filter((n) =>
-        this.#noteBlocks(n).some((b) => b === plan || units.has(b)),
+        [...this.#noteBlocks(n), ...this.#noteCarriers(n)].some(
+          (b) => b === plan || units.has(b),
+        ),
       ),
     );
     const about: readonly [string, (entity: string) => boolean][] = [

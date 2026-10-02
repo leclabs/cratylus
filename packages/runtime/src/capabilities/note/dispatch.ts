@@ -5,7 +5,10 @@
 //   capture    a note: `<title> --kind <k> --topic <t> --body <b>
 //              [--blocks <plan or unit>]…`
 //   revise     a new version of a note (`--title` retitles it)
-//   retract    a note
+//   resolve    a note taken up: `<title> --concept <anchor>` or
+//              `--unit <u of plan p>`, the live concept or unit that now
+//              carries it
+//   retract    a note withdrawn with nothing carrying it
 //   reconcile  a diverged note: one version over every version
 //
 // A note's title is its name and addresses it. What a note blocks is named by
@@ -31,7 +34,14 @@ import {
   verbOf,
 } from '../plan/argv.js';
 import { type Reading, act, agreed, look } from '../plan/reading.js';
-import { type Note, capture, reconcile, retract, revise } from './notebook.js';
+import {
+  type Note,
+  capture,
+  reconcile,
+  resolve,
+  retract,
+  revise,
+} from './notebook.js';
 
 /** The note capability over the records of the repository holding `from`. */
 export function noteHost(from: string = process.cwd()): NoteHost {
@@ -43,7 +53,7 @@ export function noteHost(from: string = process.cwd()): NoteHost {
     );
 
   /** The note `title` names; refuses a title no note holds. */
-  const resolve = (read: Reading, title: string): string => {
+  const titled = (read: Reading, title: string): string => {
     const entity = read.findNote(title);
     if (entity === undefined)
       throw new Error(
@@ -91,22 +101,30 @@ export function noteHost(from: string = process.cwd()): NoteHost {
 
     revise: (title, change, by) =>
       write((read) => {
-        const entity = resolve(read, title);
+        const entity = titled(read, title);
         const [current] = versions(read, entity);
         const written = note(read, change, current as Note);
         revise(read.store, entity, written, by);
         return written.title;
       }),
 
+    resolve: (title, carrier, by) =>
+      write((read) => {
+        const entity = titled(read, title);
+        const to = read.resolveCarrier(carrier);
+        resolve(read.store, entity, to, by);
+        return bare(parsed(title));
+      }),
+
     retract: (title, by) =>
       write((read) => {
-        retract(read.store, resolve(read, title), by);
+        retract(read.store, titled(read, title), by);
         return bare(parsed(title));
       }),
 
     reconcile: (title, change, by) =>
       write((read) => {
-        const entity = resolve(read, title);
+        const entity = titled(read, title);
         const heads = versions(read, entity);
         const pick = <K extends keyof Note>(key: K): Note[K] =>
           agreed(
@@ -142,6 +160,16 @@ const TITLE = {
   title: valueFlag('The title the note is renamed to'),
 } as const;
 
+/** The flags that name what carries a note taken up: exactly one is given. */
+const CARRIER = {
+  concept: valueFlag(
+    'The anchor of the live concept that now carries the note',
+  ),
+  unit: valueFlag(
+    'The live unit, as `u of plan p` or bare where its name is its own, that now carries the note',
+  ),
+} as const;
+
 /** The notebook's verbs, in the order its header lists them, each with what
  *  it does, the positional it acts on and the flags it takes. */
 export const VERBS = {
@@ -161,8 +189,14 @@ export const VERBS = {
     positional: '<title>',
     flags: { ...TITLE, ...FIELDS, ...INVOCATION },
   },
+  resolve: {
+    summary:
+      'Resolve a note taken up to the concept or unit that now carries it',
+    positional: '<title>',
+    flags: { ...CARRIER, ...INVOCATION },
+  },
   retract: {
-    summary: 'Retract a note',
+    summary: 'Retract a note withdrawn with nothing carrying it',
     positional: '<title>',
     flags: { ...INVOCATION },
   },
@@ -218,6 +252,19 @@ export function dispatchNote(
     }
     case 'revise':
       return host.revise(title(), change(), invocation(args, 'note', verb));
+    case 'resolve': {
+      const concept = one(args, 'concept');
+      const unit = one(args, 'unit');
+      if ((concept === undefined) === (unit === undefined))
+        throw new Error(
+          'note resolve: give exactly one of --concept and --unit; a note taken up is resolved to the concept or the unit that carries it',
+        );
+      return host.resolve(
+        title(),
+        concept === undefined ? { unit: unit as string } : { concept },
+        invocation(args, 'note', verb),
+      );
+    }
     case 'retract':
       return host.retract(title(), invocation(args, 'note', verb));
     case 'reconcile':

@@ -81,9 +81,10 @@ yield ≠ ∅ ⇒ a hypothesis self rectifies against its expertise ∧ the fiel
 the bound plan ⟨C is its fixed target : a held change never amends a shard under a running plan⟩ ; a change bears on it
     ⇔ its concept is a shard the plan realizes ∨ stands in the closure of one
 the bound plan found built on a shard c that is itself wrong ⇒ in order ⟨self captures a note blocking that plan ;
-    self amend(c) once ; the planner re-plans, rectifying or rebuilding ; self retracts the note ; work resumes⟩
+    self amend(c) once ; the planner re-plans, rectifying or rebuilding ; self resolves the note to c ; work resumes⟩
     ⟨intake at INCEPTION ∧ live, never at retirement : the note is the intake, captured at once ; only the
      amend waits · an obligation standing between an agent and closing its work always loses · measured 0 of 25⟩
+a note self takes up into C ⇒ resolve the note to the concept that carries it ⟨¬ retract : a retraction names no carrier · covers the decision note amended in when the bound plan completes⟩
 design ⊨ ¬ delegable ⟨a subagent starts blank ∧ a design authored by several
     fragments BY CONSTRUCTION⟩
 design ≜ conceptualize(intent) → materialize(·) → define(c) ∨ supersede(c) → C → cut(C)` as SkillExpression;

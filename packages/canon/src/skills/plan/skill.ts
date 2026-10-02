@@ -135,7 +135,7 @@ census(P) ⊨ once ∧ pinned⟨commit⟩ ∧ cited by every unit ⟨¬ re-deriv
 ∀ unit : measurement ∈ spec(unit) ⇒ measurement = claim⟨commit⟩ ∴ cite ⇔ ∄ change to its paths since that commit ; else re-derive ≺ cite ⟨a count in a unit is CENSUS OUTPUT, ¬ a datum · the tree moves ∧ nothing reds⟩
 ∀ unit : reach-leg(unit) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 ∀ unit : conform(spec(unit))
-plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → bind(P) ⟨cuts the line, only when ¬∃ bound P⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩ ; on \`whole <unit>\` : advance(unit) ↦ ${UNIT.satisfies}, hand out the newly ready ; ∀ unit completed ⇒ close(P) ; on a stop ⟨an owed note blocking P⟩ : rectify ⟨repin ∨ revise ∨ retract ∨ add⟩ ∨ rebuild P ≺ the note is retracted ⟨the drift laws apply to a bound P⟩` as SkillExpression;
+plan ≜ the planner's procedure : take(shards) → census ⟨delegable⟩ → slice(shards) → add(∀ unit) ⟨spec ∧ pin⟩ → ratify @ planner → bind(P) ⟨cuts the line, only when ¬∃ bound P⟩ → advance(each ready unit) ↦ ${UNIT.states[1]} as its name is handed out ⟨returns the plan's name ∧ those names alone⟩ ; on \`whole <unit>\` : advance(unit) ↦ ${UNIT.satisfies}, hand out the newly ready ; ∀ unit completed ⇒ close(P) ; on a stop ⟨an owed note blocking P⟩ : rectify ⟨repin ∨ revise ∨ retract ∨ add⟩ ∨ rebuild P ≺ the note is resolved ⟨the drift laws apply to a bound P⟩` as SkillExpression;
 
 export const plan: Skill = {
   name: 'plan',

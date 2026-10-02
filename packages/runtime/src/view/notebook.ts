@@ -3,7 +3,8 @@
 // note led by its title, behind the owed rulings that must be resolved first.
 //
 // A diverged note keeps its place, marked, under the kind and topic of every
-// version of it.
+// version of it. A resolved note, like a withdrawn one, is neither listed nor
+// counted; its title drills to it, marked with what carries it.
 //
 // A note's title is its name. Kinds are the `note` skill's; they arrive as
 // display text, are never interpreted, and group in the order they first
@@ -39,6 +40,15 @@ export interface Note {
   readonly blocks: readonly Name[];
 }
 
+/** A note taken up, and what carries it: a concept, by its anchor, or a unit,
+ *  as `u of plan p`. */
+export interface Resolved extends Note {
+  readonly carrier: {
+    readonly domain: 'concept' | 'unit';
+    readonly name: Name;
+  };
+}
+
 /** The notebook view's input. */
 export interface NotebookState extends Computed {
   /** Every live note, in the order given. */
@@ -49,6 +59,9 @@ export interface NotebookState extends Computed {
   /** Withdrawn notes, each its last version, so a withdrawn holder of a
    *  shared title drills to what the view is given of it. */
   readonly withdrawn: readonly Note[];
+  /** Resolved notes, each with the carrier it is resolved to, named as it is
+   *  now; drilled to by the title a resolved note carried. */
+  readonly resolved: readonly Resolved[];
   readonly incoherent: readonly Incoherence[];
 }
 
@@ -65,7 +78,8 @@ export function noteLine(note: Note): string {
   return `${said(note)} · ${note.kind} · ${note.topic}`;
 }
 
-/** One note in full; `mark` follows its title (` — withdrawn`). */
+/** One note in full; `mark` follows its title (` — withdrawn`, or ` — resolved
+ *  to` its carrier). */
 function noteInFull(note: Note, mark = ''): string[] {
   return [
     `note: ${printed(note.title)}${mark}`,
@@ -78,9 +92,10 @@ function noteInFull(note: Note, mark = ''): string[] {
 
 /**
  * The notebook's view: the whole notebook, or, given the `title` of a note,
- * every live or withdrawn note it names in full and every version of every
- * diverged note it names by any of its titles in full, beneath the header and
- * the resolve-first layer.
+ * every live, withdrawn or resolved note it names in full and every version of
+ * every diverged note it names by any of its titles in full, beneath the header
+ * and the resolve-first layer. A resolved note is never listed or counted in
+ * the whole notebook.
  */
 export function notebookView(state: NotebookState, title?: Name): string {
   const lines = [
@@ -107,6 +122,14 @@ export function notebookView(state: NotebookState, title?: Name): string {
         ...state.withdrawn
           .filter((n) => denotes(title, n.title))
           .map((n) => noteInFull(n, ' — withdrawn')),
+        ...state.resolved
+          .filter((n) => denotes(title, n.title))
+          .map((n) =>
+            noteInFull(
+              n,
+              ` — resolved to ${n.carrier.domain} ${printed(n.carrier.name)}`,
+            ),
+          ),
         ...state.diverged
           .filter((d) => denotesAny(title, d.names))
           .map((d) => divergedLines(d, (n) => noteInFull(n))),
