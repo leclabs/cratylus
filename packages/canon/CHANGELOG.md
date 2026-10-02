@@ -1,5 +1,13 @@
 # @cratylus/canon
 
+## 0.14.0
+
+### Minor Changes
+
+- 9813224: The planner now takes the operator's suggestions about how to build a shard as idea notes handed with the shard, by title, and does not search the notebook for them. It weighs each by its own judgment, never as a ruling and never as grounds to redraw the shard, and resolves one it takes up to the unit that carries it with `note resolve --unit`; one it does not take up stays as it is. The `planner` role value reads the handed idea notes and writes their resolution, the `plan` skill's procedure takes them with the shards and resolves each one taken up after the units are added, and the role's description and archetype say so.
+- 7c7354d: A note taken up now ends resolved, and a note withdrawn with nothing carrying it ends retracted. `cratylus note resolve <title>` takes exactly one of `--concept <anchor>` or `--unit <u of plan p>` beside the author, reason and cause, and writes a whole new version of the note that keeps its fields and names its carrier by identity and domain, so a carrier renamed since still reads right. It refuses, writing nothing, with neither flag or both, a title no note holds, a diverged note (reconcile it first), an anchor that denotes no live concept and a name that denotes no live unit. A resolved note, like a retracted one, is no longer live, holds no title and blocks nothing, so resolving an owed ruling ends it, the unit it blocked returns to the frontier and a plan it blocked binds; a new note may take its title. The whole notebook neither lists nor counts a resolved note, and `note show <title>` prints it in full marked ` — resolved to concept <anchor>` or ` — resolved to unit <u of plan p>` by the carrier's current name. Resolving a note to a unit of a bound plan is written on that plan's line, as a note blocking it is. A note resolved differently on two merged branches is diverged, and `note reconcile` reaches it by its title: it takes `--concept` or `--unit` too, and needs one where the versions disagree on whether the note is resolved or on what carries it. The `note` skill gains the verb, and the `design` and `plan` skills end a note taken up by resolving it, with the design resolving the note to the concept that carries it, where each retracted it.
+- 01afe42: The architect role sorts what the operator says: what must hold goes into the design once rectified, and a suggestion about how a concept might be built never does. Each such suggestion is captured at once, as it is said, as an idea note whose topic is that concept, and when the concept is cut into a shard the notes on it are handed to the planner beside the shard, not inside it.
+
 ## 0.13.4
 
 ### Patch Changes
