@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3XFF5KKVQAB1JMWEK1MX0JJ",
+    "entity": "01M3XB4VJFTXYSX2977XYXRYV2",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XB4VJFTXYSX2977XYXRYV3"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T04:55:25.043Z",
+    "reason": "The payload concept now explicitly names the concept or unit that carries a resolved note.",
+    "cause": "payload amendment after suggestions-as-notes closed"
+  },
+  "payload": {
+    "title": "note payload omits what carries a resolved note",
+    "kind": "question",
+    "topic": "payload",
+    "body": "The payload concept says a note's payload is its title, kind, topic, body and whatever it blocks. Since notebook now has a note taken up end resolved, naming what carries it, and a retraction carries no payload, the carrier has to live in the note's whole state; resolved-notes at f79dca93 stores it there. Does the payload gloss need to name a note's carrier, or does the design mean the carrier to live elsewhere?",
+    "blocks": [],
+    "resolved": {
+      "domain": "concept",
+      "entity": "01M3MEKGJNN7S61YZ8MF1JD16A"
+    }
+  }
+}

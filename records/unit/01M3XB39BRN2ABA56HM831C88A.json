@@ -1,0 +1,95 @@
+{
+  "envelope": {
+    "id": "01M3XB39BRN2ABA56HM831C88A",
+    "entity": "01M3XACPQN8AKDZD7GTG26S7PD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XB2CZ1M2E9JZGF87A6KK05"
+    ],
+    "author": "SuggestionsAndResolve",
+    "time": "2026-10-02T03:39:01.368Z",
+    "reason": "made whole at e663b633 after an achieved assay",
+    "cause": "architect routed whole suggestion-sorting"
+  },
+  "payload": {
+    "plan": "01M3XAC88VRDH0M7DBH91MENZC",
+    "spec": {
+      "name": "suggestion-sorting",
+      "intent": "Census @25f9e3a1 (the source tree; the design records amending notebook, architect role and planner role were written after it and reach this plan's line with its bind). Every path is repo-relative on the plan's line. A line number, size or count below is a measurement at 25f9e3a1: re-derive it if its path changed since. Add no test file beyond what the acceptance names. Realize `architect role` as amended at its newest version: the architect sorts what the operator says into what must hold, which (once rectified) goes into the design, and suggestions about how a concept might be built, which never do. It captures each suggestion at once, as it is said, as an idea note whose topic is that concept; and when it cuts that concept into a shard for the planner it hands those notes WITH the shard, by title, never inside it. The shard stays what and why and never how, so the assayer, which judges a unit against its shard, never judges against a suggestion. Everything else in the gloss is already realized (the route clauses, plan-closed, route-names, ad hoc dispatch) and stays as it is.\n\nHOME. The contract is the `architect` Role value, packages/canon/src/dimensions/role/architect.ts (3530 bytes at 25f9e3a1). Its reads and writes already carry `note`. Extend the two clauses this changes, in the value's own notation: `rectify(input)` (the operator's input is sorted: what must hold ↦ C after rectification; a how-suggestion ↦ an idea note captured at once, its topic the concept, ¬ C), and `cut(C)` (the shard ↦ planner, with the idea notes on that concept handed beside it, ¬ inside it). packages/canon/src/roles/architect.ts: the description and the archetype each say it in one clause where they already speak of rectifying inputs and cutting shards; update the cell comment only if it would otherwise be false.\n\nNOT HERE. The design and note skills are not this unit's: capture already exists, and the concurrent unit resolved-notes writes both skills; this unit edits neither and binds no symbol of either (say it in the role value's own words, as the design skill's existing 'capture a decision note' line does). The personas kino, mav and nico hold this role through `holds` and inherit the change; their residue is untouched. The purview guard reads the holder's projected role section as its law and passes a dispatch to a planner; it needs no edit.\n\n.changeset/suggestion-sorting.md: '@cratylus/canon' minor.",
+      "static": [
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/test/reader-density.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        ".changeset/suggestion-sorting.md"
+      ],
+      "accept": [
+        "In the `architect` value, the `rectify(input)` clause sorts the operator's input into what must hold (to C) and how-suggestions (to an idea note on that concept, never C), and the `cut(C)` clause hands the idea notes on the concept with the shard and not inside it; `grep -c idea packages/canon/src/dimensions/role/architect.ts` prints at least 1 (0 at 25f9e3a1).",
+        "`grep -c -i suggest packages/canon/src/roles/architect.ts` prints at least 1 (0 at 25f9e3a1), the hits in the description and the archetype.",
+        "`git diff <the commit the unit's work starts from> --name-only` lists only this unit's outputs.",
+        "In packages/canon, `pnpm exec vitest run test/reader-density.test.ts test/persona.test.ts test/purview-guardrail.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts` exits 0 (the RESIDUE gate admits only σ* anchors in a dimension value) and `pnpm --filter @cratylus/canon typecheck` exits 0."
+      ]
+    },
+    "state": "completed",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M3X9AF04H3CMH8WQBDHQYKHT",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "01afe42d277dcee21d38e4a930cb3cebed76b06c",
+        "author": "SuggestionSorting",
+        "time": "2026-10-02T03:30:22.258Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "01afe42d277dcee21d38e4a930cb3cebed76b06c",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssaySuggestionSorting",
+        "time": "2026-10-02T03:32:27.326Z"
+      },
+      {
+        "kind": "broke",
+        "check": "canon test/hook-rule-boundary.test.ts: AGENTS.md drifts from cell(repo-preamble) (2 failed: byte-identical target; regenerateTargets --check drift [AGENTS.md]) — red at line base 25f9e3a1 alone, which added the green-field line to AGENTS.md but not to the cell; combined tree 39d1322b otherwise green (build, lint, typecheck, project pass)",
+        "author": "IntegrateSuggestionSorting",
+        "time": "2026-10-02T03:35:01.056Z"
+      },
+      {
+        "kind": "whole",
+        "commit": "e663b633",
+        "author": "IntegrateSuggestionSorting2",
+        "time": "2026-10-02T03:38:32.289Z"
+      }
+    ]
+  }
+}

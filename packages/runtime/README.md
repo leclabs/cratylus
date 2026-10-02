@@ -26,7 +26,7 @@ names them: `eventTap`, `design`, `plan` and `note`. A corpus's skill names one 
 | `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                       |
 | `design`   | `DesignHost`   | `show`, `define`, `amend`, `retract`, `reconcile`, `trace`                                                     |
 | `plan`     | `PlanHost`     | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile`, `land`, `assay`, `whole`, `broke` |
-| `note`     | `NoteHost`     | `show`, `capture`, `revise`, `retract`, `reconcile`                                                            |
+| `note`     | `NoteHost`     | `show`, `capture`, `revise`, `resolve`, `retract`, `reconcile`                                                 |
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
 against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is pure
@@ -90,7 +90,8 @@ the notes blocking either that the checkout holds — each is no longer in the c
 afterwards, whether the line lacked it or already held it, unless the checkout's HEAD tracks it,
 since a committed record is never removed — and writes the bind there. While
 the plan is bound, every write about it — each plan verb on the plan or one of its units, and each
-note write whose blocks name the plan or one of its units, before or after the write — is written
+note write whose blocks name the plan or one of its units, or that resolves a note to one of its units,
+before or after the write — is written
 into the line's worktree from whichever checkout runs it, and its output ends by naming the branch
 and worktree it wrote to. A bound plan with no worktree holding its line refuses the write, writes
 nothing, and says what is missing; `bind` refuses a branch no worktree holds the same way.

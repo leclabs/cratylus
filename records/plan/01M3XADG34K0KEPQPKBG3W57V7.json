@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3XADG34K0KEPQPKBG3W57V7",
+    "entity": "01M3XAC88VRDH0M7DBH91MENZC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XAC88VRDH0M7DBH91MENZD"
+    ],
+    "author": "SuggestionsAndResolve",
+    "time": "2026-10-02T03:27:07.364Z",
+    "reason": "ratified: three units over the shards notebook, architect role and planner role, waves with disjoint outputs and references, no plan bound",
+    "cause": "the architect handed the shards and asked for the plan bound"
+  },
+  "payload": {
+    "name": "suggestions-as-notes",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3R07G7ZCK24TEDA78HW4VRM"
+    ],
+    "state": "bound"
+  }
+}

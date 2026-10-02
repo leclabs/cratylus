@@ -13,3 +13,4 @@
 
 - Conventional Commits, header ≤100 chars (commitlint, `commit-msg` hook).
 - **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only `git push` is gated: push only when the operator asks.
+- **Green-field register:** existing code, records, and docs constrain work only where explicitly declared; compatibility is never a goal.

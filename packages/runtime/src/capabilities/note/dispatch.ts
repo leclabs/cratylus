@@ -5,8 +5,12 @@
 //   capture    a note: `<title> --kind <k> --topic <t> --body <b>
 //              [--blocks <plan or unit>]…`
 //   revise     a new version of a note (`--title` retitles it)
-//   retract    a note
-//   reconcile  a diverged note: one version over every version
+//   resolve    a note taken up: `<title> --concept <anchor>` or
+//              `--unit <u of plan p>`, the live concept or unit that now
+//              carries it
+//   retract    a note withdrawn with nothing carrying it
+//   reconcile  a diverged note: one version over every version, resolved to
+//              `--concept` or `--unit` when given
 //
 // A note's title is its name and addresses it. What a note blocks is named by
 // plan or unit name and resolved here: a unit as the view prints it,
@@ -18,7 +22,12 @@
 // member. A write writes all or nothing.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { NoteChange, NoteHost, NoteInput } from '../../ports/note.js';
+import type {
+  NoteCarrier,
+  NoteChange,
+  NoteHost,
+  NoteInput,
+} from '../../ports/note.js';
 import { bare, parsed } from '../../record-store/names.js';
 import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { notebookView } from '../../view/notebook.js';
@@ -31,7 +40,14 @@ import {
   verbOf,
 } from '../plan/argv.js';
 import { type Reading, act, agreed, look } from '../plan/reading.js';
-import { type Note, capture, reconcile, retract, revise } from './notebook.js';
+import {
+  type Note,
+  capture,
+  reconcile,
+  resolve,
+  retract,
+  revise,
+} from './notebook.js';
 
 /** The note capability over the records of the repository holding `from`. */
 export function noteHost(from: string = process.cwd()): NoteHost {
@@ -43,7 +59,7 @@ export function noteHost(from: string = process.cwd()): NoteHost {
     );
 
   /** The note `title` names; refuses a title no note holds. */
-  const resolve = (read: Reading, title: string): string => {
+  const titled = (read: Reading, title: string): string => {
     const entity = read.findNote(title);
     if (entity === undefined)
       throw new Error(
@@ -91,22 +107,30 @@ export function noteHost(from: string = process.cwd()): NoteHost {
 
     revise: (title, change, by) =>
       write((read) => {
-        const entity = resolve(read, title);
+        const entity = titled(read, title);
         const [current] = versions(read, entity);
         const written = note(read, change, current as Note);
         revise(read.store, entity, written, by);
         return written.title;
       }),
 
-    retract: (title, by) =>
+    resolve: (title, carrier, by) =>
       write((read) => {
-        retract(read.store, resolve(read, title), by);
+        const entity = titled(read, title);
+        const to = read.resolveCarrier(carrier);
+        resolve(read.store, entity, to, by);
         return bare(parsed(title));
       }),
 
-    reconcile: (title, change, by) =>
+    retract: (title, by) =>
       write((read) => {
-        const entity = resolve(read, title);
+        retract(read.store, titled(read, title), by);
+        return bare(parsed(title));
+      }),
+
+    reconcile: (title, change, by, carrier) =>
+      write((read) => {
+        const entity = titled(read, title);
         const heads = versions(read, entity);
         const pick = <K extends keyof Note>(key: K): Note[K] =>
           agreed(
@@ -114,13 +138,27 @@ export function noteHost(from: string = process.cwd()): NoteHost {
             heads.map((n) => n[key]),
             key,
           );
-        const written = note(read, change, {
-          title: change.title ?? pick('title'),
-          kind: change.kind ?? pick('kind'),
-          topic: change.topic ?? pick('topic'),
-          body: change.body ?? pick('body'),
-          blocks: change.blocks === undefined ? pick('blocks') : [],
-        });
+        if (
+          carrier === undefined &&
+          new Set(heads.map((n) => JSON.stringify(n.resolved ?? null))).size > 1
+        )
+          throw new Error(
+            'note reconcile: its versions disagree on whether it is resolved, or on what carries it; give --concept or --unit',
+          );
+        const resolved =
+          carrier === undefined
+            ? heads[0]?.resolved
+            : read.resolveCarrier(carrier);
+        const written: Note = {
+          ...note(read, change, {
+            title: change.title ?? pick('title'),
+            kind: change.kind ?? pick('kind'),
+            topic: change.topic ?? pick('topic'),
+            body: change.body ?? pick('body'),
+            blocks: change.blocks === undefined ? pick('blocks') : [],
+          }),
+          ...(resolved === undefined ? {} : { resolved }),
+        };
         reconcile(read.store, entity, written, by);
         return written.title;
       }),
@@ -142,6 +180,17 @@ const TITLE = {
   title: valueFlag('The title the note is renamed to'),
 } as const;
 
+/** The flags that name what carries a note taken up: a note is resolved to
+ *  exactly one, and a diverged note reconciled to at most one. */
+const CARRIER = {
+  concept: valueFlag(
+    'The anchor of the live concept that now carries the note',
+  ),
+  unit: valueFlag(
+    'The live unit, as `u of plan p` or bare where its name is its own, that now carries the note',
+  ),
+} as const;
+
 /** The notebook's verbs, in the order its header lists them, each with what
  *  it does, the positional it acts on and the flags it takes. */
 export const VERBS = {
@@ -161,16 +210,22 @@ export const VERBS = {
     positional: '<title>',
     flags: { ...TITLE, ...FIELDS, ...INVOCATION },
   },
+  resolve: {
+    summary:
+      'Resolve a note taken up to the concept or unit that now carries it',
+    positional: '<title>',
+    flags: { ...CARRIER, ...INVOCATION },
+  },
   retract: {
-    summary: 'Retract a note',
+    summary: 'Retract a note withdrawn with nothing carrying it',
     positional: '<title>',
     flags: { ...INVOCATION },
   },
   reconcile: {
     summary:
-      'Settle a diverged note with one version over every version; give each field the versions disagree on',
+      'Settle a diverged note with one version over every version; give each field the versions disagree on, and the carrier where they disagree on it',
     positional: '<title>',
-    flags: { ...TITLE, ...FIELDS, ...INVOCATION },
+    flags: { ...TITLE, ...FIELDS, ...CARRIER, ...INVOCATION },
   },
 } as const satisfies VerbFlags;
 
@@ -193,6 +248,24 @@ export function dispatchNote(
     const blocks = many(args, 'blocks');
     if (blocks !== undefined) found.blocks = blocks;
     return found;
+  };
+  /** What the flags name as carrier; exactly one when `needed`, else at most
+   *  one. */
+  const carrier = (needed: boolean): NoteCarrier | undefined => {
+    const concept = one(args, 'concept');
+    const unit = one(args, 'unit');
+    if (
+      (concept !== undefined && unit !== undefined) ||
+      (needed && concept === undefined && unit === undefined)
+    )
+      throw new Error(
+        `note ${verb}: give ${needed ? 'exactly' : 'at most'} one of --concept and --unit; a note is resolved to the one concept or unit that carries it`,
+      );
+    return concept !== undefined
+      ? { concept }
+      : unit !== undefined
+        ? { unit }
+        : undefined;
   };
   switch (verb) {
     case 'show':
@@ -218,9 +291,20 @@ export function dispatchNote(
     }
     case 'revise':
       return host.revise(title(), change(), invocation(args, 'note', verb));
+    case 'resolve':
+      return host.resolve(
+        title(),
+        carrier(true) as NoteCarrier,
+        invocation(args, 'note', verb),
+      );
     case 'retract':
       return host.retract(title(), invocation(args, 'note', verb));
     case 'reconcile':
-      return host.reconcile(title(), change(), invocation(args, 'note', verb));
+      return host.reconcile(
+        title(),
+        change(),
+        invocation(args, 'note', verb),
+        carrier(false),
+      );
   }
 }
