@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XB4VJFTXYSX2977XYXRYV3",
+    "entity": "01M3XB4VJFTXYSX2977XYXRYV2",
+    "operation": "create",
+    "supersedes": [],
+    "author": "AssayResolvedNotes",
+    "time": "2026-10-02T03:39:52.783Z",
+    "reason": "Finding beside the assay of resolved-notes: the payload concept in notebook's closure lists a note's fields without the carrier the notebook concept now requires",
+    "cause": "assay of unit resolved-notes of plan suggestions-as-notes at f79dca93"
+  },
+  "payload": {
+    "title": "note payload omits what carries a resolved note",
+    "kind": "question",
+    "topic": "payload",
+    "body": "The payload concept says a note's payload is its title, kind, topic, body and whatever it blocks. Since notebook now has a note taken up end resolved, naming what carries it, and a retraction carries no payload, the carrier has to live in the note's whole state; resolved-notes at f79dca93 stores it there. Does the payload gloss need to name a note's carrier, or does the design mean the carrier to live elsewhere?",
+    "blocks": []
+  }
+}

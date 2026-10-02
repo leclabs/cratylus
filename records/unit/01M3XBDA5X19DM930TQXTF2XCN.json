@@ -1,0 +1,103 @@
+{
+  "envelope": {
+    "id": "01M3XBDA5X19DM930TQXTF2XCN",
+    "entity": "01M3XAC89F7MDJZB60ZRK1SNM2",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XB4NC6GRA1JZER951CKY65"
+    ],
+    "author": "ResolvedNotes",
+    "time": "2026-10-02T03:44:29.885Z",
+    "reason": "Amended after assay: a diverged note holds every title its versions carry so reconcile reaches it; reconcile takes --concept or --unit to end resolved; diverged versions show their carrier",
+    "cause": "assay verdict not-achieved at f79dca93 (agent://AssayResolvedNotes)"
+  },
+  "payload": {
+    "plan": "01M3XAC88VRDH0M7DBH91MENZC",
+    "spec": {
+      "name": "resolved-notes",
+      "intent": "Census @25f9e3a1 (the source tree; the design records amending notebook, architect role and planner role were written after it and reach this plan's line with its bind). Every path is repo-relative on the plan's line. A line number, size or count below is a measurement at 25f9e3a1: re-derive it if its path changed since. Add no test file beyond what the acceptance names. Realize `notebook` as amended: a note taken up ends RESOLVED, naming what now carries it, a concept or a unit; a note withdrawn with nothing carrying it ends retracted. Anyone may capture, revise, resolve or retract a note. A resolved note, like a retracted one, is no longer live, holds no title and blocks nothing, so an owed ruling also ends by being resolved; a diverged note still blocks whatever any of its versions blocks until it is reconciled.\n\nRUNTIME (packages/runtime; the record store under src/record-store/ is NOT touched: it knows no domain, and resolution is the notebook's).\n(1) A new note verb: `cratylus note resolve <title> --concept <anchor>` or `cratylus note resolve <title> --unit <unit>`, each write with --author, --reason and --cause; exactly one of --concept and --unit. A unit is named exactly as --blocks names one (`u of plan p`, or bare where its name is its own). It REFUSES, writing nothing: neither flag or both; a title no note holds; a diverged note (pointing to reconcile, as revise and retract do); an anchor that denotes no live concept; a name that denotes no live unit.\n(2) The resolution is a whole-state version of the note (an amend record) whose payload keeps the note's fields and adds its carrier by minted identity and by domain (concept or unit), never by name, so a renamed carrier still reads right. Not a retraction: a retraction carries no payload and so could not say what carries the note.\n(3) capabilities/note/notebook.ts: a resolved note is not live (absent from `live`), holds no title (a new capture may take it), and is no owed ruling (`owedRulings` drops it), so a unit it blocked returns to the frontier and a plan it blocked binds. Update the header comment's lifecycle sentence.\n(4) capabilities/plan/reading.ts: note title holders exclude resolved versions; `noteState` carries the resolved notes beside `withdrawn`, each with its carrier printed by current name (a concept by its anchor, a unit as `u of plan p`); the carrier unit's plan joins what a note write concerns (`#concerns`, about line 1244), so resolving to a unit of a bound plan is written on that plan's line exactly as a note blocking it is.\n(5) view/notebook.ts: the whole notebook neither lists nor counts a resolved note; `note show <title>` of a title a resolved note carried prints it in full marked ` — resolved to concept <anchor>` or ` — resolved to unit <u of plan p>`, as a withdrawn note drills marked ` — withdrawn`; the resolve write returns that view.\n(6) ports/note.ts: NoteHost gains `resolve`. capabilities/note/dispatch.ts: VERBS gains `resolve` after `revise` with a summary in the notebook's words, the header comment lists it, and the local helper now named `resolve` (title lookup, line 46) is renamed so it does not shadow the verb. src/capability.ts: the note description names resolve. packages/runtime/README.md's verb table and packages/cli/README.md's reference (held to the help by packages/cli/test/command-tree.test.ts) gain it. test/note.test.ts: its every-verb flag case (about line 444, which pins Object.keys(VERBS)) gains resolve, and the cases the acceptance names are added in the file's existing style (verb surface driven in a temporary git repository).\n\nCANON (packages/canon/src/skills).\n(7) note/skill.ts: resolve joins the verb set, the procedure line and `anyone ⊨`; a definition `resolve(n) ≜ ` spelling `scripts/note.mjs resolve <title>` with `--concept <anchor>` or `--unit <u of plan p>` and `<by>`, glossed as n taken up ↦ what now carries it; live(n) excludes resolved; retract is for a note withdrawn with nothing carrying it; the owed law ends at resolve, retract, or revise to blocks ∅; the description says resolve. The flags spelled equal what the runtime declares.\n(8) Every corpus site that ends a TAKEN-UP note by retraction moves to resolution: 2 sites at 25f9e3a1 (`git grep -nE \"retracts the note|the note is retracted\" -- packages/canon/src`). design/skill.ts line 84, `self retracts the note` in the stop sequence, becomes self resolving the note to c (it is taken up into the amended c); and the design skill states once, as one law, that a note self takes up into C is resolved to the concept that carries it (which covers the held decision note amended in when the bound plan completes, line 79-80). plan/skill.ts line 138, `≺ the note is retracted`, becomes `≺ the note is resolved`. plan is 9998 of the 10,000-character hook cap at 25f9e3a1 and must not grow here; design has 3854 to spare. Where a symbol gate requires it, bind resolve to its home with `@ note`. `resolve` already appears in other senses (design line 70 `report ∧ ¬ resolve`, plan line 132 `resolve occurs`): if a symbol gate flags the collision, reword those without growing plan.\n(9) .changeset/resolved-notes.md: '@cratylus/runtime' minor, '@cratylus/canon' minor, 'cratylus' minor, one paragraph in the notebook's words.",
+      "static": [
+        "packages/runtime/src/record-store/record.ts",
+        "packages/runtime/src/record-store/fold.ts",
+        "packages/runtime/src/record-store/names.ts",
+        "packages/runtime/src/capabilities/plan/argv.ts",
+        "packages/runtime/src/view/layers.ts",
+        "packages/runtime/src/capabilities/design/design.ts",
+        "packages/cli/test/command-tree.test.ts",
+        "packages/canon/test/skill-hook-cap.test.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/runtime/src/capabilities/note/notebook.ts",
+        "packages/runtime/src/capabilities/note/dispatch.ts",
+        "packages/runtime/src/ports/note.ts",
+        "packages/runtime/src/view/notebook.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts",
+        "packages/runtime/src/capability.ts",
+        "packages/runtime/test/note.test.ts",
+        "packages/runtime/README.md",
+        "packages/cli/README.md",
+        "packages/canon/src/skills/note/skill.ts",
+        "packages/canon/src/skills/design/skill.ts",
+        "packages/canon/src/skills/plan/skill.ts",
+        ".changeset/resolved-notes.md"
+      ],
+      "accept": [
+        "`pnpm --filter @cratylus/runtime exec vitest run test/note.test.ts` exits 0, and the file holds cases, driven through the verb surface in a temporary git repository, showing: a note blocking a unit, resolved with `--unit '<u> of plan <p>'`, is no longer an owed ruling and the unit is back on the frontier; a note resolved with `--concept <anchor>`; after either, the whole notebook neither lists nor counts it, and `note show <title>` prints it marked resolved to its carrier by current name; a new capture under the resolved title is admitted; resolve REFUSES, writing nothing, with neither flag, both flags, an anchor naming no live concept, a name naming no live unit, a title no note holds, and a diverged note (naming reconcile). At 25f9e3a1 `note resolve` is no verb, so every such case fails.",
+        "`pnpm --filter @cratylus/runtime typecheck` and `pnpm --filter @cratylus/runtime test` exit 0 (plan.test.ts reads owed rulings through the same reading).",
+        "After `pnpm build`, `pnpm exec cratylus note resolve --help` lists exactly the flags --concept, --unit, --author, --reason, --cause (at 25f9e3a1 it refuses the verb).",
+        "`pnpm --filter cratylus exec vitest run test/command-tree.test.ts` exits 0 (the README reference names `cratylus note resolve`).",
+        "`git diff <the commit the unit's work starts from> --stat -- packages/runtime/src/record-store` prints nothing.",
+        "`git grep -nE \"retracts the note|the note is retracted\" -- packages/canon/src` prints nothing (2 hits at 25f9e3a1).",
+        "In packages/canon, `pnpm exec vitest run test/command-veracity.test.ts test/runtime-shim.test.ts test/symbols.test.ts test/symbol-altitude.test.ts test/symbol-probe-gate.test.ts test/skill-shape.test.ts test/formal-block-self-sufficiency.test.ts test/reader-density.test.ts test/skill-hook-cap.test.ts` exits 0, skill-hook-cap printing plan at no more than 9998, and `pnpm --filter @cratylus/canon typecheck` exits 0.",
+        "With T=$(mktemp -d), `pnpm exec cratylus project --harness claude --out $T` exits 0 and $T/skills/note/SKILL.md has a line spelling `scripts/note.mjs resolve <title>` whose flags are exactly --concept and --unit beside the by-flags, the set the --help leg lists (0 such lines at 25f9e3a1)."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "version": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+      "closure": {
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3MEKGJNN7S61YZ8MF1JD16B",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "f79dca93e5b3944b0957561e3404506ef97cd2bf",
+        "author": "ResolvedNotes",
+        "time": "2026-10-02T03:35:43.804Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "f79dca93e5b3944b0957561e3404506ef97cd2bf",
+        "verdict": "not-achieved",
+        "missing": [
+          "notebook, a diverged note until it is reconciled (with reconciliation, one whole-state version superseding every head): a note resolved differently on two branches that then merge is reported as diverged, yet no verb can reach it, since reconcile, like every other write, refuses with 'no note is titled', so that divergence can never be reconciled; and no reconciled version can end resolved, so the resolved state a version carries can never be the reconciled one. Locus: the title a diverged note holds, which counts only its unresolved versions (capabilities/note/notebook.ts titles; plan/reading.ts #noteHolders), and note reconcile (capabilities/note/dispatch.ts)",
+          "notebook, a note taken up ends resolved naming what now carries it (with divergence, reported): a diverged note's resolved versions are reported without their carrier and as still blocking what they name, so two versions that differ only in what carries them print identically and the divergence is reported without what diverged. Locus: the diverged-version lines of the notebook view (view/notebook.ts, plan/reading.ts shownNote)"
+        ],
+        "author": "AssayResolvedNotes",
+        "time": "2026-10-02T03:39:46.437Z"
+      },
+      {
+        "kind": "land",
+        "commit": "7c7354defeacd7dd90a92ce3b91109a0fd5c39f4",
+        "author": "ResolvedNotes",
+        "time": "2026-10-02T03:44:29.885Z"
+      }
+    ]
+  }
+}

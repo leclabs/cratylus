@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3XB5ZKD2DYXQEHYDA2ZA1JA",
+    "entity": "01M3XB5ZKD2DYXQEHYDA2ZA1J9",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-02T03:40:29.677Z",
+    "reason": "Rectifying the assayer's finding on resolved-notes; held under design stability",
+    "cause": "assay of resolved-notes at f79dca93"
+  },
+  "payload": {
+    "title": "a resolved note's payload names its carrier",
+    "kind": "decision",
+    "topic": "payload",
+    "body": "The payload concept lists a note's fields as title, kind, topic, body and whatever it blocks. Once a note can end resolved, its whole-state payload also holds what carries it: the concept or unit it was resolved to. Payload stands in the closure of notebook, which the bound plan suggestions-as-notes realizes, so this amendment waits until that plan closes. Nothing built in the meantime is misled: the resolved-notes unit already stores the carrier.",
+    "blocks": []
+  }
+}
