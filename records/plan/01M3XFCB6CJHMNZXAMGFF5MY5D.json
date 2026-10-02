@@ -1,0 +1,23 @@
+{
+  "envelope": {
+    "id": "01M3XFCB6CJHMNZXAMGFF5MY5D",
+    "entity": "01M3XAC88VRDH0M7DBH91MENZC",
+    "operation": "amend",
+    "supersedes": [
+      "01M3XADG34K0KEPQPKBG3W57V7"
+    ],
+    "author": "CloseSuggestions",
+    "time": "2026-10-02T04:53:52.460Z",
+    "reason": "All three units are completed after the final handed-ideas whole; no frontier, drift, owed rulings, divergence, or incoherence remains.",
+    "cause": "whole handed-ideas of suggestions-as-notes"
+  },
+  "payload": {
+    "name": "suggestions-as-notes",
+    "realizes": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M3R07G7ZCK24TEDA78HW4VRM"
+    ],
+    "state": "closed"
+  }
+}
