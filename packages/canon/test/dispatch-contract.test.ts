@@ -74,8 +74,7 @@ describe('invocation-owned dispatch contracts', () => {
     expect(claude).toContain('actual schema');
     expect(claude).toContain('not machine-enforced');
     expect(claude).toContain('--json-schema');
-    expect(claude).not.toContain('pass invocation-specific outputSchema');
-    expect(claude).not.toContain('consume parsed structuredOutput.data');
+    expect(claude).toContain('not machine-enforced structured transport');
   });
 
   it('covers branch-specific closed schemas and unit pins', () => {

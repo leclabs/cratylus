@@ -1,0 +1,67 @@
+{
+  "envelope": {
+    "id": "01M405QG2QEHV2WFFECAW640MB",
+    "entity": "01M405KVCEY8VYQVADPZ2KT0TS",
+    "operation": "amend",
+    "supersedes": [
+      "01M405KVCEY8VYQVADPZ2KT0TT"
+    ],
+    "author": "planner",
+    "time": "2026-10-03T06:02:55.447Z",
+    "reason": "Distinguish declared architect dispatchers from the planner optional delegated-census use site in the shared pinned census.",
+    "cause": "Usage census found the planner role permits census delegation despite having no declared role dispatches."
+  },
+  "payload": {
+    "plan": "01M405KVBSH87W0NMA4G62HE3S",
+    "spec": {
+      "name": "strict-dispatch-returns",
+      "intent": "Census measured 2026-10-03 against repository HEAD f9a73ae5e76c9848ea2e0f965c5cf9bb39f1ce66, with only the two handed design amendments uncommitted: records/design/01M4055P8KM691BD2WDBGF5QVK.json and records/design/01M4055WFZCMFSX97216YRCT18.json. This paragraph is the shared pinned census for this plan; architect-dispatch-contract cites it rather than repeating it. Repository source contains no outputSchema/schemaMode dispatch implementation or role output defaults. The dispatch occurrences are the delegation action, the architect role contract and role cell, and their four holders architect, nico, kino, mav (the complete observed declared-role dispatcher denominator). The planner additionally permits delegated census in its role contract; that optional ad-hoc seam must reach the same skill and is included in the adoption unit, not misclassified as a fifth architect holder. Receiving-role semantics are the planner, implementer, assayer and integrator role dimensions, not POC schemas. The delegation-prompt.md and subagent-return.md fixtures currently demonstrate a prose return. Skills are discovered from packages/canon/src/skills by the plugin; skill closure and projection already deliver bodies through both adapters. Supported harnesses are claude and omp; the stale ignored codex render is not a supported target and is outside this change. Source agents include integrator while existing staged renders omit it, so derive the render inventory from live source, not the stale stage. POC occurrence set is /home/lex/.agents/skills/dispatch/SKILL.md; the four dispatcher definitions under /home/lex/.omp/agent/agents have manual dispatch preload/action additions; implementer, assayer, planner and integrator definitions in that directory have output frontmatter. These are disposable deployed copies, not design authority. Generated and deployed occurrence ownership is assigned to architect-dispatch-contract: both supported .cratylus render trees and their manifests, all eight role/persona agent definitions, main-session preload surfaces, and the dispatch skill at the native skill roots. Historical records/changelogs and unrelated operator agents are not live callers and remain unchanged. Re-derive a measurement before citing it if one of its measured paths changes. Every reach check must print the source-derived denominator, the visited targets and any missing targets.\n\nRealize the dispatch-contract primitive as the canonical dispatch skill at packages/canon/src/skills/dispatch/skill.ts, using the existing Skill/formalBlock/composition pattern. This is the callable apparatus of the architect role, not a new architectural owner. State that each invocation declares its own strict return contract, delegates emit only conforming values, and invocation contracts supersede inherited/session or role defaults without requiring those defaults. A mismatch is a failed dispatch delivered to the dispatcher, not a design note, whole failure, semantic assay verdict or automatic redispatch. No schemas or transport fields belong to plans or units. Do not move the law into deliver, generic output formatting, forge or lifecycle state. Derive the loop seam guidance from receiving-role semantics, including planner ready/waiting/closed routes, implementer landed/blocked, assayer achieved/not-achieved and its missing-part addresses, integrator whole/red and the closed-plan route; require the appropriate contextual names and conditional facts, and pin the unit name when the seam is unit-scoped. Ad-hoc requests declare their own shape, independent of a role default. Author any illustrative schema only in corpus/test artifacts, never in plan records; the POC's incomplete examples are not normative.\n\nFor omp, document the native invocation-specific outputSchema and schemaMode strict path and consumption of parsed structuredOutput data, including addressed fields where available. Per the supported-harness law and the principal's 2026-10-03 ruling, Claude receives the same seam-owned intent at its highest available fidelity, but the projected skill must explicitly state that native Agent calls lack the machine-enforced per-call schema mechanism; print-mode --json-schema is not evidence of Agent-tool enforcement. Do not invent a delegation engine, use omp from Claude, imply parity, substitute role frontmatter, or silently degrade. Document the shortfall in the skill and the existing supported-harness user documentation.\n\nAdd focused canonical-skill/projection tests and retained behavioral evidence from a real enforcing omp dispatch seam. Use controlled disposable delegates/fixtures rather than live plan work for the negative cases. Prove a conforming invocation yields a parsed object and a nonconforming return fails at the boundary, with no automatic redispatch and no note/whole/lifecycle write. Include wrong-unit, missing-required-data and extra-property/prose negative controls against the actual enforcing validator; distinguish direct native validator evidence from live dispatch observations. No fake validator or text-only assertion is behavioral proof. Update the existing delegation/return fixtures and their reach test to model a caller contract and structured value. This unit may project into temporary roots for its own proof, but does not update staged/deployed architect targets: that is the dependent adoption unit's sole ownership. Add a changeset and keep the single pinned census above as the shared planning evidence. Run only focused checks for these changes; full-project combination verification belongs to the integrator.",
+      "static": [
+        "packages/canon/src/skills/event-tap/skill.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/src/index.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "/home/lex/workspaces/.handoff/cdd-dispatch-contract-handoff.md",
+        "/home/lex/.agents/skills/dispatch/SKILL.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/dispatch/skill.ts",
+        "packages/canon/test/dispatch-contract.test.ts",
+        "packages/canon/test/support/dispatch-contract",
+        "packages/canon/test/fixtures/dispatch-contract",
+        "packages/canon/test/fixtures/generated/delegation-prompt.md",
+        "packages/canon/test/fixtures/generated/subagent-return.md",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/README.md",
+        "packages/cli/README.md",
+        ".changeset/dispatch-contract.md"
+      ],
+      "accept": [
+        "The new dispatch skill is discovered by the existing plugin and projects through both supported adapters. Focused tests fail if invocation ownership, strict enforcement on the enforcing seam, unit-name pinning, mismatch-as-failed-dispatch, or absence of automatic redispatch is removed; the same tests reject the POC role-default-as-contract model.",
+        "Loop guidance covers the actual receiving-role result branches, including planner waiting/closed routes and integrator plan-close, without forcing an ad-hoc request into those shapes. Tests reject missing branch-required facts and a result naming the wrong unit. No schema or transport field is added to any plan/unit model, capability or record, and no return-format law is installed in deliver or a generic output-format cell.",
+        "Retained real omp seam evidence identifies the harness/version, command or tool invocation, caller-supplied strict contract and raw observed result. A valid return has parsed structured data (not a JSON-looking string); a deliberately nonconforming return is reported as failed dispatch. Negative evidence demonstrates wrong-unit, missing-required-data and extra-property/prose refusal through the real enforcing boundary/validator, with each proof method labeled and no mock substituted.",
+        "The failed-dispatch observation records one dispatch attempt, no automatic redispatch, and no mutation of note, whole or unit/plan state. Capability/environment failures are reported as unavailable evidence, never counted as refusal proof.",
+        "Projection tests read the emitted Claude dispatch skill and assert an explicit machine-enforcement shortfall, while preserving caller-owned seam intent. They reject a claim that native Claude Agent calls enforce the omp transport or that role output defaults compensate. The supported-harness documentation states the real difference and cites https://code.claude.com/docs/en/cli-reference and https://code.claude.com/docs/en/sub-agents.",
+        "Updated delegation/return fixtures exercise the structured seam, and reader-reach plus dispatch-contract focused tests pass. Reach proof prints the complete inspected fixture/harness denominator. A changeset records the user-visible contract; no generated/staged/host artifacts owned by architect-dispatch-contract are modified."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M4055P8KM691BD2WDBGF5QVJ",
+      "version": "01M4055P8KM691BD2WDBGF5QVK",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

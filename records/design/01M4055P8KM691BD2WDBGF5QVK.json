@@ -1,0 +1,17 @@
+{
+  "envelope": {
+    "id": "01M4055P8KM691BD2WDBGF5QVK",
+    "entity": "01M4055P8KM691BD2WDBGF5QVJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-03T05:53:11.955Z",
+    "reason": "Make the proven structured-return seam a durative concept before projection.",
+    "cause": "/home/lex/workspaces/.handoff/cdd-dispatch-contract-handoff.md"
+  },
+  "payload": {
+    "anchor": "dispatch contract",
+    "gloss": "the caller-declared, machine-enforced return shape at a delegation seam: every dispatch supplies a strict schema for that particular seam, and the delegate returns only a value conforming to it, so prose cannot masquerade as a route, verdict or landing. The dispatcher owns the schema; a role's default output shape is neither the contract nor required beside it. A mismatch is refused at the seam and returned to the dispatcher as a failed dispatch, never recorded as a design note or a broken whole and never retried automatically. Unit-loop seams derive their shape from the receiving role and pin the unit's name where applicable; ad-hoc seams declare the shape their request requires. The unit itself carries no transport contract.",
+    "factors": []
+  }
+}

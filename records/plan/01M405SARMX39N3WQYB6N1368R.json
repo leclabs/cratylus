@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M405SARMX39N3WQYB6N1368R",
+    "entity": "01M405KVBSH87W0NMA4G62HE3S",
+    "operation": "amend",
+    "supersedes": [
+      "01M405KVBTC619AABM6D214465"
+    ],
+    "author": "planner",
+    "time": "2026-10-03T06:03:55.540Z",
+    "reason": "Ratify the pinned usage census and the fixed one-unit-per-shard cut; the architect adoption consumes the strict-dispatch primitive and solely owns shared projections and POC replacement.",
+    "cause": "Operator acceptance requires a bound plan for dispatch contract and architect role; supported-harness ruling preserves explicit Claude shortfall."
+  },
+  "payload": {
+    "name": "dispatch-contract",
+    "realizes": [
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M4055P8KM691BD2WDBGF5QVJ"
+    ],
+    "state": "bound"
+  }
+}

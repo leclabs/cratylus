@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M4074K3KSGDMM9RDVBF2P08C",
+    "entity": "01M4074K3KSGDMM9RDVBF2P08B",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-03T06:27:33.107Z",
+    "reason": "Stop the plan while correcting a shard that demands an unavailable native Claude enforcement seam.",
+    "cause": "assay verdict on strict-dispatch-returns at 30d76279"
+  },
+  "payload": {
+    "title": "dispatch enforcement follows harness fidelity",
+    "kind": "decision",
+    "topic": "dispatch contract",
+    "body": "The bound dispatch-contract plan exposed that Claude native Agent calls provide no per-call machine-enforced response schema. The dispatch contract must be caller-owned on every harness, machine-enforced where the harness offers that seam, and projected at the highest available fidelity with an explicit shortfall where it does not; role defaults and invented transport remain excluded.",
+    "blocks": [
+      "01M405KVBSH87W0NMA4G62HE3S"
+    ]
+  }
+}

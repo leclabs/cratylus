@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M405KVBTC619AABM6D214465",
+    "entity": "01M405KVBSH87W0NMA4G62HE3S",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-03T06:00:55.930Z",
+    "reason": "Realize the handed dispatch primitive before its dependent architect-role adoption; census is pinned by use and no transport schema is stored in the ledger.",
+    "cause": "Operator assignment: plan dispatch contract and architect role, one unit per handed shard."
+  },
+  "payload": {
+    "name": "dispatch-contract",
+    "realizes": [
+      "01M3QRDK076G190M60GAV4DDGF",
+      "01M4055P8KM691BD2WDBGF5QVJ"
+    ],
+    "state": "proposed"
+  }
+}
