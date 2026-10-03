@@ -36,6 +36,21 @@ async function projectedSkill(harness: 'claude' | 'omp') {
 }
 
 describe('invocation-owned dispatch contracts', () => {
+  it('convicts a dispatch contract with no caller-owned schema', () => {
+    const missingCallerContract = dispatch.formalBlock.replace(
+      'caller declares its own contract',
+      'caller inherits a role default',
+    );
+    expect(missingCallerContract).not.toContain(
+      'caller declares its own contract',
+    );
+    expect(() =>
+      expect(missingCallerContract).toContain(
+        'caller declares its own contract',
+      ),
+    ).toThrow();
+  });
+
   it('requires a caller-owned schema without assigning harness fields universally', () => {
     expect(dispatch.formalBlock).toContain('caller declares its own contract');
     expect(dispatch.formalBlock).toContain(
