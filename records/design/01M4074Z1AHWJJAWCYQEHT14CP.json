@@ -1,0 +1,21 @@
+{
+  "envelope": {
+    "id": "01M4074Z1AHWJJAWCYQEHT14CP",
+    "entity": "01M4055P8KM691BD2WDBGF5QVJ",
+    "operation": "amend",
+    "supersedes": [
+      "01M4055P8KM691BD2WDBGF5QVK"
+    ],
+    "author": "nico",
+    "time": "2026-10-03T06:27:45.322Z",
+    "reason": "Correct the shard after execution established that Claude native Agent calls expose no per-call machine-enforced response schema.",
+    "cause": "dispatch enforcement follows harness fidelity"
+  },
+  "payload": {
+    "anchor": "dispatch contract",
+    "gloss": "the caller-declared return shape at a delegation seam: every dispatch supplies the schema for that particular seam, and the delegate returns only a value conforming to it, so prose cannot masquerade as a route, verdict or landing. The dispatcher owns the schema; a role's default output shape is neither the contract nor required beside it. Where the harness offers per-call schema enforcement, the schema is strict and a mismatch is refused at the seam as a failed dispatch, never recorded as a design note or broken whole and never retried automatically. A supported harness without that native seam receives the highest-fidelity projection it offers and an explicit statement of the shortfall, never a false parity claim or invented transport. Unit-loop seams derive their shape from the receiving role and pin the unit's name where applicable; ad-hoc seams declare the shape their request requires. The unit itself carries no transport contract.",
+    "factors": [
+      "01M3Q4H5JNCJDB32Z9Y6JFBW1N"
+    ]
+  }
+}

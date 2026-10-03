@@ -1,0 +1,103 @@
+{
+  "envelope": {
+    "id": "01M405PVMQ13ZG1X3Q20HJZ4WT",
+    "entity": "01M405PVMPN4JCRWYTQYPAKVJJ",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-03T06:02:34.519Z",
+    "reason": "Adopt the canonical dispatch contract at its architect-role home and own all shared generated/deployed targets after the primitive is whole.",
+    "cause": "Operator fixed cut: one unit for architect role; preserve complete caller migration and delete POC defaults."
+  },
+  "payload": {
+    "plan": "01M405KVBSH87W0NMA4G62HE3S",
+    "spec": {
+      "name": "architect-dispatch-contract",
+      "intent": "Realize the amended architect-role shard by adopting the dispatch contract as its apparatus and migrating every live delegation reader to it. Cite the shared repository census in strict-dispatch-returns of this plan, measured at f9a73ae5e76c9848ea2e0f965c5cf9bb39f1ce66 on 2026-10-03, including the handed design record IDs; do not re-census unchanged paths per implementer. The dependency is genuine: this unit consumes the canonical dispatch skill and proof delivered by strict-dispatch-returns. The explicitly fixed two-shard/two-unit cut therefore has successive waves rather than inventing independent slices that overwrite the same targets.\n\nUpdate the architect role dimension and its RoleCell so the responsibility for declaring each seam's strict contract, consuming only its conforming return, and treating mismatch as failed dispatch is explicit and dispatch is a required skill alongside design and note. Keep the role the architectural home and factor on the skill rather than duplicating its schemas in the role. Retain name-only routing, the principal's no-spec/no-artifact read boundary, existing planner/implementer/assayer/integrator responsibilities, ad-hoc delegation, planner route/closed-plan semantics and separation of transport failure from semantic verdict and whole failure. The generic delegation action should reference the caller-owned contract without retaining prose-return guidance that conflicts with it or restating the skill's schema catalog. The generic architect plus nico, kino and mav inherit through holds(architectRole), not four copied persona rules. The planner role also permits delegated census: make the dispatch skill reachable for that optional ad-hoc seam without moving the architectural owner or putting transport in the plan skill/records. Do not alter receiving roles' domain semantics merely to fit the POC examples.\n\nOwn the clean projection/deployment cutover. Regenerate both supported render trees using the existing project commands after building current source, deriving the complete agent inventory from source rather than retaining the stage's missing integrator. All affected agent targets, skill targets, preload/launch surfaces and render/deploy manifests are in this unit's footprint. Migrate the named user-scope POC files through normal projection/deployment: replace the manual dispatch skill with its corpus projection, replace the four manually patched architect-holder definitions, and remove output frontmatter from implementer, assayer, planner and integrator. Preserve unrelated user agents/settings and do not delete the entire agents directory. No compatibility schema defaults or POC alias remain. Native Claude Agent limitations must remain explicit in the projected dispatch skill, as supported-harness requires; the highest available fidelity is not a claim of strict native enforcement. Corpus source remains authoritative, and host cleanup alone is not completion.\n\nAdd focused source-derived reach/projection tests across the four declared architect dispatchers and the planner's optional census seam, both harnesses, and main-session plus delegated startup. Assert the complete agent and skill output inventory and frontmatter without relying on existing stage files. Use existing adapter/preload/deployment mechanisms rather than inventing a new delegation engine, output-schema model or capability. A narrow read-only audit of the real host POC replacements establishes deletion; stage/temp-home tests establish reproducibility. Own a separate changeset. All generated directories below are contention sets, not authority to rewrite unrelated assets: only bytes downstream of this adoption and regenerated manifest entries may change. Run focused tests and the two projection commands, not the integrator's full-project combination check.",
+      "static": [
+        "packages/canon/src/skills/dispatch/skill.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/src/agents/architect.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/canon/src/agents/mav.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/test/persona.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "package.json",
+        "/home/lex/workspaces/.handoff/cdd-dispatch-contract-handoff.md"
+      ],
+      "deps": [
+        "01M405KVCEY8VYQVADPZ2KT0TS"
+      ],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/test/architect-dispatch-contract.test.ts",
+        "packages/canon/test/fixtures/architect-dispatch-contract",
+        "packages/canon/test/persona.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        ".changeset/architect-dispatch-contract.md",
+        ".cratylus/claude",
+        ".cratylus/omp",
+        "/home/lex/.agents/skills/dispatch",
+        "/home/lex/.claude/skills/dispatch",
+        "/home/lex/.claude/agents",
+        "/home/lex/.claude/personas",
+        "/home/lex/.omp/agent/agents",
+        "/home/lex/.omp/agent/personas",
+        "/home/lex/.cratylus.json"
+      ],
+      "accept": [
+        "Source-derived reach tests print the complete dispatcher and optional census-delegation denominator. Every architect holder inherits the role-owned contract and dispatch skill; planner census delegation can load the same skill without adding transport to plan/unit records. No persona copies the contract or schema catalog. Tests fail for a seeded missing holder, absent dispatch preload or permissive/default-only instruction.",
+        "The architect retains its no-spec/no-artifact read boundary, name-only loop routing and the existing routing of ready/waiting/closed plans and domain verdicts. The contract distinguishes schema mismatch from note intake, a semantic not-achieved verdict and an integrator red, and requests no automatic retry.",
+        "After canonical source build, pnpm canon:project and pnpm canon:project:omp emit the source-derived agent inventory, including integrator, and the dispatch skill. Focused tests inspect both native agent definitions and main/delegated preload surfaces; every listed skill resolves. Reach output lists both harnesses, all inspected holders and generated paths, so a stale or empty stage cannot pass.",
+        "Both projections contain the caller-owned seam contract and no role output schema defaults. The emitted Claude skill explicitly states its native Agent machine-enforcement shortfall, while omp carries the native strict-call instruction. Tests reject a projection that silently omits the skill or claims equivalent enforcement.",
+        "The named POC host files are replaced from current corpus projection. A read-only host audit finds no output frontmatter in any of the four POC receiving-role definitions and no residual hand-edited dispatch schema/default guidance in the four architect-holder definitions or the dispatch skill. Temporary-home deploy tests reproduce that clean overwrite while preserving an unrelated agent and unrelated host configuration.",
+        "Focused architect-dispatch-contract, persona, practices and harness-parity checks pass after both projections. The distinct changeset records adoption and the role-default cutover. The unit changes no dispatch primitive/test/doc paths owned by strict-dispatch-returns; no transport schema is added to plan/unit data and no unrelated host artifact is removed."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M4055WFZCMFSX97216YRCT18",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M4055P8KM691BD2WDBGF5QVJ": "01M4055P8KM691BD2WDBGF5QVK",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}
