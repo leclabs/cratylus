@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M404N7A20CQW5W7TTQ5NAEZ8",
+    "entity": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZD7FHXXXGQ1VJ7YX41A76M"
+    ],
+    "author": "nico",
+    "time": "2026-10-03T05:44:12.354Z",
+    "reason": "Close after gathering the retired line's records to main; the original close record was uncommitted on the removed worktree.",
+    "cause": "operator ruling 2026-10-03: plan misguided, branch rejected"
+  },
+  "payload": {
+    "name": "persona-owned-enforcement",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8",
+      "01M3R07G7ZCK24TEDA78HW4VRM"
+    ],
+    "state": "closed"
+  }
+}
