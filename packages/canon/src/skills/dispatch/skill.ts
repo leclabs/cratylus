@@ -30,4 +30,5 @@ export const dispatch: Skill = {
   description:
     'Use at every delegation seam to make the caller own an invocation-specific return contract and request only a conforming value. Harness enforcement differs: omp supports native per-call strict schemas; Claude Code carries the caller schema in call instructions without machine enforcement.',
   formalBlock: FORMAL_BLOCK,
+  composition: () => [],
 };
