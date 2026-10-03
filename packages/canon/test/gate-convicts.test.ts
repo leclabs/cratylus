@@ -127,6 +127,7 @@ type Kind = 'GATE' | 'BEHAVIORAL';
 const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── canon ────────────────────────────────────────────────────────────
   'canon/architecture.test.ts': 'GATE',
+  'canon/architect-dispatch-contract.test.ts': 'GATE',
   // scans every tracked authored file's BYTES for a control byte outside tab/newline/CR
   // and for undecodable UTF-8 — the two ways a file stops being text and every text tool
   // goes silently dark on it. Its convicting fixtures drive the same two pure predicates
@@ -268,6 +269,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and asserted SILENT, which is the defect held green in perpetuity.
   'forge/deploy/check.test.ts': 'BEHAVIORAL',
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
+  // performs the actual Claude and omp user-scope projections over a seeded temporary
+  // home, asserting stale POC removal and preservation of unrelated host state.
+  'forge/deploy/architect-dispatch-contract.test.ts': 'BEHAVIORAL',
   'forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
   'forge/deploy/hooks.test.ts': 'BEHAVIORAL',
   // drives `addModelRoles` and `runInstall` over host configs and a corpus it builds
