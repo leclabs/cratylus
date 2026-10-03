@@ -71,7 +71,7 @@ export const architectRole: RoleCell = {
   // integrator's skill. Declared rather than described — omp injects them before a
   // dispatched subagent's first prompt and the generic launcher inlines their bodies for
   // a main session, so a holder is the same agent either way it is reached.
-  skills: ['design', 'note'],
+  skills: ['design', 'dispatch', 'note'],
   // The writers below, by role: the architect hands a shard to the planner, a ready
   // unit to the implementer, a commit to the assayer and an achieved unit to the
   // integrator, so an install that places an architect places those four.

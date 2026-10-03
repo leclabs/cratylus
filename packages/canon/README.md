@@ -88,6 +88,10 @@ ambient context.
 Because the plugin object loses its package-root provenance when a consumer imports it, the
 directory fields are resolved against `import.meta.url` at definition time and consumed verbatim.
 
+## Dispatch return contracts
+
+Each delegation invocation owns its return schema; role defaults do not define the caller's contract. The omp adapter can pass a native per-call strict schema and consume its parsed structured result. Claude Code carries the caller's schema and conforming-return instruction in the available Agent call instructions, which is the highest-fidelity projection available but does not provide machine-enforced per-call schema validation. A nonconforming return is not a valid route or verdict. Claude's print-mode `--json-schema` option does not establish enforcement for native Agent calls. Repository tests prove contract construction and skill projection, not external harness validation.
+
 ## Dependencies, stated plainly
 
 `@cratylus/schema` for the cell shapes and for `defineAgentPlugin`, which declares the plugin at its

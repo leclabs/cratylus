@@ -190,6 +190,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // never judged, a fabricated citation is discarded, an unenrolled scope is silent).
   'canon/purview-guardrail.test.ts': 'BEHAVIORAL',
   'canon/reader-density.test.ts': 'GATE',
+  'canon/dispatch-contract.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
   'canon/pack-smoke.test.ts': 'GATE',
