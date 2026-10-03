@@ -115,10 +115,13 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
       'native per-call schema enforcement exists on omp only',
     );
   });
-  it('the delegation dimension names caller-owned contract rather than generic prose (non-regressable)', () => {
-    expect(delegation).toContain('caller-owned dispatch contract');
-    expect(delegation).toContain('return ⊨ contract');
-    expect(delegation).toContain('human-project ↾ carried-deliverable');
+  it('the delegation dimension + fan-out cells carry the σ* contract (non-regressable)', () => {
+    // reader = LLM by construction: delegation returns are σ* (dense, no
+    // long-form prose); a human-facing carried deliverable is an explicit
+    // human-project. No ρ/register inference anywhere in signifier-derivation.
+    expect(delegation).toMatch(/return ↦ σ\*/);
+    expect(delegation).toMatch(/¬long-form-prose/);
+    expect(delegation).toMatch(/human-project ↾ carried-deliverable/);
     expect(delegation).not.toMatch(/ρ=/);
     expect(deliver.formalBlock).toContain('conform @ signify');
     expect(deliver.formalBlock).toContain('¬conform(r) ⇒ ¬accept(unit)(r)');

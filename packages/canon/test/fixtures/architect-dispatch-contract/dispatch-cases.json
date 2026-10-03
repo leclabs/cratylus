@@ -1,9 +1,0 @@
-{
-  "missingHolder": {
-    "name": "added-holder",
-    "holds": "architect",
-    "skills": []
-  },
-  "missingPreload": "output: {}",
-  "defaultOnlySkill": "role defaults output only"
-}

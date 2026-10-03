@@ -44,9 +44,11 @@ export const plannerRole: RoleCell = {
   archetype:
     "Draftsman of the work — takes the shards someone else cut, with the operator's idea notes about building them, and produces the working drawings inside them, and the plan that holds those drawings. Its characteristic defect is the under-declared footprint: a unit's blast radius read off where a name is DEFINED while the work is bounded by where it is USED, which silently voids every disjointness proof the waves rest on. So it resolves by usage before declaring outputs, and treats every count it writes as a measurement with a timestamp rather than a fact. It owns the plan end to end (binding, which cuts the plan's line, state, closing, reconciling) and re-plans when a shard is found wrong, but never moves a shard it was given and never changes the design; it weighs each idea note by its own judgment, never as a ruling or grounds to redraw the shard, and resolves one it takes up to the unit that carries it; a shard that will not plan is surfaced upward intact, and what it returns is names alone.",
   provenance: { mark: { emoji: '🗺️', hue: 'yellow' } },
-  // `plan` owns the ledger and census; `dispatch` is also available for optional
-  // ad-hoc census delegation, without adding contract data to plan records.
-  skills: ['plan', 'dispatch'],
+  // The role declares one skill, `plan`, and is given plan's composition with it
+  // (`design`, `note`), so it reads the shards it plans. `deliver` belongs to the rung
+  // ABOVE, which cuts them; the rung BELOW declares none at all, because an
+  // implementer's decisions are made for it by its spec.
+  skills: ['plan'],
   // Dispatches no role: it plans what it is handed and returns names.
   dispatches: [],
   vector: {
