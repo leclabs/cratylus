@@ -87,7 +87,7 @@
               "factor": { "type": "string" },
               "locus": { "type": "string" }
             },
-            "required": ["concept", "factor", "locus"],
+            "required": ["concept", "locus"],
             "additionalProperties": false
           }
         }

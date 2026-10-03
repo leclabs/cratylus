@@ -20,7 +20,7 @@ contract ∉ plan ∨ unit ⟨no schema or transport field⟩
 contract ∉ deliver ∨ generic output-format ∨ forge ∨ lifecycle state
 loop-result ⟨planner⟩ ∈ { waiting(plan ∧ waiting[unit ∧ blockers]), ready(plan ∧ ready[unit]), closed(plan) }
 loop-result ⟨implementer⟩ ∈ { landed(unit ∧ commit), blocked(unit ∧ reason) }
-loop-result ⟨assayer⟩ ∈ { achieved(unit ∧ commit), not-achieved(unit ∧ commit ∧ missing[concept ∧ factor ∧ locus]) }
+loop-result ⟨assayer⟩ ∈ { achieved(unit ∧ commit), not-achieved(unit ∧ commit ∧ missing[concept ∧ locus ∧ optional factor]) }
 loop-result ⟨integrator⟩ ∈ { whole(unit ∧ commit), red(unit ∧ commit ∧ failing-check), plan-close(plan ∧ release-disposition) }
 branch-required facts accompany the chosen result ⟨ad-hoc request ∉ loop is not forced into a loop result⟩
 ` as SkillExpression;

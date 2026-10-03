@@ -105,6 +105,14 @@ describe('invocation-owned dispatch contracts', () => {
     expect(schemas.implementer.landed.required).toContain('commit');
     expect(schemas.implementer.blocked.required).toContain('reason');
     expect(schemas.assayer['not-achieved'].required).toContain('missing');
+    expect(schemas.assayer['not-achieved'].items).toBeUndefined();
+    expect(
+      schemas.assayer['not-achieved'].properties.missing.items?.required,
+    ).toEqual(['concept', 'locus']);
+    expect(
+      schemas.assayer['not-achieved'].properties.missing.items?.properties
+        ?.factor,
+    ).toEqual({ type: 'string' });
     expect(schemas.integrator.red.required).toContain('check');
     expect(schemas.integrator['plan-close'].required).toContain(
       'releaseDisposition',
