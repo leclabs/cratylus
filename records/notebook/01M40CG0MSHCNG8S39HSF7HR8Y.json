@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M40CG0MSHCNG8S39HSF7HR8Y",
+    "entity": "01M40CG0MSHCNG8S39HSF7HR8X",
+    "operation": "create",
+    "supersedes": [],
+    "author": "IntegrateStrictDispatchReturns",
+    "time": "2026-10-03T08:01:10.297Z",
+    "reason": "Record gathering found two different immutable payloads under one ULID path.",
+    "cause": "The main checkout has an untracked design record that collides with an existing line record."
+  },
+  "payload": {
+    "title": "Immutable record ID collision 01M4055WFZCMFSX97216YRCT18",
+    "kind": "question",
+    "topic": "strict-dispatch-returns of dispatch-contract",
+    "body": "While gathering records, the main checkout held an untracked records/design/01M4055WFZCMFSX97216YRCT18.json whose content differs from the immutable record already on the integration line at that same ULID path. The line copy was preserved; the conflicting main-checkout copy was not imported or overwritten. Resolve the duplicate-ID record inconsistency before claiming that the line has gathered every record and is releasable.",
+    "blocks": []
+  }
+}
