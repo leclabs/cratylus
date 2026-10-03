@@ -85,7 +85,7 @@ function holderViolations(
 }
 
 function dispatchSkillViolations(body: string): string[] {
-  return [
+  const checks: readonly (readonly [string, string])[] = [
     ['caller declares its own contract', 'missing universal caller contract'],
     ['outputSchema', 'missing native omp schema projection'],
     ['schemaMode: strict', 'missing strict mode'],
@@ -93,7 +93,10 @@ function dispatchSkillViolations(body: string): string[] {
       'not machine-enforced structured transport',
       'missing Claude machine-enforcement shortfall',
     ],
-  ].flatMap(([needle, message]) => (body.includes(needle) ? [] : [message]));
+  ];
+  return checks.flatMap(([needle, message]) =>
+    body.includes(needle) ? [] : [message],
+  );
 }
 
 describe('architect dispatch contract reach and projection', () => {
