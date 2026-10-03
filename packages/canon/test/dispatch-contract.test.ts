@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
-import { adapterByName } from '../../forge/src/adapters/registry/index.js';
-import { projectPluginSet } from '../../forge/src/project/index.js';
 import canon from '../src/index.js';
 import { dispatch } from '../src/skills/dispatch/skill.js';
 import type { ContractFixtures } from './support/dispatch-contract/contracts.js';
@@ -88,6 +88,11 @@ describe('invocation-owned dispatch contracts', () => {
       expect(schema.additionalProperties).toBe(false);
       expect(schema.required.length).toBeGreaterThan(0);
     }
+    const schemaFor = (role: string, name: string) => {
+      const schema = schemas[role]?.[name];
+      if (!schema) throw new Error(`missing ${role} schema for ${name}`);
+      return schema;
+    };
     for (const name of [
       'landed',
       'blocked',
@@ -97,24 +102,23 @@ describe('invocation-owned dispatch contracts', () => {
       'red',
     ]) {
       const schema =
-        schemas.implementer[name] ??
-        schemas.assayer[name] ??
-        schemas.integrator[name];
+        schemas.implementer?.[name] ??
+        schemas.assayer?.[name] ??
+        schemas.integrator?.[name];
+      if (!schema) throw new Error(`missing schema for ${name}`);
       expect(schema.properties.unit?.const).toBe('strict-dispatch-returns');
     }
-    expect(schemas.implementer.landed.required).toContain('commit');
-    expect(schemas.implementer.blocked.required).toContain('reason');
-    expect(schemas.assayer['not-achieved'].required).toContain('missing');
-    expect(schemas.assayer['not-achieved'].items).toBeUndefined();
-    expect(
-      schemas.assayer['not-achieved'].properties.missing.items?.required,
-    ).toEqual(['concept', 'locus']);
-    expect(
-      schemas.assayer['not-achieved'].properties.missing.items?.properties
-        ?.factor,
-    ).toEqual({ type: 'string' });
-    expect(schemas.integrator.red.required).toContain('check');
-    expect(schemas.integrator['plan-close'].required).toContain(
+    expect(schemaFor('implementer', 'landed').required).toContain('commit');
+    expect(schemaFor('implementer', 'blocked').required).toContain('reason');
+    expect(schemaFor('assayer', 'not-achieved').required).toContain('missing');
+    expect(schemaFor('assayer', 'not-achieved').items).toBeUndefined();
+    const missingItems = schemaFor('assayer', 'not-achieved').properties.missing
+      ?.items;
+    if (!missingItems) throw new Error('missing-items schema is absent');
+    expect(missingItems.required).toEqual(['concept', 'locus']);
+    expect(missingItems.properties?.factor).toEqual({ type: 'string' });
+    expect(schemaFor('integrator', 'red').required).toContain('check');
+    expect(schemaFor('integrator', 'plan-close').required).toContain(
       'releaseDisposition',
     );
   });
