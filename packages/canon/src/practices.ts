@@ -12,12 +12,10 @@
 // implementer, assayer and integrator, so every practice that places an architect
 // lists those four beside it. It lists SKILLS only where no agent carries them: a
 // skill an agent is given travels with the agent, and whatever a skill composes
-// travels with it. The architect carries `dispatch`, so each practice that places
-// an architect receives that skill through the agent without listing it separately.
-// A guard (a hook cell that binds a composition) is listed nowhere: it is registered
-// exactly when a rendered agent composes what it binds. A hook cell that binds no
-// composition but serves what an agent DECLARES is listed by the practices that place
-// that agent.
+// travels with it. A guard (a hook cell that binds a composition) is listed nowhere:
+// it is registered exactly when a rendered agent composes what it binds. A hook cell
+// that binds no composition but serves what an agent DECLARES is listed by the
+// practices that place that agent.
 //
 // The practice names are signs of THIS corpus's own making; the consumer-facing
 // description is the one line an install shows beside each.
