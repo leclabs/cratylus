@@ -71,6 +71,7 @@ describe('invocation-owned dispatch contracts', () => {
     expect(omp).toContain('outputSchema');
     expect(omp).toContain('schemaMode: strict');
     expect(omp).toContain('structuredOutput.data');
+    expect(claude).toContain('pass invocation-specific outputSchema');
     expect(claude).toContain('actual schema');
     expect(claude).toContain('not machine-enforced');
     expect(claude).toContain('--json-schema');
