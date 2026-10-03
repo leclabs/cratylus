@@ -23,9 +23,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { dispatch } from '../src/skills/dispatch/skill.js';
 import { delegation } from '../src/dimensions/actions/delegation.js';
 import { deliver } from '../src/skills/deliver/skill.js';
+import { dispatch } from '../src/skills/dispatch/skill.js';
 import { exemplify } from '../src/skills/exemplify/skill.js';
 import {
   type ArtClass,
@@ -106,10 +106,14 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
   // ── the codification homes are standing law, not per-turn discretion ─────────
   it('pins the canonical invocation contract and mismatch handling', () => {
     expect(dispatch.formalBlock).toContain('outputSchema ∧ schemaMode: strict');
-    expect(dispatch.formalBlock).toContain('consume parsed structuredOutput.data');
+    expect(dispatch.formalBlock).toContain(
+      'consume parsed structuredOutput.data',
+    );
     expect(dispatch.formalBlock).toContain('failed-dispatch ↦ dispatcher');
     expect(dispatch.formalBlock).toContain('¬ automatic redispatch');
-    expect(dispatch.formalBlock).toContain('native Agent calls lack omp');
+    expect(dispatch.formalBlock).toContain(
+      'native per-call schema enforcement exists on omp only',
+    );
   });
   it('the delegation dimension + fan-out cells carry the σ* contract (non-regressable)', () => {
     // reader = LLM by construction: delegation returns are σ* (dense, no
