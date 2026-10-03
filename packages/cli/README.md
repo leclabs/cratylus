@@ -265,7 +265,6 @@ and warns where it falls short; they are not the same, and this is what a user m
   `## Required reading` by its hook instead of printed, and the agent loads it with the Skill tool
   on demand. Install warns once per such skill and weighs it against the home it installs under,
   since the path is part of the output.
-- **Dispatch return contracts.** Every delegation invocation supplies its own schema and requests a conforming value. omp supports native per-call strict schemas and parsed structured results. Claude Code passes the caller's schema and conforming-return instruction through the available Agent call instructions, but this is an instruction projection, not machine-enforced structured transport; do not accept a nonconforming return as a route or verdict. Claude's print-mode `--json-schema` does not enforce schemas on Agent calls. Repository projection tests do not test external enforcement. See Claude's [CLI reference](https://code.claude.com/docs/en/cli-reference) and [subagents documentation](https://code.claude.com/docs/en/sub-agents).
 - **Guards.** A guard judges an act against the contract of the agent that performs it, and only in
   the main session of an agent that composes it, never in a subagent that agent dispatches. A bare
   `claude` or `omp` session is not judged, which makes starting one the off switch. A harness that
