@@ -1,23 +1,6 @@
 {
-  "wrongUnit": {
-    "value": { "unit": "another-unit", "status": "landed", "commit": "abc" },
-    "violates": "properties.unit.const"
-  },
-  "missingReason": {
-    "value": { "unit": "strict-dispatch-returns", "status": "blocked" },
-    "violates": "required.reason"
-  },
-  "extraProperty": {
-    "value": {
-      "unit": "strict-dispatch-returns",
-      "status": "landed",
-      "commit": "abc",
-      "commentary": "done"
-    },
-    "violates": "additionalProperties.false"
-  },
-  "proseInsteadOfObject": {
-    "value": "The work is complete.",
-    "violates": "type.object"
-  }
+  "wrongUnit": {"value":{"unit":"another-unit","status":"landed","commit":"abc"},"violates":"properties.unit.const"},
+  "missingReason": {"value":{"unit":"strict-dispatch-returns","status":"blocked"},"violates":"required.reason"},
+  "extraProperty": {"value":{"unit":"strict-dispatch-returns","status":"landed","commit":"abc","commentary":"done"},"violates":"additionalProperties.false"},
+  "proseInsteadOfObject": {"value":"The work is complete.","violates":"type.object"}
 }
