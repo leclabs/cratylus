@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M404G5MBQN8BBF8ZB8ECBFW2",
+    "entity": "01M404G5MBQN8BBF8ZB8ECBFW1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-03T05:41:26.795Z",
+    "reason": "Correcting my scope error after the operator identified the repeatedly observed semantic-guesswork veto as the real consumer bug.",
+    "cause": "operator redirect: authorized SendMessage falsely denied; guard overreach is the actual intended fix"
+  },
+  "payload": {
+    "title": "semantic suspicion must not veto authorized work",
+    "kind": "decision",
+    "topic": "enforcement scope",
+    "body": "The operator's actual target is recurring false refusals of authorized actions, not expanded persona-launch or skill-delivery work. Evidence in this session includes purview denying route withdrawal and native-process hosting as dispatcher-written specs, and denying a read-only recall tool device because its transport was named Write. Existing semantic judges guess whether an act fits a natural-language role contract and turn that guess into a hard veto. Correct design must separate enforcement of machine-verifiable authority/effect invariants from advisory interpretation of semantic intent: an LLM concern is not proof of a violation and must not override established operator authorization. Human intentions need not all become machine-checkable; those that cannot be checked must not be falsely presented as enforceable predicates. Preserve real objective protections and operator control. Stop the persona-owned-enforcement plan while the holder rectifies this goal; do not fix the problem through more prompt exceptions or an unrelated skill-delivery overhaul. Shared skills and references can already satisfy complete agent composition without physical per-agent duplication or eager body injection.",
+    "blocks": []
+  }
+}
