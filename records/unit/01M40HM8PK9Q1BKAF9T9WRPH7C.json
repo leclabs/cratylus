@@ -1,0 +1,236 @@
+{
+  "envelope": {
+    "id": "01M40HM8PK9Q1BKAF9T9WRPH7C",
+    "entity": "01M405KVCEY8VYQVADPZ2KT0TS",
+    "operation": "amend",
+    "supersedes": [
+      "01M40HGD9Y5G4BVZ2XHZ4K52NV"
+    ],
+    "author": "RegisterDispatchConvict",
+    "time": "2026-10-03T09:30:52.499Z",
+    "reason": "Add_convicting_fixture",
+    "cause": "Meta_gate_failure"
+  },
+  "payload": {
+    "plan": "01M405KVBSH87W0NMA4G62HE3S",
+    "spec": {
+      "name": "strict-dispatch-returns",
+      "intent": "Realize the amended dispatch contract shard, whose factor is supported harness, in the canonical dispatch skill. Retain this unit and its active state, existing artifact work, landing 30d76279 and not-achieved assay as historical evidence against the previous pin. Neither that assay nor this re-plan accepts the amended target. Continue from the committed candidate in /home/lex/workspaces/cratylus.strict-dispatch-returns, not the older partial skill in the main checkout; preserve unrelated work in every checkout. A fresh candidate and a fresh assay against the corrected pin are required before integration and completion.\n\nShared census, refreshed on 2026-10-03: the original repository baseline is f9a73ae5e76c9848ea2e0f965c5cf9bb39f1ce66; candidate 30d762791570396d75b8d6ad41477893ec445755 changes only the dispatch skill, dispatch-contract test, reader-reach test, dispatch-contract fixtures/support, generated delegation/return fixtures and dispatch changeset. The two README outputs have not been changed by that candidate. This refresh supersedes the obsolete no-implementation and uncommitted-only claims, not the historical baseline. The plan line is 0d2f1353785616fea4f303d53dcabdce1656982e plus the architect's uncommitted dispatch amendment records/design/01M4074Z1AHWJJAWCYQEHT14CP.json and blocking note. Usage census at the baseline, confirmed against the unchanged source: architect, nico, kino and mav inherit architectRole; its role dimension and RoleCell and the delegation action are adoption sites; the planner's delegated-census permission is an optional ad-hoc reader. These readers belong to architect-dispatch-contract, not this unit. The complete supported-harness denominator is Claude Code and omp. The candidate's canonical skill, emitted skill, delegation fixture and instruction assertions currently spell an unconditional outputSchema/schemaMode rule; those are this unit's correction sites. Both units cite this shared census rather than repeating it. Counts are measurements at these commits, not assumptions about future generated inventories.\n\nSeparate the invariant from its harness realization. Every delegation invocation supplies its caller-owned schema and asks for only its conforming value; unit-scoped contracts pin the named unit, loop seams derive their required facts from the receiving role, and ad-hoc seams use the request's own shape. Role-default schemas are neither authoritative nor required. The canonical rule must not require omp transport fields on every supported harness. On omp, pass native per-call outputSchema and schemaMode strict and consume parsed structuredOutput.data, including addressed fields where available. A native strict mismatch is a failed dispatch delivered to the dispatcher, not a design note, whole failure, semantic assay verdict, lifecycle-state mutation or automatic redispatch.\n\nOn Claude Code native Agent calls, carry the caller's actual schema and conforming-return instruction in the available call instructions, state explicitly that this is the highest-fidelity instruction projection rather than machine-enforced structured transport, and do not consume a nonconforming return as a valid route or verdict. Do not claim a native validator refused it. Explicitly disclose the missing per-call schema-enforcement seam in the canonical and emitted skill and supported-harness documentation. Print-mode --json-schema does not establish Agent-tool enforcement. Do not invent Agent fields, a validator, a delegation engine, an omp bridge or compensating role-output defaults. The existing Skill/formalBlock and adapter projection apparatus suffices; do not move the law into deliver, generic output formatting, forge or lifecycle state, and add no schema/transport field to plan or unit data.\n\nRetain and correct the existing focused canonical, projection, illustrative caller-schema and structured-return fixtures. Cover planner ready/waiting/closed, implementer landed/blocked, assayer achieved/not-achieved with missing-part addresses, and integrator whole/red/plan-close without forcing ad-hoc calls into a loop schema. Update reader-reach and the generated delegation prompt so the same qualification survives every instruction reader. Add regression assertions that distinguish the universal caller schema from omp-only native enforcement, rather than passing because a Claude shortfall sentence coexists with an unconditional native-transport requirement. Projection proof may use temporary roots; staged and deployed adoption artifacts remain exclusively owned by the dependent unit.\n\nFinish both declared README updates and retain/update the dispatch changeset. Document the actual harness difference with the Claude CLI and subagent references. The live strict-schema POC in the handed cdd-dispatch-contract-handoff.md is design evidence for the external omp precondition, not post-change acceptance evidence. Repository acceptance covers changed instructions, contract construction, projection and footprint only; it does not require a new live harness run, observing external retries or ledger writes, or recreating native enforcement. Run only the focused dispatch-contract and reader-reach checks for the changed artifacts; full combination verification belongs to the integrator. Print the complete inspected fixture/harness denominator in reach proof. Preserve all completed valid history; this plan currently has no completed unit to reset or reopen. Leave the architect-owned blocking note unresolved.",
+      "static": [
+        "packages/canon/src/skills/event-tap/skill.ts",
+        "packages/canon/src/manifest.ts",
+        "packages/canon/src/index.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/src/dimensions/role/implementer.ts",
+        "packages/canon/src/dimensions/role/assayer.ts",
+        "packages/canon/src/dimensions/role/integrator.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "/home/lex/workspaces/.handoff/cdd-dispatch-contract-handoff.md",
+        "/home/lex/.agents/skills/dispatch/SKILL.md"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/dispatch/skill.ts",
+        "packages/canon/test/dispatch-contract.test.ts",
+        "packages/canon/test/support/dispatch-contract",
+        "packages/canon/test/fixtures/dispatch-contract",
+        "packages/canon/test/fixtures/generated/delegation-prompt.md",
+        "packages/canon/test/fixtures/generated/subagent-return.md",
+        "packages/canon/test/reader-reach.test.ts",
+        "packages/canon/README.md",
+        "packages/cli/README.md",
+        ".changeset/dispatch-contract.md"
+      ],
+      "accept": [
+        "The canonical skill and both emitted skills require a caller-owned schema and conforming value for every invocation, but attach native outputSchema/schemaMode strict, parsed structuredOutput.data and native mismatch refusal only to omp. Focused tests fail when native fields or enforcement are made unconditional across harnesses, when role defaults become the contract, or when the omp strict path is removed. Unit-name pinning and the no-automatic-redispatch law remain asserted. These are repository instruction/projection tests, not a test of the external harness validator.",
+        "Loop guidance and illustrative caller-contract fixtures cover the actual receiving-role result branches: planner ready/waiting/closed, implementer landed/blocked, assayer achieved/not-achieved with missing-part addresses, and integrator whole/red and plan-close, without forcing an ad-hoc request into those shapes. Contract-shape tests assert the contextual names, conditional required facts, unit const for each unit-scoped example, and closed object properties; wrong-unit, missing-required-data and extra-property/prose controls identify the schema constraints they violate without claiming to exercise the native validator. No schema or transport field is added to any plan/unit model, capability or record, and no return-format law is installed in deliver or a generic output-format cell.",
+        "The changed user documentation explicitly separates repository-owned projection/contract proof from external omp enforcement, identifying the existing live strict-schema POC in the handed cdd-dispatch-contract-handoff.md as design evidence for the harness precondition. No pre-change POC, mock, text assertion or environment failure is reported as post-change native dispatch refusal evidence. A new live harness run and retained native-validator results are not unit acceptance requirements.",
+        "Repository tests assert that the canonical and emitted mismatch guidance returns a failed dispatch to its dispatcher and expressly excludes automatic redispatch, design-note creation, whole failure, semantic assay verdict and lifecycle-state mutation as mismatch handling. The unit adds no runtime retry, note, whole or plan/unit state-write path. This criterion concerns the changed instructions and artifact footprint; it requires no observation of external harness internals or execution against a live plan.",
+        "Projection tests read the emitted Claude dispatch skill and assert that the caller schema and conforming-return instruction travel through native Agent call instructions, with an explicit absence of per-call machine enforcement. They reject false parity, invented transport fields, role defaults as compensation, and using print-mode --json-schema as Agent enforcement evidence. Tests distinguish the absence of enforcement from the obligation not to consume a nonconforming return as a route or verdict. Both declared READMEs describe the supported-harness difference, citing https://code.claude.com/docs/en/cli-reference and https://code.claude.com/docs/en/sub-agents.",
+        "Updated delegation/return fixtures exercise the structured seam, and reader-reach plus dispatch-contract focused tests pass. Reach proof prints the complete inspected fixture/harness denominator. A changeset records the user-visible contract; no generated/staged/host artifacts owned by architect-dispatch-contract are modified."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M4055P8KM691BD2WDBGF5QVJ",
+      "version": "01M4074Z1AHWJJAWCYQEHT14CP",
+      "closure": {
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "30d76279",
+        "author": "BuildStrictDispatchReturns-2",
+        "time": "2026-10-03T06:23:13.017Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "30d76279",
+        "verdict": "not-achieved",
+        "missing": [
+          "dispatch contract — machine-enforced return shape at packages/canon/src/skills/dispatch/skill.ts:15 and the Claude projection"
+        ],
+        "author": "AssayStrictDispatchReturns",
+        "time": "2026-10-03T06:26:13.549Z"
+      },
+      {
+        "kind": "land",
+        "commit": "1aa1f02c",
+        "author": "RecoverStrictDispatchReturns",
+        "time": "2026-10-03T07:45:17.809Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "1aa1f02c",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayRecoveredDispatchReturns",
+        "time": "2026-10-03T07:48:45.694Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: @cratylus/canon build fails: packages/canon/src/skills/dispatch/skill.ts(28,14) TS2741 Property 'composition' is missing in type '{ name: string; description: string; formalBlock: SkillExpression; }' but required in type 'Skill<\"eventTap\" | \"design\" | \"plan\" | \"note\">'",
+        "author": "IntegrateStrictDispatchReturns",
+        "time": "2026-10-03T07:51:14.570Z"
+      },
+      {
+        "kind": "land",
+        "commit": "be0739c3",
+        "author": "RepairStrictDispatchReturns",
+        "time": "2026-10-03T07:53:42.941Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "be0739c3",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "ReassayStrictDispatchReturns",
+        "time": "2026-10-03T07:57:42.582Z"
+      },
+      {
+        "kind": "broke",
+        "check": "git merge be0739c3: add/add conflicts in packages/canon/src/skills/dispatch/skill.ts and packages/canon/test/dispatch-contract.test.ts; content conflicts in packages/canon/test/fixtures/generated/delegation-prompt.md and packages/canon/test/reader-reach.test.ts",
+        "author": "IntegrateStrictDispatchReturns",
+        "time": "2026-10-03T07:59:24.340Z"
+      },
+      {
+        "kind": "land",
+        "commit": "3cc1b12d",
+        "author": "FinishDispatchFixtureRepair",
+        "time": "2026-10-03T08:08:40.478Z"
+      },
+      {
+        "kind": "land",
+        "commit": "94f71508",
+        "author": "LandDispatchConflictRepair",
+        "time": "2026-10-03T08:09:17.159Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "94f71508",
+        "verdict": "not-achieved",
+        "missing": [
+          "dispatch contract — every dispatch supplies the schema for that particular seam — packages/canon/src/roles/architect.ts:66-78 and packages/canon/src/practices.ts:30-67 leave the dispatch skill outside every dispatching agent and practice"
+        ],
+        "author": "AssayFinalDispatchReturns",
+        "time": "2026-10-03T08:13:02.509Z"
+      },
+      {
+        "kind": "land",
+        "commit": "0e09a885",
+        "author": "WireDispatchSkill",
+        "time": "2026-10-03T08:14:32.065Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "0e09a885",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayDispatchReach",
+        "time": "2026-10-03T08:17:45.103Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: biome check . fails formatting in packages/canon/test/fixtures/dispatch-contract/controls.json and packages/canon/test/support/dispatch-contract/contracts.ts",
+        "author": "IntegrateDispatchReach",
+        "time": "2026-10-03T08:19:39.650Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: @cratylus/canon build fails at packages/canon/src/skills/dispatch/skill.ts(26,14): TS2741 Property 'composition' is missing in type '{ name: string; description: string; formalBlock: SkillExpression; }' but required in type Skill<eventTap | design | plan | note>.",
+        "author": "IntegrateFormattedDispatch",
+        "time": "2026-10-03T08:59:15.965Z"
+      },
+      {
+        "kind": "land",
+        "commit": "d92cbcad",
+        "author": "RebaseDispatchUnit",
+        "time": "2026-10-03T09:09:29.155Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "d92cbcadafaabc1ac12d0ba75c6d1b4d635568be",
+        "verdict": "not-achieved",
+        "missing": [
+          "dispatch contract — unit-loop seams must derive their shape from the receiving role — packages/canon/src/skills/dispatch/skill.ts:22-24 and packages/canon/test/fixtures/dispatch-contract/seams.json:43-119 omit role-required return addresses and require a factor for every not-achieved finding even when the missing part is a shard clause"
+        ],
+        "author": "AssayCumulativeDispatch",
+        "time": "2026-10-03T09:12:55.881Z"
+      },
+      {
+        "kind": "land",
+        "commit": "45f0c43a",
+        "author": "CompleteDispatchSeams",
+        "time": "2026-10-03T09:16:27.216Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "45f0c43a",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayCompleteDispatchSeams",
+        "time": "2026-10-03T09:19:18.251Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: @cratylus/canon typecheck:test fails with TS6059 imports outside canon rootDir and TS18048/TS2532 possibly-undefined return schema accesses in packages/canon/test/dispatch-contract.test.ts",
+        "author": "IntegrateCompleteDispatch",
+        "time": "2026-10-03T09:21:52.914Z"
+      },
+      {
+        "kind": "land",
+        "commit": "c3ea3873",
+        "author": "RepairDispatchTypecheck",
+        "time": "2026-10-03T09:24:31.278Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "c3ea3873",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayDispatchTypecheck",
+        "time": "2026-10-03T09:25:48.383Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: @cratylus/canon test failed gate-convicts.test.ts because canon/dispatch-contract.test.ts lacks a convicting fixture",
+        "author": "IntegrateTypecheckedDispatch",
+        "time": "2026-10-03T09:28:46.142Z"
+      },
+      {
+        "kind": "land",
+        "commit": "06687044",
+        "author": "RegisterDispatchConvict",
+        "time": "2026-10-03T09:30:52.499Z"
+      }
+    ]
+  }
+}
