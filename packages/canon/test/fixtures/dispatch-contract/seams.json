@@ -1,0 +1,20 @@
+{
+  "planner": {
+    "ready": {"type":"object","properties":{"plan":{"type":"string"},"ready":{"type":"array","items":{"type":"string"}}},"required":["plan","ready"],"additionalProperties":false},
+    "waiting": {"type":"object","properties":{"plan":{"type":"string"},"waiting":{"type":"array","items":{"type":"object","properties":{"unit":{"type":"string"},"blockedBy":{"type":"array","items":{"type":"string"}}},"required":["unit","blockedBy"],"additionalProperties":false}},"required":["plan","waiting"],"additionalProperties":false},
+    "closed": {"type":"object","properties":{"plan":{"type":"string"},"status":{"const":"closed"}},"required":["plan","status"],"additionalProperties":false}
+  },
+  "implementer": {
+    "landed": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"status":{"const":"landed"},"commit":{"type":"string"}},"required":["unit","status","commit"],"additionalProperties":false},
+    "blocked": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"status":{"const":"blocked"},"reason":{"type":"string"}},"required":["unit","status","reason"],"additionalProperties":false}
+  },
+  "assayer": {
+    "achieved": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"commit":{"type":"string"},"verdict":{"const":"achieved"}},"required":["unit","commit","verdict"],"additionalProperties":false},
+    "not-achieved": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"commit":{"type":"string"},"verdict":{"const":"not-achieved"},"missing":{"type":"array","items":{"type":"object","properties":{"concept":{"type":"string"},"factor":{"type":"string"},"locus":{"type":"string"}},"required":["concept","factor","locus"],"additionalProperties":false}},"required":["unit","commit","verdict","missing"],"additionalProperties":false}
+  },
+  "integrator": {
+    "whole": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"commit":{"type":"string"},"result":{"const":"whole"}},"required":["unit","commit","result"],"additionalProperties":false},
+    "red": {"type":"object","properties":{"unit":{"const":"strict-dispatch-returns"},"commit":{"type":"string"},"result":{"const":"red"},"check":{"type":"string"}},"required":["unit","commit","result","check"],"additionalProperties":false},
+    "plan-close": {"type":"object","properties":{"plan":{"type":"string"},"status":{"const":"closed"},"releaseDisposition":{"type":"string"}},"required":["plan","status","releaseDisposition"],"additionalProperties":false}
+  }
+}

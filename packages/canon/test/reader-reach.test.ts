@@ -5,11 +5,9 @@
 //   1. CONSUMER-GENERATED artifacts — what the generating skills (praxis ·
 //      create-agent · exemplify) emit on consumer hosts. Fixtures under
 //      `test/fixtures/generated/` were produced 2026-07-01 on fresh consumer
-//      projects by the skills AS CODIFIED (each cell now carries the ρ=LLM
-//      discipline in its own laws) and pinned here; each must conform. The
-//      exception is the delegation-prompt and subagent-return pair, which
-//      depicts this corpus's implementer: a dispatch naming the one unit to
-//      build, and the return that is only that unit's name.
+//      The delegation-prompt and subagent-return pair depicts a structured,
+//      invocation-owned contract: the caller names its unit and schema and the
+//      return is parsed data rather than an account.
 //   2. AGENT↔AGENT messages — delegation prompts + subagent returns, ρ=LLM by
 //      standing rule (codified: `dimensions/actions/delegation.ts` definiens; the
 //      dispatch/judge laws in `skills/praxis.ts`; `conform(k)` in exemplify's
@@ -25,6 +23,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { dispatch } from '../src/skills/dispatch/skill.js';
 import { delegation } from '../src/dimensions/actions/delegation.js';
 import { deliver } from '../src/skills/deliver/skill.js';
 import { exemplify } from '../src/skills/exemplify/skill.js';
@@ -105,6 +104,13 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
   });
 
   // ── the codification homes are standing law, not per-turn discretion ─────────
+  it('pins the canonical invocation contract and mismatch handling', () => {
+    expect(dispatch.formalBlock).toContain('outputSchema ∧ schemaMode: strict');
+    expect(dispatch.formalBlock).toContain('consume parsed structuredOutput.data');
+    expect(dispatch.formalBlock).toContain('failed-dispatch ↦ dispatcher');
+    expect(dispatch.formalBlock).toContain('¬ automatic redispatch');
+    expect(dispatch.formalBlock).toContain('native Agent calls lack omp');
+  });
   it('the delegation dimension + fan-out cells carry the σ* contract (non-regressable)', () => {
     // reader = LLM by construction: delegation returns are σ* (dense, no
     // long-form prose); a human-facing carried deliverable is an explicit
