@@ -241,6 +241,7 @@ describe('canon practices — what a render places', () => {
         'mav',
         'planner',
       ]);
+      expect((await render(harness, ['cdd'])).skills).toContain('dispatch');
     }
   }, 120_000);
 
