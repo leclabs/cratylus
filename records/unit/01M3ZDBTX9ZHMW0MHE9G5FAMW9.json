@@ -1,0 +1,88 @@
+{
+  "envelope": {
+    "id": "01M3ZDBTX9ZHMW0MHE9G5FAMW9",
+    "entity": "01M3ZDBTX9ZHMW0MHE9G5FAMW8",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-02T22:57:07.497Z",
+    "reason": "Dispatch-sized realization of the rectified handed shard, with acceptance confined to its own delta and dependencies carrying shared-output serialization.",
+    "cause": "Persona launch now factors skill routing; current planner role permits genuine singleton dependency waves."
+  },
+  "payload": {
+    "plan": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "spec": {
+      "name": "composition-owned-guards",
+      "intent": "Census: complete-persona-launch of plan persona-owned-enforcement, source commit a327bd6e96f3c92d1dba0242bf886e6abc094cda. The line at d8701e45 changes only planning/design/notebook records relative to that source; the original source census still applies. The prior implementer's isolated edits are unaccepted and are not a baseline. Use a fresh isolated checkout off the line after predecessors are whole. Do not run builds/tests/linters/formatters mid-flight; main/integrator verifies the coherent unit against only its criteria. No design changes or rubric redesign are authorized.\n\nOwn the enforcement delta only, across both supported adapters: composition is propagated from discovery through registration, each applicable guard/act invokes once in the selected main session, and a discovered installed copy grants no enrollment. Reuse core/enrollment composes and realized-event decisions. Partition bound guards from non-enforcing plumbing before the current map to hooks/scopeActivatedSurface drops binds. Emit only the selected agent's applicable guard set; deduplicate HookCell/enforcing-fragment routes by guard identity and actual trigger/selector. Shared workers remain shared. Session plumbing must not carry guards or be replicated into every persona solely because the old profile model did so.\n\nFor omp, retain native discovery for unrelated host extensions, but remove guards from the user-native session-root module. Activate per-persona guard modules only through the selected overlay; do not treat overlays as replacing native discovery. Preserve the existing main/subagent check and unknown-kind diagnostic. For Claude, move composition guards out of global settings into the selected agent's existing native hook body, retaining one hooks key, ordering, canonical selectors and native subagent exclusion. Supply that selected installation's explicit scope in its owned command/envelope. Workers must check their own gate and applicable moment in that scope; a namesake manifest found from agent_type alone is not authority. Contract lookup uses the same selected owner. Do not alter judge prompts, deadlines, recovery, contest/retry or stop-loop behavior.\n\nUse the existing module filename convention in this factor unit: owner-qualified naming and final command/body ownership are the persona-launch unit's delta. This avoids mixing an unrelated naming migration into worker admission. Do remove obsolete global guard registrations and attributed artifacts through existing deploy/prune mechanisms here; never scan-delete unrecorded host files. Migrate affected exports and all projection, adapter, worker and harness-parity expectations within the declared envelope so this factor can pass its own whole check. Update source cells and regenerate their committed shell targets rather than treating the old isolated target edits as authored source. Guard-specific docs and a changeset belong here. Do not redesign skill preload or require whole persona-launch acceptance yet.\n\nAcceptance uses the existing generated-module execution harness, real shell workers and deterministic judge fixtures; it must execute the union of native/global and selected surfaces in the harness-faithful order and assert counts, not only filenames. These are tests of the code changed here, not a mandate to build an offline model gateway or a multi-model platform. The following complete-persona-launch unit owns a focused check at the real native-loader seam once both factors have landed.",
+      "static": [
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/adapters/omp/events.ts",
+        "packages/forge/src/adapters/claude/events.ts",
+        "packages/canon/src/guard-shell.ts",
+        "packages/canon/tooling/project-targets.ts",
+        "packages/forge/src/prune/index.ts"
+      ],
+      "deps": [
+        "01M3ZDBTBGT4GV0N19315JYTG0"
+      ],
+      "outputs": [
+        "packages/forge/src/core/enrollment.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/claude/hooks.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/schema/src/hook-cell.ts",
+        "packages/canon/src/hooks/purview-guardrail.ts",
+        "packages/canon/src/hooks/stance-guardrail-pre.ts",
+        "packages/canon/src/hooks/stance-guardrail.ts",
+        "packages/canon/targets/guardrail/purview-guardrail.sh",
+        "packages/canon/targets/guardrail/stance-guardrail-pre.sh",
+        "packages/canon/targets/guardrail/stance-guardrail.sh",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/agent-hooks.test.ts",
+        "packages/forge/test/project/enforcement-ownership.test.ts",
+        "packages/forge/test/project/bindings.test.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/forge/test/project/practices.test.ts",
+        "packages/forge/test/project/projection-facts.test.ts",
+        "packages/forge/test/project/degradation.test.ts",
+        "packages/forge/test/project/realization.test.ts",
+        "packages/forge/test/project/shortfall-adapter.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "packages/forge/test/deploy/hooks.test.ts",
+        "packages/forge/test/deploy/prune.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/canon/test/stance-guardrail-dark.test.ts",
+        "packages/canon/test/hook-act-selector.test.ts",
+        "packages/canon/test/hook-rule-boundary.test.ts",
+        "packages/canon/test/support/guardrail/test-stance-guardrail.sh",
+        "packages/forge/README.md",
+        "packages/cli/README.md",
+        "packages/canon/targets/guardrail/README.md",
+        ".changeset/composition-owned-guards.md"
+      ],
+      "accept": [
+        "Print HARNESS_NAMES, composing/unbound agents and applicable guard/act denominators. Projection of differently composed agents plus an unbound agent emits exactly their guard sets, no guard handlers in global/native-session surfaces, and no duplicate path when the same guard arrives through both source routes. A fixture containing the original N+1 global guard registrations is rejected.",
+        "Execute all discovered global and selected generated registrations together with real workers. For each applicable main-session act assert one worker/judge invocation; bare, unbound, other-owner and dispatched-subagent controls assert zero, while an unrelated session-plumbing sentinel still fires. Test both adapter event mappings and paths containing spaces.",
+        "Explicit scope/gate/moment admission reaches the selected contract bytes; agent_type plus a discovered namesake manifest, a manifest carrying only another guard, and a child carrying inherited scope do not enroll. Keep existing behavioral guard regressions and target byte-lock passing without rubric changes.",
+        "Reproject/redeploy removes only manifest-attributed obsolete global guard registrations and stale modules, preserves unrecorded host hooks/extensions, and is idempotent. Update parity gates to inspect owned surfaces rather than insisting every guard appears in the session-root file. No whole-skill or command-name migration is owed by this factor."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "version": "01M3ZAHN9C1K8SMCQCA540M8H1",
+      "closure": {}
+    },
+    "ledger": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "envelope": {
+    "id": "01M3ZB91ASVAP4E7CPN2VFV5RW",
+    "entity": "01M3Z9S13CP2PHJNBMF97DPX1R",
+    "operation": "amend",
+    "supersedes": [
+      "01M3Z9S13CP2PHJNBMF97DPX1S"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T22:20:38.617Z",
+    "reason": "Take up complete-agent ownership and owner-qualified guard module names; the current global copy is attributed deployment output, and filenames clarify ownership but never confer it.",
+    "cause": "Planning census of the handed idea against the amended persona launch closure"
+  },
+  "payload": {
+    "title": "persona-owned extension names",
+    "kind": "idea",
+    "topic": "persona launch",
+    "body": "The operator suggests treating a launchable persona's guards as part of the whole agent it launches, and giving that persona's deployed extensions persona-specific names to make their ownership explicit. Distinguish the conceptual requirement (the launch brings the agent's complete composition, with its own applicable guards and contract) from implementation choices (module filenames, directories and shared code). Investigate the user-scoped cratylus-session copy as possible historical residue or a current deployment defect before deciding the cutover.",
+    "blocks": [],
+    "resolved": {
+      "domain": "unit",
+      "entity": "01M3ZB7PVP22R4XX6K82VM7Z17"
+    }
+  }
+}

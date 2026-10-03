@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3ZAHNR4MCMTZD4AKYPEA326",
+    "entity": "01M3QBG00Z13RG3P9110NBW9X8",
+    "operation": "amend",
+    "supersedes": [
+      "01M3RCXAGWQC0RZ1A1C8398R78"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T22:07:53.092Z",
+    "reason": "The launcher promised identity and whole skills but left enforcement implicit. A launch must bring the selected persona's whole executable composition, without overlapping ambient enrollment; module filenames remain a planning choice rather than a design requirement.",
+    "cause": "operator's complete-agent body model and overlapping extension provenance investigation"
+  },
+  "payload": {
+    "anchor": "persona launch",
+    "gloss": "a persona can be started as a harness's main session, by its name, and arrives as the complete agent: its identity is the session's prompt, its composed skills are present whole before its first turn, and its composition's applicable enforcement is part of that same executable body under enforcement scope, not an ambient policy added by other installed agents. The launch makes the selected agent's ownership unambiguous; shared implementation does not give another installation authority over that session. Making a persona launchable by name is offered, never imposed: the operator is told what will be placed and agrees; nothing the host already has is replaced; and what cratylus placed, it can take away again.",
+    "factors": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3W846Q2NS8ENRDTY9929N0E"
+    ]
+  }
+}

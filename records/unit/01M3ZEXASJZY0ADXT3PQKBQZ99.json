@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3ZEXASJZY0ADXT3PQKBQZ99",
+    "entity": "01M3ZDBTBGT4GV0N19315JYTG0",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZE3C57EKXZM117RTZ9CHEY"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T23:24:09.395Z",
+    "reason": "Respect the existing worker cooperation boundary and route future artifact work through the available canonical native implementer carrier with genuine plan-line worktree authority.",
+    "cause": "BuildDependencyWaves cannot modify the original repository from its OMP isolated clone; installed task isolation forces that clone boundary."
+  },
+  "payload": {
+    "plan": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "spec": {
+      "name": "dependency-waves",
+      "intent": "Census: complete-persona-launch of plan persona-owned-enforcement, source commit a327bd6e96f3c92d1dba0242bf886e6abc094cda. The line at d8701e45 changes only planning/design/notebook records relative to that source; the original source census still applies. The prior implementer's isolated edits are unaccepted and are not a baseline. Use a fresh isolated checkout off the line after predecessors are whole. Do not run builds/tests/linters/formatters mid-flight; main/integrator verifies the coherent unit against only its criteria. No design changes or rubric redesign are authorized.\n\nRealize the newly handed planner role rule in the authored planning skill and planner role surface: dependencies or shared outputs may require a singleton wave; do not call that a bad cut or pad it with unchanged work. Remove the universal singleton-nonterminal-wave rejection, while retaining dependency ordering, no concurrent output/reference contention, per-dispatch capacity, factor-based splitting and proportionate acceptance. Keep the wave recurrence and lifecycle vocabulary unchanged. This is a wording/law correction, not a runtime scheduling feature: existing plan wave computation already represents serial dependencies. Update the focused test and package release note. Do not edit the host-installed skills or historical plan/design records.\n\nRecovery source: the completed delta remains at db95c6528916fe4ba602db7d692af365d7b02eeb in /home/lex/.omp/wt/t58d1a1b3d/m. Its parent is a327bd6e96f3c92d1dba0242bf886e6abc094cda, not the bound plan tip, and the owning repository does not hold that commit. Recover that delta, without repeating the authored change, into the new native implementer actor's own actual unit worktree off the current plan line and commit with truthful recovery attribution. Land the resulting proper-base commit, not db95c652 relabeled. Keep the old clone as a read-only recovery source; do not auto-apply its patch to main or directly to the line, and do not weaken the landing classifier. The existing unit state, pin, output envelope and acceptance remain unchanged.\n\nThe actual unit worktree must share the Git common directory of the repository owning /home/lex/workspaces/cratylus.plan-persona-owned-enforcement. Copied external worktree metadata in an automatic clone is not that provenance. The note omp isolation clone is not a plan-line worktree records the observed distinction.\n\nExecution carrier: use a fresh native implementer main session through the installed /home/lex/.omp/agent/omp-agent launcher, launched by Main from the owning plan line and addressed by this unit's name. The installed omp agent definition has the current implementer contract, including its own plan land event. Native CLI print mode is supported. This actor establishes its own real isolated unit worktree off the current line, writes artifact only there, and writes the authoritative landing through the plan capability. Its initial cwd on the line is for reading the unit and establishing the worktree, never permission to build directly on the line. The ordinary role, guard hooks, model routing and independent assay remain in force; disable none of them.\n\nDo not resume a clone-constrained actor to modify the original repository: BuildDependencyWaves has an injected NEVER-modify-outside-clone instruction, which this spec cannot override. The installed task-dispatch hook unconditionally sets isolated:true for named implementer tasks, so isolated:false on the same task route is not sufficient. A native main-session launcher is a distinct supported execution carrier with the correct workspace authority, not an escape from the prior worker's boundary. Main owns invoking that new carrier; the planner neither launches an actor from the restricted clone nor performs artifact recovery. The integrator does not impersonate the implementer's landing. If the native launcher encounters an actual authentication/runtime restriction, report its precise failure before claiming this alternate carrier is unavailable. Only binary, launcher and role availability have been observed; no model run or successful recovery is claimed by the planner.",
+      "static": [
+        "records/design/01M3ZCZCNBW7Q5NR3SBCE5SH3X.json",
+        "packages/canon/src/roles/planner.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/test/planner-waves.test.ts",
+        ".changeset/dependency-waves.md"
+      ],
+      "accept": [
+        "A focused test over the authored plan skill and planner role rejects the old unconditional singleton-wave prohibition and requires the replacement to permit serial work for real dependencies/shared outputs without permitting concurrent contention or fake units. It must fail against the pre-change skill, not merely assert that a new test exists.",
+        "The existing wave recurrence, unit/plan lifecycle values, total realization/pin rules and capacity/acceptance constraints are unchanged. Inspection plus the focused canon test and existing formal-block/symbol checks are sufficient; no native harness or model run is owed for this wording unit."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3R07G7ZCK24TEDA78HW4VRM",
+      "version": "01M3ZCZCNBW7Q5NR3SBCE5SH3X",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

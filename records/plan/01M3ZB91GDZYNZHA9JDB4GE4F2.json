@@ -1,0 +1,22 @@
+{
+  "envelope": {
+    "id": "01M3ZB91GDZYNZHA9JDB4GE4F2",
+    "entity": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZB7PTP7HGZYBW79R04VYYE"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T22:20:38.797Z",
+    "reason": "Ratified atomic end-to-end cutover over the overlapping handed shards, with one terminal wave and complete consumer footprint.",
+    "cause": "Operator authorizes binding with the pinned design available on the integration line"
+  },
+  "payload": {
+    "name": "persona-owned-enforcement",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8"
+    ],
+    "state": "bound"
+  }
+}

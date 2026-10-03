@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3ZCZCNBW7Q5NR3SBCE5SH3X",
+    "entity": "01M3R07G7ZCK24TEDA78HW4VRM",
+    "operation": "amend",
+    "supersedes": [
+      "01M3X9QRTSPQCW0FSNSQQWWA2K"
+    ],
+    "author": "nico",
+    "time": "2026-10-02T22:50:19.691Z",
+    "reason": "The plan skill rejects every singleton nonterminal wave, even when real dependencies and overlapping outputs require serial execution. This is an invalid planning premise: disjoint outputs justify parallelism, but absence of parallelism does not invalidate a concept cut. Make legitimate serialization explicit without permitting oversized units or fake work.",
+    "cause": "planner surfaced persona launch has no dispatch-sized factor cut; universal singleton-wave rejection"
+  },
+  "payload": {
+    "anchor": "planner role",
+    "gloss": "the role that turns the shards the architect hands down into a plan: units, each realizing exactly one shard, ordered so what a unit depends on comes first, sized so one implementer can finish each. It owns everything about the plan, including how each shard is to be realized on each harness, and re-plans, rectifying or rebuilding, when a shard it builds on is found wrong. It never changes the design. Parallel work follows genuine independence: a dependency or shared output may require a singleton wave, which is neither a defect nor a reason to pad the plan with unchanged work or force concurrency. The operator's suggestions about how to build a shard, handed with it as idea notes, it weighs by its own judgment, never as rulings nor as grounds to redraw the shard; a note it takes up it resolves to the unit that carries it. Each unit's acceptance proves what that unit changes and no more: a proof costlier than the change, such as a live multi-model run for a wording edit, is a defect of the plan, not diligence.",
+    "factors": [
+      "01M3MEKH6MYSSJ0N1CJPDKNTVR",
+      "01M3MEKHA5W8RJBDX72X37FZVJ",
+      "01M3MEKHDTVV9VCA7NFZ7EPP8B",
+      "01M3R07G3AGHCM4ZHMGFM7Z5A3"
+    ]
+  }
+}

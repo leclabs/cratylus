@@ -1,0 +1,24 @@
+{
+  "envelope": {
+    "id": "01M3ZD7FHXXXGQ1VJ7YX41A76M",
+    "entity": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZB91GDZYNZHA9JDB4GE4F2"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T22:54:44.797Z",
+    "reason": "Replan the bound line over the rectified handed shards: skill routing now factors complete launch and planner role admits genuine singleton dependency waves.",
+    "cause": "Main hands current persona launch, enforcement scope, skill routing and planner role after capacity stop."
+  },
+  "payload": {
+    "name": "persona-owned-enforcement",
+    "realizes": [
+      "01M3MEKHK6QA4SFYW73YXKASWM",
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8",
+      "01M3R07G7ZCK24TEDA78HW4VRM"
+    ],
+    "state": "bound"
+  }
+}

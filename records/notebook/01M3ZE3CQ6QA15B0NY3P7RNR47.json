@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3ZE3CQ6QA15B0NY3P7RNR47",
+    "entity": "01M3ZE3CQ6QA15B0NY3P7RNR46",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-02T23:09:59.398Z",
+    "reason": "Record the observed substrate cause and its recovery route without changing the design or accepting the unit.",
+    "cause": "Refused landing of dependency-waves from an automatic isolated clone."
+  },
+  "payload": {
+    "title": "omp isolation clone is not a plan-line worktree",
+    "kind": "decision",
+    "topic": "plan",
+    "body": "The automatic omp isolated workspace for BuildDependencyWaves was /home/lex/.omp/wt/t58d1a1b3d/m, a standalone clone whose .git is its common directory and whose own root is its main worktree. Its db95c6528916fe4ba602db7d692af365d7b02eeb commit has parent a327bd6e96f3c92d1dba0242bf886e6abc094cda; the actual plan line is at 501e26e4b6f3eab7dc7b5f5d5f527d7b9b944578. The actual source repository does not contain that commit. Copied worktree metadata still names the external plan line, explaining why plan show worked while plan land classified the clone commit as main. No artifact was observed applied to the operator's actual main or plan line. The planner revised dependency-waves to recover the committed delta in a true unit worktree off the owning plan line and land the resulting commit without bypassing provenance checks. This is an established substrate distinction, not a design-law failure or missing implementation prerequisite; the unit stays active and unaccepted. Native clone isolation alone does not meet the plan-line worktree contract.",
+    "blocks": []
+  }
+}

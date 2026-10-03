@@ -1,0 +1,85 @@
+{
+  "envelope": {
+    "id": "01M3ZDBVFTJ7PCHC60EWK5ADJ2",
+    "entity": "01M3ZDBVFTJ7PCHC60EWK5ADJ1",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-02T22:57:08.090Z",
+    "reason": "Dispatch-sized realization of the rectified handed shard, with acceptance confined to its own delta and dependencies carrying shared-output serialization.",
+    "cause": "Persona launch now factors skill routing; current planner role permits genuine singleton dependency waves."
+  },
+  "payload": {
+    "plan": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "spec": {
+      "name": "whole-skill-delivery",
+      "intent": "Census: complete-persona-launch of plan persona-owned-enforcement, source commit a327bd6e96f3c92d1dba0242bf886e6abc094cda. The line at d8701e45 changes only planning/design/notebook records relative to that source; the original source census still applies. The prior implementer's isolated edits are unaccepted and are not a baseline. Use a fresh isolated checkout off the line after predecessors are whole. Do not run builds/tests/linters/formatters mid-flight; main/integrator verifies the coherent unit against only its criteria. No design changes or rubric redesign are authorized.\n\nRealize only the whole composed-skill obligation of skill routing on the two supported main-session paths. Retain the existing resolved-plugin skill roster and breadth-first deduplicated skillClosure semantics, including same-name plugin override and runtime capability routes. Deliver the entire closure before the first turn, not previews or promises to read it later. Claude's main-sessionSkillHook/oversizedSkills path currently turns an over-cap body into deferred required reading; replace that incomplete path with whole delivery using an available native carrier. omp's launcher likewise must not successfully call an incomplete composition complete after a failed skill read or incompatible skill-filter override. Choose explicit diagnostics/refusal for a missing required deployed body rather than silent fallback; do not weaken the complete positive path. Keep subagent preload correct and avoid double injection.\n\nThe implementation owns the preload/skill-bearing prompt carrier and its existing launcher callsites, not enforcement policy, per-persona guard filenames, consent UI or persona residue. Preserve the predecessor's selected scope/guards while changing skill delivery. Prefer an existing native full-body/file carrier, and use the already declared Claude persona-launch helper rather than inventing another generic runtime capability. If a new production helper is essential, route its concrete path to the planner before editing. Remove obsolete cap/deferred-reading exports, fields and callers as part of the cutover, not as compatibility aliases. Update skill-related docs and a changeset. Native flag help and existing launcher-shell/SessionStart-command tests provide the implementation boundary; tests must execute the emitted carrier and compare the full bytes. Final native ownership-plus-skills launch evidence belongs to the dependent persona-launch unit, not repeated here.",
+      "static": [
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/core/body.ts",
+        "packages/forge/src/project/runtime-shim.ts",
+        "packages/forge/src/adapters/registry/index.ts"
+      ],
+      "deps": [
+        "01M3ZDBTX9ZHMW0MHE9G5FAMW8"
+      ],
+      "outputs": [
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/claude/persona-launch.ts",
+        "packages/forge/test/project/skill-closure.test.ts",
+        "packages/forge/test/project/skill-hook-cap.test.ts",
+        "packages/forge/test/project/tree.test.ts",
+        "packages/forge/test/project/shortfall-adapter.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/canon/test/skill-hook-cap.test.ts",
+        "packages/forge/README.md",
+        "packages/cli/README.md",
+        ".changeset/whole-skill-delivery.md"
+      ],
+      "accept": [
+        "Execute emitted main-session carriers for claude and omp against a diamond skill closure and compare every body and runtime route in full, exactly once and in closure order, before the captured first-turn input. Include a body beyond the old Claude hook cap, multibyte content, a long home path, and a later plugin override. Print each harness and closure denominator; the current over-cap deferred-reading implementation must fail.",
+        "A missing required body and an incompatible explicit skill filter cannot silently yield a successful complete launch; they produce an actionable diagnostic and no falsely complete first-turn input. Subagent skill preload does not duplicate the new main-session path. Existing selected enforcement scope and model-route arguments remain intact.",
+        "Retired cap/deferred-reading fields, exports and callsites are removed, related fixture expectations are migrated, and supported positive paths deliver whole bodies without truncation or runtime prompt scaffolding. Focused skill/launcher/closure tests and existing type checks suffice; no worker rubric or install-consent retest is added to this unit."
+      ]
+    },
+    "state": "pending",
+    "pin": {
+      "concept": "01M3MEKHK6QA4SFYW73YXKASWM",
+      "version": "01M3R09VG6XNT4XW2BFMMH8W8E",
+      "closure": {
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3NCQZJ91ZKMY51CB3MP8G0W",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

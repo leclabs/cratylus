@@ -1,0 +1,66 @@
+{
+  "envelope": {
+    "id": "01M3ZE3C57EKXZM117RTZ9CHEY",
+    "entity": "01M3ZDBTBGT4GV0N19315JYTG0",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZDMJMGE81GBKQSAGQ4D2B3"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T23:09:58.823Z",
+    "reason": "Correct the execution substrate: the automatic isolated clone is its own main checkout and holds a wrong-base commit; recover the artifact into an actual unit worktree off the owning plan line.",
+    "cause": "BuildDependencyWaves landing db95c652 was refused; Main requests the rectified route or substrate finding."
+  },
+  "payload": {
+    "plan": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "spec": {
+      "name": "dependency-waves",
+      "intent": "Census: complete-persona-launch of plan persona-owned-enforcement, source commit a327bd6e96f3c92d1dba0242bf886e6abc094cda. The line at d8701e45 changes only planning/design/notebook records relative to that source; the original source census still applies. The prior implementer's isolated edits are unaccepted and are not a baseline. Use a fresh isolated checkout off the line after predecessors are whole. Do not run builds/tests/linters/formatters mid-flight; main/integrator verifies the coherent unit against only its criteria. No design changes or rubric redesign are authorized.\n\nRealize the newly handed planner role rule in the authored planning skill and planner role surface: dependencies or shared outputs may require a singleton wave; do not call that a bad cut or pad it with unchanged work. Remove the universal singleton-nonterminal-wave rejection, while retaining dependency ordering, no concurrent output/reference contention, per-dispatch capacity, factor-based splitting and proportionate acceptance. Keep the wave recurrence and lifecycle vocabulary unchanged. This is a wording/law correction, not a runtime scheduling feature: existing plan wave computation already represents serial dependencies. Update the focused test and package release note. Do not edit the host-installed skills or historical plan/design records.\n\nLANDING-SUBSTRATE RECTIFICATION: resume this same active unit to recover its completed artifact, not to redo the wording change. The reported commit is db95c6528916fe4ba602db7d692af365d7b02eeb in /home/lex/.omp/wt/t58d1a1b3d/m. Observed git topology: that path is a standalone clone with .git as its common directory and itself as its main worktree, on note/guard-authorization-revision. The commit parent is a327bd6e96f3c92d1dba0242bf886e6abc094cda, not the bound plan tip 501e26e4b6f3eab7dc7b5f5d5f527d7b9b944578. The real repository at /home/lex/workspaces/cratylus does not hold db95c652. The clone retains worktree metadata naming the external plan line, which lets plan show find records but does not make its own artifact commit belong to that line. Therefore the runtime's main-checkout refusal names the clone's main checkout, not an accidental landing in the operator's actual main checkout.\n\nRecover the existing unit delta from that clone commit into an actual unit worktree based on the current plan/persona-owned-enforcement line in the repository that owns /home/lex/workspaces/cratylus.plan-persona-owned-enforcement. That unit worktree must share the owning repository's Git common directory, not merely a copied branch name or copied worktree registry. Preserve the completed changes and their attribution, but produce a commit whose base is the plan line and record that new commit as the landing. Use the existing clone only as the recovery source; do not patch-apply into main or directly into the integration line, do not simply import the wrong-base commit and relabel it, and do not weaken builtIn or the landing law. Managing that worktree/recovery is the implementer's competence; the plan fixes the required repository and provenance, not a Git command tutorial. The harness's automatic isolated clone is an isolation container, not by itself the required plan-line worktree. Keep automatic apply disabled and retain the recovery source until the proper landing is recorded. Existing output paths, acceptance, pin and active state are unchanged; this is a substrate repair, not a new product unit.",
+      "static": [
+        "records/design/01M3ZCZCNBW7Q5NR3SBCE5SH3X.json",
+        "packages/canon/src/roles/planner.ts",
+        "packages/runtime/src/capabilities/plan/reading.ts"
+      ],
+      "deps": [],
+      "outputs": [
+        "packages/canon/src/skills/plan/skill.ts",
+        "packages/canon/src/dimensions/role/planner.ts",
+        "packages/canon/test/planner-waves.test.ts",
+        ".changeset/dependency-waves.md"
+      ],
+      "accept": [
+        "A focused test over the authored plan skill and planner role rejects the old unconditional singleton-wave prohibition and requires the replacement to permit serial work for real dependencies/shared outputs without permitting concurrent contention or fake units. It must fail against the pre-change skill, not merely assert that a new test exists.",
+        "The existing wave recurrence, unit/plan lifecycle values, total realization/pin rules and capacity/acceptance constraints are unchanged. Inspection plus the focused canon test and existing formal-block/symbol checks are sufficient; no native harness or model run is owed for this wording unit."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3R07G7ZCK24TEDA78HW4VRM",
+      "version": "01M3ZCZCNBW7Q5NR3SBCE5SH3X",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

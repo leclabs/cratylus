@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3Z9S13CP2PHJNBMF97DPX1S",
+    "entity": "01M3Z9S13CP2PHJNBMF97DPX1R",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-02T21:54:25.516Z",
+    "reason": "Preserving the operator's implementation suggestion beside the conceptual discussion, not imposing file naming on the design.",
+    "cause": "operator asks whether global cratylus-session is palimpsest or bug and proposes persona-specific extension names"
+  },
+  "payload": {
+    "title": "persona-owned extension names",
+    "kind": "idea",
+    "topic": "persona launch",
+    "body": "The operator suggests treating a launchable persona's guards as part of the whole agent it launches, and giving that persona's deployed extensions persona-specific names to make their ownership explicit. Distinguish the conceptual requirement (the launch brings the agent's complete composition, with its own applicable guards and contract) from implementation choices (module filenames, directories and shared code). Investigate the user-scoped cratylus-session copy as possible historical residue or a current deployment defect before deciding the cutover.",
+    "blocks": []
+  }
+}

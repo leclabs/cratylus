@@ -1,0 +1,116 @@
+{
+  "envelope": {
+    "id": "01M3ZE5BGDXJ6SGE444C3CAX3P",
+    "entity": "01M3ZB7PVP22R4XX6K82VM7Z17",
+    "operation": "amend",
+    "supersedes": [
+      "01M3ZDFQT422C2V17EBZJ1BAPY"
+    ],
+    "author": "planner",
+    "time": "2026-10-02T23:11:03.693Z",
+    "reason": "Carry the observed isolation-substrate constraint into later unit routes so the same clone-main landing failure cannot repeat.",
+    "cause": "dependency-waves was committed in an automatic standalone clone instead of a true unit worktree off the owning plan line."
+  },
+  "payload": {
+    "plan": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "spec": {
+      "name": "complete-persona-launch",
+      "intent": "The capacity failure is rectified by factoring this formerly oversized unit. This unit now owns only the complete-persona-launch integration and owner-qualified launch artifacts, after dependency-waves, composition-owned-guards and whole-skill-delivery are whole. It retains the original live identity and naming-idea carrier; prior unaccepted isolated edits are not a landing and must not be used as the integration baseline. Its design pin is explicitly retaken against persona launch with skill routing added, plus the unchanged behavioral obligations. The current planner role permits these singleton dependency waves; the new units are a conceptual factor cut, not fabricated parallel work.\n\nCENSUS, taken once from source commit a327bd6e96f3c92d1dba0242bf886e6abc094cda on 2026-10-02: the source worktree had no tracked implementation changes. Design amendments 01M3ZAHN9C1K8SMCQCA540M8H1 (enforcement scope) and 01M3ZAHNR4MCMTZD4AKYPEA326 (persona launch) were uncommitted; persona is 01M3W846Q2NS8ENRDTY9929N0F. These record versions, not the view header's commit, are the design referent. RecordStore.read unions this checkout and the plan lines; Reading.computed reports the first plan-line worktree's HEAD, which explained a4b440c5 in the interfaces while this source checkout was at the commit above. Binding moves plan/unit and relevant notebook records but not design records, so the planner supplies the pinned design records on the new line before handing out this unit. Do not rederive this census absent intervening changes to its paths.\n\nThe supported harness denominator at that commit is the registry's claude and omp. Current purviewGuardrail DOES declare binds:{dimension:'role'}; stance guards also bind composition. The GlobalSessionOrigin claim that purview has no binds is false against this source. project/index.ts discovers hook modules by directory rather than only canon/hook-cells.ts. It carries binds into local sources and stanceManifests, then drops them at the hooks/scopeActivatedSurface registration call. ompScopeActivatedExtensions emits the same guard-bearing registrations at _session and each agent. TURN_BRIDGE derives scope from the module location; the global scope has no manifest. Thus duplicate registration is observed, but duplicate successful judgments are NOT established by those registrations alone. The host manifest and deployed global module were read on 2026-10-02: enforcing:_session records agent/extensions/cratylus-session.ts, and it contains purview and stance registrations. This is active deployment output, not an orphan. Do not delete host files during implementation.\n\nThe use census, not just definition sites, is the declared output envelope below. The ownership path runs through core/enrollment.ts (composes, stanceManifests, personaRootOf), core/harness-adapter.ts, project/index.ts, both adapter renderers and barrels, Claude hook serialization, deploy/hooks.ts and manifest/deploy pruning, install/uninstall, persona command placement, worker templates and committed targets. omp registration and filenames are consumed by forge adapter/deploy tests and canon harness-parity/purview tests; skill-cap and launch APIs are consumed by both adapters, projector cap tests and canon skill-hook-cap; worker ingress is exercised by canon purview/stance tests and the hermetic shell suite. Current README claims that Claude guards live in settings and presence alone enrolls are affected. Historical changelog entries, past design/plan/notebook records, rubric calibration fixtures, and the locked ground documents are evidence, not rewrite targets. Existing worker deadline/recovery/contest/stop-loop behavior remains unchanged.\n\nCENSUS CONTINUITY: at replanning, git diff --name-only from source a327bd6e96f3c92d1dba0242bf886e6abc094cda to line HEAD d8701e45 names records only; the implementation census above is therefore still usable. The supplemental planner-law use census is packages/canon/src/skills/plan/skill.ts and packages/canon/src/dimensions/role/planner.ts; the role is composed from packages/canon/src/roles/planner.ts. The universal singleton prohibition occurs in the plan skill, not a runtime scheduler. Current amendments 01M3ZCZBZ7MEHSWAG18Y4VZC0T (persona launch) and 01M3ZCZCNBW7Q5NR3SBCE5SH3X (planner role) have been copied byte-for-byte onto this plan line; they supersede the earlier launch/planning constraints in the historical census. Every unit cites this one census, and a predecessor changing a cited path is consumed through its landing rather than by treating an old count as current.\n\nThe factor contracts are complete before this unit starts. composition-owned-guards supplies a selected per-agent guard surface, explicit owned worker scope, exact gate/moment admission and no global guard handlers. whole-skill-delivery supplies the entire deduplicated skill closure before the first turn with working runtime routes and no successful incomplete preload. Consume those implementations; do not reimplement or re-prove all their internals. The persona concept remains unchanged: keep the selected identity and residue, not a new role/persona definition.\n\nTake up the handed persona-owned extension names idea at the launch boundary: give per-persona guard module artifacts owner-qualified filenames derived from the CLI bin and persona and update scopedRel, exports and consumers together. A filename clarifies ownership but is not authority. The launcher/overlay and Claude selected definition must agree on the exact owned body and installation scope, including a same-named persona elsewhere. Preserve the shared generic launcher and shared worker implementation, use the selected definition's identity/model route, and ensure the skill-bearing carrier and guard-bearing surface travel as one launch. Keep direct generic-launcher and command-symlink forms coherent, relocated homes and non-install cwd correct. Do not disable native discovery, replace unrelated host settings, or add a legacy ambient enrollment path.\n\nFinalize installation/deployment attribution for the complete launch artifact set: offer command placement with existing consent/default-no/dry-run behavior, never overwrite a taken command name, retire only manifest-attributed renamed modules and stale guard registrations on reinstall, and remove only the recorded owned artifacts on uninstall. Update launch, layout and consumer documentation and the final package changeset. Keep guard rubric bodies, persona/role identities and unrelated host-owned extensions intact. The already resolved naming idea remains carried by this unit, not by the enforcement factor's temporary use of the existing filename convention.\n\nProportionate proof: extend existing projected/deployed launcher tests and the already landed factor tests; run the shipped launchers against captured native entry arguments/payloads to prove the assembled body. Add one focused real-loader exercise per supported harness to check the risk those tests cannot model: native/global discovery together with the selected persona launch, first-turn full-body reach, selected enforcement invoked once and an unrelated host sentinel still present. Do not repeat the whole negative/guard-behavior matrix or build a generalized multi-model test platform. If model output is needed to drive the native event, a small deterministic loopback Messages fixture may provide it; the real native binary, loader, projected/deployed artifacts and worker must remain real. Capture actual first model input or an equally direct native prompt/preload observation, not a model's recollection that it saw a skill. The concrete construction route documented in the prior revision remains available: /home/lex/.local/bin/claude 2.1.285, /home/lex/.local/bin/omp 18.4.12, temporary HOME/CLAUDE_CONFIG_DIR/PI_CODING_AGENT_DIR, preserved discovery, and fixture-only credentials. The planner has not run those scenarios. No shipped fallback or silent skip can stand for missing evidence.\n\nNo mid-flight build/test/formatter runs are assigned to implementers. The main/integrator runs each factor's focused acceptance after its coherent landing and runs the combined launch/native evidence and whole-repository checks once after this final unit. The original broad whole-unit acceptance has been partitioned, not a design obligation dropped: dependency/wave discipline is dependency-waves; exact ownership/activation and existing guard behavior are composition-owned-guards; complete skill composition is whole-skill-delivery; assembled native launch, naming/consent/attribution and final consumer reach are this unit. A missing real-loader observation is reported precisely and is not a pretext to return without implementing the already reachable integration. Any genuine new file outside the envelope goes to the planner before editing; planner records are committed by the integrator.\n\nExecution substrate: the note omp isolation clone is not a plan-line worktree records an observed landing failure, not an optional convention. The required unit worktree is based on the current plan/persona-owned-enforcement tip and shares the Git common directory of the repository owning /home/lex/workspaces/cratylus.plan-persona-owned-enforcement. An automatic omp isolated clone is its own main checkout and may retain misleading external worktree metadata; it is not sufficient merely because plan show reads the right records. Establish the actual unit-worktree provenance before building, keep native automatic apply disabled, and record the landing in the owning repository. No implementation on the main checkout or directly on the integration line is authorized; no Git procedure or product change is prescribed here.",
+      "static": [
+        "records/design/01M3ZCZBZ7MEHSWAG18Y4VZC0T.json",
+        "records/design/01M3ZCZCNBW7Q5NR3SBCE5SH3X.json",
+        "records/design/01M3ZAHN9C1K8SMCQCA540M8H1.json",
+        "records/design/01M3W846Q2NS8ENRDTY9929N0F.json",
+        "MODEL.md",
+        "ARCHITECTURE.md",
+        "packages/forge/src/adapters/registry/index.ts",
+        "packages/forge/src/core/enrollment.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/deploy/scope.ts",
+        "packages/forge/src/deploy/types.ts",
+        "packages/forge/src/prune/index.ts",
+        "packages/canon/src/guard-shell.ts",
+        "packages/forge/package.json",
+        "packages/canon/package.json",
+        "package.json"
+      ],
+      "deps": [
+        "01M3ZDBVFTJ7PCHC60EWK5ADJ1"
+      ],
+      "outputs": [
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/omp/index.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/src/adapters/claude/index.ts",
+        "packages/forge/src/adapters/claude/persona-launch.ts",
+        "packages/forge/src/core/harness-adapter.ts",
+        "packages/forge/src/project/index.ts",
+        "packages/forge/src/deploy/hooks.ts",
+        "packages/forge/src/deploy/deploy.ts",
+        "packages/forge/src/deploy/manifest.ts",
+        "packages/forge/src/deploy/persona-commands.ts",
+        "packages/forge/src/cli/commands/install.ts",
+        "packages/forge/src/cli/commands/uninstall.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/deploy/harness-shape.test.ts",
+        "packages/forge/test/deploy/hooks.test.ts",
+        "packages/forge/test/deploy/prune.test.ts",
+        "packages/forge/test/deploy/uninstall.test.ts",
+        "packages/forge/test/deploy/persona-commands.test.ts",
+        "packages/forge/test/deploy/cli.test.ts",
+        "packages/forge/test/project/enforcement-ownership.test.ts",
+        "packages/forge/test/deploy/complete-persona-launch.test.ts",
+        "packages/forge/test/deploy/native-harness.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/canon/test/purview-guardrail.test.ts",
+        "packages/forge/README.md",
+        "packages/cli/README.md",
+        "README.md",
+        ".changeset/persona-owned-launch.md"
+      ],
+      "accept": [
+        "Through both the generic launcher and the persona-name symlink, execute the deployed launch bytes from a different cwd and relocated/custom home. Capture the entry prompt/preload and configuration payload and assert one selected identity, every transitive skill body/runtime route whole and once, the matching owned enforcement scope, and the preserved selected model route. The fixture includes another installed persona and another installation with the same name so ownership cannot be inferred from basename alone.",
+        "Owner-qualified guard module filenames, overlays, scopedRel mappings, exports and consuming tests agree. No renamed old module or global guard enrollment route survives a manifest-attributed reinstall. Unrecorded foreign files and an unrelated host hook/extension remain unchanged. The prior unqualified artifact shape must fail the new ownership/naming assertion.",
+        "One focused real native-loader exercise on each of claude and omp observes the selected launch body before the first model turn and loads native/global plus selected surfaces together. It records exactly one applicable guard invocation and an unrelated host sentinel. Print harness versions and attempted/completed scenario denominators. Keep all artifacts/processes in temporary roots. This is not satisfied by only importing one generated module or recording stub CLI argv; the negative admission/child/retry matrices are proved once by the enforcement factor, not duplicated here.",
+        "Existing consent/default-no/dry-run/name-collision controls pass for the assembled artifact set. The deploy record owns every created launch artifact, reinstall is idempotent, and uninstall removes only recorded owned commands/artifacts. Documentation and the final changeset describe complete launch rather than the retired ambient/presence-only paths.",
+        "The main/integrator combines the already accepted factor evidence with final launch evidence and runs build, typecheck, test typecheck, changed-path formatting/lint, target regeneration, both projections, tests and the hermetic stance suite in dependency order once for the completed line. No guard-rubric calibration or extra model-quality proof is required. Do not mark this unit complete from a passing factor alone."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QBG00Z13RG3P9110NBW9X8",
+      "version": "01M3ZCZBZ7MEHSWAG18Y4VZC0T",
+      "closure": {
+        "01M3MEKHK6QA4SFYW73YXKASWM": "01M3R09VG6XNT4XW2BFMMH8W8E",
+        "01M3QBFZX8JMA6VHK12AEAN8KV": "01M3ZAHN9C1K8SMCQCA540M8H1",
+        "01M3W846Q2NS8ENRDTY9929N0E": "01M3W846Q2NS8ENRDTY9929N0F",
+        "01M3MEKHHB7HFK4FFQQG5C1Z0G": "01M3NCQZJ91ZKMY51CB3MP8G0W",
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3MEKHDTVV9VCA7NFZ7EPP8B": "01M3RCCVTP2XGJAN0SNEVTMWNX",
+        "01M3MEKHFKC1AW1P0T9Y7S21JK": "01M3MEKHFKC1AW1P0T9Y7S21JM",
+        "01M3NCQZF0FH8FXX88A0GE6BV7": "01M3NCQZF141ZRXKZF7HEZC9N3",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHBYF8EJN5TTVED2MTPA": "01M3PPHADBCZPN1XQF2JFB8W9Q",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": []
+  }
+}

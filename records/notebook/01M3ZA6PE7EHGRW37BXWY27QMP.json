@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3ZA6PE7EHGRW37BXWY27QMP",
+    "entity": "01M3ZA6PE7EHGRW37BXWY27QMN",
+    "operation": "create",
+    "supersedes": [],
+    "author": "nico",
+    "time": "2026-10-02T22:01:53.351Z",
+    "reason": "Preserving the investigated deployment defect and uncertainty without starting implementation during the conceptual discussion.",
+    "cause": "operator asks whether user-scoped cratylus-session is palimpsest or bug; GlobalSessionOrigin provenance audit"
+  },
+  "payload": {
+    "title": "agent enforcement is projected as ambient session hooks",
+    "kind": "question",
+    "topic": "enforcement scope",
+    "body": "Read-only provenance investigation established that the user-scoped ~/.omp/agent/extensions/cratylus-session.ts is attributed by the current deployment manifest under enforcing:_session, not an orphaned historical file. Current projection generates that session-root module alongside per-agent modules with the same guard registrations. Persona extension paths augment native user-directory discovery, so the placements overlap rather than form exclusive alternatives. This conflicts with conceptual ownership: guards bind exactly agents whose composition includes them and judge that agent's contract. Historical session-hook versus agent-enforcement separation appears to survive in the projection structure after agent-bound guards entered the session surface. Duplicate handler execution has not been exercised and must not be asserted as observed. Correct the ownership and activation model, not merely disable one path or rename copies. Persona-qualified extension naming is a separate implementation idea under persona launch.",
+    "blocks": []
+  }
+}

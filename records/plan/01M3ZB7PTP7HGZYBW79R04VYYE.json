@@ -1,0 +1,20 @@
+{
+  "envelope": {
+    "id": "01M3ZB7PTP7HGZYBW79R04VYYE",
+    "entity": "01M3ZB7PTP7HGZYBW79R04VYYD",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-02T22:19:55.094Z",
+    "reason": "Ratified one atomic launch cutover: the handed enforcement scope is in the handed persona launch closure, and its implementation shares the same registration and launch seams.",
+    "cause": "Operator authorizes CDD for overlapping user-scoped and persona-scoped enforcement; current amended shards and handed implementation idea."
+  },
+  "payload": {
+    "name": "persona-owned-enforcement",
+    "realizes": [
+      "01M3QBFZX8JMA6VHK12AEAN8KV",
+      "01M3QBG00Z13RG3P9110NBW9X8"
+    ],
+    "state": "proposed"
+  }
+}

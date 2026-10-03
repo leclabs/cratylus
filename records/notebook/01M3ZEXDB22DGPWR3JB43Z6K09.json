@@ -1,0 +1,19 @@
+{
+  "envelope": {
+    "id": "01M3ZEXDB22DGPWR3JB43Z6K09",
+    "entity": "01M3ZEXDB22DGPWR3JB43Z6K08",
+    "operation": "create",
+    "supersedes": [],
+    "author": "planner",
+    "time": "2026-10-02T23:24:12.002Z",
+    "reason": "Rectify the prior recovery route against the actual injected cooperation boundary, without bypassing it or changing design authority.",
+    "cause": "Main reports that the clone-bound implementer cannot reach the owning repository."
+  },
+  "payload": {
+    "title": "native implementer carrier for authoritative landing",
+    "kind": "decision",
+    "topic": "plan",
+    "body": "The assigned OMP task worker's actual Coop instruction prohibits every write outside /home/lex/.omp/wt/t58d1a1b3d/m or in the original repository. My previous route wrongly asked that same actor to recover into the owning Git repository; a plan spec cannot override its harness boundary. Clone-local rebasing would not solve its inability to write the authoritative bound-line land record, and the integrator may not substitute for the implementer as that event's writer. The installed cratylus-isolation extension unconditionally forces isolated:true for named implementer task calls, so setting isolated:false on that route does not solve it.\n\nAn available alternate carrier was observed: /home/lex/.omp/agent/omp-agent exists, and /home/lex/.omp/agent/agents/implementer.md carries the current artifact/landing/note contract with the public plan land route. The native omp CLI supports main-session launch and print mode. Main can invoke a fresh canonical native implementer session from the owning plan line, addressed by dependency-waves; that actor establishes its own actual unit worktree and recovers the read-only db95c652 delta. This leaves the original restricted actor and its boundary intact, preserves isolation by a real Git worktree and preserves all guards, artifact provenance, landing authorship and independent assay. No native model invocation, authenticated completion or recovered landing has been claimed. The unit and successor specs now carry this execution-carrier distinction, rather than directing the clone-bound actor outside its scope.",
+    "blocks": []
+  }
+}
