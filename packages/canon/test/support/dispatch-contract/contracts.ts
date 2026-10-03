@@ -5,4 +5,6 @@ export interface ContractShape {
   readonly additionalProperties: boolean;
 }
 
-export type ContractFixtures = Readonly<Record<string, Readonly<Record<string, ContractShape>>>>;
+export type ContractFixtures = Readonly<
+  Record<string, Readonly<Record<string, ContractShape>>>
+>;
