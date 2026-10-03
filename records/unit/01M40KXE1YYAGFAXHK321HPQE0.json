@@ -1,0 +1,143 @@
+{
+  "envelope": {
+    "id": "01M40KXE1YYAGFAXHK321HPQE0",
+    "entity": "01M405PVMPN4JCRWYTQYPAKVJJ",
+    "operation": "amend",
+    "supersedes": [
+      "01M40KQFD3FHTGA6C6XR2PJ67T"
+    ],
+    "author": "AssayArchitectTypecheck",
+    "time": "2026-10-03T10:10:50.046Z",
+    "reason": "The caller-owned dispatch contract remains spelled, covers the supported-harness seam exactly, and has no second realization; the intervening tuple annotation preserves every assertion.",
+    "cause": "Reassay requested after the typecheck-only landing at b100e0578e971bcfe4a2b8e03385763c067639d1."
+  },
+  "payload": {
+    "plan": "01M405KVBSH87W0NMA4G62HE3S",
+    "spec": {
+      "name": "architect-dispatch-contract",
+      "intent": "Realize the architect-role shard by adopting dispatch contract as its apparatus and migrating every live delegation reader. Cite the single shared census in strict-dispatch-returns of this plan: original baseline f9a73ae5e76c9848ea2e0f965c5cf9bb39f1ce66 and the 2026-10-03 candidate refresh at 30d762791570396d75b8d6ad41477893ec445755. Reuse that evidence for unchanged paths rather than repeating the census; derive generated inventories from current source when projecting. This unit retains its pending state and dependency on strict-dispatch-returns. The dependency is real: adoption consumes the corrected canonical skill and its proof. Retain the handed shard cut and sequential adoption, not artificial concurrent slices that read unfinished outputs.\n\nThe architect's own shard has not changed, but its dispatch-contract factor and supported-harness closure have. Repin that closure and adopt the corrected, harness-qualified contract. Update the architect role dimension and RoleCell to own every caller-declared seam schema, consume only conforming returns and use the dispatch skill alongside design and note. Native strict schema enforcement is required where supported; Claude receives the caller schema and conforming-return instruction through available Agent instructions with an explicit machine-enforcement shortfall. Never restate an unconditional omp-field requirement in a generic role or delegation action. Role-default output schemas are non-contractual duplication, not fallback enforcement. Keep the role as the architectural owner and factor on the skill rather than copying schemas into it.\n\nRetain name-only routing, the principal's no-spec/no-artifact read boundary, the planner/implementer/assayer/integrator responsibilities, ad-hoc delegation, ready/waiting/closed-plan semantics, and separation of failed dispatch from note intake, semantic verdicts and broken whole. Do not add automatic retries. Update the generic delegation action to reference the caller-owned contract rather than conflicting prose-return guidance or a second schema catalog. Architect, nico, kino and mav inherit through holds(architectRole); do not copy rules into personas. Make the dispatch skill reachable to the planner's optional ad-hoc census delegation without adding transport to plan/unit records or changing receiving-role domain semantics.\n\nOwn the clean projection and deployment cutover after the dependency is complete. Build current source and run the existing canon:project and canon:project:omp commands. Derive the full agent inventory from source, including integrator, rather than trusting a stale stage. The declared render trees cover affected agent definitions, skills, preload/launch surfaces and manifests; change only artifacts downstream of this adoption. Migrate the named user-scope POC files by normal deployment: replace the manual dispatch skill and the four hand-patched architect-holder definitions from corpus projection, and remove output frontmatter from implementer, assayer, planner and integrator. Preserve unrelated user agents, settings and configuration; no directory-wide deletion, compatibility defaults or POC aliases. Keep the Claude shortfall explicit in all emitted/deployed skill readers. Host cleanup alone is not completion.\n\nAdd source-derived reach/projection tests for all architect holders and the planner's optional seam, both supported harnesses, and main-session/delegated startup. Test that role adoption and preload retain the universal caller schema with harness-qualified enforcement; a shortfall sentence does not excuse an unconditional native-transport claim elsewhere. Use existing adapter, preload and deployment mechanisms rather than introducing a delegation engine, schema model or capability. Print the complete inspected holder/harness/path denominator, assert the full skill and agent output inventory and that every listed skill resolves, and reject empty or stale inventories. A narrow read-only audit of real host POC replacements establishes removal; temporary-home deploy tests prove reproducible overwrite while preserving unrelated files and configuration. Own the separate architect-dispatch-contract changeset. Run focused adoption, persona, practices and harness-parity checks plus the two projection commands; full-project combination verification belongs to the integrator. Do not modify the predecessor's canonical dispatch skill, dispatch tests, fixtures or documentation outputs. Leave the architect-owned blocking note unresolved.",
+      "static": [
+        "packages/canon/src/skills/dispatch/skill.ts",
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/roles/hold.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/src/agents/architect.ts",
+        "packages/canon/src/agents/nico.ts",
+        "packages/canon/src/agents/kino.ts",
+        "packages/canon/src/agents/mav.ts",
+        "packages/canon/src/practices.ts",
+        "packages/canon/test/persona.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        "packages/forge/src/project/resolve-skills.ts",
+        "packages/forge/src/adapters/omp/render.ts",
+        "packages/forge/src/adapters/claude/render.ts",
+        "packages/forge/test/adapters/claude.test.ts",
+        "packages/forge/test/adapters/omp.test.ts",
+        "package.json",
+        "/home/lex/workspaces/.handoff/cdd-dispatch-contract-handoff.md"
+      ],
+      "deps": [
+        "01M405KVCEY8VYQVADPZ2KT0TS"
+      ],
+      "outputs": [
+        "packages/canon/src/dimensions/role/architect.ts",
+        "packages/canon/src/roles/architect.ts",
+        "packages/canon/src/roles/planner.ts",
+        "packages/canon/src/dimensions/actions/delegation.ts",
+        "packages/canon/test/architect-dispatch-contract.test.ts",
+        "packages/canon/test/fixtures/architect-dispatch-contract",
+        "packages/canon/test/persona.test.ts",
+        "packages/canon/test/practices.test.ts",
+        "packages/canon/test/harness-parity.test.ts",
+        ".changeset/architect-dispatch-contract.md",
+        ".cratylus/claude",
+        ".cratylus/omp",
+        "/home/lex/.agents/skills/dispatch",
+        "/home/lex/.claude/skills/dispatch",
+        "/home/lex/.claude/agents",
+        "/home/lex/.claude/personas",
+        "/home/lex/.omp/agent/agents",
+        "/home/lex/.omp/agent/personas",
+        "/home/lex/.cratylus.json",
+        "/home/lex/.claude/.forge/deploy-manifest.json",
+        "/home/lex/.omp/.forge/deploy-manifest.json"
+      ],
+      "accept": [
+        "Source-derived reach tests print the complete dispatcher and optional census-delegation denominator. Every architect holder inherits the role-owned contract and dispatch skill; planner census delegation can load the same skill without adding transport to plan/unit records. No persona copies the contract or schema catalog. Tests fail for a seeded missing holder, absent dispatch preload or permissive/default-only instruction.",
+        "The architect retains its no-spec/no-artifact read boundary, name-only loop routing and the existing routing of ready/waiting/closed plans and domain verdicts. The contract distinguishes schema mismatch from note intake, a semantic not-achieved verdict and an integrator red, and requests no automatic retry.",
+        "After canonical source build, pnpm canon:project and pnpm canon:project:omp emit the source-derived agent inventory, including integrator, and the dispatch skill. Focused tests inspect both native agent definitions and main/delegated preload surfaces; every listed skill resolves. Reach output lists both harnesses, all inspected holders and generated paths, so a stale or empty stage cannot pass.",
+        "Both projections and their main/delegated preload surfaces carry the caller-owned seam contract without role-output defaults. The generic architect/delegation instructions never require omp-only native fields or enforcement on Claude. The emitted Claude skill carries the actual caller-schema instruction projection and explicitly states its native Agent machine-enforcement shortfall; omp carries native outputSchema/schemaMode strict and parsed-result consumption. Tests fail for silent omission, unconditional cross-harness native-field requirements, a default-only substitute or false enforcement parity.",
+        "The named POC host files are replaced from current corpus projection. A read-only host audit finds no output frontmatter in any of the four POC receiving-role definitions and no residual hand-edited dispatch schema/default guidance in the four architect-holder definitions or the dispatch skill. Temporary-home deploy tests reproduce that clean overwrite while preserving an unrelated agent and unrelated host configuration.",
+        "Focused architect-dispatch-contract, persona, practices and harness-parity checks pass after both projections. The distinct changeset records adoption and the role-default cutover. This unit changes none of the canonical dispatch skill/test/doc paths owned by strict-dispatch-returns; no transport schema is added to plan/unit data and no unrelated host artifact is removed."
+      ]
+    },
+    "state": "active",
+    "pin": {
+      "concept": "01M3QRDK076G190M60GAV4DDGF",
+      "version": "01M4055WFZCMFSX97216YRCT18",
+      "closure": {
+        "01M3MEKH6MYSSJ0N1CJPDKNTVR": "01M3X9QRHR8Q9J3RVQKKKFABA0",
+        "01M3MEKH8E3Q8R94A9EFNDE986": "01M3R07J729QJZ3VKNCFEJQZQV",
+        "01M3QZDSHGQ7FQ3XKAYVR75X4X": "01M3R07GP1DMK7NCQ1J084Y51F",
+        "01M3QZDSNXFW5WVR66146BGMJK": "01M3R09TPEW56N3DBJR9N0JJW9",
+        "01M3R07G3AGHCM4ZHMGFM7Z5A3": "01M3R07G3AGHCM4ZHMGFM7Z5A4",
+        "01M4055P8KM691BD2WDBGF5QVJ": "01M4074Z1AHWJJAWCYQEHT14CP",
+        "01M3MEKH4WNSY2RE9VRTXZH9PT": "01M3MEKH4WNSY2RE9VRTXZH9PV",
+        "01M3MEKH37GZV0QAAPZTX6K86Y": "01M3MEKH382H9C2B3AXJTGXZRT",
+        "01M3MEKHA5W8RJBDX72X37FZVJ": "01M3RWCX2WZRZE58R55GA90PN7",
+        "01M3Q4H5JNCJDB32Z9Y6JFBW1N": "01M3Q4H5JNCJDB32Z9Y6JFBW1P",
+        "01M3MEKGMC8VSE3FNXVNWEQQ1N": "01M3MEKGMC8VSE3FNXVNWEQQ1P",
+        "01M3MEKGNZQ0P7T1JDXFN9AW41": "01M3MEKGNZQ0P7T1JDXFN9AW42",
+        "01M3MEKGSBRWFZRBAK69X0J776": "01M3MEKGSBRWFZRBAK69X0J777",
+        "01M3MEKGYAW8NGQQ1B25XJQ6KZ": "01M3MEKGYAW8NGQQ1B25XJQ6M0",
+        "01M3MEKGZW0N24X571C5XH281J": "01M3MEKGZW0N24X571C5XH281K",
+        "01M3MEKH1HQA7YT43FBNSBXMWW": "01M3MEKH1HQA7YT43FBNSBXMWX",
+        "01M3MEKGTZBB6D2EE4Y0HKSS9R": "01M3MEKGTZBB6D2EE4Y0HKSS9S",
+        "01M3MEKGJNN7S61YZ8MF1JD16A": "01M3XFF551A5BT8NERJK947RAG",
+        "01M3MEKGQP6FWTCGZMRPVD7BN5": "01M3MEKGQP6FWTCGZMRPVD7BN6",
+        "01M3MEKGWMXGMJBQX7EJDW4295": "01M3MEKGWMXGMJBQX7EJDW4296",
+        "01M3MEKGGY7GAEA7D6YKBAPJ1A": "01M3MEKGGY7GAEA7D6YKBAPJ1B",
+        "01M3MEKGF71N1FBS899CQT6R1N": "01M3MEKGF71N1FBS899CQT6R1P"
+      }
+    },
+    "ledger": [
+      {
+        "kind": "land",
+        "commit": "b15d696c",
+        "author": "BuildArchitectDispatchContract",
+        "time": "2026-10-03T09:59:38.609Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b15d696c",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayArchitectDispatchContract",
+        "time": "2026-10-03T10:02:54.038Z"
+      },
+      {
+        "kind": "broke",
+        "check": "pnpm verify: @cratylus/canon#typecheck:test errors in test/architect-dispatch-contract.test.ts:88,96 (TS2322, TS2345)",
+        "author": "IntegrateArchitectDispatchContract",
+        "time": "2026-10-03T10:05:39.699Z"
+      },
+      {
+        "kind": "land",
+        "commit": "HEAD",
+        "author": "RepairArchitectTypecheck",
+        "time": "2026-10-03T10:07:34.818Z"
+      },
+      {
+        "kind": "assay",
+        "commit": "b100e0578e971bcfe4a2b8e03385763c067639d1",
+        "verdict": "achieved",
+        "missing": [],
+        "author": "AssayArchitectTypecheck",
+        "time": "2026-10-03T10:10:50.046Z"
+      }
+    ]
+  }
+}
