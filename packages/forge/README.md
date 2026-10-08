@@ -13,9 +13,8 @@ Agents, skills, and hooks are **authored** as typed TypeScript cells inside plug
 declares which plugins it extends; `forge` resolves that set into one merged canon and projects it
 into harness artifacts on the local machine.
 
-The direction matters. The canon is the source; a harness's home (`~/.claude/`, `~/.omp/`) is a
-projection of it. Nothing in this pipeline reads a harness's existing configuration and treats it as
-truth.
+The direction matters. The canon is the source; OMP's home (`~/.omp/`) is a projection of it.
+Nothing in this pipeline reads a harness's existing configuration and treats it as truth.
 
 ## The pipeline
 
@@ -28,12 +27,10 @@ init → add → compose → project → deploy
 | `init`    | scaffolds `cratylus.config.ts` in the project root, extending a plugin                                  |
 | `add`     | wires another plugin package into that config's `extends`                                               |
 | `compose` | resolves the plugin set into one merged fragment set, and prints it                                     |
-| `project` | renders the resolved set into a render tree (`.cratylus/<harness>`)                                     |
-| `deploy`  | places the render tree into the chosen harness's home (`.claude/` or `.omp/`), at user or project scope |
+| `project` | renders the resolved set into a render tree (`.cratylus/omp`) |
+| `deploy`  | places the render tree into OMP's home (`.omp/`), at user or project scope |
 
-Projection goes from composed cells to harness artifacts **directly**. The claude and omp harness
-adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
-no intermediate exchange format between the two, and no stage of this pipeline reads or writes one.
+Projection goes from composed cells to OMP artifacts directly, through forge's adapter port.
 
 Composition is why projection cannot be pre-rendered and shipped. Which cells exist, and what each
 resolves to, depends on the plugin set a consumer declares — a set the plugin authors never saw. So
@@ -75,12 +72,10 @@ install what it imports.
 
 ## Rendering a tree
 
-`projectPluginSet` materializes the resolved set into a render tree: `agents/`, `skills/`, and the
-harness's hook surface. On claude that includes a `settings.json` carrying the hook registrations.
-omp has no hook config, so its hooks are emitted as `enforcing/<scope>/` modules and there is no
-`settings.json`. Skills that need a runtime companion get their shim emitted alongside them. A shim
-forwards its arguments to `cratylus <capability>` with the caller's environment, and it needs no
-session from any harness.
+`projectPluginSet` materializes the resolved set into a render tree: `agents/`, `skills/`, and
+`hooks/`. OMP hook modules are emitted under `enforcing/<scope>/`; skills that need a runtime
+companion get their shim emitted alongside them. A shim forwards its arguments to
+`cratylus <capability>` with the caller's environment, and it needs no session from any harness.
 
 ### A render may name practices
 
@@ -89,10 +84,8 @@ choice, each naming the agents it installs and any skills no agent carries, besi
 (`AgentPlugin.plumbing`) every practice is installed with and none is offered as. `projectPluginSet`
 renders the practices it is given (`ProjectOpts.practices`); named none, it renders every cell exactly
 as a plugin set declaring no practice does, byte for byte. Given names, it renders the union of those
-practices' agents and skills, the skills those are given and compose, the plumbing, and the guards a
-rendered agent composes (a hook cell that binds a composition is registered only when a rendered
-agent composes what it binds; a hook cell that is neither plumbing nor such a guard is left out). An
-empty list is refused: no practice is not every practice.
+practices' agents, skills they declare and compose, and hooks declared by the chosen practices or
+plugin plumbing. An empty list is refused: no practice is not every practice.
 
 A chosen set must be closed. Before anything is rendered, projection checks that every agent finds
 the roles it dispatches (`Agent.dispatches`, matched by anchor against `Agent.holds`) held by an
@@ -111,113 +104,72 @@ resolved skills, so a later plugin's same-name cell changes the closure, a name 
 kept and not expanded, and a composition cycle terminates. The closure is computed once, before any
 agent is rendered; every adapter renders the list it is handed.
 
-Where it lands depends on whether the harness's agent definition can name skills it preloads
-(`HarnessAdapter.preloadsSkills`), which both shipped adapters answer yes to:
 
-| Harness | The closure becomes                                                                                                                                                                                                                  |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| omp     | front-matter `autoloadSkills` (for a main session, the launcher inlines each skill's body)                                                                                                                                           |
-| claude  | subagent: front-matter `skills`; for a main session, a `SessionStart` hook per skill in the definition prints its body (a skill over the hook's output cap is named under `## Required reading` by the hook instead, with a warning) |
-
-A harness that answers no gets the closure as a required-reading declaration, and projection warns
-once per agent that has any.
+OMP receives each agent's skill closure in `autoloadSkills`; a main-session launch also inlines the
+skill bodies. Where a skill is too large for the launcher, it remains available through required
+reading rather than being dropped.
 
 ## How deploy places a tree
 
-`deploySingle` places one kind (agents, skills or hooks) of an already-projected render tree into
-the **local** root of the harness it is given (`claude` or `omp`): `.claude/` or `.omp/`. Agent
-definitions and skill directories are copied. On claude, `settings.json` hook registrations are
-merged into any existing file rather than replacing it; on omp, the `enforcing/<scope>/` modules are
-placed instead, since omp has no hook config to merge.
+`deploySingle` places one kind (agents, skills or hooks) of an already-projected render tree into the
+local OMP home. Agent definitions land under `agent/agents/`; skills land in the vendor-neutral
+`~/.agents/skills` tree that OMP reads natively. OMP hook registrations are emitted as extension
+modules, not merged into a settings file.
 
-Deploy stops at the harness's agent, skill and hook destinations (and the runtime config). A
-harness's own model routing is host configuration, not a deployed artifact, and `deploy` never
-writes it.
-
-Every adapter that declares `scopedRel` also receives one stance manifest per agent that composes a
-guard, staged at `enforcing/<agent>/stance/manifest.json` by the projector (`core/enrollment.ts`, one
-builder for both harnesses). A cell is a guard when it declares `binds`, the composition that binds an
-agent to it; an agent's manifest lists exactly the guards it includes, and a cell that binds nothing
-(a notice) is never listed. On omp the manifest lands beside the agent's modules; on claude, whose
-hooks stay in `settings.json`, it is the only scoped artifact, and lands under
-`.claude/personas/<name>/`. A harness with no `scopedRel` cannot name the running agent, so projection
-warns once per guard and carries it as a steer, deploying no mechanism for it.
+Deploy stops at the agent, skill and hook destinations (and the runtime config). Model routing is
+host configuration, not a deployed artifact, and `deploy` never writes it.
 
 ### The destinations are the adapter's, not the render tree's
 
-A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<name>/`,
-`hooks/<id>/`, `enforcing/<scope>/` and `shared/` — and it is deliberately not any harness's layout.
-`shared/` holds the hook assets that are the same on every harness, which deploy places under the
-vendor-neutral `.agents` root. Deploy asks the adapter where each artifact belongs:
+A render tree is forge's staging layout — `agents/<name><ext>`, `skills/<name>/`, `hooks/<id>/` and
+scoped artifacts under `enforcing/<scope>/`. It is deliberately not the harness's layout. Deploy
+asks the adapter where each artifact belongs:
 
-| Artifact                | Port op                  | claude                                                    | omp                                                        |
-| ----------------------- | ------------------------ | --------------------------------------------------------- | ---------------------------------------------------------- |
-| agent definition        | `agentRel(name)`         | `agents/<name><ext>`                                      | `agent/agents/<name>.md`                                   |
-| skill directory         | `skillRel(name, agents)` | `skills/<name>`                                           | `../.agents/skills/<name>` (one copy — read natively)      |
-| hook registration       | `hooksFile` (merged)     | `settings.json`                                           | — (no hook config exists, so nothing is merged)            |
-| stance manifest         | `scopedRel(file, scope)` | `personas/<agent>/stance/manifest.json`                   | `<scope>/stance/manifest.json` (per agent)                 |
-| scoped mechanism module | `scopedRel(file, scope)` | —                                                         | `<scope>/extensions/<file>`                                |
-| badge                   | `scopedRel(file, scope)` | `personas/<agent>/cratylus-persona-badge.txt` (per agent) | `<scope>/extensions/cratylus-persona-badge.ts` (per agent) |
-| `--config` overlay      | `scopedRel(file, scope)` | —                                                         | `<scope>/omp.yml` (per agent)                              |
-| launcher                | `scopedRel(file, scope)` | `personas/_session/claude-agent` (0755, ONE)              | `agent/omp-agent` (0755, ONE for every agent)              |
-| status-line worker      | `scopedRel(file, scope)` | `personas/_session/cratylus-status-line.sh` (0755, ONE)   | —                                                          |
+| Artifact                | Port op                  | OMP |
+| ----------------------- | ------------------------ | --- |
+| agent definition        | `agentRel(name)`         | `agent/agents/<name>.md` |
+| skill directory         | `skillRel(name, agents)` | `../.agents/skills/<name>` |
+| hook module             | `hooksFile`              | generated extension module |
+| scoped mechanism module | `scopedRel(file, scope)` | `<scope>/extensions/<file>` |
+| badge                   | `scopedRel(file, scope)` | `<scope>/extensions/cratylus-persona-badge.ts` |
+| `--config` overlay      | `scopedRel(file, scope)` | `<scope>/omp.yml` |
+| launcher                | `scopedRel(file, scope)` | `agent/omp-agent` |
 
-`<scope>` is `agent/` for the SESSION copy (a launch that names no agent) or
-`agent/personas/<agent>/` for a projected agent — a directory omp scans for nothing, so what lands
-there is reachable only from that agent's own `--config` overlay and never from a bare `omp`.
+`<scope>` is `agent/` for the session copy or `agent/personas/<agent>/` for a projected agent. The
+agent's own `--config` overlay makes that scoped directory reachable without exposing it to a bare
+session.
 
-**The definition is the single source of truth.** An agent's definition is staged and placed once,
-and both readers take it from there: omp reads `agent/agents/<name>.md` natively when it dispatches
-the agent as a subagent, and its one launcher reads the same bytes to start the agent as a main
-session. One definition, two readers, nothing to drift — and ONE launcher on the host rather than one
-per agent. A definition names the role an agent holds and never a model.
+**The definition is the single source of truth.** OMP reads `agent/agents/<name>.md` when it
+dispatches an agent as a subagent, and the launcher reads the same bytes to start it as a main
+session. One definition, two readers, nothing to drift — and one launcher on the host rather than
+one per agent.
 
 ## The harness adapter port
 
 A harness adapter implements `HarnessAdapter` (`@cratylus/forge/harness-adapter`) and is selected by
-name through `adapterByName`. The port is the whole of what projection and deploy ask of a harness;
-neither knows a concrete harness.
+name through `adapterByName`. OMP is the current implementation; projection and deploy depend on the
+port, not on OMP's concrete rendering functions.
 
-| member                                              | what the harness says                                                                                                              |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `name`, `substrate`, `home`, `agentExt`             | its canonical name, the substrate it realizes constraints on, its dot-directory and the extension its agent definitions carry      |
-| `agentRel`, `skillRel`, `hooksFile`                 | where an agent definition, a skill and the hook config land, relative to the home                                                  |
-| `agentDef`, `skillDef`, `hooks`                     | the render of an agent, a skill, and the hook registrations (`hooks` absent where the harness has no hook config)                  |
-| `preloadsSkills`, `mainSessionSkillHook`            | whether a definition can name skills it preloads, and how a main session gets them where it cannot                                 |
-| `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, whether an event can be realized and narrowed to one agent, and the command a deployed worker is invoked by         |
-| `judgeBin`                                          | the CLI that answers a model question, or empty where the harness judges in-process                                                |
-| `enforcingSurface`, `scopeActivatedSurface`         | the hook mechanism as code, for a harness whose hook surface is a program rather than a config file                                |
-| `scopedRel`                                         | where a scoped artifact lands, per agent or for the session; it places an agent's stance manifest directly under `<root>/<agent>/` |
-| `launchSurface`, `launcherFile`                     | the launch spec, and the launcher it emits in the session scope                                                                    |
-| `statusLine`, `statusSegment`                       | where the badge shows on a status line that is one command, or on one that is a list of segments                                   |
-| `roleRouting`                                       | how a held role routes to a model: its default role, the role nearest each held role, and the config files in read order           |
+| member                                              | what the harness says                                                                                       |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `name`, `substrate`, `home`, `agentExt`             | its canonical name, substrate, dot-directory and agent-definition extension                                 |
+| `agentRel`, `skillRel`, `hooksFile`                 | where an agent, skill and hook module land, relative to the harness home                                     |
+| `agentDef`, `skillDef`, `hooks`                     | how an agent, skill and hook registration are rendered                                                      |
+| `preloadsSkills`, `mainSessionSkillHook`             | whether an agent definition preloads skills and how a main session gets them                                |
+| `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                                            |
+| `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment                      |
+| `scopedRel`                                         | where a scoped artifact lands for an agent or the session                                                   |
+| `launchSurface`, `launcherFile`                     | the launch spec and launcher                                                                                |
+| `statusSegment`                                     | how the badge appears in OMP's segmented status line                                                        |
 
-An event absent from `nativeEvents` is unrealizable on the harness, and projection reports it rather
-than fabricating a binding. `scopes` is a stronger demand than `realizes`: firing is not scoping, and
-an adapter must never answer yes for an event it cannot realize. `hookCommand` is written against
-`$HOME`, not a resolved path, because it is read at run time on whatever host it lands on.
+An event absent from `nativeEvents` is unrealizable, and projection reports it rather than
+fabricating a binding. `scopes` is a stronger demand than `realizes`: firing is not scoping, and an
+adapter must never answer yes for an event it cannot realize. `hookCommand` is written against
+`$HOME`, not a resolved path, because it is read at runtime on whatever host it lands on.
 
-`scopedRel` places more than mechanism: the same per-scope map places the launch spec's overlay and
-launcher, because both belong beside the modules they wire. A harness whose hook surface is a
-program rather than a config file (omp: its loader scans an `extensions/` directory, or a directory
-named in a launch spec's `--config` overlay) has no fragment to merge, so its adapter implements
-`scopeActivatedSurface` and `launchSurface`, and the projection stages one artifact per scope for
-deploy to place. The map must place an agent's manifest directly under `<root>/<agent>/`, keeping its
-scope-relative path, because the workers derive that root from it (`personaRootOf`, bound into a hook
-worker's template as the `harness-persona-root` fact).
-
-`launchSurface` takes the composed agents, each once, because on omp the identity a launch carries
-includes what the operator sees of it: the badge, one `cratylus-persona-badge.ts` module per agent in
-that agent's own `extensions/`, whose text is baked at projection from the agent's mark and name.
-Claude's badge is a text file per agent beside one session-scoped status-line worker, which
-`statusLine` declares (`file`, and the `command` that runs it, written against `$HOME`). A harness
-whose status line is a list of segments declares `statusSegment` instead: the host config files that
-hold the layout, the segment an extension's status renders in, the layout in effect when the host
-names no preset, and the left list the `custom` preset falls back to. How the badge is made to show
-is install's, and the `cratylus` README holds it.
-
-`roleRouting` is optional: claude leaves it absent, since it has no host role map to seed. How each
-harness routes a held role to a model is [the `cratylus` README](../cli/README.md)'s.
+`scopedRel` places the launch spec's overlay and launcher beside the modules they wire. OMP's
+`scopeActivatedSurface` emits one artifact per scope for deploy to place. `launchSurface` receives
+the composed agents once so it can project each badge from that agent's mark and name.
 
 ## Where the boundaries are
 
@@ -227,8 +179,8 @@ Three concerns look adjacent to this pipeline and are deliberately outside it.
 ordinary package install. It is a _precondition_ of the pipeline, not a stage of it — `init` cannot run
 before the CLI exists.
 
-**Projection is local.** `deploy` writes to a harness root (`.claude/` or `.omp/`) on the machine it
-runs on. It has no transport, no host list, and no remote mode.
+**Projection is local.** `deploy` writes to OMP's root (`.omp/`) on the machine it runs on. It has
+no transport, no host list, and no remote mode.
 
 **Running it across many hosts is yours.** Iterating a fleet is an outer loop _around_ the whole
 pipeline, and it is a site-specific concern rather than a feature of this tool. The loop ssh's to each
@@ -247,8 +199,8 @@ import { deploySingle, userScope, projectScope } from '@cratylus/forge/deploy';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 ```
 
-`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'omp'` — so a
-consumer depends on the adapter port and this selector rather than on a concrete harness module.
+`adapterByName` is the single selection point for a harness adapter. OMP is its one implementation;
+consumers depend on the adapter port and selector rather than on concrete rendering functions.
 Plugin authors also want [`@cratylus/schema`](../schema/README.md), which holds the cell types and
 `defineAgentPlugin`. They are no longer forge's, and importing them from the projector was the
 inversion `schema` exists to end; `@cratylus/forge/resolve` re-exports `AgentPlugin` and
@@ -256,8 +208,7 @@ inversion `schema` exists to end; `@cratylus/forge/resolve` re-exports `AgentPlu
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
 fragment catalogs of a plugin set), `./validate` (the doctrine-free acceptance algorithm, whose data
-the corpus injects), `./module-scan`, `./adapters/*` (each harness adapter) and `./cli` (the
-projector's Commander commands, which [`cratylus`](../cli/README.md) adds to its own program).
+the corpus injects), `./module-scan` and `./adapters/omp` (the OMP adapter).
 
 ## License
 
