@@ -2,12 +2,8 @@
 //
 // A cell that does not own a symbol borrows it by boundary-binding: a line of the
 // form `sym₁, sym₂ @ home`, which asserts "these are defined over there, go read
-// them there." That assertion was never checked. `carry-on` carried
-// `active, done @ praxis` for the whole life of the cell, and praxis has never
-// declared `active` — it declares shard `state`, and `active` is one of its VALUES.
-// Meanwhile `wake` declared a THIRD, incompatible meaning locally. One sign, three
-// homes, and every gate in the suite was green: `symbols` checks that each GLYPH is
-// registered in `operator-lexicon`, which says nothing about whether a NAME resolves.
+them there." This gate checks that each borrowed name resolves to a declaration
+in the live skill named as its home.
 //
 // SCOPE — only bindings whose home is a live skill are checkable. `@ live-anatomy`,
 // `@ memory-session-registry`, `@ cold-decode-oracle` name conceptual homes outside
@@ -42,7 +38,7 @@ async function loadSkills(): Promise<Map<string, Skill>> {
  * A boundary-binding line: `sym, sym … @ home`, home a bare lowercase anchor.
  *
  * `@` carries TWO senses in this corpus and only one is checkable:
- *   BORROW  `bound, done @ praxis`                     — go read these there
+ *   BORROW  `sources @ conceptualize`                    — go read it there
  *   REMIT   `boundary ≜ dimensions-only · domain-skills @ create-skill`
  *                                                       — that concern is theirs
  * The second is a definiens ABOUT ownership, not an import, and `create-skill`
@@ -104,26 +100,23 @@ describe('BOUNDARY-BINDING gate — `X @ home` resolves in that home', () => {
 
   it('CONVICTS: a binding whose home lacks the symbol is reported', async () => {
     const real = await loadSkills();
-    // Re-grounded from `praxis` onto its successor `plan` when the design/plan/
-    // deliver trio superseded it. The fixture needs a LIVE home that declares one
-    // of two borrowed symbols and not the other; naming a home that no longer
-    // exists made this an ENOENT rather than a verdict.
-    const home = real.get('plan');
-    expect(home, 'plan must exist for this fixture').toBeDefined();
-
+    // Use a live skill home that declares one borrowed symbol but not the other;
+    // this keeps the fixture anchored to the current corpus.
+    const home = real.get('conceptualize');
+    expect(home, 'conceptualize must exist for this fixture').toBeDefined();
     const injected = new Map(real);
     injected.set('__fixture__', {
       name: '__fixture__',
       description: 'synthetic',
-      // `R` is declared by `plan` (`R ⊆ P × P`); `quiesced` is declared nowhere.
-      formalBlock: 'X ≜ a thing\nquiesced, R @ plan\n',
+      // `sources` is declared by `conceptualize`; `quiesced` is declared nowhere.
+      formalBlock: 'X ≜ a thing\nquiesced, sources @ conceptualize\n',
       composition: () => [],
     } as unknown as Skill);
 
     const found = unresolved(injected);
-    expect(found.join(' | ')).toContain('`quiesced @ plan`');
-    // and it does NOT over-report: `R` IS declared by plan.
-    expect(found.join(' | ')).not.toContain('`R @ plan`');
+    expect(found.join(' | ')).toContain('`quiesced @ conceptualize`');
+    // and it does NOT over-report: `sources` IS declared by conceptualize.
+    expect(found.join(' | ')).not.toContain('`sources @ conceptualize`');
   });
 
   it('EXONERATES: a conceptual (non-skill) home is skipped, not failed', async () => {

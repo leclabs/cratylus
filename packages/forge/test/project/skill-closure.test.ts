@@ -83,27 +83,10 @@ describe('omp — `autoloadSkills` carries the closure', () => {
   });
 });
 
-describe('claude — the subagent `skills` field carries the closure', () => {
-  it('emits it as a YAML sequence, in closure order', async () => {
-    const { agent } = await project('claude');
-    const lines = fence(agent('chain')).split('\n');
-    const at = lines.indexOf('skills:');
-    expect(at).toBeGreaterThan(-1);
-    expect(lines.slice(at + 1, at + 1 + CLOSURE.length)).toEqual(
-      CLOSURE.map((s) => `  - "${s}"`),
-    );
-    expect(lines[at + 1 + CLOSURE.length]?.startsWith('  - ')).not.toBe(true);
-    expect(fence(agent('bare'))).not.toMatch(/^skills:/m);
-  });
-
-  it('warns about nothing — claude preloads skills natively', async () => {
-    expect((await project('claude')).warnings).toEqual([]);
-  });
-});
 
 describe('a harness with no preload field — the closure degrades to a declaration', () => {
-  // No supported harness lacks a preload field, so the test-local shortfall
-  // adapter (claude without `preloadsSkills`) is the witness.
+  // OMP supports native skill preloading; a local adapter without that field
+  // remains the witness for the declaration fallback.
   it('ends the definition with a required-reading section, in closure order', async () => {
     const { agent } = await project(shortfallAdapter);
     const text = agent('chain');
@@ -135,8 +118,8 @@ describe('a harness with no preload field — the closure degrades to a declarat
 
 describe('a harness that cannot start an agent in a worktree — the declaration degrades to a warning', () => {
   // The `isolating` plugin ships `walled`, which declares worktree isolation; the
-  // base agents (`chain`, `bare`) declare none. claude is the harness that starts
-  // one in a worktree; omp and the test-local shortfall adapter cannot.
+  // base agents (`chain`, `bare`) declare none. OMP and the test-local shortfall
+  // adapter cannot start one in a worktree; OMP isolates dispatches instead.
   const isolating: ProjectablePlugin = {
     name: 'fixture-closure-isolating',
     agents: join(fixtures, 'isolating', 'agents'),
@@ -160,17 +143,11 @@ describe('a harness that cannot start an agent in a worktree — the declaration
     expect(fence(agent('walled'))).not.toMatch(/^isolation:/m);
   });
 
-  it('warns on omp, which has no such field, and emits no key', async () => {
+  it('warns on omp, which uses dispatch isolation rather than a definition field', async () => {
     const { warnings, agent } = await project('omp', [base, isolating]);
     expect(isolationWarnings(warnings)).toHaveLength(1);
     expect(isolationWarnings(warnings)[0]).toContain("'walled'");
     expect(fence(agent('walled'))).not.toMatch(/^isolation:/m);
   });
 
-  it('warns about nothing on claude, which carries it natively', async () => {
-    const { warnings, agent } = await project('claude', [base, isolating]);
-    expect(isolationWarnings(warnings)).toEqual([]);
-    expect(fence(agent('walled')).split('\n')).toContain('isolation: worktree');
-    expect(fence(agent('bare'))).not.toMatch(/^isolation:/m);
-  });
 });

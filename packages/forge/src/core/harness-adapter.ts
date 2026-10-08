@@ -2,14 +2,13 @@
 // captures the projection operations a consumer (canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
 // on-disk ARTIFACTS — WITHOUT naming a concrete adapter module. A consumer selects
-// an implementation strictly BY NAME (`adapterByName('claude' | 'omp')`), so no
+// an implementation strictly BY NAME (`adapterByName('omp')`), so no
 // `adapters/<harness>` subpath import leaks into the consumer.
 //
 // Each projection op returns `{ filename, content }` — the harness owns its own
 // file naming (`<name>.md`; `SKILL.md`), the consumer owns only
 // the parent directory it writes under. Optional ops (`hooks`, `enforcingSurface`)
-// are present only on harnesses that have that artifact (claude serializes hooks →
-// a `settings.json` fragment).
+// are present when that artifact exists; OMP realizes hooks as extension modules.
 //
 // VOCABULARY — the GENUS is `artifact`: one projected file, `⟨filename, content⟩`,
 // which is what every op below returns. `surface` is kept for the sense the rest
@@ -54,17 +53,6 @@ export const SESSION_SCOPE = '_session';
  */
 export const ENFORCING_STAGE_DIR = 'enforcing';
 
-/**
- * Staging dir for HARNESS-INVARIANT hook assets — the ones `HookWorker.shared`
- * marks, which deploy places under the vendor-neutral {@link NEUTRAL_AGENT_ROOT}
- * instead of inside a harness tree.
- *
- * A SEPARATE DIR RATHER THAN A FLAG ON DISK, for the reason `ENFORCING_STAGE_DIR`
- * gives one paragraph up: the tree is what deploy reads, and a property that
- * exists only in the cell is a property deploy cannot see. Staging by
- * DESTINATION KIND is how the render tree carries the answer.
- */
-export const SHARED_STAGE_DIR = 'shared';
 
 /**
  * The harness-NEUTRAL agent root, relative to a scope's home — the one directory
@@ -116,12 +104,11 @@ export interface HarnessProjection {
   /**
    * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
    *
-   * Absent ⇒ the artifact is global to the harness home: one artifact, one place,
-   * no scope to name (claude's `settings.json`). Present ⇒ the artifact is one of
-   * MANY, and its scope decides where deploy lands it (`HarnessAdapter.scopedRel`).
-   * omp's scope is a DIRECTORY, so the same registrations are emitted once per
-   * scope and each copy is correct by placement rather than by a runtime filter;
-   * claude's persona scope holds only the stance manifest its workers look for.
+   * Absent ⇒ the artifact is global to the harness home: one artifact, one place.
+   * Present ⇒ the artifact is one of MANY, and its scope decides where deploy
+   * lands it (`HarnessAdapter.scopedRel`). OMP's scope is a directory, so the
+   * same registrations are emitted once per scope and are correct by placement
+   * rather than by a runtime filter.
    */
   readonly scope?: string;
   /**
@@ -278,17 +265,6 @@ export interface HarnessAdapter {
    */
   readonly hooksFile: string;
   /**
-   * The CLI this harness answers a model question with — or the EMPTY string
-   * where it judges in-process and needs no subprocess.
-   *
-   * Declared on the port because it is the fact that made every harness's guard
-   * depend on one vendor: the judge backend hardcoded `claude`, so omp's stance
-   * guard required a second CLI installed and separately
-   * authenticated, and a lapsed session in that CLI failed every verdict open,
-   * silently, everywhere at once. A harness answers with its OWN model or it says
-   * it cannot, and neither answer belongs in a cell.
-   */
-  readonly judgeBin: string;
   /**
    * Whether an agent definition on this harness can NAME skills the harness
    * preloads into that agent — omp's `autoloadSkills`, claude's subagent
@@ -499,15 +475,6 @@ export interface HarnessAdapter {
    * the SESSION scope, because an operator who has to combine flags by hand to
    * start one persona has a launch spec whether or not this port generates it
    * for them.
-   *
-   * EVERY HARNESS THAT DECLARES IT PLACES THE STANCE MANIFEST, mechanism or
-   * not: the projector stages one per persona (`core/enrollment.ts`) and this map
-   * says where it lands. omp's scope carries modules beside it; claude's carries
-   * nothing else, because claude registers in `settings.json` and its workers find
-   * the persona by the `agent_type` the hook payload names. The map must place a
-   * persona's manifest directly under `<root>/<persona>/`, keeping its
-   * scope-relative path (`STANCE_MANIFEST`), because the workers derive that root
-   * from it (`personaRootOf`).
    *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is

@@ -1,27 +1,18 @@
-// The forge `Hook` deploy-IR + worker payloads, DERIVED from the first-class
-// `hook` source cells (`src/hooks/*.ts`). The source of truth is the cell:
-// `hooks.ts` no longer hand-authors a `Hook` nor points at on-disk `.sh` assets —
-// it lifts the harness-substrate cells (via forge's doctrine-free `hookIrOf`) into
-// the forge `Hook` IR the projector serializes into `.claude/settings.json`
-// (claude adapter: `turn.end` → Stop) and carries
-// their VERBATIM worker payloads so the projector stages them under `hooks/<id>/`
-// (no file copy — the bytes come from the cell). Only `harness`-substrate cells
-// register in settings.json, and every surviving cell is one: the corpus's single
-// `git`-substrate cell, `praxis-continuity`, retired with the praxis plan mirror it
-// nudged about. The routing for a non-harness substrate is not hypothetical — it is
-// exercised the moment such a cell exists again — but nothing carries it today, and
-// a header claiming a live example is a claim a reader cannot check.
+// First-class hook cells that forge projects from the canon catalog. Source truth
+// lives in `src/hooks/*.ts`; this module is the composition root naming the
+// concrete cells. Forge selects the adapter, serializes the hook configuration,
+// and stages each cell's VERBATIM worker payload under `hooks/<id>/`.
 //
 // The cell shapes are the schema's type kernel (`@cratylus/schema`); this
 // module is the composition root that NAMES the concrete cells and nothing more.
 // It used to also LIFT them to the `Hook` IR here, which forced a command string to
-// exist before any adapter was chosen — so every cell spelled out a claude path.
-// The lift is the projector's, per adapter, from `HarnessAdapter.hookCommand`.
+// exist before any adapter was chosen. The lift is the projector's, per adapter,
+// from `HarnessAdapter.hookCommand`.
 
 import { deployDriftNotice } from './hooks/deploy-drift-notice.js';
 import type { HookCell } from './manifest.js';
 
-/** The harness-substrate hook cells forge projects into settings.json + hooks/<id>/. */
+/** The harness-substrate hook cells forge projects into the host config + hooks/<id>/. */
 export const harnessHookCells: readonly HookCell[] = [
   deployDriftNotice,
 ];

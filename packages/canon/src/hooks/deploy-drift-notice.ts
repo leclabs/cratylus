@@ -3,7 +3,7 @@ import type { HookCell } from '../manifest.js';
 // deploy-drift-notice — the advisory that answers, before the agent acts, whether
 // the doctrine THIS HOST runs is the doctrine the corpus renders.
 //
-// THE INCIDENT. `~/.claude/agents/<name>.md` and the render tree diverged. An agent
+// THE INCIDENT. `~/.omp/agent/agents/<name>.md` and the render tree diverged. An agent
 // edited the corpus for a full session under a superseded first principle, and every
 // gate in the repository stayed green the entire time — because every gate that
 // existed was a claim about how a target is PRODUCED, and none was a claim about what
@@ -35,18 +35,15 @@ import type { HookCell } from '../manifest.js';
 // copy with nothing further to say. That is not hypothetical and it is not rare —
 // it is the ORDINARY shape of work here, where a session edits a cell, projects it,
 // and keeps going under the version it just replaced. The 16-hour-old projection of
-// an agent's own governing cell was this; so was a `plan` edit that landed under a
+// an agent's own governing cell was this; so was an authored skill edit that landed under a
 // running session hours later.
 //
 // `prompt.submit` IS THE RE-ARM, and it is the same question at a finer grain rather
-// than a second mechanism. Both events put the notice in the one position that makes
-// it worth having — BEFORE the agent acts on an instruction — and on both harnesses
-// the answer reaches the agent's own context, which is where a false premise has to
-// be corrected because the agent is the thing holding it. `turn.end` was the runner-up
-// and is the wrong end of the turn: it speaks after the acting is done, and on claude
-// its stdout lands in the transcript rather than in the context of the reader who
-// needs it. `file.edit.post` was rejected as a category error — a cell EDIT is not
-// drift; drift begins when the render tree moves, which happens under a shell command.
+// than a second mechanism. Both moments put the notice before the agent acts on an
+// instruction, where the false premise can be corrected. `turn.end` is the wrong end
+// of the turn: it speaks after the acting is done. `file.edit.post` was rejected as
+// a category error — a cell EDIT is not drift; drift begins when the render tree moves,
+// which happens under a shell command.
 //
 // A RE-ARM IS ONLY AS GOOD AS ITS SILENCE, and this one is where the silence had to be
 // re-earned. Fired every prompt, an unchanged verdict would repeat the same advisory
@@ -138,7 +135,7 @@ import type { HookCell } from '../manifest.js';
 //
 // The `workers[].content` is the TEMPLATE the committed worker at `targetPath`
 // regenerates from — resolved bytes, byte-locked by `test/hook-rule-boundary.test.ts`.
-// The committed resolution is the CLAUDE one (`COMMITTED_TARGET_HARNESS`), because a
+// The committed resolution is the OMP one (`COMMITTED_TARGET_HARNESS`), because a
 // template with an adapter-relative fact has one resolution per harness and
 // `targetPath` names one file; every DEPLOYED copy is resolved for the harness that
 // session runs. EDIT THE CELL AND REGENERATE (`pnpm canon:project:targets`) — never

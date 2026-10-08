@@ -7,6 +7,6 @@ export const greet: Skill = {
   name: 'greet',
   description: 'a fixture skill',
   formalBlock: 'G ≜ ⟨greeting⟩\n\n∀g ∈ G : g ≠ ∅',
-  runtime: { capability: 'note' },
+  runtime: { capability: 'design' },
   composition: () => [],
 };

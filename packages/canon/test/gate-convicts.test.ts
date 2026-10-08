@@ -146,8 +146,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
   'canon/cell-gloss-census.test.ts': 'GATE',
   'canon/cratylism.test.ts': 'GATE',
-  // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.claude` itself and
-  // drives the committed SessionStart worker over both, so its negative cases ARE its
+  // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.omp` itself and
+  // drives the committed session worker over both, so its negative cases ARE its
   // fixtures. Every SILENT leg is paired with a one-byte mutation of the same host
   // that must make the same worker speak — the control that separates a working
   // in-sync check from one that compared nothing.
@@ -203,12 +203,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/cli/cli.test.ts': 'BEHAVIORAL',
   'forge/cli/compose.test.ts': 'BEHAVIORAL',
   'forge/cli/explain.test.ts': 'BEHAVIORAL',
-  // drives `runInstall` through injected prompts over a corpus and a tmp HOME it writes
-  // itself, and asserts on the host's bytes: nothing is written before the confirmation
-  // or on a decline, a decision given by flag asks nothing, a run with no terminal and
-  // no practices named is refused before a byte is written, and a role the host already
-  // routed is neither asked nor changed — it polices no corpus.
-  'forge/cli/install.test.ts': 'BEHAVIORAL',
   'forge/config/loader.test.ts': 'BEHAVIORAL',
   'forge/config/scaffold.test.ts': 'BEHAVIORAL',
   'forge/core/runtime-shim-binding.test.ts': 'BEHAVIORAL',
@@ -217,38 +211,24 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and asserted SILENT, which is the defect held green in perpetuity.
   'forge/deploy/check.test.ts': 'BEHAVIORAL',
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
-  // drives `ensureBadgeStatusLine`, `ensureStatusSegment` and `runInstall` over host
-  // settings and configs it writes itself — a host's own status line, a list that
-  // already has `status`, shapes it cannot extend, a dry run — and asserts each is left
-  // as the bytes were: the never-replace negatives are its fixtures, and it polices no
-  // corpus.
+  // exercises the OMP status-line config editor and install path, including byte-preserving
+  // edits, custom layouts, host-owned settings, and dry-run behavior.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
-  // runs `runInstall` then `runUninstall` over a tmp HOME the host has already written
-  // to, and compares the whole tree byte for byte; its convicting fixtures are the host's
-  // own edits (a placed file, a status line, a config line, a hook entry, a persona
-  // link), each asserted still there, and a record it cannot trust — it polices no
-  // corpus.
+  // covers generic manifest line-edit behavior without depending on a harness
+  // integration or the deleted workflow artifacts.
   'forge/deploy/uninstall.test.ts': 'BEHAVIORAL',
-  // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
-  // negative (`.claude` absent) so the old hardcode cannot pass it.
+  // drives scaffoldProject with a supplied OMP harness home and asserts its `.omp` path.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
   // drives `probeRuntimeBin`/`assertShimsResolvable` against stranded and live host
   // fixtures it builds itself, with the real shim bytes.
   'forge/deploy/runtime-bin-resolvable.test.ts': 'BEHAVIORAL',
   'forge/deploy/local.test.ts': 'BEHAVIORAL',
   'forge/deploy/prune.test.ts': 'BEHAVIORAL',
-  'forge/project/bindings.test.ts': 'BEHAVIORAL',
   'forge/project/realization.test.ts': 'BEHAVIORAL',
-  'forge/project/degradation.test.ts': 'BEHAVIORAL',
-  // projects a fixture plugin it owns under both adapters and reads the warnings.
+  // projects an OMP-only fixture and reads the eventTap degradation warning.
   'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
-  // projects a fixture plugin set it owns, declaring practices, plumbing and a dispatch
-  // relation, and reads the placed cells back; its refusals (an unclosed dispatch or
-  // skill, an undeclared name, an empty choice) ARE its fixtures.
-  // projects a fixture plugin it owns whose skills straddle the claude hook cap, and
-  // asserts the oversized one is unhooked, named as required reading and warned once;
-  // its boundary cases (exactly the cap, one over) ARE its fixtures.
+  // OMP keeps oversized skills available without a main-session hook.
   'forge/project/skill-hook-cap.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
@@ -258,9 +238,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // control would leave open.
   'forge/project/write-prune.test.ts': 'BEHAVIORAL',
   'forge/project/tree.test.ts': 'GATE',
-  // BEHAVIORAL: it projects a fixture plugin it owns under BOTH adapters and reads the
-  // emitted worker bytes back, so the divergence is the fixture rather than a claim
-  // about the live corpus. Its derivation half is convicted the same way — `binNameOf`
+  // BEHAVIORAL: it projects a fixture plugin it owns under OMP and reads the emitted
+  // worker bytes back. Its derivation half is convicted the same way — `binNameOf`
   // is fed synthetic manifests, including the two it must refuse.
   'forge/project/projection-facts.test.ts': 'BEHAVIORAL',
   'forge/validate/enforced.test.ts': 'BEHAVIORAL',

@@ -19,36 +19,20 @@ function projectAgentsMd(subject: string): string {
 
 This is an **agent project** -- a working set of agents, not a pile of files. It was
 scaffolded by projecting the canon catalog into this repository: the project
-structure is laid down, and the built-in agents are projected alongside it.
+structure is laid down, and surviving canon artifacts are projected alongside it.
 
 ## Subject
 
 ${subject}
 
-## The built-in agents
-
-Projected into this project as agents (\`.claude/agents/\`):
-
-- **Nico** 📐 -- master builder of the **constitution**: roles, archetypes, the
-  agent system itself. To mutate the culture, be Nico or delegate to him.
-- **Mav** ✈️ -- master builder of the **substrate**: the infrastructure, machinery,
-  and delivery the project runs on. For build/delivery, Mav leads.
-
-\`principal-ic\` is **intrinsic** to both built-in agents -- the built-in genus, bound
-to this project's subject, not a path-scoped grant.
 
 ## How this project was scaffolded
 
-- **Culture** -- every agent + skill in this \`.claude/\` is a *projection* of an
-  canon catalog cell, not a hand-authored copy. Regenerate by re-projecting;
-  do not hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
-  header + content-hash that the projector guards against clobbering).
+- **Culture** -- every projected agent and skill is a *projection* of a canon
+  catalog cell, not a hand-authored copy. Regenerate by re-projecting; do not
+  hand-edit generated definitions.
 - **Structure projected, not copied** -- the scaffold draws on the canon catalog's
   project structure. This project instantiates that structure.
-
-## Work-tracking
-
-Work is planned with the \`plan\` skill.
 `;
 }
 

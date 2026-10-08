@@ -58,12 +58,6 @@ import {
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
 import {
-  STANCE_MANIFEST,
-  composes,
-  personaRootOf,
-  stanceManifests,
-} from '../core/enrollment.js';
-import {
   dimensionFieldsOf,
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
@@ -71,7 +65,6 @@ import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
-  SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
 import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
 // The DEFINING module, never the `deploy/` barrel: one constant is wanted here,
@@ -121,13 +114,6 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     // comparator's own failure by exit status, and `1` is forge's choice — not
     // POSIX's, the way `0` is. So the one code that is ours travels by name.
     'deploy-check-drift-code': String(DEPLOY_CHECK_EXIT.drift),
-    // EMPTY IS A VALUE HERE, and the worker reads it as one: a harness that
-    // judges in-process names no CLI, and the backend must fail open rather than
-    // fall back to somebody else's.
-    'harness-judge-bin': adapter.judgeBin,
-    // Read back from `scopedRel`, so a worker names no layout of its own.
-    'harness-persona-root': personaRootOf(adapter),
-    'stance-manifest': STANCE_MANIFEST,
   };
 }
 
@@ -988,12 +974,8 @@ export async function projectPluginSet(
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
 
-  // A CHOSEN SET REGISTERS ITS PLUMBING AND ITS GUARDS, and no other hook. A guard is
-  // a cell that binds a composition, and it travels with the agents that compose what
-  // it binds: registered only when a rendered agent does, since one registered for
-  // nobody would fire in every session and judge none. A plumbing hook naming no cell
-  // is refused for the reason an omission that matched nothing is: it would read as
-  // one that held.
+  // A CHOSEN SET REGISTERS ITS PLUMBING, and no other hook. A plumbing hook naming
+  // no cell is refused: it would read as installed while registering nothing.
   if (selection) {
     for (const id of selection.hooks) {
       if (!discoveredHooks.some((cell) => cell.id === id)) {
@@ -1004,31 +986,9 @@ export async function projectPluginSet(
     }
   }
   const hookCells = selection
-    ? discoveredHooks.filter((cell) => {
-        if (selection.hooks.has(cell.id)) return true;
-        const { binds } = cell;
-        return (
-          binds !== undefined &&
-          composed.some((c) => composes(c.agent, binds, manifest, cell.id))
-        );
-      })
+    ? discoveredHooks.filter((cell) => selection.hooks.has(cell.id))
     : discoveredHooks;
 
-  // A GUARD NEEDS A SCOPE, AND A HARNESS THAT CANNOT NAME THE RUNNING AGENT HAS NONE.
-  // A cell that binds a composition is a guard, and a guard registered where no
-  // manifest can be found fires on every session and enrolls nobody — the defect
-  // this projection exists to rule out, and one that reads as coverage. A harness
-  // with no `scopedRel` therefore carries such a cell as a STEER only: its rule is
-  // already declared in the agent bodies that compose it, its mechanism is withheld,
-  // and the operator is told once per cell, here and again at install.
-  const unscopable = opts.adapter.scopedRel
-    ? []
-    : hookCells.filter((cell) => cell.binds);
-  for (const cell of unscopable) {
-    warn(
-      `guard '${cell.id}' cannot be scoped on '${opts.adapter.name}': this harness cannot name the running agent, so a hook registered for it would fire for every session and judge none. It is carried as a steer (the rule stays declared in the agents that compose it) and its mechanism is not deployed here.`,
-    );
-  }
 
   // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A cell bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
@@ -1045,9 +1005,7 @@ export async function projectPluginSet(
       );
     }
   }
-  const carried = hookCells.filter(
-    (cell) => !unscopable.includes(cell) && !unfired.has(cell.id),
-  );
+  const carried = hookCells.filter((cell) => !unfired.has(cell.id));
 
   let hooks = 0;
   if (carried.length > 0) {
@@ -1077,7 +1035,6 @@ export async function projectPluginSet(
       // placeholder throws rather than shipping `{{…}}` to a host.
       const sources = carried.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
-        ...(cell.binds ? { binds: cell.binds } : {}),
         workers: cell.workers.map((w) =>
           resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
@@ -1136,38 +1093,11 @@ export async function projectPluginSet(
       // code surface would have shipped registrations pointing at workers that were
       // never staged.
       if (registered) {
-        // ONE STANCE MANIFEST PER BOUND PERSONA, emitted once, for every harness that
-        // places a scoped artifact: each lists exactly the guards its composed agent
-        // includes, at the moments this adapter realizes. It sits past the branch that
-        // registered the cells because enrollment is not a property of HOW a harness
-        // registers — omp's module per scope and claude's one settings file both hand
-        // the workers the same manifest to find. The session scope gets none.
-        if (opts.adapter.scopedRel) {
-          for (const m of stanceManifests(
-            sources,
-            opts.adapter,
-            rendered,
-            manifest,
-          )) {
-            const path = join(ENFORCING_STAGE_DIR, m.scope, m.filename);
-            files.push({ path, content: m.content });
-            log(`EMIT stance manifest ${path}`);
-          }
-        }
         for (const src of sources) {
           const id = src.hook.id ?? 'unnamed';
           for (const worker of src.workers) {
-            // A SHARED ASSET LEAVES THE HARNESS TREE. Its bytes are the same on
-            // every projection, so it is staged under the neutral root's own
-            // staging dir and deploy places it beside the agents and skills that
-            // already live there — one address every harness can read, and none
-            // of them another harness's.
             files.push({
-              path: join(
-                worker.shared ? SHARED_STAGE_DIR : 'hooks',
-                id,
-                worker.filename,
-              ),
+              path: join('hooks', id, worker.filename),
               content: worker.content,
               ...(worker.executable ? { executable: true } : {}),
             });

@@ -1,7 +1,7 @@
 // The by-name HarnessAdapter registry: the ONE selection point a projection
 // consumer uses to obtain a harness adapter WITHOUT importing a concrete
-// `adapters/<harness>` module. `adapterByName('claude' | 'omp')` returns the
-// wired `HarnessAdapter`; an unknown name throws.
+// `adapters/<harness>` module. `adapterByName('omp')` returns the wired
+// `HarnessAdapter`; an unknown name throws.
 //
 // This is the only module that names the concrete harness adapters; a consumer
 // (canon's project CLIs) depends solely on the `HarnessAdapter` port and

@@ -381,8 +381,8 @@ function removePlacedFiles(
 ): void {
   const neutral = resolve(harnessDir, '..', NEUTRAL_AGENT_ROOT);
   const roots = [harnessDir, neutral];
-  // A path outside the harness home — omp's neutral root, a hook's shared assets — may
-  // be recorded by another harness's install as well, and that one still needs it.
+  // OMP's neutral root sits outside its harness home and may also be recorded
+  // by another install; preserve files that manifest still owns.
   const elsewhere = new Map<string, string>();
   for (const name of HARNESS_NAMES) {
     if (name === adapter.name) continue;

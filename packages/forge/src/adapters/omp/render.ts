@@ -1942,15 +1942,8 @@ export const ompHarnessAdapter: HarnessAdapter = {
   substrate: 'harness',
   home: '.omp',
   agentExt: '.md',
-  // Declared because the port requires it, and truthful: it is the artifact omp's
-  // enforcement lands in. It is never merged into a host config the way claude's
-  // `settings.json` is, because `hooks()` is absent and
-  // deploy therefore has no fragment to merge.
+  // OMP loads this generated hook-extension module.
   hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
-  // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds
-  // the session's own model and runs the worker around a judgment it makes
-  // itself, so there is no CLI to name and no second process to spawn.
-  judgeBin: '',
   // `autoloadSkills` names skills omp preloads into the agent it defines.
   preloadsSkills: true,
   // omp's agent definition reader takes no field that isolates an agent: its task

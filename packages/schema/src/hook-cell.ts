@@ -1,71 +1,10 @@
-// `HookCell` — a scope-activated source cell (MODEL `Kind ∋ rule`,
-// `activation: rule ↦ scope`). It binds the SESSION or the SUBSTRATE, not an agent:
-// nothing composes it, so its scope cannot be derived from composition the way an
-// `Enforcing` guardrail's is.
+// `HookCell` is a source cell for a harness lifecycle event and its worker payload.
+// The cell names canonical events; a corpus narrows that vocabulary, and the
+// harness adapter supplies the native event binding and invocation.
 //
-// THE HEADER HERE ONCE CITED "MODEL `Kind ∋ hook`, `activation: hook↦event`". MODEL
-// says `Kind ≜ {fragment, agent, rule, skill}` and `ActivationMode ≜ {compose-only,
-// identity, scope, trigger}` — the citation was false on both counts, and it was
-// load-bearing for this whole type. `hook` is what a HARNESS calls its mechanism;
-// it is not a Kind of thing the canon authors.
-//
-// The cell carries THREE separable things:
-//   1. `residue` — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
-//      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the cell's intent.
-//   2. the harness-agnostic EVENT binding (`events` + `timeout`) — WHEN it fires, in
-//      vendor-neutral terms.
-//   3. `workers[].content` — the worker payload TEMPLATE (the byte-anchor): WHAT it
-//      does. The committed file at each `worker.targetPath` is a DEPLOY-OWNED target
-//      regenerated from `resolveWorker(worker, facts, speech).content` and
-//      byte-locked by the consuming corpus. The anchor is NOT weakened by the
-//      template: its subject is the RESOLVED bytes, which are still a pure function
-//      of the cell plus a closed, projector-owned fact set.
-//   4. `speech` — the strings the hook SPEAKS to an agent, hoisted out of the shell
-//      into a declared field so a reader-density gate can enumerate them. `>&2`
-//      operator diagnostics and jq plumbing are NOT speech.
-//
-// WHY THE TEMPLATE EXISTS (property 1, ARCHITECTURE.md). A worker sometimes needs a
-// value only PROJECTION knows — the runtime bin's name. A cell that imported it
-// named an implementation, which is exactly the edge `meaning and mechanism never
-// reference each other` forbids; the shell string hid the edge from the compiler but
-// not from the import graph. The cell now names WHICH FACT it needs
-// (`{{fact:runtime-bin}}`) and the projector substitutes. `ProjectionFact` is the
-// closed set of fact NAMES — this module never holds a fact's VALUE, because a value
-// here would restore the `schema → runtime` edge that was deliberately repaired.
-//
-// NOR THE SELECTOR. `matcher` lived here too, documented with
-// `AskUserQuestion|Agent|SendMessage` as its example — a doc comment shipping the
-// defect it invited, on a shape whose whole claim is harness-neutrality. It is gone,
-// and NOTHING replaced it on the cell: a cell that wants to fire only when the agent
-// is about to consult the operator names that ACT (`operator.consult.pre`) among its
-// `events`, and the adapter computes the native ⟨event, selector⟩ pair
-// (`NativeBinding`). No tool VOCABULARY was minted to make that possible and none
-// could be: tool sets are open-world, so a closed enum over them is permanently
-// incomplete. The vocabulary was already the corpus's event vocabulary.
-//
-// WHAT IT MUST NEVER CARRY IS THE INVOCATION. `command` lived here and every cell
-// spelled out `sh "$HOME/.claude/hooks/<id>/<file>"` — a claude path in the generic
-// design. A second harness's projection was consequently dropped rather than
-// translated, so its agents ran with no governance at all. The cell now names its
-// `entry` worker and the ADAPTER derives the invocation
-// (`HarnessAdapter.hookCommand`), per MODEL's `mechanism : fragment ×
-// harness-adapter ⇀ harness-mechanism`.
-//
-// SUBSTRATE. `harness` hooks realize through a harness adapter (e.g. claude
-// `settings.json` `{hooks}` merge + `hooks/<id>/` workers) — these lift into the
-// `Hook` config-IR via `hookIrOf`. A `git`-substrate hook fires in git's process (a
-// different substrate), so it is NOT routed into `settings.json`.
-//
-// WHY `HookCell` IS GENERIC. Its `events` are `EventName`s, and this package states
-// only that an event HAS a name (`MODEL.md:22`: `shape ⊥ vocabulary`). The type
-// parameter is where the CORPUS puts its own vocabulary back in: canon declares
-// `CANONICAL_EVENTS` and aliases `HookCell = HookCellOf<CanonicalEvent>`, so a cell
-// naming an undeclared event is a compile error at the only site that can know.
-// The exact `Skill<C extends CapabilityName>` treatment, one axis over.
-//
-// This is the doctrine-free TYPE KERNEL: the shared cell shapes + the generic
-// config-IR lift. The concrete cell instances (the harness-substrate cells, their
-// verbatim workers) live in the consuming corpus, not here.
+// Worker templates may name projector-owned facts and declared speech. Projection
+// resolves those placeholders into the bytes deployed from each `targetPath`;
+// the schema carries the template, never its runtime-dependent values.
 
 import type { EventName, Hook, Substrate } from './hook/index.js';
 
@@ -89,11 +28,9 @@ export type HookSubstrate = Substrate;
  * contract to exist before a code could be named. The estimate stands for the
  * PROJECTOR'S side of the seam and nowhere else.
  *
- * TWO OF THEM ARE ADAPTER-RELATIVE, which is the property that makes this seam
- * more than a constant table: `projectionFacts` is a function OF the harness
- * adapter, so the SAME cell resolves to different bytes per harness. A worker
- * that must look at a deployed tree cannot otherwise know which harness's tree
- * is its own — it ran in a session, it was never told whose.
+ * Adapter-relative facts take the harness's own name and hook-config filename from
+ * the same adapter that renders its hook configuration; templates never carry a
+ * second harness table.
  */
 export type ProjectionFact =
   /** The runtime executable's name on PATH (`CLI_BIN`). */
@@ -106,35 +43,6 @@ export type ProjectionFact =
   | 'harness-hooks-file'
   /** The exit status `deploy --check` returns when it FOUND drift. */
   | 'deploy-check-drift-code'
-  /**
-   * The CLI this harness answers a model question with, or EMPTY where the
-   * harness judges in-process and needs no subprocess at all.
-   *
-   * A fact rather than a literal for the reason every fact here is one, and this
-   * is the sharpest instance of it: the judge backend defaulted to `claude` on
-   * EVERY harness, so omp's stance guard depended on a second
-   * vendor's CLI being installed and separately authenticated. When that OAuth
-   * lapsed, every verdict on every harness failed open in silence. A harness's
-   * own name for its own model is a projection fact, never a cell's constant.
-   */
-  | 'harness-judge-bin'
-  /**
-   * Where this harness keeps its persona scopes, relative to the harness home —
-   * the directory holding `<persona>/stance/manifest.json`, or EMPTY where the
-   * harness places no scoped artifact.
-   *
-   * A worker that runs on a harness naming the running agent (`agent_type`) finds
-   * that agent's scope at `<harness home>/<this>/<agent_type>`. It is the adapter's
-   * own `scopedRel` read back, so the layout has one home and no worker spells it.
-   */
-  | 'harness-persona-root'
-  /**
-   * The persona's stance manifest, relative to the persona's own scope — the one
-   * file whose presence enrolls the persona, and whose spelling forge owns
-   * (`STANCE_MANIFEST`). A worker joins it to the scope it resolved and names no
-   * path of its own, so the artifact has one sign and one home.
-   */
-  | 'stance-manifest';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 
@@ -169,68 +77,16 @@ export interface HookWorker {
   readonly content: string;
   /** Whether the regenerated target carries the executable bit. */
   readonly executable: boolean;
-  /**
-   * HARNESS-INVARIANT DATA: the same bytes on every projection, so it deploys
-   * ONCE to the vendor-neutral `.agents` root rather than into each harness's
-   * own tree.
-   *
-   * THE CRITERION IS `byte-identical ∧ ¬executable`, and the second conjunct is
-   * not a technicality. Byte-identity alone would also sweep in the worker
-   * scripts, which are POSITIONALLY COUPLED to the harness in two ways their
-   * bytes cannot show: each harness's registration addresses its own copy by
-   * path, and each worker resolves its judge backend as a SIBLING — and that
-   * judge is genuinely harness-specific, because it names the harness's own CLI
-   * through `{{fact:harness-judge-bin}}`. A single shared worker could not know
-   * whose judge to run without the registration passing it in, which relocates
-   * harness-specificity into a shared file's arguments and buys only the
-   * deduplication of two scripts that belong beside the registration invoking
-   * them. An entry point a harness invokes is executable; a rubric is not.
-   *
-   * WHY IT IS A DECLARED PROPERTY rather than a deploy heuristic. The stance
-   * rubric is one 27 kB file every harness scores against, and copying it into
-   * `<harness>/hooks/<id>/` per harness did not merely duplicate it: it left the
-   * text with no address any OTHER realization could name. An advisor roster
-   * entry wanting the same rubric would have had to `@`-import it out of a
-   * sibling harness's tree — precisely the cross-harness reach
-   * `harness-independence` forbids. A shared asset has one address, and the
-   * neutral root is the one place every harness may read without reaching into
-   * another.
-   */
-  readonly shared?: boolean;
 }
 
 /**
  * A `hook` source cell (source grain), carrying its verbatim worker payloads.
  *
- * `E` is the CORPUS'S event vocabulary and `D` its dimension vocabulary. Left at
- * their defaults this cell accepts any `EventName` and any dimension name, which
- * is all this package can say; a corpus aliases both against its own declared
- * tuples and gets the compile error back.
+ * `E` is the CORPUS'S event vocabulary. Left at its default this cell accepts
+ * any `EventName`, which is all this package can say; a corpus aliases it against
+ * its own declared tuple and gets the compile error back.
  */
-export interface HookCell<
-  E extends EventName = EventName,
-  D extends string = string,
-> {
-  /**
-   * THE COMPOSITION THAT BINDS AN AGENT TO THIS CELL — what makes it a GUARD.
-   *
-   * A guard fires for exactly the agents whose composition includes what it
-   * enforces (`enforcement scope`), and this is where the cell says what that is:
-   * a dimension and, optionally, the ANCHOR of one value of it (`anchorOf`). An
-   * agent is bound when it composes a value with that anchor — never compared by
-   * body, which a fold may rewrite — or, with `value` absent, when it composes any
-   * value of the dimension.
-   *
-   * ABSENT ⇒ the cell is no guard: it binds no agent and enrolls none. A notice
-   * that only has to FIRE (a drift advisory, a resume note) is such a cell, and
-   * naming an agent list beside it would be the runtime self-filter the model
-   * forbids.
-   *
-   * `D` is the CORPUS'S dimension vocabulary, exactly as `E` is its events: a
-   * corpus that aliases it against its own manifest gets a misspelled dimension
-   * back as a compile error.
-   */
-  readonly binds?: { readonly dimension: D; readonly value?: string };
+export interface HookCell<E extends EventName = EventName> {
   /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
   readonly id: string;
   /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */
