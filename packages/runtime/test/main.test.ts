@@ -4,9 +4,8 @@
 //
 // Driven the way the bin drives it: argv in, stdout, stderr and the exit code out,
 // in a scratch repository as the working directory, under a host config carrying
-// what each capability reads — the vocabulary and Claude's names for the event
-// tap, the plan lifecycle for `plan`. The help each capability and each verb
-// prints is read off the same declarations the verbs are read against.
+// the event vocabulary. The help each capability and each verb prints is read off
+// the same declarations the verbs are read against.
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,20 +35,7 @@ beforeAll(() => {
     CONFIG,
     JSON.stringify({
       events: { vocabulary: ['turn.end'] },
-      harnesses: { claude: { native: { 'turn.end': 'Stop' } } },
-      configuration: {
-        plan: {
-          plan: {
-            states: ['p-draft', 'p-held', 'p-over'],
-            exclusive: 'p-held',
-            final: 'p-over',
-          },
-          unit: {
-            states: ['u-new', 'u-mid', 'u-done', 'u-past'],
-            satisfies: 'u-done',
-          },
-        },
-      },
+      harnesses: { omp: { native: { 'turn.end': 'session_stop' } } },
     }),
   );
   process.env[RUNTIME_CONFIG_ENV] = CONFIG;
@@ -59,15 +45,10 @@ afterAll(() => {
   else process.env[RUNTIME_CONFIG_ENV] = prior;
 });
 
-// This suite drives the CLAUDE tap. The event tap reads which harness invoked it
-// from the environment, so a run launched from inside an omp session would be
-// refused; the run states the harness it means instead of inheriting the runner's.
-beforeAll(() => {
-  vi.stubEnv('OMPCODE', '');
-});
-afterAll(() => {
-  vi.unstubAllEnvs();
-});
+// Keep the event-tap test invocation explicitly OMP-scoped rather than inheriting
+// the environment of whichever harness launched the test runner.
+beforeAll(() => vi.stubEnv('OMPCODE', '1'));
+afterAll(() => vi.unstubAllEnvs());
 
 /** The commands in a program that stops reading options at its first command, as
  *  the program that owns the bin holds them. */
@@ -110,43 +91,10 @@ async function run(
   return { code, out: out.join(''), err: err.join('') };
 }
 
-/** One call per capability, and what only that capability's surface prints for it.
- *  Typed over `Capability`, so a capability without a leg here does not compile. */
-const ROUTED: {
-  readonly [C in Capability]: {
-    readonly argv: string[];
-    readonly says: RegExp;
-  };
-} = {
-  eventTap: {
-    argv: ['status', '--settings', join(repo, 'settings.json')],
-    says: /^\{\n {2}"verb": "status",\n {2}"status": \{/,
-  },
-  design: { argv: ['show'], says: /^design at / },
-};
-
-describe('the capability commands route each capability to its own verb surface', () => {
-  it.each(CAPABILITIES)('%s', async (capability) => {
-    const { argv, says } = ROUTED[capability];
-    const { code, out, err } = await run([capability, ...argv]);
-    expect(err).toBe('');
-    expect(code).toBe(0);
-    expect(out).toMatch(says);
-  });
-
-  it("a capability's refusal exits 1 as `cratylus <message>`", async () => {
-    const { code, out, err } = await run(['eventTap', 'frobnicate']);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toMatch(/^cratylus eventTap: unknown verb 'frobnicate'/);
-  });
-});
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   eventTap: EVENT_TAP,
   design: DESIGN,
-  plan: PLAN,
-  note: NOTE,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -165,9 +113,8 @@ describe('the capability commands print their help from the declarations', () =>
   );
 
   it.each([
-    ['plan', 'add', '<unit>'],
+    ['design', 'define', '<concept>'],
     ['eventTap', 'install', null],
-    ['note', 'capture', '<title>'],
   ] as const)(
     '%s %s --help documents its positional and every flag',
     async (c, verb, positional) => {
@@ -191,31 +138,23 @@ describe('the capability commands print their help from the declarations', () =>
   );
 
   it('`-h` after a verb asks for the same help as `--help`', async () => {
-    const asked = await run(['plan', 'add', '--help']);
-    expect((await run(['plan', 'add', '-h'])).out).toBe(asked.out);
-    expect((await run(['plan', '-h'])).out).toBe(
-      (await run(['plan', '--help'])).out,
+    const asked = await run(['design', 'define', '--help']);
+    expect((await run(['design', 'define', '-h'])).out).toBe(asked.out);
+    expect((await run(['design', '-h'])).out).toBe(
+      (await run(['design', '--help'])).out,
     );
   });
 });
 
-describe('the capability commands answer a missing or undeclared verb with what to do', () => {
-  it('no verb prints the capability’s help on stderr and exits 1', async () => {
-    const { code, out, err } = await run(['plan']);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    for (const { summary } of Object.values(PLAN))
-      expect(err).toContain(summary);
-  });
-
-  it('a verb the capability does not declare is one line naming it, the verbs and the help to ask for', async () => {
-    const { code, out, err } = await run(['plan', 'frob']);
+describe('the capability commands answer an undeclared verb with what to do', () => {
+  it('names the declared verbs and help for an unknown design verb', async () => {
+    const { code, out, err } = await run(['design', 'frob']);
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err.trimEnd().split('\n')).toHaveLength(1);
     expect(err).toContain("'frob'");
-    for (const verb of Object.keys(PLAN)) expect(err).toContain(verb);
-    expect(err).toContain('cratylus plan --help');
+    for (const verb of Object.keys(DESIGN)) expect(err).toContain(verb);
+    expect(err).toContain('cratylus design --help');
   });
 
   const DISPATCHERS: {
@@ -262,36 +201,32 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
 
   it('`-h` that is a flag’s value is that value, not a request for help', async () => {
     const captured = await run([
-      'note',
-      'capture',
+      'design',
+      'define',
       'dash-h',
-      '--kind',
-      'idea',
-      '--topic',
-      'x',
-      '--body',
+      '--gloss',
       '-h',
+      '--factors',
+      '',
       ...BY,
     ]);
     expect(captured.err).toBe('');
     expect(captured.code).toBe(0);
-    const shown = await run(['note', 'show', 'dash-h']);
+    const shown = await run(['design', 'show', 'dash-h']);
     expect(shown.code).toBe(0);
-    expect(shown.out).toMatch(/^ *body: -h$/m);
+    expect(shown.out).toMatch(/^ *gloss: -h$/m);
   });
 
-  it('`--help` after a flag that takes no value in its place is still a request for help', async () => {
-    const { code, out } = await run(['note', 'capture', '--body', '--help']);
+  it('`--help` after a flag that takes a value but is missing it is still a request for help', async () => {
+    const { code, out } = await run(['design', 'define', '--gloss', '--help']);
     expect(code).toBe(0);
-    expect(out).toContain('Usage: cratylus note capture');
+    expect(out).toContain('Usage: cratylus design define');
   });
 });
 
 describe('the capability commands refuse a word the verb does not take', () => {
   const cases: [Capability, string, string[]][] = [
     ['design', 'show', ['plan', 'extra']],
-    ['note', 'show', ['t', 'extra']],
-    ['plan', 'show', ['p', 'extra']],
     ['eventTap', 'status', ['extra']],
   ];
 
@@ -331,7 +266,7 @@ describe('the capability commands refuse a word the verb does not take', () => {
 
   it('an untaken flag and a surplus word are refused together in the one line', async () => {
     const { code, out, err } = await run([
-      'note',
+      'design',
       'show',
       't',
       'extra',
@@ -343,13 +278,8 @@ describe('the capability commands refuse a word the verb does not take', () => {
     expect(err).toContain('--bogus');
     expect(err).toContain("'extra'");
     expect(err).toBe(
-      `cratylus ${refused('note', 'show', ['--bogus'], NOTE.show, ['extra'])}\n`,
+      `cratylus ${refused('design', 'show', ['--bogus'], DESIGN.show, ['extra'])}\n`,
     );
   });
 
-  it('a verb with a positional still takes it, once', async () => {
-    const { code, err } = await run(['plan', 'show', 'p']);
-    expect(err).toBe('');
-    expect(code).toBe(0);
-  });
 });

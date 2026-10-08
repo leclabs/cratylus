@@ -45,6 +45,7 @@ describe('runtime-shim binding', () => {
       runtime: { capability: 'eventTap' },
     });
     expect(body).toContain('scripts/eventTap.mjs');
+  });
 
   it('leaks NO absolute path, checkout path, or bin name into the body', () => {
     const body = skillBody(resolved({ runtime: { capability: 'eventTap' } }));

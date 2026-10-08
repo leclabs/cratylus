@@ -190,9 +190,9 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(expect.arrayContaining(['eventTap', 'design']));
     expect(BASENAMES).toEqual(expect.arrayContaining(['event-tap', 'design']));
-    // The subset axis rests on the skill cells that declare a capability; two is
-    // the floor below which a dark read could pass it vacuously.
-    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(2);
+    // The subset axis rests on the surviving skill cell that declares a capability.
+    // One witness is the floor below which a dark read could pass it vacuously.
+    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(1);
   });
 
   it('the two registers round-trip on the pairs the corpus actually runs', () => {

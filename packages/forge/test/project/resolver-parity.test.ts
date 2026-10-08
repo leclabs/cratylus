@@ -124,6 +124,7 @@ async function soulOf(
   const tree = await projectPluginSet({
     plugins: [plugin],
     adapter: adapterByName('omp'),
+    ...(resolvedBodies === undefined ? {} : { resolvedBodies }),
   });
   const soul = tree.files.find((f) => f.path === 'agents/parity.md');
   if (!soul) throw new Error('fixture: no agents/parity.md projected');

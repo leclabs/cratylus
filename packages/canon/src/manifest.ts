@@ -49,7 +49,6 @@ import type {
 export const MANIFEST = {
   // Persona
   autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
-  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
   formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
   'audience-adaptation': {
     axis: 'Persona',
@@ -163,7 +162,6 @@ export type Agent = AgentOf<typeof MANIFEST>;
 
 // Persona
 export type Autonomy = Value<'autonomy'>;
-export type Role = Value<'role'>;
 export type Formality = Value<'formality'>;
 export type AudienceAdaptation = Value<'audience-adaptation'>;
 export type Transparency = Value<'transparency'>;

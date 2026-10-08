@@ -30,8 +30,10 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { deploySingle } from '../../src/deploy/index.js';
+import { runDeploy } from '../../src/cli/commands/deploy.js';
 import {
   type AuditOpts,
+  auditLocal,
   placeAgentsLocal,
   placeSkillsLocal,
   renderedFiles,
@@ -45,6 +47,8 @@ const OMP_LAYOUT: AuditOpts = {
   skillRel: (name, agents) => OMP.skillRel(name, agents),
   agents: ['mav', 'nico'],
 };
+
+const silent = { dry: false, log: () => {}, warn: () => {} };
 
 /** The live line of the first principle, and the superseded one it replaced —
  *  verbatim from the incident, because the point of the report is that an
@@ -288,7 +292,6 @@ describe('renderedFiles agrees with the placers own testimony', () => {
       agentRel: (name: string) => OMP.agentRel(name),
       skillRel: (name: string, agents: readonly string[]) =>
         OMP.skillRel(name, agents),
-      dry: true,
       ...silent,
     };
     const a = placeAgentsLocal(harnessDir, agentsDir, ['mav', 'nico'], layout);

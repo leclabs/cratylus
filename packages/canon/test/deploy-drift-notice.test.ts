@@ -221,7 +221,7 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     put(join(tree, 'agents', 'mav.md'), `name: mav\n${RENDERED_AXIOM}\n`);
     const { stdout } = run();
     expect(stdout).toMatch(/DEPLOY DRIFT/);
-    expect(stdout).toMatch(/ABSENT\s+agents\/mav\.md/);
+    expect(stdout).toMatch(/ABSENT\s+agent\/agents\/mav\.md/);
   });
 
   it('REFUSES to read a comparator that returned no verdict as an in-sync host', () => {

@@ -541,7 +541,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         }
       }
     }
-  } else if (askable.length > 0 && !configRefused) {
+  } else if (routing !== undefined && askable.length > 0 && !configRefused) {
     open = true;
     if (interactive) {
       const questions: RoleQuestion[] = askable.map((role) => ({

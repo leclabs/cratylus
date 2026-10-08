@@ -154,7 +154,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
   it.each([
     [['frobnicate'], ['frobnicate']],
     [
-      ['install', '--harnes', 'claude'],
+      ['install', '--harnes', 'omp'],
       ['--harnes', '--harness'],
     ],
     [['install', '--plugin', 'x'], ['--plugin']],
@@ -170,7 +170,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
     ],
     [
       ['deploy', '--harness', 'nope'],
-      ['nope', 'claude', 'omp'],
+      ['nope', 'omp'],
     ],
     [['optimize', 'x'], ['--plan']],
     [['optimize', '--plan', 'p'], ['source']],

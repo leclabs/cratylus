@@ -2,8 +2,8 @@
 //
 // A cell that does not own a symbol borrows it by boundary-binding: a line of the
 // form `sym₁, sym₂ @ home`, which asserts "these are defined over there, go read
-them there." This gate checks that each borrowed name resolves to a declaration
-in the live skill named as its home.
+// them there." This gate checks that each borrowed name resolves to a declaration
+// in the live skill named as its home.
 //
 // SCOPE — only bindings whose home is a live skill are checkable. `@ live-anatomy`,
 // `@ memory-session-registry`, `@ cold-decode-oracle` name conceptual homes outside

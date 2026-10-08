@@ -66,13 +66,12 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
     // OMP's launch spec, scoped session-hook modules and persona module, alongside
-    // the shared worker and skills.
+    // the agent hook worker and skills.
     expect(paths).toEqual(
       [
         'agents/probe.md',
         `enforcing/_session/${CLI_BIN}-session.ts`,
         'enforcing/_session/omp-agent',
-        `enforcing/probe/${CLI_BIN}-guardrails.ts`,
         `enforcing/probe/${CLI_BIN}-persona-badge.ts`,
         `enforcing/probe/${CLI_BIN}-session.ts`,
         'enforcing/probe/omp.yml',

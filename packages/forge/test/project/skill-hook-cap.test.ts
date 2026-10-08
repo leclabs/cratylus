@@ -28,7 +28,7 @@ describe('omp — skills remain available without a main-session hook', () => {
     });
     const both = tree.files.find((f) => f.path === 'agents/both.md')?.content;
     expect(warnings).toEqual([]);
-    expect(both).toContain('\nskills:\n  - "small"\n  - "huge"\n');
+    expect(both).toContain('\nautoloadSkills: ["small", "huge"]\n');
     expect(both).not.toContain('## Required reading');
   });
 });

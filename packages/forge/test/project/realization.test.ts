@@ -40,7 +40,7 @@ describe('steer — no peer for the event at all: degrade, do not fail', () => {
     const [loss, ...rest] = realizationOf(orphan, ompHarnessAdapter).losses;
     expect(rest).toEqual([]);
     expect(loss?.reason).toBe('unrealizable');
-    expect(loss?.warning).toContain('stance'); // f
+    expect(loss?.warning).toContain('example-constraint'); // f
     expect(loss?.warning).toContain('file.read.pre'); // e
     expect(loss?.warning).toContain('omp'); // adapter
   });
@@ -147,6 +147,7 @@ describe('routed — another substrate: not this adapter’s concern, and not a 
   });
 
   it('never consults either capability predicate for a routed constraint', () => {
+    let asked = false;
     // If it did, routing would collapse into degradation.
     const spy = {
       ...ompHarnessAdapter,

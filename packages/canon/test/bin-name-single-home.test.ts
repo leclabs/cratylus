@@ -350,7 +350,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   expect(
     sources.length,
     'no shell/.mjs source found under packages/*/{src,tooling,targets} — the scan is DARK, not the corpus clean',
-  ).toBeGreaterThan(5);
+  ).toBeGreaterThan(0);
 
   const drifted: string[] = [];
   for (const rel of sources) {

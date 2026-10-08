@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runAdd } from '../../src/cli/commands/add.js';
 import { runInit } from '../../src/cli/commands/init.js';
 import { runInstall } from '../../src/cli/commands/install.js';
+import { runOptimize } from '../../src/cli/commands/optimize.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import {
   CONFIG_PACKAGE,

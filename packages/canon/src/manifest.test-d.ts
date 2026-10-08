@@ -21,33 +21,23 @@ import type {
   Capabilities,
   Guardrails,
   OutputFormat,
-  Role,
   Value,
 } from './manifest.js';
 
 // ── Fixtures (well-typed branded dimension values) ──────────────────────────────
 
 const autonomyV: Autonomy = 'human-on-the-loop ≜ on the loop';
-const roleV: Role = 'operate ≜ run a live system';
 const guardrailA: Guardrails = 'harm-avoidance ≜ refuse harm';
 const guardrailB: Guardrails = 'honesty ≜ assert from evidence';
 const capabilitiesA: Capabilities = 'software-engineering ≜ build software';
 const actionsA: Actions = 'file-ops ≜ mutate files';
 const outputFormatV: OutputFormat = 'code ≜ emit source';
 
-// ── NEGATIVE 1: a value of the WRONG dimension assigned to the wrong field ───────
-// The `__dimension` brand discriminates the dimension of a TYPED value structurally.
-
-// @ts-expect-error — an `output-format` value cannot be a `Role` (dimension brand mismatch).
-const wrongDimension: Role = outputFormatV;
+// ── NEGATIVE 1: a value of the wrong dimension cannot fill a different one ───────
 
 // @ts-expect-error — an `actions` value is not an `output-format` value.
 const fenceClash: OutputFormat = actionsA;
 
-// ── NEGATIVE 2: a SCALAR dimension given an ARRAY ───────────────────────────────
-
-// @ts-expect-error — `role` is scalar; an array is not assignable to `Role`.
-const scalarGivenArray: Agent['role'] = [roleV];
 
 // ── NEGATIVE 3: a SET dimension given a SCALAR ──────────────────────────────────
 
@@ -61,7 +51,6 @@ const baseFixture: Agent = {
   description: 'the master builder — ships systems end-to-end',
   autonomy: [autonomyV],
   archetype: 'the master-builder — ship end-to-end',
-  role: roleV,
   formality: 'formal ≜ terse',
   audienceAdaptation: 'convergence ≜ converge',
   transparency: 'reasoning-trace ≜ show the derivation',
@@ -94,7 +83,6 @@ const nullSentinel: Agent = {
   autonomy: null, // set dimension, harness-inherited
   engineeringPrinciples: null, // set dimension, harness-inherited
   heuristics: null, // set dimension, harness-inherited
-  role: null, // scalar dimension, harness-inherited
 };
 void nullSentinel;
 
@@ -103,7 +91,6 @@ void nullSentinel;
 const missingKey: Agent = {
   name: 'missing-key',
   archetype: baseFixture.archetype,
-  role: baseFixture.role,
   formality: baseFixture.formality,
   audienceAdaptation: baseFixture.audienceAdaptation,
   transparency: baseFixture.transparency,
@@ -128,10 +115,6 @@ const missingKey: Agent = {
 };
 void missingKey;
 
-// NEGATIVE: `undefined` is not the sentinel — only `null` spells inherit.
-// @ts-expect-error — `undefined` is not assignable to a dimension key; the sentinel is `null`.
-const undefinedNotSentinel: Agent = { ...baseFixture, role: undefined };
-void undefinedNotSentinel;
 
 // @ts-expect-error — `actions` is a set; a scalar value in the Agent literal is rejected.
 const agentSetFault: Agent = { ...baseFixture, actions: actionsA };
@@ -190,7 +173,6 @@ const agentGuardrailsMissing: Agent = {
   description: baseFixture.description,
   archetype: baseFixture.archetype,
   autonomy: baseFixture.autonomy,
-  role: baseFixture.role,
   formality: baseFixture.formality,
   audienceAdaptation: baseFixture.audienceAdaptation,
   transparency: baseFixture.transparency,
@@ -271,9 +253,7 @@ void enforcingNoSubstrate;
 
 // Silence "declared but never read" for the intentional fault bindings.
 void agentUnconfined;
-void wrongDimension;
 void fenceClash;
-void scalarGivenArray;
 void setGivenScalar;
 void agentSetFault;
 void agentScalarFault;

@@ -70,6 +70,7 @@ import {
 } from '@cratylus/forge/validate';
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
+import type { Dimension, Value } from '../src/manifest.js';
 import { describe, expect, it } from 'vitest';
 import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
