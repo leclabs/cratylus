@@ -17,10 +17,6 @@ import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
 import { dispatchDesign } from '../src/capabilities/design/index.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
-import { VERBS as NOTE } from '../src/capabilities/note/dispatch.js';
-import { dispatchNote } from '../src/capabilities/note/index.js';
-import { VERBS as PLAN } from '../src/capabilities/plan/dispatch.js';
-import { dispatchPlan } from '../src/capabilities/plan/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
@@ -127,8 +123,6 @@ const ROUTED: {
     says: /^\{\n {2}"verb": "status",\n {2}"status": \{/,
   },
   design: { argv: ['show'], says: /^design at / },
-  plan: { argv: ['show'], says: /^no plan at / },
-  note: { argv: ['show'], says: /^notebook at / },
 };
 
 describe('the capability commands route each capability to its own verb surface', () => {
@@ -229,8 +223,6 @@ describe('the capability commands answer a missing or undeclared verb with what 
   } = {
     eventTap: dispatchEventTap,
     design: dispatchDesign,
-    plan: dispatchPlan,
-    note: dispatchNote,
   };
 
   it.each(CAPABILITIES)(

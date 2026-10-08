@@ -78,7 +78,7 @@ export function harnessDirIn(
  */
 export function userScope(
   home?: string | null,
-  harnessHome = '.claude',
+  harnessHome = '.omp',
   homeEnv?: string,
 ): ScopeResult {
   if (!home) {
@@ -100,7 +100,7 @@ export function userScope(
 /** Project scope: `<project>/<harnessHome>` (project defaults to cwd). */
 export function projectScope(
   project?: string | null,
-  harnessHome = '.claude',
+  harnessHome = '.omp',
 ): ScopeResult {
   const root = project ? resolvePath(expanduser(project)) : process.cwd();
   return { harnessDir: resolvePath(root, harnessHome), note: null };

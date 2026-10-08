@@ -11,5 +11,3 @@
 export * from './events.js';
 export * from './ports/event-tap.js';
 export * from './ports/design.js';
-export * from './ports/plan.js';
-export * from './ports/note.js';

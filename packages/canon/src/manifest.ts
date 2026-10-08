@@ -215,8 +215,6 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'eventTap',
   'design',
-  'plan',
-  'note',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */

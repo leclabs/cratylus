@@ -54,10 +54,6 @@ import { homedir, tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { mergeManifest } from '@cratylus/schema';
 import {
-  CLAUDE_MODEL_TIERS,
-  CLAUDE_ROLE_TIERS,
-} from '../../adapters/claude/render.js';
-import {
   HARNESS_NAMES,
   type HarnessAdapter,
   adapterByName,
@@ -73,7 +69,6 @@ import {
   requirePlugins,
 } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import { keepsHostModel } from '../../deploy/deploy.js';
 import {
   MANIFEST_REL,
   type ModelRoleEntry,
@@ -84,7 +79,6 @@ import {
   ensureHostSettings,
   ensureStatusSegment,
   hasManifest,
-  hostModelClaim,
   markMigratedConfig,
   modelRoleLine,
   noteHostEdit,
@@ -177,10 +171,7 @@ export function detectHarnesses(home?: string): string[] {
 /** A run that stops before writing, for a reason the operator can act on. */
 class Refusal extends Error {}
 
-/** A model value as it may be written on a claude def's `model:` line. */
-const CLAUDE_MODEL = /^[A-Za-z0-9][A-Za-z0-9._:/[\]-]*$/;
-/** A model value as it may be written in omp's `modelRoles`: an alias (`@slow`) or a
- *  selector (`provider/model:high`), quoted when written. */
+/** A model value as omp writes in its `modelRoles`: an alias or selector. */
 const OMP_MODEL = /^\S+$/;
 
 /** What the steps of one run did (or, under `dry`, would do). */
@@ -482,8 +473,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // ── WHAT TO ROUTE ────────────────────────────────────────────────────────────
   // A role the host already routes is the host's: never asked, never changed.
   const routing = adapter.roleRouting;
-  const routesDefs = routing === undefined && keepsHostModel(adapter.home);
-  const validModel = routesDefs ? CLAUDE_MODEL : OMP_MODEL;
+  const validModel = OMP_MODEL;
   const hostRouted = new Set<string>();
   // omp: the roles whose entry is install's own seed, still as it wrote it.
   const seeded = new Set<string>();
@@ -519,20 +509,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       if (own) seeded.add(role);
       else hostRouted.add(role);
     }
-  } else if (routesDefs) {
-    const prior = readManifest(harnessDir);
-    for (const [role, holders] of Object.entries(tree.roleHolders)) {
-      const routed = holders.some((name) => {
-        const path = join(harnessDir, adapter.agentRel(name));
-        return (
-          existsSync(path) &&
-          hostModelClaim(prior, name, readFileSync(path, 'utf-8'))?.line !==
-            undefined
-        );
-      });
-      if (routed) hostRouted.add(role);
-    }
-  } else {
     routable = [];
   }
   const askable = routable.filter((r) => !hostRouted.has(r));
@@ -540,7 +516,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const choices: Record<string, string> = {};
   const left: string[] = [];
   if (opts.modelRoles !== undefined) {
-    if (routing === undefined && !routesDefs) {
+    if (routing === undefined) {
       throw new Refusal(
         `--model-roles: the '${adapter.name}' harness routes no roles; drop --model-roles`,
       );
@@ -571,14 +547,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       const questions: RoleQuestion[] = askable.map((role) => ({
         role,
         holders: tree.roleHolders[role] ?? [],
-        options: routing
-          ? routing.offered.map((r) => `@${r}`)
-          : CLAUDE_MODEL_TIERS,
-        initial: routing
-          ? `@${routing.nearest(role)}`
-          : Object.hasOwn(CLAUDE_ROLE_TIERS, role)
-            ? CLAUDE_ROLE_TIERS[role]
-            : undefined,
+        options: routing.offered.map((r) => `@${r}`),
+        initial: `@${routing.nearest(role)}`,
       }));
       const picked = await answered(prompts.routes(questions));
       for (const q of questions) {
@@ -643,14 +613,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     // it adopts.
     const migrating = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
 
-    // Claude's route is the `model:` line of each agent holding the role.
-    const models: Record<string, string> = routesDefs
-      ? Object.fromEntries(
-          Object.entries(choices).flatMap(([role, model]) =>
-            (tree.roleHolders[role] ?? []).map((name) => [name, model]),
-          ),
-        )
-      : {};
 
     const apply = async (
       dry: boolean,
@@ -689,7 +651,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         log: (line) => found.detail.push(line),
         warn: (message) => found.warnings.push(message),
         fail: (message) => found.failures.push(message),
-        ...(Object.keys(models).length > 0 ? { models } : {}),
       });
       const rc = deployed.rc;
       if (rc !== 0) return { rc, found };
@@ -717,15 +678,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         harnessDir,
         dry,
       });
-      if (routesDefs) {
-        describeClaudeRoles(found, adapter, tree.heldRoles);
-        for (const [role, model] of Object.entries(choices)) {
-          found.routes.push(`${role} → ${model}`);
-        }
-        for (const role of hostRouted) {
-          found.left.push(`the model of ${role}, which the host set`);
-        }
-      }
       // Then the badge, which is what the operator sees of those personas: the host's
       // own status line, made to show it.
       showPersonaBadge(found, adapter, agentNames, {
@@ -1347,33 +1299,3 @@ function seedModelRoles(
   });
 }
 
-/**
- * Show the host the roles it can set, on the harness with no role map of its own.
- * Claude Code names a subagent's model in one place — the `model:` line of its
- * definition — so each held role is listed with the tier the definitions holding it
- * carry, and how the host changes it: edit that line (a deploy keeps it), or override
- * every subagent at once with the documented environment pair.
- */
-function describeClaudeRoles(
-  found: Findings,
-  adapter: HarnessAdapter,
-  heldRoles: readonly string[],
-): void {
-  if (adapter.name !== 'claude' || heldRoles.length === 0) return;
-  found.detail.push(
-    `  roles (${heldRoles.length}): each agent runs on its role's tier until the host sets its model`,
-  );
-  for (const role of heldRoles) {
-    const tier = Object.hasOwn(CLAUDE_ROLE_TIERS, role)
-      ? CLAUDE_ROLE_TIERS[role]
-      : undefined;
-    found.detail.push(
-      tier === undefined
-        ? `    ${role}: no tier — runs on the session's model; set it with the \`model:\` line of each agent holding it (kept across installs)`
-        : `    ${role}: tier ${tier} (\`model: ${tier}\`) — set it with the \`model:\` line of each agent holding it (kept across installs)`,
-    );
-  }
-  found.detail.push(
-    '  every subagent at once: CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 with CLAUDE_CODE_SUBAGENT_MODEL=<model>',
-  );
-}

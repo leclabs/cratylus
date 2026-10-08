@@ -18,7 +18,6 @@
 // now, but the rule stands on its own: import the module that DEFINES the symbol,
 // so no future barrel can silently re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
-import { claudeHarnessAdapter } from '../claude/render.js';
 import { ompHarnessAdapter } from '../omp/render.js';
 
 export type {
@@ -31,10 +30,9 @@ export type {
 export type { ResolvedSkill } from '../../core/body.js';
 
 /** The canonical harness names with a registered `HarnessAdapter`. */
-export type HarnessName = 'claude' | 'omp';
+export type HarnessName = 'omp';
 
 const REGISTRY: Record<HarnessName, HarnessAdapter> = {
-  claude: claudeHarnessAdapter,
   omp: ompHarnessAdapter,
 };
 

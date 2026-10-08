@@ -80,7 +80,7 @@ function copyTree(src: string, dest: string): void {
 function projectCulture(
   target: string,
   tree: RenderTree,
-  harnessHome = '.claude',
+  harnessHome = '.omp',
 ): [number, number] {
   const agentsDir = resolvePath(target, harnessHome, 'agents');
   const skillsDir = resolvePath(target, harnessHome, 'skills');
@@ -125,7 +125,7 @@ export function scaffoldProject(
   const warn = opts.warn ?? (() => {});
   const subject = opts.subject ?? DEFAULT_SUBJECT;
   const template = opts.template;
-  const harnessHome = opts.harnessHome ?? '.claude';
+  const harnessHome = opts.harnessHome ?? '.omp';
   const target = resolvePath(opts.target);
   const agentsMd = resolvePath(target, 'AGENTS.md');
   if (existsSync(agentsMd) && !opts.force) {

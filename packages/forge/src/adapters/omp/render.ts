@@ -251,14 +251,6 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 /** omp's own default model role — the fallback every definition's `model` ends in. */
 const OMP_DEFAULT_ROLE = 'default';
 
-/** The built-in omp role nearest to each role an agent may hold. A held role with
- *  no entry is nearest the default role. The integrator's work is spec-bounded like
- *  the implementer's (it joins what implementers built), so it routes to `task`. */
-const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
-  implementer: 'task',
-  integrator: 'task',
-  planner: 'plan',
-};
 
 /** The host config files omp reads its settings from — the ONE spelling, shared by
  *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
@@ -269,7 +261,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
  *  The host keeps the mapping in its config file under its `modelRoles` key. */
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
-  nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
+  nearest: () => OMP_DEFAULT_ROLE,
   offered: ['default', 'smol', 'slow', 'plan', 'task'],
   configRels: OMP_CONFIG_RELS,
 };

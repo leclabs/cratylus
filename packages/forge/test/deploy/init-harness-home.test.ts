@@ -1,11 +1,4 @@
-// `scaffoldProject` places the culture under the TARGET HARNESS's dot-dir, not a
-// baked-in `.claude`. The harness home is a defaulted parameter (the adapter's
-// `HarnessAdapter.home`), matching the shape `userScope`/`projectScope` already
-// carry in `../../src/deploy/scope.ts`.
-//
-// Two facts are asserted, and the second is the one that used to be false: a
-// NON-claude scaffold must put its dirs where THAT harness reads them, and must
-// leave no `.claude` behind.
+// `scaffoldProject` places the culture under the target harness's dot-dir.
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -17,23 +10,7 @@ import {
 import { buildRenderTree, tmp } from './helpers.js';
 
 describe('scaffoldProject harnessHome', () => {
-  it('defaults to .claude when the caller predates the parameter', () => {
-    const { agentsDir, skillsDir } = buildRenderTree(tmp('forge-render-'));
-    const target = tmp('forge-scaffold-default-');
-    const r = scaffoldProject({
-      target,
-      tree: { agentsDir, skillsDir },
-      template: DEFAULT_PROJECT_TEMPLATE,
-      subject: 'a test project',
-    });
-    expect(r.rc).toBe(0);
-    expect(existsSync(join(target, '.claude', 'agents', 'mav.md'))).toBe(true);
-    expect(
-      existsSync(join(target, '.claude', 'skills', 'memory', 'SKILL.md')),
-    ).toBe(true);
-  });
-
-  it('puts a non-claude harness’s dirs where THAT harness reads them', () => {
+  it('puts the omp harness dirs where that harness reads them', () => {
     const { agentsDir, skillsDir } = buildRenderTree(tmp('forge-render-'));
     const target = tmp('forge-scaffold-omp-');
     const r = scaffoldProject({
@@ -46,18 +23,10 @@ describe('scaffoldProject harnessHome', () => {
     expect(r.rc).toBe(0);
     expect(r.agents).toBe(2);
     expect(r.skills).toBe(2);
-    // culture landed under the omp home
     expect(existsSync(join(target, '.omp', 'agents', 'mav.md'))).toBe(true);
     expect(existsSync(join(target, '.omp', 'agents', 'nico.md'))).toBe(true);
-    expect(
-      existsSync(join(target, '.omp', 'skills', 'memory', 'SKILL.md')),
-    ).toBe(true);
-    expect(existsSync(join(target, '.omp', 'skills', 'wake', 'SKILL.md'))).toBe(
-      true,
-    );
-    // and NOTHING was left in the claude home
-    expect(existsSync(join(target, '.claude'))).toBe(false);
-    // the harness-agnostic half of the scaffold is unmoved, and lays no plans tree
+    expect(existsSync(join(target, '.omp', 'skills', 'memory', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(target, '.omp', 'skills', 'wake', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(target, 'AGENTS.md'))).toBe(true);
     expect(existsSync(join(target, 'plans'))).toBe(false);
   });
@@ -74,6 +43,5 @@ describe('scaffoldProject harnessHome', () => {
       log: (l) => lines.push(l),
     });
     expect(lines.join('\n')).toMatch(/culture projected: .* -> .*\/\.omp\//);
-    expect(lines.join('\n')).not.toMatch(/\.claude/);
   });
 });

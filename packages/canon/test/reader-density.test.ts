@@ -23,8 +23,7 @@
 // corpus sit at 0 hits, the pinned genus bodies at 5.4–5.5 second-person/100):
 //   HEDGE          — ≥2 distinct tutorial/hedge/connective patterns
 //                    (live max = 1, on pinned src/genus/memory.md; seed fixture = 6)
-//   SECOND-PERSON  — ≥2 hits ∧ ≥4 per 100 words (one incidental agent-address
-//                    hit is legal: carry-on description = 1 hit @3.1)
+//                    (one incidental second-person hit is legal)
 //   FPP-WALKTHROUGH— ≥2 first-person-plural walkthrough tokens (live = 0)
 //
 // RATCHET — explicit, shrink-only allowlist. Empty when the corpus fully
@@ -72,7 +71,6 @@ import {
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import type { Agent, Dimension, Value } from '../src/manifest.js';
 import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
@@ -109,12 +107,7 @@ const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
  * (engineering-principle, output-format) pairs that contradict — one dimension
  * asserting reader=LLM while the other binds "for a human reader".
  */
-const CONTRADICTION_PAIRS: ReadonlyArray<readonly [string, string]> = [
-  ['llm-native', 'natural-language'],
-];
 
-/** Agents with a known dimension contradiction, pinned until the manifest fix-class task. */
-const CONTRADICTION_RATCHET: ReadonlySet<string> = new Set([]);
 
 // ── surface enumeration (source grain — the projections follow the source) ──────
 
@@ -254,20 +247,6 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
-  // Agent cells at SOURCE grain. `agent-vector` was declared ρ=LLM in RHO and
-  // witnessed by NOTHING — a class asserting coverage it never had.
-  for (const { rel, agent } of await allAgents()) {
-    for (const field of ['description', 'archetype', 'preamble'] as const) {
-      const text = (agent as unknown as Record<string, unknown>)[field];
-      if (typeof text === 'string' && text.length > 0) {
-        surfaces.push({
-          label: `agent ${rel} ${field}`,
-          cls: 'agent-vector',
-          text,
-        });
-      }
-    }
-  }
   return surfaces;
 }
 
@@ -283,27 +262,10 @@ const OWNED_CLASSES: readonly ArtClass[] = [
   'dimension-definiens',
   'skill-description',
   'genus-protocol',
-  'agent-vector',
   'cell-declaration',
   'rule-target-content',
 ];
 
-async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
-  const out: Array<{ rel: string; agent: Agent }> = [];
-  for (const rel of await collect('agents/*.ts')) {
-    if (rel.endsWith('base.ts')) {
-      continue;
-    }
-    const mod = (await import(
-      pathToFileURL(join(srcRoot, rel)).href
-    )) as Record<string, unknown>;
-    const key = Object.keys(mod).find(
-      (k) => k !== 'default' && !k.endsWith('Resolved'),
-    );
-    out.push({ rel, agent: mod[key as string] as Agent });
-  }
-  return out;
-}
 
 /** Recover {slug, definiens} from a dimension value's `"<slug> ≜ <definiens>"` body. */
 function splitBody(v: string): { slug: string; definiens: string } {
@@ -327,21 +289,12 @@ function slugOf(v: Value<Dimension>): string {
   return splitBody(bodyOf(v)).slug;
 }
 
-/** The contradiction pairs `agent` carries. */
-function dimensionContradictions(agent: Agent): string[] {
-  const principles = (agent.engineeringPrinciples ?? []).map(slugOf);
-  const output = agent.outputFormat ? slugOf(agent.outputFormat) : undefined;
-  return CONTRADICTION_PAIRS.filter(
-    ([p, o]) => principles.includes(p) && output === o,
-  ).map(([p, o]) => `${p} ∧ ${o}`);
-}
 
 // ── the gate ────────────────────────────────────────────────────────────────────
 
 describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
   it('the 4 densified exemplars PASS (calibration anchors)', async () => {
     for (const rel of [
-      'dimensions/role/architect.ts',
       'dimensions/objective/parsimony.ts',
       'dimensions/transparency/decision-rationale.ts',
       'dimensions/capabilities/research-investigation.ts',
@@ -432,15 +385,8 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     expect(labels).toContain('genus src/genus/persona.md ## Protocol');
     expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
-    expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
-    expect(labels).toContain('agent agents/nico.ts archetype');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
     expect(count('skill-description')).toBeGreaterThan(10);
-    // population: 2 live agents × {description, archetype} (`preamble` is unused
-    // by either) = 4 non-empty agent-vector surfaces. >2 fails if a field went
-    // missing from BOTH agents — a real regression — while not pinning the exact
-    // count to a catalog size that drifts with every roster edit.
-    expect(count('agent-vector')).toBeGreaterThan(2);
   });
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {
@@ -477,33 +423,6 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     }
   });
 
-  it('no agent vector carries a register contradiction, or is pinned', async () => {
-    const agents = await allAgents();
-    expect(agents.length).toBeGreaterThan(0);
-    const failures = agents
-      .filter(
-        ({ agent }) =>
-          dimensionContradictions(agent).length > 0 &&
-          !CONTRADICTION_RATCHET.has(agent.name),
-      )
-      .map(
-        ({ agent }) =>
-          `CONTRADICTION ${agent.name}: ${dimensionContradictions(agent).join(' · ')}`,
-      );
-    expect(failures, failures.join('\n')).toEqual([]);
-    // shrink-only, same law as the register ratchet
-    for (const name of CONTRADICTION_RATCHET) {
-      const entry = agents.find(({ agent }) => agent.name === name);
-      expect(
-        entry,
-        `contradiction pin ${name} names a live agent`,
-      ).toBeDefined();
-      expect(
-        dimensionContradictions((entry as { agent: Agent }).agent).length,
-        `${name} no longer contradicts — REMOVE its ratchet pin`,
-      ).toBeGreaterThan(0);
-    }
-  });
 
   // ── NON-VACUOUS: the gate BITES, and the exemption is the model's ─────────────
   const humanSeed =
@@ -626,7 +545,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
 /** The REGENERABLE seed — a self-authored store leaked into the deploy Target set. */
 const REGENERABLE_SEED: readonly Target[] = [
   {
-    path: '~/.claude/agents/mav/EPISODIC.jsonl',
+    path: '~/.omp/agent/agents/example/EPISODIC.jsonl',
     deployOwned: false,
     handEdited: false,
     selfAuthored: true,
@@ -636,7 +555,7 @@ const REGENERABLE_SEED: readonly Target[] = [
 /** A conformant, freshly regenerated deploy Target set — passes REGENERABLE. */
 const GREEN_TARGETS: readonly Target[] = [
   {
-    path: 'agents/mav.md',
+    path: 'agent/agents/example.md',
     deployOwned: true,
     handEdited: false,
     selfAuthored: false,

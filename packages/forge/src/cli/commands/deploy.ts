@@ -221,7 +221,7 @@ export async function deployTree(opts: DeployCmdOpts): Promise<DeployOutcome> {
   const fail = opts.fail ?? ((message: string) => failLine('deploy', message));
   const outcome: DeployOutcome = {
     rc: 0,
-    harness: opts.harness ?? 'claude',
+    harness: opts.harness ?? 'omp',
     harnessDir: '',
     dry: opts.dryRun ?? false,
     placed: [],
@@ -624,7 +624,7 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     // died on an uncaught error and its status was whatever the runtime chose,
     // which is `1`: the code that means DRIFT. The check's own failure was
     // reported as a stale host by the one path that could not be caught.
-    const harnessAdapter = adapterByName(opts.harness ?? 'claude');
+    const harnessAdapter = adapterByName(opts.harness ?? 'omp');
     // Same scope resolution the deploy path uses, so a check and the deploy it
     // audits can never be looking at two different roots.
     const scopeRes =

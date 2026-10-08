@@ -1,182 +1,77 @@
-// Projection-stability gate (T6.1e — replaces the retired byte-identity oracles).
-// The byte-identity oracles (full-roundtrip / agent-roundtrip / roundtrip /
-// skill-roundtrip) proved TS === legacy `.md`/`.render`; that job is DONE and the
-// `.md` cells are gone — `.ts` is now the sole source, so there is nothing to
-// round-trip against. This guards the surviving invariant: EVERY fragment, skill,
-// and agent module still imports and PROJECTS (non-empty, no throw), at the
-// expected cardinalities. A broken module / projection fails the suite.
+// Projection stability (.ts is the sole source): surviving fragments and skills
+// project through forge's omp adapter.
 
 import { readdirSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import {
-  agentToClaudeMd,
-  skillToClaudeMd,
-} from '@cratylus/forge/adapters/claude';
+import { fileURLToPath } from 'node:url';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectPluginSet } from '@cratylus/forge/project';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import { MANIFEST } from '../src/manifest.js';
-import type { Agent } from '../src/manifest.js';
-import { carryOn } from '../src/skills/carry-on/skill.js';
+import canon from '../src/index.js';
 import { formalize } from '../src/skills/formalize/skill.js';
 import { fragmentToMarkdown } from '../tooling/project.js';
 import { firstExport } from './support/cell-module.js';
-
-/** Project a skill through the forge claude adapter — `f(name, formalBlock,
- *  composition())`, the SOLE projection path (the stored-body round-trip retired). */
-function renderSkill(s: Skill): string {
-  return skillToClaudeMd({
-    name: s.name,
-    trigger: `/${s.name}`,
-    description: s.description,
-    formalBlock: s.formalBlock,
-    composedFrom: s.composition().map((c) => `/${c.name}`),
-  });
-}
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(canonRoot, 'src');
 
 async function collect(pattern: string): Promise<string[]> {
   const out: string[] = [];
-  for await (const p of glob(pattern, { cwd: srcRoot })) {
-    out.push(p);
-  }
+  for await (const p of glob(pattern, { cwd: srcRoot })) out.push(p);
   return out.sort();
 }
 
+async function project() {
+  return projectPluginSet({
+    plugins: [canon],
+    adapter: adapterByName('omp'),
+  });
+}
+
 describe('projection stability (.ts is the sole source)', () => {
-  it('every dimension fragment projects non-empty AND carries its own text', async () => {
-    // `fragmentToMarkdown` is `\n\n${value}\n`, so its output is length ≥ 3 for
-    // EVERY input including the empty string: the old `length > 0` assertion was
-    // a tautology that no corpus could ever fail. The real invariants are that
-    // the fragment itself is non-empty and that projection CARRIES it.
+  it('every dimension fragment projects non-empty and carries its own text', async () => {
     const modules = await collect('dimensions/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
       const f = await firstExport<string>(join(srcRoot, rel));
-      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(
-        0,
-      );
-      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(
-        f,
-      );
+      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(0);
+      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(f);
     }
   });
 
-  it('is non-vacuous — the strengthened predicate FAILS an empty fragment', () => {
-    // control: a real fragment satisfies both legs
+  it('is non-vacuous — the strengthened predicate fails an empty fragment', () => {
     const real = 'a real fragment';
     expect(real.trim().length).toBeGreaterThan(0);
     expect(fragmentToMarkdown(real)).toContain(real);
-    // conviction: an empty one is caught by the non-emptiness leg — and would NOT
-    // have been caught by the length-of-projection leg it replaces.
     expect(''.trim().length).toBe(0);
     expect(fragmentToMarkdown('').length).toBeGreaterThan(0);
   });
 
-  it('every skill projects non-empty', async () => {
+  it('every skill projects non-empty through omp', async () => {
     const modules = await collect('skills/*/skill.ts');
     expect(modules.length).toBeGreaterThan(0);
+    const tree = await project();
     for (const rel of modules) {
-      const s = await firstExport<Skill>(join(srcRoot, rel));
-      const rendered = renderSkill(s);
-      expect(rendered.length, rel).toBeGreaterThan(0);
-      // carries the cell's own identity, not merely some non-empty wrapper
-      expect(rendered, `${rel}: rendering carries the skill name`).toContain(
-        s.name,
-      );
+      const skill = await firstExport<Skill>(join(srcRoot, rel));
+      const path = `skills/${skill.name}/SKILL.md`;
+      const rendered = tree.files.find((f) => f.path === path)?.content;
+      expect(rendered, `${rel}: projected by omp`).toBeDefined();
+      expect(rendered?.length, `${rel}: non-empty`).toBeGreaterThan(0);
+      expect(rendered, `${rel}: carries the skill name`).toContain(skill.name);
     }
   });
 
-  // De-braid model: a skill's SKILL.md is `f(name, formalBlock, composition())`,
-  // rendered VERBATIM by the forge adapter — the σ* `formalBlock` inside the fence
-  // plus a "Composed from …" provenance line from the lazy composition thunk. The
-  // retired "absorbed declarations" mechanism (composition-formula consumed, decls
-  // lifted out of a stored body) no longer exists: the formalBlock IS the whole
-  // payload. This guards that the formalBlock reaches the projection intact AND the
-  // composition thunk resolves to the live siblings' `/trigger`s.
-  it('rendered formalize + carry-on project their formalBlock, composed-from only when composed', () => {
-    const formalizeMd = renderSkill(formalize);
-    // the σ* formalBlock law lines render VERBATIM inside the fence …
-    expect(formalizeMd).toContain(
-      'self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)',
-    );
-    expect(formalizeMd).toContain('¬self-sufficient(B) ⇒ ⊥');
-    // … and the composition thunk reaches the projected "Composed from" line.
-    expect(formalizeMd).toContain('Composed from /conceptualize · /signify.');
-
-    const carryOnMd = renderSkill(carryOn);
-    // Derived from the CELL, not a copied literal: a hardcoded first line pins the
-    // block's current wording, so an intentional rewrite reads as a regression and
-    // the test rots into a change-detector. What projection stability actually
-    // claims is that the formalBlock reaches the artifact VERBATIM — assert that.
-    expect(carryOnMd).toContain(carryOn.formalBlock);
-    expect(carryOn.formalBlock.split('\n')[0]).toMatch(/^carry-on ≜ /);
-    // carry-on is the EMPTY-composition witness, and deliberately so: it used to
-    // compose `/praxis`, which bound an authority cell to one context and made
-    // "carry on with what we just discussed" unserveable. An empty thunk must
-    // project NO provenance line at all — a stray "Composed from ." would be the
-    // same coupling reappearing as a rendering artifact.
-    expect(carryOn.composition()).toEqual([]);
-    expect(carryOnMd).not.toContain('Composed from');
+  it('the formalize skill projects its formalBlock and composition through omp', async () => {
+    const tree = await project();
+    const rendered = tree.files.find(
+      (f) => f.path === 'skills/formalize/SKILL.md',
+    )?.content;
+    expect(rendered).toContain(formalize.formalBlock);
+    expect(rendered).toContain('Composed from /conceptualize · /signify.');
   });
 
-  it('every agent resolves and projects a Target', async () => {
-    const modules = (await collect('agents/*.ts')).filter(
-      (r) => !r.endsWith('base.ts'),
-    );
-    expect(modules.length).toBeGreaterThan(0);
-    for (const rel of modules) {
-      const agent = await firstExport<Agent>(join(srcRoot, rel));
-      const target = agentToClaudeMd(agent, { manifest: MANIFEST });
-      expect(target.length, rel).toBeGreaterThan(0);
-    }
-  });
-
-  // A DECLARATION THAT RESOLVES NOWHERE IS WORSE THAN NO DECLARATION. An agent's
-  // `skills` are NAMES; projection expands them to their closure over
-  // `composition` and hands that to every harness — omp's `autoloadSkills`, whose
-  // bodies the generic launcher inlines for a main session, among them.
-  // A skill renamed or retired out from under one leaves an agent that still LOOKS
-  // equipped: omp resolves the name against its skill roster, finds nothing, and
-  // autoloads nothing — silently, with the definition still naming it. The names
-  // are string literals precisely because the field is an ADDRESS into a host's
-  // skill tree rather than an import, so this is the leg that keeps them true.
-  it('every skill an agent declares resolves to a live cell', async () => {
-    const roster = new Set(
-      (await collect('skills/*/skill.ts')).map((r) => r.split('/')[1]),
-    );
-    expect(roster.size).toBeGreaterThan(0);
-    const modules = (await collect('agents/*.ts')).filter(
-      (r) => !r.endsWith('base.ts'),
-    );
-    let declared = 0;
-    for (const rel of modules) {
-      const agent = await firstExport<Agent>(join(srcRoot, rel));
-      for (const name of agent.skills ?? []) {
-        declared++;
-        expect(roster.has(name), `${rel} declares skill '${name}'`).toBe(true);
-      }
-    }
-    // Non-vacuous: the loop above passes trivially on a corpus where no agent
-    // declares anything, which is exactly the state this field was added to end.
-    expect(declared).toBeGreaterThan(0);
-  });
-
-  // THE SHIPPED ROSTER IS THE SCANNED ROSTER, and `dist/` is what gets scanned.
-  // `index.ts` hands the loader DIRECTORIES (`skills: dir('./skills')`), resolved
-  // relative to the built module, so the corpus a host projects is whatever sits in
-  // `dist/skills` — not whatever `src/skills` holds. The build was `tsc` alone, and
-  // `tsc` never removes an output whose input is gone: deleting three cells and
-  // rebuilding still projected all sixteen, silently, because their `dist` dirs
-  // survived. Measured on this cutover — the projection reported "16 skill(s)" from
-  // a tree with 13.
-  //
-  // The fix is `clean` in canon's build script; this is the gate that notices if it
-  // ever comes back out, and it reads the two rosters rather than a count so the
-  // failure names the stale cell.
   it('the built skill roster equals the source roster', async () => {
     const src = (await collect('skills/*/skill.ts')).map(
       (r) => r.split('/')[1],

@@ -11,7 +11,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { VERBS, dispatchDesign } from '../src/capabilities/design/dispatch.js';
-import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
 import * as verbFlags from '../src/verb-flags.js';
 import {
   BY,
@@ -176,20 +175,6 @@ describe('design — the lattice at the verb surface', () => {
       '--cause',
       'design.test',
     );
-    dispatchPlan(
-      [
-        'add',
-        'u1',
-        '--plan',
-        'standing-plan',
-        '--realizes',
-        'mid',
-        '--plan-realizes',
-        'mid',
-        ...BY,
-      ],
-      { from: repo },
-    );
     const trace = spoken(repo, design(repo, 'trace', 'mid'));
     expect(trace).toMatch(
       /- define by test at \S+ — a fixture — mid — the middle/,
@@ -201,7 +186,6 @@ describe('design — the lattice at the verb surface', () => {
     expect(trace).toContain('  blast, what stands on it:\n    - top');
     expect(trace).not.toContain('standing-plan');
     expect(trace).not.toContain('u1');
-    expect(show(repo, [], 'mid')).toContain('standing-plan (p-draft): u1');
   });
 });
 
@@ -306,29 +290,6 @@ describe('design — divergence and convergence across a merge', () => {
     );
   });
 
-  it('a diverged concept holding two anchors lists a plan realizing it once', () => {
-    const repo = repository();
-    design(repo, 'define', 'alpha', '--gloss', 'first', ...BY);
-    const plan = (unit: string, ...more: string[]) =>
-      dispatchPlan(
-        ['add', unit, '--plan', 'pl', '--realizes', 'alpha', ...more, ...BY],
-        { from: repo },
-      );
-    plan('u1', '--plan-realizes', 'alpha');
-    plan('u2');
-    merge(
-      repo,
-      'design',
-      () => design(repo, 'amend', 'alpha', '--anchor', 'alpha2', ...BY),
-      () => design(repo, 'amend', 'alpha', '--gloss', 'other', ...BY),
-    );
-    const out = show(repo, [], 'alpha');
-    expect(out).toMatch(/ {2}diverged: (alpha or alpha2|alpha2 or alpha)\n/);
-    const realized = out.split('realized in:\n')[1] ?? '';
-    expect(realized.match(/pl \(p-draft\)/g)).toHaveLength(1);
-    expect(realized).toContain('u1');
-    expect(realized).toContain('u2');
-  });
 });
 
 describe('design — the header of a repository with nothing committed', () => {
@@ -480,45 +441,6 @@ describe('design — when the store itself fails', () => {
   });
 });
 
-describe('design — on a host without the plan lifecycle', () => {
-  it('shows and writes the design, saying the plans standing on it wait for a deploy', () => {
-    const repo = repository();
-    design(repo, 'define', 'alpha', '--gloss', 'first', ...BY);
-    dispatchPlan(
-      [
-        'add',
-        'u1',
-        '--plan',
-        'pl',
-        '--realizes',
-        'alpha',
-        '--plan-realizes',
-        'alpha',
-        ...BY,
-      ],
-      { from: repo },
-    );
-    under(undefined, () => {
-      const before = everyRecord(repo).length;
-      const amended = spoken(
-        repo,
-        design(repo, 'amend', 'alpha', '--gloss', 'second', ...BY),
-      );
-      expect(everyRecord(repo)).toHaveLength(before + 1);
-      expect(amended).toContain(
-        'plans standing on each concept: unavailable until `cratylus deploy`',
-      );
-      const out = show(repo);
-      expect(out).toContain('  alpha — second');
-      expect(out).not.toContain('realized in');
-      expect(show(repo, [], 'alpha')).toContain(
-        '  realized in: unavailable until `cratylus deploy`',
-      );
-      expect(design(repo, 'trace', 'alpha')).toContain('trace: alpha');
-    });
-    expect(show(repo)).toContain('realized in pl (p-draft): u1');
-  });
-});
 
 describe('design — the flags each verb takes', () => {
   it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {

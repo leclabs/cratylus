@@ -5,8 +5,5 @@ import type { Autonomy } from '../../manifest.js';
 // axis. Unlike the decision-authority pole and the escalation directive, it is
 // phase-STATE, not a static value: the `⟨resting · phase-state⟩` residue declares
 // this as the RESTING / initial position (a session opens in orientation, intent
-// the operator's to set) while marking that the live position shifts —
-// `carry-on` elevates it to out-of-the-loop, held until its context is
-// satisfied, the operator redirects, or an unresolvable fork re-enters
-// on-the-loop. See skills/carry-on.
+// the operator's to set) while marking that the live position is session-state.
 export const humanOnTheLoop: Autonomy = `human-on-the-loop ⟨resting · phase-state⟩`;
