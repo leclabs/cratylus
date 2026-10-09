@@ -15,3 +15,5 @@
 - **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only `git push` is gated: push only when the operator asks.
 - **Green-field register:** existing code, records, and docs constrain work only where explicitly declared; compatibility is never a goal.
 - **Reach for an established library before writing or adopting machinery.** Where a well-known problem has an actively maintained, widely used library with a small API, use it; never adopt a workflow or orchestration engine. Wrap it behind cratylus's own capability, so agents learn one small cratylus API, not the library's.
+- **Branching:** cut feature branches from `dev` and merge them back into `dev` once accepted; `dev` reaches `main` only when the operator releases.
+- **Commit only what you changed:** stage and commit your own paths by name, never everything in the tree, and never amend or rewrite history others may share.
