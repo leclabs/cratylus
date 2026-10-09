@@ -1,7 +1,7 @@
 # Examples · cut 2a · workflow execution
 
 Context: workflow. Concepts: roles, lead, builder, reviewer, build, work package, judgment, whole check,
-proportionality and meaning question (see `design/workflow.md`). Changed only
+proportionality, meaning question and dependency graph (see `design/workflow.md`). Changed only
 with the meaning-holder's approval, with a reason.
 
 **Structural** examples are properties the harness or the freeze guarantees, checked once, deterministically.
@@ -23,9 +23,10 @@ something must never happen holds in all 5.
 4. (meaning question, lead) **Given** an example that can be read two ways, and the two readings would change
    its concept, **when** the lead meets it, **then** it asks the architect, leaves the concept and example
    unchanged, and never picks a meaning itself.
-5. (lead, work package) **Given** a cut whose work touches three groups of outputs, one depending on another,
-   **when** the lead plans it, **then** it makes work packages whose outputs do not overlap, and dispatches
-   the dependent one only after its prerequisite is done.
+5. (lead, dependency graph) **Given** a cut whose work divides into four vertical slices, two of which need
+   the same shared output, **when** the lead plans it, **then** it makes the shared output its own work
+   package that both depend on, no two work packages share an output, the graph has no cycle, and every work
+   package on one topological level is dispatched together, each level only after the one before it is done.
 6. (whole check) **Given** the whole check fails in two suites, **when** the lead responds, **then** it has
    both failures fixed in one round and runs the whole check once more, never once per fix.
 7. (judgment) **Given** judgment finds the work fails a case, **when** the builder has fixed it, **then** the
