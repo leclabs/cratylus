@@ -15,7 +15,10 @@ something must never happen holds in all 5.
    has no means to change the work, an example or a concept.
 2. (work package) **Given** two work packages with disjoint outputs, **when** one builder's change touches an
    output of the other work package, **then** the change is refused.
-3. (whole check) **Given** a change that affects two contexts and one contract, **when** the whole check
+3. (dependency graph) **Given** a declared set of work packages, their outputs and their dependencies,
+   **when** it is checked, **then** it is refused if two work packages share an output or the dependencies
+   form a cycle, and otherwise each work package's topological level is computed from it.
+4. (whole check) **Given** a change that affects two contexts and one contract, **when** the whole check
    runs, **then** every suite of both contexts and the contract runs, in one run.
 
 ## Behavioral
@@ -26,7 +29,8 @@ something must never happen holds in all 5.
 5. (lead, dependency graph) **Given** a cut whose work divides into four vertical slices, two of which need
    the same shared output, **when** the lead plans it, **then** it makes the shared output its own work
    package that both depend on, no two work packages share an output, the graph has no cycle, and every work
-   package on one topological level is dispatched together, each level only after the one before it is done.
+   package on one computed topological level is dispatched together, each level only after the one before it
+   is done.
 6. (whole check) **Given** the whole check fails in two suites, **when** the lead responds, **then** it has
    both failures fixed in one round and runs the whole check once more, never once per fix.
 7. (judgment) **Given** judgment finds the work fails a case, **when** the builder has fixed it, **then** the
