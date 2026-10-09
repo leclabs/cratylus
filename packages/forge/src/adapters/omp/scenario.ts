@@ -199,28 +199,32 @@ function runOmp(
   readonly stderr: string;
   readonly code: number;
 }> {
-  const { promise, resolve, reject } = Promise.withResolvers<{
-    readonly stdout: string;
-    readonly stderr: string;
-    readonly code: number;
-  }>();
-  const child = spawn('omp', args, { env, stdio: ['ignore', 'pipe', 'pipe'] });
-  let stdout = '';
-  let stderr = '';
-  child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
-    stdout += chunk;
+  return new Promise((resolve, reject) => {
+    const child = spawn('omp', args, {
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(
+        new Error(`OMP scenario exceeded 30 seconds: ${stderr || stdout}`),
+      );
+    }, 30_000);
+    child.once('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once('close', (code) => {
+      clearTimeout(timeout);
+      resolve({ stdout, stderr, code: code ?? 1 });
+    });
   });
-  child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
-    stderr += chunk;
-  });
-  const timeout = setTimeout(() => {
-    child.kill('SIGTERM');
-    reject(new Error(`OMP scenario exceeded 30 seconds: ${stderr || stdout}`));
-  }, 30_000);
-  child.once('error', reject);
-  child.once('close', (code) => {
-    clearTimeout(timeout);
-    resolve({ stdout, stderr, code: code ?? 1 });
-  });
-  return promise;
 }
