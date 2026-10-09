@@ -20,7 +20,7 @@ why        : div → causes
 harness-override    ≜ runtime substituted the value ⟨tool-gating · model-pin · env⟩
 deploy-drift        ≜ deployed def ≠ source vector ⟨stale ∨ partial deploy⟩
 profile-projection  ≜ def projected at a reader/profile that reshaped the value
-transient-elevation ≜ a session act flipped it ⟨carry-on : autonomy human-on-the-loop ↦ human-out-of-the-loop⟩
+transient-elevation ≜ a session act flipped it ⟨autonomy human-on-the-loop ↦ human-out-of-the-loop⟩
 composer-dropped    ≜ projection dropped a facet ⟨the color/mark regression class⟩
 env-conditioned     ≜ a host/env fact changed the effective value
 unobservable        ≜ runtime value ¬ inspectable ∴ report-as-such ∧ ¬ guess

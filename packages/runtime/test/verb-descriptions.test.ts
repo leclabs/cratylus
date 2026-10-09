@@ -7,16 +7,12 @@
 import { describe, expect, it } from 'vitest';
 import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
-import { VERBS as NOTE } from '../src/capabilities/note/dispatch.js';
-import { VERBS as PLAN } from '../src/capabilities/plan/dispatch.js';
 import { CAPABILITIES, CAPABILITY_SUMMARIES } from '../src/capability.js';
 import type { Verb, VerbFlags } from '../src/verb-flags.js';
 
 const SURFACES: Record<(typeof CAPABILITIES)[number], VerbFlags> = {
   eventTap: EVENT_TAP,
   design: DESIGN,
-  plan: PLAN,
-  note: NOTE,
 };
 
 /** A line of words: something is said, and all of it on one line. */

@@ -29,7 +29,6 @@
 
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-import type { NoteCarrier } from '../../ports/note.js';
 import { type Fold, fold } from '../../record-store/fold.js';
 import {
   IDENTITY,
@@ -82,6 +81,9 @@ import {
 import { type Movement, type Pin, drift, suspicion, take } from './pin.js';
 import * as planDomain from './plan.js';
 import * as unitDomain from './unit.js';
+type NoteCarrierInput =
+  | { readonly concept: string }
+  | { readonly unit: string };
 
 // ── The lifecycle ───────────────────────────────────────────────────────────────
 
@@ -657,7 +659,7 @@ export class Reading {
   /** What now carries a note taken up: the live concept an anchor denotes, or
    *  the live unit a name denotes, as the note records it. Refuses a name no
    *  live concept or unit holds. */
-  resolveCarrier(carrier: NoteCarrier): Carrier {
+  resolveCarrier(carrier: NoteCarrierInput): Carrier {
     if ('concept' in carrier) {
       const entity = this.design.denotes(parsed(carrier.concept));
       if (

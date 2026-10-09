@@ -24,16 +24,13 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
-import { STANCE_MANIFEST } from '../core/enrollment.js';
 // The DEFINING module, never the `core/` surface at large: two tokens are
 // wanted here — the staging dir the projection writes, and the deploy-time
 // self-reference substitution — and both must be the same constant every
 // stage reads.
 import {
   ENFORCING_STAGE_DIR,
-  NEUTRAL_AGENT_ROOT,
   SCOPE_DIR_TOKEN,
-  SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
 import { settingsJson } from './settings-json.js';
 import {
@@ -175,39 +172,6 @@ export function placeHooksLocal(
     report.written[name] = files.map((f) => `hooks/${name}/${f}`);
     log(`hook ${name} -> ${destDir}/ (+${files.length} worker asset(s))`);
   }
-  // ── SHARED ASSETS → the vendor-neutral root ──────────────────────────────────
-  // A `HookWorker.shared` asset is byte-identical on every projection, so it has
-  // one address instead of one per harness: `<home>/.agents/<id>/`, the sibling
-  // of every harness home, beside the agents and skills already deployed there.
-  //
-  // WHY THE REL PATH ESCAPES `harnessDir`. Every other placement in this file is
-  // inside the harness tree, and the manifest keys on rel paths from it, so a
-  // `../` rel keeps the shared asset ATTRIBUTABLE: prune removes it when the hook
-  // retires, exactly as it does the scoped mechanism modules that already use
-  // this shape (`../.agents/<agent>/extensions/...`).
-  const sharedRoot = resolvePath(hooksDir, SHARED_STAGE_DIR);
-  if (existsSync(sharedRoot)) {
-    for (const id of readdirSync(sharedRoot).sort()) {
-      const srcDir = resolvePath(sharedRoot, id);
-      if (!statSync(srcDir).isDirectory()) continue;
-      const files = readdirSync(srcDir)
-        .filter((f) => statSync(resolvePath(srcDir, f)).isFile())
-        .sort();
-      if (files.length === 0) continue;
-      const written: string[] = [];
-      for (const f of files) {
-        const rel = posix.join('..', NEUTRAL_AGENT_ROOT, id, f);
-        const dest = resolvePath(harnessDir, rel);
-        if (!opts.dry) {
-          mkdirSync(dirname(dest), { recursive: true });
-          copyFileSync(resolvePath(srcDir, f), dest);
-        }
-        written.push(rel);
-      }
-      report.written[`${SHARED_STAGE_DIR}:${id}`] = written;
-      log(`shared ${id} -> ${written.join(', ')}`);
-    }
-  }
   // Merge the hooks block into the host settings.json.
   const incoming = readProjectedHooks(hooksDir, hooksFile);
   // Testimony, registration half: the commands this render tree asks for. A
@@ -257,12 +221,8 @@ export function placeHooksLocal(
     for (const scope of scopes) {
       const scopeDir = resolvePath(stageRoot, scope);
       const written: string[] = [];
-      const manifests: string[] = [];
-      // A scope's artifacts are a TREE, not a flat list. This skipped any
-      // directory outright, which silently dropped a persona's `stance/`
-      // manifest — the file that says which cells gate that persona. The
-      // scope-relative path is what `scopedRel` wants, so the walk carries it
-      // down and a nested artifact lands exactly where it was staged.
+      // Scope artifacts can be nested; preserve their full relative paths so the
+      // adapter receives the same tree projection staged.
       const walk = (dir: string, prefix: string): string[] =>
         readdirSync(dir)
           .sort()
@@ -295,20 +255,13 @@ export function placeHooksLocal(
           chmodSync(dest, statSync(src).mode);
         }
         written.push(rel);
-        if (file === STANCE_MANIFEST) manifests.push(rel);
       }
       if (written.length === 0) continue;
       // Testimony under the SCOPE, not under a hook id: one module carries every
       // cell's registrations, so no single cell owns it and a per-cell record would
       // claim the same file many times. Recorded so it retires with the scope.
       report.written[`${ENFORCING_STAGE_DIR}:${scope}`] = written;
-      // ONE SIGN PER ARTIFACT: the stance manifest is not "mechanism" — on claude it is
-      // the only thing a scope carries — so the log names it as what it is.
-      const modules = written.filter((rel) => !manifests.includes(rel));
-      if (modules.length > 0)
-        log(`mechanism ${scope} -> ${modules.join(', ')}`);
-      if (manifests.length > 0)
-        log(`stance manifest ${scope} -> ${manifests.join(', ')}`);
+      log(`mechanism ${scope} -> ${written.join(', ')}`);
     }
   }
   log(`hooks copied: ${report.copied}`);

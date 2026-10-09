@@ -8,19 +8,11 @@
 //       corpus is green whether it derives or remembers. `binNameOf` is fed
 //       synthetic manifests here, so remembering would be red.
 //
-//   (2) THE TABLE IS ADAPTER-RELATIVE. Two facts are functions of the harness, and
-//       that is the whole repair for a worker that had to guess which deployment
-//       was its own. Asserting the values is not enough — a table that returned
-//       claude's pair for both harnesses would satisfy any single-adapter leg — so
-//       the two tables are DIFFED and the difference is asserted to be exactly the
-//       harness-relative members.
+//   (2) THE TABLE IS ADAPTER-RELATIVE. OMP is the sole deployment target, so
+//       the table is asserted against OMP's concrete facts.
 //
-//   (3) THE ADAPTER REACHES THE BYTES. A correct table wired to nothing is the
-//       failure this suite would otherwise miss entirely: `projectPluginSet` has
-//       TWO `resolveWorker` call sites (a hook cell's workers, and an enforcing
-//       mechanism's), and the code comment at the second says "both sites, or
-//       neither". Both are projected here, under both adapters, and the emitted
-//       bytes are read back.
+//   (3) OMP REACHES THE BYTES. A correct table wired to nothing is the failure
+//       this suite would otherwise miss: hook workers are rendered with OMP's facts.
 //
 // A FIXTURE PLUGIN, NOT THE CORPUS. The property is the projector's; rendering the
 // canon to prove it would make this suite pay for the corpus's size and would fail
@@ -30,11 +22,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import { STANCE_MANIFEST } from '../../src/core/enrollment.js';
 import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
@@ -51,31 +41,7 @@ const plugin: ProjectablePlugin = {
   name: 'fixture-facts',
   manifest: FIXTURE_MANIFEST,
   hooks: join(here, 'fixtures-facts', 'hooks'),
-  // Borrowed from the degradation fixture: it composes an enforcing value, which
-  // is what makes the projector reach its SECOND `resolveWorker` site at all.
-  agents: join(here, 'fixtures-enforcing', 'agents'),
 };
-
-/** An enforcing mechanism whose worker names a harness fact — the SECOND of the
- *  projector's two resolution sites, which no other fixture reaches. */
-const MECHANISMS = new Map<string, HarnessMechanism>([
-  [
-    'fixture-warden',
-    {
-      command: 'sh fixture-warden.sh',
-      workers: [
-        {
-          filename: 'worker.sh',
-          targetPath: 'hooks/fixture-warden/worker.sh',
-          content:
-            '#!/bin/sh\nHOOKS_FILE={{fact:harness-hooks-file}}\nexit 0\n',
-          executable: true,
-        },
-      ],
-    },
-  ],
-]);
-
 // ── (1) the bin name is DERIVED from the key npm reads ──────────────────────────
 
 describe('the command name has exactly one home, and there is one command', () => {
@@ -132,95 +98,40 @@ describe('the command name has exactly one home, and there is one command', () =
   });
 });
 
-// ── (2) the table is a function OF the adapter ──────────────────────────────────
+// ── (2) the table describes OMP's facts ─────────────────────────────────────────
 
-describe('projectionFacts is adapter-relative', () => {
-  const claude = projectionFacts(adapterByName('claude'));
+describe('projectionFacts describes OMP', () => {
   const omp = projectionFacts(adapterByName('omp'));
 
   it('binds every fact the schema declares', () => {
-    // `ProjectionFact` is a closed set of NAMES; this table is the only place they
-    // acquire values. A member added to the union and forgotten here throws at
-    // resolve time on a host, which is the class of defect the seam exists to move
-    // to build time — so the key set is asserted, not spot-checked.
-    expect(Object.keys(claude).sort()).toEqual([
+    expect(Object.keys(omp).sort()).toEqual([
       'deploy-bin',
       'deploy-check-drift-code',
       'harness-hooks-file',
-      'harness-judge-bin',
       'harness-name',
-      'harness-persona-root',
       'runtime-bin',
-      'stance-manifest',
     ]);
-    // EVERY FACT BUT ONE IS NON-EMPTY, and the exception is load-bearing rather
-    // than missing: `harness-judge-bin` is EMPTY for a harness that judges
-    // in-process, which is how omp says "no subprocess, and no other vendor's
-    // CLI either". A blanket non-empty assertion would forbid that answer.
-    expect(
-      Object.entries(claude)
-        .filter(([k]) => k !== 'harness-judge-bin')
-        .every(([, v]) => v.length > 0),
-    ).toBe(true);
-    expect(claude['harness-judge-bin']).toBe('claude');
+    expect(Object.values(omp).every((value) => value.length > 0)).toBe(true);
   });
 
-  it('the two harnesses differ in EXACTLY the harness-relative facts', () => {
-    // The convicting shape. A table that ignored its argument would produce an
-    // empty diff; one that made the wrong facts adapter-relative would produce a
-    // different one. Both are red here.
-    const differing = Object.keys(claude)
-      .filter(
-        (k) => claude[k as keyof typeof claude] !== omp[k as keyof typeof omp],
-      )
-      .sort();
-    expect(differing).toEqual([
-      'harness-hooks-file',
-      'harness-judge-bin',
-      'harness-name',
-      'harness-persona-root',
-    ]);
-  });
-
-  it('carries each adapter’s own name and hooks file', () => {
-    expect(claude['harness-name']).toBe('claude');
-    expect(claude['harness-hooks-file']).toBe('settings.json');
+  it('carries OMP’s name and hooks file', () => {
     expect(omp['harness-name']).toBe('omp');
     expect(omp['harness-hooks-file']).toBe(adapterByName('omp').hooksFile);
-    expect(omp['harness-hooks-file']).not.toBe(claude['harness-hooks-file']);
   });
-
-  it('carries each adapter’s persona root, read back from its own scopedRel', () => {
-    expect(claude['harness-persona-root']).toBe('personas');
-    expect(omp['harness-persona-root']).toBe('agent/personas');
-  });
-
-  it('carries the stance manifest’s one spelling, the same on both harnesses', () => {
-    expect(claude['stance-manifest']).toBe(STANCE_MANIFEST);
-    expect(omp['stance-manifest']).toBe(STANCE_MANIFEST);
-  });
-
   it('carries the drift exit code as the string a shell compares', () => {
-    // The number leaves the language here. It must be the code `deploy --check`
-    // actually returns for drift — `check.test.ts` pins that end — and it must be
-    // distinguishable from the other two, or a worker reading it cannot classify.
-    expect(claude['deploy-check-drift-code']).toBe(
+    expect(omp['deploy-check-drift-code']).toBe(
       String(DEPLOY_CHECK_EXIT.drift),
     );
-    expect(
-      new Set(Object.values(DEPLOY_CHECK_EXIT)).size,
-      'the three exit codes must be three',
-    ).toBe(3);
+    expect(new Set(Object.values(DEPLOY_CHECK_EXIT)).size).toBe(3);
   });
 });
 
-// ── (3) the adapter reaches the emitted bytes, at BOTH resolution sites ─────────
+// ── (3) OMP reaches the emitted bytes ───────────────────────────────────────────
 
-async function projectFixture(harness: string) {
+async function projectFixture() {
   const tree = await projectPluginSet({
     plugins: [plugin],
-    adapter: adapterByName(harness),
-    mechanisms: MECHANISMS,
+    adapter: adapterByName('omp'),
     warn: () => {},
   });
   const at = (path: string): string =>
@@ -232,54 +143,25 @@ async function projectFixture(harness: string) {
 const declared = (sh: string, key: string): string | undefined =>
   sh.match(new RegExp(`^${key}=(\\S+)$`, 'm'))?.[1];
 
-describe('the projector hands its adapter to the worker templates', () => {
-  it('resolves a hook cell’s workers against the harness being rendered', async () => {
-    const claude = await projectFixture('claude');
-    const omp = await projectFixture('omp');
-    expect(claude.probe, 'no probe worker was emitted').not.toBe('');
-    expect(omp.probe, 'no probe worker was emitted').not.toBe('');
-
-    // The SAME cell, two harnesses, two answers — captured off the bytes rather
-    // than asserted about the table, because the bytes are what lands on a host.
-    expect(declared(claude.probe, 'HARNESS')).toBe('claude');
-    expect(declared(claude.probe, 'HARNESS_HOOKS_FILE')).toBe('settings.json');
-    expect(declared(omp.probe, 'HARNESS')).toBe('omp');
-    expect(declared(omp.probe, 'HARNESS_HOOKS_FILE')).toBe(
+describe('the OMP projector hands facts to worker templates', () => {
+  it('resolves a hook cell’s workers against OMP', async () => {
+    const { probe } = await projectFixture();
+    expect(probe, 'no probe worker was emitted').not.toBe('');
+    expect(declared(probe, 'HARNESS')).toBe('omp');
+    expect(declared(probe, 'HARNESS_HOOKS_FILE')).toBe(
       adapterByName('omp').hooksFile,
     );
-    // The persona root is read back from each adapter's own `scopedRel`, so the
-    // bytes a worker joins to the harness home name the directory deploy writes.
-    expect(declared(claude.probe, 'PERSONA_ROOT')).toBe('personas');
-    expect(declared(omp.probe, 'PERSONA_ROOT')).toBe('agent/personas');
-    // One sign for the manifest, on both harnesses, from the one constant.
-    expect(declared(claude.probe, 'STANCE_MANIFEST')).toBe(STANCE_MANIFEST);
-    expect(declared(omp.probe, 'STANCE_MANIFEST')).toBe(STANCE_MANIFEST);
-    expect(omp.probe).not.toBe(claude.probe);
   });
 
-  it('resolves an ENFORCING mechanism’s workers the same way', async () => {
-    // The second call site. It shipped a `{{fact:…}}` to a host once already by
-    // being the one of two that had not been converted; a fact that is adapter-
-    // relative gives it a new way to be silently wrong (right value, wrong
-    // harness), so it is read back rather than assumed to follow the first.
-    const worker = (t: Awaited<ReturnType<typeof projectFixture>>): string =>
-      t.tree.files.find((f) => f.path === 'hooks/fixture-warden/worker.sh')
-        ?.content ?? '';
-    const claude = worker(await projectFixture('claude'));
-    expect(declared(claude, 'HOOKS_FILE')).toBe('settings.json');
-  });
-
-  it('emits no unresolved fact placeholder on either harness', async () => {
+  it('emits no unresolved fact placeholder', async () => {
     // `{{scopeDir}}` is the one placeholder a scoped artifact ships on purpose —
     // deploy resolves it to the artifact's own directory — so it is not a fact.
-    for (const harness of ['claude', 'omp']) {
-      const { tree } = await projectFixture(harness);
-      for (const f of tree.files) {
-        expect(
-          f.content.replaceAll(SCOPE_DIR_TOKEN, '').includes('{{'),
-          `${harness}: ${f.path} ships an unresolved placeholder`,
-        ).toBe(false);
-      }
+    const { tree } = await projectFixture();
+    for (const f of tree.files) {
+      expect(
+        f.content.replaceAll(SCOPE_DIR_TOKEN, '').includes('{{'),
+        `${f.path} ships an unresolved placeholder`,
+      ).toBe(false);
     }
   });
 });

@@ -34,9 +34,7 @@ import {
 import { dirname, posix, resolve as resolvePath } from 'node:path';
 import {
   ENFORCING_STAGE_DIR,
-  NEUTRAL_AGENT_ROOT,
   SCOPE_DIR_TOKEN,
-  SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
 import { staleFiles } from '../prune/index.js';
 import {
@@ -533,9 +531,8 @@ export function renderedFiles(
       for (const scope of readdirSync(stageRoot).sort()) {
         const scopeDir = resolvePath(stageRoot, scope);
         if (!statSync(scopeDir).isDirectory()) continue;
-        // The placer walks this scope as a TREE; the audit must walk it the same
-        // way or a nested artifact — a persona's `stance/` manifest — is placed
-        // and then reported foreign by the very check that protects it.
+        // The placer walks this scope as a tree; the audit must use the same
+        // paths so a nested artifact is not reported as foreign.
         const walk = (dir: string, prefix: string): string[] =>
           readdirSync(dir)
             .sort()
@@ -551,33 +548,6 @@ export function renderedFiles(
             rel: scopedRel(file, scope),
             src,
             owner: `${ENFORCING_STAGE_DIR}:${scope}`,
-          });
-        }
-      }
-    }
-  }
-  // hooks, third half: the SHARED assets. `placeHooksLocal` writes these to the
-  // vendor-neutral root and records them under `shared:<id>`, so an audit that
-  // does not enumerate them calls a live artifact ours-and-retired — and the
-  // prune borrows this very set as its candidates. Measured on an operator host:
-  // the stance rubric, the one file every stance verdict is scored against, was
-  // reported as a path "a deploy would prune". An audit that condemns the
-  // artifact it was built to protect is worse than no audit.
-  if (kind === 'hooks' && tree.hooksDir) {
-    const sharedRoot = resolvePath(tree.hooksDir, SHARED_STAGE_DIR);
-    if (existsSync(sharedRoot)) {
-      for (const id of readdirSync(sharedRoot).sort()) {
-        const srcDir = resolvePath(sharedRoot, id);
-        if (!statSync(srcDir).isDirectory()) continue;
-        for (const file of readdirSync(srcDir).sort()) {
-          const src = resolvePath(srcDir, file);
-          if (!statSync(src).isFile()) continue;
-          out.push({
-            // The placer's own mapping, spelled once here so audit and action
-            // cannot disagree about where a shared asset lands.
-            rel: posix.join('..', NEUTRAL_AGENT_ROOT, id, file),
-            src,
-            owner: `${SHARED_STAGE_DIR}:${id}`,
           });
         }
       }

@@ -218,7 +218,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         `The directory to render into (default: .${CLI_BIN}/<harness>, the tree \`${CLI_BIN} deploy\` reads)`,
       ),
     )
-    .addOption(harnessOption('The harness to render for').default('claude'))
+    .addOption(harnessOption('The harness to render for').default('omp'))
     .addOption(
       new Option(
         '--verbose',
@@ -440,7 +440,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         .choices(SCOPES)
         .default('user'),
     )
-    .addOption(harnessOption('The harness to place into').default('claude'))
+    .addOption(harnessOption('The harness to place into').default('omp'))
     .addOption(
       new Option(
         '--home <dir>',

@@ -1,13 +1,8 @@
-// EVENT-TAP CELL gate — the agent-facing surface of the `eventTap` runtime capability.
+// EVENT-TAP CELL gate — the OMP-facing surface of the `eventTap` runtime capability.
 //
-// WHY THIS FILE EXISTS. The capability was built and tested end-to-end
-// (`runtime/src/capabilities/event-tap/`) but had NO skill cell, so it was
-// reachable ONLY by an operator typing `cratylus tap …` at a shell — inverting the
-// point of the effort chain (a passive tap an AGENT can turn on to observe itself). The
-// shard that would have added the cell was recorded ABSORBED into a memory-only shard
-// that never touched event-tap, so the work vanished silently and no gate noticed: every
-// skill gate quantifies over the cells that EXIST, so a missing cell is invisible to all
-// of them. This file is the gate that would have caught it.
+// Projection emits the cell's SKILL.md and thin shim at
+// `skills/event-tap/scripts/eventTap.mjs`. Verb parity keeps the cell aligned with
+// the runtime-owned `EventTapVerb` union without adding a canon → runtime package edge.
 //
 // TWO LEGS:
 //   • PROJECTION — projecting the canon emits the cell's SKILL.md AND its thin shim at
@@ -76,12 +71,12 @@ beforeAll(async () => {
   // V7: the projector RETURNS the tree; the caller is the one writer.
   const report = await projectPluginSet({
     plugins: [canonPlugin],
-    adapter: adapterByName('claude'),
+    adapter: adapterByName('omp'),
   });
   writeRenderTree(out, report.files);
 }, 120_000);
 
-describe('event-tap cell — the capability has an agent-facing surface', () => {
+describe('event-tap cell — the OMP surface', () => {
   it('the cell exists, is named for its directory, and declares the eventTap capability', () => {
     expect(eventTap.name).toBe('event-tap');
     expect(eventTap.runtime?.capability).toBe('eventTap');

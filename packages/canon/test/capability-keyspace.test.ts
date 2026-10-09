@@ -2,19 +2,12 @@
 // capability, spoken in two registers, and nothing outside it answers to a
 // capability's name.
 //
-// WHY THIS FILE EXISTS. The `event-tap` capability was reachable under THREE
-// spellings at once: `eventTap` (the keyspace member and the dispatch word),
-// `event-tap` (the plugin `name:`, the dir, the port module), and `tap` (a bare
-// abbreviation that `main.ts` accepted beside the real word, and that every
-// exported identifier in the capability had contracted to — `TapVerb`,
-// `dispatchTap`, `TAP_ID`). Nothing was wrong with the first two: the corpus
-// already declares the kebab↔camel map (`forge/src/core/anatomy-body.ts`'s
-// `dimensionField`) and runs it live for `situation-awareness`↔`situationAwareness`,
-// so those are one sign in two registers, not two signs. `tap` was the genuine
-// second sign, and it fails circumscription — it carries *passive siphon on a
-// stream* but not WHICH stream, so it never enters the competition despite being
-// shortest. The tree already agreed before anyone ruled: the shipped VALUE was
-// always `${CLI_BIN}-event-tap`; only the identifier had been abbreviated.
+// WHY THIS FILE EXISTS. A capability has one keyspace name, in its declared
+// camelCase register (`eventTap`), and a matching kebab-case port module
+// (`event-tap`). The conversion between those registers is already declared by
+// the corpus and used for `situation-awareness` / `situationAwareness`; this gate
+// checks that runtime ports and skill declarations remain aligned with the
+// capability vocabulary rather than accumulating alternate names.
 //
 // ── WHAT THIS GATE DOES *NOT* CHECK, AND WHY ────────────────────────────────────
 // Two equalities were proposed for this gate and both were FALSE OF THE CORPUS they
@@ -107,8 +100,7 @@ function portBasenames(dir: string): string[] {
 }
 
 /** Every capability a canon skill cell declares, as `<skill> → <capability>`. A
- *  comment is not a declaration: a cell may record the capability it once bound
- *  (`carry-on` does), so comment lines are dropped before the match. */
+ *  comment is not a declaration: comment lines are dropped before the match. */
 function skillCapabilities(
   dir: string,
 ): { skill: string; capability: string }[] {
@@ -197,14 +189,12 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['eventTap', 'design', 'plan', 'note']),
+      expect.arrayContaining(['eventTap', 'design']),
     );
-    expect(BASENAMES).toEqual(
-      expect.arrayContaining(['event-tap', 'design', 'plan', 'note']),
-    );
-    // The subset axis rests on the skill cells that declare a capability; two is
-    // the floor below which a dark read could pass it vacuously.
-    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(2);
+    expect(BASENAMES).toEqual(expect.arrayContaining(['event-tap', 'design']));
+    // The subset axis rests on the surviving skill cell that declares a capability.
+    // One witness is the floor below which a dark read could pass it vacuously.
+    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(1);
   });
 
   it('the two registers round-trip on the pairs the corpus actually runs', () => {
@@ -287,7 +277,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
     // AXIS 2: a cell forwarding to a capability no host binds.
     expect(
-      subsetViolations(caps, [{ skill: 'ghost', capability: 'tap' }]),
+      subsetViolations(caps, [{ skill: 'ghost', capability: 'unknown' }]),
     ).toHaveLength(1);
     expect(
       subsetViolations(caps, [{ skill: 'event-tap', capability: 'eventTap' }]),

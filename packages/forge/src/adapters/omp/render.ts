@@ -251,15 +251,6 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 /** omp's own default model role — the fallback every definition's `model` ends in. */
 const OMP_DEFAULT_ROLE = 'default';
 
-/** The built-in omp role nearest to each role an agent may hold. A held role with
- *  no entry is nearest the default role. The integrator's work is spec-bounded like
- *  the implementer's (it joins what implementers built), so it routes to `task`. */
-const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
-  implementer: 'task',
-  integrator: 'task',
-  planner: 'plan',
-};
-
 /** The host config files omp reads its settings from — the ONE spelling, shared by
  *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
@@ -269,7 +260,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
  *  The host keeps the mapping in its config file under its `modelRoles` key. */
 export const ompRoleRouting: RoleRouting = {
   defaultRole: OMP_DEFAULT_ROLE,
-  nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
+  nearest: () => OMP_DEFAULT_ROLE,
   offered: ['default', 'smol', 'slow', 'plan', 'task'],
   configRels: OMP_CONFIG_RELS,
 };
@@ -1950,15 +1941,8 @@ export const ompHarnessAdapter: HarnessAdapter = {
   substrate: 'harness',
   home: '.omp',
   agentExt: '.md',
-  // Declared because the port requires it, and truthful: it is the artifact omp's
-  // enforcement lands in. It is never merged into a host config the way claude's
-  // `settings.json` is, because `hooks()` is absent and
-  // deploy therefore has no fragment to merge.
+  // OMP loads this generated hook-extension module.
   hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
-  // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds
-  // the session's own model and runs the worker around a judgment it makes
-  // itself, so there is no CLI to name and no second process to spawn.
-  judgeBin: '',
   // `autoloadSkills` names skills omp preloads into the agent it defines.
   preloadsSkills: true,
   // omp's agent definition reader takes no field that isolates an agent: its task

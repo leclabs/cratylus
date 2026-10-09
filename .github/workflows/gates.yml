@@ -99,6 +99,15 @@ jobs:
       # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks the test
       # tree too. The tests ARE the enforcement layer for every naming and shape guarantee
       # here; an unchecked test tree is an unchecked enforcement layer.
+      - name: install OMP v18.6.3
+        run: |
+          mkdir -p "$RUNNER_TEMP/omp/bin"
+          curl --fail --location --silent --show-error \
+            https://github.com/can1357/oh-my-pi/releases/download/v18.6.3/omp-linux-x64 \
+            --output "$RUNNER_TEMP/omp/bin/omp"
+          echo "5972347a0afa983333151e1f27461bc441929a22ab5ec65dfed248eb2108ddaf  $RUNNER_TEMP/omp/bin/omp" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/omp/bin/omp"
+          echo "$RUNNER_TEMP/omp/bin" >> "$GITHUB_PATH"
       - name: test
         run: pnpm test
 

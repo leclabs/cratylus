@@ -30,29 +30,10 @@ function resolved(over: Partial<ResolvedSkill> = {}): ResolvedSkill {
 }
 
 describe('runtime-shim binding', () => {
-  it('binds the shim by capability-relative path when runtime is declared', () => {
-    const body = renderSkillCellBody({
-      verb: 'Wake',
-      block: BLOCK,
-      runtime: { capability: 'note' },
-    });
-    expect(body).toContain('scripts/note.mjs');
-    expect(body).toMatch(/Runtime capability `note`/);
-  });
-
   it('emits NO binding when runtime is absent — the unchanged path', () => {
     const body = renderSkillCellBody({ verb: 'Wake', block: BLOCK });
     expect(body).not.toContain('scripts/');
     expect(body).not.toMatch(/Runtime capability/);
-  });
-
-  it('threads runtime from ResolvedSkill through skillBody', () => {
-    const withRuntime = skillBody(
-      resolved({ runtime: { capability: 'note' } }),
-    );
-    expect(withRuntime).toContain('scripts/note.mjs');
-    // Without it, the same cell renders exactly as before the seam existed.
-    expect(skillBody(resolved())).not.toContain('scripts/');
   });
 
   it('names the declared capability, not a hardcoded one', () => {
@@ -62,23 +43,14 @@ describe('runtime-shim binding', () => {
       runtime: { capability: 'eventTap' },
     });
     expect(body).toContain('scripts/eventTap.mjs');
-    expect(body).not.toContain('note');
   });
 
   it('leaks NO absolute path, checkout path, or bin name into the body', () => {
-    const body = skillBody(resolved({ runtime: { capability: 'note' } }));
+    const body = skillBody(resolved({ runtime: { capability: 'eventTap' } }));
     // The whole point of the seam: the bin name has ONE home (the shim emitter),
     // never the projected markdown. A rebrand must not have to touch cells.
     expect(body).not.toContain(CLI_BIN);
     expect(body).not.toMatch(/(^|[\s`])\//m);
     expect(body).not.toContain('packages/');
-  });
-
-  it('keeps the composition provenance line alongside the binding', () => {
-    const body = skillBody(
-      resolved({ composedFrom: ['/dream'], runtime: { capability: 'note' } }),
-    );
-    expect(body).toContain('scripts/note.mjs');
-    expect(body).toContain('Composed from /dream.');
   });
 });

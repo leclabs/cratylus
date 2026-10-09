@@ -109,7 +109,7 @@ export interface CellTarget {
  * reviewer reading `settings.json` in a file whose subject is an omp extension, which
  * is why the corpus's own harness is the honest one to commit.
  */
-export const COMMITTED_TARGET_HARNESS = 'claude';
+export const COMMITTED_TARGET_HARNESS = 'omp';
 
 /**
  * Flatten every hook worker + rule body into its committed target.

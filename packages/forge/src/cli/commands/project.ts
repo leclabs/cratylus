@@ -23,14 +23,14 @@ import {
 import { fail, say, warn } from '../style.js';
 
 /** The harness `project` and `deploy` both default to. */
-const DEFAULT_HARNESS = 'claude';
+const DEFAULT_HARNESS = 'omp';
 
 export interface ProjectCmdOpts {
   /** Path to `cratylus.config.ts`; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
   /** Render-tree root; defaults to `<cwd>/.cratylus/<harness>`, the tree `deploy` reads. */
   out?: string;
-  /** Harness adapter name; defaults to `claude`. */
+  /** Harness adapter name; defaults to `omp`. */
   harness?: string;
   /** Also print one line per file rendered and per stale file pruned. */
   verbose?: boolean;

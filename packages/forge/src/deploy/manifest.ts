@@ -691,7 +691,7 @@ export function recordsHostEdits(harnessDir: string): boolean {
  *  blind to a harness whose agents carry another extension: a tree filtered by
  *  `.md` matches nothing, and nothing reads as "no orphans". */
 const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
-  agent: { dir: 'agents', extended: true },
+  agent: { dir: 'agent/agents', extended: true },
   skill: { dir: 'skills' },
   hooks: { dir: 'hooks' },
 };

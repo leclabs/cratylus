@@ -91,7 +91,7 @@ function emptyHost(): { env: NodeJS.ProcessEnv } {
 
 /** A render tree carrying the REAL projected thin shim — the emitter's own
  *  bytes, not a lookalike, so the gate is tested against what actually ships. */
-function treeWithShim(capability = 'note'): {
+function treeWithShim(skill = 'event-tap'): {
   skillsDir: string;
   agentsDir: string;
   srcDir: string;
@@ -99,18 +99,18 @@ function treeWithShim(capability = 'note'): {
 } {
   const src = tmp('forge-render-');
   const tree = buildRenderTree(src);
-  const srcDir = join(tree.skillsDir, capability);
+  const srcDir = join(tree.skillsDir, skill);
   mkdirSync(join(srcDir, 'scripts'), { recursive: true });
-  writeFileSync(join(srcDir, 'SKILL.md'), `# ${capability}\n`, 'utf-8');
+  writeFileSync(join(srcDir, 'SKILL.md'), `# ${skill}\n`, 'utf-8');
   writeFileSync(
-    join(srcDir, 'scripts', `${capability}.mjs`),
-    runtimeShimContent(capability),
+    join(srcDir, 'scripts', 'eventTap.mjs'),
+    runtimeShimContent('eventTap'),
     'utf-8',
   );
   return {
     ...tree,
     srcDir,
-    files: ['SKILL.md', `scripts/${capability}.mjs`],
+    files: ['SKILL.md', 'scripts/eventTap.mjs'],
   };
 }
 
@@ -152,25 +152,20 @@ describe('what counts as a placed CALL', () => {
     const { srcDir, files } = treeWithShim();
     writeFileSync(
       join(srcDir, 'SKILL.md'),
-      `# note\n\nRuns via \`${BIN} note show\`.\n`,
+      `# event-tap\n\nRuns via \`${BIN} eventTap\`.\n`,
       'utf-8',
     );
-    // THE DETECTOR IS NAME-AGNOSTIC and reports WHAT each shim spawns. It used to
-    // take the current bin and grep for it, which meant a shim spawning a RETIRED
-    // name matched nothing and the gate passed for having found nothing.
+    // The detector reports what each shim spawns.
     expect(shimsSpawningRuntimeBin(srcDir, files)).toEqual([
-      { rel: 'scripts/note.mjs', spawns: BIN },
+      { rel: 'scripts/eventTap.mjs', spawns: BIN },
     ]);
   });
 
   it('REFUSES a shim spawning a command this build does not ship', () => {
-    // The detector reports what a shim ACTUALLY spawns rather than searching for the
-    // current name, so a mismatch is a finding instead of an empty list. A gate that
-    // searched for the current name would go green on exactly this input.
     const { srcDir, files } = treeWithShim();
     writeFileSync(
-      join(srcDir, 'scripts', 'note.mjs'),
-      `import { spawnSync } from 'node:child_process';\nspawnSync('${FOREIGN}', ['note']);\n`,
+      join(srcDir, 'scripts', 'eventTap.mjs'),
+      `import { spawnSync } from 'node:child_process';\nspawnSync('${FOREIGN}', ['eventTap']);\n`,
       'utf-8',
     );
     const msg = assertShimsResolvable(srcDir, files, {});
@@ -229,7 +224,7 @@ describe('assertShimsResolvable', () => {
     expect(text).not.toBeNull();
     const msg = text as string;
     // what was placed, and that it is inert
-    expect(msg).toMatch(/scripts\/note\.mjs/);
+    expect(msg).toMatch(/scripts\/eventTap\.mjs/);
     expect(msg).toMatch(/inert/);
     // the probe that was actually run
     expect(msg).toMatch(new RegExp(`${BIN} --version`));
@@ -273,7 +268,7 @@ describe('assertShimsResolvable', () => {
   it('the stranded host is reported with the file `which` would have found', () => {
     const host = strandedHost();
     const probe = probeRuntimeBin({ env: host.env, fresh: true });
-    const msg = runtimeBinRefusal(probe, ['scripts/note.mjs']);
+    const msg = runtimeBinRefusal(probe, ['scripts/eventTap.mjs']);
     expect(msg).toContain(host.bin);
   });
 });
@@ -297,11 +292,11 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
 
   it('rc 2 + a refusal on the STRANDED host — the files still land and are recorded', () => {
     const tree = treeWithShim();
-    const claude = join(tmp('forge-host-'), '.claude');
+    const omp = join(tmp('forge-host-'), '.omp');
     const warns: string[] = [];
 
     const r = withHost(strandedHost().env, () =>
-      placeSkillsLocal(claude, tree, ['note'], {
+      placeSkillsLocal(omp, tree, ['event-tap'], {
         dry: false,
         log: () => {},
         warn: (l) => warns.push(l),
@@ -314,16 +309,18 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
     expect(r.report.warnings.join('\n')).toMatch(/deployed shims are inert/);
     // Testimony is still complete: the placer records what it laid down so the
     // next deploy can converge. A refusal must not cost attributability.
-    expect(r.report.written.note).toContain('skills/note/scripts/note.mjs');
+    expect(r.report.written['event-tap']).toContain(
+      'skills/event-tap/scripts/eventTap.mjs',
+    );
   });
 
   it('rc 0 and silence on the LIVE host — same tree, same shim', () => {
     const tree = treeWithShim();
-    const claude = join(tmp('forge-host-'), '.claude');
+    const omp = join(tmp('forge-host-'), '.omp');
     const warns: string[] = [];
 
     const r = withHost(liveHost().env, () =>
-      placeSkillsLocal(claude, tree, ['note'], {
+      placeSkillsLocal(omp, tree, ['event-tap'], {
         dry: false,
         log: () => {},
         warn: (l) => warns.push(l),
@@ -338,9 +335,9 @@ describe('placeSkillsLocal refuses a deploy that shipped inert shims', () => {
   it('a shim-free skill deploys clean even on the stranded host (no false conviction)', () => {
     const src = tmp('forge-render-');
     const tree = buildRenderTree(src);
-    const claude = join(tmp('forge-host-'), '.claude');
+    const omp = join(tmp('forge-host-'), '.omp');
     const r = withHost(strandedHost().env, () =>
-      placeSkillsLocal(claude, tree, ['wake'], silent),
+      placeSkillsLocal(omp, tree, ['probe'], silent),
     );
     expect(r.rc).toBe(0);
   });

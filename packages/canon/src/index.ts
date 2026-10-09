@@ -45,7 +45,6 @@ export default defineAgentPlugin({
   practices: PRACTICES,
   plumbing: PLUMBING,
   fragments: dir('./dimensions'),
-  agents: dir('./agents'),
   skills: dir('./skills'),
   hooks: dir('./hooks'),
 });

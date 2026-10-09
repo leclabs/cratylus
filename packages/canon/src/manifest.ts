@@ -49,7 +49,6 @@ import type {
 export const MANIFEST = {
   // Persona
   autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
-  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
   formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
   'audience-adaptation': {
     axis: 'Persona',
@@ -163,7 +162,6 @@ export type Agent = AgentOf<typeof MANIFEST>;
 
 // Persona
 export type Autonomy = Value<'autonomy'>;
-export type Role = Value<'role'>;
 export type Formality = Value<'formality'>;
 export type AudienceAdaptation = Value<'audience-adaptation'>;
 export type Transparency = Value<'transparency'>;
@@ -215,8 +213,6 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'eventTap',
   'design',
-  'plan',
-  'note',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */
@@ -345,6 +341,5 @@ export const CANONICAL_EVENTS = [
 /** One moment this corpus has a name for — the pivot every adapter maps FROM. */
 export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
 
-/** This corpus's `HookCell`: schema's shape, narrowed to the events above and to
- *  this manifest's dimensions, so a guard binding a misspelled one is a compile error. */
-export type HookCell = HookCellOf<CanonicalEvent, Dimension>;
+/** This corpus's hook-cell shape, narrowed to its declared event vocabulary. */
+export type HookCell = HookCellOf<CanonicalEvent>;

@@ -67,9 +67,8 @@ export function renderBody(spec: SkillCellSpec): string {
 }
 
 /**
- * THE ONE skill-cell body generator — the single home both the claude/omp
- * adapter skill projection (`@cratylus/forge/adapters/claude` `skillBody`)
- * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
+ * The one skill-cell body generator serves the OMP adapter skill projection
+ * and exemplify's standalone cell (`renderSkillCell`). A PURE MAP
  * from parts to markdown: a verb H1, optional intro prose, the fenced `text`
  * formal block, and an optional "Composed from …" provenance line. There is NO
  * parsing, NO ``ref`` projection, NO `## Harness` selection, NO `≜`-line strip

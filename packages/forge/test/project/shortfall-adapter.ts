@@ -1,36 +1,21 @@
-// A TEST-LOCAL ADAPTER for the degradation paths no supported harness
-// exhibits. claude and omp both scope every event they realize, and both preload
-// skills natively, so the `unscopable` loss and the declaration-only skill
-// closure have no witness among the harnesses that ship; and claude starts an
-// agent in a worktree, so the harness that cannot has no claude witness. The seam
-// still owns those laws, and a law with no witness is a law nobody would notice
-// breaking.
-//
-// It is claude's adapter with exactly three capabilities withdrawn:
-//
-//   scopes           — nothing. It fires every event claude fires and can narrow
-//                      none of them to an agent: `realizes ∧ ¬scopes`.
-//   preloadsSkills   — false. The closure is rendered as a `## Required reading`
-//                      section closing the definition instead of a `skills` field.
-//   startsInWorktree — false. An agent's `isolation` is not emitted.
-//
-// Nothing else differs, so a divergence from claude in a test is caused by one of
-// those three withdrawals and by nothing else.
+// A test-local adapter with three capabilities withdrawn from omp: it cannot scope
+// events, preload skills natively, or start an agent in a worktree. The adapter seam
+// must preserve those distinctions even though the shipped implementation has them.
 
-import { claudeHarnessAdapter } from '../../src/adapters/claude/render.js';
+import { ompHarnessAdapter } from '../../src/adapters/omp/render.js';
 import type { HarnessAdapter } from '../../src/core/harness-adapter.js';
 
 export const SHORTFALL = 'shortfall';
 
 export const shortfallAdapter: HarnessAdapter = {
-  ...claudeHarnessAdapter,
+  ...ompHarnessAdapter,
   name: SHORTFALL,
   preloadsSkills: false,
   startsInWorktree: false,
   scopes: () => false,
   agentDef: (agent, ctx) => {
     const { skills, isolation: _isolation, ...withoutSkills } = agent;
-    const { filename, content } = claudeHarnessAdapter.agentDef(
+    const { filename, content } = ompHarnessAdapter.agentDef(
       withoutSkills,
       ctx,
     );

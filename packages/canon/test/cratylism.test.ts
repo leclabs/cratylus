@@ -14,9 +14,7 @@
 //     (`tooling/cold-oracle`, `decodeCold`), run at authoring + CI,
 //     never coined by author or operator. It cannot run in a hermetic unit test (it
 //     calls the live model), so this gate asserts the structural leg and points to the
-//     oracle for the semantic one. The principle is additionally enforced EVERY TURN by
-//     PROJECTION: `cratylism` is in every canon-authoring agent's vector + `AGENTS.md`,
-//     so the discipline is in-context at decision time.
+//     cold-oracle for the semantic one.
 //
 // RATCHET — a shrink-only allowlist of known filename≠anchor divergences (a file whose
 // name is an English gloss, not its body's discovered anchor). Each must be reconciled
@@ -37,10 +35,7 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { adapterByName } from '@cratylus/forge/adapters/registry';
-import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
-import canonPlugin from '../src/index.js';
 import { DIMENSION_NAMES } from '../src/manifest.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -159,7 +154,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   it('every composite/rule/hook file basename == its declared identity (name/id)', async () => {
     const divergences: string[] = [];
     let checked = 0;
-    for (const kind of ['skills', 'agents', 'rules', 'hooks']) {
+    for (const kind of ['skills', 'rules', 'hooks']) {
       // Skill cells are self-contained dirs `skills/<name>/skill.ts`: the
       // discovered sign is the DIRECTORY name (`name==parent-dir`), not the
       // uniform `skill` basename. Every other kind is still a flat `<id>.ts`.
@@ -175,19 +170,13 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
           divergences.push(`${kind}/${p}: file '${file}' ≠ id '${id}'`);
       }
     }
-    // non-vacuous: population = 13 skills + 2 agents (mav, nico) + 1 rule + 4
-    // hooks = 20 declared identities actually extracted (not a glob silently
-    // matching nothing, nor a regex that stopped finding `name:`/`id:`).
-    expect(checked).toBeGreaterThan(19);
+    // Non-vacuous: the scan reaches surviving skill, rule and hook cells.
+    expect(checked).toBeGreaterThan(0);
     expect(divergences, divergences.join('\n')).toEqual([]);
   });
 
-  // The axiom ships by TWO routes: the dimension catalog (`cratylism.ts` → every
-  // agent whose held role selects it, once, as its engineering-principle) and the
-  // `preamble` some skills set (`genus/prime-principle.ts` → the skills whose laws
-  // name concepts by anchor). The preamble once carried a hand-transcribed copy, so
-  // cleaning the dimension left 26 artifacts shipping the superseded axiom while the
-  // suite stayed green. The carry is now BY IMPORT; these legs keep it that way.
+  // The axiom's intrinsic preamble carries its canonized value by import; skill laws
+  // that use it must not carry a separately transcribed copy.
   it('the intrinsic preamble carries the canonized σ* value verbatim', async () => {
     const { primePrinciple } = await import('../src/genus/prime-principle.js');
     const { cratylism } = await import(
@@ -211,49 +200,8 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     ).toContain(cratylism);
   });
 
-  // An agent holds the axiom through its role's engineering-principles, so a leading
-  // stamp on top of it would say the same thing twice in one Target. Measured on the
-  // projection itself: the count is a fact about the shipped bytes, not the source.
-  it('no projected agent carries the cratylism value more than once', async () => {
-    const { cratylism } = await import(
-      '../src/dimensions/engineering-principles/cratylism.js'
-    );
-    // Narrow the `Value<O>` union to its bare σ* arm with the corpus's own predicate
-    // (as the leg above does), so the count reads a string without a cast.
-    const { enforcing } = await import('@cratylus/schema');
-    if (enforcing(cratylism)) {
-      throw new Error(
-        'cratylism is declared ENFORCING — this leg counts its bare σ* body',
-      );
-    }
-    for (const harness of ['claude', 'omp'] as const) {
-      const { files } = await projectPluginSet({
-        plugins: [canonPlugin],
-        adapter: adapterByName(harness),
-        warn: () => {},
-      });
-      const agents = files.filter((f) => /^agents\/[^/]+$/.test(f.path));
-      expect(agents.length, `${harness}: no agent projected`).toBeGreaterThan(
-        0,
-      );
-      const counts = agents.map((f) => ({
-        path: f.path,
-        n: f.content.split(cratylism).length - 1,
-      }));
-      expect(
-        counts.filter((c) => c.n > 1),
-        `${harness}: agent(s) carrying the cratylism value more than once`,
-      ).toEqual([]);
-      // non-vacuous: the value does reach agents, so a zero count is not an absent axiom
-      expect(
-        counts.some((c) => c.n === 1),
-        `${harness}: no agent carries cratylism at all — the count proves nothing`,
-      ).toBe(true);
-    }
-  });
-
-  // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and foreign
-  // agents invoking a canon skill. Anything in it naming a workspace-local artifact is a
+  // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and skills
+  // invoking a canon cell. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
   // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`. The apex
   // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
@@ -336,11 +284,11 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   });
 
   // SCOPE FLOOR, projected-cell register. Dimension values and skill formalBlocks
-  // deploy into a CONSUMER's `.claude/`, where cratylus's tree is absent. Clean
-  // today — this leg keeps it that way, since nothing else in the suite would notice
-  // a `packages/…` path or a VISION/MODEL reference entering a cell. Completes the
-  // seam: intrinsic carry · consumer scaffold · projected cells all gated; only
-  // `rules/repo-preamble.ts` (cratylus-local, ρ=human) may name them.
+  // deploy into a consumer repo, where cratylus's tree is absent. Clean today — this
+  // leg keeps it that way, since nothing else in the suite would notice a `packages/…`
+  // path or a VISION/MODEL reference entering a cell. Completes the seam: intrinsic
+  // carry · consumer scaffold · projected cells all gated; only `rules/repo-preamble.ts`
+  // (cratylus-local, ρ=human) may name them.
   it('no projected cell names an cratylus-local path', async () => {
     const local = [
       'packages/',

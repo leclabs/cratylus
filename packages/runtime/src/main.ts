@@ -38,11 +38,7 @@ import { VERBS as DESIGN } from './capabilities/design/dispatch.js';
 import { dispatchDesign } from './capabilities/design/index.js';
 import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
-import { VERBS as NOTE } from './capabilities/note/dispatch.js';
-import { dispatchNote } from './capabilities/note/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
-import { VERBS as PLAN } from './capabilities/plan/dispatch.js';
-import { dispatchPlan } from './capabilities/plan/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
@@ -71,8 +67,6 @@ const SURFACES: {
     run: (argv) => JSON.stringify(dispatchEventTap(argv), null, 2),
   },
   design: { verbs: DESIGN, run: dispatchDesign },
-  plan: { verbs: PLAN, run: dispatchPlan },
-  note: { verbs: NOTE, run: dispatchNote },
 };
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */

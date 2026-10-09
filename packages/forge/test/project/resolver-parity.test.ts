@@ -123,8 +123,8 @@ async function soulOf(
 ): Promise<string> {
   const tree = await projectPluginSet({
     plugins: [plugin],
-    adapter: adapterByName('claude'),
-    ...(resolvedBodies ? { resolvedBodies } : {}),
+    adapter: adapterByName('omp'),
+    ...(resolvedBodies === undefined ? {} : { resolvedBodies }),
   });
   const soul = tree.files.find((f) => f.path === 'agents/parity.md');
   if (!soul) throw new Error('fixture: no agents/parity.md projected');

@@ -1,10 +1,18 @@
-// The omp (Oh My Pi) harness surface. PROJECTION-ONLY, like claude's.
+// The OMP-native projection and configurable behavior harness surfaces.
 
 // The anatomy→omp projection — the only one of the two harnesses whose
 // persona is a NATIVE artifact of the harness: one `agent/agents/<name>.md`
 // definition that omp discovers itself, read back by ONE generic launcher for a
 // main session. The composed Target body is harness-neutral, so the
 // `ResolvedSkill` shape is shared with the claude adapter.
+// The behavior runner binds caller-supplied model, peer and tool fixtures.
+export { createOmpAgentScenarioRunner } from './scenario.js';
+export type {
+  OmpBehaviorRecord,
+  OmpScenario,
+  OmpScenarioHarnessConfig,
+  OmpScenarioRunner,
+} from './scenario.js';
 export {
   OMP_AGENT_DEF_DIR,
   OMP_GUARDRAIL_MODULE,

@@ -26,7 +26,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { delegation } from '../src/dimensions/actions/delegation.js';
-import { deliver } from '../src/skills/deliver/skill.js';
 import { exemplify } from '../src/skills/exemplify/skill.js';
 import {
   type ArtClass,
@@ -113,9 +112,6 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
     expect(delegation).toMatch(/¬long-form-prose/);
     expect(delegation).toMatch(/human-project ↾ carried-deliverable/);
     expect(delegation).not.toMatch(/ρ=/);
-    expect(deliver.formalBlock).toContain('conform @ signify');
-    expect(deliver.formalBlock).toContain('¬conform(r) ⇒ ¬accept(unit)(r)');
-    expect(deliver.formalBlock).not.toMatch(/ρ\(/);
     expect(exemplify.formalBlock).toContain('conform(k)');
     expect(exemplify.formalBlock).toMatch(/valid\(k\)\s+⇔.*conform\(k\)/);
     expect(exemplify.formalBlock).not.toMatch(/readers|ρ\(/);
