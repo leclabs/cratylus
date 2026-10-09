@@ -35,7 +35,7 @@ Concepts change only by supersession: a new version with its reason, recorded in
 - **work package** · the smallest part of a cut's work given to one builder: a set of outputs, the files it writes, that no other builder changes, its commit history included, with the examples of every concept those outputs serve, so no two builders can collide; it is a vertical slice where it can be, satisfying whole examples on its own, and an output two slices both need becomes its own work package that both depend on. · _built from:_ example
 - **dependency graph** · the work packages of a cut and which must finish before which, with no cycles; they are dispatched in topological order, every work package on the same topological level in parallel, so the order and the parallelism are computed from the graph rather than decided again each time. · _built from:_ work package
 - **work** · what a cut produces, which its examples are checked against. · _primitive_
-- **illustration** · turning a cut's concepts into examples before any build: a reader who did not write the concepts writes them cold, and flags every term in their wording that is neither a concept of the conceptual design nor plain industry usage; the context's meaning-holder confirms the examples and settles the flagged terms, and the examples are frozen with a share held out, so every meaning question is settled before work starts. · _built from:_ concept, example, held-out example, freeze
+- **illustration** · turning a cut's concepts into examples before any build: a reader who did not write the concepts writes them cold, covering what must not happen as well as what must, for every kind of check, and flags every term in their wording that is neither a concept of the conceptual design nor plain industry usage; the context's meaning-holder confirms the examples and settles the flagged terms, and the examples are frozen with a share held out, so every meaning question is settled before work starts. · _built from:_ concept, example, held-out example, freeze
 - **cut** · the concepts of one context realized together as one change, closed over what they depend on and sized to one reviewable change; intent that spans contexts becomes one cut per context, joined by contracts. · _built from:_ bounded context, contract
 - **retirement** · a removal the conceptual design names, whose example is that the retired thing is absent from what the product delivers, so nothing is removed by guesswork and nothing retired survives. · _built from:_ example
 - **context map** · the contexts of a conceptual design, which depends on which, and the contracts between them, so work that spans contexts has a stated place and nothing crosses a boundary unannounced. · _built from:_ bounded context, contract
@@ -52,10 +52,13 @@ Concepts change only by supersession: a new version with its reason, recorded in
 1. **example substrate** (done): example, held-out example, freeze of examples.
 2. **workflow execution:** roles, lead, builder, reviewer, build, work package, judgment, whole check,
    proportionality, meaning question.
-3. **capability fidelity and capability port** (delivery context): one implementation behind the cratylus command line, reached in omp through a thin extension adapter; the prerequisite of cut 4.
-4. **concept journal and meaning roles:** concept journal, conceptual design, freeze of concepts, decision
+3. **never assertions** (follow-up to cut 2, small): the example concept gains the rule that an assertion
+   that something must never happen holds only when it holds in every run, and the example substrate gains an
+   approved example for it, judged against the never assertions cut 2 built.
+4. **capability fidelity and capability port** (delivery context): one implementation behind the cratylus command line, reached in omp through a thin extension adapter; the prerequisite of cut 4.
+5. **concept journal and meaning roles:** concept journal, conceptual design, freeze of concepts, decision
    rights, architect, illustrator, meaning-holder, operator, illustration, context map. On completion, this
    file is imported into the concept journal and retired.
-5. **delivery:** owned root, upgrade, install and uninstall at user scope, and retiring the event tap.
-6. **personas:** mav, nico and kino on the new roles (corpus context); kino holds the platform and production
+6. **delivery:** owned root, upgrade, install and uninstall at user scope, and retiring the event tap.
+7. **personas:** mav, nico and kino on the new roles (corpus context); kino holds the platform and production
    contexts of a film-production consumer.
