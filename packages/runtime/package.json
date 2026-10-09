@@ -50,6 +50,10 @@
     "./verb-flags": {
       "types": "./dist/verb-flags.d.ts",
       "import": "./dist/verb-flags.js"
+    },
+    "./example-substrate": {
+      "types": "./dist/example-substrate.d.ts",
+      "import": "./dist/example-substrate.js"
     }
   },
   "files": ["dist"],

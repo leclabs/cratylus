@@ -183,6 +183,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).
   'forge/adapters/omp.test.ts': 'BEHAVIORAL',
+  // Runs a real OMP agent with local model/stand-in peers, records calls, and
+  // asserts its behavior over repeated runs through runtime's example checker.
+  'forge/adapters/omp-scenario.test.ts': 'BEHAVIORAL',
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
@@ -255,6 +258,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/stories/E6/S7.opt-in-lossless.test.ts': 'BEHAVIORAL',
 
   // ── runtime ──────────────────────────────────────────────────────────
+  // Checks execution/output/agent/rubric examples plus held-out secrecy and
+  // capability-protected red-first freeze behavior using fixtures it supplies.
+  'runtime/example-substrate.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
   // drives the `design` verb surface over temporary git repositories it builds and
   // merges itself; its refusals ARE its fixtures.

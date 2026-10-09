@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 // runtime is a library: one entry per `exports` subpath, each with its .d.ts, so a
-// consumer imports the contracts (`.`, `./events`, `./ports/event-tap`), a
+// consumer imports the contracts (`.`, `./events`, `./ports/event-tap`, `./example-substrate`), a
 // capability module, the capability keyspace, or `capabilityCommands` (`./main`) with types
 // intact. The executable is the installable CLI package's; this one ships no bin.
 export default defineConfig([
@@ -16,6 +16,7 @@ export default defineConfig([
       'verb-flags': 'src/verb-flags.ts',
       events: 'src/events.ts',
       'ports/event-tap': 'src/ports/event-tap.ts',
+      'example-substrate': 'src/example-substrate.ts',
       'capabilities/event-tap': 'src/capabilities/event-tap/index.ts',
     },
     format: ['esm'],
