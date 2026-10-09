@@ -51,7 +51,7 @@ Concepts change only by supersession: a new version with its reason, recorded in
 1. **example substrate** (done): example, held-out example, freeze of examples.
 2. **workflow execution:** roles, lead, builder, reviewer, build, work package, judgment, whole check,
    proportionality, meaning question.
-3. **capability fidelity** (delivery context): capabilities reach omp as extensions, the prerequisite of cut 4.
+3. **capability fidelity and capability port** (delivery context): one implementation behind the cratylus command line, reached in omp through a thin extension adapter; the prerequisite of cut 4.
 4. **concept journal and meaning roles:** concept journal, conceptual design, freeze of concepts, decision
    rights, architect, illustrator, meaning-holder, operator, illustration, context map. On completion, this
    file is imported into the concept journal and retired.

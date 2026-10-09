@@ -8,7 +8,11 @@ omp is the one supported harness. Concepts change only by supersession until the
 - **capability fidelity** · a capability reaches the harness at the highest fidelity the harness offers: its
   own native facility first, then cratylus's own extension to the harness, and prose only where neither is
   possible; a skill carries only when to reach for a capability, never a reimplementation of it in prose, so
-  agents call a capability as a tool rather than follow instructions about it. · _primitive_
+  agents call a capability as a tool rather than follow instructions about it. · _built from:_ capability port
+- **capability port** · each capability has one implementation in cratylus, reachable from the cratylus
+  command line; a harness reaches it through a thin adapter that calls that implementation and adds no
+  behavior of its own, so every harness gets the same capability and supporting another harness never
+  reimplements one. · _primitive_
 - **owned root** · everything cratylus places on a host lives under one root it owns, and the harness's own
   surfaces only refer into it, so what cratylus placed is known by construction, never inferred file by file.
   · _primitive_
@@ -18,5 +22,5 @@ omp is the one supported harness. Concepts change only by supersession until the
 
 ## Contracts with other contexts
 
-- **workflow → delivery:** the concept journal is reachable in omp as a tool that cratylus adds to the harness
-  as an extension, not as prose a skill restates.
+- **workflow → delivery:** the concept journal is reachable from the cratylus command line, and in omp as a
+  tool that a cratylus extension adds as a thin adapter over that same command, not as prose a skill restates.
