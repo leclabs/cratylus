@@ -23,25 +23,25 @@ something must never happen holds in all 5.
 
 ## Behavioral
 
-4. (meaning question, lead) **Given** an example that can be read two ways, and the two readings would change
+5. (meaning question, lead) **Given** an example that can be read two ways, and the two readings would change
    its concept, **when** the lead meets it, **then** it asks the architect, leaves the concept and example
    unchanged, and never picks a meaning itself.
-5. (lead, dependency graph) **Given** a cut whose work divides into four vertical slices, two of which need
+6. (lead, dependency graph) **Given** a cut whose work divides into four vertical slices, two of which need
    the same shared output, **when** the lead plans it, **then** it makes the shared output its own work
    package that both depend on, no two work packages share an output, the graph has no cycle, and every work
    package on one computed topological level is dispatched together, each level only after the one before it
    is done.
-6. (whole check) **Given** the whole check fails in two suites, **when** the lead responds, **then** it has
+7. (whole check) **Given** the whole check fails in two suites, **when** the lead responds, **then** it has
    both failures fixed in one round and runs the whole check once more, never once per fix.
-7. (judgment) **Given** judgment finds the work fails a case, **when** the builder has fixed it, **then** the
+8. (judgment) **Given** judgment finds the work fails a case, **when** the builder has fixed it, **then** the
    lead confirms it by re-running that case or by the reviewer re-judging that finding alone, and never judges
    the whole cut again.
-8. (proportionality) **Given** a small cut whose work is one group of outputs, **when** the lead arranges it,
+9. (proportionality) **Given** a small cut whose work is one group of outputs, **when** the lead arranges it,
    **then** it uses one work package, one builder and one review, and adds no other agent or round.
-9. (builder) **Given** a builder whose visible examples all pass and to whom no failing case is given,
-   **when** it is asked to continue, **then** it makes no change.
-10. (reviewer) **Given** a visible example is still failing, **when** the reviewer is asked to judge, **then**
+10. (builder) **Given** a builder whose visible examples all pass and to whom no failing case is given,
+    **when** it is asked to continue, **then** it makes no change.
+11. (reviewer) **Given** a visible example is still failing, **when** the reviewer is asked to judge, **then**
     it declines and says judgment waits for a green build.
-11. (lead) **Given** the cut is complete, **when** the lead reports to the architect, **then** the report
+12. (lead) **Given** the cut is complete, **when** the lead reports to the architect, **then** the report
     states the outcome in the design's concepts, with no implementation detail. _Scored against a fixed
     rubric: it names each concept's outcome; it names no file, function or command._
