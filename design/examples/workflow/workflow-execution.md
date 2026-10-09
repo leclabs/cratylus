@@ -1,8 +1,8 @@
 # Examples · cut 2a · workflow execution
 
 Context: workflow. Concepts: roles, lead, builder, reviewer, build, work package, judgment, whole check,
-proportionality, meaning question and dependency graph (see `design/workflow.md`). Changed only
-with the meaning-holder's approval, with a reason.
+proportionality, meaning question and dependency graph (see `design/workflow.md`). Confirmed by the
+meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
 
 **Structural** examples are properties the harness or the freeze guarantees, checked once, deterministically.
 **Behavioral** examples are decisions that need judgment: the agent runs 5 times in a fixed scenario with
