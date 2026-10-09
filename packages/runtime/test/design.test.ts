@@ -289,7 +289,6 @@ describe('design — divergence and convergence across a merge', () => {
       '  leaf — diverged, 1 version and a retraction',
     );
   });
-
 });
 
 describe('design — the header of a repository with nothing committed', () => {
@@ -440,7 +439,6 @@ describe('design — when the store itself fails', () => {
     );
   });
 });
-
 
 describe('design — the flags each verb takes', () => {
   it('REFUSES, on every verb, each flag it does not take, a single-dash one too, in one refusal naming its nearest and every flag it takes, and writes nothing', () => {

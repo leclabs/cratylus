@@ -200,7 +200,6 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     ).toContain(cratylism);
   });
 
-
   // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and skills
   // invoking a canon cell. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very

@@ -49,9 +49,9 @@ describe('from an omp invocation context', () => {
       '--settings',
       settings,
     ];
-    expect(() => dispatchEventTap(argv, { config: CONFIG, env: OMP_ENV })).toThrow(
-      /^eventTap install: .*omp.*no event-tap strategy/,
-    );
+    expect(() =>
+      dispatchEventTap(argv, { config: CONFIG, env: OMP_ENV }),
+    ).toThrow(/^eventTap install: .*omp.*no event-tap strategy/);
     expect(existsSync(join(settings, '..'))).toBe(false);
     expect(existsSync(sink)).toBe(false);
   });

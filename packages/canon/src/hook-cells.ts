@@ -13,6 +13,4 @@ import { deployDriftNotice } from './hooks/deploy-drift-notice.js';
 import type { HookCell } from './manifest.js';
 
 /** The harness-substrate hook cells forge projects into the host config + hooks/<id>/. */
-export const harnessHookCells: readonly HookCell[] = [
-  deployDriftNotice,
-];
+export const harnessHookCells: readonly HookCell[] = [deployDriftNotice];

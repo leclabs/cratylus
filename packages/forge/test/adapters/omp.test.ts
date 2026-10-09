@@ -127,7 +127,6 @@ describe('omp agent definition', () => {
     }
   });
 
-
   it('survives a description carrying the characters YAML reserves', () => {
     // A plain scalar may not contain `: `, and a real corpus description does
     // ("…and canon: dimension catalogs") — unquoted, the document is a scanner
@@ -161,8 +160,6 @@ describe('omp agent definition', () => {
     expect(out).toContain('delivery ⟨end-to-end integrated green⟩');
   });
 });
-
-
 
 /**
  * A DEPLOYED omp home, laid out by the adapter's OWN destination map: the
@@ -461,7 +458,6 @@ describe('omp launch spec', () => {
       }
     });
 
-
     it('inlines none under `--no-skills`, and warns once under `--skills`', () => {
       // `--no-skills` is omp's own "load none", so the session starts with none
       // — not with bodies it would never have loaded, nor with references to them.
@@ -529,7 +525,4 @@ describe('omp launch spec', () => {
       expect(() => readFileSync(home.reads)).toThrow();
     });
   });
-
-
-
 });

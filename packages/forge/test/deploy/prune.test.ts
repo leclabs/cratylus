@@ -41,9 +41,6 @@ function renderTreeExt(
   return { agentsDir, skillsDir };
 }
 
-
-
-
 describe('deploy prune — OMP convergence to the render tree', () => {
   it('NEUTRAL ROOT: a retired skill is swept out of `../.agents`, foreign files spared', () => {
     const omp = adapterByName('omp');
@@ -84,5 +81,4 @@ describe('deploy prune — OMP convergence to the render tree', () => {
       existsSync(join(home, '.agents', 'skills', 'probe', 'SKILL.md')),
     ).toBe(true);
   });
-
 });

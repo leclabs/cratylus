@@ -42,7 +42,7 @@ export type ProjectionFact =
   /** This harness's hook-config artifact (`settings.json` / `hooks.json`). */
   | 'harness-hooks-file'
   /** The exit status `deploy --check` returns when it FOUND drift. */
-  | 'deploy-check-drift-code'
+  | 'deploy-check-drift-code';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 

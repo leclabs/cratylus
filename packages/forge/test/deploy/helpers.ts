@@ -64,4 +64,3 @@ export function buildRenderTree(root: string): {
   writeFileSync(join(memory, 'SKILL.md'), '# memory\n', 'utf-8');
   return { agentsDir, skillsDir };
 }
-

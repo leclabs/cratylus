@@ -15,7 +15,6 @@ describe('bound — the harness realizes every event at the composed scope', () 
     agents: ['example-agent'],
   } as const;
 
-
   it('omp carries the same event with no loss', () => {
     const r = realizationOf(constraint, ompHarnessAdapter);
     expect(r.mode).toBe('bound');
@@ -44,7 +43,6 @@ describe('steer — no peer for the event at all: degrade, do not fail', () => {
     expect(loss?.warning).toContain('file.read.pre'); // e
     expect(loss?.warning).toContain('omp'); // adapter
   });
-
 });
 
 describe('steer — fires it but cannot NAME the agent: degrade, do not widen', () => {

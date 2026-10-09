@@ -41,7 +41,6 @@ const plugin: ProjectablePlugin = {
   name: 'fixture-facts',
   manifest: FIXTURE_MANIFEST,
   hooks: join(here, 'fixtures-facts', 'hooks'),
-
 };
 // ── (1) the bin name is DERIVED from the key npm reads ──────────────────────────
 
@@ -129,7 +128,6 @@ describe('projectionFacts describes OMP', () => {
 
 // ── (3) OMP reaches the emitted bytes ───────────────────────────────────────────
 
-
 async function projectFixture() {
   const tree = await projectPluginSet({
     plugins: [plugin],
@@ -154,7 +152,6 @@ describe('the OMP projector hands facts to worker templates', () => {
       adapterByName('omp').hooksFile,
     );
   });
-
 
   it('emits no unresolved fact placeholder', async () => {
     // `{{scopeDir}}` is the one placeholder a scoped artifact ships on purpose —

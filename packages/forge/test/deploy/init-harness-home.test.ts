@@ -25,8 +25,12 @@ describe('scaffoldProject harnessHome', () => {
     expect(r.skills).toBe(2);
     expect(existsSync(join(target, '.omp', 'agents', 'mav.md'))).toBe(true);
     expect(existsSync(join(target, '.omp', 'agents', 'nico.md'))).toBe(true);
-    expect(existsSync(join(target, '.omp', 'skills', 'memory', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(target, '.omp', 'skills', 'wake', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(target, '.omp', 'skills', 'memory', 'SKILL.md')),
+    ).toBe(true);
+    expect(existsSync(join(target, '.omp', 'skills', 'wake', 'SKILL.md'))).toBe(
+      true,
+    );
     expect(existsSync(join(target, 'AGENTS.md'))).toBe(true);
     expect(existsSync(join(target, 'plans'))).toBe(false);
   });

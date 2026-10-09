@@ -46,7 +46,6 @@ function file(name: string, content: string | null) {
   };
 }
 
-
 // ── omp: config.yml ──────────────────────────────────────────────────────────
 
 // The default preset's own layout, written out the way install writes it — literal, so
@@ -628,7 +627,6 @@ describe('install — the status line', () => {
     });
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
-
 
   describe('omp', () => {
     const seed = (host: string) => {

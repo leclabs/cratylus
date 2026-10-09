@@ -251,7 +251,6 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 /** omp's own default model role — the fallback every definition's `model` ends in. */
 const OMP_DEFAULT_ROLE = 'default';
 
-
 /** The host config files omp reads its settings from — the ONE spelling, shared by
  *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
  *  config.yml is absent: omp reads the first that exists and never merges the two. */

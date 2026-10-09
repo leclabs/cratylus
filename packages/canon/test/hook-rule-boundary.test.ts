@@ -193,9 +193,7 @@ const ACCEPT_RATCHET: ReadonlyArray<{ slug: string; leg: Leg }> = [];
 describe('S4 hook/rule boundary — first-class source cells, projected targets', () => {
   it('every shell-hook family is a hook cell (behavior-in-cell)', async () => {
     const ids = (await allHookCells()).map((c) => c.id).sort();
-    expect(ids).toEqual([
-      'deploy-drift-notice',
-    ]);
+    expect(ids).toEqual(['deploy-drift-notice']);
   });
 
   it('the only AGENTS.md target is the repo-root rule; every other tracked AGENTS.md is out-of-scope', async () => {

@@ -22,5 +22,3 @@ describe('parseCompanions', () => {
     expect(parseCompanions(null)).toBeUndefined();
   });
 });
-
-

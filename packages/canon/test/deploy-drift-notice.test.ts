@@ -375,4 +375,3 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     expect(clean, `clean path took ${clean}ms`).toBeLessThan(3_000);
   });
 });
-

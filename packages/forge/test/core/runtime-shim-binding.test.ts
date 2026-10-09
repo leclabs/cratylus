@@ -30,13 +30,11 @@ function resolved(over: Partial<ResolvedSkill> = {}): ResolvedSkill {
 }
 
 describe('runtime-shim binding', () => {
-
   it('emits NO binding when runtime is absent — the unchanged path', () => {
     const body = renderSkillCellBody({ verb: 'Wake', block: BLOCK });
     expect(body).not.toContain('scripts/');
     expect(body).not.toMatch(/Runtime capability/);
   });
-
 
   it('names the declared capability, not a hardcoded one', () => {
     const body = renderSkillCellBody({
@@ -55,5 +53,4 @@ describe('runtime-shim binding', () => {
     expect(body).not.toMatch(/(^|[\s`])\//m);
     expect(body).not.toContain('packages/');
   });
-
 });

@@ -26,9 +26,9 @@ import {
   resolveConfig,
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
+import { answers, fixturePractices } from '../deploy/helpers.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import { capture } from './streams.js';
-import { answers, fixturePractices } from '../deploy/helpers.js';
 
 /** The real canon corpus dimensions dir — the default plugin's fragment source. */
 const CANON_DIMENSIONS = fileURLToPath(

@@ -91,7 +91,6 @@ async function run(
   return { code, out: out.join(''), err: err.join('') };
 }
 
-
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   eventTap: EVENT_TAP,
   design: DESIGN,
@@ -281,5 +280,4 @@ describe('the capability commands refuse a word the verb does not take', () => {
       `cratylus ${refused('design', 'show', ['--bogus'], DESIGN.show, ['extra'])}\n`,
     );
   });
-
 });

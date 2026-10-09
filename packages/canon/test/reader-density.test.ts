@@ -70,8 +70,8 @@ import {
 } from '@cratylus/forge/validate';
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
-import type { Dimension, Value } from '../src/manifest.js';
 import { describe, expect, it } from 'vitest';
+import type { Dimension, Value } from '../src/manifest.js';
 import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
@@ -108,7 +108,6 @@ const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
  * (engineering-principle, output-format) pairs that contradict — one dimension
  * asserting reader=LLM while the other binds "for a human reader".
  */
-
 
 // ── surface enumeration (source grain — the projections follow the source) ──────
 
@@ -267,7 +266,6 @@ const OWNED_CLASSES: readonly ArtClass[] = [
   'rule-target-content',
 ];
 
-
 /** Recover {slug, definiens} from a dimension value's `"<slug> ≜ <definiens>"` body. */
 function splitBody(v: string): { slug: string; definiens: string } {
   const i = v.indexOf(' ≜ ');
@@ -289,7 +287,6 @@ function splitBody(v: string): { slug: string; definiens: string } {
 function slugOf(v: Value<Dimension>): string {
   return splitBody(bodyOf(v)).slug;
 }
-
 
 // ── the gate ────────────────────────────────────────────────────────────────────
 
@@ -423,7 +420,6 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
       ).toBe('human');
     }
   });
-
 
   // ── NON-VACUOUS: the gate BITES, and the exemption is the model's ─────────────
   const humanSeed =

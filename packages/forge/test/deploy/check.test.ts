@@ -29,8 +29,8 @@ import {
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import { deploySingle } from '../../src/deploy/index.js';
 import { runDeploy } from '../../src/cli/commands/deploy.js';
+import { deploySingle } from '../../src/deploy/index.js';
 import {
   type AuditOpts,
   auditLocal,
@@ -186,7 +186,9 @@ describe('auditLocal — CONVICTION', () => {
     expect(stale[0]?.missing).toContain(LIVE);
     expect(stale[0]?.superseded).toContain(SUPERSEDED);
     // `mav` did not drift and is not accused.
-    expect(rep.divergences.map((d) => d.path)).not.toContain(OMP.agentRel('mav'));
+    expect(rep.divergences.map((d) => d.path)).not.toContain(
+      OMP.agentRel('mav'),
+    );
   });
 
   it('reports a rendered artifact that never landed as ABSENT', () => {
@@ -199,7 +201,6 @@ describe('auditLocal — CONVICTION', () => {
     ]);
     expect(absent[0]?.gist).toMatch(/wake/);
     expect(rep.divergences.some((d) => d.kind === 'stale')).toBe(false);
-
   });
 
   it('reports a file we did not render as FOREIGN, never as ours, and never deletes it', () => {
@@ -268,11 +269,7 @@ describe('auditLocal — EXONERATION', () => {
       (f) => `${f}:${readFileSync(join(h.home, f)).toString('base64')}`,
     );
     for (const kind of ['agent', 'skill'] as const) {
-      audit(
-        h,
-        kind,
-        kind === 'agent' ? ['mav', 'nico'] : ['memory', 'wake'],
-      );
+      audit(h, kind, kind === 'agent' ? ['mav', 'nico'] : ['memory', 'wake']);
     }
     const after = allFiles(h.home).map(
       (f) => `${f}:${readFileSync(join(h.home, f)).toString('base64')}`,
@@ -296,7 +293,12 @@ describe('renderedFiles agrees with the placers own testimony', () => {
     };
     const a = placeAgentsLocal(harnessDir, agentsDir, ['mav', 'nico'], layout);
     expect(
-      renderedFiles('agent', { agentsDir, skillsDir }, ['mav', 'nico'], OMP_LAYOUT)
+      renderedFiles(
+        'agent',
+        { agentsDir, skillsDir },
+        ['mav', 'nico'],
+        OMP_LAYOUT,
+      )
         .map((f) => f.rel)
         .sort(),
     ).toEqual(Object.values(a.report.written).flat().sort());
@@ -307,12 +309,16 @@ describe('renderedFiles agrees with the placers own testimony', () => {
       layout,
     );
     expect(
-      renderedFiles('skill', { agentsDir, skillsDir }, ['memory', 'wake'], OMP_LAYOUT)
+      renderedFiles(
+        'skill',
+        { agentsDir, skillsDir },
+        ['memory', 'wake'],
+        OMP_LAYOUT,
+      )
         .map((f) => f.rel)
         .sort(),
     ).toEqual(Object.values(s.report.written).flat().sort());
   });
-
 });
 
 describe('cratylus deploy --check', () => {

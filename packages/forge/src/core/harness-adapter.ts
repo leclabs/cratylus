@@ -53,7 +53,6 @@ export const SESSION_SCOPE = '_session';
  */
 export const ENFORCING_STAGE_DIR = 'enforcing';
 
-
 /**
  * The harness-NEUTRAL agent root, relative to a scope's home — the one directory
  * name shared across vendors.

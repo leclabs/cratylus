@@ -38,7 +38,6 @@ const outputFormatV: OutputFormat = 'code ≜ emit source';
 // @ts-expect-error — an `actions` value is not an `output-format` value.
 const fenceClash: OutputFormat = actionsA;
 
-
 // ── NEGATIVE 3: a SET dimension given a SCALAR ──────────────────────────────────
 
 // @ts-expect-error — `guardrails` is a set; a single value is not a `Guardrails[]`.
@@ -114,7 +113,6 @@ const missingKey: Agent = {
   selfEvaluation: baseFixture.selfEvaluation,
 };
 void missingKey;
-
 
 // @ts-expect-error — `actions` is a set; a scalar value in the Agent literal is rejected.
 const agentSetFault: Agent = { ...baseFixture, actions: actionsA };

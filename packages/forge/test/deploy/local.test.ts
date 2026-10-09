@@ -1,6 +1,5 @@
 // Local placers overwrite rendered files, leave unrelated files alone, and honor dry runs.
 
-
 import {
   chmodSync,
   existsSync,
@@ -51,9 +50,6 @@ describe('placeAgentsLocal', () => {
   });
 });
 
-
-
-
 describe('placeSkillsLocal', () => {
   it('copies each skill dir SKILL.md to the host skills root', () => {
     const src = tmp('forge-render-');
@@ -89,10 +85,7 @@ describe('placeSkillsLocal', () => {
     const destScript = join(omp, 'skills', 'recur', 'scripts', 'x.mjs');
     expect(readFileSync(destScript, 'utf-8')).toBe('#!/usr/bin/env node\n');
     expect(
-      readFileSync(
-        join(omp, 'skills', 'recur', 'references', 'y.md'),
-        'utf-8',
-      ),
+      readFileSync(join(omp, 'skills', 'recur', 'references', 'y.md'), 'utf-8'),
     ).toBe('# y\n');
     // (2) exec bit preserved on scripts/*
     expect(statSync(destScript).mode & 0o111).not.toBe(0);
@@ -128,4 +121,3 @@ describe('placeSkillsLocal', () => {
     expect(existsSync(join(omp, 'skills', 'memory', 'logo.txt'))).toBe(true);
   });
 });
-

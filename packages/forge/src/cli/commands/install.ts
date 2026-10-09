@@ -613,7 +613,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     // it adopts.
     const migrating = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
 
-
     const apply = async (
       dry: boolean,
     ): Promise<{ rc: number; found: Findings }> => {
@@ -1298,4 +1297,3 @@ function seedModelRoles(
     ].join('; '),
   });
 }
-

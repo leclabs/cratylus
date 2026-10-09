@@ -989,7 +989,6 @@ export async function projectPluginSet(
     ? discoveredHooks.filter((cell) => selection.hooks.has(cell.id))
     : discoveredHooks;
 
-
   // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A cell bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
   // since bytes beside no registration read as coverage and deliver none, and the

@@ -116,7 +116,6 @@ const CONSUMERS = [
 const read = (rel: string): string =>
   readFileSync(join(repoRoot, rel), 'utf-8');
 
-
 /** The command's ONE home read the way npm reads it — the `bin` key, no compiler in
  *  the loop. A shell worker cannot import the constant, so a worker that SPELLS the
  *  name is held against this.

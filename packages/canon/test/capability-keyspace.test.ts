@@ -188,7 +188,9 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // module added to the pin is still judged by the biconditional below (verified:
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
-    expect(CAPABILITIES).toEqual(expect.arrayContaining(['eventTap', 'design']));
+    expect(CAPABILITIES).toEqual(
+      expect.arrayContaining(['eventTap', 'design']),
+    );
     expect(BASENAMES).toEqual(expect.arrayContaining(['event-tap', 'design']));
     // The subset axis rests on the surviving skill cell that declares a capability.
     // One witness is the floor below which a dark read could pass it vacuously.

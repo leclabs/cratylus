@@ -36,8 +36,12 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
       const f = await firstExport<string>(join(srcRoot, rel));
-      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(0);
-      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(f);
+      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(
+        0,
+      );
+      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(
+        f,
+      );
     }
   });
 

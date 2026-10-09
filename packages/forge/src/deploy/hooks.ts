@@ -28,7 +28,10 @@ import { dirname, posix, resolve as resolvePath } from 'node:path';
 // wanted here — the staging dir the projection writes, and the deploy-time
 // self-reference substitution — and both must be the same constant every
 // stage reads.
-import { ENFORCING_STAGE_DIR, SCOPE_DIR_TOKEN } from '../core/harness-adapter.js';
+import {
+  ENFORCING_STAGE_DIR,
+  SCOPE_DIR_TOKEN,
+} from '../core/harness-adapter.js';
 import { settingsJson } from './settings-json.js';
 import {
   type PlaceOpts,

@@ -83,7 +83,6 @@ describe('omp — `autoloadSkills` carries the closure', () => {
   });
 });
 
-
 describe('a harness with no preload field — the closure degrades to a declaration', () => {
   // OMP supports native skill preloading; a local adapter without that field
   // remains the witness for the declaration fallback.
@@ -149,5 +148,4 @@ describe('a harness that cannot start an agent in a worktree — the declaration
     expect(isolationWarnings(warnings)[0]).toContain("'walled'");
     expect(fence(agent('walled'))).not.toMatch(/^isolation:/m);
   });
-
 });

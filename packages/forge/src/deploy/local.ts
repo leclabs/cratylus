@@ -32,7 +32,10 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
-import { ENFORCING_STAGE_DIR, SCOPE_DIR_TOKEN } from '../core/harness-adapter.js';
+import {
+  ENFORCING_STAGE_DIR,
+  SCOPE_DIR_TOKEN,
+} from '../core/harness-adapter.js';
 import { staleFiles } from '../prune/index.js';
 import {
   assertShimsResolvable,

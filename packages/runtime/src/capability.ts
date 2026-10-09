@@ -2,7 +2,6 @@
 // The runtime capability keyspace.
 // ─────────────────────────────────────────────────────────────────────────────
 
-
 export const CAPABILITIES = ['eventTap', 'design'] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];

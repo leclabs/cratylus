@@ -15,7 +15,6 @@ import type { Skill } from '@cratylus/schema';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** A corpus cell that declares a `runtime` capability — a shim carrier, and the
@@ -130,4 +129,3 @@ describe('runtime shim is emitted for OMP', () => {
     expect(ompShim).toBe(emitted(CAPABILITY));
   });
 });
-
