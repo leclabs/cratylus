@@ -145,8 +145,8 @@ async function runCheck(example: Example): Promise<CheckResult> {
           };
     }
     case 'rubric': {
-      const output = await check.produce();
       const rubric = deepFreeze(clone(check.rubric));
+      const output = await check.produce();
       const maxScore = rubric.reduce(
         (sum, criterion) => sum + criterion.points,
         0,
@@ -389,8 +389,8 @@ export type HeldOutJudgmentAccess = Readonly<{
   replaceRevealed: (id: string, replacement: Example) => void;
 }>;
 export type HeldOutSet = Readonly<{
-  builder: HeldOutBuilderAccess;
-  judgment: HeldOutJudgmentAccess;
+  builderAccess: () => HeldOutBuilderAccess;
+  judgmentAccess: () => HeldOutJudgmentAccess;
 }>;
 type HeldOutState = {
   hidden: Example[];
@@ -428,7 +428,10 @@ export function createHeldOutSet(
     replaceRevealed: (id, replacement) =>
       replaceHiddenFailure(state, id, replacement),
   });
-  return Object.freeze({ builder, judgment });
+  return Object.freeze({
+    builderAccess: () => builder,
+    judgmentAccess: () => judgment,
+  });
 }
 async function judgeHiddenCases(state: HeldOutState): Promise<HeldOutReport> {
   const results: { status: CheckResult['status'] }[] = [];
@@ -527,10 +530,23 @@ function clone<T>(value: T): T {
   }
   return value;
 }
-function deepFreeze<T>(value: T): T {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-    for (const entry of Object.values(value)) deepFreeze(entry);
-    Object.freeze(value);
+function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
+  const isReference =
+    (typeof value === 'object' && value !== null) ||
+    typeof value === 'function';
+  if (!isReference) return value;
+  const reference = value as object;
+  if (seen.has(reference)) return value;
+  seen.add(reference);
+  for (const key of Reflect.ownKeys(reference)) {
+    const descriptor = Object.getOwnPropertyDescriptor(reference, key);
+    if (!descriptor) continue;
+    if ('value' in descriptor) deepFreeze(descriptor.value, seen);
+    else {
+      if (descriptor.get) deepFreeze(descriptor.get, seen);
+      if (descriptor.set) deepFreeze(descriptor.set, seen);
+    }
   }
+  Object.freeze(reference);
   return value;
 }

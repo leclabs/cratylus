@@ -16,8 +16,9 @@ afterEach(() => {
 });
 
 async function modelEndpoint(
-  action: 'peer' | 'lookup' | 'none' = 'peer',
+  action: 'peer' | 'lookup' | 'scenario' | 'none' = 'peer',
   expectedFirstRun?: number,
+  onRun?: (run: number) => void,
 ): Promise<string> {
   let runCount = 0;
   const server = createServer(async (request, response) => {
@@ -41,29 +42,42 @@ async function modelEndpoint(
     response.writeHead(200, {
       'content-type': 'text/event-stream; charset=utf-8',
     });
+    const calls =
+      action === 'scenario'
+        ? [
+            {
+              name: 'message_peer',
+              arguments: {
+                to: 'release-coordinator',
+                content: 'What is the release date?',
+              },
+            },
+            { name: 'lookup_release', arguments: { day: 'Friday' } },
+          ]
+        : [
+            {
+              name: action === 'peer' ? 'message_peer' : 'lookup_release',
+              arguments:
+                action === 'peer'
+                  ? {
+                      to: 'release-coordinator',
+                      content: 'What is the release date?',
+                    }
+                  : { day: 'Friday' },
+            },
+          ];
+    if (!hasToolResult) onRun?.(invocation);
     const chunks = wantsTool
       ? [
           { delta: { role: 'assistant' }, finish_reason: null },
           {
             delta: {
-              tool_calls: [
-                {
-                  index: 0,
-                  id: 'call_fixture_tool',
-                  type: 'function',
-                  function: {
-                    name: action === 'peer' ? 'message_peer' : 'lookup_release',
-                    arguments: JSON.stringify(
-                      action === 'peer'
-                        ? {
-                            to: 'release-coordinator',
-                            content: 'What is the release date?',
-                          }
-                        : { day: 'Friday' },
-                    ),
-                  },
-                },
-              ],
+              tool_calls: calls.map(({ name, arguments: args }, index) => ({
+                index,
+                id: `call_fixture_tool_${index}`,
+                type: 'function',
+                function: { name, arguments: JSON.stringify(args) },
+              })),
             },
             finish_reason: null,
           },
@@ -123,18 +137,29 @@ function runner(
 }
 
 describe('OMP scenario runner', () => {
-  it('checks a visible agent example through runtime and the real OMP runner', async () => {
+  it('binds example 3 to real OMP runs with stand-in peers and tools', async () => {
+    const observedRuns: number[] = [];
+    const baseUrl = await modelEndpoint('scenario', 1, (run) =>
+      observedRuns.push(run),
+    );
     const result = await checkExample({
       id: 'release-date',
       concept: 'agent behavior',
       situation: SCENARIO.situation,
       trigger: SCENARIO.trigger,
-      outcome: 'Message the release coordinator using the configured tool.',
+      outcome:
+        'Message the release coordinator and use the configured release lookup tool.',
       check: {
         kind: 'agent-behavior',
         runs: 2,
         threshold: 1,
-        runner: runner(await modelEndpoint('peer', 1)),
+        runner: runner(baseUrl, [
+          {
+            name: 'lookup_release',
+            description: 'Look up the release date',
+            response: 'Friday',
+          },
+        ]),
         assertions: [
           { kind: 'message-to', recipient: 'release-coordinator' },
           {
@@ -145,10 +170,16 @@ describe('OMP scenario runner', () => {
               content: 'What is the release date?',
             },
           },
+          {
+            kind: 'tool-call',
+            name: 'lookup_release',
+            arguments: { day: 'Friday' },
+          },
         ],
       },
     });
 
+    expect(observedRuns).toEqual([1, 2]);
     expect(result).toEqual({ status: 'pass', runs: 2, passRate: 1 });
   }, 70_000);
   it('snapshots model and peer configuration when the runner is created', async () => {

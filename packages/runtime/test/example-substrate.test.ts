@@ -64,7 +64,7 @@ describe('example checks', () => {
     ).rejects.toThrow(/explicit expected result/);
     expect(execute).not.toHaveBeenCalled();
   });
-  it('asserts recorded recipients and tool arguments over repeated injected agent runs', async () => {
+  it('evaluates injected agent-run records across repeated assertions', async () => {
     const runner = vi.fn(async () => ({
       messages: [{ to: 'reviewer', content: 'ready' }],
       toolCalls: [{ name: 'comment', arguments: { issue: 7 } }],
@@ -105,22 +105,37 @@ describe('example checks', () => {
     expect(result).toMatchObject({ status: 'fail', runs: 4, passRate: 0.5 });
   });
 
-  it('scores only against the frozen fixed rubric', async () => {
-    const result = await checkExample(
-      visible({
-        kind: 'rubric',
-        rubric: [
-          {
-            id: 'complete',
-            points: 2,
-            assertion: { kind: 'output-equals', path: 'done', value: true },
-          },
-        ],
-        produce: async () => ({ done: true }),
-      }),
-    );
-    expect(result).toMatchObject({ status: 'pass', score: 2, maxScore: 2 });
-    expect(Object.isFrozen(result.rubric)).toBe(true);
+  it('uses the rubric captured before the producer runs', async () => {
+    const rubric = [
+      {
+        id: 'complete',
+        points: 2,
+        assertion: {
+          kind: 'output-equals' as const,
+          path: 'done',
+          value: true,
+        },
+      },
+    ];
+    const example = visible({
+      kind: 'rubric',
+      rubric,
+      produce: async () => {
+        const criterion = rubric[0];
+        if (!criterion) throw new Error('rubric criterion missing');
+        Reflect.set(criterion, 'points', 99);
+        return { done: true };
+      },
+    });
+    const result = await checkExample(example);
+
+    expect(result).toMatchObject({
+      status: 'pass',
+      score: 2,
+      maxScore: 2,
+      rubric: [{ id: 'complete', points: 2 }],
+    });
+    expect(rubric[0]?.points).toBe(99);
   });
 });
 
@@ -152,11 +167,14 @@ describe('held-out judgment', () => {
       id: 'visible-baseline',
     };
     const set = createHeldOutSet([baseline], [secret]);
-    expect(set.builder.visible()).toContainEqual(baseline);
-    expect('judgment' in set.builder).toBe(false);
-    expect(() => set.judgment.revealFailure(secret.id)).toThrow(/not failed/);
-    expect(set.builder.visible()).toContainEqual(baseline);
-    const report = await set.judgment.judge();
+    const builder = set.builderAccess();
+    expect('judgmentAccess' in builder).toBe(false);
+    expect(builder.visible()).toContainEqual(baseline);
+    const judgment = set.judgmentAccess();
+    expect('builderAccess' in judgment).toBe(false);
+    expect(() => judgment.revealFailure(secret.id)).toThrow(/not failed/);
+    expect(builder.visible()).toContainEqual(baseline);
+    const report = await judgment.judge();
     expect(JSON.stringify(report)).not.toContain(secret.trigger);
     expect(JSON.stringify(report)).not.toContain(secret.outcome);
     expect(JSON.stringify(report)).not.toContain(secret.situation);
@@ -164,13 +182,11 @@ describe('held-out judgment', () => {
     expect(report.failures).toEqual([
       { concept: secret.concept, shortfall: expect.any(String) },
     ]);
-    expect(set.judgment.revealFailure(secret.id)).toEqual(secret);
-    set.judgment.replaceRevealed(secret.id, replacement);
-    expect(set.builder.visible()).toContainEqual(secret);
-    expect(set.builder.visible()).toContainEqual(baseline);
-    expect(() => set.judgment.revealFailure('replacement-1')).toThrow(
-      /not failed/,
-    );
+    expect(judgment.revealFailure(secret.id)).toEqual(secret);
+    judgment.replaceRevealed(secret.id, replacement);
+    expect(builder.visible()).toContainEqual(secret);
+    expect(builder.visible()).toContainEqual(baseline);
+    expect(() => judgment.revealFailure('replacement-1')).toThrow(/not failed/);
   });
 });
 describe('example freeze', () => {
@@ -204,6 +220,33 @@ describe('example freeze', () => {
     expect(Reflect.set(view, 'situation', 'changed')).toBe(false);
     expect(Reflect.set(builder, 'replaceExample', () => {})).toBe(false);
     expect(frozen.example.situation).toBe(example.situation);
+  });
+
+  it('freezes callback properties that can change a confirmed check', async () => {
+    type MutableProducer = (() => Promise<{ ready: boolean }>) & {
+      expected: boolean;
+    };
+    const produce = (async () => ({
+      ready: produce.expected,
+    })) as MutableProducer;
+    produce.expected = false;
+    const example = visible({
+      kind: 'output-assertion',
+      path: 'ready',
+      operator: 'equals',
+      value: true,
+      produce,
+    });
+    const ledger = createExampleLedger([example], 'meaning-holder');
+    await ledger.meaningHolder.confirm(example.id);
+    const view = ledger.builder.get(example.id);
+    if (!view || view.check.kind !== 'output-assertion')
+      throw new Error('The confirmed check should be visible.');
+
+    expect(Reflect.set(view.check.produce, 'expected', true)).toBe(false);
+    expect(await ledger.builder.check(example.id)).toMatchObject({
+      status: 'fail',
+    });
   });
 
   it('accepts only holder-approved same-id changes and requires a new red result', async () => {
