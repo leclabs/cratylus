@@ -1,7 +1,7 @@
 import { once } from 'node:events';
 import { type Server, createServer } from 'node:http';
+import { checkExample } from '@cratylus/runtime/example-substrate';
 import { afterEach, describe, expect, it } from 'vitest';
-import { checkExample } from '../../../runtime/src/example-substrate.js';
 import { createOmpAgentScenarioRunner } from '../../src/adapters/omp/index.js';
 
 const SCENARIO = {
