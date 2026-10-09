@@ -1,12 +1,13 @@
 import { once } from 'node:events';
 import { type Server, createServer } from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
+import { checkExample } from '../../../runtime/src/example-substrate.js';
 import { createOmpAgentScenarioRunner } from '../../src/adapters/omp/index.js';
 
 const SCENARIO = {
   situation: 'A peer needs the release date.',
   trigger: 'Ask the release coordinator for the date.',
-  run: 0,
+  run: 1,
 } as const;
 
 const servers: Server[] = [];
@@ -16,16 +17,27 @@ afterEach(() => {
 
 async function modelEndpoint(
   action: 'peer' | 'lookup' | 'none' = 'peer',
+  expectedFirstRun?: number,
 ): Promise<string> {
+  let runCount = 0;
   const server = createServer(async (request, response) => {
     let body = '';
     for await (const chunk of request) body += chunk;
     const requestBody = JSON.parse(body) as {
-      messages: readonly { role?: string }[];
+      messages: readonly { role?: string; content?: string }[];
     };
-    const wantsTool =
-      action !== 'none' &&
-      !requestBody.messages.some((message) => message.role === 'tool');
+    const hasToolResult = requestBody.messages.some(
+      (message) => message.role === 'tool',
+    );
+    const promptText = JSON.stringify(requestBody.messages);
+    const invocation = hasToolResult ? runCount : ++runCount;
+    const expectedRun =
+      expectedFirstRun === undefined
+        ? undefined
+        : expectedFirstRun + invocation - 1;
+    const runMatches =
+      expectedRun === undefined || promptText.includes(`Run: ${expectedRun}`);
+    const wantsTool = action !== 'none' && !hasToolResult && runMatches;
     response.writeHead(200, {
       'content-type': 'text/event-stream; charset=utf-8',
     });
@@ -111,6 +123,34 @@ function runner(
 }
 
 describe('OMP scenario runner', () => {
+  it('checks a visible agent example through runtime and the real OMP runner', async () => {
+    const result = await checkExample({
+      id: 'release-date',
+      concept: 'agent behavior',
+      situation: SCENARIO.situation,
+      trigger: SCENARIO.trigger,
+      outcome: 'Message the release coordinator using the configured tool.',
+      check: {
+        kind: 'agent-behavior',
+        runs: 2,
+        threshold: 1,
+        runner: runner(await modelEndpoint('peer', 1)),
+        assertions: [
+          { kind: 'message-to', recipient: 'release-coordinator' },
+          {
+            kind: 'tool-call',
+            name: 'message_peer',
+            arguments: {
+              to: 'release-coordinator',
+              content: 'What is the release date?',
+            },
+          },
+        ],
+      },
+    });
+
+    expect(result).toEqual({ status: 'pass', runs: 2, passRate: 1 });
+  }, 70_000);
   it('snapshots model and peer configuration when the runner is created', async () => {
     const baseUrl = await modelEndpoint();
     const config = {

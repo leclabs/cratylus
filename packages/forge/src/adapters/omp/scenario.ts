@@ -68,7 +68,7 @@ async function runConfiguredScenario(
     const prompt = [
       `Situation: ${scenario.situation}`,
       `Trigger: ${scenario.trigger}`,
-      `Run: ${scenario.run + 1}`,
+      `Run: ${scenario.run}`,
     ].join('\n');
     const { stdout, stderr, code } = await runOmp(
       [
