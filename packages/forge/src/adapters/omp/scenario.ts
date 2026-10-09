@@ -47,7 +47,8 @@ export type OmpScenarioRunner = (
 export function createOmpAgentScenarioRunner(
   config: OmpScenarioHarnessConfig,
 ): OmpScenarioRunner {
-  return (scenario) => runConfiguredScenario(scenario, config);
+  const snapshot = structuredClone(config);
+  return (scenario) => runConfiguredScenario(scenario, snapshot);
 }
 
 async function runConfiguredScenario(

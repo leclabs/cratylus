@@ -111,6 +111,43 @@ function runner(
 }
 
 describe('OMP scenario runner', () => {
+  it('snapshots model and peer configuration when the runner is created', async () => {
+    const baseUrl = await modelEndpoint();
+    const config = {
+      model: {
+        provider: 'scenario-fixture',
+        id: 'fixture',
+        baseUrl,
+        apiKey: 'local-fixture',
+      },
+      systemPrompt: 'Use the available tools when the scenario requires them.',
+      peers: [
+        { name: 'release-coordinator', response: 'The release is Friday.' },
+      ],
+      tools: [],
+    };
+    const run = createOmpAgentScenarioRunner(config);
+
+    config.model.baseUrl = 'http://127.0.0.1:1/v1';
+    const [peer] = config.peers;
+    if (!peer) throw new Error('test peer missing');
+    peer.name = 'mutated-peer';
+
+    await expect(run(SCENARIO)).resolves.toEqual({
+      messages: [
+        { to: 'release-coordinator', content: 'What is the release date?' },
+      ],
+      toolCalls: [
+        {
+          name: 'message_peer',
+          arguments: {
+            to: 'release-coordinator',
+            content: 'What is the release date?',
+          },
+        },
+      ],
+    });
+  }, 35_000);
   it('runs OMP and records the calls actually made to the configured stand-in peer', async () => {
     const run = runner(await modelEndpoint());
     const record = await run(SCENARIO);
