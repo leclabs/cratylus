@@ -1,0 +1,14 @@
+{
+  "id": "01M4KYNDQSFCRX3WCWQPRKP288",
+  "at": "2026-10-10T22:24:16.121Z",
+  "kind": "decide",
+  "decisionId": "0068",
+  "context": "agents",
+  "title": "Every agent starts with the harness's default tools",
+  "situation": "0051 started reach open but kept one exception ahead of evidence: the assayer had no tool that changes anything. 0067 then gave it a shell but added isolation against its repairing the work. Both guard against a misbehaviour never observed: an assayer judges, its profile says it never builds or repairs, and nothing it is given asks it to change anything. The restriction cost real evidence: assayers could not run a check or read a change's history.",
+  "decision": "Every agent, the assayer included, starts with the harness's default tools, with no isolation and no withheld verbs. Reach is held as a setting only for whom an agent may dispatch, its handoffs. Anything else is narrowed only once a role is observed doing harm with it, never ahead of that evidence. This replaces 0067 and the assayer exception 0051 kept.",
+  "consequences": "The assayer's read-only tool list and the journal's read-only gate for it, built by the catalog re-cut, are removed in the typed-handoffs cut (0064).",
+  "status": "accepted",
+  "supersedes": "0067",
+  "supersedesEntry": "01M4KYEWZYSPZS2VAP7G8F644R"
+}
