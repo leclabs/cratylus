@@ -1,6 +1,6 @@
 # Master design · the agent catalog re-cut
 
-Discovery draft, 2026-10-10, under open decisions 0044 (re-cut), 0045 (architect), 0046 (roles and personas),
+Frozen 2026-10-10 as the specification of the catalog re-cut, under open decisions 0044 (re-cut), 0045 (architect), 0046 (roles and personas),
 0048 (ipseic room) and 0049 (one-round swarm). Workers transcribe this; they never design or name.
 
 Signs marked **(canon)** keep the anchor the canon on `main` already cold-verified. Signs marked **(new)** are

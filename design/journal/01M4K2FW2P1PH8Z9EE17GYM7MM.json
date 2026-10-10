@@ -1,0 +1,8 @@
+{
+  "id": "01M4K2FW2P1PH8Z9EE17GYM7MM",
+  "at": "2026-10-10T14:11:54.070Z",
+  "kind": "accept",
+  "decisionId": "0049",
+  "entry": "01M4JYWWBNNK54P5VC0N42QCV0",
+  "reason": "Accepted 2026-10-10: the master design and the central naming batch are done and frozen; the lead runs the single round after agent launch lands, since both touch the projector."
+}

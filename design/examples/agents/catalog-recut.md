@@ -1,6 +1,7 @@
-# Examples · the agent catalog re-cut (draft for approval)
+# Examples · the agent catalog re-cut
 
-Context: agents. Master design: `design/discovery/agents-master-design.md`. All examples are structural:
+Context: agents. Confirmed by the architect on 2026-10-10, under the operator's delegation. Master design:
+`design/examples/agents/master-design.md`, frozen with these examples. All examples are structural:
 checked by composing, projecting or installing, then inspecting the result.
 
 1. (catalog) **Given** the catalog, **when** its factors are listed, **then** they are exactly the 18 of the
@@ -24,8 +25,8 @@ checked by composing, projecting or installing, then inspecting the result.
    name and description, presents its values grouped in catalog order, each as its name with its explanation,
    and contains no perception-scope, action-scope, handoffs or model as text.
 8. (binding, reach) **Given** the roles installed for omp, **when** their settings are inspected, **then**
-   reach is held by omp's own settings: the assayer has no tool that changes anything; the architect has no tool
-   that edits the work or runs a shell; the builder, assayer, illustrator and check-writer can dispatch no one;
+   reach is held by omp's own settings: the assayer has no tool that changes anything; the architect has no shell
+   and no tool that edits an existing file; the builder, assayer, illustrator and check-writer can dispatch no one;
    the architect and the lead can dispatch exactly their handoffs.
 9. (binding, model) **Given** the roles and personas installed for omp, **when** their model settings are
    inspected, **then** each agent has its own model role named for it, bound to the tier and effort the master
