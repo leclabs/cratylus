@@ -19,10 +19,15 @@ it('judgment case 1: launches a bundled declaration with its own body and name',
     });
     // omp's native subagent prompt delimits the declaration with Role/Context.
     // Extract the runtime body, never a test copy of the bundled source.
-    const body = child.prompt
-      .findLast((block) => block.startsWith('§ Role\n'))
-      ?.match(/^§ Role\n([\s\S]*?)\n§ Context\n/)?.[1]
-      .trim();
+    let role: string | undefined;
+    for (let index = child.prompt.length - 1; index >= 0; index--) {
+      const block = child.prompt[index]!;
+      if (block.startsWith('§ Role\n')) {
+        role = block;
+        break;
+      }
+    }
+    const body = role?.match(/^§ Role\n([\s\S]*?)\n§ Context\n/)?.[1]?.trim();
     expect(
       body,
       'native dispatch supplies the bundled declaration body',
@@ -68,7 +73,7 @@ it('judgment case 2: keeps the effort on a model selector, directly and through 
     for (const [name, model] of [
       ['selector-surveyor', 'fixture/declared:high'],
       ['role-surveyor', '@survey'],
-    ]) {
+    ] as const) {
       const declaration = {
         name,
         model,

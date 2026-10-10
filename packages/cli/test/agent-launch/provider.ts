@@ -58,10 +58,10 @@ export async function provider(reply: (request: Request) => Reply) {
       response.end(String(error));
     }
   });
-  const listening = Promise.withResolvers<void>();
-  server.once('error', listening.reject);
-  server.listen(0, '127.0.0.1', () => listening.resolve());
-  await listening.promise;
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
   return {
     requests,
     errors,

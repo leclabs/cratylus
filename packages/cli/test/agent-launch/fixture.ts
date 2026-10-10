@@ -267,17 +267,17 @@ export function rpc(args: string[], cwd: string, env: NodeJS.ProcessEnv) {
   let sequence = 0;
   let exited = false;
   const listeners = new Set<() => void>();
-  const completion = Promise.withResolvers<{
+  const done = new Promise<{
     code: number | null;
     stdout: string;
     stderr: string;
-  }>();
-  const done = completion.promise;
-  child.on('error', completion.reject);
-  child.on('close', (code) => {
-    exited = true;
-    completion.resolve({ code, stdout, stderr });
-    for (const listener of listeners) listener();
+  }>((resolve, reject) => {
+    child.on('error', reject);
+    child.on('close', (code) => {
+      exited = true;
+      resolve({ code, stdout, stderr });
+      for (const listener of listeners) listener();
+    });
   });
   child.stdout.on('data', (chunk) => {
     stdout += chunk;
@@ -301,22 +301,22 @@ export function rpc(args: string[], cwd: string, env: NodeJS.ProcessEnv) {
   const deadline = setTimeout(() => child.kill('SIGKILL'), 60_000);
   void done.finally(() => clearTimeout(deadline));
   function waitFor(predicate: (frame: Frame) => boolean): Promise<Frame> {
-    const pending = Promise.withResolvers<Frame>();
-    const check = () => {
-      const frame = frames.find(predicate);
-      if (frame) {
-        listeners.delete(check);
-        pending.resolve(frame);
-      } else if (exited) {
-        listeners.delete(check);
-        pending.reject(
-          new Error(`omp exited before observation:\n${stderr}${stdout}`),
-        );
-      }
-    };
-    listeners.add(check);
-    check();
-    return pending.promise;
+    return new Promise((resolve, reject) => {
+      const check = () => {
+        const frame = frames.find(predicate);
+        if (frame) {
+          listeners.delete(check);
+          resolve(frame);
+        } else if (exited) {
+          listeners.delete(check);
+          reject(
+            new Error(`omp exited before observation:\n${stderr}${stdout}`),
+          );
+        }
+      };
+      listeners.add(check);
+      check();
+    });
   }
   function send(command: Record<string, unknown>) {
     const id = String(++sequence);
