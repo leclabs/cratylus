@@ -115,15 +115,19 @@ deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall ta
 `<dir>/.claude` or `<dir>/.omp`, the shared files under `<dir>/.agents` and the runtime config in
 `<dir>/.cratylus.json`.
 
-On omp install also places the concept journal as a tool: one extension,
-`~/.omp/agent/extensions/cratylus-concepts.ts`, recorded in the manifest with the other session
-modules. Every omp session loads it, and at load it asks the `cratylus` on `PATH` to explain the
-concept journal (`cratylus concepts --explain`) and offers the one tool `concept_journal` composed
-from that answer: its description, a required `verb` among the explained verbs, and every explained
-parameter. A verb that reads asks for read approval, one that appends for write. A call runs that
-`cratylus concepts <verb> …` in the session's directory and returns its JSON; a refusal is the
-tool's error, in the command's own words. The extension holds nothing of the journal itself, so a
-newer `cratylus` package changes the tool in the next session without installing again.
+On omp install also places cratylus's own extension, `~/.omp/agent/extensions/cratylus.ts`,
+recorded in the manifest with the other session modules. Every omp session loads it, and at load it
+offers each capability that explains itself as one tool, today the concept journal: it asks the
+`cratylus` on `PATH` to explain it (`cratylus concepts --explain`) and offers the tool
+`concept_journal` composed from that answer: its description, a required `verb` among the
+explained verbs, and every explained parameter (where verbs declare one name with different
+schemas, each schema under `anyOf`). A verb that reads asks for read approval, one that appends for
+write. A call runs that `cratylus concepts <verb> …` in the session's directory, every value given
+as one `--flag=value` word so a value starting with `-` arrives as written, and returns its JSON; a
+refusal is the tool's error, in the command's own words. A concept or id starting with `-` cannot be
+given to the command as a word of its own, so the command refuses it. The extension holds nothing
+of the journal itself, so a newer `cratylus` package changes the tool in the next session without
+installing again.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with

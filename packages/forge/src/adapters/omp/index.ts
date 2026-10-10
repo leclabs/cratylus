@@ -28,7 +28,7 @@ export {
   agentToOmpMd,
   ompAgentRel,
   ompCapabilityExtensions,
-  ompCapabilityModule,
+  OMP_CRATYLUS_MODULE,
   ompDispatchIsolation,
   ompGuardrailExtensions,
   ompIsolationExtensions,
