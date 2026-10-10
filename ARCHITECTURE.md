@@ -85,18 +85,18 @@ admitted body with a boundary. The right reason, not the convenient one.
 The generic platform beneath **the tools skills route to** — the implementations behind the semantic
 surface.
 
-Its capabilities — `eventTap`, `design`, `plan` and `note` — are **built into the runtime** and known
-when it is built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider.
-Each is reached through its **port**. The event tap's Claude strategy is the case with
-interchangeable implementations: it proxies Claude's own hooks from behind the event tap's port,
-where another harness's strategy would stand in its place.
+Its capabilities — `eventTap` and `concepts` — are **built into the runtime** and known when it is
+built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider. The event
+tap is reached through its **port**, and its Claude strategy is the case with interchangeable
+implementations: it proxies Claude's own hooks from behind the event tap's port, where another
+harness's strategy would stand in its place.
 
 It ships **with** the agent and runs on the host. It knows no corpus: the corpus's event vocabulary and
 each capability's configuration reach it in the host config that deploy writes.
 
 It knows no harness beyond the event tap's Claude strategy, which writes Claude's settings format, and
-the tap refuses a caller whose harness has no strategy of its own; `design`, `plan` and `note` are
-repository-scoped and know no harness at all.
+the tap refuses a caller whose harness has no strategy of its own; `concepts` is repository-scoped
+and knows no harness at all.
 
 A lifecycle guardrail is not the runtime's. It is a canon hook cell that forge projects as the
 harness's own hook — on omp, as an extension module — so the runtime hosts the capabilities above and
@@ -148,7 +148,7 @@ command and capability there is.
 **One command, not two.** `cratylus` and `cratylus-run` were separate bins because the two surfaces
 lived in two packages and each built its own command-line program. The two DAGs that split defended are a fact
 about **imports** — which the bundler and the package manager already handle — not a fact that has
-to surface as two names a consumer must learn. A capability verb is `cratylus design show`, and
+to surface as two names a consumer must learn. A capability verb is `cratylus concepts state`, and
 the generated shims that invoke it spell one name.
 
 **What the merge costs, stated because it is a cost.** A host that only runs agents now installs the

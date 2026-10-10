@@ -94,8 +94,8 @@ directory fields are resolved against `import.meta.url` at definition time and c
 entry. Canon reaches the projector as **data** — the corpus is passed to it as a plugin — and no
 cell imports it.
 
-No cell imports the runtime either. A skill names the capability it routes to — one of `eventTap`,
-`design`, `plan` and `note`, the four built into the runtime — as `runtime: { capability: … }`,
+No cell imports the runtime either. A skill names the capability it routes to — `eventTap` or
+`concepts`, the two built into the runtime — as `runtime: { capability: … }`,
 never its implementation, and a cell that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
 and mechanism never referencing each other — and [ARCHITECTURE.md](../../ARCHITECTURE.md) records

@@ -466,12 +466,10 @@ cratylus uninstall [options]
 
 ## Capabilities
 
-A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `eventTap`, `design` and `concepts`:
+A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `eventTap` and `concepts`:
 
 ```sh
 cratylus eventTap status
-cratylus design show
-cratylus design define 'record id' --gloss '…' --author … --reason … --cause …
 cratylus concepts state
 cratylus concepts supersede 'reservation expiry' --context booking --wording '…' --reason '…'
 ```
@@ -529,90 +527,6 @@ cratylus eventTap status [options]
 | Flag                 | What it does                                                              |
 | -------------------- | ------------------------------------------------------------------------- |
 | `--settings <value>` | The harness settings file the tap is attached in, in place of the default |
-
-### `cratylus design`
-
-Define, amend and trace the concepts a design is made of.
-
-#### `cratylus design show`
-
-Show the whole lattice root to primitive, or one concept in full.
-
-```sh
-cratylus design show [options] [concept]
-```
-
-#### `cratylus design define`
-
-Define a new concept, naming its gloss and its factors.
-
-```sh
-cratylus design define [options] <concept>
-```
-
-| Flag                | What it does                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `--gloss <value>`   | What the concept is, in one line                                                    |
-| `--factors <value>` | A concept it decomposes into; repeat once per factor, or give an empty one for none |
-| `--author <value>`  | Who makes this write                                                                |
-| `--reason <value>`  | Why this write is made                                                              |
-| `--cause <value>`   | What caused this write                                                              |
-
-#### `cratylus design amend`
-
-Write a new version of a concept; a field left out carries over, and amending a withdrawn concept reinstates it.
-
-```sh
-cratylus design amend [options] <concept>
-```
-
-| Flag                | What it does                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `--anchor <value>`  | The anchor the concept is relabelled to                                             |
-| `--gloss <value>`   | What the concept is, in one line                                                    |
-| `--factors <value>` | A concept it decomposes into; repeat once per factor, or give an empty one for none |
-| `--author <value>`  | Who makes this write                                                                |
-| `--reason <value>`  | Why this write is made                                                              |
-| `--cause <value>`   | What caused this write                                                              |
-
-#### `cratylus design retract`
-
-Withdraw a concept that nothing live factors on.
-
-```sh
-cratylus design retract [options] <concept>
-```
-
-| Flag               | What it does           |
-| ------------------ | ---------------------- |
-| `--author <value>` | Who makes this write   |
-| `--reason <value>` | Why this write is made |
-| `--cause <value>`  | What caused this write |
-
-#### `cratylus design reconcile`
-
-Settle a diverged concept with one version over every version; give each field the versions disagree on.
-
-```sh
-cratylus design reconcile [options] <concept>
-```
-
-| Flag                | What it does                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `--anchor <value>`  | The anchor the concept is relabelled to                                             |
-| `--gloss <value>`   | What the concept is, in one line                                                    |
-| `--factors <value>` | A concept it decomposes into; repeat once per factor, or give an empty one for none |
-| `--author <value>`  | Who makes this write                                                                |
-| `--reason <value>`  | Why this write is made                                                              |
-| `--cause <value>`   | What caused this write                                                              |
-
-#### `cratylus design trace`
-
-Show how a concept came to be, what it stands on and what stands on it.
-
-```sh
-cratylus design trace [options] <concept>
-```
 
 ### `cratylus concepts`
 
