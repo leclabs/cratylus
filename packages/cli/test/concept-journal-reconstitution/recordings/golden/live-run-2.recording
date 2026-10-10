@@ -1,0 +1,45 @@
+{
+  "name": "live-2",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Reconstituting from the concept journal rather than from the summary."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts",
+        "i": "Querying concept journal"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state",
+        "i": "Reading journal state"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" --context booking && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "I rebuilt the design from the concept journal. **The compaction summary is out of date in two places**, so I'm working from the journal, not the summary.\n\n## Current design: `booking` (Booking reservations and payment)\n\n**Live concept**\n- **reservation expiry**: \"Reservations expire after **fifteen** minutes.\"\n  - The summary says ten minutes, but that was the first version. It was later superseded with the reason \"Customers need time to complete the payment challenge.\"\n  - Nothing is competing or retired.\n\n**Settled (accepted) decisions**\n- **deposit**: \"Collect a refundable deposit,\" because a booking can be abandoned. The consequence is that refunds must be supported. The summary lists this as open, but the journal records it as accepted.\n\n**Open decisions**\n- **reminder**: \"Send a reminder before expiry,\" because a reservation can expire unnoticed. The consequence is that a reminder channel would be needed.\n\n## What the open work touches\nThe only open item is **reminder**. Before it can be accepted, these questions need answers:\n\n1. **Timing against the 15-minute window.** \"Before expiry\" isn't defined yet. I recommend a single reminder at a fixed point before expiry, such as 5 minutes before. A 15-minute window leaves room for one useful nudge, and sending several in that span would be noise.\n2. **The reminder channel.** The decision names a channel as a consequence, but no context owns one. Either `booking` holds a \"reminder\" concept or a separate notification context is added to the context map. I recommend a separate context: delivering messages isn't part of booking's subject (reservations and payment).\n3. **Interaction with the deposit.** If a reservation expires after the deposit is taken, the reminder protects money the customer has already paid. If that's the motivation, the decision's situation should say so. It would also make the case for accepting the decision stronger.\n\nI've recorded nothing new yet. Do you want me to:\n- (a) refine **reminder** along these lines and leave it open for your approval, or\n- (b) work through concrete examples (an expiry with and without a deposit taken) before refining it?"
+    }
+  ]
+}

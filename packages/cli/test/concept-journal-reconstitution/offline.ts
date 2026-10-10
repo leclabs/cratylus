@@ -14,9 +14,11 @@ import {
 import { here, repository, reservation } from './fixture.js';
 import { inspectLaunch } from './omp.js';
 
+// Captured .recording files are verbatim JSON transcripts, kept outside JSON
+// formatter rewrites; handwritten .json controls use the same recording schema.
 const recordings = ['golden', 'negative'].flatMap((kind) =>
   readdirSync(join(here, 'recordings', kind))
-    .filter((file) => file.endsWith('.json'))
+    .filter((file) => /\.(?:json|recording)$/.test(file))
     .map((file) => ({
       kind,
       file,
@@ -29,7 +31,11 @@ describe('example 10 offline proof', () => {
   for (const { kind, file, record } of recordings)
     it(`${kind}/${file}`, () => {
       expect(failures(assessReservations(record))).toEqual(
-        kind === 'golden' ? [] : [record.target],
+        kind === 'golden'
+          ? []
+          : Array.isArray(record.target)
+            ? record.target
+            : [record.target],
       );
       for (const event of record.events)
         if (event.kind === 'tool') expect(observedTools).toContain(event.name);

@@ -1,5 +1,5 @@
 // Example 8: the one-time migration belongs to this repository, not the concepts capability.
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -47,9 +47,48 @@ describe('concept journal one-time seeding', () => {
     assertSeeded(fixture.root, source);
   }, 120_000);
 
-  it('8c — this repository has the pinned design only in its journal, with the old files absent and untracked', () => {
-    // Read only: this check neither seeds nor removes anything in the shared checkout.
-    assertSeeded(repositoryRoot, source);
+  it('8c — preserves the original seed bytes and reproduces its ordered contents, with the old files absent and untracked', () => {
+    // Later appends may grow this repository's design; its original seed is immutable.
+    const seedCommit = 'b4f4bc7c';
+    const seedPaths = git(
+      repositoryRoot,
+      'diff-tree',
+      '--no-commit-id',
+      '--name-only',
+      '--diff-filter=A',
+      '-r',
+      seedCommit,
+      '--',
+      'design/journal',
+    )
+      .trim()
+      .split('\n')
+      .sort();
+    expect(seedPaths.length).toBeGreaterThan(0);
+    const original = seedPaths.map((path) => {
+      const bytes = Buffer.from(
+        git(repositoryRoot, 'show', `${seedCommit}:${path}`),
+      );
+      expect(readFileSync(join(repositoryRoot, path)), path).toEqual(bytes);
+      return bytes;
+    });
+    successful(
+      seed(fixture.root, source),
+      'reproduce original seed from pinned design',
+    );
+    const reproduced = Object.entries(snapshot(fixture.root))
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([, bytes]) => Buffer.from(bytes, 'base64'));
+    const contents = (bytes: Buffer) => {
+      const entry = JSON.parse(bytes.toString('utf8')) as Record<
+        string,
+        unknown
+      >;
+      // The seed has no links between generated ids. Keep decisionId and all payload fields.
+      const { id: _id, at: _at, ...content } = entry;
+      return content;
+    };
+    expect(reproduced.map(contents)).toEqual(original.map(contents));
     for (const path of [
       'design/workflow.md',
       'design/delivery.md',

@@ -170,7 +170,11 @@ describe('held-out 3: retirement survives compaction', () => {
   for (const { kind, file, record } of recordings)
     it(`offline ${kind}/${file}`, () => {
       expect(failures(assess(record))).toEqual(
-        kind === 'golden' ? [] : [record.target],
+        kind === 'golden'
+          ? []
+          : Array.isArray(record.target)
+            ? record.target
+            : [record.target],
       );
       for (const event of record.events)
         if (event.kind === 'tool') expect(observedTools).toContain(event.name);

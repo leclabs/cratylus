@@ -1,0 +1,45 @@
+{
+  "name": "live-3",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Reconstituting from the concept journal before acting, rather than from the summary."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts",
+        "i": "Querying concept journal"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state",
+        "i": "Reading journal state"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history --context booking \"reservation expiry\" && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "I rebuilt the design from the concept journal, and it disagrees with the summary on two points. I'm going by the journal.\n\n**Where the summary is out of date**\n- **Expiry window is fifteen minutes, not ten.** \"Reservation expiry\" was first defined as ten minutes (\"Initial checkout window\"). It was then changed to *\"Reservations expire after fifteen minutes\"* because customers need time to complete the payment challenge. Only the fifteen-minute version is current.\n- **The deposit decision is settled, not open.** It was accepted as *\"Collect a refundable deposit\"* because a booking can be abandoned, and it commits us to supporting refunds.\n\n**Current design of `booking`** (\"Booking reservations and payment\"; it has no relations in the context map yet)\n- Concepts in use: **reservation expiry**, at fifteen minutes. No other concepts, none competing, none retired.\n- Settled: **deposit**, collect a refundable deposit, so refunds must be supported.\n- Open: **reminder**, send a reminder before expiry. This would need a reminder channel.\n\n**Gaps I see**\n1. The deposit decision depends on things the journal doesn't name. It has no concept for *deposit* or *refund*, and it doesn't say what happens to a deposit when a reservation expires. Since expiry is the abandonment that justified the deposit, that link should be explicit.\n2. The reminder decision says \"before expiry\" without saying how long before. In a fifteen-minute window, that timing decides whether the reminder is useful at all.\n3. The reminder's channel isn't covered by `booking`'s subject. It most likely belongs to a separate notification context in the context map, not inside booking.\n\n**What I recommend next**\n- Define **deposit** and **refund** in `booking`. Write the rule for expiry so that **an expired reservation refunds its deposit**: abandoning shouldn't cost the customer money unless you want it to work as a penalty.\n- Hold off on accepting **reminder** until you've made the intent call below. If you want it, I'll supersede the decision so it says when the reminder is sent, and record the channel as a relation to a notification context.\n\n**Decisions for you**\n1. When a reservation expires, is the deposit refunded, or kept as a penalty?\n2. Do you want reminders at all, and if so, roughly how long before expiry?\n\nOnce you answer, I'll record the concepts and decisions in the journal with their reasons."
+    }
+  ]
+}

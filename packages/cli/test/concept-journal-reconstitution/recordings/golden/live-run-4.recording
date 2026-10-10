@@ -1,0 +1,45 @@
+{
+  "name": "live-4",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Reconstituting from the concept journal first, rather than from the summary."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts",
+        "i": "Querying concept journal"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state",
+        "i": "Reading journal state"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\"",
+        "i": "Reading expiry concept history"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" --context booking && pnpm cratylus concepts decisions",
+        "i": "Reading expiry history and decisions"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "I rebuilt the design from the concept journal rather than the summary. **The summary is out of date in two places.**\n\n## Booking: current design (from the journal)\n\n**What the context covers:** booking reservations and payment. It has no recorded relations to other contexts.\n\n**Live concepts**\n- **reservation expiry**: \"Reservations expire after **fifteen** minutes.\"\n  - The summary says ten minutes, but that was version 1 (\"Initial checkout window\"). It has been replaced.\n  - Version 2 changed it to fifteen minutes because customers need time to complete the payment challenge.\n\nThere are no competing versions and nothing has been retired.\n\n**Decisions**\n- **deposit: accepted (settled).** The summary says this is open, but it isn't.\n  - *Situation:* a booking can be abandoned.\n  - *Decision:* collect a refundable deposit.\n  - *Consequence:* refunds must be supported.\n- **reminder: open.**\n  - *Situation:* a reservation can expire unnoticed.\n  - *Decision:* send a reminder before it expires.\n  - *Consequence:* a reminder channel would be needed.\n\n## What's open, and the gaps I see\n\n1. **reminder** is the only open decision. Before it can be accepted, it needs:\n   - **When:** a lead time relative to the fifteen-minute expiry. For example, at 10 minutes, leaving 5 to act.\n   - **How:** the channel. This is a real dependency and should be named, not left as \"would be needed\".\n   - **What makes it matter:** with a deposit in place, an expiry that goes unnoticed may leave money held. That ties reminder to deposit.\n2. **The deposit's consequences aren't in the design yet.** The decision is accepted, but there are no concepts for *deposit* or *refund*. Things like when a deposit is refunded and whether expiry triggers a refund are undefined. That's a gap between a settled decision and the concepts it implies.\n\n## Recommendation for the next step\n1. **Define deposit and refund first.** That includes stating how a refund relates to reservation expiry. Expiry is the deposit decision's own trigger for abandonment.\n2. **Then make the reminder decision concrete** (lead time and channel) so you can accept or reject it.\n\nDeposit comes first because whether a reminder is worth sending depends partly on what expiry does to the deposit.\n\nShould I go ahead in that order? And for reminder, do you already have a channel in mind (email, SMS, push), or should I propose one?"
+    }
+  ]
+}
