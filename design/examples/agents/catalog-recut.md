@@ -25,9 +25,9 @@ checked by composing, projecting or installing, then inspecting the result.
    name and description, presents its values grouped in catalog order, each as its name with its explanation,
    and contains no perception-scope, action-scope, handoffs or model as text.
 8. (binding, reach) **Given** the roles installed for omp, **when** their settings are inspected, **then**
-   reach is held by omp's own settings: the assayer has no tool that changes anything; the architect has no shell
-   and no tool that edits an existing file; the builder, assayer, illustrator and check-writer can dispatch no one;
-   the architect and the lead can dispatch exactly their handoffs.
+   every agent has omp's default tools, except that the assayer has no tool that changes anything; and the
+   builder, assayer, illustrator and check-writer can dispatch no one, while the architect and the lead can
+   dispatch exactly their handoffs.
 9. (binding, model) **Given** the roles and personas installed for omp, **when** their model settings are
    inspected, **then** each agent has its own model role named for it, bound to the tier and effort the master
    design gives it.

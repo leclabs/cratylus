@@ -243,9 +243,16 @@ assayer dispatched with `frontier-other-family · max`, not a separate agent.
 
 `researcher` is omp's own read-only scout, not a cratylus role.
 
-**Enforcement.** Reach is held by the harness's settings at the finest grain the harness offers (which tools
-an agent has, whom it may dispatch). A finer scope the harness cannot express, such as one work package's
-paths, is held by the assignment: the agent is simply never given anything else.
+**Enforcement (decision 0051).** The perception-scope and action-scope rows above describe what each role is
+_for_. They do not restrict anyone yet. Every agent starts with the harness's default tools. Reach is held
+as a setting only where the design itself rules a tool out:
+
+- the assayer has no tool that changes anything (it never repairs);
+- each agent can dispatch exactly its handoffs.
+
+Everything else is narrowed later, from the tools each role is observed to use across cuts, never ahead of that
+evidence. A finer scope, such as one work package's paths, is held by the assignment: the agent is simply never
+given anything else.
 
 ## 4. Personas (residue over the architect role; everything not listed is the role's)
 
