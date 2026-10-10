@@ -76,7 +76,7 @@ Identity also carries `name`, `description` and `mark` (canon), and **reserves**
 | `illustration`    | turn concepts into concrete examples, before any build, including what must not happen                               |
 | `freeze`          | fix examples, their checks and their concepts while a build realizes them; a check is trusted only once seen to fail |
 | `build`           | change the work until its visible examples pass                                                                      |
-| `judgment`        | judge the finished work once, against fixed criteria and held-out examples                                           |
+| `judgment`        | judge the finished work once, when its build is green, against fixed criteria and held-out examples                  |
 | `whole check`     | run every check of everything affected in one run, fixing everything it revealed in one round                        |
 | `reconstitution`  | at every start, recover the design from its source of truth and read it back before acting                           |
 
@@ -178,20 +178,20 @@ assayer dispatched with `frontier-other-family · max`, not a separate agent.
 
 ### assignment · deliverable
 
-| Value                                       | Gloss                                                                     |
-| ------------------------------------------- | ------------------------------------------------------------------------- |
-| `intent` (assignment)                       | what the operator wants and why, in any words                             |
-| `cut-brief` (assignment)                    | a cut's concepts, examples and decisions in force, by reference           |
-| `work-package` (assignment)                 | the outputs it owns and their visible examples                            |
-| `judgment-brief` (assignment)               | the concepts, decisions, examples, held-out results and the work to judge |
-| `concepts` (assignment)                     | a cut's concepts only                                                     |
-| `examples` (assignment)                     | the agreed examples to bind                                               |
-| `decisions-with-reasons` (deliverable)      | concepts, decisions and rulings, each with its reason                     |
-| `outcome-with-efficiency` (deliverable)     | each example's outcome in concept terms, with the effort it took          |
-| `done-or-failing-case` (deliverable)        | done, or the case that still fails                                        |
-| `verdict-per-concept` (deliverable)         | accept or reject, with findings per concept                               |
-| `examples-with-flagged-terms` (deliverable) | examples, plus every term it could not place                              |
-| `checks-seen-red` (deliverable)             | checks, each shown failing on work that does not satisfy it               |
+| Value                                       | Gloss                                                                                                                                                      |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `intent` (assignment)                       | what the operator wants and why, in any words                                                                                                              |
+| `cut-brief` (assignment)                    | a cut's concepts, examples and decisions in force, by reference                                                                                            |
+| `work-package` (assignment)                 | the outputs it owns and their visible examples                                                                                                             |
+| `judgment-brief` (assignment)               | the concepts, decisions, examples, held-out results and the work to judge                                                                                  |
+| `concepts` (assignment)                     | a cut's concepts only                                                                                                                                      |
+| `examples` (assignment)                     | the agreed examples to bind                                                                                                                                |
+| `decisions-with-reasons` (deliverable)      | concepts, decisions and rulings, each with its reason                                                                                                      |
+| `outcome-with-efficiency` (deliverable)     | each example's outcome stated in the design's own concepts, the terms the architect works in rather than those of the realization, with the effort it took |
+| `done-or-failing-case` (deliverable)        | done, or the case that still fails                                                                                                                         |
+| `verdict-per-concept` (deliverable)         | accept or reject, with findings per concept                                                                                                                |
+| `examples-with-flagged-terms` (deliverable) | examples, plus every term it could not place                                                                                                               |
+| `checks-seen-red` (deliverable)             | checks, each shown failing on work that does not satisfy it                                                                                                |
 
 ### guardrails (required; canon plus new)
 
