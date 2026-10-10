@@ -1,6 +1,6 @@
 # Examples · cut 1 · example substrate
 
-Context: workflow. Concepts: example, held-out example, freeze (see `design/workflow.md`).
+Context: workflow. Concepts: example, held-out example, freeze (see `cratylus concepts design --context workflow`).
 Confirmed by the meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
 
 ## example
