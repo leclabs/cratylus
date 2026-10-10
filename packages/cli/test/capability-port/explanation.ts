@@ -31,7 +31,7 @@ const parametersByVerb: Record<string, string[]> = {
   design: ['context'],
   history: ['concept', 'context'],
   decisions: ['context', 'open'],
-  context: ['context', 'subject', 'relation'],
+  context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
   retire: ['concept', 'context', 'reason'],

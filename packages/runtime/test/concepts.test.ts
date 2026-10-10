@@ -289,7 +289,14 @@ describe('the concept journal as a library', () => {
         },
       ],
     });
-    const settled = concepts('context', 'booking', '--subject', 'Both.');
+    const settled = concepts(
+      'context',
+      'booking',
+      '--subject',
+      'Both.',
+      '--reason',
+      'Keep both branches in one settled description.',
+    );
     expect(settled).toMatchObject({ supersedes: expect.any(Array) });
     expect(concepts('design')).toMatchObject({
       contexts: [{ subject: 'Both.', relation: '', competingDescriptions: [] }],

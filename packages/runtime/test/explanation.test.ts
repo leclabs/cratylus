@@ -71,7 +71,7 @@ const PARAMETERS: Record<string, string[]> = {
   design: ['context'],
   history: ['concept', 'context'],
   decisions: ['context', 'open'],
-  context: ['context', 'subject', 'relation'],
+  context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
   retire: ['concept', 'context', 'reason'],
@@ -362,13 +362,12 @@ describe('what the explanation calls required is what the verb refuses without',
     return concepts;
   }
 
-  /** A call of each verb giving every parameter it takes, by parameter. */
+  /** A full call of each single-use verb, by parameter. */
   const FULL: Record<string, Record<string, string>> = {
     state: { context: 'booking' },
     design: { context: 'booking' },
     history: { concept: 'slot', context: 'booking' },
     decisions: { context: 'booking', open: '' },
-    context: { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' },
     define: {
       concept: 'window',
       context: 'booking',
@@ -411,10 +410,12 @@ describe('what the explanation calls required is what the verb refuses without',
     return words;
   }
 
-  const cases = explain(JOURNAL).verbs.flatMap((verb) => [
-    [verb.name, undefined] as const,
-    ...verb.parameters.map((p) => [verb.name, p.name] as const),
-  ]);
+  const cases = explain(JOURNAL)
+    .verbs.filter((verb) => verb.name !== 'context')
+    .flatMap((verb) => [
+      [verb.name, undefined] as const,
+      ...verb.parameters.map((p) => [verb.name, p.name] as const),
+    ]);
 
   it.each(cases)('%s without %s', (name, left) => {
     const verb = explain(JOURNAL).verbs.find(
@@ -436,6 +437,57 @@ describe('what the explanation calls required is what the verb refuses without',
       expect(entries().length).toBe(
         before.length + (verb.effect === 'appends' ? 1 : 0),
       );
+    }
+  });
+
+  it('context declares a parameter required only when both recording and changing refuse its omission', () => {
+    const verb = explain(JOURNAL).verbs.find(
+      (v) => v.name === 'context',
+    ) as VerbExplanation;
+    const fullCalls: Record<string, string>[] = [
+      { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' },
+      {
+        context: 'booking',
+        subject: 'Expanded booking.',
+        relation: 'Alongside fleet.',
+        reason: 'Include the expanded subject.',
+      },
+    ];
+    for (const left of [undefined, ...PARAMETERS.context!]) {
+      const refused = fullCalls.map((full) => {
+        const given = { ...full };
+        if (left !== undefined) delete given[left];
+        const concepts = journal();
+        const directory = join(repo as string, 'design/journal');
+        const before = readdirSync(directory);
+        try {
+          let error: unknown;
+          try {
+            concepts(...argv(verb, given));
+          } catch (caught) {
+            error = caught;
+          }
+          if (error !== undefined) {
+            expect(error).toBeInstanceOf(Error);
+            expect((error as Error).message).toMatch(/^concepts context: /);
+            expect(readdirSync(directory)).toEqual(before);
+            return true;
+          }
+          expect(readdirSync(directory)).toHaveLength(before.length + 1);
+          return false;
+        } finally {
+          rmSync(repo as string, { recursive: true, force: true });
+          repo = undefined;
+        }
+      });
+      if (left === undefined)
+        expect(refused, 'both full calls').toEqual([false, false]);
+      else
+        expect(
+          verb.parameters.find((parameter) => parameter.name === left)
+            ?.required,
+          `context without ${left}`,
+        ).toBe(refused.every(Boolean));
     }
   });
 });
