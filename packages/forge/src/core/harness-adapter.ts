@@ -574,8 +574,8 @@ export interface DispatchIsolation {
     readonly entries: Readonly<Record<string, string>>;
   };
   /** What the isolation still lacks against a worktree off the plan's line, in words
-   *  that complete "the implementer runs in an isolated copy of its dispatcher's
-   *  checkout, …": said by projection and by install. */
+   *  that complete "an agent that declares isolation runs in an isolated copy of its
+   *  dispatcher's checkout, …": said by projection and by install. */
   readonly lacks: string;
 }
 
