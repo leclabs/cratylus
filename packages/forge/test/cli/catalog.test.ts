@@ -51,6 +51,14 @@ const ZEROCONF_ANATOMY = {
     level: 'firm',
     projection: 'text',
   },
+  gauge: {
+    group: 'Bearing',
+    repertoire: 'fixed',
+    arity: 'slots',
+    level: 'fixed',
+    projection: 'binding',
+    slots: [{ name: 'span' }, { name: 'pitch', gloss: 'how fine' }],
+  },
 };
 
 /** Write `export const <name> = <literal>;` under `<root>/<dimension>/<file>.ts`. */
@@ -129,17 +137,18 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
     expect(out).toContain('veridicality');
     expect(out).toContain('plumbline');
     // …joined with the discovered value bodies, and with the metadata the entry
-    // module declared (group · repertoire · arity), which is the half only it can supply.
+    // module declared (group · repertoire · arity and slots · default level · projection),
+    // which is the half only it can supply.
     expect(out).toContain('ground-truth');
     expect(out).toContain('true-vertical');
-    expect(out).toContain('veridicality [Grounding, latent, scalar] (1)');
-    expect(out).toContain('plumbline [Bearing, curated, set] (1)');
     // The census is the whole of stdout: no header line, no spacer line.
     expect(out.split('\n')).toEqual([
-      'veridicality [Grounding, latent, scalar] (1)',
+      'veridicality [Grounding, latent, scalar, —, text] (1)',
       '  ground-truth',
-      'plumbline [Bearing, curated, set] (1)',
+      'plumbline [Bearing, curated, set, firm, text] (1)',
       '  true-vertical',
+      'gauge [Bearing, fixed, slots (span, pitch), fixed, binding] (0)',
+      '  (no value modules)',
     ]);
   });
 
@@ -163,6 +172,8 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
         group: 'Grounding',
         repertoire: 'latent',
         arity: 'scalar',
+        level: null,
+        projection: 'text',
         values: ['ground-truth'],
       },
       {
@@ -170,7 +181,19 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
         group: 'Bearing',
         repertoire: 'curated',
         arity: 'set',
+        level: 'firm',
+        projection: 'text',
         values: ['true-vertical'],
+      },
+      {
+        dimension: 'gauge',
+        group: 'Bearing',
+        repertoire: 'fixed',
+        arity: 'slots',
+        level: 'fixed',
+        projection: 'binding',
+        slots: [{ name: 'span' }, { name: 'pitch', gloss: 'how fine' }],
+        values: [],
       },
     ]);
   });

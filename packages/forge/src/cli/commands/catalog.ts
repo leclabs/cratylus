@@ -66,12 +66,18 @@ function defaultCorpus(): string | undefined {
   return existsSync(candidate) ? candidate : undefined;
 }
 
-/** The corpus census as lines, grouped by dimension. */
+/**
+ * The corpus census as lines, grouped by dimension. Each head reads
+ * `<dimension> [<group>, <repertoire>, <arity>[ (<slot>, …)], <level|—>, <projection>]
+ * (<count>)`: the default enforcement level (`—` when none applies) and whether the
+ * dimension is rendered as text or compiled to harness settings.
+ */
 function renderTable(entries: CatalogEntry[]): string[] {
   const lines: string[] = [];
   for (const e of entries) {
+    const slots = e.slots ? ` (${e.slots.map((s) => s.name).join(', ')})` : '';
     lines.push(
-      `${e.dimension} [${e.group}, ${e.repertoire}, ${e.arity}] (${e.values.length})`,
+      `${e.dimension} [${e.group}, ${e.repertoire}, ${e.arity}${slots}, ${e.level ?? '—'}, ${e.projection}] (${e.values.length})`,
     );
     if (e.values.length === 0) lines.push('  (no value modules)');
     for (const v of e.values) {

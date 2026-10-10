@@ -26,7 +26,9 @@ import { pathToFileURL } from 'node:url';
 import {
   type Arity,
   type DimensionManifest,
+  type EnforcementLevel,
   type Repertoire,
+  type Slot,
   type Value,
   bodyOf,
   isDimensionValue,
@@ -48,6 +50,12 @@ export interface CatalogEntry {
   readonly repertoire: Repertoire;
   /** How many values the dimension holds — `scalar | set | slots | attribute`. */
   readonly arity: Arity;
+  /** The default enforcement level an entry takes; `null` when none applies. */
+  readonly level: EnforcementLevel | null;
+  /** `text` is rendered into the agent's body; `binding` compiles to harness settings. */
+  readonly projection: 'text' | 'binding';
+  /** The named slots of a `slots` dimension, in order. Absent otherwise. */
+  readonly slots?: readonly Slot[];
   /**
    * The discovered value bodies (each a branded-string cell, `⟨α, residue⟩`),
    * sorted shortlex.
@@ -140,6 +148,9 @@ export async function enumerateCatalog(
       group: meta.group,
       repertoire: meta.repertoire,
       arity: meta.arity,
+      level: meta.level,
+      projection: meta.projection,
+      ...(meta.slots === undefined ? {} : { slots: meta.slots }),
       values: await valuesOf(corpusDimensionsDir, name),
     });
   }
