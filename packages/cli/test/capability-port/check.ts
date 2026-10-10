@@ -88,9 +88,26 @@ export function parseRecording(raw: unknown): Recording {
   return record as unknown as Recording; // All consumed fields validated above.
 }
 export function journalCalls(recording: Recording) {
-  return recording.events.filter(
-    (e): e is Call => e.kind === 'tool' && e.name === 'concept_journal',
-  );
+  // Preserve raw transport events for tool-wiring and shell assertions. Omp's
+  // device write executes the same registered capability as a top-level call;
+  // a documentation read is neither a journal act nor a shell invocation.
+  return recording.events.flatMap((event): Call[] => {
+    if (event.kind !== 'tool') return [];
+    if (event.name === 'concept_journal') return [event];
+    if (
+      event.name !== 'write' ||
+      event.arguments.path !== 'xd://concept_journal' ||
+      typeof event.arguments.content !== 'string'
+    )
+      return [];
+    try {
+      const args = object(JSON.parse(event.arguments.content));
+      return [{ ...event, name: 'concept_journal', arguments: args }];
+    } catch {
+      // Invalid device arguments cannot establish a completed journal act.
+      return [];
+    }
+  });
 }
 export function succeeded(call: Call) {
   return call.result !== undefined && call.result.isError !== true;

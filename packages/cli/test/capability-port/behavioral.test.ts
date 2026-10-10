@@ -3,7 +3,13 @@
 // CAPABILITY_PORT_RECORDINGS selects the evidence directory (else a printed tmp path).
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
-import { decodeMessages, meaningChange, openChoice } from './check.js';
+import {
+  decodeMessages,
+  journalCalls,
+  meaningChange,
+  openChoice,
+  shellReachesJournal,
+} from './check.js';
 import { here } from './fixture.js';
 import { offline } from './offline.js';
 import { behavioral } from './omp.js';
@@ -45,4 +51,77 @@ it('decoder reads the verb argument, matches results by id, and ignores reasonin
       result: { isError: false, content: [{ type: 'text', text: 'output' }] },
     },
   ]);
+});
+
+it('decoder recognizes omp device writes while preserving raw transport and results', () => {
+  const events = decodeMessages([
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'toolCall',
+          id: 'docs',
+          name: 'read',
+          arguments: { path: 'xd://concept_journal' },
+        },
+        {
+          type: 'toolCall',
+          id: 'call',
+          name: 'write',
+          arguments: {
+            path: 'xd://concept_journal',
+            content: '{"verb":"decisions"}',
+          },
+        },
+      ],
+    },
+    { role: 'toolResult', toolCallId: 'docs', isError: false, content: [] },
+    {
+      role: 'toolResult',
+      toolCallId: 'call',
+      isError: false,
+      content: [{ type: 'text', text: '{"decisions":[]}' }],
+    },
+  ]);
+  expect(journalCalls({ name: 'device-route', events })).toEqual([
+    {
+      kind: 'tool',
+      id: 'call',
+      name: 'concept_journal',
+      arguments: { verb: 'decisions' },
+      result: {
+        isError: false,
+        content: [{ type: 'text', text: '{"decisions":[]}' }],
+      },
+    },
+  ]);
+  expect(events.filter((e) => e.kind === 'tool').map((e) => e.name)).toEqual([
+    'read',
+    'write',
+  ]);
+  expect(events.some((e) => e.kind === 'tool' && shellReachesJournal(e))).toBe(
+    false,
+  );
+});
+
+it.each([
+  'journal.json',
+  'xd://another_tool',
+  'xd://concept_journal_extra',
+  'xd://concept_journal/',
+])('decoder refuses a non-journal device target: %s', (path) => {
+  expect(
+    journalCalls({
+      name: 'wrong-target',
+      events: [
+        {
+          kind: 'tool',
+          id: 'call',
+          name: 'write',
+          arguments: { path, content: '{"verb":"decide","status":"open"}' },
+          result: { isError: false },
+        },
+      ],
+    }),
+  ).toEqual([]);
 });
