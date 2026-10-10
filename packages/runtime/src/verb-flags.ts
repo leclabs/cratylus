@@ -6,9 +6,10 @@
 // does not take or a word beyond the positional it declares.
 //
 // A capability declares, for each of its verbs, its purpose in a line, its
-// positional, and the flags it takes (named without their leading `--`), each
-// with whether it takes a value and a one-line description. A flag cannot be
-// taken without being described: the declaration does not compile otherwise.
+// positional (optional where the verb also acts without it), and the flags it
+// takes (named without their leading `--`), each with whether it takes a value
+// and a one-line description. A flag cannot be taken without being described:
+// the declaration does not compile otherwise.
 // A flag also says whether its verb refuses a call without it, whether it
 // takes one of a few values, and whether it is given once per value; the
 // verb's help and its explanation both read this one declaration.
@@ -78,10 +79,12 @@ export const switchFlag = (description: string) =>
 export type Flags = { readonly [flag: string]: Flag };
 
 /** The one word a verb acts on, given where it must be: its name, which its
- *  help prints as `<name>`, and the line its help prints for it. */
+ *  help prints as `<name>`, or as `[name]` when it is `optional` (the verb
+ *  also acts without it), and the line its help prints for it. */
 export interface Positional {
   readonly name: string;
   readonly description: string;
+  readonly optional?: true;
 }
 
 /** One verb, declared once: its purpose in a line, the positional it acts on
@@ -98,9 +101,12 @@ export type VerbFlags<V extends string = string, T extends Verb = Verb> = {
   readonly [verb in V]: T;
 };
 
-/** How a verb's positional is spelled in its help and its refusals. */
+/** How a verb's positional is spelled in its help and its refusals: `<name>`,
+ *  or `[name]` when optional. */
 export const spelled = (positional: Positional): string =>
-  `<${positional.name}>`;
+  positional.optional === true
+    ? `[${positional.name}]`
+    : `<${positional.name}>`;
 
 /** An argv tail: its positionals, and each flag's values in the order given;
  *  a switch holds `''` each time it is given. */

@@ -572,7 +572,7 @@ What the journal and each verb are for, when to reach for each, the concept each
 
 The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
 
-What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
+What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
 Nothing under `design/journal` is edited, moved or deleted. In the cratylus repository its immutability gate holds this: it refuses such a change at commit and in CI, naming each path, and lets additions pass.
 
@@ -599,7 +599,7 @@ cratylus concepts design [options]
 #### `cratylus concepts history`
 
 ```sh
-cratylus concepts history [options] <concept>
+cratylus concepts history [options] [concept]
 ```
 
 | Flag                |
@@ -627,6 +627,7 @@ cratylus concepts context [options] <context>
 | -------------------- |
 | `--subject <value>`  |
 | `--relation <value>` |
+| `--reason <value>`   |
 
 #### `cratylus concepts define`
 
