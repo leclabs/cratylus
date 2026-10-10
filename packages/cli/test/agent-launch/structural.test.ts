@@ -140,14 +140,21 @@ describe('agent launch — visible examples', () => {
   it('3: preserves the operator tool selection without widening or narrowing', async () => {
     const f = fixture();
     try {
-      f.declaration({ ...declaration, tools: ['read', 'write'] });
+      const tools = ['read', 'grep'];
+      const plain = await inspect(f, { tools });
+      // “neither widens”: task is declaration-only, not granted by these flags.
+      expect(plain.observation.tools).not.toContain('task');
+      f.declaration({ ...declaration, tools: ['read', 'task'] });
       const { observation } = await inspect(f, {
         agent: declaration.name,
-        tools: ['read', 'grep'],
+        tools,
       });
-      // “operator's selection”; includes both a dispatch-only and an
-      // operator-only tool, so equality binds “neither widens nor narrows”.
-      expect(observation.tools.slice().sort()).toEqual(['grep', 'read']);
+      // “operator's selection” is what omp grants, extension tools included,
+      // not the literal --tools list. Equality binds “neither widens nor narrows”.
+      expect
+        .soft(observation.tools.slice().sort())
+        .toEqual(plain.observation.tools.slice().sort());
+      expect.soft(observation.tools).toContain('concept_journal');
     } finally {
       f.dispose();
     }
