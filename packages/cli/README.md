@@ -147,21 +147,24 @@ session runs without omp's default personality, as a dispatched child does; with
 or off as `read-summarize` says (unsaid, as your settings have it); with the advisor and the
 pre-planning hand-off (prewalk) the declaration names, `task.agentAdvisor` and `task.agentPrewalk`
 entries first, and neither when it names none, as for a child. It may dispatch only the agents
-`spawns` names, as dispatch gives them to a child (`*` is any agent; an empty list, or no `spawns`, is
-none, though omp reads a declaration whose `tools` include `task` and that gives no `spawns` as `*`);
-omp refuses any other with
-`Cannot spawn '<name>'. Allowed: …`. These are held as session-only overrides, never written to your
-configuration, and the declaration wins over your configuration files as it does for a child. A
-`--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` or `--prewalk-into` you pass
-yourself wins over the declaration, each for its own part, and the rest of the declaration is held
-either way. The status line shows `<mark> <name>`, or the name alone without a mark (a bundled omp
-agent, such as `scout`, has no mark). The declaration is read afresh for each new session. The tools
-stay yours: the extension never changes the session's tools, so `omp --agent <name> --tools …`
-holds exactly what plain `omp --tools …` holds (without `task` the session cannot dispatch at all),
-and a declaration's `tools` are for dispatch only. A name omp does not discover ends startup with a
-non-zero exit and `cratylus: Unknown agent "<name>"`, before any session starts. Without `--agent`,
-and in subagent sessions, the extension adds nothing to the prompt, the status line or the session's
-settings.
+`spawns` names (`*` is any agent; with no `spawns`, any agent when its `tools` include `task` and
+none otherwise, as omp reads it; an explicitly empty `spawns`, an empty list or a blank string, is
+none even when its `tools` include `task`); omp refuses any other with
+`Cannot spawn '<name>'. Allowed: …`. Two of these are held as the declaration says where omp's own
+`task` dispatch does not hold them for a child, a known omp limitation: an explicitly empty `spawns`
+with `task` in `tools`, which omp's discovery reads as `*`, and `read-summarize: true`, which omp's
+dispatch does not apply (it applies only `false`). These are held as session-only overrides, never
+written to your configuration, and the declaration wins over your configuration files as it does
+for a child. A `--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` or
+`--prewalk-into` you pass yourself wins over the declaration, each for its own part, and the rest
+of the declaration is held either way. The status line shows `<mark> <name>`, or the name alone
+without a mark (a bundled omp agent, such as `scout`, has no mark). The declaration is read afresh
+for each new session. The tools stay yours: the extension never changes the session's tools, so
+`omp --agent <name> --tools …` holds exactly what plain `omp --tools …` holds (without `task` the
+session cannot dispatch at all), and a declaration's `tools` are for dispatch only. A name omp does
+not discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before any
+session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
+prompt, the status line or the session's settings.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
