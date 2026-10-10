@@ -3,7 +3,7 @@
 **CRITICAL INVARIANT:** You **MUST Read** these documents upon session-start:
 
 - [`CANON.md`](./CANON.md) — **overview and primer**
-- [`CRATYLISM`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
+- [`CRATYLISM`](./packages/canon/src/genus/prime-principle.ts) — The First Principle (**LOCKED**)
 - [`VISION.md`](./VISION.md) — **why** the canon exists
 - [`MODEL.md`](./MODEL.md) — **what** exists: conceptual objectives and acceptance criteria
 - [`ENGINE.md`](./ENGINE.md) — **how** primitives are discovered, validated, and projected

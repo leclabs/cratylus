@@ -8,12 +8,11 @@
 //      projects by the skills AS CODIFIED (each cell now carries the ρ=LLM
 //      discipline in its own laws) and pinned here; each must conform. The
 //      exception is the delegation-prompt and subagent-return pair, which
-//      depicts this corpus's implementer: a dispatch naming the one unit to
+//      depicts this corpus's builder: a dispatch naming the one unit to
 //      build, and the return that is only that unit's name.
 //   2. AGENT↔AGENT messages — delegation prompts + subagent returns, ρ=LLM by
-//      standing rule (codified: `dimensions/actions/delegation.ts` definiens; the
-//      dispatch/judge laws in `skills/praxis.ts`; `conform(k)` in exemplify's
-//      `valid`). The codification is asserted non-regressable below.
+//      standing rule (codified: `conform(k)` in exemplify's `valid`). The
+//      codification is asserted non-regressable below.
 //
 // Shares ONE model with reader-density.test.ts: `reader-register.ts` (ρ · the
 // deterministic register witness · conform). FALSIFIERS: a seeded long-form-
@@ -25,7 +24,6 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { delegation } from '../src/dimensions/actions/delegation.js';
 import { exemplify } from '../src/skills/exemplify/skill.js';
 import {
   type ArtClass,
@@ -103,15 +101,10 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
     expect(humanRegisterSignals(dense)).toEqual([]);
   });
 
-  // ── the codification homes are standing law, not per-turn discretion ─────────
-  it('the delegation dimension + fan-out cells carry the σ* contract (non-regressable)', () => {
-    // reader = LLM by construction: delegation returns are σ* (dense, no
-    // long-form prose); a human-facing carried deliverable is an explicit
-    // human-project. No ρ/register inference anywhere in signifier-derivation.
-    expect(delegation).toMatch(/return ↦ σ\*/);
-    expect(delegation).toMatch(/¬long-form-prose/);
-    expect(delegation).toMatch(/human-project ↾ carried-deliverable/);
-    expect(delegation).not.toMatch(/ρ=/);
+  // ── the codification home is standing law, not per-turn discretion ──────────
+  it('the fan-out cell carries the σ* contract (non-regressable)', () => {
+    // reader = LLM by construction: no ρ/register inference anywhere in
+    // signifier-derivation.
     expect(exemplify.formalBlock).toContain('conform(k)');
     expect(exemplify.formalBlock).toMatch(/valid\(k\)\s+⇔.*conform\(k\)/);
     expect(exemplify.formalBlock).not.toMatch(/readers|ρ\(/);

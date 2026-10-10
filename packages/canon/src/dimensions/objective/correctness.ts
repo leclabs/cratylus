@@ -1,3 +1,3 @@
 import type { Objective } from '../../manifest.js';
 
-export const correctness: Objective = `correctness`;
+export const correctness: Objective = `correctness ≜ the work satisfies its examples exactly`;

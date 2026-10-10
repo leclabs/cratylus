@@ -5,7 +5,7 @@
 // the module set:
 //
 //   parsimonious-over-structure(corpus) ⇔
-//     ¬∃ file/type/field existing SOLELY to restate what an archetype holds.
+//     ¬∃ file/type/field existing SOLELY to restate what a role holds.
 //
 // A disposition with no `accept()` leg binds attention, not the corpus — so the
 // class re-accretes. This module adds the missing machine-checked leg as three
@@ -21,15 +21,15 @@
 //                           id matches /Resolved$/ or is typed `ResolvedAgent`:
 //                           a PARALLEL representation duplicating the `Agent`
 //                           vector already declared in the same module.
-//   ABSORBED-IDENTITY (c) — the provenance-mega-fragment class. A dimension
+//   ABSORBED-IDENTITY (c) — the identity-mega-fragment class. A catalog
 //                           value-cell carrying an inlinable IDENTITY token (a
 //                           `mark:{emoji,hue}`) AND referenced by ≤1 agent:
 //                           content wholly absorbed into ONE agent's identity,
-//                           not a reusable dimension value. The AND is load-bearing —
+//                           not a reusable catalog value. The AND is load-bearing —
 //                           refCount≥2 is a genuine SHARED value (reusable, green),
-//                           a mark-less single-ref cell is a legit open-dimension
-//                           value (role/build — green). Only mark ∧ refCount≤1 is
-//                           "identity, not dimension value".
+//                           a mark-less single-ref cell is a legit open-factor
+//                           value (role/builder — green). Only mark ∧ refCount≤1 is
+//                           "identity, not catalog value".
 //
 // A ROLE CELL IS NOT A GENUS FLOOR, and the distinction is worth stating because the
 // two look alike from a distance. `src/roles/<name>.ts` supplies a partial dimension
@@ -42,10 +42,10 @@
 // telling the reader to delete it. Accretion is a floor nobody named; a role is named,
 // and the name is the contract a peer dispatches against.
 //
-// GOVERNING INVARIANT (project's whole point): every deployed artifact the model
-// reads is formal σ* under ρ, never human prose — held here structurally: the
-// gate refuses re-accretion of files/types/fields that restate an archetype, the
-// structural face of the same parsimony `accept.ts` enforces per-cell.
+// GOVERNING INVARIANT: nothing in the corpus restates what another home already
+// holds — held here structurally: the gate refuses re-accretion of
+// files/types/fields that restate a role, the structural face of the same
+// parsimony `accept.ts` enforces per-cell.
 //
 // CANON'S, NOT THE PROJECTOR'S. This is a gate over THIS corpus's own tree, and the
 // coupling is in the WITNESSES, not in extractable constants: `genusFloor` quantifies
@@ -185,12 +185,12 @@ export function resolvedDup(corpus: StructuralCorpus): StructuralVerdict {
 }
 
 /**
- * ABSORBED-IDENTITY — a dimension value-cell carrying an identity token (`mark`) AND
- * referenced by ≤1 agent (the provenance-mega-fragment class: identity wholly
- * absorbed into one agent, not a reusable dimension value). The AND is the guard
+ * ABSORBED-IDENTITY — a catalog value-cell carrying an identity token (`mark`) AND
+ * referenced by ≤1 agent (the identity-mega-fragment class: identity wholly
+ * absorbed into one agent, not a reusable catalog value). The AND is the guard
  * against false positives — refCount≥2 ⇒ genuine shared value; ¬mark ⇒ legit
- * open-dimension value even at refCount=1. The clean tree carries no marked value-cell
- * (provenance collapsed to inline `provenance:{mark}` on each agent).
+ * open-factor value even at refCount=1. The clean tree carries no marked value-cell
+ * (an agent's mark is an identity detail, inline on the agent).
  */
 export function absorbedIdentity(corpus: StructuralCorpus): StructuralVerdict {
   const refCount = new Map<string, number>();
