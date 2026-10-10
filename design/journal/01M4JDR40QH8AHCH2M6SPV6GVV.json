@@ -1,0 +1,13 @@
+{
+  "id": "01M4JDR40QH8AHCH2M6SPV6GVV",
+  "at": "2026-10-10T08:09:24.247Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "capability interface",
+  "wording": "a capability is offered to agents the way the harness describes its own tools: its name and verbs are the anchors of the concepts it serves, in their context's words, and each says its concept's purpose and when to reach for it, so an agent reading the interface cold knows what each verb does without being told.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "Once capabilities reach agents as tools, the tool's interface is all an agent knows of the capability; it must carry the meaning, as cratylism requires of every name.",
+  "supersedes": []
+}

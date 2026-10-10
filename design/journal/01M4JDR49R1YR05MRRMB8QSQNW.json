@@ -1,0 +1,13 @@
+{
+  "id": "01M4JDR49R1YR05MRRMB8QSQNW",
+  "at": "2026-10-10T08:09:24.536Z",
+  "kind": "decide",
+  "decisionId": "0035",
+  "context": "corpus",
+  "title": "Stance and its guard",
+  "situation": "The architect repeatedly slides from meaning into realization when asked a conceptual question, caught by the operator each time; identity comes from an agent's definition and reach from whoever starts it, but nothing holds the dimensions the operator sets firm. The operator's direction is an append-only record of those settings that a guard reads at the moment of each check, with enforcement levels in the manner of policy stores (advisory, soft-mandatory, hard-mandatory).",
+  "decision": "Realize stance and the stance guard: the operator's settings recorded as entries, the guard reading the current stance at each act and enforcing it as firmly as it holds.",
+  "consequences": "Not yet illustrated; the operator develops it further first. Depends on agent launch. Its examples must include what the guard must not block.",
+  "status": "open",
+  "supersedes": null
+}

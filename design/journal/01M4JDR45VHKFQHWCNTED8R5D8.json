@@ -1,0 +1,13 @@
+{
+  "id": "01M4JDR45VHKFQHWCNTED8R5D8",
+  "at": "2026-10-10T08:09:24.411Z",
+  "kind": "decide",
+  "decisionId": "0034",
+  "context": "delivery",
+  "title": "Cut: agent launch",
+  "situation": "Agent launch is defined (decision 0033) and not yet realized.",
+  "decision": "Realize agent launch as its own small cut in delivery, after cut 6, through the same extension.",
+  "consequences": "Retires the stopgap launchers; is the platform the stance guard sits on.",
+  "status": "open",
+  "supersedes": null
+}
