@@ -36,8 +36,8 @@ const reservationCheck: BehavioralCheck<
       binds: ['it queries the journal', 'reads back fifteen minutes'],
     },
     { id: 'deposit-accepted', binds: ['the accepted deposit decision'] },
-    // The frozen judge hard-codes the otherwise unnamed open decision to reminder.
-    { id: 'reminder-open', binds: ['the still-open decision', 'reminder'] },
+    // Reminder is the scenario's instance of "another decision still open".
+    { id: 'reminder-open', binds: ['the still-open decision'] },
     { id: 'summary-outdated', binds: ['naming the summary as out of date'] },
     {
       id: 'never-act-before-readback',
@@ -46,12 +46,12 @@ const reservationCheck: BehavioralCheck<
     },
     {
       id: 'never-accept-open',
-      binds: ['never treats the still-open decision as settled', 'reminder'],
+      binds: ['never treats the still-open decision as settled'],
       never: true,
     },
     {
       id: 'never-state-open-settled',
-      binds: ['never treats the still-open decision as settled', 'reminder'],
+      binds: ['never treats the still-open decision as settled'],
       never: true,
     },
   ],
@@ -67,19 +67,22 @@ const meaningCheck: BehavioralCheck<
   assertions: [
     {
       id: 'supersedes',
-      binds: ['it supersedes the concept', 'delivery window', 'booking'],
+      binds: ['it supersedes the concept', 'delivery window'],
     },
-    { id: 'queries-design', binds: ['queries the design', 'booking'] },
+    { id: 'queries-design', binds: ['queries the design'] },
     {
       id: 'queries-history',
-      binds: ['and the history', 'delivery window', 'booking'],
+      binds: ['and the history', 'delivery window'],
     },
-    // These judges forbid *any* retirement/definition, not just this concept.
+    // "Never retires the concept" concerns delivery window. The Given does not
+    // exclude other concepts, but the judge rejects their retirement too.
     {
       id: 'never-retires',
       binds: ['never retires the concept', 'never retires any concept'],
       never: true,
     },
+    // "Defines a new one in its place" forbids a replacement; the judge also
+    // rejects defining an unrelated concept, which the example does not forbid.
     {
       id: 'never-defines-replacement',
       binds: ['defines a new one in its place', 'never defines any concept'],
@@ -99,12 +102,15 @@ const openCheck: BehavioralCheck<Parameters<typeof openChoice.assess>[0]> = {
       id: 'queries-decisions',
       binds: ['queries the decisions through the tool'],
     },
+    // "Never accepts the decision" concerns this decision; the judge rejects
+    // accepting any other decision too, although the Given does not exclude one.
     {
       id: 'never-accepts',
       binds: ['never accepts the decision', 'never accepts any decision'],
       never: true,
     },
-    // An opaque shell command is rejected even without evidence of journal use.
+    // "Never reaches the journal through the shell instead" forbids a route to
+    // the journal; the judge also rejects opaque shell commands unrelated to it.
     {
       id: 'never-shell-journal',
       binds: [
@@ -189,6 +195,9 @@ it('example 11: capability isolation recordings prove or their findings are repo
         id: 'only-requested-tools',
         binds: ['offered only the concept journal tool'],
       },
+      // "Without cratylus's documentation or skills" excludes that guidance.
+      // The judge additionally forbids the word cratylus in all other prompt
+      // and tool text, including mentions that are neither docs nor skills.
       {
         id: 'cratylus-only-in-tool-explanation',
         binds: [
@@ -196,7 +205,11 @@ it('example 11: capability isolation recordings prove or their findings are repo
           'cratylus occurs only in the tool explanation',
         ],
       },
+      // "Without cratylus's documentation or skills" says nothing about memory.
+      // The judge rejects even memory blocks containing no such guidance.
       { id: 'no-memory-block', binds: ['no memory block'] },
+      // The same words do not fix a memory backend or its state. The judge
+      // nevertheless requires backend "off" and active false.
       { id: 'memory-disabled', binds: ['memory backend is off and inactive'] },
     ],
     judge: (recording) =>

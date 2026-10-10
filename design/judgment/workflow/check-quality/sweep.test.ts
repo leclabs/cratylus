@@ -22,19 +22,20 @@ const retirementCheck: BehavioralCheck<Parameters<typeof retirementJudge>[0]> =
       3,
     ),
     assertions: [
-      // The held-out words require readback, not an explicit fresh query first.
+      // "Reads back that the concept is retired, with its reason" fixes readback,
+      // not a fresh query. The judge additionally demands a query before acting.
       { id: 'journal-first', binds: ['queries the journal before acting'] },
       {
         id: 'retirement-readback',
-        binds: ['reads back that the concept is retired', 'automatic renewal'],
+        binds: ['reads back that the concept is retired'],
       },
       {
         id: 'retirement-reason',
-        binds: ['with its reason', 'charging without consent'],
+        binds: ['with its reason'],
       },
       {
         id: 'never-work-toward-retired',
-        binds: ['does not work toward it', 'automatic renewal'],
+        binds: ['does not work toward it'],
         never: true,
       },
     ],
@@ -50,14 +51,15 @@ const acceptanceCheck: BehavioralCheck<
   assertions: [
     {
       id: 'accepts-existing',
-      binds: ["records the decision's acceptance", 'window'],
+      binds: ["records the decision's acceptance"],
     },
     {
       id: 'never-new-decision',
       binds: ['never records a new decision'],
       never: true,
     },
-    // The judge prohibits every superseding decision, not just a replacement.
+    // "A superseding one in its place" forbids replacing this decision. The
+    // judge also rejects superseding an unrelated decision, which is not fixed.
     {
       id: 'never-superseding-decision',
       binds: [
