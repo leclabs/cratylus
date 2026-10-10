@@ -17,11 +17,12 @@
 // `readArgv` stays their one reader, so every `verb flags` refusal is the
 // dispatcher's own. The one thing read here is whether the tokens ask for help:
 // `--help` or `-h` as a token of its own, never as the value of a flag that
-// takes one — `note capture t --body -h` keeps `-h` as the body. A verb the
-// capability does not declare is refused by `verbOf`, the one home of that refusal.
+// takes one — `concepts context c --subject -h` keeps `-h` as the subject. A verb
+// the capability does not declare is refused by `verbOf`, the one home of that
+// refusal.
 //
-// `eventTap` and `concepts` print their JSON result; `design`, `plan` and `note`
-// print their view. A refusal is a loud code-1 failure, printed as `cratylus <message>`, a message opening with the
+// `eventTap` and `concepts` print their JSON result. A refusal is a loud code-1
+// failure, printed as `cratylus <message>`, a message opening with the
 // capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
@@ -36,8 +37,6 @@ import { Command, Option } from 'commander';
 import { CLI_BIN } from './bin-name.js';
 import { VERBS as CONCEPTS } from './capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from './capabilities/concepts/index.js';
-import { VERBS as DESIGN } from './capabilities/design/dispatch.js';
-import { dispatchDesign } from './capabilities/design/index.js';
 import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
@@ -68,7 +67,6 @@ const SURFACES: {
     verbs: EVENT_TAP,
     run: (argv) => JSON.stringify(dispatchEventTap(argv), null, 2),
   },
-  design: { verbs: DESIGN, run: dispatchDesign },
   concepts: {
     verbs: CONCEPTS,
     run: (argv) => JSON.stringify(dispatchConcepts(argv), null, 2),

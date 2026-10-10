@@ -3,7 +3,7 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`eventTap`, `design`, `plan`, `note`), and `@cratylus/canon` the corpus `install`
+// (`eventTap`, `concepts`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through.

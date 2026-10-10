@@ -77,7 +77,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
         'enforcing/probe/omp.yml',
         'hooks/ping/ping.sh',
         'skills/greet/SKILL.md',
-        'skills/greet/scripts/design.mjs',
+        'skills/greet/scripts/concepts.mjs',
       ].sort(),
     );
     // Bytes, not paths-on-disk: every entry carries its own content.
@@ -99,10 +99,10 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const skill = t.files.find((f) => f.path === 'skills/greet/SKILL.md');
     expect(skill?.content).toContain('G ≜ ⟨greeting⟩');
     const shim = t.files.find(
-      (f) => f.path === 'skills/greet/scripts/design.mjs',
+      (f) => f.path === 'skills/greet/scripts/concepts.mjs',
     );
     expect(shim?.executable).toBe(true);
-    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['design'`);
+    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['concepts'`);
   });
 
   it('carries the OMP session-hook module and worker byte-anchor', async () => {

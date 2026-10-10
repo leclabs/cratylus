@@ -262,9 +262,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // capability-protected red-first freeze behavior using fixtures it supplies.
   'runtime/example-substrate.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
-  // drives the `design` verb surface over temporary git repositories it builds and
-  // merges itself; its refusals ARE its fixtures.
-  'runtime/design.test.ts': 'BEHAVIORAL',
+  // drives `dispatchConcepts` over scratch git repositories it builds itself; its
+  // refusals (a flag given twice, a journal entry that is not one, a directory
+  // outside git) ARE its fixtures.
+  'runtime/concepts.test.ts': 'BEHAVIORAL',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
   'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',

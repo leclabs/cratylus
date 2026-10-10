@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.10.0",
-  "description": "The per-host runtime: the built-in capabilities (eventTap, design, concepts, plan, note) and their port interfaces, the host runtime config, and the runtime-owned lifecycle-event taxonomy.",
+  "description": "The per-host runtime: the built-in capabilities (eventTap, concepts) and the event-tap port interface, the host runtime config, and the runtime-owned lifecycle-event taxonomy.",
   "license": "MIT",
   "engines": {
     "node": ">=22"

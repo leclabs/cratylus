@@ -212,7 +212,7 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 // would be one root over two concepts.
 export const RUNTIME_CAPABILITIES = [
   'eventTap',
-  'design',
+  'concepts',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */
