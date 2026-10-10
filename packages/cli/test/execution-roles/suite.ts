@@ -63,7 +63,7 @@ export function roleSuite(directory: string) {
           expect(batch.passed).toBe(false);
         });
       it('offline aggregation: four of five, every never in all five', async () => {
-        const good = recordings.golden[0].recording;
+        const good = recordings.golden[0]!.recording;
         expect(
           (await judgeBatch(source, Array(5).fill(good), { atLeast: 4, of: 5 }))
             .passed,

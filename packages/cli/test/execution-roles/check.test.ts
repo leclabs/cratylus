@@ -54,13 +54,12 @@ it.each(['define', 'supersede', 'retire'])(
   'rejects a new %s version of the named concept',
   (kind) => {
     const r = record(15);
-    r.snapshots[1]['design/journal/new-entry.json'] = `journal:${JSON.stringify(
-      {
+    r.snapshots[1]!['design/journal/new-entry.json'] =
+      `journal:${JSON.stringify({
         kind,
         context: 'booking',
         name: 'reservation',
-      },
-    )}`;
+      })}`;
     expect(
       assess(scenarios.find((s) => s.number === 15)!, r)['concept-unchanged'],
     ).toBe(false);
@@ -72,7 +71,7 @@ it.each([
   { kind: 'supersede', context: 'another-context', name: 'reservation' },
 ])('permits unrelated journal entry %j', (entry) => {
   const r = record(15);
-  r.snapshots[1]['design/journal/new-entry.json'] =
+  r.snapshots[1]!['design/journal/new-entry.json'] =
     `journal:${JSON.stringify(entry)}`;
   expect(
     assess(scenarios.find((s) => s.number === 15)!, r)['concept-unchanged'],

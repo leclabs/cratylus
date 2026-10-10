@@ -58,7 +58,7 @@ export function assess(
     ['installed-role', wiringHolds(record, scenario.role)],
     ...scenario.clauses.map((clause) => {
       if (clause.unchanged) {
-        const before = record.snapshots[0];
+        const before = record.snapshots[0]!;
         const paths = clause.unchanged;
         return [
           clause.id,

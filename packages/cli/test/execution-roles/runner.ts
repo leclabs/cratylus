@@ -49,7 +49,7 @@ export function project(scenario: Scenario): Fixture {
       '--subject',
       'Booking reservations and cancellation.',
     ]);
-    for (const line of scenario.files['design/concepts.md'].split('\n')) {
+    for (const line of scenario.files['design/concepts.md']!.split('\n')) {
       const boundary = line.indexOf(': ');
       if (boundary < 0) continue;
       command(f, 'cratylus', [
