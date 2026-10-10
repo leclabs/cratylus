@@ -269,6 +269,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
   'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
+  // asserts over the live concept journal declaration and cratylus's own live design:
+  // each verb's concept is a live concept, its help says what it explains, and what
+  // it calls required is refused without. A verb whose concept the design retired,
+  // in a scratch journal, convicts it.
+  'runtime/explanation.test.ts': 'GATE',
   // drives `install` over requests it builds itself — all mapped, some, none — against
   // a host config it supplies; polices no live artifact.
   // stages and commits changes in temp repositories it builds itself; its refusals (a

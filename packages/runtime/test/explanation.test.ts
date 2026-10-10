@@ -166,13 +166,28 @@ describe('concepts --explain', () => {
       expect(positional(verb), verb).toEqual([]);
   });
 
-  it('acts on live concepts of cratylus’s own conceptual design', () => {
-    const design = dispatchConcepts(['design'], { from: repositoryRoot }) as {
-      contexts: { concepts: { name: string }[] }[];
+  /** The live concepts of the journal of the repository at `from`, and the
+   *  concepts it has retired. */
+  function designAt(from: string) {
+    const design = dispatchConcepts(['design'], { from }) as {
+      contexts: {
+        concepts: { name: string }[];
+        retired: { name: string }[];
+      }[];
     };
-    const anchors = design.contexts.flatMap((c) =>
-      c.concepts.map((v) => v.name),
-    );
+    return {
+      live: design.contexts.flatMap((c) => c.concepts.map((v) => v.name)),
+      retired: design.contexts.flatMap((c) => c.retired.map((v) => v.name)),
+    };
+  }
+
+  /** The verbs of `explanation` whose concept is no live concept of `live`. */
+  const unanchored = (explanation: Explanation, live: readonly string[]) =>
+    explanation.verbs
+      .filter((v) => !live.includes(v.concept))
+      .map((v) => v.name);
+
+  it('acts on live concepts of cratylus’s own conceptual design', () => {
     const concepts = Object.fromEntries(
       explain(JOURNAL).verbs.map((v) => [v.name, v.concept]),
     );
@@ -188,8 +203,47 @@ describe('concepts --explain', () => {
       decide: 'decision',
       accept: 'decision',
     });
-    for (const concept of Object.values(concepts))
-      expect(anchors).toContain(concept);
+    expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
+      [],
+    );
+  });
+
+  it('convicts a verb whose concept the design has retired', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'explain-anchor-'));
+    try {
+      execFileSync('git', ['init', '-q'], { cwd: repo });
+      const concepts = (...argv: string[]) =>
+        dispatchConcepts(argv, { from: repo });
+      concepts('context', 'workflow', '--subject', 'The practice.');
+      for (const verb of explain(JOURNAL).verbs)
+        if (designAt(repo).live.every((name) => name !== verb.concept))
+          concepts(
+            'define',
+            verb.concept,
+            '--context',
+            'workflow',
+            '--wording',
+            `What ${verb.concept} means.`,
+            '--reason',
+            'Fixture.',
+          );
+      expect(unanchored(explain(JOURNAL), designAt(repo).live)).toEqual([]);
+      concepts(
+        'retire',
+        'supersession',
+        '--context',
+        'workflow',
+        '--reason',
+        'Fixture.',
+      );
+      // The defect landed: supersession is retired, no longer live.
+      const after = designAt(repo);
+      expect(after.retired).toContain('supersession');
+      expect(after.live).not.toContain('supersession');
+      expect(unanchored(explain(JOURNAL), after.live)).toEqual(['supersede']);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 
   it('refuses a verb the capability does not declare, as without --explain', async () => {
