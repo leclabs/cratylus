@@ -12,6 +12,8 @@ import { join } from 'node:path';
 import { Command } from 'commander';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
+import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
+import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
 import { dispatchDesign } from '../src/capabilities/design/index.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
@@ -94,6 +96,7 @@ async function run(
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   eventTap: EVENT_TAP,
   design: DESIGN,
+  concepts: CONCEPTS,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -161,6 +164,7 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   } = {
     eventTap: dispatchEventTap,
     design: dispatchDesign,
+    concepts: dispatchConcepts,
   };
 
   it.each(CAPABILITIES)(

@@ -5,6 +5,7 @@
 // end of this file fails `typecheck:test` if it ever compiles.
 
 import { describe, expect, it } from 'vitest';
+import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
 import { CAPABILITIES, CAPABILITY_SUMMARIES } from '../src/capability.js';
@@ -13,6 +14,7 @@ import type { Verb, VerbFlags } from '../src/verb-flags.js';
 const SURFACES: Record<(typeof CAPABILITIES)[number], VerbFlags> = {
   eventTap: EVENT_TAP,
   design: DESIGN,
+  concepts: CONCEPTS,
 };
 
 /** A line of words: something is said, and all of it on one line. */
