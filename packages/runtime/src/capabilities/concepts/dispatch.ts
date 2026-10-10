@@ -16,8 +16,15 @@
 // A query appends nothing and prints JSON. An appending verb appends exactly one
 // entry and prints it as JSON. Every refusal is one line opening with
 // `concepts <verb>:`, thrown before anything is appended.
+//
+// The capability EXPLAINS ITSELF from the declarations below: its name and when
+// to reach for it, and for each verb the concept it acts on, its purpose, when to
+// reach for it, whether it reads or appends, and each parameter it takes. Its
+// help prints the same declarations, and its calls are read against them.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { CAPABILITY_SUMMARIES } from '../../capability.js';
+import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import {
   type Argv,
   type VerbFlags,
@@ -30,99 +37,222 @@ import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
 import { journalAt } from './journal.js';
 import { type DecisionView, Folded } from './views.js';
 
-const CONTEXT = {
-  context: valueFlag(
-    'The bounded context it belongs to, one recorded by concepts context',
-  ),
-} as const;
+/** The recorded bounded context `what` belongs to, given where it must be. */
+const inContext = (what: string) =>
+  ({
+    context: valueFlag(
+      `The bounded context the ${what} belongs to, one already recorded with the context verb`,
+      { required: true },
+    ),
+  }) as const;
 
-const VERSION = {
-  ...CONTEXT,
-  wording: valueFlag('What the concept says, in the context’s own words'),
-  reason: valueFlag('Why this version is recorded'),
+/** The concept a verb acts on, named in its bounded context. */
+const concept = (description: string) =>
+  ({ name: 'concept', description }) as const;
+
+/** A concept a version is built from, given once per concept. */
+const BUILT_FROM = {
   'built-from': valueFlag(
     'A concept it is built from; repeat once per concept, none for a primitive',
+    { repeats: true },
   ),
 } as const;
 
-/** The concepts capability's verbs, queries first, each with what it does, the
+/** The values a decision is recorded with. */
+const STATUSES = ['open', 'accepted'] as const;
+
+/** Whether `status` is one a decision is recorded with. */
+const isStatus = (status: string): status is (typeof STATUSES)[number] =>
+  (STATUSES as readonly string[]).includes(status);
+
+/** The concepts capability's verbs, queries first, each with the concept it acts
+ *  on, its purpose, when to reach for it, whether it reads or appends, the
  *  positional it acts on and the flags it takes. */
 export const VERBS = {
   state: {
-    summary:
-      'Read the whole state of each context in one answer, to reconstitute from: its live concepts (current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled)',
-    positional: null,
-    flags: { context: valueFlag('Only this bounded context') },
-  },
-  design: {
-    summary:
-      'Show the current design of each context: its live concepts, competing versions and retired concepts',
-    positional: null,
-    flags: { context: valueFlag('Only this bounded context') },
-  },
-  history: {
-    summary:
-      'Show every version of one concept in append order, each with its reason, exactly as recorded',
-    positional: '<concept>',
-    flags: { ...CONTEXT },
-  },
-  decisions: {
-    summary:
-      'List the decisions in the order recorded, each open, accepted or superseded',
+    concept: 'conceptual design',
+    effect: 'reads',
+    purpose:
+      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled)',
+    when: 'At the start of a session, or after it was compacted, to reconstitute the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting',
     positional: null,
     flags: {
-      context: valueFlag('Only the decisions of this bounded context'),
-      open: switchFlag('Only the open decisions'),
+      context: valueFlag(
+        'Only this bounded context; every context when left out',
+      ),
+    },
+  },
+  design: {
+    concept: 'conceptual design',
+    effect: 'reads',
+    purpose:
+      'Show the current conceptual design of each bounded context: its live concepts, each at its current version, competing versions and retired concepts',
+    when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands',
+    positional: null,
+    flags: {
+      context: valueFlag(
+        'Only this bounded context; every context when left out',
+      ),
+    },
+  },
+  history: {
+    concept: 'concept',
+    effect: 'reads',
+    purpose:
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded',
+    when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired',
+    positional: concept(
+      'The concept whose versions to show, by its name in the bounded context',
+    ),
+    flags: { ...inContext('concept') },
+  },
+  decisions: {
+    concept: 'decision',
+    effect: 'reads',
+    purpose:
+      'List the decisions in the order recorded, each open, accepted or superseded',
+    when: 'To see what has been decided and what still awaits acceptance, before acting on a choice or after recording or accepting a decision',
+    positional: null,
+    flags: {
+      context: valueFlag(
+        'Only the decisions of this bounded context; every context’s when left out',
+      ),
+      open: switchFlag('Only the decisions still awaiting acceptance'),
     },
   },
   context: {
-    summary:
-      'Record a bounded context with its subject and its place in the context map',
-    positional: '<name>',
+    concept: 'bounded context',
+    effect: 'appends',
+    purpose:
+      'Record a bounded context: a subject with its own model and vocabulary, and its place in the context map',
+    when: 'Before the first concept or decision of a subject the journal has no bounded context for; a recorded context is recorded again only to settle descriptions that merged branches recorded differently',
+    positional: {
+      name: 'context',
+      description:
+        'The bounded context’s name, the word its concepts and decisions are recorded under',
+    },
     flags: {
-      subject: valueFlag('What the context is about'),
-      relation: valueFlag('How it relates to the other contexts'),
+      subject: valueFlag('The subject the context models, in its own words', {
+        required: true,
+      }),
+      relation: valueFlag(
+        'How it relates to the other bounded contexts in the context map; none when left out',
+      ),
     },
   },
   define: {
-    summary: 'Record the first version of a concept in one bounded context',
-    positional: '<concept>',
-    flags: VERSION,
+    concept: 'concept',
+    effect: 'appends',
+    purpose:
+      'Record a new concept in one bounded context: its first version, in the context’s own words, with the reason it is written',
+    when: 'When the design gains a concept it does not have yet; a concept already in the design changes by supersession instead',
+    positional: concept(
+      'The new concept’s name, the word its bounded context uses for it',
+    ),
+    flags: {
+      ...inContext('concept'),
+      wording: valueFlag(
+        'What the concept means, in its bounded context’s own words, naming no implementation',
+        { required: true },
+      ),
+      reason: valueFlag('Why the concept is defined', { required: true }),
+      ...BUILT_FROM,
+    },
   },
   supersede: {
-    summary:
-      'Record a new version of a concept superseding every current version, resolving competing ones and bringing a retired concept back',
-    positional: '<concept>',
-    flags: VERSION,
+    concept: 'supersession',
+    effect: 'appends',
+    purpose:
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
+    when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
+    positional: concept(
+      'The concept whose meaning changes, by its name in the bounded context',
+    ),
+    flags: {
+      ...inContext('concept'),
+      wording: valueFlag(
+        'What the concept now means, in its bounded context’s own words, naming no implementation',
+        { required: true },
+      ),
+      reason: valueFlag('Why its meaning changes', { required: true }),
+      ...BUILT_FROM,
+    },
   },
   retire: {
-    summary: 'Record the retirement of a concept, with its reason',
-    positional: '<concept>',
-    flags: { ...CONTEXT, reason: valueFlag('Why the concept is retired') },
+    concept: 'retirement',
+    effect: 'appends',
+    purpose:
+      'Record that a concept leaves the current design, with the reason: it is no longer live, and its history is kept',
+    when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
+    positional: concept(
+      'The concept that leaves the design, by its name in the bounded context',
+    ),
+    flags: {
+      ...inContext('concept'),
+      reason: valueFlag('Why the concept leaves the design', {
+        required: true,
+      }),
+    },
   },
   decide: {
-    summary:
-      'Record a decision, open or accepted: its situation, the decision and its consequences',
-    positional: '<id>',
+    concept: 'decision',
+    effect: 'appends',
+    purpose:
+      'Record a new decision about the conceptual design or how it is realized: its situation, what is decided and its consequences, open or accepted, optionally superseding an earlier decision',
+    when: 'When a choice is made or proposed: recorded open while it awaits agreement, accepted when it is already agreed; a decision is never edited, so a changed choice is a new decision superseding the earlier one',
+    positional: {
+      name: 'id',
+      description:
+        'The new decision’s id, by which it is accepted and later superseded',
+    },
     flags: {
-      ...CONTEXT,
-      title: valueFlag('The decision’s title'),
-      situation: valueFlag('The situation that calls for the decision'),
-      decision: valueFlag('What is decided'),
-      consequences: valueFlag('What follows from it'),
-      status: valueFlag('How the decision is recorded: open or accepted'),
+      ...inContext('decision'),
+      title: valueFlag('The decision’s title, naming the choice in a line', {
+        required: true,
+      }),
+      situation: valueFlag('The situation that calls for the decision', {
+        required: true,
+      }),
+      decision: valueFlag('What is decided', { required: true }),
+      consequences: valueFlag(
+        'What follows from it for the design and the work',
+        { required: true },
+      ),
+      status: valueFlag(
+        'How the decision is recorded: open, awaiting acceptance, or accepted, already agreed',
+        { required: true, values: STATUSES },
+      ),
       supersedes: valueFlag(
-        'An earlier decision this one supersedes: its id, or its entry where two decisions share the id',
+        'An earlier decision this one replaces: its id, or its entry where two decisions share the id',
       ),
     },
   },
   accept: {
-    summary:
-      'Record the acceptance of an open decision, named by its id or, where two decisions share the id, by its entry; an entry of its own, so the decision’s record never changes',
-    positional: '<ref>',
-    flags: { reason: valueFlag('Why it is accepted') },
+    concept: 'decision',
+    effect: 'appends',
+    purpose:
+      'Record that an open decision is agreed, as an entry of its own, so the decision becomes settled and its record never changes',
+    when: 'When an open decision is agreed, and only then; it never records a new decision, and an accepted decision changes only by a later decision that supersedes it',
+    positional: {
+      name: 'id',
+      description:
+        'The open decision to accept: its id, or its entry where two decisions share the id',
+    },
+    flags: {
+      reason: valueFlag(
+        'Why it is accepted; the acceptance carries no reason when left out',
+      ),
+    },
   },
-} as const satisfies VerbFlags;
+} as const satisfies VerbFlags<string, ExplainedVerb>;
+
+/** The concept journal, as it explains itself. */
+export const JOURNAL: CapabilityInterface = {
+  name: 'concept journal',
+  purpose: CAPABILITY_SUMMARIES.concepts,
+  when: 'Whenever work touches a project’s conceptual design: to read back its current concepts, their history and its decisions before acting, and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
+  verbs: VERBS,
+};
 
 /** What `state` says each part of its answer is. */
 const READING = {
@@ -298,7 +428,7 @@ export function dispatchConcepts(
         string,
       ];
       const status = read.required('status', 'the status (open or accepted)');
-      if (status !== 'open' && status !== 'accepted')
+      if (!isStatus(status))
         throw refuse(
           `the status is '${status}'; a decision is recorded open or accepted`,
         );

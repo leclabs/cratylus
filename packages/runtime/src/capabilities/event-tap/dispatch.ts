@@ -82,7 +82,7 @@ const SETTINGS = {
  *  (none) and the flags it takes. */
 export const VERBS = {
   install: {
-    summary: 'Attach the tap to lifecycle events, capturing them to a sink',
+    purpose: 'Attach the tap to lifecycle events, capturing them to a sink',
     positional: null,
     flags: {
       events: valueFlag(
@@ -93,17 +93,17 @@ export const VERBS = {
     },
   },
   uninstall: {
-    summary: 'Detach the tap, leaving no residue',
+    purpose: 'Detach the tap, leaving no residue',
     positional: null,
     flags: { ...SETTINGS },
   },
   read: {
-    summary: 'Read back what the tap captured, in the order observed',
+    purpose: 'Read back what the tap captured, in the order observed',
     positional: null,
     flags: { ...SETTINGS },
   },
   status: {
-    summary: 'Report whether the tap is attached, and to which events',
+    purpose: 'Report whether the tap is attached, and to which events',
     positional: null,
     flags: { ...SETTINGS },
   },

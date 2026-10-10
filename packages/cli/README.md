@@ -530,7 +530,9 @@ cratylus eventTap status [options]
 
 ### `cratylus concepts`
 
-Keep the concept journal: each bounded context’s concepts and decisions, appended with reasons, and the current state to reconstitute from.
+Keep the concept journal: the conceptual design and its decisions, each bounded context’s concepts appended version by version with the reason each was written and never edited, from which the current design, every concept’s history and the open decisions are read.
+
+The concept journal explains itself. `cratylus concepts --explain` prints, as one JSON object, its name (`concept journal`), its purpose, when to reach for it, and its verbs in order; `cratylus concepts <verb> --explain` prints one verb: the concept it acts on, its purpose, when to reach for it, whether it `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on. `cratylus concepts --help` and `cratylus concepts <verb> --help` are drawn from the same declarations, so they say what the explanation says.
 
 The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
 
@@ -540,138 +542,172 @@ Nothing under `design/journal` is edited, moved or deleted. In the cratylus repo
 
 #### `cratylus concepts state`
 
-Read the whole state of each context in one answer, to reconstitute from: its live concepts (current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled).
+Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled).
+
+When: At the start of a session, or after it was compacted, to reconstitute the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting. Concept: conceptual design; it reads.
 
 ```sh
 cratylus concepts state [options]
 ```
 
-| Flag                | What it does              |
-| ------------------- | ------------------------- |
-| `--context <value>` | Only this bounded context |
+| Flag                | What it does                                           |
+| ------------------- | ------------------------------------------------------ |
+| `--context <value>` | Only this bounded context; every context when left out |
 
 #### `cratylus concepts design`
 
-Show the current design of each context: its live concepts, competing versions and retired concepts.
+Show the current conceptual design of each bounded context: its live concepts, each at its current version, competing versions and retired concepts.
+
+When: Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands. Concept: conceptual design; it reads.
 
 ```sh
 cratylus concepts design [options]
 ```
 
-| Flag                | What it does              |
-| ------------------- | ------------------------- |
-| `--context <value>` | Only this bounded context |
+| Flag                | What it does                                           |
+| ------------------- | ------------------------------------------------------ |
+| `--context <value>` | Only this bounded context; every context when left out |
 
 #### `cratylus concepts history`
 
-Show every version of one concept in append order, each with its reason, exactly as recorded.
+Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded.
+
+When: To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired. Concept: concept; it reads.
 
 ```sh
 cratylus concepts history [options] <concept>
 ```
 
-| Flag                | What it does                                                        |
-| ------------------- | ------------------------------------------------------------------- |
-| `--context <value>` | The bounded context it belongs to, one recorded by concepts context |
+`<concept>`: The concept whose versions to show, by its name in the bounded context.
+
+| Flag                | What it does                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `--context <value>` | The bounded context the concept belongs to, one already recorded with the context verb (required) |
 
 #### `cratylus concepts decisions`
 
 List the decisions in the order recorded, each open, accepted or superseded.
 
+When: To see what has been decided and what still awaits acceptance, before acting on a choice or after recording or accepting a decision. Concept: decision; it reads.
+
 ```sh
 cratylus concepts decisions [options]
 ```
 
-| Flag                | What it does                               |
-| ------------------- | ------------------------------------------ |
-| `--context <value>` | Only the decisions of this bounded context |
-| `--open`            | Only the open decisions                    |
+| Flag                | What it does                                                              |
+| ------------------- | ------------------------------------------------------------------------- |
+| `--context <value>` | Only the decisions of this bounded context; every context’s when left out |
+| `--open`            | Only the decisions still awaiting acceptance                              |
 
 #### `cratylus concepts context`
 
-Record a bounded context with its subject and its place in the context map.
+Record a bounded context: a subject with its own model and vocabulary, and its place in the context map.
+
+When: Before the first concept or decision of a subject the journal has no bounded context for; a recorded context is recorded again only to settle descriptions that merged branches recorded differently. Concept: bounded context; it appends.
 
 ```sh
-cratylus concepts context [options] <name>
+cratylus concepts context [options] <context>
 ```
 
-| Flag                 | What it does                         |
-| -------------------- | ------------------------------------ |
-| `--subject <value>`  | What the context is about            |
-| `--relation <value>` | How it relates to the other contexts |
+`<context>`: The bounded context’s name, the word its concepts and decisions are recorded under.
+
+| Flag                 | What it does                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `--subject <value>`  | The subject the context models, in its own words (required)                         |
+| `--relation <value>` | How it relates to the other bounded contexts in the context map; none when left out |
 
 #### `cratylus concepts define`
 
-Record the first version of a concept in one bounded context.
+Record a new concept in one bounded context: its first version, in the context’s own words, with the reason it is written.
+
+When: When the design gains a concept it does not have yet; a concept already in the design changes by supersession instead. Concept: concept; it appends.
 
 ```sh
 cratylus concepts define [options] <concept>
 ```
 
-| Flag                   | What it does                                                              |
-| ---------------------- | ------------------------------------------------------------------------- |
-| `--context <value>`    | The bounded context it belongs to, one recorded by concepts context       |
-| `--wording <value>`    | What the concept says, in the context’s own words                         |
-| `--reason <value>`     | Why this version is recorded                                              |
-| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive |
+`<concept>`: The new concept’s name, the word its bounded context uses for it.
+
+| Flag                   | What it does                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `--context <value>`    | The bounded context the concept belongs to, one already recorded with the context verb (required) |
+| `--wording <value>`    | What the concept means, in its bounded context’s own words, naming no implementation (required)   |
+| `--reason <value>`     | Why the concept is defined (required)                                                             |
+| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive                         |
 
 #### `cratylus concepts supersede`
 
-Record a new version of a concept superseding every current version, resolving competing ones and bringing a retired concept back.
+Record a new meaning for a concept that stays in the design: a new version, with its reason, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back.
+
+When: When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement. Concept: supersession; it appends.
 
 ```sh
 cratylus concepts supersede [options] <concept>
 ```
 
-| Flag                   | What it does                                                              |
-| ---------------------- | ------------------------------------------------------------------------- |
-| `--context <value>`    | The bounded context it belongs to, one recorded by concepts context       |
-| `--wording <value>`    | What the concept says, in the context’s own words                         |
-| `--reason <value>`     | Why this version is recorded                                              |
-| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive |
+`<concept>`: The concept whose meaning changes, by its name in the bounded context.
+
+| Flag                   | What it does                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `--context <value>`    | The bounded context the concept belongs to, one already recorded with the context verb (required)   |
+| `--wording <value>`    | What the concept now means, in its bounded context’s own words, naming no implementation (required) |
+| `--reason <value>`     | Why its meaning changes (required)                                                                  |
+| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive                           |
 
 #### `cratylus concepts retire`
 
-Record the retirement of a concept, with its reason.
+Record that a concept leaves the current design, with the reason: it is no longer live, and its history is kept.
+
+When: When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead. Concept: retirement; it appends.
 
 ```sh
 cratylus concepts retire [options] <concept>
 ```
 
-| Flag                | What it does                                                        |
-| ------------------- | ------------------------------------------------------------------- |
-| `--context <value>` | The bounded context it belongs to, one recorded by concepts context |
-| `--reason <value>`  | Why the concept is retired                                          |
+`<concept>`: The concept that leaves the design, by its name in the bounded context.
+
+| Flag                | What it does                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `--context <value>` | The bounded context the concept belongs to, one already recorded with the context verb (required) |
+| `--reason <value>`  | Why the concept leaves the design (required)                                                      |
 
 #### `cratylus concepts decide`
 
-Record a decision, open or accepted: its situation, the decision and its consequences.
+Record a new decision about the conceptual design or how it is realized: its situation, what is decided and its consequences, open or accepted, optionally superseding an earlier decision.
+
+When: When a choice is made or proposed: recorded open while it awaits agreement, accepted when it is already agreed; a decision is never edited, so a changed choice is a new decision superseding the earlier one. Concept: decision; it appends.
 
 ```sh
 cratylus concepts decide [options] <id>
 ```
 
-| Flag                     | What it does                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `--context <value>`      | The bounded context it belongs to, one recorded by concepts context                            |
-| `--title <value>`        | The decision’s title                                                                           |
-| `--situation <value>`    | The situation that calls for the decision                                                      |
-| `--decision <value>`     | What is decided                                                                                |
-| `--consequences <value>` | What follows from it                                                                           |
-| `--status <value>`       | How the decision is recorded: open or accepted                                                 |
-| `--supersedes <value>`   | An earlier decision this one supersedes: its id, or its entry where two decisions share the id |
+`<id>`: The new decision’s id, by which it is accepted and later superseded.
+
+| Flag                     | What it does                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `--context <value>`      | The bounded context the decision belongs to, one already recorded with the context verb (required) |
+| `--title <value>`        | The decision’s title, naming the choice in a line (required)                                       |
+| `--situation <value>`    | The situation that calls for the decision (required)                                               |
+| `--decision <value>`     | What is decided (required)                                                                         |
+| `--consequences <value>` | What follows from it for the design and the work (required)                                        |
+| `--status <value>`       | How the decision is recorded: open, awaiting acceptance, or accepted, already agreed (required)    |
+| `--supersedes <value>`   | An earlier decision this one replaces: its id, or its entry where two decisions share the id       |
 
 #### `cratylus concepts accept`
 
-Record the acceptance of an open decision, named by its id or, where two decisions share the id, by its entry; an entry of its own, so the decision’s record never changes.
+Record that an open decision is agreed, as an entry of its own, so the decision becomes settled and its record never changes.
+
+When: When an open decision is agreed, and only then; it never records a new decision, and an accepted decision changes only by a later decision that supersedes it. Concept: decision; it appends.
 
 ```sh
-cratylus concepts accept [options] <ref>
+cratylus concepts accept [options] <id>
 ```
 
-| Flag               | What it does       |
-| ------------------ | ------------------ |
-| `--reason <value>` | Why it is accepted |
+`<id>`: The open decision to accept: its id, or its entry where two decisions share the id.
+
+| Flag               | What it does                                                       |
+| ------------------ | ------------------------------------------------------------------ |
+| `--reason <value>` | Why it is accepted; the acceptance carries no reason when left out |
 
 ## Corpus authoring
 

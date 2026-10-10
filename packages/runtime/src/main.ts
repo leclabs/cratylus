@@ -7,18 +7,25 @@
 // there is, and one refusal answers a word that is neither.
 //
 // ONE COMMANDER COMMAND PER CAPABILITY, its verbs rendered into its help, all of it
-// built from the declarations beside the verbs: the capability's summary from
-// `CAPABILITY_SUMMARIES`, a verb's summary, positional, and each flag's description
+// built from the declarations beside the verbs: the capability's purpose from
+// `CAPABILITY_SUMMARIES`, a verb's purpose, positional, and each flag's description
 // and whether it takes a value from the capability's `VERBS`. Nothing is retyped
 // here, so help cannot say what a verb does not take.
+//
+// A CAPABILITY THAT EXPLAINS ITSELF answers `--explain` with its explanation as
+// JSON, and `<verb> --explain` with one verb's: read out of those same
+// declarations by `explain`, beside the help they also print. Its help adds when
+// to reach for it, and each verb's the concept it acts on, when to reach for it,
+// and whether it reads or appends, so the help says what the explanation says.
 //
 // COMMANDER DOES NOT PARSE A VERB'S FLAGS. It owns the structure and the help; the
 // tokens after the verb reach that verb's dispatcher exactly as given, and
 // `readArgv` stays their one reader, so every `verb flags` refusal is the
-// dispatcher's own. The one thing read here is whether the tokens ask for help:
-// `--help` or `-h` as a token of its own, never as the value of a flag that
-// takes one — `concepts context c --subject -h` keeps `-h` as the subject. A verb
-// the capability does not declare is refused by `verbOf`, the one home of that
+// dispatcher's own. The one thing read here is whether the tokens ask for help
+// or for the explanation: `--help`, `-h` or `--explain` as a token of its own,
+// never as the value of a flag that takes one — `concepts context c --subject
+// -h` keeps `-h` as the subject. Help wins over the explanation. A verb the
+// capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
 // `eventTap` and `concepts` print their JSON result. A refusal is a loud code-1
@@ -35,7 +42,10 @@
 
 import { Command, Option } from 'commander';
 import { CLI_BIN } from './bin-name.js';
-import { VERBS as CONCEPTS } from './capabilities/concepts/dispatch.js';
+import {
+  VERBS as CONCEPTS,
+  JOURNAL,
+} from './capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from './capabilities/concepts/index.js';
 import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
@@ -45,11 +55,18 @@ import {
   CAPABILITY_SUMMARIES,
   type Capability,
 } from './capability.js';
-import type { Verb, VerbFlags } from './verb-flags.js';
+import {
+  type CapabilityInterface,
+  type ExplainedVerb,
+  explain,
+  explainVerb,
+} from './explanation.js';
+import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 
 /**
  * Each capability's verb surface: the verbs it declares, and its verb and
- * arguments in, the text it prints out. A refusal throws.
+ * arguments in, the text it prints out, and, where it explains itself, its
+ * interface. A refusal throws.
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `eventTap`, never the kebab dir name nor an abbreviation. That is the word the
@@ -61,6 +78,7 @@ const SURFACES: {
   readonly [C in Capability]: {
     readonly verbs: VerbFlags;
     readonly run: (argv: string[]) => string;
+    readonly explained?: CapabilityInterface;
   };
 } = {
   eventTap: {
@@ -70,21 +88,35 @@ const SURFACES: {
   concepts: {
     verbs: CONCEPTS,
     run: (argv) => JSON.stringify(dispatchConcepts(argv), null, 2),
+    explained: JOURNAL,
   },
 };
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
 
-/** One verb's command, held for its help alone: its summary, its positional and
- *  its flags, declared so they print. It is never registered and never parses. */
+/** One verb's command, held for its help alone: its purpose, and where the verb
+ *  explains itself when to reach for it, its concept and its effect; its
+ *  positional and its flags, declared so they print. It is never registered and
+ *  never parses. */
 function verbCommand(
   capability: Capability,
   name: string,
   verb: Verb,
+  explained: ExplainedVerb | undefined,
 ): Command {
   const command = new Command(name)
-    .description(verb.summary)
+    .summary(verb.purpose)
+    .description(
+      explained === undefined
+        ? verb.purpose
+        : [
+            verb.purpose,
+            `When: ${explained.when}`,
+            `Concept: ${explained.concept}`,
+            `Effect: ${explained.effect}`,
+          ].join('\n'),
+    )
     .helpCommand(false)
     .configureHelp({
       ...UNWRAPPED,
@@ -92,7 +124,8 @@ function verbCommand(
       commandUsage: (self) =>
         `${CLI_BIN} ${capability} ${self.name()} ${self.usage()}`,
     });
-  if (verb.positional !== null) command.argument(verb.positional);
+  if (verb.positional !== null)
+    command.argument(spelled(verb.positional), verb.positional.description);
   for (const [flag, spec] of Object.entries(verb.flags))
     command.addOption(
       new Option(
@@ -108,15 +141,19 @@ function verbCommand(
 const FLAG_SHAPED = /^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/;
 
 /**
- * Whether `tokens`, the tail of a verb, ask for help: `--help` or `-h` as a
- * token of its own, and not as the value of a flag that takes one. The walk
- * spends each token as `readArgv` does, so a token that reader gives to a flag
- * as its value is never read as the request.
+ * Whether `tokens`, the tail of a verb, ask for one of `asks` — `--help` and
+ * `-h`, or `--explain` — as a token of its own, and not as the value of a flag
+ * that takes one. The walk spends each token as `readArgv` does, so a token that
+ * reader gives to a flag as its value is never read as the request.
  */
-function asksForHelp(tokens: readonly string[], verb: Verb): boolean {
+function asksFor(
+  tokens: readonly string[],
+  verb: Verb,
+  asks: readonly string[],
+): boolean {
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i] as string;
-    if (token === '--help' || token === '-h') return true;
+    if (asks.includes(token)) return true;
     if (!token.startsWith('-') || token === '-') continue;
     const eq = token.indexOf('=');
     if (eq !== -1) continue;
@@ -132,6 +169,10 @@ function asksForHelp(tokens: readonly string[], verb: Verb): boolean {
   }
   return false;
 }
+
+/** The tokens that ask for help, and for the explanation. */
+const HELP: readonly string[] = ['--help', '-h'];
+const EXPLAIN: readonly string[] = ['--explain'];
 
 function refuse(message: string): void {
   process.stderr.write(`${CLI_BIN} ${message}\n`);
@@ -152,19 +193,35 @@ function printHelp(command: Command, text: string, asked: boolean): void {
   }
 }
 
-/** A capability's help: its verbs, and where to ask for what a verb takes. */
-function helpOf(command: Command, error: boolean): string {
-  return `${command.helpInformation({ error })}Run ${CLI_BIN} ${command.name()} <verb> --help for what a verb takes.\n`;
+/** A capability's help: its verbs, and where to ask for what a verb takes; where
+ *  it explains itself, when to reach for it and where to ask for that as JSON. */
+function helpOf(
+  command: Command,
+  error: boolean,
+  explained: CapabilityInterface | undefined,
+): string {
+  const name = `${CLI_BIN} ${command.name()}`;
+  return [
+    command.helpInformation({ error }),
+    ...(explained === undefined ? [] : [`When: ${explained.when}\n`]),
+    `Run ${name} <verb> --help for what a verb takes.\n`,
+    ...(explained === undefined
+      ? []
+      : [
+          `Run ${name} --explain, or ${name} <verb> --explain, for this explanation as JSON.\n`,
+        ]),
+  ].join('');
 }
 
 /** One capability's command: its verbs in its help, its action routing the verb
- *  and the tokens after it, exactly as given, to the capability's verb surface. */
+ *  and the tokens after it, exactly as given, to the capability's verb surface,
+ *  or, where it explains itself, answering `--explain` with its explanation. */
 function capabilityCommand(capability: Capability): Command {
-  const { verbs, run } = SURFACES[capability];
+  const { verbs, run, explained } = SURFACES[capability];
   const verbCommands = new Map(
     Object.entries(verbs).map(([name, verb]) => [
       name,
-      verbCommand(capability, name, verb),
+      verbCommand(capability, name, verb, explained?.verbs[name]),
     ]),
   );
   return (
@@ -191,21 +248,43 @@ function capabilityCommand(capability: Capability): Command {
           self: Command,
         ) => {
           if (verb === undefined) {
-            printHelp(self, helpOf(self, true), false);
+            printHelp(self, helpOf(self, true, explained), false);
             return;
           }
-          if (verb === '--help' || verb === '-h') {
-            printHelp(self, helpOf(self, false), true);
+          if (HELP.includes(verb)) {
+            printHelp(self, helpOf(self, false, explained), true);
+            return;
+          }
+          if (explained !== undefined && EXPLAIN.includes(verb)) {
+            process.stdout.write(
+              `${JSON.stringify(explain(explained), null, 2)}\n`,
+            );
+            process.exitCode = 0;
             return;
           }
           try {
             verbOf([verb], capability, verbs);
-            if (asksForHelp(tokens, verbs[verb] as Verb)) {
+            const declared = verbs[verb] as Verb;
+            if (asksFor(tokens, declared, HELP)) {
+              const help = (
+                verbCommands.get(verb) as Command
+              ).helpInformation();
               printHelp(
                 self,
-                (verbCommands.get(verb) as Command).helpInformation(),
+                explained === undefined
+                  ? help
+                  : `${help}Run ${CLI_BIN} ${capability} ${verb} --explain for this explanation as JSON.\n`,
                 true,
               );
+              return;
+            }
+            if (explained !== undefined && asksFor(tokens, declared, EXPLAIN)) {
+              const explanation = explainVerb(
+                verb,
+                explained.verbs[verb] as ExplainedVerb,
+              );
+              process.stdout.write(`${JSON.stringify(explanation, null, 2)}\n`);
+              process.exitCode = 0;
               return;
             }
             process.stdout.write(`${run([verb, ...tokens])}\n`);
