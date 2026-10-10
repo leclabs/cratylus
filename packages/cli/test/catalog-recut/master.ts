@@ -7,6 +7,13 @@ export interface ExpectedEntry {
   slot?: string;
   note?: string;
 }
+
+/** Keep missing fixture data a loud failure, while narrowing indexed reads. */
+export function requireDefined<T>(value: T | undefined, label: string): T {
+  if (value === undefined)
+    throw new Error(`Missing test fixture value: ${label}`);
+  return value;
+}
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
@@ -493,22 +500,38 @@ export function roleVector(role: RoleName): Vector {
   const column = roleNames.indexOf(role);
   return Object.fromEntries(
     agentFactors.map((factor) => {
-      const text = factor === 'role' ? role : columns[factor][column];
+      const text =
+        factor === 'role'
+          ? role
+          : requireDefined(columns[factor]?.[column], `${role}.${factor}`);
       const meta = factors[factor];
       const entries =
         text === ''
           ? []
           : text.split(',').map((item, index) => {
               const [anchor, note] = item.split('~');
-              return entry(factor, anchor, {
-                ...('slots' in meta ? { slot: meta.slots[index].name } : {}),
-                ...(note ? { note } : {}),
-                ...(role === 'architect' &&
-                factor === 'stance' &&
-                ['decisive', 'conceptual-elevation'].includes(anchor)
-                  ? { level: 'fixed' as const }
-                  : {}),
-              });
+              return entry(
+                factor,
+                requireDefined(anchor, `${role}.${factor} anchor`),
+                {
+                  ...('slots' in meta
+                    ? {
+                        slot: requireDefined(
+                          meta.slots[index],
+                          `${factor} slot ${index}`,
+                        ).name,
+                      }
+                    : {}),
+                  ...(note ? { note } : {}),
+                  ...(role === 'architect' &&
+                  factor === 'stance' &&
+                  ['decisive', 'conceptual-elevation'].includes(
+                    requireDefined(anchor, `${role}.${factor} anchor`),
+                  )
+                    ? { level: 'fixed' as const }
+                    : {}),
+                },
+              );
             });
       return [camel(factor), entries];
     }),
@@ -580,12 +603,23 @@ export function personaVector(name: PersonaName): Vector {
   const vector = roleVector('architect');
   const residue = personaResidue(name).values;
   // Enumerated coordinates, not an implementation of composition precedence.
-  vector.expertise.push(...residue.expertise);
-  if (residue.stance) vector.stance.push(...residue.stance);
-  if (name === 'nico') vector.objective = residue.objective;
-  if (name === 'kino')
-    vector.communicationStyle[2] = residue.communicationStyle[0];
-  else vector.communicationStyle[1] = residue.communicationStyle[0];
+  requireDefined(vector.expertise, 'architect.expertise').push(
+    ...requireDefined(residue.expertise, `${name}.expertise`),
+  );
+  if (residue.stance)
+    requireDefined(vector.stance, 'architect.stance').push(...residue.stance);
+  if (name === 'nico')
+    vector.objective = requireDefined(residue.objective, 'nico.objective');
+  const communicationStyle = requireDefined(
+    vector.communicationStyle,
+    'architect.communicationStyle',
+  );
+  const replacement = requireDefined(
+    residue.communicationStyle?.[0],
+    `${name}.communicationStyle replacement`,
+  );
+  if (name === 'kino') communicationStyle[2] = replacement;
+  else communicationStyle[1] = replacement;
   return vector;
 }
 export const retired = [

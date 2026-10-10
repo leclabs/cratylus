@@ -21,6 +21,7 @@ import {
   camel,
   decisionSlots,
   factors,
+  requireDefined,
 } from './master.js';
 export const repo = fileURLToPath(new URL('../../../..', import.meta.url));
 // The namespace import lets a missing public export fail its example, not suite collection.
@@ -125,7 +126,7 @@ export default defineConfig({ extends: [canon${
   };
   const cli = join(
     dirname(require.resolve('cratylus/package.json')),
-    cliPackage.bin.cratylus,
+    requireDefined(cliPackage.bin.cratylus, 'cratylus binary'),
   );
   // No host credentials, agent configuration or extension discovery enters the fixture.
   const env = {
@@ -177,7 +178,10 @@ export default defineConfig({ extends: [canon${
     const text = readFileSync(file, 'utf8');
     const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/.exec(text);
     expect(match, `${name} has YAML front matter`).not.toBeNull();
-    return { front: parseYaml(match![1]), body: match![2] };
+    return {
+      front: parseYaml(requireDefined(match?.[1], `${name} front matter`)),
+      body: requireDefined(match?.[2], `${name} body`),
+    };
   }
   return {
     root,
@@ -264,7 +268,7 @@ export function expectProjection(
       lines.push(`## ${group}`);
     }
     lines.push(`### ${factor}`);
-    const entries = vector[camel(factor)];
+    const entries = requireDefined(vector[camel(factor)], `${name}.${factor}`);
     if (entries.length === 0) lines.push('- (none)');
     for (const entry of entries) {
       const [anchor, gloss] = entry.value.split(' ≜ ');

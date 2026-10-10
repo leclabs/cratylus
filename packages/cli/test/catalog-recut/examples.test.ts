@@ -24,6 +24,7 @@ import {
   marks,
   personaResidue,
   personaVector,
+  requireDefined,
   retired,
   roleNames,
   roleVector,
@@ -82,11 +83,19 @@ describe('catalog re-cut: the visible examples', () => {
       });
       const expected = roleVector(name);
       expect(agent.dispatches).toEqual(
-        expected.handoffs.map((entry) => entry.value.split(' ≜ ')[0]),
+        requireDefined(expected.handoffs, `${name}.handoffs`).map(
+          (entry) => entry.value.split(' ≜ ')[0],
+        ),
       );
       expect(agent.routing).toEqual({
-        tier: expected.model[0].value.split(' ≜ ')[0],
-        effort: expected.model[1].value.split(' ≜ ')[0],
+        tier: requireDefined(
+          expected.model?.[0],
+          `${name}.model tier`,
+        ).value.split(' ≜ ')[0],
+        effort: requireDefined(
+          expected.model?.[1],
+          `${name}.model effort`,
+        ).value.split(' ≜ ')[0],
       });
       if (name === 'assayer') expect(agent.readOnly).toBe(true);
       else expect(agent.readOnly).toBeUndefined();
@@ -98,7 +107,7 @@ describe('catalog re-cut: the visible examples', () => {
       expectProjection(
         f.declaration(name),
         name,
-        descriptions[name],
+        requireDefined(descriptions[name], `${name} description`),
         roleVector(name),
       );
   });
@@ -117,7 +126,7 @@ describe('catalog re-cut: the visible examples', () => {
     expectProjection(
       f.declaration('nico'),
       'nico',
-      descriptions.nico,
+      requireDefined(descriptions.nico, 'nico description'),
       personaVector('nico'),
       marks.nico.emoji,
     );
@@ -138,7 +147,7 @@ describe('catalog re-cut: the visible examples', () => {
       expectProjection(
         f.declaration(name),
         name,
-        descriptions[name],
+        requireDefined(descriptions[name], `${name} description`),
         personaVector(name),
         marks[name].emoji,
       );
@@ -161,15 +170,20 @@ describe('catalog re-cut: the visible examples', () => {
     const composed = f.compose();
     expect(composed.agent, composed.message).toBeDefined();
     const expected = roleVector('architect');
-    expected.perceptionScope = expected.perceptionScope.filter(
+    expected.perceptionScope = requireDefined(
+      expected.perceptionScope,
+      'architect.perceptionScope',
+    ).filter(
       (entry) => !narrowed.removes.perceptionScope.includes(entry.value),
     );
-    expected.actionScope = expected.actionScope.filter(
-      (entry) => !narrowed.removes.actionScope.includes(entry.value),
-    );
-    expected.handoffs = expected.handoffs.filter(
-      (entry) => !narrowed.removes.handoffs.includes(entry.value),
-    );
+    expected.actionScope = requireDefined(
+      expected.actionScope,
+      'architect.actionScope',
+    ).filter((entry) => !narrowed.removes.actionScope.includes(entry.value));
+    expected.handoffs = requireDefined(
+      expected.handoffs,
+      'architect.handoffs',
+    ).filter((entry) => !narrowed.removes.handoffs.includes(entry.value));
     expect(vectorOf(composed.agent!)).toEqual(expected);
     expect(composed.agent!.dispatches).toEqual(['researcher']);
     f.install();
@@ -234,7 +248,7 @@ describe('catalog re-cut: the visible examples', () => {
       expectProjection(
         f.declaration(name),
         name,
-        descriptions[name],
+        requireDefined(descriptions[name], `${name} description`),
         vector,
         persona ? marks[persona].emoji : undefined,
       );
@@ -266,7 +280,7 @@ describe('catalog re-cut: the visible examples', () => {
           .filter(Boolean),
         name,
       ).toEqual(
-        handoffs[name]
+        requireDefined(handoffs[name], `${name} handoffs`)
           .split(',')
           .map((name) => name.trim())
           .filter(Boolean),
