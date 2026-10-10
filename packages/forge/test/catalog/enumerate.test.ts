@@ -21,7 +21,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   type CatalogEntry,
   enumerateCatalog,
@@ -210,6 +210,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'forge-catalog-'));
   });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
   it('a value module dropped under a dimension dir appears, no other change', async () => {
     const addressDir = join(dir, 'autonomy');
@@ -243,9 +244,5 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     expect(after?.values).toEqual([
       'fixture-mode ≜ a discovered-only fixture value',
     ]);
-  });
-
-  it('cleanup', () => {
-    rmSync(dir, { recursive: true, force: true });
   });
 });

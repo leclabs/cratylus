@@ -16,21 +16,33 @@
 // data-loss hazard pointed at a consumer's `--out .`. So the refusals are pinned
 // too — the bootstrap bound, the un-recorded bystander, and the escape guard.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ProjectedFile } from '../../src/project/index.js';
 import {
   RENDER_MANIFEST_REL,
   writeRenderTree,
 } from '../../src/project/write.js';
 
+// `out` sits one level inside the temp dir: the escape-guard case writes a file
+// beside `out`, and that file must land inside what afterEach removes.
+let root: string;
 let out: string;
 beforeEach(() => {
-  out = mkdtempSync(join(tmpdir(), 'render-prune-'));
+  root = mkdtempSync(join(tmpdir(), 'render-prune-'));
+  out = join(root, 'out');
+  mkdirSync(out);
 });
+afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 const f = (path: string, content = `// ${path}\n`): ProjectedFile => ({
   path,

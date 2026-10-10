@@ -69,14 +69,14 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import canonPlugin from '../src/index.js';
 import { cellTargets } from '../tooling/project-targets.js';
@@ -143,8 +143,10 @@ let projectedShim = '';
 /** Every projected `hooks/**` artifact, as ⟨path, RESOLVED bytes⟩. */
 let projectedHooks: Array<readonly [string, string]> = [];
 
+let scratch: string | undefined;
 beforeAll(async () => {
-  const out = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
+  scratch = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
+  const out = scratch;
   const report = await projectPluginSet({
     plugins: [canonPlugin],
     adapter: adapterByName('omp'),
@@ -158,6 +160,10 @@ beforeAll(async () => {
     .filter((f) => f.path.startsWith('hooks/'))
     .map((f) => [f.path, f.content] as const);
 }, 120_000);
+afterAll(async () => {
+  if (scratch !== undefined)
+    await rm(scratch, { recursive: true, force: true });
+});
 
 // Every hand-authored shell/`.mjs` source under each package's `src`. Emitted artifacts
 // are covered by the hook-artifact leg; these are the ones a human wrote and no compiler

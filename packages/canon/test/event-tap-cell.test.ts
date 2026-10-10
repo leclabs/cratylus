@@ -13,14 +13,14 @@
 //     runtime (the DAG is canon → forge), so a textual read is what keeps the two
 //     from drifting without inventing a package edge to carry a test.
 
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 import { eventTap } from '../src/skills/event-tap/skill.js';
 
@@ -75,6 +75,9 @@ beforeAll(async () => {
   });
   writeRenderTree(out, report.files);
 }, 120_000);
+afterAll(() => {
+  if (out !== '') rmSync(out, { recursive: true, force: true });
+});
 
 describe('event-tap cell — the OMP surface', () => {
   it('the cell exists, is named for its directory, and declares the eventTap capability', () => {

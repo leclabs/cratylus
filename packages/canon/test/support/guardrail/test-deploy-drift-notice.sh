@@ -58,7 +58,7 @@ DEPLOY_TOOL="$(sed -n 's/^DEPLOY_TOOL=\(.*\)$/\1/p' "$WORKER" | head -1)"
 HOOKS_FILE="$(sed -n 's/^HARNESS_HOOKS_FILE=\(.*\)$/\1/p' "$WORKER" | head -1)"
 HARNESS_HOME=".omp"
 
-WORK="$(mktemp -d)"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/test-deploy-drift-notice.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 fail=0
 pass() { printf '  ok   — %s\n' "$1"; }

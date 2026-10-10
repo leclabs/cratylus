@@ -13,12 +13,13 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { divergence, fold, incoherence } from '../src/record-store/fold.js';
 import type { Record } from '../src/record-store/record.js';
 import {
@@ -46,8 +47,19 @@ function git(cwd: string, ...args: string[]): string {
   );
 }
 
+// Each repository sits one level inside its own temp dir, because a plan's line is a
+// worktree cut NEXT TO the repository (`<repo>.plan-<plan>`); removing the temp dir
+// removes both.
+const scratch: string[] = [];
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 function repository(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'record-store-'));
+  const parent = mkdtempSync(join(tmpdir(), 'record-store-'));
+  scratch.push(parent);
+  const dir = join(parent, 'repo');
+  mkdirSync(dir);
   git(dir, 'init', '-q', '-b', 'main');
   return dir;
 }

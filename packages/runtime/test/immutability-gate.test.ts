@@ -14,7 +14,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { JOURNAL_DIR } from '../src/capabilities/concepts/journal.js';
 import {
   changes,
@@ -40,6 +40,16 @@ function git(cwd: string, ...args: string[]): string {
   ).trim();
 }
 
+const scratch: string[] = [];
+function tmp(): string {
+  const d = mkdtempSync(join(tmpdir(), 'immutability-gate-'));
+  scratch.push(d);
+  return d;
+}
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 /** Where a fresh file of each protected root goes: a record, or a journal entry. */
 const RECORD = () => `${RECORDS_ROOT}/concept/${ulid()}.json`;
 const ENTRY = () => `${JOURNAL_DIR}/${ulid()}.json`;
@@ -50,7 +60,7 @@ function repositoryWithRecord(fresh: () => string = RECORD): {
   repo: string;
   record: string;
 } {
-  const repo = mkdtempSync(join(tmpdir(), 'immutability-gate-'));
+  const repo = tmp();
   git(repo, 'init', '-q', '-b', 'main');
   const record = put(repo, fresh(), '{"v":1}');
   git(repo, 'add', '-A');
@@ -132,7 +142,7 @@ describe.each([
 
 describe('immutability gate', () => {
   it('the first commit of a repository, all additions, passes', () => {
-    const repo = mkdtempSync(join(tmpdir(), 'immutability-gate-'));
+    const repo = tmp();
     git(repo, 'init', '-q', '-b', 'main');
     put(repo, `${RECORDS_ROOT}/concept/${ulid()}.json`, '{}');
     git(repo, 'add', '-A');

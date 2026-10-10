@@ -2,10 +2,10 @@
 // lifecycle vocabulary, each harness's native names under its own stanza, and each
 // capability's configuration. Each part alone is a live config; none says nothing.
 
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import {
   loadRuntimeConfig,
   nativeActsOf,
@@ -17,6 +17,16 @@ afterEach(() => {
   delete process.env[ENV];
 });
 
+const scratch: string[] = [];
+function tmp(): string {
+  const d = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+  scratch.push(d);
+  return d;
+}
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 describe('the host runtime config', () => {
   it('an absent config reads as null', () => {
     process.env[ENV] = join(tmpdir(), 'definitely-absent-runtime.json');
@@ -25,7 +35,7 @@ describe('the host runtime config', () => {
 
   it('a VOCABULARY-ONLY config is a real config', () => {
     // The deploy-emitted shape: the corpus's event names and nothing else.
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     writeFileSync(
       cfg,
@@ -44,7 +54,7 @@ describe('the host runtime config', () => {
     // is empty, or one whose every name is stripped as non-string — is refused
     // alike, naming the commands that write one: never handed an empty map, and
     // never another's.
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     writeFileSync(
       cfg,
@@ -75,7 +85,7 @@ describe('the host runtime config', () => {
     // The shape deploy now writes (`acts`, each ⟨event, matcher⟩) and the shape an
     // earlier deploy wrote (names only): both read, the second with no acts and
     // without being refused. A binding that is not an event is dropped.
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     writeFileSync(
       cfg,
@@ -118,7 +128,7 @@ describe('the host runtime config', () => {
   it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {
     // Corpus meaning a capability acts on arrives as its configuration entry; a
     // document carrying only that is exactly as live as a vocabulary-only one.
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     const entry = { lifecycle: { states: ['a', 'b'], final: 'b' } };
     writeFileSync(cfg, JSON.stringify({ configuration: { someCap: entry } }));
@@ -131,7 +141,7 @@ describe('the host runtime config', () => {
   });
 
   it('a malformed configuration block is ignored without wedging the load', () => {
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     process.env[ENV] = cfg;
     for (const malformed of [['someCap'], 'someCap', 7, null, {}]) {
@@ -154,7 +164,7 @@ describe('the host runtime config', () => {
   });
 
   it('a malformed config reads as null rather than wedging', () => {
-    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const root = tmp();
     const cfg = join(root, 'runtime.json');
     writeFileSync(cfg, '{ not json');
     process.env[ENV] = cfg;

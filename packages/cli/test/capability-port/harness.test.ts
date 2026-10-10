@@ -60,14 +60,15 @@ it('package control: npm replaces the runtime package without a workspace link',
 
 function registrationHost(names: string[]) {
   const h = host();
-  // Isolate these controls from whatever the current build installs.
-  rmSync(h.home, { recursive: true, force: true });
-  const directory = join(h.home, '.omp/agent/extensions');
-  mkdirSync(directory, { recursive: true });
-  if (names.length) {
-    writeFileSync(
-      join(directory, 'registration-control.ts'),
-      `export default function registrationControl(pi) {
+  try {
+    // Isolate these controls from whatever the current build installs.
+    rmSync(h.home, { recursive: true, force: true });
+    const directory = join(h.home, '.omp/agent/extensions');
+    mkdirSync(directory, { recursive: true });
+    if (names.length) {
+      writeFileSync(
+        join(directory, 'registration-control.ts'),
+        `export default function registrationControl(pi) {
         for (const name of ${JSON.stringify(names)}) {
           pi.registerTool({
             name, label: name, description: 'Registration control, not journal behavior.',
@@ -77,7 +78,11 @@ function registrationHost(names: string[]) {
           });
         }
       }`,
-    );
+      );
+    }
+  } catch (error) {
+    h.dispose();
+    throw error;
   }
   return h;
 }

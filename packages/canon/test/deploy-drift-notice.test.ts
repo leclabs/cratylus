@@ -144,7 +144,9 @@ interface Run {
 /**
  * Run the worker with `HOME` pinned at the fixture host (which is how the comparator
  * resolves the user-scope deploy root) and the discovery env scrubbed, so every leg
- * exercises the worker's OWN resolution unless it deliberately overrides it.
+ * exercises the worker's OWN resolution unless it deliberately overrides it. `TMPDIR`
+ * is pinned inside the fixture too: the worker keeps its per-session record under it,
+ * and the shared `/tmp/cratylus-deploy-drift` is a deployed host's, not this suite's.
  *
  * Exit status is asserted here, in every leg: an advisory that ever exits non-zero
  * has stopped being an advisory, and no leg should have to remember to check.
@@ -160,6 +162,7 @@ function run(
     env: {
       ...process.env,
       HOME: home,
+      TMPDIR: join(root, 'tmp'),
       CRATYLUS_CORPUS: '',
       CRATYLUS_RENDER_TREE: '',
       CRATYLUS_DEPLOY_CHECK: '',
