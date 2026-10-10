@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R995266887EXGNT5R5AZ",
+  "at": "2026-10-10T05:49:41.029Z",
+  "kind": "decide",
+  "decisionId": "0018",
+  "context": "workflow",
+  "title": "Assayer",
+  "situation": "The role that judges a cut once, against fixed criteria, needs a name that carries that meaning cold. Two\ncandidates were read cold by a reader with no other context:\n\n- **assayer:** independently examines the work and distinguishes solid work from apparent success; judges\n  against the task's requirements and acceptance criteria, not its own preferred design; never repairs the work\n  it assesses.\n- **reviewer:** inspects proposed changes for defects and risks against requirements, conventions, and\n  standards of correctness, security and maintainability.\n\n\"Reviewer\" carries a broad, self-supplied standard, the re-derived judging that keeps a workflow from\nconverging (decision 0006), and is also the name of omp's bundled general code-review agent.",
+  "decision": "The role is named **assayer**: it carries judgment against a fixed standard, independence, and no repair.",
+  "consequences": "The agent is `assayer`, routed through the model role `assayer`; omp's bundled `reviewer` stays available for\nordinary code review.",
+  "status": "accepted",
+  "supersedes": null
+}

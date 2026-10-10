@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R90W26EYTCPCQSJ73H8G",
+  "at": "2026-10-10T05:49:40.764Z",
+  "kind": "decide",
+  "decisionId": "0012",
+  "context": "workflow",
+  "title": "Omp only",
+  "situation": "Supporting several harnesses split attention before the substrate worked.",
+  "decision": "omp is the only supported harness. The Claude Code adapter and its tests are deleted; forge's adapter seam stays, with omp as its one implementation. Parity is a later decision.",
+  "consequences": "Capability port (decision 0009) keeps future parity cheap.",
+  "status": "accepted",
+  "supersedes": null
+}

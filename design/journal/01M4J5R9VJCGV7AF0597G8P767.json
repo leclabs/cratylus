@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R9VJCGV7AF0597G8P767",
+  "at": "2026-10-10T05:49:41.618Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "decision rights",
+  "wording": "who decides what: the operator decides what is wanted and why, its priorities, the approval of examples and release; the architect recommends and decides everything else about meaning, rectifying intent into known patterns and bringing the operator decisions already taken with their reasons, never questions it can answer itself.",
+  "builtFrom": [
+    "meaning question"
+  ],
+  "reason": "decided in 0002: Decision rights",
+  "supersedes": []
+}

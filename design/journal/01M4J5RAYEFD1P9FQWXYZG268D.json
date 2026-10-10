@@ -1,0 +1,11 @@
+{
+  "id": "01M4J5RAYEFD1P9FQWXYZG268D",
+  "at": "2026-10-10T05:49:42.734Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "concept",
+  "wording": "what must hold and why, stated in its bounded context's own words; it names no implementation, so the work can be judged against it without the work defining it.",
+  "builtFrom": [],
+  "reason": "decided in 0001: Adopt the example driven workflow",
+  "supersedes": []
+}

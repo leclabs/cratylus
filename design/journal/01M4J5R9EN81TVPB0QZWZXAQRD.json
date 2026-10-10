@@ -1,0 +1,22 @@
+{
+  "id": "01M4J5R9EN81TVPB0QZWZXAQRD",
+  "at": "2026-10-10T05:49:41.205Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "example-driven workflow",
+  "wording": "agents effectively produce work that realizes a meaning the operator and architect settled, judged against examples fixed before any build, within and across bounded contexts; effective includes efficient: the agents' effort goes into work that realizes the meaning, each fact is established once, and nothing unchanged is checked again.",
+  "builtFrom": [
+    "conceptual design",
+    "cut",
+    "illustration",
+    "build",
+    "judgment",
+    "whole check",
+    "release",
+    "proportionality",
+    "roles",
+    "efficiency"
+  ],
+  "reason": "decided in 0001: Adopt the example driven workflow",
+  "supersedes": []
+}

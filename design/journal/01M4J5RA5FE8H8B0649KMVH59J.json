@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5RA5FE8H8B0649KMVH59J",
+  "at": "2026-10-10T05:49:41.935Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "proportionality",
+  "wording": "the ceremony of a cut scales with its size and risk: a small cut is one work package with one builder and one judgment, so the method never costs more than the change.",
+  "builtFrom": [
+    "work package"
+  ],
+  "reason": "decided in 0001: Adopt the example driven workflow",
+  "supersedes": []
+}

@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R8T0S714HKEJTY1G5QGQ",
+  "at": "2026-10-10T05:49:40.544Z",
+  "kind": "decide",
+  "decisionId": "0007",
+  "context": "workflow",
+  "title": "Judgment standard",
+  "situation": "Asking whether a behavioral check \"could pass while its example is false\" has no fixed point for evals of a language model: some contrived way around it always exists.",
+  "decision": "A check is adequate when it rejects the plausible failure modes its example and its negative recordings name. A contrived way around it is a hardening note, never a finding against the work.",
+  "consequences": "Recorded in `judgment`.",
+  "status": "accepted",
+  "supersedes": null
+}

@@ -1,0 +1,11 @@
+{
+  "id": "01M4J5RB1BX5SKAV3N09E922R3",
+  "at": "2026-10-10T05:49:42.827Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "capability port",
+  "wording": "each capability has one implementation in cratylus, reachable from the cratylus command line; a harness reaches it through a thin adapter that calls that implementation and adds no behavior of its own, so every harness gets the same capability and supporting another harness never reimplements one.",
+  "builtFrom": [],
+  "reason": "decided in 0009: Capability port and fidelity",
+  "supersedes": []
+}
