@@ -620,6 +620,10 @@ Keep the concept journal: each bounded context’s concepts and decisions, appen
 
 The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
 
+What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
+
+Nothing under `design/journal` is edited, moved or deleted. In the cratylus repository its immutability gate holds this: it refuses such a change at commit and in CI, naming each path, and lets additions pass.
+
 #### `cratylus concepts state`
 
 Read the whole state of each context in one answer, to reconstitute from: its live concepts (current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled).
@@ -699,7 +703,7 @@ cratylus concepts define [options] <concept>
 
 #### `cratylus concepts supersede`
 
-Record a new version of a concept superseding every current version, resolving competing ones.
+Record a new version of a concept superseding every current version, resolving competing ones and bringing a retired concept back.
 
 ```sh
 cratylus concepts supersede [options] <concept>
@@ -733,22 +737,22 @@ Record a decision, open or accepted: its situation, the decision and its consequ
 cratylus concepts decide [options] <id>
 ```
 
-| Flag                     | What it does                                                        |
-| ------------------------ | ------------------------------------------------------------------- |
-| `--context <value>`      | The bounded context it belongs to, one recorded by concepts context |
-| `--title <value>`        | The decision’s title                                                |
-| `--situation <value>`    | The situation that calls for the decision                           |
-| `--decision <value>`     | What is decided                                                     |
-| `--consequences <value>` | What follows from it                                                |
-| `--status <value>`       | How the decision is recorded: open or accepted                      |
-| `--supersedes <value>`   | The id of an earlier decision this one supersedes                   |
+| Flag                     | What it does                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `--context <value>`      | The bounded context it belongs to, one recorded by concepts context                            |
+| `--title <value>`        | The decision’s title                                                                           |
+| `--situation <value>`    | The situation that calls for the decision                                                      |
+| `--decision <value>`     | What is decided                                                                                |
+| `--consequences <value>` | What follows from it                                                                           |
+| `--status <value>`       | How the decision is recorded: open or accepted                                                 |
+| `--supersedes <value>`   | An earlier decision this one supersedes: its id, or its entry where two decisions share the id |
 
 #### `cratylus concepts accept`
 
-Record the acceptance of an open decision, an entry of its own; the decision’s record never changes.
+Record the acceptance of an open decision, named by its id or, where two decisions share the id, by its entry; an entry of its own, so the decision’s record never changes.
 
 ```sh
-cratylus concepts accept [options] <id>
+cratylus concepts accept [options] <ref>
 ```
 
 | Flag               | What it does       |
