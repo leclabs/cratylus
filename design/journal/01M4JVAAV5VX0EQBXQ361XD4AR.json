@@ -1,0 +1,16 @@
+{
+  "id": "01M4JVAAV5VX0EQBXQ361XD4AR",
+  "at": "2026-10-10T12:06:32.549Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "role",
+  "wording": "a function an agent performs in a team, stated as a default value for every factor: one role per agent, so whoever dispatches it knows what comes back; it carries who the agent is, what it decides and what it is accountable for, never the steps of a workflow, which are method.",
+  "builtFrom": [
+    "factor",
+    "identity",
+    "authority",
+    "reach"
+  ],
+  "reason": "Discovery 2026-10-10: keeps the canon's role-as-bundle and singular arity; the canon's roles carried the old workflow's procedure and could not outlive it.",
+  "supersedes": []
+}

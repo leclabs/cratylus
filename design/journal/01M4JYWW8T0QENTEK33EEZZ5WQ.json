@@ -1,0 +1,13 @@
+{
+  "id": "01M4JYWW8T0QENTEK33EEZZ5WQ",
+  "at": "2026-10-10T13:09:05.946Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "ipseic agent",
+  "wording": "a persona with selfhood: a personal identity that persists across sessions, hosts and harnesses (a name, a mark, and a key pair that signs its acts), its own continuous memory of what it has experienced and knows itself to have experienced, a personality and mind of its own, a long lifespan in which it grows and evolves, and freedom to travel between environments while remaining the same self.",
+  "builtFrom": [
+    "persona"
+  ],
+  "reason": "The operator's medium-term goal, stated 2026-10-10: a paradigm shift beyond ambient agents (long-running, event-triggered) to agents with ipseity (selfhood, autonoesis, self-continuity); mav, kino and nico are slated to be among the first. Their present minimal residue is a deliberate simplification until the workflow is proven in consumer use.",
+  "supersedes": []
+}

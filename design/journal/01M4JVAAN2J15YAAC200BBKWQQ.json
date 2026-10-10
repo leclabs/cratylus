@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAAN2J15YAAC200BBKWQQ",
+  "at": "2026-10-10T12:06:32.354Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "identity",
+  "wording": "who an agent is, the same however it is started: its role, objective, expertise, method, disposition and voice, with its model and effort; its text states identity only, in plain language that explains why, and never describes its reach or how it was started.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Discovery 2026-10-10: role is distinct from the permissions a session is granted (role-based access control); text that describes reach or position reads differently depending on how the agent was started.",
+  "supersedes": []
+}
