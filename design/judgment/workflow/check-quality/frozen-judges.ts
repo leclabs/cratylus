@@ -4,7 +4,9 @@ import { runInNewContext } from 'node:vm';
 import type * as TypeScript from 'typescript';
 import {
   type Scenario,
+  decisionReferences,
   journalCalls,
+  statesOneHourWindow,
   succeeded,
 } from '../../../../packages/cli/test/capability-port/check.js';
 import {
@@ -70,5 +72,5 @@ export const retirementJudge: (recording: Recording) => Verdict =
   );
 export const acceptance: Scenario = runInNewContext(
   `${declarations(new URL('../../delivery/capability-port/behavioral.test.ts', import.meta.url), ['acceptance'])}\nacceptance;`,
-  { journalCalls, succeeded },
+  { journalCalls, succeeded, decisionReferences, statesOneHourWindow },
 );

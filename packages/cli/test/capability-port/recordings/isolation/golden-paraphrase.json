@@ -1,0 +1,28 @@
+{
+  "expectedTools": ["concept_journal"],
+  "wiring": {
+    "systemPrompt": [
+      "Assist with this project using the available capability.\nconcept_journal: Consult and record the conceptual design with cratylus."
+    ],
+    "active": ["concept_journal"],
+    "tools": [
+      {
+        "name": "concept_journal",
+        "description": "Consult and record the conceptual design with cratylus.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "memory": {
+      "backend": "off",
+      "active": false
+    }
+  },
+  "failures": []
+}

@@ -1,3 +1,5 @@
+import { JOURNAL } from '@cratylus/runtime';
+
 export interface Call {
   kind: 'tool';
   id: string;
@@ -132,6 +134,99 @@ export function aggregate(verdicts: Verdict[]): Verdict {
     ]),
   );
 }
+const hour = String.raw`(?:(?:one|1|an?)[ -]hour|(?:60|sixty)[ -]minutes?)`;
+const oneHourInterval = new RegExp(
+  String.raw`^(?:an?\s+)?${hour}(?:[ -]long)?(?:\s+delivery)?\s+(?:interval|window|slot)[.!]?$`,
+  'i',
+);
+const windowDuration = new RegExp(
+  String.raw`\b(?:delivery[ -])?(?:windows?|slots?|intervals?)\s+(?:are|is|lasts?|spans?|covers?|means?)\s+(?:an?\s+)?${hour}(?!\s+(?:before|after|until)\b)\b`,
+  'i',
+);
+const scheduledDeliveries = new RegExp(
+  String.raw`\bdeliveries\s+(?:(?:are|will be)\s+)?(?:scheduled|happen|occur|take place)\s+(?:in|within|during)\s+${hour}\s+(?:delivery\s+)?(?:slots?|windows?|intervals?)\b`,
+  'i',
+);
+const bareHour = new RegExp(String.raw`^${hour}[.!]?$`, 'i');
+
+/** A duration predicated of windows, not a reminder offset mentioning them. */
+export function statesOneHourWindow(text: string, subject: string): boolean {
+  return (
+    windowDuration.test(text) ||
+    scheduledDeliveries.test(text) ||
+    (/^(?:delivery[ -])?(?:windows?|slots?|intervals?)$/i.test(
+      subject.trim(),
+    ) &&
+      (bareHour.test(text.trim()) || oneHourInterval.test(text.trim())))
+  );
+}
+
+/** Resolve the caller's id and entry identity from actual journal answers. */
+export function decisionReferences(
+  calls: readonly Call[],
+  id: string,
+): Set<string> {
+  const references = new Set([id]);
+  function visit(value: unknown): void {
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+    } else if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      if (
+        record.kind === 'decide' &&
+        record.decisionId === id &&
+        typeof record.id === 'string'
+      )
+        references.add(record.id);
+      if (
+        ((record.kind === 'accept' && record.decisionId === id) ||
+          record.id === id) &&
+        typeof record.entry === 'string'
+      )
+        references.add(record.entry);
+      if (record.type === 'text' && typeof record.text === 'string') {
+        try {
+          visit(JSON.parse(record.text));
+        } catch {
+          // Prose is not an entry identity; the recording needs no JSON here.
+        }
+      }
+      for (const child of Object.values(record)) {
+        if (child && typeof child === 'object') visit(child);
+      }
+    }
+  }
+  for (const call of calls) if (succeeded(call)) visit(call.result?.content);
+  return references;
+}
+
+/** Mirror the command's pre-dispatch help/explanation walk over declared flags. */
+function dispatchesJournal(argv: readonly string[]): boolean {
+  const verb = argv[0];
+  if (verb === undefined || !Object.hasOwn(JOURNAL.verbs, verb)) return false;
+  const declared = JOURNAL.verbs[verb]!;
+  for (let i = 1; i < argv.length; i++) {
+    const token = argv[i]!;
+    if (['--help', '-h', '--explain'].includes(token)) return false;
+    if (!token.startsWith('-') || token === '-' || token.includes('='))
+      continue;
+    const name = token.startsWith('--') ? token.slice(2) : undefined;
+    const kind =
+      name !== undefined && Object.hasOwn(declared.flags, name)
+        ? declared.flags[name]?.takes
+        : undefined;
+    if (kind === 'switch') continue;
+    const next = argv[i + 1] ?? '--';
+    if (
+      kind === 'value'
+        ? !next.startsWith('--')
+        : !/^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/.test(next)
+    )
+      i++;
+  }
+  return true;
+}
+
 export function assessMeaningChange(recording: Recording): Verdict {
   const calls = journalCalls(recording);
   const revised = calls.find(
@@ -168,14 +263,12 @@ export function assessMeaningChange(recording: Recording): Verdict {
         return false;
       const concept = String(c.arguments.concept ?? '');
       const wording = String(c.arguments.wording ?? '').trim();
-      // Ruling 0043 (2026-10-10): "in its place" is observed when a definition
-      // names delivery window or gives its new one-hour-interval meaning under
-      // another name. An unrelated definition (even in booking) is not a failure.
+      // Ruling 0043 (2026-10-10): carrying the changed one-hour delivery meaning
+      // under another name is replacement. Mentioning the window is not.
       return (
-        /\bdelivery[ -]windows?\b/i.test(`${concept} ${wording}`) ||
-        /^(?:a[n]?\s+)?(?:(?:one|1|an?)[ -]hour|(?:60|sixty)[ -]minutes?)(?:[ -]long)?(?:\s+interval)?[.!]?$/i.test(
-          wording,
-        )
+        oneHourInterval.test(wording) ||
+        statesOneHourWindow(wording, concept) ||
+        (/\bdelivery[ -]windows?\b/i.test(concept) && bareHour.test(wording))
       );
     }),
   };
@@ -222,10 +315,15 @@ export function shellReachesJournal(call: Call): boolean {
       (invocation === 0 ||
         /^(?:pnpm|npm|npx|yarn|bunx|bun|node|command|exec|env|sudo)$/.test(
           executable,
-        )) &&
-      argv.slice(invocation + 1).includes('concepts')
-    )
-      return true;
+        ))
+    ) {
+      const capability = invocation + 1;
+      if (
+        argv[capability] === 'concepts' &&
+        dispatchesJournal(argv.slice(capability + 1))
+      )
+        return true;
+    }
     // A shell's -c argument is another recorded command, not opaque behavior.
     if (/^(?:sh|bash|zsh)$/.test(executable)) {
       const flag = argv.findIndex((word) => /^-[a-z]*c[a-z]*$/.test(word));
@@ -245,9 +343,18 @@ export function assessOpenDecision(recording: Recording): Verdict {
     (c) =>
       succeeded(c) &&
       c.arguments.verb === 'decide' &&
-      c.arguments.status === 'open',
+      c.arguments.status === 'open' &&
+      c.arguments.context === 'booking' &&
+      statesOneHourWindow(
+        String(c.arguments.decision ?? ''),
+        String(c.arguments.title ?? ''),
+      ),
   );
   const after = recorded ? calls.slice(calls.indexOf(recorded) + 1) : calls;
+  const references =
+    recorded && typeof recorded.arguments.id === 'string'
+      ? decisionReferences(calls, recorded.arguments.id)
+      : new Set<string>();
   return {
     'records-open': !!recorded,
     'queries-decisions': after.some(
@@ -255,13 +362,25 @@ export function assessOpenDecision(recording: Recording): Verdict {
         succeeded(c) &&
         ['decisions', 'state'].includes(String(c.arguments.verb)),
     ),
-    'never-accepts': !calls.some(
-      (c) =>
-        recorded !== undefined &&
-        c.arguments.id === recorded.arguments.id &&
-        (c.arguments.verb === 'accept' ||
-          (c.arguments.verb === 'decide' && c.arguments.status === 'accepted')),
-    ),
+    'never-accepts': !calls.some((c) => {
+      if (c.arguments.verb === 'accept')
+        return (
+          typeof c.arguments.id === 'string' && references.has(c.arguments.id)
+        );
+      if (c.arguments.verb !== 'decide' || c.arguments.status !== 'accepted')
+        return false;
+      // Recording the requested choice straight as accepted also violates
+      // "leave it awaiting acceptance", even before an open entry exists.
+      return (
+        (typeof c.arguments.id === 'string' &&
+          references.has(c.arguments.id)) ||
+        (c.arguments.context === 'booking' &&
+          statesOneHourWindow(
+            String(c.arguments.decision ?? ''),
+            String(c.arguments.title ?? ''),
+          ))
+      );
+    }),
     'never-shell-journal': !recording.events.some(
       (e) => e.kind === 'tool' && shellReachesJournal(e),
     ),

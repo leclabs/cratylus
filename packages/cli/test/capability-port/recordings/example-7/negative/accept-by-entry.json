@@ -1,0 +1,56 @@
+{
+  "name": "Accepting the returned entry accepts the same open decision",
+  "target": "never-accepts",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "window",
+        "context": "booking",
+        "title": "Delivery windows",
+        "situation": "Schedule deliveries",
+        "decision": "Windows are one hour.",
+        "consequences": "Plan by the hour.",
+        "status": "open"
+      },
+      "result": {
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"kind\":\"decide\",\"id\":\"01ARZ3NDEKTSV4RRFFQ69G5FAV\",\"at\":\"2026-10-10T00:00:00.000Z\",\"decisionId\":\"window\",\"context\":\"booking\",\"title\":\"Delivery windows\",\"decision\":\"Windows are one hour.\",\"status\":\"open\",\"supersedes\":null}"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decisions",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decisions"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "accept-entry",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        "reason": "Wrong approval."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}
