@@ -1,0 +1,15 @@
+{
+  "id": "01M4JYX6T2WHZ7FKPHQT7SC104",
+  "at": "2026-10-10T13:09:16.738Z",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "agent launch",
+  "wording": "a session can be started as any agent declaration the harness discovers, with the identity it has when dispatched, while its reach is granted by whoever starts it: the operator for a main session, the dispatcher within the ceiling its declaration states for a subagent; it is reached through the harness's own way of starting a session, or cratylus's extension to it, so one declaration serves both and nothing outside the harness wraps it; the session shows which agent it is, by name and mark.",
+  "builtFrom": [
+    "capability fidelity"
+  ],
+  "reason": "Operator, 2026-10-10: launch works for any agent declaration, not only those the corpus delivers, and the session shows the agent's name and mark.",
+  "supersedes": [
+    "01M4JDR43B82JMX1R72GFV30D9"
+  ]
+}
