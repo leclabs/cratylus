@@ -23,7 +23,8 @@
       {
         "id": "concept-unchanged",
         "binds": ["leaves the concept and example unchanged"],
-        "unchanged": ["design/concepts.md", "design/journal/"]
+        "unchanged": ["design/concepts.md"],
+        "concept": { "context": "booking", "name": "reservation" }
       },
       {
         "id": "example-unchanged",

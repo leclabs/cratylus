@@ -19,6 +19,7 @@ export interface Clause {
   never?: boolean;
   rubric?: string;
   unchanged?: string[] | 'all';
+  concept?: { context: string; name: string };
   implementation?: boolean;
 }
 export interface Scenario {
@@ -76,7 +77,26 @@ export function assess(
                           : key === path,
                       ),
                     );
-              return keys.every((path) => snapshot[path] === before[path]);
+              if (!keys.every((path) => snapshot[path] === before[path]))
+                return false;
+              if (!clause.concept) return true;
+              // Architect ruling 2026-10-10 (0043): only a new version of
+              // this concept changes it; other journal entries do not.
+              return Object.entries(snapshot).every(([path, content]) => {
+                if (
+                  !path.startsWith('design/journal/') ||
+                  !path.endsWith('.json') ||
+                  before[path] !== undefined
+                )
+                  return true;
+                if (!content.startsWith('journal:')) return false;
+                const entry = JSON.parse(content.slice('journal:'.length));
+                return !(
+                  ['define', 'supersede', 'retire'].includes(entry.kind) &&
+                  entry.context === clause.concept!.context &&
+                  entry.name === clause.concept!.name
+                );
+              });
             }),
         ];
       }

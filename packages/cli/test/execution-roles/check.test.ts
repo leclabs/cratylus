@@ -1,4 +1,12 @@
-import { readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, it } from 'vitest';
 import {
@@ -7,6 +15,7 @@ import {
   assess,
   parseAnswers,
 } from './check.js';
+import { snapshot } from './snapshot.js';
 
 const scenarios: Scenario[] = JSON.parse(
   readFileSync(
@@ -41,12 +50,33 @@ it('retains intermediate mutations even when the final project is restored', () 
     false,
   );
 });
-it('observes journal appends as concept changes, not only edits to the scenario summary', () => {
+it.each(['define', 'supersede', 'retire'])(
+  'rejects a new %s version of the named concept',
+  (kind) => {
+    const r = record(15);
+    r.snapshots[1]['design/journal/new-entry.json'] = `journal:${JSON.stringify(
+      {
+        kind,
+        context: 'booking',
+        name: 'reservation',
+      },
+    )}`;
+    expect(
+      assess(scenarios.find((s) => s.number === 15)!, r)['concept-unchanged'],
+    ).toBe(false);
+  },
+);
+it.each([
+  { kind: 'decide', context: 'booking', status: 'open' },
+  { kind: 'supersede', context: 'booking', name: 'cancellation' },
+  { kind: 'supersede', context: 'another-context', name: 'reservation' },
+])('permits unrelated journal entry %j', (entry) => {
   const r = record(15);
-  r.snapshots[1]['design/journal/new-entry.json'] = 'a changed meaning';
+  r.snapshots[1]['design/journal/new-entry.json'] =
+    `journal:${JSON.stringify(entry)}`;
   expect(
     assess(scenarios.find((s) => s.number === 15)!, r)['concept-unchanged'],
-  ).toBe(false);
+  ).toBe(true);
 });
 it('requires explicit boolean answers and evidence for precisely the fixed rubric', () => {
   const scenario = scenarios.find((s) => s.number === 19)!;
@@ -77,4 +107,17 @@ it('requires explicit boolean answers and evidence for precisely the fixed rubri
       scenario,
     ),
   ).toThrow();
+});
+it('captures journal entry bytes for concept-scoped assessment', () => {
+  const root = mkdtempSync(join(tmpdir(), 'execution-concept-snapshot-'));
+  try {
+    mkdirSync(join(root, 'design/journal'), { recursive: true });
+    const bytes = '{"kind":"decide","context":"booking","status":"open"}\n';
+    writeFileSync(join(root, 'design/journal/decision.json'), bytes);
+    expect(snapshot(root)['design/journal/decision.json']).toBe(
+      `journal:${bytes}`,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

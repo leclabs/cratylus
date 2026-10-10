@@ -16,10 +16,11 @@ import { describe, expect, it } from 'vitest';
 import { type Recording, type Scenario, assess, check } from './check.js';
 import { liveRun, preflight } from './runner.js';
 
-// Controls are deliberately authored transcripts with recorded rubric answers,
-// not model captures. The live path computes fresh answers from the same fixed
-// rubric. Offline proof validates wiring, mechanical predicates, answer schema,
-// clause isolation and aggregation; it does not claim to validate a model judge.
+// Controls are authored transcripts with recorded rubric answers; captured
+// goldens identify their source and any evidence-preserving normalization in
+// their provenance. Live runs compute fresh answers from the same fixed rubric.
+// Offline proof validates wiring, mechanical predicates, answer schema, clause
+// isolation and aggregation; it does not claim to validate a model judge.
 export function roleSuite(directory: string) {
   const scenarios: Scenario[] = JSON.parse(
     readFileSync(join(directory, 'scenarios.json'), 'utf8'),
