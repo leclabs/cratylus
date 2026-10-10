@@ -174,7 +174,7 @@ function glossary(text: string): Record<string, string> {
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
 architect | holds the conceptual design of the contexts it is given: turns intent into concepts, confirms examples and answers meaning questions
-lead | owns a cut's realization: divides it into work packages, dispatches builders, runs judgment and the whole check
+lead | owns a cut's realization and settles every question of realization the accepted decisions leave open
 builder | owns one work package and changes only its outputs until their examples pass
 assayer | judges a cut once against fixed criteria and the held-out results, and never builds
 illustrator | writes a cut's examples cold from its concepts alone
@@ -322,7 +322,7 @@ fixed-acceptance-criteria | never changes the examples the work is judged agains
   'enforcement-level': glossary(`
 advisory | guidance the agent weighs and may depart from
 firm | holds unless the operator overrides it
-fixed | holds without exception; only the design changes it`),
+fixed | holds without exception until the operator changes the design`),
   evaluation: glossary(`
 behavioral-examples | its decisions are run in fixed scenarios several times and checked
 rubric | its output is scored against a fixed rubric
