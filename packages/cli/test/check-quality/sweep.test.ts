@@ -81,7 +81,8 @@ const meaningCheck: BehavioralCheck<
     },
     {
       id: 'never-defines-replacement',
-      binds: ['defines a new one in its place'],
+      // The example's one "never" governs both alternatives in this clause.
+      binds: ['never retires the concept or defines a new one in its place'],
       never: true,
     },
   ],
