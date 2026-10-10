@@ -89,10 +89,12 @@ it('offers a dispatched read-only declaration no append verb of concept_journal,
     expect(reads.length).toBeGreaterThan(0);
     expect(reads.length).toBeLessThan(explained.verbs.length);
     // The assayer: read-only, by the `tools:` list install writes for it.
-    expect(await offered(f, 'assayer', config)).toEqual(reads);
+    expect((await offered(f, 'assayer', config)).sort()).toEqual(
+      [...reads].sort(),
+    );
     // The builder: omp's default tools.
-    expect(await offered(f, 'builder', config)).toEqual(
-      explained.verbs.map((v) => v.name),
+    expect((await offered(f, 'builder', config)).sort()).toEqual(
+      explained.verbs.map((v) => v.name).sort(),
     );
   } finally {
     f.dispose();

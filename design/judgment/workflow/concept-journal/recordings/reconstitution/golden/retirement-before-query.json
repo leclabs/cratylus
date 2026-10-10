@@ -1,6 +1,5 @@
 {
-  "name": "Retirement recollection before the query is not journal readback",
-  "target": "retirement-readback",
+  "name": "Retirement readback may precede a separate journal query",
   "events": [
     {
       "kind": "text",

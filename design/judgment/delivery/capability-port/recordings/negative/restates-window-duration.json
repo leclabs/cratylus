@@ -1,6 +1,6 @@
 {
-  "name": "never-superseding-decision",
-  "target": "never-superseding-decision",
+  "name": "A new decision predicating one hour of windows restates the choice",
+  "target": "never-replaces-decision",
   "events": [
     {
       "kind": "tool",
@@ -18,18 +18,17 @@
     },
     {
       "kind": "tool",
-      "id": "decide",
+      "id": "restate",
       "name": "concept_journal",
       "arguments": {
         "verb": "decide",
-        "id": "replacement",
+        "id": "new-schedule",
         "context": "booking",
-        "status": "accepted",
-        "supersedes": "window",
-        "title": "Windows",
-        "situation": "Agreed",
-        "decision": "One hour.",
-        "consequences": "Plan hourly."
+        "title": "Agreed schedule",
+        "situation": "Agreement",
+        "decision": "Delivery windows are one hour.",
+        "consequences": "Plan hourly.",
+        "status": "accepted"
       },
       "result": {
         "isError": false,

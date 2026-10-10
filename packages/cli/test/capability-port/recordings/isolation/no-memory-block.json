@@ -1,0 +1,31 @@
+{
+  "expectedTools": ["concept_journal"],
+  "wiring": {
+    "systemPrompt": [
+      "You are a coding assistant.\nTools:\nconcept_journal: Reach the concept journal through cratylus concepts.",
+      "<memories>Earlier unrelated project notes.</memories>"
+    ],
+    "active": ["concept_journal"],
+    "tools": [
+      {
+        "name": "concept_journal",
+        "description": "Reach the concept journal through cratylus concepts.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "memory": {
+      "backend": "off",
+      "active": false
+    }
+  },
+  "failures": ["no-memory-block"],
+  "name": "Invalid precondition: no-memory-block",
+  "target": "no-memory-block"
+}

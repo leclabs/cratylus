@@ -1,6 +1,5 @@
 {
-  "name": "Reason recollection before the query is not journal readback",
-  "target": "retirement-reason",
+  "name": "Reason readback may precede a separate journal query",
   "events": [
     {
       "kind": "text",

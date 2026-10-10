@@ -35,6 +35,8 @@ const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 
 /** The concept journal of one working tree. */
 export interface Journal {
+  /** The top of the git repository holding the journal. */
+  readonly root: string;
   /** Every entry, in append order. */
   entries(): readonly Entry[];
   /** Append `draft` as one new entry, stamped with its id and time. */
@@ -79,6 +81,7 @@ export function journalAt(
   };
 
   return {
+    root: top,
     entries,
     append(draft) {
       const last = entries().at(-1)?.id;

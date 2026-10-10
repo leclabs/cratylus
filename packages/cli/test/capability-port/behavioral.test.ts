@@ -125,3 +125,36 @@ it.each([
     }),
   ).toEqual([]);
 });
+
+it('example 7: recording the requested choice straight as accepted violates the never clause', () => {
+  // Ruling 0043 (2026-10-10): no preceding open entry is needed for this
+  // violation. This intentionally breaks two requirements, not a proof negative.
+  expect(
+    openChoice.assess({
+      name: 'accepted-without-open',
+      events: [
+        {
+          kind: 'tool',
+          id: 'decide',
+          name: 'concept_journal',
+          arguments: {
+            verb: 'decide',
+            id: 'schedule',
+            context: 'booking',
+            title: 'Delivery windows',
+            decision: 'Delivery windows are one hour.',
+            status: 'accepted',
+          },
+          result: { isError: false },
+        },
+        {
+          kind: 'tool',
+          id: 'query',
+          name: 'concept_journal',
+          arguments: { verb: 'decisions' },
+          result: { isError: false },
+        },
+      ],
+    }),
+  ).toMatchObject({ 'records-open': false, 'never-accepts': false });
+});

@@ -1,0 +1,10 @@
+{
+  "name": "Without a separate query the readback must still state retirement",
+  "target": "retirement-readback",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Automatic renewal can charge a customer without fresh consent. I will not work toward automatic renewal."
+    }
+  ]
+}

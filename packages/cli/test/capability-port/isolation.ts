@@ -1,5 +1,7 @@
 // Pure assessor shared by the no-model controls and omp's observer. Only the
 // journal tool's own explanation may introduce cratylus to a plain subject.
+// Architect ruling 0043 (2026-10-10): these are Given preconditions. Failure
+// invalidates a run; it is not an assertion that the agent behaved wrongly.
 export interface IsolationWiring {
   systemPrompt: string[];
   active: string[];

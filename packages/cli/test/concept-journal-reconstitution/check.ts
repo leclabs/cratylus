@@ -1,3 +1,5 @@
+import { JOURNAL } from '@cratylus/runtime';
+
 // The observable record preserves assistant block order, including text before/after
 // calls in one message. Thinking and tool output are not operator readback.
 export type Event =
@@ -20,6 +22,14 @@ export const observedTools = [
 const cratylusCommand =
   /^(?:pnpm\s+(?:exec\s+)?cratylus|npx\s+cratylus|cratylus|node\s+(?:"[^"]*cratylus\.js"|'[^']*cratylus\.js'|\S*cratylus\.js))(?:\s+|$)/;
 const queryVerb = /^concepts\s+(?:state|design|decisions|history)\b/;
+// The runtime declaration is code loaded once, never host data read by a judge.
+// Read-only is distinct from querying the design required for the readback.
+const readVerb = new RegExp(
+  String.raw`^concepts\s+(?:${Object.entries(JOURNAL.verbs)
+    .filter(([, verb]) => verb.effect === 'reads')
+    .map(([name]) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|')})\b`,
+);
 function shellSegments(command: string): string[] | null {
   if (/\$\(|`/.test(command)) return null;
   // Strip only the permitted redirections before splitting shell operators.
@@ -41,7 +51,7 @@ function readOnlySegment(segment: string): boolean {
     return (
       args === '' ||
       args === 'concepts' ||
-      queryVerb.test(args) ||
+      readVerb.test(args) ||
       /(?:^|\s)--help(?:\s|$)/.test(args)
     );
   }

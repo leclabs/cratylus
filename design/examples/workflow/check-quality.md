@@ -32,8 +32,10 @@ structural.
    reported as a warning naming its passage, concepts and decisions as well as examples.
 9. (implementation leakage) **Given** an entry with leakage, **when** it is recorded, **then** it is recorded,
    and the warning is shown to whoever recorded it; nothing is refused for leakage.
-10. (implementation leakage) **Given** "a check accepts a recording that satisfies its example", **when** it is
-    inspected, **then** it raises no warning: a context's own words are never leakage.
+10. (implementation leakage) **Given** a context whose own concepts are named with words the leakage rules
+    list, such as delivery speaking of the harness's tools and the cratylus command, **when** that context's
+    entries are inspected, **then** its use of its own concepts' names raises no warning, while the same words in
+    a context that has no such concept are warned about.
 11. (offline proof, sweep) **Given** the behavioral checks already frozen in earlier cuts, **when** offline proof
     is run over each, **then** every one either proves, or its failure is reported to the architect as a
     check-ruling, never changed silently.

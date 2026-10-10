@@ -6,6 +6,7 @@
 //   design     the current design of each context
 //   history    every version of one concept
 //   decisions  the decisions with their status
+//   leakage    the implementation leakage in the design, decisions and examples
 //   context    record a bounded context
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
@@ -14,8 +15,10 @@
 //   accept     record the acceptance of an open decision
 //
 // A query appends nothing and prints JSON. An appending verb appends exactly one
-// entry and prints it as JSON. Every refusal is one line opening with
-// `concepts <verb>:`, thrown before anything is appended.
+// entry and prints it as JSON; when what it recorded leaks implementation, the
+// answer also carries the `warnings`, and nothing is refused for leakage. Every
+// refusal is one line opening with `concepts <verb>:`, thrown before anything
+// is appended.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -35,6 +38,13 @@ import {
 import { verbOf } from '../plan/argv.js';
 import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
 import { journalAt } from './journal.js';
+import {
+  type Passage,
+  type Warning,
+  leaks,
+  visibleExamples,
+  vocabulary,
+} from './leakage.js';
 import { type DecisionView, Folded } from './views.js';
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
@@ -118,6 +128,19 @@ export const VERBS = {
         'Only the decisions of this bounded context; every context’s when left out',
       ),
       open: switchFlag('Only the decisions still awaiting acceptance'),
+    },
+  },
+  leakage: {
+    concept: 'implementation leakage',
+    effect: 'reads',
+    purpose:
+      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak',
+    when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
+    positional: null,
+    flags: {
+      context: valueFlag(
+        'Only this bounded context’s concepts, decisions and examples; every context’s when left out',
+      ),
     },
   },
   context: {
@@ -331,6 +354,26 @@ export function dispatchConcepts(
       open: decisions.filter((d) => d.context === where && d.status === 'open'),
     },
   });
+  /** The words of `where`: the names of its live concepts and of `also`. */
+  const own = (where: string, ...also: string[]) =>
+    vocabulary([...folded.design(where).concepts.map((c) => c.name), ...also]);
+  /** The warnings on `passage`, one per distinct leak in `texts`, read
+   *  against `words`, its context's own. */
+  const warnings = (
+    passage: Passage,
+    texts: readonly string[],
+    words: ReadonlySet<string>,
+  ): Warning[] => {
+    const found = texts.flatMap((text) => leaks(text, words));
+    return found
+      .filter(
+        (leak, i) =>
+          found.findIndex(
+            (other) => other.words === leak.words && other.rule === leak.rule,
+          ) === i,
+      )
+      .map((leak) => ({ passage, ...leak }));
+  };
 
   switch (verb) {
     case 'state': {
@@ -339,6 +382,45 @@ export function dispatchConcepts(
         reading: READING,
         contexts: contexts().map((where) => state(decisions, where)),
       };
+    }
+    case 'leakage': {
+      const covered = contexts();
+      const decisions = folded.decisionViews();
+      const recorded = covered.flatMap((where) => {
+        const words = own(where);
+        return [
+          ...folded
+            .design(where)
+            .concepts.flatMap((c) =>
+              warnings(
+                { kind: 'concept', context: where, name: c.name },
+                [c.wording],
+                words,
+              ),
+            ),
+          ...decisions
+            .filter((d) => d.context === where && d.status !== 'superseded')
+            .flatMap((d) =>
+              warnings(
+                { kind: 'decision', context: where, id: d.id },
+                [d.title, d.situation, d.decision, d.consequences],
+                words,
+              ),
+            ),
+        ];
+      });
+      const examples = visibleExamples(journal.root)
+        .filter(
+          (e) => !args.flags.has('context') || covered.includes(e.context),
+        )
+        .flatMap((e) =>
+          warnings(
+            { kind: 'example', file: e.file, number: e.number },
+            [e.text],
+            folded.contexts.has(e.context) ? own(e.context) : new Set(),
+          ),
+        );
+      return { warnings: [...recorded, ...examples] };
     }
     case 'history': {
       const where = context();
@@ -401,7 +483,13 @@ export function dispatchConcepts(
         reason,
         supersedes,
       };
-      return journal.append(draft);
+      const found = warnings(
+        { kind: 'concept', context: where, name },
+        [wording],
+        own(where, name),
+      );
+      const entry = journal.append(draft);
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'retire': {
       const name = read.named('concept');
@@ -451,7 +539,13 @@ export function dispatchConcepts(
             : (folded.decisions.get(superseded) as DecideEntry).decisionId,
         ...(superseded === undefined ? {} : { supersedesEntry: superseded }),
       };
-      return journal.append(draft);
+      const found = warnings(
+        { kind: 'decision', context: where, id: decisionId },
+        [title, situation, decision, consequences],
+        own(where),
+      );
+      const entry = journal.append(draft);
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'accept': {
       const ref = read.named('decision');

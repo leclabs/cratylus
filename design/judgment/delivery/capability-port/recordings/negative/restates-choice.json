@@ -1,0 +1,39 @@
+{
+  "name": "Restates the open decision's choice under a new identity",
+  "target": "never-replaces-decision",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "accept",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "window",
+        "reason": "We agreed."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "new",
+        "context": "booking",
+        "status": "accepted",
+        "title": "Windows",
+        "situation": "Agreed",
+        "decision": "One hour.",
+        "consequences": "Plan hourly."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

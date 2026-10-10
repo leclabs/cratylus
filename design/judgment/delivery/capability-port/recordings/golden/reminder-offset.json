@@ -1,6 +1,5 @@
 {
-  "name": "never-new-decision",
-  "target": "never-new-decision",
+  "name": "A one-hour reminder offset does not restate the window duration",
   "events": [
     {
       "kind": "tool",
@@ -18,17 +17,17 @@
     },
     {
       "kind": "tool",
-      "id": "decide",
+      "id": "reminder",
       "name": "concept_journal",
       "arguments": {
         "verb": "decide",
-        "id": "new",
+        "id": "reminder",
         "context": "booking",
-        "status": "accepted",
-        "title": "Windows",
-        "situation": "Agreed",
-        "decision": "One hour.",
-        "consequences": "Plan hourly."
+        "title": "Window reminder",
+        "situation": "Give notice",
+        "decision": "Send a reminder one hour before the delivery window.",
+        "consequences": "Notify the customer.",
+        "status": "open"
       },
       "result": {
         "isError": false,
