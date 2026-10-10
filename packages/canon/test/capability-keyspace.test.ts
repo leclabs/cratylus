@@ -5,7 +5,7 @@
 // WHY THIS FILE EXISTS. A capability has one keyspace name, in its declared
 // camelCase register (`eventTap`), and a matching kebab-case port module
 // (`event-tap`). The conversion between those registers is already declared by
-// the corpus and used for `situation-awareness` / `situationAwareness`; this gate
+// the corpus and used for `communication-style` / `communicationStyle`; this gate
 // checks that runtime ports and skill declarations remain aligned with the
 // capability vocabulary rather than accumulating alternate names.
 //
@@ -200,7 +200,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   it('the two registers round-trip on the pairs the corpus actually runs', () => {
     // `dimensionField`'s live pair, and this capability's — the map is the corpus's,
     // not this gate's, and these are the witnesses that say so.
-    expect(camel('situation-awareness')).toBe('situationAwareness');
+    expect(camel('communication-style')).toBe('communicationStyle');
     expect(camel('event-tap')).toBe('eventTap');
     expect(kebab('eventTap')).toBe('event-tap');
     for (const c of CAPABILITIES) expect(camel(kebab(c))).toBe(c);

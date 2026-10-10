@@ -21,12 +21,8 @@ import {
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { resolve } from '../../src/resolve/resolve.js';
+import { CANON_DIMENSIONS, canonDirManifest } from '../canon-corpus.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-
-/** The real canon corpus dimensions dir, located relative to this test file. */
-const CANON_DIMENSIONS = fileURLToPath(
-  new URL('../../../canon/src/dimensions', import.meta.url),
-);
 
 /** Write `export const <name> = '<body>'` under `<dir>/<dimension>/<file>.ts`. */
 function writeStringFragment(
@@ -148,19 +144,19 @@ describe('extends: [canon] — resolves to the canon default set', () => {
     // supplies the same dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      manifest: FIXTURE_MANIFEST,
+      manifest: canonDirManifest(),
       fragments: CANON_DIMENSIONS,
     };
     const config: CratylusConfig = { extends: [canon], patches: [] };
     const resolved = await resolveConfig(config);
 
-    // The full canon fragment catalog resolved (141 modules in the corpus).
+    // The full canon fragment catalog resolved.
     expect(resolved.fragments.size).toBeGreaterThan(100);
     const byId = new Map(
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
     // A known canon fragment resolved to its branded-string body.
-    expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
+    expect(byId.get('canon:objective/parsimony')).toMatch(/^parsimony ≜ /);
   });
 });
 

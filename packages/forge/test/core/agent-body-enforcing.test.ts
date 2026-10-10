@@ -3,7 +3,7 @@
 // about; this half asserts a RENDERED BODY, which is the projector's concern and
 // stays here.
 
-import type { Value } from '@cratylus/schema';
+import type { Agent, Value } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { agentBody } from '../../src/core/body.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
@@ -17,23 +17,26 @@ const bound: Guardrails = {
   events: ['tool.use.pre'],
 };
 
-describe('SOUL rendering — an enforcing value renders its DECLARATION', () => {
+describe('agent body — an enforcing value renders its DECLARATION', () => {
   it('never leaks `[object Object]` into the projected body', () => {
     // The regression this guards: `agentBody` pushed `v as string`, and the cast
     // was the very thing hiding that a value may be an object. tsc could not see
     // it; only a rendered body can.
-    const body = agentBody(
-      {
-        name: 'a',
-        archetype: 'x',
-        guardrails: [bound, bare],
-      } as never,
-      FIXTURE_MANIFEST,
-    );
+    const agent = {
+      name: 'a',
+      description: 'x',
+      mark: null,
+      key: null,
+      guardrails: [
+        { value: bound, level: 'fixed' },
+        { value: bare, level: 'fixed' },
+      ],
+    } as Agent;
+    const body = agentBody(agent, { guardrails: FIXTURE_MANIFEST.guardrails });
     expect(body).not.toContain('[object Object]');
-    expect(body).toContain('stance ≜ hold the stance');
-    expect(body).toContain('honesty ≜ assert from evidence');
-    // The binding is NOT in the SOUL — it is where the rule binds, not what it says.
+    expect(body).toContain('- **stance** — hold the stance (fixed)');
+    expect(body).toContain('- **honesty** — assert from evidence (fixed)');
+    // The binding is NOT in the body — it is where the rule binds, not what it says.
     expect(body).not.toContain('tool.use.pre');
     expect(body).not.toContain('harness');
   });

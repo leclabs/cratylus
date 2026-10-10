@@ -1,7 +1,9 @@
 // What an earlier install placed for launching personas — the `omp-agent` launcher,
 // the per-persona `omp.yml` overlays, the badge modules and the persona commands
 // linked to the launcher — is placed no more: a session is started as an agent by
-// `omp --agent`. An operator who installed them is rid of them by the next install,
+// `omp --agent`. Nor is any module placed for one agent under `agent/personas/`: the
+// guardrail, session and isolation copies an earlier install put there were loaded
+// by no session. An operator who installed them is rid of them by the next install,
 // which prunes what its record lists and it no longer writes, or by uninstall.
 
 import {
@@ -15,7 +17,6 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInstall } from '../../src/cli/commands/install.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
@@ -26,7 +27,11 @@ import {
 } from '../../src/deploy/manifest.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
+import {
+  FIXTURE_PRACTICE,
+  fixtureAgentSource,
+  fixturePractices,
+} from './helpers.js';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -35,8 +40,8 @@ afterEach(() => {
   roots.length = 0;
 });
 
-/** The files an earlier install placed to launch `alpha` by name, harness-relative,
- *  each with the manifest group that recorded it. */
+/** The files an earlier install placed to launch `alpha` by name, or to scope its
+ *  modules to it, harness-relative, each with the manifest group that recorded it. */
 const RETIRED = [
   ['enforcing:_session', 'agent/omp-agent'],
   ['enforcing:alpha', 'agent/personas/alpha/omp.yml'],
@@ -44,7 +49,13 @@ const RETIRED = [
     'enforcing:alpha',
     'agent/personas/alpha/extensions/cratylus-persona-badge.ts',
   ],
+  ['enforcing:alpha', 'agent/personas/alpha/extensions/cratylus-guardrails.ts'],
+  ['enforcing:alpha', 'agent/personas/alpha/extensions/cratylus-session.ts'],
+  ['enforcing:alpha', 'agent/personas/alpha/extensions/cratylus-isolation.ts'],
 ] as const;
+
+/** The per-agent root nothing is placed under now. */
+const PERSONAS = 'agent/personas';
 
 describe('the retired persona launch surface', () => {
   let home: string;
@@ -69,20 +80,7 @@ describe('the retired persona launch surface', () => {
     mkdirSync(cwd, { recursive: true });
     const agents = join(root, 'agents');
     mkdirSync(agents, { recursive: true });
-    writeFileSync(
-      join(agents, 'alpha.ts'),
-      [
-        'export const alpha = {',
-        "  name: 'alpha',",
-        "  description: 'fixture agent alpha',",
-        "  archetype: 'alpha probe',",
-        ...Object.keys(FIXTURE_MANIFEST).map(
-          (k) => `  ${kebabToCamel(k)}: null,`,
-        ),
-        '};',
-        '',
-      ].join('\n'),
-    );
+    writeFileSync(join(agents, 'alpha.ts'), fixtureAgentSource('alpha'));
     plugin = {
       name: 'retired-launch-fixture',
       manifest: FIXTURE_MANIFEST,
@@ -132,6 +130,7 @@ describe('the retired persona launch surface', () => {
     expect(await install()).toBe(0);
     for (const [, rel] of RETIRED)
       expect(existsSync(join(harness(), rel))).toBe(false);
+    expect(existsSync(join(harness(), PERSONAS))).toBe(false);
     expect(gone(link())).toBe(true);
     expect(readManifest(harness()).personaLinks).toEqual([]);
   });
@@ -141,6 +140,10 @@ describe('the retired persona launch surface', () => {
     expect(await install()).toBe(0);
     for (const [, rel] of RETIRED)
       expect(existsSync(join(harness(), rel)), rel).toBe(false);
+    expect(existsSync(join(harness(), PERSONAS))).toBe(false);
+    expect(
+      Object.keys(readManifest(harness()).kinds.hooks ?? {}),
+    ).not.toContain('enforcing:alpha');
     expect(gone(link())).toBe(true);
     expect(readManifest(harness()).personaLinks).toEqual([]);
   });
@@ -150,6 +153,7 @@ describe('the retired persona launch surface', () => {
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     for (const [, rel] of RETIRED)
       expect(existsSync(join(harness(), rel)), rel).toBe(false);
+    expect(existsSync(join(harness(), PERSONAS))).toBe(false);
     expect(gone(link())).toBe(true);
   });
 

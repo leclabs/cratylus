@@ -70,14 +70,17 @@ export interface DeployManifest {
   // chosen line can equal the rendered one and a removed line equals "none". A manifest
   // written before this list reads as `[]`: `agentModels` alone then decides.
   hostModels: string[];
-  // The roles whose `modelRoles` entry in the host's config is the operator's choice
-  // (omp), whatever its value against the nearest built-in route install seeds an entry
-  // with: a value cannot say this, since a choice can equal the seed. Such an entry is
-  // the host's from then on. An entry that is NOT here and is recorded in `hostEdits`
-  // byte for byte as install wrote it is install's own seed, which a later install may
-  // move to a model the operator now chooses. A manifest written before this list reads
-  // as `[]`.
+  // The model roles whose `modelRoles` entry in the host's config is the operator's
+  // choice (omp), whatever its value against the one install seeds the entry with: a
+  // value cannot say this, since a choice can equal the seed. Such an entry is the
+  // host's from then on. A manifest written before this list reads as `[]`.
   hostRoutes: string[];
+  // model role -> the value install seeded its `modelRoles` entry with (omp). An entry
+  // that still holds that value and is not in `hostRoutes` is install's own seed, which
+  // a later install moves to the value it would seed now, or to the model the operator
+  // chooses. A manifest written before this record reads as `{}`; an entry recorded in
+  // `hostEdits` as an inserted line, standing byte for byte, is then install's own.
+  modelRoleSeeds: Record<string, string>;
   // The practices the last install chose, by name, for the next to preselect. `null` ⇒
   // none recorded (a host installed before practices, or a deploy that is not an install),
   // which an install reads as a fresh host.
@@ -150,6 +153,7 @@ export function emptyManifest(): DeployManifest {
     agentModels: {},
     hostModels: [],
     hostRoutes: [],
+    modelRoleSeeds: {},
     practices: null,
     statusLine: null,
     digests: {},
@@ -181,6 +185,7 @@ export function readManifest(harnessDir: string): DeployManifest {
       agentModels: parsed.agentModels ?? {},
       hostModels: parsed.hostModels ?? [],
       hostRoutes: parsed.hostRoutes ?? [],
+      modelRoleSeeds: parsed.modelRoleSeeds ?? {},
       practices: parsed.practices ?? null,
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
@@ -614,28 +619,33 @@ export function retargetHostEdit(
   });
 }
 
-/** Record which roles' `modelRoles` entries are now the operator's choice (`chosen`), and
- *  which are install's own seed (`seeded`, a role that was in the first list before). */
+/** Record which model roles' entries are now the operator's choice (`chosen`), and
+ *  which are install's own seed, each with the value install wrote (`seeded`). */
 export function noteHostRoutes(
   harnessDir: string,
   chosen: readonly string[],
-  seeded: readonly string[],
+  seeded: Readonly<Record<string, string>>,
 ): void {
-  if (chosen.length === 0 && seeded.length === 0) return;
+  const own = Object.keys(seeded);
+  if (chosen.length === 0 && own.length === 0) return;
   const manifest = readManifest(harnessDir);
-  const next = [
-    ...manifest.hostRoutes.filter(
-      (r) => !seeded.includes(r) && !chosen.includes(r),
-    ),
-    ...chosen,
-  ];
-  if (
-    next.length === manifest.hostRoutes.length &&
-    next.every((r) => manifest.hostRoutes.includes(r))
-  ) {
-    return;
-  }
-  writeManifest(harnessDir, { ...manifest, hostRoutes: next });
+  writeManifest(harnessDir, {
+    ...manifest,
+    hostRoutes: [
+      ...manifest.hostRoutes.filter(
+        (r) => !own.includes(r) && !chosen.includes(r),
+      ),
+      ...chosen,
+    ],
+    modelRoleSeeds: {
+      ...Object.fromEntries(
+        Object.entries(manifest.modelRoleSeeds).filter(
+          ([r]) => !chosen.includes(r),
+        ),
+      ),
+      ...seeded,
+    },
+  });
 }
 
 /** Mark `file` as one an install from before edits were recorded may have changed in ways

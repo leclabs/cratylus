@@ -22,18 +22,21 @@ verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
 signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned ; w a symbol this corpus's own skills declare
 canonizable(skill) ⇒ ∀ w ∈ declared(skill) : signify-verify(w)                    -- skill of THIS corpus ; one obligation per declared symbol ; the gate routes RECORDED probe readouts to pass ∨ fail, and a symbol with none is owed, ¬ passed
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
-Role       ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED ∧ PARTIAL : the EXPECTATIONS of anyone holding the role ; made OF dimension values ∴ ¬ itself a dimension — the `role` dimension carries its SIGN⟩
-             ⟨∧ the identity of its generic holder : description · archetype · provenance.mark⟩
-generic-holder ≜ the agent NAMED for its Role (architect · planner · implementer · assayer · integrator) ⟨carries nothing beyond the Role : its description, archetype and mark are the Role's ; declares ∅⟩
-persona    ≜ an agent named as an individual (mav · nico · kino) ⟨holds one Role and DECLARES its residue over it : its own description, archetype and mark at least, any dimension value besides⟩
+Role       ≜ (DimensionName → ℘(entry)) ⟨NAMED ∧ TOTAL : a value for EVERY factor the catalog gives a field, an explicitly empty set counting as one ; the EXPECTATIONS of anyone holding the role ; made OF factor values ∴ ¬ itself a factor — the `role` factor carries its SIGN⟩
+             ⟨∧ the identity of its generic holder : name · description ; a Role carries no mark⟩
+entry      ≜ ⟨value, level⟩ ⟨level ∈ {advisory, firm, fixed} ∪ {—} : enforcement-level is an ATTRIBUTE of every value held, ¬ a value of its own ; unstated ⇒ the factor's default @ manifest⟩
+generic-holder ≜ holder(Role) : the agent NAMED for its Role (architect · lead · builder · assayer · illustrator · check-writer) ⟨carries nothing beyond the Role : its name and description are the Role's ; no mark ; declares ∅⟩
+             ⟨holder REFUSES a Role missing a factor, a scalar without exactly one value, a slot not filled exactly once, ∨ empty guardrails⟩
+persona    ≜ persona(Role, residue) : an agent named as an individual (kino · nico · mav) ⟨holds one Role and DECLARES its residue over it : its own description and mark at least, any factor value besides⟩
 holds      : agent → Role ⟨SINGULAR : a Role is the contract a PEER dispatches against ∧ ∄ dispatcher that can reason about a union of Roles⟩
-declares   : agent → (DimensionName ⇸ ℘(fragment)) ⟨what a persona states over the Role : its residue ; ¬ bounded in size ; ∅ for a generic-holder⟩
-select     : agent → (DimensionName ⇸ ℘(fragment)) ; select(a) = holds(a) ⊕ declares(a)   -- the fold runs @ select ∴ the emitted Target is FLAT
-⊕ ⊨ arity @ manifest ⟨set ⇒ holds(a) ∪ declares(a) ⟨EXTEND⟩ ; scalar ⇒ declares(a) if the key is STATED ⟨OVERRIDE⟩, else holds(a)⟩
+declares   : agent → (DimensionName ⇸ ℘(entry)) ⟨what a persona states over the Role : its residue ; ¬ bounded in size ; ∅ for a generic-holder⟩
+select     : agent → (DimensionName → ℘(entry)) ; select(a) = holds(a) ⊕ declares(a)   -- the fold runs @ select ∴ the emitted Target is FLAT
+⊕ ⊨ arity @ manifest ⟨scalar ⇒ declares(a) if STATED ⟨OVERRIDE⟩, else holds(a) ; slots ⇒ each stated slot OVERRIDES its own ; set ⇒ holds(a) then declares(a) ⟨EXTEND ; restating a held value changes only its level ∨ note⟩ ; Reach ⇒ a persona may only NARROW it⟩
 role ∉ dom(declares) ⇒ contract(holds(a)) ¬ overridable ⟨∄ field a persona may state ∴ inviolable BY CONSTRUCTION, ¬ by a marking⟩
-mark ∉ dom(⊕) ⟨identity, ¬ folded : a generic-holder's mark is its Role's, a persona's is its own⟩
-             ⟨the fold REFUSES a persona with no archetype or mark of its own, a persona whose mark is its Role's, and a Role-named agent that declares anything beyond its Role⟩
-compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
+mark ∉ dom(⊕) ⟨identity, ¬ folded : a generic-holder has none, a persona's is its own⟩
+             ⟨⊕ REFUSES, never silently ignores, naming what it refused : a residue that WIDENS Reach ⟨a perception-scope, action-scope ∨ handoff the Role does not hold⟩, removes a guardrail ∨ lowers its level, removes any other set's value, ∨ names a factor ∉ catalog ; a persona with no mark, ∨ whose mark is its Role's⟩
+compose    : (DimensionName → ℘(entry)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
+             ⟨Reach ⟨perception-scope · action-scope · handoffs⟩ ∧ model are BINDINGS, ¬ text : realize compiles them to the harness's tool, dispatch ∧ model-role settings ; a level is rendered only where fixed⟩
 realize    : cell × harness-adapter ⇀ harness-mechanism ⟨realizes MODEL's `mechanism` ; keyed on the CELL, ¬ on ActivationMode alone⟩
              ⟨reads activation(c) ∧ — for an enforcing f — events(f) ∧ substrate(f) : a mode cannot see which Event fires⟩
              ⟨PARTIAL ∵ mechanism is PARTIAL : most cells realize to nothing ⟨compose-only⟩⟩

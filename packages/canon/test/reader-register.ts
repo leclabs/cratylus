@@ -16,13 +16,14 @@
 export type Rho = 'LLM' | 'human';
 export const RHO = {
   // static corpus surfaces (reader-density.test.ts)
-  // `D(c)` — the RAW post-`≜` text of a dimension value, pre-`∖ fired(α)`. A DIFFERENT
-  // object from a cell's `residue` below; the shared root word is not a shared concept.
+  // `D(c)` — the RAW post-`≜` text of a catalog value: its gloss, plain words the
+  // model reads. A DIFFERENT object from a cell's `residue` below; the shared root
+  // word is not a shared concept.
   'dimension-definiens': 'LLM', // source cell
   'skill-description': 'LLM', // progressive-disclosure surface, read by the harness LLM
   'skill-prose': 'LLM', // projected SKILL.md body (outside fences)
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
-  'agent-vector': 'LLM', // projected Target — scored at SOURCE grain (description · archetype · preamble)
+  'agent-vector': 'LLM', // projected Target — scored at SOURCE grain (description · values)
   'cell-declaration': 'LLM', // a cell's σ*-signified identity: `residue` on EVERY cell shape
   // A rule's VERBATIM projected payload (`/AGENTS.md`) — `RuleCell.content`. It is a
   // class of its own, not folded into `cell-declaration`: a residue is σ*-signified
@@ -35,32 +36,6 @@ export const RHO = {
   'delegation-prompt': 'LLM', // agent↔agent dispatch
   'subagent-return': 'LLM', // agent↔agent return
   // ρ = human ⇔ readers(a) = {human}
-  //
-  // `emission-definiens` — the dimension values split out of
-  // `dimension-definiens` above, and the split is a ρ RULING, not an exemption.
-  // ρ binds on READERS(a), and almost every dimension's definiens is read by the
-  // model ABOUT the model. These are different in kind: their referent IS the
-  // text the operator reads, so the register each must be written in is the
-  // register it describes. `llm-native` states this directly —
-  // `register-resolution ∉ signifier-derivation`: register resolves from the
-  // reader of what a value GOVERNS, never inherited from the notation its
-  // siblings are signified in.
-  //
-  // MEMBERSHIP IS PER VALUE, NOT PER DIMENSION, and `autonomy` is why. Every
-  // `formality` value governs the reply, so the whole dimension qualifies; but
-  // `autonomy` is a SET dimension holding `decision-authority`, `mission-command`
-  // and `human-on-the-loop` — which govern what the agent DOES and stay σ* —
-  // beside `handoff`, whose referent is the shape of a report to the operator.
-  // ρ is a fact about an artifact, and the artifact here is a VALUE.
-  //
-  // MEASURED, and this class exists because of the measurement. A formality
-  // value carrying its clauses in σ* (`plain ⟨… ¬symbol-bearing ⟨notation ∉
-  // operator-reply⟩ · fragment ↾ list-item ⟨¬ standalone⟩⟩`) was quoted back
-  // byte-for-byte by the session it governed — comprehended — while that same
-  // session emitted 0.69 structured reply lines. The same clauses in the register
-  // they describe: 0.45. Comprehension was never the gap; a value whose own
-  // surface contradicts its content does not bind emission.
-  'emission-definiens': 'human',
   readme: 'human',
   'human-doc': 'human',
   'commit-message': 'human',

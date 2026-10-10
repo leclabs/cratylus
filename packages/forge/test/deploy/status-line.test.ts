@@ -11,7 +11,6 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
@@ -19,7 +18,11 @@ import type { StatusSegmentHost } from '../../src/core/harness-adapter.js';
 import { ensureStatusSegment } from '../../src/deploy/status-line.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
+import {
+  FIXTURE_PRACTICE,
+  fixtureAgentSource,
+  fixturePractices,
+} from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -560,23 +563,8 @@ describe('ensureStatusSegment', () => {
 function corpus(): ProjectablePlugin {
   const agents = join(tmpRoot(), 'agents');
   mkdirSync(agents, { recursive: true });
-  const nulls = Object.keys(FIXTURE_MANIFEST)
-    .map((k) => `  ${kebabToCamel(k)}: null,`)
-    .join('\n');
   for (const name of ['alpha', 'beta']) {
-    writeFileSync(
-      join(agents, `${name}.ts`),
-      [
-        `export const ${name} = {`,
-        `  name: '${name}',`,
-        `  description: 'fixture agent ${name}',`,
-        `  archetype: '${name} probe',`,
-        nulls,
-        '};',
-        '',
-      ].join('\n'),
-      'utf8',
-    );
+    writeFileSync(join(agents, `${name}.ts`), fixtureAgentSource(name), 'utf8');
   }
   return {
     name: 'status-line-fixture',
@@ -633,8 +621,8 @@ describe('install — the status line', () => {
       writeFileSync(ompConfig(), host);
       return () => readFileSync(ompConfig(), 'utf8');
     };
-    // The entries install also seeds in `modelRoles` are its own; a host that has them
-    // already sees the status line and nothing else change.
+    // A host with model roles of its own: the agents here bind none, so they stand
+    // as they are, and only the status line changes.
     const ROLES = 'modelRoles:\n  default: "@default"\n';
 
     it('moves a host with no statusLine to custom with the default preset’s own layout plus status, the hook row off', async () => {

@@ -22,65 +22,143 @@
 
 import type { AgentOf, DimensionMeta, Value } from '@cratylus/schema';
 
+// Two groups, `Persona` then `Constitution`. Most dimensions take no default
+// enforcement level; `role` and `guardrails` are `fixed`, so a projected body shows
+// the marker; `model` is a two-slot `binding`, so it is never text.
+const text = { projection: 'text', level: null } as const;
+
 export const FIXTURE_MANIFEST = {
-  // Persona
-  autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
-  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
-  formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
-  'audience-adaptation': {
-    axis: 'Persona',
+  autonomy: { group: 'Persona', repertoire: 'latent', arity: 'set', ...text },
+  role: {
+    group: 'Persona',
+    repertoire: 'open',
+    arity: 'scalar',
+    projection: 'text',
+    level: 'fixed',
+  },
+  formality: {
+    group: 'Persona',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
   },
-  transparency: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
-  // Constitution — standing drives
-  objective: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
+  'audience-adaptation': {
+    group: 'Persona',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
+  },
+  transparency: {
+    group: 'Persona',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
+  },
+  objective: {
+    group: 'Constitution',
+    repertoire: 'open',
+    arity: 'scalar',
+    ...text,
+  },
   guardrails: {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'curated',
     arity: 'set',
+    projection: 'text',
+    level: 'fixed',
     required: true,
   },
   'engineering-principles': {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'curated',
     arity: 'set',
+    ...text,
   },
-  heuristics: { axis: 'Constitution', repertoire: 'curated', arity: 'set' },
-  capabilities: { axis: 'Constitution', repertoire: 'open', arity: 'set' },
-  learning: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  heuristics: {
+    group: 'Constitution',
+    repertoire: 'curated',
+    arity: 'set',
+    ...text,
+  },
+  capabilities: {
+    group: 'Constitution',
+    repertoire: 'open',
+    arity: 'set',
+    ...text,
+  },
+  learning: {
+    group: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
+  },
   'situation-awareness': {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
   },
-  // Constitution — apparatus
-  actions: { axis: 'Constitution', repertoire: 'latent', arity: 'set' },
-  modalities: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  model: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  memory: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  // Constitution — per-turn act
-  trigger: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  framing: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
-  'reasoning-strategy': {
-    axis: 'Constitution',
+  actions: {
+    group: 'Constitution',
+    repertoire: 'latent',
+    arity: 'set',
+    ...text,
+  },
+  modalities: {
+    group: 'Constitution',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
+  },
+  model: {
+    group: 'Constitution',
+    repertoire: 'curated',
+    arity: 'slots',
+    projection: 'binding',
+    level: 'firm',
+    slots: [{ name: 'tier' }, { name: 'effort' }],
+  },
+  memory: {
+    group: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
+  },
+  trigger: {
+    group: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
+  },
+  framing: {
+    group: 'Constitution',
+    repertoire: 'open',
+    arity: 'scalar',
+    ...text,
+  },
+  'reasoning-strategy': {
+    group: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+    ...text,
   },
   satisficing: {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
   },
   'output-format': {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
   },
   'self-evaluation': {
-    axis: 'Constitution',
+    group: 'Constitution',
     repertoire: 'latent',
     arity: 'scalar',
+    ...text,
   },
 } as const satisfies Record<string, DimensionMeta>;
 
@@ -96,6 +174,6 @@ export const FIXTURE_DIMENSION_NAMES = Object.keys(
 export type FixtureValue<D extends FixtureDimension> = Value<D>;
 
 /** The strict agent vector over the fixture catalog — what the fixture agent
- *  modules are authored against, so a fixture is arity- and completeness-checked
- *  by the same derivation a real corpus's agents are. */
+ *  modules are authored against, so a fixture is completeness-checked by the same
+ *  derivation a real corpus's agents are. */
 export type FixtureAgent = AgentOf<typeof FIXTURE_MANIFEST>;

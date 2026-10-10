@@ -32,18 +32,9 @@
 // (remove the pin); a new violation is never pinnable silently (the sets are
 // literal here).
 //
-// CROSS-DIMENSION CONSISTENCY, and why this gate carries it at all. The
-// 2026-07-01 register diagnosis found that no dimension operatively binds the
-// reader: `output-format` names the artifact TYPE, while `natural-language`
-// binds "for a human reader" — so a vector could carry `llm-native` ∧
-// `natural-language` at once, and `principal-ic` DID, an intra-vector
-// contradiction the type system accepts without complaint. The diagnosis's
-// conclusion was that the register gate must add a cross-dimension consistency
-// leg rather than scoring density alone. That leg is below.
-//
 // NON-VACUOUS: a seeded human-register definiens is convicted with named
-// signals; the same text under a ρ=human class is exempt BY THE MODEL; the 4
-// densified exemplars pass. All asserted below.
+// signals; the same text under a ρ=human class is exempt BY THE MODEL; the
+// calibration exemplars pass. All asserted below.
 
 import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
@@ -72,7 +63,7 @@ import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import type { Dimension, Value } from '../src/manifest.js';
-import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
+import { RESIDUE_OPERATORS, declaredGlyphs } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
@@ -104,11 +95,6 @@ const srcRoot = join(canonRoot, 'src');
  */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
-/**
- * (engineering-principle, output-format) pairs that contradict — one dimension
- * asserting reader=LLM while the other binds "for a human reader".
- */
-
 // ── surface enumeration (source grain — the projections follow the source) ──────
 
 interface Surface {
@@ -125,22 +111,13 @@ async function collect(pattern: string): Promise<string[]> {
   return out.sort();
 }
 
-/** The dimension VALUES whose referent is the operator-facing reply, so ρ resolves
- *  human — see `RHO`'s `emission-definiens` note for the ruling, its measurement,
- *  and why membership is per value rather than per dimension. A `formality/` prefix
- *  because every member of that dimension governs the reply; `autonomy/handoff` by
- *  name because its siblings govern what the agent DOES and stay σ*. */
-const EMISSION_VALUES: readonly string[] = ['formality/', 'autonomy/handoff'];
-
-/** ρ's class for a dimension value — ONE home, read by the density scan and by the
- *  AC-RESIDUE scan, so the two gates cannot disagree about which values carry a σ*
- *  payload. */
-function dimensionClassOf(rel: string): ArtClass {
-  const dim = relative('dimensions', rel).replace(/\.ts$/, '');
-  return EMISSION_VALUES.some((v) => dim === v || dim.startsWith(v))
-    ? 'emission-definiens'
-    : 'dimension-definiens';
-}
+/**
+ * Every catalog value is an anchor and a gloss: one or two plain sentences saying
+ * what it means and why, never dense notation (the catalog re-cut's master design).
+ * A gloss is read by the model, so ρ is LLM — plain words in the model's register,
+ * which the register detector scores like every other ρ=LLM surface.
+ */
+const DIMENSION_CLASS: ArtClass = 'dimension-definiens';
 
 async function allSurfaces(): Promise<Surface[]> {
   const surfaces: Surface[] = [];
@@ -148,7 +125,7 @@ async function allSurfaces(): Promise<Surface[]> {
     const f = await firstExport<string>(join(srcRoot, rel));
     surfaces.push({
       label: `dimension ${relative('dimensions', rel).replace(/\.ts$/, '')}`,
-      cls: dimensionClassOf(rel),
+      cls: DIMENSION_CLASS,
       text: splitBody(f).definiens,
     });
   }
@@ -291,11 +268,11 @@ function slugOf(v: Value<Dimension>): string {
 // ── the gate ────────────────────────────────────────────────────────────────────
 
 describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
-  it('the 4 densified exemplars PASS (calibration anchors)', async () => {
+  it('the calibration exemplars PASS', async () => {
     for (const rel of [
       'dimensions/objective/parsimony.ts',
-      'dimensions/transparency/decision-rationale.ts',
-      'dimensions/capabilities/research-investigation.ts',
+      'dimensions/communication-style/decision-rationale.ts',
+      'dimensions/expertise/research-investigation.ts',
     ]) {
       const f = await firstExport<string>(join(srcRoot, rel));
       expect(
@@ -339,38 +316,38 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     ).toEqual([]);
   });
 
-  // ρ=human is EXEMPT from `conform`, which is exactly why this leg exists.
-  // Declaring `formality-definiens` human buys no enforcement on its own: a value
-  // that regressed to σ* would sail straight through the exemption.
+  // A gloss is plain words, and that is what this leg pins. The register detector
+  // above witnesses the TUTORIAL register (hedges, second person, first-person
+  // walkthrough); it cannot tell plain words from notation, since clean notation
+  // carries none of those markers either. So the notation itself is the witness:
+  // a gloss carrying any glyph of the operator lexicon is dense notation.
   //
-  // THE WITNESS IS AC-RESIDUE'S OWN PREDICATE, INVERTED. `registerOf` is the wrong
-  // instrument here — it detects the TUTORIAL-GLOSS register (hedges, second
-  // person, first-person walkthrough), which is a defect signal, not evidence that
-  // a value is prose; clean prose carries none of those markers and reads as
-  // register=LLM. `admissibleSingleLine` is the discriminator that actually
-  // divides notation from prose, and it is the same predicate every OTHER
-  // dimension is gated BY — so formality is gated by its complement, out of one
-  // home, and the two legs cannot drift apart.
-  //
-  // WITHOUT THIS LEG THE RULING IS DECORATION. Not hypothetical: the σ* form of
-  // `plain` was measured being comprehended and disobeyed — quoted back verbatim
-  // by a session emitting 0.69 structured reply lines, against 0.45 once the same
-  // clauses were written in the register they describe.
-  it('every `formality` value is prose, never σ* — the ρ ruling bites', async () => {
-    const rels = (await collect('dimensions/**/*.ts')).filter(
-      (rel) => RHO[dimensionClassOf(rel)] === 'human',
-    );
-    expect(rels.length).toBeGreaterThan(4);
-    const notProse: string[] = [];
+  // MEASURED, and the reason glosses are plain: a value carrying its clauses in
+  // σ* was quoted back byte-for-byte by the session it governed — comprehended —
+  // while that same session did not act on it (0.69 structured reply lines against
+  // 0.45 once the same clauses were written in plain words).
+  it('every catalog value is `<anchor> ≜ <gloss>`, its gloss plain words, never σ*', async () => {
+    const glyphs = declaredGlyphs();
+    const rels = await collect('dimensions/**/*.ts');
+    expect(rels.length).toBeGreaterThan(100);
+    const notPlain: string[] = [];
     for (const rel of rels) {
-      const value = await firstExport<string>(join(srcRoot, rel));
-      if (admissibleSingleLine(value, canonPolicy).admissible)
-        notProse.push(rel);
+      const body = bodyOf(
+        await firstExport<Value<Dimension>>(join(srcRoot, rel)),
+      );
+      const { slug, definiens } = splitBody(body);
+      const dense = [...definiens].filter((ch) => glyphs.has(ch));
+      if (slug === body || definiens.length === 0 || dense.length > 0)
+        notPlain.push(`${rel}: ${dense.join(' ') || 'no gloss'}`);
     }
     expect(
-      notProse,
-      `ρ=human dimension values that are still σ*: ${notProse.join(' · ')}`,
+      notPlain,
+      `catalog values without a plain gloss: ${notPlain.join(' · ')}`,
     ).toEqual([]);
+    // non-vacuous: the predicate convicts a σ* gloss the catalog once shipped
+    expect(
+      [...'⟨names natural ¬conventional⟩'].some((ch) => glyphs.has(ch)),
+    ).toBe(true);
   });
 
   it('the enumerated families are all PRESENT (an empty glob passes every check)', async () => {
@@ -695,22 +672,14 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
 //
 // The machine-check behind AC-RESIDUE: MODEL PARSIMONIOUS
-// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
-// every dimension VALUE residue · every skill `description` · every skill `body`
-// (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
-// prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
-// the model reads is formal σ* under ρ, never human prose — this gate IS that
-// invariant's enforcement over the whole deployed payload set. Predicate + witnesses:
-// `tooling/cold-oracle/residue.ts`; admitted operators READ from
-// `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one home).
-//
-// FIXTURE-BASED bite proof, GREEN NOW: the 139 live dimension values are E1's verbatim-
-// prose intermediates (`slug ≜ <old prose>`) until wave-2 (O/S/H) reduces them to σ*,
-// and descriptions are likewise pre-reduction prose — so the LIVE-corpus scan is
-// `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
-// The predicate is proven on fixtures instead: prose REJECTED (offending clause named),
-// the three σ* forms + a real `formalize` body ACCEPTED, a prose-carrying
-// body REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
+// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED σ* payload —
+// every skill `formalBlock` (whole) MUST be a `formalize` artifact, never human prose.
+// Catalog values are NOT σ* payloads: each is an anchor and a plain gloss, gated by
+// the plain-gloss leg above. Predicate + witnesses: `tooling/cold-oracle/residue.ts`;
+// admitted operators READ from `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one
+// home). The single-line predicate is proven on fixtures: prose REJECTED (offending
+// clause named), the three σ* forms + a real `formalize` body ACCEPTED, a
+// prose-carrying body REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
 
 describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, never prose', () => {
   // DRY — the gate's admitted value-algebra operators ARE the lexicon's, not a copy.
@@ -752,7 +721,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       ).toBe(true);
   });
 
-  // ── SINGLE-LINE (dimension value residue · skill `description`) ────────────────────
+  // ── SINGLE-LINE (a σ* residue) ─────────────────────────────────────────────
   it('ACCEPTS the three σ* forms — ∅ · a bare anchor · an operator application', () => {
     for (const form of [
       '', // ∅ — the anchor α fully fires the concept
@@ -765,7 +734,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   it('REJECTS a prose residue, NAMING the offending clause (actionable for O*/S*)', () => {
-    // the live E1 intermediate for dimensions/autonomy/human-on-the-loop (verbatim head).
+    // a prose residue (verbatim head of a since-retired value intermediate).
     const prose =
       "acts autonomously on the operator's behalf; the operator oversees and " +
       'sets intent, never pre-approves each act.';
@@ -814,32 +783,10 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     expect(w.reason).toContain('#-preamble gloss');
   });
 
-  // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED once every dimension value and every skill `formalBlock` had been
-  // reduced to σ* — before that reduction this leg would have convicted the whole
-  // corpus, so it could not be turned on.
+  // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed σ* payload ──
   // (`description` is σ_human*, not a σ* payload — gated by density, not residue.)
-  it('every deployed σ* payload is admissible (dimension values · skill formalBlocks)', async () => {
+  it('every deployed σ* payload is admissible (skill formalBlocks)', async () => {
     const failures: string[] = [];
-    for (const rel of await collect('dimensions/**/*.ts')) {
-      const value = await firstExport<string>(join(srcRoot, rel));
-      // ρ DECIDES MEMBERSHIP IN THE σ* PAYLOAD SET, and this gate's own governing
-      // invariant already says so: "every deployed artifact THE MODEL READS is
-      // formal σ*, never human prose — UNDER ρ". A `formality` value's referent is
-      // the operator's reading experience, so `RHO` resolves it human
-      // (`formality-definiens`) and it is not a σ* payload to begin with. Skipping
-      // it here is the invariant applied, not an exemption carved out of it — and
-      // the skip reads ρ from the one table both gates share, so the two can never
-      // disagree about what σ* covers.
-      if (RHO[dimensionClassOf(rel)] === 'human') continue;
-      // The WHOLE value, never `splitBody(value).definiens`: that split gated only
-      // what followed the first ` ≜ `, so a value with NO ` ≜ ` yielded definiens ''
-      // and went entirely UNGATED — `cratylism` and `llm-native` (bare-anchor form)
-      // shipped free NL into every Target for exactly that reason. A formal block is
-      // formal end to end; load-bearing prose becomes notation, the rest is dropped.
-      const r = admissibleSingleLine(value, canonPolicy);
-      if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
-    }
     for (const rel of await collect('skills/*/skill.ts')) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       // `description` is σ_human*, NOT σ* — no longer residue-gated. The sole σ*

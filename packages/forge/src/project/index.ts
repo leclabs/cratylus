@@ -36,16 +36,15 @@ import {
   type Binding,
   type DimensionManifest,
   type Enforcing,
+  type Entry,
   type HookCell,
   type Plumbing,
   type Practice,
   type ProjectionFacts,
   type Skill,
-  type Value,
   anchorOf,
   bodyOf,
   dimensionValueOf,
-  enforcing,
   hookIrOf,
   mergeManifest,
   resolveWorker,
@@ -200,8 +199,10 @@ export interface ProjectOpts {
   readonly practices?: readonly string[];
 }
 
-interface Src {
-  readonly dir: string;
+/** One agent of the plugin set, as its module declares it: the agent is identified by
+ *  its declared `name`, never by the file that carries it. */
+interface AgentSrc {
+  readonly agent: Agent;
   readonly plugin: string;
 }
 
@@ -236,13 +237,12 @@ export interface ProjectedFile {
  */
 export interface ProjectedTree extends ProjectReport {
   readonly files: readonly ProjectedFile[];
-  /** The sorted, distinct roles the rendered agents hold ({@link Agent.holds}), so
-   *  a consumer that routes by role — install — knows them without re-reading a
-   *  definition. Empty when no rendered agent holds one. */
-  readonly heldRoles: readonly string[];
-  /** Each held role → the sorted names of the rendered agents holding it: where a
-   *  consumer that routes by role must act on the agents, not the role. */
-  readonly roleHolders: Readonly<Record<string, readonly string[]>>;
+  /** Each rendered agent that states a model routing ({@link Agent.routing}) → its
+   *  tier and effort, by agent name in sorted order: what an install binds as the
+   *  agent's own model role without re-reading a definition. */
+  readonly agentModels: Readonly<
+    Record<string, { readonly tier: string; readonly effort: string }>
+  >;
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
@@ -261,15 +261,61 @@ export interface OfferedPractice {
   readonly preselected: boolean;
 }
 
-/** The `<name>: Agent` vector export of an agent module. */
+/** The Agent an agent module exports: its one non-default export carrying a string
+ *  `name`. A module exporting none is refused, naming the module. */
 async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  if (!key) throw new Error(`${modPath}: no Agent export`);
-  return mod[key] as Agent;
+  const agent = Object.entries(mod).find(
+    ([k, v]) =>
+      k !== 'default' &&
+      typeof v === 'object' &&
+      v !== null &&
+      'name' in v &&
+      typeof v.name === 'string',
+  )?.[1];
+  if (agent === undefined) {
+    throw new Error(`agent module ${modPath} exports no Agent`);
+  }
+  // The guard above proved the one field identity needs; the vector is the module's.
+  const declared = agent as Agent;
+  return declared;
+}
+
+/**
+ * Every agent of the plugin set, by its declared `name`. Every agent module is loaded,
+ * because only the module knows the name it declares. A later plugin's agent of the
+ * same name REPLACES an earlier one's (and is logged); two modules of ONE plugin
+ * declaring the same name are refused, naming both.
+ */
+async function declaredAgents(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Promise<Map<string, AgentSrc>> {
+  const byName = new Map<string, AgentSrc>();
+  for (const p of plugins) {
+    if (!p.agents) continue;
+    const own = new Map<string, string>();
+    for (const n of await scanModuleNames(p.agents, ['base'])) {
+      const modPath = await resolveModulePath(p.agents, n);
+      if (!modPath) throw new Error(`agent module not found: ${n}`);
+      const agent = await agentOf(modPath);
+      const twin = own.get(agent.name);
+      if (twin !== undefined) {
+        throw new Error(
+          `plugin '${p.name}' declares the agent '${agent.name}' twice: in ${twin} and in ${modPath}`,
+        );
+      }
+      own.set(agent.name, modPath);
+      const prev = byName.get(agent.name);
+      if (prev)
+        log(`  override agent ${agent.name}: ${prev.plugin} → ${p.name}`);
+      byName.set(agent.name, { agent, plugin: p.name });
+    }
+  }
+  return byName;
 }
 
 /** The `HookCell` export of a hook module (the object carrying `substrate`). */
@@ -419,18 +465,16 @@ export function resolveFragmentBodies(
 }
 
 /**
- * Rewrite an agent's DIMENSION fields through the resolved-body substitution.
+ * Rewrite an agent's DIMENSION entries through the resolved-body substitution.
  *
- * ONLY the catalog's dimension fields are touched: `archetype` is a plain identity
- * string and `provenance` the structured mark — neither lives in a
- * `fragments` dir, so neither is a fold subject. An empty substitution returns the
- * agent unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ * ONLY the value of each entry the catalog's dimension fields hold is touched:
+ * the identity face (name, description, mark, key, …) does not live in a
+ * `fragments` dir, so it is no fold subject, and an entry's level, slot and note
+ * are the agent's, not the value's. An empty substitution returns the agent
+ * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
  *
- * WHICH fields those are is read off the CATALOG, not listed here. The list used
- * to be 22 hand-written lines, which made this function the last place in the
- * projector that knew a dimension by name — and a corpus that declared a
- * twenty-third would have had its values silently skipped by the fold while the
- * Target still printed them.
+ * WHICH fields those are is read off the CATALOG, not listed here, so a corpus
+ * that declares a dimension has its values folded the day it declares it.
  */
 function withResolvedBodies(
   agent: Agent,
@@ -438,27 +482,25 @@ function withResolvedBodies(
   manifest: DimensionManifest,
 ): Agent {
   if (subst.size === 0) return agent;
-  // Substitute a value's DECLARATION face and put the binding back. A value may
-  // now be an enforcing cell rather than a bare string, and `substrate`/`events`
-  // are not bodies — folding a value must never silently unbind it. Keying the
-  // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
-  // authored body a bare one uses.
-  const sub = (v: Value<string>): Value<string> => {
-    const body = bodyOf(v);
-    return withBody(v, subst.get(body) ?? body);
-  };
   // Spread first, then overwrite in place: every dimension key already exists on
   // the agent (completeness law), so the field ORDER of the copy is the field
   // order of the original — the fold moves bodies, never bytes of structure.
   const folded: Record<string, unknown> = { ...agent };
   for (const field of Object.values(dimensionFieldsOf(manifest))) {
-    const v = dimensionValueOf(agent, field);
-    // `null` is the omit-to-inherit sentinel and stays exactly that; a dimension
-    // the agent does not carry is left untouched rather than minted as `null`.
-    if (v === null || v === undefined) continue;
-    folded[field] = Array.isArray(v)
-      ? (v as readonly Value<string>[]).map(sub)
-      : sub(v as Value<string>);
+    const held = dimensionValueOf(agent, field);
+    if (!Array.isArray(held)) continue;
+    // Substitute a value's DECLARATION face and put the binding back. A value may
+    // be an enforcing cell rather than a bare string, and `substrate`/`events`
+    // are not bodies — folding a value must never silently unbind it. Keying the
+    // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
+    // authored body a bare one uses.
+    folded[field] = (held as readonly Entry[]).map((entry) => {
+      const body = bodyOf(entry.value);
+      return {
+        ...entry,
+        value: withBody(entry.value, subst.get(body) ?? body),
+      };
+    });
   }
   return folded as unknown as Agent;
 }
@@ -513,16 +555,19 @@ interface PracticeSelection {
  *
  * CLOSED means: every agent the set places finds every skill it is given and every
  * role it dispatches. The role is matched against `Agent.holds` by anchor, which is
- * the whole of what forge may know of a role. Each refusal names the practice
- * that placed the agent, the agent, and the role or skill that is missing.
+ * the whole of what forge may know of a role — or against the agents the harness
+ * supplies natively (`HarnessAdapter.nativeAgents`), which need no agent of the
+ * set. Each refusal names the practice that placed the agent, the agent, and the
+ * role or skill that is missing.
  */
-async function selectPractices(
+function selectPractices(
   names: readonly string[],
   plugins: readonly ProjectablePlugin[],
   declared: readonly Practice[],
-  agentSrc: ReadonlyMap<string, Src>,
+  agentSrc: ReadonlyMap<string, AgentSrc>,
   roster: ReadonlyMap<string, Skill>,
-): Promise<PracticeSelection> {
+  nativeAgents: Readonly<Record<string, string>>,
+): PracticeSelection {
   const chosen: Practice[] = [];
   for (const name of names) {
     const practice = declared.find((p) => p.name === name);
@@ -549,9 +594,7 @@ async function selectPractices(
         `practice '${practice}' names the agent '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
       );
     }
-    const modPath = await resolveModulePath(src.dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    authored.set(name, await agentOf(modPath));
+    authored.set(name, src.agent);
   }
 
   const held = new Set<string>();
@@ -560,9 +603,9 @@ async function selectPractices(
   }
   for (const [name, agent] of authored) {
     for (const role of agent.dispatches ?? []) {
-      if (held.has(role)) continue;
+      if (held.has(role) || Object.hasOwn(nativeAgents, role)) continue;
       throw new Error(
-        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds`,
+        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds and the harness does not supply`,
       );
     }
   }
@@ -656,18 +699,9 @@ export async function projectPluginSet(
     log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
   }
 
-  // Collect by name across plugins first, so an override is resolved BEFORE any
-  // cell is rendered and can be logged rather than discovered as a clobbered file.
-  const agentSrc = new Map<string, Src>();
-  for (const p of opts.plugins) {
-    if (p.agents) {
-      for (const n of await scanModuleNames(p.agents, ['base'])) {
-        const prev = agentSrc.get(n);
-        if (prev) log(`  override agent ${n}: ${prev.plugin} → ${p.name}`);
-        agentSrc.set(n, { dir: p.agents, plugin: p.name });
-      }
-    }
-  }
+  // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
+  // any cell is rendered and can be logged rather than discovered as a clobbered file.
+  const agentSrc = await declaredAgents(opts.plugins, log);
   const allSkills = await resolveSkills(opts.plugins, log);
   // The roster an agent's skill closure is read against: the cells that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
@@ -679,12 +713,13 @@ export async function projectPluginSet(
   const offered = declaredPractices(opts.plugins, log);
   const selection =
     opts.practices !== undefined
-      ? await selectPractices(
+      ? selectPractices(
           opts.practices,
           opts.plugins,
           offered,
           agentSrc,
           roster,
+          opts.adapter.nativeAgents ?? {},
         )
       : undefined;
   const contributedSkills = selection
@@ -703,10 +738,9 @@ export async function projectPluginSet(
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
-  for (const [name, { dir }] of [...agentSrc].sort()) {
-    const modPath = await resolveModulePath(dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const authored = await agentOf(modPath);
+  for (const [name, { agent: authored }] of [...agentSrc].sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
     if (selection && !selection.agents.has(name)) continue;
     const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
@@ -1104,14 +1138,17 @@ export async function projectPluginSet(
     }
   }
 
-  const roleHolders: Record<string, string[]> = {};
-  rendered.forEach((a, i) => {
-    if (a.holds === undefined) return;
-    const held = roleHolders[a.holds] ?? [];
-    held.push(agentNames[i] as string);
-    roleHolders[a.holds] = held;
-  });
-  for (const held of Object.values(roleHolders)) held.sort();
+  const agentModels: Record<string, { tier: string; effort: string }> = {};
+  const routed = rendered.flatMap((a, i) =>
+    a.routing === undefined
+      ? []
+      : [[agentNames[i] as string, a.routing] as const],
+  );
+  for (const [name, { tier, effort }] of routed.sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
+    agentModels[name] = { tier, effort };
+  }
 
   return {
     files,
@@ -1119,8 +1156,7 @@ export async function projectPluginSet(
     skills,
     shims,
     hooks,
-    heldRoles: Object.keys(roleHolders).sort(),
-    roleHolders,
+    agentModels,
     unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,

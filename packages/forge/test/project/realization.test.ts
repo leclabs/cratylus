@@ -8,14 +8,15 @@ import { SHORTFALL, shortfallAdapter } from './shortfall-adapter.js';
 // The local shortfall adapter exercises the unscopable branch without adding a
 // second shipped implementation.
 describe('bound — the harness realizes every event at the composed scope', () => {
+  // Composed by no agent, so session-wide: omp realizes it at that scope.
   const constraint = {
     anchor: 'example-constraint',
     substrate: 'harness',
     events: ['tool.use.pre'],
-    agents: ['example-agent'],
+    agents: [],
   } as const;
 
-  it('omp carries the same event with no loss', () => {
+  it('omp carries a session-wide constraint with no loss', () => {
     const r = realizationOf(constraint, ompHarnessAdapter);
     expect(r.mode).toBe('bound');
     expect(r.losses).toEqual([]);
@@ -90,8 +91,10 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
     expect(unscopable?.reason).not.toBe(unrealizable?.reason);
   });
 
-  it('does not degrade on omp, which scopes what it realizes', () => {
-    expect(realizationOf(composed, ompHarnessAdapter).mode).toBe('bound');
+  it('degrades on omp too, which cannot scope a guard to one agent', () => {
+    const r = realizationOf(composed, ompHarnessAdapter);
+    expect(r.mode).toBe('steer');
+    expect(r.losses.map((l) => l.reason)).toEqual(['unscopable']);
   });
 
   it('is not asked when no agent composes the constraint', () => {
@@ -108,13 +111,14 @@ describe('one loss degrades the WHOLE constraint, never a subset of its events',
     // tool.use.pre is realizable on omp; file.read.pre is not. Emitting the
     // mechanism for only the realizable half would enforce a constraint nobody
     // authored — binding on some occasions, silent on others, with no declaration
-    // saying which. The declaration already covers every occasion.
+    // saying which. The declaration already covers every occasion. Session-wide,
+    // so scope is not in question and the one loss is the unrealizable event.
     const r = realizationOf(
       {
         anchor: 'example-constraint',
         substrate: 'harness',
         events: ['tool.use.pre', 'file.read.pre'],
-        agents: ['example-agent'],
+        agents: [],
       },
       ompHarnessAdapter,
     );
@@ -171,10 +175,10 @@ describe('what the corpus actually faces — measured per predicate, not assumed
     'subagent.dispatch.pre',
   ] as const;
 
-  it('every harness event the canon cells declare is realizable and scoped on omp', () => {
+  it('every harness event the canon cells declare is realizable on omp, none scoped to an agent', () => {
     for (const event of CANON_EVENTS) {
       expect(ompHarnessAdapter.realizes(event)).toBe(true);
-      expect(ompHarnessAdapter.scopes(event)).toBe(true);
+      expect(ompHarnessAdapter.scopes(event)).toBe(false);
     }
   });
 
