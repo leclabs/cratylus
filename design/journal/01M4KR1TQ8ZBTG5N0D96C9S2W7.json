@@ -1,0 +1,8 @@
+{
+  "id": "01M4KR1TQ8ZBTG5N0D96C9S2W7",
+  "at": "2026-10-10T20:28:42.600Z",
+  "kind": "accept",
+  "decisionId": "0056",
+  "entry": "01M4KK28Z8JP05C826JVZ0KMS3",
+  "reason": "Realized 2026-10-10, released in dev a9982e20: context with a reason supersedes a recorded context's description; history --context reads its descriptions. Both assayers accepted with no findings."
+}
