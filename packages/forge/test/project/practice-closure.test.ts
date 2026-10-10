@@ -1,7 +1,8 @@
 // A practice is CLOSED under dispatch when every role an agent it places hands work
 // to is held by an agent of the chosen set — or is an agent the harness supplies
 // natively (`HarnessAdapter.nativeAgents`). And the projected tree reports each
-// rendered agent's model routing (`agentModels`), keyed by agent name.
+// rendered agent's model routing (`agentModels`), keyed by agent name. An agent is
+// identified by its DECLARED name, never by the file name of its module.
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -27,15 +28,17 @@ const EMPTY_FIELDS = FIXTURE_DIMENSION_NAMES.map(
   (d) => `  ${d.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())}: [],`,
 ).join('\n');
 
-/** An agent module holding `holds`, dispatching `dispatches`, routed as given. */
+/** An agent module exporting `exported`, declaring `name`, holding `holds`, dispatching
+ *  `dispatches`, routed as given. */
 function agentModule(
   name: string,
   holds: string,
   dispatches: readonly string[],
   routing?: { tier: string; effort: string },
+  exported: string = name,
 ): string {
   return [
-    `export const ${name} = {`,
+    `export const ${exported} = {`,
     `  name: '${name}',`,
     `  description: 'a fixture agent holding ${holds}',`,
     '  mark: null,',
@@ -47,6 +50,22 @@ function agentModule(
     '};',
     '',
   ].join('\n');
+}
+
+/** A plugin whose agents are the given modules, by file name, offering `practices`. */
+function pluginOf(
+  name: string,
+  modules: Readonly<Record<string, string>>,
+  practices: ProjectablePlugin['practices'] = [],
+): ProjectablePlugin {
+  const root = mkdtempSync(join(tmpdir(), 'forge-agent-identity-'));
+  roots.push(root);
+  const agents = join(root, 'agents');
+  mkdirSync(agents);
+  for (const [file, content] of Object.entries(modules)) {
+    writeFileSync(join(agents, `${file}.ts`), content);
+  }
+  return { name, manifest: FIXTURE_MANIFEST, agents, practices };
 }
 
 function plugin(): ProjectablePlugin {
@@ -133,5 +152,125 @@ describe('ProjectedTree.agentModels', () => {
       hand: { tier: 'fast', effort: 'low' },
     });
     expect(Object.keys(tree.agentModels)).toEqual(['chief', 'hand']);
+  });
+});
+
+describe('an agent is identified by its declared name', () => {
+  const consumer = (): ProjectablePlugin =>
+    pluginOf(
+      'consumer',
+      {
+        whatever: agentModule(
+          'production-x',
+          'producer',
+          [],
+          { tier: 'fast', effort: 'low' },
+          'whatever',
+        ),
+      },
+      [
+        {
+          name: 'production',
+          description: 'the production persona',
+          agents: ['production-x'],
+        },
+      ],
+    );
+
+  it('selects, renders and routes a module under its declared name, not its file name', async () => {
+    const tree = await projectPluginSet({
+      plugins: [consumer()],
+      adapter: withNative,
+      practices: ['production'],
+      warn: () => {},
+    });
+    expect(tree.agents).toBe(1);
+    const paths = tree.files.map((f) => f.path);
+    expect(paths).toContain(join('agents', 'production-x.md'));
+    expect(paths).not.toContain(join('agents', 'whatever.md'));
+    expect(tree.agentModels).toEqual({
+      'production-x': { tier: 'fast', effort: 'low' },
+    });
+  });
+
+  it('refuses a practice naming the module file instead of the agent', async () => {
+    const named = pluginOf(
+      'consumer',
+      {
+        whatever: agentModule(
+          'production-x',
+          'producer',
+          [],
+          undefined,
+          'whatever',
+        ),
+      },
+      [{ name: 'by-file', description: 'by file', agents: ['whatever'] }],
+    );
+    await expect(
+      projectPluginSet({
+        plugins: [named],
+        adapter: withNative,
+        practices: ['by-file'],
+        warn: () => {},
+      }),
+    ).rejects.toThrow(
+      "practice 'by-file' names the agent 'whatever', which is no agent of the plugin set (agents: production-x)",
+    );
+  });
+
+  it('lets a later plugin override an agent of the same declared name', async () => {
+    const earlier = pluginOf('earlier', {
+      'production-x': agentModule(
+        'production-x',
+        'producer',
+        [],
+        { tier: 'frontier', effort: 'high' },
+        'productionX',
+      ),
+    });
+    const lines: string[] = [];
+    const tree = await projectPluginSet({
+      plugins: [earlier, consumer()],
+      adapter: withNative,
+      practices: ['production'],
+      warn: () => {},
+      log: (line) => lines.push(line),
+    });
+    expect(tree.agentModels).toEqual({
+      'production-x': { tier: 'fast', effort: 'low' },
+    });
+    expect(lines).toContain(
+      '  override agent production-x: earlier → consumer',
+    );
+  });
+
+  it('refuses two modules of one plugin declaring the same name, naming both', async () => {
+    const twins = pluginOf('twins', {
+      one: agentModule('same', 'a', [], undefined, 'one'),
+      two: agentModule('same', 'b', [], undefined, 'two'),
+    });
+    await expect(
+      projectPluginSet({
+        plugins: [twins],
+        adapter: withNative,
+        warn: () => {},
+      }),
+    ).rejects.toThrow(
+      /plugin 'twins' declares the agent 'same' twice: in .*one\.ts and in .*two\.ts/,
+    );
+  });
+
+  it('refuses an agent module exporting no Agent, naming it', async () => {
+    const empty = pluginOf('empty', {
+      hollow: 'export const hollow = 42;\n',
+    });
+    await expect(
+      projectPluginSet({
+        plugins: [empty],
+        adapter: withNative,
+        warn: () => {},
+      }),
+    ).rejects.toThrow(/agent module .*hollow\.ts exports no Agent/);
   });
 });

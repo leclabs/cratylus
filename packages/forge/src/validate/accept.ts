@@ -434,7 +434,9 @@ export interface AgentComposite {
 /**
  * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one dimension is
  * redundant). Value ∈ catalog is TYPE-enforced upstream (`@cratylus/schema` — a
- * wrong dimension is a compile error) and arity is refused where the corpus composes
+ * wrong dimension is a compile error) and arity — `scalar` (one value), `set` (many),
+ * `slots` (exactly one value per named slot) or `attribute` (no field on an agent;
+ * its values are attributes of other values) — is refused where the corpus composes
  * an agent; this catches a duplicated selection within a dimension set.
  */
 export function composed(agent: AgentComposite): {

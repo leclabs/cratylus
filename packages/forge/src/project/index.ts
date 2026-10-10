@@ -199,8 +199,10 @@ export interface ProjectOpts {
   readonly practices?: readonly string[];
 }
 
-interface Src {
-  readonly dir: string;
+/** One agent of the plugin set, as its module declares it: the agent is identified by
+ *  its declared `name`, never by the file that carries it. */
+interface AgentSrc {
+  readonly agent: Agent;
   readonly plugin: string;
 }
 
@@ -259,15 +261,61 @@ export interface OfferedPractice {
   readonly preselected: boolean;
 }
 
-/** The `<name>: Agent` vector export of an agent module. */
+/** The Agent an agent module exports: its one non-default export carrying a string
+ *  `name`. A module exporting none is refused, naming the module. */
 async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  if (!key) throw new Error(`${modPath}: no Agent export`);
-  return mod[key] as Agent;
+  const agent = Object.entries(mod).find(
+    ([k, v]) =>
+      k !== 'default' &&
+      typeof v === 'object' &&
+      v !== null &&
+      'name' in v &&
+      typeof v.name === 'string',
+  )?.[1];
+  if (agent === undefined) {
+    throw new Error(`agent module ${modPath} exports no Agent`);
+  }
+  // The guard above proved the one field identity needs; the vector is the module's.
+  const declared = agent as Agent;
+  return declared;
+}
+
+/**
+ * Every agent of the plugin set, by its declared `name`. Every agent module is loaded,
+ * because only the module knows the name it declares. A later plugin's agent of the
+ * same name REPLACES an earlier one's (and is logged); two modules of ONE plugin
+ * declaring the same name are refused, naming both.
+ */
+async function declaredAgents(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Promise<Map<string, AgentSrc>> {
+  const byName = new Map<string, AgentSrc>();
+  for (const p of plugins) {
+    if (!p.agents) continue;
+    const own = new Map<string, string>();
+    for (const n of await scanModuleNames(p.agents, ['base'])) {
+      const modPath = await resolveModulePath(p.agents, n);
+      if (!modPath) throw new Error(`agent module not found: ${n}`);
+      const agent = await agentOf(modPath);
+      const twin = own.get(agent.name);
+      if (twin !== undefined) {
+        throw new Error(
+          `plugin '${p.name}' declares the agent '${agent.name}' twice: in ${twin} and in ${modPath}`,
+        );
+      }
+      own.set(agent.name, modPath);
+      const prev = byName.get(agent.name);
+      if (prev)
+        log(`  override agent ${agent.name}: ${prev.plugin} → ${p.name}`);
+      byName.set(agent.name, { agent, plugin: p.name });
+    }
+  }
+  return byName;
 }
 
 /** The `HookCell` export of a hook module (the object carrying `substrate`). */
@@ -512,14 +560,14 @@ interface PracticeSelection {
  * set. Each refusal names the practice that placed the agent, the agent, and the
  * role or skill that is missing.
  */
-async function selectPractices(
+function selectPractices(
   names: readonly string[],
   plugins: readonly ProjectablePlugin[],
   declared: readonly Practice[],
-  agentSrc: ReadonlyMap<string, Src>,
+  agentSrc: ReadonlyMap<string, AgentSrc>,
   roster: ReadonlyMap<string, Skill>,
   nativeAgents: Readonly<Record<string, string>>,
-): Promise<PracticeSelection> {
+): PracticeSelection {
   const chosen: Practice[] = [];
   for (const name of names) {
     const practice = declared.find((p) => p.name === name);
@@ -546,9 +594,7 @@ async function selectPractices(
         `practice '${practice}' names the agent '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
       );
     }
-    const modPath = await resolveModulePath(src.dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    authored.set(name, await agentOf(modPath));
+    authored.set(name, src.agent);
   }
 
   const held = new Set<string>();
@@ -653,18 +699,9 @@ export async function projectPluginSet(
     log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
   }
 
-  // Collect by name across plugins first, so an override is resolved BEFORE any
-  // cell is rendered and can be logged rather than discovered as a clobbered file.
-  const agentSrc = new Map<string, Src>();
-  for (const p of opts.plugins) {
-    if (p.agents) {
-      for (const n of await scanModuleNames(p.agents, ['base'])) {
-        const prev = agentSrc.get(n);
-        if (prev) log(`  override agent ${n}: ${prev.plugin} → ${p.name}`);
-        agentSrc.set(n, { dir: p.agents, plugin: p.name });
-      }
-    }
-  }
+  // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
+  // any cell is rendered and can be logged rather than discovered as a clobbered file.
+  const agentSrc = await declaredAgents(opts.plugins, log);
   const allSkills = await resolveSkills(opts.plugins, log);
   // The roster an agent's skill closure is read against: the cells that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
@@ -676,7 +713,7 @@ export async function projectPluginSet(
   const offered = declaredPractices(opts.plugins, log);
   const selection =
     opts.practices !== undefined
-      ? await selectPractices(
+      ? selectPractices(
           opts.practices,
           opts.plugins,
           offered,
@@ -701,10 +738,9 @@ export async function projectPluginSet(
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
-  for (const [name, { dir }] of [...agentSrc].sort()) {
-    const modPath = await resolveModulePath(dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const authored = await agentOf(modPath);
+  for (const [name, { agent: authored }] of [...agentSrc].sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
     if (selection && !selection.agents.has(name)) continue;
     const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
