@@ -5,7 +5,7 @@ optimal-signifiers, authored as typed TypeScript.
 
 The discipline is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
-therefore not a prompt. It is a **dimension-selection vector** over signified values, and the
+therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
 markdown a harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
@@ -20,8 +20,8 @@ corpus, or of a plugin that extends this one.
 npm install cratylus @cratylus/canon
 ```
 
-The package's whole public surface is its default export — canon as an agent-plugin. A consumer
-`extends` it from a `cratylus.config.ts` and projects it with the `cratylus` command:
+The package's default export is canon as an agent-plugin. A consumer `extends` it from a
+`cratylus.config.ts` and projects it with the `cratylus` command:
 
 ```ts
 import { defineConfig } from 'cratylus';
@@ -33,53 +33,63 @@ export default defineConfig({
 });
 ```
 
-Addressing is by **imported binding**, never a string id. That holds one level down too: an agent
-cell imports each dimension value it selects, so composition is checked by the compiler rather than
+Addressing is by **imported binding**, never a string id. That holds one level down too: a role or
+persona cell imports each value it states, so composition is checked by the compiler rather than
 resolved by a registry, and every part of a composite is traceable to its one home.
 
 ## What the plugin carries
 
 | field       | what it is                                                                                           |
 | ----------- | ---------------------------------------------------------------------------------------------------- |
-| `manifest`  | **which dimensions exist** — 22, across the `'Persona'` and `'Constitution'` axes                    |
+| `manifest`  | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value        |
 | `events`    | **which lifecycle events exist** — the corpus's harness-agnostic event vocabulary                    |
-| `fragments` | the dimension value modules, filed one per dimension directory                                       |
-| `agents`    | the agent vectors                                                                                    |
+| `fragments` | the factor value modules, filed one per factor directory                                             |
+| `agents`    | the composed agents: six generic holders of their roles, and three personas                          |
 | `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes                  |
 | `hooks`     | the hook cells, each carrying its verbatim worker payload                                            |
 | `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
 | `plumbing`  | what every practice is installed with and none is offered as, declared beside them                   |
 
-Canon owns the catalog because a dimension is **constitutive**: declaring one makes it part of that
+Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
-consumer can extend this design — or add a dimension to it — without editing the tool that renders
+consumer can extend this design — or add a factor to it — without editing the tool that renders
 it. The shapes those cells are authored against, and `defineAgentPlugin` that declares the plugin,
 are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents
 
-The plugin carries eight agents. `architect`, `planner`, `implementer`, `assayer` and `integrator`
-are the generic holders of their roles: each is named for the role it holds, the role cell
-(`src/roles/`) states the description, archetype and mark that holder carries along with the
-dimension values every holder is expected to select, and `agents/<role>.ts` says only which role it
-holds with `holds(role)`.
+The plugin carries nine agents, all in the practice `example-driven-workflow`. `architect`, `lead`,
+`builder`, `assayer`, `illustrator` and `check-writer` are the generic holders of their roles. A role
+cell (`src/roles/<role>.ts`) states a value for every factor, an explicitly empty set counting as one,
+and `agents/<role>.ts` is `holder(<role>Role)`: named for the role, carrying nothing beyond it and no
+mark. `holder` refuses a cell missing a factor, a scalar without exactly one value, a slot not filled
+exactly once, and empty guardrails.
 
-mav, nico and kino are personas over the architect role: each is an agent named as an individual, and
-declares a description, an archetype and a mark of its own beside whatever dimension values it adds.
-An aspect it states overrides a scalar the role supplies and extends a set, and it never states the
-role itself, since the contract is the role's. `holds` refuses, when the cell is defined, an
-individual agent with no archetype or mark of its own, one whose mark is its role's, and an agent
-named for its role that declares anything beyond it. The architect role also states which roles its
-holders dispatch to, and the `holds` fold copies that to `Agent.dispatches`.
+kino, nico and mav are personas over the architect role, `persona(architectRole, residue)`: each is
+an agent named as an individual, with a description and a mark of its own beside the values it
+states. A single value it states replaces the role's, a slot only its own slot; a set value is added
+after the role's, and restating one the role holds changes only its enforcement level or note. It
+never states the role itself, since the contract is the role's. Composition refuses, rather than
+ignores, a persona that widens reach (a perception-scope, action-scope or handoff the role does not
+hold; it may narrow them), removes a guardrail or lowers its level, removes any other value, names a
+factor the catalog does not have, or has no mark or its role's; the `CompositionRefusal` it throws
+names what it refused.
+
+A composed agent also says, for the projector, the role it holds (`holds`), the roles its handoffs
+name (`dispatches`), its model's tier and effort (`routing`), and whether it changes nothing
+(`readOnly`, when its action-scope is exactly `none`). Its `key` is reserved for ipseic agents and is
+empty. `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named
+exports, for a corpus that composes agents of its own over these roles.
 
 ## The first principle
 
-The first principle (`dimensions/engineering-principles/cratylism.ts`) is not stamped on every cell.
-It rides only the cells whose laws apply it: the ten skills that name concepts by anchor, optimal
-sign or cold decode set it as their `preamble`, and an agent carries it once, through the
-engineering-principles of the role it holds, where that role states it. A cell that does not use it
+The first principle, the dense `cratylism` axiom, has its one literal home in
+`genus/prime-principle.ts` and is not stamped on every cell. It rides only the cells whose laws apply
+it: the skills that name concepts by anchor, optimal sign or cold decode set it as their `preamble`,
+and an agent carries it once, in plain words, as the `cratylism` stance of the role it holds, where
+that role states it. A cell that does not use it
 never holds a host's own authored surfaces to this corpus's naming axiom. The axiom is scoped: the
-cold-decode oracle decides signs only for the corpus's core agent dimension names and values, the
+cold-decode oracle decides signs only for the corpus's core agent factor names and values, the
 terminology it was built to discover. Every other term is the industry's own, used as the industry
 understands it, and no consumer surface is held to the oracle. It is intrinsic to those cells'
 projected bytes, so it survives deployment into a foreign repository rather than depending on
