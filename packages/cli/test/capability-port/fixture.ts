@@ -133,6 +133,14 @@ export function host(): Host {
   // The setup's npm install is shared; each test copies the installed artifact,
   // not a workspace tree. Upgrade tests cannot mutate another test's runtime.
   const root = mkdtempSync(join(tmpdir(), 'capability-host-'));
+  try {
+    return hostIn(root);
+  } catch (error) {
+    rmSync(root, { recursive: true, force: true });
+    throw error;
+  }
+}
+function hostIn(root: string): Host {
   const prefix = join(root, 'prefix');
   cpSync(inject('capabilityPrefix'), prefix, {
     recursive: true,
