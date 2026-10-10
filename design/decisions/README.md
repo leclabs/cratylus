@@ -21,3 +21,4 @@ concept journal when it exists (decision 0014).
 - [0015 · Re cut workflow execution](0015-re-cut-workflow-execution.md)
 - [0016 · Project conventions outside the workflow](0016-project-conventions-outside-the-workflow.md)
 - [0017 · Prefer established libraries](0017-prefer-established-libraries.md)
+- [0018 · Assayer](0018-assayer.md)
