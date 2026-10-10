@@ -713,7 +713,7 @@ As with the concept journal, what the capability and each verb are for, when to 
 
 Every verb takes `--cut <context>/<name>`, a cut whose visible examples are `design/examples/<context>/<name>.md` in the git repository you run it in; an example's concepts are the names in the parenthesis that opens it. Each cut keeps an append-only log under the repository's git common directory, `cratylus/work-packages/<context>/<name>.jsonl`, shared by every worktree and never tracked; its state is read back from the log on every call. The appending verbs (`submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`) each append one event; `record` appends one `efficiency` entry to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
 
-The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git add -A -- <paths>` and `git commit --only -m <message> -- <paths>`, and refuses any path outside the package's outputs.
+The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared, and `dispatch` refuses while any visible example has no owner. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
 
 #### `cratylus workPackage inventory`
 

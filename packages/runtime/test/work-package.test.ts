@@ -172,6 +172,78 @@ describe('workPackage refusals', () => {
     expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
   });
 
+  it('REFUSES a directory path that would commit another package’s file, staging nothing', () => {
+    const repo = repository('delivery');
+    wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'src/reserve');
+    wp(
+      repo,
+      'submit',
+      'b',
+      '--concept',
+      'delivery',
+      '--output',
+      'src/reserve/x.ts',
+      '--depends-on',
+      'a',
+    );
+    wp(repo, 'dispatch');
+    mkdirSync(join(repo, 'src/reserve'), { recursive: true });
+    writeFileSync(join(repo, 'src/reserve/x.ts'), 'theirs\n');
+    const index = git(repo, 'ls-files', '--stage');
+    expect(
+      refused(
+        repo,
+        'commit',
+        'a',
+        '--message',
+        'mine',
+        '--path',
+        'src/reserve',
+      ),
+    ).toBe(
+      "workPackage commit: outside the outputs of 'a': 'src/reserve/x.ts' (an output of 'b'); nothing is committed",
+    );
+    expect(git(repo, 'ls-files', '--stage')).toBe(index);
+    expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
+  });
+
+  it('reads a path with glob characters literally, committing only that file', () => {
+    const repo = repository('delivery');
+    wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'a[b].ts');
+    wp(
+      repo,
+      'submit',
+      'b',
+      '--concept',
+      'delivery',
+      '--output',
+      'ab.ts',
+      '--depends-on',
+      'a',
+    );
+    wp(repo, 'dispatch');
+    writeFileSync(join(repo, 'a[b].ts'), 'mine\n');
+    writeFileSync(join(repo, 'ab.ts'), 'theirs\n');
+    wp(repo, 'commit', 'a', '--message', 'mine', '--path', 'a[b].ts');
+    expect(git(repo, 'ls-tree', '-r', '--name-only', 'HEAD')).toBe('a[b].ts');
+    expect(git(repo, 'ls-files', '--stage', '--', 'ab.ts')).toBe('');
+  });
+
+  it('REFUSES dispatch while an example names no concept, naming its number', () => {
+    const repo = repository('delivery');
+    writeFileSync(
+      join(repo, 'design/examples/booking/delivery.md'),
+      '1. (delivery) **Given** delivery.\n\n2. **Given** no concept.\n',
+    );
+    wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'a/');
+    expect(refused(repo, 'dispatch')).toBe(
+      'workPackage dispatch: example 2 has no owner; nothing is handed out',
+    );
+    expect(wp(repo, 'levels')).toMatchObject({
+      levels: [{ level: 1, packages: [{ name: 'a', state: 'submitted' }] }],
+    });
+  });
+
   it('REFUSES to record figures for a context the journal lacks', () => {
     const repo = repository('delivery');
     expect(refused(repo, 'record')).toContain("'booking'");

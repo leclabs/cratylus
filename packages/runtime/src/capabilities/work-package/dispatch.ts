@@ -35,7 +35,7 @@ import { Folded as Journal } from '../concepts/views.js';
 import { verbOf } from '../plan/argv.js';
 import { type Cut, cutAt } from './cut.js';
 import { Folded, type WorkPackage } from './fold.js';
-import { commitPaths, commonDirOf, topOf } from './git.js';
+import { commitPaths, commonDirOf, filesOf, topOf } from './git.js';
 import { type DependencyGraph, dependencyGraph } from './graph.js';
 import { type PackageFields, storeAt } from './store.js';
 
@@ -160,7 +160,7 @@ export const VERBS = {
     concept: 'work package',
     effect: 'appends',
     purpose:
-      'Commit the given paths as one handed-out work package’s builder and keep the commit in its history; refused, with nothing kept, when a path lies outside that package’s outputs',
+      'Commit the given paths, read literally, as one handed-out work package’s builder and keep the commit in its history; refused, with nothing kept, when a path or a file it would commit lies outside that package’s outputs',
     when: 'Whenever a builder commits its work, so no builder ever changes another’s outputs',
     positional: PACKAGE,
     flags: {
@@ -487,15 +487,14 @@ export function dispatchWorkPackage(
         throw refuse(
           `no work package serves the concepts ${unserved.map((c) => `'${c.name}'`).join(', ')}; nothing is handed out`,
         );
-      const unowned = examples.filter(
-        (e) => e.package === null && e.candidates.length > 1,
-      );
+      const unowned = examples.filter((e) => e.package === null);
       if (unowned.length > 0)
         throw refuse(
           `${unowned
-            .map(
-              (e) =>
-                `example ${e.number} spans ${e.candidates.map((c) => `'${c}'`).join(', ')} and none depends on the others`,
+            .map((e) =>
+              e.candidates.length > 1
+                ? `example ${e.number} spans ${e.candidates.map((c) => `'${c}'`).join(', ')} and none depends on the others`
+                : `example ${e.number} has no owner`,
             )
             .join('; ')}; nothing is handed out`,
         );
@@ -560,7 +559,7 @@ export function dispatchWorkPackage(
         throw refuse(
           `${malformed.map((p) => `'${p}'`).join(', ')} is not a path from the top of the project`,
         );
-      const outside = paths.filter(
+      const outside = [...new Set([...paths, ...filesOf(top, paths)])].filter(
         (path) => !own.outputs.some((o) => covers(o, path)),
       );
       if (outside.length > 0)
