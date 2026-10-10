@@ -21,9 +21,14 @@ export interface Declaration {
   effort?: string | null;
   mark?: string;
   tools?: string[];
+  spawns?: string[] | '*';
+  skills?: string[];
+  readSummarize?: boolean;
+  advisor?: boolean | string;
+  prewalk?: boolean | string;
 }
 export interface Observation {
-  phase: 'start' | 'turn';
+  phase: 'start' | 'turn' | 'context';
   kind: string;
   prompt: string[];
   model: { provider: string; id: string };
@@ -32,6 +37,15 @@ export interface Observation {
   schemas: { name: string; parameters: Record<string, unknown> }[];
   entries: unknown[];
   context: unknown;
+  messages?: { role: string; customType?: string; content?: unknown }[];
+  prewalkArmed: boolean;
+  settings: {
+    readSummarize: boolean;
+    advisor: boolean;
+    advisorModel?: string;
+    prewalk: boolean;
+    personality: string;
+  };
 }
 export interface Frame {
   type: string;
@@ -53,6 +67,7 @@ export interface LaunchOptions {
   cwd?: string;
   resume?: string;
   modelFlags?: boolean;
+  skills?: boolean;
 }
 export interface Session {
   args: string[];
@@ -76,6 +91,7 @@ export interface Fixture {
   configuration(): Record<string, unknown>;
   declaration(d: Declaration, directory?: string): string;
   launch(options?: LaunchOptions): Session;
+  skill(name: string, instructions: string): void;
   observed(): Observation[];
   dispose(): void;
 }
@@ -141,7 +157,13 @@ export function fixture(
             api: 'openai-completions',
             baseUrl,
             apiKey: 'fixture-key-not-a-credential',
-            models: ['base', 'declared'].map((id) => ({
+            models: [
+              'base',
+              'declared',
+              'adviser',
+              'fast',
+              'implementation',
+            ].map((id) => ({
               id,
               name: id,
               reasoning: true,
@@ -168,6 +190,13 @@ export function fixture(
       ...(d.effort === null ? {} : { 'thinking-level': d.effort ?? 'high' }),
       ...(d.mark ? { mark: d.mark } : {}),
       ...(d.tools ? { tools: d.tools } : {}),
+      ...(d.spawns !== undefined ? { spawns: d.spawns } : {}),
+      ...(d.skills ? { 'autoload-skills': d.skills } : {}),
+      ...(d.readSummarize !== undefined
+        ? { 'read-summarize': d.readSummarize }
+        : {}),
+      ...(d.advisor !== undefined ? { advisor: d.advisor } : {}),
+      ...(d.prewalk !== undefined ? { prewalk: d.prewalk } : {}),
     };
     const file = join(directory, `${d.name}.md`);
     writeFileSync(
@@ -186,7 +215,7 @@ export function fixture(
       ...(options.modelFlags === false
         ? []
         : ['--model', 'fixture/base', '--thinking', 'low']),
-      '--no-skills',
+      ...(options.skills ? [] : ['--no-skills']),
       '--no-rules',
       '--no-lsp',
       '--no-title',
@@ -250,6 +279,14 @@ export function fixture(
     },
     declaration,
     launch,
+    skill: (name, instructions) => {
+      const directory = join(cwd, '.omp/skills', name);
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(
+        join(directory, 'SKILL.md'),
+        `---\nname: ${name}\ndescription: Fixture skill ${name}\n---\n${instructions}\n`,
+      );
+    },
     observed,
     dispose: () => rmSync(root, { recursive: true, force: true }),
   };
@@ -378,4 +415,56 @@ export function carries(observation: Observation, d: Declaration) {
     id: 'declared',
   });
   expect(observation.effort).toBe(d.effort ?? 'high');
+}
+
+export const skillInstructions = [
+  'When surveying this estuary, count violet buoys before amber buoys.',
+  'Report tidal measurements in fathoms beside the silver lighthouse.',
+];
+export const wholeDeclaration: Declaration = {
+  name: 'estuary-chief',
+  body: 'Coordinate the quartz estuary survey from the northern observatory.',
+  mark: 'EC',
+  tools: ['read', 'write', 'task'],
+  spawns: ['estuary-east', 'estuary-west'],
+  skills: ['buoy-order', 'tidal-units'],
+  readSummarize: false,
+  advisor: 'fixture/adviser',
+  // Distinct from smol: arming omp's default must not satisfy the declaration.
+  prewalk: 'fixture/implementation',
+};
+export const dispatchTargets = [
+  'estuary-east',
+  'estuary-west',
+  'estuary-south',
+];
+export function wholeFixture() {
+  const f = fixture();
+  f.configure({
+    modelRoles: {
+      default: 'fixture/base',
+      smol: 'fixture/fast',
+      advisor: 'fixture/base',
+    },
+    defaultThinkingLevel: 'low',
+    personality: 'default',
+    async: { enabled: false },
+    memory: { backend: 'off' },
+    read: { summarize: { enabled: true } },
+    advisor: { enabled: false },
+    prewalk: { enabled: false },
+  });
+  wholeDeclaration.skills!.forEach((name, index) =>
+    f.skill(name, skillInstructions[index]!),
+  );
+  for (const name of dispatchTargets)
+    f.declaration({
+      name,
+      body: `Only ${name} records the copper tide gauge.`,
+      tools: [],
+      advisor: false,
+      prewalk: false,
+    });
+  f.declaration(wholeDeclaration);
+  return f;
 }

@@ -106,7 +106,8 @@ kept and not expanded, and a composition cycle terminates. The closure is comput
 agent is rendered; every adapter renders the list it is handed.
 
 OMP receives each agent's skill closure in `autoloadSkills`, which it preloads for a dispatched
-subagent.
+subagent; for a main session started by `omp --agent <name>` the cratylus extension carries the same
+skills' full instructions in every turn's system prompt.
 
 ### An agent's text, and the settings its reach and model bind to
 
@@ -153,8 +154,13 @@ it.
 
 **The definition is the single source of truth.** OMP reads `agent/agents/<name>.md` when it
 dispatches an agent as a subagent, and `omp --agent <name>` resolves the same declaration through
-omp's own discovery to start it as a main session, through the cratylus extension. One definition,
-no launcher, nothing to drift.
+omp's own discovery to start it as a main session, through the cratylus extension, holding the whole
+declaration as dispatch resolves it for a child: its text, model, effort, `autoload-skills`,
+`spawns`, `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own
+dispatch drops what the declaration says, launch holds what it says — a known omp limitation: an
+explicitly empty `spawns` with `task` among the `tools` is no one (omp's discovery reads it as `*`),
+and `read-summarize: true` turns summarised reads on (omp's dispatch applies only `false`). One
+definition, no launcher, nothing to drift.
 
 ## The harness adapter port
 
