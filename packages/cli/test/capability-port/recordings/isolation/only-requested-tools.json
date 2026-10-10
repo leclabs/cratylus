@@ -1,0 +1,37 @@
+{
+  "expectedTools": ["concept_journal"],
+  "wiring": {
+    "systemPrompt": [
+      "You are a coding assistant.\nTools:\nconcept_journal: Reach the concept journal through cratylus concepts."
+    ],
+    "active": ["concept_journal", "read"],
+    "tools": [
+      {
+        "name": "concept_journal",
+        "description": "Reach the concept journal through cratylus concepts.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "read",
+        "description": "Read a file.",
+        "parameters": {
+          "type": "object"
+        }
+      }
+    ],
+    "memory": {
+      "backend": "off",
+      "active": false
+    }
+  },
+  "failures": ["only-requested-tools"],
+  "name": "Invalid precondition: only-requested-tools",
+  "target": "only-requested-tools"
+}

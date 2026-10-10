@@ -3,11 +3,13 @@
 // entry per file, never edited, moved or deleted.
 //
 // Every entry carries its `id`, a ULID that names its file and orders it, and
-// `at`, the moment its id was minted. A concept version (`define`,
-// `supersede`, `retire`) belongs to one bounded context and names the versions
-// it supersedes; a decision (`decide`) is named by its own id, and its
-// acceptance (`accept`) is an entry of its own, so the decision's record never
-// changes.
+// `at`, the moment its id was minted. A context's description (`context`)
+// changes like a concept does: a later description with its reason supersedes
+// the current ones, the earlier kept in the context's history. A concept
+// version (`define`, `supersede`, `retire`) belongs to one bounded context and
+// names the versions it supersedes; a decision (`decide`) is named by its own
+// id, and its acceptance (`accept`) is an entry of its own, so the decision's
+// record never changes.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** What every entry carries: the ULID naming its file, and when it was minted. */
@@ -16,15 +18,18 @@ interface Stamped {
   readonly at: string;
 }
 
-/** A bounded context: its subject, and its place in the context map. A context
- *  is its name: the first entry of a name records it, and one that settles a
- *  competing description names the entries it supersedes (absent on entries
- *  written before descriptions could compete, which supersede none). */
+/** A description of a bounded context: its full subject, and its place in the
+ *  context map. A context is its name: the first entry of a name records it,
+ *  with no reason; a later one changes it, with the `reason` it was written,
+ *  naming the current entries it supersedes (one when settled, all when
+ *  competing). Entries written before contexts could change carry no reason,
+ *  and those written before descriptions could compete no `supersedes`. */
 export interface ContextEntry extends Stamped {
   readonly kind: 'context';
   readonly name: string;
   readonly subject: string;
   readonly relation: string;
+  readonly reason?: string;
   readonly supersedes?: readonly string[];
 }
 

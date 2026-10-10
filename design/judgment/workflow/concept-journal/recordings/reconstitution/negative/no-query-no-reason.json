@@ -1,0 +1,10 @@
+{
+  "name": "Without a separate query the readback must still give the reason",
+  "target": "retirement-reason",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Automatic renewal is retired. I will not work toward automatic renewal."
+    }
+  ]
+}

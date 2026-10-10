@@ -276,6 +276,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // Checks execution/output/agent/rubric examples plus held-out secrecy and
   // capability-protected red-first freeze behavior using fixtures it supplies.
   'runtime/example-substrate.test.ts': 'BEHAVIORAL',
+  // proves behavioral checks and judges batches over checks and recordings it supplies;
+  // its rejected goldens, accepted negatives and host reads ARE its fixtures.
+  'runtime/check-quality/offline-proof.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
   // drives `dispatchConcepts` over scratch git repositories it builds itself; its
   // refusals (a flag given twice, a journal entry that is not one, a directory
@@ -294,6 +297,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
+  // runs the leakage detector over text it supplies and the journal verbs in scratch git
+  // repositories it builds itself; its leaking and plain passages ARE its fixtures.
+  'runtime/leakage.test.ts': 'BEHAVIORAL',
+  // proves checks it supplies, with host reads it makes itself; polices no live artifact.
+  'runtime/offline-proof.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
   // capability's, a first word that is no capability) ARE its fixtures.
   'runtime/main.test.ts': 'BEHAVIORAL',

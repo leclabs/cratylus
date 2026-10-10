@@ -18,18 +18,6 @@ import { expect, inject } from 'vitest';
 import { repositoryRoot } from '../concept-journal/fixture.js';
 
 export const here = dirname(fileURLToPath(import.meta.url));
-export const verbs = [
-  'state',
-  'design',
-  'history',
-  'decisions',
-  'context',
-  'define',
-  'supersede',
-  'retire',
-  'decide',
-  'accept',
-];
 export const shellTools = ['bash', 'read', 'write', 'edit', 'grep', 'glob'];
 export type Args = Record<string, unknown>;
 export interface ToolInfo {

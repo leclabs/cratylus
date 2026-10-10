@@ -86,7 +86,7 @@ export function explainVerb(
     parameters.push({
       name: verb.positional.name,
       description: verb.positional.description,
-      required: true,
+      required: verb.positional.optional !== true,
       schema: { type: 'string' },
       positional: true,
     });

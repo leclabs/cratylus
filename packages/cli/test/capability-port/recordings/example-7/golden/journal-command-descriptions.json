@@ -1,0 +1,124 @@
+{
+  "name": "Help explanation and usage never dispatch to the journal",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "window",
+        "context": "booking",
+        "title": "Delivery windows",
+        "situation": "Schedule deliveries",
+        "decision": "Windows are one hour.",
+        "consequences": "Plan by the hour.",
+        "status": "open"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decisions",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decisions"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-0",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-1",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts --help"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-2",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts -h"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-3",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts --explain"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-4",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts state --help"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-5",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts decide --explain"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-6",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm exec cratylus concepts define x --wording text --help"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "description-7",
+      "name": "bash",
+      "arguments": {
+        "command": "cratylus concepts unknown"
+      },
+      "result": {
+        "isError": false
+      }
+    }
+  ]
+}

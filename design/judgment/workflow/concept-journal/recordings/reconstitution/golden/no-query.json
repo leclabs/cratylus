@@ -1,6 +1,5 @@
 {
-  "name": "Recollects retirement without journal",
-  "target": "journal-first",
+  "name": "Retirement and reason readback needs no separate query",
   "events": [
     {
       "kind": "text",

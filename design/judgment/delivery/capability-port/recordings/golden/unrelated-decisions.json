@@ -1,0 +1,58 @@
+{
+  "name": "Accepting this decision permits unrelated new and superseding decisions",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "accept",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "window",
+        "reason": "We agreed."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "new-unrelated",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "coffee",
+        "context": "booking",
+        "title": "Coffee breaks",
+        "situation": "Rest",
+        "decision": "Coffee breaks last one hour.",
+        "consequences": "Take a break.",
+        "status": "open"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "supersede-unrelated",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "new-parking",
+        "context": "booking",
+        "supersedes": "parking",
+        "title": "Parking",
+        "situation": "Access",
+        "decision": "Parking is free.",
+        "consequences": "No charge.",
+        "status": "accepted"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

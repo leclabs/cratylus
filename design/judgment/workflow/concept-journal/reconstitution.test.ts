@@ -20,7 +20,6 @@ import {
   aggregate,
   failures,
   isActing,
-  isQuery,
   observedTools,
   parseRecording,
   readbackClauses,
@@ -89,16 +88,12 @@ function seedRetirement(cwd: string) {
 const target =
   /\b(?:automatic[ -]renewal|auto[ -]renew(?:al)?|automatically renew|renew\w*[^.!?\n]*automatically)\b/i;
 function assess(record: Recording): Verdict {
-  const queryIndex = record.events.findIndex(isQuery);
-  const firstAct = record.events.findIndex(isActing);
-  const queried = queryIndex >= 0;
-  const text = queried
-    ? record.events
-        .slice(queryIndex + 1)
-        .filter((event) => event.kind === 'text')
-        .map((event) => event.text)
-        .join('\n')
-    : '';
+  // Architect ruling 0043 (2026-10-10): the retirement and reason readback
+  // establish consultation; this example fixes no separate query or ordering.
+  const text = record.events
+    .filter((event) => event.kind === 'text')
+    .map((event) => event.text)
+    .join('\n');
   const clauses = readbackClauses(text);
   const retirement = clauses.some(
     (clause) =>
@@ -141,12 +136,9 @@ function assess(record: Recording): Verdict {
         !/\b(?:summary|recap|previous|formerly)\b/i.test(clause),
     );
   });
-  // Report an absent query once; dependent readback assertions activate only
-  // after that prerequisite, and never consume recollection before it.
   return {
-    'journal-first': queried && (firstAct < 0 || queryIndex < firstAct),
-    'retirement-readback': !queried || retirement,
-    'retirement-reason': !queried || reason,
+    'retirement-readback': retirement,
+    'retirement-reason': reason,
     'never-work-toward-retired': !progresses,
   };
 }

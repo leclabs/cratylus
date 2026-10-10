@@ -1,0 +1,30 @@
+{
+  "expectedTools": ["concept_journal"],
+  "wiring": {
+    "systemPrompt": [
+      "You are a coding assistant.\nTools:\nconcept_journal: Reach the concept journal through cratylus concepts."
+    ],
+    "active": ["concept_journal"],
+    "tools": [
+      {
+        "name": "concept_journal",
+        "description": "Reach the concept journal through cratylus concepts.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "memory": {
+      "backend": "local",
+      "active": true
+    }
+  },
+  "failures": ["memory-disabled"],
+  "name": "Invalid precondition: memory-disabled",
+  "target": "memory-disabled"
+}

@@ -21,18 +21,22 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `eventTap` and `concepts`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability | port           | verbs                                                                                                     |
-| ---------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                  |
-| `concepts` | —              | `state`, `design`, `history`, `decisions`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` |
+| capability | port           | verbs                                                                                                                |
+| ---------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                             |
+| `concepts` | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` |
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
-[the `cratylus` README](../cli/README.md).
+[the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
+`supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
+code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
+warns; a context's own concept names are never leakage.
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
-against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is pure
-contracts: no implementation.
+against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is
+contracts and declarations: beside the port contracts it exports `JOURNAL`, the concept journal's
+explanation, so a consumer reads which verbs read and which append as code.
 
 ## Subpaths
 
@@ -126,3 +130,55 @@ Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cr
 the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
 irreducible second copy is [`cratylus`](../cli/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.
+
+## Offline proof
+
+A behavioral check is proven before it is frozen, and proof never runs live work: `proveOffline`
+only calls the check's `judge` over recordings already made. A `BehavioralCheck` names its example's
+words, its assertions with the phrases of the example each binds, and any host setting the judge
+reads (`host`, each with the example's words that name it). The check is `proven`, and may be
+frozen, only when the proof finds nothing:
+
+- at least two golden recordings that differ (`goldens-not-varied`; with none, each assertion is
+  also `never-seen-passing`), each getting every assertion true (`golden-rejected`);
+- every negative fails exactly the one assertion it `breaks` (`negative-accepted`,
+  `negative-breaks-other`), and every assertion is failed by some negative that breaks it
+  (`never-seen-failing`: an assertion never seen to fail is not trusted);
+- the judge returns verdicts only for the check's assertions (`undeclared`);
+- every assertion binds words its example names (`unbound`), and every bound phrase occurs in the
+  example, compared case-, whitespace-, punctuation- and quote-insensitively (`binds-unfixed`);
+- an assertion binding `never` is a `never` assertion, and a `never` assertion binds a never-phrase
+  (never, no, not, …) (`never-mismatch`);
+- the judge reads nothing from the operator's host that the example does not name (`host-read`).
+  A declared read is excused only when one of its bound phrases occurs in the example and names
+  it: `env:NAME` by `NAME`, `file:PATH` by the path or its final segment, `process:FILE` likewise,
+  `home` by "home", `clock` by a date or time word (date, time, today, now, clock, day),
+  `timezone` by "time zone", `cwd` by "working directory", any other read by its name.
+
+While a judge runs, its reads of the host are recorded, through ESM named imports as well as
+namespaces: environment variables (`env:NAME`; enumerating the environment is `env`), the home
+directory (`home`), files read through `node:fs` or `node:fs/promises` (`file:PATH`), child
+processes started through `node:child_process` (`process:FILE`), `node:os` facts (`user`,
+`hostname`, `tmpdir`, `networkInterfaces`, `cpus`, …), the working directory (`cwd`, also through
+`path.resolve` of a relative path), the current time (`clock`: `Date.now`, `new Date()`,
+`performance`, `process.hrtime`/`uptime`, `Intl.DateTimeFormat` formatting no date, `Temporal.Now`)
+and the host time zone (`timezone`: local-time `Date` methods, `toLocale*` without a `timeZone`,
+a formatter without one). Each read is charged to the proof whose judge made it, so concurrent
+proofs do not charge each other, and everything is restored once no proof is judging. A judge
+that throws on a recording is a finding against that recording.
+
+A check given as an already-loaded object is observed while judging only. Give it as a loader,
+`() => BehavioralCheck | Promise<BehavioralCheck>`, so what its module reads when loaded is seen
+too. Reads made by the module-loading machinery itself (Node's loaders, and vite's or vitest's
+module runner and transform reading sources) are not the check's and are not recorded; reads by
+the check's own code, or by a library it calls, are. A reference to `process.env`, to `Date` or
+to a patched function that was taken before the proof began judging is not observed; reach them
+through the global or the module while judging.
+
+`judgeBatch` judges a batch of runs against `{ atLeast, of }`: an ordinary assertion passes when it
+holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.
+
+An example's `behavioral` check (`ExampleCheck`) carries the check, its recordings, a threshold
+and a runner. The meaning-holder's `confirm` and `refreeze` freeze it only when offline proof over
+its recordings succeeds, never running the runner, and otherwise refuse with the findings;
+`checkExample` runs the runner `of` times and passes when `judgeBatch` passes.

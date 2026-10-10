@@ -288,6 +288,8 @@ describe('concept journal judgment regressions', () => {
           'Settled subject.',
           '--relation',
           'Settled relation.',
+          '--reason',
+          'Keep both branches in one settled description.',
         );
         expect(
           query<{ contexts: DescribedContext[] }>(root, 'design').contexts,

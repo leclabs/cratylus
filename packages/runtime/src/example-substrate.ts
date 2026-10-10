@@ -1,4 +1,10 @@
 import { isDeepStrictEqual } from 'node:util';
+import {
+  type CheckSource,
+  type ProofRecordings,
+  judgeBatch,
+  proveOffline,
+} from './offline-proof.js';
 
 export type AgentMessage = Readonly<{ to: string; content: string }>;
 export type AgentToolCall = Readonly<{
@@ -58,6 +64,13 @@ export type ExampleCheck =
         assertion: RubricAssertion;
       }>[];
       produce: () => unknown | Promise<unknown>;
+    }>
+  | Readonly<{
+      kind: 'behavioral';
+      check: CheckSource;
+      recordings: ProofRecordings;
+      threshold: Readonly<{ atLeast: number; of: number }>;
+      runner: (run: number) => Promise<unknown>;
     }>;
 
 export type Example = Readonly<{
@@ -173,6 +186,22 @@ async function runCheck(example: Example): Promise<CheckResult> {
         rubric,
       };
     }
+    case 'behavioral': {
+      const records: unknown[] = [];
+      for (let run = 1; run <= check.threshold.of; run += 1)
+        records.push(await check.runner(run));
+      const batch = await judgeBatch(check.check, records, check.threshold);
+      return batch.passed
+        ? { status: 'pass', runs: check.threshold.of }
+        : {
+            status: 'fail',
+            runs: check.threshold.of,
+            shortfall: `behavioral assertions failed: ${batch.assertions
+              .filter(({ passed }) => !passed)
+              .map(({ id, held, runs }) => `${id} held ${held}/${runs}`)
+              .join(', ')}`,
+          };
+    }
   }
 }
 
@@ -241,6 +270,25 @@ export function validateExample(example: Example): void {
     )
       throw new Error(
         `Example ${example.id} has an unspecified outcome: the fixed rubric is not mechanically checkable.`,
+      );
+    return;
+  }
+  if (check.kind === 'behavioral') {
+    const { atLeast, of } = check.threshold ?? {};
+    if (
+      (typeof check.check !== 'function' &&
+        (typeof check.check !== 'object' || check.check === null)) ||
+      !Array.isArray(check.recordings?.golden) ||
+      !Array.isArray(check.recordings?.negative) ||
+      typeof check.runner !== 'function' ||
+      !Number.isInteger(of) ||
+      of < 1 ||
+      !Number.isInteger(atLeast) ||
+      atLeast < 0 ||
+      atLeast > of
+    )
+      throw new Error(
+        `Example ${example.id} has an unspecified outcome: behavioral checks require a check, its recordings, a runner, and a threshold of at least one run with atLeast from 0 to of.`,
       );
     return;
   }
@@ -323,11 +371,7 @@ export function createExampleLedger(
     confirm: async (id) => {
       const example = drafts.get(id);
       if (!example) throw new Error(`No unconfirmed example with id ${id}.`);
-      const result = await checkExample(example);
-      if (result.status !== 'fail')
-        throw new Error(
-          'Cannot confirm an example until its check has shown it can fail.',
-        );
+      await showCanFail(example, 'confirm');
       const frozen = deepFreeze({
         example: clone(example),
         history: [],
@@ -363,11 +407,7 @@ export function createExampleLedger(
         );
       if (confirmed.get(pending.id) !== pending.confirmed)
         throw new Error('The confirmed example changed after this approval.');
-      const result = await checkExample(change.example);
-      if (result.status !== 'fail')
-        throw new Error(
-          'Cannot refreeze an example until its changed check has shown it can fail.',
-        );
+      await showCanFail(change.example, 'refreeze');
       const frozen = deepFreeze({
         example: clone(change.example),
         history: clone(change.history),
@@ -378,6 +418,30 @@ export function createExampleLedger(
     },
   });
   return Object.freeze({ builder, meaningHolder: meaningHolderAccess });
+}
+
+// A check is frozen only once it is shown it can fail: a behavioral one by offline proof over its
+// recordings, never by live runs; any other by running it.
+async function showCanFail(
+  example: Example,
+  action: 'confirm' | 'refreeze',
+): Promise<void> {
+  const check = example.check;
+  if (check.kind === 'behavioral') {
+    const proof = await proveOffline(check.check, check.recordings);
+    if (!proof.proven)
+      throw new Error(
+        `Cannot ${action} example ${example.id}: offline proof did not succeed: ${JSON.stringify(proof.findings)}`,
+      );
+    return;
+  }
+  const result = await checkExample(example);
+  if (result.status !== 'fail')
+    throw new Error(
+      action === 'confirm'
+        ? 'Cannot confirm an example until its check has shown it can fail.'
+        : 'Cannot refreeze an example until its changed check has shown it can fail.',
+    );
 }
 
 export type HeldOutBuilderAccess = Readonly<{

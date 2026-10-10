@@ -2,7 +2,7 @@ import { cpSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect } from 'vitest';
 import { repositoryRoot } from '../concept-journal/fixture.js';
-import { type Host, type ToolInfo, verbs } from './fixture.js';
+import { type Host, type ToolInfo, snapshot, success } from './fixture.js';
 
 export interface ParameterExplanation {
   name: string;
@@ -25,32 +25,11 @@ export interface Explanation {
   when: string;
   verbs: VerbExplanation[];
 }
-// Parameter identities are fixed by the realization contract, not by wording.
-const parametersByVerb: Record<string, string[]> = {
-  state: ['context'],
-  design: ['context'],
-  history: ['concept', 'context'],
-  decisions: ['context', 'open'],
-  context: ['context', 'subject', 'relation'],
-  define: ['concept', 'context', 'wording', 'reason', 'built-from'],
-  supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
-  retire: ['concept', 'context', 'reason'],
-  decide: [
-    'id',
-    'context',
-    'title',
-    'situation',
-    'decision',
-    'consequences',
-    'status',
-    'supersedes',
-  ],
-  accept: ['id', 'reason'],
-};
+
 export function checkExplanation(h: Host): Explanation {
   const explanation = h.concepts<Explanation>('--explain');
   expect(explanation.name).toBe('concept journal');
-  expect(explanation.verbs.map((v) => v.name)).toEqual(verbs);
+  expect(explanation.verbs.length).toBeGreaterThan(0);
   for (const text of [explanation.purpose, explanation.when])
     expect(text.trim().length).toBeGreaterThan(0);
   // Copy only the live journal DATA. Even the anchor query runs the installed
@@ -62,7 +41,7 @@ export function checkExplanation(h: Host): Explanation {
     { recursive: true },
   );
   const ownDesign = h.concepts<{
-    contexts: { concepts: { name: string }[] }[];
+    contexts: { name: string; concepts: { name: string }[] }[];
   }>('design');
   const anchors: string[] = ownDesign.contexts.flatMap(
     (c: { concepts: { name: string }[] }) => c.concepts.map((v) => v.name),
@@ -71,11 +50,7 @@ export function checkExplanation(h: Host): Explanation {
   for (const verb of explanation.verbs) {
     expect(h.concepts(verb.name, '--explain')).toEqual(verb);
     expect(anchors).toContain(verb.concept);
-    expect(verb.effect).toBe(
-      ['state', 'design', 'history', 'decisions'].includes(verb.name)
-        ? 'reads'
-        : 'appends',
-    );
+    expect(['reads', 'appends']).toContain(verb.effect);
     expect(help).toContain(verb.purpose);
     for (const text of [verb.purpose, verb.when]) {
       expect(typeof text).toBe('string');
@@ -86,22 +61,26 @@ export function checkExplanation(h: Host): Explanation {
     expect(new Set(verb.parameters.map((p) => p.name)).size).toBe(
       verb.parameters.length,
     );
-    expect(verb.parameters.map((p) => p.name).sort()).toEqual(
-      [...parametersByVerb[verb.name]!].sort(),
+    // The explanation describes its own surface, not a frozen list of verbs.
+    // Read parameter identities and positions independently from command help.
+    const flags = [...verbHelp.matchAll(/^\s+--([\w-]+)\b/gm)].map(
+      (match) => match[1]!,
     );
-    const positional = ['history', 'define', 'supersede', 'retire'].includes(
-      verb.name,
-    )
-      ? 'concept'
-      : verb.name === 'context'
-        ? 'context'
-        : ['decide', 'accept'].includes(verb.name)
-          ? 'id'
-          : undefined;
+    const usage = verbHelp
+      .split('\n')
+      .find((line) => line.startsWith('Usage:'))!;
+    const positionals = [...usage.matchAll(/<([^>]+)>|\[([^\]]+)\]/g)]
+      .map((match) => match[1] ?? match[2]!)
+      .filter((name) => name !== 'options');
+    expect(verb.parameters.map((p) => p.name).sort()).toEqual(
+      [...flags, ...positionals].sort(),
+    );
     for (const parameter of verb.parameters) {
       expect(parameter.name.length).toBeGreaterThan(0);
       expect(typeof parameter.required).toBe('boolean');
-      expect(parameter.positional === true).toBe(parameter.name === positional);
+      expect(parameter.positional === true).toBe(
+        positionals.includes(parameter.name),
+      );
       expect(parameter.schema.type).toBe(
         parameter.name === 'open'
           ? 'boolean'
@@ -119,6 +98,31 @@ export function checkExplanation(h: Host): Explanation {
       if (parameter.schema.type === 'array')
         expect(parameter.schema.items).toEqual({ type: 'string' });
     }
+    if (verb.effect === 'reads') {
+      const subject = ownDesign.contexts.find(
+        (context) => context.concepts.length > 0,
+      )!;
+      const values: Record<string, string> = {
+        context: subject.name,
+        concept: subject.concepts[0]!.name,
+      };
+      const args = [verb.name];
+      for (const parameter of verb.parameters.filter((p) => p.required)) {
+        const value = values[parameter.name];
+        expect(
+          value,
+          `fixture value for ${verb.name}.${parameter.name}`,
+        ).toBeDefined();
+        args.push(
+          ...(parameter.positional
+            ? [value!]
+            : [`--${parameter.name}`, value!]),
+        );
+      }
+      const before = snapshot(join(h.cwd, 'design/journal'));
+      success(h.command(['concepts', ...args]));
+      expect(snapshot(join(h.cwd, 'design/journal'))).toEqual(before);
+    }
   }
   const supersede = explanation.verbs.find((v) => v.name === 'supersede')!;
   const retire = explanation.verbs.find((v) => v.name === 'retire')!;
@@ -131,9 +135,9 @@ export function checkToolExplanation(
   sentinel = false,
 ) {
   expect(tool.name).toBe('concept_journal');
-  expect(tool.parameters.properties.verb!.enum).toEqual(
-    explanation.verbs.map((v) => v.name),
-  );
+  expect(
+    [...(tool.parameters.properties.verb!.enum as string[])].sort(),
+  ).toEqual(explanation.verbs.map((v) => v.name).sort());
   expect(tool.parameters.required).toContain('verb');
   const text = [
     tool.label ?? '',

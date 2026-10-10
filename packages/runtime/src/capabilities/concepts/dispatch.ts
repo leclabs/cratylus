@@ -4,9 +4,10 @@
 //   state      the whole state of each context in one answer: the query a
 //              session reconstitutes from
 //   design     the current design of each context
-//   history    every version of one concept
+//   history    every version of one concept, or of a context's description
 //   decisions  the decisions with their status
-//   context    record a bounded context
+//   leakage    the implementation leakage in the design, decisions and examples
+//   context    record a bounded context, or, with a reason, change one
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
 //   retire     record a concept's retirement
@@ -14,8 +15,10 @@
 //   accept     record the acceptance of an open decision
 //
 // A query appends nothing and prints JSON. An appending verb appends exactly one
-// entry and prints it as JSON. Every refusal is one line opening with
-// `concepts <verb>:`, thrown before anything is appended.
+// entry and prints it as JSON; when what it recorded leaks implementation, the
+// answer also carries the `warnings`, and nothing is refused for leakage. Every
+// refusal is one line opening with `concepts <verb>:`, thrown before anything
+// is appended.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -35,7 +38,14 @@ import {
 import { verbOf } from '../plan/argv.js';
 import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
 import { journalAt } from './journal.js';
-import { type DecisionView, Folded } from './views.js';
+import {
+  type Passage,
+  type Warning,
+  leaks,
+  visibleExamples,
+  vocabulary,
+} from './leakage.js';
+import { type DecisionView, type Description, Folded } from './views.js';
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
 const inContext = (what: string) =>
@@ -99,12 +109,20 @@ export const VERBS = {
     concept: 'concept',
     effect: 'reads',
     purpose:
-      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded',
-    when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired',
-    positional: concept(
-      'The concept whose versions to show, by its name in the bounded context',
-    ),
-    flags: { ...inContext('concept') },
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason',
+    when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, and why each change was made',
+    positional: {
+      ...concept(
+        'The concept whose versions to show, by its name in the bounded context; leave it out to show the bounded context’s own history',
+      ),
+      optional: true,
+    },
+    flags: {
+      context: valueFlag(
+        'The bounded context the concept belongs to, or, without a concept, the one whose own history to show; one already recorded with the context verb',
+        { required: true },
+      ),
+    },
   },
   decisions: {
     concept: 'decision',
@@ -120,23 +138,39 @@ export const VERBS = {
       open: switchFlag('Only the decisions still awaiting acceptance'),
     },
   },
+  leakage: {
+    concept: 'implementation leakage',
+    effect: 'reads',
+    purpose:
+      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak',
+    when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
+    positional: null,
+    flags: {
+      context: valueFlag(
+        'Only this bounded context’s concepts, decisions and examples; every context’s when left out',
+      ),
+    },
+  },
   context: {
     concept: 'bounded context',
     effect: 'appends',
     purpose:
-      'Record a bounded context: a subject with its own model and vocabulary, and its place in the context map',
-    when: 'Before the first concept or decision of a subject the journal has no bounded context for; a recorded context is recorded again only to settle descriptions that merged branches recorded differently',
+      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history',
+    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject the journal has no bounded context for; with a reason, when a recorded context’s subject or relation changes, or to settle descriptions that merged branches recorded differently',
     positional: {
       name: 'context',
       description:
-        'The bounded context’s name, the word its concepts and decisions are recorded under',
+        'The bounded context’s name, the word its concepts and decisions are recorded under; a change names a context already recorded',
     },
     flags: {
-      subject: valueFlag('The subject the context models, in its own words', {
-        required: true,
-      }),
+      subject: valueFlag(
+        'The subject the context models, in its own words; needed to record a new context, and when changing a recorded one, the current subject is kept when left out',
+      ),
       relation: valueFlag(
-        'How it relates to the other bounded contexts in the context map; none when left out',
+        'How it relates to the other bounded contexts in the context map; none when left out on recording, the current relation kept when left out on a change',
+      ),
+      reason: valueFlag(
+        'Why a recorded context changes; needed to change one, and giving it marks the call as a change, never a recording',
       ),
     },
   },
@@ -257,7 +291,7 @@ export const JOURNAL: CapabilityInterface = {
 /** What `state` says each part of its answer is. */
 const READING = {
   competingDescriptions:
-    'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context settles them',
+    'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context with a reason settles them',
   concepts: 'the live concepts of the context, each its current version',
   competing:
     'concepts with two or more versions superseding the same one; none is chosen until a later version supersedes them all',
@@ -331,6 +365,26 @@ export function dispatchConcepts(
       open: decisions.filter((d) => d.context === where && d.status === 'open'),
     },
   });
+  /** The words of `where`: the names of its live concepts and of `also`. */
+  const own = (where: string, ...also: string[]) =>
+    vocabulary([...folded.design(where).concepts.map((c) => c.name), ...also]);
+  /** The warnings on `passage`, one per distinct leak in `texts`, read
+   *  against `words`, its context's own. */
+  const warnings = (
+    passage: Passage,
+    texts: readonly string[],
+    words: ReadonlySet<string>,
+  ): Warning[] => {
+    const found = texts.flatMap((text) => leaks(text, words));
+    return found
+      .filter(
+        (leak, i) =>
+          found.findIndex(
+            (other) => other.words === leak.words && other.rule === leak.rule,
+          ) === i,
+      )
+      .map((leak) => ({ passage, ...leak }));
+  };
 
   switch (verb) {
     case 'state': {
@@ -340,8 +394,48 @@ export function dispatchConcepts(
         contexts: contexts().map((where) => state(decisions, where)),
       };
     }
+    case 'leakage': {
+      const covered = contexts();
+      const decisions = folded.decisionViews();
+      const recorded = covered.flatMap((where) => {
+        const words = own(where);
+        return [
+          ...folded
+            .design(where)
+            .concepts.flatMap((c) =>
+              warnings(
+                { kind: 'concept', context: where, name: c.name },
+                [c.wording],
+                words,
+              ),
+            ),
+          ...decisions
+            .filter((d) => d.context === where && d.status !== 'superseded')
+            .flatMap((d) =>
+              warnings(
+                { kind: 'decision', context: where, id: d.id },
+                [d.title, d.situation, d.decision, d.consequences],
+                words,
+              ),
+            ),
+        ];
+      });
+      const examples = visibleExamples(journal.root)
+        .filter(
+          (e) => !args.flags.has('context') || covered.includes(e.context),
+        )
+        .flatMap((e) =>
+          warnings(
+            { kind: 'example', file: e.file, number: e.number },
+            [e.text],
+            folded.contexts.has(e.context) ? own(e.context) : new Set(),
+          ),
+        );
+      return { warnings: [...recorded, ...examples] };
+    }
     case 'history': {
       const where = context();
+      if (args.positionals.length === 0) return folded.contextHistory(where);
       const name = read.named('concept');
       if (folded.versions(where, name).length === 0)
         throw refuse(`the bounded context '${where}' has no concept '${name}'`);
@@ -364,17 +458,50 @@ export function dispatchConcepts(
     }
     case 'context': {
       const name = read.named('context');
-      const subject = read.required('subject', 'the subject');
-      const relation = read.optional('relation') ?? '';
-      if (!folded.contexts.has(name))
-        return journal.append({ kind: 'context', name, subject, relation });
-      if (folded.descriptions(name).length < 2)
-        throw refuse(`the bounded context '${name}' is already recorded`);
+      const reason = read.optional('reason');
+      const subject = read.optional('subject');
+      const relation = read.optional('relation');
+      const recorded = folded.contexts.has(name);
+      if (reason === undefined) {
+        if (recorded)
+          throw refuse(
+            `the bounded context '${name}' is already recorded; give --reason to change it`,
+          );
+        return journal.append({
+          kind: 'context',
+          name,
+          subject: read.required('subject', 'the subject'),
+          relation: relation ?? '',
+        });
+      }
+      if (!recorded)
+        throw refuse(
+          `the journal has no bounded context '${name}'; record it without --reason first`,
+        );
+      if (reason.trim() === '')
+        throw refuse('the reason is empty; give why the context changes');
+      if (subject === undefined && relation === undefined)
+        throw refuse('give the --subject or --relation that changes, or both');
+      if (subject !== undefined && subject.trim() === '')
+        throw refuse(
+          'the subject is empty; give one, or leave --subject out to keep it',
+        );
+      const descriptions = folded.descriptions(name);
+      /** The current `field`, carried over; refused while competing
+       *  descriptions differ on it. */
+      const carried = (field: 'subject' | 'relation'): string => {
+        if (new Set(descriptions.map((d) => d[field])).size > 1)
+          throw refuse(
+            `the competing descriptions differ in their ${field}; give --${field} to settle it`,
+          );
+        return (descriptions[0] as Description)[field];
+      };
       const draft: Omit<ContextEntry, 'id' | 'at'> = {
         kind: 'context',
         name,
-        subject,
-        relation,
+        subject: subject ?? carried('subject'),
+        relation: relation ?? carried('relation'),
+        reason,
         supersedes: folded.currentDescriptions(name).map((c) => c.id),
       };
       return journal.append(draft);
@@ -401,7 +528,13 @@ export function dispatchConcepts(
         reason,
         supersedes,
       };
-      return journal.append(draft);
+      const found = warnings(
+        { kind: 'concept', context: where, name },
+        [wording],
+        own(where, name),
+      );
+      const entry = journal.append(draft);
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'retire': {
       const name = read.named('concept');
@@ -451,7 +584,13 @@ export function dispatchConcepts(
             : (folded.decisions.get(superseded) as DecideEntry).decisionId,
         ...(superseded === undefined ? {} : { supersedesEntry: superseded }),
       };
-      return journal.append(draft);
+      const found = warnings(
+        { kind: 'decision', context: where, id: decisionId },
+        [title, situation, decision, consequences],
+        own(where),
+      );
+      const entry = journal.append(draft);
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'accept': {
       const ref = read.named('decision');
