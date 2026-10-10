@@ -79,7 +79,13 @@ export interface Fixture {
   observed(): Observation[];
   dispose(): void;
 }
-export function fixture(options: { config?: string } = {}): Fixture {
+export function fixture(
+  options: {
+    config?: string;
+    prepare?(paths: { home: string; cwd: string }): void;
+    linkPersonaCommands?: boolean;
+  } = {},
+): Fixture {
   const root = mkdtempSync(join(tmpdir(), 'agent-launch-'));
   const home = join(root, 'home');
   const cwd = join(root, 'project');
@@ -106,6 +112,7 @@ export function fixture(options: { config?: string } = {}): Fixture {
     mkdirSync(dirname(configFile), { recursive: true });
     writeFileSync(configFile, options.config);
   }
+  options.prepare?.({ home, cwd });
   const installed = spawnSync(
     'cratylus',
     [
@@ -115,7 +122,9 @@ export function fixture(options: { config?: string } = {}): Fixture {
       '--home',
       home,
       '--all',
-      '--no-link-persona-commands',
+      options.linkPersonaCommands
+        ? '--link-persona-commands'
+        : '--no-link-persona-commands',
       '--model-roles',
       'default',
     ],

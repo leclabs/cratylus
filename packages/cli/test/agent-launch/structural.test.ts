@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { carries, fixture, inspect, status } from './fixture.js';
@@ -239,6 +239,80 @@ describe('agent launch — visible examples', () => {
       );
       // Starting under this allowlist witnesses “through the one cratylus
       // extension”; no launcher, wrapper or declaration copy exists.
+    } finally {
+      f.dispose();
+    }
+  });
+  it('7: install retires agent launchers, persona overlays, badges and linked commands', () => {
+    const name = 'corpus-pilot';
+    const body = 'Guide the survey vessel through the inlet.';
+    const f = fixture({
+      linkPersonaCommands: true,
+      prepare: ({ cwd }) => {
+        const agents = join(cwd, 'corpus/agents');
+        mkdirSync(agents, { recursive: true });
+        // A fixture corpus consumed by the real install loader, not a hand-
+        // placed omp declaration or a dependency on the bundled canon's agents.
+        writeFileSync(
+          join(agents, `${name}.ts`),
+          `export const pilot = ${JSON.stringify({
+            name,
+            description: 'A fixture corpus agent.',
+            archetype: body,
+            provenance: null,
+            objective: 'Survey the inlet.',
+          })};\n`,
+        );
+        writeFileSync(
+          join(cwd, 'cratylus.config.ts'),
+          `export default { extends: [${JSON.stringify({
+            name: 'launch-fixture',
+            agents,
+            manifest: {
+              objective: {
+                axis: 'Constitution',
+                repertoire: 'open',
+                arity: 'scalar',
+              },
+            },
+          })}] };\n`,
+        );
+      },
+    });
+    try {
+      // “installed with a corpus that delivers agents”: install really places it.
+      expect(
+        readFileSync(join(f.home, '.omp/agent/agents', `${name}.md`), 'utf8'),
+      ).toContain(body);
+      // Inspect only what install places in this fixture HOME. Directory entries
+      // include symlinks, so a broken linked command cannot pass as absent.
+      const placed = readdirSync(f.home, { recursive: true }).map(String);
+      // “no launcher, persona overlay or badge for any agent”.
+      expect
+        .soft(
+          placed.filter((path) => /(^|\/)omp-agent$/.test(path)),
+          'install places no omp-agent launcher',
+        )
+        .toEqual([]);
+      expect
+        .soft(
+          placed.filter((path) => /\/personas\/[^/]+\/omp\.yml$/.test(path)),
+          'install places no persona omp.yml overlay',
+        )
+        .toEqual([]);
+      expect
+        .soft(
+          placed.filter((path) =>
+            /(^|\/)cratylus-persona-badge\.ts$/.test(path),
+          ),
+          'install places no persona badge extension',
+        )
+        .toEqual([]);
+      // “starting as an agent goes only through omp --agent”: no linked command.
+      // The actual --agent path is already witnessed by examples 1 and 6.
+      expect
+        .soft(placed, 'install links no persona command')
+        .not.toContain(`.local/bin/${name}`);
     } finally {
       f.dispose();
     }
