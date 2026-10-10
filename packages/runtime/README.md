@@ -139,16 +139,45 @@ words, its assertions with the phrases of the example each binds, and any host s
 reads (`host`, each with the example's words that name it). The check is `proven`, and may be
 frozen, only when the proof finds nothing:
 
-- every golden recording gets every assertion true (`golden-rejected`);
+- at least two golden recordings that differ (`goldens-not-varied`; with none, each assertion is
+  also `never-seen-passing`), each getting every assertion true (`golden-rejected`);
 - every negative fails exactly the one assertion it `breaks` (`negative-accepted`,
   `negative-breaks-other`), and every assertion is failed by some negative that breaks it
   (`never-seen-failing`: an assertion never seen to fail is not trusted);
+- the judge returns verdicts only for the check's assertions (`undeclared`);
 - every assertion binds words its example names (`unbound`), and every bound phrase occurs in the
   example, compared case-, whitespace-, punctuation- and quote-insensitively (`binds-unfixed`);
-- the judge reads nothing from the operator's host the check does not declare (`host-read`):
-  environment variables, the home directory, files read through `node:fs` or `node:fs/promises`,
-  and the clock are observed while it judges, through named imports as well as namespaces, and
-  restored afterwards. A judge that throws on a recording is a finding against that recording.
+- an assertion binding `never` is a `never` assertion, and a `never` assertion binds a never-phrase
+  (never, no, not, …) (`never-mismatch`);
+- the judge reads nothing from the operator's host that the example does not name (`host-read`).
+  A declared read is excused only when one of its bound phrases occurs in the example and names
+  it: `env:NAME` by `NAME`, `file:PATH` by the path or its final segment, `process:FILE` likewise,
+  `home` by "home", `clock` by a date or time word (date, time, today, now, clock, day),
+  `timezone` by "time zone", `cwd` by "working directory", any other read by its name.
+
+While a judge runs, its reads of the host are recorded, through ESM named imports as well as
+namespaces: environment variables (`env:NAME`; enumerating the environment is `env`), the home
+directory (`home`), files read through `node:fs` or `node:fs/promises` (`file:PATH`), child
+processes started through `node:child_process` (`process:FILE`), `node:os` facts (`user`,
+`hostname`, `tmpdir`, `networkInterfaces`, `cpus`, …), the working directory (`cwd`, also through
+`path.resolve` of a relative path), the current time (`clock`: `Date.now`, `new Date()`,
+`performance`, `process.hrtime`/`uptime`, `Intl.DateTimeFormat` formatting no date, `Temporal.Now`)
+and the host time zone (`timezone`: local-time `Date` methods, `toLocale*` without a `timeZone`,
+a formatter without one). Each read is charged to the proof whose judge made it, so concurrent
+proofs do not charge each other, and everything is restored once no proof is judging. A judge
+that throws on a recording is a finding against that recording.
+
+A check given as an already-loaded object is observed while judging only. Give it as a loader,
+`() => BehavioralCheck | Promise<BehavioralCheck>`, so what its module reads when loaded is seen
+too. Under a transforming loader such as vitest's, the module's own source files read while it
+loads are recorded as file reads. A reference to `process.env`, to `Date` or to a patched function
+that was taken before the proof began judging is not observed; reach them through the global or
+the module while judging.
 
 `judgeBatch` judges a batch of runs against `{ atLeast, of }`: an ordinary assertion passes when it
 holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.
+
+An example's `behavioral` check (`ExampleCheck`) carries the check, its recordings, a threshold
+and a runner. The meaning-holder's `confirm` and `refreeze` freeze it only when offline proof over
+its recordings succeeds, never running the runner, and otherwise refuse with the findings;
+`checkExample` runs the runner `of` times and passes when `judgeBatch` passes.
