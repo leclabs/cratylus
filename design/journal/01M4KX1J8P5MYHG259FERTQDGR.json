@@ -1,0 +1,17 @@
+{
+  "id": "01M4KX1J8P5MYHG259FERTQDGR",
+  "at": "2026-10-10T21:55:56.822Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "binding",
+  "wording": "how a composed agent meets one harness: its model and effort through a model role named for it, its reach as that harness's tool and dispatch permissions, its procedure as skills, and its assignment and deliverable as typed contracts the harness checks when the agent is dispatched and when it returns; the agent is the same on every harness, and only its binding differs.",
+  "builtFrom": [
+    "agent",
+    "reach",
+    "identity"
+  ],
+  "reason": "The operator, 2026-10-10: the handoff seam had no typed input or output, so a scenario that never gave the lead its cut brief failed slowly, across live batches, instead of at once. Typed handoffs are the agent frameworks' own pattern (structured inputs and outputs at each handoff).",
+  "supersedes": [
+    "01M4KK1VSPMRQ1RPJ4B1864H3R"
+  ]
+}
