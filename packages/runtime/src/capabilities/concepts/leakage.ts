@@ -7,9 +7,11 @@
 // Detection is lexical, in the manner of requirements smells: each rule below
 // finds the narrowest span that leaks (a tool's name, a command and its
 // subcommand, a path), never a whole sentence. A span lying inside another
-// span is the same leak and is reported once, as the wider. A context's own
-// words are never leakage: a span made only of the words of its concepts'
-// names raises nothing, and ordinary English words are on no list.
+// span is the same leak and is reported once, as the wider; a quotation in
+// code type that is plain prose is no leak itself, so only the leaks inside it
+// are reported. A context's own words are never leakage: a span made only of
+// the words of its concepts' names raises nothing, nor a command a concept's
+// name names, and an ordinary English word is a leak only used as a command.
 //
 // A leak is a WARNING, never a refusal: a word list cannot tell every
 // legitimate use from a leak, so the architect reads the warnings and judges.
@@ -68,6 +70,22 @@ const COMMANDS = [
   'brew',
 ];
 
+/** Tools whose name is also an ordinary English word: a leak only where it is
+ *  used as a command, given a subcommand or a flag. */
+const ORDINARY = [
+  'babel',
+  'biome',
+  'brew',
+  'curl',
+  'docker',
+  'jest',
+  'mocha',
+  'prettier',
+  'python',
+  'rollup',
+  'yarn',
+];
+
 /** Subcommands that make the word before them a command. */
 const SUBCOMMANDS = [
   'add',
@@ -87,6 +105,7 @@ const SUBCOMMANDS = [
   'fetch',
   'init',
   'install',
+  'link',
   'lint',
   'log',
   'merge',
@@ -108,19 +127,14 @@ const SUBCOMMANDS = [
   'worktree',
 ];
 
-/** Well-known tools, libraries and formats, by name alone; none is an ordinary
- *  English word, so `cratylus` (the project) and `node` are named only as a
- *  command. */
+/** Well-known tools, libraries and formats, by name alone; an ordinary English
+ *  word is named only as a command (`ORDINARY`), and so are `cratylus` (the
+ *  project) and `node`. */
 const TOOLS = [
   'awk',
-  'babel',
-  'biome',
-  'brew',
   'changesets',
   'commander.js',
-  'curl',
   'deno',
-  'docker',
   'esbuild',
   'eslint',
   'git',
@@ -129,13 +143,11 @@ const TOOLS = [
   'graphql',
   'grep',
   'javascript',
-  'jest',
   'jq',
   'json',
   'jsonl',
   'kubernetes',
   'lodash',
-  'mocha',
   'mongodb',
   'mysql',
   'node.js',
@@ -146,11 +158,8 @@ const TOOLS = [
   'pnpm',
   'postgres',
   'postgresql',
-  'prettier',
-  'python',
   'redis',
   'ripgrep',
-  'rollup',
   'sed',
   'sqlite',
   'toml',
@@ -163,7 +172,6 @@ const TOOLS = [
   'vitest',
   'webpack',
   'yaml',
-  'yarn',
   'zod',
   'zsh',
 ];
@@ -171,6 +179,16 @@ const TOOLS = [
 /** File extensions that make a word a file's name. */
 const EXTENSIONS =
   'ts|tsx|js|jsx|mjs|cjs|json|jsonl|md|yaml|yml|toml|sh|py|rs|go|lock|txt|html|css|sql|env';
+
+/** Directories a repository conventionally has: a slash-joined word naming
+ *  one is a file location even without a leading `./` or a trailing `/`. */
+const DIRECTORIES =
+  /^(?:packages|src|dist|lib|bin|test|tests|docs|scripts|node_modules|design|apps|fixtures)$/;
+
+/** A quotation in code type that is plain prose: words with spaces between
+ *  and ordinary sentence punctuation, nothing only code has. */
+const PROSE =
+  /^`(?=[^`]* )(?:[\p{L}\p{N}’' ,;:!?()“”"—–]|-(?!-)|\.(?![\p{L}\p{N}]))+`$/u;
 
 /** Each rule: what it is called, the spans it finds, and which of them leak
  *  when not all do. Where two rules find the same span, the earlier names it. */
@@ -180,17 +198,21 @@ const RULES: readonly {
   keep?: (span: string) => boolean;
 }[] = [
   {
-    // Plain words set in code type, such as a quoted phrase, state meaning;
-    // anything else in it is code.
     rule: 'quotes code',
     pattern: /`[^`\n]+`/g,
-    keep: (span) => !/^`[A-Za-z’'-]+(?: [A-Za-z’'-]+)+`$/.test(span),
+    keep: (span) => !PROSE.test(span),
   },
   {
+    // Located from the root, home or here, ending in a directory or a file's
+    // extension, through a hidden, private or scoped part, through three or
+    // more parts, or through a directory a repository conventionally has;
+    // two plain words joined by a slash, such as and/or, are prose.
     rule: 'names a file location',
     pattern: /(?<![\w./~@-])(?:~|\.{1,2})?\/?(?:[\w.@-]+\/)+[\w.@-]*/g,
     keep: (span) =>
-      /^(?:\/|~\/|\.{1,2}\/)|\/$|(?:^|\/)[._]|\.[a-z]{1,5}$/i.test(span),
+      /^(?:\/|~\/|\.{1,2}\/)|\/$|(?:^|\/)[._@]|\.[a-z]{1,5}$|\/.*\//i.test(
+        span,
+      ) || span.split('/').some((part) => DIRECTORIES.test(part)),
   },
   {
     rule: 'names a file',
@@ -202,13 +224,14 @@ const RULES: readonly {
   {
     rule: 'names a command',
     pattern: new RegExp(
-      `(?<![\\w./-])(?:${COMMANDS.join('|')})[ \\t]+(?:${SUBCOMMANDS.join('|')})(?![\\w/-]|\\.\\w)`,
+      `(?<![\\w./-])(?:${[...COMMANDS, ...ORDINARY].join('|')})[ \\t]+(?:(?:${SUBCOMMANDS.join('|')})(?![\\w/-]|\\.\\w)|--[a-z][\\w-]*)`,
       'gi',
     ),
   },
   {
     rule: 'names a command-line flag',
-    pattern: /(?<![\w-])--[a-z][a-z0-9-]*/g,
+    // A flag stands as a word of its own; a dash between words is no flag.
+    pattern: /(?<=^|[\s`(["'=])--[a-z][a-z0-9-]*/g,
   },
   {
     rule: 'names a tool or library',
@@ -218,9 +241,12 @@ const RULES: readonly {
     ),
   },
   {
+    // camelCase from a word of two letters or more, PascalCase of three or
+    // more words, snake_case, or a call; a brand of two capitals (DevOps,
+    // OpenAI, PhD, LaTeX) is a name, and a tool that is one stays on the list.
     rule: 'names a code identifier',
     pattern:
-      /\b(?:[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*|[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*[A-Za-z0-9])\b|\b[A-Za-z_][\w.]*\(\)/g,
+      /\b(?:[a-z]{2,}[a-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+){2,}|[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*[A-Za-z0-9])\b|\b[A-Za-z_][\w.]*\(\)/g,
   },
 ];
 
@@ -236,7 +262,7 @@ export function vocabulary(names: readonly string[]): ReadonlySet<string> {
 }
 
 /** The leaks in `text`, in the order they appear; spans made only of `own`
- *  words, the context's own, raise none. */
+ *  words, the context's own, raise none, nor a command one of them names. */
 export function leaks(
   text: string,
   own: ReadonlySet<string> = new Set(),
@@ -246,8 +272,12 @@ export function leaks(
     for (const match of text.matchAll(pattern)) {
       const span = match[0].replace(/[.,;:!?]+$/, '');
       if (keep !== undefined && !keep(span)) continue;
-      const words = span.toLowerCase().replace(/`/g, '').trim();
-      if (own.has(words) || words.split(/\s+/).every((w) => own.has(w)))
+      const words = span.toLowerCase().replace(/`/g, '').trim().split(/\s+/);
+      if (
+        own.has(words.join(' ')) ||
+        words.every((w) => own.has(w)) ||
+        (rule === 'names a command' && own.has(words[0] as string))
+      )
         continue;
       found.push({ start: match.index, end: match.index + span.length, rule });
     }

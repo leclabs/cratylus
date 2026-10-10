@@ -60,6 +60,33 @@ describe('leaks', () => {
     ['It is validated with zod.', 'zod', 'names a tool or library'],
     ['It is hosted on GitHub.', 'GitHub', 'names a tool or library'],
     ['It merges into `main` first.', '`main`', 'quotes code'],
+    [
+      'The journal is design/journal in the repository.',
+      'design/journal',
+      'names a file location',
+    ],
+    [
+      'It ships from packages/runtime/src unchanged.',
+      'packages/runtime/src',
+      'names a file location',
+    ],
+    [
+      'It is drawn with @dagrejs/graphlib.',
+      '@dagrejs/graphlib',
+      'names a file location',
+    ],
+    [
+      'Its parts are kept in archive/old/notes for now.',
+      'archive/old/notes',
+      'names a file location',
+    ],
+    ['Format it with prettier --write.', 'prettier --write', 'names a command'],
+    ['Packages are added with yarn add.', 'yarn add', 'names a command'],
+    [
+      'It is served by EventTapHostClaude.',
+      'EventTapHostClaude',
+      'names a code identifier',
+    ],
   ])('%s → %s', (text, words, rule) => {
     expect(leaks(text)).toEqual([{ words, rule }]);
   });
@@ -75,6 +102,15 @@ describe('leaks', () => {
     ]);
   });
 
+  it('reports only the leaks inside a quotation that is plain prose', () => {
+    expect(leaks('The rule says `keep the plan in git.` plainly.')).toEqual([
+      { words: 'git', rule: 'names a tool or library' },
+    ]);
+    expect(leaks('It says `run it, then pnpm install; done!` once.')).toEqual([
+      { words: 'pnpm install', rule: 'names a command' },
+    ]);
+  });
+
   it.each([
     'a check accepts a recording that satisfies its example',
     'The node in the dependency graph waits for its inputs, and/or its peers.',
@@ -82,6 +118,12 @@ describe('leaks', () => {
     'Cratylus keeps its design in one journal, e.g. for every context.',
     'It names a `green-field realization` in plain words.',
     'Version 0.10.0 holds: — the words stay plain.',
+    'The tests are kept prettier, and a jest is no tool.',
+    'A curl of smoke, a yarn spun, a brew of tea, a babel of voices.',
+    'Python, the snake, and Docker, the dock worker, rollup the mocha.',
+    'The work -- once read -- stays read; no word--joined pair is a flag.',
+    'A PhD in LaTeX at McDonald from DevOps and OpenAI.',
+    'Each verb reads/appends, or read/write, and/or neither.',
   ])('raises nothing on plain meaning: %s', (text) => {
     expect(leaks(text)).toEqual([]);
   });
@@ -91,6 +133,16 @@ describe('leaks', () => {
     expect(leaks('A git merge request is reviewed.', own)).toEqual([]);
     expect(leaks('A git merge request is reviewed.')).toEqual([
       { words: 'git merge', rule: 'names a command' },
+    ]);
+  });
+
+  it('holds the exemption to the context whose concept names the words', () => {
+    const delivery = vocabulary(['cratylus command', 'omp']);
+    const text = 'Run cratylus install, then start omp.';
+    expect(leaks(text, delivery)).toEqual([]);
+    expect(leaks(text, vocabulary(['plan']))).toEqual([
+      { words: 'cratylus install', rule: 'names a command' },
+      { words: 'omp', rule: 'names a tool or library' },
     ]);
   });
 });
