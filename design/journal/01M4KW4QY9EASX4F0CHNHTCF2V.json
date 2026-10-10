@@ -1,0 +1,14 @@
+{
+  "id": "01M4KW4QY9EASX4F0CHNHTCF2V",
+  "at": "2026-10-10T21:40:12.361Z",
+  "kind": "decide",
+  "decisionId": "0061",
+  "context": "workflow",
+  "title": "The architect accepts a cut on the assayers' verdicts, not the lead's account",
+  "situation": "Example 19 asked the lead to report a cut's outcome in the design's concepts; across three profile wordings the lead's reports kept naming the realization, because the lead holds the realization. Decision 0060 then tried to hold that report by a capability. The operator observed that the assayer is the role that judges in concept terms. The semantic gap concept says the gap opens when work is judged by an agent's own account; the lead's report of its own cut is exactly such an account.",
+  "decision": "The conceptual outcome of a cut reaches the architect as the assayers' verdicts, per concept, in the design's terms: the assayer's deliverable. The lead passes those verdicts on unchanged and adds only what it holds: the cut's efficiency figures, recorded through the work package capability, and any meaning question. The lead does not restate the outcome in its own words. Example 19 is re-illustrated on the assayer's verdict in the follow-up cut with 0059.",
+  "consequences": "0060 is superseded before it was built. The follow-up cut realizes 0059 and this decision.",
+  "status": "open",
+  "supersedes": "0060",
+  "supersedesEntry": "01M4KVV296W5WEXZX4CSZSBP9H"
+}
