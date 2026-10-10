@@ -1,13 +1,23 @@
 // Shared deploy-test scaffolding: build a render tree in a temp dir.
 
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Practice } from '@cratylus/schema';
+import { afterAll } from 'vitest';
 import type { InstallPrompts } from '../../src/cli/commands/install-prompts.js';
 
+// Evaluated per test file (isolate on): the hook lands on each importing file's
+// root suite and removes every dir that file's `tmp` calls made.
+const scratch: string[] = [];
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 export function tmp(prefix: string): string {
-  return mkdtempSync(join(tmpdir(), prefix));
+  const d = mkdtempSync(join(tmpdir(), prefix));
+  scratch.push(d);
+  return d;
 }
 
 /** The one practice a fixture corpus declares: every agent it has, preselected. A
