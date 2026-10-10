@@ -294,9 +294,10 @@ export const ompStatusSegment: StatusSegmentHost = {
  * it arrives. Emitted only when that list is non-empty, so an agent given none
  * carries no such key. omp honours the field for a
  * DISPATCHED subagent — the skills are injected before the child's first
- * prompt. A MAIN session started by `omp --agent` has no native path for it, and
- * the cratylus extension does not inline them: such a session reaches its skills
- * the way any session does, through omp's own skill discovery.
+ * prompt. A MAIN session started by `omp --agent` has no native path for it, so
+ * the cratylus extension inlines them: every turn's system prompt carries the full
+ * instructions of each named skill in omp's own autoload form
+ * ({@link ompCapabilityExtensions}).
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -1375,7 +1376,7 @@ function scopePlacement(agent: string | undefined): string[] {
  * base prompt never drops them. The status line reads `<mark> <name>`, or `<name>`
  * without a mark (install lists omp's `status` segment so it renders).
  *
- * THE REST OF THE DECLARATION AS DISPATCH RESOLVES IT. Once per launch, held as
+ * THE REST OF THE DECLARATION. Once per launch, held as
  * session-scoped runtime overrides on the session's own settings (never persisted)
  * and put back as they were when the launch ends (a switch to a session the name
  * no longer resolves for): personality `none`, as every dispatched child runs;
@@ -1391,12 +1392,22 @@ function scopePlacement(agent: string | undefined): string[] {
  * standing in that role only while omp arms it. Configuration files are defaults
  * the declaration overrides, as for a child; the operator's explicit `--advisor` and
  * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own dimension. Whom the
- * session may dispatch is what dispatch gives a child of the declaration's `spawns`,
- * read by omp's `resolveSpawnPolicy`: `*` anyone, a list exactly those, empty or
- * absent no one (omp's discovery already reads an absent `spawns` with `task` among
- * the `tools` as `*`). It is enforced on the launched session's own dispatches in
- * `before_subagent_spawn` with omp's own refusal (`Cannot spawn '<x>'. Allowed: …`)
- * — never through `task.disabledAgents`, which every child inherits.
+ * session may dispatch is the declaration's `spawns`, read by omp's
+ * `resolveSpawnPolicy`: `*` anyone, a list exactly those, absent as omp's discovery
+ * reads it (`*` with `task` among the `tools`, else no one), and an explicitly empty
+ * one — an empty list or a blank string, read raw from the declaration's file with
+ * omp's front-matter parser, as the mark is — no one, even with `task` among the
+ * `tools`; a bundled declaration, having no file, gets discovery's value. It is
+ * enforced on the launched session's own dispatches in `before_subagent_spawn` with
+ * omp's own refusal (`Cannot spawn '<x>'. Allowed: …`) — never through
+ * `task.disabledAgents`, which every child inherits.
+ *
+ * TWO KNOWN omp LIMITATIONS, where launch holds what the declaration says and omp's
+ * own dispatch does not: an explicitly empty `spawns` with `task` among the `tools`
+ * (omp's discovery reads it as absent, then infers `*`, so a dispatched child may
+ * spawn anyone), and `read-summarize: true` (omp's dispatch applies only `false`, so
+ * a dispatched child keeps the session's setting). For every other value, launch
+ * holds what omp's dispatch gives a child.
  *
  * The active tools are never touched: the session holds exactly what omp grants for
  * the operator's selection, so without `task` it cannot dispatch at all, and a
@@ -1414,9 +1425,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `// Offers each capability of the installed \`${CLI_BIN}\` command that explains itself as one`,
         '// tool, composed at session load from what the command explains of it, and run by that',
         '// command on every call; and starts the main session as an agent declaration omp',
-        '// discovers, by `omp --agent <name>`, holding the whole declaration as omp dispatch would:',
-        '// its text, model, effort, skills loaded at start, dispatch targets, read summarisation,',
-        "// advisor and pre-planning, and no default personality; the operator's own flags win.",
+        '// discovers, by `omp --agent <name>`, holding the whole declaration as a dispatched child',
+        '// holds it: its text, model, effort, skills loaded at start, dispatch targets, read',
+        "// summarisation, advisor and pre-planning, and no default personality; the operator's own",
+        "// flags win. Two values omp's own dispatch drops are held as declared: an empty `spawns`",
+        '// with `task` among the tools (no one), and `read-summarize: true` (on).',
         '//',
         '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
         "// installed command's own explanation, so a newer installed package changes the tools in",
@@ -1588,23 +1601,31 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         "// The declaration omp's task dispatch runs by `name` from `cwd`, discovered afresh by omp",
         '// itself (nearest project `.omp/agents/`, then the user agent dir, then extension packages,',
-        '// plugins and bundled agents; first name wins), with the mark its front matter declares.',
-        '// A bundled declaration has no file (`embedded:<name>.md`), and omp declares no mark on one.',
-        'async function discover(',
-        '  name: string,',
-        '  cwd: string,',
-        '): Promise<{ found?: Omit<Launched, "spawns">; names: string[] }> {',
+        '// plugins and bundled agents; first name wins), with the mark its front matter declares and',
+        '// whom it may dispatch. A bundled declaration has no file (`embedded:<name>.md`): omp declares',
+        '// no mark on one, and its `spawns` is the one discovery gives.',
+        'async function discover(name: string, cwd: string): Promise<{ found?: Launched; names: string[] }> {',
         '  const agents: AgentDefinition[] = (await discoverAgents(cwd)).agents;',
         '  const names = agents.map((a) => a.name);',
         '  const declaration = agents.find((a) => a.name === name);',
         '  if (declaration === undefined) return { names };',
         '  const file = declaration.filePath;',
-        '  const said =',
+        '  const said: Record<string, unknown> =',
         '    file !== undefined && isAbsolute(file) && existsSync(file)',
-        '      ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter.mark',
-        '      : undefined;',
-        '  const mark = typeof said === "string" && said.trim() !== "" ? said.trim() : undefined;',
-        '  return { found: { declaration, mark }, names };',
+        '      ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter',
+        '      : {};',
+        '  const mark = typeof said.mark === "string" && said.mark.trim() !== "" ? said.mark.trim() : undefined;',
+        '  // Whom it may dispatch, as dispatch passes `spawns` to a child: `*` anyone, a list exactly',
+        "  // those, absent as omp's discovery reads it (`*` with `task` among the tools, else no one).",
+        '  // An explicitly empty `spawns` (an empty list or a blank string) is no one, even with `task`:',
+        "  // omp's discovery reads it as absent and so as `*`, which omp's own dispatch then honours.",
+        '  const raw = said.spawns;',
+        '  const none = Array.isArray(raw) ? raw.length === 0 : typeof raw === "string" && raw.trim() === "";',
+        '  const spawns = none ? undefined : declaration.spawns;',
+        '  const policy = resolveSpawnPolicy(',
+        '    spawns === undefined ? "" : Array.isArray(spawns) ? spawns.join(",") : spawns,',
+        '  );',
+        '  return { found: { declaration, mark, spawns: policy }, names };',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -1678,7 +1699,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const keep = <T>(setting: Overridable<T>, value: T) => undo.push(hold(scope, setting, value));',
         '    // No default personality, as every dispatched child runs.',
         '    keep(cfgPersonality, "none");',
-        "    // Summarised reads: on or off as declared; undeclared, the session's own setting.",
+        "    // Summarised reads: on or off as declared; undeclared, the session's own setting. (omp's",
+        '    // own dispatch applies only `false`; launch holds `true` as the declaration says.)',
         '    if (declaration.readSummarize !== undefined) keep(cfgReadSummarizeEnabled, declaration.readSummarize);',
         "    // The advisor: `task.agentAdvisor` first, then the declaration's `advisor`; none without",
         "    // either, as for a child. A pattern is that advisor's model, expanded against the",
@@ -1739,7 +1761,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      ctx.ui.notify(message, "error");',
         '      return;',
         '    }',
-        '    const { declaration, mark } = found;',
+        '    const { declaration } = found;',
         "    // The session's own settings: every resolution reads them and every override lands there.",
         '    const scope = findScopedSettings() ?? settings;',
         "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
@@ -1774,13 +1796,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      : (declaration.thinkingLevel ?? resolved.thinkingLevel);',
         '    if (operator.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
         '    await settle(scope, declaration, operator);',
-        '    ctx.ui.setStatus(AGENT_STATUS, mark === undefined ? name : `${mark} ${name}`);',
-        '    // Whom it may dispatch, as dispatch passes `spawns` to a child: absent is no one.',
-        '    const spawns = declaration.spawns;',
-        '    launched = {',
-        '      ...found,',
-        '      spawns: resolveSpawnPolicy(spawns === undefined ? "" : Array.isArray(spawns) ? spawns.join(",") : spawns),',
-        '    };',
+        '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
+        '    launched = found;',
         '  }',
         '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',

@@ -1071,15 +1071,54 @@ describe('omp capability interface', () => {
       expect(
         await fire('before_subagent_spawn', 'sub', spawning('pilot')),
       ).toBeUndefined();
-      // As dispatch passes `spawns` to a child: empty or absent is no one, `*` anyone.
+      // As dispatch passes `spawns` to a child: `*` anyone, absent as omp's discovery reads
+      // it (`*` with `task` among the tools, else no one). An explicitly empty `spawns` in
+      // the file is no one, though omp's discovery reads it as absent and so as `*`.
       const none =
         "Cannot spawn 'pilot'. Allowed: none (spawns disabled for this agent)";
-      for (const [spawns, refusal] of [
-        [[], none],
-        [undefined, none],
-        ['*', undefined],
+      const declared = (
+        said: Record<string, unknown>,
+        discovered: unknown,
+      ) => ({
+        ...WHOLE(),
+        ...declare(
+          {
+            name: 'cartographer',
+            description: 'Charts the estuary.',
+            model: 'fixture/declared',
+            ...said,
+          },
+          'Map the estuary before drawing its shipping routes.',
+        ),
+        spawns: discovered,
+      });
+      const withTask = ['read', 'task'];
+      for (const [label, agent, refusal] of [
+        [
+          'empty list with task',
+          declared({ tools: withTask, spawns: [] }, '*'),
+          none,
+        ],
+        [
+          'blank string with task',
+          declared({ tools: withTask, spawns: ' ' }, '*'),
+          none,
+        ],
+        ['absent without task', declared({ tools: ['read'] }, undefined), none],
+        ['absent with task', declared({ tools: withTask }, '*'), undefined],
+        ['*', declared({ tools: withTask, spawns: '*' }, '*'), undefined],
+        [
+          'bundled, as discovered',
+          {
+            ...WHOLE(),
+            filePath: 'embedded:cartographer.md',
+            source: 'bundled',
+            spawns: '*',
+          },
+          undefined,
+        ],
       ] as const) {
-        omp.agents = [{ ...WHOLE(), spawns }];
+        omp.agents = [agent];
         const launched = await started('cartographer');
         await launched.fire('session_start');
         expect(
@@ -1088,7 +1127,7 @@ describe('omp capability interface', () => {
             undefined,
             spawning('pilot'),
           ),
-          String(spawns),
+          label,
         ).toEqual(
           refusal === undefined ? undefined : { block: true, reason: refusal },
         );
