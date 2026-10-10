@@ -145,25 +145,80 @@ it.each(['define', 'decide'] as const)(
   },
 );
 
-it('example 10: a context’s own words raise no warning on append or inspection', () => {
-  // Binds the given sentence and “a context’s own words are never leakage”.
-  define('check', 'A judgment of whether an example holds.');
-  define('recording', 'An account of work that happened.');
-  define('example', 'A concrete case of what must hold.');
-  const answer = define(
-    'acceptance',
-    'a check accepts a recording that satisfies its example',
-  ) as { warnings?: Warning[] };
-  expect(answer.warnings ?? []).toHaveLength(0);
-  const inspected = concepts('leakage', '--context', context) as {
-    warnings: Warning[];
-  };
-  expect(
-    inspected.warnings.some(
-      ({ passage }) =>
-        passage.kind === 'concept' &&
-        passage.context === context &&
-        passage.name === 'acceptance',
-    ),
-  ).toBe(false);
+it('example 10: listed tool names are exempt only in the context that owns them', () => {
+  // Architect's re-illustration of 2026-10-10: bind “own concepts are named
+  // with words the leakage rules list”, “raises no warning” and “the same
+  // words in a context that has no such concept are warned about”.
+  // omp and git are both listed tool names, not merely ordinary vocabulary.
+  const names = ['omp', 'git'];
+  concepts(
+    'context',
+    'delivery',
+    '--subject',
+    'How the work reaches its harness.',
+  );
+  for (const name of names) {
+    concepts(
+      'define',
+      name,
+      '--context',
+      'delivery',
+      '--wording',
+      'A means by which the work reaches its destination.',
+      '--reason',
+      'Name a delivery concept.',
+    );
+  }
+  const wording = 'The work reaches omp and git.';
+  for (const scope of ['delivery', context]) {
+    const appended = concepts(
+      'define',
+      'reach',
+      '--context',
+      scope,
+      '--wording',
+      wording,
+      '--reason',
+      'State what the work reaches.',
+    ) as { warnings?: Warning[] };
+    const inspected = concepts('leakage', '--context', scope) as {
+      warnings: Warning[];
+    };
+    const passage = { kind: 'concept', context: scope, name: 'reach' };
+    const warnings = inspected.warnings.filter(
+      (warning) =>
+        warning.passage.kind === passage.kind &&
+        warning.passage.context === passage.context &&
+        warning.passage.name === passage.name,
+    );
+    for (const name of names) {
+      if (scope === 'delivery') {
+        // Only the exempt spans are fixed; unrelated warnings are not forbidden.
+        expect
+          .soft(
+            (appended.warnings ?? []).some(({ words }) => words.includes(name)),
+          )
+          .toBe(false);
+        expect
+          .soft(warnings.some(({ words }) => words.includes(name)))
+          .toBe(false);
+      } else {
+        expect
+          .soft(appended.warnings)
+          .toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ words: expect.stringContaining(name) }),
+            ]),
+          );
+        expect.soft(warnings).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              passage: expect.objectContaining(passage),
+              words: expect.stringContaining(name),
+            }),
+          ]),
+        );
+      }
+    }
+  }
 });
