@@ -1,0 +1,14 @@
+{
+  "id": "01M4KXXATZ1YHQE0196RCKCGMR",
+  "at": "2026-10-10T22:11:06.719Z",
+  "kind": "decide",
+  "decisionId": "0064",
+  "context": "agents",
+  "title": "Typed handoffs, carrying example 19",
+  "situation": "Every role's profile names its assignment and deliverable only as text, so nothing checked that a lead was handed a cut brief; example 19's scenario omitted it and three live batches passed before the omission was found (0062). With its real inputs (a concept brief and its assayers' verdicts as returned), the lead stated every concept's outcome in 5 of 5 runs, but named files in 5 of 5: only those its assayers' verdicts cited as evidence, relayed faithfully. Assayers rightly cite the work, since their findings go back to builders; the translation into the design's terms belongs at the lead's deliverable to the architect, which free text has not held. Findings that judgment does not count as defects (hardening notes) and each cut's efficiency figures have so far lived only in reports and been lost.",
+  "decision": "Each assignment and deliverable value carries a schema in the design's terms: a cut brief holds the cut's concepts, examples and decisions in force; the lead's deliverable holds, per example, its concept and outcome with its evidence named by example and check, the assayers' verdicts, the cut's efficiency figures, and its hardening notes, recorded durably where reconstitution reads them. The binding checks the assignment when an agent is dispatched or launched and refuses one that does not fit, naming what is missing, and binds the deliverable as the harness's own output schema. Behavioral evaluation scenarios are built from the same schema, so one that omits a role's inputs fails at once.",
+  "consequences": "Realized together with 0059 in one cut; example 19 of the execution cut is carried into it as its first example, its scenario as rebound under 0062. The architect recommends this cut right after the execution cut, ahead of the delivery cut; the order is the operator's to confirm (0057 does not yet list it).",
+  "status": "open",
+  "supersedes": "0063",
+  "supersedesEntry": "01M4KX1JB3RRXFRDK3Z1PWWZ06"
+}

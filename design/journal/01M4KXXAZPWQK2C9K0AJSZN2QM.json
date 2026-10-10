@@ -1,0 +1,13 @@
+{
+  "id": "01M4KXXAZPWQK2C9K0AJSZN2QM",
+  "at": "2026-10-10T22:11:06.870Z",
+  "kind": "decide",
+  "decisionId": "0066",
+  "context": "workflow",
+  "title": "An older reader and a newer journal",
+  "situation": "The concept journal is append-only and travels with the repository, but the runtime that reads it refuses any entry kind it does not know: a journal holding one classify entry is unreadable to every runtime built before classify, so a host, a teammate or an earlier branch's build stops being able to reconstitute. Event-sourced systems normally keep old readers working (a tolerant reader that skips what it does not know, or versioned entries).",
+  "decision": "Settle how a runtime treats an entry kind it does not know: refuse, as now; or read past it, reporting that the journal holds entries this runtime cannot interpret and that its views may be incomplete.",
+  "consequences": "Belongs to the delivery cut, with upgrade (0029).",
+  "status": "open",
+  "supersedes": null
+}
