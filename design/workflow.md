@@ -30,7 +30,7 @@ Concepts change only by supersession: a new version with its reason, recorded in
 - **proportionality** · the ceremony of a cut scales with its size and risk: a small cut is one work package with one builder and one review, so the method never costs more than the change. · _built from:_ work package
 - **release** · the operator admits a cut's change to the project, the one act no agent performs. · _primitive_
 - **whole check** · every suite of every affected context and every contract, run once per change; each failing run is followed by one round that fixes everything it revealed, then one more run, and rounds repeat until it holds, so the whole is shown to hold without ever re-running it once per fix. · _built from:_ contract
-- **judgment** · once per cut, when the build is green: the held-out examples run, and one reviewer judges what cannot execute and whether the examples still express their concepts; a finding about the work returns to the builders as a failing case and is confirmed by re-running that case or by the reviewer re-judging that finding alone, while a finding that an example no longer expresses its concept goes to the architect as a meaning question, so acceptance is independent and the whole cut is judged once. · _built from:_ held-out example, example
+- **judgment** · once per cut, when the build is green: the held-out examples run, and one reviewer judges what cannot execute and whether the examples still express their concepts; a finding about the work returns to the builders as a failing case and is confirmed by re-running that case or by the reviewer re-judging that finding alone, while a finding that an example no longer expresses its concept goes to the architect as a meaning question, so acceptance is independent and the whole cut is judged once; a check is adequate when it rejects the plausible failure modes its example and its negative recordings name, and a contrived way around it is a hardening note, never a finding against the work. · _built from:_ held-out example, example
 - **build** · builders change their work packages until their visible examples pass, with failing cases as the only feedback, so each round can only come closer. · _built from:_ example, freeze, work package
 - **work package** · the smallest part of a cut's work given to one builder: a set of outputs, the files it writes, that no other builder changes, its commit history included, with the examples of every concept those outputs serve, so no two builders can collide; it is a vertical slice where it can be, satisfying whole examples on its own, and an output two slices both need becomes its own work package that both depend on. · _built from:_ example
 - **dependency graph** · the work packages of a cut and which must finish before which, with no cycles; they are dispatched in topological order, every work package on the same topological level in parallel, so the order and the parallelism are computed from the graph rather than decided again each time. · _built from:_ work package
@@ -50,15 +50,21 @@ Concepts change only by supersession: a new version with its reason, recorded in
 ## Cuts
 
 1. **example substrate** (done): example, held-out example, freeze of examples.
-2. **workflow execution:** roles, lead, builder, reviewer, build, work package, judgment, whole check,
-   proportionality, meaning question.
-3. **never assertions** (follow-up to cut 2, small): the example concept gains the rule that an assertion
-   that something must never happen holds only when it holds in every run, and the example substrate gains an
-   approved example for it, judged against the never assertions cut 2 built.
-4. **capability fidelity and capability port** (delivery context): one implementation behind the cratylus command line, reached in omp through a thin extension adapter; the prerequisite of cut 4.
-5. **concept journal and meaning roles:** concept journal, conceptual design, freeze of concepts, decision
-   rights, architect, illustrator, meaning-holder, operator, illustration, context map. On completion, this
-   file is imported into the concept journal and retired.
-6. **delivery:** owned root, upgrade, install and uninstall at user scope, and retiring the event tap.
-7. **personas:** mav, nico and kino on the new roles (corpus context); kino holds the platform and production
+2. **workflow execution** (paused, green, re-cut by decision 0015): roles, lead, builder, reviewer, build,
+   work package, judgment, whole check, proportionality, meaning question.
+3. **concept journal** (next, decision 0014): the conceptual design and its decisions kept as an event-sourced
+   journal per bounded context, reached as `cratylus concepts`; this file, `design/delivery.md` and
+   `design/decisions/` are imported into it, with each concept's past versions and reasons.
+4. **execution bookkeeping** (decision 0015): the work package capability takes submitted and updated work
+   packages, checks that every concept is served, hands out computed levels, refuses an empty dispatch, counts
+   whole-check runs per round and flags a round that made no progress; examples 6, 7 and 9 and held-out cases
+   2, 5 and 7 of cut 2 are re-illustrated here as structural examples.
+5. **never assertions and lead refinements** (small): the never-assertion rule and example; sweep on find; an
+   example spanning work packages belongs to the dependent one; offline proof of behavioral checks.
+6. **capability fidelity and capability port** (delivery context): the concept journal and the work package
+   capability reached in omp through a thin extension adapter over the cratylus command line.
+7. **meaning roles:** architect, illustrator, meaning-holder, operator, illustration, context map, decision
+   rights, freeze of concepts.
+8. **delivery:** owned root, upgrade, install and uninstall at user scope, and retiring the event tap.
+9. **personas:** mav, nico and kino on the new roles (corpus context); kino holds the platform and production
    contexts of a film-production consumer.
