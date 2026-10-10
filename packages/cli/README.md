@@ -13,12 +13,12 @@ It needs Node 22 or later.
 
 ```sh
 cratylus install                     # the guided run: put the default corpus on this machine, no project needed
-mav                                  # start an installed agent by its name, once install has linked its command
+omp --agent mav                      # start a session as an installed agent, on omp
 cratylus uninstall --harness claude  # take away what install placed (or omp)
 ```
 
-The sections that follow are for whoever installs: the guided install, starting an agent by its
-name, the badge on the status line, where Claude Code and omp differ, the host's model routing on
+The sections that follow are for whoever installs: the guided install, starting a session as an
+agent, the badge on the status line, where Claude Code and omp differ, the host's model routing on
 omp, the host runtime config, taking it away again, and what a command's exit code and streams
 mean. After them comes the reference, which is the help of every command once: install and
 uninstall, then the capabilities that agents and skills call, then the commands for writing a corpus
@@ -48,19 +48,18 @@ and installs only the practices it is named, or every practice when told `--all`
 
 ### The decisions
 
-Four decisions are yours, each with the flag that settles it (a decision given by flag is never
+Three decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
-| Decision                              | Flag                                                     | Asked when                                                       | Where nothing is asked               |
-| ------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ |
-| Which harness                         | `--harness <claude\|omp>`                                | absent, and the host does not have exactly one supported harness | none: refused                        |
-| Which practices                       | `--practices <name,…>` / `--all`                         | neither is given, on a terminal                                  | none: refused, whatever `--yes` says |
-| Which model each role routes to       | `--model-roles <role=model,…\|default>`                  | there are held roles the host has not routed itself              | cratylus's own routing               |
-| Whether to link their launch commands | `--link-persona-commands` / `--no-link-persona-commands` | there is a command to place or adopt                             | none linked                          |
+| Decision                        | Flag                                    | Asked when                                                       | Where nothing is asked               |
+| ------------------------------- | --------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ |
+| Which harness                   | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness | none: refused                        |
+| Which practices                 | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                  | none: refused, whatever `--yes` says |
+| Which model each role routes to | `--model-roles <role=model,…\|default>` | there are held roles the host has not routed itself              | cratylus's own routing               |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
 question first asks whether to choose a model per role at all, and answering no keeps the default
-routing. Linking defaults to no.
+routing.
 Unless a flag settled every decision, the preview ends with that last question. Answering no, or
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
@@ -85,7 +84,7 @@ an answer to one. An empty choice is refused as well (`--practices ''`, or every
 since none is not every; to take it all out, run `cratylus uninstall --harness <h>`.
 
 Installing again is how you change the choice. A practice installed before and not chosen now is
-removed, with what no chosen practice still carries and its launch commands.
+removed, with what no chosen practice still carries.
 
 ### Which model each role routes to
 
@@ -107,10 +106,11 @@ Install places the agent definitions and guard hooks under the harness's home (`
 `~/.omp`), the skills (on omp, under `~/.agents`), a few shared files under `~/.agents`, and the host
 runtime config (`~/.cratylus.json`). It edits two of the host's own files, and only adds to them: on
 Claude Code `~/.claude/settings.json` (the guard hooks it registers, and the status line), on omp
-`~/.omp/agent/config.yml` (`modelRoles`, and the status line). With `--link-persona-commands` it
-also links launch commands into `~/.local/bin`. The run names every host file it edits and every
-directory outside the harness's home that it writes to, and records all of it in the harness's
-deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away exactly that.
+`~/.omp/agent/config.yml` (`modelRoles`, and the status line). It places no launcher and links no
+command: a session is started as an agent by the harness itself. The run names every host file it
+edits and every directory outside the harness's home that it writes to, and records all of it in the
+harness's deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away
+exactly that.
 `--home <dir>` installs for the home `<dir>` in place of yours: the harness's files go under
 `<dir>/.claude` or `<dir>/.omp`, the shared files under `<dir>/.agents` and the runtime config in
 `<dir>/.cratylus.json`.
@@ -135,14 +135,19 @@ The same extension starts a session as any agent declaration omp discovers: `omp
 then extension packages, plugins and omp's bundled agents, the first of a name winning. A declaration
 is a markdown file whose front matter gives `name`, `description`, `model` (an omp model selector),
 `thinking-level`, optionally `tools`, and `mark`, a short string such as an emoji, followed by its
-body. The session runs on the declaration's model and thinking level; every turn's system prompt
-carries the declaration, its name and description as a sentence and then its body; and the status
-line shows `<mark> <name>`, or the name alone without a mark. The declaration is read afresh for
-each new session. The tools stay yours: a declaration's `tools` are for dispatch only, and when you
-pass `--tools` the session has exactly that selection (read as omp reads its own command line), the
-extension's own tools included only if you name them; without `--tools` nothing changes. A name omp
-does not discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before
-any session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
+body. The session runs on the model and thinking level omp's own `task` dispatch would run the
+declaration on, resolved by omp's own resolver: its `model` selectors, a role alias such as
+`@slow` expanded to the host's `modelRoles` entry, and the thinking level a selector carries
+(`provider/model:high`, written in the declaration or in the role's configured value) ahead of
+`thinking-level`. A `--model` or `--thinking` you pass yourself wins over the declaration's, each for
+its own part, and the declaration's body is carried either way. Every turn's system prompt carries
+the declaration, its name and description as a sentence and then its body; and the status line
+shows `<mark> <name>`, or the name alone without a mark (a bundled omp agent, such as `scout`, has
+no mark). The declaration is read afresh for each new session. The tools stay yours: the extension
+never changes the session's tools, so `omp --agent <name> --tools …` holds exactly what plain
+`omp --tools …` holds, and a declaration's `tools` are for dispatch only. A name omp does not
+discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before any
+session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
 prompt or the status line.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
@@ -179,52 +184,37 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
   says, or run install from a directory with no config.
 - `cancelled; nothing was written, so run it again to install`: you cancelled a question.
 
-## Starting an agent by its name
+## Starting a session as an agent
 
-An installed agent starts as the session itself, with its own definition as the system prompt, from
-a command of its name:
-
-```sh
-mav            # start the agent mav
-mav -p 'hi'    # every other word on the command line is the harness's own flag
-```
-
-Install makes those commands when it is told to. `--link-persona-commands` links
-`~/.local/bin/<name>` to the harness's launcher for every installed agent, and
-`--no-link-persona-commands` links none without asking. With neither, a terminal install asks (the
-question says how many commands it will link and how many it will adopt, and the answer defaults to
-no), and a piped or scripted install links none and ends by telling you to run it again with
-`--link-persona-commands`. `--verbose` lists a `would place` line per agent when nothing is linked,
-and `--dry-run` places nothing either way. Install warns when `~/.local/bin` is not on `PATH`.
-
-The launcher is `~/.omp/agent/omp-agent` on omp and `~/.claude/personas/_session/claude-agent` on
-Claude Code, and it takes the agent's name itself, so a command you have not linked still works:
+An installed agent starts as the session itself through the harness's own flag:
 
 ```sh
-~/.claude/personas/_session/claude-agent mav
-~/.omp/agent/omp-agent mav
+omp --agent mav            # start the agent mav
+omp --agent mav -p 'hi'    # every other word on the command line is omp's own flag
+claude --agent mav         # the same on Claude Code
 ```
 
-Install never overwrites. A name that is taken by a file, by another program's link, or by the other
-harness's launcher is left as it is; install warns, naming what is there, and links the rest. A link
-you made by hand to this harness's own launcher is adopted rather than re-created: install records
-it so that uninstall can take it, and leaves the link itself untouched. An agent has one command
-across harnesses: whichever install links a name first owns it, and the other harness's install
-warns that the first harness's launcher holds it. No suffixed name is made. A second install reports
-the links it placed as `present` and changes nothing, and an agent left out on a re-install has its
-command unlinked again, if install placed it. The links are recorded under `personaLinks` in the
-deploy manifest, and `cratylus uninstall` removes them again.
+Install places no launcher and links no command for it: on omp, `--agent` is cratylus's extension
+(see what install places), and it starts any declaration omp discovers, not only the installed
+agents. An earlier install placed a launcher (`~/.omp/agent/omp-agent`), a `--config` overlay and a
+badge module per agent under `~/.omp/agent/personas/`, and, when asked, a command per agent in
+`~/.local/bin` linked to the launcher. The next `cratylus install` removes them: the files are
+pruned as files the deploy manifest records and this install no longer writes, and each linked
+command the manifest records under `personaLinks` is unlinked while it still points into the
+harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
+removes them too.
 
 ## The badge on the status line
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
 a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
-subagent's, and it carries no color. `cratylus install` places the badge for each agent it installs
-and then makes the host's status line show it. What that takes differs by harness, and the host's own
-configuration is only ever added to. `--dry-run` says what would be set and writes nothing.
+subagent's, and it carries no color. `cratylus install` makes the host's status line show it. What
+that takes differs by harness, and the host's own configuration is only ever added to. `--dry-run`
+says what would be set and writes nothing.
 
-**On Claude Code** the status line is one command, `statusLine` in `settings.json`. Where the host
-has none, install sets the badge worker as that command
+**On Claude Code** install places a badge for each agent it installs. The status line is one
+command, `statusLine` in `settings.json`. Where the host has none, install sets the badge worker as
+that command
 (`sh "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/personas/_session/cratylus-status-line.sh"`) and says so. Where the host has its
 own, install wraps it: the worker runs the host's command and puts the badge and a space in front of
 the first line it prints, and in a session that runs no installed agent its output reaches the status
@@ -234,11 +224,15 @@ line byte for byte, so nothing the host shows is taken away. Every other key of 
 badge can show until it is fixed. The worker needs `jq` to know which agent runs; without it the
 worker prints the host's output and no badge. `claude -p` runs no status line at all.
 
-**On omp** an extension's status shows inside the status line only where the host's layout lists
-omp's `status` segment, and omp reads a segment list (`statusLine.leftSegments`) only under
-`statusLine.preset: custom`. Under any other preset, the default one included, the list is ignored
-and the badge renders on a row beneath the status line. Install edits `~/.omp/agent/config.yml`
-(`config.yaml` where that is the file omp reads) according to the preset the host is on:
+**On omp** the badge is the status cratylus's extension sets for a session started with
+`omp --agent` (the section on starting a session as an agent), so install places no badge of its
+own, and makes room for it wherever it places that extension, whether or not the corpus delivers any
+agent: any session may be started as any declaration omp discovers. An extension's status shows
+inside the status line only where the host's layout lists omp's `status` segment, and omp reads a
+segment list (`statusLine.leftSegments`) only under `statusLine.preset: custom`. Under any other
+preset, the default one included, the list is ignored and the badge renders on a row beneath the
+status line. Install edits `~/.omp/agent/config.yml` (`config.yaml` where that is the file omp
+reads) according to the preset the host is on:
 
 - **No preset set** (a file with no `statusLine` included): install writes `preset: custom` with the
   default preset's own left segments plus `status`, its right segments and its segment options, so
@@ -264,16 +258,7 @@ A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting 
 mapping, an alias, a list split across lines in flow style) is reported and left as it is, apart
 from that one value, and the install still succeeds. Where `statusLine` is an alias to a mapping
 written elsewhere, install cannot turn the row back on or list `status` there, and the report says
-so. The badge is not lost: when omp starts the session, the badge module reads the host's
-`config.yml` as text, and where `showHookStatus: false` is written and no `status` segment is
-listed, it also sets the badge in a widget beneath the editor, which no status setting hides. You
-see `✈️ mav` there in place of the status row; setting `showHookStatus` to true or listing `status`
-puts it back in the status line, and the widget is no longer set. Where the row is shown or `status`
-is listed, the badge appears once, in the status line, as before.
-
-The badge needs omp 18.3.2 or later to tell a top-level session from a subagent's (`ctx.agent`). On
-an older omp it shows only where omp reports its interactive terminal host, and where it cannot
-tell, omp shows one line saying so, once, instead of the badge.
+so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 ## Where Claude Code and omp differ
 
@@ -288,19 +273,22 @@ and warns where it falls short; they are not the same, and this is what a user m
   (`.claude/settings.json`), and omp has no such file. It taps the requested events that have a
   native peer, lists and warns about each one that has none as skipped, and refuses, writing
   nothing, when none can be tapped. On omp it refuses and says why.
-- **Launcher and badge.** Both harnesses have a badge and a launcher. omp has no `--agent` flag, so
-  its single `omp-agent` launcher starts the agent as a main session; on Claude Code the launcher is
-  `claude-agent`. The sections on starting an agent and on the badge say the rest.
+- **Starting as an agent and the badge.** Both harnesses start a session as an agent with their own
+  `--agent` flag: Claude Code natively, omp through cratylus's extension. Neither has a launcher.
+  The sections on starting a session as an agent and on the badge say the rest.
 - **Skills at the start of a session.** A `claude --agent` main session starts with the agent's
   skills: Claude Code preloads an agent's skills only for a dispatched subagent, so the definition
-  carries a `SessionStart` hook per skill that prints its body, and omp's launcher inlines them.
-  Claude Code caps one hook's output at 10,000 characters, so a skill over the cap is named under
-  `## Required reading` by its hook instead of printed, and the agent loads it with the Skill tool
-  on demand. Install warns once per such skill and weighs it against the home it installs under,
-  since the path is part of the output.
+  carries a `SessionStart` hook per skill that prints its body. Claude Code caps one hook's output
+  at 10,000 characters, so a skill over the cap is named under `## Required reading` by its hook
+  instead of printed, and the agent loads it with the Skill tool on demand. Install warns once per
+  such skill and weighs it against the home it installs under, since the path is part of the
+  output. An `omp --agent` session reaches its skills through omp's own skill discovery, as any
+  omp session does.
 - **Guards.** A guard judges an act against the contract of the agent that performs it, and only in
-  the main session of an agent that composes it, never in a subagent that agent dispatches. A bare
-  `claude` or `omp` session is not judged, which makes starting one the off switch. A harness that
+  the main session of an agent that composes it, never in a subagent that agent dispatches. On omp
+  a guard composed for one agent is placed in that agent's own scope, which an `omp --agent`
+  session does not load yet, so there it does not judge. A bare `claude` or `omp` session is not
+  judged, which makes starting one the off switch. A harness that
   cannot name the running agent carries a guard as a steer, the stated rule in place of the
   enforced one, and install warns once per guard. A guard whose judge cannot run lets the turn
   through and says so where you read it, never as a clean verdict. A refusal always names its way
@@ -410,7 +398,7 @@ the harness's deploy manifest (`.forge/deploy-manifest.json`) and by nothing els
 records a sha-256 digest of every file it wrote, the hook commands it registered in `settings.json`,
 the status line it set or wrapped (with your original command), the lines it added to omp's
 `config.yml` (the `modelRoles` entries and the status line layout), a digest of each part it
-wrote into the runtime config, and the launch commands it linked or adopted.
+wrote into the runtime config, and the persona commands an earlier install linked or adopted.
 Uninstall removes:
 
 - every recorded file whose bytes still hash to that digest, and any directory that leaves empty;
@@ -418,7 +406,8 @@ Uninstall removes:
   other key as you had it, or no `statusLine` where you had none;
 - the lines it added to `config.yml`, so the file is what you wrote, byte for byte, your own
   `modelRoles` entries included (a `config.yml` install created goes with its last line);
-- the launch commands it placed or adopted, and only those;
+- the persona commands an earlier install placed or adopted while they still point into the
+  harness's home, and only those;
 - this harness's stanza of the runtime config (`~/.cratylus.json`, or `$AGENT_RUNTIME_CONFIG`), and
   with the last installed harness's stanza the corpus's parts too, the event vocabulary and the
   configuration of each capability the corpus configured, each while it is still what install
@@ -429,7 +418,7 @@ It prints a count of what it removed and each thing it left because the host pla
 with its reason; `--verbose` lists every item removed too. It ends by telling you to restart the
 harness. A placed file you edited since install is left, and so is one recorded before digests were
 kept (an edit cannot be ruled out), a hook registration whose entry now also runs a command of yours,
-a status line you have pointed at another command, a launch command you replaced, and a file the
+a status line you have pointed at another command, a persona command you replaced, and a file the
 other harness's install still records. A part of the runtime config you changed since install (a
 capability's configuration you edited, an event you added to the vocabulary) is left too, and so is
 every key you placed in it, each named. A `config.yml` line you rewrote is left too, and only that
@@ -471,18 +460,16 @@ Install the bundled corpus into a harness on this machine, asking what you have 
 cratylus install [options]
 ```
 
-| Flag                         | What it does                                                                                                                                                                                   |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`           | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
-| `--practices <names>`        | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
-| `--all`                      | Install every practice, without asking                                                                                                                                                         |
-| `--link-persona-commands`    | Link a command named after each installed persona into ~/.local/bin (default: asked; else none)                                                                                                |
-| `--no-link-persona-commands` | Link no persona commands, without asking                                                                                                                                                       |
-| `--model-roles <roles>`      | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)                                                   |
-| `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
-| `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                      |
-| `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                           |
-| `--home <dir>`               | The home directory the harness's directory is under (default: your home directory)                                                                                                             |
+| Flag                    | What it does                                                                                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`      | The harness to install into (default: the one this machine has, else asked) (choices: "claude", "omp")                                                                                         |
+| `--practices <names>`   | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                               |
+| `--all`                 | Install every practice, without asking                                                                                                                                                         |
+| `--model-roles <roles>` | The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)                                                   |
+| `-y, --yes`             | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
+| `--verbose`             | Also print the per-file detail of the run                                                                                                                                                      |
+| `--dry-run`             | Print what would be placed and stop, writing nothing                                                                                                                                           |
+| `--home <dir>`          | The home directory the harness's directory is under (default: your home directory)                                                                                                             |
 
 ### `cratylus uninstall`
 

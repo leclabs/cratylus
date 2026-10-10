@@ -23,17 +23,17 @@ You need Node 22 or later, and Claude Code or omp run at least once on this mach
    ```
 
    The run is guided. It asks only what you have not said: which harness, which practices (the ways
-   of working it offers, each installed as one choice), and which model each role routes to. It asks
-   whether to link a launch command for each installed agent, which `--link-persona-commands` answers
-   up front. It shows what it will place, and places it once you confirm.
+   of working it offers, each installed as one choice), and which model each role routes to. It
+   shows what it will place, and places it once you confirm.
 
-3. Start an installed agent by its name, where install linked its command:
+3. Start a session as an installed agent, through the harness itself:
 
    ```sh
-   mav
+   omp --agent mav
    ```
 
-   Any other word on the command line is the harness's own flag.
+   Any other word on the command line is the harness's own flag (`claude --agent mav` on Claude
+   Code).
 
 4. Take it away again, whenever you like:
 
