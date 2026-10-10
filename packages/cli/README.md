@@ -111,6 +111,23 @@ Claude Code `~/.claude/settings.json` (the guard hooks it registers, and the sta
 also links launch commands into `~/.local/bin`. The run names every host file it edits and every
 directory outside the harness's home that it writes to, and records all of it in the harness's
 deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away exactly that.
+`--home <dir>` installs for the home `<dir>` in place of yours: the harness's files go under
+`<dir>/.claude` or `<dir>/.omp`, the shared files under `<dir>/.agents` and the runtime config in
+`<dir>/.cratylus.json`.
+
+On omp install also places cratylus's own extension, `~/.omp/agent/extensions/cratylus.ts`,
+recorded in the manifest with the other session modules. Every omp session loads it, and at load it
+offers each capability that explains itself as one tool, today the concept journal: it asks the
+`cratylus` on `PATH` to explain it (`cratylus concepts --explain`) and offers the tool
+`concept_journal` composed from that answer: its description, a required `verb` among the
+explained verbs, and every explained parameter (where verbs declare one name with different
+schemas, each schema under `anyOf`). A verb that reads asks for read approval, one that appends for
+write. A call runs that `cratylus concepts <verb> …` in the session's directory, every value given
+as one `--flag=value` word so a value starting with `-` arrives as written, and returns its JSON; a
+refusal is the tool's error, in the command's own words. A concept or id starting with `-` cannot be
+given to the command as a word of its own, so the command refuses it. The extension holds nothing
+of the journal itself, so a newer `cratylus` package changes the tool in the next session without
+installing again.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
@@ -449,6 +466,7 @@ cratylus install [options]
 | `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
 | `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                      |
 | `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                           |
+| `--home <dir>`               | The home directory the harness's directory is under (default: your home directory)                                                                                                             |
 
 ### `cratylus uninstall`
 
@@ -530,7 +548,9 @@ cratylus eventTap status [options]
 
 ### `cratylus concepts`
 
-Keep the concept journal: each bounded context’s concepts and decisions, appended with reasons, and the current state to reconstitute from.
+The concept journal. Its verbs are `state`, `design`, `history`, `decisions`, `context`, `define`, `supersede`, `retire`, `decide` and `accept`.
+
+What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
 The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
 
@@ -540,138 +560,118 @@ Nothing under `design/journal` is edited, moved or deleted. In the cratylus repo
 
 #### `cratylus concepts state`
 
-Read the whole state of each context in one answer, to reconstitute from: its live concepts (current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled).
-
 ```sh
 cratylus concepts state [options]
 ```
 
-| Flag                | What it does              |
-| ------------------- | ------------------------- |
-| `--context <value>` | Only this bounded context |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
 
 #### `cratylus concepts design`
-
-Show the current design of each context: its live concepts, competing versions and retired concepts.
 
 ```sh
 cratylus concepts design [options]
 ```
 
-| Flag                | What it does              |
-| ------------------- | ------------------------- |
-| `--context <value>` | Only this bounded context |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
 
 #### `cratylus concepts history`
-
-Show every version of one concept in append order, each with its reason, exactly as recorded.
 
 ```sh
 cratylus concepts history [options] <concept>
 ```
 
-| Flag                | What it does                                                        |
-| ------------------- | ------------------------------------------------------------------- |
-| `--context <value>` | The bounded context it belongs to, one recorded by concepts context |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
 
 #### `cratylus concepts decisions`
-
-List the decisions in the order recorded, each open, accepted or superseded.
 
 ```sh
 cratylus concepts decisions [options]
 ```
 
-| Flag                | What it does                               |
-| ------------------- | ------------------------------------------ |
-| `--context <value>` | Only the decisions of this bounded context |
-| `--open`            | Only the open decisions                    |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
+| `--open`            |
 
 #### `cratylus concepts context`
 
-Record a bounded context with its subject and its place in the context map.
-
 ```sh
-cratylus concepts context [options] <name>
+cratylus concepts context [options] <context>
 ```
 
-| Flag                 | What it does                         |
-| -------------------- | ------------------------------------ |
-| `--subject <value>`  | What the context is about            |
-| `--relation <value>` | How it relates to the other contexts |
+| Flag                 |
+| -------------------- |
+| `--subject <value>`  |
+| `--relation <value>` |
 
 #### `cratylus concepts define`
-
-Record the first version of a concept in one bounded context.
 
 ```sh
 cratylus concepts define [options] <concept>
 ```
 
-| Flag                   | What it does                                                              |
-| ---------------------- | ------------------------------------------------------------------------- |
-| `--context <value>`    | The bounded context it belongs to, one recorded by concepts context       |
-| `--wording <value>`    | What the concept says, in the context’s own words                         |
-| `--reason <value>`     | Why this version is recorded                                              |
-| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive |
+| Flag                   |
+| ---------------------- |
+| `--context <value>`    |
+| `--wording <value>`    |
+| `--reason <value>`     |
+| `--built-from <value>` |
 
 #### `cratylus concepts supersede`
-
-Record a new version of a concept superseding every current version, resolving competing ones and bringing a retired concept back.
 
 ```sh
 cratylus concepts supersede [options] <concept>
 ```
 
-| Flag                   | What it does                                                              |
-| ---------------------- | ------------------------------------------------------------------------- |
-| `--context <value>`    | The bounded context it belongs to, one recorded by concepts context       |
-| `--wording <value>`    | What the concept says, in the context’s own words                         |
-| `--reason <value>`     | Why this version is recorded                                              |
-| `--built-from <value>` | A concept it is built from; repeat once per concept, none for a primitive |
+| Flag                   |
+| ---------------------- |
+| `--context <value>`    |
+| `--wording <value>`    |
+| `--reason <value>`     |
+| `--built-from <value>` |
 
 #### `cratylus concepts retire`
-
-Record the retirement of a concept, with its reason.
 
 ```sh
 cratylus concepts retire [options] <concept>
 ```
 
-| Flag                | What it does                                                        |
-| ------------------- | ------------------------------------------------------------------- |
-| `--context <value>` | The bounded context it belongs to, one recorded by concepts context |
-| `--reason <value>`  | Why the concept is retired                                          |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
+| `--reason <value>`  |
 
 #### `cratylus concepts decide`
-
-Record a decision, open or accepted: its situation, the decision and its consequences.
 
 ```sh
 cratylus concepts decide [options] <id>
 ```
 
-| Flag                     | What it does                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `--context <value>`      | The bounded context it belongs to, one recorded by concepts context                            |
-| `--title <value>`        | The decision’s title                                                                           |
-| `--situation <value>`    | The situation that calls for the decision                                                      |
-| `--decision <value>`     | What is decided                                                                                |
-| `--consequences <value>` | What follows from it                                                                           |
-| `--status <value>`       | How the decision is recorded: open or accepted                                                 |
-| `--supersedes <value>`   | An earlier decision this one supersedes: its id, or its entry where two decisions share the id |
+| Flag                     |
+| ------------------------ |
+| `--context <value>`      |
+| `--title <value>`        |
+| `--situation <value>`    |
+| `--decision <value>`     |
+| `--consequences <value>` |
+| `--status <value>`       |
+| `--supersedes <value>`   |
 
 #### `cratylus concepts accept`
 
-Record the acceptance of an open decision, named by its id or, where two decisions share the id, by its entry; an entry of its own, so the decision’s record never changes.
-
 ```sh
-cratylus concepts accept [options] <ref>
+cratylus concepts accept [options] <id>
 ```
 
-| Flag               | What it does       |
-| ------------------ | ------------------ |
-| `--reason <value>` | Why it is accepted |
+| Flag               |
+| ------------------ |
+| `--reason <value>` |
 
 ## Corpus authoring
 

@@ -1,0 +1,63 @@
+{
+  "name": "never-retires",
+  "target": "never-retires",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "supersede",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "supersede",
+        "concept": "delivery window",
+        "context": "booking",
+        "wording": "A one-hour interval.",
+        "reason": "The interval shortened."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "design",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "design"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "history",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "history",
+        "concept": "delivery window",
+        "context": "booking"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "retire",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "retire",
+        "concept": "delivery window",
+        "context": "booking",
+        "reason": "Wrong act."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

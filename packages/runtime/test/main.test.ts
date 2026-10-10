@@ -98,14 +98,14 @@ const SURFACES: { readonly [C in Capability]: VerbFlags } = {
 
 describe('the capability commands print their help from the declarations', () => {
   it.each(CAPABILITIES)(
-    '%s --help names every verb and its summary',
+    '%s --help names every verb and its purpose',
     async (c) => {
       const { code, out, err } = await run([c, '--help']);
       expect(err).toBe('');
       expect(code).toBe(0);
       expect(out).toContain(CAPABILITY_SUMMARIES[c]);
-      for (const [verb, { summary }] of Object.entries(SURFACES[c])) {
-        const line = out.split('\n').find((l) => l.includes(summary));
+      for (const [verb, { purpose }] of Object.entries(SURFACES[c])) {
+        const line = out.split('\n').find((l) => l.includes(purpose));
         expect(line, `${c} ${verb}`).toMatch(new RegExp(`^ +${verb}\\b`));
       }
     },
@@ -123,8 +123,11 @@ describe('the capability commands print their help from the declarations', () =>
       const { code, out, err } = await run([c, verb, '--help']);
       expect(err).toBe('');
       expect(code).toBe(0);
-      expect(out).toContain(declared.summary);
-      if (positional !== null) expect(out).toContain(positional);
+      expect(out).toContain(declared.purpose);
+      if (positional !== null) {
+        expect(out).toContain(positional);
+        expect(out).toContain(declared.positional?.description);
+      }
       expect(Object.keys(declared.flags).length).toBeGreaterThan(0);
       for (const [flag, { description, takes }] of Object.entries(
         declared.flags,

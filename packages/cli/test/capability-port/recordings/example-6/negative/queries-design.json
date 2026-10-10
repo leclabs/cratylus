@@ -1,0 +1,36 @@
+{
+  "name": "queries-design",
+  "target": "queries-design",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "supersede",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "supersede",
+        "concept": "delivery window",
+        "context": "booking",
+        "wording": "A one-hour interval.",
+        "reason": "The interval shortened."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "history",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "history",
+        "concept": "delivery window",
+        "context": "booking"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

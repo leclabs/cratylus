@@ -1,0 +1,32 @@
+{
+  "name": "device-route",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "docs",
+      "name": "read",
+      "arguments": { "path": "xd://concept_journal" },
+      "result": { "isError": false, "content": [] }
+    },
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "write",
+      "arguments": {
+        "path": "xd://concept_journal",
+        "content": "{\"verb\":\"decide\",\"id\":\"window\",\"context\":\"booking\",\"title\":\"Delivery windows\",\"situation\":\"Schedule deliveries\",\"decision\":\"Windows are one hour.\",\"consequences\":\"Plan by the hour.\",\"status\":\"open\"}"
+      },
+      "result": { "isError": false, "content": [] }
+    },
+    {
+      "kind": "tool",
+      "id": "decisions",
+      "name": "write",
+      "arguments": {
+        "path": "xd://concept_journal",
+        "content": "{\"verb\":\"decisions\"}"
+      },
+      "result": { "isError": false, "content": [] }
+    }
+  ]
+}

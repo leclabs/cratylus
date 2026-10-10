@@ -27,6 +27,8 @@ export {
   type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,
+  ompCapabilityExtensions,
+  OMP_CRATYLUS_MODULE,
   ompDispatchIsolation,
   ompGuardrailExtensions,
   ompIsolationExtensions,

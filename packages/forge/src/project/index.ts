@@ -916,6 +916,19 @@ export async function projectPluginSet(
     }
   }
 
+  // THE CAPABILITY INTERFACE: what offers the runtime's capabilities as tools,
+  // staged by scope as the launch spec is. Optional: an adapter offering no
+  // capability as a tool composes nothing here.
+  for (const s of opts.adapter.capabilitySurface?.() ?? []) {
+    const path = join(
+      ENFORCING_STAGE_DIR,
+      s.scope ?? SESSION_SCOPE,
+      s.filename,
+    );
+    files.push({ path, content: s.content });
+    log(`EMIT capability interface ${path}`);
+  }
+
   let skills = 0;
   let shims = 0;
   let warnedTaplessHarness = false;

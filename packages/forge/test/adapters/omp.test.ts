@@ -11,6 +11,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -19,10 +20,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  OMP_CRATYLUS_MODULE,
   OMP_LAUNCHER_FILE,
   OMP_OVERLAY_FILE,
   agentToOmpMd,
   ompAgentRel,
+  ompCapabilityExtensions,
   ompHarnessAdapter,
   ompLaunchSurface,
 } from '../../src/adapters/omp/index.js';
@@ -523,6 +526,234 @@ describe('omp launch spec', () => {
       expect(prompt).not.toContain('# Skill:');
       expect(prompt).not.toContain('## Required reading');
       expect(() => readFileSync(home.reads)).toThrow();
+    });
+  });
+});
+
+describe('omp capability interface', () => {
+  it('emits ONE module, named for cratylus, placed where a plain omp loads it', () => {
+    const surface = ompHarnessAdapter.capabilitySurface?.() ?? [];
+    expect(surface.map((s) => [s.scope, s.filename])).toEqual([
+      [SESSION_SCOPE, OMP_CRATYLUS_MODULE],
+    ]);
+    expect(OMP_CRATYLUS_MODULE).toBe('cratylus.ts');
+    expect(
+      ompHarnessAdapter.scopedRel?.(OMP_CRATYLUS_MODULE, SESSION_SCOPE),
+    ).toBe('agent/extensions/cratylus.ts');
+  });
+
+  it('asks the installed command for each interface and carries none of its own', () => {
+    const [module] = ompCapabilityExtensions();
+    const content = module?.content ?? '';
+    expect(content).toContain('const COMMAND = "cratylus";');
+    expect(content).toContain(
+      'const CAPABILITIES: readonly string[] = ["concepts"];',
+    );
+    expect(content).toContain('[capability, "--explain"]');
+    // No verb, journal location or entry field of a capability is spelled here.
+    for (const word of [
+      'supersede',
+      'retire',
+      'decide',
+      'design/journal',
+      'concept journal',
+    ])
+      expect(content).not.toContain(word);
+  });
+
+  describe('composed from a stand-in installed command', () => {
+    interface Registered {
+      name: string;
+      parameters: {
+        properties: Record<string, Record<string, unknown>>;
+        required: string[];
+      };
+      approval(args: Record<string, unknown>): string;
+      execute(
+        id: string,
+        args: Record<string, unknown>,
+        signal: undefined,
+        update: undefined,
+        ctx: { cwd: string },
+      ): Promise<{ content: { text: string }[] }>;
+    }
+    const PATH = process.env.PATH;
+    afterEach(() => {
+      process.env.PATH = PATH;
+    });
+
+    /** Load the emitted module against a `cratylus` on PATH that answers
+     *  `--explain` with `explanation` and any other call with its argv as JSON
+     *  (or, for a verb named `refuse`, a refusal on stderr). */
+    async function load(explanation: unknown): Promise<Registered[]> {
+      const dir = mkdtempSync(join(tmpdir(), 'omp-capability-'));
+      tmp.push(dir);
+      const bin = join(dir, 'bin');
+      mkdirSync(bin);
+      const said = join(dir, 'explanation.json');
+      writeFileSync(said, JSON.stringify(explanation));
+      writeFileSync(
+        join(bin, 'cratylus'),
+        [
+          `#!${process.execPath}`,
+          'const args = process.argv.slice(2);',
+          `if (args.includes('--explain')) process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8'));`,
+          "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
+          'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
+          '',
+        ].join('\n'),
+        { mode: 0o755 },
+      );
+      process.env.PATH = `${bin}:${PATH}`;
+      const [module] = ompCapabilityExtensions();
+      const file = join(dir, OMP_CRATYLUS_MODULE);
+      writeFileSync(file, module?.content ?? '');
+      const registered: Registered[] = [];
+      // Dynamic: the module under test is the emitted bytes, written to disk here.
+      const factory = (await import(file)).default as (
+        pi: unknown,
+      ) => Promise<void>;
+      await factory({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: (tool: Registered) => registered.push(tool),
+      });
+      return registered;
+    }
+
+    const parameter = (
+      name: string,
+      schema: Record<string, unknown>,
+      positional = false,
+    ) => ({
+      name,
+      description: `the ${name}`,
+      required: positional,
+      schema,
+      ...(positional ? { positional: true } : {}),
+    });
+    const verb = (
+      name: string,
+      effect: 'reads' | 'appends',
+      parameters: unknown[],
+    ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
+    const EXPLANATION = {
+      name: 'stand in',
+      purpose: 'p',
+      when: 'w',
+      verbs: [
+        verb('look', 'reads', [
+          parameter('context', { type: 'string' }),
+          parameter('mode', { type: 'string' }),
+        ]),
+        verb('put', 'appends', [
+          parameter('word', { type: 'string' }, true),
+          parameter('context', { type: 'string' }),
+          parameter('mode', { type: 'string', enum: ['a', 'b'] }),
+          parameter('from', { type: 'array', items: { type: 'string' } }),
+          parameter('open', { type: 'boolean' }),
+        ]),
+        verb('refuse', 'appends', []),
+      ],
+    };
+
+    it('registers one tool per capability, its verb required, approval by effect', async () => {
+      const [tool, ...rest] = await load(EXPLANATION);
+      expect(rest).toEqual([]);
+      expect(tool?.name).toBe('stand_in');
+      expect(tool?.parameters.required).toEqual(['verb']);
+      expect(tool?.parameters.properties.verb?.enum).toEqual([
+        'look',
+        'put',
+        'refuse',
+      ]);
+      expect(tool?.approval({ verb: 'look' })).toBe('read');
+      expect(tool?.approval({ verb: 'put' })).toBe('write');
+    });
+
+    it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {
+      const [tool] = await load(EXPLANATION);
+      const { context, mode, from } = tool?.parameters.properties ?? {};
+      expect(context).toEqual({
+        type: 'string',
+        description:
+          'look (optional): the context\nput (optional): the context',
+      });
+      expect(from).toEqual({
+        type: 'array',
+        items: { type: 'string' },
+        description: 'put (optional): the from',
+      });
+      expect(mode).toEqual({
+        anyOf: [{ type: 'string' }, { type: 'string', enum: ['a', 'b'] }],
+        description: 'look (optional): the mode\nput (optional): the mode',
+      });
+    });
+
+    it('gives every value as one --flag=value token, so a dash-led value is never a flag', async () => {
+      const [tool] = await load(EXPLANATION);
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-capability-cwd-'));
+      tmp.push(cwd);
+      const result = await tool?.execute(
+        'id',
+        {
+          verb: 'put',
+          word: 'w4',
+          context: '--explain',
+          mode: '-- a dash-led value',
+          from: ['--a', 'b'],
+          open: true,
+        },
+        undefined,
+        undefined,
+        { cwd },
+      );
+      expect(JSON.parse(result?.content[0]?.text ?? '')).toEqual({
+        args: [
+          'concepts',
+          'put',
+          'w4',
+          '--context=--explain',
+          '--mode=-- a dash-led value',
+          '--from=--a',
+          '--from=b',
+          '--open',
+        ],
+        cwd: realpathSync(cwd),
+      });
+    });
+
+    it('gives a dash-led positional as a flag-shaped token the command refuses, never as a request for help', async () => {
+      const [tool] = await load(EXPLANATION);
+      const args = async (word: string) =>
+        JSON.parse(
+          (
+            await tool?.execute(
+              'id',
+              { verb: 'put', word },
+              undefined,
+              undefined,
+              { cwd: tmpdir() },
+            )
+          )?.content[0]?.text ?? '',
+        ).args;
+      expect(await args('--help')).toEqual(['concepts', 'put', '--help=']);
+      expect(await args('--explain')).toEqual([
+        'concepts',
+        'put',
+        '--explain=',
+      ]);
+      expect(await args('-h')).toEqual(['concepts', 'put', '-h=']);
+      expect(await args('--x=y')).toEqual(['concepts', 'put', '--x=y']);
+      expect(await args('-')).toEqual(['concepts', 'put', '-']);
+    });
+
+    it("fails a refused call with the command's own message", async () => {
+      const [tool] = await load(EXPLANATION);
+      await expect(
+        tool?.execute('id', { verb: 'refuse' }, undefined, undefined, {
+          cwd: tmpdir(),
+        }),
+      ).rejects.toThrow('cratylus concepts refuse: its own words');
     });
   });
 });
