@@ -10,7 +10,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { type IsolationWiring, assessIsolation } from './isolation.js';
-import { entries } from './tap-omp.js';
+import { entries, registrations } from './tap-omp.js';
 
 type Args = Record<string, unknown>;
 interface Context {
@@ -120,10 +120,7 @@ export default function observe(pi: API) {
                     ctx.model && (await ctx.modelRegistry.getApiKey(ctx.model))
                   )
                 : undefined,
-            registered: [...entries].map(([name, entry]) => ({
-              name,
-              path: entry.sourceInfo.path,
-            })),
+            registered: registrations,
             results,
           },
           null,
