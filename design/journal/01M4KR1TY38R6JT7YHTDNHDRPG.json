@@ -1,0 +1,18 @@
+{
+  "id": "01M4KR1TY38R6JT7YHTDNHDRPG",
+  "at": "2026-10-10T20:28:42.819Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "concept journal",
+  "wording": "the conceptual design and its decisions kept as an append-only journal: each concept version belongs to one bounded context and carries the reason it was written, the latest version of a concept or of a context's description is its current one, two versions that supersede the same one are reported as competing until a later version supersedes both, and nothing is edited or deleted; the current conceptual design of each context, the history of each concept and each context's description, and the open decisions are computed from it, and nothing outside it is an account of the design, and it is amended only by appending through named commands, so supersession holds by construction.",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "supersession",
+    "decision"
+  ],
+  "reason": "0056: the journal also keeps and computes a context's own description history.",
+  "supersedes": [
+    "01M4J5R9ZSYWN3QWS5MD9AB0GD"
+  ]
+}
