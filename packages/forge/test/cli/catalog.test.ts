@@ -38,11 +38,19 @@ import { capture as captureLines } from './streams.js';
  */
 const ZEROCONF_ANATOMY = {
   veridicality: {
-    axis: 'Constitution',
+    group: 'Grounding',
     repertoire: 'latent',
     arity: 'scalar',
+    level: null,
+    projection: 'text',
   },
-  plumbline: { axis: 'Persona', repertoire: 'curated', arity: 'set' },
+  plumbline: {
+    group: 'Bearing',
+    repertoire: 'curated',
+    arity: 'set',
+    level: 'firm',
+    projection: 'text',
+  },
 };
 
 /** Write `export const <name> = <literal>;` under `<root>/<dimension>/<file>.ts`. */
@@ -121,16 +129,16 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
     expect(out).toContain('veridicality');
     expect(out).toContain('plumbline');
     // …joined with the discovered value bodies, and with the metadata the entry
-    // module declared (axis · repertoire · arity), which is the half only it can supply.
+    // module declared (group · repertoire · arity), which is the half only it can supply.
     expect(out).toContain('ground-truth');
     expect(out).toContain('true-vertical');
-    expect(out).toContain('veridicality [Constitution, latent, scalar] (1)');
-    expect(out).toContain('plumbline [Persona, curated, set] (1)');
+    expect(out).toContain('veridicality [Grounding, latent, scalar] (1)');
+    expect(out).toContain('plumbline [Bearing, curated, set] (1)');
     // The census is the whole of stdout: no header line, no spacer line.
     expect(out.split('\n')).toEqual([
-      'veridicality [Constitution, latent, scalar] (1)',
+      'veridicality [Grounding, latent, scalar] (1)',
       '  ground-truth',
-      'plumbline [Persona, curated, set] (1)',
+      'plumbline [Bearing, curated, set] (1)',
       '  true-vertical',
     ]);
   });
@@ -152,14 +160,14 @@ describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () =
     expect(JSON.parse(out)).toEqual([
       {
         dimension: 'veridicality',
-        axis: 'Constitution',
+        group: 'Grounding',
         repertoire: 'latent',
         arity: 'scalar',
         values: ['ground-truth'],
       },
       {
         dimension: 'plumbline',
-        axis: 'Persona',
+        group: 'Bearing',
         repertoire: 'curated',
         arity: 'set',
         values: ['true-vertical'],

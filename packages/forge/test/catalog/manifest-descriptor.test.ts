@@ -27,8 +27,8 @@ import {
 // list is authored from the `Dimension` union in the manifest doc; if the union
 // grows/shrinks this test must be updated alongside `MANIFEST`, which is
 // exactly the point — adding a dimension forces touching its metadata AND this
-// assertion together). `archetype` and `provenance` are excluded: neither is a
-// σ*-fragment dimension (archetype = plain string, provenance = structured `{mark}`).
+// assertion together). Name, description, mark and key are identity details, not
+// dimensions, so none of them is a key.
 const THE_22: readonly FixtureDimension[] = [
   'autonomy',
   'role',
@@ -57,9 +57,12 @@ const THE_22: readonly FixtureDimension[] = [
 /** Descriptor metadata as it arrives from a dir listing / a descriptor entry —
  *  the shapes the two checks below are fed, widened so a BAD one can be built. */
 interface Meta {
-  readonly axis: string;
+  readonly group: string;
   readonly repertoire: string;
   readonly arity: string;
+  readonly level: string | null;
+  readonly projection: string;
+  readonly slots?: readonly { readonly name: string }[];
 }
 
 /** The descriptor↔corpus comparison, as a function of the two sets, so a
@@ -76,13 +79,22 @@ function corpusDrift(
   };
 }
 
-/** The legality predicate over one descriptor entry. */
+/** The legality predicate over one descriptor entry: a named group, the closed
+ *  repertoire/arity/level/projection vocabularies, and slots exactly on a `slots`
+ *  dimension. */
 function illegalMeta(m: Meta): string[] {
   const bad: string[] = [];
-  if (!['Persona', 'Constitution'].includes(m.axis)) bad.push(`axis=${m.axis}`);
-  if (!['latent', 'open', 'curated'].includes(m.repertoire))
+  if (m.group.trim() === '') bad.push('group=(empty)');
+  if (!['latent', 'open', 'curated', 'fixed'].includes(m.repertoire))
     bad.push(`repertoire=${m.repertoire}`);
-  if (!['scalar', 'set'].includes(m.arity)) bad.push(`arity=${m.arity}`);
+  if (!['scalar', 'set', 'slots', 'attribute'].includes(m.arity))
+    bad.push(`arity=${m.arity}`);
+  if (m.level !== null && !['advisory', 'firm', 'fixed'].includes(m.level))
+    bad.push(`level=${m.level}`);
+  if (!['text', 'binding'].includes(m.projection))
+    bad.push(`projection=${m.projection}`);
+  if ((m.arity === 'slots') !== (m.slots !== undefined && m.slots.length > 0))
+    bad.push(`slots on arity=${m.arity}`);
   return bad;
 }
 
@@ -92,7 +104,7 @@ describe('a dimension catalog', () => {
     expect(Object.keys(FIXTURE_MANIFEST)).toHaveLength(22);
   });
 
-  it('every axis/repertoire/arity is a legal value', () => {
+  it('every group/repertoire/arity/level/projection is a legal value', () => {
     for (const dimension of FIXTURE_DIMENSION_NAMES) {
       expect(illegalMeta(FIXTURE_MANIFEST[dimension]), dimension).toEqual([]);
     }
@@ -152,23 +164,30 @@ describe('a dimension catalog', () => {
       extra: [],
     });
 
-    // A descriptor entry outside the closed axis/repertoire/arity vocabularies.
+    // A descriptor entry outside the closed vocabularies.
+    const legal = {
+      group: 'Persona',
+      repertoire: 'curated',
+      arity: 'scalar',
+      level: null,
+      projection: 'text',
+    };
     expect(
-      illegalMeta({
-        axis: 'Persona',
-        repertoire: 'freeform',
-        arity: 'tuple',
-      }),
+      illegalMeta({ ...legal, repertoire: 'freeform', arity: 'tuple' }),
     ).toEqual(['repertoire=freeform', 'arity=tuple']);
+    expect(illegalMeta({ ...legal, group: '' })).toEqual(['group=(empty)']);
     expect(
-      illegalMeta({ axis: 'Vibe', repertoire: 'latent', arity: 'set' }),
-    ).toEqual(['axis=Vibe']);
+      illegalMeta({ ...legal, level: 'strict', projection: 'hook' }),
+    ).toEqual(['level=strict', 'projection=hook']);
+    expect(illegalMeta({ ...legal, arity: 'slots' })).toEqual([
+      'slots on arity=slots',
+    ]);
+    expect(illegalMeta({ ...legal, slots: [{ name: 'tier' }] })).toEqual([
+      'slots on arity=scalar',
+    ]);
+    expect(illegalMeta(legal)).toEqual([]);
     expect(
-      illegalMeta({
-        axis: 'Constitution',
-        repertoire: 'curated',
-        arity: 'scalar',
-      }),
+      illegalMeta({ ...legal, arity: 'slots', slots: [{ name: 'tier' }] }),
     ).toEqual([]);
   });
 });

@@ -71,7 +71,7 @@ function renderTable(entries: CatalogEntry[]): string[] {
   const lines: string[] = [];
   for (const e of entries) {
     lines.push(
-      `${e.dimension} [${e.axis}, ${e.repertoire}, ${e.arity}] (${e.values.length})`,
+      `${e.dimension} [${e.group}, ${e.repertoire}, ${e.arity}] (${e.values.length})`,
     );
     if (e.values.length === 0) lines.push('  (no value modules)');
     for (const v of e.values) {

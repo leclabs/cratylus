@@ -26,14 +26,10 @@ import {
   resolveConfig,
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
+import { CANON_DIMENSIONS, canonDirManifest } from '../canon-corpus.js';
 import { answers, fixturePractices } from '../deploy/helpers.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import { capture } from './streams.js';
-
-/** The real canon corpus dimensions dir — the default plugin's fragment source. */
-const CANON_DIMENSIONS = fileURLToPath(
-  new URL('../../../canon/src/dimensions', import.meta.url),
-);
 
 describe('CLI commands (integration)', () => {
   let cwd: string;
@@ -74,7 +70,7 @@ describe('CLI commands (integration)', () => {
     // dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      manifest: FIXTURE_MANIFEST,
+      manifest: canonDirManifest(),
       fragments: CANON_DIMENSIONS,
     };
     const resolved = await resolveConfig({
@@ -85,7 +81,7 @@ describe('CLI commands (integration)', () => {
     const byId = new Map(
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
-    expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
+    expect(byId.get('canon:objective/parsimony')).toMatch(/^parsimony ≜ /);
   });
 
   it('init is idempotent: an existing cratylus.config.ts is left untouched', async () => {

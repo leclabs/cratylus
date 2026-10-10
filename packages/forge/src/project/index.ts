@@ -36,16 +36,15 @@ import {
   type Binding,
   type DimensionManifest,
   type Enforcing,
+  type Entry,
   type HookCell,
   type Plumbing,
   type Practice,
   type ProjectionFacts,
   type Skill,
-  type Value,
   anchorOf,
   bodyOf,
   dimensionValueOf,
-  enforcing,
   hookIrOf,
   mergeManifest,
   resolveWorker,
@@ -236,13 +235,12 @@ export interface ProjectedFile {
  */
 export interface ProjectedTree extends ProjectReport {
   readonly files: readonly ProjectedFile[];
-  /** The sorted, distinct roles the rendered agents hold ({@link Agent.holds}), so
-   *  a consumer that routes by role — install — knows them without re-reading a
-   *  definition. Empty when no rendered agent holds one. */
-  readonly heldRoles: readonly string[];
-  /** Each held role → the sorted names of the rendered agents holding it: where a
-   *  consumer that routes by role must act on the agents, not the role. */
-  readonly roleHolders: Readonly<Record<string, readonly string[]>>;
+  /** Each rendered agent that states a model routing ({@link Agent.routing}) → its
+   *  tier and effort, by agent name in sorted order: what an install binds as the
+   *  agent's own model role without re-reading a definition. */
+  readonly agentModels: Readonly<
+    Record<string, { readonly tier: string; readonly effort: string }>
+  >;
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
@@ -419,18 +417,16 @@ export function resolveFragmentBodies(
 }
 
 /**
- * Rewrite an agent's DIMENSION fields through the resolved-body substitution.
+ * Rewrite an agent's DIMENSION entries through the resolved-body substitution.
  *
- * ONLY the catalog's dimension fields are touched: `archetype` is a plain identity
- * string and `provenance` the structured mark — neither lives in a
- * `fragments` dir, so neither is a fold subject. An empty substitution returns the
- * agent unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ * ONLY the value of each entry the catalog's dimension fields hold is touched:
+ * the identity face (name, description, mark, key, …) does not live in a
+ * `fragments` dir, so it is no fold subject, and an entry's level, slot and note
+ * are the agent's, not the value's. An empty substitution returns the agent
+ * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
  *
- * WHICH fields those are is read off the CATALOG, not listed here. The list used
- * to be 22 hand-written lines, which made this function the last place in the
- * projector that knew a dimension by name — and a corpus that declared a
- * twenty-third would have had its values silently skipped by the fold while the
- * Target still printed them.
+ * WHICH fields those are is read off the CATALOG, not listed here, so a corpus
+ * that declares a dimension has its values folded the day it declares it.
  */
 function withResolvedBodies(
   agent: Agent,
@@ -438,27 +434,25 @@ function withResolvedBodies(
   manifest: DimensionManifest,
 ): Agent {
   if (subst.size === 0) return agent;
-  // Substitute a value's DECLARATION face and put the binding back. A value may
-  // now be an enforcing cell rather than a bare string, and `substrate`/`events`
-  // are not bodies — folding a value must never silently unbind it. Keying the
-  // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
-  // authored body a bare one uses.
-  const sub = (v: Value<string>): Value<string> => {
-    const body = bodyOf(v);
-    return withBody(v, subst.get(body) ?? body);
-  };
   // Spread first, then overwrite in place: every dimension key already exists on
   // the agent (completeness law), so the field ORDER of the copy is the field
   // order of the original — the fold moves bodies, never bytes of structure.
   const folded: Record<string, unknown> = { ...agent };
   for (const field of Object.values(dimensionFieldsOf(manifest))) {
-    const v = dimensionValueOf(agent, field);
-    // `null` is the omit-to-inherit sentinel and stays exactly that; a dimension
-    // the agent does not carry is left untouched rather than minted as `null`.
-    if (v === null || v === undefined) continue;
-    folded[field] = Array.isArray(v)
-      ? (v as readonly Value<string>[]).map(sub)
-      : sub(v as Value<string>);
+    const held = dimensionValueOf(agent, field);
+    if (!Array.isArray(held)) continue;
+    // Substitute a value's DECLARATION face and put the binding back. A value may
+    // be an enforcing cell rather than a bare string, and `substrate`/`events`
+    // are not bodies — folding a value must never silently unbind it. Keying the
+    // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
+    // authored body a bare one uses.
+    folded[field] = (held as readonly Entry[]).map((entry) => {
+      const body = bodyOf(entry.value);
+      return {
+        ...entry,
+        value: withBody(entry.value, subst.get(body) ?? body),
+      };
+    });
   }
   return folded as unknown as Agent;
 }
@@ -513,8 +507,10 @@ interface PracticeSelection {
  *
  * CLOSED means: every agent the set places finds every skill it is given and every
  * role it dispatches. The role is matched against `Agent.holds` by anchor, which is
- * the whole of what forge may know of a role. Each refusal names the practice
- * that placed the agent, the agent, and the role or skill that is missing.
+ * the whole of what forge may know of a role — or against the agents the harness
+ * supplies natively (`HarnessAdapter.nativeAgents`), which need no agent of the
+ * set. Each refusal names the practice that placed the agent, the agent, and the
+ * role or skill that is missing.
  */
 async function selectPractices(
   names: readonly string[],
@@ -522,6 +518,7 @@ async function selectPractices(
   declared: readonly Practice[],
   agentSrc: ReadonlyMap<string, Src>,
   roster: ReadonlyMap<string, Skill>,
+  nativeAgents: Readonly<Record<string, string>>,
 ): Promise<PracticeSelection> {
   const chosen: Practice[] = [];
   for (const name of names) {
@@ -560,9 +557,9 @@ async function selectPractices(
   }
   for (const [name, agent] of authored) {
     for (const role of agent.dispatches ?? []) {
-      if (held.has(role)) continue;
+      if (held.has(role) || Object.hasOwn(nativeAgents, role)) continue;
       throw new Error(
-        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds`,
+        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds and the harness does not supply`,
       );
     }
   }
@@ -685,6 +682,7 @@ export async function projectPluginSet(
           offered,
           agentSrc,
           roster,
+          opts.adapter.nativeAgents ?? {},
         )
       : undefined;
   const contributedSkills = selection
@@ -1104,14 +1102,17 @@ export async function projectPluginSet(
     }
   }
 
-  const roleHolders: Record<string, string[]> = {};
-  rendered.forEach((a, i) => {
-    if (a.holds === undefined) return;
-    const held = roleHolders[a.holds] ?? [];
-    held.push(agentNames[i] as string);
-    roleHolders[a.holds] = held;
-  });
-  for (const held of Object.values(roleHolders)) held.sort();
+  const agentModels: Record<string, { tier: string; effort: string }> = {};
+  const routed = rendered.flatMap((a, i) =>
+    a.routing === undefined
+      ? []
+      : [[agentNames[i] as string, a.routing] as const],
+  );
+  for (const [name, { tier, effort }] of routed.sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
+    agentModels[name] = { tier, effort };
+  }
 
   return {
     files,
@@ -1119,8 +1120,7 @@ export async function projectPluginSet(
     skills,
     shims,
     hooks,
-    heldRoles: Object.keys(roleHolders).sort(),
-    roleHolders,
+    agentModels,
     unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,

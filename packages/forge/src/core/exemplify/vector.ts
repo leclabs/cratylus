@@ -1,27 +1,37 @@
 /**
- * Agent elevation — the exemplify+elicit leg: a step-1 agent (raw NL held
- * verbatim on the `archetype` dimension) → a typed 24-dimension selection vector that
- * REPLACES the free-text source form as the agent's single source of truth.
+ * Agent elevation — the exemplify+elicit leg: a step-1 agent (raw NL) → a typed
+ * dimension vector over the given catalog that REPLACES the free-text source form
+ * as the agent's single source of truth.
  *
  * SEMANTIC SEAM: reading evidence out of the description — which dimension a
  * span speaks to, which value it selects, which dimensions are SILENT and what
  * the bisecting elicitation question is (/elicit's information-gain law) —
  * is an LLM pass, authored into the {@link ElevationSpec}. The frame owns the
  * mechanical laws and refuses loudly on each:
- *  - completeness: all 24 dimension keys, always (inherit renders as `null`);
+ *  - completeness: every dimension that occupies a field, always (an inherited
+ *    or silent one renders as the explicitly empty `[]`);
  *  - never-invent: a concrete value MUST carry a provenance trace — a
  *    `quote` that is verbatim-containable in the source, or an explicit
  *    `inference` tag with a note; an untraceable value is an invented value;
  *  - silence ⇒ `ELICIT:` marker (machine-greppable) + a sidecar elicitation
  *    script with ≥ 2 candidates and 1 bisecting question — never an enum;
- *  - arity: a scalar dimension takes exactly one fragment;
+ *  - arity: a scalar dimension takes exactly one fragment, a `slots` dimension
+ *    exactly one per declared slot, and an `attribute` dimension none (it is no
+ *    field);
  *  - replacement no-loss (REC ≽): the step-1 source text must be recoverable
  *    from the emitted vector module, else replacement would drop content.
+ *
+ * Each selected fragment is emitted as an `Entry` at its dimension's default
+ * enforcement level.
  */
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { type DimensionManifest, kebabToCamel } from '@cratylus/schema';
+import {
+  type DimensionManifest,
+  type DimensionMeta,
+  kebabToCamel,
+} from '@cratylus/schema';
 import { canonicalText } from './digest.js';
 import { ExemplifyRefusal } from './types.js';
 
@@ -33,16 +43,19 @@ export interface DimensionEvidence {
   note: string;
 }
 
-/** A selected fragment (slug + definiens) for one dimension value. */
+/** A selected fragment (slug + definiens) for one dimension value; `slot` names
+ *  the slot it fills when the dimension's arity is `slots`. */
 export interface DimensionFragmentSpec {
   slug: string;
   definiens: string;
+  slot?: string;
 }
 
 /** A concrete, evidence-traced dimension value. */
 export interface FragmentPlan {
   kind: 'value';
-  /** Exactly one for scalar dimensions; one-or-more for the five set dimensions. */
+  /** Exactly one for scalar dimensions, one per slot for `slots` dimensions,
+   *  one-or-more for set dimensions. */
   fragments: readonly DimensionFragmentSpec[];
   evidence: DimensionEvidence;
 }
@@ -56,7 +69,7 @@ export interface DimensionElicitPlan {
   question: string;
 }
 
-/** Deliberate harness-inheritance (`null` in the vector). */
+/** Deliberate harness-inheritance (`[]` in the vector). */
 export interface DimensionInheritPlan {
   kind: 'inherit';
 }
@@ -69,9 +82,11 @@ export type DimensionPlan =
 export interface ElevationSpec {
   /** The agent name (module + export identity). */
   name: string;
+  /** The one-line description the subagent router reads (`Agent.description`). */
+  description: string;
   /** TS export identifier; default: the name camel-cased. */
   exportName?: string;
-  /** All 24 dimensions — completeness is the type; runtime re-checked. */
+  /** Every field dimension of the catalog — completeness is re-checked at runtime. */
   dimensions: Record<string, DimensionPlan>;
 }
 
@@ -91,8 +106,13 @@ function tsString(value: string): string {
   return JSON.stringify(value);
 }
 
-function renderFragment(dimension: string, f: DimensionFragmentSpec): string {
-  return `{ dimension: '${dimension}', slug: '${f.slug}', definiens: ${tsString(f.definiens)} }`;
+function renderEntry(
+  f: DimensionFragmentSpec,
+  level: string | null,
+  slotted: boolean,
+): string {
+  const slot = slotted ? `, slot: ${tsString(f.slot as string)}` : '';
+  return `{ value: ${tsString(`${f.slug} ≜ ${f.definiens}`)}, level: ${level === null ? 'null' : tsString(level)}${slot} }`;
 }
 
 /**
@@ -107,7 +127,11 @@ export function renderAgentVector(
   // The catalog is what COMPLETENESS is measured against — "all dimensions,
   // always" is a claim about a SPECIFIC catalog, so the caller names it.
   const manifest = opts.manifest;
-  const dimensionNames = Object.keys(manifest);
+  // An `attribute` dimension occupies no field: it is neither required of a spec
+  // nor admitted by one.
+  const dimensionNames = Object.keys(manifest).filter(
+    (d) => manifest[d]?.arity !== 'attribute',
+  );
   const reasons: string[] = [];
   const dimensionKeys = Object.keys(spec.dimensions);
   for (const dimension of dimensionNames) {
@@ -116,23 +140,32 @@ export function renderAgentVector(
   }
   for (const key of dimensionKeys) {
     if (!dimensionNames.includes(key))
-      reasons.push(`unknown dimension '${key}'`);
+      reasons.push(
+        key in manifest
+          ? `dimension '${key}' is an attribute of other values, not a field`
+          : `unknown dimension '${key}'`,
+      );
   }
   const source =
     opts.sourceText === undefined ? undefined : canonicalText(opts.sourceText);
   const elicit: Record<string, { candidates: string[]; question: string }> = {};
   const provenance: Record<string, DimensionEvidence> = {};
-  const lines: string[] = [`  name: '${spec.name}',`];
+  const lines: string[] = [
+    `  name: ${tsString(spec.name)},`,
+    `  description: ${tsString(spec.description)},`,
+    '  mark: null,',
+    '  key: null,',
+  ];
 
-  for (const [name, meta] of Object.entries(manifest)) {
-    const dimension = name;
+  for (const dimension of dimensionNames) {
+    const meta = manifest[dimension] as DimensionMeta;
     const plan = spec.dimensions[dimension];
     // The kebab→camel rule direct, not a lookup: the field a dimension occupies is
     // derivable from its NAME, so a catalog's own keys are all this needs.
-    const field = kebabToCamel(name);
+    const field = kebabToCamel(dimension);
     if (plan === undefined) continue;
     if (plan.kind === 'inherit') {
-      lines.push(`  ${field}: null,`);
+      lines.push(`  ${field}: [],`);
       continue;
     }
     if (plan.kind === 'elicit') {
@@ -151,7 +184,7 @@ export function renderAgentVector(
         question: plan.question,
       };
       lines.push(
-        `  ${field}: null, // ELICIT: ${spec.name}.elicit.json#${dimension}`,
+        `  ${field}: [], // ELICIT: ${spec.name}.elicit.json#${dimension}`,
       );
       continue;
     }
@@ -179,26 +212,34 @@ export function renderAgentVector(
       );
       continue;
     }
+    if (arity === 'slots') {
+      const declared = (meta.slots ?? []).map((s) => s.name);
+      const filled = plan.fragments.map((f) => f.slot);
+      if (
+        filled.length !== declared.length ||
+        declared.some((slot) => !filled.includes(slot))
+      ) {
+        reasons.push(
+          `dimension '${dimension}' has slots: exactly one fragment per slot (${declared.join(', ')}), got ${filled.map((s) => s ?? '(no slot)').join(', ')}`,
+        );
+        continue;
+      }
+    }
     if (plan.fragments.length === 0) {
       reasons.push(`dimension '${dimension}': value plan with zero fragments`);
       continue;
     }
     provenance[dimension] = plan.evidence;
-    if (arity === 'set') {
-      const items = plan.fragments
-        .map((f) => `    ${renderFragment(dimension, f)},`)
-        .join('\n');
-      lines.push(`  ${field}: [\n${items}\n  ],`);
-    } else {
-      const f = plan.fragments[0] as DimensionFragmentSpec;
-      lines.push(`  ${field}: ${renderFragment(dimension, f)},`);
-    }
+    const items = plan.fragments
+      .map((f) => `    ${renderEntry(f, meta.level, arity === 'slots')},`)
+      .join('\n');
+    lines.push(`  ${field}: [\n${items}\n  ],`);
   }
   if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
 
   const exportName = spec.exportName ?? camel(spec.name);
   const module = [
-    `/** ${spec.name} — 24-dimension selection vector, elevated via exemplify+elicit`,
+    `/** ${spec.name} — dimension selection vector, elevated via exemplify+elicit`,
     ` *  (forge optimize). Sidecars: ${spec.name}.provenance.json${
       Object.keys(elicit).length > 0 ? ` · ${spec.name}.elicit.json` : ''
     }. */`,
@@ -262,7 +303,7 @@ export function elevateAgent(opts: ElevateOptions): ElevateResult {
     !carried.includes(canonicalText(sourceText))
   ) {
     throw new ExemplifyRefusal([
-      'replacement would lose step-1 content (REC ≽ fails): the source text is not recoverable from the vector — carry it verbatim (archetype dimension) before replacing',
+      'replacement would lose step-1 content (REC ≽ fails): the source text is not recoverable from the vector — carry it verbatim on an open dimension before replacing',
     ]);
   }
   const agentsDir = join(opts.outDir, 'agents');
