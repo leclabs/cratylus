@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAAKJ14M54N1BQATHCRH2",
+  "at": "2026-10-10T12:06:32.306Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "factor",
+  "wording": "one independent lever of an agent, which no other factor's value determines: identity (role, objective, expertise, method, disposition, voice), authority (decision rights, autonomy and escalation), reach (perception, action and delegation scope), cognition (model and effort, memory and knowledge), interface (input and output contract), and governance (invariants, firmness, evaluation); deployment choices such as the harness or how a session starts are not factors.",
+  "builtFrom": [
+    "agent"
+  ],
+  "reason": "Discovery 2026-10-10: eighteen levers cover what agent definitions across the industry state, mutually exclusive and together exhaustive; dimensions that change nothing controllable are not factors.",
+  "supersedes": []
+}

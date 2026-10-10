@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAAPM0H58WW8X12B6PJ87",
+  "at": "2026-10-10T12:06:32.404Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "reach",
+  "wording": "what an agent may see, change and dispatch, held by the harness's permissions rather than by its text; granted by whoever starts the agent, never above the ceiling its definition declares, so the same agent can be started narrowly or, deliberately, more widely.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Discovery 2026-10-10: least privilege enforced by permission is deterministic; every reach failure observed this week was held only by text.",
+  "supersedes": []
+}

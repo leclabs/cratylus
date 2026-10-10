@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAASQ8J44FNHA9HQZ631Y",
+  "at": "2026-10-10T12:06:32.503Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "firmness",
+  "wording": "how firmly a value holds: advisory, firm unless the operator overrides it, or fixed; a firm or fixed value is enforced at the most reliable place that can hold it, by permission first, then by a capability, then by a guard that checks the act, and by text only where nothing else can.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Discovery 2026-10-10: enforcement levels as in policy stores; the canon held every value equally and enforced reach with model-judged guards, which are slow, costly and fallible.",
+  "supersedes": []
+}

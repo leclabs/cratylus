@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVATKM5NTB7483K29W3XT9",
+  "at": "2026-10-10T12:06:48.692Z",
+  "kind": "decide",
+  "decisionId": "0046",
+  "context": "agents",
+  "title": "The workflow roles and personas",
+  "situation": "The workflow's roles exist only as placeholder agents with a model each; the canon on main had personas kino, nico and mav, all over the architect role, and mav's residue was little more than its name.",
+  "decision": "Generic holders: lead (owns a cut's realization; dispatches builder, binder, assayer, researcher; strongest tier, high), builder (one work package; edits only its outputs; strongest tier, medium), assayer (judges against fixed criteria; read-only; strongest tier, xhigh, with a second assayer on another model family), illustrator (examples cold from concepts only; another family, high), binder (writes the checks that bind examples before the build, specification by example's automating validation; another family, high). Personas over the architect: kino (film production and generative video; holds a film-production consumer's platform and production contexts; teaches a layman with provenance), nico (the corpus's concept space and the cold-decode oracle; holds the corpus context; parsimony; peer density), mav (software system design for any software repository; holds that project's contexts; peer density).",
+  "consequences": "If mav's software-design expertise is not wanted, mav retires in favour of the generic architect. The placeholder agents in the operator's home are retired when the corpus composes these.",
+  "status": "open",
+  "supersedes": null
+}
