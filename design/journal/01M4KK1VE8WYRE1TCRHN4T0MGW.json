@@ -1,0 +1,14 @@
+{
+  "id": "01M4KK1VE8WYRE1TCRHN4T0MGW",
+  "at": "2026-10-10T19:01:20.456Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "check-writer",
+  "wording": "the agent that writes the checks binding a cut's examples before the build, each seen to fail against work that does not satisfy it, and never builds the work those checks judge, so the criteria are fixed by someone other than the builders.",
+  "builtFrom": [
+    "freeze",
+    "example"
+  ],
+  "reason": "The freeze requires checks written by someone other than the work's builders, but no workflow role held that job; the agents context composes it as check-writer (0053).",
+  "supersedes": []
+}

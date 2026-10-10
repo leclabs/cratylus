@@ -1,0 +1,17 @@
+{
+  "id": "01M4KK1VSPMRQ1RPJ4B1864H3R",
+  "at": "2026-10-10T19:01:20.822Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "binding",
+  "wording": "how a composed agent meets one harness: its model and effort through a model role named for it, its reach as that harness's tool and dispatch permissions, its procedure as skills; the agent is the same on every harness, and only its binding differs.",
+  "builtFrom": [
+    "agent",
+    "reach",
+    "identity"
+  ],
+  "reason": "Uses procedure for method.",
+  "supersedes": [
+    "01M4JVAAY5AQYE0J5HHBC4VKAC"
+  ]
+}

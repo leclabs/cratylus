@@ -1,0 +1,8 @@
+{
+  "id": "01M4KK1V96G74AK2Q00C0CCNXC",
+  "at": "2026-10-10T19:01:20.294Z",
+  "kind": "accept",
+  "decisionId": "0034",
+  "entry": "01M4JDR45VHKFQHWCNTED8R5D8",
+  "reason": "Realized 2026-10-10: omp --agent launches any declaration with its whole identity (0047), released with the whole-declaration follow-up in dev 727baa33. Efficiency: agent launch 2 build rounds, 2 whole-check runs, 0 live evals; whole-declaration follow-up 2 build rounds, 2 whole-check runs, 0 live evals."
+}

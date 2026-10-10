@@ -1,0 +1,22 @@
+{
+  "id": "01M4KK1VMPM4SWYKA2GHYPSMFM",
+  "at": "2026-10-10T19:01:20.662Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "the agent that owns a cut's realization: divides its work into work packages, schedules their dependency graph, has the check-writer bind the examples before the build, dispatches builders, runs judgment and the whole check, and settles every question of realization the accepted decisions leave open, keeping the work within those that constrain it; it brings the architect only a meaning question or the cut's outcome, in concept terms, and never changes a concept, an example or a decision.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "build",
+    "judgment",
+    "whole check",
+    "decision",
+    "check-writer"
+  ],
+  "reason": "Names the check-writer, whom the lead dispatches (0053).",
+  "supersedes": [
+    "01M4JDR3WXG55KDYKKS34C3FGX"
+  ]
+}
