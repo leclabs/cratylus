@@ -1,0 +1,13 @@
+{
+  "id": "01M4JYWWA9H7YCX20NCV5486SN",
+  "at": "2026-10-10T13:09:05.993Z",
+  "kind": "decide",
+  "decisionId": "0048",
+  "context": "agents",
+  "title": "Ipseic agents, medium term",
+  "situation": "mav, kino and nico are kept minimal on purpose while the workflow is proven, first in consumer use such as a film-production project. The operator's unstated medium-term goal is agents with selfhood. Industry pieces exist separately: ambient agents (long-running, event-triggered), cryptographic agent identity (key pairs, signed acts, agent cards), persistent self-editing memory, and self-improving agents; nothing combines them into one continuous self.",
+  "decision": "Design ipseic agents after the workflow is proven in consumer use, with mav, kino and nico among the first. Until then, every factor and composition choice keeps room for them: identity carries a personal identifier slot (name, mark, key), memory distinguishes the agent's own continuous experience from a session's working memory, and nothing ties an agent to one session, host or harness.",
+  "consequences": "The re-cut (0044) reserves these slots without realizing them; the ipseic design is a later discovery round.",
+  "status": "open",
+  "supersedes": null
+}
