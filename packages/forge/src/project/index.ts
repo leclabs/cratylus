@@ -693,7 +693,7 @@ export async function projectPluginSet(
 
   let agents = 0;
   const agentNames: string[] = [];
-  // Each RENDERED agent, once — what a launch spec composes from.
+  // Each RENDERED agent, once — what the agent surface composes from.
   const rendered: Agent[] = [];
   // Composed vectors, kept so the BINDINGS can be derived from what the agents
   // actually compose — after the fold, since a folded body is the real one.
@@ -879,26 +879,15 @@ export async function projectPluginSet(
         s.scope === undefined
           ? s.filename
           : join(ENFORCING_STAGE_DIR, s.scope, s.filename);
-      files.push({
-        path,
-        content: s.content,
-        ...(s.executable ? { executable: true } : {}),
-      });
+      files.push({ path, content: s.content });
       log(`EMIT enforcing surface ${path}`);
     }
   }
 
-  // THE LAUNCH SPEC. Some harnesses have no native identity field for a MAIN
-  // session at all — omp has no `--agent` flag and no per-session name, so
-  // composing a persona means combining flags an operator would otherwise have
-  // to remember and type together every time. That combination is itself worth
-  // generating, not leaving to a README; staged the same way
-  // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
-  // scopes appear here: an artifact that NAMES one persona is that persona's
-  // (omp's overlay), and one that resolves a persona at RUN time belongs to the
-  // session and is emitted once (omp's launcher, and claude's — which starts
-  // `claude --agent <persona>` so a persona has a command by its own name).
-  // Optional: an adapter with no launcher composes nothing here.
+  // WHAT THE ADAPTER COMPOSES FROM THE AGENTS THEMSELVES beyond their definitions
+  // (omp's dispatch isolation module), staged the same way `enforcingSurface`'s
+  // output is, by whatever scope the adapter named. Optional: an adapter that
+  // composes nothing from the agents emits nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(rendered)) {
@@ -907,17 +896,13 @@ export async function projectPluginSet(
         s.scope ?? SESSION_SCOPE,
         s.filename,
       );
-      files.push({
-        path,
-        content: s.content,
-        ...(s.executable ? { executable: true } : {}),
-      });
-      log(`EMIT launch spec ${path}`);
+      files.push({ path, content: s.content });
+      log(`EMIT agent surface ${path}`);
     }
   }
 
   // THE CAPABILITY INTERFACE: what offers the runtime's capabilities as tools,
-  // staged by scope as the launch spec is. Optional: an adapter offering no
+  // staged by scope as the agent surface is. Optional: an adapter offering no
   // capability as a tool composes nothing here.
   for (const s of opts.adapter.capabilitySurface?.() ?? []) {
     const path = join(
@@ -1084,11 +1069,7 @@ export async function projectPluginSet(
             s.scope ?? SESSION_SCOPE,
             s.filename,
           );
-          files.push({
-            path,
-            content: s.content,
-            ...(s.executable ? { executable: true } : {}),
-          });
+          files.push({ path, content: s.content });
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {

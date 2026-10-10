@@ -14,7 +14,6 @@
 // at `<root>` (the dir holding both).
 
 import {
-  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
@@ -24,14 +23,9 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
-// The DEFINING module, never the `core/` surface at large: two tokens are
-// wanted here — the staging dir the projection writes, and the deploy-time
-// self-reference substitution — and both must be the same constant every
-// stage reads.
-import {
-  ENFORCING_STAGE_DIR,
-  SCOPE_DIR_TOKEN,
-} from '../core/harness-adapter.js';
+// The DEFINING module, never the `core/` surface at large: the staging dir the
+// projection writes must be the same constant every stage reads.
+import { ENFORCING_STAGE_DIR } from '../core/harness-adapter.js';
 import { settingsJson } from './settings-json.js';
 import {
   type PlaceOpts,
@@ -240,19 +234,7 @@ export function placeHooksLocal(
         const dest = resolvePath(harnessDir, rel);
         if (!opts.dry) {
           mkdirSync(dirname(dest), { recursive: true });
-          // TEXT, not a raw copy: a staged artifact may carry `SCOPE_DIR_TOKEN`
-          // (omp's overlay does, to name its own extensions dir) — a fact only
-          // knowable HERE, once `dest` is resolved against the real `--home`.
-          // See the token's own doc for why projection cannot bake this in.
-          const raw = readFileSync(src, 'utf-8');
-          const content = raw.includes(SCOPE_DIR_TOKEN)
-            ? raw.split(SCOPE_DIR_TOKEN).join(dirname(dest))
-            : raw;
-          writeFileSync(dest, content);
-          // Preserve mode so a launcher's exec bit survives the copy — set at
-          // STAGING (`write.ts`, `executable: true`), lost by a read/write
-          // round-trip exactly like `copyFileSync` loses it, unless restored.
-          chmodSync(dest, statSync(src).mode);
+          copyFileSync(src, dest);
         }
         written.push(rel);
       }

@@ -23,9 +23,9 @@
 // the loader's own one-line message, writing nothing: falling back to the default
 // corpus there would install something other than what the config names.
 //
-// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
-// which harness, which of the corpus's practices, whether to link their launch
-// commands, and which model each held role routes to. Each has a flag; a decision
+// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
+// which harness, which of the corpus's practices, and which model each held role routes
+// to. Each has a flag; a decision
 // given by flag is never asked. The practices are the one decision no run takes for
 // the operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
 // `--yes`, given the practices already installed here, or on a fresh host the corpus's
@@ -51,7 +51,7 @@ import {
   rmSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { mergeManifest } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
@@ -72,9 +72,7 @@ import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   MANIFEST_REL,
   type ModelRoleEntry,
-  type PersonaCommandsOpts,
   addModelRoles,
-  describePersonaCommands,
   ensureBadgeStatusLine,
   ensureHostSettings,
   ensureStatusSegment,
@@ -83,9 +81,6 @@ import {
   modelRoleLine,
   noteHostEdit,
   noteHostRoutes,
-  personaLauncherOf,
-  placePersonaCommands,
-  planPersonaCommands,
   readManifest,
   recordedLines,
   recordsHostEdits,
@@ -126,10 +121,6 @@ export interface InstallCmdOpts {
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
   all?: boolean;
-  /** Link a command named after each installed persona into `~/.local/bin`
-   *  (`--link-persona-commands`), or link none (`--no-link-persona-commands`). Absent:
-   *  asked, or — where nothing is asked — none. */
-  linkPersonaCommands?: boolean;
   /** `--model-roles <role=model,…|default>`: the model each named held role routes
    *  to; `default` leaves every role on cratylus's routing. Given at all, it settles
    *  the decision: a role it does not name takes the default. Absent: asked. */
@@ -145,8 +136,6 @@ export interface InstallCmdOpts {
   prompts?: InstallPrompts;
   /** Whether questions may be asked at all. Default: stdin and stdout are a terminal. */
   interactive?: boolean;
-  /** `PATH`, for the on-PATH report. Default: the process's. */
-  pathEnv?: string;
   /** The user's HOME, when the run is for another: the harness's files go in
    *  `<home>/<its dot-directory>`. Absent, each harness's own directory — its
    *  environment variable's where it has one and that is set, else under the
@@ -194,16 +183,9 @@ interface Findings {
   routes: string[];
   /** What the host had set and was left alone. */
   left: string[];
-  /** The persona commands. */
-  commands: {
-    binDir: string | undefined;
-    linked: string[];
-    adopted: string[];
-    /** Names that could be linked and were not asked to be. */
-    offered: string[];
-    /** The personas whose commands were taken out again, their practice dropped. */
-    unlinked: string[];
-  };
+  /** The persona commands an earlier install linked, removed by this one: starting
+   *  as an agent goes through the harness itself now. */
+  unlinked: string[];
 }
 
 function emptyFindings(): Findings {
@@ -216,13 +198,7 @@ function emptyFindings(): Findings {
     edits: [],
     routes: [],
     left: [],
-    commands: {
-      binDir: undefined,
-      linked: [],
-      adopted: [],
-      offered: [],
-      unlinked: [],
-    },
+    unlinked: [],
   };
 }
 
@@ -582,30 +558,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     mkdirSync(stageTree.agentsDir, { recursive: true });
     mkdirSync(stageTree.skillsDir, { recursive: true });
     const agentNames = treeNames('agent', stageTree, adapter.agentExt);
-    // The agents an earlier install placed that this one does not: their practice is
-    // dropped, and so are their launch commands.
-    const droppedAgents = Object.keys(
-      readManifest(harnessDir).kinds.agent ?? {},
-    ).filter((n) => !agentNames.includes(n));
-
-    const commandsCtx = personaCommandsOf(adapter, agentNames, opts);
-    const placeable =
-      commandsCtx === undefined
-        ? []
-        : planPersonaCommands(commandsCtx).links.filter(
-            (l) => l.state === 'place' || l.state === 'adopt',
-          );
-    let link = false;
-    if (opts.linkPersonaCommands !== undefined) {
-      link = opts.linkPersonaCommands;
-    } else if (placeable.length > 0) {
-      open = true;
-      if (interactive && commandsCtx !== undefined) {
-        link = await answered(
-          prompts.linkCommands(linkQuestion(commandsCtx, placeable)),
-        );
-      }
-    }
 
     // A host this ran on before edits were recorded has the lines its install put in
     // the host's config files with nothing saying so. Read BEFORE the deploy rewrites
@@ -677,29 +629,22 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         harnessDir,
         dry,
       });
-      // Then the badge, which is what the operator sees of those personas: the host's
-      // own status line, made to show it.
-      showPersonaBadge(found, adapter, agentNames, {
+      // Then where a session's agent shows: the host's own status line, made to show it.
+      showAgentStatus(found, adapter, agentNames, {
         harnessDir,
         dry,
         adopt: migrating,
       });
-      // Then the persona commands: install's own step too, after the launcher they
-      // link to has been placed.
-      if (commandsCtx !== undefined) {
-        linkPersonaCommands(found, commandsCtx, { link, dry });
-        if (droppedAgents.length > 0) {
-          const removal = removePersonaCommands({
-            ...commandsCtx,
-            personas: droppedAgents,
-            only: true,
-            dry,
-          });
-          for (const l of removal.links) {
-            if (l.state === 'removed' || l.state === 'remove') {
-              found.commands.unlinked.push(basename(l.link));
-            }
-          }
+      // Then the persona commands an earlier install linked, which nothing links now.
+      for (const l of removePersonaCommands({
+        home: opts.home ?? homedir(),
+        harnessDir,
+        dry,
+      }).links) {
+        if (l.state === 'removed' || l.state === 'remove') {
+          found.unlinked.push(l.link);
+        } else if (l.state === 'kept') {
+          found.left.push(`${l.link}: ${l.reason} (${l.current})`);
         }
       }
       return { rc, found };
@@ -770,7 +715,8 @@ function warnAll(found: Findings): void {
 /**
  * What a run shows an operator, before it places (`dry`) and after: the harness and
  * its home; the practices; the counts; each host file edited and what changed in it;
- * the models chosen; the launch commands; what the host had set and was left alone —
+ * the models chosen; the persona commands an earlier install linked and this one
+ * removed; what the host had set and was left alone —
  * and, once placed, what to do next.
  */
 function describe(
@@ -821,18 +767,9 @@ function describe(
       `  models you chose: ${list(found.routes)}; every other role follows the default routing`,
     );
   }
-  const { commands } = found;
-  const named = (verb: string, names: readonly string[]): string =>
-    `  ${verb} ${plural(names.length, 'launch command')} in ${commands.binDir}: ${list(names)}`;
-  if (commands.linked.length > 0) {
-    lines.push(named(dry ? 'would link' : 'linked', commands.linked));
-  }
-  if (commands.adopted.length > 0) {
-    lines.push(named(dry ? 'would adopt' : 'adopted', commands.adopted));
-  }
-  if (commands.unlinked.length > 0) {
+  if (found.unlinked.length > 0) {
     lines.push(
-      `  ${dry ? 'would unlink' : 'unlinked'} the command${commands.unlinked.length === 1 ? '' : 's'} of ${list(commands.unlinked)}`,
+      `  ${dry ? 'would remove' : 'removed'} ${plural(found.unlinked.length, 'persona command')} an earlier install linked (start an agent with ${adapter.name} itself now): ${list(found.unlinked)}`,
     );
   }
   // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
@@ -860,110 +797,12 @@ function describe(
   }
   if (dry) return lines;
 
-  const next = [`start or restart ${adapter.name}`];
-  if (commands.linked.length + commands.adopted.length > 0) {
-    next.push(
-      `launch a persona by its name: ${list([...commands.linked, ...commands.adopted])}`,
-    );
-  } else if (commands.offered.length > 0) {
-    next.push(
-      `to launch personas by name, run again with --link-persona-commands (${plural(commands.offered.length, 'command')} into ${commands.binDir})`,
-    );
-  }
-  next.push(`to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`);
+  const next = [
+    `start or restart ${adapter.name}`,
+    `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,
+  ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;
-}
-
-/** The persona commands' shared inputs, or `undefined` where the harness has no
- *  launcher to link to. No agent to name a command after is still a context: the
- *  commands of the personas an install drops are removed through it. The launcher a
- *  command links to is the harness's, and every OTHER harness's is passed along so a
- *  name already taken by one is reported as held by it. */
-function personaCommandsOf(
-  adapter: HarnessAdapter,
-  personas: readonly string[],
-  opts: InstallCmdOpts,
-): PersonaCommandsOpts | undefined {
-  const harnessDir = harnessDirIn(adapter, opts.home);
-  const self = personaLauncherOf(harnessDir, adapter);
-  if (self === undefined) return undefined;
-  return {
-    home: opts.home ?? homedir(),
-    harnessDir,
-    self,
-    personas,
-    peers: HARNESS_NAMES.filter((n) => n !== adapter.name).flatMap((n) => {
-      const peer = personaLauncherOf(
-        harnessDirIn(adapterByName(n), opts.home),
-        adapterByName(n),
-      );
-      return peer ? [peer] : [];
-    }),
-    ...(opts.pathEnv !== undefined ? { pathEnv: opts.pathEnv } : {}),
-  };
-}
-
-/** What a yes to linking does, in the two ways it acts: a free name is linked, and a
- *  hand-made link to this launcher is only recorded — so the two are counted apart. */
-function linkQuestion(
-  ctx: PersonaCommandsOpts,
-  placeable: readonly { state: string }[],
-): string {
-  const count = (state: string) =>
-    placeable.filter((l) => l.state === state).length;
-  const link = count('place');
-  const adopt = count('adopt');
-  const binDir = planPersonaCommands(ctx).binDir;
-  return link === 0
-    ? `Adopt ${plural(adopt, 'persona command')} already linked in ${binDir}?`
-    : `Link ${plural(link, 'persona command')} into ${binDir}${adopt > 0 ? `, and adopt ${adopt} already linked there` : ''}?`;
-}
-
-/**
- * Say what commands named after the installed personas would be placed in the user's
- * bin dir, and place them when `link` says to. Anywhere else nothing is placed and the
- * report says how to.
- */
-function linkPersonaCommands(
-  found: Findings,
-  ctx: PersonaCommandsOpts,
-  run: { link: boolean; dry: boolean },
-): void {
-  const say = (lines: readonly string[]): void => {
-    found.detail.push(...lines);
-  };
-  if (run.link) {
-    const report = placePersonaCommands({ ...ctx, dry: run.dry });
-    say(describePersonaCommands(report, run.dry));
-    found.commands.binDir = report.binDir;
-    for (const l of report.links) {
-      if (l.state === 'place' || l.state === 'placed') {
-        found.commands.linked.push(l.persona);
-      } else if (l.state === 'adopt' || l.state === 'adopted') {
-        found.commands.adopted.push(l.persona);
-      } else if (l.state === 'blocked') {
-        found.warnings.push(
-          `persona command ${l.persona} was not linked: ${l.link} is ${l.heldBy ? `linked to the ${l.heldBy} launcher` : l.current} and is left alone`,
-        );
-      }
-    }
-    if (!report.onPath && found.commands.linked.length > 0) {
-      found.warnings.push(
-        `${report.binDir} is not on PATH — add it to PATH to run the persona commands by name`,
-      );
-    }
-    return;
-  }
-  const plan = planPersonaCommands(ctx);
-  say(describePersonaCommands(plan, true));
-  found.commands.binDir = plan.binDir;
-  const offered = plan.links.filter(
-    (l) => l.state === 'place' || l.state === 'adopt',
-  );
-  if (offered.length === 0) return;
-  found.commands.offered.push(...offered.map((l) => l.persona));
-  say(['  none placed — pass --link-persona-commands to link them']);
 }
 
 /** The host config file a harness reads its settings from, and so the one to edit: the
@@ -1027,30 +866,35 @@ function seedDispatchIsolation(
 }
 
 /**
- * Make the host's status line show the persona badge the projection just placed, and
- * say what was done. Nothing is placed when no persona was installed, so there is no
- * badge to show.
+ * Make the host's status line show which agent a session is, and say what was done.
  *
  * The two harnesses' status lines differ in kind, and each declares its own on the
  * port. Claude Code's is ONE command (`adapter.statusLine` names the worker that
- * fills it): set where the host has none, and WRAPPED where it has one — the worker
+ * fills it with the persona badge the projection placed): set where the host has none,
+ * and WRAPPED where it has one — the worker
  * runs the host's command and prints the badge in front of its first line, and prints
  * that command's output byte for byte in a session that runs no persona, so the badge
  * is never left off and nothing the host shows is taken away. The host's command is
- * recorded in the deploy manifest for an uninstall to restore. omp's is a list of
- * segments (`adapter.statusSegment`), which shows an extension's status only where it
- * lists `status`: install adds it to the layout in the config file the harness reads,
- * moving a host on the default preset to the `custom` one that reads a list at all,
- * and leaving a host on any other named preset as it is. Either failure to edit is
- * reported and the install itself still succeeds.
+ * recorded in the deploy manifest for an uninstall to restore. Nothing is set there
+ * when no persona was installed, so there is no badge to show.
+ *
+ * omp's is a list of segments (`adapter.statusSegment`), which shows an extension's
+ * status only where it lists `status`, and the cratylus extension
+ * (`adapter.capabilitySurface`) puts there the name and mark of the agent a session
+ * was started as (`omp --agent <name>`). ANY session may be started as an agent —
+ * any declaration omp discovers, not only the corpus's — so wherever install places
+ * that extension it also adds `status` to the layout in the config file the harness
+ * reads, moving a host on the default preset to the `custom` one that reads a list at
+ * all, and leaving a host on any other named preset as it is (where its hidden status
+ * row is shown again instead). Either failure to edit is reported and the install
+ * itself still succeeds.
  */
-function showPersonaBadge(
+function showAgentStatus(
   found: Findings,
   adapter: HarnessAdapter,
   personas: readonly string[],
   run: { harnessDir: string; dry: boolean; adopt: boolean },
 ): void {
-  if (personas.length === 0) return;
   const { dry, adopt } = run;
   const say = (line: string): void => {
     found.detail.push(line);
@@ -1060,7 +904,7 @@ function showPersonaBadge(
   };
 
   const worker = adapter.statusLine;
-  if (worker !== undefined) {
+  if (worker !== undefined && personas.length > 0) {
     const { harnessDir } = run;
     const path = join(harnessDir, adapter.hooksFile);
     const recorded = readManifest(harnessDir).statusLine;
@@ -1118,10 +962,11 @@ function showPersonaBadge(
     }
   }
 
-  // A harness whose status line is a list of segments: list the one the badge renders
-  // in, in the file the harness reads its layout from.
+  // A harness whose status line is a list of segments: list the one an extension's
+  // status renders in, in the file the harness reads its layout from, wherever the
+  // extension that shows the session's agent there is placed.
   const host = adapter.statusSegment;
-  if (host !== undefined) {
+  if (host !== undefined && adapter.capabilitySurface !== undefined) {
     const path = hostConfigPath(host.configRels, run.harnessDir);
     const result = ensureStatusSegment(path, host, { dry, adopt });
     if (result.edit !== undefined) {
@@ -1130,23 +975,23 @@ function showPersonaBadge(
     if (adopt && !dry && existsSync(path)) {
       markMigratedConfig(run.harnessDir, path);
     }
-    // The row beneath the editor is the badge's place wherever the layout has none of
+    // The row beneath the editor is the agent's place wherever the layout has none of
     // its own; a host that had hidden it is told it is shown now, and why.
     const rowShown = result.hookRowShown
-      ? ` Save one value: its \`showHookStatus\` was false, which hid the persona badge's only place there, so ${dry ? 'it would be' : 'it is'} now true.`
+      ? ` Save one value: its \`showHookStatus\` was false, which hid the only place there for the name and mark of the agent a session was started as, so ${dry ? 'it would be' : 'it is'} now true.`
       : '';
     switch (result.state) {
       case 'refused':
         if (result.hookRowShown) {
           found.warnings.push(
-            `could not list \`${host.segment}\` in ${path} — ${result.refused}. The persona badge renders beneath the status line, not in it.${rowShown}`,
+            `could not list \`${host.segment}\` in ${path} — ${result.refused}. A session's agent renders beneath the status line, not in it.${rowShown}`,
           );
           return;
         }
         refused(
           path,
           result.refused as string,
-          'The persona badge renders beneath the status line, not in it, unless the host set `statusLine.showHookStatus: false`, which hides it there; set it true, or list the `status` segment in a `custom` layout, to see the badge.',
+          "A session's agent renders beneath the status line, not in it, unless the host set `statusLine.showHookStatus: false`, which hides it there; set it true, or list the `status` segment in a `custom` layout, to see it.",
         );
         return;
       case 'present':
@@ -1156,20 +1001,20 @@ function showPersonaBadge(
         return;
       case 'other-preset':
         say(
-          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is.${rowShown}`,
+          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so a session's agent renders beneath the status line; left as it is.${rowShown}`,
         );
         for (const line of result.advice ?? []) say(`    ${line}`);
         found.left.push(
-          `the status line preset \`${result.preset}\` in ${path}; the persona badge renders beneath it`,
+          `the status line preset \`${result.preset}\` in ${path}; a session's agent renders beneath it`,
         );
         return;
       case 'own-layout':
         say(
-          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so the persona badge renders beneath the status line.${rowShown}`,
+          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so a session's agent renders beneath the status line.${rowShown}`,
         );
         for (const line of result.advice ?? []) say(`    ${line}`);
         found.left.push(
-          `the status line layout in ${path}; the persona badge renders beneath it`,
+          `the status line layout in ${path}; a session's agent renders beneath it`,
         );
         return;
       case 'added':
@@ -1178,7 +1023,7 @@ function showPersonaBadge(
         );
         found.edits.push({
           path,
-          what: 'the status line lists the persona badge segment',
+          what: "the status line lists the segment that shows a session's agent",
         });
         return;
     }

@@ -159,31 +159,20 @@ export {
   ensureHostSettings,
 } from './host-settings.js';
 
-// The persona commands: a command named after each installed persona, linked into the
-// user's bin dir to the harness's launcher — never over anything this install did not
-// place, and removed only as recorded.
+// The persona commands earlier installs linked into the user's bin dir, removed as
+// recorded: install links none any more, and takes away what an earlier one placed.
 export {
-  describePersonaCommands,
-  describePersonaRemoval,
-  PERSONA_BIN_REL,
-  type PersonaCommandsOpts,
-  type PersonaCommandsReport,
-  type PersonaLauncher,
-  type PersonaLink,
-  type PersonaLinkState,
   type PersonaRemoval,
+  type PersonaRemovalOpts,
   type PersonaRemovalReport,
   type PersonaRemovalState,
-  personaLauncherOf,
-  placePersonaCommands,
-  planPersonaCommands,
   removePersonaCommands,
 } from './persona-commands.js';
 
-// The host's status line, where the persona badge becomes visible: Claude Code's one
-// `settings.statusLine` command (set where the host has none; where it has one, install
-// wraps that command so the badge prints before its output; never replaced) and omp's
-// `statusLine` layout (the `status` segment listed, under the `custom` preset that
+// The host's status line, where an agent's name and mark become visible: Claude Code's
+// one `settings.statusLine` command (set where the host has none; where it has one,
+// install wraps that command so the badge prints before its output; never replaced) and
+// omp's `statusLine` layout (the `status` segment listed, under the `custom` preset that
 // reads a list at all).
 export {
   type BadgeStatusLineResult,

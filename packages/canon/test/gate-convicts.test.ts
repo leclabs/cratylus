@@ -220,6 +220,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // covers generic manifest line-edit behavior without depending on a harness
   // integration or the deleted workflow artifacts.
   'forge/deploy/uninstall.test.ts': 'BEHAVIORAL',
+  // drives install and uninstall over a fixture home holding an earlier install's
+  // persona launcher, overlay, badge and linked command, and asserts each is removed.
+  'forge/deploy/retired-launch.test.ts': 'BEHAVIORAL',
   // drives scaffoldProject with a supplied OMP harness home and asserts its `.omp` path.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
   // drives `probeRuntimeBin`/`assertShimsResolvable` against stranded and live host

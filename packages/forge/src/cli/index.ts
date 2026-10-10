@@ -311,18 +311,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(new Option('--all', 'Install every practice, without asking'))
     .addOption(
       new Option(
-        '--link-persona-commands',
-        'Link a command named after each installed persona into ~/.local/bin (default: asked; else none)',
-      ),
-    )
-    .addOption(
-      new Option(
-        '--no-link-persona-commands',
-        'Link no persona commands, without asking',
-      ),
-    )
-    .addOption(
-      new Option(
         '--model-roles <roles>',
         "The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)",
       ),
@@ -353,7 +341,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         harness?: string;
         practices?: string;
         all?: boolean;
-        linkPersonaCommands?: boolean;
         modelRoles?: string;
         yes?: boolean;
         verbose?: boolean;
@@ -365,7 +352,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           corpus: options.defaultCorpus,
           practices: opts.practices,
           all: opts.all,
-          linkPersonaCommands: opts.linkPersonaCommands,
           modelRoles: opts.modelRoles,
           yes: opts.yes,
           verbose: opts.verbose,

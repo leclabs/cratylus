@@ -26,6 +26,16 @@ export const reservation = {
 };
 export function run(cwd: string, command: string, args: string[]) {
   const result = spawnSync(command, args, {
+    // Fixture preparation must not consult the operator's git, npm or pnpm
+    // configuration either; the inspect path's isolation starts before omp.
+    env: {
+      HOME: join(cwd, '.fixture-home'),
+      PWD: cwd,
+      PATH: `${dirname(process.execPath)}:${process.env.PATH}`,
+      LANG: 'C.UTF-8',
+      GIT_CONFIG_NOSYSTEM: '1',
+      GIT_CONFIG_GLOBAL: '/dev/null',
+    },
     cwd,
     encoding: 'utf8',
     timeout: 30_000,
@@ -51,6 +61,7 @@ export function snapshot(cwd: string): Record<string, string> {
 export function repository() {
   const cwd = mkdtempSync(join(tmpdir(), 'concept-reconstitution-'));
   try {
+    mkdirSync(join(cwd, '.fixture-home'));
     for (const args of [
       ['init', '-q'],
       ['config', 'user.name', 'Journal check'],

@@ -199,7 +199,6 @@ function hostIn(root: string): Host {
     '--home',
     home,
     '--all',
-    '--no-link-persona-commands',
     '--model-roles',
     'default',
   ]);

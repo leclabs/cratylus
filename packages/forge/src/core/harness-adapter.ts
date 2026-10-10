@@ -70,31 +70,6 @@ export const ENFORCING_STAGE_DIR = 'enforcing';
  */
 export const NEUTRAL_AGENT_ROOT = '.agents';
 
-/**
- * The self-reference token a SCOPED artifact's content may embed to name its OWN
- * eventual absolute destination directory — substituted at DEPLOY TIME, never at
- * projection.
- *
- * WHY IT EXISTS: `hookCommand` gets to bake a literal `$HOME` because the
- * artifact it authors is a SHELL command, expanded by the shell that runs it at
- * RUN time on whatever host it lands on. A harness whose own config is a
- * structured document it parses itself has no such expansion — measured on
- * omp's `--config` overlay, whose `extensions:` entries are resolved with a
- * plain path join against the launch process's cwd (`resolveExtensionLoadPath`,
- * oh-my-pi's resource loader) and never against `$HOME`, a shell variable, or
- * this file's own directory (confirmed: a literal `$HOME` segment in a config
- * value loads as a directory NAMED `$HOME`, not the operator's home). A document
- * that must reference where IT ITSELF will live has no run-time seam to defer
- * to, so the only truthful moment left is DEPLOY, once `--home` has resolved a
- * real destination for this very artifact.
- *
- * A placer staging a scoped artifact already computes that destination
- * (`resolvePath(harnessDir, scopedRel(filename, scope))`) to know where to write
- * it, so substituting this token costs nothing further and needs no
- * harness-specific knowledge in the deploy layer — see `deploy/hooks.ts`.
- */
-export const SCOPE_DIR_TOKEN = '{{scopeDir}}';
-
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
   /** The harness-owned filename (with extension), e.g. `mav.md` / `SKILL.md`. */
@@ -110,13 +85,6 @@ export interface HarnessProjection {
    * rather than by a runtime filter.
    */
   readonly scope?: string;
-  /**
-   * Land executable (0755) once placed — a launcher an operator invokes
-   * directly, the way a hook worker already does (`ProjectedFile.executable`).
-   * Absent ⇒ the ambient umask, correct for every module and config file this
-   * port projects.
-   */
-  readonly executable?: boolean;
 }
 
 /** A hooks → settings-fragment projection, plus the per-hook losses. `settings`
@@ -468,12 +436,9 @@ export interface HarnessAdapter {
    * `launchSurface` returned with a `scope`.
    *
    * NOT ONLY MECHANISM, and that is why this is named `scopedRel` rather than
-   * `enforcingRel`, its name until a launch spec needed the same map: a harness
-   * whose scope is a directory may place MORE than a hook module there — omp's
-   * `--config` overlay lands beside the modules it names, and its launcher in
-   * the SESSION scope, because an operator who has to combine flags by hand to
-   * start one persona has a launch spec whether or not this port generates it
-   * for them.
+   * `enforcingRel`: a harness whose scope is a directory may place more than a hook
+   * module there, such as the artifacts {@link launchSurface} composes from the
+   * agents themselves.
    *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is
@@ -488,35 +453,21 @@ export interface HarnessAdapter {
    */
   scopedRel?(filename: string, agent?: string): string;
   /**
-   * Emit the LAUNCH SPEC — the artifacts an operator combines to start a
-   * session AS one composed persona, on a harness with no native identity
-   * field to put a persona in — and the IDENTITY that launch carries, which
-   * includes what the operator sees of it: omp's persona badge, the mark emoji
-   * and name in the status line. Staged the same way `enforcingSurface`'s output
-   * is (`scope` = the agent name, or {@link SESSION_SCOPE}), because the spec
-   * belongs beside the mechanism modules it wires, not in a directory of its
-   * own.
+   * Emit what this harness composes from the COMPOSED AGENTS themselves, beyond each
+   * agent's own definition: omp's dispatch isolation module (the agents that declare a
+   * worktree of their own), and on a harness whose status line is one command, the
+   * badge files and the worker {@link statusLine} names. Staged the same way
+   * `enforcingSurface`'s output is (`scope` = the agent name, or
+   * {@link SESSION_SCOPE}).
    *
    * `agents` is the COMPOSED set, each projected agent once — not its names —
-   * because the badge is written from the agent cell (its `provenance` mark) at
-   * projection: a launched persona cannot name itself at run time.
+   * because what is emitted is written from the agent cells at projection.
    *
-   * PER-AGENT AND SESSION-WIDE BOTH, and the split is the implementation's to
-   * make. An artifact that NAMES one persona is scoped to it (omp's `--config`
-   * overlay, which names that persona's own extensions dir); one that resolves
-   * a persona at run time is session-scoped and emitted ONCE (omp's launcher,
-   * which reads the agent out of `$1` or out of argv[0]). Returning one set per
-   * agent unconditionally is how ten agents came to ship ten byte-identical
-   * launchers.
+   * NO LAUNCHER. Starting a session as an agent goes through the harness itself
+   * (omp's `--agent`, registered by its {@link capabilitySurface} module; claude's own
+   * `--agent`), so nothing emitted here starts one.
    *
-   * ORTHOGONAL TO A PROFILE. omp's `--profile` silos auth, MCP, models,
-   * sessions and `agent.db` — an ENVIRONMENT choice, a property of the host.
-   * The launch spec carries IDENTITY — a property of the agent this port
-   * composes — and the two facts do not need to agree: an operator may still
-   * pass `--profile work` on the launcher's own command line and get both.
-   *
-   * Absent ⇒ this harness carries identity in its own native field (claude's
-   * front-matter `name`) and composes no launch spec.
+   * Absent ⇒ this harness composes nothing from the agents beyond their definitions.
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
   /**
@@ -533,18 +484,6 @@ export interface HarnessAdapter {
    * Absent ⇒ this harness is offered no capability as a tool.
    */
   capabilitySurface?(): readonly HarnessProjection[];
-  /**
-   * The filename of this harness's GENERIC PERSONA LAUNCHER — the file
-   * {@link launchSurface} emits at the {@link SESSION_SCOPE}, one for every persona,
-   * which resolves the persona to launch from its own invoked name.
-   *
-   * Declared on the port because install's persona commands link to it: a command
-   * named after a persona is a symlink to this file, and where it landed is the
-   * adapter's own answer (`scopedRel(launcherFile, SESSION_SCOPE)`), never a path
-   * install spells. Absent ⇒ this harness has no launcher, so no persona command
-   * can be linked to it.
-   */
-  readonly launcherFile?: string;
   /**
    * The harness's ONE host-owned status-line command, and the worker this port
    * ships to fill it — declared by a harness whose status line is a single command
@@ -568,7 +507,8 @@ export interface HarnessAdapter {
   /**
    * Where an extension's status appears in this harness's status line, for a harness
    * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
-   * persona badge is an extension status, and it renders INSIDE the line only where
+   * status of the cratylus extension (the agent a session was started as) is an
+   * extension status, and it renders INSIDE the line only where
    * the host's layout lists `segment` — otherwise beneath it. Install adds it, to the
    * host's own layout and never over it.
    *
@@ -578,7 +518,7 @@ export interface HarnessAdapter {
    * `defaultLayout` is what the harness lays out when the host names no preset — the
    * layout in effect on a host that never chose one, which has no `segment`, and
    * which the harness reads segment lists from ONLY under its `custom` preset: so a
-   * host with no preset can show the badge only by choosing `custom`, and install
+   * host with no preset can show that status inline only by choosing `custom`, and install
    * then writes this layout under it so the line looks as it did. `customLeft` is
    * the left list the `custom` preset falls back to when the host lists none.
    *

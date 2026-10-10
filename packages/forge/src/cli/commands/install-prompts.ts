@@ -39,8 +39,6 @@ export interface InstallPrompts {
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
-  /** Whether to link the launch commands; `question` says what a yes does. */
-  linkCommands(question: string): Promise<boolean | undefined>;
   /** The model per role: the answer of every role asked, a role left at its default
    *  answering its `initial` (or absent, where it has none). */
   routes(
@@ -120,12 +118,6 @@ export const terminalPrompts: InstallPrompts = {
         initialValues: [...initial],
         required: true,
       }),
-    );
-  },
-
-  async linkCommands(question) {
-    return answer(
-      await clack.confirm({ message: question, initialValue: false }),
     );
   },
 

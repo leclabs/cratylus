@@ -404,7 +404,6 @@ describe('guided install confirmation', () => {
         corpus: corpus as never,
         home,
         cwd,
-        pathEnv: '/usr/bin',
         harness: 'omp',
         practices: undefined,
         interactive: true,

@@ -15,8 +15,8 @@ import {
 import { repository, reservation, seedReservations } from './fixture.js';
 import { inspectLaunch, liveRun } from './omp.js';
 
-// Default collection runs only the offline proof, never a model turn.
-// PREFLIGHT exercises exactly the live fixture, but cannot call omp's model.
+// Default collection replays recordings and inspects a prepared turn, exiting
+// before any provider request. PREFLIGHT only exercises journal fixture setup.
 describe('example 10: reconstitutes from the concept journal', () => {
   it.runIf(process.env.CONCEPT_JOURNAL_PREFLIGHT === '1')(
     'preflight: appends the real journal before any model launch',

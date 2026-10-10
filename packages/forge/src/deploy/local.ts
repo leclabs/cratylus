@@ -32,10 +32,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, posix, resolve as resolvePath } from 'node:path';
-import {
-  ENFORCING_STAGE_DIR,
-  SCOPE_DIR_TOKEN,
-} from '../core/harness-adapter.js';
+import { ENFORCING_STAGE_DIR } from '../core/harness-adapter.js';
 import { staleFiles } from '../prune/index.js';
 import {
   assertShimsResolvable,
@@ -623,22 +620,7 @@ export function auditLocal(
   // ── stale + absent: every rendered artifact, against its deployed copy.
   for (const { rel, src } of rendered) {
     const dest = resolvePath(harnessDir, rel);
-    // THE PLACER SUBSTITUTES, SO THE AUDIT MUST TOO. `placeHooksLocal` resolves
-    // `SCOPE_DIR_TOKEN` against the real destination directory at write time, so
-    // an artifact carrying it can NEVER equal its rendered bytes. Comparing raw
-    // made six persona overlays permanently, falsely stale — and a drift report
-    // that is always red is one nobody reads, which is the whole value of it.
-    const rawWant = readFileSync(src);
-    const want =
-      !isBinary(rawWant) && rawWant.includes(SCOPE_DIR_TOKEN)
-        ? Buffer.from(
-            rawWant
-              .toString('utf-8')
-              .split(SCOPE_DIR_TOKEN)
-              .join(dirname(dest)),
-            'utf-8',
-          )
-        : rawWant;
+    const want = readFileSync(src);
     if (!existsSync(dest)) {
       divergences.push({
         kind: 'absent',
