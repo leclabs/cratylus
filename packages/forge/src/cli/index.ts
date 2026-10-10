@@ -312,7 +312,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--model-roles <roles>',
-        "The model each role routes to, as role=model comma-separated, or 'default' (default: asked; a role the host already routes is left as it is)",
+        "The model the model role named for each agent routes to, as agent=model comma-separated (keys are agent names), or 'default' (default: asked; an agent's model role the host already routes is left as it is)",
       ),
     )
     .addOption(

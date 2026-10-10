@@ -257,9 +257,9 @@ describe('agent launch — visible examples', () => {
           `export const pilot = ${JSON.stringify({
             name,
             description: 'A fixture corpus agent.',
-            archetype: body,
-            provenance: null,
-            objective: 'Survey the inlet.',
+            mark: null,
+            key: null,
+            objective: [{ value: `survey ≜ ${body}`, level: 'fixed' }],
           })};\n`,
         );
         writeFileSync(
@@ -269,9 +269,11 @@ describe('agent launch — visible examples', () => {
             agents,
             manifest: {
               objective: {
-                axis: 'Constitution',
+                group: 'Constitution',
                 repertoire: 'open',
                 arity: 'scalar',
+                level: 'fixed',
+                projection: 'text',
               },
             },
           })}] };\n`,

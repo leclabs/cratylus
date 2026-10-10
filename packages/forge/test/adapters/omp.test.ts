@@ -18,33 +18,97 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
   OMP_ISOLATION_MODULE,
+  OMP_READ_ONLY_TOOLS,
+  OMP_SESSION_MODULE,
   agentToOmpMd,
   ompCapabilityExtensions,
   ompHarnessAdapter,
+  ompRoleRouting,
 } from '../../src/adapters/omp/index.js';
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** What the emitted CRATYLUS module reaches of omp itself, which only an omp
  *  process resolves: its agent discovery, front-matter parser, command-line parser,
- *  model resolver and settings. Each stand-in answers from `omp` below and records
- *  what it was asked. */
-const omp = vi.hoisted(() => ({
-  agents: [] as Record<string, unknown>[],
-  discovered: [] as string[],
-  /** What omp's `parseArgs` read off the command line. */
-  args: {} as { model?: string; thinking?: string; tools?: string[] },
-  parsed: [] as { argv: string[]; flags: Map<string, { type: string }> }[],
-  /** The host's `modelRoles`, as the stand-in resolver expands `@role`. */
-  roles: {} as Record<string, string>,
-  /** The host's `task.agentModelOverrides`. */
-  overrides: {} as Record<string, string>,
-  selections: [] as Record<string, unknown>[],
-}));
+ *  model, advisor, prewalk and spawn resolvers, skills and settings. Each stand-in
+ *  answers from `omp` below and records what it was asked. */
+const omp = vi.hoisted(() => {
+  /** The session's runtime settings layer, as `overlayLayers().overrides` reads it. */
+  const runtime: Record<string, unknown> = {};
+  /** Every runtime override written or cleared, in order: `[id, value]`. */
+  const writes: [string, unknown][] = [];
+  /** The object holding `path`'s last key, its parents made as needed. */
+  const at = (path: string[]) => {
+    let node = runtime;
+    for (const key of path.slice(0, -1)) {
+      node[key] ??= {};
+      node = node[key] as Record<string, unknown>;
+    }
+    return node;
+  };
+  /** A setting handle whose override lands in `runtime`, as omp's does. */
+  const handle = (id: string) => {
+    const segments = id.split('.');
+    const last = segments.at(-1) ?? id;
+    return {
+      segments,
+      override: (_scope: unknown, value: unknown) => {
+        at(segments)[last] = structuredClone(value);
+        writes.push([id, value]);
+      },
+      clearOverride: () => {
+        delete at(segments)[last];
+        // An emptied parent goes too, so a cleared layer reads as one never written.
+        for (let depth = segments.length - 1; depth > 0; depth--) {
+          const path = segments.slice(0, depth);
+          const parent = at(path);
+          const key = path.at(-1) ?? '';
+          if (Object.keys(parent[key] as object).length === 0)
+            delete parent[key];
+        }
+        writes.push([id, undefined]);
+      },
+    };
+  };
+  return {
+    agents: [] as Record<string, unknown>[],
+    discovered: [] as string[],
+    /** What omp's `parseArgs` read off the command line. */
+    args: {} as {
+      model?: string;
+      thinking?: string;
+      tools?: string[];
+      advisor?: boolean;
+      prewalk?: boolean;
+      noPrewalk?: boolean;
+      prewalkInto?: string;
+    },
+    parsed: [] as { argv: string[]; flags: Map<string, { type: string }> }[],
+    /** The host's `modelRoles`, as the stand-in resolvers expand `@role`. */
+    roles: {} as Record<string, string>,
+    /** The host's `task.agentModelOverrides`. */
+    overrides: {} as Record<string, string>,
+    /** The host's `task.agentAdvisor` and `task.agentPrewalk`. */
+    agentAdvisor: {} as Record<string, string>,
+    agentPrewalk: {} as Record<string, string>,
+    selections: [] as Record<string, unknown>[],
+    /** The skills omp discovered for the session. */
+    skills: [] as { name: string; filePath: string }[],
+    runtime,
+    writes,
+    handle,
+    /** The session's own settings, which the module must read and write. */
+    scope: {
+      standIn: 'session settings',
+      overlayLayers: () => ({ overrides: structuredClone(runtime) }),
+    },
+  };
+});
 vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
   discoverAgents: async (cwd: string) => {
     omp.discovered.push(cwd);
@@ -89,12 +153,96 @@ vi.mock('@oh-my-pi/pi-coding-agent/config/model-resolver', () => ({
     }
     return { explicitThinkingLevel: false, authFallbackUsed: false };
   },
+  DEFAULT_PREWALK_TARGET: '@smol',
+  // `task.agentAdvisor` / `task.agentPrewalk` first ("off" wins, a pattern is that
+  // pattern), then the declaration's `advisor` / `prewalk`.
+  resolveAgentAdvisorSelection: (options: {
+    settingsOverride?: string;
+    agentAdvisor?: boolean | string;
+  }) => {
+    if (options.settingsOverride === 'off') return undefined;
+    if (options.settingsOverride !== undefined)
+      return { model: options.settingsOverride };
+    if (options.agentAdvisor === true) return {};
+    return typeof options.agentAdvisor === 'string'
+      ? { model: options.agentAdvisor }
+      : undefined;
+  },
+  resolveAgentAdvisorRolePattern: (pattern: string) =>
+    pattern.startsWith('@')
+      ? (omp.roles[pattern.slice(1)] ?? pattern)
+      : pattern,
+  resolveAgentPrewalkPattern: (options: {
+    settingsOverride?: string;
+    agentPrewalk?: boolean | string;
+  }) => {
+    if (options.settingsOverride === 'off') return undefined;
+    if (options.settingsOverride !== undefined) return options.settingsOverride;
+    if (options.agentPrewalk === true) return '@smol';
+    return typeof options.agentPrewalk === 'string'
+      ? options.agentPrewalk
+      : undefined;
+  },
+  resolveConfiguredModelPatterns: (pattern: string) => {
+    if (!pattern.startsWith('@')) return [pattern];
+    const role = omp.roles[pattern.slice(1)];
+    return role === undefined ? [] : [role];
+  },
 }));
 vi.mock('@oh-my-pi/pi-coding-agent/config/settings', () => ({
-  settings: { standIn: 'settings' },
+  findScopedSettings: () => omp.scope,
+  settings: { standIn: 'global settings' },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/config/registry', () => ({
+  lookup: (id: string) => omp.handle(id),
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/config/model-settings', () => ({
+  cfgModelRoles: omp.handle('modelRoles'),
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/session/settings', () => ({
+  cfgPersonality: omp.handle('personality'),
+  cfgPrewalkEnabled: omp.handle('prewalk.enabled'),
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/tools/settings', () => ({
+  cfgReadSummarizeEnabled: omp.handle('read.summarize.enabled'),
 }));
 vi.mock('@oh-my-pi/pi-coding-agent/task/settings', () => ({
   cfgTaskAgentModelOverrides: { get: () => omp.overrides },
+  cfgTaskAgentAdvisor: { get: () => omp.agentAdvisor },
+  cfgTaskAgentPrewalk: { get: () => omp.agentPrewalk },
+  cfgTaskPrewalk: { get: () => false },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
+  resolveAgentPrewalkDefault: (agent: { prewalk?: boolean | string }) =>
+    agent.prewalk,
+}));
+// omp's spawn-policy meanings: `*` or absent anyone, empty no one, a list exactly those.
+vi.mock('@oh-my-pi/pi-coding-agent/task/spawn-policy', () => ({
+  resolveSpawnPolicy: (spawns?: string) => {
+    const said = (spawns ?? '*').trim();
+    if (said === '*')
+      return { enabled: true, allowedAgents: null, allowedErrorText: '*' };
+    const allowed = said.split(',').filter(Boolean);
+    return allowed.length === 0
+      ? {
+          enabled: false,
+          allowedAgents: allowed,
+          allowedErrorText: 'none (spawns disabled for this agent)',
+        }
+      : {
+          enabled: true,
+          allowedAgents: allowed,
+          allowedErrorText: allowed.join(','),
+        };
+  },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
+  getActiveSkills: () => omp.skills,
+  buildSkillPromptMessage: async (
+    skill: { name: string },
+    _input: unknown,
+    kind: string,
+  ) => ({ message: `<${kind} skill ${skill.name}: its instructions>` }),
 }));
 // Top-level `key: "json"` lines between the fences: all a fixture here writes.
 vi.mock('@oh-my-pi/pi-utils', () => ({
@@ -126,9 +274,19 @@ const AGENT = {
   // catalogs"). Unquoted, the emitted document is a scanner error and omp falls
   // back to a naive line parser, warning once per discovery pass.
   description: 'the builder: ships things',
-  archetype: 'Hero archetype of end-to-end delivery',
-  objective: 'delivery ⟨end-to-end integrated green⟩',
+  mark: null,
+  key: null,
+  ...Object.fromEntries(
+    Object.keys(FIXTURE_MANIFEST).map((k) => [kebabToCamel(k), []]),
+  ),
+  objective: [
+    { value: 'delivery ≜ end-to-end integrated green', level: 'fixed' },
+  ],
 } as never;
+
+/** {@link AGENT} with identity facts of its own. */
+const agent = (over: Record<string, unknown>) =>
+  ({ ...(AGENT as object), ...over }) as never;
 
 const CTX = { manifest: FIXTURE_MANIFEST } as never;
 
@@ -169,41 +327,85 @@ function frontMatter(md: string): Record<string, string> {
 }
 
 describe('omp agent definition', () => {
-  it('carries the two fields omp requires when skills are absent', () => {
-    expect(frontMatter(agentToOmpMd(AGENT, CTX))).toEqual({
+  it('carries name, description, the empty key and the model role named for the agent', () => {
+    const front = frontMatter(agentToOmpMd(AGENT, CTX));
+    expect(front).toEqual({
       name: 'mav',
       description: 'the builder: ships things',
+      key: 'null',
+      model: '@mav',
     });
+    expect(Object.keys(front)).toEqual(['name', 'description', 'key', 'model']);
+  });
+
+  it('writes every setting in the order omp reads them, each only where it applies', () => {
+    const front = frontMatter(
+      agentToOmpMd(
+        agent({
+          mark: { emoji: '✈️', hue: 'green' },
+          dispatches: ['illustrator', 'lead', 'researcher'],
+          readOnly: true,
+          skills: ['design'],
+        }),
+        CTX,
+      ),
+    );
+    expect(Object.keys(front)).toEqual([
+      'name',
+      'description',
+      'mark',
+      'key',
+      'model',
+      'spawns',
+      'tools',
+      'autoloadSkills',
+    ]);
+    expect(front.mark).toBe('✈️');
+  });
+
+  it('dispatches exactly its handoffs, the researcher as omp’s own scout', () => {
+    const spawns = (dispatches: readonly string[] | undefined) =>
+      frontMatter(agentToOmpMd(agent({ dispatches }), CTX)).spawns;
+    expect(spawns(['illustrator', 'lead', 'researcher'])).toBe(
+      'illustrator, lead, scout',
+    );
+    // `""` denies every dispatch: an agent that hands off to no one dispatches no one.
+    expect(spawns([])).toBe('');
+    // Undeclared handoffs leave omp's default in place.
+    expect(spawns(undefined)).toBeUndefined();
+    expect(ompHarnessAdapter.nativeAgents).toEqual({ researcher: 'scout' });
+  });
+
+  it('lists tools only for an agent that changes nothing, keeping omp’s defaults for the rest', () => {
+    expect(
+      frontMatter(agentToOmpMd(agent({ readOnly: true }), CTX)).tools,
+    ).toBe('[read, grep, glob, find, ast_grep, web_search]');
+    expect(frontMatter(agentToOmpMd(AGENT, CTX))).not.toHaveProperty('tools');
   });
 
   it('emits `autoloadSkills` for an agent given skills, and only then', () => {
-    // The front-matter key that describes the COMPOSED AGENT rather than the
-    // host's dispatch policy — with `model`, which names its role. The list is the closure
-    // projection hands the adapter, rendered in the order it arrives. omp
-    // honours it for a DISPATCHED subagent, so the list reaching these bytes is
-    // what a dispatch of this one definition preloads.
+    // The list is the closure projection hands the adapter, rendered in the order it
+    // arrives. omp honours it for a DISPATCHED subagent, so the list reaching these
+    // bytes is what a dispatch of this one definition preloads.
     //
     // Read off the RENDERED STRING rather than through `frontMatter`: the claim
     // is about the bytes omp's own YAML reader will see, including the quoting
     // and the position of the key inside the fence.
     const declared = agentToOmpMd(
-      { ...(AGENT as object), skills: ['design', 'deliver'] } as never,
+      agent({ skills: ['design', 'deliver'] }),
       CTX,
     );
     expect(declared).toContain(
       '\nautoloadSkills: ["design", "deliver"]\n---\n',
     );
 
-    // The negative half, and it has teeth: a third key emitted unconditionally
-    // would put `autoloadSkills: []` into every definition that declares none —
-    // a list omp parses to empty and a launcher renders as nothing, which is
-    // noise that reads like a declaration. An EMPTY list is treated as absent
-    // for the same reason.
-    for (const bare of [AGENT, { ...(AGENT as object), skills: [] } as never]) {
+    // An EMPTY list is treated as absent: `autoloadSkills: []` is noise that reads
+    // like a declaration.
+    for (const bare of [AGENT, agent({ skills: [] })]) {
       const fence = /^---\n([\s\S]*?)\n---\n/.exec(
         agentToOmpMd(bare, CTX),
       )?.[1] as string;
-      expect(fence.split('\n')).toHaveLength(2);
+      expect(fence.split('\n')).toHaveLength(4);
       expect(fence).not.toContain('autoloadSkills');
     }
   });
@@ -215,30 +417,101 @@ describe('omp agent definition', () => {
     // parser, invisible until a description grows something the fallback loses
     // too. The round trip is the claim: whatever goes in comes back out.
     const gnarly = 'a "quote", a \\ and a colon: here';
-    const out = agentToOmpMd(
-      { ...(AGENT as object), description: gnarly } as never,
-      CTX,
-    );
+    const out = agentToOmpMd(agent({ description: gnarly }), CTX);
     expect(frontMatter(out).description).toBe(gnarly);
   });
 
-  it('asserts NO identity line — a dispatched body needs none', () => {
-    // It used to open the body, because this file WAS the appended prompt and
-    // omp's base prompt asserts its own identity underneath. A DISPATCHED
-    // subagent reads this body as its ENTIRE system prompt, with no rival
-    // identity under it, so the sentence would be redundant there.
+  it('carries the composed body, opening with the name and description', () => {
+    // The legs above pass trivially if the body were dropped: a file of front-matter
+    // fields and nothing else would satisfy every one of them.
     const body = agentToOmpMd(AGENT, CTX).split('\n---\n')[1] ?? '';
+    expect(body).toMatch(/^\n# mav\n\nthe builder: ships things\n/);
+    expect(body).toContain(
+      '- **delivery** — end-to-end integrated green (fixed)',
+    );
     expect(body).not.toContain('You are `mav`');
   });
+});
 
-  it('still carries the composed body, not merely the front-matter', () => {
-    // The legs above pass trivially if the body were dropped: a file of two
-    // front-matter fields and nothing else would satisfy every one of them and
-    // carry no dimensions at all.
-    const out = agentToOmpMd(AGENT, CTX);
-    expect(out).toContain('## Archetype');
-    expect(out).toContain('Hero archetype of end-to-end delivery');
-    expect(out).toContain('delivery ⟨end-to-end integrated green⟩');
+describe('omp model roles', () => {
+  const host = [
+    ['default', 'anthropic/frontier-model:low'],
+    ['smol', 'anthropic/small-model:medium'],
+    ['plan', '@default'],
+    ['second', 'anthropic/other-model:high'],
+    ['alternate', 'openai/other-family:max'],
+    ['later', 'google/third-family'],
+  ] as const;
+
+  it("binds an agent's own role to its tier and effort", () => {
+    expect(ompRoleRouting.agentRole({ tier: 'frontier', effort: 'high' })).toBe(
+      '@frontier:high',
+    );
+  });
+
+  it('seeds each tier from the host’s own roles, its thinking level dropped', () => {
+    expect(ompRoleRouting.seedTier('frontier', host)).toBe(
+      'anthropic/frontier-model',
+    );
+    expect(ompRoleRouting.seedTier('fast', host)).toBe('anthropic/small-model');
+    // The first entry, in file order, of another provider than the frontier's; an
+    // alias names no provider.
+    expect(ompRoleRouting.seedTier('frontier-other-family', host)).toBe(
+      'openai/other-family',
+    );
+  });
+
+  it('reads the frontier the host already set when it seeds the other family', () => {
+    expect(
+      ompRoleRouting.seedTier('frontier-other-family', [
+        ['frontier', 'openai/chosen'],
+        ...host,
+      ]),
+    ).toBe('anthropic/frontier-model');
+  });
+
+  it('seeds nothing it has no model for', () => {
+    expect(ompRoleRouting.seedTier('frontier', [])).toBeUndefined();
+    expect(
+      ompRoleRouting.seedTier('fast', [['default', 'a/b']]),
+    ).toBeUndefined();
+    expect(
+      ompRoleRouting.seedTier('frontier-other-family', [['default', 'a/b']]),
+    ).toBeUndefined();
+    expect(ompRoleRouting.seedTier('no-such-tier', host)).toBeUndefined();
+  });
+});
+
+describe('omp scopes nothing per agent', () => {
+  it('narrows no event to one agent, so a guard an agent composes is reported', () => {
+    for (const event of Object.keys(ompHarnessAdapter.nativeEvents)) {
+      expect(ompHarnessAdapter.scopes(event as never), event).toBe(false);
+    }
+    expect(ompHarnessAdapter.enforcingSurface).toBeUndefined();
+  });
+
+  it('places every scoped module in the session root and refuses an agent scope', () => {
+    expect(ompHarnessAdapter.scopedRel?.('m.ts')).toBe('agent/extensions/m.ts');
+    expect(ompHarnessAdapter.scopedRel?.('m.ts', SESSION_SCOPE)).toBe(
+      'agent/extensions/m.ts',
+    );
+    expect(() => ompHarnessAdapter.scopedRel?.('m.ts', 'mav')).toThrow(
+      /nothing for one agent/,
+    );
+  });
+
+  it('emits the session hooks once, at the session scope', () => {
+    const hooks = [
+      { id: 'nudge', events: ['session.start'], command: 'sh nudge.sh' },
+    ] as never;
+    const out = ompHarnessAdapter.scopeActivatedSurface?.(hooks, [
+      'mav',
+      'nico',
+    ]);
+    expect(out?.map((p) => [p.filename, p.scope])).toEqual([
+      [OMP_SESSION_MODULE, SESSION_SCOPE],
+    ]);
+    expect(out?.[0]?.content).not.toContain('personas');
   });
 });
 
@@ -246,20 +519,14 @@ describe('omp launch', () => {
   it('composes no launcher, persona overlay or badge from the agents', () => {
     // Starting a session as an agent goes only through `omp --agent`, which the
     // capability module registers: what the adapter composes from the agents is
-    // the dispatch isolation module, and only for an agent declaring a worktree.
+    // the dispatch isolation module, once at the session scope, and only for an
+    // agent declaring a worktree.
     expect(ompHarnessAdapter.launchSurface?.([AGENT])).toEqual([]);
     expect(
       ompHarnessAdapter
-        .launchSurface?.([
-          AGENT,
-          { ...(AGENT as object), name: 'iso', isolation: {} } as never,
-        ])
-        .map((f) => f.filename),
-    ).toEqual([
-      OMP_ISOLATION_MODULE,
-      OMP_ISOLATION_MODULE,
-      OMP_ISOLATION_MODULE,
-    ]);
+        .launchSurface?.([AGENT, agent({ name: 'iso', isolation: 'worktree' })])
+        .map((f) => [f.filename, f.scope]),
+    ).toEqual([[OMP_ISOLATION_MODULE, SESSION_SCOPE]]);
   });
 });
 
@@ -347,16 +614,49 @@ describe('omp capability interface', () => {
         ctx: { cwd: string },
       ): Promise<{ content: { text: string }[] }>;
     }
-    /** The tools the emitted module registers against the stand-in command. */
-    async function load(explanation: unknown): Promise<Registered[]> {
+    /** The tools the emitted module registers against the stand-in command, once
+     *  a session starts: a main one (with `--agent <flag>`, if given) or one omp
+     *  dispatched and names `sub`. */
+    async function load(
+      explanation: unknown,
+      session: { flag?: string; sub?: string } = {},
+    ): Promise<Registered[]> {
       const factory = await emitted(explanation);
       const registered: Registered[] = [];
+      const handlers = new Map<
+        string,
+        (event: unknown, ctx: unknown) => unknown
+      >();
       await factory({
         typebox: { Type: { Unsafe: (schema: unknown) => schema } },
         registerTool: (tool: Registered) => registered.push(tool),
         registerFlag: () => {},
-        on: () => {},
+        getFlag: (name: string) =>
+          name === 'agent' ? session.flag : undefined,
+        on: (
+          event: string,
+          handler: (event: unknown, ctx: unknown) => unknown,
+        ) => handlers.set(event, handler),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
       });
+      expect(
+        registered,
+        'nothing is offered before the session starts',
+      ).toEqual([]);
+      await handlers.get('session_start')?.(
+        {},
+        {
+          cwd: '/the/session/cwd',
+          agent:
+            session.sub === undefined
+              ? { kind: 'main', name: 'main' }
+              : { kind: 'sub', name: session.sub },
+          model: { provider: 'fixture', id: 'base' },
+          modelRegistry: {},
+          ui: { setStatus: () => {}, notify: () => {} },
+        },
+      );
       return registered;
     }
 
@@ -495,6 +795,90 @@ describe('omp capability interface', () => {
         }),
       ).rejects.toThrow('cratylus concepts refuse: its own words');
     });
+
+    describe('offers an agent that changes nothing its reading verbs alone', () => {
+      afterEach(() => {
+        omp.agents = [];
+        omp.discovered.length = 0;
+      });
+      /** A declaration as omp's discovery parses it; omp adds `yield` to a list. */
+      const discovered = (name: string, tools?: string[]) => ({
+        name,
+        description: 'd',
+        systemPrompt: `The ${name} body.`,
+        ...(tools === undefined ? {} : { tools: [...tools, 'yield'] }),
+        source: 'user',
+      });
+      const verbsOf = (tools: Registered[]) =>
+        tools.map((t) => [t.name, t.parameters.properties.verb?.enum]);
+
+      it('in a session dispatched as a read-only declaration, found by the lowercased name omp gives it', async () => {
+        omp.agents = [discovered('Assayer', [...OMP_READ_ONLY_TOOLS])];
+        const [tool, ...rest] = await load(EXPLANATION, { sub: 'assayer' });
+        expect(omp.discovered).toEqual(['/the/session/cwd']);
+        expect(rest).toEqual([]);
+        expect(tool?.parameters.properties.verb?.enum).toEqual(['look']);
+        // Nothing of a withheld verb is said: its parameters are not parameters.
+        expect(Object.keys(tool?.parameters.properties ?? {}).sort()).toEqual([
+          'context',
+          'mode',
+          'verb',
+        ]);
+        expect(tool?.parameters.properties.mode).toEqual({
+          type: 'string',
+          description: 'look (optional): the mode',
+        });
+      });
+
+      it('in a main session `--agent` started as a read-only declaration', async () => {
+        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
+        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual([
+          ['stand_in', ['look']],
+        ]);
+      });
+
+      it('refuses a withheld verb, called anyway, before the command runs', async () => {
+        omp.agents = [discovered('assayer', ['read'])];
+        const [tool] = await load(EXPLANATION, { sub: 'assayer' });
+        await expect(
+          tool?.execute(
+            'id',
+            { verb: 'put', word: 'w' },
+            undefined,
+            undefined,
+            {
+              cwd: tmpdir(),
+            },
+          ),
+        ).rejects.toThrow(
+          'Verb put appends, and is not offered to an agent that changes nothing',
+        );
+      });
+
+      it('offers no tool of a capability whose every verb appends', async () => {
+        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
+        const appendsOnly = {
+          ...EXPLANATION,
+          verbs: EXPLANATION.verbs.slice(1),
+        };
+        expect(await load(appendsOnly, { sub: 'assayer' })).toEqual([]);
+      });
+
+      it('offers every verb to any other agent or session', async () => {
+        const all = [['stand_in', ['look', 'put', 'refuse']]];
+        omp.agents = [
+          discovered('builder'),
+          discovered('cartographer', ['read', 'write']),
+          discovered('scout', ['read', 'bash']),
+        ];
+        for (const sub of ['builder', 'cartographer', 'scout', 'sub', 'absent'])
+          expect(verbsOf(await load(EXPLANATION, { sub })), sub).toEqual(all);
+        expect(verbsOf(await load(EXPLANATION, { flag: 'builder' }))).toEqual(
+          all,
+        );
+        expect(verbsOf(await load(EXPLANATION))).toEqual(all);
+      });
+    });
   });
 
   describe('launches a main session as an agent declaration omp discovers', () => {
@@ -542,7 +926,12 @@ describe('omp capability interface', () => {
       omp.args = {};
       omp.roles = {};
       omp.overrides = {};
+      omp.agentAdvisor = {};
+      omp.agentPrewalk = {};
       omp.selections.length = 0;
+      omp.skills = [];
+      for (const key of Object.keys(omp.runtime)) delete omp.runtime[key];
+      omp.writes.length = 0;
       vi.restoreAllMocks();
     });
 
@@ -585,8 +974,11 @@ describe('omp capability interface', () => {
           notify: () => {},
         },
       });
-      const fire = async (event: string, kind?: string) =>
-        handlers.get(event)?.({ systemPrompt: BASE }, ctx(kind));
+      const fire = async (
+        event: string,
+        kind?: string,
+        payload: unknown = { systemPrompt: BASE },
+      ) => handlers.get(event)?.(payload, ctx(kind));
       return { did, fire };
     }
 
@@ -602,12 +994,13 @@ describe('omp capability interface', () => {
       const { did, fire } = await started('cartographer');
       await fire('session_start');
       expect(omp.discovered).toEqual(['/the/session/cwd']);
-      // omp's own dispatch resolution, asked of the declaration's selectors.
+      // omp's own dispatch resolution, asked of the declaration's selectors with the
+      // session's own settings.
       expect(omp.selections).toEqual([
         {
           settingsOverride: undefined,
           agentModel: ['fixture/declared'],
-          settings: { standIn: 'settings' },
+          settings: omp.scope,
           activeModelPattern: 'fixture/base',
         },
       ]);
@@ -760,6 +1153,12 @@ describe('omp capability interface', () => {
           status: [],
         });
       expect(omp.discovered).toEqual([]);
+      expect(omp.runtime).toEqual({});
+      expect(omp.writes).toEqual([]);
+      for (const { fire } of [sub, plain])
+        expect(
+          await fire('before_subagent_spawn', undefined, { agent: 'pilot' }),
+        ).toBeUndefined();
     });
 
     it('ends startup, naming the unknown agent, before any turn', async () => {
@@ -777,6 +1176,219 @@ describe('omp capability interface', () => {
         /Unknown agent "absent"/,
       );
       expect(did.status).toEqual([]);
+      expect(await fire('before_agent_start')).toBeUndefined();
+    });
+
+    /** The cartographer, declaring the rest of what a dispatched child holds. */
+    const WHOLE = () => ({
+      ...CARTOGRAPHER(),
+      spawns: ['surveyor', 'sounder'],
+      autoloadSkills: ['tides', 'absent-skill', 'buoys'],
+      readSummarize: false,
+      advisor: 'fixture/adviser',
+      prewalk: 'fixture/fast',
+    });
+    const clearRuntime = () => {
+      for (const key of Object.keys(omp.runtime)) delete omp.runtime[key];
+      omp.writes.length = 0;
+    };
+
+    it('holds the rest of the declaration as session-scoped overrides, as dispatch resolves it', async () => {
+      omp.agents = [WHOLE()];
+      omp.runtime.modelRoles = { default: 'fixture/base' };
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      expect(omp.runtime).toEqual({
+        modelRoles: { default: 'fixture/base', advisor: 'fixture/adviser' },
+        personality: 'none',
+        read: { summarize: { enabled: false } },
+        advisor: { enabled: true },
+        prewalk: { enabled: true },
+      });
+      // The declared pre-planning target stands in omp's default target (`@smol`)
+      // only while the live session arms it.
+      expect(
+        omp.writes.filter(
+          ([id]) => id === 'modelRoles' || id === 'prewalk.enabled',
+        ),
+      ).toEqual([
+        ['modelRoles', { default: 'fixture/base', advisor: 'fixture/adviser' }],
+        ['prewalk.enabled', false],
+        [
+          'modelRoles',
+          {
+            default: 'fixture/base',
+            advisor: 'fixture/adviser',
+            smol: 'fixture/fast',
+          },
+        ],
+        ['prewalk.enabled', true],
+        ['modelRoles', { default: 'fixture/base', advisor: 'fixture/adviser' }],
+      ]);
+    });
+
+    it('runs advisor and pre-planning as a child would: per-agent settings first, undeclared off', async () => {
+      omp.agents = [WHOLE()];
+      omp.agentAdvisor = { cartographer: 'off' };
+      omp.agentPrewalk = { cartographer: 'off' };
+      await (await started('cartographer')).fire('session_start');
+      expect(omp.runtime).toEqual({
+        personality: 'none',
+        read: { summarize: { enabled: false } },
+        advisor: { enabled: false },
+        prewalk: { enabled: false },
+      });
+      clearRuntime();
+      // Undeclared: no advisor and no pre-planning; read summarisation the session's own.
+      omp.agentAdvisor = {};
+      omp.agentPrewalk = {};
+      omp.agents = [CARTOGRAPHER()];
+      await (await started('cartographer')).fire('session_start');
+      expect(omp.runtime).toEqual({
+        personality: 'none',
+        advisor: { enabled: false },
+        prewalk: { enabled: false },
+      });
+    });
+
+    it("leaves advisor and pre-planning to the operator's --advisor and --prewalk family", async () => {
+      for (const args of [
+        { advisor: true, prewalk: true },
+        { advisor: true, noPrewalk: true },
+        { advisor: true, prewalkInto: '@slow' },
+      ]) {
+        clearRuntime();
+        omp.agents = [WHOLE()];
+        omp.args = args;
+        await (await started('cartographer')).fire('session_start');
+        expect(omp.runtime, JSON.stringify(args)).toEqual({
+          personality: 'none',
+          read: { summarize: { enabled: false } },
+        });
+      }
+    });
+
+    it("carries the declared skills omp knows into every turn, in omp's autoload form", async () => {
+      omp.agents = [WHOLE()];
+      omp.skills = [
+        { name: 'buoys', filePath: '/skills/buoys/SKILL.md' },
+        { name: 'tides', filePath: '/skills/tides/SKILL.md' },
+      ];
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      for (const _turn of [1, 2]) {
+        const { systemPrompt } = (await fire('before_agent_start')) as {
+          systemPrompt: string[];
+        };
+        expect(systemPrompt.slice(2)).toEqual([
+          '<autoload skill tides: its instructions>',
+          '<autoload skill buoys: its instructions>',
+        ]);
+      }
+    });
+
+    it("refuses a dispatch the declaration's spawns do not name, in omp's words", async () => {
+      const spawning = (agent: string) => ({
+        type: 'before_subagent_spawn',
+        agent,
+        invocationKind: 'task',
+        patterns: [],
+      });
+      omp.agents = [WHOLE()];
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      for (const agent of ['surveyor', 'sounder'])
+        expect(
+          await fire('before_subagent_spawn', undefined, spawning(agent)),
+        ).toBeUndefined();
+      expect(
+        await fire('before_subagent_spawn', undefined, spawning('pilot')),
+      ).toEqual({
+        block: true,
+        reason: "Cannot spawn 'pilot'. Allowed: surveyor,sounder",
+      });
+      // A child's own dispatch is its own declaration's affair.
+      expect(
+        await fire('before_subagent_spawn', 'sub', spawning('pilot')),
+      ).toBeUndefined();
+      // As dispatch passes `spawns` to a child: `*` anyone, absent as omp's discovery reads
+      // it (`*` with `task` among the tools, else no one). An explicitly empty `spawns` in
+      // the file is no one, though omp's discovery reads it as absent and so as `*`.
+      const none =
+        "Cannot spawn 'pilot'. Allowed: none (spawns disabled for this agent)";
+      const declared = (
+        said: Record<string, unknown>,
+        discovered: unknown,
+      ) => ({
+        ...WHOLE(),
+        ...declare(
+          {
+            name: 'cartographer',
+            description: 'Charts the estuary.',
+            model: 'fixture/declared',
+            ...said,
+          },
+          'Map the estuary before drawing its shipping routes.',
+        ),
+        spawns: discovered,
+      });
+      const withTask = ['read', 'task'];
+      for (const [label, agent, refusal] of [
+        [
+          'empty list with task',
+          declared({ tools: withTask, spawns: [] }, '*'),
+          none,
+        ],
+        [
+          'blank string with task',
+          declared({ tools: withTask, spawns: ' ' }, '*'),
+          none,
+        ],
+        ['absent without task', declared({ tools: ['read'] }, undefined), none],
+        ['absent with task', declared({ tools: withTask }, '*'), undefined],
+        ['*', declared({ tools: withTask, spawns: '*' }, '*'), undefined],
+        [
+          'bundled, as discovered',
+          {
+            ...WHOLE(),
+            filePath: 'embedded:cartographer.md',
+            source: 'bundled',
+            spawns: '*',
+          },
+          undefined,
+        ],
+      ] as const) {
+        omp.agents = [agent];
+        const launched = await started('cartographer');
+        await launched.fire('session_start');
+        expect(
+          await launched.fire(
+            'before_subagent_spawn',
+            undefined,
+            spawning('pilot'),
+          ),
+          label,
+        ).toEqual(
+          refusal === undefined ? undefined : { block: true, reason: refusal },
+        );
+      }
+    });
+
+    it('puts back every setting it held and lifts its dispatch policy when the launch ends', async () => {
+      omp.agents = [WHOLE()];
+      omp.runtime.personality = 'default';
+      omp.runtime.modelRoles = { default: 'fixture/base' };
+      const before = structuredClone(omp.runtime);
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      expect(omp.runtime).not.toEqual(before);
+      // A switch to a session the name no longer resolves for ends the launch.
+      omp.agents = [];
+      await fire('session_switch');
+      expect(omp.runtime).toEqual(before);
+      expect(
+        await fire('before_subagent_spawn', undefined, { agent: 'pilot' }),
+      ).toBeUndefined();
       expect(await fire('before_agent_start')).toBeUndefined();
     });
   });

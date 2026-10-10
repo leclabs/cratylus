@@ -87,11 +87,12 @@ as a plugin set declaring no practice does, byte for byte. Given names, it rende
 practices' agents, skills they declare and compose, and hooks declared by the chosen practices or
 plugin plumbing. An empty list is refused: no practice is not every practice.
 
-A chosen set must be closed. Before anything is rendered, projection checks that every agent finds
-the roles it dispatches (`Agent.dispatches`, matched by anchor against `Agent.holds`) held by an
-agent of the set and every skill it is given, with what that composes, carried by the plugin set; a
-set that is not is refused by one error naming the practice, the agent, and the role or skill that
-is missing. A name that is no declared practice is refused, naming the declared ones. The tree
+A chosen set must be closed. Before anything is rendered, projection checks that every role an agent
+dispatches (`Agent.dispatches`, matched by anchor against `Agent.holds`) is held by an agent of the
+set or supplied natively by the adapter (`nativeAgents`), and that every skill it is given, with
+what that composes, is carried by the plugin set; a set that is not is refused by one error naming
+the practice, the agent, and the role or skill that is missing. A name that is no declared practice
+is refused, naming the declared ones. The tree
 reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected)
 for an install to offer, whatever was rendered.
 
@@ -105,7 +106,21 @@ kept and not expanded, and a composition cycle terminates. The closure is comput
 agent is rendered; every adapter renders the list it is handed.
 
 OMP receives each agent's skill closure in `autoloadSkills`, which it preloads for a dispatched
-subagent.
+subagent; for a main session started by `omp --agent <name>` the cratylus extension carries the same
+skills' full instructions in every turn's system prompt.
+
+### An agent's text, and the settings its reach and model bind to
+
+An agent's text is rendered from its values: `# <mark> <name>` (the name alone without a mark), its
+description, then one section per factor group in catalog order, each value as its anchor and gloss,
+marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope, handoffs) and model
+are never text: they bind to the harness's settings. On OMP the definition's front matter carries
+`model: "@<name>"`, the model role named for the agent; `spawns`, the agents its handoffs name, each
+mapped through the adapter's `nativeAgents` (`researcher` → `scout`), and `""` for an agent that
+hands off to no one; and, only for an agent that changes nothing (`Agent.readOnly`), `tools` listing
+omp's reading tools alone. Every other agent keeps omp's default tools. `key: null` reserves the key
+of an ipseic agent. The tree reports each agent's tier and effort (`ProjectedTree.agentModels`), from
+which install binds its model role.
 
 ## How deploy places a tree
 
@@ -128,17 +143,24 @@ asks the adapter where each artifact belongs:
 | agent definition                | `agentRel(name)`         | `agent/agents/<name>.md`       |
 | skill directory                 | `skillRel(name, agents)` | `../.agents/skills/<name>`     |
 | hook module                     | `hooksFile`              | generated extension module     |
-| scoped mechanism module         | `scopedRel(file, scope)` | `<scope>/extensions/<file>`    |
+| scoped mechanism module         | `scopedRel(file, scope)` | `agent/extensions/<file>`      |
 | capability and `--agent` module | `scopedRel(file, scope)` | `agent/extensions/cratylus.ts` |
 
-`<scope>` is `agent/` for the session copy or `agent/personas/<agent>/` for a projected agent. omp
-scans the session copy natively; nothing loads a persona's scoped directory now that install places
-no `--config` overlay naming it, until the corpus re-cut gives those modules a home.
+OMP has one scope, the session's: omp loads `agent/extensions/` in every session and cannot load a
+module for one agent alone, so `scopes` answers no for every event, and an enforcing value bound to
+agents degrades to a steer, reported as a guard omp cannot scope per agent. Nothing is placed under
+`agent/personas/`; a reinstall prunes what an earlier install recorded there, and uninstall removes
+it.
 
 **The definition is the single source of truth.** OMP reads `agent/agents/<name>.md` when it
 dispatches an agent as a subagent, and `omp --agent <name>` resolves the same declaration through
-omp's own discovery to start it as a main session, through the cratylus extension. One definition,
-no launcher, nothing to drift.
+omp's own discovery to start it as a main session, through the cratylus extension, holding the whole
+declaration as dispatch resolves it for a child: its text, model, effort, `autoload-skills`,
+`spawns`, `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own
+dispatch drops what the declaration says, launch holds what it says — a known omp limitation: an
+explicitly empty `spawns` with `task` among the `tools` is no one (omp's discovery reads it as `*`),
+and `read-summarize: true` turns summarised reads on (omp's dispatch applies only `false`). One
+definition, no launcher, nothing to drift.
 
 ## The harness adapter port
 
@@ -155,6 +177,7 @@ port, not on OMP's concrete rendering functions.
 | `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                            |
 | `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment      |
 | `scopedRel`                                         | where a scoped artifact lands for an agent or the session                                   |
+| `nativeAgents`                                      | the agents it supplies itself, by the handoff anchor each stands for                        |
 | `launchSurface`                                     | what is composed from the agents beyond their definitions (OMP's dispatch isolation module) |
 | `capabilitySurface`                                 | the capability tools, and on OMP the `--agent` flag that starts a session as an agent       |
 | `statusSegment`                                     | how a session's agent appears in OMP's segmented status line                                |
@@ -164,8 +187,8 @@ fabricating a binding. `scopes` is a stronger demand than `realizes`: firing is 
 adapter must never answer yes for an event it cannot realize. `hookCommand` is written against
 `$HOME`, not a resolved path, because it is read at runtime on whatever host it lands on.
 
-`scopedRel` places every scoped module in its scope's `extensions/` directory. OMP's
-`scopeActivatedSurface` emits one artifact per scope for deploy to place. `launchSurface` receives
+`scopedRel` places a scoped module in its scope's `extensions/` directory, and on OMP every scope is
+the session's. `launchSurface` receives
 the composed agents once.
 
 ## Where the boundaries are

@@ -6,9 +6,9 @@
 // metadata (read from the GIVEN catalog — forge ships none), and emits the
 // discovery contract:
 //
-//   { dimension, axis, repertoire, arity, values: [{ slug, definiens }] }   ×24
+//   { dimension, group, repertoire, arity, values: [{ slug, definiens }] }   per dimension
 //
-// forge owns the MECHANISM (it types the 24 dimensions, it knows axis/repertoire/arity);
+// forge owns the MECHANISM (it knows group/repertoire/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
 // it consumes a directory of dimension-module dirs, not `packages/canon` — the same
 // split the deploy layer makes when it "consumes a render tree, not the corpus".
@@ -26,8 +26,9 @@ import { pathToFileURL } from 'node:url';
 import {
   type Arity,
   type DimensionManifest,
-  type Genus,
+  type EnforcementLevel,
   type Repertoire,
+  type Slot,
   type Value,
   bodyOf,
   isDimensionValue,
@@ -43,12 +44,18 @@ export interface CatalogEntry {
   /** The dimension name (e.g. `address`) — the catalog's own key, so a plain
    *  string: WHICH dimensions exist is the corpus's fact, not the projector's. */
   readonly dimension: string;
-  /** The MECE filing axis. */
-  readonly axis: Genus;
-  /** How the value-catalog is sourced — `enum | open | curated`. */
+  /** The factor group the dimension is filed under. */
+  readonly group: string;
+  /** How the value-catalog is sourced — `latent | open | curated | fixed`. */
   readonly repertoire: Repertoire;
-  /** Whether the dimension holds one value or many. */
+  /** How many values the dimension holds — `scalar | set | slots | attribute`. */
   readonly arity: Arity;
+  /** The default enforcement level an entry takes; `null` when none applies. */
+  readonly level: EnforcementLevel | null;
+  /** `text` is rendered into the agent's body; `binding` compiles to harness settings. */
+  readonly projection: 'text' | 'binding';
+  /** The named slots of a `slots` dimension, in order. Absent otherwise. */
+  readonly slots?: readonly Slot[];
   /**
    * The discovered value bodies (each a branded-string cell, `⟨α, residue⟩`),
    * sorted shortlex.
@@ -138,9 +145,12 @@ export async function enumerateCatalog(
   for (const [name, meta] of Object.entries(manifest)) {
     entries.push({
       dimension: name,
-      axis: meta.axis,
+      group: meta.group,
       repertoire: meta.repertoire,
       arity: meta.arity,
+      level: meta.level,
+      projection: meta.projection,
+      ...(meta.slots === undefined ? {} : { slots: meta.slots }),
       values: await valuesOf(corpusDimensionsDir, name),
     });
   }
@@ -230,10 +240,10 @@ export class DuplicateNamespaceError extends Error {
 }
 
 /**
- * ONE FRAGMENT as authored — identity, axis, body. `node` is the resolver `Fragment`
+ * ONE FRAGMENT as authored — identity, dimension, body. `node` is the resolver `Fragment`
  * (OBJECT IDENTITY = the imported binding — what the config loader targets in a
  * `PatchEntry`, and what the resolver keys the resolved map by). `dimension` is the
- * axis it files under.
+ * dimension it files under.
  * `body` is its authored base value: the branded-string body for a string fragment;
  * for a node-form fragment (the reference-bearing form) the node object itself —
  * the config loader decides how a node-form fragment originates its base contribution.
@@ -369,21 +379,15 @@ export async function enumeratePluginFragmentCatalogs(
     const fragments: FragmentEntry[] = [];
     for (const [name, meta] of Object.entries(manifest)) {
       const dimension = name;
-      // NOT A MAP — a WIDTH COERCION. `Arity` (`scalar`|`set`) is a strict subset of
-      // `ValueShape` (`+structured`), so there is no arity→shape function here and nothing
-      // to name; the owed-signification marker that stood here was recording a debt against a
-      // non-entity. The ANNOTATION is the check: if the two vocabularies ever diverge this
-      // line stops compiling, which is the guarantee the comment was standing in for.
+      // An ARITY → VALUE SHAPE map, and a narrow one. Every module under a dimension
+      // dir is ONE value, so its node is an atom (`scalar`) unless the dimension holds
+      // many, where a consumer may append to it (`set`). A `slots` value fills one
+      // slot and an `attribute` value is one attribute: both atoms.
       //
       // Deriving `Arity` FROM `ValueShape` would be structurally stronger and is refused:
       // `Arity` lives in the schema and `ValueShape` in the projector, so the derivation
       // would make the shapes depend on projection — ARCHITECTURE property 2.
-      //
-      // THE COERCION IS ALSO THE SIGN-LEVEL DEFECT, now visible. It compiles only
-      // because `ValueShape` REUSES `Arity`'s two signs, where they mean cardinality
-      // and only cardinality; here they mean degree of internal structure. Same signs,
-      // two axes, one repo — recorded on `ValueShape`, not repaired here.
-      const valueShape: ValueShape = meta.arity;
+      const valueShape: ValueShape = meta.arity === 'set' ? 'set' : 'scalar';
       const dir = join(src.fragmentsDir, dimension);
       for (const { exportName, value } of await scanDimensionModules(dir)) {
         if (isFragmentNode(value)) {

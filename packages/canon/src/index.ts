@@ -7,9 +7,10 @@
 // exported object — addressing by IMPORTED BINDING, never a string id.
 //
 // The dir fields point at the live source dirs this corpus already carries: the
-// fragment modules under `src/dimensions/<dim>/*.ts`, and the agent / skill preset
-// modules. The forge resolver scans these paths exactly as the existing
-// directory-scan does; no resolver logic lives here.
+// fragment modules under `src/dimensions/<dim>/*.ts`, the agent modules under
+// `src/agents/*.ts` (each role's generic holder and the personas, composed in
+// `compose.ts`), and the skill modules. The forge resolver scans these paths
+// exactly as the existing directory-scan does; no resolver logic lives here.
 //
 // SELF-LOCATION (why absolute, not `'./src/dimensions'`): a consumer `extends`
 // this plugin by importing the OBJECT, which has lost its package-root provenance
@@ -23,6 +24,22 @@ import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
 import { PLUMBING, PRACTICES } from './practices.js';
+
+export {
+  CompositionRefusal,
+  holder,
+  persona,
+  type Residue,
+  type RoleCell,
+  type Stated,
+} from './compose.js';
+export { MANIFEST };
+export { architectRole } from './roles/architect.js';
+export { assayerRole } from './roles/assayer.js';
+export { builderRole } from './roles/builder.js';
+export { checkWriterRole } from './roles/check-writer.js';
+export { illustratorRole } from './roles/illustrator.js';
+export { leadRole } from './roles/lead.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>
@@ -45,6 +62,7 @@ export default defineAgentPlugin({
   practices: PRACTICES,
   plumbing: PLUMBING,
   fragments: dir('./dimensions'),
+  agents: dir('./agents'),
   skills: dir('./skills'),
   hooks: dir('./hooks'),
 });

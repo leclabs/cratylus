@@ -1,24 +1,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE DIMENSION MANIFEST — canon's own, and the one home for it.
+// THE FACTOR MANIFEST — canon's own, and the one home for it.
 //
-// `@cratylus/schema` owns the META-MODEL: that a dimension HAS an `axis`, a
-// `repertoire`, an `arity`, a `required`, and all machinery that operates on any
-// manifest obeying that shape. THIS module owns the INSTANCE: WHICH dimensions
-// exist, and each one's metadata. The manifest rides the PLUGIN (`src/index.ts`
-// declares `manifest: MANIFEST`), so a consumer projecting canon gets the design
-// without the projector containing it.
+// `@cratylus/schema` owns the META-MODEL: that a factor HAS a `group`, a
+// `repertoire`, an `arity`, a default enforcement `level`, a `projection`, its
+// `slots` and `required`, and all machinery that operates on any manifest obeying
+// that shape. THIS module owns the INSTANCE: WHICH factors exist, and each one's
+// metadata. The manifest rides the PLUGIN (`src/index.ts` declares
+// `manifest: MANIFEST`), so a consumer projecting canon gets the design without
+// the projector containing it.
 //
 // The manifest used to live in `forge`, which meant a corpus could not
-// discover a dimension without editing the projector — the thesis inverted at its
-// most load-bearing point. A projector that knows there are exactly 22 dimensions
-// named these 22 things is not projecting a design; it contains one.
+// discover a factor without editing the projector — the thesis inverted at its
+// most load-bearing point. A projector that knows there are exactly 18 factors
+// named these 18 things is not projecting a design; it contains one.
 //
 // WHERE THE TYPO-CATCHING LIVES. The schema's `Fragment<O>` is constrained
 // `O extends string`, not `O extends Dimension`, and MUST NOT be re-tightened:
 // the brand discriminates by the type ARGUMENT, so every value-level guarantee
-// (the cross-dimension refusal, the `required` catch-all) holds without the
+// (the cross-factor refusal, the `required` catch-all) holds without the
 // constraint. The one property the relaxation costs is catching a MISSPELLED
-// dimension name, and it is restored HERE, by `Value<D extends Dimension>` below
+// factor name, and it is restored HERE, by `Value<D extends Dimension>` below
 // — the corpus that owns the manifest is the only place that can know a name is
 // not one of its own.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -37,8 +38,10 @@ import type {
 } from '@cratylus/schema';
 
 /**
- * The one runtime home for this corpus's dimension metadata. Every derivation
- * below reads it, so a dimension is added HERE and nowhere else.
+ * The one runtime home for this corpus's factor metadata, in catalog order: the
+ * groups (Identity, Authority, Reach, Cognition, Interface, Governance) are
+ * ordered by first appearance. Every derivation below reads it, so a factor is
+ * added HERE and nowhere else.
  *
  * `as const satisfies Record<string, DimensionMeta>` is LOAD-BEARING and is not
  * interchangeable with a `: Record<string, DimensionMeta>` annotation. The
@@ -47,81 +50,167 @@ import type {
  * silently, while everything still compiles.
  */
 export const MANIFEST = {
-  // Persona
-  autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
-  formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
-  'audience-adaptation': {
-    axis: 'Persona',
-    repertoire: 'latent',
+  // Identity
+  role: {
+    group: 'Identity',
     arity: 'scalar',
+    repertoire: 'open',
+    level: 'fixed',
+    projection: 'text',
   },
-  transparency: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
-  // Constitution — standing drives
-  objective: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
-  // `required` — this dimension may NOT be omitted. The catch-all against
+  objective: {
+    group: 'Identity',
+    arity: 'slots',
+    repertoire: 'open',
+    level: 'fixed',
+    projection: 'text',
+    slots: [{ name: 'drive' }, { name: 'stopping-rule' }],
+  },
+  expertise: {
+    group: 'Identity',
+    arity: 'set',
+    repertoire: 'open',
+    level: 'firm',
+    projection: 'text',
+  },
+  procedure: {
+    group: 'Identity',
+    arity: 'set',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'text',
+  },
+  stance: {
+    group: 'Identity',
+    arity: 'set',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'text',
+  },
+  'communication-style': {
+    group: 'Identity',
+    arity: 'slots',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'text',
+    slots: [{ name: 'register' }, { name: 'density' }, { name: 'rationale' }],
+  },
+  // Authority
+  'decision-rights': {
+    group: 'Authority',
+    arity: 'slots',
+    repertoire: 'fixed',
+    level: 'fixed',
+    projection: 'text',
+    slots: [
+      { name: 'intent', gloss: 'what is wanted and why' },
+      { name: 'priority', gloss: 'what comes first' },
+      { name: 'meaning', gloss: 'concepts and examples' },
+      { name: 'constraint', gloss: 'decisions on realization' },
+      { name: 'realization', gloss: 'how the work, or the checks, are built' },
+      { name: 'check-ruling', gloss: 'changing a frozen check' },
+      { name: 'verdict', gloss: 'whether the work is accepted' },
+      { name: 'release', gloss: 'admitting the change to the project' },
+    ],
+  },
+  autonomy: {
+    group: 'Authority',
+    arity: 'set',
+    repertoire: 'curated',
+    level: 'fixed',
+    projection: 'text',
+  },
+  // Reach — a ceiling, held by permission: compiled to harness settings, never text
+  'perception-scope': {
+    group: 'Reach',
+    arity: 'set',
+    repertoire: 'fixed',
+    level: 'fixed',
+    projection: 'binding',
+  },
+  'action-scope': {
+    group: 'Reach',
+    arity: 'set',
+    repertoire: 'fixed',
+    level: 'fixed',
+    projection: 'binding',
+  },
+  handoffs: {
+    group: 'Reach',
+    arity: 'set',
+    repertoire: 'fixed',
+    level: 'fixed',
+    projection: 'binding',
+  },
+  // Cognition
+  model: {
+    group: 'Cognition',
+    arity: 'slots',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'binding',
+    slots: [{ name: 'tier' }, { name: 'effort' }],
+  },
+  memory: {
+    group: 'Cognition',
+    arity: 'set',
+    repertoire: 'curated',
+    level: 'fixed',
+    projection: 'text',
+  },
+  // Interface
+  assignment: {
+    group: 'Interface',
+    arity: 'scalar',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'text',
+  },
+  deliverable: {
+    group: 'Interface',
+    arity: 'scalar',
+    repertoire: 'curated',
+    level: 'firm',
+    projection: 'text',
+  },
+  // Governance
+  // `required` — this factor may NOT be held empty. The catch-all against
   // attachment failing open: an agent composed with no bound is not a lesser
   // agent, it is an unconfined one. Stated HERE, as catalog data, because
-  // "may this be omitted?" is a fact about the dimension exactly as `arity` is —
-  // and because it is a CANON doctrine, which is why it could never be at home
-  // as a hand-written exception inside the projector's `Agent` interface.
+  // "may this be empty?" is a fact about the factor exactly as `arity` is.
   guardrails: {
-    axis: 'Constitution',
-    repertoire: 'curated',
+    group: 'Governance',
     arity: 'set',
+    repertoire: 'curated',
+    level: 'fixed',
+    projection: 'text',
     required: true,
   },
-  'engineering-principles': {
-    axis: 'Constitution',
-    repertoire: 'curated',
+  // An attribute on every held value, not a field of its own on an agent.
+  'enforcement-level': {
+    group: 'Governance',
+    arity: 'attribute',
+    repertoire: 'fixed',
+    level: null,
+    projection: 'text',
+  },
+  evaluation: {
+    group: 'Governance',
     arity: 'set',
-  },
-  heuristics: { axis: 'Constitution', repertoire: 'curated', arity: 'set' },
-  capabilities: { axis: 'Constitution', repertoire: 'open', arity: 'set' },
-  learning: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  'situation-awareness': {
-    axis: 'Constitution',
-    repertoire: 'latent',
-    arity: 'scalar',
-  },
-  // Constitution — apparatus
-  actions: { axis: 'Constitution', repertoire: 'latent', arity: 'set' },
-  modalities: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  model: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  memory: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  // Constitution — per-turn act
-  trigger: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
-  framing: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
-  'reasoning-strategy': {
-    axis: 'Constitution',
-    repertoire: 'latent',
-    arity: 'scalar',
-  },
-  satisficing: {
-    axis: 'Constitution',
-    repertoire: 'latent',
-    arity: 'scalar',
-  },
-  'output-format': {
-    axis: 'Constitution',
-    repertoire: 'latent',
-    arity: 'scalar',
-  },
-  'self-evaluation': {
-    axis: 'Constitution',
-    repertoire: 'latent',
-    arity: 'scalar',
+    repertoire: 'curated',
+    level: null,
+    projection: 'text',
   },
 } as const satisfies Record<string, DimensionMeta>;
 
 /**
- * Every fragment dimension of this corpus — DERIVED from `MANIFEST`, never listed
- * twice. `archetype` and `provenance` are NOT here: archetype is a plain-string
- * description on the agent and provenance the structured `{mark}`;
- * both carry data, not a σ* residue, so neither is a value-fragment dimension.
+ * Every factor of this corpus — DERIVED from `MANIFEST`, never listed twice.
+ * `name`, `description`, `mark` and `key` are NOT here: they are identity details
+ * of an agent, carrying data rather than a catalog value.
  */
 export type Dimension = keyof typeof MANIFEST;
 
-/** Every fragment-dimension name, in manifest (Persona-then-Constitution) declaration order. */
+/** Every factor name, in catalog order. */
 export const DIMENSION_NAMES = Object.keys(MANIFEST) as readonly Dimension[];
 
 /**
@@ -145,49 +234,45 @@ export type RequiredDimension = RequiredDimensionOf<typeof MANIFEST>;
  * An agent of this corpus: a FLAT, explicit selection over `MANIFEST` (depth 1 —
  * composition over inheritance), plus the identity fields forge reads.
  *
- * Every dimension key is REQUIRED (completeness law). A scalar dimension holds
- * ONE branded value or `null` (explicit omit-to-inherit — do NOT project this
- * dimension; inherit whatever the harness provides); a set dimension holds an
- * array, or `null` to omit the whole section. `guardrails` has no `| null`: it is
- * `required: true` in the catalog, so the unconfined agent cannot be written down.
+ * Every non-attribute factor is a field holding the agent's `Entry[]`, each entry
+ * a catalog value with its enforcement level; an explicitly empty set is `[]`.
  */
 export type Agent = AgentOf<typeof MANIFEST>;
 
-// ── Per-dimension value types (branded strings) ─────────────────────────────
-// A dimension value is a bare named σ* expression: `export const x: Objective = '…'`.
+// ── Per-factor value types (branded strings) ────────────────────────────────
+// A factor value is a named module: `export const x: Objective = '<anchor> ≜ <gloss>'`.
 // Each alias is a nominal-branded `string` — the phantom `__dimension` brand keys
-// the string to its dimension so `tsc` rejects a cross-dimension assignment. The
-// value's content is the body ⟨α, residue⟩ (rendered `α ≜ residue`, or just `α`
-// for a true σ* whose residue is ∅).
+// the string to its factor so `tsc` rejects a cross-factor assignment.
 
-// Persona
-export type Autonomy = Value<'autonomy'>;
-export type Formality = Value<'formality'>;
-export type AudienceAdaptation = Value<'audience-adaptation'>;
-export type Transparency = Value<'transparency'>;
-
-// Constitution — standing drives
+// Identity
+export type Role = Value<'role'>;
 export type Objective = Value<'objective'>;
-export type Guardrails = Value<'guardrails'>;
-export type EngineeringPrinciples = Value<'engineering-principles'>;
-export type Heuristics = Value<'heuristics'>;
-export type Capabilities = Value<'capabilities'>;
-export type Learning = Value<'learning'>;
-export type SituationAwareness = Value<'situation-awareness'>;
+export type Expertise = Value<'expertise'>;
+export type Procedure = Value<'procedure'>;
+export type Stance = Value<'stance'>;
+export type CommunicationStyle = Value<'communication-style'>;
 
-// Constitution — apparatus
-export type Actions = Value<'actions'>;
-export type Modalities = Value<'modalities'>;
+// Authority
+export type DecisionRights = Value<'decision-rights'>;
+export type Autonomy = Value<'autonomy'>;
+
+// Reach
+export type PerceptionScope = Value<'perception-scope'>;
+export type ActionScope = Value<'action-scope'>;
+export type Handoffs = Value<'handoffs'>;
+
+// Cognition
 export type Model = Value<'model'>;
 export type Memory = Value<'memory'>;
 
-// Constitution — per-turn act
-export type Trigger = Value<'trigger'>;
-export type Framing = Value<'framing'>;
-export type ReasoningStrategy = Value<'reasoning-strategy'>;
-export type Satisficing = Value<'satisficing'>;
-export type OutputFormat = Value<'output-format'>;
-export type SelfEvaluation = Value<'self-evaluation'>;
+// Interface
+export type Assignment = Value<'assignment'>;
+export type Deliverable = Value<'deliverable'>;
+
+// Governance
+export type Guardrails = Value<'guardrails'>;
+export type Enforcement = Value<'enforcement-level'>;
+export type Evaluation = Value<'evaluation'>;
 
 // ── The runtime-capability vocabulary ───────────────────────────────────────
 //
@@ -206,10 +291,9 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 //
 // THE SIGN IS `RuntimeCapability`, WHICH IS WHAT SCHEMA ALREADY CALLED IT — and
 // that is the finding. The name was never the defect; the derivation source was.
-// The qualifier is load-bearing HERE and not in schema: this package also
-// declares a DIMENSION named `capabilities` (`Capabilities` above), an
-// agent-design axis, which is a different concept. Bare `Capability` beside it
-// would be one root over two concepts.
+// The qualifier is load-bearing HERE and not in schema: in an agent catalog a
+// bare `Capability` reads as what an agent is able to do (the `expertise`
+// factor above), which is a different concept; one root would cover two.
 export const RUNTIME_CAPABILITIES = [
   'eventTap',
   'concepts',

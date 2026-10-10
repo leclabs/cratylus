@@ -145,6 +145,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
   'canon/cell-gloss-census.test.ts': 'GATE',
+  // BEHAVIORAL: drives `holder`/`persona` with the role cells and residues it states
+  // itself; its refused composition (a persona removing `none`) is its own negative case.
+  'canon/compose.test.ts': 'BEHAVIORAL',
   'canon/cratylism.test.ts': 'GATE',
   // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.omp` itself and
   // drives the committed session worker over both, so its negative cases ARE its
@@ -186,6 +189,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // Runs a real OMP agent with local model/stand-in peers, records calls, and
   // asserts its behavior over repeated runs through runtime's example checker.
   'forge/adapters/omp-scenario.test.ts': 'BEHAVIORAL',
+  // drives `agentBody` over a small catalog and agents it supplies itself; its refused
+  // vector (a text factor that is not a list of entries) is its own negative case.
+  'forge/core/agent-body.test.ts': 'BEHAVIORAL',
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
@@ -214,6 +220,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and asserted SILENT, which is the defect held green in perpetuity.
   'forge/deploy/check.test.ts': 'BEHAVIORAL',
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
+  // drives `addModelRoles` and install/uninstall over host configs it writes itself,
+  // including a document it must refuse and a `--model-roles` name no agent has.
+  'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
   // exercises the OMP status-line config editor and install path, including byte-preserving
   // edits, custom layouts, host-owned settings, and dry-run behavior.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
@@ -231,6 +240,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/deploy/local.test.ts': 'BEHAVIORAL',
   'forge/deploy/prune.test.ts': 'BEHAVIORAL',
   'forge/project/realization.test.ts': 'BEHAVIORAL',
+  // projects fixture plugins it writes itself; its refusals (an unclosed handoff, a
+  // module named by file, duplicate names, a module exporting no Agent) are its fixtures.
+  'forge/project/practice-closure.test.ts': 'BEHAVIORAL',
   // projects an OMP-only fixture and reads the eventTap degradation warning.
   'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',

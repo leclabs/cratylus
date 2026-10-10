@@ -28,15 +28,17 @@ scopable   : Event × harness-adapter → 𝔹 ⟨can the adapter narrow e to a 
              ⟨fire-ability ⊥ scopability : an adapter may fire e globally and be unable to name an agent⟩
 mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what deploy EMITS for an enforcing f⟩
 
-NatSet ≜ {null, one, many} ; null={0} ; one={1} ; many={n∈ℕ: n≥1}
-DimensionName ; catalog : DimensionName → ℘(fragment) ; arity : DimensionName → NatSet
+Arity ≜ {scalar, set, slots, attribute} ⟨scalar : one value · set : any number, an explicitly empty set counting as a value · slots : one value per named slot · attribute : no field of its own, a property of other values⟩
+DimensionName ; catalog : DimensionName → ℘(fragment) ; arity : DimensionName → Arity ; group : DimensionName → Group ⟨the catalog's factors, grouped ; groups ordered by first appearance⟩
+EnforcementLevel ≜ {advisory, firm, fixed} ; level : held value → EnforcementLevel ∪ {—} ⟨an ATTRIBUTE of every value an agent holds ; unstated ⇒ the factor's default⟩
 Target ≜ harness-declaration-artifact
 
 author : Intent → cell ; compose : (DimensionName ⇸ ℘(fragment)) → IR ; ir : agent → IR ; deploy : cell × harness-adapter → Target
 author-valid ⇔ accept ; deploy-valid ⇔ REGENERABLE
 
 accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
-COMPOSED(a) : ir(a)=⟨S_on⟩_{on∈dom catalog} ∧ ∀on: S_on⊆catalog(on) ∧ |S_on|∈arity(on) ∧ ∄ superfluous S_on
+COMPOSED(a) : ir(a)=⟨S_on⟩_{on∈dom catalog, arity(on)≠attribute} ∧ ∀on: S_on⊆catalog(on) ∧ fits(S_on, arity(on)) ∧ ∄ superfluous S_on
+             fits(S, scalar) ⇔ |S|=1 ; fits(S, slots) ⇔ each slot filled exactly once ; fits(S, set) ⇔ |S|≥0, ≥1 where the factor is required
 
 Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ ENFORCED ∧ REGENERABLE
   terminology ≜ the corpus's core agent dimension names and values ⟨⊂ Corpus ; the terms the cold-decode oracle was built to discover⟩

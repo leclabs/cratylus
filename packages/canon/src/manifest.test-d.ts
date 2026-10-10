@@ -1,129 +1,167 @@
 // Type-level acceptance for THIS CORPUS'S manifest — the types `src/manifest.ts`
 // derives from `MANIFEST`. It lives here, not in the projector, because every
-// property below is a property of a catalog: which dimensions exist, which are
-// sets, which may be omitted. A projector that could assert them would be one
-// that contained the catalog.
+// property below is a property of a catalog: which factors exist and which of
+// them an agent carries as a field. A projector that could assert them would be
+// one that contained the catalog.
 //
 // Checked by `tsc --noEmit` (the `typecheck` gate, `include: src/**/*`); it emits
 // nothing and is excluded from the build. Every `@ts-expect-error` below asserts
 // that the marked construction is a COMPILE ERROR — if the error ever disappears,
 // `tsc` fails on the now-unused directive, so these are live negative tests.
 //
-// A dimension value is a per-dimension NOMINAL-BRANDED STRING (`⟨α, residue⟩`); the
-// phantom `__dimension` brand keys each string to its dimension so a cross-dimension
-// assignment of a TYPED value is a compile error.
+// A factor value is a per-factor NOMINAL-BRANDED STRING (`'<anchor> ≜ <gloss>'`);
+// the phantom `__dimension` brand keys each string to its factor so a
+// cross-factor assignment of a TYPED value is a compile error. An agent holds
+// every non-attribute factor as a list of entries, each a value with its
+// enforcement level. Arity, slots and `required` are catalog DATA that
+// composition checks; they are not type-level here.
 
 import type { Skill } from '@cratylus/schema';
 import type {
-  Actions,
+  ActionScope,
   Agent,
-  Autonomy,
-  Capabilities,
+  Deliverable,
+  Expertise,
   Guardrails,
-  OutputFormat,
+  Stance,
   Value,
 } from './manifest.js';
 
-// ── Fixtures (well-typed branded dimension values) ──────────────────────────────
+// ── Fixtures (well-typed branded factor values) ─────────────────────────────
 
-const autonomyV: Autonomy = 'human-on-the-loop ≜ on the loop';
-const guardrailA: Guardrails = 'harm-avoidance ≜ refuse harm';
-const guardrailB: Guardrails = 'honesty ≜ assert from evidence';
-const capabilitiesA: Capabilities = 'software-engineering ≜ build software';
-const actionsA: Actions = 'file-ops ≜ mutate files';
-const outputFormatV: OutputFormat = 'code ≜ emit source';
-
-// ── NEGATIVE 1: a value of the wrong dimension cannot fill a different one ───────
-
-// @ts-expect-error — an `actions` value is not an `output-format` value.
-const fenceClash: OutputFormat = actionsA;
-
-// ── NEGATIVE 3: a SET dimension given a SCALAR ──────────────────────────────────
-
-// @ts-expect-error — `guardrails` is a set; a single value is not a `Guardrails[]`.
-const setGivenScalar: Agent['guardrails'] = guardrailA;
-
-// ── NEGATIVE 4: the same arity faults inside a whole Agent literal ───────────
+const guardrailA: Guardrails = 'honesty ≜ never fabricates';
+const guardrailB: Guardrails = 'privacy ≜ does not expose private information';
+const expertiseA: Expertise = 'software-engineering ≜ building software well';
+const stanceA: Stance = 'dry ≜ states each fact once';
+const actionScopeA: ActionScope = 'run-checks ≜ run checks and builds';
+const deliverableV: Deliverable = 'done-or-failing-case ≜ done, or the case';
 
 const baseFixture: Agent = {
   name: 'fixture',
-  description: 'the master builder — ships systems end-to-end',
-  autonomy: [autonomyV],
-  archetype: 'the master-builder — ship end-to-end',
-  formality: 'formal ≜ terse',
-  audienceAdaptation: 'convergence ≜ converge',
-  transparency: 'reasoning-trace ≜ show the derivation',
-  provenance: { mark: { emoji: '✈️', hue: 'green' } },
-  objective: 'delivery ≜ ship end-to-end',
-  guardrails: [guardrailA, guardrailB],
-  engineeringPrinciples: ['dry ≜ one home per idea'],
-  heuristics: ['recognition ≜ take the best'],
-  capabilities: [capabilitiesA],
-  learning: 'consolidation ≜ consolidate',
-  situationAwareness: 'projection ≜ hold the whole',
-  actions: [actionsA],
-  modalities: 'text ≜ the text modality',
-  model: 'claude ≜ the model/runtime',
-  memory: 'ltm ≜ the persistent store',
-  trigger: 'user-message ≜ a directive from a user',
-  framing: 'goal-directed ≜ frame as objective',
-  reasoningStrategy: 'plan-and-solve ≜ plan then execute',
-  satisficing: 'optimize ≜ maximize EV',
-  outputFormat: outputFormatV,
-  selfEvaluation: 'executable-test-oracle ≜ run against tests',
+  description: 'a builder fixture',
+  mark: { emoji: '✈️', hue: 'green' },
+  key: null,
+  role: [{ value: 'builder ≜ owns one work package', level: 'fixed' }],
+  objective: [
+    {
+      value: 'correctness ≜ satisfies its examples',
+      level: 'fixed',
+      slot: 'drive',
+    },
+    {
+      value: 'satisfice ≜ stop at the first',
+      level: 'fixed',
+      slot: 'stopping-rule',
+    },
+  ],
+  expertise: [{ value: expertiseA, level: 'firm' }],
+  procedure: [{ value: 'build ≜ change the work', level: 'firm' }],
+  stance: [{ value: stanceA, level: 'firm' }],
+  communicationStyle: [
+    { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
+    { value: 'maintenance ≜ a peer density', level: 'firm', slot: 'density' },
+    { value: 'answer-only ≜ the answer', level: 'firm', slot: 'rationale' },
+  ],
+  decisionRights: [
+    { value: 'P ≜ performs', level: 'fixed', slot: 'realization' },
+  ],
+  autonomy: [
+    {
+      value: 'human-in-the-loop ≜ a person approves',
+      level: 'fixed',
+      note: 'of the lead',
+    },
+  ],
+  perceptionScope: [{ value: 'work ≜ the realization itself', level: 'fixed' }],
+  actionScope: [{ value: actionScopeA, level: 'fixed' }],
+  handoffs: [],
+  model: [
+    { value: 'frontier ≜ the strongest model', level: 'firm', slot: 'tier' },
+    {
+      value: 'medium ≜ moderate thinking effort',
+      level: 'firm',
+      slot: 'effort',
+    },
+  ],
+  memory: [{ value: 'working ≜ the session context', level: 'fixed' }],
+  assignment: [{ value: 'work-package ≜ the outputs it owns', level: 'firm' }],
+  deliverable: [{ value: deliverableV, level: 'firm' }],
+  guardrails: [
+    { value: guardrailA, level: 'fixed' },
+    { value: guardrailB, level: 'fixed' },
+  ],
+  evaluation: [],
 };
 
-// ── The `null` sentinel (explicit omit-to-inherit) ──────────────────────────
+// ── NEGATIVE 1: a value of one factor cannot fill another ───────────────────
 
-// POSITIVE: `null`-valued keys compile — scalar and set dimensions alike.
-const nullSentinel: Agent = {
+// @ts-expect-error — an `action-scope` value is not a `deliverable` value.
+const fenceClash: Deliverable = actionScopeA;
+
+const entryClash: Agent = {
   ...baseFixture,
-  name: 'null-sentinel',
-  autonomy: null, // set dimension, harness-inherited
-  engineeringPrinciples: null, // set dimension, harness-inherited
-  heuristics: null, // set dimension, harness-inherited
+  // @ts-expect-error — a `stance` value cannot be held under `expertise`.
+  expertise: [{ value: stanceA, level: 'firm' }],
 };
-void nullSentinel;
 
-// NEGATIVE: a vector MISSING a dimension key fails tsc (completeness law).
-// @ts-expect-error — `autonomy` is required; omission is spelled `autonomy: null`, never a missing key.
+// ── NEGATIVE 2: a field holds ENTRIES, never a bare value ───────────────────
+
+// @ts-expect-error — `guardrails` holds `Entry[]`; a bare value is not one.
+const bareField: Agent['guardrails'] = guardrailA;
+
+// @ts-expect-error — an entry carries its enforcement level; a bare value in the list is not one.
+const bareInList: Agent = { ...baseFixture, guardrails: [guardrailA] };
+
+const badLevel: Agent = {
+  ...baseFixture,
+  // @ts-expect-error — `strict` is not an enforcement level (advisory · firm · fixed, or null).
+  stance: [{ value: stanceA, level: 'strict' }],
+};
+
+// ── NEGATIVE 3: no `null` sentinel — an empty factor is `[]` ────────────────
+
+// @ts-expect-error — an explicitly empty factor is spelled `[]`, never `null`.
+const nullField: Agent = { ...baseFixture, handoffs: null };
+
+// POSITIVE: the explicitly empty set compiles.
+const emptySet: Agent = { ...baseFixture, handoffs: [], evaluation: [] };
+void emptySet;
+
+// ── NEGATIVE 4: completeness — every factor field is present ────────────────
+
+// @ts-expect-error — `evaluation` is a factor field; omission is spelled `evaluation: []`.
 const missingKey: Agent = {
-  name: 'missing-key',
-  archetype: baseFixture.archetype,
-  formality: baseFixture.formality,
-  audienceAdaptation: baseFixture.audienceAdaptation,
-  transparency: baseFixture.transparency,
-  provenance: baseFixture.provenance,
+  name: baseFixture.name,
+  description: baseFixture.description,
+  mark: baseFixture.mark,
+  key: null,
+  role: baseFixture.role,
   objective: baseFixture.objective,
-  guardrails: baseFixture.guardrails,
-  engineeringPrinciples: baseFixture.engineeringPrinciples,
-  heuristics: baseFixture.heuristics,
-  capabilities: baseFixture.capabilities,
-  learning: baseFixture.learning,
-  situationAwareness: baseFixture.situationAwareness,
-  actions: baseFixture.actions,
-  modalities: baseFixture.modalities,
+  expertise: baseFixture.expertise,
+  procedure: baseFixture.procedure,
+  stance: baseFixture.stance,
+  communicationStyle: baseFixture.communicationStyle,
+  decisionRights: baseFixture.decisionRights,
+  autonomy: baseFixture.autonomy,
+  perceptionScope: baseFixture.perceptionScope,
+  actionScope: baseFixture.actionScope,
+  handoffs: baseFixture.handoffs,
   model: baseFixture.model,
   memory: baseFixture.memory,
-  trigger: baseFixture.trigger,
-  framing: baseFixture.framing,
-  reasoningStrategy: baseFixture.reasoningStrategy,
-  satisficing: baseFixture.satisficing,
-  outputFormat: baseFixture.outputFormat,
-  selfEvaluation: baseFixture.selfEvaluation,
-};
-void missingKey;
-
-// @ts-expect-error — `actions` is a set; a scalar value in the Agent literal is rejected.
-const agentSetFault: Agent = { ...baseFixture, actions: actionsA };
-
-const agentScalarFault: Agent = {
-  ...baseFixture,
-  // @ts-expect-error — `output-format` is scalar; an array in the Agent literal is rejected.
-  outputFormat: [outputFormatV],
+  assignment: baseFixture.assignment,
+  deliverable: baseFixture.deliverable,
+  guardrails: baseFixture.guardrails,
 };
 
-// ── NEGATIVE 5: Skill composition is a LAZY THUNK of sibling skills ──────────
+// ── NEGATIVE 5: the attribute and identity details are not factor fields ────
+
+// @ts-expect-error — enforcement level is an attribute on entries, never a field.
+const levelField: Agent = { ...baseFixture, enforcementLevel: [] };
+
+// @ts-expect-error — the key slot is reserved for ipseic agents and always empty.
+const keyHeld: Agent = { ...baseFixture, key: 'kino' };
+
+// ── NEGATIVE 6: Skill composition is a LAZY THUNK of sibling skills ─────────
 // The graph is cyclic (conceptualize↔exemplify↔…); composition is a thunk
 // `() => readonly Skill[]` so sibling refs resolve lazily (no ESM temporal-dead-
 // zone at load). The payload is `formalBlock` (σ*); there is no stored `body`.
@@ -147,58 +185,7 @@ void composed;
 // @ts-expect-error — composition is a thunk `() => Skill[]`, not an eager array.
 const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 
-// ── NEGATIVE 6: the CATCH-ALL — an agent composed with NO guardrail ─────────────
-//
-// The one dimension with no `| null`. Attachment-based governance fails open
-// (Spring Security's unannotated methods; AppArmor's profileless tasks), and both
-// prescribe a catch-all underneath. This is ours, and it is stronger than either
-// because it is `tsc` rather than a runtime backstop: the unconfined agent cannot
-// be written down. `@ts-expect-error` keeps the gate LIVE — if omitting
-// `guardrails` ever stops being an error, this line fails instead of going quiet.
-
-// BOTH LEGS. `undefined` alone is the weaker half of the gate: the two ways an
-// agent actually arrives unconfined are the key being ABSENT (never written) and
-// the key being `null` (written as omit-to-inherit, which every other dimension
-// permits and this one must not). A catch-all that convicted only one of them
-// would be a catch-most.
-
-// @ts-expect-error — `guardrails` is required; an agent may not be composed unconfined.
-const agentUnconfined: Agent = { ...baseFixture, guardrails: undefined };
-
-// @ts-expect-error — the MISSING leg: no `guardrails` key at all.
-const agentGuardrailsMissing: Agent = {
-  name: 'unconfined-missing',
-  description: baseFixture.description,
-  archetype: baseFixture.archetype,
-  autonomy: baseFixture.autonomy,
-  formality: baseFixture.formality,
-  audienceAdaptation: baseFixture.audienceAdaptation,
-  transparency: baseFixture.transparency,
-  provenance: baseFixture.provenance,
-  objective: baseFixture.objective,
-  engineeringPrinciples: baseFixture.engineeringPrinciples,
-  heuristics: baseFixture.heuristics,
-  capabilities: baseFixture.capabilities,
-  learning: baseFixture.learning,
-  situationAwareness: baseFixture.situationAwareness,
-  actions: baseFixture.actions,
-  modalities: baseFixture.modalities,
-  model: baseFixture.model,
-  memory: baseFixture.memory,
-  trigger: baseFixture.trigger,
-  framing: baseFixture.framing,
-  reasoningStrategy: baseFixture.reasoningStrategy,
-  satisficing: baseFixture.satisficing,
-  outputFormat: baseFixture.outputFormat,
-  selfEvaluation: baseFixture.selfEvaluation,
-};
-
-// @ts-expect-error — the NULL leg: `guardrails` may not be omitted-to-inherit.
-const agentGuardrailsNull: Agent = { ...baseFixture, guardrails: null };
-void agentGuardrailsMissing;
-void agentGuardrailsNull;
-
-// ── The catalog's OWN guarantee: a misspelled dimension does not exist ──────────
+// ── The catalog's OWN guarantee: a misspelled factor does not exist ─────────
 //
 // This is the property forge gave up when `Fragment<O>` relaxed to
 // `O extends string`, and the reason it could be given up: it lands HERE, on the
@@ -207,52 +194,55 @@ void agentGuardrailsNull;
 // plain annotation, `Dimension` silently becomes `string`, this directive stops
 // firing, and tsc fails on it. That is the tripwire.
 
-// @ts-expect-error — `guardrials` is not a dimension of this corpus.
+// @ts-expect-error — `guardrials` is not a factor of this corpus.
 type Misspelled = Value<'guardrials'>;
 type _Misspelled = Misspelled;
 
 // POSITIVE: the correctly-spelled one resolves.
-const spelled: Value<'guardrails'> = 'honesty ≜ assert from evidence';
+const spelled: Value<'guardrails'> = 'honesty ≜ never fabricates';
 void spelled;
 
-// ── NEGATIVE 7: an ENFORCING value declaring `events` but no `substrate` ────────
+// ── NEGATIVE 7: an ENFORCING value declaring `events` but no `substrate` ────
 //
 // The pair is ONE FACT. The refusal law is substrate-relative — an event
 // belonging to another substrate is ROUTED, not refused — so it cannot be
 // evaluated from the events alone. A value that declared `events` without a
 // substrate would bind nowhere decidable: a silent-allow wearing a type.
-//
-// Verified to fire unassisted: with the directive removed, tsc reports TS2322
-// on `{ body, events }` not being assignable to `Guardrails`.
 
 // @ts-expect-error — `substrate` is required alongside `events`; the pair is one fact.
 const enforcingNoSubstrate: Guardrails = {
-  body: 'stance ≜ hold the stance',
+  body: 'honesty ≜ never fabricates',
   events: ['tool.use.pre'],
 };
 
-// ── POSITIVE: the enforcing shape and the bare shape are BOTH values ────────────
+// ── POSITIVE: the enforcing shape and the bare shape are BOTH values ────────
 // `events` is PARTIAL: opting in is a shape, opting out is the untouched string.
 
 const enforcingValue: Guardrails = {
-  body: 'stance ≜ hold the stance',
+  body: 'honesty ≜ never fabricates',
   substrate: 'harness',
   events: ['tool.use.pre'],
 };
-const bareValue: Guardrails = 'honesty ≜ assert from evidence';
 
-// An agent composes either, in the same set — the union is the whole point.
+// An agent holds either, in the same set — the union is the whole point.
 const agentMixedGuardrails: Agent = {
   ...baseFixture,
-  guardrails: [enforcingValue, bareValue],
+  guardrails: [
+    { value: enforcingValue, level: 'fixed' },
+    { value: guardrailB, level: 'fixed' },
+  ],
 };
 void agentMixedGuardrails;
 void enforcingNoSubstrate;
 
 // Silence "declared but never read" for the intentional fault bindings.
-void agentUnconfined;
 void fenceClash;
-void setGivenScalar;
-void agentSetFault;
-void agentScalarFault;
+void entryClash;
+void bareField;
+void bareInList;
+void badLevel;
+void nullField;
+void missingKey;
+void levelField;
+void keyHeld;
 void eagerComposition;

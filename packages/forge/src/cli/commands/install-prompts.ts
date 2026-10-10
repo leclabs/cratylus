@@ -13,11 +13,11 @@
 import * as clack from '@clack/prompts';
 import type { OfferedPractice } from '../../project/index.js';
 
-/** One held role whose model the operator may route, and what is offered for it. */
+/** One agent's model role whose model the operator may route, and what is offered for
+ *  it. */
 export interface RoleQuestion {
+  /** The model role, named for its agent. */
   readonly role: string;
-  /** The agents holding the role, for the operator to recognise it by. */
-  readonly holders: readonly string[];
   /** The models offered for it, besides a typed one. */
   readonly options: readonly string[];
   /** Preselected: cratylus's own routing for the role, or `undefined` where it routes
@@ -39,8 +39,8 @@ export interface InstallPrompts {
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
-  /** The model per role: the answer of every role asked, a role left at its default
-   *  answering its `initial` (or absent, where it has none). */
+  /** The model per agent's model role: the answer of every role asked, a role left at
+   *  its default answering its `initial` (or absent, where it has none). */
   routes(
     questions: readonly RoleQuestion[],
   ): Promise<Record<string, string> | undefined>;
@@ -63,10 +63,9 @@ const OTHER = 'another model';
 const DEFAULT = "the session's model";
 
 async function askRoute(q: RoleQuestion): Promise<string | undefined> {
-  const holders = q.holders.join(', ');
   const picked = answer(
     await clack.select<string>({
-      message: `Model for the ${q.role} role (${holders})`,
+      message: `Model for the ${q.role} agent`,
       options: [
         ...(q.initial === undefined
           ? [{ value: DEFAULT, label: DEFAULT }]
@@ -124,7 +123,7 @@ export const terminalPrompts: InstallPrompts = {
   async routes(questions) {
     const customize = answer(
       await clack.confirm({
-        message: `Choose the model for each of ${questions.length} role${questions.length === 1 ? '' : 's'}? (No keeps the default routing.)`,
+        message: `Choose the model for each of ${questions.length} agent${questions.length === 1 ? '' : 's'}? (No keeps each on the tier and effort it holds.)`,
         initialValue: false,
       }),
     );

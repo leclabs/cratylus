@@ -51,15 +51,15 @@ and installs only the practices it is named, or every practice when told `--all`
 Three decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
-| Decision                        | Flag                                    | Asked when                                                       | Where nothing is asked               |
-| ------------------------------- | --------------------------------------- | ---------------------------------------------------------------- | ------------------------------------ |
-| Which harness                   | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness | none: refused                        |
-| Which practices                 | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                  | none: refused, whatever `--yes` says |
-| Which model each role routes to | `--model-roles <role=model,…\|default>` | there are held roles the host has not routed itself              | cratylus's own routing               |
+| Decision                                | Flag                                     | Asked when                                                        | Where nothing is asked               |
+| --------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------- | ------------------------------------ |
+| Which harness                           | `--harness <claude\|omp>`                | absent, and the host does not have exactly one supported harness  | none: refused                        |
+| Which practices                         | `--practices <name,…>` / `--all`         | neither is given, on a terminal                                   | none: refused, whatever `--yes` says |
+| Which model each agent's role routes to | `--model-roles <agent=model,…\|default>` | there are installed agents whose role the host has not set itself | each agent's tier and effort         |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
-question first asks whether to choose a model per role at all, and answering no keeps the default
-routing.
+question first asks whether to choose a model per agent at all, and answering no keeps each agent's
+tier and effort.
 Unless a flag settled every decision, the preview ends with that last question. Answering no, or
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
@@ -76,8 +76,9 @@ offered as none. On a terminal, install asks one question that lists each practi
 description, the practices already installed here ticked (on a fresh host, the one the corpus
 preselects).
 
-`--practices <name,…>` names the practices to install, as in `--practices cdd`, and `--all` takes
-every one. They are refused together, and so is a name no practice answers to; that refusal lists the
+`--practices <name,…>` names the practices to install, as in
+`--practices example-driven-workflow`, and `--all` takes every one. They are refused together, and
+so is a name no practice answers to; that refusal lists the
 practices the corpus declares. Without a terminal and with neither flag, `install` refuses before
 writing anything and lists them too: what it installed last time is a default for a question, never
 an answer to one. An empty choice is refused as well (`--practices ''`, or every practice unticked),
@@ -86,19 +87,20 @@ since none is not every; to take it all out, run `cratylus uninstall --harness <
 Installing again is how you change the choice. A practice installed before and not chosen now is
 removed, with what no chosen practice still carries.
 
-### Which model each role routes to
+### Which model each agent's role routes to
 
-An agent names the role it holds, never a model, and the host maps a role to a model.
-`--model-roles` settles that decision whenever it is given: a role it does not name keeps cratylus's
-routing, and `--model-roles default` keeps it for every role. On omp a model is a `modelRoles`
-entry in the host's config (`planner=@slow`, or a model such as `anthropic/claude-opus-5-5:high`);
-on Claude Code it is the `model:` line of each agent holding the role (`planner=sonnet`). A role
-you name is yours from then on: a later install keeps it. On omp the entry install seeds for a role
-you did not choose is not yours: it stays as install wrote it until you edit it, and a later install
-asks that role again and moves the entry to your answer. A role the host already routed itself is
-never asked and never changed, is named as the host's in the preview, and a `--model-roles` entry
-for it is left as the host set it and said so. The sections on omp's routing and on where Claude
-Code and omp differ say more.
+Each agent runs on a model role named for it, never on a model, and the host maps the role to a
+model. Install binds each agent's role to the tier and effort its design gives it, as
+`architect: "@frontier:high"`, over a role per tier that install seeds (the section on omp's model
+routing). `--model-roles` settles that decision whenever it is given, keyed by the agent's name: an
+agent it does not name keeps its tier and effort, and `--model-roles default` keeps them for every
+agent. A model is a `modelRoles` entry in the host's config (`builder=@frontier:low`, or a model
+such as `anthropic/claude-opus-5-5:high`). An agent you name is yours from then on: a later install keeps
+it. The entry install seeds for an agent you did not choose is not yours: it stays as install wrote
+it until you edit it, and a later install asks that agent again and moves the entry to your answer.
+A role the host already set itself is never asked and never changed, is named as the host's in the
+preview, and a `--model-roles` entry for it is left as the host set it and said so. The section on
+omp's model routing says more.
 
 ### What it places
 
@@ -134,21 +136,37 @@ The same extension starts a session as any agent declaration omp discovers: `omp
 `task` dispatch runs: `.omp/agents/` nearest the session's directory, then `~/.omp/agent/agents/`,
 then extension packages, plugins and omp's bundled agents, the first of a name winning. A declaration
 is a markdown file whose front matter gives `name`, `description`, `model` (an omp model selector),
-`thinking-level`, optionally `tools`, and `mark`, a short string such as an emoji, followed by its
-body. The session runs on the model and thinking level omp's own `task` dispatch would run the
-declaration on, resolved by omp's own resolver: its `model` selectors, a role alias such as
-`@slow` expanded to the host's `modelRoles` entry, and the thinking level a selector carries
-(`provider/model:high`, written in the declaration or in the role's configured value) ahead of
-`thinking-level`. A `--model` or `--thinking` you pass yourself wins over the declaration's, each for
-its own part, and the declaration's body is carried either way. Every turn's system prompt carries
-the declaration, its name and description as a sentence and then its body; and the status line
-shows `<mark> <name>`, or the name alone without a mark (a bundled omp agent, such as `scout`, has
-no mark). The declaration is read afresh for each new session. The tools stay yours: the extension
-never changes the session's tools, so `omp --agent <name> --tools …` holds exactly what plain
-`omp --tools …` holds, and a declaration's `tools` are for dispatch only. A name omp does not
-discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before any
+`thinking-level`, optionally `tools`, `spawns`, `autoload-skills`, `read-summarize`, `advisor` and
+`prewalk`, and `mark`, a short string such as an emoji, followed by its body. The session holds the
+whole declaration as omp's own `task` dispatch would give it to a child, resolved by omp's own
+resolvers. It runs on the declaration's model and thinking level: its `model` selectors, a role
+alias such as `@slow` expanded to the host's `modelRoles` entry, and the thinking level a selector
+carries (`provider/model:high`, written in the declaration or in the role's configured value) ahead
+of `thinking-level`. Every turn's system prompt carries the declaration, its name and description as
+a sentence and then its body, followed by the full instructions of each skill `autoload-skills` names
+that omp discovers for the session (a name it does not know is skipped, as dispatch skips it). The
+session runs without omp's default personality, as a dispatched child does; with summarised reads on
+or off as `read-summarize` says (unsaid, as your settings have it); with the advisor and the
+pre-planning hand-off (prewalk) the declaration names, `task.agentAdvisor` and `task.agentPrewalk`
+entries first, and neither when it names none, as for a child. It may dispatch only the agents
+`spawns` names (`*` is any agent; with no `spawns`, any agent when its `tools` include `task` and
+none otherwise, as omp reads it; an explicitly empty `spawns`, an empty list or a blank string, is
+none even when its `tools` include `task`); omp refuses any other with
+`Cannot spawn '<name>'. Allowed: …`. Two of these are held as the declaration says where omp's own
+`task` dispatch does not hold them for a child, a known omp limitation: an explicitly empty `spawns`
+with `task` in `tools`, which omp's discovery reads as `*`, and `read-summarize: true`, which omp's
+dispatch does not apply (it applies only `false`). These are held as session-only overrides, never
+written to your configuration, and the declaration wins over your configuration files as it does
+for a child. A `--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` or
+`--prewalk-into` you pass yourself wins over the declaration, each for its own part, and the rest
+of the declaration is held either way. The status line shows `<mark> <name>`, or the name alone
+without a mark (a bundled omp agent, such as `scout`, has no mark). The declaration is read afresh
+for each new session. The tools stay yours: the extension never changes the session's tools, so
+`omp --agent <name> --tools …` holds exactly what plain `omp --tools …` holds (without `task` the
+session cannot dispatch at all), and a declaration's `tools` are for dispatch only. A name omp does
+not discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before any
 session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
-prompt or the status line.
+prompt, the status line or the session's settings.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
@@ -177,8 +195,9 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 - `--practices: '<name>' is no practice of this corpus (declared: …)`, and `no practice was chosen`:
   name only declared practices, and at least one.
 - `--practices and --all were both given`: give one.
-- `--model-roles: …`: an entry must be `<role>=<model>`, a role must be one the installed agents
-  hold (the refusal lists them), and a model must be a name the harness accepts.
+- `--model-roles: '<name>' is no agent this install places (agents: …)`: an entry must be
+  `<agent>=<model>`, keyed by one of the agents it lists, and a model must be a name the harness
+  accepts.
 - `<path>/cratylus.config.ts imports '<package>', which is not installed; run …`, or
   `… does not parse`: the `cratylus.config.ts` in this directory cannot be loaded. Do what the line
   says, or run install from a directory with no config.
@@ -196,12 +215,13 @@ claude --agent mav         # the same on Claude Code
 
 Install places no launcher and links no command for it: on omp, `--agent` is cratylus's extension
 (see what install places), and it starts any declaration omp discovers, not only the installed
-agents. An earlier install placed a launcher (`~/.omp/agent/omp-agent`), a `--config` overlay and a
-badge module per agent under `~/.omp/agent/personas/`, and, when asked, a command per agent in
-`~/.local/bin` linked to the launcher. The next `cratylus install` removes them: the files are
-pruned as files the deploy manifest records and this install no longer writes, and each linked
-command the manifest records under `personaLinks` is unlinked while it still points into the
-harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
+agents. An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
+`~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed
+for that agent, and, when asked, a command per agent in `~/.local/bin` linked to the launcher.
+Install now places nothing under `~/.omp/agent/personas/`. The next `cratylus install` removes
+them: the files are pruned as files the deploy manifest records and this install no longer writes,
+and each linked command the manifest records under `personaLinks` is unlinked while it still points
+into the harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
 removes them too.
 
 ## The badge on the status line
@@ -282,13 +302,14 @@ and warns where it falls short; they are not the same, and this is what a user m
   at 10,000 characters, so a skill over the cap is named under `## Required reading` by its hook
   instead of printed, and the agent loads it with the Skill tool on demand. Install warns once per
   such skill and weighs it against the home it installs under, since the path is part of the
-  output. An `omp --agent` session reaches its skills through omp's own skill discovery, as any
-  omp session does.
+  output. An `omp --agent` session starts with the full instructions of the skills its
+  declaration's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
+  through omp's own skill discovery, as any omp session does.
 - **Guards.** A guard judges an act against the contract of the agent that performs it, and only in
-  the main session of an agent that composes it, never in a subagent that agent dispatches. On omp
-  a guard composed for one agent is placed in that agent's own scope, which an `omp --agent`
-  session does not load yet, so there it does not judge. A bare `claude` or `omp` session is not
-  judged, which makes starting one the off switch. A harness that
+  the main session of an agent that composes it, never in a subagent that agent dispatches. omp
+  cannot load a module for one agent alone, so there every guard composed for an agent is carried
+  as a steer, and install warns that omp cannot scope it per agent. A bare `claude` or `omp` session
+  is not judged, which makes starting one the off switch. A harness that
   cannot name the running agent carries a guard as a steer, the stated rule in place of the
   enforced one, and install warns once per guard. A guard whose judge cannot run lets the turn
   through and says so where you read it, never as a clean verdict. A refusal always names its way
@@ -298,61 +319,56 @@ and warns where it falls short; they are not the same, and this is what a user m
   `~/.agents/guardrail/contests.log` for you to review. A refused turn end is let through when it
   repeats, or after three refusals in a row, so a session is never locked in a loop. The guards'
   full rules are in [the guardrail README](../canon/targets/guardrail/README.md).
-- **Role routing.** On omp the role becomes `model: ["@<role>", "@default"]` and the model behind
-  it is the host's `modelRoles` entry (next section). Claude Code has no host-configurable roles,
-  so a definition there names a model tier: `model: sonnet` for an implementer or integrator
-  (spec-bounded work), `model: opus` for a planner, assayer or architect (work that holds, cuts or
-  judges against the design). An agent holding any other role, or none, has no `model` and runs on
-  the session's model. On omp the integrator routes to the built-in `@task`, as the implementer
-  does.
-- **The implementer's worktree.** On both harnesses the harness isolates the implementer by its
-  own means, and neither cuts that isolation from the bound plan's line. Building off the line is
-  the implementer's own work, on either harness, and the land gate refuses work not built off it.
-  On Claude Code the implementer runs in a worktree of its own, cut as Claude Code cuts any, by
-  its `worktree.baseRef`. omp's agent definition has no field for isolation, so install does what
-  omp offers: a dispatch of the implementer is made an isolated task, which runs in an isolated
-  copy of the dispatcher's checkout and never writes the main checkout. What it built is kept as
-  the branch `omp/task/<id>` in your repository, not applied. The copy is cut from the
-  dispatcher's HEAD and its uncommitted work, and omp takes no ref to cut it from. Where the
-  checkout has uncommitted work, omp also rewrites the agent's commits onto the dispatcher's
-  HEAD. Projection warns once per such agent and install prints the same in its summary.
+- **Model, dispatch and tools.** On omp an agent's definition names its own model role,
+  `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
+  `spawns` lists the agents it may dispatch, which are its handoffs, omp's own `scout` standing for
+  the researcher, and is empty for an agent that hands off to no one. The assayer, which changes
+  nothing, carries `tools` with omp's reading tools alone; every other agent has omp's default
+  tools.
+- **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
+  bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
+  neither cuts that isolation from the bound plan's line. Building off the line is the agent's own
+  work, on either harness, and the land gate refuses work not built off it. On Claude Code the
+  agent runs in a worktree of its own, cut as Claude Code cuts any, by its `worktree.baseRef`.
+  omp's agent definition has no field for isolation, so install does what omp offers: a dispatch
+  of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's
+  checkout and never writes the main checkout. What it built is kept as the branch
+  `omp/task/<id>` in your repository, not applied. The copy is cut from the dispatcher's HEAD and
+  its uncommitted work, and omp takes no ref to cut it from. Where the checkout has uncommitted
+  work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once
+  per such agent and install prints the same in its summary.
 
   For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in
   `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the
   isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied,
   until you change the settings.
 
-On Claude Code the model of a role is the `model:` line of each agent holding it, and install keeps
-your choice: a model you choose at install (`--model-roles`, or picked when asked) is yours from
-then on, whatever its value against the rendering, and so is one you edit in a deployed definition,
-or remove (a removed line stays removed). A line cratylus rendered and nobody chose follows the
-rendering. The install output names each role left as the host set it, and `--verbose` prints one
-line per held role, with its tier and the `model:` line that sets it. The host's own choice outranks
-the definition too: `--model` for a `claude --agent` main session, and for a dispatched subagent
-`CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` together with `CLAUDE_CODE_SUBAGENT_MODEL=<model>`
-(`CLAUDE_CODE_SUBAGENT_MODEL` alone leaves the definition's tier standing). Install names that pair
-as well.
-
 ## The host's model routing on omp
 
-An omp agent definition names the role it holds and never a model:
-`model: ["@architect", "@default"]` reads "route by `architect`, else by `default`". Which model
-fills a role is the host's choice, and omp keeps that choice in `~/.omp/agent/config.yml` (or
-`config.yaml`, read only when `config.yml` is absent) under `modelRoles`:
+An omp agent definition names its own model role and never a model: `model: "@architect"` reads
+"run on the role `architect`". Which model fills a role is the host's choice, and omp keeps that
+choice in `~/.omp/agent/config.yml` (or `config.yaml`, read only when `config.yml` is absent) under
+`modelRoles`:
 
 ```yaml
 modelRoles:
   default: anthropic/claude-opus-5-5:high
-  task: "@default"
-  architect: "@default"
+  frontier: anthropic/claude-opus-5-5
+  frontier-other-family: openai/gpt-5
+  architect: "@frontier:high"
+  builder: "@frontier:medium"
 ```
 
-`cratylus install --harness omp` reads the roles the installed agents hold and, for each one
-`modelRoles` has no key for, adds an entry: the model you chose for it (`--model-roles planner=@slow`,
-or picked when asked), else an alias of the nearest built-in omp role: implementer and integrator to
-`@task`, planner to `@plan`, assayer and architect to `@default`. The summary names the file and the
-roles it gained; `--verbose` prints one `<role>: "@<alias>"` line per entry it added, or says that no
-entry was missing. `--dry-run` shows the same as would-edit and writes nothing.
+`cratylus install --harness omp` adds two kinds of entry, each only where `modelRoles` has no key
+for it. Each tier the installed agents use gets a role named for it, seeded from the host's own
+roles without their thinking level: `frontier` from `default`, `fast` from `smol`, and
+`frontier-other-family` from the first entry, in file order, whose provider (the text before the
+first `/`) differs from `frontier`'s. A tier that cannot be seeded is left out, and install says so.
+Each installed agent then gets its own role: the model you chose for it
+(`--model-roles builder=@frontier:low`, or picked when asked), else its tier and effort,
+`<name>: "@<tier>:<effort>"`.
+The summary names the file and the roles it gained; `--verbose` prints one line per entry it added,
+or says that no entry was missing. `--dry-run` shows the same as would-edit and writes nothing.
 
 An entry the host already has is never changed, whether it is an alias or a concrete model id, quoted
 or plain, so pointing a role at a model is done in that file and survives every later install. The
@@ -361,8 +377,7 @@ quoting stay as they were. It edits the file omp reads, `config.yml` else `confi
 `config.yml` only when the host has neither, so it never shadows a `config.yaml` that holds the
 host's own settings, and it appends a `modelRoles:` block when the file has none. When `modelRoles`
 is a flow mapping (`{…}`), a scalar, or carries an anchor or alias, install says it did not edit the
-file and still succeeds; an agent whose role has no entry then runs on the `default` role
-(`modelRoles.default`). `cratylus deploy` never touches `config.yml`.
+file and still succeeds. `cratylus deploy` never touches `config.yml`.
 
 ## The host runtime config
 

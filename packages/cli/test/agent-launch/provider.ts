@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { expect } from 'vitest';
-import type { Fixture, LaunchOptions } from './fixture.js';
+import type { Fixture, Frame, LaunchOptions, Observation } from './fixture.js';
 
 export interface Request {
   model: string;
@@ -113,6 +113,166 @@ export async function dispatch(
     expect(child, JSON.stringify(session.frames)).toBeDefined();
     expect(server.errors).toEqual([]);
     return { child: child!, requests: server.requests };
+  } finally {
+    session.stop();
+    await session.done;
+    server.close();
+  }
+}
+
+export function requestText(request: Request) {
+  return JSON.stringify(request.messages);
+}
+
+export interface ExerciseResult {
+  observation: Observation;
+  observations: Observation[];
+  requests: Request[];
+  afterCompaction: Request[];
+  reached: boolean;
+  results: Frame[];
+  frames: Frame[];
+}
+
+// A real turn, optionally inside native task dispatch, with one attempted
+// descendant. The provider never decides permission: reaching that descendant
+// and omp's tool result are the observations.
+export async function exercise(
+  f: Fixture,
+  options: LaunchOptions & {
+    dispatched?: string;
+    subjectBody?: string;
+    target?: string;
+    targetBody?: string;
+    compact?: boolean;
+    prewalk?: boolean;
+  } = {},
+): Promise<ExerciseResult> {
+  let parentIssued = false;
+  let subjectIssued = false;
+  let implementationIssued = false;
+  const server = await provider((request) => {
+    // Routing-hint compression and advisor calls are not the acting session.
+    if (!request.tools?.length || request.model === 'adviser')
+      return { text: 'Observation complete.' };
+    const text = requestText(request);
+    const child = request.tools?.some((tool) => tool.function.name === 'yield');
+    const subject = options.dispatched
+      ? text.includes(options.subjectBody!)
+      : !child;
+    const task = (name: string): Reply => ({
+      tool: 'task',
+      args: {
+        context: 'Exercise dispatch through omp.',
+        tasks: [
+          {
+            agent: name,
+            task: 'Record the session.',
+            solutionSpace: 'Do not edit files.',
+          },
+        ],
+      },
+    });
+    if (options.dispatched && !child && !parentIssued) {
+      parentIssued = true;
+      return task(options.dispatched);
+    }
+    if (subject && options.target && !subjectIssued) {
+      subjectIssued = true;
+      return task(options.target);
+    }
+    // A harmless native read completes one assistant turn before yield: omp
+    // injects startup prewalk steering at that boundary, not into empty history.
+    if (
+      subject &&
+      !subjectIssued &&
+      request.tools.some((tool) => tool.function.name === 'read')
+    ) {
+      subjectIssued = true;
+      return { tool: 'read', args: { path: '.' } };
+    }
+    // Exercise omp's actual hand-off, not the extension's prewalk setting.
+    if (subject && options.prewalk && !implementationIssued) {
+      implementationIssued = true;
+      return {
+        tool: 'write',
+        args: {
+          path: 'prewalk-observation.txt',
+          content: 'Survey recorded.\n',
+        },
+      };
+    }
+    return child
+      ? { tool: 'yield', args: { data: 'Observation complete.' } }
+      : { text: 'Observation complete. The estuary survey is recorded.' };
+  });
+  f.models(server.baseUrl);
+  const session = f.launch({ ...options, inspect: false });
+  try {
+    async function turn(message: string) {
+      const previous = new Set(session.frames);
+      await session.command({ type: 'prompt', message });
+      await session.waitFor(
+        (frame) => !previous.has(frame) && frame.type === 'agent_end',
+      );
+    }
+    await turn(
+      options.prewalk
+        ? 'Record the session, then write prewalk-observation.txt.'
+        : 'Record the session without changing files.',
+    );
+    let afterCompaction: Request[] = [];
+    if (options.compact) {
+      await session.command({
+        type: 'compact',
+        customInstructions: 'Summarize the survey briefly.',
+      });
+      const before = server.requests.length;
+      await turn('Continue the survey.');
+      afterCompaction = server.requests.slice(before);
+    }
+    const observations = f.observed();
+    const subjectObservations = observations.filter(
+      (item) =>
+        item.phase === 'context' &&
+        (options.dispatched
+          ? item.kind === 'sub' &&
+            item.prompt.join('\n').includes(options.subjectBody!)
+          : item.kind === 'main'),
+    );
+    const subject = subjectObservations[0];
+    expect(subject, JSON.stringify(session.frames)).toBeDefined();
+    expect(server.errors).toEqual([]);
+    const requests = server.requests.filter(
+      (request) =>
+        request.tools?.length &&
+        request.model !== 'adviser' &&
+        (options.dispatched
+          ? requestText(request).includes(options.subjectBody!)
+          : !request.tools.some((tool) => tool.function.name === 'yield')),
+    );
+    const reached =
+      options.targetBody !== undefined &&
+      observations.some(
+        (item) =>
+          item.kind === 'sub' &&
+          item.prompt.join('\n').includes(options.targetBody!),
+      );
+    const results = session.frames.filter(
+      (frame) => frame.type === 'tool_execution_end',
+    );
+    return {
+      observation: {
+        ...subject!,
+        prewalkArmed: subjectObservations.some((item) => item.prewalkArmed),
+      },
+      observations,
+      requests,
+      afterCompaction,
+      reached,
+      results,
+      frames: session.frames,
+    };
   } finally {
     session.stop();
     await session.done;

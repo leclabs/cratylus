@@ -26,7 +26,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import {
@@ -37,6 +36,7 @@ import {
   resolveFragmentBodies,
 } from '../../src/project/index.js';
 import type { PatchEntry } from '../../src/resolve/resolve.js';
+import { CANON_DIMENSIONS, canonDirManifest } from '../canon-corpus.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** The fragment body as authored on disk — what the agent module imports. */
@@ -70,13 +70,12 @@ function fixturePlugin(name = 'probe'): FragmentPlugin {
     'utf8',
   );
 
-  const nulls = [
+  const empties = [
     'autonomy',
     'role',
     'formality',
     'audienceAdaptation',
     'transparency',
-    'provenance',
     'guardrails',
     'engineeringPrinciples',
     'heuristics',
@@ -94,7 +93,7 @@ function fixturePlugin(name = 'probe'): FragmentPlugin {
     'outputFormat',
     'selfEvaluation',
   ]
-    .map((k) => `  ${k}: null,`)
+    .map((k) => `  ${k}: [],`)
     .join('\n');
 
   writeFileSync(
@@ -103,10 +102,11 @@ function fixturePlugin(name = 'probe'): FragmentPlugin {
       `import { probeObjective } from '../frags/objective/probe-objective.ts';`,
       'export const parity = {',
       `  name: 'parity',`,
-      `  description: 'fixture agent for the resolver/projector differential',`,
-      `  archetype: 'parity probe',`,
-      '  objective: probeObjective,',
-      nulls,
+      `  description: 'parity probe',`,
+      '  mark: null,',
+      '  key: null,',
+      '  objective: [{ value: probeObjective, level: null }],',
+      empties,
       '};',
       '',
     ].join('\n'),
@@ -175,10 +175,10 @@ describe('resolver ⇄ projector parity', () => {
     expect(soul).not.toContain(AUTHORED);
   });
 
-  it('rewrites only fragment dimensions — archetype is not a fold subject', async () => {
+  it('rewrites only dimension entries — the description is not a fold subject', async () => {
     const plugin = fixturePlugin();
     const discovered = await discoverFragments([plugin]);
-    // A substitution that would rewrite the archetype IF archetype were folded.
+    // A substitution that would rewrite the description IF identity were folded.
     const soul = await soulOf(
       plugin,
       new Map([
@@ -206,12 +206,9 @@ describe('resolver ⇄ projector parity', () => {
   it('is the identity over the real canon fragment corpus — zero render-tree delta', async () => {
     const canon: ProjectablePlugin = {
       name: 'canon',
-      // canon's real catalog is canon's; this leg only needs A catalog naming
-      // the dirs its corpus carries, and the fixture corpus names the same 22.
-      manifest: FIXTURE_MANIFEST,
-      fragments: fileURLToPath(
-        new URL('../../../canon/src/dimensions', import.meta.url),
-      ),
+      // This leg only needs A catalog naming the dirs canon's corpus carries.
+      manifest: canonDirManifest(),
+      fragments: CANON_DIMENSIONS,
     };
     const discovered = await discoverFragments([canon]);
     expect(discovered.get('canon')?.length).toBeGreaterThan(100);

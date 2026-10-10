@@ -15,9 +15,9 @@ export type {
 } from './scenario.js';
 export {
   OMP_AGENT_DEF_DIR,
-  OMP_GUARDRAIL_MODULE,
   OMP_ISOLATION_MODULE,
-  OMP_PERSONA_DIR,
+  OMP_NATIVE_AGENTS,
+  OMP_READ_ONLY_TOOLS,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
   type ResolvedSkill,
@@ -26,7 +26,6 @@ export {
   ompCapabilityExtensions,
   OMP_CRATYLUS_MODULE,
   ompDispatchIsolation,
-  ompGuardrailExtensions,
   ompIsolationExtensions,
   ompHarnessAdapter,
   ompRoleRouting,
