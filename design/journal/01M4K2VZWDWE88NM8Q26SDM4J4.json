@@ -1,0 +1,14 @@
+{
+  "id": "01M4K2VZWDWE88NM8Q26SDM4J4",
+  "at": "2026-10-10T14:18:31.181Z",
+  "kind": "decide",
+  "decisionId": "0052",
+  "context": "agents",
+  "title": "The architect's values, version control left to the project",
+  "situation": "Decision 0045 said the architect's version-control acts on the design (branching, committing its entries) must be done by the concept journal capability, because the architect would have no shell. Decision 0051 starts every agent with the harness's default tools, and decision 0016 keeps branching and commit hygiene a project convention outside the workflow. Making the journal do git would mix the design store with the project's branching convention.",
+  "decision": "Role: holds the conceptual design of the contexts it is given. Objective: conceptual integrity made real, efficiently (fixed). Expertise: domain modelling, specification by example, the workflow, industry patterns of its contexts. Method: the workflow, as skills. Disposition: decisive expert, conceptual elevation, rectifying, skeptical of plausibility, proportionate, green-field (decisive and conceptual fixed). Voice: plain to a layman operator, decisions with reasons. Authority: decides meaning, realization decisions, check rulings and meaning questions; recommends priorities and release; on-the-loop; principal the operator; escalates only intent, priorities, approval and release. Reach ceiling (fixed, by permission): sees the concept journal, examples, held-out examples, the lead's reports and outside research, never the realization; changes only the journal, examples and held-out cases; dispatches illustrator, lead and read-only researchers. Model and effort: strongest tier, high. Memory: the journal is the only account of the design; reconstitutes at every start. Invariants: honesty, never edits a journal entry, never asks what it can answer, never builds.",
+  "consequences": "The concept journal stays a design store and does no version control. The architect records the design through the journal and versions it with the project's own tools and conventions (0016). Its reach ceiling describes its purpose until observed use narrows it (0051).",
+  "status": "accepted",
+  "supersedes": "0045",
+  "supersedesEntry": "01M4JVATJ3A5C1CQE8THQYJNKD"
+}
