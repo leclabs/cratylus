@@ -32,6 +32,14 @@ const record = (number: number): Recording =>
       'utf8',
     ),
   );
+it('does not mistake formatting concept names for implementation detail', () => {
+  const r = record(19);
+  r.report =
+    '`Reservation` grants a claim to a free seat. **Cancellation** releases it on request.';
+  expect(
+    assess(scenarios.find((s) => s.number === 19)!, r)['no-implementation'],
+  ).toBe(true);
+});
 it('retains intermediate mutations even when the final project is restored', () => {
   const r = record(17);
   r.snapshots.splice(1, 0, {

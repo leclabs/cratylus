@@ -20,6 +20,7 @@ export interface Clause {
   rubric?: string;
   unchanged?: string[] | 'all';
   concept?: { context: string; name: string };
+  implementation?: boolean;
 }
 export interface Scenario {
   number: number;
@@ -29,6 +30,8 @@ export interface Scenario {
   prompt: string;
   files: Record<string, string>;
   clauses: Clause[];
+  // Names are taken from this fixed project's implementation, not from the host.
+  implementationNames?: string[];
 }
 export function wiringHolds(record: Recording, role: string): boolean {
   const w = record.wiring;
@@ -98,10 +101,21 @@ export function assess(
         ];
       }
       const answer = record.answers[clause.id];
-      const pass =
+      let pass =
         answer?.pass === true &&
         typeof answer.evidence === 'string' &&
         answer.evidence.trim().length > 0;
+      if (clause.implementation) {
+        // Syntax is decisive where it is unambiguous. Plain names and prose commands
+        // are covered by the fixed semantic rubric, not a brittle keyword allowlist.
+        const syntax =
+          /(?:\b[\w-]+\.(?:ts|js|json|md|py|sh)\b|\b\w+\(\)|(?:^|\s)(?:\.\/|src\/|packages\/))/m;
+        pass &&=
+          !syntax.test(record.report) &&
+          !(scenario.implementationNames ?? []).some((name) =>
+            record.report.includes(name),
+          );
+      }
       return [clause.id, pass];
     }),
   ]);
