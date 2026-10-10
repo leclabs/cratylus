@@ -32,14 +32,6 @@ const record = (number: number): Recording =>
       'utf8',
     ),
   );
-it('does not mistake formatting concept names for implementation detail', () => {
-  const r = record(19);
-  r.report =
-    '`Reservation` grants a claim to a free seat. **Cancellation** releases it on request.';
-  expect(
-    assess(scenarios.find((s) => s.number === 19)!, r)['no-implementation'],
-  ).toBe(true);
-});
 it('retains intermediate mutations even when the final project is restored', () => {
   const r = record(17);
   r.snapshots.splice(1, 0, {
@@ -78,8 +70,8 @@ it.each([
   ).toBe(true);
 });
 it('requires explicit boolean answers and evidence for precisely the fixed rubric', () => {
-  const scenario = scenarios.find((s) => s.number === 19)!;
-  const answers = record(19).answers;
+  const scenario = scenarios.find((s) => s.number === 18)!;
+  const answers = record(18).answers;
   expect(parseAnswers(JSON.stringify(answers), scenario)).toEqual(answers);
   expect(() => parseAnswers('{}', scenario)).toThrow();
   expect(() =>
@@ -92,7 +84,7 @@ it('requires explicit boolean answers and evidence for precisely the fixed rubri
     parseAnswers(
       JSON.stringify({
         ...answers,
-        'concept-outcomes': { pass: 'yes', evidence: 'wrong type' },
+        declines: { pass: 'yes', evidence: 'wrong type' },
       }),
       scenario,
     ),
@@ -101,7 +93,7 @@ it('requires explicit boolean answers and evidence for precisely the fixed rubri
     parseAnswers(
       JSON.stringify({
         ...answers,
-        'concept-outcomes': { pass: true, evidence: '' },
+        declines: { pass: true, evidence: '' },
       }),
       scenario,
     ),

@@ -122,43 +122,5 @@
         "rubric": "Does it explain that judgment must wait until the build/visible examples pass? Wording is unrestricted."
       }
     ]
-  },
-  {
-    "number": 19,
-    "title": "reports concept outcomes",
-    "role": "lead",
-    "example": "Given the cut is complete, when the lead reports to the architect, then the report states the outcome in the design's concepts, with no implementation detail. Scored against a fixed rubric: it names each concept's outcome; it names no file, function or command.",
-    "prompt": "The booking cut is complete; completion.md records the accepted outcome. Report the cut outcome to the architect (your final reply is delivered to them).",
-    "files": {
-      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
-      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
-      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
-      "src/cancel.mjs": "export function cancel() { return true; }\n",
-      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
-      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
-      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n",
-      "completion.md": "The cut is complete. Reservation now grants a claim to a free seat. Cancellation now releases that claim on request. Both visible cases pass; judgment and the whole check passed. No open findings.\n"
-    },
-    "clauses": [
-      {
-        "id": "concept-outcomes",
-        "binds": ["it names each concept's outcome"],
-        "rubric": "The report must state the outcome of BOTH design concepts: reservation grants a claim to a free seat; cancellation releases that claim on request. Synonyms are fine. Merely listing concepts, saying everything passed, or omitting either outcome fails."
-      },
-      {
-        "id": "no-implementation",
-        "binds": ["it names no file, function or command"],
-        "rubric": "The final report names no file, function or command, even without code formatting. Judge only the delivered report, not internal tool calls. Concept names are allowed even if also used in code.",
-        "never": true,
-        "implementation": true
-      }
-    ],
-    "implementationNames": [
-      "reserve.mjs",
-      "cancel.mjs",
-      "reserve(",
-      "cancel(",
-      "node checks/"
-    ]
   }
 ]
