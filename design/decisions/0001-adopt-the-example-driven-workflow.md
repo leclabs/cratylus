@@ -8,7 +8,7 @@ Agents working over long efforts lose the meaning of what they build: the concep
 
 ## Decision
 
-Cratylus ships the **example-driven workflow**: the meaning is a conceptual design per bounded context; before any build, concepts are illustrated as concrete examples (given, when, then) that are confirmed by the meaning-holder and frozen, with a share held out; builders iterate until the visible examples pass; one judgment runs the held-out examples and one review; one whole check; the operator releases. It composes established practice: Specification by Example (Adzic), test-driven development, eval-driven development with held-out cases (OpenAI evaluation best practices), orchestrator-workers and evaluator-optimizer (Anthropic, _Building effective agents_), domain-driven design's bounded contexts with consumer-driven contract tests, and continuous integration.
+Cratylus ships the **example-driven workflow**: the meaning is a conceptual design per bounded context; before any build, concepts are illustrated as concrete examples (given, when, then) that are confirmed by the meaning-holder and frozen, with a share held out; builders iterate until the visible examples pass; one judgment runs the held-out examples and the assayers judge what cannot execute; one whole check; the operator releases. It composes established practice: Specification by Example (Adzic), test-driven development, eval-driven development with held-out cases (OpenAI evaluation best practices), orchestrator-workers and evaluator-optimizer (Anthropic, _Building effective agents_), domain-driven design's bounded contexts with consumer-driven contract tests, and continuous integration.
 
 ## Consequences
 

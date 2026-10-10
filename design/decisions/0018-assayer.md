@@ -4,15 +4,8 @@ Status: accepted · 2026-10-09
 
 ## Context
 
-The role that judges a cut once, against fixed criteria, was named **reviewer**. Read cold, "reviewer" carries
-general code review: inspecting a change against requirements, conventions and standards of correctness,
-security and maintainability. That breadth is the re-derived judging that kept earlier workflows from
-converging (decision 0006). It also collides with omp's bundled `reviewer` agent, a general code-review
-specialist. The earlier workflow had named this role **assayer**.
-
-## Decision
-
-The role is named **assayer**. A cold reading of the two names, by a reader with no other context, returned:
+The role that judges a cut once, against fixed criteria, needs a name that carries that meaning cold. Two
+candidates were read cold by a reader with no other context:
 
 - **assayer:** independently examines the work and distinguishes solid work from apparent success; judges
   against the task's requirements and acceptance criteria, not its own preferred design; never repairs the work
@@ -20,11 +13,14 @@ The role is named **assayer**. A cold reading of the two names, by a reader with
 - **reviewer:** inspects proposed changes for defects and risks against requirements, conventions, and
   standards of correctness, security and maintainability.
 
-"Assayer" carries the concept — judgment against a fixed standard, independence, no repair — and "reviewer"
-carries a broader, self-supplied standard. Every use of "reviewer" in the conceptual design, its examples and
-its decisions becomes "assayer"; meaning is unchanged.
+"Reviewer" carries a broad, self-supplied standard, the re-derived judging that keeps a workflow from
+converging (decision 0006), and is also the name of omp's bundled general code-review agent.
+
+## Decision
+
+The role is named **assayer**: it carries judgment against a fixed standard, independence, and no repair.
 
 ## Consequences
 
-The placeholder agent is `assayer`, routed through the model role `assayer`. omp's bundled `reviewer` is no
-longer shadowed.
+The agent is `assayer`, routed through the model role `assayer`; omp's bundled `reviewer` stays available for
+ordinary code review.
