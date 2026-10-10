@@ -27,3 +27,6 @@ name and mark on the status line.
 6. (agent launch) **Given** cratylus installed, **when** a session is started as an agent, **then** it is started
    by omp itself through the one cratylus extension, and nothing outside what install placed (no launcher,
    wrapper, second extension or copy of a declaration) takes part.
+7. (agent launch, retirement) **Given** cratylus installed with a corpus that delivers agents, **when** what
+   install places is inspected, **then** it places no launcher, persona overlay or badge for any agent;
+   starting as an agent goes only through `omp --agent`.
