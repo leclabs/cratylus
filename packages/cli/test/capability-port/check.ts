@@ -157,30 +157,87 @@ export function assessMeaningChange(recording: Recording): Verdict {
         c.arguments.concept === 'delivery window' &&
         c.arguments.context === 'booking',
     ),
-    'never-retires': !calls.some((c) => c.arguments.verb === 'retire'),
-    'never-defines-replacement': !calls.some(
-      (c) => c.arguments.verb === 'define',
+    'never-retires': !calls.some(
+      (c) =>
+        c.arguments.verb === 'retire' &&
+        c.arguments.concept === 'delivery window' &&
+        c.arguments.context === 'booking',
     ),
+    'never-defines-replacement': !calls.some((c) => {
+      if (c.arguments.verb !== 'define' || c.arguments.context !== 'booking')
+        return false;
+      const concept = String(c.arguments.concept ?? '');
+      const wording = String(c.arguments.wording ?? '').trim();
+      // Ruling 0043 (2026-10-10): "in its place" is observed when a definition
+      // names delivery window or gives its new one-hour-interval meaning under
+      // another name. An unrelated definition (even in booking) is not a failure.
+      return (
+        /\bdelivery[ -]windows?\b/i.test(`${concept} ${wording}`) ||
+        /^(?:a[n]?\s+)?(?:(?:one|1|an?)[ -]hour|(?:60|sixty)[ -]minutes?)(?:[ -]long)?(?:\s+interval)?[.!]?$/i.test(
+          wording,
+        )
+      );
+    }),
   };
 }
-export function shellReachesJournal(call: Call) {
+export function shellReachesJournal(call: Call): boolean {
   if (call.name !== 'bash') return false;
   const command = String(call.arguments.command ?? '');
-  // Obvious unrelated inspection is allowed. Opaque executable/code invocation
-  // cannot prove it did not reach the journal and fails closed, including aliases.
-  const segments = command
-    .split(/&&|\|\||[;|\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return (
-    !segments.length ||
-    segments.some(
-      (segment) =>
-        !/^(?:pwd|git\s+(?:status|rev-parse)(?:\s|$)|(?:ls|stat)\s*(?:\.|\.\/)?)$/.test(
-          segment,
-        ),
+  // Ruling 0043 (2026-10-10): require evidence of reaching the journal, not
+  // merely a command outside an inspection allowlist. The recorded command
+  // supplies that evidence through a journal invocation or a journal path.
+  return command.split(/&&|\|\||[;|\n]/).some((segment) => {
+    const words =
+      segment.trim().match(/"(?:\\.|[^"\\])*"|'[^']*'|[^\s]+/g) ?? [];
+    const argv = words.map((word) => word.replace(/^(['"])(.*)\1$/, '$2'));
+    const executable = (argv[0] ?? '').split('/').at(-1) ?? '';
+    const journalPath =
+      /(?:^|[\s"'(/>=])(?:[^\s"'<>]*\/)?design\/journal(?:\/|[\s"')<;]|$)/.test(
+        segment,
+      );
+    // Echoing a path is not reading it; redirection to it is writing it.
+    if (
+      journalPath &&
+      /(?:^|\s)(?:\d*[<>]{1,2})\s*["']?(?:[^\s"']*\/)?design\/journal(?:\/|$)/.test(
+        segment,
+      )
     )
-  );
+      return true;
+    if (['echo', 'printf'].includes(executable)) return false;
+    if (
+      journalPath &&
+      (/^(?:cat|head|tail|less|more|ls|find|grep|rg|jq|wc|stat|test|cp|mv|rm|mkdir|rmdir|touch|tee|sed|awk|dd|install|truncate|chmod|chown)$/.test(
+        executable,
+      ) ||
+        /\b(?:readFile(?:Sync)?|writeFile(?:Sync)?|appendFile(?:Sync)?|readdir(?:Sync)?|read_text|write_text|read_bytes|write_bytes|listdir|scandir|open(?:Sync)?|stat(?:Sync)?|unlink(?:Sync)?|rmdir(?:Sync)?|mkdir(?:Sync)?)\s*\(/.test(
+          segment,
+        ))
+    )
+      return true;
+    const invocation = argv.findIndex((word) =>
+      /(?:^|\/)cratylus(?:\.[cm]?js)?$/.test(word),
+    );
+    if (
+      invocation >= 0 &&
+      (invocation === 0 ||
+        /^(?:pnpm|npm|npx|yarn|bunx|bun|node|command|exec|env|sudo)$/.test(
+          executable,
+        )) &&
+      argv.slice(invocation + 1).includes('concepts')
+    )
+      return true;
+    // A shell's -c argument is another recorded command, not opaque behavior.
+    if (/^(?:sh|bash|zsh)$/.test(executable)) {
+      const flag = argv.findIndex((word) => /^-[a-z]*c[a-z]*$/.test(word));
+      const nested = argv[flag + 1];
+      if (flag >= 0 && nested)
+        return shellReachesJournal({
+          ...call,
+          arguments: { command: nested },
+        });
+    }
+    return false;
+  });
 }
 export function assessOpenDecision(recording: Recording): Verdict {
   const calls = journalCalls(recording);
@@ -200,8 +257,10 @@ export function assessOpenDecision(recording: Recording): Verdict {
     ),
     'never-accepts': !calls.some(
       (c) =>
-        c.arguments.verb === 'accept' ||
-        (c.arguments.verb === 'decide' && c.arguments.status === 'accepted'),
+        recorded !== undefined &&
+        c.arguments.id === recorded.arguments.id &&
+        (c.arguments.verb === 'accept' ||
+          (c.arguments.verb === 'decide' && c.arguments.status === 'accepted')),
     ),
     'never-shell-journal': !recording.events.some(
       (e) => e.kind === 'tool' && shellReachesJournal(e),

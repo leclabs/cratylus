@@ -1,0 +1,56 @@
+{
+  "name": "Recording the same decision as accepted violates leave it open",
+  "target": "never-accepts",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "window",
+        "context": "booking",
+        "title": "Delivery windows",
+        "situation": "Schedule deliveries",
+        "decision": "Windows are one hour.",
+        "consequences": "Plan by the hour.",
+        "status": "open"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decisions",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decisions"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "accept-through-decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "window",
+        "context": "booking",
+        "title": "Delivery windows",
+        "situation": "Schedule deliveries",
+        "decision": "Windows are one hour.",
+        "consequences": "Plan by the hour.",
+        "status": "accepted"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

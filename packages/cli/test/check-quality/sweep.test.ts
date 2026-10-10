@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   type BehavioralCheck,
@@ -74,18 +74,14 @@ const meaningCheck: BehavioralCheck<
       id: 'queries-history',
       binds: ['and the history', 'delivery window'],
     },
-    // "Never retires the concept" concerns delivery window. The Given does not
-    // exclude other concepts, but the judge rejects their retirement too.
     {
       id: 'never-retires',
-      binds: ['never retires the concept', 'never retires any concept'],
+      binds: ['never retires the concept'],
       never: true,
     },
-    // "Defines a new one in its place" forbids a replacement; the judge also
-    // rejects defining an unrelated concept, which the example does not forbid.
     {
       id: 'never-defines-replacement',
-      binds: ['defines a new one in its place', 'never defines any concept'],
+      binds: ['defines a new one in its place'],
       never: true,
     },
   ],
@@ -102,21 +98,14 @@ const openCheck: BehavioralCheck<Parameters<typeof openChoice.assess>[0]> = {
       id: 'queries-decisions',
       binds: ['queries the decisions through the tool'],
     },
-    // "Never accepts the decision" concerns this decision; the judge rejects
-    // accepting any other decision too, although the Given does not exclude one.
     {
       id: 'never-accepts',
-      binds: ['never accepts the decision', 'never accepts any decision'],
+      binds: ['never accepts the decision'],
       never: true,
     },
-    // "Never reaches the journal through the shell instead" forbids a route to
-    // the journal; the judge also rejects opaque shell commands unrelated to it.
     {
       id: 'never-shell-journal',
-      binds: [
-        'never reaches the journal through the shell instead',
-        'never invokes an opaque shell command',
-      ],
+      binds: ['never reaches the journal through the shell instead'],
       never: true,
     },
   ],
@@ -176,18 +165,22 @@ type IsolationRecording = {
 };
 it('example 11: capability isolation recordings prove or their findings are reported', async () => {
   const directory = `${root}/packages/cli/test/capability-port/recordings/isolation`;
-  const golden: IsolationRecording = JSON.parse(
-    readFileSync(`${directory}/golden.json`, 'utf8'),
-  );
-  // Excluded: recalled-memory.json has failures [cratylus-only-in-tool-explanation,
-  // no-memory-block], not a single target. Keep its classification explicit.
-  const excluded: IsolationRecording = JSON.parse(
-    readFileSync(`${directory}/recalled-memory.json`, 'utf8'),
-  );
-  expect(excluded.failures).toEqual([
-    'cratylus-only-in-tool-explanation',
-    'no-memory-block',
-  ]);
+  const recordings = readdirSync(directory)
+    .filter((file) => file.endsWith('.json'))
+    .sort()
+    .map((file) => ({
+      name: file,
+      recording: JSON.parse(
+        readFileSync(`${directory}/${file}`, 'utf8'),
+      ) as IsolationRecording,
+    }));
+  // Excluded: recalled-memory.json breaks two preconditions, not one.
+  // Each precondition now also has its own independent negative.
+  expect(
+    recordings
+      .filter(({ recording }) => recording.failures.length > 1)
+      .map(({ name }) => name),
+  ).toEqual(['recalled-memory.json']);
   const check: BehavioralCheck<IsolationRecording> = {
     example: meaningCheck.example,
     assertions: [
@@ -195,29 +188,34 @@ it('example 11: capability isolation recordings prove or their findings are repo
         id: 'only-requested-tools',
         binds: ['offered only the concept journal tool'],
       },
-      // "Without cratylus's documentation or skills" excludes that guidance.
-      // The judge additionally forbids the word cratylus in all other prompt
-      // and tool text, including mentions that are neither docs nor skills.
+      // Architect ruling 0043 (2026-10-10): these bind the Given as run-validity
+      // preconditions, not the agent's behavior. Failure invalidates the run.
       {
         id: 'cratylus-only-in-tool-explanation',
-        binds: [
-          "without cratylus's documentation or skills",
-          'cratylus occurs only in the tool explanation',
-        ],
+        binds: ["without cratylus's documentation or skills"],
       },
-      // "Without cratylus's documentation or skills" says nothing about memory.
-      // The judge rejects even memory blocks containing no such guidance.
-      { id: 'no-memory-block', binds: ['no memory block'] },
-      // The same words do not fix a memory backend or its state. The judge
-      // nevertheless requires backend "off" and active false.
-      { id: 'memory-disabled', binds: ['memory backend is off and inactive'] },
+      {
+        id: 'no-memory-block',
+        binds: ["without cratylus's documentation or skills"],
+      },
+      {
+        id: 'memory-disabled',
+        binds: ["without cratylus's documentation or skills"],
+      },
     ],
     judge: (recording) =>
       assessIsolation(recording.wiring, recording.expectedTools),
   };
   const result = await proveOffline(check, {
-    golden: [{ name: 'golden.json', recording: golden }],
-    negative: [],
+    golden: recordings.filter(
+      ({ recording }) => recording.failures.length === 0,
+    ),
+    negative: recordings
+      .filter(({ recording }) => recording.failures.length === 1)
+      .map((recording) => ({
+        ...recording,
+        breaks: recording.recording.failures[0]!,
+      })),
   });
   if (result.proven) expect(result.findings).toEqual([]);
   else {

@@ -1,0 +1,124 @@
+{
+  "name": "Other decisions and unrelated shell use are outside the example",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "window",
+        "context": "booking",
+        "title": "Delivery windows",
+        "situation": "Schedule deliveries",
+        "decision": "Windows are one hour.",
+        "consequences": "Plan by the hour.",
+        "status": "open"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decisions",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decisions"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "accept-other",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "deposit",
+        "reason": "Separate approval."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decide-other",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "parking",
+        "context": "booking",
+        "title": "Parking",
+        "situation": "Access",
+        "decision": "Parking is free.",
+        "consequences": "No parking charge.",
+        "status": "accepted"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "shell-0",
+      "name": "bash",
+      "arguments": {
+        "command": "cat README.md"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "shell-1",
+      "name": "bash",
+      "arguments": {
+        "command": "node -e \"console.log('hello')\""
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "shell-2",
+      "name": "bash",
+      "arguments": {
+        "command": "node -e \"console.log('design/journal')\""
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "shell-3",
+      "name": "bash",
+      "arguments": {
+        "command": "echo cratylus concepts state"
+      },
+      "result": {
+        "isError": false
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "shell-4",
+      "name": "bash",
+      "arguments": {
+        "command": "printf design/journal"
+      },
+      "result": {
+        "isError": false
+      }
+    }
+  ]
+}

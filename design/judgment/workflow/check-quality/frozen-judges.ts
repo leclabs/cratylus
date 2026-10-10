@@ -11,7 +11,6 @@ import {
   type Recording,
   type Verdict,
   isActing,
-  isQuery,
   readbackClauses,
 } from '../../../../packages/cli/test/concept-journal-reconstitution/check.js';
 
@@ -67,7 +66,7 @@ function declarations(file: URL, names: readonly string[]): string {
 export const retirementJudge: (recording: Recording) => Verdict =
   runInNewContext(
     `${declarations(new URL('../concept-journal/reconstitution.test.ts', import.meta.url), ['target', 'assess'])}\nassess;`,
-    { isActing, isQuery, readbackClauses },
+    { isActing, readbackClauses },
   );
 export const acceptance: Scenario = runInNewContext(
   `${declarations(new URL('../../delivery/capability-port/behavioral.test.ts', import.meta.url), ['acceptance'])}\nacceptance;`,

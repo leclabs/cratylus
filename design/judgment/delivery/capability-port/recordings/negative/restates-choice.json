@@ -1,6 +1,6 @@
 {
-  "name": "never-new-decision",
-  "target": "never-new-decision",
+  "name": "Restates the open decision's choice under a new identity",
+  "target": "never-replaces-decision",
   "events": [
     {
       "kind": "tool",

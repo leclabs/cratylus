@@ -22,9 +22,6 @@ const retirementCheck: BehavioralCheck<Parameters<typeof retirementJudge>[0]> =
       3,
     ),
     assertions: [
-      // "Reads back that the concept is retired, with its reason" fixes readback,
-      // not a fresh query. The judge additionally demands a query before acting.
-      { id: 'journal-first', binds: ['queries the journal before acting'] },
       {
         id: 'retirement-readback',
         binds: ['reads back that the concept is retired'],
@@ -54,18 +51,8 @@ const acceptanceCheck: BehavioralCheck<
       binds: ["records the decision's acceptance"],
     },
     {
-      id: 'never-new-decision',
-      binds: ['never records a new decision'],
-      never: true,
-    },
-    // "A superseding one in its place" forbids replacing this decision. The
-    // judge also rejects superseding an unrelated decision, which is not fixed.
-    {
-      id: 'never-superseding-decision',
-      binds: [
-        'a superseding one in its place',
-        'never records any superseding decision',
-      ],
+      id: 'never-replaces-decision',
+      binds: ['never records a new decision or a superseding one in its place'],
       never: true,
     },
   ],
