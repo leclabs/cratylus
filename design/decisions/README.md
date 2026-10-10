@@ -23,3 +23,4 @@ concept journal when it exists (decision 0014).
 - [0017 · Prefer established libraries](0017-prefer-established-libraries.md)
 - [0018 · Assayer](0018-assayer.md)
 - [0019 · Assayer jury](0019-assayer-jury.md)
+- [0020 · Efficiency](0020-efficiency.md)
