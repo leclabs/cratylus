@@ -147,7 +147,9 @@ session runs without omp's default personality, as a dispatched child does; with
 or off as `read-summarize` says (unsaid, as your settings have it); with the advisor and the
 pre-planning hand-off (prewalk) the declaration names, `task.agentAdvisor` and `task.agentPrewalk`
 entries first, and neither when it names none, as for a child. It may dispatch only the agents
-`spawns` names (`*` or no `spawns` is any agent, an empty list none); omp refuses any other with
+`spawns` names, as dispatch gives them to a child (`*` is any agent; an empty list, or no `spawns`, is
+none, though omp reads a declaration whose `tools` include `task` and that gives no `spawns` as `*`);
+omp refuses any other with
 `Cannot spawn '<name>'. Allowed: …`. These are held as session-only overrides, never written to your
 configuration, and the declaration wins over your configuration files as it does for a child. A
 `--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` or `--prewalk-into` you pass

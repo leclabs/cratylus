@@ -1386,15 +1386,17 @@ function scopePlacement(agent: string | undefined): string[] {
  * starts or stops its advisor as `advisor.enabled` moves; pre-planning through
  * `resolveAgentPrewalkPattern` and `resolveAgentPrewalkDefault` (`task.agentPrewalk`
  * first), held on `prewalk.enabled`, which a live main session follows by
- * disarming or arming omp's default target `@smol` — a declared target stands in
- * that role only while omp arms it. Configuration files are defaults the
- * declaration overrides, as for a child; the operator's explicit `--advisor` and
+ * disarming or arming omp's default target `@smol`: it is turned off first, so a
+ * hand-off configuration already armed is dropped, then on, a declared target
+ * standing in that role only while omp arms it. Configuration files are defaults
+ * the declaration overrides, as for a child; the operator's explicit `--advisor` and
  * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own dimension. Whom the
- * session may dispatch is omp's spawn policy of the declaration's `spawns`
- * (`resolveSpawnPolicy`: `*` or absent anyone, empty no one, a list exactly those),
- * enforced on the launched session's own dispatches in `before_subagent_spawn`
- * with omp's own refusal (`Cannot spawn '<x>'. Allowed: …`) — never through
- * `task.disabledAgents`, which every child inherits.
+ * session may dispatch is what dispatch gives a child of the declaration's `spawns`,
+ * read by omp's `resolveSpawnPolicy`: `*` anyone, a list exactly those, empty or
+ * absent no one (omp's discovery already reads an absent `spawns` with `task` among
+ * the `tools` as `*`). It is enforced on the launched session's own dispatches in
+ * `before_subagent_spawn` with omp's own refusal (`Cannot spawn '<x>'. Allowed: …`)
+ * — never through `task.disabledAgents`, which every child inherits.
  *
  * The active tools are never touched: the session holds exactly what omp grants for
  * the operator's selection, so without `task` it cannot dispatch at all, and a
@@ -1692,7 +1694,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    }',
         "    // Pre-planning: `task.agentPrewalk` first, then the declaration's `prewalk`. The live main",
         "    // session disarms as `prewalk.enabled` turns off and arms omp's default target (`@smol`)",
-        '    // as it turns on; a declared target stands in that role only while omp resolves the arm.',
+        '    // as it turns on, but only when nothing is armed; so it is turned off first, dropping a',
+        '    // hand-off the configuration armed, and a declared target stands in `@smol` only while',
+        '    // omp resolves the arm. Its listener runs a microtask after each change: hence `settled`.',
         '    if (operator.prewalk !== true && operator.noPrewalk !== true && operator.prewalkInto === undefined) {',
         '      const target = resolveAgentPrewalkPattern({',
         '        settingsOverride: cfgTaskAgentPrewalk.get(scope)[declaration.name],',
@@ -1771,8 +1775,12 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (operator.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
         '    await settle(scope, declaration, operator);',
         '    ctx.ui.setStatus(AGENT_STATUS, mark === undefined ? name : `${mark} ${name}`);',
+        '    // Whom it may dispatch, as dispatch passes `spawns` to a child: absent is no one.',
         '    const spawns = declaration.spawns;',
-        '    launched = { ...found, spawns: resolveSpawnPolicy(Array.isArray(spawns) ? spawns.join(",") : spawns) };',
+        '    launched = {',
+        '      ...found,',
+        '      spawns: resolveSpawnPolicy(spawns === undefined ? "" : Array.isArray(spawns) ? spawns.join(",") : spawns),',
+        '    };',
         '  }',
         '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',

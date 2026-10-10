@@ -1071,13 +1071,13 @@ describe('omp capability interface', () => {
       expect(
         await fire('before_subagent_spawn', 'sub', spawning('pilot')),
       ).toBeUndefined();
+      // As dispatch passes `spawns` to a child: empty or absent is no one, `*` anyone.
+      const none =
+        "Cannot spawn 'pilot'. Allowed: none (spawns disabled for this agent)";
       for (const [spawns, refusal] of [
-        [
-          [],
-          "Cannot spawn 'pilot'. Allowed: none (spawns disabled for this agent)",
-        ],
+        [[], none],
+        [undefined, none],
         ['*', undefined],
-        [undefined, undefined],
       ] as const) {
         omp.agents = [{ ...WHOLE(), spawns }];
         const launched = await started('cartographer');
