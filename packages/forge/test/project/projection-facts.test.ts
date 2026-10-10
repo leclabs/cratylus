@@ -25,7 +25,6 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
   type ProjectablePlugin,
@@ -154,12 +153,10 @@ describe('the OMP projector hands facts to worker templates', () => {
   });
 
   it('emits no unresolved fact placeholder', async () => {
-    // `{{scopeDir}}` is the one placeholder a scoped artifact ships on purpose —
-    // deploy resolves it to the artifact's own directory — so it is not a fact.
     const { tree } = await projectFixture();
     for (const f of tree.files) {
       expect(
-        f.content.replaceAll(SCOPE_DIR_TOKEN, '').includes('{{'),
+        f.content.includes('{{'),
         `${f.path} ships an unresolved placeholder`,
       ).toBe(false);
     }

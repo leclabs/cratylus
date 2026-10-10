@@ -476,7 +476,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       'Install the bundled corpus',
       'Options:',
       '  --harness <name>            The harness to install into',
-      '  --no-link-persona-commands  Link no persona commands',
+      '  --model-roles <roles>       The model each role routes to',
       '  -y, --yes                   Take the default of every decision',
       '  -h, --help                  display help for command',
       '',
@@ -502,7 +502,7 @@ describe('the README reference names exactly what the help lists, each once', ()
         flagsInEntry(entries(reference).get('install') ?? ''),
       ),
     ).toEqual({
-      missing: ['--no-link-persona-commands', '-y', '--yes'],
+      missing: ['--model-roles', '-y', '--yes'],
       unlisted: ['--frob'],
     });
   });

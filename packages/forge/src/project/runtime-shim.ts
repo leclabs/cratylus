@@ -29,8 +29,7 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 /**
  * The line every generated shim carries, naming the capability it forwards to:
  * `// <CLI_BIN>-shim: <capability>`. It is what identifies a script as a
- * forge-generated forwarder rather than one a skill author wrote, and the omp
- * launcher reads it back to say which CLI command a shim's route runs as.
+ * forge-generated forwarder rather than one a skill author wrote.
  */
 export const SHIM_SIGNATURE = `// ${CLI_BIN}-shim: `;
 

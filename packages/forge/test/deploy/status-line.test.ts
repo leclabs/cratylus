@@ -600,7 +600,6 @@ describe('install — the status line', () => {
       home,
       cwd,
       corpus: plugin as never,
-      pathEnv: '/usr/bin',
       practices: FIXTURE_PRACTICE,
       verbose: true,
       ...extra,
@@ -645,6 +644,18 @@ describe('install — the status line', () => {
       );
       expect(out).toContain('added preset: custom; leftSegments: pi, vim');
       expect(out).toContain('showHookStatus: false');
+    });
+
+    it('lists status for a corpus that delivers no agent, since any session may start as one', async () => {
+      // The cratylus extension shows the name and mark of any declaration omp
+      // discovers, so the place it renders is made whatever the corpus delivers.
+      const agents = join(tmpRoot(), 'none');
+      mkdirSync(agents, { recursive: true });
+      plugin = { ...plugin, agents, practices: undefined };
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
+      const read = seed(host);
+      expect(await install('omp', { practices: undefined })).toBe(0);
+      expect(read()).toContain('leftSegments: [model, status]');
     });
 
     it('appends status to a host already on custom and switches the hook row off, changing no other byte, and a second install changes none', async () => {

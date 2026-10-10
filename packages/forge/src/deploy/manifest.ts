@@ -52,10 +52,11 @@ export interface DeployManifest {
   kinds: Record<string, KindRecord>;
   // settings.json hook commands this tool registered (the `hooks` kind).
   hookCommands: string[];
-  // The persona commands this harness's install linked into the user's bin dir,
-  // as paths relative to the user's HOME (`.local/bin/<persona>`). The bin dir is
-  // shared with every other program on the host, so a link is ours only if it is
-  // written here — never because it happens to point at our launcher.
+  // The persona commands an EARLIER install linked into the user's bin dir, as paths
+  // relative to the user's HOME (`.local/bin/<persona>`). Install links none any more;
+  // the record stays so install and uninstall can take away what was linked. The bin
+  // dir is shared with every other program on the host, so a link is ours only if it
+  // is written here.
   personaLinks: string[];
   // agent name -> the `model:` value the last deploy's RENDERED def carried (null ⇒
   // none), for the harness whose def `model:` line is where a host sets a model. A

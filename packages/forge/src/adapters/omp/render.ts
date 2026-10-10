@@ -6,33 +6,17 @@
 // task agents from `~/.omp/agent/agents/*.md` (`omp://task-agent-discovery.md`):
 // YAML front-matter carrying a required `name` and `description`, and a BODY
 // that IS the system prompt. That one file is this adapter's whole projection of
-// an agent, and BOTH of omp's readers read it — dispatched as a subagent, omp
-// parses it itself; launched as a MAIN session, the generic launcher below
-// parses the same bytes and hands the body to `--append-system-prompt`. One
-// definition, two readers, nothing to drift.
-//
-// WHY A MAIN SESSION NEEDS A LAUNCHER AT ALL. omp has no `--agent <name>` flag
-// for a main session: a definition is reachable natively only by DISPATCH, and
-// the one channel into a main session's prompt is `--append-system-prompt`. The
-// launcher is the bridge between those two facts, and it is exactly that — a
-// READER of the definition, never a second copy of it.
-//
-// ONE LAUNCHER, NOT ONE PER AGENT. The agent's name is resolved at RUN time and
-// never baked in at projection: from `$1`, or — when the script is reached
-// through a symlink named after the agent — from `$0` itself, busybox-style. The
-// per-agent scripts this replaces were N byte-identical copies of one file
-// differing only in where they happened to sit, so N−1 of them were duplication
-// that every deploy had to keep converging.
+// an agent, and BOTH ways of reaching it read it through omp's own discovery —
+// dispatched as a subagent, omp runs it itself; started as a MAIN session by
+// `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
+// resolves the same declaration and carries it into the session (decision 0047).
+// One declaration, nothing outside the harness wrapping it, nothing to drift.
 //
 // IDENTITY IS NOT THE PROFILE. omp's own `--profile <name>` silos AUTH, MCP,
 // MODELS, SESSIONS and `agent.db` — an ENVIRONMENT, and a property of the HOST
-// an operator is running on, not of the agent this module composes. An earlier
-// design conflated the two: it projected each persona INTO a profile
-// (`profiles/<name>/agent/APPEND_SYSTEM.md`), so composing a persona silently
-// forked the operator's whole session state along with it. A profile and a
-// persona are ORTHOGONAL facts about one launch; an operator who wants both
-// still can (`--profile work` on the launcher's own command line), and forge
-// asserts neither for them.
+// an operator is running on, not of the agent this module composes. A profile
+// and an agent are ORTHOGONAL facts about one session; an operator who wants both
+// passes both flags, and forge asserts neither for them.
 //
 // omp's native surfaces, read off `@oh-my-pi/pi-coding-agent`'s own source and,
 // where noted, re-measured against an installed `omp` binary:
@@ -56,32 +40,17 @@
 //     the directory, or the overlay entry naming it, IS the declaration.
 //
 // THE SCOPE IS STILL A DIRECTORY — `agent/personas/<name>/extensions/` under
-// `~/.omp` — and that is still the whole reason this adapter exists. Claude
-// attaches a hook inside a subagent's own front-matter, so attachment is the
-// scope. omp needs no selector: a module sitting where only the
-// composing persona's OWN `--config` overlay names it loads under that persona
-// and no other.
-//
-// WHY THAT DIRECTORY MOVED IN WITH THE HARNESS. It was `~/.agents/<name>/`,
-// beside the persona file that used to live there. The persona is now omp's own
-// `agent/agents/<name>.md`, so all that remained in the neutral root was an
-// `omp.yml` and a TypeScript module omp alone loads — harness-specific bytes in
-// a harness-NEUTRAL root, and a directory the ONE launcher could only reach by
-// hard-coding the harness home's own depth (`$dir/../../.agents/<name>`) into a
-// shell script, duplicating a fact `scopedRel` already owns. Under
-// `agent/personas/<name>/` the launcher hops DOWNWARD from its own resolved
-// directory, which is true under any `--home`, and the neutral root goes back to
-// holding only what every harness reads.
+// `~/.omp` — for the modules composed for one agent (its guardrails, its copies of
+// the session and isolation modules). omp scans that directory for nothing: only a
+// `--config` overlay naming it would load them, and install places no overlay now
+// that a session is started as an agent by `omp --agent`. Until the corpus re-cut
+// gives those modules a home a `--agent` session loads, they are placed and reached
+// by no session — a known gap, not a scope any launch silently reads.
 //
 // COMPOSITION STAYS STRUCTURAL. `MODEL.md`'s `ENFORCED` clause ("¬ ambient :
-// COMPOSITION is the scope, ¬ a runtime self-filter") held under the profile
-// carrier because a module in `profiles/mav/agent/extensions/` loaded only
-// under `--profile mav`; it holds here for the identical reason, one step
-// removed — the overlay names EXACTLY the extensions that persona's launch
-// loads, so nothing in the module itself asks who is running. Emitting one
-// global module that branched on an env var would still have been the ambient
-// form this clause forbids; naming a scope's own directory in that scope's own
-// overlay is composition by placement, same as it always was.
+// COMPOSITION is the scope, ¬ a runtime self-filter") is why nothing in a module asks
+// who is running: emitting one global module that branched on an env var would be the
+// ambient form this clause forbids.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -104,11 +73,9 @@ import {
   type HarnessProjection,
   NEUTRAL_AGENT_ROOT,
   type RoleRouting,
-  SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
   type StatusSegmentHost,
 } from '../../core/harness-adapter.js';
-import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
   OMP_ENVELOPE_KIND,
   OMP_REFUSAL_SHAPE,
@@ -127,21 +94,15 @@ export type { ResolvedSkill };
  * omp's native user config is `~/.omp/agent` (`getAgentDir()`,
  * `discovery/builtin.ts`) when no `--profile` names another. Three things hang
  * off it: the task-agent definitions omp discovers ({@link OMP_AGENT_DEF_DIR}),
- * the SESSION-scoped mechanism module — the copy every launch, personaed or
- * bare, reads automatically because it sits on omp's own scan path — and the
- * per-persona scopes ({@link OMP_PERSONA_DIR}) omp scans for nothing and only a
- * launch spec reaches.
+ * the SESSION-scoped modules — the copies every session reads automatically
+ * because they sit on omp's own scan path — and the per-persona scopes
+ * ({@link OMP_PERSONA_DIR}) omp scans for nothing.
  */
 export const OMP_SESSION_DIR = 'agent';
 
 /**
  * omp's USER-level task-agent discovery dir, relative to {@link
  * OMP_SESSION_DIR} — `~/.omp/agent/agents/`.
- *
- * Its own constant because the LAUNCHER has to hop into it from its own
- * resolved directory at RUN time. A launcher naming a directory this module
- * spelled differently is a persona unlaunchable by its own name, and the shell
- * would report that as a missing file rather than as a disagreement.
  */
 export const OMP_AGENT_DEF_DIR = 'agents';
 
@@ -154,7 +115,7 @@ export const OMP_AGENT_DEF_DIR = 'agents';
  *  reads, and it made the persona a LAUNCH ARGUMENT — invisible to omp's own
  *  agent discovery, so a composed agent could be started as a session and could
  *  not be DISPATCHED as a subagent by the same name. One artifact answers both
- *  now, and the launcher reads it rather than owning a second copy. */
+ *  now: dispatch and `omp --agent <name>` resolve it through the same discovery. */
 export function ompAgentRel(name: string): string {
   return `${OMP_SESSION_DIR}/${OMP_AGENT_DEF_DIR}/${name}.md`;
 }
@@ -186,17 +147,7 @@ export const OMP_GUARDRAIL_MODULE = `${CLI_BIN}-guardrails.ts`;
  *  guardrails follow the agents that compose them, these follow the cells. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
-/** The persona badge's status key — the slot `ctx.ui.setStatus` fills, derived
- *  from the bin so a rename carries it. The module is named after the same slot. */
-const OMP_PERSONA_BADGE_KEY = `${CLI_BIN}-persona-badge`;
-
-/** The emitted PERSONA BADGE module's filename. A third file rather than one
- *  more registration in either sibling, because it retires with neither: the
- *  guardrails follow composed constraints, the session module follows the cells,
- *  and the badge follows the persona alone. */
-export const OMP_PERSONA_BADGE_MODULE = `${OMP_PERSONA_BADGE_KEY}.ts`;
-
-/** The emitted DISPATCH ISOLATION module's filename. A fourth file, since it retires
+/** The emitted DISPATCH ISOLATION module's filename. A third file, since it retires
  *  with the agents that declare a worktree of their own and with nothing else. */
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
@@ -218,53 +169,13 @@ const OMP_AGENT_FLAG = 'agent';
  *  name in, named from the bin so a rename carries it. */
 const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
 
-/** The `--config` overlay filename — the launcher's one argument for reaching a
- *  persona's own extensions. */
-export const OMP_OVERLAY_FILE = 'omp.yml';
-
-/** The generic launcher's filename — no extension, because it is invoked
- *  directly (`omp-agent mav`), never sourced or required.
+/** Where one persona's SCOPED modules land, relative to {@link
+ *  OMP_SESSION_DIR} — `~/.omp/agent/personas/<name>/extensions/`.
  *
- *  It is also the DISPATCH SENTINEL: the script compares `basename $0` against
- *  this exact name to decide whether the agent arrives as `$1` or as argv[0]
- *  itself, so a rename carries INTO the script instead of silently disabling
- *  the symlink form. */
-export const OMP_LAUNCHER_FILE = 'omp-agent';
-
-/** Where one persona's SCOPED artifacts land, relative to {@link
- *  OMP_SESSION_DIR} — `~/.omp/agent/personas/<name>/`.
- *
- *  A directory omp scans for NOTHING, which is the entire point: what lands
- *  here (`omp.yml`, and the mechanism modules it names) must be reachable only
- *  from that persona's own launch and never from a bare `omp`. It sits UNDER
- *  the session root rather than beside it so the launcher — which resolves its
- *  own directory and knows nothing else — reaches it by hopping down, with no
- *  knowledge of where the harness home is or how deep.
- *
- *  RELOCATING THIS BREAKS EVERY LIVE SESSION, and the failure is delayed. A
- *  running session holds its `--config <persona>/omp.yml` in a launch spec it
- *  re-resolves on EVERY subagent spawn, so a deploy that moves the scope out
- *  from under it leaves the parent apparently healthy and every spawn dying on
- *  `Config overlay not found`. That is the silent removal of delegation from an
- *  agent whose whole design delegates. Measured twice: once for `kino` on
- *  2026-09-22 against a path the deploy had never written, and again the next
- *  day for `mav` when this constant moved the scope here from `.agents/<name>/`.
- *  So a future move of this constant is a BREAKING change for sessions already
- *  running, and it wants the old path left resolvable until they drain — the
- *  deploy cannot know they exist. */
+ *  A directory omp scans for NOTHING: what lands here was reached only through a
+ *  per-persona `--config` overlay, which install no longer places, so no session
+ *  loads it now (see this file's header). */
 export const OMP_PERSONA_DIR = 'personas';
-
-// The filenames that must resolve inside a scope's `extensions/` subdirectory
-// rather than at the scope's own top level — the overlay and the launcher are
-// the operator's entry points and are never themselves scanned as extensions,
-// so they stay one level up from what they name.
-const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
-  [OMP_GUARDRAIL_MODULE]: true,
-  [OMP_SESSION_MODULE]: true,
-  [OMP_PERSONA_BADGE_MODULE]: true,
-  [OMP_ISOLATION_MODULE]: true,
-  [OMP_CRATYLUS_MODULE]: true,
-};
 
 // ── Role routing: the roles omp routes a model by ────────────────────────────
 
@@ -306,10 +217,11 @@ export const ompDispatchIsolation: DispatchIsolation = {
     "cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line",
 };
 
-// ── Status line: where the persona badge renders ─────────────────────────────
+// ── Status line: where a session's agent renders ─────────────────────────────
 
 /** omp's status line, as {@link HarnessAdapter.statusSegment} exposes it. An extension's
- *  status (`ctx.ui.setStatus`, which is how the persona badge speaks) renders inside
+ *  status (`ctx.ui.setStatus`, which is how the cratylus extension shows the agent a
+ *  session was started as) renders inside
  *  the line only where the layout lists `status`; omp's own layouts never do. The
  *  layout is read from `statusLine.leftSegments` only under `statusLine.preset:
  *  custom`, so a host that never chose a preset is on `default` — whose layout is what
@@ -382,10 +294,9 @@ export const ompStatusSegment: StatusSegmentHost = {
  * it arrives. Emitted only when that list is non-empty, so an agent given none
  * carries no such key. omp honours the field for a
  * DISPATCHED subagent — the skills are injected before the child's first
- * prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the same key back OUT of this
- * file for a MAIN session, which has no native path for it, and inlines each
- * skill's body the same way. One list, both ways of reaching the agent, nothing
- * listed twice.
+ * prompt. A MAIN session started by `omp --agent` has no native path for it, and
+ * the cratylus extension does not inline them: such a session reaches its skills
+ * the way any session does, through omp's own skill discovery.
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -402,8 +313,8 @@ export const ompStatusSegment: StatusSegmentHost = {
  * because this file WAS the appended prompt and omp's base prompt asserts its
  * own identity underneath it. It is not that file any more: for a DISPATCHED
  * subagent the body is the entire system prompt and the sentence is redundant,
- * and for a MAIN session the launcher prepends it — see {@link
- * OMP_LAUNCHER_SCRIPT}, which carries the measurement that earned it.
+ * and for a MAIN session started by `omp --agent` the cratylus extension prepends
+ * the name and description as prose ({@link ompCapabilityExtensions}).
  */
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
@@ -530,13 +441,12 @@ export function ompGuardrailExtensions(
  * were warned about and dropped, and this harness deployed no mechanism at all —
  * no stance gate, no drift notice, no memory nudge, no resume notice.
  *
- * ONE MODULE PER SCOPE, and the scopes are the projected agents' own `.agents/
- * <name>/` dirs plus the SESSION root, because a scope's module loads only where
- * that scope's own launch reaches it: the session root is what a bare `omp`
- * scans natively, and an agent's own copy is what that agent's launch spec
- * names in its overlay. Claude registers these once in a user-level
- * `settings.json` that every session reads; the same reach on this harness is
- * N+1 placements.
+ * ONE MODULE PER SCOPE, and the scopes are the projected agents' own
+ * `personas/<name>/` dirs plus the SESSION root: the session root is what every
+ * `omp` session scans natively, and an agent's own copy is reached only by a
+ * `--config` overlay naming it, which install no longer places (see this file's
+ * header). Claude registers these once in a user-level `settings.json` that every
+ * session reads; the same reach on this harness is the session root's copy.
  *
  * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
  * constraint filtering itself at runtime; these cells compose no agent — they bind
@@ -1400,543 +1310,14 @@ function scopePlacement(agent: string | undefined): string[] {
   return agent === undefined
     ? [
         '// SCOPED BY LOCATION. This module sits in the SESSION config root',
-        `// (\`${OMP_SESSION_DIR}/extensions/\`), which a bare \`omp\` — one launched`,
-        "// with no persona's launch spec — scans NATIVELY, with no `--config` entry",
-        '// required. A persona launch reads its own copy instead and never this one.',
+        `// (\`${OMP_SESSION_DIR}/extensions/\`), which every \`omp\` session scans NATIVELY,`,
+        '// with no `--config` entry required.',
       ]
-    : personaPlacement(agent);
-}
-
-/** The placement note of a module in persona `agent`'s own scope — shared by
- *  every per-persona module, because the placement is one fact about them all. */
-function personaPlacement(agent: string): string[] {
-  return [
-    '// SCOPED BY LOCATION, NAMED BY THE LAUNCH SPEC. This module sits in this',
-    `// persona's own \`${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}/extensions/\` dir, which`,
-    `// omp never scans on its own — the \`${OMP_LAUNCHER_FILE}\` launcher is what passes`,
-    `// \`--config ${OMP_OVERLAY_FILE}\` once it has resolved this persona by name, and that`,
-    '// overlay is what names this directory. A launch that never resolves this',
-    "// persona's overlay — including a bare `omp` — never loads this copy.",
-  ];
-}
-
-// ── Launch spec → <persona>/omp.yml, <session>/omp-agent ─────────────────────
-
-/**
- * The `--config` overlay's text — identical for every persona; only the
- * DESTINATION (and so the token substituted into it) differs by scope.
- *
- * `{{SCOPE_DIR_TOKEN}}` names this file's OWN eventual directory and is resolved
- * at DEPLOY, never here: omp's `extensions:` entries are resolved with a plain
- * path join against the LAUNCH process's cwd (`resolveExtensionLoadPath` in the
- * installed package's resource loader), never against this file's own directory
- * and never against a shell variable — a literal `$HOME` segment in a config
- * value was measured loading as a directory literally NAMED `$HOME`, not
- * expanded. A relative entry here would therefore point wherever the operator
- * happened to `cd` before running the launcher, and `$HOME` (`export`ed by the
- * launcher, the way `hookCommand` bakes it into a shell command) is exactly the
- * option that fails, because this file is not read by a shell that could expand
- * it. So the path is resolved once, at deploy, from the same `--home` the
- * artifact itself lands under — see `SCOPE_DIR_TOKEN`'s own doc and
- * `deploy/hooks.ts`, which performs the substitution.
- *
- * NAMES THE DIRECTORY, not one file inside it. This persona's own guardrail
- * module and its session module both land in `extensions/`, and a directory
- * entry in `extensions:` sweeps every loose `.ts`/`.js` file inside it — the
- * same routine a native config root's own auto-discovery uses, confirmed
- * against the installed package's `collectAutoExtensionEntries` and reproduced
- * empirically (a directory entry loaded both files; a literal `$HOME` entry
- * failed to resolve at all). Naming one file here by name would silently stop
- * loading the other the day it is added, which is exactly the silent
- * enforcement loss a `--profile`-scanned directory never had.
- */
-export function ompOverlayYaml(): string {
-  return [
-    `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-    '#',
-    "# This persona's --config overlay (see ompOverlayYaml in forge's omp adapter",
-    '# for why the path below is a directory, and why it is a deploy-time token',
-    '# rather than a literal path).',
-    'extensions:',
-    `  - ${SCOPE_DIR_TOKEN}/extensions`,
-    '',
-    "# THE CELL IS THE ONLY VOICE. omp's default prompt renders a personality block",
-    '# chosen by this setting, and a persona already states its register completely —',
-    '# `formality` carries the prose contract, `audience-adaptation` sets density,',
-    '# `transparency` and `handoff` fix what a reply discloses and how it ends. A preset',
-    '# beside those is a second, uncoordinated statement of the same thing.',
-    '#',
-    '# `none` and not a preset, because omp runs every SUBAGENT with `none` regardless.',
-    '# Left at a preset, one definition means two different voices depending on whether',
-    '# it was launched or dispatched — the exact defect the single definition and the',
-    "# launcher's `autoloadSkills` rendering close on the other two axes.",
-    'personality: none',
-    '',
-  ].join('\n');
-}
-
-/**
- * The launcher's text — ONE script for every persona on the host, which is the
- * whole shape change: the agent is resolved at RUN time out of the definitions
- * omp already discovers, so nothing here is per-agent and nothing has to be
- * regenerated when an agent is added, renamed or retired.
- *
- * TWO WAYS TO NAME THE AGENT, and the second is the one operators actually use.
- * `omp-agent mav` reads `$1`. `mav` — a symlink in a `PATH` dir — reads argv[0]
- * itself, busybox-style, and does NOT consume `$1`, so every remaining word on
- * that command line is omp's own. The dispatch is decided BEFORE the symlink
- * walk, because the walk resolves away the very name argv[0] is carrying.
- *
- * AND IT FOLLOWS SYMLINKS, because `dirname "$0"` alone does not. Linking this
- * script into a `PATH` directory is the normal way to run a persona by name, and
- * `$0` is then the LINK: the launcher computed the link's directory, passed
- * `--config <that dir>/omp.yml`, and omp died with `Config overlay not found:
- * ~/.local/bin/omp.yml` — measured, on an operator's host. Every path below
- * names a descendant of the REAL file's directory, so the real file is what has
- * to be found. Hops are capped the way a kernel caps them, so a link cycle fails
- * the launch instead of hanging it, and `readlink` is used without `-f` (a GNU
- * extension absent from the BSD `readlink` on a stock macOS).
- *
- * IT RESOLVES ITS OWN DIRECTORY rather than a baked-in absolute path, so the
- * SAME bytes are correct whether deploy wrote them under a real `$HOME` or the
- * sandboxed `--home` a test used. `omp.yml`'s abs path has no such option (see
- * `ompOverlayYaml`), but a shell script has a shell, and its own location is a
- * fact true at every site this file can land — unlike `--home`, which the script
- * never sees and does not need to.
- *
- * THE PROMPT IS AN ARGUMENT, NOT A FILE. `--append-system-prompt` takes either,
- * and a temp file is the shape that leaks: this script EXECs, so there would be
- * no process left to remove one. What binds an argument on Linux is not
- * `ARG_MAX` (the whole argv plus environment) but the per-argument
- * `MAX_ARG_STRLEN`, 32 pages — 128 KiB on 4 KiB pages. The largest composed
- * prompt measured at ef78db59 is about 34 KB: nico's 6.5 KB definition plus
- * the 27.4 KB of its design, deliver, plan and note bodies. No guard enforces
- * the limit; a prompt past it fails the `exec` with `E2BIG` rather than
- * starting a session.
- *
- * THE IDENTITY LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION. Every
- * adapter must carry the cell's `name` into whatever surface its harness reads
- * an identity from: claude has a front-matter `name:` field. A MAIN omp session
- * has none — `--append-system-prompt` is a TRUE
- * augment, so omp's base prompt survives underneath and asserts its OWN identity
- * ("Oh My Pi coding assistant"). Appending a body headed `# ✈️ mav` therefore
- * leaves TWO identities in one prompt, and which one answers depends on the
- * question. Asked "what is your name and your Prime Principle?" the session
- * answered `mav` and recited cratylism; asked the bare "what is your name?" the
- * SAME session answered "I'm ChatGPT, an AI assistant running in the Oh My Pi
- * harness." Both measured, on `omp/17.2.9`, blank cwd, `--no-skills`. With this
- * line prepended the bare question answers `mav`. It lives HERE rather than in
- * the definition because a DISPATCHED subagent does not need it: there the body
- * IS the entire system prompt, with no rival identity under it.
- *
- * `autoloadSkills` IS HONOURED HERE BECAUSE OMP HONOURS IT ONLY FOR A SPAWN.
- * The field injects skills before a SUBAGENT's first prompt and has no
- * main-session path at all, so one definition would otherwise mean two
- * different things depending on how it was reached. So the launcher does what
- * a spawn does, through omp's OWN resolver: for each listed skill, in order,
- * it runs `omp read skill://<name>` from the launch directory and inlines
- * what omp returns — the same `SKILL.md` a session started there resolves,
- * whichever root it came from (user or project) and whatever settings gate
- * them — with its front matter stripped. There is no second copy of omp's
- * discovery here to drift from the first.
- *
- * NO BASE DIRECTORY, BECAUSE NONE IS NEEDED. omp exposes a skill's body but
- * not its location, and `skill://…` does not execute. Every projected
- * `scripts/<capability>.mjs` is a thin forwarder to the host CLI (`CLI_BIN`)
- * (`runtimeShimContent`), so each inlined skill opens, under `# Skill: <name>`,
- * with one line per GENERATED shim among its `scripts/`, saying which CLI
- * command that route runs as. A shim is known by its signature line
- * (`SHIM_SIGNATURE`), which also names the capability it forwards to; a script
- * the skill's author wrote gets no line. A skill omp cannot resolve is not
- * dropped: it degrades to a `skill://` line under `## Required reading`, and
- * the launcher says so on stderr, once per skill, before it launches.
- *
- * omp's own skill flags are read off the arguments passed through to it:
- * `--no-skills` inlines none, and a `--skills` filter, which is not mirrored,
- * earns one stderr line.
- *
- * THE MODEL ROUTE IS READ FROM THE SAME DEFINITION, so a persona launched by
- * name starts where a dispatched holder of its role runs: on the definition's
- * `model` list ({@link agentToOmpMd}), one definition and two readers. omp's
- * `--model` takes a role alias, and takes a comma-separated list of them with
- * the first it resolves winning (both measured on omp 18.4.9) — but where a
- * dispatched agent falls through a role the host never mapped, `--model` on one
- * is `Model "@architect" not found` and no session starts. So the launcher asks
- * omp which roles the host maps (`omp config get modelRoles`) and passes only
- * the `@role` selectors among them, a selector naming a model as written. Where
- * the definition routes nothing, or the host maps none of its roles, no model
- * is passed and omp chooses as it always did: `--model @default` against a host
- * with no default role is not that choice (measured: it picks a provider with no
- * credentials). A `--model` the operator passes wins, and nothing is added.
- *
- * THE SAME READER serves the `model` list and `autoloadSkills` (`fm_list`).
- *
- * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
- * FLOW sequence from the skill closure projection hands it; an operator
- * hand-editing a definition writes YAML's BLOCK sequence. Reading only one of
- * them would drop the declaration in silence, which is the same session as one
- * that never made it.
- */
-export const OMP_LAUNCHER_SCRIPT = [
-  '#!/bin/sh',
-  `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-  '#',
-  `# ONE launcher for every persona: \`${OMP_LAUNCHER_FILE} <agent> [omp flags]\`, or a`,
-  '# symlink named after the agent (`ln -s … ~/.local/bin/mav`), which is then a',
-  "# command taking omp's own flags and nothing else.",
-  '',
-  '# WHICH AGENT — decided before the symlink walk below, because that walk',
-  '# resolves away the very name argv[0] is carrying.',
-  'invoked=${0##*/}',
-  `if [ "$invoked" = "${OMP_LAUNCHER_FILE}" ]; then`,
-  '  if [ "$#" -eq 0 ]; then',
-  `    printf 'usage: ${OMP_LAUNCHER_FILE} <agent> [omp flags ...]\\n' >&2`,
-  '    exit 2',
-  '  fi',
-  '  name=$1',
-  '  shift',
-  'else',
-  '  name=$invoked',
-  'fi',
-  '',
-  '# Resolves its own directory rather than a baked-in path: this exact file is',
-  '# deployed once, but has to run from wherever it landed - including through a',
-  '# symlink in a PATH dir, which holds none of the files named below.',
-  'self=$0',
-  'hops=0',
-  'while [ -L "$self" ] && [ "$hops" -lt 40 ]; do',
-  '  hops=$((hops + 1))',
-  '  target=$(readlink "$self") || exit 1',
-  '  case $target in',
-  '    /*) self=$target ;;',
-  '    *) self=$(dirname -- "$self")/$target ;;',
-  '  esac',
-  'done',
-  'dir=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd) || exit 1',
-  '',
-  '# THE DEFINITION IS THE SOURCE OF TRUTH, and it is the same file a DISPATCHED',
-  `# subagent of this name reads: omp's own \`${OMP_AGENT_DEF_DIR}/\` dir, one hop below this`,
-  '# script, is the user-level task-agent root it discovers from.',
-  `def=$dir/${OMP_AGENT_DEF_DIR}/$name.md`,
-  'if [ ! -f "$def" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: no definition for agent %s\\n' "$name" >&2`,
-  `  printf '${OMP_LAUNCHER_FILE}: expected it at %s\\n' "$def" >&2`,
-  '  exit 1',
-  'fi',
-  '',
-  "# TEXT AFTER THE FRONT MATTER, leading blank lines dropped: a definition's body",
-  '# and a skill body alike. Front matter is dispatch metadata and must never reach',
-  '# the model as literal text.',
-  "after_fm='",
-  '  NR == 1 && $0 == "---" { fm = 1; next }',
-  '  fm { if ($0 == "---") fm = 0; next }',
-  '  !started && $0 ~ /^[ \\t]*$/ { next }',
-  '  { started = 1; print }',
-  "'",
-  '',
-  '# THE BODY IS THE SYSTEM PROMPT.',
-  'composed=$(awk "$after_fm" "$def")',
-  'if [ -z "$composed" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: %s carries no system prompt\\n' "$def" >&2`,
-  '  exit 1',
-  'fi',
-  '',
-  '# A front-matter field read here, in either YAML spelling: one value per line.',
-  '# `\\047` spells the apostrophe the surrounding quotes cannot; awk unescapes it',
-  '# before the string is used as a regex.',
-  'fm_list() {',
-  `  awk -v key="$1" '`,
-  '    function clean(s) { gsub(strip, "", s); return s }',
-  '    BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
-  '    NR == 1 { if ($0 == "---") next; exit }',
-  '    $0 == "---" { exit }',
-  '    list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
-  '      s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
-  '      if (s != "") print s',
-  '      next',
-  '    }',
-  '    { list = 0 }',
-  '    index($0, key ":") == 1 {',
-  '      rest = substr($0, length(key) + 2)',
-  '      sub(/^[ \\t]+/, "", rest)',
-  '      gsub(/^\\[|\\]$/, "", rest)',
-  '      if (rest == "") { list = 1; next }',
-  '      m = split(rest, part, ",")',
-  '      for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
-  '    }',
-  `  ' "$def"`,
-  '}',
-  'skills=$(fm_list autoloadSkills)',
-  'model=$(fm_list model)',
-  '',
-  "# THE SKILL BODIES, as a spawn would have them, read through omp's OWN",
-  "# resolver from the launch directory — see this script's doc.",
-  "nl='",
-  "'",
-  "# omp's own skill flags, read off the arguments it is about to receive.",
-  '# `--no-skills` means omp loads none, so none are inlined; a `--skills`',
-  '# filter is not mirrored, and saying so is the alternative to diverging quietly.',
-  'filtered=',
-  'for arg in "$@"; do',
-  '  case $arg in',
-  '    --no-skills) skills= ;;',
-  '    --skills | --skills=*) filtered=1 ;;',
-  '  esac',
-  'done',
-  'if [ -n "$filtered" ] && [ -n "$skills" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: agent %s: --skills filters which skills omp loads, which this launcher does not apply; its inlined skills may differ from what omp loads\\n' "$name" >&2`,
-  'fi',
-  'missing=',
-  'while IFS= read -r skill; do',
-  '  [ -n "$skill" ] || continue',
-  '  if ! text=$(omp read "skill://$skill" </dev/null 2>/dev/null); then',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp resolves no skill %s from %s; naming it as required reading instead\\n' "$name" "$skill" "$PWD" >&2`,
-  '    missing="$missing$nl- \\`skill://$skill\\`"',
-  '    continue',
-  '  fi',
-  '  # Each shim forwards to the host CLI, so its route needs no location.',
-  '  routes=',
-  '  set -f',
-  '  for script in $(omp read "skill://$skill/scripts" </dev/null 2>/dev/null); do',
-  '    # A route line only for a shim forge generated, named by its signature:',
-  "    # any other script is the skill author's, and its route is not ours to state.",
-  `    cap=$(omp read "skill://$skill/scripts/$script" </dev/null 2>/dev/null | awk -v sig='${SHIM_SIGNATURE}' 'NR <= 3 && index($0, sig) == 1 { print substr($0, length(sig) + 1); exit }')`,
-  `    [ -n "$cap" ] && routes="$routes$nl\\\`scripts/$script <verb>\\\` runs as \\\`${CLI_BIN} $cap <verb>\\\`."`,
-  '  done',
-  '  set +f',
-  `  composed="$composed$nl$nl# Skill: $skill\${routes:+$nl$routes}$nl$nl$(printf '%s\\n' "$text" | awk "$after_fm")"`,
-  'done <<EOF',
-  '$skills',
-  'EOF',
-  'if [ -n "$missing" ]; then',
-  '  composed="$composed$nl$nl## Required reading$nl${nl}These skills are REQUIRED reading for this session, not background:${nl}read each one in full before you act.$nl$missing"',
-  'fi',
-  '',
-  "# THE IDENTITY ASSERTION — see this script's own doc for the measurement that",
-  '# earned it. Held in a variable so the backticks sit inside single quotes and',
-  '# stay literal rather than becoming a command substitution.',
-  "id='You are `%s`. That is your name and the identity you answer as in this session, superseding any other name this system prompt gave you.'",
-  'append=$(printf "$id\\n\\n%s\\n" "$name" "$composed")',
-  '',
-  '# THE MODEL ROUTE: the SAME `model` list a DISPATCHED holder of this role routes',
-  "# by, read from the definition this script already read. omp's --model takes a",
-  '# role alias and a comma-separated list, first one it resolves wins - but a role',
-  '# the host never mapped is "Model not found", where a dispatched agent falls',
-  "# through. So each `@role` is kept only when the host's modelRoles has it, as",
-  '# omp itself reports them; a selector that names a model is kept as written.',
-  '# A definition routing nothing, a host mapping none of its roles, and an',
-  '# operator-given --model each leave omp to choose.',
-  'operator=',
-  'for arg in "$@"; do',
-  '  case $arg in',
-  '    --model | --model=*) operator=1 ;;',
-  '  esac',
-  'done',
-  'route=',
-  'if [ -z "$operator" ] && [ -n "$model" ]; then',
-  '  if ! roles=$(omp config get modelRoles </dev/null 2>/dev/null); then',
-  '    roles=',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp would not report the host modelRoles; starting on omp default model, not on the route its definition names\\n' "$name" >&2`,
-  '  fi',
-  '  while IFS= read -r selector; do',
-  '    [ -n "$selector" ] || continue',
-  '    case $selector in',
-  '      @*)',
-  '        role=${selector#@}',
-  '        role=${role%%:*}',
-  '        case $roles in',
-  '          *"\\"$role\\":"*) ;;',
-  '          *) continue ;;',
-  '        esac',
-  '        ;;',
-  '    esac',
-  '    route="$route${route:+,}$selector"',
-  '  done <<EOF',
-  '$model',
-  'EOF',
-  '  [ -z "$route" ] || set -- --model "$route" "$@"',
-  'fi',
-  '',
-  "# The persona's OWN extensions, named by its OWN overlay: the placement that",
-  '# makes a mechanism module load under this persona and under no other. Absent',
-  '# for a definition forge did not project, which is not an error — that agent is',
-  '# launchable, just ungoverned — and passing a `--config` that is not there',
-  '# would be a refusal omp prints instead of starting.',
-  `overlay=$dir/${OMP_PERSONA_DIR}/$name/${OMP_OVERLAY_FILE}`,
-  'if [ -f "$overlay" ]; then',
-  '  exec omp --append-system-prompt "$append" --config "$overlay" "$@"',
-  'fi',
-  'exec omp --append-system-prompt "$append" "$@"',
-  '',
-].join('\n');
-
-/**
- * The launch spec: ONE generic launcher, plus one `--config` overlay per
- * projected agent.
- *
- * ASYMMETRIC ON PURPOSE. The launcher is SESSION-scoped because it names no
- * agent — it reads one at run time out of the definitions deploy already placed
- * — so a corpus of ten agents ships one script instead of ten identical ones.
- * The overlay is PER-AGENT because it names that persona's own `extensions/`
- * directory, and that naming is exactly what keeps a mechanism module from
- * loading under anybody else.
- *
- * The SESSION scope gets the launcher and never an overlay: a bare `omp` reads
- * the session root's own `extensions/` natively and has no persona to name.
- *
- * AN EMPTY AGENT SET EMITS NOTHING AT ALL, launcher included. A launcher with no
- * definition it could ever resolve is a file that reads as an affordance and
- * delivers a usage error.
- */
-export function ompLaunchSurface(
-  agentNames: readonly string[],
-): HarnessProjection[] {
-  if (agentNames.length === 0) return [];
-  const out: HarnessProjection[] = [
-    {
-      filename: OMP_LAUNCHER_FILE,
-      scope: SESSION_SCOPE,
-      content: OMP_LAUNCHER_SCRIPT,
-      executable: true,
-    },
-  ];
-  for (const agent of [...agentNames].sort()) {
-    out.push({
-      filename: OMP_OVERLAY_FILE,
-      scope: agent,
-      content: ompOverlayYaml(),
-    });
-  }
-  return out;
-}
-
-// ── Persona badge → <persona>/extensions/<bin>-persona-badge.ts ─────────────
-
-/**
- * The persona badge: ONE module per projected agent, in that persona's own
- * scope, that puts the persona's mark emoji and name where the operator of a
- * session it runs can see it. Never the SESSION scope — a bare launch runs no
- * persona, so there is nothing to badge.
- *
- * THE NAME IS BAKED AT PROJECTION. omp calls a launched persona `main`
- * (`ctx.agent.name`), so the running session cannot say which persona it is;
- * placement already does, and the badge text is written from the agent cell
- * here. A null provenance carries no mark, and the badge is the name alone.
- *
- * THE HUE IS NEVER READ: omp strips ANSI from an extension's status text, so a
- * hue could reach the status line only as a word nobody asked for.
- *
- * WHERE IT SHOWS. Only in the top-level interactive session, never a dispatched
- * subagent's. `ctx.agent.kind === "main"` says so on an omp that has `ctx.agent`
- * (18.3.2 and later) — and the module reads `ctx.agent?.kind`, so an older omp
- * does not make it throw at launch. Without `ctx.agent`, omp still says `ctx.mode
- * === "tui"` only of the interactive terminal host (a subagent session runs in
- * `print`), so the badge shows there on `hasUI` and `mode` together; where
- * neither is there to tell by, the module says so once, in one line, on
- * `ctx.ui.notify`, and shows no badge.
- *
- * WHERE IT SHOWS ITS TEXT. Always in the status (`ctx.ui.setStatus`), which omp
- * draws inline where the layout lists `status` and on a row beneath the editor
- * otherwise. That row is the host's to hide (`statusLine.showHookStatus:
- * false`), and install can turn it back on only where it can read the host's
- * `statusLine` — not where that is an alias to a mapping written elsewhere in
- * the file. So the module reads the host's config text the way install does
- * (as text, never as a layout) and, where the row is hidden and no `status`
- * segment is listed to draw the badge inline, ALSO puts the badge in a widget
- * beneath the editor, which no status setting reaches. Where the row is shown
- * or `status` is listed, the widget is not set, so the badge is never twice.
- * That decision lives here, in what omp loads, because deploy cannot know the
- * state of a file the host edits after it.
- */
-export function ompPersonaBadgeExtensions(
-  agents: readonly Agent[],
-): HarnessProjection[] {
-  return [...agents]
-    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
-    .map((a) => {
-      const text = a.provenance
-        ? `${a.provenance.mark.emoji} ${a.name}`
-        : a.name;
-      return {
-        filename: OMP_PERSONA_BADGE_MODULE,
-        scope: a.name,
-        content: [
-          `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-          `// The persona badge of \`${a.name}\`: its mark and name, in the status line.`,
-          '//',
-          ...personaPlacement(a.name),
-          '// The name is baked in below, never asked for: omp calls a launched persona',
-          '// `main`, so what this badge shows is known only at projection. It shows only',
-          "// in a top-level interactive session, never in a subagent's. Where the host hid",
-          '// the status row and lists no `status` segment, it is also set in a widget',
-          '// beneath the editor, so it is somewhere visible rather than nowhere.',
-          '',
-          "import { existsSync, readFileSync } from 'node:fs';",
-          "import { homedir } from 'node:os';",
-          "import { join } from 'node:path';",
-          "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
-          '',
-          `const KEY = ${JSON.stringify(OMP_PERSONA_BADGE_KEY)};`,
-          `const BADGE = ${JSON.stringify(text)};`,
-          'const NOTICE =',
-          `  ${JSON.stringify(`${CLI_BIN} persona badge: this omp does not say which agent a session is, so no badge is shown; it needs omp 18.3.2 or later.`)};`,
-          '',
-          '// The host config text, comments removed — the file omp reads its settings from',
-          '// (`config.yml`, or `config.yaml` where that is the only one), or undefined.',
-          'function hostConfig(): string | undefined {',
-          '  const dir =',
-          "    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.omp', 'agent');",
-          "  const file = ['config.yml', 'config.yaml']",
-          '    .map((name) => join(dir, name))',
-          '    .find((path) => existsSync(path));',
-          '  if (file === undefined) return undefined;',
-          '  try {',
-          "    return readFileSync(file, 'utf8')",
-          '      .split(/\\r?\\n/)',
-          '      .map((line) => line.replace(/(^|[ \\t])#.*$/, "$1"))',
-          "      .join('\\n');",
-          '  } catch {',
-          '    return undefined;',
-          '  }',
-          '}',
-          '',
-          '// True where the status row is hidden (`showHookStatus: false`, found as text',
-          '// wherever it is written, an alias target included) and no `status` segment is',
-          '// listed to draw the status inline: there setStatus reaches nobody.',
-          'function statusUnseen(): boolean {',
-          '  const text = hostConfig();',
-          '  if (text === undefined) return false;',
-          '  const hidden =',
-          '    /\\bshowHookStatus["\']?[ \\t]*:[ \\t]*(?:false|False|FALSE)(?=[ \\t,}\\]]|$)/m;',
-          '  const listed =',
-          '    /^[ \\t]*-[ \\t]+["\']?status["\']?[ \\t]*$/m.test(text) ||',
-          '    /\\b(?:left|right)Segments["\']?[ \\t]*:[ \\t]*\\[[^\\]]*\\bstatus\\b/.test(text);',
-          '  return hidden.test(text) && !listed;',
-          '}',
-          '',
-          'let said = false;',
-          '',
-          'export default function (pi: ExtensionAPI) {',
-          '  pi.on("session_start", (_event, ctx) => {',
-          '    if (!ctx.hasUI) return;',
-          '    const agent = ctx.agent as { kind?: string } | undefined;',
-          '    const topLevel =',
-          '      agent !== undefined ? agent.kind === "main" : ctx.mode === "tui";',
-          '    if (!topLevel) {',
-          '      if (agent === undefined && ctx.mode === undefined && !said) {',
-          '        said = true;',
-          '        ctx.ui.notify?.(NOTICE, "info");',
-          '      }',
-          '      return;',
-          '    }',
-          '    ctx.ui.setStatus(KEY, BADGE);',
-          '    if (statusUnseen()) ctx.ui.setWidget(KEY, [BADGE], { placement: "belowEditor" });',
-          '  });',
-          '}',
-          '',
-        ].join('\n'),
-      };
-    });
+    : [
+        "// SCOPED BY LOCATION. This module sits in this persona's own",
+        `// \`${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}/extensions/\` dir, which omp never`,
+        '// scans on its own; only a `--config` overlay naming this directory loads it.',
+      ];
 }
 
 // ── Capability interface and agent launch → agent/extensions/<bin>.ts ───────
@@ -1970,17 +1351,30 @@ export function ompPersonaBadgeExtensions(
  * `.omp/agents/`, then the user's `<agentDir>/agents/`, then extension packages,
  * plugins and bundled agents, first name wins — read afresh for that session, never
  * copied or cached. The mark is the declaration's `mark` front-matter key, read with
- * omp's own front-matter parser. The session then runs on the declaration's model
- * (its first selector omp resolves) and `thinking-level`; every turn's system
- * prompt carries the declaration as prose — its name and description in a
- * sentence, then its body, never the raw front matter — appended in
- * `before_agent_start`, so a rebuilt base prompt never drops it; and the status line
- * reads `<mark> <name>`, or `<name>` without a mark. The active tools stay the
- * operator's: a declaration's `tools` are dispatch's alone, and an explicit
- * `--tools` (read with omp's own `parseArgs`) is the session's whole set — omp would
- * otherwise admit this module's capability tools beside it. An unknown name ends
- * startup with a non-zero exit before any turn. A subagent session, or a session
- * without the flag, gets nothing of this.
+ * omp's own front-matter parser from the declaration's file; a bundled declaration
+ * has none (its path is `embedded:<name>.md`), so it shows its name alone.
+ *
+ * MODEL AND EFFORT AS DISPATCH RESOLVES THEM. The session runs on what omp's task
+ * dispatch would run the declaration on, through omp's own resolver
+ * (`resolveAgentModelSelection`, then `resolveModelOverrideWithAuthFallback`): its
+ * `task.agentModelOverrides` entry, else its `model` selectors with role aliases
+ * expanded, else the session's own model; and the effort a selector carries
+ * (`provider/model:high`, directly or in the configured value of a role alias)
+ * wins over the declaration's `thinking-level`, which wins over the level the
+ * resolved selector implies. `ctx.models.resolve` is not used: it drops the level.
+ * The operator's explicit `--model` and `--thinking`, read with omp's own
+ * `parseArgs`, win over the declaration's — each for its own dimension — and the
+ * declaration's body is carried either way.
+ *
+ * Every turn's system prompt carries the declaration as prose — its name and
+ * description in a sentence, then its body, never the raw front matter — appended
+ * in `before_agent_start`, so a rebuilt base prompt never drops it; and the status
+ * line reads `<mark> <name>`, or `<name>` without a mark (install lists omp's
+ * `status` segment so it renders). The active tools are never touched: the session
+ * holds exactly what omp grants for the operator's selection, and a declaration's
+ * `tools` are dispatch's alone. An unknown name ends startup with a non-zero exit
+ * before any turn. A subagent session, or a session without the flag, gets nothing
+ * of this.
  */
 export function ompCapabilityExtensions(): HarnessProjection[] {
   return [
@@ -2000,10 +1394,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "// declaration is the one omp's own discovery finds, read afresh for each session.",
         '',
         'import { execFile } from "node:child_process";',
-        'import { readFileSync } from "node:fs";',
+        'import { existsSync, readFileSync } from "node:fs";',
+        'import { isAbsolute } from "node:path";',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
         'import { parseArgs } from "@oh-my-pi/pi-coding-agent/cli/args";',
+        'import {',
+        '  resolveAgentModelSelection,',
+        '  resolveModelOverrideWithAuthFallback,',
+        '} from "@oh-my-pi/pi-coding-agent/config/model-resolver";',
+        'import { settings } from "@oh-my-pi/pi-coding-agent/config/settings";',
         'import { discoverAgents } from "@oh-my-pi/pi-coding-agent/task/discovery";',
+        'import { cfgTaskAgentModelOverrides } from "@oh-my-pi/pi-coding-agent/task/settings";',
         'import { parseFrontmatter } from "@oh-my-pi/pi-utils";',
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
@@ -2114,7 +1515,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  name: string;',
         '  description: string;',
         '  systemPrompt: string;',
-        '  model?: string[];',
+        '  model?: string | string[];',
         '  thinkingLevel?: string;',
         '  filePath?: string;',
         '}',
@@ -2126,25 +1527,29 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'interface Session {',
         '  cwd: string;',
         '  agent?: { kind: string };',
-        '  models: { resolve(selector: string): Parameters<ExtensionAPI["setModel"]>[0] | undefined };',
+        '  model?: { provider: string; id: string };',
+        '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
         '  ui: {',
         '    setStatus(key: string, text: string | undefined): void;',
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
         '  };',
         '}',
+        'type Level = Parameters<ExtensionAPI["setThinkingLevel"]>[0];',
         '',
         "// The declaration omp's task dispatch runs by `name` from `cwd`, discovered afresh by omp",
         '// itself (nearest project `.omp/agents/`, then the user agent dir, then extension packages,',
         '// plugins and bundled agents; first name wins), with the mark its front matter declares.',
+        '// A bundled declaration has no file (`embedded:<name>.md`), and omp declares no mark on one.',
         'async function discover(name: string, cwd: string): Promise<{ found?: Launched; names: string[] }> {',
         '  const agents: Declaration[] = (await discoverAgents(cwd)).agents;',
         '  const names = agents.map((a) => a.name);',
         '  const declaration = agents.find((a) => a.name === name);',
         '  if (declaration === undefined) return { names };',
-        '  const said = declaration.filePath',
-        '    ? parseFrontmatter(readFileSync(declaration.filePath, "utf8"), { source: declaration.filePath })',
-        '        .frontmatter.mark',
-        '    : undefined;',
+        '  const file = declaration.filePath;',
+        '  const said =',
+        '    file !== undefined && isAbsolute(file) && existsSync(file)',
+        '      ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter.mark',
+        '      : undefined;',
         '  const mark = typeof said === "string" && said.trim() !== "" ? said.trim() : undefined;',
         '  return { found: { declaration, mark }, names };',
         '}',
@@ -2180,19 +1585,38 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      return;',
         '    }',
         '    const { declaration, mark } = found;',
-        '    const selectors = declaration.model ?? [];',
-        '    const model = selectors.map((s) => ctx.models.resolve(s)).find((m) => m !== undefined);',
-        '    if (model !== undefined) await pi.setModel(model);',
-        '    else if (selectors.length > 0)',
-        '      ctx.ui.notify(`Agent "${name}": no available model matches ${selectors.join(", ")}`, "warning");',
-        '    if (declaration.thinkingLevel !== undefined)',
-        '      pi.setThinkingLevel(declaration.thinkingLevel as Parameters<ExtensionAPI["setThinkingLevel"]>[0]);',
+        "    // The operator's own `--model` and `--thinking`, read as omp reads its command line,",
+        "    // win; the declaration's model and effort apply where the operator gave none.",
+        '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
+        '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
+        "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
+        '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
+        "    // the session's own model; then the effort a selector's `:level` carries, else the",
+        "    // declaration's `thinking-level`, else the level the resolved selector implies.",
+        '    const patterns =',
+        '      operator.model !== undefined',
+        '        ? [operator.model]',
+        '        : resolveAgentModelSelection({',
+        '            settingsOverride: cfgTaskAgentModelOverrides.get(settings)[name],',
+        '            agentModel: declaration.model,',
+        '            settings,',
+        '            activeModelPattern: current,',
+        '          }).patterns;',
+        '    const resolved = await resolveModelOverrideWithAuthFallback(patterns, current, ctx.modelRegistry, settings);',
+        '    const model = resolved.model;',
+        '    if (operator.model === undefined) {',
+        '      if (model === undefined) {',
+        '        if (patterns.length > 0)',
+        '          ctx.ui.notify(`Agent "${name}": no available model matches ${patterns.join(", ")}`, "warning");',
+        '      } else if (model.provider !== ctx.model?.provider || model.id !== ctx.model?.id) {',
+        '        await pi.setModel(model);',
+        '      }',
+        '    }',
+        '    const level = resolved.explicitThinkingLevel',
+        '      ? resolved.thinkingLevel',
+        '      : (declaration.thinkingLevel ?? resolved.thinkingLevel);',
+        '    if (operator.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
         '    ctx.ui.setStatus(AGENT_STATUS, mark === undefined ? name : `${mark} ${name}`);',
-        "    // The operator's `--tools`, read as omp reads its own command line, stands exactly: omp",
-        "    // would otherwise admit the tools this module registers beside it, and a declaration's",
-        "    // `tools` are dispatch's alone.",
-        '    const { tools } = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
-        '    if (tools !== undefined) await pi.setActiveTools(tools);',
         '    launched = found;',
         '  }',
         '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
@@ -2271,7 +1695,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // this adapter can narrow to one agent. That is what closes the bootstrap's
   // central finding — that every enforcing fragment degraded to `steer` on omp
   // because there was no identity to scope to. The identity is the agent
-  // DEFINITION, and the scope is the directory its overlay names.
+  // DEFINITION, and the scope is its own `personas/<name>/extensions/` directory.
   scopes: (event) => ompBindingOf(event) !== undefined,
   // `$HOME` and not a resolved path: the emitted module is read at RUN time on
   // whatever host it lands on, so it must not bake in the projecting machine's home.
@@ -2287,41 +1711,27 @@ export const ompHarnessAdapter: HarnessAdapter = {
     ompGuardrailExtensions(bindings, mechanisms),
   scopeActivatedSurface: (hooks, agentNames) =>
     ompScopeActivatedExtensions(hooks, agentNames),
-  // The launch spec, then each persona's badge: the identity a launch carries on
-  // a harness with no native identity field includes what the operator SEES.
-  launchSurface: (agents) => [
-    ...ompLaunchSurface(agents.map((a) => a.name)),
-    ...ompPersonaBadgeExtensions(agents),
-    ...ompIsolationExtensions(agents),
-  ],
+  // The dispatch isolation modules: what this harness composes from the agents
+  // beyond their definitions. Starting a session as one goes through `omp --agent`,
+  // which the capability module below registers, so nothing here launches anything.
+  launchSurface: (agents) => ompIsolationExtensions(agents),
   // The capabilities a plain session is offered as tools, each composed at load
-  // from the installed command's own explanation.
+  // from the installed command's own explanation, and `--agent`.
   capabilitySurface: ompCapabilityExtensions,
-  launcherFile: OMP_LAUNCHER_FILE,
   // The SESSION scope reads as itself OR as omission, so a caller may pass a
   // projection's `scope` field straight through. Requiring the translation put the
   // same `=== SESSION_SCOPE` conditional at every call site, and a call site that
   // forgot it asked for a persona named `_session`.
   //
-  // The overlay and the launcher sit at the scope's OWN top level; the guardrail,
-  // session and persona badge modules sit one level down, in `extensions/`, because that is the
-  // subdirectory omp's loader (native scan, or a directory named in `--config`)
-  // actually reads — see `OMP_EXTENSION_FILES`.
-  //
-  // EVERY scope now lives under omp's OWN session root: the SESSION copy at
-  // `agent/`, which omp scans natively, and each persona at
-  // `agent/personas/<name>/`, which nothing scans and only that persona's own
-  // overlay reaches. The two used to straddle two roots — the persona half sat
-  // in the harness-NEUTRAL `.agents/`, beside a persona file that no longer
-  // lives there — which left the ONE launcher no way to reach an overlay except
-  // by hard-coding this module's own layout into shell.
+  // Every scoped artifact is an extension module, so each lands in its scope's
+  // `extensions/`, the subdirectory omp's loader reads: the SESSION copy at
+  // `agent/extensions/`, which omp scans natively, and each persona's at
+  // `agent/personas/<name>/extensions/`, which nothing scans.
   scopedRel: (filename, agent) => {
     const dir =
       agent === undefined || agent === SESSION_SCOPE
         ? OMP_SESSION_DIR
         : `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}`;
-    return OMP_EXTENSION_FILES[filename]
-      ? `${dir}/extensions/${filename}`
-      : `${dir}/${filename}`;
+    return `${dir}/extensions/${filename}`;
   },
 };

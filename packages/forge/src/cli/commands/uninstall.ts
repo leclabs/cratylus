@@ -4,8 +4,8 @@
 // WHAT IS THIS TOOL'S TO REMOVE is decided by the deploy manifest and by nothing else
 // (`deploy/manifest.ts`): a path is ours because a placer recorded writing it, a hook
 // registration because deploy recorded registering it, a line of the host's config
-// because install recorded inserting it, a persona command because install recorded
-// linking or adopting it. "Looks like one of ours" is refused here as it is in the prune.
+// because install recorded inserting it, a persona command because an earlier install
+// recorded linking or adopting it. "Looks like one of ours" is refused here as it is in the prune.
 //
 // WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file whose bytes no longer
 // hash to the digest of what was written is left, and so is a file recorded before
@@ -14,8 +14,8 @@
 // another command, a config line the host has rewritten: each is left, and NAMED, so the
 // operator sees what remains and why. The report is two lists — removed, and left.
 //
-// THE ORDER makes a half-finished run recoverable: the persona commands first (they
-// point at a launcher a later step deletes), then the host's `settings.json` and config
+// THE ORDER makes a half-finished run recoverable: the persona commands an earlier install
+// linked first (they point at a launcher a later step deletes), then the host's `settings.json` and config
 // (nothing may register a worker that is about to go), then the placed files, then the
 // runtime config's stanza for this harness, and the manifest LAST. A run that stops
 // before the manifest can be run again; one that has removed the manifest has nothing
@@ -45,7 +45,6 @@ import {
   MANIFEST_REL,
   MANIFEST_VERSION,
   applyPrune,
-  personaLauncherOf,
   placedFileState,
   readManifest,
   recordsHostEdits,
@@ -154,32 +153,17 @@ function dropFile(root: string, abs: string): void {
   }
 }
 
-/** The persona commands this harness's install linked or adopted. */
+/** The persona commands an earlier install of this harness linked or adopted. */
 function removePersonaLinks(
-  adapter: HarnessAdapter,
   harnessDir: string,
-  manifest: DeployManifest,
   opts: UninstallCmdOpts,
   tally: Tally,
 ): void {
-  if (manifest.personaLinks.length === 0) return;
-  const self = personaLauncherOf(harnessDir, adapter);
-  if (self === undefined) {
-    for (const rel of manifest.personaLinks) {
-      tally.left.push({
-        what: join(opts.home ?? homedir(), rel),
-        why: `recorded as a persona command, but ${adapter.name} has no launcher to check it against`,
-      });
-    }
-    return;
-  }
-  // Only the recorded links are candidates: no persona names are passed, so a command
-  // this install did not place is never even looked at.
+  // Only the recorded links are candidates, so a command no install placed is never
+  // even looked at.
   const report = removePersonaCommands({
     home: opts.home ?? homedir(),
     harnessDir,
-    self,
-    personas: [],
     dry: opts.dryRun ?? false,
   });
   for (const l of report.links) {
@@ -596,7 +580,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   const editsRecorded = recordsHostEdits(harnessDir);
   const tally: Tally = { removed: [], left: [] };
   try {
-    removePersonaLinks(adapter, harnessDir, manifest, opts, tally);
+    removePersonaLinks(harnessDir, opts, tally);
     restoreSettings(adapter, harnessDir, manifest, dry, tally);
     if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
     undoHostEdits(harnessDir, manifest, dry, tally);

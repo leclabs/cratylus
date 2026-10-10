@@ -21,25 +21,29 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
-  OMP_LAUNCHER_FILE,
-  OMP_OVERLAY_FILE,
+  OMP_ISOLATION_MODULE,
   agentToOmpMd,
-  ompAgentRel,
   ompCapabilityExtensions,
   ompHarnessAdapter,
-  ompLaunchSurface,
 } from '../../src/adapters/omp/index.js';
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** What the emitted CRATYLUS module reaches of omp itself, which only an omp
- *  process resolves: its agent discovery, front-matter parser and command-line
- *  parser. Each stand-in answers from `omp` below and records what it was asked. */
+ *  process resolves: its agent discovery, front-matter parser, command-line parser,
+ *  model resolver and settings. Each stand-in answers from `omp` below and records
+ *  what it was asked. */
 const omp = vi.hoisted(() => ({
   agents: [] as Record<string, unknown>[],
   discovered: [] as string[],
-  tools: undefined as string[] | undefined,
+  /** What omp's `parseArgs` read off the command line. */
+  args: {} as { model?: string; thinking?: string; tools?: string[] },
   parsed: [] as { argv: string[]; flags: Map<string, { type: string }> }[],
+  /** The host's `modelRoles`, as the stand-in resolver expands `@role`. */
+  roles: {} as Record<string, string>,
+  /** The host's `task.agentModelOverrides`. */
+  overrides: {} as Record<string, string>,
+  selections: [] as Record<string, unknown>[],
 }));
 vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
   discoverAgents: async (cwd: string) => {
@@ -50,8 +54,47 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
 vi.mock('@oh-my-pi/pi-coding-agent/cli/args', () => ({
   parseArgs: (argv: string[], flags: Map<string, { type: string }>) => {
     omp.parsed.push({ argv, flags });
-    return { tools: omp.tools };
+    return omp.args;
   },
+}));
+// omp's dispatch precedence, as far as these legs need it: the settings override,
+// else the declaration's selectors, else the session's model, `@role` expanded; and
+// a `fixture/<id>[:level]` selector resolving with its level explicit.
+vi.mock('@oh-my-pi/pi-coding-agent/config/model-resolver', () => ({
+  resolveAgentModelSelection: (options: Record<string, unknown>) => {
+    omp.selections.push(options);
+    const source =
+      options.settingsOverride ??
+      options.agentModel ??
+      options.activeModelPattern;
+    const patterns = source === undefined ? [] : [source as string].flat();
+    return {
+      patterns: patterns.map((p) =>
+        p.startsWith('@') ? (omp.roles[p.slice(1)] ?? p) : p,
+      ),
+      role: undefined,
+    };
+  },
+  resolveModelOverrideWithAuthFallback: async (patterns: string[]) => {
+    for (const pattern of patterns) {
+      const [selector = '', level] = pattern.split(':');
+      const [provider, id] = selector.split('/');
+      if (provider === 'fixture' && id)
+        return {
+          model: { provider, id },
+          thinkingLevel: level,
+          explicitThinkingLevel: level !== undefined,
+          authFallbackUsed: false,
+        };
+    }
+    return { explicitThinkingLevel: false, authFallbackUsed: false };
+  },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/config/settings', () => ({
+  settings: { standIn: 'settings' },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/task/settings', () => ({
+  cfgTaskAgentModelOverrides: { get: () => omp.overrides },
 }));
 // Top-level `key: "json"` lines between the fences: all a fixture here writes.
 vi.mock('@oh-my-pi/pi-utils', () => ({
@@ -69,8 +112,7 @@ vi.mock('@oh-my-pi/pi-utils', () => ({
     };
   },
 }));
-/** Temp dirs the legs below that touch disk create — they RUN the launcher,
- *  which is the only way its resolution is observable. */
+/** Temp dirs the legs below that touch disk create. */
 const tmp: string[] = [];
 afterEach(() => {
   for (const d of tmp) rmSync(d, { recursive: true, force: true });
@@ -138,9 +180,8 @@ describe('omp agent definition', () => {
     // The front-matter key that describes the COMPOSED AGENT rather than the
     // host's dispatch policy — with `model`, which names its role. The list is the closure
     // projection hands the adapter, rendered in the order it arrives. omp
-    // honours it for a DISPATCHED subagent; `OMP_LAUNCHER_SCRIPT` reads the same
-    // key back out for a MAIN session, which has no native path for it — so the
-    // list reaching these bytes is what makes one definition mean one thing.
+    // honours it for a DISPATCHED subagent, so the list reaching these bytes is
+    // what a dispatch of this one definition preloads.
     //
     // Read off the RENDERED STRING rather than through `frontMatter`: the claim
     // is about the bytes omp's own YAML reader will see, including the quoting
@@ -181,7 +222,7 @@ describe('omp agent definition', () => {
     expect(frontMatter(out).description).toBe(gnarly);
   });
 
-  it('asserts NO identity line — the launcher owns that sentence now', () => {
+  it('asserts NO identity line — a dispatched body needs none', () => {
     // It used to open the body, because this file WAS the appended prompt and
     // omp's base prompt asserts its own identity underneath. A DISPATCHED
     // subagent reads this body as its ENTIRE system prompt, with no rival
@@ -201,369 +242,24 @@ describe('omp agent definition', () => {
   });
 });
 
-/**
- * A DEPLOYED omp home, laid out by the adapter's OWN destination map: the
- * generic launcher in the session root, the definition omp discovers beside it,
- * and one persona scope carrying its overlay. Plus a fake `omp` on `PATH` that
- * records the argv it was exec'd with, because what the launcher composes is
- * observable nowhere else.
- *
- * Built from `scopedRel`/`agentRel` rather than from written-out paths: a
- * layout change moves this fixture with it instead of leaving it pinned to a
- * directory nobody writes any more.
- *
- * THE FAKE `omp` IS ALSO THE SKILL RESOLVER, as the real one is for the
- * launcher: `omp read skill://<name>` answers with `skills[name].md`,
- * `skill://<name>/scripts` lists its `scripts`, `skill://<name>/scripts/<f>`
- * prints one, and an unknown name exits 1 as omp does. Every `read` appends the directory it ran in to
- * `reads`, so a test can see WHERE the launcher asked from.
- */
-interface DeployedHome {
-  sandbox: string;
-  harness: string;
-  bin: string;
-  argv: string;
-  reads: string;
-  launcher: string;
-}
-
-/** A skill as the fake `omp` resolves it: its SKILL.md, and its `scripts/`
- *  files by name. */
-interface ResolvedFixture {
-  md: string;
-  scripts?: Readonly<Record<string, string>>;
-}
-
-function deployedHome(
-  defs: Record<string, string>,
-  skills: Record<string, ResolvedFixture> = {},
-): DeployedHome {
-  const sandbox = mkdtempSync(join(tmpdir(), 'omp-home-'));
-  tmp.push(sandbox);
-  const harness = join(sandbox, '.omp');
-  const place = (at: string, content: string, mode?: number): void => {
-    mkdirSync(dirname(at), { recursive: true });
-    writeFileSync(at, content, mode === undefined ? undefined : { mode });
-  };
-  for (const [name, def] of Object.entries(defs)) {
-    place(join(harness, ompAgentRel(name)), def);
-  }
-  const resolved = join(sandbox, 'resolved');
-  for (const [name, { md, scripts }] of Object.entries(skills)) {
-    place(join(resolved, name, 'SKILL.md'), md);
-    for (const [file, content] of Object.entries(scripts ?? {})) {
-      place(join(resolved, name, 'scripts', file), content);
-    }
-  }
-  for (const f of ompLaunchSurface(Object.keys(defs))) {
-    place(
-      join(
-        harness,
-        ompHarnessAdapter.scopedRel?.(f.filename, f.scope) as string,
-      ),
-      f.content,
-      f.executable ? 0o755 : undefined,
-    );
-  }
-  const bin = join(sandbox, 'bin');
-  mkdirSync(bin, { recursive: true });
-  const argv = join(sandbox, 'argv');
-  const reads = join(sandbox, 'reads');
-  // NUL-DELIMITED, because one of these arguments is the composed system
-  // prompt and it is MULTI-LINE. A newline-separated sink read the prompt back
-  // as a dozen unrelated arguments, which is the shape that would let a
-  // truncated prompt pass every assertion here.
-  writeFileSync(
-    join(bin, 'omp'),
-    [
-      '#!/bin/sh',
-      'if [ "$1" = read ]; then',
-      `  printf '%s\\n' "$PWD" >> ${reads}`,
-      '  case $2 in',
-      `    skill://*/scripts) d=${resolved}/\${2#skill://}; [ -d "$d" ] || exit 1; ls "$d"; exit 0 ;;`,
-      `    skill://*/*) f=${resolved}/\${2#skill://} ;;`,
-      `    skill://*) f=${resolved}/\${2#skill://}/SKILL.md ;;`,
-      '  esac',
-      '  [ -f "$f" ] || { echo "Unknown skill" >&2; exit 1; }',
-      '  cat "$f"; exit 0',
-      'fi',
-      `printf '%s\\0' "$@" > ${argv}`,
-      '',
-    ].join('\n'),
-    { mode: 0o755 },
-  );
-  return {
-    sandbox,
-    harness,
-    bin,
-    argv,
-    reads,
-    launcher: join(
-      harness,
-      ompHarnessAdapter.scopedRel?.(OMP_LAUNCHER_FILE, SESSION_SCOPE) as string,
-    ),
-  };
-}
-
-/** The arguments the fake `omp` was exec'd with, whole. */
-function recordedArgv(at: string): string[] {
-  return readFileSync(at, 'utf-8').split('\0').slice(0, -1);
-}
-
-/** Run the deployed launcher through `entry` and report what a shell saw —
- *  stderr included on success, where a degraded skill is reported. */
-function launch(
-  bin: string,
-  entry: string,
-  args: readonly string[] = [],
-  cwd?: string,
-): { status: number; stderr: string } {
-  const r = spawnSync(entry, [...args], {
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH ?? ''}` },
-    stdio: ['ignore', 'ignore', 'pipe'],
-    encoding: 'utf-8',
-    ...(cwd ? { cwd } : {}),
-  });
-  return { status: r.status ?? -1, stderr: r.stderr };
-}
-
-describe('omp launch spec', () => {
-  it('emits ONE launcher for the session and ONE overlay per agent, sorted', () => {
-    // The shape change, in one assertion. Ten agents used to mean ten
-    // byte-identical launchers differing only in where they sat.
+describe('omp launch', () => {
+  it('composes no launcher, persona overlay or badge from the agents', () => {
+    // Starting a session as an agent goes only through `omp --agent`, which the
+    // capability module registers: what the adapter composes from the agents is
+    // the dispatch isolation module, and only for an agent declaring a worktree.
+    expect(ompHarnessAdapter.launchSurface?.([AGENT])).toEqual([]);
     expect(
-      ompLaunchSurface(['nico', 'mav']).map((f) => [f.scope, f.filename]),
+      ompHarnessAdapter
+        .launchSurface?.([
+          AGENT,
+          { ...(AGENT as object), name: 'iso', isolation: {} } as never,
+        ])
+        .map((f) => f.filename),
     ).toEqual([
-      [SESSION_SCOPE, OMP_LAUNCHER_FILE],
-      ['mav', OMP_OVERLAY_FILE],
-      ['nico', OMP_OVERLAY_FILE],
+      OMP_ISOLATION_MODULE,
+      OMP_ISOLATION_MODULE,
+      OMP_ISOLATION_MODULE,
     ]);
-  });
-
-  it('lands the launcher executable — an unexecutable one is dead on the host', () => {
-    const [launcher] = ompLaunchSurface(['mav']);
-    expect(launcher?.executable).toBe(true);
-    expect(launcher?.content).toContain('#!/bin/sh');
-    // And no absolute path was baked in at projection: the script is identical
-    // for every persona and every `--home`.
-    expect(launcher?.content).not.toMatch(/\/home\/|\/Users\//);
-  });
-
-  it('emits NOTHING for an empty agent set, launcher included', () => {
-    // A launcher with no definition it could ever resolve reads as an
-    // affordance and delivers a usage error.
-    expect(ompLaunchSurface([])).toEqual([]);
-  });
-
-  it('composes identity + body + that persona’s OWN overlay, through a symlink', () => {
-    // HOW A LAUNCHER IS ACTUALLY RUN: linked into a `PATH` dir under the
-    // persona's name. That directory holds none of the files the launcher
-    // reads, and a script that trusted `dirname "$0"` handed omp the LINK's
-    // directory — measured on an operator's host as `Config overlay not found:
-    // ~/.local/bin/omp.yml`, a persona unlaunchable by its own name.
-    //
-    // Asserted by RUNNING it against an `omp` that records its argv, because
-    // every claim here is only observable in what gets exec'd. A
-    // `toContain('dirname')` assertion passed throughout that defect.
-    //
-    // FED THE PROJECTOR'S OWN BYTES, so the split the launcher performs is
-    // pinned against the front-matter this adapter actually emits rather than
-    // against a convenient hand-written sample.
-    const { harness, bin, argv, launcher } = deployedHome({
-      mav: agentToOmpMd(AGENT, CTX),
-    });
-    symlinkSync(launcher, join(bin, 'mav'));
-
-    expect(launch(bin, join(bin, 'mav'))).toEqual({ status: 0, stderr: '' });
-
-    const args = recordedArgv(argv);
-    const prompt = args[args.indexOf('--append-system-prompt') + 1] as string;
-    // The identity omp's own base prompt would otherwise win…
-    expect(prompt.split('\n')[0]).toContain('You are `mav`');
-    // …the composed body under it…
-    expect(prompt).toContain('Hero archetype of end-to-end delivery');
-    // …and NOT the front-matter, which would arrive as literal text.
-    expect(prompt).not.toContain('description:');
-    // …and this persona's own overlay, which is the whole of its governance.
-    expect(args).toContain(
-      join(
-        harness,
-        ompHarnessAdapter.scopedRel?.(OMP_OVERLAY_FILE, 'mav') as string,
-      ),
-    );
-  });
-
-  it('argv[0] dispatch does not eat the operator’s own first flag', () => {
-    // The busybox contract: invoked under its OWN name the agent is `$1`;
-    // invoked as `mav` the agent is argv[0] and every remaining word is omp's.
-    // Get this backwards and `mav --model x` silently launches an agent named
-    // `--model`, or drops the flag.
-    const { bin, argv, launcher } = deployedHome({
-      mav: agentToOmpMd(AGENT, CTX),
-    });
-    symlinkSync(launcher, join(bin, 'mav'));
-
-    launch(bin, join(bin, 'mav'), ['--model', 'x']);
-    expect(recordedArgv(argv)).toContain('--model');
-
-    launch(bin, launcher, ['mav', '--model', 'x']);
-    const explicit = recordedArgv(argv);
-    expect(explicit).toContain('--model');
-    expect(explicit).not.toContain('mav');
-  });
-
-  it('REFUSES, naming the path, when the definition is not there', () => {
-    // A launcher that fell through to a bare `omp` would start an UNGOVERNED
-    // session wearing the persona's name — the failure this whole shape exists
-    // to make impossible, and one an operator would not notice for a whole
-    // session.
-    const { harness, bin, launcher } = deployedHome({
-      mav: agentToOmpMd(AGENT, CTX),
-    });
-    const { status, stderr } = launch(bin, launcher, ['ghost']);
-    expect(status).toBeGreaterThan(0);
-    expect(stderr).toContain('ghost');
-    expect(stderr).toContain(join(harness, ompAgentRel('ghost')));
-  });
-
-  describe('a MAIN session starts with the skills omp resolves, as a spawn does', () => {
-    // omp honours `autoloadSkills` ONLY for a spawned subagent, which starts
-    // with each skill's body injected. The launcher gives a main session the
-    // same start, asking omp itself which body each name resolves to.
-
-    /** A SKILL.md as projection writes one: front matter, then the body. */
-    const skillMd = (name: string, body: string) =>
-      `---\nname: ${name}\ndescription: the ${name} skill\n---\n\n${body}\n`;
-    const SKILLS: Record<string, ResolvedFixture> = {
-      design: { md: skillMd('design', '# Design\n\nDESIGN_BODY') },
-      deliver: { md: skillMd('deliver', '# Deliver\n\nDELIVER_BODY') },
-      probe: { md: skillMd('probe', '# Probe\n\nPROBE_BODY') },
-      signify: { md: skillMd('signify', '# Signify\n\nSIGNIFY_BODY') },
-    };
-    const SCRIBE = [
-      '---',
-      'name: scribe',
-      'description: "writes"',
-      'autoloadSkills:',
-      '  - signify',
-      '  - probe',
-      '---',
-      '',
-      'BODY',
-      '',
-    ].join('\n');
-    const MAV = agentToOmpMd(
-      { ...(AGENT as object), skills: ['deliver', 'design'] } as never,
-      CTX,
-    );
-
-    /** Launch `agent` in `home`; its exit, stderr and appended prompt. */
-    const run = (home: DeployedHome, agent: string, cwd?: string) => {
-      const { status, stderr } = launch(home.bin, home.launcher, [agent], cwd);
-      const args = recordedArgv(home.argv);
-      const prompt = args[args.indexOf('--append-system-prompt') + 1] as string;
-      return { status, stderr, prompt };
-    };
-
-    it('inlines what omp resolves, in listed order, for BOTH spellings', () => {
-      // BOTH SPELLINGS, because both arrive here. An operator hand-editing a
-      // definition writes YAML's BLOCK sequence; `agentToOmpMd` emits the FLOW
-      // sequence from the `skills` projection hands it.
-      const home = deployedHome({ scribe: SCRIBE, mav: MAV }, SKILLS);
-
-      const block = run(home, 'scribe');
-      expect(block).toMatchObject({ status: 0, stderr: '' });
-      expect(
-        block.prompt.endsWith(
-          'BODY\n\n# Skill: signify\n\n# Signify\n\nSIGNIFY_BODY\n\n# Skill: probe\n\n# Probe\n\nPROBE_BODY',
-        ),
-      ).toBe(true);
-
-      // THE PROJECTOR'S OWN BYTES: what forge wrote out of an agent's `skills`
-      // is what the launcher must read back in.
-      const flow = run(home, 'mav');
-      expect(flow).toMatchObject({ status: 0, stderr: '' });
-      expect(
-        flow.prompt.endsWith(
-          '# Skill: deliver\n\n# Deliver\n\nDELIVER_BODY\n\n# Skill: design\n\n# Design\n\nDESIGN_BODY',
-        ),
-      ).toBe(true);
-      expect(flow.prompt).toContain('Hero archetype of end-to-end delivery');
-      // Neither the definition's front matter nor any skill's reaches the model.
-      for (const { prompt } of [block, flow]) {
-        expect(prompt).not.toContain('autoloadSkills');
-        expect(prompt).not.toMatch(/^(name|description):/m);
-        expect(prompt).not.toContain('skill://');
-        expect(prompt).not.toContain('Base directory');
-      }
-    });
-
-    it('inlines none under `--no-skills`, and warns once under `--skills`', () => {
-      // `--no-skills` is omp's own "load none", so the session starts with none
-      // — not with bodies it would never have loaded, nor with references to them.
-      const none = deployedHome({ scribe: SCRIBE }, SKILLS);
-      const off = launch(none.bin, none.launcher, ['scribe', '--no-skills']);
-      expect(off).toEqual({ status: 0, stderr: '' });
-      const offArgs = recordedArgv(none.argv);
-      const offPrompt = offArgs[offArgs.indexOf('--append-system-prompt') + 1];
-      expect(offPrompt).not.toContain('# Skill:');
-      expect(offPrompt).not.toContain('## Required reading');
-      expect(offArgs).toContain('--no-skills');
-      expect(() => readFileSync(none.reads)).toThrow();
-
-      // A `--skills` filter is not mirrored; the launcher says so once, and the
-      // flag still reaches omp.
-      const filtered = deployedHome({ scribe: SCRIBE }, SKILLS);
-      const { status, stderr } = launch(filtered.bin, filtered.launcher, [
-        'scribe',
-        '--skills=sig*',
-      ]);
-      expect(status).toBe(0);
-      const lines = stderr.split('\n').filter(Boolean);
-      expect(lines).toHaveLength(1);
-      expect(lines[0]).toMatch(/^omp-agent: agent scribe: --skills/);
-      expect(recordedArgv(filtered.argv)).toContain('--skills=sig*');
-    });
-
-    it('asks omp from the launch directory, where project skills resolve', () => {
-      const home = deployedHome({ scribe: SCRIBE }, SKILLS);
-      const project = join(home.sandbox, 'project');
-      mkdirSync(project);
-      run(home, 'scribe', project);
-      const reads = readFileSync(home.reads, 'utf-8')
-        .split('\n')
-        .filter(Boolean);
-      expect(reads.length).toBeGreaterThan(0);
-      expect(new Set(reads)).toEqual(new Set([project]));
-    });
-
-    it('degrades a skill omp cannot resolve to its reference, and says so', () => {
-      // Never dropped in silence: the name still reaches the model, and the
-      // operator is told which skill, for which agent, before omp starts.
-      const { probe: _, ...withoutProbe } = SKILLS;
-      const home = deployedHome({ scribe: SCRIBE }, withoutProbe);
-      const { status, stderr, prompt } = run(home, 'scribe');
-      expect(status).toBe(0);
-      const lines = stderr.split('\n').filter(Boolean);
-      expect(lines).toHaveLength(1);
-      expect(lines[0]).toMatch(/^omp-agent:/);
-      expect(lines[0]).toContain('scribe');
-      expect(lines[0]).toContain('probe');
-      expect(prompt).toContain('# Skill: signify');
-      expect(prompt).not.toContain('# Skill: probe');
-      expect(prompt).toMatch(
-        /\n## Required reading\n[\s\S]*\n- `skill:\/\/probe`$/,
-      );
-    });
-
-    it('adds nothing, and asks omp nothing, for a definition without `autoloadSkills`', () => {
-      const home = deployedHome({ mav: agentToOmpMd(AGENT, CTX) }, SKILLS);
-      const { status, stderr, prompt } = run(home, 'mav');
-      expect({ status, stderr }).toEqual({ status: 0, stderr: '' });
-      expect(prompt).not.toContain('# Skill:');
-      expect(prompt).not.toContain('## Required reading');
-      expect(() => readFileSync(home.reads)).toThrow();
-    });
   });
 });
 
@@ -820,7 +516,7 @@ describe('omp capability interface', () => {
         name: fields.name,
         description: fields.description,
         systemPrompt: body,
-        model: [fields.model],
+        ...(fields.model === undefined ? {} : { model: [fields.model] }),
         thinkingLevel: fields['thinking-level'],
         source: 'user',
         filePath,
@@ -843,7 +539,10 @@ describe('omp capability interface', () => {
       omp.agents = [];
       omp.discovered.length = 0;
       omp.parsed.length = 0;
-      omp.tools = undefined;
+      omp.args = {};
+      omp.roles = {};
+      omp.overrides = {};
+      omp.selections.length = 0;
       vi.restoreAllMocks();
     });
 
@@ -878,10 +577,8 @@ describe('omp capability interface', () => {
       const ctx = (kind = 'main') => ({
         cwd: '/the/session/cwd',
         agent: { kind },
-        models: {
-          resolve: (selector: string) =>
-            selector === 'fixture/declared' ? { id: 'declared' } : undefined,
-        },
+        model: { provider: 'fixture', id: 'base' },
+        modelRegistry: { standIn: 'registry' },
         ui: {
           setStatus: (key: string, text: unknown) =>
             did.status.push([key, text]),
@@ -905,9 +602,86 @@ describe('omp capability interface', () => {
       const { did, fire } = await started('cartographer');
       await fire('session_start');
       expect(omp.discovered).toEqual(['/the/session/cwd']);
-      expect(did.models).toEqual([{ id: 'declared' }]);
+      // omp's own dispatch resolution, asked of the declaration's selectors.
+      expect(omp.selections).toEqual([
+        {
+          settingsOverride: undefined,
+          agentModel: ['fixture/declared'],
+          settings: { standIn: 'settings' },
+          activeModelPattern: 'fixture/base',
+        },
+      ]);
+      expect(did.models).toEqual([{ provider: 'fixture', id: 'declared' }]);
       expect(did.efforts).toEqual(['high']);
       expect(did.status).toEqual([['cratylus-agent', '⚓ cartographer']]);
+    });
+
+    it('takes the effort a selector carries, directly or through a role alias, as dispatch does', async () => {
+      omp.roles = { survey: 'fixture/declared:low' };
+      for (const [model, level, effort] of [
+        ['fixture/declared:high', undefined, 'high'],
+        ['@survey', 'high', 'low'],
+      ] as const) {
+        omp.agents = [
+          declare(
+            {
+              name: 'surveyor',
+              description: 'd',
+              model,
+              ...(level ? { 'thinking-level': level } : {}),
+            },
+            'Survey the inlet.',
+          ),
+        ];
+        const { did, fire } = await started('surveyor');
+        await fire('session_start');
+        expect(did.models).toEqual([{ provider: 'fixture', id: 'declared' }]);
+        expect(did.efforts, model).toEqual([effort]);
+      }
+    });
+
+    it("lets the operator's own --model and --thinking win, the body still carried", async () => {
+      omp.agents = [CARTOGRAPHER()];
+      omp.args = { model: 'fixture/base', thinking: 'low' };
+      const both = await started('cartographer');
+      await both.fire('session_start');
+      expect(both.did.models).toEqual([]);
+      expect(both.did.efforts).toEqual([]);
+      const { systemPrompt } = (await both.fire('before_agent_start')) as {
+        systemPrompt: string[];
+      };
+      expect(systemPrompt.join('\n')).toContain(
+        'Map the estuary before drawing its shipping routes.',
+      );
+      expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
+      expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
+      // Each flag wins its own dimension only.
+      omp.args = { thinking: 'low' };
+      const effort = await started('cartographer');
+      await effort.fire('session_start');
+      expect(effort.did.models).toEqual([
+        { provider: 'fixture', id: 'declared' },
+      ]);
+      expect(effort.did.efforts).toEqual([]);
+    });
+
+    it('launches a bundled declaration, which has no file and no mark', async () => {
+      omp.agents = [
+        {
+          name: 'scout',
+          description: 'Explores.',
+          systemPrompt: 'The bundled scout body.',
+          source: 'bundled',
+          filePath: 'embedded:scout.md',
+        },
+      ];
+      const { did, fire } = await started('scout');
+      await fire('session_start');
+      expect(did.status).toEqual([['cratylus-agent', 'scout']]);
+      const { systemPrompt } = (await fire('before_agent_start')) as {
+        systemPrompt: string[];
+      };
+      expect(systemPrompt.join('\n')).toContain('The bundled scout body.');
     });
 
     it('shows the name alone for a declaration without a mark', async () => {
@@ -942,18 +716,12 @@ describe('omp capability interface', () => {
       }
     });
 
-    it("keeps an explicit --tools exactly, by omp's own parse, and leaves a session without one alone", async () => {
+    it('never touches the active tools, whatever --tools the operator gave', async () => {
       omp.agents = [CARTOGRAPHER()];
-      omp.tools = ['read', 'grep'];
-      const explicit = await started('cartographer');
-      await explicit.fire('session_start');
-      expect(explicit.did.tools).toEqual([['read', 'grep']]);
-      expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
-      expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
-      omp.tools = undefined;
-      const plain = await started('cartographer');
-      await plain.fire('session_start');
-      expect(plain.did.tools).toEqual([]);
+      omp.args = { tools: ['read', 'grep'] };
+      const { did, fire } = await started('cartographer');
+      await fire('session_start');
+      expect(did.tools).toEqual([]);
     });
 
     it('reads the declaration afresh for each new session', async () => {

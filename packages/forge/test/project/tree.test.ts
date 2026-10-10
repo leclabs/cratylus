@@ -65,18 +65,15 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
-    // OMP's launch spec, scoped session-hook modules, persona module and
-    // cratylus's own module, which offers the capabilities as tools, alongside
-    // the agent hook worker and skills.
+    // OMP's scoped session-hook modules and cratylus's own module, which offers
+    // the capabilities as tools and `--agent`, alongside the agent hook worker and
+    // skills. No launcher, persona overlay or badge.
     expect(paths).toEqual(
       [
         'agents/probe.md',
         `enforcing/_session/${CLI_BIN}.ts`,
         `enforcing/_session/${CLI_BIN}-session.ts`,
-        'enforcing/_session/omp-agent',
-        `enforcing/probe/${CLI_BIN}-persona-badge.ts`,
         `enforcing/probe/${CLI_BIN}-session.ts`,
-        'enforcing/probe/omp.yml',
         'hooks/ping/ping.sh',
         'skills/greet/SKILL.md',
         'skills/greet/scripts/concepts.mjs',
