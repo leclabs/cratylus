@@ -297,7 +297,32 @@ async function observeHost<T>(
 function record(...reads: readonly HostRead[]): void {
   if (inside) return;
   const sink = observing.getStore();
-  if (sink) for (const read of reads) sink.add(read);
+  if (sink && !loaderMade()) for (const read of reads) sink.add(read);
+}
+
+// Module-loading machinery: Node's own loaders, and vite/vitest's module runner and transform.
+const LOADER =
+  /^node:internal\/modules\/|[\\/]node_modules[\\/](?:\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?(?:vite-node|vite|vitest|@vitest[\\/][^\\/]+)[\\/]/;
+
+// Whether a read was made by module-loading machinery loading a check, not by the check's own code
+// or a library it calls. The caller is the first frame past this module's own frames and past any
+// other builtin (whose own caller made the read).
+function loaderMade(): boolean {
+  const limit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 64;
+  const stack = new Error().stack ?? '';
+  Error.stackTraceLimit = limit;
+  const files = stack
+    .split('\n')
+    .slice(1)
+    .flatMap((line) => /\(?([^\s()]+):\d+:\d+\)?$/.exec(line)?.[1] ?? []);
+  const [own] = files;
+  for (const file of files) {
+    if (file === own) continue;
+    if (LOADER.test(file)) return true;
+    if (!file.startsWith('node:')) return false;
+  }
+  return false;
 }
 
 function observed(original: Method, read: Reader): Method {

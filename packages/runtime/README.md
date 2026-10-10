@@ -169,10 +169,11 @@ that throws on a recording is a finding against that recording.
 
 A check given as an already-loaded object is observed while judging only. Give it as a loader,
 `() => BehavioralCheck | Promise<BehavioralCheck>`, so what its module reads when loaded is seen
-too. Under a transforming loader such as vitest's, the module's own source files read while it
-loads are recorded as file reads. A reference to `process.env`, to `Date` or to a patched function
-that was taken before the proof began judging is not observed; reach them through the global or
-the module while judging.
+too. Reads made by the module-loading machinery itself (Node's loaders, and vite's or vitest's
+module runner and transform reading sources) are not the check's and are not recorded; reads by
+the check's own code, or by a library it calls, are. A reference to `process.env`, to `Date` or
+to a patched function that was taken before the proof began judging is not observed; reach them
+through the global or the module while judging.
 
 `judgeBatch` judges a batch of runs against `{ atLeast, of }`: an ordinary assertion passes when it
 holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.

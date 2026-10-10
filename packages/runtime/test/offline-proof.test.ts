@@ -461,12 +461,23 @@ describe('declared host reads', () => {
 
 describe('a check given as a loader', () => {
   it('is observed while it loads, module scope included', async () => {
+    // Fresh modules, so the module loader reads their sources while the proof observes it.
+    const pure = await proveOffline(
+      async () => (await import('./offline-proof-module-pure.js')).check,
+      recordings,
+    );
+    expect(pure).toEqual({ proven: true, findings: [] });
     const loaded = await proveOffline(
       async () => (await import('./offline-proof-module.js')).check,
       recordings,
     );
-    // Under vitest the transforming loader reads the module's source through `node:fs` too.
-    expect(loaded.findings).toContainEqual({ kind: 'host-read', read: 'home' });
+    expect(loaded.findings).toEqual([{ kind: 'host-read', read: 'home' }]);
+    const builtin = await proveOffline(async () => {
+      const { homedir } = await import('node:os');
+      homedir();
+      return checkReading(() => {});
+    }, recordings);
+    expect(builtin.findings).toEqual([{ kind: 'host-read', read: 'home' }]);
     const synchronous = await proveOffline(() => {
       void process.env.LOADER_PROBE;
       return checkReading(() => {});
