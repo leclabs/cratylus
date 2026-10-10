@@ -179,6 +179,7 @@ export function host(): Host {
   cpSync(join(here, 'observe-omp.ts'), observer);
   const tap = join(root, 'tap-omp.ts');
   cpSync(join(here, 'tap-omp.ts'), tap);
+  cpSync(join(here, 'isolation.ts'), join(root, 'isolation.ts'));
   const command = (args: string[], directory = cwd) =>
     run('cratylus', args, directory, env);
   const concepts = <T = Record<string, unknown>>(...args: string[]): T =>

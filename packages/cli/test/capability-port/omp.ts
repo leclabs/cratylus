@@ -1,12 +1,13 @@
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { homedir, tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   type Recording,
@@ -18,6 +19,7 @@ import {
 } from './check.js';
 import {
   type Host,
+  type Wiring,
   argv,
   host,
   openDecision,
@@ -25,6 +27,80 @@ import {
   seedWindow,
   success,
 } from './fixture.js';
+import { assessIsolation } from './isolation.js';
+
+interface ModelWiring extends Wiring {
+  systemPrompt: string[];
+  memory: { backend: string; active: boolean };
+  credentialResolved: boolean;
+}
+
+export function modelLaunch(h: Host, tools: string[], output: string) {
+  // Context-file discovery is separate from --no-rules in omp. Do not expose
+  // the operator's home: copy ONLY the credential store to another empty home.
+  // The installed adapter remains in h.home and is passed explicitly.
+  h.offered(h.inspect());
+  const home = join(h.root, 'model-home');
+  const agent = join(home, '.omp/agent');
+  mkdirSync(agent, { recursive: true });
+  for (const suffix of ['', '-wal', '-shm']) {
+    const source = join(homedir(), '.omp/agent', `agent.db${suffix}`);
+    if (existsSync(source)) cpSync(source, join(agent, `agent.db${suffix}`));
+  }
+  mkdirSync(output, { recursive: true });
+  const config = join(h.root, 'model-config.json');
+  writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
+  const path = [
+    ...new Set([
+      join(h.prefix, 'node_modules/.bin'),
+      dirname(process.execPath),
+      '/usr/bin',
+      '/bin',
+    ]),
+  ];
+  expect(
+    path.filter((directory) => existsSync(join(directory, 'cratylus'))),
+  ).toEqual([join(h.prefix, 'node_modules/.bin')]);
+  const executable = success(run('which', ['omp'], h.cwd)).trim();
+  const auth = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => /^OMP_AUTH_/.test(key)),
+  );
+  return {
+    executable,
+    args: [...h.launchArgs(), '--config', config],
+    env: {
+      ...h.env,
+      ...auth,
+      HOME: home,
+      PATH: path.join(':'),
+      CAPABILITY_INSPECT: '0',
+      CAPABILITY_ISOLATION: '1',
+      CAPABILITY_CHECK_CREDENTIALS: '1',
+      CAPABILITY_TOOLS: JSON.stringify(tools),
+      CAPABILITY_WIRING: join(output, 'wiring.json'),
+      CAPABILITY_TRANSCRIPT: join(output, 'messages.jsonl'),
+      CAPABILITY_PROMPTS: join(output, 'prompts.jsonl'),
+    },
+  };
+}
+
+export function inspectModelLaunch(h: Host, tools: string[], output: string) {
+  const launch = modelLaunch(h, tools, output);
+  const result = run(launch.executable, launch.args, h.cwd, {
+    ...launch.env,
+    CAPABILITY_INSPECT: '1',
+  });
+  success(result);
+  const wiring: ModelWiring = JSON.parse(
+    readFileSync(launch.env.CAPABILITY_WIRING, 'utf8'),
+  );
+  expect(
+    wiring.credentialResolved,
+    'omp resolves credentials without a model turn',
+  ).toBe(true);
+  expect(failures(assessIsolation(wiring, tools))).toEqual([]);
+  return wiring;
+}
 
 export function seed(h: Host, scenario: Scenario) {
   if (scenario.seed === 'window') seedWindow(h);
@@ -47,32 +123,38 @@ export function launch(
     process.env.CAPABILITY_PORT_RUBRIC !== '1'
   )
     throw new Error('A live launch needs an explicit opt-in');
-  if (tools.includes('concept_journal')) h.offered(h.inspect([], tools), tools);
-  mkdirSync(output, { recursive: true });
-  const transcript = join(output, 'messages.jsonl');
+  const prepared = modelLaunch(h, tools, output);
+  const transcript = prepared.env.CAPABILITY_TRANSCRIPT;
   writeFileSync(transcript, '');
-  // A provider key in the environment or the host's credential broker supplies
-  // auth without borrowing its extensions, rules, skills, settings or role.
-  const auth = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => /^OMP_AUTH_/.test(key)),
-  );
+  writeFileSync(prepared.env.CAPABILITY_PROMPTS, '');
   const result = run(
-    'omp',
-    [...h.launchArgs(), prompt],
+    prepared.executable,
+    [...prepared.args, prompt],
     h.cwd,
-    {
-      ...h.env,
-      ...auth,
-      CAPABILITY_INSPECT: '0',
-      CAPABILITY_TOOLS: JSON.stringify(tools),
-      CAPABILITY_WIRING: join(output, 'wiring.json'),
-      CAPABILITY_TRANSCRIPT: transcript,
-    },
+    prepared.env,
     300_000,
   );
   writeFileSync(join(output, 'stdout'), result.stdout);
   writeFileSync(join(output, 'stderr'), result.stderr);
   success(result);
+  const wiring: ModelWiring = JSON.parse(
+    readFileSync(prepared.env.CAPABILITY_WIRING, 'utf8'),
+  );
+  expect(wiring.credentialResolved).toBe(true);
+  expect(failures(assessIsolation(wiring, tools))).toEqual([]);
+  const prompts: ModelWiring[] = readFileSync(
+    prepared.env.CAPABILITY_PROMPTS,
+    'utf8',
+  )
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  expect(
+    prompts.length,
+    'every model run records its rendered system prompt',
+  ).toBeGreaterThan(0);
+  for (const turn of prompts)
+    expect(failures(assessIsolation(turn, tools))).toEqual([]);
   const messages: unknown[] = readFileSync(transcript, 'utf8')
     .split('\n')
     .filter(Boolean)
