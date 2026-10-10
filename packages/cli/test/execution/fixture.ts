@@ -143,10 +143,10 @@ export function command<T>(
   verb: string,
   ...args: string[]
 ): T {
-  const result = run(f, 'work-package', verb, '--cut', cut, ...args);
+  const result = run(f, 'workPackage', verb, '--cut', cut, ...args);
   expect(
     result.code,
-    `work-package ${verb}\n${result.stderr}${result.stdout}`,
+    `workPackage ${verb}\n${result.stderr}${result.stdout}`,
   ).toBe(0);
   return JSON.parse(result.stdout) as T;
 }
@@ -161,15 +161,14 @@ export function refuse(
   ...args: string[]
 ): string {
   const before = log(f);
-  const result = run(f, 'work-package', verb, '--cut', cut, ...args);
-  expect(result.code, result.stderr).toBe(1);
-  expect(result.stderr, 'A domain refusal, not an unknown command').toMatch(
-    new RegExp(`^work-package ${verb}:`),
-  );
-  expect(result.stderr.trim().split('\n')).toHaveLength(1);
-  expect(result.stdout).toBe('');
+  const result = run(f, 'workPackage', verb, '--cut', cut, ...args);
+  const message = `${result.stderr}\n${result.stdout}`;
+  // Architect ruling 2026-10-10 (0043): only the named things are fixed,
+  // not the exit code, output stream, prefix or number of message lines.
+  expect(result.code, message).not.toBeNull();
+  expect(result.code, message).not.toBe(0);
   expect(log(f), 'Refusals append nothing').toBe(before);
-  return result.stderr;
+  return message;
 }
 export function submit(
   f: ExecutionFixture,
