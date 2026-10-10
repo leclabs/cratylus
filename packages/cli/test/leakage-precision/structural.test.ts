@@ -236,4 +236,58 @@ describe('leakage precision', () => {
     // Binds “it is inspected as that kind from then on”: realization raises no warning.
     expect(inspect()).toEqual([]);
   });
+
+  it('Example 6 — a subject owns the plain word, not a command, code span or flag', () => {
+    context('workflow', `The practice of checking work with ${tool}.`);
+    const entries = [
+      { name: 'plain', form: tool },
+      { name: 'command', form: `${tool} run` },
+      { name: 'span', form: `\`${tool}\`` },
+      { name: 'flag', form: `--${tool}` },
+    ].map(({ name, form }) => ({
+      name,
+      recorded: append(
+        fixture.root,
+        'define',
+        name,
+        '--context',
+        'workflow',
+        '--wording',
+        `The work is checked with ${form}.`,
+        '--reason',
+        'State checking.',
+      ) as Answer,
+    }));
+    const inspected = inspect();
+    for (const { name, recorded } of entries) {
+      const passage = expect.objectContaining({
+        kind: 'concept',
+        context: 'workflow',
+        name,
+      });
+      if (name === 'plain') {
+        // Binds “the plain word raises no warning” when recorded.
+        expect.soft(recorded.warnings ?? []).toEqual([]);
+        // Binds “the plain word raises no warning” when inspected alongside the other entries.
+        expect
+          .soft(inspected)
+          .not.toEqual(
+            expect.arrayContaining([expect.objectContaining({ passage })]),
+          );
+      } else {
+        const warning = expect.objectContaining({
+          passage,
+          words: expect.stringContaining(tool),
+        });
+        // Binds “the command, code span or flag is warned” for each form when recorded.
+        expect
+          .soft(recorded.warnings, `${name} on recording`)
+          .toEqual(expect.arrayContaining([warning]));
+        // Binds “the command, code span or flag is warned” for each form when inspected.
+        expect
+          .soft(inspected, `${name} on inspection`)
+          .toEqual(expect.arrayContaining([warning]));
+      }
+    }
+  });
 });
