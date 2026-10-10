@@ -13,6 +13,10 @@ describe('agent launch — visible examples', () => {
   it('1: carries the declaration body, not raw front matter, and its model and effort', async () => {
     const f = fixture();
     try {
+      f.configure({
+        modelRoles: { default: 'fixture/base' },
+        defaultThinkingLevel: 'low',
+      });
       const file = f.declaration(declaration);
       const rawFrontMatter =
         /(?:^|\n)---[ \t]*\n(?:[^\n]*\n)*?name:[^\n]*\n(?:[^\n]*\n)*?---(?:\n|$)/;
@@ -27,12 +31,35 @@ describe('agent launch — visible examples', () => {
       expect(() =>
         expect(raw.observation.prompt.join('\n')).not.toMatch(rawFrontMatter),
       ).toThrow();
-      const { observation } = await inspect(f, { agent: declaration.name });
+      const { observation } = await inspect(f, {
+        agent: declaration.name,
+        modelFlags: false,
+      });
       // “system prompt carries ... body”; “model and effort”.
       carries(observation, declaration);
       // “never as raw front matter”: reject a fenced YAML declaration, not
       // the name/description/model rendered freely as prose.
       expect(observation.prompt.join('\n')).not.toMatch(rawFrontMatter);
+    } finally {
+      f.dispose();
+    }
+  });
+  it('1b: explicit operator model and thinking flags win while the declaration body stays', async () => {
+    const f = fixture();
+    try {
+      f.declaration(declaration);
+      const { observation } = await inspect(f, {
+        agent: declaration.name,
+        modelFlags: false,
+        extra: ['--model', 'fixture/base', '--thinking', 'low'],
+      });
+      // “explicit operator flags win”; the declaration still supplies its body.
+      expect(observation.prompt.join('\n')).toContain(declaration.body);
+      expect.soft(observation.model).toMatchObject({
+        provider: 'fixture',
+        id: 'base',
+      });
+      expect.soft(observation.effort).toBe('low');
     } finally {
       f.dispose();
     }
@@ -59,6 +86,10 @@ describe('agent launch — visible examples', () => {
       };
     });
     try {
+      f.configure({
+        modelRoles: { default: 'fixture/base' },
+        defaultThinkingLevel: 'low',
+      });
       f.models(server.baseUrl);
       f.declaration({ ...declaration, tools: [] });
       const config = join(f.root, 'runtime.json');
@@ -71,6 +102,7 @@ describe('agent launch — visible examples', () => {
       );
       const parent = f.launch({
         inspect: false,
+        modelFlags: false,
         tools: ['task'],
         extra: ['--config', config],
       });
@@ -95,7 +127,10 @@ describe('agent launch — visible examples', () => {
         parent.stop();
         await parent.done;
       }
-      const main = await inspect(f, { agent: declaration.name });
+      const main = await inspect(f, {
+        agent: declaration.name,
+        modelFlags: false,
+      });
       carries(main.observation, declaration);
     } finally {
       server.close();
