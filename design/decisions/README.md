@@ -24,3 +24,4 @@ concept journal when it exists (decision 0014).
 - [0018 · Assayer](0018-assayer.md)
 - [0019 · Assayer jury](0019-assayer-jury.md)
 - [0020 · Efficiency](0020-efficiency.md)
+- [0021 · Held-out examples by omission](0021-held-out-examples-by-omission.md)
