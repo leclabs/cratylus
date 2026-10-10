@@ -1,0 +1,31 @@
+{
+  "name": "accept-after-state",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "state",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "state"
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "accept",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "window",
+        "reason": "We agreed."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}

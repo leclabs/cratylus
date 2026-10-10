@@ -1,0 +1,40 @@
+{
+  "name": "never-superseding-decision",
+  "target": "never-superseding-decision",
+  "events": [
+    {
+      "kind": "tool",
+      "id": "accept",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "accept",
+        "id": "window",
+        "reason": "We agreed."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    },
+    {
+      "kind": "tool",
+      "id": "decide",
+      "name": "concept_journal",
+      "arguments": {
+        "verb": "decide",
+        "id": "replacement",
+        "context": "booking",
+        "status": "accepted",
+        "supersedes": "window",
+        "title": "Windows",
+        "situation": "Agreed",
+        "decision": "One hour.",
+        "consequences": "Plan hourly."
+      },
+      "result": {
+        "isError": false,
+        "content": []
+      }
+    }
+  ]
+}
