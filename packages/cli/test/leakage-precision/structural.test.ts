@@ -206,6 +206,7 @@ describe('leakage precision', () => {
     );
     // Binds “a decision recorded before kinds existed”: identify its entry without fixing a filename.
     expect(decisionFiles).toHaveLength(1);
+    const [decisionFile] = decisionFiles as [string];
     const classified = append(
       fixture.root,
       'classify',
@@ -218,7 +219,7 @@ describe('leakage precision', () => {
     // Binds “as an entry of its own”.
     expect(added).toHaveLength(1);
     // Binds “leaves the decision's record unchanged”: compare the original journal bytes, not its view.
-    expect(after[decisionFiles[0]]).toBe(before[decisionFiles[0]]);
+    expect(after[decisionFile]).toBe(before[decisionFile]);
     // Binds “its kind is recorded afterwards, as an entry of its own”.
     expect(decisionViews()).toEqual([
       expect.objectContaining({
