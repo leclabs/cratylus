@@ -1,0 +1,6 @@
+---
+'@cratylus/forge': minor
+'cratylus': minor
+---
+
+`omp --agent <name>` starts the main session as any agent declaration omp discovers (decision 0047), through cratylus's one omp extension, `~/.omp/agent/extensions/cratylus.ts`, which `cratylus install --harness omp` places. The extension registers the `agent` flag and resolves the name with omp's own agent discovery, the declarations omp's `task` dispatch runs (`.omp/agents/` nearest the session's directory, then `~/.omp/agent/agents/`, then extension packages, plugins and bundled agents), read afresh for each new session. The session runs on the declaration's `model` and `thinking-level`; every turn's system prompt carries the declaration, its name and description as a sentence and then its body, never its raw front matter; and the status line shows the declaration's `mark` and name, or the name alone. The active tools stay the operator's: a declaration's `tools` are for dispatch only, and an explicit `--tools` is the session's exact selection. An unknown name ends startup with a non-zero exit naming it, before any session starts. Without `--agent`, and in subagent sessions, the extension adds nothing. Its capability tools are unchanged.

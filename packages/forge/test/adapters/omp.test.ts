@@ -18,7 +18,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
   OMP_LAUNCHER_FILE,
@@ -32,6 +32,43 @@ import {
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
+/** What the emitted CRATYLUS module reaches of omp itself, which only an omp
+ *  process resolves: its agent discovery, front-matter parser and command-line
+ *  parser. Each stand-in answers from `omp` below and records what it was asked. */
+const omp = vi.hoisted(() => ({
+  agents: [] as Record<string, unknown>[],
+  discovered: [] as string[],
+  tools: undefined as string[] | undefined,
+  parsed: [] as { argv: string[]; flags: Map<string, { type: string }> }[],
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
+  discoverAgents: async (cwd: string) => {
+    omp.discovered.push(cwd);
+    return { agents: omp.agents };
+  },
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/cli/args', () => ({
+  parseArgs: (argv: string[], flags: Map<string, { type: string }>) => {
+    omp.parsed.push({ argv, flags });
+    return { tools: omp.tools };
+  },
+}));
+// Top-level `key: "json"` lines between the fences: all a fixture here writes.
+vi.mock('@oh-my-pi/pi-utils', () => ({
+  parseFrontmatter: (text: string) => {
+    const [, block = '', body = ''] =
+      /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(text) ?? [];
+    return {
+      frontmatter: Object.fromEntries(
+        block.split('\n').map((line) => {
+          const at = line.indexOf(':');
+          return [line.slice(0, at), JSON.parse(line.slice(at + 1))];
+        }),
+      ),
+      body,
+    };
+  },
+}));
 /** Temp dirs the legs below that touch disk create — they RUN the launcher,
  *  which is the only way its resolution is observable. */
 const tmp: string[] = [];
@@ -531,6 +568,43 @@ describe('omp launch spec', () => {
 });
 
 describe('omp capability interface', () => {
+  const PATH = process.env.PATH;
+  afterEach(() => {
+    process.env.PATH = PATH;
+  });
+
+  /** The emitted module's factory, written to disk beside a `cratylus` on PATH
+   *  that answers `--explain` with `explanation` and any other call with its argv
+   *  as JSON (or, for a verb named `refuse`, a refusal on stderr). */
+  async function emitted(
+    explanation: unknown,
+  ): Promise<(pi: unknown) => Promise<void>> {
+    const dir = mkdtempSync(join(tmpdir(), 'omp-capability-'));
+    tmp.push(dir);
+    const bin = join(dir, 'bin');
+    mkdirSync(bin);
+    const said = join(dir, 'explanation.json');
+    writeFileSync(said, JSON.stringify(explanation));
+    writeFileSync(
+      join(bin, 'cratylus'),
+      [
+        `#!${process.execPath}`,
+        'const args = process.argv.slice(2);',
+        `if (args.includes('--explain')) process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8'));`,
+        "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
+        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
+        '',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+    process.env.PATH = `${bin}:${PATH}`;
+    const [module] = ompCapabilityExtensions();
+    const file = join(dir, OMP_CRATYLUS_MODULE);
+    writeFileSync(file, module?.content ?? '');
+    // Dynamic: the module under test is the emitted bytes, written to disk here.
+    return (await import(file)).default;
+  }
+
   it('emits ONE module, named for cratylus, placed where a plain omp loads it', () => {
     const surface = ompHarnessAdapter.capabilitySurface?.() ?? [];
     expect(surface.map((s) => [s.scope, s.filename])).toEqual([
@@ -577,45 +651,15 @@ describe('omp capability interface', () => {
         ctx: { cwd: string },
       ): Promise<{ content: { text: string }[] }>;
     }
-    const PATH = process.env.PATH;
-    afterEach(() => {
-      process.env.PATH = PATH;
-    });
-
-    /** Load the emitted module against a `cratylus` on PATH that answers
-     *  `--explain` with `explanation` and any other call with its argv as JSON
-     *  (or, for a verb named `refuse`, a refusal on stderr). */
+    /** The tools the emitted module registers against the stand-in command. */
     async function load(explanation: unknown): Promise<Registered[]> {
-      const dir = mkdtempSync(join(tmpdir(), 'omp-capability-'));
-      tmp.push(dir);
-      const bin = join(dir, 'bin');
-      mkdirSync(bin);
-      const said = join(dir, 'explanation.json');
-      writeFileSync(said, JSON.stringify(explanation));
-      writeFileSync(
-        join(bin, 'cratylus'),
-        [
-          `#!${process.execPath}`,
-          'const args = process.argv.slice(2);',
-          `if (args.includes('--explain')) process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8'));`,
-          "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
-          'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
-          '',
-        ].join('\n'),
-        { mode: 0o755 },
-      );
-      process.env.PATH = `${bin}:${PATH}`;
-      const [module] = ompCapabilityExtensions();
-      const file = join(dir, OMP_CRATYLUS_MODULE);
-      writeFileSync(file, module?.content ?? '');
+      const factory = await emitted(explanation);
       const registered: Registered[] = [];
-      // Dynamic: the module under test is the emitted bytes, written to disk here.
-      const factory = (await import(file)).default as (
-        pi: unknown,
-      ) => Promise<void>;
       await factory({
         typebox: { Type: { Unsafe: (schema: unknown) => schema } },
         registerTool: (tool: Registered) => registered.push(tool),
+        registerFlag: () => {},
+        on: () => {},
       });
       return registered;
     }
@@ -754,6 +798,218 @@ describe('omp capability interface', () => {
           cwd: tmpdir(),
         }),
       ).rejects.toThrow('cratylus concepts refuse: its own words');
+    });
+  });
+
+  describe('launches a main session as an agent declaration omp discovers', () => {
+    type Handler = (event: unknown, ctx: unknown) => unknown;
+    const BASE = ['the base prompt'];
+
+    /** A declaration file as omp would discover it, and omp's parse of it. */
+    function declare(fields: Record<string, unknown>, body: string) {
+      const dir = mkdtempSync(join(tmpdir(), 'omp-agent-'));
+      tmp.push(dir);
+      const filePath = join(dir, `${String(fields.name)}.md`);
+      writeFileSync(
+        filePath,
+        `---\n${Object.entries(fields)
+          .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+          .join('\n')}\n---\n${body}\n`,
+      );
+      return {
+        name: fields.name,
+        description: fields.description,
+        systemPrompt: body,
+        model: [fields.model],
+        thinkingLevel: fields['thinking-level'],
+        source: 'user',
+        filePath,
+      };
+    }
+    const CARTOGRAPHER = () =>
+      declare(
+        {
+          name: 'cartographer',
+          description: 'Charts the estuary.',
+          model: 'fixture/declared',
+          'thinking-level': 'high',
+          tools: ['read', 'write'],
+          mark: '⚓',
+        },
+        'Map the estuary before drawing its shipping routes.',
+      );
+
+    afterEach(() => {
+      omp.agents = [];
+      omp.discovered.length = 0;
+      omp.parsed.length = 0;
+      omp.tools = undefined;
+      vi.restoreAllMocks();
+    });
+
+    /** The emitted module loaded into a stand-in omp started with `--agent
+     *  <flag>` (or without it), recording every session action it takes. */
+    async function started(flag?: string) {
+      const factory = await emitted({
+        name: 'stand in',
+        purpose: 'p',
+        when: 'w',
+        verbs: [],
+      });
+      const handlers = new Map<string, Handler>();
+      const did = {
+        flags: [] as [string, unknown][],
+        models: [] as unknown[],
+        efforts: [] as unknown[],
+        tools: [] as unknown[],
+        status: [] as [string, unknown][],
+      };
+      await factory({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: () => {},
+        registerFlag: (name: string, options: unknown) =>
+          did.flags.push([name, options]),
+        getFlag: (name: string) => (name === 'agent' ? flag : undefined),
+        on: (event: string, handler: Handler) => handlers.set(event, handler),
+        setModel: async (model: unknown) => did.models.push(model),
+        setThinkingLevel: (level: unknown) => did.efforts.push(level),
+        setActiveTools: async (tools: unknown) => did.tools.push(tools),
+      });
+      const ctx = (kind = 'main') => ({
+        cwd: '/the/session/cwd',
+        agent: { kind },
+        models: {
+          resolve: (selector: string) =>
+            selector === 'fixture/declared' ? { id: 'declared' } : undefined,
+        },
+        ui: {
+          setStatus: (key: string, text: unknown) =>
+            did.status.push([key, text]),
+          notify: () => {},
+        },
+      });
+      const fire = async (event: string, kind?: string) =>
+        handlers.get(event)?.({ systemPrompt: BASE }, ctx(kind));
+      return { did, fire };
+    }
+
+    it('registers the string flag `agent`', async () => {
+      const { did } = await started();
+      expect(did.flags).toEqual([
+        ['agent', expect.objectContaining({ type: 'string' })],
+      ]);
+    });
+
+    it("runs on the declaration's model and effort, its mark and name on the status line", async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { did, fire } = await started('cartographer');
+      await fire('session_start');
+      expect(omp.discovered).toEqual(['/the/session/cwd']);
+      expect(did.models).toEqual([{ id: 'declared' }]);
+      expect(did.efforts).toEqual(['high']);
+      expect(did.status).toEqual([['cratylus-agent', '⚓ cartographer']]);
+    });
+
+    it('shows the name alone for a declaration without a mark', async () => {
+      omp.agents = [
+        declare(
+          { name: 'surveyor', description: 'd', model: 'fixture/declared' },
+          'Measure the inlet.',
+        ),
+      ];
+      const { did, fire } = await started('surveyor');
+      await fire('session_start');
+      expect(did.status).toEqual([['cratylus-agent', 'surveyor']]);
+    });
+
+    it('appends the body, front matter as prose, to every turn of the main session', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      for (const _turn of [1, 2]) {
+        const { systemPrompt } = (await fire('before_agent_start')) as {
+          systemPrompt: string[];
+        };
+        expect(systemPrompt.slice(0, 1)).toEqual(BASE);
+        const added = systemPrompt.slice(1).join('\n');
+        expect(added).toContain(
+          'Map the estuary before drawing its shipping routes.',
+        );
+        expect(added).toContain('cartographer');
+        expect(added).toContain('Charts the estuary.');
+        expect(added).not.toContain('---');
+        expect(added).not.toMatch(/^(?:name|model|thinking-level|mark):/m);
+      }
+    });
+
+    it("keeps an explicit --tools exactly, by omp's own parse, and leaves a session without one alone", async () => {
+      omp.agents = [CARTOGRAPHER()];
+      omp.tools = ['read', 'grep'];
+      const explicit = await started('cartographer');
+      await explicit.fire('session_start');
+      expect(explicit.did.tools).toEqual([['read', 'grep']]);
+      expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
+      expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
+      omp.tools = undefined;
+      const plain = await started('cartographer');
+      await plain.fire('session_start');
+      expect(plain.did.tools).toEqual([]);
+    });
+
+    it('reads the declaration afresh for each new session', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { fire } = await started('cartographer');
+      await fire('session_start');
+      omp.agents = [
+        declare(
+          { name: 'cartographer', description: 'd', model: 'fixture/declared' },
+          'The revised charting brief.',
+        ),
+      ];
+      await fire('session_switch');
+      const { systemPrompt } = (await fire('before_agent_start')) as {
+        systemPrompt: string[];
+      };
+      expect(omp.discovered).toHaveLength(2);
+      expect(systemPrompt.join('\n')).toContain('The revised charting brief.');
+      expect(systemPrompt.join('\n')).not.toContain('Map the estuary');
+    });
+
+    it('does nothing in a subagent session, or without the flag', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const sub = await started('cartographer');
+      await sub.fire('session_start', 'sub');
+      expect(await sub.fire('before_agent_start', 'sub')).toBeUndefined();
+      const plain = await started();
+      await plain.fire('session_start');
+      expect(await plain.fire('before_agent_start')).toBeUndefined();
+      for (const { did } of [sub, plain])
+        expect(did).toEqual({
+          flags: [['agent', expect.anything()]],
+          models: [],
+          efforts: [],
+          tools: [],
+          status: [],
+        });
+      expect(omp.discovered).toEqual([]);
+    });
+
+    it('ends startup, naming the unknown agent, before any turn', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const exit = vi.spyOn(process, 'exit').mockImplementation((code) => {
+        throw new Error(`exit ${code}`);
+      });
+      const stderr = vi
+        .spyOn(process.stderr, 'write')
+        .mockImplementation(() => true);
+      const { did, fire } = await started('absent');
+      await expect(fire('session_start')).rejects.toThrow('exit 1');
+      expect(exit).toHaveBeenCalledWith(1);
+      expect(String(stderr.mock.calls[0]?.[0])).toMatch(
+        /Unknown agent "absent"/,
+      );
+      expect(did.status).toEqual([]);
+      expect(await fire('before_agent_start')).toBeUndefined();
     });
   });
 });

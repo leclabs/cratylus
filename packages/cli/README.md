@@ -129,6 +129,22 @@ given to the command as a word of its own, so the command refuses it. The extens
 of the journal itself, so a newer `cratylus` package changes the tool in the next session without
 installing again.
 
+The same extension starts a session as any agent declaration omp discovers: `omp --agent <name>`
+(or `--agent=<name>`). The name resolves through omp's own agent discovery, the declarations omp's
+`task` dispatch runs: `.omp/agents/` nearest the session's directory, then `~/.omp/agent/agents/`,
+then extension packages, plugins and omp's bundled agents, the first of a name winning. A declaration
+is a markdown file whose front matter gives `name`, `description`, `model` (an omp model selector),
+`thinking-level`, optionally `tools`, and `mark`, a short string such as an emoji, followed by its
+body. The session runs on the declaration's model and thinking level; every turn's system prompt
+carries the declaration, its name and description as a sentence and then its body; and the status
+line shows `<mark> <name>`, or the name alone without a mark. The declaration is read afresh for
+each new session. The tools stay yours: a declaration's `tools` are for dispatch only, and when you
+pass `--tools` the session has exactly that selection (read as omp reads its own command line), the
+extension's own tools included only if you name them; without `--tools` nothing changes. A name omp
+does not discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before
+any session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
+prompt or the status line.
+
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
 `CLAUDE_CONFIG_DIR` set, the Claude Code files above are placed in and removed from that directory,
