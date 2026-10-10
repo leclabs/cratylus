@@ -308,7 +308,7 @@ concepts | a cut's concepts only
 examples | the agreed examples to bind`),
   deliverable: glossary(`
 decisions-with-reasons | concepts, decisions and rulings, each with its reason
-outcome-with-efficiency | each example's outcome stated in the design's own concepts, the terms the architect works in rather than those of the realization, with the effort it took
+outcome-with-efficiency | each example's outcome stated in the design's own concepts, the terms the architect works in rather than those of the realization, its evidence and sources named in those same terms, with the effort it took
 done-or-failing-case | done, or the case that still fails
 verdict-per-concept | accept or reject, with findings per concept
 examples-with-flagged-terms | examples, plus every term it could not place
