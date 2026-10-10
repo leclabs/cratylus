@@ -6,6 +6,10 @@ import { appendFileSync } from 'node:fs';
 import { lookup } from '@oh-my-pi/pi-coding-agent/config/registry';
 import { findScopedSettings } from '@oh-my-pi/pi-coding-agent/config/settings';
 import { isPrewalkPlanNudge } from '@oh-my-pi/pi-coding-agent/session/prewalk';
+interface Message {
+  role: string;
+  customType?: string;
+}
 interface Context {
   agent: { kind: string };
   model: unknown;
@@ -26,7 +30,7 @@ interface API {
   ): void;
   on(
     event: 'context',
-    handler: (event: { messages: unknown[] }, ctx: Context) => void,
+    handler: (event: { messages: Message[] }, ctx: Context) => void,
   ): void;
 }
 export default function observe(pi: API) {
@@ -34,7 +38,7 @@ export default function observe(pi: API) {
     phase: string,
     prompt: string[],
     ctx: Context,
-    messages?: unknown[],
+    messages?: Message[],
   ) {
     const settings = findScopedSettings()!;
     appendFileSync(
