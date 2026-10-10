@@ -115,7 +115,7 @@ Identity also carries `name`, `description` and `mark` (canon), and **reserves**
 | register   | `formal`                 | formal register                                                                           |
 | register   | `casual`                 | conversational register                                                                   |
 | density    | `convergence`            | density set by a layman reader                                                            |
-| density    | `maintenance`            | a peer's density, keeping the notation the work is done in                                |
+| density    | `maintenance`            | a peer's density, in the notation that peer works in                                      |
 | rationale  | `answer-only`            | the answer, without its reasoning                                                         |
 | rationale  | `decision-rationale`     | each decision with its reasons                                                            |
 | rationale  | `provenance-attribution` | each recommendation traced to a named outside source, observed marked apart from inferred |

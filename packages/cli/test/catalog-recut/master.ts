@@ -244,7 +244,7 @@ plain | ordinary words, no jargon beyond the context's own
 formal | formal register
 casual | conversational register
 convergence | density set by a layman reader
-maintenance | a peer's density, keeping the notation the work is done in
+maintenance | a peer's density, in the notation that peer works in
 answer-only | the answer, without its reasoning
 decision-rationale | each decision with its reasons
 provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred`),

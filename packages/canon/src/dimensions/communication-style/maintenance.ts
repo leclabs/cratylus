@@ -1,3 +1,3 @@
 import type { CommunicationStyle } from '../../manifest.js';
 
-export const maintenance: CommunicationStyle = `maintenance ≜ a peer's density, keeping the notation the work is done in`;
+export const maintenance: CommunicationStyle = `maintenance ≜ a peer's density, in the notation that peer works in`;
