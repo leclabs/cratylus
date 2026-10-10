@@ -126,3 +126,25 @@ Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cr
 the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
 irreducible second copy is [`cratylus`](../cli/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.
+
+## Offline proof
+
+A behavioral check is proven before it is frozen, and proof never runs live work: `proveOffline`
+only calls the check's `judge` over recordings already made. A `BehavioralCheck` names its example's
+words, its assertions with the phrases of the example each binds, and any host setting the judge
+reads (`host`, each with the example's words that name it). The check is `proven`, and may be
+frozen, only when the proof finds nothing:
+
+- every golden recording gets every assertion true (`golden-rejected`);
+- every negative fails exactly the one assertion it `breaks` (`negative-accepted`,
+  `negative-breaks-other`), and every assertion is failed by some negative that breaks it
+  (`never-seen-failing`: an assertion never seen to fail is not trusted);
+- every assertion binds words its example names (`unbound`), and every bound phrase occurs in the
+  example, compared case-, whitespace-, punctuation- and quote-insensitively (`binds-unfixed`);
+- the judge reads nothing from the operator's host the check does not declare (`host-read`):
+  environment variables, the home directory, files read through `node:fs` or `node:fs/promises`,
+  and the clock are observed while it judges, through named imports as well as namespaces, and
+  restored afterwards. A judge that throws on a recording is a finding against that recording.
+
+`judgeBatch` judges a batch of runs against `{ atLeast, of }`: an ordinary assertion passes when it
+holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.
