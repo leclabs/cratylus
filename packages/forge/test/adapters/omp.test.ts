@@ -23,6 +23,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
   OMP_ISOLATION_MODULE,
+  OMP_READ_ONLY_TOOLS,
   OMP_SESSION_MODULE,
   agentToOmpMd,
   ompCapabilityExtensions,
@@ -469,16 +470,49 @@ describe('omp capability interface', () => {
         ctx: { cwd: string },
       ): Promise<{ content: { text: string }[] }>;
     }
-    /** The tools the emitted module registers against the stand-in command. */
-    async function load(explanation: unknown): Promise<Registered[]> {
+    /** The tools the emitted module registers against the stand-in command, once
+     *  a session starts: a main one (with `--agent <flag>`, if given) or one omp
+     *  dispatched and names `sub`. */
+    async function load(
+      explanation: unknown,
+      session: { flag?: string; sub?: string } = {},
+    ): Promise<Registered[]> {
       const factory = await emitted(explanation);
       const registered: Registered[] = [];
+      const handlers = new Map<
+        string,
+        (event: unknown, ctx: unknown) => unknown
+      >();
       await factory({
         typebox: { Type: { Unsafe: (schema: unknown) => schema } },
         registerTool: (tool: Registered) => registered.push(tool),
         registerFlag: () => {},
-        on: () => {},
+        getFlag: (name: string) =>
+          name === 'agent' ? session.flag : undefined,
+        on: (
+          event: string,
+          handler: (event: unknown, ctx: unknown) => unknown,
+        ) => handlers.set(event, handler),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
       });
+      expect(
+        registered,
+        'nothing is offered before the session starts',
+      ).toEqual([]);
+      await handlers.get('session_start')?.(
+        {},
+        {
+          cwd: '/the/session/cwd',
+          agent:
+            session.sub === undefined
+              ? { kind: 'main', name: 'main' }
+              : { kind: 'sub', name: session.sub },
+          model: { provider: 'fixture', id: 'base' },
+          modelRegistry: {},
+          ui: { setStatus: () => {}, notify: () => {} },
+        },
+      );
       return registered;
     }
 
@@ -616,6 +650,90 @@ describe('omp capability interface', () => {
           cwd: tmpdir(),
         }),
       ).rejects.toThrow('cratylus concepts refuse: its own words');
+    });
+
+    describe('offers an agent that changes nothing its reading verbs alone', () => {
+      afterEach(() => {
+        omp.agents = [];
+        omp.discovered.length = 0;
+      });
+      /** A declaration as omp's discovery parses it; omp adds `yield` to a list. */
+      const discovered = (name: string, tools?: string[]) => ({
+        name,
+        description: 'd',
+        systemPrompt: `The ${name} body.`,
+        ...(tools === undefined ? {} : { tools: [...tools, 'yield'] }),
+        source: 'user',
+      });
+      const verbsOf = (tools: Registered[]) =>
+        tools.map((t) => [t.name, t.parameters.properties.verb?.enum]);
+
+      it('in a session dispatched as a read-only declaration, found by the lowercased name omp gives it', async () => {
+        omp.agents = [discovered('Assayer', [...OMP_READ_ONLY_TOOLS])];
+        const [tool, ...rest] = await load(EXPLANATION, { sub: 'assayer' });
+        expect(omp.discovered).toEqual(['/the/session/cwd']);
+        expect(rest).toEqual([]);
+        expect(tool?.parameters.properties.verb?.enum).toEqual(['look']);
+        // Nothing of a withheld verb is said: its parameters are not parameters.
+        expect(Object.keys(tool?.parameters.properties ?? {}).sort()).toEqual([
+          'context',
+          'mode',
+          'verb',
+        ]);
+        expect(tool?.parameters.properties.mode).toEqual({
+          type: 'string',
+          description: 'look (optional): the mode',
+        });
+      });
+
+      it('in a main session `--agent` started as a read-only declaration', async () => {
+        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
+        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual([
+          ['stand_in', ['look']],
+        ]);
+      });
+
+      it('refuses a withheld verb, called anyway, before the command runs', async () => {
+        omp.agents = [discovered('assayer', ['read'])];
+        const [tool] = await load(EXPLANATION, { sub: 'assayer' });
+        await expect(
+          tool?.execute(
+            'id',
+            { verb: 'put', word: 'w' },
+            undefined,
+            undefined,
+            {
+              cwd: tmpdir(),
+            },
+          ),
+        ).rejects.toThrow(
+          'Verb put appends, and is not offered to an agent that changes nothing',
+        );
+      });
+
+      it('offers no tool of a capability whose every verb appends', async () => {
+        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
+        const appendsOnly = {
+          ...EXPLANATION,
+          verbs: EXPLANATION.verbs.slice(1),
+        };
+        expect(await load(appendsOnly, { sub: 'assayer' })).toEqual([]);
+      });
+
+      it('offers every verb to any other agent or session', async () => {
+        const all = [['stand_in', ['look', 'put', 'refuse']]];
+        omp.agents = [
+          discovered('builder'),
+          discovered('cartographer', ['read', 'write']),
+          discovered('scout', ['read', 'bash']),
+        ];
+        for (const sub of ['builder', 'cartographer', 'scout', 'sub', 'absent'])
+          expect(verbsOf(await load(EXPLANATION, { sub })), sub).toEqual(all);
+        expect(verbsOf(await load(EXPLANATION, { flag: 'builder' }))).toEqual(
+          all,
+        );
+        expect(verbsOf(await load(EXPLANATION))).toEqual(all);
+      });
     });
   });
 

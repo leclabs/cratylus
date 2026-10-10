@@ -1289,7 +1289,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  *
  * A PORT, NEVER A COPY. At session load the module runs the installed
  * `<bin> <capability> --explain` for each such capability (the command on PATH,
- * never a path into a source workspace) and registers one tool per capability,
+ * never a path into a source workspace), and when the session starts it registers
+ * one tool per capability,
  * composed from that answer alone: the name snake-cased from the explained name,
  * the label that name, the description the capability's purpose and when and each
  * verb's concept, purpose, when, effect and parameters; the parameters a required
@@ -1303,6 +1304,16 @@ const SESSION_PLACEMENT: readonly string[] = [
  * The module names the command and the capabilities and nothing of what a
  * capability says, so a newer installed package changes the tools in the next
  * session, these bytes unchanged.
+ *
+ * READ-ONLY REACH (decision 0051). An agent that changes nothing is offered a
+ * capability's reading verbs alone, and a capability with none is no tool for it;
+ * a withheld verb, called anyway, is refused before the command runs. The module
+ * knows the agent from omp: a main session runs as the declaration `--agent`
+ * launched, a dispatched one as the declaration omp's discovery finds by the name
+ * omp gives the session (`ctx.agent.name`, lowercased). That declaration changes
+ * nothing when it lists its tools and each is one of {@link OMP_READ_ONLY_TOOLS}
+ * (or the `yield` omp adds to every list) — the very list
+ * {@link agentToOmpMd} writes for a read-only agent, so no field of its own says so.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
@@ -1369,6 +1380,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
+        `const READ_ONLY_TOOLS: readonly string[] = ${JSON.stringify(OMP_READ_ONLY_TOOLS)};`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '',
@@ -1477,6 +1489,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  systemPrompt: string;',
         '  model?: string | string[];',
         '  thinkingLevel?: string;',
+        '  tools?: string[];',
         '  filePath?: string;',
         '}',
         'interface Launched {',
@@ -1486,7 +1499,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// What of a session the launch reads or sets.',
         'interface Session {',
         '  cwd: string;',
-        '  agent?: { kind: string };',
+        '  agent?: { kind: string; name?: string };',
         '  model?: { provider: string; id: string };',
         '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
         '  ui: {',
@@ -1512,6 +1525,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      : undefined;',
         '  const mark = typeof said === "string" && said.trim() !== "" ? said.trim() : undefined;',
         '  return { found: { declaration, mark }, names };',
+        '}',
+        '',
+        '// A declaration that changes nothing: it lists its tools, and each one reads or searches',
+        '// (omp adds `yield` to every list it reads).',
+        'function changesNothing(declaration: Declaration | undefined): boolean {',
+        '  const tools = declaration?.tools;',
+        '  return tools !== undefined && tools.every((t) => t === "yield" || READ_ONLY_TOOLS.includes(t));',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -1579,7 +1599,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    ctx.ui.setStatus(AGENT_STATUS, mark === undefined ? name : `${mark} ${name}`);',
         '    launched = found;',
         '  }',
-        '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
+        '  pi.on("session_start", async (_event, ctx) => {',
+        '    const session = ctx as unknown as Session;',
+        '    await launch(session, true);',
+        '    offer(changesNothing(await running(session)));',
+        '  });',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
         '  pi.on("before_agent_start", (event, ctx) =>',
         '    launched !== undefined && (ctx as unknown as Session).agent?.kind === "main"',
@@ -1587,21 +1611,46 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      : undefined,',
         '  );',
         '',
-        '  for (const capability of CAPABILITIES) {',
-        '    const explanation: Explanation = JSON.parse(await run([capability, "--explain"]));',
-        '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
-        '    pi.registerTool({',
-        '      name: explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),',
-        '      label: explanation.name,',
-        '      description: description(explanation),',
-        '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
-        '      approval: (args: Record<string, unknown>) =>',
-        '        verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
-        '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
-        '        const text = await run(argv(capability, verbs.get(String(args.verb)), args), ctx.cwd, signal);',
-        '        return { content: [{ type: "text" as const, text }] };',
-        '      },',
-        '    });',
+        '  // Each capability as its installed command explains it, asked once, at load.',
+        '  const explanations: [string, Explanation][] = [];',
+        '  for (const capability of CAPABILITIES)',
+        '    explanations.push([capability, JSON.parse(await run([capability, "--explain"]))]);',
+        '',
+        '  // The declaration the session runs as: in a main session, the one `--agent` launched;',
+        '  // in a dispatched one, the one omp discovers by the name it gives the session, lowercased.',
+        '  async function running(ctx: Session): Promise<Declaration | undefined> {',
+        '    if (ctx.agent?.kind === "main") return launched?.declaration;',
+        '    const name = ctx.agent?.name;',
+        '    if (name === undefined) return undefined;',
+        '    const agents: Declaration[] = (await discoverAgents(ctx.cwd)).agents;',
+        '    return agents.find((a) => a.name.toLowerCase() === name);',
+        '  }',
+        '',
+        "  // Each capability as one tool, once the session's agent is known: with every verb it",
+        '  // explains, or, to an agent that changes nothing, its reading verbs alone (none: no tool).',
+        '  function offer(readsOnly: boolean): void {',
+        '    for (const [capability, explained] of explanations) {',
+        '      const offered = explained.verbs.filter((v) => !readsOnly || v.effect === "reads");',
+        '      if (offered.length === 0) continue;',
+        '      const explanation: Explanation = { ...explained, verbs: offered };',
+        '      const verbs = new Map(offered.map((v) => [v.name, v]));',
+        '      const withheld = new Set(explained.verbs.filter((v) => !verbs.has(v.name)).map((v) => v.name));',
+        '      pi.registerTool({',
+        '        name: explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),',
+        '        label: explanation.name,',
+        '        description: description(explanation),',
+        '        parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
+        '        approval: (args: Record<string, unknown>) =>',
+        '          verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
+        '        async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
+        '          const verb = String(args.verb);',
+        '          if (withheld.has(verb))',
+        '            throw new Error(`Verb ${verb} appends, and is not offered to an agent that changes nothing`);',
+        '          const text = await run(argv(capability, verbs.get(verb), args), ctx.cwd, signal);',
+        '          return { content: [{ type: "text" as const, text }] };',
+        '        },',
+        '      });',
+        '    }',
         '  }',
         '}',
         '',
