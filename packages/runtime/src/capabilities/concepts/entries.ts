@@ -9,7 +9,8 @@
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id, and its acceptance (`accept`) is an entry of its own, so the decision's
-// record never changes.
+// record never changes. A cut's efficiency figures (`efficiency`) are recorded
+// by the work package capability; the latest for a cut are its figures.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** What every entry carries: the ULID naming its file, and when it was minted. */
@@ -84,7 +85,29 @@ export interface AcceptEntry extends Stamped {
   readonly reason?: string;
 }
 
-export type Entry = ContextEntry | VersionEntry | DecideEntry | AcceptEntry;
+/** A cut's efficiency figures as recorded at one moment: the agent runs it took,
+ *  in total and by role, its rounds, its whole-check runs, and the tokens its
+ *  runs carried (`null` when none carried any). A later entry for the same cut
+ *  of the same context holds its figures from then on. */
+export interface EfficiencyEntry extends Stamped {
+  readonly kind: 'efficiency';
+  readonly context: string;
+  readonly cut: string;
+  readonly agentRuns: {
+    readonly total: number;
+    readonly byRole: Readonly<Record<string, number>>;
+  };
+  readonly rounds: number;
+  readonly wholeCheckRuns: number;
+  readonly tokens: number | null;
+}
+
+export type Entry =
+  | ContextEntry
+  | VersionEntry
+  | DecideEntry
+  | AcceptEntry
+  | EfficiencyEntry;
 
 /** Every kind of entry the journal holds. */
 export const KINDS: readonly Entry['kind'][] = [
@@ -94,6 +117,7 @@ export const KINDS: readonly Entry['kind'][] = [
   'retire',
   'decide',
   'accept',
+  'efficiency',
 ];
 
 /** An entry before it is stamped: what a verb asks the journal to append. */

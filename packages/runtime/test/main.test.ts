@@ -16,6 +16,8 @@ import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
+import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
+import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
@@ -94,6 +96,7 @@ async function run(
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   eventTap: EVENT_TAP,
   concepts: CONCEPTS,
+  workPackage: WORK_PACKAGE,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -164,6 +167,7 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   } = {
     eventTap: dispatchEventTap,
     concepts: dispatchConcepts,
+    workPackage: dispatchWorkPackage,
   };
 
   it.each(CAPABILITIES)(

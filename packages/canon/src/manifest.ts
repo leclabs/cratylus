@@ -297,6 +297,7 @@ export type Evaluation = Value<'evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'eventTap',
   'concepts',
+  'workPackage',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */

@@ -85,7 +85,7 @@ admitted body with a boundary. The right reason, not the convenient one.
 The generic platform beneath **the tools skills route to** — the implementations behind the semantic
 surface.
 
-Its capabilities — `eventTap` and `concepts` — are **built into the runtime** and known when it is
+Its capabilities — `eventTap`, `concepts` and `workPackage` — are **built into the runtime** and known when it is
 built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider. The event
 tap is reached through its **port**, and its Claude strategy is the case with interchangeable
 implementations: it proxies Claude's own hooks from behind the event tap's port, where another
@@ -95,8 +95,10 @@ It ships **with** the agent and runs on the host. It knows no corpus: the corpus
 each capability's configuration reach it in the host config that deploy writes.
 
 It knows no harness beyond the event tap's Claude strategy, which writes Claude's settings format, and
-the tap refuses a caller whose harness has no strategy of its own; `concepts` is repository-scoped
-and knows no harness at all.
+the tap refuses a caller whose harness has no strategy of its own; `concepts` and `workPackage` are
+repository-scoped and know no harness at all. `workPackage` computes a cut's dependency graph with
+`@dagrejs/graphlib`, wrapped behind the capability, and records the cut's efficiency figures in the
+concept journal.
 
 A lifecycle guardrail is not the runtime's. It is a canon hook cell that forge projects as the
 harness's own hook — on omp, as an extension module — so the runtime hosts the capabilities above and

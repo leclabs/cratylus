@@ -68,6 +68,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
+    "@dagrejs/graphlib": "catalog:",
     "commander": "catalog:"
   },
   "devDependencies": {

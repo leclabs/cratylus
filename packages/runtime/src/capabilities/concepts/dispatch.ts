@@ -83,7 +83,7 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled)',
+      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled), open decisions (not settled) and the efficiency figures last recorded for each of its cuts',
     when: 'At the start of a session, or after it was compacted, to reconstitute the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting',
     positional: null,
     flags: {
@@ -300,6 +300,8 @@ const READING = {
   'decisions.open': 'decisions recorded and not yet accepted: not settled',
   'decisions.entry':
     'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
+  efficiency:
+    'each cut of the context with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
@@ -364,6 +366,7 @@ export function dispatchConcepts(
       ),
       open: decisions.filter((d) => d.context === where && d.status === 'open'),
     },
+    efficiency: folded.efficiency(where),
   });
   /** The words of `where`: the names of its live concepts and of `also`. */
   const own = (where: string, ...also: string[]) =>
