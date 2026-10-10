@@ -10,8 +10,13 @@
 // span is the same leak and is reported once, as the wider; a quotation in
 // code type that is plain prose is no leak itself, so only the leaks inside it
 // are reported. A context's own words are never leakage: a span made only of
-// the words of its concepts' names raises nothing, nor a command a concept's
-// name names, and an ordinary English word is a leak only used as a command.
+// the words of its concepts' names and of its current subject raises nothing,
+// nor a command one of them names, and an ordinary English word is a leak
+// only used as a command.
+//
+// Leakage warns only where realization replaces meaning: a decision recorded
+// as constraining realization names what it constrains on purpose, and is
+// never inspected; one stating meaning, or of no recorded kind, is.
 //
 // A leak is a WARNING, never a refusal: a word list cannot tell every
 // legitimate use from a leak, so the architect reads the warnings and judges.
@@ -250,14 +255,23 @@ const RULES: readonly {
   },
 ];
 
-/** The words of a context: the names of its concepts, and each word in them. */
-export function vocabulary(names: readonly string[]): ReadonlySet<string> {
+/** The words of a context: the names of its concepts, and each word in them,
+ *  and each word its `subjects` name, the punctuation around it dropped. */
+export function vocabulary(
+  names: readonly string[],
+  subjects: readonly string[] = [],
+): ReadonlySet<string> {
   const words = new Set<string>();
   for (const name of names) {
     const lower = name.toLowerCase();
     words.add(lower);
     for (const word of lower.split(/\s+/)) words.add(word);
   }
+  for (const subject of subjects)
+    for (const word of subject.toLowerCase().split(/\s+/)) {
+      const bare = word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+      if (bare !== '') words.add(bare);
+    }
   return words;
 }
 

@@ -21,17 +21,19 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `eventTap` and `concepts`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability | port           | verbs                                                                                                                |
-| ---------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                             |
-| `concepts` | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` |
+| capability | port           | verbs                                                                                                                            |
+| ---------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                                         |
+| `concepts` | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` |
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
 `supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
-warns; a context's own concept names are never leakage.
+warns; a context's own words, its concept names and the words its current subject names, are
+never leakage, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
+`realization` is never inspected (decision 0058).
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
 against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is

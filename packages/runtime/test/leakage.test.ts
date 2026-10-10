@@ -145,6 +145,17 @@ describe('leaks', () => {
       { words: 'omp', rule: 'names a tool or library' },
     ]);
   });
+
+  it('counts the words a subject names as the context’s own, punctuation dropped', () => {
+    const own = vocabulary(
+      ['plan'],
+      ['Work kept in git, checked with vitest.'],
+    );
+    expect(leaks('Checked with vitest; kept with git merge.', own)).toEqual([]);
+    expect(leaks('Checked with zod.', own)).toEqual([
+      { words: 'zod', rule: 'names a tool or library' },
+    ]);
+  });
 });
 
 describe('visibleExamples', () => {
@@ -262,5 +273,50 @@ describe('concepts leakage, and the warnings of an append', () => {
       ].flat(),
     });
     expect(concepts('leakage')).toHaveProperty('warnings.length', 3);
+  });
+
+  it('inspects a decision unless its governing kind is realization', () => {
+    top = mkdtempSync(join(tmpdir(), 'leakage-'));
+    execFileSync('git', ['init', '-q'], { cwd: top });
+    const from = top;
+    const concepts = (...argv: string[]) => dispatchConcepts(argv, { from });
+    concepts('context', 'booking', '--subject', 'A subject.');
+    const decide = (id: string, ...kind: string[]) =>
+      concepts(
+        'decide',
+        id,
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'Validated with zod.',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+        ...kind,
+      );
+    expect(decide('built', '--kind', 'realization')).not.toHaveProperty(
+      'warnings',
+    );
+    expect(decide('meant', '--kind', 'meaning')).toHaveProperty(
+      'warnings.length',
+      1,
+    );
+    expect(decide('unsaid')).toHaveProperty('warnings.length', 1);
+    const warned = () => {
+      // The leakage query's answer, as the verb prints it.
+      const answer = concepts('leakage') as {
+        warnings: { passage: { id: string } }[];
+      };
+      return answer.warnings.map((w) => w.passage.id);
+    };
+    expect(warned()).toEqual(['meant', 'unsaid']);
+    concepts('classify', 'unsaid', '--kind', 'realization');
+    concepts('classify', 'built', '--kind', 'meaning', '--reason', 'It means.');
+    expect(warned()).toEqual(['built', 'meant']);
   });
 });

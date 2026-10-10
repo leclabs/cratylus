@@ -64,6 +64,7 @@ const VERBS = [
   'retire',
   'decide',
   'accept',
+  'classify',
 ];
 
 /** Each verb's parameters, as the realization contract names them. */
@@ -86,8 +87,10 @@ const PARAMETERS: Record<string, string[]> = {
     'consequences',
     'status',
     'supersedes',
+    'kind',
   ],
   accept: ['id', 'reason'],
+  classify: ['id', 'kind', 'reason'],
 };
 
 describe('concepts --explain', () => {
@@ -148,6 +151,11 @@ describe('concepts --explain', () => {
       type: 'string',
       enum: ['open', 'accepted'],
     });
+    for (const verb of ['decide', 'classify'])
+      expect(byVerb[verb]?.kind?.schema, verb).toEqual({
+        type: 'string',
+        enum: ['meaning', 'realization'],
+      });
     expect(byVerb.decisions?.open?.schema).toEqual({ type: 'boolean' });
     for (const verb of ['define', 'supersede'])
       expect(byVerb[verb]?.['built-from']?.schema).toEqual({
@@ -164,6 +172,7 @@ describe('concepts --explain', () => {
     expect(positional('context')).toEqual(['context']);
     expect(positional('decide')).toEqual(['id']);
     expect(positional('accept')).toEqual(['id']);
+    expect(positional('classify')).toEqual(['id']);
     for (const verb of ['state', 'design', 'decisions', 'leakage'])
       expect(positional(verb), verb).toEqual([]);
   });
@@ -205,6 +214,7 @@ describe('concepts --explain', () => {
       retire: 'retirement',
       decide: 'decision',
       accept: 'decision',
+      classify: 'decision',
     });
     expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
       [],
@@ -396,8 +406,10 @@ describe('what the explanation calls required is what the verb refuses without',
       consequences: 'C',
       status: 'open',
       supersedes: 'd1',
+      kind: 'meaning',
     },
     accept: { id: 'd1', reason: 'Agreed.' },
+    classify: { id: 'd1', kind: 'realization', reason: 'It constrains.' },
   };
 
   /** The argv of `verb` giving `given`. */

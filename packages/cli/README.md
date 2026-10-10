@@ -566,15 +566,15 @@ cratylus eventTap status [options]
 
 ### `cratylus concepts`
 
-The concept journal. Its verbs are `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide` and `accept`.
+The concept journal. Its verbs are `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` and `classify`.
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal. A refusal is one line on stderr, exit 1, and appends nothing.
 
-`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the decisions not superseded and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the decisions not superseded and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and the words its current subject names. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` and `state` report each decision's governing `kind` (`null` where none is recorded) and its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
-What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
+What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `classify` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
 Nothing under `design/journal` is edited, moved or deleted. In the cratylus repository its immutability gate holds this: it refuses such a change at commit and in CI, naming each path, and lets additions pass.
 
@@ -693,6 +693,7 @@ cratylus concepts decide [options] <id>
 | `--consequences <value>` |
 | `--status <value>`       |
 | `--supersedes <value>`   |
+| `--kind <value>`         |
 
 #### `cratylus concepts accept`
 
@@ -702,6 +703,17 @@ cratylus concepts accept [options] <id>
 
 | Flag               |
 | ------------------ |
+| `--reason <value>` |
+
+#### `cratylus concepts classify`
+
+```sh
+cratylus concepts classify [options] <id>
+```
+
+| Flag               |
+| ------------------ |
+| `--kind <value>`   |
 | `--reason <value>` |
 
 ## Corpus authoring
