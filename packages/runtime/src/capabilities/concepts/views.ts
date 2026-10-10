@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The VIEWS computed from the concept journal: the current design of each
-// bounded context, a concept's history, and the decisions with their status.
+// bounded context, a concept's history, a context's own history, and the
+// decisions with their status.
 // Each is a pure function of the entries in append order: no clock, no
 // randomness, so the same journal answers the same every time.
 //
@@ -13,7 +14,8 @@
 // A context is its NAME. Its current descriptions are the entries of that name
 // no later one supersedes; recorded alike on two branches they are one
 // description, recorded differently they are COMPETING, none chosen, until a
-// later entry of the name supersedes them all.
+// later entry of the name supersedes them all. The design shows only the
+// current description; every earlier one stays in the context's history.
 //
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
@@ -91,6 +93,19 @@ export interface HistoryView {
     readonly wording?: string;
     readonly builtFrom?: readonly string[];
     readonly reason: string;
+    readonly supersedes: readonly string[];
+  }[];
+}
+
+/** Every description of a context, in append order, exactly as recorded. */
+export interface ContextHistoryView {
+  readonly context: string;
+  readonly versions: readonly {
+    readonly id: string;
+    readonly at: string;
+    readonly subject: string;
+    readonly relation: string;
+    readonly reason?: string;
     readonly supersedes: readonly string[];
   }[];
 }
@@ -270,6 +285,22 @@ export class Folded {
           : { wording: v.wording, builtFrom: [...v.builtFrom] }),
         reason: v.reason,
         supersedes: [...v.supersedes],
+      })),
+    };
+  }
+
+  /** Every description of `context`, a context the journal has, each exactly
+   *  as recorded; `supersedes` is empty where an entry names none. */
+  contextHistory(context: string): ContextHistoryView {
+    return {
+      context,
+      versions: (this.contexts.get(context) ?? []).map((c) => ({
+        id: c.id,
+        at: c.at,
+        subject: c.subject,
+        relation: c.relation,
+        ...(c.reason === undefined ? {} : { reason: c.reason }),
+        supersedes: [...(c.supersedes ?? [])],
       })),
     };
   }

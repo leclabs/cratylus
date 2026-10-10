@@ -574,7 +574,7 @@ The concept journal is `design/journal` at the top of the git repository you run
 
 `leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the decisions not superseded and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
-What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
+What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
 Nothing under `design/journal` is edited, moved or deleted. In the cratylus repository its immutability gate holds this: it refuses such a change at commit and in CI, naming each path, and lets additions pass.
 
@@ -601,7 +601,7 @@ cratylus concepts design [options]
 #### `cratylus concepts history`
 
 ```sh
-cratylus concepts history [options] <concept>
+cratylus concepts history [options] [concept]
 ```
 
 | Flag                |
@@ -639,6 +639,7 @@ cratylus concepts context [options] <context>
 | -------------------- |
 | `--subject <value>`  |
 | `--relation <value>` |
+| `--reason <value>`   |
 
 #### `cratylus concepts define`
 

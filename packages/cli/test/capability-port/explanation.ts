@@ -25,6 +25,7 @@ export interface Explanation {
   when: string;
   verbs: VerbExplanation[];
 }
+
 export function checkExplanation(h: Host): Explanation {
   const explanation = h.concepts<Explanation>('--explain');
   expect(explanation.name).toBe('concept journal');
