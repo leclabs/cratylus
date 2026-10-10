@@ -67,6 +67,7 @@ export function launchArgs(
   session: string,
   extension: string,
   model = 'fixture/base',
+  agent: string | null = 'architect',
 ) {
   return [
     '--print',
@@ -76,8 +77,7 @@ export function launchArgs(
     model,
     '--thinking',
     'medium',
-    '--agent',
-    'architect',
+    ...(agent === null ? [] : ['--agent', agent]),
     '--resume',
     session,
     '--tools',
@@ -99,34 +99,46 @@ export function inspectLaunch(cwd: string, summary: string) {
   try {
     f.declaration({ name: 'architect', body: architectBody });
     const session = compactedSession(cwd, summary);
-    const wiring = join(f.root, 'wiring.json');
     // Supply a turn so the observer sees the effective prompt AFTER the
     // installed extension's override; exit there, before any provider request.
-    const result = spawnSync(
-      'omp',
-      [...launchArgs(session, f.extension), 'Continue the work.'],
-      {
-        cwd,
-        input: '',
-        encoding: 'utf8',
-        timeout: 60_000,
-        env: {
-          ...f.env,
-          PWD: cwd,
-          CONCEPT_INSPECT_ONLY: '1',
-          CONCEPT_WIRING_FILE: wiring,
+    const record = (agent: string | null) => {
+      const wiring = join(f.root, `${agent ?? 'plain'}-wiring.json`);
+      const result = spawnSync(
+        'omp',
+        [
+          ...launchArgs(session, f.extension, 'fixture/base', agent),
+          'Continue the work.',
+        ],
+        {
+          cwd,
+          input: '',
+          encoding: 'utf8',
+          timeout: 60_000,
+          env: {
+            ...f.env,
+            PWD: cwd,
+            CONCEPT_INSPECT_ONLY: '1',
+            CONCEPT_WIRING_FILE: wiring,
+          },
         },
-      },
-    );
-    if (result.error) throw result.error;
-    expect(result.status, result.stderr + result.stdout).toBe(0);
-    expect(
-      existsSync(wiring),
-      'real omp must emit its active tool schemas',
-    ).toBe(true);
-    const observed = JSON.parse(readFileSync(wiring, 'utf8'));
-    expect(observed.active.slice().sort()).toEqual([...observedTools].sort());
+      );
+      if (result.error) throw result.error;
+      expect(result.status, result.stderr + result.stdout).toBe(0);
+      expect(
+        existsSync(wiring),
+        'real omp must emit its active tool schemas',
+      ).toBe(true);
+      return JSON.parse(readFileSync(wiring, 'utf8'));
+    };
+    const plain = record(null);
+    const observed = record('architect');
+    // Reconstitution needs the scenario tools below, not a literal --tools
+    // roster. Any additional active tools must be ones plain omp also grants
+    // with the same flags; admitting its extension tools is not a defect.
+    for (const name of observed.active)
+      expect(plain.active, `plain omp also grants ${name}`).toContain(name);
     for (const name of observedTools) {
+      expect(observed.active, `scenario offers ${name}`).toContain(name);
       const tool = observed.tools.find(
         (item: { name: string }) => item.name === name,
       );

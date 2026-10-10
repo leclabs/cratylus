@@ -1,6 +1,5 @@
 // Use real built-ins only; never register stand-in tools or replace the role.
 import { appendFileSync, writeFileSync } from 'node:fs';
-import { observedTools } from './check.js';
 interface Context {
   sessionManager: { getEntries(): unknown[]; buildSessionContext(): unknown };
 }
@@ -18,7 +17,6 @@ interface Extension {
     };
   }[];
   getActiveTools(): string[];
-  setActiveTools(tools: string[]): void;
   on(
     event: 'before_agent_start',
     handler: (event: { systemPrompt: string[] }, ctx: Context) => void,
@@ -32,9 +30,6 @@ export default function observe(pi: Extension) {
   // Loaded after install's cratylus extension. Observe its chained turn prompt;
   // unlike session_start's base prompt, this includes per-turn overrides.
   pi.on('before_agent_start', (event, ctx) => {
-    // This scenario supplies its tools explicitly; it does not judge omp's
-    // interpretation of --tools or the launch extension's tool preservation.
-    pi.setActiveTools([...observedTools]);
     const tools = pi
       .getAllTools()
       .filter((tool) => pi.getActiveTools().includes(tool.name))
