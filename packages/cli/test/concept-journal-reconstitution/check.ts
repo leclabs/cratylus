@@ -18,7 +18,7 @@ export const observedTools = [
   'edit',
 ] as const;
 const cratylusCommand =
-  /^(?:pnpm\s+(?:exec\s+)?cratylus|npx\s+cratylus|cratylus|node\s+(?:"[^"]*cratylus\.js"|'[^']*cratylus\.js'|\S*cratylus\.js))\s+/;
+  /^(?:pnpm\s+(?:exec\s+)?cratylus|npx\s+cratylus|cratylus|node\s+(?:"[^"]*cratylus\.js"|'[^']*cratylus\.js'|\S*cratylus\.js))(?:\s+|$)/;
 const queryVerb = /^concepts\s+(?:state|design|decisions|history)\b/;
 function shellSegments(command: string): string[] | null {
   if (/\$\(|`/.test(command)) return null;
@@ -38,7 +38,12 @@ function readOnlySegment(segment: string): boolean {
   const invocation = segment.match(cratylusCommand);
   if (invocation) {
     const args = segment.slice(invocation[0].length);
-    return queryVerb.test(args) || /(?:^|\s)--help(?:\s|$)/.test(args);
+    return (
+      args === '' ||
+      args === 'concepts' ||
+      queryVerb.test(args) ||
+      /(?:^|\s)--help(?:\s|$)/.test(args)
+    );
   }
   if (
     /^(?:cat|head|tail|less|ls|pwd|cd|echo|printf|wc|sort|uniq|jq|grep|rg|tree|stat|file|which)(?:\s|$)/.test(

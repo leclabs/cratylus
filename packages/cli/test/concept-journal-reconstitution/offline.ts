@@ -164,6 +164,23 @@ describe('example 10 offline proof', () => {
         isQuery({ kind: 'tool', name: 'bash', arguments: { command } }),
         command,
       ).toBe(true);
+    for (const launcher of [
+      'pnpm cratylus',
+      'pnpm exec cratylus',
+      'npx cratylus',
+      'cratylus',
+      'node /workspace/packages/cli/dist/cratylus.js',
+    ]) {
+      for (const command of [launcher, `${launcher} concepts`]) {
+        const event = {
+          kind: 'tool' as const,
+          name: 'bash',
+          arguments: { command },
+        };
+        expect(isActing(event), command).toBe(false);
+        expect(isQuery(event), command).toBe(false);
+      }
+    }
   });
   it('launches real omp without a prompt to prove tool schemas and native compaction wiring', () => {
     const repo = repository();
