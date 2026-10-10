@@ -1,0 +1,14 @@
+{
+  "id": "01M4J5RAMT9JAGK0Z1MAVXB70H",
+  "at": "2026-10-10T05:49:42.426Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "context map",
+  "wording": "the contexts of a conceptual design, which depends on which, and the contracts between them, so work that spans contexts has a stated place and nothing crosses a boundary unannounced.",
+  "builtFrom": [
+    "bounded context",
+    "contract"
+  ],
+  "reason": "decided in 0003: Bounded contexts",
+  "supersedes": []
+}

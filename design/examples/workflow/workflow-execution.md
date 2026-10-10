@@ -1,7 +1,7 @@
 # Examples · cut 2a · workflow execution
 
 Context: workflow. Concepts: roles, lead, builder, assayer, build, work package, judgment, whole check,
-proportionality, meaning question and dependency graph (see `design/workflow.md`). Confirmed by the
+proportionality, meaning question and dependency graph (see `cratylus concepts design --context workflow`). Confirmed by the
 meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
 
 **Structural** examples are properties the harness or the freeze guarantees, checked once, deterministically.

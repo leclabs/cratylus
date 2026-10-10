@@ -22,7 +22,7 @@ export const repoPreamble: RuleCell = {
   id: 'repo-preamble',
   slug: 'repo-preamble',
   residue:
-    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index ; LOCKED-immutable-grounding : source-aligns-up · ¬regenerated-from-source⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated ; green-field ⟨constrains-only-where-declared ; ¬compatibility-goal⟩⟩ ; activation=scope ⟨curated source, projected + byte-locked⟩',
+    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index ; LOCKED-immutable-grounding : source-aligns-up · ¬regenerated-from-source⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated ; green-field ⟨constrains-only-where-declared ; ¬compatibility-goal⟩ ; library-first ⟨maintained · small-API · ¬workflow-engine ; wrapped behind a cratylus capability⟩ ; branching=github-flow ⟨feature-branch ← main → PR ; ¬direct-commit@main ; declared deviation⟩ ; commit-own-paths ⟨by name ; ¬amend · ¬rewrite-shared⟩⟩ ; activation=scope ⟨curated source, projected + byte-locked⟩',
   scope: '',
   targetPath: 'AGENTS.md',
   refs: [],
@@ -42,5 +42,8 @@ export const repoPreamble: RuleCell = {
 - Conventional Commits, header ≤100 chars (commitlint, \`commit-msg\` hook).
 - **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only \`git push\` is gated: push only when the operator asks.
 - **Green-field register:** existing code, records, and docs constrain work only where explicitly declared; compatibility is never a goal.
+- **Reach for an established library before writing or adopting machinery.** Where a well-known problem has an actively maintained, widely used library with a small API, use it; never adopt a workflow or orchestration engine. Wrap it behind cratylus's own capability, so agents learn one small cratylus API, not the library's.
+- **Branching strategy: GitHub flow.** Cut a short-lived feature branch from \`main\` for each change and merge it back into \`main\` by pull request; never commit to \`main\` directly. A session may adopt another flow for a while, such as an integration branch ahead of \`main\`, and says so when it does.
+- **Commit only what you changed:** stage and commit your own paths by name, never everything in the tree, and never amend or rewrite history others may share.
 `,
 };

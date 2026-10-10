@@ -1,0 +1,18 @@
+{
+  "id": "01M4J5R9MBD3JH4WJNZKHMYCSH",
+  "at": "2026-10-10T05:49:41.387Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "the agent that owns a cut's realization: divides its work into work packages, schedules their dependency graph, dispatches builders, runs judgment and the whole check, and settles every question of realization itself; it brings the architect only a meaning question or the cut's outcome, in concept terms, and never changes a concept or an example.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "build",
+    "judgment",
+    "whole check"
+  ],
+  "reason": "decided in 0010: Bookkeeping in capabilities",
+  "supersedes": []
+}

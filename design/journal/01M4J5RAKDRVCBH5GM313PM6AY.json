@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5RAKDRVCBH5GM313PM6AY",
+  "at": "2026-10-10T05:49:42.381Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "retirement",
+  "wording": "a removal the conceptual design names, whose example is that the retired thing is absent from what the product delivers, so nothing is removed by guesswork and nothing retired survives.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "decided in 0013: Green field reset",
+  "supersedes": []
+}

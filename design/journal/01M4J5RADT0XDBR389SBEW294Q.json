@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5RADT0XDBR389SBEW294Q",
+  "at": "2026-10-10T05:49:42.202Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "dependency graph",
+  "wording": "the work packages of a cut and which must finish before which, with no cycles; they are dispatched in topological order, every work package on the same topological level in parallel, so the order and the parallelism are computed from the graph rather than decided again each time.",
+  "builtFrom": [
+    "work package"
+  ],
+  "reason": "decided in 0010: Bookkeeping in capabilities",
+  "supersedes": []
+}

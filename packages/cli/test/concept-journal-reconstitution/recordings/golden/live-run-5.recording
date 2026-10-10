@@ -1,0 +1,45 @@
+{
+  "name": "live-5",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Reconstituting from the concept journal before acting, rather than relying on the summary."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts",
+        "i": "Querying concept journal"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state",
+        "i": "Reading journal state"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts history \"reservation expiry\" --context booking && pnpm cratylus concepts decisions",
+        "i": "Checking expiry history and decisions"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "I rebuilt the design from the concept journal, and it disagrees with the compaction summary in two places. **The journal is authoritative, so I'm working from it:**\n\n| | Summary said | Journal records |\n|---|---|---|\n| Reservation expiry | ten minutes | **fifteen minutes**. Ten was the first version, later replaced. |\n| `deposit` decision | open | **accepted** |\n| `reminder` decision | open | open (they agree) |\n\n## Current design: context `booking`\nSubject: booking reservations and payment. The context map gives it no relation to other contexts.\n\n**Live concept**\n- **reservation expiry**: \"Reservations expire after fifteen minutes.\"\n  - The first version said ten minutes (\"Initial checkout window\").\n  - It was replaced because \"customers need time to complete the payment challenge.\"\n  - Only one version is current, and no other concept is built from it.\n\n**No competing versions and no retired concepts.**\n\n**Accepted (settled)**\n- **`deposit`**: A booking can be abandoned, so we collect a refundable deposit. Consequence: refunds must be supported.\n\n**Open (not settled)**\n- **`reminder`**: A reservation can expire unnoticed, so send a reminder before it expires. Consequence: we would need a reminder channel.\n\n## Gaps in the design\n- **Refunds aren't modelled.** Accepting `deposit` committed us to supporting them, but the journal has no concept for the deposit or the refund. It doesn't say when a deposit is refunded or kept, or how a deposit relates to a reservation that expires.\n- **`reminder` depends on the expiry concept but doesn't name it.** It also doesn't say when the reminder goes out within the fifteen minutes.\n\n## Recommendation and what I need from you\n1. **`reminder`**: whether we should send a reminder at all is your call, because it's about intent. If you want it, I'd make it precise before accepting it: one reminder at a fixed lead time before expiry (around five minutes, so the customer can still finish the payment challenge). It would go only to customers who have started a reservation and haven't paid. Choosing the channel would be a decision of its own.\n2. **Deposit and refund**: I'd define these next, because an accepted decision already commits us to them. Before I record them, I need to know your intent on one point: **if a reservation expires because the customer abandons it, do they get the deposit back, or is it kept?**\n\nI haven't recorded anything in the journal this session. Tell me your answers on these two points and I'll record the concepts and decisions."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "01M4J5RAF6051WACA7PQX2XZBY",
+  "at": "2026-10-10T05:49:42.246Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "work",
+  "wording": "what a cut produces, which its examples are checked against.",
+  "builtFrom": [],
+  "reason": "decided in 0004: Work and work package",
+  "supersedes": []
+}

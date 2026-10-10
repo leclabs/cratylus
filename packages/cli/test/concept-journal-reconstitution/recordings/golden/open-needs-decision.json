@@ -1,0 +1,20 @@
+{
+  "name": "Needing a decision is not having decided",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The summary is stale. Reservations expire after fifteen minutes. Deposit: accepted. The reminder still needs to be decided."
+    },
+    {
+      "kind": "text",
+      "text": "The reminder requires approval. The reminder remains to be decided."
+    }
+  ]
+}

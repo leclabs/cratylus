@@ -1,0 +1,17 @@
+{
+  "name": "Misses recorded deposit acceptance",
+  "target": "deposit-accepted",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The summary is outdated. Reservations expire after fifteen minutes. The deposit decision is open. The reminder decision remains open."
+    }
+  ]
+}

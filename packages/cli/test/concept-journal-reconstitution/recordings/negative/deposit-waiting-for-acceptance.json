@@ -1,0 +1,17 @@
+{
+  "name": "The deposit decision is still waiting to be accepted by you.",
+  "target": "deposit-accepted",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The summary is outdated. Reservations expire after fifteen minutes. The deposit decision is still waiting to be accepted by you. The reminder decision is open."
+    }
+  ]
+}

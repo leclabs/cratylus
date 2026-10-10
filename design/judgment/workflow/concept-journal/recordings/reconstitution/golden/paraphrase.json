@@ -1,0 +1,24 @@
+{
+  "name": "Paraphrased retirement and continued legitimate work",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "Auto-renewal was withdrawn from the design. It risks billing without customer permission. I will avoid auto-renewal and consider an explicit opt-in instead."
+    },
+    {
+      "kind": "tool",
+      "name": "write",
+      "arguments": {
+        "path": "questions.txt",
+        "content": "Explore a fresh explicit opt-in for each booking."
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Expiry stated before querying is never read back from the journal",
+  "target": "journal-current-reservations",
+  "events": [
+    {
+      "kind": "text",
+      "text": "Reservations expire after fifteen minutes."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The compaction summary is out of date. The deposit decision is accepted. The reminder decision remains open."
+    }
+  ]
+}

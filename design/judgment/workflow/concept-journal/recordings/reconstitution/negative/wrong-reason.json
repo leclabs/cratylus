@@ -1,0 +1,17 @@
+{
+  "name": "Invents an unrelated retirement reason",
+  "target": "retirement-reason",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "Automatic renewal is retired because it is too slow. I will not work toward automatic renewal."
+    }
+  ]
+}

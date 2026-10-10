@@ -12,8 +12,8 @@ import { join } from 'node:path';
 import { Command } from 'commander';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
-import { VERBS as DESIGN } from '../src/capabilities/design/dispatch.js';
-import { dispatchDesign } from '../src/capabilities/design/index.js';
+import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
+import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 import {
@@ -24,7 +24,7 @@ import {
 import { capabilityCommands } from '../src/main.js';
 import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
 import { type VerbFlags, refused } from '../src/verb-flags.js';
-import { BY, CONFIG, everyRecord, repository } from './verb-surface.js';
+import { CONFIG, everyEntry, repository } from './verb-surface.js';
 
 const repo = repository();
 
@@ -93,7 +93,7 @@ async function run(
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   eventTap: EVENT_TAP,
-  design: DESIGN,
+  concepts: CONCEPTS,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -112,7 +112,7 @@ describe('the capability commands print their help from the declarations', () =>
   );
 
   it.each([
-    ['design', 'define', '<concept>'],
+    ['concepts', 'define', '<concept>'],
     ['eventTap', 'install', null],
   ] as const)(
     '%s %s --help documents its positional and every flag',
@@ -137,30 +137,30 @@ describe('the capability commands print their help from the declarations', () =>
   );
 
   it('`-h` after a verb asks for the same help as `--help`', async () => {
-    const asked = await run(['design', 'define', '--help']);
-    expect((await run(['design', 'define', '-h'])).out).toBe(asked.out);
-    expect((await run(['design', '-h'])).out).toBe(
-      (await run(['design', '--help'])).out,
+    const asked = await run(['concepts', 'define', '--help']);
+    expect((await run(['concepts', 'define', '-h'])).out).toBe(asked.out);
+    expect((await run(['concepts', '-h'])).out).toBe(
+      (await run(['concepts', '--help'])).out,
     );
   });
 });
 
 describe('the capability commands answer an undeclared verb with what to do', () => {
-  it('names the declared verbs and help for an unknown design verb', async () => {
-    const { code, out, err } = await run(['design', 'frob']);
+  it('names the declared verbs and help for an unknown concepts verb', async () => {
+    const { code, out, err } = await run(['concepts', 'frob']);
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err.trimEnd().split('\n')).toHaveLength(1);
     expect(err).toContain("'frob'");
-    for (const verb of Object.keys(DESIGN)) expect(err).toContain(verb);
-    expect(err).toContain('cratylus design --help');
+    for (const verb of Object.keys(CONCEPTS)) expect(err).toContain(verb);
+    expect(err).toContain('cratylus concepts --help');
   });
 
   const DISPATCHERS: {
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
     eventTap: dispatchEventTap,
-    design: dispatchDesign,
+    concepts: dispatchConcepts,
   };
 
   it.each(CAPABILITIES)(
@@ -181,51 +181,52 @@ describe('the capability commands answer an undeclared verb with what to do', ()
 
 describe('the capability commands leave a verb’s flags to the verb’s own reader', () => {
   it('a flag the verb does not take is refused as `refused` words it, and nothing is written', async () => {
-    const before = everyRecord(repo);
+    const before = everyEntry(repo);
     const { code, out, err } = await run([
-      'design',
-      'define',
+      'concepts',
+      'context',
       'x',
-      '--glos',
+      '--subjec',
       'y',
-      ...BY,
     ]);
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err).toBe(
-      `cratylus ${refused('design', 'define', ['--glos'], DESIGN.define)}\n`,
+      `cratylus ${refused('concepts', 'context', ['--subjec'], CONCEPTS.context)}\n`,
     );
-    expect(everyRecord(repo)).toEqual(before);
+    expect(everyEntry(repo)).toEqual(before);
   });
 
   it('`-h` that is a flag’s value is that value, not a request for help', async () => {
-    const captured = await run([
-      'design',
-      'define',
+    const recorded = await run([
+      'concepts',
+      'context',
       'dash-h',
-      '--gloss',
+      '--subject',
       '-h',
-      '--factors',
-      '',
-      ...BY,
     ]);
-    expect(captured.err).toBe('');
-    expect(captured.code).toBe(0);
-    const shown = await run(['design', 'show', 'dash-h']);
+    expect(recorded.err).toBe('');
+    expect(recorded.code).toBe(0);
+    const shown = await run(['concepts', 'design', '--context', 'dash-h']);
     expect(shown.code).toBe(0);
-    expect(shown.out).toMatch(/^ *gloss: -h$/m);
+    expect(JSON.parse(shown.out).contexts[0].subject).toBe('-h');
   });
 
   it('`--help` after a flag that takes a value but is missing it is still a request for help', async () => {
-    const { code, out } = await run(['design', 'define', '--gloss', '--help']);
+    const { code, out } = await run([
+      'concepts',
+      'define',
+      '--wording',
+      '--help',
+    ]);
     expect(code).toBe(0);
-    expect(out).toContain('Usage: cratylus design define');
+    expect(out).toContain('Usage: cratylus concepts define');
   });
 });
 
 describe('the capability commands refuse a word the verb does not take', () => {
   const cases: [Capability, string, string[]][] = [
-    ['design', 'show', ['plan', 'extra']],
+    ['concepts', 'history', ['c', 'extra']],
     ['eventTap', 'status', ['extra']],
   ];
 
@@ -245,28 +246,27 @@ describe('the capability commands refuse a word the verb does not take', () => {
   );
 
   it('a write given a surplus word writes nothing', async () => {
-    const before = everyRecord(repo);
+    const before = everyEntry(repo);
     const { code, out, err } = await run([
-      'design',
-      'define',
+      'concepts',
+      'context',
       'a',
       'b',
-      '--gloss',
-      'g',
-      ...BY,
+      '--subject',
+      's',
     ]);
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err).toBe(
-      `cratylus ${refused('design', 'define', [], DESIGN.define, ['b'])}\n`,
+      `cratylus ${refused('concepts', 'context', [], CONCEPTS.context, ['b'])}\n`,
     );
-    expect(everyRecord(repo)).toEqual(before);
+    expect(everyEntry(repo)).toEqual(before);
   });
 
   it('an untaken flag and a surplus word are refused together in the one line', async () => {
     const { code, out, err } = await run([
-      'design',
-      'show',
+      'concepts',
+      'history',
       't',
       'extra',
       '--bogus',
@@ -277,7 +277,7 @@ describe('the capability commands refuse a word the verb does not take', () => {
     expect(err).toContain('--bogus');
     expect(err).toContain("'extra'");
     expect(err).toBe(
-      `cratylus ${refused('design', 'show', ['--bogus'], DESIGN.show, ['extra'])}\n`,
+      `cratylus ${refused('concepts', 'history', ['--bogus'], CONCEPTS.history, ['extra'])}\n`,
     );
   });
 });

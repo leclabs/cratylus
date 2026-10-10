@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R9RNFVAX1MJT2RGK5P39",
+  "at": "2026-10-10T05:49:41.525Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "illustrator",
+  "wording": "the agent that writes a cut's examples cold from its concepts alone, so its examples double as the test that the concepts carry their meaning.",
+  "builtFrom": [
+    "illustration"
+  ],
+  "reason": "decided in 0004: Work and work package",
+  "supersedes": []
+}

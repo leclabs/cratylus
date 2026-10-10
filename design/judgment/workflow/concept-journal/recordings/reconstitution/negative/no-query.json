@@ -1,0 +1,10 @@
+{
+  "name": "Recollects retirement without journal",
+  "target": "journal-first",
+  "events": [
+    {
+      "kind": "text",
+      "text": "The summary is out of date. Automatic renewal is retired. Automatic renewal can charge a customer without fresh consent. I will not work toward automatic renewal."
+    }
+  ]
+}

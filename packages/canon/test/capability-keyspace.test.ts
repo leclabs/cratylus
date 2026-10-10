@@ -22,13 +22,15 @@
 //     Replaced by the SUBSET direction below, which is the true statement.
 //
 // ── THE AXES THIS GATE DOES CHECK, each with its positive-control count ──────────
-//   1. PORT MODULE ⇄ KEYSPACE, as a BICONDITIONAL (4 in-keyspace controls, 1
-//      exempt control). A `ports/*.ts` module is outside the keyspace IFF its
-//      basename carries the `provisional-` prefix. Stated as a biconditional, and
-//      not as "…except the mailbox", so that it SELF-ARMS: a capability landing
-//      tomorrow as `ports/foo.ts` is convicted until it joins the keyspace, and a
-//      second hand-written exception cannot be quietly added, because there is no
-//      list to add it to. The prefix must also be EARNED — see leg 1c.
+//   1. PORT MODULE ⇒ KEYSPACE (1 in-keyspace control, 1 exempt control). A
+//      `ports/*.ts` module is outside the keyspace IFF its basename carries the
+//      `provisional-` prefix. Stated as that equivalence, and not as "…except the
+//      mailbox", so that it SELF-ARMS: a capability landing tomorrow as
+//      `ports/foo.ts` is convicted until it joins the keyspace, and a second
+//      hand-written exception cannot be quietly added, because there is no list to
+//      add it to. The prefix must also be EARNED — see leg 1c. A keyspace member
+//      needs no port module: `concepts` codes against no port, so the converse
+//      (every member has a `ports/<kebab>.ts`) is false of the corpus and DROPPED.
 //   2. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
 //      declaring a capability is a control). One-directional on purpose: a
 //      capability with no skill cell is legal.
@@ -129,9 +131,8 @@ function skillCapabilities(
 // mechanism works (meta-gate hazard 2).
 
 /**
- * AXIS 1 — the biconditional, both directions.
- *   · a `ports/<b>.ts` is in the keyspace ⟺ `<b>` is NOT `provisional-`-prefixed
- *   · every keyspace member has a `ports/<kebab(member)>.ts`
+ * AXIS 1 — a `ports/<b>.ts` is in the keyspace ⟺ `<b>` is NOT
+ * `provisional-`-prefixed. A keyspace member without a port module is legal.
  */
 function portKeyspaceViolations(
   capabilities: readonly string[],
@@ -150,9 +151,6 @@ function portKeyspaceViolations(
         `ports/${b}.ts is outside CAPABILITIES without the \`provisional-\` prefix — either add '${camel(b)}' to the keyspace or say the anchor is undiscovered by renaming it \`provisional-${b}.ts\``,
       );
   }
-  for (const c of capabilities)
-    if (!basenames.includes(kebab(c)))
-      out.push(`capability '${c}' has no ports/${kebab(c)}.ts module`);
   return out.sort();
 }
 
@@ -189,9 +187,11 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['eventTap', 'design']),
+      expect.arrayContaining(['eventTap', 'concepts']),
     );
-    expect(BASENAMES).toEqual(expect.arrayContaining(['event-tap', 'design']));
+    expect(BASENAMES).toEqual(
+      expect.arrayContaining(['event-tap', 'provisional-mailbox']),
+    );
     // The subset axis rests on the surviving skill cell that declares a capability.
     // One witness is the floor below which a dark read could pass it vacuously.
     expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(1);
@@ -244,13 +244,13 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic corpus that violates it', () => {
-    const caps = ['design', 'eventTap'];
+    const caps = ['concepts', 'eventTap'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
     // allowlist for it to be added to, so it is convicted by construction.
     expect(
-      portKeyspaceViolations(caps, ['design', 'event-tap', 'experimental-x']),
+      portKeyspaceViolations(caps, ['event-tap', 'experimental-x']),
     ).toHaveLength(1);
 
     // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the keyspace —
@@ -264,16 +264,14 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(
       portKeyspaceViolations(
         [...caps, 'provisionalX'],
-        ['design', 'event-tap', 'provisional-x'],
+        ['event-tap', 'provisional-x'],
       ),
     ).toHaveLength(1);
 
-    // AXIS 1, the other direction: a capability with no port module at all.
-    expect(portKeyspaceViolations(caps, ['design'])).toHaveLength(1);
-
-    // …and the clean corpus really is clean through the same function, so the three
+    // A keyspace member with no port module is legal: `concepts` has none.
+    // …and the clean corpus really is clean through the same function, so the two
     // convictions above are the predicate biting, not the predicate always firing.
-    expect(portKeyspaceViolations(caps, ['design', 'event-tap'])).toEqual([]);
+    expect(portKeyspaceViolations(caps, ['event-tap'])).toEqual([]);
 
     // AXIS 2: a cell forwarding to a capability no host binds.
     expect(

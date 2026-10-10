@@ -1,0 +1,20 @@
+{
+  "name": "Working on an alternative is not pursuing the retired concept",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The summary is out of date. Automatic renewal is retired. Automatic renewal can charge a customer without fresh consent. I will not work toward automatic renewal."
+    },
+    {
+      "kind": "text",
+      "text": "Next, I'll continue with reservation expiry instead of automatic renewal. I will design explicit opt-in rather than automatic renewal. I will build a fresh consent flow in place of automatic renewal. I will design a replacement for automatic renewal. I will consider reservation expiry (automatic renewal is retired — no longer part of our work)."
+    }
+  ]
+}

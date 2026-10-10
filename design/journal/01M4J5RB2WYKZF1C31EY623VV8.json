@@ -1,0 +1,11 @@
+{
+  "id": "01M4J5RB2WYKZF1C31EY623VV8",
+  "at": "2026-10-10T05:49:42.876Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "owned root",
+  "wording": "everything cratylus places on a host lives under one root it owns, and the harness's own surfaces only refer into it, so what cratylus placed is known by construction, never inferred file by file.",
+  "builtFrom": [],
+  "reason": "decided in 0021: Owned root",
+  "supersedes": []
+}

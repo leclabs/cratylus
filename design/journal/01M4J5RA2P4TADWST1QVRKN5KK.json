@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5RA2P4TADWST1QVRKN5KK",
+  "at": "2026-10-10T05:49:41.846Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "meaning-holder",
+  "wording": "the party who approves a context's examples; each context names its own, such as a product owner for a product and a creative for a film, so each meaning is confirmed by the authority it belongs to.",
+  "builtFrom": [
+    "bounded context"
+  ],
+  "reason": "decided in 0003: Bounded contexts",
+  "supersedes": []
+}

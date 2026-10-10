@@ -1,7 +1,8 @@
 // The immutability gate, driven over temporary git repositories it builds itself:
 // staged changes (the pre-commit reading) and commit ranges (the CI reading) that
-// modify, delete, rename or retype a record must refuse, naming the path; additions,
-// changes outside the records root, and a merge of two branches' records must pass.
+// modify, delete, rename or retype a record or a concept journal entry must refuse,
+// naming the path; additions, changes outside the protected roots, and a merge of
+// two branches' records must pass.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -14,6 +15,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { JOURNAL_DIR } from '../src/capabilities/concepts/journal.js';
 import {
   changes,
   immutabilityGate,
@@ -38,11 +40,19 @@ function git(cwd: string, ...args: string[]): string {
   ).trim();
 }
 
-/** A repository whose first commit holds one record; returns it and the record's path. */
-function repositoryWithRecord(): { repo: string; record: string } {
+/** Where a fresh file of each protected root goes: a record, or a journal entry. */
+const RECORD = () => `${RECORDS_ROOT}/concept/${ulid()}.json`;
+const ENTRY = () => `${JOURNAL_DIR}/${ulid()}.json`;
+
+/** A repository whose first commit holds one file at `fresh()`, a record unless
+ *  told otherwise; returns it and the file's path. */
+function repositoryWithRecord(fresh: () => string = RECORD): {
+  repo: string;
+  record: string;
+} {
   const repo = mkdtempSync(join(tmpdir(), 'immutability-gate-'));
   git(repo, 'init', '-q', '-b', 'main');
-  const record = put(repo, `${RECORDS_ROOT}/concept/${ulid()}.json`, '{"v":1}');
+  const record = put(repo, fresh(), '{"v":1}');
   git(repo, 'add', '-A');
   git(repo, 'commit', '-q', '-m', 'first record');
   return { repo, record };
@@ -67,9 +77,12 @@ function refusedStagedAndCommitted(repo: string): {
   return { staged, committed };
 }
 
-describe('immutability gate', () => {
-  it('a modified record REFUSES, naming its path', () => {
-    const { repo, record } = repositoryWithRecord();
+describe.each([
+  ['a record', RECORD],
+  ['a concept journal entry', ENTRY],
+] as const)('immutability gate over %s', (_, fresh) => {
+  it('a modified one REFUSES, naming its path', () => {
+    const { repo, record } = repositoryWithRecord(fresh);
     put(repo, record, '{"v":2}');
     expect(refusedStagedAndCommitted(repo)).toEqual({
       staged: [record],
@@ -77,8 +90,8 @@ describe('immutability gate', () => {
     });
   });
 
-  it('a deleted record REFUSES, naming its path', () => {
-    const { repo, record } = repositoryWithRecord();
+  it('a deleted one REFUSES, naming its path', () => {
+    const { repo, record } = repositoryWithRecord(fresh);
     rmSync(join(repo, record));
     expect(refusedStagedAndCommitted(repo)).toEqual({
       staged: [record],
@@ -86,18 +99,17 @@ describe('immutability gate', () => {
     });
   });
 
-  it('a renamed record REFUSES, naming the record it removed', () => {
-    const { repo, record } = repositoryWithRecord();
-    const moved = `${RECORDS_ROOT}/concept/${ulid()}.json`;
-    git(repo, 'mv', record, moved);
+  it('a renamed one REFUSES, naming the path it removed', () => {
+    const { repo, record } = repositoryWithRecord(fresh);
+    git(repo, 'mv', record, fresh());
     expect(refusedStagedAndCommitted(repo)).toEqual({
       staged: [record],
       committed: [record],
     });
   });
 
-  it('a type-changed record REFUSES, naming its path', () => {
-    const { repo, record } = repositoryWithRecord();
+  it('a type-changed one REFUSES, naming its path', () => {
+    const { repo, record } = repositoryWithRecord(fresh);
     rmSync(join(repo, record));
     symlinkSync('elsewhere.json', join(repo, record));
     expect(refusedStagedAndCommitted(repo)).toEqual({
@@ -106,9 +118,9 @@ describe('immutability gate', () => {
     });
   });
 
-  it('an added record passes', () => {
-    const { repo } = repositoryWithRecord();
-    const added = put(repo, `${RECORDS_ROOT}/concept/${ulid()}.json`, '{}');
+  it('an added one passes', () => {
+    const { repo } = repositoryWithRecord(fresh);
+    const added = put(repo, fresh(), '{}');
     git(repo, 'add', '-A');
     expect(changes(undefined, repo)).toEqual([{ status: 'A', path: added }]);
     expect(refusedStagedAndCommitted(repo)).toEqual({
@@ -116,7 +128,9 @@ describe('immutability gate', () => {
       committed: [],
     });
   });
+});
 
+describe('immutability gate', () => {
   it('the first commit of a repository, all additions, passes', () => {
     const repo = mkdtempSync(join(tmpdir(), 'immutability-gate-'));
     git(repo, 'init', '-q', '-b', 'main');
