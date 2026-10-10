@@ -1,0 +1,13 @@
+{
+  "id": "01M4J70D89TV14TSQK88CTB98T",
+  "at": "2026-10-10T06:11:35.817Z",
+  "kind": "decide",
+  "decisionId": "0029",
+  "context": "delivery",
+  "title": "Cut 8: delivery",
+  "situation": "Cuts of the workflow's plan, open when the design files were seeded into the journal (design/workflow.md, Cuts, at 24543f22); recorded open so that reconstitution reads back what remains, by the architect's ruling of 2026-10-10. A cut of the delivery context.",
+  "decision": "Realize owned root, upgrade, install and uninstall at user scope, and retiring the event tap.",
+  "consequences": "The event tap is retired from what cratylus delivers.",
+  "status": "open",
+  "supersedes": null
+}
