@@ -342,6 +342,12 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         'Print what would be placed and stop, writing nothing',
       ),
     )
+    .addOption(
+      new Option(
+        '--home <dir>',
+        "The home directory the harness's directory is under (default: your home directory)",
+      ),
+    )
     .action(
       async (opts: {
         harness?: string;
@@ -352,6 +358,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         yes?: boolean;
         verbose?: boolean;
         dryRun?: boolean;
+        home?: string;
       }) => {
         process.exitCode = await runInstall({
           harness: opts.harness,
@@ -363,6 +370,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           yes: opts.yes,
           verbose: opts.verbose,
           dryRun: opts.dryRun,
+          home: opts.home,
         });
       },
     );

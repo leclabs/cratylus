@@ -23,6 +23,7 @@ import {
   OMP_OVERLAY_FILE,
   agentToOmpMd,
   ompAgentRel,
+  ompCapabilityExtensions,
   ompHarnessAdapter,
   ompLaunchSurface,
 } from '../../src/adapters/omp/index.js';
@@ -524,5 +525,34 @@ describe('omp launch spec', () => {
       expect(prompt).not.toContain('## Required reading');
       expect(() => readFileSync(home.reads)).toThrow();
     });
+  });
+});
+
+describe('omp capability interface', () => {
+  it('emits one session module for the concept journal, placed where a plain omp loads it', () => {
+    const surface = ompHarnessAdapter.capabilitySurface?.() ?? [];
+    expect(surface.map((s) => [s.scope, s.filename])).toEqual([
+      [SESSION_SCOPE, 'cratylus-concepts.ts'],
+    ]);
+    expect(
+      ompHarnessAdapter.scopedRel?.('cratylus-concepts.ts', SESSION_SCOPE),
+    ).toBe('agent/extensions/cratylus-concepts.ts');
+  });
+
+  it('asks the installed command for the interface and carries none of its own', () => {
+    const [module] = ompCapabilityExtensions();
+    const content = module?.content ?? '';
+    expect(content).toContain('const COMMAND = "cratylus";');
+    expect(content).toContain('const CAPABILITY = "concepts";');
+    expect(content).toContain('[CAPABILITY, "--explain"]');
+    // No verb, journal location or entry field of the capability is spelled here.
+    for (const word of [
+      'supersede',
+      'retire',
+      'decide',
+      'design/journal',
+      'concept journal',
+    ])
+      expect(content).not.toContain(word);
   });
 });

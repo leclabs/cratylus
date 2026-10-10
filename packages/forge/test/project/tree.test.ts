@@ -65,11 +65,12 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
-    // OMP's launch spec, scoped session-hook modules and persona module, alongside
-    // the agent hook worker and skills.
+    // OMP's launch spec, scoped session-hook modules, persona module and the
+    // concept journal's tool module, alongside the agent hook worker and skills.
     expect(paths).toEqual(
       [
         'agents/probe.md',
+        `enforcing/_session/${CLI_BIN}-concepts.ts`,
         `enforcing/_session/${CLI_BIN}-session.ts`,
         'enforcing/_session/omp-agent',
         `enforcing/probe/${CLI_BIN}-persona-badge.ts`,

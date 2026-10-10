@@ -111,6 +111,19 @@ Claude Code `~/.claude/settings.json` (the guard hooks it registers, and the sta
 also links launch commands into `~/.local/bin`. The run names every host file it edits and every
 directory outside the harness's home that it writes to, and records all of it in the harness's
 deploy manifest (`.forge/deploy-manifest.json`), which is what lets uninstall take away exactly that.
+`--home <dir>` installs for the home `<dir>` in place of yours: the harness's files go under
+`<dir>/.claude` or `<dir>/.omp`, the shared files under `<dir>/.agents` and the runtime config in
+`<dir>/.cratylus.json`.
+
+On omp install also places the concept journal as a tool: one extension,
+`~/.omp/agent/extensions/cratylus-concepts.ts`, recorded in the manifest with the other session
+modules. Every omp session loads it, and at load it asks the `cratylus` on `PATH` to explain the
+concept journal (`cratylus concepts --explain`) and offers the one tool `concept_journal` composed
+from that answer: its description, a required `verb` among the explained verbs, and every explained
+parameter. A verb that reads asks for read approval, one that appends for write. A call runs that
+`cratylus concepts <verb> …` in the session's directory and returns its JSON; a refusal is the
+tool's error, in the command's own words. The extension holds nothing of the journal itself, so a
+newer `cratylus` package changes the tool in the next session without installing again.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
@@ -449,6 +462,7 @@ cratylus install [options]
 | `-y, --yes`                  | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal) |
 | `--verbose`                  | Also print the per-file detail of the run                                                                                                                                                      |
 | `--dry-run`                  | Print what would be placed and stop, writing nothing                                                                                                                                           |
+| `--home <dir>`               | The home directory the harness's directory is under (default: your home directory)                                                                                                             |
 
 ### `cratylus uninstall`
 

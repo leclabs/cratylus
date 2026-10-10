@@ -520,6 +520,20 @@ export interface HarnessAdapter {
    */
   launchSurface?(agents: readonly Agent[]): readonly HarnessProjection[];
   /**
+   * Emit the CAPABILITY INTERFACE: what offers the runtime's capabilities to this
+   * harness's agents as tools, staged like {@link launchSurface}'s output (`scope`
+   * the {@link SESSION_SCOPE}, so a plain session is offered them).
+   *
+   * A PORT, NEVER A COPY. What is emitted carries no description, verb, parameter or
+   * rule of a capability: at session load it asks the installed command to explain
+   * the capability and composes the tool from that answer alone, and every call runs
+   * that command. A newer installed runtime changes the tool in the next session,
+   * the emitted bytes unchanged.
+   *
+   * Absent ⇒ this harness is offered no capability as a tool.
+   */
+  capabilitySurface?(): readonly HarnessProjection[];
+  /**
    * The filename of this harness's GENERIC PERSONA LAUNCHER — the file
    * {@link launchSurface} emits at the {@link SESSION_SCOPE}, one for every persona,
    * which resolves the persona to launch from its own invoked name.

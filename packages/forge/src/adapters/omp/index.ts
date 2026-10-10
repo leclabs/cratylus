@@ -27,6 +27,8 @@ export {
   type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,
+  ompCapabilityExtensions,
+  ompCapabilityModule,
   ompDispatchIsolation,
   ompGuardrailExtensions,
   ompIsolationExtensions,
