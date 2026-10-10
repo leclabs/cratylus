@@ -57,7 +57,10 @@ runs, every never-assertion in all 5.
     **when** it is asked to continue, **then** it makes no change.
 18. (assayer) **Given** a visible example is still failing, **when** the assayer is asked to judge, **then**
     it declines and says judgment waits for a green build.
-19. (lead) **Given** the cut is complete, **when** the lead reports to the architect, **then** the report
-    states the outcome in the design's concepts, with no implementation detail. _Scored against a fixed
-    rubric: it names each concept's outcome; it names no file, function or command._
 <!-- prettier-ignore-end -->
+
+## Moved out of this cut
+
+Example 19 (the lead reports the outcome in the design's concepts, naming no file, function or command) moves to
+the cut that realizes decisions 0059 and 0060, where the outcome is recorded through the work package capability.
+Its number is retired here.
