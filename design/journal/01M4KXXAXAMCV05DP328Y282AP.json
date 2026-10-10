@@ -1,0 +1,14 @@
+{
+  "id": "01M4KXXAXAMCV05DP328Y282AP",
+  "at": "2026-10-10T22:11:06.794Z",
+  "kind": "decide",
+  "decisionId": "0065",
+  "context": "workflow",
+  "title": "Leakage precision, realized and awaiting integration",
+  "situation": "The first leakage run over the whole design warned 69 times: none on concepts, 55 on decisions, 14 on examples, nearly all expected (realization decisions naming what they constrain; delivery's examples naming omp). Realized on feature/leakage-precision and accepted by both assayers: decide --kind meaning|realization, a classify verb recording a decision's kind as an entry of its own (a reclassification needs a reason), and a context subject's words exempting the plain word only, never a command, code span or flag containing it. A runtime older than this one refuses a journal that holds a classify entry.",
+  "decision": "Leakage warns only where realization replaces meaning: a decision states whether it constrains realization, and one that does is not warned for naming what it constrains; the plain words a context's own subject names count as that context's own words.",
+  "consequences": "On integration with the execution cut: install first, so the host's runtime knows classify; only then classify the realization decisions, accept this decision, and supersede implementation leakage and decision to carry the kind; then run leakage over the design again and read the remaining warnings.",
+  "status": "open",
+  "supersedes": "0058",
+  "supersedesEntry": "01M4KR2EV4NWKS3Y1E19DTSZEY"
+}
