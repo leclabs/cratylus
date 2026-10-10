@@ -137,8 +137,10 @@ no `--config` overlay naming it, until the corpus re-cut gives those modules a h
 
 **The definition is the single source of truth.** OMP reads `agent/agents/<name>.md` when it
 dispatches an agent as a subagent, and `omp --agent <name>` resolves the same declaration through
-omp's own discovery to start it as a main session, through the cratylus extension. One definition,
-no launcher, nothing to drift.
+omp's own discovery to start it as a main session, through the cratylus extension, holding the whole
+declaration as dispatch resolves it for a child: its text, model, effort, `autoload-skills`,
+`spawns`, `read-summarize`, `advisor` and `prewalk`, and no default personality. One definition, no
+launcher, nothing to drift.
 
 ## The harness adapter port
 

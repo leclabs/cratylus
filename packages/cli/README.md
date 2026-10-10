@@ -134,21 +134,32 @@ The same extension starts a session as any agent declaration omp discovers: `omp
 `task` dispatch runs: `.omp/agents/` nearest the session's directory, then `~/.omp/agent/agents/`,
 then extension packages, plugins and omp's bundled agents, the first of a name winning. A declaration
 is a markdown file whose front matter gives `name`, `description`, `model` (an omp model selector),
-`thinking-level`, optionally `tools`, and `mark`, a short string such as an emoji, followed by its
-body. The session runs on the model and thinking level omp's own `task` dispatch would run the
-declaration on, resolved by omp's own resolver: its `model` selectors, a role alias such as
-`@slow` expanded to the host's `modelRoles` entry, and the thinking level a selector carries
-(`provider/model:high`, written in the declaration or in the role's configured value) ahead of
-`thinking-level`. A `--model` or `--thinking` you pass yourself wins over the declaration's, each for
-its own part, and the declaration's body is carried either way. Every turn's system prompt carries
-the declaration, its name and description as a sentence and then its body; and the status line
-shows `<mark> <name>`, or the name alone without a mark (a bundled omp agent, such as `scout`, has
-no mark). The declaration is read afresh for each new session. The tools stay yours: the extension
-never changes the session's tools, so `omp --agent <name> --tools …` holds exactly what plain
-`omp --tools …` holds, and a declaration's `tools` are for dispatch only. A name omp does not
-discover ends startup with a non-zero exit and `cratylus: Unknown agent "<name>"`, before any
-session starts. Without `--agent`, and in subagent sessions, the extension adds nothing to the
-prompt or the status line.
+`thinking-level`, optionally `tools`, `spawns`, `autoload-skills`, `read-summarize`, `advisor` and
+`prewalk`, and `mark`, a short string such as an emoji, followed by its body. The session holds the
+whole declaration as omp's own `task` dispatch would give it to a child, resolved by omp's own
+resolvers. It runs on the declaration's model and thinking level: its `model` selectors, a role
+alias such as `@slow` expanded to the host's `modelRoles` entry, and the thinking level a selector
+carries (`provider/model:high`, written in the declaration or in the role's configured value) ahead
+of `thinking-level`. Every turn's system prompt carries the declaration, its name and description as
+a sentence and then its body, followed by the full instructions of each skill `autoload-skills` names
+that omp discovers for the session (a name it does not know is skipped, as dispatch skips it). The
+session runs without omp's default personality, as a dispatched child does; with summarised reads on
+or off as `read-summarize` says (unsaid, as your settings have it); with the advisor and the
+pre-planning hand-off (prewalk) the declaration names, `task.agentAdvisor` and `task.agentPrewalk`
+entries first, and neither when it names none, as for a child. It may dispatch only the agents
+`spawns` names (`*` or no `spawns` is any agent, an empty list none); omp refuses any other with
+`Cannot spawn '<name>'. Allowed: …`. These are held as session-only overrides, never written to your
+configuration, and the declaration wins over your configuration files as it does for a child. A
+`--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` or `--prewalk-into` you pass
+yourself wins over the declaration, each for its own part, and the rest of the declaration is held
+either way. The status line shows `<mark> <name>`, or the name alone without a mark (a bundled omp
+agent, such as `scout`, has no mark). The declaration is read afresh for each new session. The tools
+stay yours: the extension never changes the session's tools, so `omp --agent <name> --tools …`
+holds exactly what plain `omp --tools …` holds (without `task` the session cannot dispatch at all),
+and a declaration's `tools` are for dispatch only. A name omp does not discover ends startup with a
+non-zero exit and `cratylus: Unknown agent "<name>"`, before any session starts. Without `--agent`,
+and in subagent sessions, the extension adds nothing to the prompt, the status line or the session's
+settings.
 
 Claude Code reads its settings, agents, skills and hooks from `$CLAUDE_CONFIG_DIR` when that is set
 and not empty, and from `~/.claude` otherwise. Install and uninstall go where Claude Code reads: with
@@ -282,8 +293,9 @@ and warns where it falls short; they are not the same, and this is what a user m
   at 10,000 characters, so a skill over the cap is named under `## Required reading` by its hook
   instead of printed, and the agent loads it with the Skill tool on demand. Install warns once per
   such skill and weighs it against the home it installs under, since the path is part of the
-  output. An `omp --agent` session reaches its skills through omp's own skill discovery, as any
-  omp session does.
+  output. An `omp --agent` session starts with the full instructions of the skills its
+  declaration's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
+  through omp's own skill discovery, as any omp session does.
 - **Guards.** A guard judges an act against the contract of the agent that performs it, and only in
   the main session of an agent that composes it, never in a subagent that agent dispatches. On omp
   a guard composed for one agent is placed in that agent's own scope, which an `omp --agent`
