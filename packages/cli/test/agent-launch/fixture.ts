@@ -157,7 +157,13 @@ export function fixture(
             api: 'openai-completions',
             baseUrl,
             apiKey: 'fixture-key-not-a-credential',
-            models: ['base', 'declared', 'adviser', 'fast'].map((id) => ({
+            models: [
+              'base',
+              'declared',
+              'adviser',
+              'fast',
+              'implementation',
+            ].map((id) => ({
               id,
               name: id,
               reasoning: true,
@@ -419,12 +425,13 @@ export const wholeDeclaration: Declaration = {
   name: 'estuary-chief',
   body: 'Coordinate the quartz estuary survey from the northern observatory.',
   mark: 'EC',
-  tools: ['read', 'task'],
+  tools: ['read', 'write', 'task'],
   spawns: ['estuary-east', 'estuary-west'],
   skills: ['buoy-order', 'tidal-units'],
   readSummarize: false,
   advisor: 'fixture/adviser',
-  prewalk: 'fixture/fast',
+  // Distinct from smol: arming omp's default must not satisfy the declaration.
+  prewalk: 'fixture/implementation',
 };
 export const dispatchTargets = [
   'estuary-east',

@@ -145,10 +145,12 @@ export async function exercise(
     target?: string;
     targetBody?: string;
     compact?: boolean;
+    prewalk?: boolean;
   } = {},
 ): Promise<ExerciseResult> {
   let parentIssued = false;
   let subjectIssued = false;
+  let implementationIssued = false;
   const server = await provider((request) => {
     // Routing-hint compression and advisor calls are not the acting session.
     if (!request.tools?.length || request.model === 'adviser')
@@ -189,6 +191,17 @@ export async function exercise(
       subjectIssued = true;
       return { tool: 'read', args: { path: '.' } };
     }
+    // Exercise omp's actual hand-off, not the extension's prewalk setting.
+    if (subject && options.prewalk && !implementationIssued) {
+      implementationIssued = true;
+      return {
+        tool: 'write',
+        args: {
+          path: 'prewalk-observation.txt',
+          content: 'Survey recorded.\n',
+        },
+      };
+    }
     return child
       ? { tool: 'yield', args: { data: 'Observation complete.' } }
       : { text: 'Observation complete. The estuary survey is recorded.' };
@@ -203,7 +216,11 @@ export async function exercise(
         (frame) => !previous.has(frame) && frame.type === 'agent_end',
       );
     }
-    await turn('Record the session without changing files.');
+    await turn(
+      options.prewalk
+        ? 'Record the session, then write prewalk-observation.txt.'
+        : 'Record the session without changing files.',
+    );
     let afterCompaction: Request[] = [];
     if (options.compact) {
       await session.command({

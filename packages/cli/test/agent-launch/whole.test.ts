@@ -41,6 +41,40 @@ async function defaultPersonality(f: Fixture) {
   return [personality];
 }
 
+function assertPrewalk(result: ExerciseResult, enabled: boolean) {
+  expect
+    .soft(
+      result.observation.prewalkArmed,
+      `live pre-planning armed: ${enabled}`,
+    )
+    .toBe(enabled);
+  expect
+    .soft(
+      result.observations.some((observation) =>
+        observation.messages?.some(
+          (message) =>
+            message.role === 'toolResult' &&
+            'toolName' in message &&
+            message.toolName === 'write' &&
+            'isError' in message &&
+            message.isError === false,
+        ),
+      ),
+      'omp completed the first write that triggers the hand-off',
+    )
+    .toBe(true);
+  expect
+    .soft(
+      result.requests.at(-1)?.model,
+      'provider target after first write, not the configured smol default',
+    )
+    .toBe(
+      enabled
+        ? d.prewalk!.toString().replace('fixture/', '')
+        : result.observation.model.id,
+    );
+}
+
 function assertOtherSettings(result: ExerciseResult, personality: string[]) {
   const context = JSON.stringify(
     result.requests.map((request) => request.messages),
@@ -61,12 +95,7 @@ function assertOtherSettings(result: ExerciseResult, personality: string[]) {
   expect
     .soft(result.observation.settings.advisorModel, 'declared advisor model')
     .toBe('fixture/adviser');
-  expect
-    .soft(
-      result.observation.prewalkArmed || result.observation.settings.prewalk,
-      'pre-planning held by omp',
-    )
-    .toBe(true);
+  assertPrewalk(result, true);
   for (const block of personality)
     expect
       .soft(context, 'default personality absent')
@@ -154,9 +183,13 @@ describe('agent launch — whole declaration visible examples', () => {
         f.declaration({
           ...d,
           advisor: enabled ? 'fixture/adviser' : false,
-          prewalk: enabled ? 'fixture/fast' : false,
+          prewalk: enabled ? d.prewalk : false,
         });
-        const result = await exercise(f, launch);
+        const result = await exercise(f, {
+          ...launch,
+          tools: ['read', 'write'],
+          prewalk: true,
+        });
         expect
           .soft(result.observation.settings.advisor, `advisor ${enabled}`)
           .toBe(enabled);
@@ -164,13 +197,7 @@ describe('agent launch — whole declaration visible examples', () => {
           expect
             .soft(result.observation.settings.advisorModel)
             .toBe('fixture/adviser');
-        expect
-          .soft(
-            result.observation.prewalkArmed ||
-              result.observation.settings.prewalk,
-            `prewalk ${enabled}`,
-          )
-          .toBe(enabled);
+        assertPrewalk(result, enabled);
       }
     } finally {
       f.dispose();
@@ -197,10 +224,11 @@ describe('agent launch — whole declaration visible examples', () => {
     const f = wholeFixture();
     try {
       const personality = await defaultPersonality(f);
-      const plain = await inspect(f, { tools: ['read', 'grep'] });
+      const plain = await inspect(f, { tools: ['read', 'grep', 'write'] });
       const result = await exercise(f, {
         ...launch,
-        tools: ['read', 'grep'],
+        tools: ['read', 'grep', 'write'],
+        prewalk: true,
         extra: ['--model', 'fixture/base', '--thinking', 'low'],
         target: dispatchTargets[0],
         targetBody: `Only ${dispatchTargets[0]} records the copper tide gauge.`,
@@ -288,16 +316,22 @@ describe('agent launch — whole declaration visible examples', () => {
     }
   });
 
-  it('8: launch and native dispatch carry the same whole declaration under the same grant', async () => {
+  // Parity binds every value omp dispatch honours: false read-summary and named spawns.
+  it('8: launch and dispatch agree on every honoured declaration value under the same grant', async () => {
     const f = wholeFixture();
     try {
       const personality = await defaultPersonality(f);
-      const main = await exercise(f, { ...launch, tools: d.tools });
+      const main = await exercise(f, {
+        ...launch,
+        tools: d.tools,
+        prewalk: true,
+      });
       const child = await exercise(f, {
         skills: true,
         tools: d.tools,
         dispatched: d.name,
         subjectBody: d.body,
+        prewalk: true,
       });
       for (const result of [main, child]) {
         expect
@@ -320,12 +354,8 @@ describe('agent launch — whole declaration visible examples', () => {
         .soft(main.observation.settings.advisorModel)
         .toEqual(child.observation.settings.advisorModel);
       expect
-        .soft(
-          main.observation.prewalkArmed || main.observation.settings.prewalk,
-        )
-        .toBe(
-          child.observation.prewalkArmed || child.observation.settings.prewalk,
-        );
+        .soft(main.observation.prewalkArmed)
+        .toBe(child.observation.prewalkArmed);
       for (const target of dispatchTargets) {
         const attempt = {
           tools: d.tools,
