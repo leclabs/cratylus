@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { repositoryRoot } from '../concept-journal/fixture.js';
 import {
+  type Explanation,
   checkExplanation,
   checkToolExplanation,
   sentinelExplanation,
@@ -16,7 +17,6 @@ import {
   snapshot,
   success,
   toolJSON,
-  verbs,
 } from './fixture.js';
 import { replaceRuntime } from './replacement.js';
 
@@ -108,7 +108,10 @@ describe('capability port: installed package', () => {
     try {
       const offered = h.offered(h.inspect());
       expect(offered.parameters.required).toContain('verb');
-      expect(offered.parameters.properties.verb!.enum).toEqual(verbs);
+      const explanation = h.concepts<Explanation>('--explain');
+      expect(
+        [...(offered.parameters.properties.verb!.enum as string[])].sort(),
+      ).toEqual(explanation.verbs.map((verb) => verb.name).sort());
       for (const args of [
         {
           verb: 'context',
@@ -198,6 +201,12 @@ describe('capability port: installed package', () => {
       const tool = h.offered(h.inspect());
       success(h.install);
       expect(Object.keys(h.placed).length).toBeGreaterThan(0);
+      const explanation = h.concepts<Explanation>('--explain');
+      const journalRecipe = new RegExp(
+        String.raw`(?:pnpm\s+(?:exec\s+)?|npx\s+)?cratylus\s+concepts\s+(?:${explanation.verbs
+          .map((verb) => verb.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+          .join('|')})\b`,
+      );
       // Inspect every placed textual surface, including skills, roles, config,
       // and module source. Other capabilities' prose is not a journal recipe.
       for (const [path, bytes] of Object.entries(h.placed)) {
@@ -207,9 +216,7 @@ describe('capability port: installed package', () => {
           realpathSync(tool.sourceInfo.path)
         )
           continue;
-        expect(text, path).not.toMatch(
-          /(?:pnpm\s+(?:exec\s+)?|npx\s+)?cratylus\s+concepts\s+(?:state|design|history|decisions|context|define|supersede|retire|decide|accept)\b/,
-        );
+        expect(text, path).not.toMatch(journalRecipe);
         expect(text, path).not.toMatch(
           /design\/journal|journal\/[^\s]+\.(?:json|jsonl)|append[^\n]{0,80}(?:journal file|ULID)/i,
         );

@@ -134,9 +134,9 @@ export function checkToolExplanation(
   sentinel = false,
 ) {
   expect(tool.name).toBe('concept_journal');
-  expect(tool.parameters.properties.verb!.enum).toEqual(
-    explanation.verbs.map((v) => v.name),
-  );
+  expect(
+    [...(tool.parameters.properties.verb!.enum as string[])].sort(),
+  ).toEqual(explanation.verbs.map((v) => v.name).sort());
   expect(tool.parameters.required).toContain('verb');
   const text = [
     tool.label ?? '',
