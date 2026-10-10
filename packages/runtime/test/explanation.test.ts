@@ -57,6 +57,7 @@ const VERBS = [
   'design',
   'history',
   'decisions',
+  'leakage',
   'context',
   'define',
   'supersede',
@@ -71,6 +72,7 @@ const PARAMETERS: Record<string, string[]> = {
   design: ['context'],
   history: ['concept', 'context'],
   decisions: ['context', 'open'],
+  leakage: ['context'],
   context: ['context', 'subject', 'relation'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
@@ -125,7 +127,7 @@ describe('concepts --explain', () => {
         'parameters',
       ]);
       expect(explained.effect).toBe(
-        ['state', 'design', 'history', 'decisions'].includes(verb)
+        ['state', 'design', 'history', 'decisions', 'leakage'].includes(verb)
           ? 'reads'
           : 'appends',
       );
@@ -162,7 +164,7 @@ describe('concepts --explain', () => {
     expect(positional('context')).toEqual(['context']);
     expect(positional('decide')).toEqual(['id']);
     expect(positional('accept')).toEqual(['id']);
-    for (const verb of ['state', 'design', 'decisions'])
+    for (const verb of ['state', 'design', 'decisions', 'leakage'])
       expect(positional(verb), verb).toEqual([]);
   });
 
@@ -196,6 +198,7 @@ describe('concepts --explain', () => {
       design: 'conceptual design',
       history: 'concept',
       decisions: 'decision',
+      leakage: 'implementation leakage',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
@@ -368,6 +371,7 @@ describe('what the explanation calls required is what the verb refuses without',
     design: { context: 'booking' },
     history: { concept: 'slot', context: 'booking' },
     decisions: { context: 'booking', open: '' },
+    leakage: { context: 'booking' },
     context: { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' },
     define: {
       concept: 'window',
