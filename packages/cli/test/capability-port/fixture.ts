@@ -49,7 +49,7 @@ export interface ToolResult {
 }
 export interface Wiring {
   active: string[];
-  registered: string[];
+  registered: { name: string; path: string }[];
   tools: ToolInfo[];
   results: { args: Args; approval: string; result: ToolResult }[];
   observerError?: string;
@@ -259,11 +259,17 @@ export function host(): Host {
     ).toBe(true);
     const wiring: Wiring = JSON.parse(readFileSync(output, 'utf8'));
     expect(wiring.observerError).toBeUndefined();
-    if (explicit && wiring.tools.some((t) => t.name === 'concept_journal'))
+    if (explicit && wiring.tools.some((t) => t.name === 'concept_journal')) {
+      // Architect's decision 0006 ruling: omp's own built-in extensions also
+      // register tools under --no-extensions. Only this adapter's provenance
+      // belongs to the one-capability-tool assertion.
       expect(
-        wiring.registered,
+        wiring.registered
+          .filter((registration) => registration.path === adapter)
+          .map((registration) => registration.name),
         'the adapter registers one capability tool',
       ).toEqual(['concept_journal']);
+    }
     return wiring;
   }
   function offered(wiring: Wiring, names = ['concept_journal']) {

@@ -87,7 +87,10 @@ export default function observe(pi: API) {
           {
             active: pi.getActiveTools(),
             tools,
-            registered: [...entries.keys()],
+            registered: [...entries].map(([name, entry]) => ({
+              name,
+              path: entry.sourceInfo.path,
+            })),
             results,
           },
           null,

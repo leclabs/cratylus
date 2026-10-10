@@ -12,17 +12,21 @@ export interface Definition {
     ctx: unknown,
   ): Promise<unknown>;
 }
+export interface RegisteredTool {
+  definition: Definition;
+  sourceInfo: { path: string };
+}
 interface RegistrationAPI {
-  extension: { tools: Map<string, { definition: Definition }> };
+  extension: { tools: Map<string, RegisteredTool> };
   registerTool(tool: Definition): void;
 }
 const registryKey = Symbol.for('cratylus.cut6.observed-omp-registry');
 // Omp may import a CLI extension and its transitive import under different URLs.
 // This harness-owned symbol shares observations, never registrations or behavior.
 const store = globalThis as typeof globalThis & {
-  [registryKey]?: Map<string, { definition: Definition }>;
+  [registryKey]?: Map<string, RegisteredTool>;
 };
-store[registryKey] ??= new Map<string, { definition: Definition }>();
+store[registryKey] ??= new Map<string, RegisteredTool>();
 export const entries = store[registryKey];
 export default function tap(pi: RegistrationAPI) {
   const prototype = Object.getPrototypeOf(pi) as RegistrationAPI;

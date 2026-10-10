@@ -1,6 +1,6 @@
-// Independent harness control: never a stand-in for concept_journal. This
-// proves the observer reaches omp's actual registered definition and real cwd.
-import { mkdirSync, writeFileSync } from 'node:fs';
+// Independent harness controls. Journal-named stand-ins below exercise only the
+// registration check, never journal behavior or any product example.
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { host, shellTools, toolJSON } from './fixture.js';
@@ -53,6 +53,76 @@ it('package control: npm replaces the runtime package without a workspace link',
       ...before,
       cut6Runtime: 'newer-installed-package',
     });
+  } finally {
+    h.dispose();
+  }
+});
+
+function registrationHost(names: string[]) {
+  const h = host();
+  // Isolate these controls from whatever the current build installs.
+  rmSync(h.home, { recursive: true, force: true });
+  const directory = join(h.home, '.omp/agent/extensions');
+  mkdirSync(directory, { recursive: true });
+  if (names.length) {
+    writeFileSync(
+      join(directory, 'registration-control.ts'),
+      `export default function registrationControl(pi) {
+        for (const name of ${JSON.stringify(names)}) {
+          pi.registerTool({
+            name, label: name, description: 'Registration control, not journal behavior.',
+            parameters: pi.typebox.Type.Object({ verb: pi.typebox.Type.String() }),
+            approval: 'read',
+            async execute() { throw new Error('Registration controls must not execute'); }
+          });
+        }
+      }`,
+    );
+  }
+  return h;
+}
+
+it('registration provenance control: omp-owned tools do not count as adapter tools', () => {
+  const h = registrationHost(['concept_journal']);
+  try {
+    const wiring = h.inspect();
+    const tool = h.offered(wiring);
+    expect(
+      wiring.registered
+        .filter((registration) => registration.path === tool.sourceInfo.path)
+        .map((registration) => registration.name),
+    ).toEqual(['concept_journal']);
+    expect(
+      wiring.registered.some(
+        (registration) => registration.path !== tool.sourceInfo.path,
+      ),
+    ).toBe(true);
+  } finally {
+    h.dispose();
+  }
+});
+
+it('registration provenance negative: a second adapter tool is refused', () => {
+  const h = registrationHost(['concept_journal', 'cut6_extra_tool']);
+  try {
+    expect(() => h.inspect()).toThrow(
+      'the adapter registers one capability tool',
+    );
+  } finally {
+    h.dispose();
+  }
+});
+
+it('registration provenance negative: no installed adapter is refused', () => {
+  const h = registrationHost([]);
+  try {
+    const wiring = h.inspect();
+    expect(wiring.tools.some((tool) => tool.name === 'concept_journal')).toBe(
+      false,
+    );
+    expect(() => h.offered(wiring)).toThrow(
+      'installed omp must offer concept_journal',
+    );
   } finally {
     h.dispose();
   }
