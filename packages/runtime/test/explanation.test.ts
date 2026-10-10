@@ -264,9 +264,9 @@ describe('concepts --explain', () => {
 
   it('reads --explain given as a flag’s value as that value, never as the request', async () => {
     const repo = mkdtempSync(join(tmpdir(), 'explain-'));
-    execFileSync('git', ['init', '-q'], { cwd: repo });
     const cwd = process.cwd();
     try {
+      execFileSync('git', ['init', '-q'], { cwd: repo });
       process.chdir(repo);
       const { code, out } = await run([
         'concepts',

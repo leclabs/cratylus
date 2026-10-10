@@ -6,19 +6,25 @@
 // is not. FALSIFIER — a read-then-delete claim DESTROYS deposits that land in its gap, and
 // duplicates what two drainers read at once; this file fails on exactly that.
 
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { EnvelopeStore } from '../src/capabilities/provisional-mailbox/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
 
+const scratch: string[] = [];
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'cratylus-mailbox-'));
+  const d = mkdtempSync(join(tmpdir(), 'cratylus-mailbox-'));
+  scratch.push(d);
+  return d;
 }
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
 
 describe('accept 2: the drain is atomic under concurrent producers', () => {
   it('destroys nothing and duplicates nothing while producers race the claim', async () => {

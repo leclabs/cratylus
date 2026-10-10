@@ -17,6 +17,7 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -74,6 +75,16 @@ afterAll(() => {
   vi.unstubAllEnvs();
 });
 
+const scratch: string[] = [];
+function tmp(): string {
+  const d = mkdtempSync(join(tmpdir(), 'cratylus-event-tap-'));
+  scratch.push(d);
+  return d;
+}
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 /** Drive the verb surface with the host config a deployed host would have. */
 const tap = (argv: string[]): ReturnType<typeof dispatchEventTap> =>
   dispatchEventTap(argv, { config: CONFIG });
@@ -93,7 +104,7 @@ interface Settings {
 }
 
 function fixture(): { settingsPath: string; sinkPath: string } {
-  const dir = mkdtempSync(join(tmpdir(), 'cratylus-event-tap-'));
+  const dir = tmp();
   return {
     settingsPath: join(dir, '.claude', 'settings.json'),
     sinkPath: join(dir, 'capture.log'),
@@ -441,10 +452,7 @@ describe('tap on an ACT event (a native event narrowed to the tool that performs
   /** The claude stanza as `deploy` writes it: plain names under `native`, and each
    *  act's ⟨event, matcher⟩ under `acts`; read back by the runtime's own loader. */
   function deployedConfig(): RuntimeConfig {
-    const path = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
-      'config.json',
-    );
+    const path = join(tmp(), 'config.json');
     writeFileSync(
       path,
       JSON.stringify({
@@ -646,10 +654,7 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
     // The old flat shape: one `native` map under `events`, for every harness. It is
     // not read, so this host has a vocabulary and no stanza for claude, and the tap
     // refuses rather than attaching through a map that may be another harness's.
-    const path = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
-      'config.json',
-    );
+    const path = join(tmp(), 'config.json');
     writeFileSync(
       path,
       JSON.stringify({
@@ -706,10 +711,7 @@ describe('a flag the verb does not take is refused before the verb acts', () => 
    *  that holds none. */
   function unconfigured(argv: string[]): EventTapResult {
     const prior = process.env[RUNTIME_CONFIG_ENV];
-    process.env[RUNTIME_CONFIG_ENV] = join(
-      mkdtempSync(join(tmpdir(), 'cratylus-event-tap-')),
-      'none.json',
-    );
+    process.env[RUNTIME_CONFIG_ENV] = join(tmp(), 'none.json');
     try {
       return dispatchEventTap(argv);
     } finally {

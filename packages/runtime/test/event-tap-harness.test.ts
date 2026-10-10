@@ -3,10 +3,10 @@
 // The environment is injected (`opts.env`) rather than mutated, so each case names
 // the invoking context it means.
 
-import { existsSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import {
   dispatchEventTap,
   invokingHarness,
@@ -22,8 +22,14 @@ const CONFIG: RuntimeConfig = {
 
 const OMP_ENV = { OMPCODE: '1' };
 
+const made: string[] = [];
+afterAll(() => {
+  for (const d of made) rmSync(d, { recursive: true, force: true });
+});
+
 function scratch(): { settings: string; sink: string } {
   const dir = mkdtempSync(join(tmpdir(), 'cratylus-event-tap-harness-'));
+  made.push(dir);
   return {
     settings: join(dir, '.omp', 'settings.json'),
     sink: join(dir, 'capture.log'),
