@@ -13,3 +13,6 @@ Context: workflow. Concept: implementation leakage. Decision in force: 0058. Con
    treated as stating meaning and warned for naming a tool.
 5. **Given** a decision recorded before kinds existed, **when** its kind is recorded afterwards, as an entry of
    its own that leaves the decision's record unchanged, **then** it is inspected as that kind from then on.
+6. **Given** a context whose subject names a word, **when** an entry in it names that word as a plain word, and
+   another entry uses the same word inside a command, a code span or a flag, **then** the plain word raises no
+   warning and the command, code span or flag is warned.
