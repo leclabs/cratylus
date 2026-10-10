@@ -1,5 +1,7 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { expect } from 'vitest';
+import type { Fixture, LaunchOptions } from './fixture.js';
 
 export interface Request {
   model: string;
@@ -69,4 +71,51 @@ export async function provider(reply: (request: Request) => Reply) {
       server.close();
     },
   };
+}
+
+// Native task dispatch remains the oracle: this helper only scripts transport
+// and returns the passive observer's child turn.
+export async function dispatch(
+  f: Fixture,
+  name: string,
+  options: LaunchOptions = {},
+) {
+  const server = await provider((request) => {
+    if (request.tools?.some((tool) => tool.function.name === 'yield'))
+      return {
+        tool: 'yield',
+        args: { data: { summary: 'Recorded.', files: [], architecture: '' } },
+      };
+    if (request.messages.some((message) => message.role === 'tool'))
+      return { text: 'Dispatch complete.' };
+    return {
+      tool: 'task',
+      args: {
+        context: 'Record the declaration.',
+        tasks: [
+          {
+            agent: name,
+            task: 'Return the observation.',
+            solutionSpace: 'Do not edit files.',
+          },
+        ],
+      },
+    };
+  });
+  f.models(server.baseUrl);
+  const session = f.launch({ ...options, inspect: false, tools: ['task'] });
+  try {
+    await session.command({ type: 'prompt', message: 'Dispatch the task.' });
+    await session.waitFor((frame) => frame.type === 'agent_end');
+    const child = f
+      .observed()
+      .find((item) => item.kind === 'sub' && item.phase === 'turn');
+    expect(child, JSON.stringify(session.frames)).toBeDefined();
+    expect(server.errors).toEqual([]);
+    return { child: child!, requests: server.requests };
+  } finally {
+    session.stop();
+    await session.done;
+    server.close();
+  }
 }

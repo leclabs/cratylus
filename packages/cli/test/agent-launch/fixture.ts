@@ -18,7 +18,7 @@ export interface Declaration {
   name: string;
   body: string;
   model?: string;
-  effort?: string;
+  effort?: string | null;
   mark?: string;
   tools?: string[];
 }
@@ -52,6 +52,7 @@ export interface LaunchOptions {
   onlyInstalled?: boolean;
   cwd?: string;
   resume?: string;
+  modelFlags?: boolean;
 }
 export interface Session {
   args: string[];
@@ -71,12 +72,14 @@ export interface Fixture {
   observer: string;
   observations: string;
   models(baseUrl?: string): void;
+  configure(config: Record<string, unknown>): void;
+  configuration(): Record<string, unknown>;
   declaration(d: Declaration, directory?: string): string;
   launch(options?: LaunchOptions): Session;
   observed(): Observation[];
   dispose(): void;
 }
-export function fixture(): Fixture {
+export function fixture(options: { config?: string } = {}): Fixture {
   const root = mkdtempSync(join(tmpdir(), 'agent-launch-'));
   const home = join(root, 'home');
   const cwd = join(root, 'project');
@@ -98,6 +101,11 @@ export function fixture(): Fixture {
     GIT_CONFIG_NOSYSTEM: '1',
     GIT_CONFIG_GLOBAL: '/dev/null',
   };
+  const configFile = join(home, '.omp/agent/config.yml');
+  if (options.config !== undefined) {
+    mkdirSync(dirname(configFile), { recursive: true });
+    writeFileSync(configFile, options.config);
+  }
   const installed = spawnSync(
     'cratylus',
     [
@@ -152,7 +160,7 @@ export function fixture(): Fixture {
       name: d.name,
       description: `Fixture declaration ${d.name}`,
       model: d.model ?? 'fixture/declared',
-      'thinking-level': d.effort ?? 'high',
+      ...(d.effort === null ? {} : { 'thinking-level': d.effort ?? 'high' }),
       ...(d.mark ? { mark: d.mark } : {}),
       ...(d.tools ? { tools: d.tools } : {}),
     };
@@ -170,10 +178,9 @@ export function fixture(): Fixture {
     const args = [
       '--mode',
       'rpc',
-      '--model',
-      'fixture/base',
-      '--thinking',
-      'low',
+      ...(options.modelFlags === false
+        ? []
+        : ['--model', 'fixture/base', '--thinking', 'low']),
       '--no-skills',
       '--no-rules',
       '--no-lsp',
@@ -218,6 +225,24 @@ export function fixture(): Fixture {
     observer,
     observations,
     models,
+    configure: (config) =>
+      writeFileSync(configFile, JSON.stringify(config, null, 2)),
+    configuration: () => {
+      // Parse the fixture home's actual YAML, including install's edits, with
+      // the same Bun YAML parser available to the real omp executable.
+      const parsed = spawnSync(
+        'bun',
+        [
+          '-e',
+          'console.log(JSON.stringify(Bun.YAML.parse(await Bun.file(process.argv[1]).text())))',
+          configFile,
+        ],
+        { cwd, env, encoding: 'utf8', timeout: 10_000 },
+      );
+      if (parsed.error) throw parsed.error;
+      expect(parsed.status, parsed.stderr).toBe(0);
+      return JSON.parse(parsed.stdout);
+    },
     declaration,
     launch,
     observed,
