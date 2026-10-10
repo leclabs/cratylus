@@ -5,7 +5,13 @@
 // pins the shim's shape and executable mode using the surviving eventTap capability.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +19,7 @@ import { emitRuntimeShim } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -28,9 +34,19 @@ const shimOf = (out: string): string =>
     'utf-8',
   );
 
+const scratch: string[] = [];
+function tmp(prefix: string): string {
+  const d = mkdtempSync(join(tmpdir(), prefix));
+  scratch.push(d);
+  return d;
+}
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 /** The emitted shim for `capability`, straight from the single emitter. */
 function emitted(capability: string): string {
-  const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
+  const dir = tmp('runtime-shim-');
   return readFileSync(emitRuntimeShim(dir, capability), 'utf-8');
 }
 
@@ -50,10 +66,7 @@ function buildCli(): string {
 }
 
 beforeAll(async () => {
-  const ompOut = join(
-    mkdtempSync(join(tmpdir(), 'runtime-shim-projection-')),
-    'omp',
-  );
+  const ompOut = join(tmp('runtime-shim-projection-'), 'omp');
   execFileSync(
     process.execPath,
     [
@@ -102,7 +115,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
   });
 
   it('emits scripts/<capability>.mjs executable', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
+    const dir = tmp('runtime-shim-');
     const dest = emitRuntimeShim(dir, CAPABILITY);
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
