@@ -22,3 +22,4 @@ concept journal when it exists (decision 0014).
 - [0016 · Project conventions outside the workflow](0016-project-conventions-outside-the-workflow.md)
 - [0017 · Prefer established libraries](0017-prefer-established-libraries.md)
 - [0018 · Assayer](0018-assayer.md)
+- [0019 · Assayer jury](0019-assayer-jury.md)

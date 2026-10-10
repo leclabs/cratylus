@@ -27,4 +27,4 @@ its decisions becomes "assayer"; meaning is unchanged.
 ## Consequences
 
 The placeholder agent is `assayer`, routed through the model role `assayer`. omp's bundled `reviewer` is no
-longer shadowed. The second member of the judgment jury, `juror`, also holds the assayer role.
+longer shadowed.
