@@ -12,4 +12,4 @@ Reconstitution is a query, not a recollection. The conceptual design and its dec
 
 ## Consequences
 
-`design/workflow.md`, `design/delivery.md` and these decision records are imported into the journal, with each concept's past versions and commit reasons. A session begins by querying the journal and reading it back.
+The journal is seeded once from `design/workflow.md`, `design/delivery.md` and these decision records, normalized to the design as accepted: each concept and decision recorded once, with its reason; their history before the journal stays in version control and is not imported. The files are then retired, so the journal is the only account of the design. A session begins by querying the journal and reading it back.
