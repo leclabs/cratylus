@@ -1,0 +1,16 @@
+{
+  "name": "Markdown readback without mandated prose",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The recap is incorrect.\n| Item | Current journal |\n| --- | --- |\n| Reservation expiry | fifteen minutes |\n| Deposit | accepted |\n| Reminder | open |"
+    }
+  ]
+}

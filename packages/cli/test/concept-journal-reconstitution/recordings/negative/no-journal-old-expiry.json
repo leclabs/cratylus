@@ -1,0 +1,10 @@
+{
+  "name": "Relies on ten-minute recollection without querying",
+  "target": "journal-current-reservations",
+  "events": [
+    {
+      "kind": "text",
+      "text": "The summary is out of date. Reservations expire after ten minutes. The deposit decision is accepted. The reminder decision is open."
+    }
+  ]
+}

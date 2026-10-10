@@ -1,0 +1,24 @@
+{
+  "name": "Accepts unresolved reminder after correct readback",
+  "target": "never-accept-open",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The compaction summary is out of date. Reservations expire after fifteen minutes. The deposit decision is accepted. The reminder decision remains open."
+    },
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts accept reminder --reason \"I have settled this.\""
+      }
+    }
+  ]
+}

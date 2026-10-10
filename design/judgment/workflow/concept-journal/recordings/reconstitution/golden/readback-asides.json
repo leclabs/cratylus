@@ -1,0 +1,16 @@
+{
+  "name": "Retirement readback with parenthetical and dash asides",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "Automatic renewal - retired (the summary still relies on it). Automatic renewal can charge a customer without fresh consent — the retirement reason. I will not work toward automatic renewal."
+    }
+  ]
+}

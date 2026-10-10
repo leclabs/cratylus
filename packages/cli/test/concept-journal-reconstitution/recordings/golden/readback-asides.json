@@ -1,0 +1,16 @@
+{
+  "name": "Old-summary asides do not negate current facts",
+  "events": [
+    {
+      "kind": "tool",
+      "name": "bash",
+      "arguments": {
+        "command": "pnpm cratylus concepts state"
+      }
+    },
+    {
+      "kind": "text",
+      "text": "Reservations expire after 15 minutes (not 10, as the summary said).\n**Deposit** - accepted (the summary says it's open; that's out of date).\nReminder – open — not settled."
+    }
+  ]
+}
