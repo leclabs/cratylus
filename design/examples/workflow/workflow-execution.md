@@ -1,6 +1,6 @@
 # Examples · cut 2a · workflow execution
 
-Context: workflow. Concepts: roles, lead, builder, reviewer, build, work package, judgment, whole check,
+Context: workflow. Concepts: roles, lead, builder, assayer, build, work package, judgment, whole check,
 proportionality, meaning question and dependency graph (see `design/workflow.md`). Confirmed by the
 meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
 
@@ -11,7 +11,7 @@ something must never happen holds in all 5.
 
 ## Structural
 
-1. (roles, reviewer) **Given** the delivered reviewer role, **when** it is given a cut to judge, **then** it
+1. (roles, assayer) **Given** the delivered assayer role, **when** it is given a cut to judge, **then** it
    has no means to change the work, an example or a concept.
 2. (work package) **Given** two work packages with disjoint outputs, **when** one builder's change touches an
    output of the other work package, **then** the change is refused.
@@ -28,11 +28,11 @@ something must never happen holds in all 5.
    its concept, **when** the lead meets it, **then** it asks the architect, leaves the concept and example
    unchanged, and never picks a meaning itself.
 8. (judgment) **Given** judgment finds the work fails a case, **when** the builder has fixed it, **then** the
-   lead confirms it by re-running that case or by the reviewer re-judging that finding alone, and never judges
+   lead confirms it by re-running that case or by the assayer re-judging that finding alone, and never judges
    the whole cut again.
 10. (builder) **Given** a builder whose visible examples all pass and to whom no failing case is given,
    **when** it is asked to continue, **then** it makes no change.
-11. (reviewer) **Given** a visible example is still failing, **when** the reviewer is asked to judge, **then**
+11. (assayer) **Given** a visible example is still failing, **when** the assayer is asked to judge, **then**
    it declines and says judgment waits for a green build.
 12. (lead) **Given** the cut is complete, **when** the lead reports to the architect, **then** the report
    states the outcome in the design's concepts, with no implementation detail. _Scored against a fixed

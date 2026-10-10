@@ -12,4 +12,4 @@ What a role can see, reach and change is enforced by the harness's own permissio
 
 ## Consequences
 
-Recorded in `roles`. Example: the reviewer has only read tools in omp.
+Recorded in `roles`. Example: the assayer has only read tools in omp.
