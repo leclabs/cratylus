@@ -1,0 +1,22 @@
+{
+  "id": "01M4KK1VFWVD2X6ZNK7ETJB0NT",
+  "at": "2026-10-10T19:01:20.508Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "roles",
+  "wording": "the parties of the workflow and what each sees, changes and decides; a role's reach is held by the harness's own permissions where the design rules something out, and otherwise stated as its purpose and narrowed from what the role is observed to use, while what a role decides is checked by examples of its behavior.",
+  "builtFrom": [
+    "operator",
+    "meaning-holder",
+    "architect",
+    "illustrator",
+    "lead",
+    "check-writer",
+    "builder",
+    "assayer"
+  ],
+  "reason": "Adds the check-writer, and reconciles reach with 0051: reach starts open and narrows from observed use, rather than being enforced by permission throughout.",
+  "supersedes": [
+    "01M4J5R9G1SYWJ6DM3Y3AGHVKE"
+  ]
+}

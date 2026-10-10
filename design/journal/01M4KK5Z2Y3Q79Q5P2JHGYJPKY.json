@@ -1,0 +1,11 @@
+{
+  "id": "01M4KK5Z2Y3Q79Q5P2JHGYJPKY",
+  "at": "2026-10-10T19:03:35.262Z",
+  "kind": "define",
+  "context": "corpus",
+  "name": "sign",
+  "wording": "the word or mark that invokes a concept in a model's semantic space. Signs differ in precision: one carries meaning the concept lacks, another misses meaning it has. For each concept some sign invokes it more precisely than any other, its optimal sign, which is a fact about the model rather than a choice, so a sign is found, not coined. In the corpus each concept is kept under one sign, and no sign under two concepts.",
+  "builtFrom": [],
+  "reason": "The agents context's factors and values are expressed as signs, decision 0049 chooses every signifier once, centrally, and the names profile and check-writer were kept on evidence about signs, yet the journal defined no sign. One concept, one sign: signifier is the same concept, and the sign a concept is kept under (the canon's anchor) needs no concept of its own.",
+  "supersedes": []
+}

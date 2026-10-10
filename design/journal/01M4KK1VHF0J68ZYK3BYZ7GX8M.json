@@ -1,0 +1,18 @@
+{
+  "id": "01M4KK1VHF0J68ZYK3BYZ7GX8M",
+  "at": "2026-10-10T19:01:20.559Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "architect",
+  "wording": "the agent that turns the operator's intent into concepts, sorted by context, using known patterns and conventions; holds the conceptual design and every context it covers without merging their models; confirms examples with each meaning-holder and answers meaning questions; it works from the design, the examples and its delegates' reports in concept terms, never from the work, which is its purpose rather than a permission until observed use narrows its reach.",
+  "builtFrom": [
+    "conceptual design",
+    "illustration",
+    "meaning-holder",
+    "decision rights"
+  ],
+  "reason": "Reconciles 'never sees the work' with 0051: not reading the work is the architect's purpose, held today by its role text, not by a permission.",
+  "supersedes": [
+    "01M4J5R9HJVJW9KJ0QD793ERA0"
+  ]
+}
