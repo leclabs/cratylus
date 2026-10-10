@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The corpus's corpus-authoring practice and its plumbing.
+// The corpus's practices and their plumbing.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Plumbing, Practice } from '@cratylus/schema';
@@ -22,6 +22,23 @@ export const PRACTICES: readonly Practice[] = [
       'create-skill',
       'introspect',
     ],
+  },
+  {
+    name: 'example-driven-workflow',
+    description:
+      'Build against a design: the architect, lead, builders, assayer, illustrator and check-writer of the example-driven workflow, and the personas kino, nico and mav.',
+    agents: [
+      'architect',
+      'lead',
+      'builder',
+      'assayer',
+      'illustrator',
+      'check-writer',
+      'kino',
+      'nico',
+      'mav',
+    ],
+    preselected: true,
   },
 ];
 
