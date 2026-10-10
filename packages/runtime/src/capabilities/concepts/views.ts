@@ -10,8 +10,15 @@
 // superseded the same one), reported in append order, none chosen, until a
 // later version supersedes them all.
 //
-// A decision is SUPERSEDED once any decision supersedes it, else ACCEPTED once
-// recorded accepted or its acceptance is recorded, else OPEN.
+// A context is its NAME. Its current descriptions are the entries of that name
+// no later one supersedes; recorded alike on two branches they are one
+// description, recorded differently they are COMPETING, none chosen, until a
+// later entry of the name supersedes them all.
+//
+// A decision is its ENTRY; its id is the name the caller gave, which two
+// branches may each give, so a reference by id holds only while one decision
+// has it. A decision is SUPERSEDED once any decision supersedes it, else
+// ACCEPTED once recorded accepted or its acceptance is recorded, else OPEN.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
@@ -37,10 +44,19 @@ export type CompetingVersion =
   | Omit<ConceptView, 'name'>
   | { readonly retired: true; readonly reason: string };
 
-export interface ContextView {
-  readonly name: string;
+/** A context's description: its subject and its place in the context map. */
+export interface Description {
   readonly subject: string;
   readonly relation: string;
+}
+
+/** A context's design; `subject` and `relation` are `null` while its
+ *  description is competing, each competing one listed in append order. */
+export interface ContextView {
+  readonly name: string;
+  readonly subject: string | null;
+  readonly relation: string | null;
+  readonly competingDescriptions: readonly Description[];
   readonly concepts: readonly ConceptView[];
   readonly competing: readonly {
     readonly name: string;
@@ -53,6 +69,7 @@ export interface ContextView {
 }
 
 export interface DecisionView {
+  readonly entry: string;
   readonly id: string;
   readonly context: string;
   readonly title: string;
@@ -87,23 +104,27 @@ export type Standing =
 /** The journal folded: its contexts, concepts and decisions, each in the order
  *  first recorded. */
 export class Folded {
-  /** Each context by name, the first recording of a name being its own. */
-  readonly contexts = new Map<string, ContextEntry>();
+  /** Each context's entries by name, in append order. */
+  readonly contexts = new Map<string, ContextEntry[]>();
   /** Each context's concepts by name, each with its versions in append order. */
   readonly concepts = new Map<string, Map<string, VersionEntry[]>>();
-  /** Each decision by id, the first recording of an id being its own. */
+  /** Each decision by its entry's id, in append order. */
   readonly decisions = new Map<string, DecideEntry>();
-  /** The decisions whose acceptance is recorded. */
+  /** The entries of the decisions each id names, in append order. */
+  readonly named = new Map<string, string[]>();
+  /** The entries of the decisions whose acceptance is recorded. */
   readonly acceptances = new Set<string>();
-  /** The decisions superseding each decision, in append order. */
+  /** The ids of the decisions superseding each decision's entry. */
   readonly supersededBy = new Map<string, string[]>();
 
   constructor(entries: readonly Entry[]) {
     for (const entry of entries)
       switch (entry.kind) {
         case 'context':
-          if (!this.contexts.has(entry.name))
-            this.contexts.set(entry.name, entry);
+          this.contexts.set(entry.name, [
+            ...(this.contexts.get(entry.name) ?? []),
+            entry,
+          ]);
           break;
         case 'define':
         case 'supersede':
@@ -118,19 +139,64 @@ export class Folded {
           ]);
           break;
         }
-        case 'decide':
-          if (this.decisions.has(entry.decisionId)) break;
-          this.decisions.set(entry.decisionId, entry);
-          if (entry.supersedes !== null)
-            this.supersededBy.set(entry.supersedes, [
-              ...(this.supersededBy.get(entry.supersedes) ?? []),
+        case 'decide': {
+          const target =
+            entry.supersedesEntry ??
+            (entry.supersedes === null
+              ? undefined
+              : this.only(entry.supersedes));
+          this.decisions.set(entry.id, entry);
+          this.named.set(entry.decisionId, [
+            ...(this.named.get(entry.decisionId) ?? []),
+            entry.id,
+          ]);
+          if (target !== undefined)
+            this.supersededBy.set(target, [
+              ...(this.supersededBy.get(target) ?? []),
               entry.decisionId,
             ]);
           break;
-        case 'accept':
-          this.acceptances.add(entry.decisionId);
+        }
+        case 'accept': {
+          const target = entry.entry ?? this.only(entry.decisionId);
+          if (target !== undefined) this.acceptances.add(target);
           break;
+        }
       }
+  }
+
+  /** The entry of the one decision `id` names among those folded so far;
+   *  `undefined` when none or several do. A reference written by id alone
+   *  binds only where it is unambiguous. */
+  private only(id: string): string | undefined {
+    const entries = this.named.get(id) ?? [];
+    return entries.length === 1 ? entries[0] : undefined;
+  }
+
+  /** The entries of the decisions `ref`, an entry's id or a decision's id,
+   *  names: one, none, or several when an id is shared. */
+  resolve(ref: string): readonly string[] {
+    return this.decisions.has(ref) ? [ref] : (this.named.get(ref) ?? []);
+  }
+
+  /** The current entries of `context`, a context the journal has: those no
+   *  later entry of its name supersedes. */
+  currentDescriptions(context: string): readonly ContextEntry[] {
+    const recorded = this.contexts.get(context) ?? [];
+    const superseded = new Set(recorded.flatMap((c) => c.supersedes ?? []));
+    return recorded.filter((c) => !superseded.has(c.id));
+  }
+
+  /** The distinct descriptions of `context`'s current entries, in append
+   *  order: one when settled, two or more when competing. */
+  descriptions(context: string): Description[] {
+    const distinct: Description[] = [];
+    for (const { subject, relation } of this.currentDescriptions(context))
+      if (
+        !distinct.some((d) => d.subject === subject && d.relation === relation)
+      )
+        distinct.push({ subject, relation });
+    return distinct;
   }
 
   /** The versions of `name` in `context`, in append order; none when the
@@ -155,11 +221,13 @@ export class Folded {
 
   /** The current design of `context`, a context the journal has. */
   design(context: string): ContextView {
-    const recorded = this.contexts.get(context) as ContextEntry;
+    const descriptions = this.descriptions(context);
+    const settled = descriptions.length === 1 ? descriptions[0] : undefined;
     const view = {
-      name: recorded.name,
-      subject: recorded.subject,
-      relation: recorded.relation,
+      name: context,
+      subject: settled?.subject ?? null,
+      relation: settled?.relation ?? null,
+      competingDescriptions: settled === undefined ? descriptions : [],
       concepts: [] as ConceptView[],
       competing: [] as ContextView['competing'][number][],
       retired: [] as ContextView['retired'][number][],
@@ -206,11 +274,11 @@ export class Folded {
     };
   }
 
-  /** The status `id`, a decision the journal has, holds now. */
-  status(id: string): DecisionView['status'] {
-    if ((this.supersededBy.get(id) ?? []).length > 0) return 'superseded';
-    const recorded = this.decisions.get(id) as DecideEntry;
-    return recorded.status === 'accepted' || this.acceptances.has(id)
+  /** The status the decision recorded by `entry` holds now. */
+  status(entry: string): DecisionView['status'] {
+    if ((this.supersededBy.get(entry) ?? []).length > 0) return 'superseded';
+    const recorded = this.decisions.get(entry) as DecideEntry;
+    return recorded.status === 'accepted' || this.acceptances.has(entry)
       ? 'accepted'
       : 'open';
   }
@@ -218,15 +286,16 @@ export class Folded {
   /** Every decision, in the order recorded, as `decisions` gives it. */
   decisionViews(): DecisionView[] {
     return [...this.decisions.values()].map((d) => ({
+      entry: d.id,
       id: d.decisionId,
       context: d.context,
       title: d.title,
       situation: d.situation,
       decision: d.decision,
       consequences: d.consequences,
-      status: this.status(d.decisionId),
+      status: this.status(d.id),
       supersedes: d.supersedes,
-      supersededBy: [...(this.supersededBy.get(d.decisionId) ?? [])],
+      supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
     }));
   }
 }

@@ -134,7 +134,7 @@ describe('the concept journal as a library', () => {
     });
   });
 
-  it('refuses a flag given twice, a retired concept, and accepting a decision that is not open', () => {
+  it('refuses a flag given twice, retiring twice, and accepting a decision that is not open', () => {
     version('define', 'A hold.', 'First.');
     refused(
       [
@@ -156,19 +156,22 @@ describe('the concept journal as a library', () => {
       ['retire', 'hold', '--context', 'booking', '--reason', 'Again.'],
       /^concepts retire: .*retired/,
     );
-    refused(
-      [
-        'supersede',
-        'hold',
-        '--context',
-        'booking',
-        '--wording',
-        'Back.',
-        '--reason',
-        'R.',
-      ],
-      /^concepts supersede: .*retired/,
+    const back = concepts(
+      'supersede',
+      'hold',
+      '--context',
+      'booking',
+      '--wording',
+      'Back.',
+      '--reason',
+      'R.',
     );
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        { concepts: [{ name: 'hold', wording: 'Back.' }], retired: [] },
+      ],
+    });
+    expect(back).toMatchObject({ kind: 'supersede' });
     refused(
       [
         'define',
@@ -218,6 +221,82 @@ describe('the concept journal as a library', () => {
     );
     expect(() => concepts('design')).toThrow(
       /^concepts design: the journal entry .* is not an entry/,
+    );
+  });
+
+  it('reads entries written before identities could be shared, by their names', () => {
+    const dir = join(repo, 'design/journal');
+    const legacy = (id: string, body: object) =>
+      writeFileSync(
+        join(dir, `${id}.json`),
+        JSON.stringify({ id, at: '2026-01-01T00:00:00.000Z', ...body }),
+      );
+    const decision = (decisionId: string, supersedes: string | null) => ({
+      kind: 'decide',
+      decisionId,
+      context: 'booking',
+      title: 'T',
+      situation: 'S',
+      decision: 'D',
+      consequences: 'C',
+      status: 'open',
+      supersedes,
+    });
+    legacy('01Z00000000000000000000001', decision('a', null));
+    legacy('01Z00000000000000000000002', {
+      kind: 'accept',
+      decisionId: 'a',
+    });
+    legacy('01Z00000000000000000000003', decision('b', null));
+    legacy('01Z00000000000000000000004', decision('c', 'b'));
+    expect(concepts('decisions')).toMatchObject({
+      decisions: [
+        { entry: '01Z00000000000000000000001', id: 'a', status: 'accepted' },
+        {
+          entry: '01Z00000000000000000000003',
+          id: 'b',
+          status: 'superseded',
+          supersededBy: ['c'],
+        },
+        { entry: '01Z00000000000000000000004', id: 'c', status: 'open' },
+      ],
+    });
+    refused(['accept', 'a'], /^concepts accept: .*accepted/);
+  });
+
+  it('settles a competing context description with one superseding every current one', () => {
+    writeFileSync(
+      join(repo, 'design/journal', '01Z00000000000000000000001.json'),
+      JSON.stringify({
+        id: '01Z00000000000000000000001',
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Other.',
+        relation: '',
+      }),
+    );
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        {
+          name: 'booking',
+          subject: null,
+          relation: null,
+          competingDescriptions: [
+            { subject: 'Booking.', relation: '' },
+            { subject: 'Other.', relation: '' },
+          ],
+        },
+      ],
+    });
+    const settled = concepts('context', 'booking', '--subject', 'Both.');
+    expect(settled).toMatchObject({ supersedes: expect.any(Array) });
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ subject: 'Both.', relation: '', competingDescriptions: [] }],
+    });
+    refused(
+      ['context', 'booking', '--subject', 'Again.'],
+      /^concepts context: .*already recorded/,
     );
   });
 });

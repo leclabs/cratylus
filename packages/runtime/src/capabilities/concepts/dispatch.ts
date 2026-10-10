@@ -26,7 +26,7 @@ import {
   valueFlag,
 } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
-import type { DecideEntry, WordedEntry } from './entries.js';
+import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
 import { journalAt } from './journal.js';
 import { type DecisionView, Folded } from './views.js';
 
@@ -91,7 +91,7 @@ export const VERBS = {
   },
   supersede: {
     summary:
-      'Record a new version of a concept superseding every current version, resolving competing ones',
+      'Record a new version of a concept superseding every current version, resolving competing ones and bringing a retired concept back',
     positional: '<concept>',
     flags: VERSION,
   },
@@ -112,26 +112,30 @@ export const VERBS = {
       consequences: valueFlag('What follows from it'),
       status: valueFlag('How the decision is recorded: open or accepted'),
       supersedes: valueFlag(
-        'The id of an earlier decision this one supersedes',
+        'An earlier decision this one supersedes: its id, or its entry where two decisions share the id',
       ),
     },
   },
   accept: {
     summary:
-      'Record the acceptance of an open decision, an entry of its own; the decision’s record never changes',
-    positional: '<id>',
+      'Record the acceptance of an open decision, named by its id or, where two decisions share the id, by its entry; an entry of its own, so the decision’s record never changes',
+    positional: '<ref>',
     flags: { reason: valueFlag('Why it is accepted') },
   },
 } as const satisfies VerbFlags;
 
 /** What `state` says each part of its answer is. */
 const READING = {
+  competingDescriptions:
+    'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context settles them',
   concepts: 'the live concepts of the context, each its current version',
   competing:
     'concepts with two or more versions superseding the same one; none is chosen until a later version supersedes them all',
   retired: 'concepts retired from the design, each with its reason',
   'decisions.accepted': 'decisions accepted and not superseded: settled',
   'decisions.open': 'decisions recorded and not yet accepted: not settled',
+  'decisions.entry':
+    'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
@@ -160,16 +164,33 @@ export function dispatchConcepts(
   const contexts = (): string[] =>
     args.flags.has('context') ? [context()] : [...folded.contexts.keys()];
   /** The current versions a new version of `name` in `where` supersedes;
-   *  refuses a concept the context does not have, or a retired one. */
-  const superseding = (where: string, name: string): string[] => {
+   *  refuses a concept the context does not have, or, unless `revive`, a
+   *  retired one. */
+  const superseding = (
+    where: string,
+    name: string,
+    revive: boolean,
+  ): string[] => {
     const standing = folded.standing(where, name);
     if (standing === undefined)
       throw refuse(`the bounded context '${where}' has no concept '${name}'`);
-    if (standing.is === 'retired')
-      throw refuse(`the concept '${name}' in '${where}' is retired`);
+    if (standing.is === 'retired' && !revive)
+      throw refuse(`the concept '${name}' in '${where}' is already retired`);
     return standing.is === 'competing'
       ? standing.current.map((v) => v.id)
       : [standing.current.id];
+  };
+  /** The entry of the one decision `ref` names; refuses none, or an id
+   *  several decisions share. */
+  const decisionOf = (ref: string): string => {
+    const entries = folded.resolve(ref);
+    if (entries.length === 0)
+      throw refuse(`the journal has no decision '${ref}'`);
+    if (entries.length > 1)
+      throw refuse(
+        `the id '${ref}' is shared by the decisions ${entries.join(', ')}; name one by its entry`,
+      );
+    return entries[0] as string;
   };
   const state = (decisions: readonly DecisionView[], where: string) => ({
     ...folded.design(where),
@@ -215,9 +236,18 @@ export function dispatchConcepts(
       const name = read.named('context');
       const subject = read.required('subject', 'the subject');
       const relation = read.optional('relation') ?? '';
-      if (folded.contexts.has(name))
+      if (!folded.contexts.has(name))
+        return journal.append({ kind: 'context', name, subject, relation });
+      if (folded.descriptions(name).length < 2)
         throw refuse(`the bounded context '${name}' is already recorded`);
-      return journal.append({ kind: 'context', name, subject, relation });
+      const draft: Omit<ContextEntry, 'id' | 'at'> = {
+        kind: 'context',
+        name,
+        subject,
+        relation,
+        supersedes: folded.currentDescriptions(name).map((c) => c.id),
+      };
+      return journal.append(draft);
     }
     case 'define':
     case 'supersede': {
@@ -230,7 +260,8 @@ export function dispatchConcepts(
         throw refuse(
           `the bounded context '${where}' already has the concept '${name}'; supersede it instead`,
         );
-      const supersedes = verb === 'define' ? [] : superseding(where, name);
+      const supersedes =
+        verb === 'define' ? [] : superseding(where, name, true);
       const draft: Omit<WordedEntry, 'id' | 'at'> = {
         kind: verb,
         context: where,
@@ -246,7 +277,7 @@ export function dispatchConcepts(
       const name = read.named('concept');
       const where = context();
       const reason = read.required('reason', 'the reason');
-      const supersedes = superseding(where, name);
+      const supersedes = superseding(where, name, false);
       return journal.append({
         kind: 'retire',
         context: where,
@@ -271,13 +302,10 @@ export function dispatchConcepts(
         throw refuse(
           `the status is '${status}'; a decision is recorded open or accepted`,
         );
-      const supersedes = read.optional('supersedes') ?? null;
-      if (folded.decisions.has(decisionId))
+      const ref = read.optional('supersedes');
+      if (folded.named.has(decisionId) || folded.decisions.has(decisionId))
         throw refuse(`the decision '${decisionId}' is already recorded`);
-      if (supersedes !== null && !folded.decisions.has(supersedes))
-        throw refuse(
-          `the journal has no decision '${supersedes}' to supersede`,
-        );
+      const superseded = ref === undefined ? undefined : decisionOf(ref);
       const draft: Omit<DecideEntry, 'id' | 'at'> = {
         kind: 'decide',
         decisionId,
@@ -287,25 +315,29 @@ export function dispatchConcepts(
         decision,
         consequences,
         status,
-        supersedes,
+        supersedes:
+          superseded === undefined
+            ? null
+            : (folded.decisions.get(superseded) as DecideEntry).decisionId,
+        ...(superseded === undefined ? {} : { supersedesEntry: superseded }),
       };
       return journal.append(draft);
     }
     case 'accept': {
-      const decisionId = read.named('decision id');
+      const ref = read.named('decision');
       const reason = read.optional('reason');
       if (reason !== undefined && reason.trim() === '')
         throw refuse('the reason is empty; give one, or leave --reason out');
-      if (!folded.decisions.has(decisionId))
-        throw refuse(`the journal has no decision '${decisionId}'`);
-      const status = folded.status(decisionId);
+      const entry = decisionOf(ref);
+      const status = folded.status(entry);
       if (status !== 'open')
         throw refuse(
-          `the decision '${decisionId}' is ${status}; only an open decision is accepted`,
+          `the decision '${ref}' is ${status}; only an open decision is accepted`,
         );
       return journal.append({
         kind: 'accept',
-        decisionId,
+        decisionId: (folded.decisions.get(entry) as DecideEntry).decisionId,
+        entry,
         ...(reason === undefined ? {} : { reason }),
       });
     }

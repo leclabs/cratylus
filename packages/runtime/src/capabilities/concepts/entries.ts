@@ -16,12 +16,16 @@ interface Stamped {
   readonly at: string;
 }
 
-/** A bounded context: its subject, and its place in the context map. */
+/** A bounded context: its subject, and its place in the context map. A context
+ *  is its name: the first entry of a name records it, and one that settles a
+ *  competing description names the entries it supersedes (absent on entries
+ *  written before descriptions could compete, which supersede none). */
 export interface ContextEntry extends Stamped {
   readonly kind: 'context';
   readonly name: string;
   readonly subject: string;
   readonly relation: string;
+  readonly supersedes?: readonly string[];
 }
 
 /** A version of a concept that states it: its first (`define`) or one that
@@ -49,7 +53,10 @@ export interface RetireEntry extends Stamped {
 export type VersionEntry = WordedEntry | RetireEntry;
 
 /** A decision, recorded open or accepted, optionally superseding an earlier
- *  one by its id. */
+ *  one. Its identity is its entry's id; `decisionId` is the name the caller
+ *  gave, which two branches may each give. `supersedes` is the superseded
+ *  decision's name and `supersedesEntry` its entry (absent on entries written
+ *  before names could be shared, which are read by their name alone). */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;
@@ -60,12 +67,15 @@ export interface DecideEntry extends Stamped {
   readonly consequences: string;
   readonly status: 'open' | 'accepted';
   readonly supersedes: string | null;
+  readonly supersedesEntry?: string;
 }
 
-/** The acceptance of an open decision. */
+/** The acceptance of an open decision: its name, and its entry (absent on
+ *  entries written before names could be shared). */
 export interface AcceptEntry extends Stamped {
   readonly kind: 'accept';
   readonly decisionId: string;
+  readonly entry?: string;
   readonly reason?: string;
 }
 
