@@ -31,11 +31,10 @@ import type { ResolvedSkill } from './body.js';
  * agent — the SESSION itself.
  *
  * A harness whose enforcement is CODE has no global config file to register in, so
- * it realizes a session-scoped cell by placing a module in every scope that must
- * carry it: one per composing agent, plus the session root itself (a launch that
- * named no agent). The agent scopes are keyed by agent name; this token names the
- * remaining one. It is not an agent name and cannot collide with one — canon agent
- * names are cold-derived words, never `_`-prefixed.
+ * it realizes a session-scoped cell by placing a module in the scope every session
+ * reads. Agent scopes are keyed by agent name (a harness that places artifacts per
+ * agent); this token names the session's. It is not an agent name and cannot collide
+ * with one — canon agent names are cold-derived words, never `_`-prefixed.
  */
 export const SESSION_SCOPE = '_session';
 
@@ -79,10 +78,7 @@ export interface HarnessProjection {
    * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
    *
    * Absent ⇒ the artifact is global to the harness home: one artifact, one place.
-   * Present ⇒ the artifact is one of MANY, and its scope decides where deploy
-   * lands it (`HarnessAdapter.scopedRel`). OMP's scope is a directory, so the
-   * same registrations are emitted once per scope and are correct by placement
-   * rather than by a runtime filter.
+   * Present ⇒ its scope decides where deploy lands it (`HarnessAdapter.scopedRel`).
    */
   readonly scope?: string;
 }
@@ -388,9 +384,9 @@ export interface HarnessAdapter {
    * the two paths the same path.
    *
    * Returns one projection, MANY, or null. Plural because a harness may scope by
-   * per-agent DIRECTORY rather than by a selector: omp writes one module per
-   * composing agent into that agent's own `extensions/` dir, which needs no
-   * filter to be correctly scoped and cannot be expressed as a single artifact.
+   * per-agent DIRECTORY rather than by a selector, which cannot be expressed as a
+   * single artifact. A harness that can narrow no event to one agent (omp: its
+   * {@link scopes} is false) omits this, and projection reports each such guard.
    */
   enforcingSurface?(
     bindings: readonly Binding[],
@@ -416,12 +412,12 @@ export interface HarnessAdapter {
    * `fire`: no `~/.omp/hooks` and no per-profile `agent/extensions` dir, against
    * all five anchors wired in the same host's `~/.claude/settings.json`.
    *
-   * `agentNames` is the projected agent set, because a session-scoped cell governs
-   * whoever is running: on a harness that scopes by directory, "every session"
-   * means one module per persona scope PLUS the session root ({@link
-   * SESSION_SCOPE}). That is not the ambient form MODEL forbids — nothing here
-   * filters itself at runtime, and no artifact governs an agent that did not
-   * compose it; these cells compose no agent by construction.
+   * `agentNames` is the projected agent set, for a harness that scopes by
+   * directory and must place a copy per agent scope beside the session's ({@link
+   * SESSION_SCOPE}). omp does not: its one module sits at the session scope. That is
+   * not the ambient form MODEL forbids — nothing here filters itself at runtime, and
+   * no artifact governs an agent that did not compose it; these cells compose no
+   * agent by construction.
    *
    * Absent ⇒ this harness registers scope-activated cells in a config file, or
    * cannot carry them at all (the degrade `project` reports).
@@ -526,26 +522,32 @@ export interface HarnessAdapter {
    */
   readonly statusSegment?: StatusSegmentHost;
   /**
-   * How this harness routes a MODEL by the ROLE an agent holds — the table that
-   * lets a projected definition name its position ({@link Agent.holds}) and leaves
-   * the host to choose the model. The projection names no model id, ever.
+   * How this harness binds an agent's MODEL through host-configured model roles —
+   * the table that lets a projected definition name a role of its own (the role
+   * named for the agent) and leaves the host to choose the model. The projection
+   * names no model id, ever.
    *
-   * Three facts, all the harness's own: the ROLE it falls back to when the host
-   * never configured the held one (`defaultRole`, the role such an agent then runs
-   * on), the built-in role each held role is NEAREST to (`nearest`, which seeds the
-   * host entry install adds), and WHERE the host keeps the mapping (`configRels`,
-   * harness-home relative, in the order the harness READS them — it reads the first
-   * that exists, so install edits that one and creates the first only when none
-   * does). Install reads this by harness name through the registry, so it never
-   * imports an adapter.
+   * Three facts, all the harness's own: WHERE the host keeps its roles
+   * (`configRels`, harness-home relative, in the order the harness READS them — it
+   * reads the first that exists, so install edits that one and creates the first
+   * only when none does); the value an agent's own role takes for the tier and
+   * effort it holds (`agentRole`); and the value a tier's role is SEEDED with from
+   * the roles the host already has (`seedTier`). Install reads this by harness name
+   * through the registry, so it never imports an adapter.
    *
    * Absent ⇒ this harness has no host-configured role → model table: install
-   * touches no host config. That is not "definitions name no model route": a
-   * harness may route by a tier of its own in the definitions it projects, keyed
-   * by the held role and owned by that adapter alone (claude emits a tier alias
-   * per role), and the host's choice still outranks it.
+   * touches no host config.
    */
   roleRouting?: RoleRouting;
+  /**
+   * The handoffs this harness supplies an agent for natively, by the handoff's
+   * anchor → the harness's own agent name (omp: `researcher` → `scout`). A dispatch
+   * to one names the harness's agent, and a practice whose agents hand off to one is
+   * closed without an agent of the corpus holding it.
+   *
+   * Absent ⇒ the harness supplies none.
+   */
+  readonly nativeAgents?: Readonly<Record<string, string>>;
   /**
    * How this harness isolates a DISPATCHED agent without an agent-definition field —
    * omp's task isolation: a per-dispatch flag the dispatcher's extension sets, over
@@ -611,18 +613,21 @@ export interface StatusSegmentHost {
   readonly customLeft: readonly string[];
 }
 
-/** A harness's role → model routing table. See {@link HarnessAdapter.roleRouting}. */
+/** A harness's model-role table. See {@link HarnessAdapter.roleRouting}. */
 export interface RoleRouting {
-  /** The role the host routes by when it has no entry for the held one. */
-  readonly defaultRole: string;
-  /** The harness's own built-in role nearest to a held role; `defaultRole` for a
-   *  role it has no closer peer for. */
-  nearest(heldRole: string): string;
-  /** The harness's built-in roles a held role may be routed to, for an operator to
-   *  choose among; each is offered as the alias `@<role>`. */
-  readonly offered: readonly string[];
-  /** The host config files that map roles to models, relative to the harness home,
+  /** The host config files that hold the model roles, relative to the harness home,
    *  in the harness's read order: it reads the first that exists and ignores the
    *  rest, so a file created beside an existing later one would shadow it. */
   readonly configRels: readonly string[];
+  /** The value of an agent's own model role, for the tier and effort it holds. */
+  agentRole(routing: {
+    readonly tier: string;
+    readonly effort: string;
+  }): string;
+  /** The value the role named for `tier` is seeded with, from the host's model roles
+   *  as they stand (in file order); `undefined` where it cannot be seeded. */
+  seedTier(
+    tier: string,
+    host: readonly (readonly [role: string, value: string])[],
+  ): string | undefined;
 }

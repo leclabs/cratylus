@@ -24,8 +24,8 @@
 // corpus there would install something other than what the config names.
 //
 // THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
-// which harness, which of the corpus's practices, and which model each held role routes
-// to. Each has a flag; a decision
+// which harness, which of the corpus's practices, and which model each agent's model
+// role routes to. Each has a flag; a decision
 // given by flag is never asked. The practices are the one decision no run takes for
 // the operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
 // `--yes`, given the practices already installed here, or on a fresh host the corpus's
@@ -39,9 +39,9 @@
 // report is what is shown — so the preview cannot describe something the placement
 // then does differently.
 //
-// WHAT THE HOST HAS ALREADY SET IS NEVER ASKED AND NEVER CHANGED. A role the host
-// routes itself is left as it is, named as the host's, and a `--model-roles` entry for
-// it is left as the host set it and said so.
+// WHAT THE HOST HAS ALREADY SET IS NEVER ASKED AND NEVER CHANGED. A model role the host
+// set itself is left as it is, named as the host's, and a `--model-roles` entry for it
+// is left as the host set it and said so.
 
 import {
   existsSync,
@@ -121,9 +121,10 @@ export interface InstallCmdOpts {
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
   all?: boolean;
-  /** `--model-roles <role=model,…|default>`: the model each named held role routes
-   *  to; `default` leaves every role on cratylus's routing. Given at all, it settles
-   *  the decision: a role it does not name takes the default. Absent: asked. */
+  /** `--model-roles <name=model,…|default>`: the model each named agent's model role
+   *  routes to, keyed by agent name; `default` leaves every agent on the tier and
+   *  effort it holds. Given at all, it settles the decision: an agent it does not name
+   *  takes the default. Absent: asked. */
   modelRoles?: string;
   /** `--yes`: on a terminal, take the default of every decision not given (the
    *  practices already installed here, or on a fresh host the corpus's preselected
@@ -163,6 +164,9 @@ class Refusal extends Error {}
 /** A model value as omp writes in its `modelRoles`: an alias or selector. */
 const OMP_MODEL = /^\S+$/;
 
+/** The tier and effort one agent's model role binds. */
+type AgentModel = ProjectedTree['agentModels'][string];
+
 /** What the steps of one run did (or, under `dry`, would do). */
 interface Findings {
   /** The per-file detail, in the order a verbose run prints it. */
@@ -179,7 +183,7 @@ interface Findings {
   outside: Record<string, number>;
   /** Host files edited: the path and what changed in it. */
   edits: { path: string; what: string }[];
-  /** The models the operator chose for roles, as `role → model`. */
+  /** The models the operator chose for agents' model roles, as `name → model`. */
   routes: string[];
   /** What the host had set and was left alone. */
   left: string[];
@@ -213,7 +217,7 @@ function parseNames(raw: string): string[] {
     .filter(Boolean);
 }
 
-/** `--model-roles`, parsed: the models by role, or `default` for none. */
+/** `--model-roles`, parsed: the models by agent name, or `default` for none. */
 function parseModelRoles(
   raw: string,
   valid: RegExp,
@@ -226,7 +230,7 @@ function parseModelRoles(
     const model = eq < 0 ? '' : entry.slice(eq + 1).trim();
     if (role === '' || model === '') {
       throw new Refusal(
-        `--model-roles: '${entry}' must be <role>=<model>; pass <role>=<model>,… or the single word 'default'`,
+        `--model-roles: '${entry}' must be <name>=<model>; pass <name>=<model>,… or the single word 'default'`,
       );
     }
     if (!valid.test(model)) {
@@ -446,48 +450,43 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const decided = chosen === undefined ? undefined : { chosen, removed };
   const tree: ProjectedTree = rendered.report;
 
-  // ── WHAT TO ROUTE ────────────────────────────────────────────────────────────
-  // A role the host already routes is the host's: never asked, never changed.
+  // ── WHICH MODELS ─────────────────────────────────────────────────────────────
+  // Each agent's model role binds the tier and effort it holds. An entry the host set
+  // itself is the host's: never asked, never changed. An entry install seeded and
+  // nobody chose since is install's own, which this run moves to what it seeds now.
   const routing = adapter.roleRouting;
-  const validModel = OMP_MODEL;
+  const agentModels = tree.agentModels;
+  const agentRoles = Object.keys(agentModels).sort();
+  const tiers = [
+    ...new Set(Object.values(agentModels).map((m) => m.tier)),
+  ].sort();
   const hostRouted = new Set<string>();
-  // omp: the roles whose entry is install's own seed, still as it wrote it.
   const seeded = new Set<string>();
-  let routable = tree.heldRoles;
   let configRefused = false;
   if (routing !== undefined) {
     const path = hostConfigPath(routing.configRels, harnessDir);
+    const roles = [...tiers, ...agentRoles];
     const probe = addModelRoles(
       path,
-      tree.heldRoles.map((role) => ({ role, value: '' })),
+      roles.map((role) => ({ role, value: '' })),
       { dry: true },
     );
     configRefused = probe.refused !== undefined;
-    const missing = new Set(probe.added.map((e) => e.role));
-    // An entry is install's own seed while it stands as install wrote it and no
-    // operator chose it: a later run may move it to the model chosen now. Any other
-    // entry is the host's, an operator's choice included.
+    const record = readManifest(harnessDir);
+    // A host installed before seeds were recorded by value: its seeds are the lines
+    // recorded as install's insertions, standing as they were written.
     const written = recordedLines(harnessDir, path);
-    const chosen = readManifest(harnessDir).hostRoutes;
-    // A host installed before edits were recorded has no such record; its seeds are
-    // the lines this install would write itself, which it adopts.
-    const legacy = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
-    for (const role of tree.heldRoles) {
-      if (configRefused || missing.has(role)) continue;
-      const line = probe.current[role] as string;
-      const seed = `${modelRoleLine(
-        { role, value: `@${routing.nearest(role)}` },
-        '',
-      )}${/\r?\n$/.exec(line)?.[0] ?? ''}`;
+    for (const [role, value] of probe.host) {
+      if (!roles.includes(role)) continue;
+      const line = probe.current[role];
       const own =
-        !chosen.includes(role) &&
-        (written.has(line) || (legacy && line.trimStart() === seed));
-      if (own) seeded.add(role);
-      else hostRouted.add(role);
+        !record.hostRoutes.includes(role) &&
+        (record.modelRoleSeeds[role] === value ||
+          (line !== undefined && written.has(line)));
+      (own ? seeded : hostRouted).add(role);
     }
-    routable = [];
   }
-  const askable = routable.filter((r) => !hostRouted.has(r));
+  const askable = agentRoles.filter((r) => !hostRouted.has(r));
 
   const choices: Record<string, string> = {};
   const left: string[] = [];
@@ -497,20 +496,18 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         `--model-roles: the '${adapter.name}' harness routes no roles; drop --model-roles`,
       );
     }
-    const given = parseModelRoles(opts.modelRoles, validModel);
+    const given = parseModelRoles(opts.modelRoles, OMP_MODEL);
     if (given !== 'default') {
-      const unknown = Object.keys(given).filter(
-        (r) => !tree.heldRoles.includes(r),
-      );
+      const unknown = Object.keys(given).filter((r) => !agentRoles.includes(r));
       if (unknown.length > 0) {
         throw new Refusal(
-          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no role the installed agents hold (roles: ${list(tree.heldRoles)}); name one of those roles`,
+          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no agent this install places (agents: ${list(agentRoles)}); name one of those agents`,
         );
       }
       for (const [role, model] of Object.entries(given)) {
         if (hostRouted.has(role)) {
           left.push(
-            `--model-roles ${role}=${model}: the host already routes ${role}, so it is left as the host set it`,
+            `--model-roles ${role}=${model}: the host already set the model role ${role}, so it is left as the host set it`,
           );
         } else {
           choices[role] = model;
@@ -520,17 +517,17 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   } else if (routing !== undefined && askable.length > 0 && !configRefused) {
     open = true;
     if (interactive) {
+      const seeds = Object.values(agentModels).map((m) => routing.agentRole(m));
       const questions: RoleQuestion[] = askable.map((role) => ({
         role,
-        holders: tree.roleHolders[role] ?? [],
-        options: routing.offered.map((r) => `@${r}`),
-        initial: `@${routing.nearest(role)}`,
+        options: [...new Set(seeds)].sort(),
+        initial: routing.agentRole(agentModels[role] as AgentModel),
       }));
       const picked = await answered(prompts.routes(questions));
       for (const q of questions) {
         const model = picked[q.role];
         if (model === undefined || model === q.initial) continue;
-        if (!validModel.test(model)) {
+        if (!OMP_MODEL.test(model)) {
           throw new Refusal(
             `'${model}' is not a usable model name; pass a name the harness accepts`,
           );
@@ -615,10 +612,10 @@ async function install(opts: InstallCmdOpts): Promise<number> {
           practices: chosen,
         });
       }
-      // The routes the definitions just placed name roles; the host maps a role to a
-      // model. Deploy is unchanged — this is install's own step, and a deploy that
-      // failed places no routes to back.
-      seedModelRoles(found, adapter, tree.heldRoles, choices, seeded, {
+      // The definitions just placed name their agents' model roles; the host maps a
+      // role to a model. Deploy is unchanged — this is install's own step, and a deploy
+      // that failed places no roles to back.
+      seedModelRoles(found, adapter, tree.agentModels, choices, seeded, {
         harnessDir,
         dry,
         adopt: migrating,
@@ -764,7 +761,7 @@ function describe(
   }
   if (found.routes.length > 0) {
     lines.push(
-      `  models you chose: ${list(found.routes)}; every other role follows the default routing`,
+      `  models you chose: ${list(found.routes)}; every other agent runs on the tier and effort it holds`,
     );
   }
   if (found.unlinked.length > 0) {
@@ -1031,39 +1028,61 @@ function showAgentStatus(
 }
 
 /**
- * Give every held role the host has not mapped an entry — the operator's choice for
- * it, or else an alias of the harness's nearest built-in role — and say what was
- * added. An entry that is install's own seed (`seeded`) moves to the operator's choice
- * for it, and otherwise stands; an entry the host has is never changed; a `modelRoles`
- * that cannot be safely extended is reported and left as it is — the install itself
- * still succeeds. What the operator chose is recorded as the host's from then on.
+ * Make the host's model roles bind each agent's model, and say what was placed, kept,
+ * or could not be seeded. Two kinds of entry are wanted: each tier an agent uses, as a
+ * role named for the tier and seeded from the roles the host already has (the adapter
+ * says how: `RoleRouting.seedTier`); and each agent's own role, the operator's choice
+ * for it or else the alias of its tier and effort. An entry that is install's own seed
+ * (`seeded`) moves to the value wanted now; an entry the host set is never changed; a
+ * tier with nothing to seed it from is left unseeded and reported; a `modelRoles` that
+ * cannot be safely extended is reported and left as it is — the install itself still
+ * succeeds. What the operator chose is recorded as the host's from then on, and what
+ * install seeded as its own.
  */
 function seedModelRoles(
   found: Findings,
   adapter: HarnessAdapter,
-  heldRoles: readonly string[],
+  agentModels: ProjectedTree['agentModels'],
   choices: Readonly<Record<string, string>>,
   seeded: ReadonlySet<string>,
   run: { harnessDir: string; dry: boolean; adopt: boolean },
 ): void {
   const routing = adapter.roleRouting;
-  if (routing === undefined || heldRoles.length === 0) return;
+  const agents = Object.keys(agentModels).sort();
+  if (routing === undefined || agents.length === 0) return;
   const { harnessDir, dry, adopt } = run;
   const path = hostConfigPath(routing.configRels, harnessDir);
-  const wanted: ModelRoleEntry[] = heldRoles.map((role) => ({
-    role,
-    value: choices[role] ?? `@${routing.nearest(role)}`,
-  }));
+  // The host's roles as they stand: what each tier is seeded from.
+  const host = addModelRoles(path, [], { dry: true }).host;
+  const tiers = [
+    ...new Set(Object.values(agentModels).map((m) => m.tier)),
+  ].sort();
+  const wanted: ModelRoleEntry[] = [];
+  const unseeded: string[] = [];
+  for (const tier of tiers) {
+    const value = routing.seedTier(tier, host);
+    if (value !== undefined) wanted.push({ role: tier, value });
+    else if (!host.some(([role]) => role === tier)) unseeded.push(tier);
+  }
+  for (const name of agents) {
+    wanted.push({
+      role: name,
+      value:
+        choices[name] ?? routing.agentRole(agentModels[name] as AgentModel),
+    });
+  }
   const result = addModelRoles(path, wanted, {
     dry,
     adopt,
-    retarget: wanted.filter((e) => seeded.has(e.role) && e.role in choices),
+    retarget: wanted.filter((e) => seeded.has(e.role)),
   });
-  // What an uninstall takes out again: the lines just put in, and nothing of the host's.
+  // What an uninstall takes out again: what was just put in, and nothing of the host's.
   if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
   if (!dry) {
     for (const m of result.retargeted) {
-      retargetHostEdit(harnessDir, path, m.from, m.to, m.hunk);
+      if (m.line !== undefined) {
+        retargetHostEdit(harnessDir, path, m.line.from, m.line.to, m.line.hunk);
+      }
     }
   }
   if (adopt && !dry && existsSync(path)) {
@@ -1071,42 +1090,53 @@ function seedModelRoles(
   }
   if (result.refused !== undefined) {
     found.warnings.push(
-      `did not edit ${path} — ${result.refused}. Held roles ${list(heldRoles)} fall back to \`${routing.defaultRole}\`.`,
+      `did not edit ${path} — ${result.refused}. Set the model roles ${list(wanted.map((e) => `${e.role}: ${e.value}`))} there yourself.`,
     );
     return;
+  }
+  for (const tier of unseeded) {
+    const holders = agents.filter((n) => agentModels[n]?.tier === tier);
+    found.warnings.push(
+      `could not seed the model role ${tier} in ${path}: the host's model roles hold no model to seed it from. Set ${tier} there to a model; ${list(holders)} ${holders.length === 1 ? 'runs' : 'run'} on it.`,
+    );
   }
   const moved = wanted.filter((e) =>
     result.retargeted.some((m) => m.role === e.role),
   );
-  // A seed the operator chose the very value of is already what they chose: nothing
-  // moves, and the entry is still theirs from now on, as a moved one is.
-  const kept = wanted.filter(
-    (e) =>
-      seeded.has(e.role) &&
-      Object.hasOwn(choices, e.role) &&
-      !moved.some((m) => m.role === e.role),
+  const placed = [...result.added, ...moved];
+  // An own seed standing at the value wanted now: install's still, or the operator's
+  // where they chose that very value.
+  const standing = wanted.filter(
+    (e) => seeded.has(e.role) && !moved.some((m) => m.role === e.role),
   );
   if (!dry) {
+    const own = [...placed, ...standing];
     noteHostRoutes(
       harnessDir,
-      [...result.added, ...moved, ...kept]
-        .filter((e) => e.role in choices)
-        .map((e) => e.role),
-      result.added.filter((e) => !(e.role in choices)).map((e) => e.role),
+      own.filter((e) => Object.hasOwn(choices, e.role)).map((e) => e.role),
+      Object.fromEntries(
+        own
+          .filter((e) => !Object.hasOwn(choices, e.role))
+          .map((e) => [e.role, e.value]),
+      ),
     );
   }
   // Only the host's own entries are the host's to be credited with; install's seeds,
   // standing as it wrote them, are not.
-  const routed = wanted.filter(
+  const kept = wanted.filter(
     (e) => !result.added.some((a) => a.role === e.role) && !seeded.has(e.role),
   );
-  if (routed.length > 0) {
+  if (kept.length > 0) {
     found.left.push(
-      `the model of ${list(routed.map((e) => e.role))}, which ${path} already routes`,
+      `the model roles ${list(kept.map((e) => e.role))}, which ${path} already sets`,
     );
   }
-  for (const entry of kept) found.routes.push(`${entry.role} → ${entry.value}`);
-  if (result.added.length === 0 && moved.length === 0) {
+  for (const entry of [...placed, ...standing]) {
+    if (Object.hasOwn(choices, entry.role)) {
+      found.routes.push(`${entry.role} → ${entry.value}`);
+    }
+  }
+  if (placed.length === 0) {
     found.detail.push(`  modelRoles: ${path} — no entry was missing`);
     return;
   }
@@ -1114,20 +1144,16 @@ function seedModelRoles(
     found.detail.push(
       `  modelRoles${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'added' : 'would add'}`,
     );
-  }
-  for (const entry of result.added) {
-    found.detail.push(`    ${modelRoleLine(entry, '')}`);
+    for (const entry of result.added) {
+      found.detail.push(`    ${modelRoleLine(entry, '')}`);
+    }
   }
   if (moved.length > 0) {
     found.detail.push(
-      `  modelRoles${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would move' : 'moved'} the entries install seeded to the models you chose`,
+      `  modelRoles${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would move' : 'moved'} the entries install seeded`,
     );
-    for (const entry of moved)
+    for (const entry of moved) {
       found.detail.push(`    ${modelRoleLine(entry, '')}`);
-  }
-  for (const entry of [...result.added, ...moved]) {
-    if (Object.hasOwn(choices, entry.role)) {
-      found.routes.push(`${entry.role} → ${entry.value}`);
     }
   }
   found.edits.push({
@@ -1137,7 +1163,7 @@ function seedModelRoles(
         ? [`modelRoles gains ${list(result.added.map((e) => e.role))}`]
         : []),
       ...(moved.length > 0
-        ? [`modelRoles moves ${list(moved.map((e) => e.role))} to your choice`]
+        ? [`modelRoles moves ${list(moved.map((e) => e.role))}`]
         : []),
     ].join('; '),
   });

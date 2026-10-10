@@ -1,10 +1,10 @@
-// The host's `modelRoles` mapping — the one place a held role becomes a model.
+// The host's `modelRoles` mapping — the one place an agent's model role becomes a model.
 //
-// A projected definition names the ROLE an agent holds and never a model; the host
-// decides which model fills a role in its own config file. This module adds, for a
-// role the host has not mapped, an entry that aliases the harness's nearest built-in
-// role, so a freshly installed agent routes somewhere sensible until its operator
-// chooses. It never changes an entry that is already there.
+// A projected definition names the model ROLE named for its agent and never a model;
+// the host decides which model fills a role in its own config file. This module adds
+// the entries the caller wants and the host lacks — on omp each agent's own role and
+// the tier roles they alias — and moves only the entries the caller vouches are its
+// own seed. It never changes another entry that is already there.
 //
 // THE FILE IS HOST-OWNED, so it is EDITED, never re-emitted. The write is a text
 // insertion of whole lines: no YAML library reads the file and no serializer writes
@@ -12,7 +12,9 @@
 // unrelated keys — every byte that is not the new entry must survive. What the
 // insertion cannot safely extend (a flow mapping, a scalar, an anchor, an alias, a
 // tag, a block scalar, a mapping whose entries are not `key: value` lines) is left
-// untouched and reported, and the caller carries on.
+// untouched and reported, and the caller carries on. The one exception is a file that
+// is a single JSON document, which has no comments or quoting to lose: it is written
+// back whole, and only where writing it back unchanged reproduces it byte for byte.
 //
 // It takes the path and the wanted entries as DATA: which harness, which role and
 // which alias are the caller's facts, so nothing here imports an adapter.
@@ -26,6 +28,7 @@ import {
   lineHunks,
 } from './manifest.js';
 import {
+  TOP_LEVEL_KEY,
   inlineValue,
   isBlankOrComment,
   keyOf,
@@ -52,15 +55,19 @@ export interface AddModelRolesOpts {
   readonly retarget?: readonly ModelRoleEntry[];
 }
 
-/** One existing line moved to a new value. */
+/** One existing entry moved to a new value. */
 export interface RetargetedModelRole {
   readonly role: string;
-  /** The whole line as it stood, with its terminator. */
-  readonly from: string;
-  /** The whole line as it now stands, with its terminator. */
-  readonly to: string;
-  /** The new line as a hunk of its own, for a record that never held `from`. */
-  readonly hunk: LineHunk;
+  /** The value it now holds. */
+  readonly value: string;
+  /** In a YAML file, the line that moved: as it stood and as it now stands, each with
+   *  its terminator, and the new line as a hunk of its own, for a record that never
+   *  held `from`. Absent in a JSON file, whose rewrite is recorded whole in `edit`. */
+  readonly line?: {
+    readonly from: string;
+    readonly to: string;
+    readonly hunk: LineHunk;
+  };
 }
 
 export interface AddModelRolesResult {
@@ -73,9 +80,12 @@ export interface AddModelRolesResult {
   /** Why the file was left untouched, when its `modelRoles` cannot be safely
    *  extended. Absent otherwise. */
   readonly refused?: string;
-  /** For each wanted role the file already has, its whole line as it stands, with its
-   *  terminator. Empty when `refused`. */
+  /** For each wanted role a YAML file already has, its whole line as it stands, with
+   *  its terminator. Empty when `refused`, and in a JSON file. */
   readonly current: Readonly<Record<string, string>>;
+  /** Every entry the host's `modelRoles` held before this edit, as role and value
+   *  (unquoted), in file order. Empty when `refused`. */
+  readonly host: readonly (readonly [role: string, value: string])[];
   /** The existing lines `retarget` moved (or, under `dry`, would). */
   readonly retargeted: readonly RetargetedModelRole[];
   /** What was put in the file, and what was adopted, for the deploy manifest — an
@@ -102,10 +112,15 @@ export function modelRoleLine(entry: ModelRoleEntry, indent: string): string {
  *    when it has none).
  *  - the file has no `modelRoles` key ⇒ a `modelRoles:` block is appended at the end.
  *  - the file is absent ⇒ it is created (with its directory).
+ *  - the file is a JSON document (JSON is YAML, and omp reads it as such) ⇒ the
+ *    entries join its `modelRoles` object and the document is written back in the
+ *    layout it had, when that layout is one JSON serialization reproduces byte for
+ *    byte; otherwise it is refused.
  *  - `modelRoles` holds a value this cannot safely extend ⇒ nothing is written and
  *    `refused` says why.
  *
- * An entry whose role already has a key is never touched, whatever its value.
+ * An entry whose role already has a key is never touched, whatever its value, unless
+ * the caller names it in `retarget`.
  */
 export function addModelRoles(
   path: string,
@@ -115,6 +130,9 @@ export function addModelRoles(
   const dry = opts.dry ?? false;
   const exists = existsSync(path);
   const text = exists ? readFileSync(path, 'utf8') : '';
+  if (/^\s*\{/.test(text)) {
+    return addJsonModelRoles(path, text, wanted, opts);
+  }
   const lines = splitLines(text);
   const eol = lines.find(([, t]) => t !== '')?.[1] || '\n';
 
@@ -124,9 +142,10 @@ export function addModelRoles(
     wrote: false,
     refused: reason,
     current: {},
+    host: [],
     retargeted: [],
   });
-  const nothing = { current: {}, retargeted: [] } as const;
+  const nothing = { current: {}, host: [], retargeted: [] } as const;
   // `moved` is the text with the retargeted lines already changed: the lines install
   // gains are read against it, since a moved line is not an insertion.
   const finish = (
@@ -134,10 +153,11 @@ export function addModelRoles(
     moved: string,
     next: string,
     current: Record<string, string>,
+    host: readonly (readonly [string, string])[],
     retargeted: readonly RetargetedModelRole[],
     adopted: (source: string) => LineHunk[] = () => [],
   ): AddModelRolesResult => {
-    const rest = { current, retargeted };
+    const rest = { current, host, retargeted };
     if (added.length === 0 && retargeted.length === 0) {
       return { path, added, wrote: false, ...rest };
     }
@@ -190,6 +210,7 @@ export function addModelRoles(
       `${text}${lead}modelRoles:${eol}${body}${eol}`,
       {},
       [],
+      [],
     );
   }
 
@@ -208,6 +229,7 @@ export function addModelRoles(
   let last = at; // the last line of the block that carries content
   const present = new Set<string>();
   const entryAt = new Map<string, number>(); // each key's first line
+  const host: [string, string][] = [];
   for (let i = at + 1; i < lines.length; i++) {
     const line = (lines[i] as [string, string])[0];
     if (isBlankOrComment(line)) {
@@ -226,10 +248,15 @@ export function addModelRoles(
     }
     last = i;
     if (indent === entryIndent) {
-      const key = keyOf(line.slice(indent.length));
+      const content = line.slice(indent.length);
+      const key = keyOf(content);
       if (key !== undefined) {
         present.add(key);
-        if (!entryAt.has(key)) entryAt.set(key, i);
+        if (!entryAt.has(key)) {
+          entryAt.set(key, i);
+          const head = TOP_LEVEL_KEY.exec(content)?.[0].length ?? 0;
+          host.push([key, scalarOf(inlineValue(content.slice(head)))]);
+        }
       }
     } else if (indent.length < entryIndent.length) {
       return refuse(
@@ -276,14 +303,26 @@ export function addModelRoles(
 
   // The seeds to move: the line changes in place, so the file keeps its order, and the
   // change is not read as an insertion, which an uninstall would take out whole.
-  const moves: { role: string; at: number; from: string; to: string }[] = [];
+  const moves: {
+    role: string;
+    value: string;
+    at: number;
+    from: string;
+    to: string;
+  }[] = [];
   for (const e of opts.retarget ?? []) {
     const i = entryAt.get(e.role);
     if (i === undefined) continue;
     const [t, le] = lines[i] as [string, string];
     const line = modelRoleLine(e, indent);
     if (t !== line)
-      moves.push({ role: e.role, at: i, from: t + le, to: line + le });
+      moves.push({
+        role: e.role,
+        value: e.value,
+        at: i,
+        from: t + le,
+        to: line + le,
+      });
   }
   const moved = lines.map(
     ([t, le], i) => moves.find((m) => m.at === i)?.to ?? t + le,
@@ -292,23 +331,30 @@ export function addModelRoles(
   const retargetedOf = (source: string): RetargetedModelRole[] =>
     moves.map((m) => ({
       role: m.role,
-      from: m.from,
-      to: m.to,
-      hunk: adoptedHunk(source, m.at, 1),
+      value: m.value,
+      line: { from: m.from, to: m.to, hunk: adoptedHunk(source, m.at, 1) },
     }));
 
   const missing = wanted.filter((e) => !present.has(e.role));
   if (missing.length === 0) {
     if (moves.length > 0) {
-      return finish([], movedText, movedText, current, retargetedOf(movedText));
+      return finish(
+        [],
+        movedText,
+        movedText,
+        current,
+        host,
+        retargetedOf(movedText),
+      );
     }
     return adopted.length === 0
-      ? { path, added: [], wrote: false, current, retargeted: [] }
+      ? { path, added: [], wrote: false, current, host, retargeted: [] }
       : {
           path,
           added: [],
           wrote: false,
           current,
+          host,
           retargeted: [],
           edit: { created: false, hunks: adoptedHunks(text) },
         };
@@ -330,7 +376,114 @@ export function addModelRoles(
     movedText,
     next,
     current,
+    host,
     retargetedOf(next),
     adoptedHunks,
   );
+}
+
+/** A YAML scalar as written on one line, unquoted: a double-quoted one read as the
+ *  JSON string it is, a single-quoted one with its doubled quotes undone, a plain one
+ *  as it stands. */
+function scalarOf(raw: string): string {
+  if (raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')) {
+    try {
+      return JSON.parse(raw) as string;
+    } catch {
+      return raw;
+    }
+  }
+  if (raw.length >= 2 && raw.startsWith("'") && raw.endsWith("'")) {
+    return raw.slice(1, -1).replace(/''/g, "'");
+  }
+  return raw;
+}
+
+/** The JSON layouts a document is written back in: compact, or indented by two
+ *  spaces, four, or a tab. */
+const JSON_LAYOUTS: readonly (number | string | undefined)[] = [
+  undefined,
+  2,
+  4,
+  '\t',
+];
+
+/**
+ * {@link addModelRoles} for a file that is one JSON document. The document is parsed
+ * and written back whole, so it is edited only where writing it back unchanged would
+ * reproduce it byte for byte — in one of {@link JSON_LAYOUTS}, with its final line
+ * ending — and nothing of the host's can be lost. The rewrite is recorded as the one
+ * hunk it is, which an uninstall undoes while the file still reads as install left it.
+ */
+function addJsonModelRoles(
+  path: string,
+  text: string,
+  wanted: readonly ModelRoleEntry[],
+  opts: AddModelRolesOpts,
+): AddModelRolesResult {
+  const refuse = (reason: string): AddModelRolesResult => ({
+    path,
+    added: [],
+    wrote: false,
+    refused: reason,
+    current: {},
+    host: [],
+    retargeted: [],
+  });
+  const isMapping = (v: unknown): v is Record<string, unknown> =>
+    typeof v === 'object' && v !== null && !Array.isArray(v);
+  let doc: unknown;
+  try {
+    doc = JSON.parse(text);
+  } catch {
+    return refuse(
+      'the file opens a flow mapping that is not JSON, so a `modelRoles` entry cannot be added safely',
+    );
+  }
+  if (!isMapping(doc)) {
+    return refuse(
+      'the file is a JSON document that is not an object, so a `modelRoles` key cannot be added safely',
+    );
+  }
+  const terminator = /\r?\n$/.exec(text)?.[0] ?? '';
+  const body = text.slice(0, text.length - terminator.length);
+  const layout = JSON_LAYOUTS.findIndex(
+    (l) => JSON.stringify(doc, null, l) === body,
+  );
+  if (layout < 0) {
+    return refuse(
+      'the file is JSON in a layout that writing it back would change, so a `modelRoles` entry cannot be added without rewriting bytes of yours',
+    );
+  }
+  const roles = doc.modelRoles;
+  if (
+    roles !== undefined &&
+    !(
+      isMapping(roles) &&
+      Object.values(roles).every((v) => typeof v === 'string')
+    )
+  ) {
+    return refuse(
+      '`modelRoles` is not a mapping of names to models, so an entry cannot be added safely',
+    );
+  }
+  const held = (roles ?? {}) as Record<string, string>;
+  const host = Object.entries(held);
+  const added = wanted.filter((e) => !Object.hasOwn(held, e.role));
+  const retargeted: RetargetedModelRole[] = (opts.retarget ?? [])
+    .filter((e) => Object.hasOwn(held, e.role) && held[e.role] !== e.value)
+    .map((e) => ({ role: e.role, value: e.value }));
+  const result = { path, added, current: {}, host, retargeted };
+  if ((added.length === 0 && retargeted.length === 0) || opts.dry === true) {
+    return { ...result, wrote: false };
+  }
+  const next: Record<string, string> = { ...held };
+  for (const e of [...retargeted, ...added]) next[e.role] = e.value;
+  const written = `${JSON.stringify({ ...doc, modelRoles: next }, null, JSON_LAYOUTS[layout])}${terminator}`;
+  writeFileSync(path, written);
+  return {
+    ...result,
+    wrote: true,
+    edit: { created: false, hunks: lineHunks(text, written) },
+  };
 }
