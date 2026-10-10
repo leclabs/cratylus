@@ -1,0 +1,14 @@
+{
+  "id": "01M4KKYVZ85WHMXFJQ0JKHK0KN",
+  "at": "2026-10-10T19:17:11.272Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "offline proof",
+  "wording": "before a check is frozen, it is run against fixed recordings instead of live work: golden recordings that satisfy its example must pass, and negative recordings that each break the example one specific way must fail; each assertion names the words of its example it binds, a negative exists only where the example's words call for one, and the check reads nothing from the operator's host that the example does not name, so a frozen check rejects the plausible failures and nothing its example never fixed.",
+  "builtFrom": [
+    "example",
+    "freeze"
+  ],
+  "reason": "0006 and 0043: across cuts 3 and 6, six frozen checks bound what their examples never fixed, each needing an architect ruling mid-build.",
+  "supersedes": []
+}
