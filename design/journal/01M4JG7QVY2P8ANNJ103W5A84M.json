@@ -1,0 +1,15 @@
+{
+  "id": "01M4JG7QVY2P8ANNJ103W5A84M",
+  "at": "2026-10-10T08:52:53.246Z",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability interface",
+  "wording": "a capability is offered to agents the way the harness describes its own tools: its name and verbs are the anchors of the concepts it serves, in their context's words, and each says its concept's purpose and when to reach for it, so an agent working in that context knows from the interface alone what each verb does; the description is stated once, by the capability's implementation, which explains itself on request, and a harness's adapter only composes it into that harness's form, so the meaning is never restated where it could drift.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "Single responsibility: the capability owns its own description, and adapters only compose it. 'Cold' is dropped: names are natural within their context, and the cold-decode oracle belongs to the corpus.",
+  "supersedes": [
+    "01M4JDR40QH8AHCH2M6SPV6GVV"
+  ]
+}
