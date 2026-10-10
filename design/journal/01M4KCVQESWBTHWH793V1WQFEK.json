@@ -1,0 +1,25 @@
+{
+  "id": "01M4KCVQESWBTHWH793V1WQFEK",
+  "at": "2026-10-10T17:13:08.313Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "example-driven workflow",
+  "wording": "agents effectively produce work that realizes a meaning the operator and architect settled, judged against examples fixed before any build, within and across bounded contexts, so the semantic gap is held closed by construction; effective includes efficient: the agents' effort goes into work that realizes the meaning, each fact is established once, and nothing unchanged is checked again.",
+  "builtFrom": [
+    "conceptual design",
+    "cut",
+    "illustration",
+    "build",
+    "judgment",
+    "whole check",
+    "release",
+    "proportionality",
+    "roles",
+    "efficiency",
+    "semantic gap"
+  ],
+  "reason": "Names the problem the workflow exists to solve, now that the semantic gap is a concept of its own.",
+  "supersedes": [
+    "01M4J5R9EN81TVPB0QZWZXAQRD"
+  ]
+}
