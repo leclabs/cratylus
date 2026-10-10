@@ -151,9 +151,44 @@ describe('leaks', () => {
       ['plan'],
       ['Work kept in git, checked with vitest.'],
     );
-    expect(leaks('Checked with vitest; kept with git merge.', own)).toEqual([]);
+    expect(leaks('Checked with vitest; kept with git.', own)).toEqual([]);
     expect(leaks('Checked with zod.', own)).toEqual([
       { words: 'zod', rule: 'names a tool or library' },
+    ]);
+  });
+
+  it('owns a subject’s word only as the plain word, never a command, code span or flag', () => {
+    const own = vocabulary(['plan'], ['Work checked with vitest.']);
+    expect(leaks('The work is checked with vitest.', own)).toEqual([]);
+    expect(leaks('The work is checked with vitest run.', own)).toEqual([
+      { words: 'vitest run', rule: 'names a command' },
+    ]);
+    expect(leaks('The work is checked with `vitest`.', own)).toEqual([
+      { words: '`vitest`', rule: 'quotes code' },
+    ]);
+    expect(leaks('The work is checked with --vitest.', own)).toEqual([
+      { words: '--vitest', rule: 'names a command-line flag' },
+    ]);
+  });
+
+  it('keeps every exemption a concept name gives, inside a code span too', () => {
+    const own = vocabulary(['vitest'], ['Work checked with vitest.']);
+    expect(
+      leaks('Checked with vitest, vitest run and `vitest run`.', own),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["The practice of omp's sessions.", 'omp'],
+    ['The practice of omp’s sessions.', 'omp'],
+    ['The practice of each --agent.', 'agent'],
+    ['The practice of vitest-based checking.', 'vitest'],
+  ])('gives the bare word a subject joins to others: %s', (subject, word) => {
+    const own = vocabulary(['plan'], [subject]);
+    expect(own.plain.has(word)).toBe(true);
+    expect(leaks(`Sessions run in ${word}.`, own)).toEqual([]);
+    expect(leaks(`Sessions run in \`${word}\`.`, own)).toEqual([
+      { words: `\`${word}\``, rule: 'quotes code' },
     ]);
   });
 });

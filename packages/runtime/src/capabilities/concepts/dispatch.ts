@@ -19,8 +19,9 @@
 // entry and prints it as JSON; when what it recorded leaks implementation, the
 // answer also carries the `warnings`, and nothing is refused for leakage. A
 // decision constraining realization is never warned, and a context's own words
-// include those its current subject names. Every refusal is one line opening
-// with `concepts <verb>:`, thrown before anything is appended.
+// include each plain word its current subject names, though never a command, a
+// quotation in code type or a flag that holds it. Every refusal is one line
+// opening with `concepts <verb>:`, thrown before anything is appended.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -49,6 +50,7 @@ import {
 import { journalAt } from './journal.js';
 import {
   type Passage,
+  type Vocabulary,
   type Warning,
   leaks,
   visibleExamples,
@@ -155,7 +157,7 @@ export const VERBS = {
     concept: 'implementation leakage',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, and the words a context’s concept names and its current subject name are its own words, never a leak',
+      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
     when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak, and a decision of no recorded kind is inspected as stating meaning',
     positional: null,
     flags: {
@@ -404,7 +406,8 @@ export function dispatchConcepts(
     },
   });
   /** The words of `where`: the names of its live concepts and of `also`, and
-   *  the words its current subject names (each, while descriptions compete). */
+   *  the plain words its current subject names (each, while descriptions
+   *  compete). */
   const own = (where: string, ...also: string[]) =>
     vocabulary(
       [...folded.design(where).concepts.map((c) => c.name), ...also],
@@ -415,7 +418,7 @@ export function dispatchConcepts(
   const warnings = (
     passage: Passage,
     texts: readonly string[],
-    words: ReadonlySet<string>,
+    words: Vocabulary,
   ): Warning[] => {
     const found = texts.flatMap((text) => leaks(text, words));
     return found
@@ -475,7 +478,7 @@ export function dispatchConcepts(
           warnings(
             { kind: 'example', file: e.file, number: e.number },
             [e.text],
-            folded.contexts.has(e.context) ? own(e.context) : new Set(),
+            folded.contexts.has(e.context) ? own(e.context) : vocabulary([]),
           ),
         );
       return { warnings: [...recorded, ...examples] };

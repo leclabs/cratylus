@@ -31,8 +31,8 @@ names them: `eventTap` and `concepts`. A corpus's skill names one of them as
 [the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
 `supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
-warns; a context's own words, its concept names and the words its current subject names, are
-never leakage, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
+warns; a context's own words, its concept names and each plain word its current subject names,
+are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
 `realization` is never inspected (decision 0058).
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
