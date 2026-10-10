@@ -167,8 +167,9 @@ function agentOf(
     const entry = (vector[field] ?? []).find((e) => e.slot === slot);
     return entry ? anchorOf(entry.value) : '';
   };
-  const action = anchors('actionScope');
-  const readOnly = action.length === 1 && action[0] === 'none';
+  // `none` is the absence of every action: an action-scope holding nothing else
+  // (an empty one included) is read-only.
+  const readOnly = anchors('actionScope').every((anchor) => anchor === 'none');
   return {
     name: identity.name,
     description: identity.description,
@@ -296,6 +297,11 @@ export function persona(over: RoleCell, residue: Residue): Agent {
       const anchor = anchorOf(value);
       if (factor === 'guardrails')
         refuse(`${who} removes the guardrail ${anchor}`);
+      // `none` in action-scope is the absence of every action; removing it widens.
+      if (factor === 'action-scope' && anchor === 'none')
+        refuse(
+          `${who} removes none from action-scope, which widens its reach beyond its role ${over.name}`,
+        );
       if (meta.group !== 'Reach')
         refuse(
           `${who} removes ${anchor} from ${factor}; a persona extends sets, it never takes from them`,
