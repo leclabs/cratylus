@@ -83,7 +83,6 @@ export function fixture(
   options: {
     config?: string;
     prepare?(paths: { home: string; cwd: string }): void;
-    linkPersonaCommands?: boolean;
   } = {},
 ): Fixture {
   const root = mkdtempSync(join(tmpdir(), 'agent-launch-'));
@@ -122,9 +121,6 @@ export function fixture(
       '--home',
       home,
       '--all',
-      options.linkPersonaCommands
-        ? '--link-persona-commands'
-        : '--no-link-persona-commands',
       '--model-roles',
       'default',
     ],

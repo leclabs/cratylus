@@ -247,7 +247,6 @@ describe('agent launch — visible examples', () => {
     const name = 'corpus-pilot';
     const body = 'Guide the survey vessel through the inlet.';
     const f = fixture({
-      linkPersonaCommands: true,
       prepare: ({ cwd }) => {
         const agents = join(cwd, 'corpus/agents');
         mkdirSync(agents, { recursive: true });
