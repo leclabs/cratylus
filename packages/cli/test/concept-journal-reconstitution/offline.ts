@@ -188,7 +188,7 @@ describe('example 10 offline proof', () => {
       }
     }
   });
-  it('launches real omp without a prompt to prove tool schemas and native compaction wiring', () => {
+  it('launches the fixture architect through --agent and inspects its turn prompt, tools and compacted context', () => {
     const repo = repository();
     try {
       inspectLaunch(repo.cwd, reservation.summary);

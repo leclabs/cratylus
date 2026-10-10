@@ -1,12 +1,23 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect } from 'vitest';
+import { fixture } from '../agent-launch/fixture.js';
 import { type Recording, decodeMessages, observedTools } from './check.js';
 import { here } from './fixture.js';
 
+// This instruction is test-owned, not a claim about the operator's architect
+// text. It binds reconstitution's “querying the concept journal ... before acting”.
+export const architectBody =
+  'You are the architect. Before acting, query the concept journal with `pnpm cratylus concepts state`. Read back the current design of the contexts the work touches, their decisions and what is open. Recover the design from the journal, not from the compacted summary.';
 export function compactedSession(cwd: string, summary: string) {
   const file = join(cwd, 'compacted.jsonl');
   const timestamp = new Date().toISOString();
@@ -52,17 +63,21 @@ export function compactedSession(cwd: string, summary: string) {
   );
   return file;
 }
-export function launchArgs(session: string) {
+export function launchArgs(
+  session: string,
+  extension: string,
+  model = 'fixture/base',
+) {
   return [
     '--print',
     '--mode',
     'json',
     '--model',
-    'anthropic/claude-opus-5-5',
+    model,
     '--thinking',
     'medium',
-    '--append-system-prompt',
-    join(homedir(), '.omp/agent/roles/architect.md'),
+    '--agent',
+    'architect',
     '--resume',
     session,
     '--tools',
@@ -74,65 +89,81 @@ export function launchArgs(session: string) {
     '--no-title',
     '--no-pty',
     '--extension',
+    extension,
+    '--extension',
     join(here, 'observe-omp.ts'),
   ];
 }
 export function inspectLaunch(cwd: string, summary: string) {
-  const session = compactedSession(cwd, summary);
-  const wiring = join(cwd, 'wiring.json');
-  // No prompt, closed stdin, and an early-exit observer: never a model run.
-  const result = spawnSync('omp', launchArgs(session), {
-    cwd,
-    input: '',
-    encoding: 'utf8',
-    timeout: 60_000,
-    env: {
-      ...process.env,
-      CONCEPT_INSPECT_ONLY: '1',
-      CONCEPT_WIRING_FILE: wiring,
-    },
-  });
-  if (result.error) throw result.error;
-  expect(result.status, result.stderr + result.stdout).toBe(0);
-  expect(existsSync(wiring), 'real omp must emit its active tool schemas').toBe(
-    true,
-  );
-  const observed = JSON.parse(readFileSync(wiring, 'utf8'));
-  expect(observed.active.slice().sort()).toEqual([...observedTools].sort());
-  for (const name of observedTools) {
-    const tool = observed.tools.find(
-      (item: { name: string }) => item.name === name,
+  const f = fixture();
+  try {
+    f.declaration({ name: 'architect', body: architectBody });
+    const session = compactedSession(cwd, summary);
+    const wiring = join(f.root, 'wiring.json');
+    // Supply a turn so the observer sees the effective prompt AFTER the
+    // installed extension's override; exit there, before any provider request.
+    const result = spawnSync(
+      'omp',
+      [...launchArgs(session, f.extension), 'Continue the work.'],
+      {
+        cwd,
+        input: '',
+        encoding: 'utf8',
+        timeout: 60_000,
+        env: {
+          ...f.env,
+          PWD: cwd,
+          CONCEPT_INSPECT_ONLY: '1',
+          CONCEPT_WIRING_FILE: wiring,
+        },
+      },
     );
-    expect(tool, `real launch offers ${name}`).toBeDefined();
-    expect(tool.parameters.type).toBe('object');
+    if (result.error) throw result.error;
+    expect(result.status, result.stderr + result.stdout).toBe(0);
     expect(
-      Object.keys(tool.parameters.properties ?? {}).length,
-      `${name} has declared parameters, not z.record(z.unknown())`,
-    ).toBeGreaterThan(0);
-    const parameter =
-      name === 'bash'
-        ? 'command'
-        : name === 'grep'
-          ? 'pattern'
-          : name === 'edit'
-            ? null
-            : 'path';
-    if (parameter) expect(tool.parameters.properties).toHaveProperty(parameter);
+      existsSync(wiring),
+      'real omp must emit its active tool schemas',
+    ).toBe(true);
+    const observed = JSON.parse(readFileSync(wiring, 'utf8'));
+    expect(observed.active.slice().sort()).toEqual([...observedTools].sort());
+    for (const name of observedTools) {
+      const tool = observed.tools.find(
+        (item: { name: string }) => item.name === name,
+      );
+      expect(tool, `real launch offers ${name}`).toBeDefined();
+      expect(tool.parameters.type).toBe('object');
+      expect(
+        Object.keys(tool.parameters.properties ?? {}).length,
+        `${name} has declared parameters, not z.record(z.unknown())`,
+      ).toBeGreaterThan(0);
+      const parameter =
+        name === 'bash'
+          ? 'command'
+          : name === 'grep'
+            ? 'pattern'
+            : name === 'edit'
+              ? null
+              : 'path';
+      if (parameter)
+        expect(tool.parameters.properties).toHaveProperty(parameter);
+    }
+    expect(observed.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'compaction',
+          summary,
+          firstKeptEntryId: '22222222',
+        }),
+      ]),
+    );
+    expect(JSON.stringify(observed.context)).toContain(summary);
+    // The instruction must be in the prompt actually held at the turn, not
+    // merely in a file on disk or session_start's unmodified base prompt.
+    expect(observed.systemPrompt.join('\n')).toContain(architectBody);
+    return observed;
+  } finally {
+    f.dispose();
   }
-  expect(observed.entries).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        type: 'compaction',
-        summary,
-        firstKeptEntryId: '22222222',
-      }),
-    ]),
-  );
-  expect(JSON.stringify(observed.context)).toContain(summary);
-  expect(
-    readFileSync(join(homedir(), '.omp/agent/roles/architect.md'), 'utf8'),
-  ).toContain('pnpm cratylus concepts');
-  return observed;
 }
 export function liveRun(
   cwd: string,
@@ -142,42 +173,69 @@ export function liveRun(
 ): Recording {
   if (process.env.CONCEPT_JOURNAL_LIVE !== '1')
     throw new Error('Live runs require CONCEPT_JOURNAL_LIVE=1');
-  const session = compactedSession(cwd, summary);
-  mkdirSync(outputDirectory, { recursive: true });
-  const output = resolve(outputDirectory, `run-${index}`);
-  const transcript = `${output}.messages.jsonl`;
-  writeFileSync(transcript, '');
-  const args = [...launchArgs(session), 'Continue the work.'];
-  const result = spawnSync('omp', args, {
-    cwd,
-    input: '',
-    encoding: 'utf8',
-    timeout: 300_000,
-    maxBuffer: 32 * 1024 * 1024,
-    env: {
-      ...process.env,
-      CONCEPT_INSPECT_ONLY: '0',
-      CONCEPT_WIRING_FILE: `${output}.wiring.json`,
-      CONCEPT_TRANSCRIPT_FILE: transcript,
-    },
-  });
-  // Preserve the raw stream and native session even if omp fails.
-  writeFileSync(`${output}.stdout`, result.stdout ?? '');
-  writeFileSync(`${output}.stderr`, result.stderr ?? '');
-  writeFileSync(`${output}.session.jsonl`, readFileSync(session));
-  if (result.error) throw result.error;
-  expect(result.status, result.stderr).toBe(0);
-  const messages: unknown[] = readFileSync(transcript, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => JSON.parse(line));
-  const record = { name: `live-${index}`, events: decodeMessages(messages) };
-  expect(
-    record.events.length,
-    'a successful launch must record assistant behavior',
-  ).toBeGreaterThan(0);
-  for (const event of record.events)
-    if (event.kind === 'tool') expect(observedTools).toContain(event.name);
-  writeFileSync(`${output}.json`, JSON.stringify(record, null, 2));
-  return record;
+  const f = fixture();
+  try {
+    const model = 'anthropic/claude-opus-5-5';
+    f.declaration({
+      name: 'architect',
+      body: architectBody,
+      model,
+      effort: 'medium',
+    });
+    // Only the explicitly opted-in live path may read the credential store.
+    // No roles, model config, memory, rules or extensions are copied.
+    for (const suffix of ['', '-wal', '-shm']) {
+      const source = join(homedir(), '.omp/agent', `agent.db${suffix}`);
+      if (existsSync(source))
+        cpSync(source, join(f.home, '.omp/agent', `agent.db${suffix}`));
+    }
+    const config = join(f.root, 'live-config.json');
+    writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
+    const session = compactedSession(cwd, summary);
+    mkdirSync(outputDirectory, { recursive: true });
+    const output = resolve(outputDirectory, `run-${index}`);
+    const transcript = `${output}.messages.jsonl`;
+    writeFileSync(transcript, '');
+    const args = [
+      ...launchArgs(session, f.extension, model),
+      '--config',
+      config,
+      'Continue the work.',
+    ];
+    const result = spawnSync('omp', args, {
+      cwd,
+      input: '',
+      encoding: 'utf8',
+      timeout: 300_000,
+      maxBuffer: 32 * 1024 * 1024,
+      env: {
+        ...f.env,
+        PWD: cwd,
+        CONCEPT_INSPECT_ONLY: '0',
+        CONCEPT_WIRING_FILE: `${output}.wiring.json`,
+        CONCEPT_TRANSCRIPT_FILE: transcript,
+      },
+    });
+    // Preserve the raw stream and native session even if omp fails.
+    writeFileSync(`${output}.stdout`, result.stdout ?? '');
+    writeFileSync(`${output}.stderr`, result.stderr ?? '');
+    writeFileSync(`${output}.session.jsonl`, readFileSync(session));
+    if (result.error) throw result.error;
+    expect(result.status, result.stderr).toBe(0);
+    const messages: unknown[] = readFileSync(transcript, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const record = { name: `live-${index}`, events: decodeMessages(messages) };
+    expect(
+      record.events.length,
+      'a successful launch must record assistant behavior',
+    ).toBeGreaterThan(0);
+    for (const event of record.events)
+      if (event.kind === 'tool') expect(observedTools).toContain(event.name);
+    writeFileSync(`${output}.json`, JSON.stringify(record, null, 2));
+    return record;
+  } finally {
+    f.dispose();
+  }
 }
