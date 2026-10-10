@@ -1,0 +1,17 @@
+{
+  "id": "01M4KCVJ6DBHJBAXQFB1CBHZSR",
+  "at": "2026-10-10T17:13:02.925Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "semantic gap",
+  "wording": "the distance between the meaning the operator and architect settled and what agents' work actually realizes; it opens whenever work is judged by something other than the meaning, such as a green suite, an agent's own account, or a reading bent to fit the work, and it is held closed by construction rather than by agents remembering or obeying: meaning fixed as examples before any build, held-out examples that catch passing the visible ones while missing the concept, independent judgment, and a concept journal that keeps the meaning when a session forgets it.",
+  "builtFrom": [
+    "concept",
+    "example",
+    "held-out example",
+    "judgment",
+    "concept journal"
+  ],
+  "reason": "The objective the operator set for this workflow is a method in which the semantic gap is held by construction; the seed carried its mechanisms (example, held-out example, judgment, concept journal) but never named the problem they solve, so a session reading the journal could not see why they exist.",
+  "supersedes": []
+}
