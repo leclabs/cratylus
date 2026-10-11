@@ -59,6 +59,12 @@ vi.mock('./rubric-judge.js', async (original) => ({
     const roleIndex = args.indexOf('--agent');
     const role = roleIndex < 0 ? undefined : args[roleIndex + 1];
     control.calls.push({ role, args });
+    // The installed cratylus.ts module, not omp itself, registers --agent.
+    if (
+      roleIndex >= 0 &&
+      !args.includes(join(control.home, '.omp/agent/extensions/cratylus.ts'))
+    )
+      return { status: 1, stdout: '', stderr: 'unknown flag: --agent' };
     const declaration = role
       ? readFileSync(
           join(control.home, '.omp/agent/agents', `${role}.md`),
@@ -179,18 +185,20 @@ describe.each(runners)(
       expect(args).toContain('--no-extensions');
       expect(modules.some((path) => path?.endsWith('/observe.ts'))).toBe(true);
     });
-    it('keeps installed cratylus modules out of the separate rubric judge', async () => {
-      await live(join(control.root, 'run'));
+    it('keeps the flag-registering module but excludes session hooks from the rubric judge', async () => {
+      const result = await live(join(control.root, 'run'));
+      expect(result).toMatchObject({ judgment: { status: 'judged' } });
       const judge = control.calls.find(
         (call) => !call.role || call.role === 'rubric-judge',
       );
       expect(judge).toBeDefined();
       expect(judge!.args).toContain('--no-extensions');
-      expect(
-        judge!.args.some((arg) =>
-          arg.startsWith(join(control.home, '.omp/agent/extensions/')),
-        ),
-      ).toBe(false);
+      const installed = judge!.args.filter((arg) =>
+        arg.startsWith(join(control.home, '.omp/agent/extensions/')),
+      );
+      expect(installed).toEqual([
+        join(control.home, '.omp/agent/extensions/cratylus.ts'),
+      ]);
     });
   },
 );

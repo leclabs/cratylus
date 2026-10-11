@@ -185,7 +185,7 @@ async function launch(
   writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
   const extensions =
     role === undefined
-      ? []
+      ? [f.extension] // Keep the adapter, never the subject's session hooks.
       : files(join(f.home, '.omp/agent/extensions')).filter((path) =>
           /\.(?:[cm]?js|ts)$/.test(path),
         );

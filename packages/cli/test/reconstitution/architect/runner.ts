@@ -124,7 +124,7 @@ async function launch(
   const config = join(f.root, 'session-config.json');
   writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
   const extensions = judge
-    ? []
+    ? [f.extension] // Registers --agent; session hooks stay subject-only.
     : files(join(f.home, '.omp/agent/extensions')).filter((path) =>
         /\.(?:[cm]?js|ts)$/.test(path),
       );
