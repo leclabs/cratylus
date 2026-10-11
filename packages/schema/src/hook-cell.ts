@@ -140,6 +140,12 @@ export interface GuardJudge {
    * of the act. Absent ⇒ the act alone.
    */
   readonly conversation?: boolean;
+  /**
+   * Whether the judge also reads the decisions the agent recorded this turn: each
+   * concept-journal append that took effect since the operator's last message, as its
+   * verb and its content, ahead of the act. Absent ⇒ not.
+   */
+  readonly recorded?: boolean;
 }
 
 /**

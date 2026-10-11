@@ -1780,6 +1780,171 @@ describe('omp capability interface', () => {
       expect(relayed).toHaveLength(4);
     });
 
+    /** A turn-end guard whose judge reads the decisions recorded this turn, composed into `agents`. */
+    const recordGuard = (agents: string[]) => ({
+      guard: {
+        ...surveyGuard(agents).guard,
+        id: 'unrecorded',
+        events: ['turn.end'] as ['turn.end'],
+        tell: 'holding open',
+        judge: {
+          prompt: 'Judge the reply against what was recorded.',
+          verdict: {},
+          refusesOn: 'unrecorded',
+          recorded: true,
+        },
+        refusal:
+          'holding open: a decision is taken when it is recorded. Record it, then report it.',
+      },
+      agents,
+    });
+    /** One call of the stand-in journal (`concept journal <capability>`), and its result. */
+    const journalCall = (
+      id: string,
+      call: { name: string; arguments: Record<string, unknown> },
+      isError = false,
+    ) => [
+      message({
+        role: 'assistant',
+        content: [{ type: 'toolCall', id, ...call }],
+      }),
+      message({
+        role: 'toolResult',
+        toolCallId: id,
+        toolName: call.name,
+        isError,
+        content: [{ type: 'text', text: isError ? 'refused' : 'appended' }],
+      }),
+    ];
+    const JOURNAL = 'concept_journal_concepts';
+    /** A session whose current turn recorded two decisions, one each way of calling the journal. */
+    const recordedTurn = [
+      message({ role: 'user', content: 'Settle night shoots.' }),
+      ...journalCall('earlier', {
+        name: JOURNAL,
+        arguments: { verb: 'define', name: 'earlier turn' },
+      }),
+      message({ role: 'user', content: 'Now settle approval.' }),
+      message({
+        role: 'user',
+        attribution: 'agent',
+        content: 'a guard notice, never the operator',
+      }),
+      ...journalCall('tool', {
+        name: JOURNAL,
+        arguments: { verb: 'define', name: 'approval', reason: 'distinct' },
+      }),
+      ...journalCall('device', {
+        name: 'write',
+        arguments: {
+          path: `xd://${JOURNAL}`,
+          content: JSON.stringify({ verb: 'define', name: 'release' }),
+        },
+      }),
+      ...journalCall(
+        'refused',
+        { name: JOURNAL, arguments: { verb: 'define', name: 'refused' } },
+        true,
+      ),
+      ...journalCall('read', {
+        name: JOURNAL,
+        arguments: { verb: 'overview' },
+      }),
+      ...journalCall('file', {
+        name: 'write',
+        arguments: { path: 'notes.md', content: 'x' },
+      }),
+    ];
+    const settled = {
+      last_assistant_message: 'Approval is settled: it is not release.',
+      stop_hook_active: false,
+    };
+
+    it("gives a guard whose judge reads the decisions recorded this turn each journal append that took effect since the operator's last message, and refuses the stop on its verdict", async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        [recordGuard(['architect']), replyGuard],
+        recordedTurn,
+      );
+      judge.verdict = JSON.stringify({
+        unrecorded: true,
+        surveys: true,
+        reason: 'Release is reported settled and is not recorded.',
+      });
+      expect(await fire('session_stop', settled)).toEqual({
+        decision: 'block',
+        reason:
+          'holding open: a decision is taken when it is recorded. Record it, then report it. Release is reported settled and is not recorded.\n\nsurveying: Release is reported settled and is not recorded.',
+      });
+      expect(judge.asked.map(payload)).toEqual([
+        [
+          'Decisions recorded this turn:',
+          'define {"name":"approval","reason":"distinct"}',
+          'define {"name":"release"}',
+          '',
+          'Reply:\nApproval is settled: it is not release.',
+        ].join('\n'),
+        'Reply:\nApproval is settled: it is not release.',
+      ]);
+      expect(relayed).toEqual([]);
+      // It counts toward the turn's stop allowance with the other turn-end guards.
+      expect(
+        await fire('session_stop', { ...settled, stop_hook_active: true }),
+      ).toMatchObject({ decision: 'block' });
+      expect(
+        await fire('session_stop', { ...settled, stop_hook_active: true }),
+      ).toBeUndefined();
+      expect(relayed).toHaveLength(2);
+    });
+
+    it('tells the judge none was recorded this turn, and allows the stop when it finds nothing held open', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules(
+        'architect',
+        [recordGuard(['architect'])],
+        [
+          ...recordedTurn,
+          message({ role: 'user', content: 'And scheduling?' }),
+        ],
+      );
+      judge.verdict = JSON.stringify({
+        unrecorded: false,
+        reason: 'It keeps the question open.',
+      });
+      expect(await fire('session_stop', settled)).toBeUndefined();
+      expect(judge.asked.map(payload)).toEqual([
+        'Decisions recorded this turn:\n(none)\n\nReply:\nApproval is settled: it is not release.',
+      ]);
+    });
+
+    it('fails open, aloud, when the decisions recorded this turn cannot be read or the judge gives no verdict', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        [recordGuard(['architect'])],
+        recordedTurn,
+      );
+      judge.verdict = 'It reports a settled question.';
+      expect(await fire('session_stop', settled)).toBeUndefined();
+      const reader = Symbol.for('cratylus.recorded-this-turn');
+      const globals: Record<symbol, unknown> = globalThis;
+      const lent = globals[reader];
+      delete globals[reader];
+      try {
+        expect(
+          await fire('session_stop', { ...settled, stop_hook_active: true }),
+        ).toBeUndefined();
+      } finally {
+        globals[reader] = lent;
+      }
+      expect(relayed).toEqual([
+        'unrecorded guard — the judge gave no verdict (it answered: It reports a settled question.), so this act was NOT judged.',
+        'unrecorded guard — the decisions recorded this turn could not be read, so this act was NOT judged.',
+      ]);
+      expect(judge.asked).toHaveLength(1);
+    });
+
     it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {
       omp.agents = [ARCHITECT(), CARTOGRAPHER()];
       const architect = await twoModules(
