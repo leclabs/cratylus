@@ -3,6 +3,15 @@
   "recording": {
     "messages": [
       {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "```assignment\n{\"cut\":\"seats\",\"concepts\":[\"reservation\",\"cancellation\"],\"examples\":[\"booking/1\",\"booking/2\"],\"decisions\":[\"0001\"]}\n```\n\nThe builder reports the cancellation finding in judgment.md fixed. Handle confirmation now. You may run the case or obtain an assayer judgment of that finding. Your final reply goes to the architect."
+          }
+        ]
+      },
+      {
         "role": "assistant",
         "content": [
           {

@@ -1,6 +1,15 @@
 {
   "messages": [
     {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "```assignment\n{\"cut\":\"seats\",\"workPackages\":[\"reservation\",\"cancellation\"],\"examples\":[\"booking/1\",\"booking/2\"],\"decisions\":[]}\n```\n\nJudge the seats cut in the booking context now. The visible reservation case is still failing: node checks/reservation.mjs fails because a free seat is refused. Your final reply goes to the lead."
+        }
+      ]
+    },
+    {
       "role": "assistant",
       "content": [
         {

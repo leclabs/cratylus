@@ -43,9 +43,9 @@ const scenario: Scenario = {
       'workPackage',
       'open',
       '--cut',
-      'booking',
+      'seats',
       '--branch',
-      'feature/booking',
+      'feature/seats',
       '--meaning-holder',
       'booking=operator',
     ],
@@ -54,7 +54,7 @@ const scenario: Scenario = {
       'submit',
       name,
       '--cut',
-      'booking',
+      'seats',
       '--concept',
       name,
       '--output',
@@ -66,7 +66,7 @@ const scenario: Scenario = {
         JSON.stringify({
           kind,
           transition: `${workPackage}-${kind}`,
-          cut: 'booking',
+          cut: 'seats',
           workPackage,
           role: 'builder',
           run: workPackage,
@@ -78,7 +78,7 @@ const scenario: Scenario = {
       JSON.stringify({
         kind: 'verdict',
         transition: `verdict-${assayer}`,
-        cut: 'booking',
+        cut: 'seats',
         assayer,
         run: `assay-${assayer}`,
         hardeningNotes: [],
@@ -94,11 +94,5 @@ const scenario: Scenario = {
       }),
     ]),
   ],
-};
-// Cut discovery uses the cut name, not the old fixture filename seats.
-scenario.files = {
-  ...scenario.files,
-  'design/examples/booking/booking.md':
-    scenario.files['design/examples/booking/seats.md']!,
 };
 roleSuite(here, [scenario], execution);

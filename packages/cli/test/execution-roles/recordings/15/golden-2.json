@@ -1,6 +1,15 @@
 {
   "messages": [
     {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "```assignment\n{\"cut\":\"seats\",\"concepts\":[\"reservation\"],\"examples\":[\"booking/1\"],\"decisions\":[\"0001\"]}\n```\n\nThe reservation expiry example admits either 24 elapsed hours or the next local midnight. These change the reservation concept. Resolve how we proceed. Your final reply is delivered to the architect."
+        }
+      ]
+    },
+    {
       "role": "assistant",
       "content": [
         {

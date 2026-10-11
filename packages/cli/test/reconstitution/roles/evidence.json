@@ -43,6 +43,30 @@
     "skipped": 15,
     "exitCode": 0
   },
+  "typedAssignmentRebind": {
+    "decision": "0062",
+    "changes": "Execution scenarios 15–18 now carry their declared typed assignments. Scenario 19 and its carried fixture name the seats cut in the booking context. No clause, rubric, or expected behavior changed.",
+    "recordings": "Authored controls carry the rebound input. The captured example-15 control explicitly records its input adaptation in provenance; it is not a new live run.",
+    "offline": {
+      "command": "pnpm --filter cratylus exec vitest run test/execution-roles/roles.test.ts test/reconstitution/roles/roles.test.ts",
+      "passed": 45,
+      "skipped": 30,
+      "exitCode": 0
+    },
+    "preflight": {
+      "command": "EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/execution-roles/roles.test.ts -t preflight",
+      "passed": 5,
+      "skipped": 37,
+      "exitCode": 0
+    },
+    "carriedPreflight": {
+      "command": "EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution/roles/roles.test.ts -t 'workflow/1 .*preflight'",
+      "passed": 1,
+      "skipped": 32,
+      "exitCode": 0
+    },
+    "liveRun": false
+  },
   "red": {
     "command": "EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/roles/roles.test.ts -t 'red demonstration'",
     "failed": 9,
