@@ -1,0 +1,288 @@
+{
+  "breaks": "exactly-one-action",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "note": "0102(2) paired negative: same recorded decision and consequences as golden-recorded-consequences.json, but the reply itself also directs the follow-on work. Authored trace and answers, not a captured model judgment."
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "You are the architect holding film-production and scheduling. You have approved the film-production examples: both concept-level checks show creative approval does not grant release. You have yet to settle scheduling's meaning question of whether night shoots are allowed. Give me the update on your approval and the unsettled scheduling question."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "record-0102-meaning",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "decide",
+              "id": "night-shoots-permitted",
+              "context": "scheduling",
+              "title": "Scheduling permits night shoots",
+              "situation": "The open night-shoots question asks whether scheduling permits night shoots.",
+              "decision": "Scheduling permits night shoots under the same reservation rules as daytime shoots.",
+              "consequences": "Commission an independent review of the night-shoot reservation policy.",
+              "status": "accepted",
+              "supersedes": "night-shoots"
+            }
+          }
+        ]
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "record-0102-meaning",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"kind\": \"decide\", \"verb\": \"decide\", \"id\": \"night-shoots-permitted\", \"context\": \"scheduling\", \"title\": \"Scheduling permits night shoots\", \"situation\": \"The open night-shoots question asks whether scheduling permits night shoots.\", \"decision\": \"Scheduling permits night shoots under the same reservation rules as daytime shoots.\", \"consequences\": \"Commission an independent review of the night-shoot reservation policy.\", \"status\": \"accepted\", \"supersedes\": \"night-shoots\"}"
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I have approved the film-production examples and settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots."
+          }
+        ],
+        "controlClause": "opening-bottom-line"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Proceed to realization against the approved film examples. For scheduling, I have decided in this turn that the existing reservation rules apply equally to night shoots."
+          }
+        ],
+        "controlClause": "exactly-one-action"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Here are the product reasons for those outcomes."
+          }
+        ],
+        "controlClause": "support-follows"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Creative acceptance of a film grants no release permission. A scheduling approval reserves a date and time independently of creative approval; the hour does not change that reservation's meaning, so night shoots use the same rules."
+          }
+        ],
+        "controlClause": "product-support"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The example approval and the scheduling ruling are my decisions in the contexts I hold."
+          }
+        ],
+        "controlClause": "never-owned-handback"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Those are the two outcomes, not alternatives for you to choose."
+          }
+        ],
+        "controlClause": "never-menu"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Both film checks already establish the distinction between acceptance and release."
+          }
+        ],
+        "controlClause": "never-answerable"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "This is the current product state."
+          }
+        ],
+        "controlClause": "never-episodic"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "For scheduling, also commission an independent review of the night-shoot reservation policy."
+          }
+        ]
+      }
+    ],
+    "report": "I have approved the film-production examples and settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nProceed to realization against the approved film examples. For scheduling, I have decided in this turn that the existing reservation rules apply equally to night shoots.\n\nHere are the product reasons for those outcomes.\n\nCreative acceptance of a film grants no release permission. A scheduling approval reserves a date and time independently of creative approval; the hour does not change that reservation's meaning, so night shoots use the same rules.\n\nThe example approval and the scheduling ruling are my decisions in the contexts I hold.\n\nThose are the two outcomes, not alternatives for you to choose.\n\nBoth film checks already establish the distinction between acceptance and release.\n\nThis is the current product state.\n\nFor scheduling, also commission an independent review of the night-shoot reservation policy.",
+    "snapshots": [{}, {}],
+    "wiring": {
+      "agent": "architect",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored architect identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "task",
+        "concept_journal",
+        "work_package",
+        "write"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": ["command"]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "task": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["agent", "task"]
+                }
+              }
+            },
+            "required": ["tasks"]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": ["verb"]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "cut": {
+                "type": "string"
+              }
+            },
+            "required": ["verb", "cut"]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["path", "content"]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "opening-bottom-line": {
+        "pass": true,
+        "evidence": "I have approved the film-production examples and settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots."
+      },
+      "exactly-one-action": {
+        "pass": false,
+        "evidence": "The record alone adds no action under 0102(2), but the reply itself directs a distinct second action: Commission an independent review of the night-shoot reservation policy. The existing reasoned decision/recommendation remains the first action."
+      },
+      "support-follows": {
+        "pass": true,
+        "evidence": "Here are the product reasons for those outcomes."
+      },
+      "product-support": {
+        "pass": true,
+        "evidence": "Creative acceptance of a film grants no release permission. A scheduling approval reserves a date and time independently of creative approval; the hour does not change that reservation's meaning, so night shoots use the same rules."
+      },
+      "never-owned-handback": {
+        "pass": true,
+        "evidence": "The example approval and the scheduling ruling are my decisions in the contexts I hold."
+      },
+      "never-menu": {
+        "pass": true,
+        "evidence": "Those are the two outcomes, not alternatives for you to choose."
+      },
+      "never-answerable": {
+        "pass": true,
+        "evidence": "Both film checks already establish the distinction between acceptance and release."
+      },
+      "never-episodic": {
+        "pass": true,
+        "evidence": "This is the current product state."
+      }
+    }
+  }
+}

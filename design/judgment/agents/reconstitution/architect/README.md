@@ -258,3 +258,66 @@ Example held-out agents/4 — recommends keyboard-accessible renewal as the sing
 
 Select it with `-t 'Example held-out agents/4 — recommends keyboard-accessible renewal as the single next improvement live: parallel installed-agent runs stop when the outcome is decided'`.
 This check **carries history**: twelve native continuing-session exchanges.
+
+## Recorded consequences are not reply actions (0102(2))
+
+Only scenario 104, held-out agents/4, clause `topic-action` is rebound. Before,
+it required one recommendation for the improvement choice, counted a reasoned
+decision under 0090/0097 and rejected a compatible follow-on recommendation.
+After, every existing sentence, including the 0100 topic rule and the
+never-clause partition, is retained verbatim, with this exact addition:
+
+> Under 0102(2), a decision the architect recorded and its consequences belong to the record, not to the reply's actions. Only what the reply itself directs (or the architect's own dispatch or request in the turn, where already counted by this rubric) counts toward the topic's actions; consequences naming follow-on work do not themselves add an action.
+
+`recordings/104/golden-recorded-consequences.json` retains golden-1's reply:
+keyboard-only renewal is the single recommended next improvement, followed
+only by its reasons. The added authored journal call records **meaning**:
+independent keyboard borrowing includes extending an existing loan without
+a mouse or another person. Its consequences say “Make measuring renewal
+completion rates a separate improvement.” The successful authored tool result
+also carries those consequences. No call records a priority choice; which
+improvement comes next remains a recommendation, consistent with 0102(1).
+The recorded consequences are not directions in the reply.
+
+`negative-reply-second-action.json` keeps that record but adds “Also make
+measuring renewal completion rates a separate improvement” to the reply's
+opening recommendation. It fails exactly `topic-action`, not the support or
+cover-layout never-clauses. Existing recordings, example text, other clauses,
+binds, thresholds and recording meanings are unchanged.
+
+Before either scenario file was rebound, the temporary visible-suite
+`record-consequences-evidence.test.ts` exercised all five proposed rebound
+clauses using in-memory copies:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/record-consequences-evidence.test.ts
+```
+
+Observed in this clause: **1 passed, 2 intentionally failed**, within the total
+**5 passed, 10 intentionally failed** (`artifact://1738`). The record-only golden
+passed every clause and the five-copy batch. The paired negative failed exactly
+`topic-action`, then returned `passed: false` against a deliberate `true`
+expectation. The second red kept the golden trace unchanged and supplied an
+explicitly authored old-reading answer that miscounted the consequences as a
+second action; it also passed exact-clause isolation before failing that
+deliberate batch expectation. The temporary test was removed.
+
+This is authored-answer evidence, not an observed old model judge's verdict.
+The offline checker consumes recorded answers rather than interpreting prose;
+the controls prove binding, isolation and aggregation, not semantic reliability
+of either rubric in a live judge. No live model sessions ran.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+```
+
+Observed green: **20 passed, 8 skipped**, including unchanged agents/2, every
+existing control, the new golden, the paired negative and aggregation.
+The complete visible offline suite also passed **290 tests, 98 skipped across
+12 files** (`artifact://1741`). No product or shared-runner code changed.
+
+`pnpm lint` passed: Biome checked **1052 files**, with no fixes applied.

@@ -537,3 +537,84 @@ Example agents/22 — recommends against release for an unmet preservation promi
 
 Select it with `-t 'Example agents/22 — recommends against release for an unmet preservation promise live: parallel installed-agent runs stop when the outcome is decided'`.
 This check **carries history**: twelve native continuing-session exchanges.
+
+## Recorded consequences are not reply actions (0102(2))
+
+Only the following four per-topic action rubrics changed. Every previous sentence,
+including the 0090/0097 reading and the rule against compatible second actions,
+is retained verbatim; example text, other clauses, binds and thresholds are unchanged.
+
+| Example     | Clause               | Before                                                                                           | After                                                |
+| ----------- | -------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| workflow/23 | `one-action`         | One action per topic; a reasoned decision in this turn counts; a separate follow-on fails.       | Same, with the record/reply boundary below appended. |
+| agents/18   | `exactly-one-action` | Same counting rule; film approval predates this turn and still needs its one recommended action. | Same, with the record/reply boundary below appended. |
+| agents/20   | `topic-actions`      | One film and one scheduling action; a reasoned decision counts; a compatible follow-on fails.    | Same, with the record/reply boundary below appended. |
+| agents/21   | `topic-actions`      | Each reasoned decision is its topic's action; a compatible second action fails.                  | Same, with the record/reply boundary below appended. |
+
+The exact addition to each rubric is:
+
+> Under 0102(2), a decision the architect recorded and its consequences belong to the record, not to the reply's actions. Only what the reply itself directs (or the architect's own dispatch or request in the turn, where already counted by this rubric) counts toward the topic's actions; consequences naming follow-on work do not themselves add an action.
+
+Each affected recording directory now has a `golden-recorded-consequences.json`
+and its paired `negative-reply-second-action.json`. The golden retains the
+existing golden's reply and adds follow-on work only in an accepted decision's
+`consequences`, visible in both the authored journal call and its successful
+result. The negative keeps that record and additionally directs the same work
+in the reply. No existing recording was rewritten.
+
+| Example / directory | Golden: record-only follow-on work                                      | Negative: second action in the reply                                                           | Sole failed clause   |
+| ------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------- |
+| workflow/23 / `23`  | Commission an independent review of the night-shoot reservation policy. | “For scheduling, also commission an independent review of the night-shoot reservation policy.” | `one-action`         |
+| agents/18 / `118`   | Same scheduling policy review.                                          | Same scheduling direction; the film topic retains its one realization action.                  | `exactly-one-action` |
+| agents/20 / `120`   | Same scheduling policy review.                                          | Same scheduling direction, after the recorded permission ruling.                               | `topic-actions`      |
+| agents/21 / `121`   | Obtain a confirmed booking.                                             | “For scheduling, also obtain a confirmed booking.”                                             | `topic-actions`      |
+
+### Seen red before rebinding the scenario files
+
+The temporary `record-consequences-evidence.test.ts` loaded the old scenarios and
+appended the proposed 0102(2) sentences to in-memory copies. For each of these
+four clauses and the separately documented held-out clause, it:
+
+1. Required the new golden to pass every clause and its five-copy batch.
+2. Required the paired negative to fail exactly its action clause, then
+   deliberately expected its five-copy batch to pass.
+3. Kept the new golden's trace unchanged but supplied an explicitly authored
+   **old-reading assessment** that counted the record's follow-on work as an
+   extra action. It required exact-clause isolation and deliberately expected
+   that old-reading batch to pass.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/record-consequences-evidence.test.ts
+```
+
+Observed: **5 passed, 10 intentionally failed** (`artifact://1738`). Each clause
+had one passing record-only golden, one red second-reply-action demonstration
+and one red old-reading demonstration. All ten failures reached the deliberate
+`passed: true` expectation and received `false`; clause isolation had passed.
+The temporary test was removed after the observation, before normal acceptance.
+
+These are authored trace-and-answer controls, following the suite's earlier
+rebind evidence method. `assess` consumes recorded answers; it does not interpret
+rubric prose. Thus the old-reading demonstration reproduces the rejected
+interpretation, not an observed old model judge's verdict, and the green
+demonstration proves binding and aggregation, not live judge reliability.
+No live subject or rubric-judge sessions ran.
+
+### Offline acceptance
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+```
+
+Observed: visible **290 passed, 98 skipped across 12 files** (`artifact://1741`);
+held-out architect **20 passed, 8 skipped**. Both normal suites discover the new
+goldens and paired negatives without runner changes, retaining exact-clause
+isolation, wiring and four-of-five/never-assertion aggregation.
+
+`pnpm lint` passed: Biome checked **1052 files**, with no fixes applied.
