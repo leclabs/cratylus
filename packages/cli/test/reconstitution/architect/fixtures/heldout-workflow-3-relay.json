@@ -1,0 +1,24 @@
+[
+  {
+    "role": "assistant",
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "content": [
+      {
+        "type": "text",
+        "text": "Both decisions above stand, with their reasons. The only open step is the film cut's: rewrite its examples around approval by two people before the edit is built again."
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "text",
+        "text": "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms. A readback the session owes comes first, the records as they stand, each open decision named as open; a decision taken now follows it. A meaning question you settled this turn, reported with its reason, is that topic's one action: add nothing more to it. Every other topic keeps exactly one recommended action. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate. This reply resumes the session, so it owes a readback first, but it skips the current design and the open decisions and points only to \"both decisions above\" without naming them."
+      }
+    ],
+    "steering": true,
+    "attribution": "agent"
+  }
+]

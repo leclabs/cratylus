@@ -10,7 +10,7 @@ import {
 import type * as OS from 'node:os';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { bottomLine, handBack } from '@cratylus/canon';
+import { bottomLine, descend, handBack } from '@cratylus/canon';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rubricPrompt as roleRubricPrompt } from './execution-roles/check.js';
@@ -20,7 +20,7 @@ import {
   rubricPrompt,
 } from './reconstitution/architect/check.js';
 import * as runner from './reconstitution/architect/runner.js';
-import { deliveredEvidence } from './rubric-delivered.js';
+import { countHeldDrift, deliveredEvidence } from './rubric-delivered.js';
 import type * as JudgeHarness from './rubric-judge.js';
 
 const control = vi.hoisted(() => ({
@@ -328,6 +328,7 @@ describe('0091 delivered evidence', () => {
       expect(deliveredEvidence(input)).toEqual({
         delivered: [],
         heldDrift: [{ guard, attempt: 'reply', text: 'Refused reply', reason }],
+        relayed: [],
       });
     },
   );
@@ -342,6 +343,159 @@ describe('0091 delivered evidence', () => {
       ),
     );
   }
+  it.each([
+    descend.refusal,
+    "descending: this call opens the work your stance keeps you above. Answer from the design, the examples and your delegates' reports, and leave realization to the lead.",
+    'descending: this call opens the work your stance keeps you above.',
+  ])(
+    'recognizes descend independently of its corrective tail: %s',
+    (reason) => {
+      const [call, result] = fixture('agents-16') as Record<string, unknown>[];
+      expect(
+        deliveredEvidence([
+          call,
+          { ...result, content: [{ type: 'text', text: reason }] },
+        ]),
+      ).toEqual({
+        delivered: [],
+        heldDrift: [
+          {
+            guard: 'descend',
+            attempt: 'call',
+            tool: 'bash',
+            input: expect.any(Object),
+            reason,
+          },
+        ],
+        relayed: [],
+      });
+    },
+  );
+  it('recognizes hand-back refusals and relays independently of their corrective tail', () => {
+    const reason =
+      'hand-back: this reply returns a decision you own to the operator.';
+    const reply = { role: 'assistant', content: 'Owned ruling deferred' };
+    expect(
+      deliveredEvidence([
+        reply,
+        {
+          role: 'custom',
+          customType: 'session-stop-continuation',
+          content: reason,
+        },
+      ]),
+    ).toEqual({
+      delivered: [],
+      heldDrift: [
+        { guard: 'hand-back', attempt: 'reply', text: reply.content, reason },
+      ],
+      relayed: [],
+    });
+    const messages = [
+      reply,
+      { role: 'user', steering: true, attribution: 'agent', content: reason },
+    ];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: messages,
+      heldDrift: [],
+      relayed: [{ guard: 'hand-back', text: reply.content, reason }],
+    });
+  });
+  it('reports the real second-stop relay without withdrawing its delivered reply', async () => {
+    const messages = fixture('heldout-workflow-3-relay') as {
+      content: { text: string }[];
+    }[];
+    const before = JSON.stringify(messages);
+    const relayed = [
+      {
+        guard: 'bottom-line',
+        text: messages[0]!.content[0]!.text,
+        reason: messages[1]!.content[0]!.text,
+      },
+    ];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: messages,
+      heldDrift: [],
+      relayed,
+    });
+    expect(JSON.stringify(messages)).toBe(before);
+    const input = { ...subject(), messages };
+    for (const prompt of [
+      rubricPrompt(scenario, input),
+      roleRubricPrompt({ ...scenario, role: 'lead' }, input),
+    ])
+      expect(prompt).toContain('Both decisions above stand');
+    const output = join(control.root, 'relayed');
+    const result = await runner.judgeRecording(scenario, input, output);
+    expect(result).toMatchObject({ heldDrift: [], relayed });
+    expect(countHeldDrift(result)).toEqual({ total: 0, byGuard: {} });
+    for (const name of ['recording.json', 'judged.json'])
+      expect(JSON.parse(readFileSync(join(output, name), 'utf8'))).toEqual(
+        result,
+      );
+    expect(
+      JSON.parse(readFileSync(join(output, 'subject.json'), 'utf8')),
+    ).toEqual(input);
+  });
+  it('reports consecutive turn-guard relays but not ordinary user quotations or tool guards', () => {
+    const reply = { role: 'assistant', content: 'Delivered reply' };
+    const relay = {
+      role: 'user',
+      steering: true,
+      attribution: 'agent',
+      content: bottomLine.refusal,
+    };
+    const messages = [reply, relay, { ...relay, content: handBack.refusal }];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: messages,
+      heldDrift: [],
+      relayed: [
+        {
+          guard: 'bottom-line',
+          text: reply.content,
+          reason: bottomLine.refusal,
+        },
+        { guard: 'hand-back', text: reply.content, reason: handBack.refusal },
+      ],
+    });
+    for (const notice of [
+      { ...relay, steering: false },
+      { ...relay, attribution: 'user' },
+      { role: 'user', content: bottomLine.refusal },
+      { ...relay, content: `The guard said: ${bottomLine.refusal}` },
+      { ...relay, content: descend.refusal },
+      {
+        ...relay,
+        content:
+          'bottom-line guard — the judge gave no verdict, so this act was NOT judged.',
+      },
+    ]) {
+      const input = [reply, notice];
+      expect(deliveredEvidence(input)).toEqual({
+        delivered: input,
+        heldDrift: [],
+        relayed: [],
+      });
+    }
+    expect(deliveredEvidence([relay])).toEqual({
+      delivered: [relay],
+      heldDrift: [],
+      relayed: [],
+    });
+    const firstAttempt = { role: 'assistant', content: 'Actually refused' };
+    const continuation = {
+      role: 'custom',
+      customType: 'session-stop-continuation',
+      content: handBack.refusal,
+    };
+    const result = deliveredEvidence([firstAttempt, continuation, ...messages]);
+    expect(result.delivered).toEqual(messages);
+    expect(countHeldDrift(result)).toEqual({
+      total: 1,
+      byGuard: { 'hand-back': 1 },
+    });
+    expect(result.relayed).toEqual(deliveredEvidence(messages).relayed);
+  });
   it('removes three readback calls and one hand-back without changing the subject', () => {
     const messages = fixture('agents-13');
     const before = JSON.stringify(messages);
@@ -369,7 +523,11 @@ describe('0091 delivered evidence', () => {
     expect(delivered).toEqual(
       messages.filter((_, index) => !refused.has(index)),
     );
-    expect(deliveredEvidence(delivered)).toEqual({ delivered, heldDrift: [] });
+    expect(deliveredEvidence(delivered)).toEqual({
+      delivered,
+      heldDrift: [],
+      relayed: [],
+    });
   });
   it.each([
     ['workflow-31', 'lead-dispatch', 'task'],
@@ -413,6 +571,7 @@ describe('0091 delivered evidence', () => {
       expect(deliveredEvidence(input)).toEqual({
         delivered: input,
         heldDrift: [],
+        relayed: [],
       });
     }
   });
@@ -461,6 +620,10 @@ describe('0091 delivered evidence', () => {
   });
   it.each([
     [
+      'descend',
+      "descending: this call opens the work your stance keeps you above. Read the design instead: the context overviews, the concept journal and the ledger, through their capabilities. Answer from them, the examples and your delegates' reports, and leave realization to the lead.",
+    ],
+    [
       'readback-gate',
       'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.',
     ],
@@ -492,6 +655,7 @@ describe('0091 delivered evidence', () => {
     expect(deliveredEvidence(messages)).toEqual({
       delivered: [],
       heldDrift: [{ guard, attempt: 'call', tool: 'task', input: {}, reason }],
+      relayed: [],
     });
   });
   it('uses delivered evidence for execution roles as well as architects', () => {

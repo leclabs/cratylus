@@ -10,6 +10,12 @@ export interface HeldDrift {
   reason: string;
 }
 
+export interface RelayedTell {
+  guard: string;
+  text: string;
+  reason: string;
+}
+
 function object(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object'
     ? (value as Record<string, unknown>)
@@ -34,6 +40,14 @@ const bottomLinePrefix = bottomLine.refusal.slice(
   0,
   bottomLine.refusal.indexOf('.') + 1,
 );
+const descendPrefix = descend.refusal.slice(
+  0,
+  descend.refusal.indexOf('.') + 1,
+);
+const handBackPrefix = handBack.refusal.slice(
+  0,
+  handBack.refusal.indexOf('.') + 1,
+);
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
 // READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, leadRefusal, builderRefusal,
@@ -41,8 +55,8 @@ const bottomLinePrefix = bottomLine.refusal.slice(
 // schema/src/contract.ts checkAssignment.
 // Match only those leading sentences, not arbitrary command errors or mentions.
 function refusingGuard(reason: string): string | undefined {
-  if (reason.startsWith(descend.refusal)) return descend.id;
-  if (reason.startsWith(handBack.refusal)) return handBack.id;
+  if (reason.startsWith(descendPrefix)) return descend.id;
+  if (reason.startsWith(handBackPrefix)) return handBack.id;
   if (reason.startsWith(bottomLinePrefix)) return bottomLine.id;
   if (
     reason.startsWith(
@@ -63,6 +77,7 @@ function refusingGuard(reason: string): string | undefined {
 export function deliveredEvidence(messages: readonly unknown[]): {
   delivered: unknown[];
   heldDrift: HeldDrift[];
+  relayed: RelayedTell[];
 } {
   const removedMessages = new Set<number>();
   const removedBlocks = new Map<number, Set<number>>();
@@ -71,6 +86,8 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     { message: number; block: number; call: Record<string, unknown> }
   >();
   const heldDrift: HeldDrift[] = [];
+  const relayed: RelayedTell[] = [];
+  let relayReply = '';
   const removeBlock = (message: number, block: number) => {
     let blocks = removedBlocks.get(message);
     if (!blocks) {
@@ -82,6 +99,27 @@ export function deliveredEvidence(messages: readonly unknown[]): {
   for (const [index, value] of messages.entries()) {
     const message = object(value);
     if (!message) continue;
+    const relayReason = message.role === 'user' ? textOf(message.content) : '';
+    const relayGuard = refusingGuard(relayReason);
+    if (
+      message.role === 'user' &&
+      message.steering === true &&
+      message.attribution === 'agent' &&
+      (relayGuard === bottomLine.id || relayGuard === handBack.id)
+    ) {
+      // render.ts guardJudged relays on stop_hook_active and returns undefined:
+      // the handler neither blocks the stop nor withdraws its reply. This is
+      // an unheld tell, not a refused attempt under 0091. Keep both messages.
+      // Several turn guards can each relay a reason about the same reply.
+      if (relayReply)
+        relayed.push({
+          guard: relayGuard,
+          text: relayReply,
+          reason: relayReason,
+        });
+      continue;
+    }
+    relayReply = message.role === 'assistant' ? textOf(message.content) : '';
     if (message.role === 'assistant' && Array.isArray(message.content)) {
       for (const [block, value] of message.content.entries()) {
         const call = object(value);
@@ -149,7 +187,7 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     );
     return content.length ? [{ ...message, content }] : [];
   });
-  return { delivered, heldDrift };
+  return { delivered, heldDrift, relayed };
 }
 
 export interface HeldDriftCount {

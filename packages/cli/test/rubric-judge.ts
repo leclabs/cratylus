@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import {
   type HeldDrift,
+  type RelayedTell,
   countHeldDrift,
   deliveredEvidence,
   totalHeldDrift,
@@ -93,18 +94,22 @@ export async function judgeSubject<
     attemptOutput: string,
   ) => R['answers'] | Promise<R['answers']>,
   signal?: AbortSignal,
-): Promise<R & { judgment: Judgment; heldDrift: HeldDrift[] }> {
+): Promise<
+  R & { judgment: Judgment; heldDrift: HeldDrift[]; relayed: RelayedTell[] }
+> {
   signal?.throwIfAborted();
   mkdirSync(output, { recursive: true });
   writeFileSync(join(output, 'subject.json'), JSON.stringify(subject, null, 2));
   // Resolve and refuse before creating or launching any judge session.
   const model = judgeModel(subjects);
   const judgment: Judgment = { status: 'unjudged', model, attempts: [] };
+  const { heldDrift, relayed } = deliveredEvidence(subject.messages ?? []);
   const result = {
     ...subject,
     answers: {},
     judgment,
-    heldDrift: deliveredEvidence(subject.messages ?? []).heldDrift,
+    heldDrift,
+    relayed,
   };
   for (let attempt = 1; attempt <= 2; attempt++) {
     signal?.throwIfAborted();

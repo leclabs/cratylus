@@ -150,7 +150,7 @@ Observed: the full architect offline suite passed **93 tests, 52 skipped**. The 
 
 ## 0091: judged on what takes effect
 
-`test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.
+`test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift, relayed }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.
 
 The original `subject.json` and the judged recording's messages stay intact. Each `recording.json` and `judged.json` also records `heldDrift`: one `{ guard, attempt: "call" | "reply", tool?, input?, text?, reason }` per refused attempt. `guard` is its canonical ID, or an array of IDs when several guards jointly refuse one attempt; call entries retain their tool input and reply entries their refused text. Batch results and `assessment.json` report `{ total, byGuard }` under `heldDrift`, both for each run and overall, independently of pass/fail. A joint refusal counts once in `total` and once for each guard in `byGuard`. Returned siblings not consumed by fail-fast still contribute their drift, never an invented rubric verdict.
 
@@ -174,6 +174,28 @@ pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'combined re
 ```
 
 Observed: **2 failed, 6 passed, 20 skipped**. The unseen-readback call remained in evidence, and a retained bottom-line refusal with the previous corrective instructions was no longer recognized. Readback matching now uses the shared leading request of both emitted variants; bottom-line matching reads its identifying first sentence from the canonical guard, not the changeable corrective instructions. The full acceptance command above then passed **6 files; 187 passed, 82 skipped**, with no model sessions.
+
+#### Second-stop relays are not refused replies
+
+In `forge/src/adapters/omp/render.ts`, `guardJudged` calls `relay(reason)` and returns `undefined` when `stop_hook_active` is true. The stop handler only withdraws the reply and returns `decision: "block"` when a guard returns a reason. The second-stop reply therefore stands: the relay is an unheld tell, not held drift under 0091. `relay` sends a next-turn user message attributed to `agent`; retained sessions mark it `steering: true`.
+
+The projection keeps that reply and notice in delivered evidence. It separately reports `relayed: { guard, text, reason }[]`, also persisted in `recording.json` and `judged.json`, without adding to held-drift totals or manufacturing a rubric verdict. Only agent-attributed steering messages beginning with a turn guard's refusal identify these relays; ordinary user quotations, tool-guard text, and no-verdict notices do not. Consecutive guard relays can concern the same preceding reply.
+
+`fixtures/heldout-workflow-3-relay.json` retains the final text reply (“Both decisions above stand…”) and its steering notice from `/tmp/heldout1/heldout-workflow-3/subject.json`, keeping model provenance and omitting thinking and usage metadata. The same shape was inspected in `/tmp/batch8/architect/visible/workflow/18/run-1/subject.json` and `/tmp/smoke12/workflow-18/subject.json` (message 37).
+
+Seen red before changing the projection:
+
+```sh
+pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'second-stop relay|consecutive turn-guard relays'
+```
+
+Observed: **2 failed, 28 skipped** because `relayed` was absent, including on the real retained shape. After the projection change, persistence was independently **1 failed, 1 passed, 28 skipped**: the judged recording still lacked `relayed`. The checks also retain the reply in both rubric prompts, preserve raw subject evidence, and distinguish an actual first-stop refusal from later unheld tells.
+
+After the relay and persistence changes, the full acceptance command above passed **6 files; 189 passed, 82 skipped**. `pnpm --filter cratylus typecheck` passed, and Biome checked the four changed TypeScript/JSON files. No live subject or judge sessions ran.
+
+The same first-sentence rule now applies to descend and hand-back, so changing corrective instructions does not invalidate retained evidence. Regression cases cover descend's old tail, the new “Read the design instead…” tail, the imported refusal, and the identifying sentence alone; hand-back's identifying sentence is checked for both an actual refusal and a relay. Before the descend matcher change, sibling `ReconstitutionLead3.JudgeDelivered` observed **1 failed, 30 skipped** on `-t 'recognizes the generated descend gate'` (the new tail remained delivered). Before the hand-back matcher change, `-t 'recognizes hand-back refusals and relays independently'` was **1 failed, 34 skipped** (the refused reply remained delivered).
+
+With all three canonical guard prefixes in place, the full acceptance command passed **6 files; 194 passed, 82 skipped**, CLI typecheck passed, and Biome checked all four changed TypeScript/JSON files.
 
 ### Re-judging a flat smoke directory
 
