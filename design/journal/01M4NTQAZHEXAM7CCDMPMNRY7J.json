@@ -1,0 +1,14 @@
+{
+  "id": "01M4NTQAZHEXAM7CCDMPMNRY7J",
+  "at": "2026-10-11T15:53:53.393Z",
+  "kind": "decide",
+  "decisionId": "0110",
+  "context": "delivery",
+  "title": "Delivery cut: examples approved",
+  "situation": "The illustrator wrote the delivery cut's examples cold: 25 visible across delivery and the concept journal, 5 held out; its one meaning question, a host edit inside the owned root, was settled by superseding owned root.",
+  "decision": "The architect, holding both contexts, approves the examples as they stand on feature/delivery; they freeze as each check is seen to fail.",
+  "consequences": "The lead is dispatched with the cut.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
