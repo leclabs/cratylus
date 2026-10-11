@@ -1506,7 +1506,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * runs with `schemaMode: "strict"`, so a return omitting a required field does not
  * pass. A main session launched as an agent with an assignment schema checks the
  * launch prompt the same way: a misfit given on the command line ends startup, one
- * typed later is refused.
+ * typed later is refused, and, until one fits, every turn whose prompt misfits is
+ * refused before the agent starts it (`before_agent_start`), whatever route the
+ * prompt came by.
  *
  * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
  * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
@@ -2163,10 +2165,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    return { handled: true };',
         '  });',
         "  // Every turn's prompt carries the declaration and the full instructions of the skills it",
-        '  // loads at start, so a rebuilt base prompt drops neither.',
+        '  // loads at start, so a rebuilt base prompt drops neither. It is also the last point before',
+        '  // the launched agent takes a turn, whatever route its prompt came by: while the launch',
+        '  // still awaits its assignment, a turn whose prompt does not carry a fitting one is refused.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    if (now === undefined || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    const waiting = awaiting;',
+        '    if (waiting !== undefined) {',
+        '      const { reason } = checkAssignment(waiting.name, waiting.schema, assignmentIn(String(event.prompt ?? "")));',
+        '      if (reason !== undefined) throw new Error(`launch refused: ${reason}`);',
+        '      awaiting = undefined;',
+        '    }',
         '    return {',
         '      systemPrompt: [...event.systemPrompt, instructions(now.declaration), ...(await skills(now.declaration))],',
         '    };',
