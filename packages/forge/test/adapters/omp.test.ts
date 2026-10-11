@@ -1647,6 +1647,41 @@ describe('omp capability interface', () => {
       expect(judge.asked, 'nothing reached the operator').toEqual([]);
     });
 
+    it('counts a readback given in the same message as the act, before that message ends', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      const readback =
+        'Film: approval is settled; night shoots are open; no cut in flight.';
+      // omp finalizes the message before it dispatches its calls; `message_end` comes later.
+      await fire('assistant_message', reply(readback));
+      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
+      expect(await fire('tool_call', changing[3])).toBeUndefined();
+      expect(await fire('tool_call', changing[4])).toBeUndefined();
+      expect(judge.asked).toHaveLength(1);
+      expect(JSON.stringify(judge.asked[0])).toContain('night shoots are open');
+    });
+
+    it('still counts no in-progress reply a turn-end guard withdrew', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      const readback =
+        'Film: approval is settled; night shoots are open; no cut in flight.';
+      await fire('assistant_message', reply(readback));
+      judge.verdict = JSON.stringify({
+        surveys: true,
+        reason: 'It opens with mechanics.',
+      });
+      await fire('session_stop', {
+        last_assistant_message: readback,
+        stop_hook_active: false,
+      });
+      judge.asked.length = 0;
+      expect(await fire('tool_call', changing[1])).toEqual({
+        block: true,
+        reason: READBACK_UNSEEN_REFUSAL,
+      });
+    });
+
     it('lets the act through aloud when the judge gives no verdict', async () => {
       omp.agents = [ARCHITECT()];
       const { fire, relayed } = await twoModules('architect', [replyGuard]);
