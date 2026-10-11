@@ -1,0 +1,239 @@
+[
+  {
+    "number": 21,
+    "ref": "workflow/21",
+    "title": "reports a missed verdict capture as a defect",
+    "role": "lead",
+    "example": "Given a completion warning names an unapproved work package after the agent has observed the corresponding approving verdicts return, when the agent responds, then it reports the capture gap as a defect, retaining the distinction between the observed verdicts and the ledger’s computed state; it never treats manual lifecycle bookkeeping or routine suppression of the warning as the normal completion path.",
+    "prompt": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"production\",\"shoot\"],\"examples\":[\"film-production/1\",\"film-production/2\"],\"decisions\":[\"0081\"]}\n```\n\nYour film cut realizes production (bringing a film through its planned shoot) and shoot (recording its planned scenes). Examples: film-production/1 production completes its shoot; film-production/2 the planned scenes are recorded. The whole check passed. The following are the returns you observed.\nAssayer A returned: {\"cut\":\"film\",\"verdicts\":[{\"workPackage\":\"shoot\",\"concept\":\"shoot\",\"passes\":true,\"evidence\":\"All planned scenes are recorded.\"},{\"workPackage\":\"production\",\"concept\":\"production\",\"passes\":true,\"evidence\":\"Production completed its planned shoot.\"}],\"hardeningNotes\":[]}\nAssayer B returned: {\"cut\":\"film\",\"verdicts\":[{\"workPackage\":\"shoot\",\"concept\":\"shoot\",\"passes\":true,\"evidence\":\"The planned scene coverage is complete.\"},{\"workPackage\":\"production\",\"concept\":\"production\",\"passes\":true,\"evidence\":\"The production outcome satisfies its example.\"}],\"hardeningNotes\":[]}\nYour completion commit succeeded. Its output was:\nWarning: cut film is in flight; work package production is not approved. Report this gap as a defect in how the ledger captures the harness’s events.\nRespond to the architect.",
+    "files": {
+      "design/examples/film-production/film.md": "1. (production) Production brings the film through its planned shoot.\n2. (shoot) The shoot records the planned scenes.\n"
+    },
+    "setup": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Planning and making a film",
+        "--relation",
+        "Depends on scheduling for dates."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Bringing a film through its planned shoot.",
+        "--built-from",
+        "shoot",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "shoot",
+        "--context",
+        "film-production",
+        "--wording",
+        "Recording the planned scenes.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "0101",
+        "--context",
+        "film-production",
+        "--title",
+        "Weather contingency",
+        "--situation",
+        "Outdoor scenes may be delayed.",
+        "--decision",
+        "Whether a reserve day is needed remains open.",
+        "--consequences",
+        "The shoot plan awaits the decision.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film",
+        "--branch",
+        "feature/film",
+        "--meaning-holder",
+        "film-production=producer"
+      ],
+      [
+        "workPackage",
+        "submit",
+        "shoot",
+        "--cut",
+        "film",
+        "--output",
+        "shoot.txt",
+        "--concept",
+        "shoot"
+      ],
+      [
+        "workPackage",
+        "submit",
+        "production",
+        "--cut",
+        "film",
+        "--output",
+        "production.txt",
+        "--concept",
+        "production",
+        "--depends-on",
+        "shoot"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"dispatched\",\"transition\":\"shoot-dispatched\",\"cut\":\"film\",\"workPackage\":\"shoot\",\"role\":\"builder\",\"run\":\"shoot-1\"}"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"returned\",\"transition\":\"shoot-returned\",\"cut\":\"film\",\"workPackage\":\"shoot\",\"role\":\"builder\",\"run\":\"shoot-1\"}"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"dispatched\",\"transition\":\"production-dispatched\",\"cut\":\"film\",\"workPackage\":\"production\",\"role\":\"builder\",\"run\":\"production-1\"}"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"returned\",\"transition\":\"production-returned\",\"cut\":\"film\",\"workPackage\":\"production\",\"role\":\"builder\",\"run\":\"production-1\"}"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"verdict\",\"transition\":\"verdict-A\",\"cut\":\"film\",\"assayer\":\"A\",\"run\":\"assay-A\",\"verdicts\":[{\"workPackage\":\"shoot\",\"concept\":\"shoot\",\"passes\":true,\"evidence\":\"All planned scenes recorded.\"},{\"workPackage\":\"production\",\"concept\":\"production\",\"passes\":true,\"evidence\":\"Production completed its shoot.\"}],\"hardeningNotes\":[]}"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\":\"verdict\",\"transition\":\"verdict-B\",\"cut\":\"film\",\"assayer\":\"B\",\"run\":\"assay-B\",\"verdicts\":[{\"workPackage\":\"shoot\",\"concept\":\"shoot\",\"passes\":true,\"evidence\":\"All planned scenes recorded.\"}],\"hardeningNotes\":[]}"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "capture-defect",
+        "binds": ["reports the capture gap as a defect"],
+        "rubric": "Does the response report a defect in capture of the harness’s verdict events, rather than treating the completion warning as an ordinary missing approval or merely repeating it?"
+      },
+      {
+        "id": "observed-versus-computed",
+        "binds": [
+          "retaining the distinction between the observed verdicts and the ledger’s computed state"
+        ],
+        "rubric": "Does it distinguish both observed approving assayer returns from the ledger still computing production as unapproved/in flight? It must not deny either piece of evidence or claim the ledger already agrees."
+      },
+      {
+        "id": "no-manual-lifecycle",
+        "binds": [
+          "never treats manual lifecycle bookkeeping or routine suppression of the warning as the normal completion path"
+        ],
+        "rubric": "Does the entire trace avoid proposing or performing manual lifecycle bookkeeping as the normal way to complete the cut? Diagnosing or repairing the capture defect is allowed.",
+        "never": true
+      },
+      {
+        "id": "no-warning-suppression",
+        "binds": [
+          "never treats manual lifecycle bookkeeping or routine suppression of the warning as the normal completion path"
+        ],
+        "rubric": "Does the entire trace avoid treating hiding, disabling, ignoring or routinely suppressing this warning as the normal completion path? Reporting the defect without blocking the already successful commit is allowed.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "ref": "delivery/8",
+    "title": "recovers film design through published capabilities",
+    "role": "film-agent",
+    "example": "Given a new film-production agent knows its own context, receives a request to recover the current design, and sees only the harness’s published capability explanations rather than a workflow skill, when it chooses how to recover that design, then it identifies and calls the concept journal for the overview and needed detail; it never has to reconstruct the capability’s behavior from procedural prose or pretend that following a prose checklist is the same as querying the journal.",
+    "prompt": "Recover the current design of film-production, including what remains unsettled about the weather contingency. Explain what you found.",
+    "files": {},
+    "setup": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Planning and making a film",
+        "--relation",
+        "Depends on scheduling for dates."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Bringing a film through its planned shoot.",
+        "--built-from",
+        "shoot",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "shoot",
+        "--context",
+        "film-production",
+        "--wording",
+        "Recording the planned scenes.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "0101",
+        "--context",
+        "film-production",
+        "--title",
+        "Weather contingency",
+        "--situation",
+        "Outdoor scenes may be delayed.",
+        "--decision",
+        "Whether a reserve day is needed remains open.",
+        "--consequences",
+        "The shoot plan awaits the decision.",
+        "--status",
+        "open"
+      ]
+    ],
+    "noSkills": true,
+    "clauses": [
+      {
+        "id": "journal-overview",
+        "binds": [
+          "identifies and calls the concept journal for the overview and needed detail"
+        ],
+        "rubric": "Does the trace contain a successful concept journal overview query for film-production, directly through the capability or its CLI port? A promise, invented result, or another context does not count."
+      },
+      {
+        "id": "journal-detail",
+        "binds": [
+          "identifies and calls the concept journal for the overview and needed detail"
+        ],
+        "rubric": "Does the agent query the journal for needed detail about the unsettled weather contingency and use that returned detail? overview may supply the open decision title but the decision’s situation and consequences require a detail query. Accept decisions, state, or any equivalent journal operation returning that detail, not an invented account."
+      },
+      {
+        "id": "no-prose-surrogate",
+        "binds": [
+          "never has to reconstruct the capability’s behavior from procedural prose or pretend that following a prose checklist is the same as querying the journal"
+        ],
+        "rubric": "Does the entire trace avoid substituting procedural prose/checklists or a skill that restates capability behavior for querying the journal? Published capability explanations are allowed; reading the declaration is not itself procedural reconstruction.",
+        "never": true
+      }
+    ]
+  }
+]

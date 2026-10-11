@@ -1,0 +1,29 @@
+{
+  "cut": "reconstitution",
+  "area": "roles",
+  "method": "Authored offline golden and one-clause negative recordings; no live model sessions. All red demonstrations failed on their own behavioral assertion, not imports or fixture setup.",
+  "aggregation": "At least 4 of 5 ordinary assertions; every never-assertion in all 5. Offline aggregation also rejects two ordinary failures and one never failure.",
+  "liveRun": false,
+  "checks": [
+    {
+      "example": "held-out delivery/2",
+      "check": "roles.test.ts: held-out delivery/2 — identifies ready-work operation from capability explanation",
+      "seenRed": true,
+      "failures": [
+        "identifies-ready-operation: inventory plus self-computed readiness instead of state",
+        "no-competing-skill: depends on a separate competing workflow skill"
+      ]
+    }
+  ],
+  "offline": {
+    "command": "pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts",
+    "passed": 5,
+    "skipped": 4,
+    "exitCode": 0
+  },
+  "red": {
+    "command": "EXECUTION_RED=1 pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts -t 'red demonstration'",
+    "failed": 2,
+    "exitCode": 1
+  }
+}
