@@ -1,0 +1,179 @@
+[
+  {
+    "number": 3,
+    "ref": "held-out workflow/3",
+    "title": "prefers branch records after compaction",
+    "role": "architect",
+    "example": "(reconstitution) Given a compacted session remembers that a cut was complete but its current branch's ledger shows it in flight and its journal has a newer decision, when it resumes, then it queries the overview first and reads back the recorded state and decision before acting; it never treats its remembered completion or an old conversation as the current account.",
+    "prompt": "Resume the film work after compaction.",
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n",
+      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film",
+        "--branch",
+        "feature/film",
+        "--meaning-holder",
+        "film-production=Mira"
+      ],
+      [
+        "workPackage",
+        "submit",
+        "edit",
+        "--cut",
+        "film",
+        "--output",
+        "src/film.ts",
+        "--concept",
+        "approval",
+        "--concept",
+        "release permission"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\": \"dispatched\", \"transition\": \"film-edit-start\", \"cut\": \"film\", \"workPackage\": \"edit\", \"role\": \"builder\", \"run\": \"edit-1\"}"
+      ],
+      [
+        "concepts",
+        "decide",
+        "second-review",
+        "--context",
+        "film-production",
+        "--title",
+        "second-review",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Creative approval now requires a second creative reviewer.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "overview-first",
+        "binds": ["queries the overview first"],
+        "rubric": "Does the first design-state query request the current overview, before journal or ledger detail? Tool discovery is allowed."
+      },
+      {
+        "id": "recorded-readback",
+        "binds": ["reads back the recorded state and decision before acting"],
+        "rubric": "Before any delivery action, does it read back film in flight and the NEW accepted decision that creative approval requires a second creative reviewer?"
+      },
+      {
+        "id": "never-old-account",
+        "binds": [
+          "never treats its remembered completion or an old conversation as the current account"
+        ],
+        "rubric": "Does it reject remembered completion as stale rather than use it to claim completion or authorize action? Acknowledging the stale recollection while correcting it is allowed.",
+        "never": true
+      }
+    ],
+    "compacted": "The old conversation concluded that the film cut was complete. Creative approval needed only one reviewer. Continue from that recollection."
+  }
+]

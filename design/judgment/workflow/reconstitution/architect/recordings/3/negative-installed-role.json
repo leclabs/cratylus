@@ -1,0 +1,203 @@
+{
+  "breaks": "installed-role",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "note": "Not captured from a model. Trace and rubric answers authored together to prove predicates, clause binding and thresholds; live judge validity is not established offline.",
+      "variation": 1
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Resume the film work after compaction."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "TOOL concepts overview -> film-production: creative approval is separate from release; film in flight."
+          }
+        ],
+        "controlClause": "overview-first"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "recorded-readback-0",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "decisions"
+            }
+          }
+        ],
+        "controlClause": "recorded-readback"
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "recorded-readback-0",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "second-review accepted"
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "TOOL concepts decisions -> second-review accepted; TOOL workPackage state film -> in flight. Film remains in flight; the newer accepted decision requires a second creative reviewer. No delivery acts precede this readback."
+          }
+        ],
+        "controlClause": "recorded-readback"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The remembered completion is stale; the current branch’s records govern."
+          }
+        ],
+        "controlClause": "never-old-account"
+      }
+    ],
+    "report": "TOOL concepts overview -> film-production: creative approval is separate from release; film in flight.\n\nTOOL concepts decisions -> second-review accepted; TOOL workPackage state film -> in flight. Film remains in flight; the newer accepted decision requires a second creative reviewer. No delivery acts precede this readback.\n\nThe remembered completion is stale; the current branch’s records govern.",
+    "snapshots": [{}, {}],
+    "wiring": {
+      "agent": "lead",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored architect identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "task",
+        "concept_journal",
+        "work_package",
+        "write"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": ["command"]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "task": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["agent", "task"]
+                }
+              }
+            },
+            "required": ["tasks"]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": ["verb"]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "cut": {
+                "type": "string"
+              }
+            },
+            "required": ["verb", "cut"]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["path", "content"]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "overview-first": {
+        "pass": true,
+        "evidence": "TOOL concepts overview -> film-production: creative approval is separate from release; film in flight."
+      },
+      "recorded-readback": {
+        "pass": true,
+        "evidence": "TOOL concepts decisions -> second-review accepted; TOOL workPackage state film -> in flight. Film remains in flight; the newer accepted decision requires a second creative reviewer. No delivery acts precede this readback."
+      },
+      "never-old-account": {
+        "pass": true,
+        "evidence": "The remembered completion is stale; the current branch’s records govern."
+      }
+    }
+  }
+}
