@@ -114,12 +114,16 @@ harness's adapters, and the version of cratylus that projected them. The harness
 refer into it (for omp, the root linked into its plugin directory as an extension package), and the
 root records every reference and host-file edit it made. So what cratylus placed is known by
 construction, never inferred from names, contents or digests: install replaces the root whole
-(upgrade), uninstall removes it and its references, and a host's own files are never overwritten.
+(upgrade), uninstall removes it and its references, and a host's own files are never overwritten — a
+reference place the host holds otherwise (linked elsewhere, replaced, naming something else) is the
+host's, left and reported by install, upgrade and uninstall alike.
 Which model a tier or a persona's role runs on is the operator's choice and the host's own setting
 (decision 0112): install writes the operator's answer into the host's model roles and records none
 of it as its own, so upgrade and uninstall keep it.
-The runtime reads the recorded version beside its own and reports any difference as version skew,
-choosing between no builds.
+omp's extension compares, at every session start, the version the root records against the version
+the reached command answers for itself, and warns of any difference as version skew, naming any
+capability the command lacks and offering the rest; the runtime's `versionSkew report` gives both on
+request. Nothing chooses between builds.
 
 ### `schema` — the shapes
 

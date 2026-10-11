@@ -127,6 +127,8 @@ Everything install places for you on a harness lives under one root it owns: `~/
 
 omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over a declaration of the same name.
 
+Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
+
 Install writes nothing else of yours, with two exceptions. The models you choose for tiers and roles go into your `~/.omp/agent/config.yml` as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where that file hides the row an extension's status shows in (`statusLine.showHookStatus: false`), install lists omp's `status` segment in your layout (or shows the row again), so a session started as an agent shows its name and mark. That edit is recorded in the root, and uninstall takes it out while it stands as written.
 
 **Installing again is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
@@ -301,7 +303,7 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 ## Version skew
 
-The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions: install again with the cratylus in use (`cratylus install --harness omp`). `cratylus versionSkew report`, and the `version_skew` tool in omp, report both at any time. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
+The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report`, and the `version_skew` tool in omp, report both at any time. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
 ## Taking it away again
 

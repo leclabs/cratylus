@@ -298,9 +298,11 @@ function dependenciesOf(doc: Record<string, unknown>): Record<string, unknown> {
  * extension package by name for every project (`adapter.packageDir`), a link to the
  * root under the package's name, and the package's dependency entry, naming the root,
  * in that directory's manifest — as the harness's own `plugin link` would. Whatever
- * else the directory holds is the host's and stays. A path in the way that is not a
- * link is left and reported. `prior` is the record of the installation this one
- * replaces, which says whether install made the manifest.
+ * else the directory holds is the host's and stays. A reference location the host
+ * holds otherwise — a path that is not a link, a link pointing elsewhere, an entry
+ * naming something else — is the host's: left as it is, claimed in no record, and
+ * reported with what the operator must do. `prior` is the record of the installation
+ * this one replaces, which says whether install made the manifest.
  */
 export function linkOwnedRoot(opts: {
   readonly adapter: HarnessAdapter;
@@ -320,18 +322,20 @@ export function linkOwnedRoot(opts: {
   const linkRel = join(adapter.packageDir, 'node_modules', name);
   const link = join(harnessDir, linkRel);
   const stat = lstatSync(link, { throwIfNoEntry: false });
-  if (stat !== undefined && !stat.isSymbolicLink()) {
+  const target =
+    stat?.isSymbolicLink() === true
+      ? resolve(dirname(link), readlinkSync(link))
+      : undefined;
+  if (stat !== undefined && target !== root) {
     left.push({
       what: link,
-      why: `it is not a link, so ${adapter.name} cannot be pointed at ${root} there; move it away and install again`,
+      why: `${target === undefined ? 'it is not a link' : `it points at ${target}`}, the host's own, so ${adapter.name} does not load ${root} from there; to have it do so, move it away and install again`,
     });
   } else {
     references.push({ kind: 'link', path: linkRel });
-    const current = stat === undefined ? undefined : readlinkSync(link);
-    if (current !== root) {
+    if (stat === undefined) {
       changed.push(link);
       if (!dry) {
-        if (stat !== undefined) unlinkSync(link);
         mkdirSync(dirname(link), { recursive: true });
         symlinkSync(root, link, 'dir');
       }
@@ -349,13 +353,20 @@ export function linkOwnedRoot(opts: {
     });
     return { references, changed, left };
   }
+  const href = pathToFileURL(root).href;
+  const deps = dependenciesOf(read.doc);
+  if (Object.hasOwn(deps, name) && deps[name] !== href) {
+    left.push({
+      what: `${manifest}: dependencies.${name}`,
+      why: `it names ${String(deps[name])}, the host's own, not ${root}; to have ${adapter.name} load ${root}, take that entry out and install again`,
+    });
+    return { references, changed, left };
+  }
   const priorRef = opts.prior?.references.find(
     (r) => r.kind === 'dependency' && r.path === manifestRel,
   );
   const created = priorRef?.kind === 'dependency' ? priorRef.created : !existed;
   references.push({ kind: 'dependency', path: manifestRel, name, created });
-  const href = pathToFileURL(root).href;
-  const deps = dependenciesOf(read.doc);
   if (deps[name] !== href) {
     changed.push(manifest);
     if (!dry) {

@@ -545,10 +545,11 @@ describe('omp capability interface', () => {
     process.env.PATH = PATH;
   });
 
-  /** The emitted module's factory, written to disk beside a `cratylus` on PATH
-   *  that answers `<capability> --explain` with `explanation` under that
-   *  capability's own name (`<name> <capability>`), and any other call with its
-   *  argv as JSON (or, for a verb named `refuse`, a refusal on stderr). */
+  /** The emitted module's factory, written into an installation projected by
+   *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
+   *  with `explanation` under that capability's own name (`<name> <capability>`), and
+   *  any other call with its argv as JSON (or, for a verb named `refuse`, a refusal
+   *  on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -563,7 +564,8 @@ describe('omp capability interface', () => {
       [
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
-        `if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
+        "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
+        `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
         'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
         '',
@@ -571,8 +573,14 @@ describe('omp capability interface', () => {
       { mode: 0o755 },
     );
     process.env.PATH = `${bin}:${PATH}`;
+    const root = join(dir, 'root');
+    mkdirSync(join(root, 'extensions'), { recursive: true });
+    writeFileSync(
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'cratylus-omp', version: '1.0.0' }),
+    );
     const [module] = ompCapabilityExtensions();
-    const file = join(dir, OMP_CRATYLUS_MODULE);
+    const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
     writeFileSync(file, module?.content ?? '');
     // Dynamic: the module under test is the emitted bytes, written to disk here.
     return (await import(file)).default;
@@ -873,6 +881,168 @@ describe('omp capability interface', () => {
           'w',
         ]);
       });
+    });
+  });
+
+  describe('says version skew at every start, from the versions each side holds of itself', () => {
+    /** The emitted module placed in an installation projected by `projected`, beside
+     *  a `cratylus` on PATH that answers `--version` with `command` and explains only
+     *  the capabilities in `explains`. Each start's warnings, in order. */
+    async function started(opts: {
+      projected: string;
+      command: string;
+      explains: readonly string[];
+      starts?: number;
+    }): Promise<{ warnings: string[][]; tools: string[] }> {
+      const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
+      tmp.push(dir);
+      const root = join(dir, 'root');
+      mkdirSync(join(root, 'extensions'), { recursive: true });
+      writeFileSync(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'cratylus-omp', version: opts.projected }),
+      );
+      const bin = join(dir, 'bin');
+      mkdirSync(bin);
+      const explanation = {
+        name: 'stand in',
+        purpose: 'p',
+        when: 'w',
+        verbs: [
+          {
+            name: 'report',
+            concept: 'c',
+            purpose: 'p',
+            when: 'w',
+            effect: 'reads',
+            parameters: [],
+          },
+        ],
+      };
+      writeFileSync(
+        join(bin, 'cratylus'),
+        [
+          `#!${process.execPath}`,
+          'const args = process.argv.slice(2);',
+          `if (args[0] === '--version') { process.stdout.write(${JSON.stringify(`${opts.command}\n`)}); process.exit(0); }`,
+          `const explains = ${JSON.stringify(opts.explains)};`,
+          "if (args.includes('--explain') && !explains.includes(args[0])) { process.stderr.write(`error: unknown command '${args[0]}'\\n`); process.exit(1); }",
+          `if (args.includes('--explain')) process.stdout.write(JSON.stringify({ ...${JSON.stringify(explanation)}, name: \`stand in \${args[0]}\` }));`,
+          '',
+        ].join('\n'),
+        { mode: 0o755 },
+      );
+      process.env.PATH = `${bin}:${PATH}`;
+      const [module] = ompCapabilityExtensions();
+      const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
+      writeFileSync(file, module?.content ?? '');
+      const tools: string[] = [];
+      const handlers = new Map<
+        string,
+        (event: unknown, ctx: unknown) => unknown
+      >();
+      // Dynamic: the module under test is the emitted bytes, written to disk here.
+      await (await import(file)).default({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: (tool: { name: string }) => tools.push(tool.name),
+        registerFlag: () => {},
+        getFlag: () => undefined,
+        on: (
+          event: string,
+          handler: (event: unknown, ctx: unknown) => unknown,
+        ) => handlers.set(event, handler),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
+      });
+      const warnings: string[][] = [];
+      for (let i = 0; i < (opts.starts ?? 1); i++) {
+        const said: string[] = [];
+        await handlers.get('session_start')?.(
+          {},
+          {
+            cwd: dir,
+            agent: { kind: 'main', name: 'main' },
+            model: { provider: 'fixture', id: 'base' },
+            modelRegistry: {},
+            ui: {
+              setStatus: () => {},
+              notify: (text: string, level: string) => {
+                if (level === 'warning') said.push(text);
+              },
+            },
+          },
+        );
+        warnings.push(said);
+      }
+      return { warnings, tools };
+    }
+    const ALL = OMP_CAPABILITY_TOOLS;
+    const remedy =
+      /Install again with the cratylus in use: cratylus install --harness omp/;
+
+    it('is silent where both are the same version, and offers every capability', async () => {
+      const { warnings, tools } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ALL,
+      });
+      expect(warnings).toEqual([[]]);
+      expect(tools).toHaveLength(ALL.length);
+    });
+
+    it('warns at each of two starts where the command is newer, naming both and the remedy', async () => {
+      const { warnings } = await started({
+        projected: '2.4.0',
+        command: '2.5.0',
+        explains: ALL,
+        starts: 2,
+      });
+      for (const said of warnings) {
+        expect(said).toHaveLength(1);
+        expect(said[0]).toContain('projected by cratylus 2.4.0');
+        expect(said[0]).toContain('run is 2.5.0');
+        expect(said[0]).toMatch(remedy);
+      }
+    });
+
+    it('warns where the command is older, as where it is newer', async () => {
+      const { warnings } = await started({
+        projected: '3.1.0',
+        command: '3.0.0',
+        explains: ALL,
+      });
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toContain('projected by cratylus 3.1.0');
+      expect(warnings[0]?.[0]).toContain('run is 3.0.0');
+      expect(warnings[0]?.[0]).toMatch(remedy);
+    });
+
+    it('warns against a command that predates the version tool, still loading and offering what it provides', async () => {
+      const older = ALL.filter((c) => c !== 'versionSkew');
+      const { warnings, tools } = await started({
+        projected: '3.1.0',
+        command: '3.0.0',
+        explains: older,
+      });
+      expect(tools).toEqual(older.map((c) => `stand_in_${c.toLowerCase()}`));
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toContain('projected by cratylus 3.1.0');
+      expect(warnings[0]?.[0]).toContain('run is 3.0.0');
+      expect(warnings[0]?.[0]).toContain('does not provide versionSkew');
+      expect(warnings[0]?.[0]).toMatch(remedy);
+    });
+
+    it('warns where the command lacks a capability the installation expects, though it answers the same version', async () => {
+      const { warnings, tools } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ['concepts'],
+      });
+      expect(tools).toEqual(['stand_in_concepts']);
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toMatch(
+        /does not provide workPackage .*, versionSkew /,
+      );
     });
   });
 
