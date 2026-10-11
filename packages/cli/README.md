@@ -541,13 +541,13 @@ cratylus concepts classify [options] <id>
 
 ### `cratylus workPackage`
 
-The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `open`, `submit`, `update`, `commit`, `check` and `record`.
+The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check` and `record`.
 
 As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus workPackage --help` and `cratylus workPackage <verb> --help` print them, and `cratylus workPackage --explain` and `cratylus workPackage <verb> --explain` print the same explanation as JSON (its name `work package`). The entries below name only each verb's usage and the flags it takes.
 
-Every verb takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`.
+Every verb but `frozen` takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`. `frozen` takes no cut: it reads every cut opened and not yet integrated.
 
-The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted (the pre-commit immutability gate holds it as it holds `design/journal/`), so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
+The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted (the pre-commit immutability gate holds it as it holds `design/journal/`), so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
 
 No verb records a dispatch, a return, an assayer's verdict or the lead's report: those reach the ledger only from the harness's own agent events, through the harness binding. A work package is `submitted`, then `dispatched` and `returned` as the harness reports its builder, then `approved` once at least two distinct assayers' latest verdicts on it all pass, `failing` when every one has a finding, or `disputed` when they disagree; the cut is `open`, then `in flight` from its first dispatch, then `complete` once every work package is approved. A commit whose subject opens `feat(cut:<name>): ` while the ledger does not show that cut complete gets a warning from this repository's post-commit hook, and is never refused.
 
@@ -613,6 +613,12 @@ cratylus workPackage state [options]
 | --------------- |
 | `--cut <value>` |
 
+#### `cratylus workPackage frozen`
+
+```sh
+cratylus workPackage frozen [options]
+```
+
 #### `cratylus workPackage open`
 
 ```sh
@@ -624,6 +630,27 @@ cratylus workPackage open [options]
 | `--cut <value>`       |
 | `--branch <value>`    |
 | `--architect <value>` |
+
+#### `cratylus workPackage freeze`
+
+```sh
+cratylus workPackage freeze [options]
+```
+
+| Flag              |
+| ----------------- |
+| `--cut <value>`   |
+| `--check <value>` |
+
+#### `cratylus workPackage integrate`
+
+```sh
+cratylus workPackage integrate [options]
+```
+
+| Flag            |
+| --------------- |
+| `--cut <value>` |
 
 #### `cratylus workPackage submit`
 
