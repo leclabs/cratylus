@@ -2,17 +2,10 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { judgeBatch } from '@cratylus/runtime';
 import { expect, it, vi } from 'vitest';
 import { rpc } from '../../agent-launch/fixture.js';
 import { provider } from '../../agent-launch/provider.js';
-import {
-  type Recording,
-  type Scenario,
-  assess,
-  check,
-  rubricPrompt,
-} from './check.js';
+import type { Scenario } from './check.js';
 import standIn, { acknowledgement } from './delegate-stand-in.js';
 import { project } from './runner.js';
 
@@ -206,29 +199,3 @@ it.each([
   },
   60_000,
 );
-
-it('seen red (0094): rejects the delegate failure as the subject report opening topic', async () => {
-  const scenario: Scenario = JSON.parse(
-    readFileSync(join(here, 'scenarios.json'), 'utf8'),
-  ).find((item: Scenario) => item.number === 23);
-  const { recording }: { recording: Recording } = JSON.parse(
-    readFileSync(
-      join(here, 'recordings/23/negative-delegate-failure.json'),
-      'utf8',
-    ),
-  );
-  expect(rubricPrompt(scenario, recording)).toContain(
-    'Delegate: the illustrator could not start.',
-  );
-  expect(
-    Object.entries(assess(scenario, recording))
-      .filter(([, pass]) => !pass)
-      .map(([id]) => id),
-  ).toEqual(['conclusion-first']);
-  const batch = await judgeBatch(check(scenario), Array(5).fill(recording), {
-    atLeast: 4,
-    of: 5,
-  });
-  // Explicit opt-in demonstrates red; the normal offline run proves rejection.
-  expect(batch.passed).toBe(process.env.EXECUTION_RED === '1');
-});

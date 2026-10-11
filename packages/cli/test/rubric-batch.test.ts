@@ -12,7 +12,7 @@ interface Run {
   ordinary: boolean;
   second: boolean;
   never: boolean;
-  heldDrift?: { guard: string; attempt: 'call' | 'reply'; reason: string }[];
+  heldDrift?: { guard: string; attempt: 'call'; reason: string }[];
 }
 const source: BehavioralCheck<Run> = {
   example: 'Both ordinary criteria hold and never is violated.',
@@ -180,19 +180,29 @@ it('cancels an actual offline process without waiting for its timeout', async ()
   expect(result.status).not.toBe(0);
 });
 
-describe('0091 held drift is reported separately from verdicts', () => {
+describe('0106 held drift is reported separately from verdicts', () => {
   it('counts a jointly held attempt once overall and once for each refusing guard', () => {
     expect(
       countHeldDrift({
         heldDrift: [
           {
-            guard: ['hand-back', 'bottom-line'],
-            attempt: 'reply',
+            guard: ['descend', 'past-objective'],
+            attempt: 'call',
             reason: 'Combined refusal',
           },
         ],
       }),
-    ).toEqual({ total: 1, byGuard: { 'hand-back': 1, 'bottom-line': 1 } });
+    ).toEqual({ total: 1, byGuard: { descend: 1, 'past-objective': 1 } });
+  });
+  it('does not count stale reply refusals in retained held-drift metadata', () => {
+    expect(
+      countHeldDrift({
+        heldDrift: [
+          { guard: 'hand-back', attempt: 'reply', reason: 'Turn-end refusal' },
+          { guard: 'descend', attempt: 'call', reason: 'Pre-act refusal' },
+        ],
+      }),
+    ).toEqual({ total: 1, byGuard: { descend: 1 } });
   });
   const drift = [
     {
@@ -200,14 +210,14 @@ describe('0091 held drift is reported separately from verdicts', () => {
       attempt: 'call' as const,
       reason: 'Readback required',
     },
-    { guard: 'hand-back', attempt: 'reply' as const, reason: 'Owned decision' },
+    { guard: 'descend', attempt: 'call' as const, reason: 'Source inspection' },
     {
       guard: 'readback-gate',
       attempt: 'call' as const,
       reason: 'Readback still required',
     },
   ];
-  const counts = { total: 3, byGuard: { 'readback-gate': 2, 'hand-back': 1 } };
+  const counts = { total: 3, byGuard: { 'readback-gate': 2, descend: 1 } };
   it('counts drift for each judged or unjudged retained run without treating it as failure', async () => {
     const result = await harness.judgeRuns(source, [
       { ...good, heldDrift: drift },
@@ -220,7 +230,7 @@ describe('0091 held drift is reported separately from verdicts', () => {
       passed: true,
       judged: 4,
       unjudged: 1,
-      heldDrift: { total: 6, byGuard: { 'readback-gate': 4, 'hand-back': 2 } },
+      heldDrift: { total: 6, byGuard: { 'readback-gate': 4, descend: 2 } },
       runs: [
         { index: 1, heldDrift: counts },
         { index: 2, heldDrift: { total: 0, byGuard: {} } },
@@ -245,7 +255,7 @@ describe('0091 held drift is reported separately from verdicts', () => {
       // siblings whose rubric verdicts fail-fast deliberately did not consume.
       heldDrift: {
         total: 15,
-        byGuard: { 'readback-gate': 10, 'hand-back': 5 },
+        byGuard: { 'readback-gate': 10, descend: 5 },
       },
       runs: Array.from({ length: 5 }, (_, index) => ({
         index: index + 1,

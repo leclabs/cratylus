@@ -2,6 +2,8 @@
 
 Owns held-out workflow/3. `architect.test.ts` uses the shared architect suite against this directory's scenario and authored recordings. The fixture resumes a native compaction entry whose remembered completion conflicts with the current branch's real ledger; the journal also contains a newer accepted second-review decision. The architect receives free-text intent, not a fabricated typed assignment.
 
+Under 0106, the reply-guard examples move unchanged to `cut-7/reply-guards`; this scenario and its controls stay unchanged. The shared delivered-evidence projection now judges both an old-style refused reply and its rewrite, because both reached their reader. Only pre-act refusals count as held drift. The rebound prompt check was seen red before that change (**1 failed, 39 skipped**, `artifact://1901`); the visible architect suite's README records the command and evidence. No live model run was made for the split.
+
 Executed before the build:
 
 ```sh

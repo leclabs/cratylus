@@ -1,18 +1,11 @@
-import {
-  bottomLine,
-  descend,
-  handBack,
-  pastObjective,
-  unrecorded,
-} from '@cratylus/canon';
+import { descend, pastObjective } from '@cratylus/canon';
 
 export interface HeldDrift {
   // Several guards can jointly refuse one attempt.
   guard: string | string[];
-  attempt: 'call' | 'reply';
+  attempt: 'call';
   tool?: string;
   input?: unknown;
-  text?: string;
   reason: string;
 }
 
@@ -40,28 +33,31 @@ function textOf(content: unknown): string {
     })
     .join('\n');
 }
-// The first sentence identifies the refusal; later corrective instructions can
-// change without invalidating retained recordings.
-const bottomLinePrefixes = [
-  bottomLine.refusal.slice(0, bottomLine.refusal.indexOf('.') + 1),
-  // Retained recordings carry the sentence the guard gave while it judged replies alone.
-  'burying: this reply buries its bottom line.',
-];
+// Retained turn-end notices are diagnostic only: their replies already took
+// effect (0106). These historical sentences are not installed guard definitions.
+function replyGuard(reason: string): string | undefined {
+  if (
+    reason.startsWith('burying: this reply buries its bottom line.') ||
+    reason.startsWith('burying: this turn buries its bottom line.')
+  )
+    return 'bottom-line';
+  if (
+    reason.startsWith(
+      'hand-back: this reply returns a decision you own to the operator.',
+    )
+  )
+    return 'hand-back';
+  if (reason.startsWith('unrecorded:')) return 'unrecorded';
+  return undefined;
+}
+// The first sentence identifies a pre-act refusal independently of its tail.
 const descendPrefix = descend.refusal.slice(
   0,
   descend.refusal.indexOf('.') + 1,
 );
-const handBackPrefix = handBack.refusal.slice(
-  0,
-  handBack.refusal.indexOf('.') + 1,
-);
 const pastObjectivePrefix = pastObjective.refusal.slice(
   0,
   pastObjective.refusal.indexOf('.') + 1,
-);
-const unrecordedPrefix = unrecorded.refusal.slice(
-  0,
-  unrecorded.refusal.indexOf('.') + 1,
 );
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
@@ -72,10 +68,6 @@ const unrecordedPrefix = unrecorded.refusal.slice(
 function refusingGuard(reason: string): string | undefined {
   if (reason.startsWith(descendPrefix)) return descend.id;
   if (reason.startsWith(pastObjectivePrefix)) return pastObjective.id;
-  if (reason.startsWith(handBackPrefix)) return handBack.id;
-  if (bottomLinePrefixes.some((prefix) => reason.startsWith(prefix)))
-    return bottomLine.id;
-  if (reason.startsWith(unrecordedPrefix)) return unrecorded.id;
   if (
     reason.startsWith(
       'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) ',
@@ -97,7 +89,7 @@ function refusingGuard(reason: string): string | undefined {
   return undefined;
 }
 
-/** 0091: project the delivered trace without mutating the retained subject. */
+/** 0106: only refused pre-act attempts are withheld from delivered evidence. */
 export function deliveredEvidence(messages: readonly unknown[]): {
   delivered: unknown[];
   heldDrift: HeldDrift[];
@@ -124,19 +116,15 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     const message = object(value);
     if (!message) continue;
     const relayReason = message.role === 'user' ? textOf(message.content) : '';
-    const relayGuard = refusingGuard(relayReason);
+    const relayGuard = replyGuard(relayReason);
     if (
       message.role === 'user' &&
       message.steering === true &&
       message.attribution === 'agent' &&
-      (relayGuard === bottomLine.id ||
-        relayGuard === handBack.id ||
-        relayGuard === unrecorded.id)
+      relayGuard
     ) {
-      // render.ts guardJudged relays after its refusal allowance is exhausted
-      // and returns undefined: the handler neither blocks nor withdraws the
-      // reply. This is an unheld tell under 0091. Keep both messages.
-      // Several turn guards can each relay a reason about the same reply.
+      // Historical steering notices remain evidence alongside the reply.
+      // Several notices can concern the same preceding reply.
       if (relayReply)
         relayed.push({
           guard: relayGuard,
@@ -155,13 +143,10 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     }
     const callRefusal =
       message.role === 'toolResult' && message.isError === true;
-    const replyRefusal =
-      message.role === 'custom' &&
-      message.customType === 'session-stop-continuation';
-    if (!callRefusal && !replyRefusal) continue;
+    if (!callRefusal) continue;
     const reason = textOf(message.content);
     if (!refusingGuard(reason)) continue;
-    // The session joins simultaneous guard refusals into one continuation.
+    // One pre-act result may name several refusing guards.
     const guards = [
       ...new Set(
         reason.split(/\n+/).flatMap((line) => {
@@ -171,37 +156,21 @@ export function deliveredEvidence(messages: readonly unknown[]): {
       ),
     ];
     const guard = guards.length === 1 ? guards[0]! : guards;
-    if (callRefusal) {
-      const id = message.toolCallId;
-      const previous = typeof id === 'string' ? calls.get(id) : undefined;
-      // A result without its attempted call cannot establish a refused attempt.
-      if (!previous) continue;
-      removeBlock(previous.message, previous.block);
-      removedMessages.add(index);
-      calls.delete(id as string);
-      heldDrift.push({
-        guard,
-        attempt: 'call',
-        tool:
-          typeof previous.call.name === 'string'
-            ? previous.call.name
-            : undefined,
-        input: previous.call.arguments,
-        reason,
-      });
-    } else {
-      const previous = object(messages[index - 1]);
-      if (previous?.role !== 'assistant') continue;
-      const text = textOf(previous.content);
-      if (!text) continue;
-      if (typeof previous.content === 'string') removedMessages.add(index - 1);
-      else if (Array.isArray(previous.content)) {
-        for (const [block, value] of previous.content.entries())
-          if (object(value)?.type === 'text') removeBlock(index - 1, block);
-      }
-      removedMessages.add(index);
-      heldDrift.push({ guard, attempt: 'reply', text, reason });
-    }
+    const id = message.toolCallId;
+    const previous = typeof id === 'string' ? calls.get(id) : undefined;
+    // A result without its attempted call cannot establish a refused attempt.
+    if (!previous) continue;
+    removeBlock(previous.message, previous.block);
+    removedMessages.add(index);
+    calls.delete(id as string);
+    heldDrift.push({
+      guard,
+      attempt: 'call',
+      tool:
+        typeof previous.call.name === 'string' ? previous.call.name : undefined,
+      input: previous.call.arguments,
+      reason,
+    });
   }
   const delivered = messages.flatMap((value, index) => {
     if (removedMessages.has(index)) return [];
@@ -227,7 +196,9 @@ export function countHeldDrift(run: unknown): HeldDriftCount {
   let total = 0;
   if (Array.isArray(entries)) {
     for (const value of entries) {
-      const guard = object(value)?.guard;
+      const entry = object(value);
+      if (entry?.attempt !== 'call') continue;
+      const guard = entry.guard;
       const guards = typeof guard === 'string' ? [guard] : guard;
       if (!Array.isArray(guards) || guards.length === 0) continue;
       for (const name of new Set(guards))

@@ -10,13 +10,7 @@ import {
 import type * as OS from 'node:os';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-  bottomLine,
-  descend,
-  handBack,
-  pastObjective,
-  unrecorded,
-} from '@cratylus/canon';
+import { descend, pastObjective } from '@cratylus/canon';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rubricPrompt as roleRubricPrompt } from './execution-roles/check.js';
@@ -307,37 +301,35 @@ describe('live rubric judge contract, exercised without model sessions', () => {
   });
 });
 
-describe('0091 delivered evidence', () => {
+// Historical recording text, not guard definitions or instructions to a subject.
+const bottomLineRefusal = 'burying: this reply buries its bottom line.';
+const handBackRefusal =
+  'hand-back: this reply returns a decision you own to the operator.';
+const unrecordedRefusal =
+  'unrecorded: this reply reports a decision that was not recorded.';
+
+describe('0106 delivered evidence', () => {
   it.each([
-    { reason: bottomLine.refusal, guard: 'bottom-line' },
-    {
-      // Retained before the guard's corrective instruction was extended.
-      reason:
-        "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms.",
-      guard: 'bottom-line',
-    },
-    {
-      reason: `${handBack.refusal} Owned ruling deferred.\n\n${bottomLine.refusal} Conclusion last.`,
-      guard: ['hand-back', 'bottom-line'],
-    },
-  ])(
-    'records every guard in a combined refusal only once per attempt',
-    ({ reason, guard }) => {
-      const input = [
-        { role: 'assistant', content: 'Refused reply' },
-        {
-          role: 'custom',
-          customType: 'session-stop-continuation',
-          content: reason,
-        },
-      ];
-      expect(deliveredEvidence(input)).toEqual({
-        delivered: [],
-        heldDrift: [{ guard, attempt: 'reply', text: 'Refused reply', reason }],
-        relayed: [],
-      });
-    },
-  );
+    bottomLineRefusal,
+    handBackRefusal,
+    unrecordedRefusal,
+    `${handBackRefusal} Owned ruling deferred.\n\n${bottomLineRefusal} Conclusion last.`,
+  ])('keeps replies despite historical turn-end refusals: %s', (reason) => {
+    const input = [
+      { role: 'assistant', content: 'Refused reply' },
+      {
+        role: 'custom',
+        customType: 'session-stop-continuation',
+        content: reason,
+      },
+      { role: 'assistant', content: 'Rewritten reply' },
+    ];
+    expect(deliveredEvidence(input)).toEqual({
+      delivered: input,
+      heldDrift: [],
+      relayed: [],
+    });
+  });
   function fixture(name: string): unknown[] {
     return JSON.parse(
       readFileSync(
@@ -414,29 +406,25 @@ describe('0091 delivered evidence', () => {
       relayed: [],
     });
   });
-  it('recognizes an unrecorded refusal of a reply as held drift, and its relay as a relayed tell', () => {
+  it('keeps an unrecorded reply refusal delivered and its steering notice diagnostic', () => {
     const reply = {
       role: 'assistant',
       content: 'Approval is settled: it is not release.',
     };
-    const reason = `${unrecorded.refusal} The approval question is reported settled and not recorded.`;
-    expect(
-      deliveredEvidence([
-        reply,
-        {
-          role: 'custom',
-          customType: 'session-stop-continuation',
-          content: `${reason}\n\n${bottomLine.refusal} Mechanics.`,
-        },
-      ]).heldDrift,
-    ).toEqual([
+    const reason = `${unrecordedRefusal} The approval question is reported settled and not recorded.`;
+    const refused = [
+      reply,
       {
-        guard: ['unrecorded', 'bottom-line'],
-        attempt: 'reply',
-        text: reply.content,
-        reason: `${reason}\n\n${bottomLine.refusal} Mechanics.`,
+        role: 'custom',
+        customType: 'session-stop-continuation',
+        content: `${reason}\n\n${bottomLineRefusal} Mechanics.`,
       },
-    ]);
+    ];
+    expect(deliveredEvidence(refused)).toEqual({
+      delivered: refused,
+      heldDrift: [],
+      relayed: [],
+    });
     const messages = [
       reply,
       { role: 'user', steering: true, attribution: 'agent', content: reason },
@@ -447,34 +435,20 @@ describe('0091 delivered evidence', () => {
       relayed: [{ guard: 'unrecorded', text: reply.content, reason }],
     });
   });
-  it('classifies a refused stop carrying the readback-owed line by its refusing guards alone', () => {
-    const reply = {
-      role: 'assistant',
-      content: 'Decisions first; entry 7 recorded.',
-    };
-    const owed =
-      'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
-    for (const [guard, reason] of [
-      ['bottom-line', `${bottomLine.refusal} Mechanics.\n\n${owed}`],
-      [
-        ['bottom-line', 'hand-back'],
-        `${bottomLine.refusal} Mechanics.\n\n${handBack.refusal} Deferred.\n\n${owed}`,
-      ],
-    ] as const)
-      expect(
-        deliveredEvidence([
-          reply,
-          {
-            role: 'custom',
-            customType: 'session-stop-continuation',
-            content: reason,
-          },
-        ]),
-      ).toEqual({
-        delivered: [],
-        heldDrift: [{ guard, attempt: 'reply', text: reply.content, reason }],
-        relayed: [],
-      });
+  it('keeps a refused reply delivered even when its continuation says readback is owed', () => {
+    const messages = [
+      { role: 'assistant', content: 'Decisions first; entry 7 recorded.' },
+      {
+        role: 'custom',
+        customType: 'session-stop-continuation',
+        content: `${bottomLineRefusal}\n\nreconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.`,
+      },
+    ];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: messages,
+      heldDrift: [],
+      relayed: [],
+    });
   });
   it('recognizes a past-objective refusal of a call as held drift, alone or with descend', () => {
     const [call, result] = fixture('agents-16') as Record<string, unknown>[];
@@ -505,53 +479,21 @@ describe('0091 delivered evidence', () => {
         relayed: [],
       });
   });
-  it('recognizes a bottom-line refusal of a call as held drift, alone or with past-objective', () => {
-    const [call, result] = fixture('agents-16') as Record<string, unknown>[];
-    const reason = `${bottomLine.refusal} The call takes a second action on a topic this turn already decided.`;
-    for (const [guard, text] of [
-      ['bottom-line', reason],
-      [
-        ['past-objective', 'bottom-line'],
-        `${pastObjective.refusal} Met.\n\n${reason}`,
-      ],
-    ] as const)
-      expect(
-        deliveredEvidence([
-          call,
-          { ...result, content: [{ type: 'text', text }] },
-        ]),
-      ).toEqual({
-        delivered: [],
-        heldDrift: [
-          {
-            guard,
-            attempt: 'call',
-            tool: 'bash',
-            input: expect.any(Object),
-            reason: text,
-          },
-        ],
-        relayed: [],
-      });
-  });
-  it('recognizes hand-back refusals and relays independently of their corrective tail', () => {
+  it('keeps historical hand-back refusals delivered and recognizes steering notices', () => {
     const reason =
       'hand-back: this reply returns a decision you own to the operator.';
     const reply = { role: 'assistant', content: 'Owned ruling deferred' };
-    expect(
-      deliveredEvidence([
-        reply,
-        {
-          role: 'custom',
-          customType: 'session-stop-continuation',
-          content: reason,
-        },
-      ]),
-    ).toEqual({
-      delivered: [],
-      heldDrift: [
-        { guard: 'hand-back', attempt: 'reply', text: reply.content, reason },
-      ],
+    const refused = [
+      reply,
+      {
+        role: 'custom',
+        customType: 'session-stop-continuation',
+        content: reason,
+      },
+    ];
+    expect(deliveredEvidence(refused)).toEqual({
+      delivered: refused,
+      heldDrift: [],
       relayed: [],
     });
     const messages = [
@@ -606,9 +548,9 @@ describe('0091 delivered evidence', () => {
       role: 'user',
       steering: true,
       attribution: 'agent',
-      content: bottomLine.refusal,
+      content: bottomLineRefusal,
     };
-    const messages = [reply, relay, { ...relay, content: handBack.refusal }];
+    const messages = [reply, relay, { ...relay, content: handBackRefusal }];
     expect(deliveredEvidence(messages)).toEqual({
       delivered: messages,
       heldDrift: [],
@@ -616,16 +558,16 @@ describe('0091 delivered evidence', () => {
         {
           guard: 'bottom-line',
           text: reply.content,
-          reason: bottomLine.refusal,
+          reason: bottomLineRefusal,
         },
-        { guard: 'hand-back', text: reply.content, reason: handBack.refusal },
+        { guard: 'hand-back', text: reply.content, reason: handBackRefusal },
       ],
     });
     for (const notice of [
       { ...relay, steering: false },
       { ...relay, attribution: 'user' },
-      { role: 'user', content: bottomLine.refusal },
-      { ...relay, content: `The guard said: ${bottomLine.refusal}` },
+      { role: 'user', content: bottomLineRefusal },
+      { ...relay, content: `The guard said: ${bottomLineRefusal}` },
       { ...relay, content: descend.refusal },
       {
         ...relay,
@@ -649,23 +591,21 @@ describe('0091 delivered evidence', () => {
     const continuation = {
       role: 'custom',
       customType: 'session-stop-continuation',
-      content: handBack.refusal,
+      content: handBackRefusal,
     };
-    const result = deliveredEvidence([
+    const input = [
       firstAttempt,
       continuation,
       { ...firstAttempt, content: 'Second refused reply' },
       continuation,
       ...messages,
-    ]);
-    expect(result.delivered).toEqual(messages);
-    expect(countHeldDrift(result)).toEqual({
-      total: 2,
-      byGuard: { 'hand-back': 2 },
-    });
+    ];
+    const result = deliveredEvidence(input);
+    expect(result.delivered).toEqual(input);
+    expect(countHeldDrift(result)).toEqual({ total: 0, byGuard: {} });
     expect(result.relayed).toEqual(deliveredEvidence(messages).relayed);
   });
-  it('removes three readback calls and one hand-back without changing the subject', () => {
+  it('removes only three pre-act readback calls without changing the subject', () => {
     const messages = fixture('agents-13');
     const before = JSON.stringify(messages);
     const { delivered, heldDrift } = deliveredEvidence(messages);
@@ -675,7 +615,6 @@ describe('0091 delivered evidence', () => {
         { guard: 'readback-gate', attempt: 'call' },
         { guard: 'readback-gate', attempt: 'call' },
         { guard: 'readback-gate', attempt: 'call' },
-        { guard: 'hand-back', attempt: 'reply' },
       ],
     );
     for (const entry of heldDrift.slice(0, 3))
@@ -684,11 +623,7 @@ describe('0091 delivered evidence', () => {
         input: { path: 'xd://concept_journal' },
         reason: expect.stringMatching(/^reconstitution:/),
       });
-    expect(heldDrift[3]).toMatchObject({
-      text: expect.stringContaining("so I won't settle it without your intent"),
-      reason: expect.stringMatching(/^hand-back:/),
-    });
-    const refused = new Set([0, 1, 2, 3, 6, 7, 8, 9]);
+    const refused = new Set([0, 1, 2, 3, 6, 7]);
     expect(delivered).toEqual(
       messages.filter((_, index) => !refused.has(index)),
     );
@@ -762,7 +697,7 @@ describe('0091 delivered evidence', () => {
       { ...assistant, content: [text, other] },
     ]);
   });
-  it('removes refused string and block replies, not their successful calls or unrelated continuations', () => {
+  it('keeps refused string and block replies, successful calls and continuations', () => {
     const messages = fixture('agents-13') as Record<string, unknown>[];
     const refusal = messages[9]!;
     const call = { type: 'toolCall', id: 'kept', name: 'read', arguments: {} };
@@ -778,14 +713,8 @@ describe('0091 delivered evidence', () => {
       { ...refusal, content: 'An ordinary continuation, not a guard refusal.' },
     ];
     const result = deliveredEvidence(input);
-    expect(result.delivered).toEqual([
-      { role: 'assistant', content: [call] },
-      ...input.slice(4),
-    ]);
-    expect(result.heldDrift.map(({ text }) => text)).toEqual([
-      'Refused reply',
-      'Also refused',
-    ]);
+    expect(result.delivered).toEqual(input);
+    expect(result.heldDrift).toEqual([]);
   });
   it.each([
     [
@@ -836,7 +765,7 @@ describe('0091 delivered evidence', () => {
         report: "so I won't settle it without your intent",
       },
     );
-    expect(prompt).not.toContain("so I won't settle it without your intent");
+    expect(prompt).toContain("so I won't settle it without your intent");
     expect(prompt).toContain('Scheduling allows night shoots.');
   });
   it('persists held drift in judged recordings while preserving raw subject evidence', async () => {
@@ -855,11 +784,11 @@ describe('0091 delivered evidence', () => {
     expect(
       JSON.parse(readFileSync(join(output, 'subject.json'), 'utf8')),
     ).toEqual(input);
-    expect(
-      readFileSync(join(output, 'rubric-prompt.txt'), 'utf8'),
-    ).not.toContain("so I won't settle it without your intent");
+    expect(readFileSync(join(output, 'rubric-prompt.txt'), 'utf8')).toContain(
+      "so I won't settle it without your intent",
+    );
   });
-  it('removes the refused agents/13 reply but keeps the corrected final reply', () => {
+  it('0106 keeps the refused reply and its rewrite delivered in both rubric prompts', () => {
     const messages = JSON.parse(
       readFileSync(
         new URL(
@@ -874,7 +803,13 @@ describe('0091 delivered evidence', () => {
       messages,
       report: '',
     });
-    expect(prompt).not.toContain("so I won't settle it without your intent");
+    expect(prompt).toContain("so I won't settle it without your intent");
     expect(prompt).toContain('Scheduling allows night shoots.');
+    const rolePrompt = roleRubricPrompt(
+      { ...scenario, role: 'lead' },
+      { ...subject(), messages, report: '' },
+    );
+    expect(rolePrompt).toContain("so I won't settle it without your intent");
+    expect(rolePrompt).toContain('Scheduling allows night shoots.');
   });
 });
