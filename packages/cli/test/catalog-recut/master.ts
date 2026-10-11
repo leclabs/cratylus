@@ -18,7 +18,8 @@ export function requireDefined<T>(value: T | undefined, label: string): T {
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
-// Decision 0070 and the drift concept, rebound under 0085 and 0090. Keep this expectation
+// Decision 0070 and the drift concept, rebound under 0085 and 0090, and for the
+// reconstitution cut's agents/16 (procedure past objective). Keep this expectation
 // independent of canon so an omitted protocol or drift tell cannot pass.
 export const personaProtocol = `## Protocol
 
@@ -35,7 +36,7 @@ Drift tells (each = drift, never diligence):
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
 - **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
-- **procedure past objective** -- the ritual outliving what it serves.
+- **procedure past objective** -- the ritual outliving what it serves: once the design is settled, its examples approved and a delegate's report (its assayers' acceptance, the whole check) establishes the outcome, re-reading the records to check that report is repeating discovery; report the outcome and stop.
 
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 
