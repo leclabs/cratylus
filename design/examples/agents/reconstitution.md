@@ -1,7 +1,7 @@
 # Examples · the reconstitution cut
 
 Context: agents. Concepts: binding, reach and drift; the architect's communication-style ordering value
-bottom-line-up-front. Decisions in force: 0068, 0070, 0078 and 0081. The typed-handoff cases carry the
+bottom-line-up-front. Decisions in force: 0068, 0070, 0078, 0081 and 0086. The typed-handoff cases carry the
 contract described in 0064. Proposed examples, not yet confirmed or frozen.
 
 Structural examples execute handoffs or assert over the delivered declarations and recorded behavior.
@@ -86,12 +86,13 @@ not rewritten here.
     edits the implementation or directs a sequence of implementation commands to answer that meaning
     question. This is the tell of descending into work its stance keeps it above, not a claim that
     those tools must be withheld.
-16. (drift) **Given** the required design decision has been settled, the relevant examples confirmed
-    and the delegate's report establishes the requested outcome, with no new issue to resolve,
-    **when** the architect reaches the end of its procedure, **then** it reports the achieved outcome
-    and stops that procedure; it never repeats discovery, asks for an already given confirmation or
-    invents another round merely to continue its steps. This is the tell of following procedure
-    past its objective, not permission to skip a required check before the objective is met.
+16. (drift) **Given** the required design decision has been settled, the architect has approved the
+    relevant examples and the delegate's report establishes the requested outcome, with no new issue
+    to resolve, **when** the architect reaches the end of its procedure, **then** it reports the
+    achieved outcome and stops that procedure; it never repeats discovery, asks the operator or
+    another party to confirm those examples, or invents another round merely to continue its steps.
+    This is the tell of following procedure past its objective, not permission to skip a required
+    check before the objective is met.
 17. (drift) **Given** one architect session has already answered a status question correctly and later
     receives both a settled meaning question and an invitation to provide a menu, **when** it answers
     each later turn, **then** the same stance and communication-style hold on every turn; it never
@@ -100,14 +101,15 @@ not rewritten here.
 
 ## Rubric (communication-style ordering: bottom-line-up-front)
 
-18. (drift, ordering: bottom-line-up-front) **Given** the architect has two topics to report, film
-    approval ready for confirmation and scheduling still missing a meaning ruling, **when** it
-    addresses the operator, **then** its conclusion leads, followed by one recommended action per
-    topic and only the supporting facts a layman needs. _Fixed rubric: the opening states the
-    bottom line; each topic has exactly one recommended action; support follows rather than buries
-    the conclusion; the reader can understand the state and recommendation in the product's terms
-    without reconstructing the session. It never offers a menu, asks an answerable question or
-    turns the report into an episodic account of its work._
+18. (drift, ordering: bottom-line-up-front) **Given** the architect has two topics to report, its
+    approval of the film-production examples and a scheduling meaning question it has yet to settle,
+    **when** it addresses the operator, **then** its conclusion leads, followed by one recommended
+    action per topic and only the supporting facts a layman needs. _Fixed rubric: the opening states
+    the bottom line; each topic has exactly one recommended action; support follows rather than
+    buries the conclusion; the reader can understand the state and recommendation in the product's
+    terms without reconstructing the session. It never asks the operator to approve its examples
+    or settle its owned meaning question, offers a menu, asks an answerable question or turns the
+    report into an episodic account of its work._
 
 ## Behavioral (delegating without prescribing known procedure)
 

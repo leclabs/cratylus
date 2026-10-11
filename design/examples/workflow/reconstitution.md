@@ -1,9 +1,9 @@
 # Examples · the reconstitution cut
 
 Context: workflow. Concepts: context overview, ledger, completion check, reconstitution, concept journal,
-cut, architect, lead and roles. Decision in force: 0081, including the architect restored by 0070 and the typed
-handoffs carried from 0064. Proposed examples, not yet confirmed or frozen. Companion examples in the
-agents and delivery contexts cover the contracts this context consumes.
+cut, architect, lead and roles. Decisions in force: 0081 and 0086, including the architect restored by
+0070 and the typed handoffs carried from 0064. Proposed examples, not yet confirmed or frozen.
+Companion examples in the agents and delivery contexts cover the contracts this context consumes.
 
 Structural examples execute capabilities or assert over their delivered output. Behavioral examples run
 the composed agents 5 times in a fixed scenario: every assertion holds in at least 4 runs, every
@@ -98,10 +98,11 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     overview, then the detail needed from the journal and ledger, and before acting reads back to the
     operator the current design, open decisions and cuts in flight; it never starts delivery work
     before that readback or asks the operator to reconstruct information those records provide.
-19. (architect) **Given** the operator asks for a film approval process and the scheduling context
-    already uses approval with a different meaning, **when** the architect designs the requested
-    change, **then** it states film-production concepts using established patterns, keeps scheduling's
-    model separate, and seeks confirmation of examples from each affected meaning-holder; it never
+19. (architect) **Given** the operator has stated the intent for a film approval process, the architect
+    holds film production and scheduling whose meanings of approval differ, and the illustrator has
+    returned examples accurately expressing both, **when** the architect decides on those examples,
+    **then** it approves each context's examples itself and keeps their models separate; it never
+    seeks the operator's or another party's confirmation of an example in a context it holds, or
     merges the two meanings merely because the same word is used.
 20. (architect) **Given** a delegate asks whether a film approval means creative approval or release
     permission and the settled design distinguishes them, **when** the architect answers, **then**
@@ -144,14 +145,16 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     their verdicts return through the harness, **then** edit returns to build as a failing case
     and shoot is approved; edit is never approved merely because both verdicts have returned, and
     the cut never becomes complete while edit remains unapproved.
-27. (cut) **Given** one reviewable change serves workflow, agents and delivery, which share their
-    meaning-holder, **when** the cut and its examples are recorded, **then** it is one cut with
-    examples kept and judged in each concept's own context; it never becomes three cuts merely
-    because three contexts are touched, and a shared cut never merges their models or example sets.
-28. (cut) **Given** one intent spans film production and scheduling with different meaning-holders,
-    **when** its cuts are defined, **then** there is one cut per context joined by contracts, never
-    one cut justified solely by convenience. The shared-cut exception also never combines contexts
-    when the whole would exceed one reviewable change.
+27. (cut) **Given** one reviewable change serves workflow, agents and delivery, all held by the same
+    architect, **when** the cut and its examples are recorded, **then** it is one cut with examples
+    approved by that architect and kept and judged in each concept's own context; it never becomes
+    three cuts merely because three contexts are touched, and a shared cut never merges their
+    models or example sets or requires a separate party to approve their examples.
+28. (cut) **Given** one intent spans film production and scheduling held by different architects,
+    **when** its cuts are defined, **then** there is one cut per context joined by contracts, with
+    each architect approving its own context's examples, never one cut justified solely by
+    convenience or a separate confirmer replacing either architect. The shared-cut exception also
+    never combines contexts when the whole would exceed one reviewable change.
 29. (cut, lead) **Given** the architect has named a cut's feature branch and the cut is ready to
     dispatch, **when** the lead's assignment is delivered, **then** the cut's record carries that
     branch name and the named branch has been checked out before dispatch; the assignment never
