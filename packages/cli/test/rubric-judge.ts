@@ -3,6 +3,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { BehavioralCheck } from '@cratylus/runtime';
+import {
+  type HeldDrift,
+  countHeldDrift,
+  deliveredEvidence,
+  totalHeldDrift,
+} from './rubric-delivered.js';
 
 export interface Judgment {
   status: 'judged' | 'unjudged';
@@ -74,7 +80,10 @@ export function subjectModels(recording: { messages: unknown[] }): string[] {
 
 /** One retry judges only the retained subject; errors are not rubric verdicts. */
 export async function judgeSubject<
-  R extends { answers: Record<string, { pass: boolean; evidence: string }> },
+  R extends {
+    answers: Record<string, { pass: boolean; evidence: string }>;
+    messages?: unknown[];
+  },
 >(
   subject: R,
   output: string,
@@ -84,14 +93,19 @@ export async function judgeSubject<
     attemptOutput: string,
   ) => R['answers'] | Promise<R['answers']>,
   signal?: AbortSignal,
-): Promise<R & { judgment: Judgment }> {
+): Promise<R & { judgment: Judgment; heldDrift: HeldDrift[] }> {
   signal?.throwIfAborted();
   mkdirSync(output, { recursive: true });
   writeFileSync(join(output, 'subject.json'), JSON.stringify(subject, null, 2));
   // Resolve and refuse before creating or launching any judge session.
   const model = judgeModel(subjects);
   const judgment: Judgment = { status: 'unjudged', model, attempts: [] };
-  const result = { ...subject, answers: {}, judgment };
+  const result = {
+    ...subject,
+    answers: {},
+    judgment,
+    heldDrift: deliveredEvidence(subject.messages ?? []).heldDrift,
+  };
   for (let attempt = 1; attempt <= 2; attempt++) {
     signal?.throwIfAborted();
     try {
@@ -109,6 +123,7 @@ export async function judgeSubject<
       join(output, 'recording.json'),
       JSON.stringify(result, null, 2),
     );
+    writeFileSync(join(output, 'judged.json'), JSON.stringify(result, null, 2));
     if (judgment.status === 'judged') break;
   }
   return result;
@@ -157,7 +172,16 @@ export async function judgeRuns<R>(
   const verdicts = [];
   for (const run of runs)
     if (isJudged(run)) verdicts.push(await source.judge(run));
-  return batchVerdicts(source, verdicts);
+  const summaries = runs.map((run, index) => ({
+    index: index + 1,
+    status: isJudged(run) ? 'judged' : 'unjudged',
+    heldDrift: countHeldDrift(run),
+  }));
+  return {
+    ...batchVerdicts(source, verdicts),
+    runs: summaries,
+    heldDrift: totalHeldDrift(summaries.map((run) => run.heldDrift)),
+  };
 }
 
 /** Launch all five independently; cancellation reaches every outstanding session. */
@@ -174,6 +198,7 @@ export async function liveBatch<R>(
     index: index + 1,
     status: 'not-run',
     error: undefined as string | undefined,
+    heldDrift: countHeldDrift(undefined),
   }));
   let completed = 0;
   let judgeAttempts = 0;
@@ -200,6 +225,7 @@ export async function liveBatch<R>(
     state.error = result.error;
     if (result.record !== undefined) {
       const record = result.record;
+      state.heldDrift = countHeldDrift(record);
       if (record && typeof record === 'object' && 'judgment' in record) {
         const judgment = record.judgment;
         if (
@@ -228,13 +254,19 @@ export async function liveBatch<R>(
       new Error(`Batch ${batch.status}; run ${index} not run`),
     );
   // Await process closure and fixture disposal, never leave cancelled children behind.
-  await Promise.all(pending.values());
+  const remaining = await Promise.all(pending.values());
+  // A sibling may already have returned when fail-fast decided the verdict.
+  // Its drift still belongs in the report, even though its rubric is not counted.
+  for (const result of remaining)
+    if (result.record !== undefined)
+      runs[result.index - 1]!.heldDrift = countHeldDrift(result.record);
   const result = {
     ...batch,
     cancelled,
     notRun: 5 - batch.judged,
     runsSpent: { started: 5, completed, judgeAttempts },
     runs,
+    heldDrift: totalHeldDrift(runs.map((run) => run.heldDrift)),
   };
   writeFileSync(join(output, 'errors.json'), JSON.stringify(errors, null, 2));
   writeFileSync(

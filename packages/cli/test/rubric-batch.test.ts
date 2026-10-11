@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, describe, expect, it } from 'vitest';
+import { countHeldDrift } from './rubric-delivered.js';
 import * as harness from './rubric-judge.js';
 
 interface Run {
@@ -11,6 +12,7 @@ interface Run {
   ordinary: boolean;
   second: boolean;
   never: boolean;
+  heldDrift?: { guard: string; attempt: 'call' | 'reply'; reason: string }[];
 }
 const source: BehavioralCheck<Run> = {
   example: 'Both ordinary criteria hold and never is violated.',
@@ -176,4 +178,82 @@ it('cancels an actual offline process without waiting for its timeout', async ()
   const result = await pending;
   expect(result.error?.message).toBe('Batch decided');
   expect(result.status).not.toBe(0);
+});
+
+describe('0091 held drift is reported separately from verdicts', () => {
+  it('counts a jointly held attempt once overall and once for each refusing guard', () => {
+    expect(
+      countHeldDrift({
+        heldDrift: [
+          {
+            guard: ['hand-back', 'bottom-line'],
+            attempt: 'reply',
+            reason: 'Combined refusal',
+          },
+        ],
+      }),
+    ).toEqual({ total: 1, byGuard: { 'hand-back': 1, 'bottom-line': 1 } });
+  });
+  const drift = [
+    {
+      guard: 'readback-gate',
+      attempt: 'call' as const,
+      reason: 'Readback required',
+    },
+    { guard: 'hand-back', attempt: 'reply' as const, reason: 'Owned decision' },
+    {
+      guard: 'readback-gate',
+      attempt: 'call' as const,
+      reason: 'Readback still required',
+    },
+  ];
+  const counts = { total: 3, byGuard: { 'readback-gate': 2, 'hand-back': 1 } };
+  it('counts drift for each judged or unjudged retained run without treating it as failure', async () => {
+    const result = await harness.judgeRuns(source, [
+      { ...good, heldDrift: drift },
+      good,
+      good,
+      good,
+      { ...unjudged, heldDrift: drift },
+    ]);
+    expect(result).toMatchObject({
+      passed: true,
+      judged: 4,
+      unjudged: 1,
+      heldDrift: { total: 6, byGuard: { 'readback-gate': 4, 'hand-back': 2 } },
+      runs: [
+        { index: 1, heldDrift: counts },
+        { index: 2, heldDrift: { total: 0, byGuard: {} } },
+        { index: 3, heldDrift: { total: 0, byGuard: {} } },
+        { index: 4, heldDrift: { total: 0, byGuard: {} } },
+        { index: 5, heldDrift: counts },
+      ],
+    });
+  });
+  it('writes per-run and total held drift to assessment.json without changing fail-fast', async () => {
+    const output = directory();
+    const result = await harness.liveBatch(
+      source,
+      async () => ({ ...good, never: false, heldDrift: drift }),
+      output,
+    );
+    expect(result).toMatchObject({
+      passed: false,
+      judged: 1,
+      cancelled: 4,
+      // All five returned records must be reported, including already-resolved
+      // siblings whose rubric verdicts fail-fast deliberately did not consume.
+      heldDrift: {
+        total: 15,
+        byGuard: { 'readback-gate': 10, 'hand-back': 5 },
+      },
+      runs: Array.from({ length: 5 }, (_, index) => ({
+        index: index + 1,
+        heldDrift: counts,
+      })),
+    });
+    expect(
+      JSON.parse(readFileSync(join(output, 'assessment.json'), 'utf8')),
+    ).toEqual(result);
+  });
 });

@@ -148,6 +148,44 @@ EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/archi
 
 Observed: the full architect offline suite passed **93 tests, 52 skipped**. The selected red run had **22 passed, 2 intentionally failed, 121 skipped**. Both demonstrations returned `passed: false` for the new reasonless-ruling negative. The ordinary proof accepted the new settled goldens and rejected every isolated negative, including the existing omitted-action controls. These are authored rubric-answer controls, not live judge judgments; no model sessions were run.
 
+## 0091: judged on what takes effect
+
+`test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.
+
+The original `subject.json` and the judged recording's messages stay intact. Each `recording.json` and `judged.json` also records `heldDrift`: one `{ guard, attempt: "call" | "reply", tool?, input?, text?, reason }` per refused attempt. `guard` is its canonical ID, or an array of IDs when several guards jointly refuse one attempt; call entries retain their tool input and reply entries their refused text. Batch results and `assessment.json` report `{ total, byGuard }` under `heldDrift`, both for each run and overall, independently of pass/fail. A joint refusal counts once in `total` and once for each guard in `byGuard`. Returned siblings not consumed by fail-fast still contribute their drift, never an invented rubric verdict.
+
+The three fixtures in `fixtures/` are excerpts copied from `/tmp/smoke11/{agents-13,workflow-31,agents-16}/subject.json`: only relevant messages, with thinking and model/usage metadata removed. Agents/13 retains three refused calls, its refused reply, intervening successful calls and the corrected final reply. These are transcript controls, not authored rubric answers or new live runs.
+
+Executed offline:
+
+```sh
+pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'removes the refused agents/13 reply'
+pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts test/rubric-batch.test.ts -t '0091'
+pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts test/rubric-batch.test.ts -t 'combined refusal|jointly held'
+pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts test/rubric-judge.test.ts test/rubric-batch.test.ts test/execution-roles test/reconstitution/roles
+```
+
+Before the prompt change, the first command was **1 failed, 11 skipped**: the actual architect prompt still contained “so I won't settle it without your intent.” Before wiring projection/reporting into judging, the second command was **5 failed, 10 passed, 19 skipped**: both prompts still included that reply, judged recordings lacked drift, and both batch paths lacked drift counts. The combined-refusal check was then **3 failed, 34 skipped**: the newly installed bottom-line guard was not recognized, joint refusals lost their second guard, and totals did not count them. Final acceptance was **6 files passed; 185 passed, 82 skipped**. No subject or judge model sessions ran.
+
+### Re-judging a flat smoke directory
+
+The existing namespaced replay path already accepts symlinked `run-1` directories. For example, the **lead may run** the following (not executed for this change):
+
+```sh
+mkdir -p /tmp/smoke11-replay/architect/visible/agents/{13,16} \
+  /tmp/smoke11-replay/architect/visible/workflow/31
+ln -s /tmp/smoke11/agents-13 /tmp/smoke11-replay/architect/visible/agents/13/run-1
+ln -s /tmp/smoke11/agents-16 /tmp/smoke11-replay/architect/visible/agents/16/run-1
+ln -s /tmp/smoke11/workflow-31 /tmp/smoke11-replay/architect/visible/workflow/31/run-1
+env -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE_LEGACY \
+  EXECUTION_LIVE=1 EXECUTION_REJUDGE=/tmp/smoke11-replay \
+  EXECUTION_RECORDINGS=/tmp/smoke11-rejudged-0091 \
+  pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts \
+  -t 'Example (agents/(13|16)|workflow/31) .*rejudge:'
+```
+
+`EXECUTION_LIVE=1` authorizes only the separate judges here: `EXECUTION_REJUDGE` disables fresh subject runs and applies the same projection through `judgeRecording`. The source is read-only and the output is outside it. A single smoke subject is not four-of-five evidence: absent runs 2–5 remain unjudged, so a conforming smoke result leaves the batch **incomplete**, not passed; the suite's batch-pass assertion will fail. Inspect `run-1/judged.json` for that subject's answers and held drift, and `assessment.json` for the unchanged batch verdict. Never duplicate one smoke recording to manufacture independent runs.
+
 ## Lead commands
 
 The normal package test inclusion already discovers `architect.test.ts`. Without `EXECUTION_RED`, intentional failure demonstrations stay skipped.

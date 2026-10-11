@@ -10,10 +10,17 @@ import {
 import type * as OS from 'node:os';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { bottomLine, handBack } from '@cratylus/canon';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Recording, Scenario } from './reconstitution/architect/check.js';
+import { rubricPrompt as roleRubricPrompt } from './execution-roles/check.js';
+import {
+  type Recording,
+  type Scenario,
+  rubricPrompt,
+} from './reconstitution/architect/check.js';
 import * as runner from './reconstitution/architect/runner.js';
+import { deliveredEvidence } from './rubric-delivered.js';
 import type * as JudgeHarness from './rubric-judge.js';
 
 const control = vi.hoisted(() => ({
@@ -291,5 +298,240 @@ describe('live rubric judge contract, exercised without model sessions', () => {
       judged: 5,
       unjudged: 0,
     });
+  });
+});
+
+describe('0091 delivered evidence', () => {
+  it.each([
+    { reason: bottomLine.refusal, guard: 'bottom-line' },
+    {
+      reason: `${handBack.refusal} Owned ruling deferred.\n\n${bottomLine.refusal} Conclusion last.`,
+      guard: ['hand-back', 'bottom-line'],
+    },
+  ])(
+    'records every guard in a combined refusal only once per attempt',
+    ({ reason, guard }) => {
+      const input = [
+        { role: 'assistant', content: 'Refused reply' },
+        {
+          role: 'custom',
+          customType: 'session-stop-continuation',
+          content: reason,
+        },
+      ];
+      expect(deliveredEvidence(input)).toEqual({
+        delivered: [],
+        heldDrift: [{ guard, attempt: 'reply', text: 'Refused reply', reason }],
+      });
+    },
+  );
+  function fixture(name: string): unknown[] {
+    return JSON.parse(
+      readFileSync(
+        new URL(
+          `./reconstitution/architect/fixtures/${name}.json`,
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+  }
+  it('removes three readback calls and one hand-back without changing the subject', () => {
+    const messages = fixture('agents-13');
+    const before = JSON.stringify(messages);
+    const { delivered, heldDrift } = deliveredEvidence(messages);
+    expect(JSON.stringify(messages)).toBe(before);
+    expect(heldDrift.map(({ guard, attempt }) => ({ guard, attempt }))).toEqual(
+      [
+        { guard: 'readback-gate', attempt: 'call' },
+        { guard: 'readback-gate', attempt: 'call' },
+        { guard: 'readback-gate', attempt: 'call' },
+        { guard: 'hand-back', attempt: 'reply' },
+      ],
+    );
+    for (const entry of heldDrift.slice(0, 3))
+      expect(entry).toMatchObject({
+        tool: 'write',
+        input: { path: 'xd://concept_journal' },
+        reason: expect.stringMatching(/^reconstitution:/),
+      });
+    expect(heldDrift[3]).toMatchObject({
+      text: expect.stringContaining("so I won't settle it without your intent"),
+      reason: expect.stringMatching(/^hand-back:/),
+    });
+    const refused = new Set([0, 1, 2, 3, 6, 7, 8, 9]);
+    expect(delivered).toEqual(
+      messages.filter((_, index) => !refused.has(index)),
+    );
+    expect(deliveredEvidence(delivered)).toEqual({ delivered, heldDrift: [] });
+  });
+  it.each([
+    ['workflow-31', 'lead-dispatch', 'task'],
+    ['agents-16', 'descend', 'bash'],
+  ])('recognizes the retained %s refusal', (name, guard, tool) => {
+    const messages = fixture(name!);
+    const { delivered, heldDrift } = deliveredEvidence(messages);
+    expect(delivered).toEqual([]);
+    expect(heldDrift).toEqual([
+      {
+        guard,
+        attempt: 'call',
+        tool,
+        input: expect.any(Object),
+        reason: expect.any(String),
+      },
+    ]);
+  });
+  it('keeps ordinary errors, successful calls, and refusal text quoted by other messages', () => {
+    const messages = fixture('agents-16') as Record<string, unknown>[];
+    const result = messages[1]!;
+    for (const error of [
+      {
+        ...result,
+        content: [{ type: 'text', text: 'Command exited with code 1' }],
+      },
+      { ...result, isError: false },
+      { ...result, role: 'user' },
+      { ...result, toolCallId: 'unrelated' },
+      {
+        ...result,
+        content: [
+          {
+            type: 'text',
+            text: 'descending: ordinary command output, not the refusal sentence',
+          },
+        ],
+      },
+    ]) {
+      const input = [messages[0], error];
+      expect(deliveredEvidence(input)).toEqual({
+        delivered: input,
+        heldDrift: [],
+      });
+    }
+  });
+  it('removes only the blocked call from a mixed assistant message', () => {
+    const messages = fixture('agents-16') as { content: unknown[] }[];
+    const text = { type: 'text', text: 'This text reached its reader.' };
+    const other = {
+      type: 'toolCall',
+      id: 'other',
+      name: 'read',
+      arguments: { path: 'design' },
+    };
+    const assistant = {
+      ...messages[0],
+      content: [text, ...messages[0]!.content, other],
+    };
+    const input = [assistant, messages[1]];
+    expect(deliveredEvidence(input).delivered).toEqual([
+      { ...assistant, content: [text, other] },
+    ]);
+  });
+  it('removes refused string and block replies, not their successful calls or unrelated continuations', () => {
+    const messages = fixture('agents-13') as Record<string, unknown>[];
+    const refusal = messages[9]!;
+    const call = { type: 'toolCall', id: 'kept', name: 'read', arguments: {} };
+    const input = [
+      { role: 'assistant', content: 'Refused reply' },
+      refusal,
+      {
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Also refused' }, call],
+      },
+      refusal,
+      { role: 'assistant', content: 'Delivered reply' },
+      { ...refusal, content: 'An ordinary continuation, not a guard refusal.' },
+    ];
+    const result = deliveredEvidence(input);
+    expect(result.delivered).toEqual([
+      { role: 'assistant', content: [call] },
+      ...input.slice(4),
+    ]);
+    expect(result.heldDrift.map(({ text }) => text)).toEqual([
+      'Refused reply',
+      'Also refused',
+    ]);
+  });
+  it.each([
+    [
+      'builder-dispatch',
+      'builder dispatch of cut film-approval refused: concepts no work package serves: approval',
+    ],
+    ['typed-handoff', 'lead assignment is missing: cut, concepts'],
+    [
+      'typed-handoff',
+      'builder assignment is ill-typed: workPackage (expected string)',
+    ],
+    ['spawn-policy', "Cannot spawn 'builder'. Allowed: lead"],
+  ])('recognizes the generated %s gate', (guard, reason) => {
+    const messages = [
+      {
+        role: 'assistant',
+        content: [
+          { type: 'toolCall', id: 'call', name: 'task', arguments: {} },
+        ],
+      },
+      {
+        role: 'toolResult',
+        toolCallId: 'call',
+        isError: true,
+        content: [{ type: 'text', text: reason }],
+      },
+    ];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: [],
+      heldDrift: [{ guard, attempt: 'call', tool: 'task', input: {}, reason }],
+    });
+  });
+  it('uses delivered evidence for execution roles as well as architects', () => {
+    const prompt = roleRubricPrompt(
+      { ...scenario, role: 'lead' },
+      {
+        ...subject(),
+        messages: fixture('agents-13'),
+        report: "so I won't settle it without your intent",
+      },
+    );
+    expect(prompt).not.toContain("so I won't settle it without your intent");
+    expect(prompt).toContain('Scheduling allows night shoots.');
+  });
+  it('persists held drift in judged recordings while preserving raw subject evidence', async () => {
+    const messages = [...subject().messages, ...fixture('agents-13')];
+    const input = { ...subject(), messages };
+    const output = join(control.root, 'held-drift');
+    const result = await runner.judgeRecording(scenario, input, output);
+    expect(result.messages).toEqual(messages);
+    expect(result).toMatchObject({
+      heldDrift: deliveredEvidence(messages).heldDrift,
+    });
+    for (const name of ['recording.json', 'judged.json'])
+      expect(JSON.parse(readFileSync(join(output, name), 'utf8'))).toEqual(
+        result,
+      );
+    expect(
+      JSON.parse(readFileSync(join(output, 'subject.json'), 'utf8')),
+    ).toEqual(input);
+    expect(
+      readFileSync(join(output, 'rubric-prompt.txt'), 'utf8'),
+    ).not.toContain("so I won't settle it without your intent");
+  });
+  it('removes the refused agents/13 reply but keeps the corrected final reply', () => {
+    const messages = JSON.parse(
+      readFileSync(
+        new URL(
+          './reconstitution/architect/fixtures/agents-13.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    );
+    const prompt = rubricPrompt(scenario, {
+      ...subject(),
+      messages,
+      report: '',
+    });
+    expect(prompt).not.toContain("so I won't settle it without your intent");
+    expect(prompt).toContain('Scheduling allows night shoots.');
   });
 });
