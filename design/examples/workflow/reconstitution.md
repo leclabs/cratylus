@@ -4,6 +4,8 @@ Context: workflow. Concepts: context overview, ledger, completion check, reconst
 cut, architect, lead and roles. Decisions in force: 0081 and 0086, including the architect restored by
 0070 and the typed handoffs carried from 0064. Proposed examples, not yet confirmed or frozen.
 Companion examples in the agents and delivery contexts cover the contracts this context consumes.
+Examples 20 and 23 belong to [cut 7](cut-7.md) under decisions 0104, 0106 and 0107; the remaining
+examples retain their numbers.
 
 Structural examples execute capabilities or assert over their delivered output. Behavioral examples run
 the composed agents 5 times in a fixed scenario: every assertion holds in at least 4 runs, every
@@ -93,6 +95,8 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
 
 ## Behavioral (assertions over recorded agent behavior)
 
+<!-- prettier-ignore-start -->
+
 18. (reconstitution, architect) **Given** a new architect session touches film production and scheduling
     and has no prior conversation, **when** it resumes work, **then** it first queries each context's
     overview, then the detail needed from the journal and ledger, and before acting reads back to the
@@ -104,16 +108,13 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     **then** it approves each context's examples itself and keeps their models separate; it never
     seeks the operator's or another party's confirmation of an example in a context it holds, or
     merges the two meanings merely because the same word is used.
-20. (architect) **Given** a delegate asks whether a film approval means creative approval or release
-    permission and the settled design distinguishes them, **when** the architect answers, **then**
-    it settles the meaning question from the design and gives the delegate the ruling; it never
-    hands its own decision back to the operator as an answerable question or investigates source
-    work instead of using the design, examples and reports in concept terms.
 21. (completion check, reconstitution) **Given** a completion warning names an unapproved work package
     after the agent has observed the corresponding approving verdicts return, **when** the agent
     responds, **then** it reports the capture gap as a defect, retaining the distinction between the
     observed verdicts and the ledger's computed state; it never treats manual lifecycle bookkeeping
     or routine suppression of the warning as the normal completion path.
+
+<!-- prettier-ignore-end -->
 
 ## Rubric (delivered accounts)
 
@@ -122,14 +123,6 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     _Fixed rubric: it identifies the subject and relation; explains production before its parts;
     preserves every supplied concept's meaning; separates open decisions from current meaning; and
     identifies the cuts in flight. It never invents a concept, decision or cut to fill a gap._
-23. (architect) **Given** the operator needs an update on film approval and scheduling, and the
-    architect has their design and delegates' concept-level outcomes, **when** it reports, **then**
-    the conclusion comes first, followed by one recommended action per topic and only the support a
-    layman needs. _Fixed rubric: conclusion before support; one action for each topic; both outcomes
-    stated in the product's terms; enough support to understand each action without an episodic
-    history. It never presents a menu, asks a question it can answer, or replaces a concept-level
-    outcome with implementation details._ The agents-context examples also exercise persistence
-    of stance.
 
 ## Structural (the settled overview, judgment and context boundaries)
 

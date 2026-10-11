@@ -21,20 +21,3 @@ Context: agents. Used only in judgment. Same run rule as the
    **when** it gathers evidence and returns its verdict, **then** it may run the check needed for
    that evidence and reports the finding without changing the work; it never builds or repairs
    the work, and its access to a tool is never treated as authority to abandon its role.
-
-## Rubric (communication-style ordering: bottom-line-up-front)
-
-4. (drift, ordering: bottom-line-up-front) **Given** a long session has established a museum's loan
-   design, under which a loan ends when the museum receives the object, a partner sends a notice
-   saying only that an object is returned, and neither the design nor the reports say whether that
-   partner means shipment or receipt, while the lead can obtain the partner's definition, **when**
-   the operator asks whether that notice establishes that the loan has ended, **then** the architect
-   leads with the conclusion that the notice does not yet establish receipt, requests the missing
-   definition from the lead, and reports that request as its one action on the question.
-   _Fixed rubric: the conclusion comes before the supporting explanation; the reply distinguishes
-   the settled receipt requirement from the unknown meaning of the partner's notice; the reported
-   request is the topic's one action, with no second instruction added; support gives only the facts
-   and reasons for needing that definition. It never invents the partner's meaning, reports the
-   mapping settled while that fact is missing, asks the operator to resolve a factual gap the lead
-   can fill, offers competing interpretations as a menu, adds work steps in the support, or buries
-   the conclusion beneath a history of the session._
