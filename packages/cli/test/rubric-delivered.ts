@@ -54,8 +54,8 @@ const pastObjectivePrefix = pastObjective.refusal.slice(
 );
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
-// READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, leadRefusal, builderRefusal,
-// before_subagent_spawn and the task tool_call handler. The latter uses
+// READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, EVAL_DISPATCH_REFUSAL, leadRefusal,
+// builderRefusal, before_subagent_spawn and the task tool_call handler. The latter uses
 // schema/src/contract.ts checkAssignment.
 // Match only those leading sentences, not arbitrary command errors or mentions.
 function refusingGuard(reason: string): string | undefined {
@@ -69,6 +69,12 @@ function refusingGuard(reason: string): string | undefined {
     )
   )
     return 'readback-gate';
+  if (
+    reason.startsWith(
+      'dispatch: dispatch a delegate with the task tool, where its assignment is checked.',
+    )
+  )
+    return 'eval-dispatch';
   if (/^lead dispatch of cut .+ refused: /.test(reason)) return 'lead-dispatch';
   if (/^builder dispatch of cut .+ refused: /.test(reason))
     return 'builder-dispatch';

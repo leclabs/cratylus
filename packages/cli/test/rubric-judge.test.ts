@@ -371,6 +371,43 @@ describe('0091 delivered evidence', () => {
       });
     },
   );
+  it('recognizes a refused eval dispatch as held drift', () => {
+    const input = {
+      language: 'py',
+      code: 'h = agent(prompt, agent="lead", label="film-approval lead")',
+    };
+    const reason =
+      'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
+    expect(
+      deliveredEvidence([
+        {
+          role: 'assistant',
+          content: [
+            { type: 'toolCall', id: 'eval-1', name: 'eval', arguments: input },
+          ],
+        },
+        {
+          role: 'toolResult',
+          toolCallId: 'eval-1',
+          toolName: 'eval',
+          isError: true,
+          content: [{ type: 'text', text: reason }],
+        },
+      ]),
+    ).toEqual({
+      delivered: [],
+      heldDrift: [
+        {
+          guard: 'eval-dispatch',
+          attempt: 'call',
+          tool: 'eval',
+          input,
+          reason,
+        },
+      ],
+      relayed: [],
+    });
+  });
   it('recognizes a past-objective refusal of a call as held drift, alone or with descend', () => {
     const [call, result] = fixture('agents-16') as Record<string, unknown>[];
     const reason = `${pastObjective.refusal} The lead reported the outcome achieved; the call reads the design again.`;
