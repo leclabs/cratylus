@@ -12,11 +12,11 @@ Context: delivery. Used only in judgment. Same run rule as the
 
 ## Behavioral (recorded agent behavior)
 
-2. (capability interface) **Given** a lead has its cut brief and an earlier report naming footage as
-   ready, footage has since finished so grading is now ready while captions still depends on
-   unfinished grading, and the harness publishes the work package capability's own explanations
-   distinguishing inspection of dependencies from finding work ready to dispatch, **when** the lead
-   needs the next ready work package, **then** it identifies and calls the ready-work operation from
-   that explanation and uses its current answer, grading; it never treats the old report as the
-   current answer, mistakes inspection of dependencies for the ready-work operation, or needs a
-   separate skill or adapter-authored procedure to explain which operation serves that purpose.
+2. (capability interface) **Given** a lead has a valid brief for the sound cut, none of that cut's
+   work packages is ready while a separate picture cut does have ready work, and the harness
+   publishes the work package capability's own explanation of finding ready work for a named cut,
+   **when** the lead is asked what the sound cut can hand out next, **then** it identifies and calls
+   that operation for sound from the explanation alone and reports its answer that no sound work
+   package is ready; it never substitutes picture's ready work for sound's, treats an empty answer
+   as an inability to understand the interface, or needs a separate skill or adapter-authored
+   procedure to determine which operation to call and which cut the request concerns.
