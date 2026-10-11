@@ -130,6 +130,7 @@ describe('the architect', () => {
       'transcribing',
       'descending',
       'prescribing',
+      'holding open',
       'procedure past objective',
     ])
       expect(architect.persistence).toContain(`**${tell}**`);
