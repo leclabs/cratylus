@@ -1,8 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The concepts capability's VERB SURFACE — `concepts <verb> [args]`.
 //
+//   overview   each context told whole for a reader of it: subject and
+//              relation, concepts whole before parts, open decisions and the
+//              cuts in flight; what a session reads first to reconstitute
 //   state      the whole state of each context in one answer: the query a
-//              session reconstitutes from
+//              session reconstitutes its detail from
 //   design     the current design of each context
 //   history    every version of one concept, or of a context's description
 //   decisions  the decisions with their status
@@ -39,6 +42,7 @@ import {
   valueFlag,
 } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
+import { cutsInLedger } from '../work-package/index.js';
 import {
   type ClassifyEntry,
   type ContextEntry,
@@ -56,6 +60,7 @@ import {
   visibleExamples,
   vocabulary,
 } from './leakage.js';
+import { overviewOf } from './overview.js';
 import { type DecisionView, Folded } from './views.js';
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
@@ -94,12 +99,25 @@ const isDecisionKind = (kind: string): kind is DecisionKind =>
  *  on, its purpose, when to reach for it, whether it reads or appends, the
  *  positional it acts on and the flags it takes. */
 export const VERBS = {
+  overview: {
+    concept: 'context overview',
+    effect: 'reads',
+    purpose:
+      'Tell each bounded context whole, computed now from the journal and the ledger: its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions, then the cuts in flight that touch it, together as a plain prose account for a reader of that context',
+    when: 'First, at the start of a session or after it was compacted, for each bounded context the work touches, before reading the detail it needs from the journal and the ledger and reading back the current design, open decisions and cuts in flight',
+    positional: null,
+    flags: {
+      context: valueFlag(
+        'Only this bounded context; every context when left out',
+      ),
+    },
+  },
   state: {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
       'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled), open decisions (not settled) and the efficiency figures last recorded for each of its cuts',
-    when: 'At the start of a session, or after it was compacted, to reconstitute the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting',
+    when: 'At the start of a session, or after it was compacted, once each touched context’s overview is read, to reconstitute the detail of the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting',
     positional: null,
     flags: {
       context: valueFlag(
@@ -324,7 +342,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: to read back its current concepts, their history and its decisions before acting, and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
   verbs: VERBS,
 };
 
@@ -435,6 +453,16 @@ export function dispatchConcepts(
   };
 
   switch (verb) {
+    case 'overview': {
+      const covered = contexts();
+      const decisions = folded.decisionViews();
+      const cuts = cutsInLedger(journal.root, refuse);
+      return {
+        contexts: covered.map((where) =>
+          overviewOf(folded.design(where), decisions, cuts),
+        ),
+      };
+    }
     case 'state': {
       const decisions = folded.decisionViews();
       return {

@@ -1,0 +1,6 @@
+---
+'@cratylus/runtime': minor
+'cratylus': minor
+---
+
+Context overview. The concept journal gains the reading verb `overview` (`cratylus concepts overview [--context <name>]`, concept: context overview), which tells each bounded context whole and is computed from the journal and the ledger on every request, never stored. Each context answers `{context, subject, relation, concepts:[{name, meaning, builtFrom}], cycles, openDecisions:[{id, title}], cutsInFlight:[{cut, phase, branch}], account}`. Concepts come whole before parts: first those no other concept is built from, in recorded order, then breadth-first, each part right after the first shown concept built from it, ties in recorded order. Concepts reached only through a cycle follow in recorded order, and their cycle is named. Open decisions are the context's own. Cuts in flight are the ledger's cuts in phase `in flight` whose contexts include this one. `account` tells the same in plain prose for a reader of that context, in that order. The verb explains itself like the others, so the `concept_journal` tool offers it. The journal's own `when` and the `state` verb's `when` now say that a session reads each touched context's overview first at reconstitution, and then the detail it needs.

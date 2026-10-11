@@ -16,6 +16,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
+import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
+import { appendLifecycle } from '../src/lifecycle/index.js';
 
 let sandbox: string;
 let repo: string;
@@ -444,6 +446,73 @@ describe('the concept journal as a library', () => {
     expect(concepts('design')).toMatchObject({
       contexts: [{ subject: 'Again.', relation: '' }],
     });
+  });
+
+  it('computes the overview from the journal and the ledger, appending nothing', () => {
+    concepts(
+      'define',
+      'hold',
+      '--context',
+      'booking',
+      '--wording',
+      'A seat kept aside.',
+      '--reason',
+      'First.',
+    );
+    concepts('context', 'other', '--subject', 'Other.');
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/seats.md'),
+      '1. (hold) Given a seat, when held, then it is kept aside.\n',
+    );
+    const from = join(repo, 'nested');
+    dispatchWorkPackage(
+      [
+        'open',
+        '--cut',
+        'seats',
+        '--branch',
+        'feature/seats',
+        '--meaning-holder',
+        'booking=desk',
+      ],
+      { from },
+    );
+    const overview = () =>
+      concepts('overview', '--context', 'booking') as {
+        contexts: { context: string; cutsInFlight: unknown[] }[];
+      };
+    expect(overview().contexts[0]?.cutsInFlight).toEqual([]);
+    appendLifecycle(from, {
+      kind: 'dispatched',
+      transition: 'seats-lead',
+      cut: 'seats',
+      role: 'lead',
+      run: 'lead',
+    });
+    const before = journal();
+    expect(overview()).toMatchObject({
+      contexts: [
+        {
+          context: 'booking',
+          subject: 'Booking.',
+          concepts: [
+            { name: 'hold', meaning: 'A seat kept aside.', builtFrom: [] },
+          ],
+          cutsInFlight: [
+            { cut: 'seats', phase: 'in flight', branch: 'feature/seats' },
+          ],
+        },
+      ],
+    });
+    expect(journal()).toEqual(before);
+    expect(concepts('overview')).toMatchObject({
+      contexts: [{ context: 'booking' }, { context: 'other' }],
+    });
+    refused(
+      ['overview', '--context', 'absent'],
+      /^concepts overview: the journal has no bounded context 'absent'/,
+    );
   });
 });
 
