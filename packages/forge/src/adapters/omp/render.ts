@@ -66,7 +66,7 @@
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
-import type { Hook } from '@cratylus/schema/hook';
+import type { Hook, NativeBinding } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
   type AgentDefContext,
@@ -1360,30 +1360,43 @@ const GUARD_EXEC: readonly string[] = [
 ];
 
 /**
- * One guard's registrations: its data, then one handler per event omp fires for
- * it. A turn end is judged by its last reply, a tool call by the call itself; each
- * refuses in the shape its own caller reads ({@link OMP_REFUSAL_SHAPE}).
+ * The guards' registrations: each guard's data, then ONE handler per event omp
+ * fires, judging every guard bound to it. A turn end is judged by its last reply, a
+ * tool call by the call itself; each refuses in the shape its own caller reads
+ * ({@link OMP_REFUSAL_SHAPE}).
+ *
+ * ONE HANDLER PER EVENT, NOT PER GUARD. omp keeps the last answer its handlers gave
+ * a stop, so two guards refusing the same stop from two handlers left one refusal
+ * hiding the other. Here every guard on the event is judged, together, and their
+ * refusals reach the agent as one, each reason in it.
  */
-function guardRegistrations(
-  { guard, agents }: ComposedGuard,
-  index: number,
-): string[] {
-  const name = `guard${index}`;
-  const data = {
-    id: guard.id,
-    tell: guard.tell,
-    agents,
-    prompt: guard.judge.prompt,
-    refusesOn: guard.judge.refusesOn,
-    refusal: guard.refusal,
-  };
-  const lines = [
-    `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,
-    `  const ${name}: Guard = ${JSON.stringify(data)};`,
-  ];
-  for (const event of guard.events) {
-    const binding = ompBindingOf(event);
-    if (!binding) continue;
+function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
+  const lines: string[] = [];
+  const bound = new Map<string, { binding: NativeBinding; names: string[] }>();
+  guards.forEach(({ guard, agents }, index) => {
+    const name = `guard${index}`;
+    const data = {
+      id: guard.id,
+      tell: guard.tell,
+      agents,
+      prompt: guard.judge.prompt,
+      refusesOn: guard.judge.refusesOn,
+      refusal: guard.refusal,
+    };
+    lines.push(
+      `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,
+      `  const ${name}: Guard = ${JSON.stringify(data)};`,
+    );
+    for (const event of guard.events) {
+      const binding = ompBindingOf(event);
+      if (!binding) continue;
+      const key = `${binding.event}\0${binding.matcher ?? ''}`;
+      const at = bound.get(key) ?? { binding, names: [] };
+      at.names.push(name);
+      bound.set(key, at);
+    }
+  });
+  for (const { binding, names } of bound.values()) {
     const kind = OMP_ENVELOPE_KIND[binding.event];
     const refusal = OMP_REFUSAL_SHAPE[binding.event];
     const act =
@@ -1404,7 +1417,12 @@ function guardRegistrations(
         : '{ block: true, reason }';
     lines.push(
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
-    const reason = await guardJudged(${name}, ctx, ${act}, ${reentered});
+    const act = ${act};
+    const reentered = ${reentered};
+    const reasons = await Promise.all(
+      [${names.join(', ')}].map((guard) => guardJudged(guard, ctx, act, reentered)),
+    );
+    const reason = reasons.filter((r): r is string => r !== undefined).join("\\n\\n");
     if (reason) return ${answer};
   });`,
     );
@@ -1425,7 +1443,7 @@ function ompExtensionModule(
   registrations: string[],
   guards: readonly ComposedGuard[] = [],
 ): string {
-  const guardLines = guards.flatMap(guardRegistrations);
+  const guardLines = guardRegistrations(guards);
   // The payload bridge is emitted only where a registration reads one, so a module
   // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
   // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever

@@ -1485,6 +1485,46 @@ describe('omp capability interface', () => {
       expect(relayed).toEqual([]);
     });
 
+    it('judges every guard on one stop and refuses it once, with each reason', async () => {
+      omp.agents = [ARCHITECT()];
+      const second = {
+        ...replyGuard,
+        guard: {
+          ...replyGuard.guard,
+          id: 'shape',
+          tell: 'misshapen',
+          judge: { ...replyGuard.guard.judge, refusesOn: 'misshapen' },
+          refusal: 'misshapen:',
+        },
+      };
+      const { fire, relayed } = await twoModules('architect', [
+        replyGuard,
+        second,
+      ]);
+      judge.verdict = JSON.stringify({
+        surveys: true,
+        misshapen: true,
+        reason: 'it buries the outcome.',
+      });
+      const stop = (active: boolean) => ({
+        last_assistant_message:
+          'Decision 0091 is recorded; entry 7 is a placeholder.',
+        stop_hook_active: active,
+      });
+      expect(await fire('session_stop', stop(false))).toEqual({
+        decision: 'block',
+        reason:
+          'surveying: it buries the outcome.\n\nmisshapen: it buries the outcome.',
+      });
+      expect(judge.asked).toHaveLength(2);
+      // A stop already refused once is not refused again: each reason is relayed.
+      expect(await fire('session_stop', stop(true))).toBeUndefined();
+      expect(relayed).toEqual([
+        'surveying: it buries the outcome.',
+        'misshapen: it buries the outcome.',
+      ]);
+    });
+
     const READBACK_REFUSAL =
       'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
     const reply = (text: string) => ({
