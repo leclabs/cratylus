@@ -1,0 +1,15 @@
+{
+  "id": "01M4MBPBNR0K4047R4J9N6214J",
+  "at": "2026-10-11T02:11:58.264Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "reach",
+  "wording": "what an agent may see, change and dispatch: every agent starts with the harness's default tools, and only whom it may dispatch, its handoffs, is held by the harness's permissions; anything else is narrowed only once a role is observed doing harm with it, never ahead of that evidence; granted by whoever starts the agent, never above the ceiling its definition declares.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "0068, which the concept had not followed; flagged by the reconstitution cut's illustrator.",
+  "supersedes": [
+    "01M4JVAAPM0H58WW8X12B6PJ87"
+  ]
+}

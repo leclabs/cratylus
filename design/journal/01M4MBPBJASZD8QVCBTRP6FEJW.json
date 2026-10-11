@@ -1,0 +1,18 @@
+{
+  "id": "01M4MBPBJASZD8QVCBTRP6FEJW",
+  "at": "2026-10-11T02:11:58.154Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "ledger",
+  "wording": "the record of a context's cuts and their work packages, kept as an append-only sequence of events, each one transition of one cut or work package carrying an id of its own, so a transition recorded once is refused when repeated; its events are taken from the harness's own account of its agents as it happens, never from an agent remembering to record them: a work package is dispatched when its builder is dispatched, returned when its builder returns, and approved when both of its cut's assayers' verdicts return passing it; a verdict with a finding against it returns it to build, and while the assayers disagree it stays unapproved until the architect settles the meaning question; a cut is in flight from its first dispatch and complete once every one of its work packages is approved; each cut's phase, its work packages' status and the work packages ready to dispatch next are computed from it on request; it is versioned with its cut's feature branch, so it shows the state of the branch being read and lands with the cut's merge.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "judgment"
+  ],
+  "reason": "The illustrator's boundary on the reconstitution cut: approval did not say what failing or disagreeing verdicts do; judgment already sends a finding back to the builders and a disagreement to the architect, and the ledger now records exactly that.",
+  "supersedes": [
+    "01M4MBA0NN9BDHTFKNMPQH802K"
+  ]
+}
