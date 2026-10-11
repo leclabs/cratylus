@@ -1,0 +1,14 @@
+{
+  "id": "01M4MQPXBVJFFWG4HXJ993JY05",
+  "at": "2026-10-11T05:41:59.291Z",
+  "kind": "decide",
+  "decisionId": "0088",
+  "context": "workflow",
+  "title": "Live behavioral runs fail fast",
+  "situation": "The operator, 2026-10-11: the live behavioral suite burns tokens and has run for hours; one full visible batch took about 76 minutes, and the cut re-runs whole batches where one run would already decide. The industry's shape is fail-fast testing: a smoke run before a batch, a sequential test that stops once the outcome is decided, parallel runs, and risk-based sampling for regression.",
+  "decision": "Every live behavioral check runs this way. (1) Smoke first: one run per example, all in parallel; an example whose smoke run fails goes back to build without a batch. (2) Then the batch runs in parallel and stops as soon as its outcome is decided: with a threshold of 4 runs in 5, two failures fail it and four passes pass it; a never-assertion fails on its first violation. (3) A change to something every agent shares, such as how an agent is launched, is regression-checked by a sample: one run of one example per concept the change could affect, chosen for the widest coverage; a batch runs only for a concept whose sampled run fails. (4) An example that has passed is not run again unless what it exercises changed, and then only under (3). (5) A run left unjudged is retried once, alone, and otherwise counts as not yet run.",
+  "consequences": "Applies now to the reconstitution cut's remaining live runs and to every later cut; the thresholds and never-assertions keep their meaning, only the number of runs spent reaching them falls. Efficiency figures record runs saved by early stopping.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
