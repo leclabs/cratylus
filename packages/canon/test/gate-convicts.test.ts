@@ -195,6 +195,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
+  // drives the slots-dimension reader over vectors it builds itself, an optional slot left unfilled.
+  'forge/core/vector-slots.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'forge/catalog/manifest-descriptor.test.ts': 'GATE',
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
