@@ -1,0 +1,17 @@
+{
+  "id": "01M4MB332QVJGBGKB7Z93CD83R",
+  "at": "2026-10-11T02:01:26.871Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "a session, new or compacted, recovers the conceptual design, its decisions, what is open and what is in flight by querying the concept journal and the ledger rather than remembering: it reads the context overview of each context the work touches first, then whatever detail the work needs, and, before acting, reads back to the operator the current design of those contexts, their open decisions and the cuts in flight; it reads in the worktree it works in, so it sees its own branch's state, and continuity never depends on a conversation.",
+  "builtFrom": [
+    "concept journal",
+    "context overview",
+    "ledger"
+  ],
+  "reason": "Reconstitution cut (0076), parts 1, 3 and 5: reconstitution reads the overview first and knows what is in flight from the ledger.",
+  "supersedes": [
+    "01M4J5R9YEDHJRDXA2VGVXF93B"
+  ]
+}

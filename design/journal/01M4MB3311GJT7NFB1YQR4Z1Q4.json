@@ -1,0 +1,14 @@
+{
+  "id": "01M4MB3311GJT7NFB1YQR4Z1Q4",
+  "at": "2026-10-11T02:01:26.817Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "completion check",
+  "wording": "a fallback that catches a cut's completion the ledger missed: it watches only commits whose message declares a cut complete, in forms enumerated by decision, and is silent on every other commit; on such a commit it compares the declaration with the cut's phase as the ledger computes it, and where the ledger does not show that cut complete it warns the agent that made the commit, naming the cut, the phase the ledger shows and the work packages not yet approved, and telling it to report the gap as a defect in how the ledger takes the harness's events; it never refuses a commit, and it should never fire.",
+  "builtFrom": [
+    "ledger",
+    "cut"
+  ],
+  "reason": "Reconstitution cut (0076), part 4, the operator's ruling of 2026-10-10: a commit check is a narrow fallback for what the lifecycle events missed, not a gate on commits in general.",
+  "supersedes": []
+}
