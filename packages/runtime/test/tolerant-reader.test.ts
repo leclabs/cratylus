@@ -1,9 +1,10 @@
-// The concept journal as an older runtime reads it: entries of kinds it does not
-// know are read past and reported with every reading, appending still works and
-// leaves every entry as it was, and an entry of a known kind it cannot read is
-// refused by name. The command-line examples (cli `test/delivery-journal`) bind
-// the contract end to end; these hold it for the library and for the work
-// package capability's recording of a cut's figures into the journal.
+// The concept journal and the work package ledger as an older runtime reads
+// them: entries of kinds it does not know, and journal entries of a known kind
+// holding a value it does not know, are read past and reported with every
+// reading, appending still works and leaves every entry as it was, and an entry
+// of a known kind it cannot read is refused by name. The command-line examples
+// (cli `test/delivery-journal`) bind the contract end to end; these hold it for
+// the library and for the work package capability.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -116,12 +117,52 @@ it('reads past unknown kinds in every reading, reporting each kind and count', (
         uninterpreted: {
           kinds: { annotation: 2, review: 1 },
           mayBeIncomplete: true,
+          reading: expect.stringMatching(/read past.*may be incomplete/),
         },
       });
   expect(files()).toEqual(before);
   expect(concepts('design')).toMatchObject({
     contexts: [{ concepts: [{ name: 'hold', wording: 'Fifteen minutes.' }] }],
   });
+});
+
+it('reads past a known entry holding values it does not know, reporting each value', () => {
+  known();
+  const baseline = readings.map((argv) => concepts(...argv));
+  entry(9, {
+    kind: 'decide',
+    decisionId: 'later',
+    context: 'booking',
+    title: 'T',
+    situation: 'S',
+    decision: 'Invented.',
+    consequences: 'C',
+    status: 'deferred',
+    supersedes: null,
+    decisionKind: 'policy',
+  });
+  entry(10, {
+    kind: 'classify',
+    decisionId: 'hold-time',
+    entry: id(7),
+    decisionKind: 'policy',
+  });
+  const before = files();
+  for (const [i, argv] of readings.entries())
+    expect(concepts(...argv)).toEqual({
+      ...baseline[i],
+      uninterpreted: {
+        kinds: { decide: 1, classify: 1 },
+        values: {
+          'decide.status': { deferred: 1 },
+          'decide.decisionKind': { policy: 1 },
+          'classify.decisionKind': { policy: 1 },
+        },
+        mayBeIncomplete: true,
+        reading: expect.any(String),
+      },
+    });
+  expect(files()).toEqual(before);
 });
 
 it('appends past an unknown entry, leaving every entry as it was', () => {
@@ -198,5 +239,78 @@ it('records a cut’s figures into a journal holding an unknown kind', () => {
   expect(concepts('state')).toMatchObject({
     contexts: [{ efficiency: [{ cut: 'delivery' }] }],
     uninterpreted: { kinds: { annotation: 1 }, mayBeIncomplete: true },
+  });
+});
+
+it('reads the ledger past a kind it does not know, in every reading, and appends past it', () => {
+  mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+  writeFileSync(
+    join(repo, 'design/examples/booking/delivery.md'),
+    '1. (hold) **Given** a hold.\n',
+  );
+  const ledger = join(repo, 'design/ledger');
+  mkdirSync(ledger);
+  const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
+    writeFileSync(
+      join(ledger, `${id(n)}.json`),
+      JSON.stringify({
+        id: id(n),
+        at: '2016-07-30T23:54:10.259Z',
+        transition: `fixture:${n}`,
+        cut: 'delivery',
+        ...fields,
+      }),
+    );
+  ledgerEntry(1, {
+    kind: 'cut',
+    branch: 'feature/delivery',
+    contexts: ['booking'],
+    architects: { booking: 'architect' },
+  });
+  ledgerEntry(3, {
+    kind: 'submit',
+    workPackage: 'reader',
+    outputs: ['before.ts'],
+    concepts: ['hold'],
+    dependsOn: [],
+    needs: [],
+  });
+  const workPackage = (...argv: string[]) =>
+    dispatchWorkPackage([...argv, '--cut', 'delivery'], {
+      from: repo,
+    }) as Record<string, unknown>;
+  const ledgerReadings = [
+    ['state'],
+    ['inventory'],
+    ['assignment', 'reader'],
+    ['levels'],
+    ['history', 'reader'],
+    ['efficiency'],
+  ];
+  const baseline = ledgerReadings.map((argv) => workPackage(...argv));
+  for (const value of baseline)
+    expect(value).not.toHaveProperty('uninterpreted');
+  ledgerEntry(5, { kind: 'annotation', workPackage: 'reader' });
+  const report = {
+    kinds: { annotation: 1 },
+    mayBeIncomplete: true,
+    reading: expect.any(String),
+  };
+  for (const [i, argv] of ledgerReadings.entries())
+    expect(workPackage(...argv)).toEqual({
+      ...baseline[i],
+      uninterpreted: report,
+    });
+  const bytes = readFileSync(join(ledger, `${id(5)}.json`), 'utf8');
+  const updated = workPackage('update', 'reader', '--output', 'after.ts');
+  expect(updated).not.toHaveProperty('uninterpreted');
+  expect(workPackage('assignment', 'reader')).toMatchObject({
+    outputs: ['after.ts'],
+    uninterpreted: report,
+  });
+  expect(readFileSync(join(ledger, `${id(5)}.json`), 'utf8')).toBe(bytes);
+  known();
+  expect(concepts('overview', '--context', 'booking')).toMatchObject({
+    uninterpreted: report,
   });
 });

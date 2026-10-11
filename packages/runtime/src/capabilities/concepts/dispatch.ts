@@ -18,11 +18,14 @@
 //   accept     record the acceptance of an open decision
 //   classify   record which kind a recorded decision is: meaning or realization
 //
-// A query appends nothing and prints JSON. An appending verb appends exactly one
-// entry and prints it as JSON; when what it recorded leaks implementation, the
-// answer also carries the `warnings`, and nothing is refused for leakage. A
-// decision constraining realization is never warned, and a context's own words
-// include each plain word its current subject names, though never a command, a
+// A query appends nothing and prints JSON; when it read past entries written by
+// a newer runtime, in the journal or, for `overview`, the ledger, its answer
+// also carries `uninterpreted`, saying what it read past and how it was read.
+// An appending verb appends exactly one entry and prints it as JSON; when what
+// it recorded leaks implementation, the answer also carries the `warnings`, and
+// nothing is refused for leakage. A decision constraining realization is never
+// warned, and a context's own words include each plain word its current
+// subject names, though never a command, a
 // quotation in code type or a flag that holds it. Every refusal is one line
 // opening with `concepts <verb>:`, thrown before anything is appended.
 //
@@ -51,7 +54,7 @@ import {
   type DecisionKind,
   type WordedEntry,
 } from './entries.js';
-import { type Journal, journalAt } from './journal.js';
+import { type Journal, type ReadPast, journalAt } from './journal.js';
 import {
   type Passage,
   type Vocabulary,
@@ -342,7 +345,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Entries of kinds this runtime does not know, recorded by a newer one, are read past: every reading is worked out from the rest and then answers with what it left uninterpreted, each unknown kind with how many entries of it, and that the reading may be incomplete, while recording still appends and leaves every entry as it was; an entry of a known kind that cannot be read is refused, naming it',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
   verbs: VERBS,
 };
 
@@ -363,8 +366,8 @@ const READING = {
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
- *  `from`; returns what the verb prints as JSON, a reading with the entries of
- *  unknown kinds it read past. */
+ *  `from`; returns what the verb prints as JSON, a reading with what it read
+ *  past of the journal and of any other ledger it read. */
 export function dispatchConcepts(
   argv: readonly string[],
   opts: { readonly from?: string } = {},
@@ -373,25 +376,25 @@ export function dispatchConcepts(
   const args = readArgv(argv.slice(1), 'concepts', verb, VERBS[verb]);
   const refuse = (message: string) => new Error(`concepts ${verb}: ${message}`);
   const journal = journalAt(opts.from ?? process.cwd(), refuse);
-  const answer = answerOf(verb, args, journal, refuse);
-  const unknown = journal.unknownKinds();
-  return VERBS[verb].effect === 'reads' && unknown.size > 0
-    ? {
-        ...(answer as object),
-        uninterpreted: {
-          kinds: Object.fromEntries(unknown),
-          mayBeIncomplete: true,
-        },
-      }
-    : answer;
+  const ledgers: ReadPast[] = [];
+  const answer = answerOf(verb, args, journal, refuse, ledgers);
+  const report =
+    VERBS[verb].effect === 'reads'
+      ? ledgers.reduce((all, one) => all.with(one), journal.readPast()).report()
+      : undefined;
+  return report === undefined
+    ? answer
+    : { ...(answer as object), uninterpreted: report };
 }
 
-/** What `verb`, given `args`, answers from `journal`. */
+/** What `verb`, given `args`, answers from `journal`; each other ledger it
+ *  reads adds what it read past to `ledgers`. */
 function answerOf(
   verb: keyof typeof VERBS,
   args: Argv,
   journal: Journal,
   refuse: (message: string) => Error,
+  ledgers: ReadPast[],
 ): unknown {
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
@@ -477,7 +480,8 @@ function answerOf(
     case 'overview': {
       const covered = contexts();
       const decisions = folded.decisionViews();
-      const cuts = cutsInLedger(journal.root, refuse);
+      const { cuts, readPast } = cutsInLedger(journal.root, refuse);
+      ledgers.push(readPast);
       return {
         contexts: covered.map((where) =>
           overviewOf(folded.design(where), decisions, cuts),

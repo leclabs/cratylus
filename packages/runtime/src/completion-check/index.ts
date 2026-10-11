@@ -7,9 +7,10 @@
 // only the one enumerated form fixed by decision 0081: a subject opening
 // `feat(cut:<id>): `. For such a commit, when the ledger does not show cut
 // `<id>` complete, it writes a warning to the commit's output (stderr) naming
-// the cut, the phase the ledger computes and every work package not approved
-// (and none that is), telling the agent that made the commit to report the gap
-// as a defect in how the ledger captures the harness's events.
+// the cut, the phase the ledger computes, every work package not approved (and
+// none that is) and each kind of entry it read past, written by a newer
+// runtime, telling the agent that made the commit to report the gap as a
+// defect in how the ledger captures the harness's events.
 //
 // It is silent otherwise, always exits 0, never refuses a commit and never
 // writes the ledger.
@@ -42,7 +43,7 @@ export function completionCheck(from: string): string | undefined {
     'If you observed verdicts or returns the ledger lacks, that is a defect in how the harness’s events were captured: report it as such to whoever dispatched you, naming what you observed and what the ledger shows.',
   ].join('\n');
   try {
-    const { state } = cutView(from, cut);
+    const { state, readPast } = cutView(from, cut);
     if (state.phase === 'complete') return undefined;
     const unapproved = [...state.packages.values()].filter(
       (p) => p.status !== 'approved',
@@ -52,6 +53,11 @@ export function completionCheck(from: string): string | undefined {
       unapproved.length === 0
         ? 'The ledger holds no work package for it.'
         : `Not approved: ${unapproved.map((p) => `${p.name} (${p.status})`).join(', ')}.`,
+      ...(readPast.kinds.size === 0
+        ? []
+        : [
+            `The ledger holds entries of kinds this runtime does not know, read past (${[...readPast.kinds].map(([kind, n]) => `${kind}: ${n}`).join(', ')}), so what it shows may be incomplete.`,
+          ]),
       report,
     ].join('\n');
   } catch (error) {

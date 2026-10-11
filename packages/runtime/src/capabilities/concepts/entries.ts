@@ -14,7 +14,8 @@
 // package capability; the latest for a cut are its figures.
 //
 // An entry of a kind named here is read only when it carries every field its
-// kind's shape requires; an entry of a kind not named here was written by a
+// kind's shape requires; an entry of a kind not named here, or of a known kind
+// holding a value of an open field this runtime does not know, was written by a
 // newer runtime and is read past, never refused, interpreted or rewritten.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -143,10 +144,6 @@ const optional =
   (fits: Fits): Fits =>
   (value) =>
     value === undefined || fits(value);
-const oneOf =
-  (values: readonly string[]): Fits =>
-  (value) =>
-    values.some((v) => v === value);
 
 /** Every field of entries of kind `K` but its id and kind, each with what fits it. */
 type Shape<K extends Entry['kind']> = {
@@ -191,10 +188,10 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     situation: text,
     decision: text,
     consequences: text,
-    status: oneOf(['open', 'accepted']),
+    status: text,
     supersedes: (value) => value === null || text(value),
     supersedesEntry: optional(text),
-    decisionKind: optional(oneOf(DECISION_KINDS)),
+    decisionKind: optional(text),
   },
   accept: {
     at: text,
@@ -206,7 +203,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     at: text,
     decisionId: text,
     entry: text,
-    decisionKind: oneOf(DECISION_KINDS),
+    decisionKind: text,
     reason: optional(text),
   },
   efficiency: {
@@ -241,6 +238,29 @@ export const unfit = (
   Object.entries(SHAPES[kind] as Readonly<Record<string, Fits>>)
     .filter(([field, fits]) => !fits(entry[field]))
     .map(([field]) => field);
+
+/** The open fields of each kind: those a newer runtime may give values this
+ *  one does not know, each with the values it knows. A field's shape still
+ *  says what fits it; a fitting value outside these is newer, not malformed. */
+const KNOWN_VALUES: {
+  readonly [K in Entry['kind']]?: Readonly<Record<string, readonly string[]>>;
+} = {
+  decide: { status: ['open', 'accepted'], decisionKind: DECISION_KINDS },
+  classify: { decisionKind: DECISION_KINDS },
+};
+
+/** Each open field of `entry`, of kind `kind`, holding a value this runtime
+ *  does not know, with that value: none when it can be interpreted. */
+export const newerValues = (
+  entry: Readonly<Record<string, unknown>>,
+  kind: Entry['kind'],
+): [field: string, value: string][] =>
+  Object.entries(KNOWN_VALUES[kind] ?? {}).flatMap(([field, known]) => {
+    const value = entry[field];
+    return typeof value === 'string' && !known.includes(value)
+      ? [[field, value] as [string, string]]
+      : [];
+  });
 
 /** An entry before it is stamped: what a verb asks the journal to append. */
 export type Draft<E extends Entry = Entry> = E extends Entry

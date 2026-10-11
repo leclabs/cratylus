@@ -15,13 +15,16 @@
 // in-process; the same facts are reached out of process through the CLI:
 //   cutView(from, cut)   ≡ `cratylus workPackage state|inventory --cut <cut>`:
 //                          the ledger fold (record, phase, statuses), readiness,
-//                          served concepts and owned examples
-//   cutsInLedger(from)   every recorded cut with its branch, contexts and phase
+//                          served concepts and owned examples, and what the
+//                          ledger read past
+//   cutsInLedger(from)   every recorded cut with its branch, contexts and
+//                        phase, and what the ledger read past
 //   foldCut(entries,cut) the pure fold, over entries already read
 //   readCut(cut, pkgs)   the pure reading: served concepts and owned examples
 //   appendLifecycle      ≡ `cratylus lifecycle '<json>'` (`../../lifecycle/`)
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { ReadPast } from '../concepts/journal.js';
 import { type Cut, cutAt } from './cut.js';
 import { type CutState, foldCut } from './fold.js';
 import { topOf } from './git.js';
@@ -55,11 +58,13 @@ export {
   readCut,
 } from './reading.js';
 
-/** A cut as its ledger and its visible examples make it, computed now. */
+/** A cut as its ledger and its visible examples make it, computed now, with
+ *  the ledger's entries of kinds this runtime does not know, read past. */
 export interface CutView {
   readonly cut: Cut;
   readonly state: CutState;
   readonly reading: CutReading;
+  readonly readPast: ReadPast;
 }
 
 /** The top of the git working tree holding `from`; refuses outside one. */
@@ -84,32 +89,46 @@ export function cutView(
 ): CutView {
   const top = topFrom(from, refuse);
   const cut = cutAt(top, name, refuse);
-  const state = foldCut(ledgerAt(top, refuse).entries(), name);
-  return { cut, state, reading: readCut(cut, [...state.packages.values()]) };
+  const ledger = ledgerAt(top, refuse);
+  const state = foldCut(ledger.entries(), name);
+  return {
+    cut,
+    state,
+    reading: readCut(cut, [...state.packages.values()]),
+    readPast: ledger.readPast(),
+  };
 }
 
 /** Every cut the ledger of the repository holding `from` records with `open`,
- *  in the order opened, with its branch, contexts and current phase. */
+ *  in the order opened, with its branch, contexts and current phase, and the
+ *  ledger's entries of kinds this runtime does not know, read past. */
 export function cutsInLedger(
   from: string,
   refuse: (message: string) => Error = (m) => new Error(m),
 ): {
-  readonly cut: string;
-  readonly branch: string;
-  readonly contexts: readonly string[];
-  readonly phase: CutState['phase'];
-}[] {
-  const entries = ledgerAt(topFrom(from, refuse), refuse).entries();
-  return entries.flatMap((entry) =>
-    entry.kind === 'cut'
-      ? [
-          {
-            cut: entry.cut,
-            branch: entry.branch,
-            contexts: entry.contexts,
-            phase: foldCut(entries, entry.cut).phase,
-          },
-        ]
-      : [],
-  );
+  readonly cuts: readonly {
+    readonly cut: string;
+    readonly branch: string;
+    readonly contexts: readonly string[];
+    readonly phase: CutState['phase'];
+  }[];
+  readonly readPast: ReadPast;
+} {
+  const ledger = ledgerAt(topFrom(from, refuse), refuse);
+  const entries = ledger.entries();
+  return {
+    cuts: entries.flatMap((entry) =>
+      entry.kind === 'cut'
+        ? [
+            {
+              cut: entry.cut,
+              branch: entry.branch,
+              contexts: entry.contexts,
+              phase: foldCut(entries, entry.cut).phase,
+            },
+          ]
+        : [],
+    ),
+    readPast: ledger.readPast(),
+  };
 }
