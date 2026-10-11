@@ -51,7 +51,7 @@ import {
   type DecisionKind,
   type WordedEntry,
 } from './entries.js';
-import { journalAt } from './journal.js';
+import { type Journal, journalAt } from './journal.js';
 import {
   type Passage,
   type Vocabulary,
@@ -342,7 +342,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Entries of kinds this runtime does not know, recorded by a newer one, are read past: every reading is worked out from the rest and then answers with what it left uninterpreted, each unknown kind with how many entries of it, and that the reading may be incomplete, while recording still appends and leaves every entry as it was; an entry of a known kind that cannot be read is refused, naming it',
   verbs: VERBS,
 };
 
@@ -363,7 +363,8 @@ const READING = {
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
- *  `from`; returns what the verb prints as JSON. */
+ *  `from`; returns what the verb prints as JSON, a reading with the entries of
+ *  unknown kinds it read past. */
 export function dispatchConcepts(
   argv: readonly string[],
   opts: { readonly from?: string } = {},
@@ -372,6 +373,26 @@ export function dispatchConcepts(
   const args = readArgv(argv.slice(1), 'concepts', verb, VERBS[verb]);
   const refuse = (message: string) => new Error(`concepts ${verb}: ${message}`);
   const journal = journalAt(opts.from ?? process.cwd(), refuse);
+  const answer = answerOf(verb, args, journal, refuse);
+  const unknown = journal.unknownKinds();
+  return VERBS[verb].effect === 'reads' && unknown.size > 0
+    ? {
+        ...(answer as object),
+        uninterpreted: {
+          kinds: Object.fromEntries(unknown),
+          mayBeIncomplete: true,
+        },
+      }
+    : answer;
+}
+
+/** What `verb`, given `args`, answers from `journal`. */
+function answerOf(
+  verb: keyof typeof VERBS,
+  args: Argv,
+  journal: Journal,
+  refuse: (message: string) => Error,
+): unknown {
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
 

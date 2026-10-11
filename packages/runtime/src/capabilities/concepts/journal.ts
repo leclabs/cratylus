@@ -7,7 +7,9 @@
 // edited, moved or deleted, so two branches that both appended merge in git as
 // the union of their files. Entries are read only from this directory of the
 // working tree, never from another branch, ref, worktree or git history, and
-// are ordered by their id.
+// are ordered by their id. An entry of a kind this runtime does not know is
+// read past and counted by its kind, so every reading can say what it left
+// uninterpreted; an entry of a known kind that cannot be read is refused.
 //
 // A process mints its ids monotonically; an id is also minted past the
 // journal's last, so append order holds across the processes that appended.
@@ -25,7 +27,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
-import { type Draft, type Entry, KINDS } from './entries.js';
+import { type Draft, type Entry, isKind, unfit } from './entries.js';
 
 /** The journal's place, relative to the top of the repository. */
 export const JOURNAL_DIR = 'design/journal';
@@ -37,8 +39,11 @@ const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 export interface Journal {
   /** The top of the git repository holding the journal. */
   readonly root: string;
-  /** Every entry, in append order. */
+  /** Every entry of a kind this runtime knows, in append order. */
   entries(): readonly Entry[];
+  /** Each kind of entry this runtime does not know, with how many entries of
+   *  it were read past, in the order first met; empty when there are none. */
+  unknownKinds(): ReadonlyMap<string, number>;
   /** Append `draft` as one new entry, stamped with its id and time. */
   append<D extends Draft>(draft: D): D & { id: string; at: string };
 }
@@ -66,9 +71,16 @@ export function journalAt(
       `${from} is not inside a git working tree; the journal is ${JOURNAL_DIR} at the top of one`,
     );
   const dir = join(top, JOURNAL_DIR);
-  let cached: readonly Entry[] | undefined;
+  /** What the journal holds, read once until the next append. */
+  let cached:
+    | {
+        readonly entries: readonly Entry[];
+        readonly unknownKinds: ReadonlyMap<string, number>;
+        readonly last: string | undefined;
+      }
+    | undefined;
 
-  const entries = (): readonly Entry[] => {
+  const load = () => {
     if (cached !== undefined) return cached;
     const names = existsSync(dir)
       ? readdirSync(dir, { withFileTypes: true })
@@ -76,16 +88,28 @@ export function journalAt(
           .map((d) => d.name)
           .sort()
       : [];
-    cached = names.map((name) => read(join(dir, name), name, refuse));
+    const entries: Entry[] = [];
+    const unknownKinds = new Map<string, number>();
+    for (const name of names) {
+      const read = readEntry(join(dir, name), name, refuse);
+      if (typeof read === 'string')
+        unknownKinds.set(read, (unknownKinds.get(read) ?? 0) + 1);
+      else entries.push(read);
+    }
+    cached = {
+      entries,
+      unknownKinds,
+      last: names.at(-1)?.slice(0, -'.json'.length),
+    };
     return cached;
   };
 
   return {
     root: top,
-    entries,
+    entries: () => load().entries,
+    unknownKinds: () => load().unknownKinds,
     append(draft) {
-      const last = entries().at(-1)?.id;
-      const id = mintAfter(last);
+      const id = mintAfter(load().last);
       const entry = {
         id,
         at: new Date(decodeTime(id)).toISOString(),
@@ -117,13 +141,14 @@ function mintAfter(last: string | undefined): string {
   return monotonicFactory(Math.random, () => after)();
 }
 
-/** The entry in the file at `path`, named `name`; refuses one that is not an
- *  entry of this journal. */
-function read(
+/** The entry in the file at `path`, named `name`, or the kind it is of when
+ *  this runtime does not know that kind; refuses one that is not an entry of
+ *  this journal, or of a known kind but lacking what that kind carries. */
+function readEntry(
   path: string,
   name: string,
   refuse: (message: string) => Error,
-): Entry {
+): Entry | string {
   const entry: unknown = (() => {
     try {
       return JSON.parse(readFileSync(path, 'utf8'));
@@ -131,20 +156,24 @@ function read(
       throw refuse(`the journal entry ${JOURNAL_DIR}/${name} is not JSON`);
     }
   })();
-  // Its file names its id; a kind the journal does not record is no entry.
-  const isEntry =
-    typeof entry === 'object' &&
-    entry !== null &&
-    'id' in entry &&
-    entry.id === name.slice(0, -'.json'.length) &&
-    'kind' in entry &&
-    KINDS.some((kind) => kind === entry.kind);
-  if (!isEntry)
+  // Its file names its id, and it names its kind; one without both is no entry.
+  if (
+    typeof entry !== 'object' ||
+    entry === null ||
+    !('id' in entry) ||
+    entry.id !== name.slice(0, -'.json'.length) ||
+    !('kind' in entry) ||
+    typeof entry.kind !== 'string' ||
+    entry.kind === ''
+  )
     throw refuse(
       `the journal entry ${JOURNAL_DIR}/${name} is not an entry of this journal`,
     );
-  // Appended only by this module and never edited: its id and kind vouch for
-  // the rest of its shape.
-  const appended = entry as Entry;
-  return appended;
+  if (!isKind(entry.kind)) return entry.kind;
+  const missing = unfit(entry as Record<string, unknown>, entry.kind);
+  if (missing.length > 0)
+    throw refuse(
+      `the journal entry ${JOURNAL_DIR}/${name} is a ${entry.kind} entry this runtime cannot read: ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or malformed`,
+    );
+  return entry as Entry;
 }
