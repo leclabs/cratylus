@@ -1803,6 +1803,10 @@ const SESSION_PLACEMENT: readonly string[] = [
  * call that only reads never is. Both hold only where the launch starts a session
  * with no conversation since its last compaction, and again after the session is
  * compacted; a resumed session continuing a conversation reconstitutes nothing.
+ * Every turn of a launch whose declared communication style orders
+ * `bottom-line-up-front` carries a note rendered from that value: any text written
+ * in a turn reaches the operator ahead of the reply, so none goes alongside a tool
+ * call, the session-start readback alone excepted.
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -2403,6 +2407,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  ].join("\\n");',
         '}',
         '',
+        '// The per-turn note of a declaration whose communication style orders bottom line up front,',
+        '// rendered from that ordering value; none for any other.',
+        'function orderingNote(body: string): string | undefined {',
+        '  const style = /^### communication-style\\s*\\n([\\s\\S]*?)(?=^#{1,3} |(?![\\s\\S]))/m.exec(body)?.[1] ?? "";',
+        '  if (!/^- ordering(?: \\([^)]*\\))?: \\*\\*bottom-line-up-front\\*\\*/m.test(style)) return undefined;',
+        '  return [',
+        '    "# Ordering: bottom line up front",',
+        '    "",',
+        '    "Everything you write in a turn reaches the operator as you write it, ahead of your reply, so any text before your reply comes before your conclusion.",',
+        '    "Write nothing alongside a tool call: no word of what you are reading, checking, deciding or about to do. The operator hears from you in your reply, conclusion first.",',
+        '    "The one text that comes before it is the readback a session start asks for, given before you act.",',
+        '  ].join("\\n");',
+        '}',
+        '',
         '// Whether a call changes something: a dispatch, a file written or edited, or an appending',
         '// verb of a capability (`appending` holds each as `<tool> <verb>`), called as its tool or',
         '// through its `xd://` device. Any other call only reads.',
@@ -2666,8 +2684,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // by: while the launch still awaits its assignment, a turn whose prompt does not carry a',
         '  // fitting one is refused. In every session, launched or not, main or dispatched, the',
         '  // turn also carries the assignment form of each contracted agent the session may',
-        '  // dispatch; and the first turn of a launch whose procedure starts with reconstitution',
-        '  // carries a note saying so.',
+        '  // dispatch; the first turn of a launch whose procedure starts with reconstitution carries',
+        '  // a note saying so; and every turn of a launch whose ordering is bottom line up front',
+        '  // carries a note that its text reaches the operator ahead of its reply.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
@@ -2694,6 +2713,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    // every later turn.',
         '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
         '    noted = true;',
+        '    const ordering = orderingNote(now.declaration.systemPrompt);',
         '    return {',
         '      systemPrompt: [',
         '        ...base,',
@@ -2701,6 +2721,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...(await skills(now.declaration)),',
         '        ...(forms === undefined ? [] : [forms]),',
         '        ...(start === undefined ? [] : [start]),',
+        '        ...(ordering === undefined ? [] : [ordering]),',
         '      ],',
         '    };',
         '  });',
