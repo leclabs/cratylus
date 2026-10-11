@@ -246,7 +246,8 @@ export function placeOwnedRoot(opts: {
       : []),
     {
       path: INSTALLATION_RECORD,
-      content: `${JSON.stringify(opts.record, null, 2)}\n`,
+      // The record names the version that projected this root too, beside what it did.
+      content: `${JSON.stringify({ ...(opts.version === undefined ? {} : { version: opts.version }), ...opts.record }, null, 2)}\n`,
     },
   ];
   const result = { root, files: all.map((f) => f.path), extensions };

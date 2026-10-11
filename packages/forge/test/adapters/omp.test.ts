@@ -694,9 +694,12 @@ describe('omp capability interface', () => {
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
-     *  order the adapter offers its capabilities. */
-    const TOOLS = OMP_CAPABILITY_TOOLS.map(
-      (capability) => `stand_in_${capability.toLowerCase()}`,
+     *  order the adapter offers its capabilities; the version tool is the one the
+     *  artifacts carry, whatever the command explains. */
+    const TOOLS = OMP_CAPABILITY_TOOLS.map((capability) =>
+      capability === 'versionSkew'
+        ? 'version_skew'
+        : `stand_in_${capability.toLowerCase()}`,
     );
     const EXPLANATION = {
       name: 'stand in',
@@ -852,7 +855,11 @@ describe('omp capability interface', () => {
         tools.map((t) => [t.name, t.parameters.properties.verb?.enum]);
 
       it('whatever tools a declaration lists, in a dispatched or a launched session', async () => {
-        const all = TOOLS.map((n) => [n, ['look', 'put', 'refuse']]);
+        const all = TOOLS.map((n) => [
+          n,
+          // The version tool explains one verb alone, so it takes no `verb`.
+          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
+        ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),
           discovered('builder'),
@@ -896,7 +903,11 @@ describe('omp capability interface', () => {
       starts?: number;
       /** The installation's module replaced on disk after it was loaded. */
       replaced?: boolean;
-    }): Promise<{ warnings: string[][]; tools: string[] }> {
+    }): Promise<{
+      warnings: string[][];
+      tools: string[];
+      report: () => Promise<unknown>;
+    }> {
       const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
       tmp.push(dir);
       const root = join(dir, 'root');
@@ -940,6 +951,9 @@ describe('omp capability interface', () => {
       const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
       writeFileSync(file, module?.content ?? '');
       const tools: string[] = [];
+      let version:
+        | ((...args: unknown[]) => Promise<{ content: { text: string }[] }>)
+        | undefined;
       const handlers = new Map<
         string,
         (event: unknown, ctx: unknown) => unknown
@@ -947,7 +961,15 @@ describe('omp capability interface', () => {
       // Dynamic: the module under test is the emitted bytes, written to disk here.
       await (await import(file)).default({
         typebox: { Type: { Unsafe: (schema: unknown) => schema } },
-        registerTool: (tool: { name: string }) => tools.push(tool.name),
+        registerTool: (tool: {
+          name: string;
+          execute: (
+            ...args: unknown[]
+          ) => Promise<{ content: { text: string }[] }>;
+        }) => {
+          tools.push(tool.name);
+          if (tool.name === 'version_skew') version = tool.execute;
+        },
         registerFlag: () => {},
         getFlag: () => undefined,
         on: (
@@ -979,7 +1001,12 @@ describe('omp capability interface', () => {
         );
         warnings.push(said);
       }
-      return { warnings, tools };
+      const report = async () =>
+        JSON.parse(
+          (await version?.('id', {}, undefined, undefined, { cwd: dir }))
+            ?.content[0]?.text ?? 'null',
+        );
+      return { warnings, tools, report };
     }
     const ALL = OMP_CAPABILITY_TOOLS;
     const remedy =
@@ -1022,19 +1049,23 @@ describe('omp capability interface', () => {
       expect(warnings[0]?.[0]).toMatch(remedy);
     });
 
-    it('warns against a command that predates the version tool, still loading and offering what it provides', async () => {
+    it('warns against a command that predates the version tool, still loading, offering the version tool the artifacts carry, which reports both', async () => {
       const older = ALL.filter((c) => c !== 'versionSkew');
-      const { warnings, tools } = await started({
+      const { warnings, tools, report } = await started({
         projected: '3.1.0',
         command: '3.0.0',
         explains: older,
       });
-      expect(tools).toEqual(older.map((c) => `stand_in_${c.toLowerCase()}`));
+      expect(tools).toEqual([
+        ...older.map((c) => `stand_in_${c.toLowerCase()}`),
+        'version_skew',
+      ]);
       expect(warnings[0]).toHaveLength(1);
       expect(warnings[0]?.[0]).toContain('projected by cratylus 3.1.0');
       expect(warnings[0]?.[0]).toContain('run is 3.0.0');
-      expect(warnings[0]?.[0]).toContain('does not provide versionSkew');
+      expect(warnings[0]?.[0]).not.toContain('does not provide');
       expect(warnings[0]?.[0]).toMatch(remedy);
+      expect(await report()).toEqual({ artifacts: '3.1.0', command: '3.0.0' });
     });
 
     it('warns where the command lacks a capability the installation expects, though it answers the same version', async () => {
@@ -1043,11 +1074,9 @@ describe('omp capability interface', () => {
         command: '2.4.0',
         explains: ['concepts'],
       });
-      expect(tools).toEqual(['stand_in_concepts']);
+      expect(tools).toEqual(['stand_in_concepts', 'version_skew']);
       expect(warnings[0]).toHaveLength(1);
-      expect(warnings[0]?.[0]).toMatch(
-        /does not provide workPackage .*, versionSkew /,
-      );
+      expect(warnings[0]?.[0]).toMatch(/does not provide workPackage /);
     });
 
     it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
