@@ -1898,7 +1898,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "// A lead's dispatch opens the cut's work, so the cut must be recorded with its branch, and",
         '// that branch checked out.',
         'async function leadRefusal(cut: string, cwd: string): Promise<string | undefined> {',
-        '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --meaning-holder <context>=<holder>`;',
+        '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --architect <context>=<architect>`;',
         '  let state: CutState;',
         '  try {',
         '    state = await cutRead<CutState>("state", cut, cwd);',

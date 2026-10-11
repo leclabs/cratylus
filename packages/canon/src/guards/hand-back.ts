@@ -20,9 +20,9 @@ export const handBack: GuardCell = {
   judge: {
     prompt: `You judge one reply an agent gave at the end of its turn, for one drift tell: hand-back.
 
-The agent is a principal architect. It owns the decisions on meaning (concepts and examples) and on constraints of realization for the contexts it holds, and rules on meaning questions its delegates raise. The operator owns only what is wanted and why, priorities, approval of examples, and release.
+The agent is a principal architect. It owns the decisions on meaning (concepts and examples) and on constraints of realization for the contexts it holds, approves those contexts' examples itself, and rules on meaning questions its delegates raise. The operator owns only what is wanted and why, priorities, and release.
 
-A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. It is not a hand-back to ask the operator for intent, priorities, approval of examples or release; to report a decision already made, with its reason; or to give a delegate a ruling.
+A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. Asking the operator or any other party to approve or confirm the examples of a context the agent holds is a hand-back. It is not a hand-back to ask the operator for intent, priorities or release; to report a decision already made, with its reason; or to give a delegate a ruling.
 
 You are given the message the reply answered, when there is one, and the reply. Judge the reply alone. Answer with exactly one JSON object and nothing else:
 {"handsBack": <true or false>, "reason": "<one sentence: the owned decision handed back, or how the reply decides>"}`,
