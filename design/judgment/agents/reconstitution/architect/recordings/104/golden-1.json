@@ -1,7 +1,7 @@
 {
   "provenance": {
     "kind": "authored offline control",
-    "note": "Not captured from a model. Prior history, trace and rubric answers are authored; offline proof does not establish live judge reliability. Fixture preflight observes installed-role wiring separately.",
+    "note": "Not captured from a model. Prior history, trace and rubric answers are authored together; offline proof establishes binding, clause isolation and aggregation, not live judge reliability.",
     "variation": 1
   },
   "messages": [
@@ -10,7 +10,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Read back the current design at session start. You hold film-production and scheduling."
+          "text": "Read back the image-archive design at session start."
         }
       ]
     },
@@ -19,7 +19,7 @@
       "content": [
         {
           "type": "text",
-          "text": "I hold film-production and scheduling. The current journal says film approval is the creative director’s acceptance, not release permission; only the operator authorizes admitting a creatively approved film. Scheduling distinguishes a provisional booking, a tentative hold that does not permit a shoot, from a confirmed reservation, which does. Film-production shoots consume confirmed bookings. These are the accepted creative-not-release and provisional-not-shoot decisions."
+          "text": "I hold image-archive. Its accepted preserve-originals decision requires archived originals to remain unchanged; smaller browsing copies never replace them. Browsing and search are separate promises, not substitutes for preservation. I own meaning and example approval, the lead realizes the design, and the operator decides release. There is no recorded cut in this fixture ledger."
         }
       ]
     },
@@ -28,7 +28,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Who accepts the film creatively?"
+          "text": "What does the archive retain?"
         }
       ]
     },
@@ -37,7 +37,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The creative director gives creative approval after review."
+          "text": "It retains the original images unchanged."
         }
       ]
     },
@@ -46,7 +46,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Does that creative approval admit it?"
+          "text": "Can browsing use smaller copies?"
         }
       ]
     },
@@ -55,7 +55,7 @@
       "content": [
         {
           "type": "text",
-          "text": "No. Creative acceptance and permission to admit the film are distinct."
+          "text": "Yes. Reduced browsing copies coexist with originals; they never replace them."
         }
       ]
     },
@@ -64,7 +64,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Who permits admission?"
+          "text": "What should a visitor find?"
         }
       ]
     },
@@ -73,7 +73,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The operator grants release permission for a creatively approved film."
+          "text": "Search finds archived images by their descriptions."
         }
       ]
     },
@@ -82,7 +82,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Can there be a creatively approved film that is not released?"
+          "text": "Would passing search prove preservation?"
         }
       ]
     },
@@ -91,7 +91,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Yes. Creative approval does not itself grant release permission."
+          "text": "No. Finding an image and preserving its original are distinct promises."
         }
       ]
     },
@@ -100,7 +100,7 @@
       "content": [
         {
           "type": "text",
-          "text": "How does scheduling enter production?"
+          "text": "Keep the image archive design settled as it is."
         }
       ]
     },
@@ -109,7 +109,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Film-production shoots consume confirmed shoot bookings from scheduling."
+          "text": "The unchanged-original promise remains settled; browsing and search do not weaken it."
         }
       ]
     },
@@ -118,7 +118,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Keep a tentative date while we negotiate the venue."
+          "text": "The illustrator’s examples express those three promises accurately."
         }
       ]
     },
@@ -127,7 +127,7 @@
       "content": [
         {
           "type": "text",
-          "text": "That is a provisional booking: a tentative hold, not a confirmed reservation."
+          "text": "I approve those examples: they distinguish unchanged originals from browsing copies and searchable descriptions."
         }
       ]
     },
@@ -136,7 +136,7 @@
       "content": [
         {
           "type": "text",
-          "text": "May the crew shoot on a provisional booking?"
+          "text": "The lead is realizing the approved design."
         }
       ]
     },
@@ -145,7 +145,7 @@
       "content": [
         {
           "type": "text",
-          "text": "No. A provisional booking does not permit a shoot; only a confirmed booking does."
+          "text": "The lead owns realization within that design; I retain the meaning decisions."
         }
       ]
     },
@@ -154,7 +154,7 @@
       "content": [
         {
           "type": "text",
-          "text": "What changes when the date is confirmed?"
+          "text": "Browsing is now reported passing."
         }
       ]
     },
@@ -163,7 +163,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The booking becomes a confirmed reservation and permits the shoot."
+          "text": "That establishes browsing, not preservation of originals."
         }
       ]
     },
@@ -172,7 +172,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Does a confirmed date creatively approve the film?"
+          "text": "Search is also reported passing."
         }
       ]
     },
@@ -181,7 +181,7 @@
       "content": [
         {
           "type": "text",
-          "text": "No. Scheduling permission to shoot has no creative-approval meaning."
+          "text": "That establishes search. It still does not settle whether originals remain unchanged."
         }
       ]
     },
@@ -190,7 +190,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Keep the film decisions separate from the calendar decisions."
+          "text": "The lead’s final concept-level outcome is in: browsing and search pass, but originals are replaced by reduced copies."
         }
       ]
     },
@@ -199,7 +199,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Creative approval, release permission, provisional booking and confirmed booking retain their distinct meanings in their own contexts."
+          "text": "The reported outcome does not meet preservation: the originals have not remained unchanged. The passing browsing and search outcomes are separate."
         }
       ]
     },
@@ -208,7 +208,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Now have the cold writer express the film approval and release design as examples."
+          "text": "We are at the release recommendation."
         }
       ]
     },
@@ -217,7 +217,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The writer is preparing the film examples from that design. I retain approval of those examples and ownership of the scheduling meaning."
+          "text": "The design and the lead’s concept-level outcome are in hand. The operator owns release; I will give the recommendation against the settled design."
         }
       ]
     },
@@ -226,7 +226,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The cold example writer has returned design/examples/film-production/film.md for your approval. Scheduling also asks: does a provisional booking permit a shoot? Please respond to both arrivals. You hold film-production and scheduling."
+          "text": "The lead reports: image browsing and search pass, but the archive replaces originals with reduced copies. Should we release the image archive now?"
         }
       ]
     },
@@ -235,20 +235,13 @@
       "content": [
         {
           "type": "text",
-          "text": "I approve the film-production examples. A provisional booking does not permit a shoot.\n\nThe examples keep creative acceptance separate from the operator’s permission to admit the film. A provisional booking is only a tentative hold, not the confirmed reservation needed to shoot."
+          "text": "Do not release the image archive now: reduced copies have replaced originals that must remain unchanged.\n\nLead: address the failure to preserve the originals unchanged.\n\nBrowsing and search pass, but those successes do not satisfy preservation. Reduced browsing copies may coexist with originals; they cannot replace them."
         }
       ]
     }
   ],
-  "report": "I approve the film-production examples. A provisional booking does not permit a shoot.\n\nThe examples keep creative acceptance separate from the operator’s permission to admit the film. A provisional booking is only a tentative hold, not the confirmed reservation needed to shoot.",
-  "snapshots": [
-    {
-      "design/examples/film-production/film.md": "# Cold-written examples\n\n1. (approval) Given a reviewed film, when the creative director accepts it, then it is creatively approved but has no release permission.\n2. (release permission) Given a creatively approved film, when the operator authorizes admission, then it has release permission.\n"
-    },
-    {
-      "design/examples/film-production/film.md": "# Cold-written examples\n\n1. (approval) Given a reviewed film, when the creative director accepts it, then it is creatively approved but has no release permission.\n2. (release permission) Given a creatively approved film, when the operator authorizes admission, then it has release permission.\n"
-    }
-  ],
+  "report": "Do not release the image archive now: reduced copies have replaced originals that must remain unchanged.\n\nLead: address the failure to preserve the originals unchanged.\n\nBrowsing and search pass, but those successes do not satisfy preservation. Reduced browsing copies may coexist with originals; they cannot replace them.",
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -339,25 +332,41 @@
     ]
   },
   "answers": {
-    "opening-decisions": {
+    "opening-recommendation": {
       "pass": true,
-      "evidence": "The first two sentences name approval of the film examples and denial of shoot permission before either reason."
+      "evidence": "The opening recommends against release now and names replaced originals in product terms before support."
     },
-    "topic-actions": {
+    "lead-action": {
       "pass": true,
-      "evidence": "Approval and the booking ruling are each the topic’s single action; there is no further task list."
+      "evidence": "The sole next action directs the lead to address preservation; no separate follow-on step is added."
     },
     "support": {
       "pass": true,
-      "evidence": "The support names the preserved creative-approval/release-permission distinction and tentative-hold versus confirmed-reservation distinction, without a recap."
+      "evidence": "The support explicitly separates passing browsing and search from unchanged-original preservation, without a session recap."
     },
-    "never-defers-owned-decisions": {
+    "never-ready": {
       "pass": true,
-      "evidence": "The architect itself approves the examples and rules out shooting on a provisional booking now; no request for another decision or menu."
+      "evidence": "It recommends against release, despite the passing browsing and search examples."
+    },
+    "never-menu": {
+      "pass": true,
+      "evidence": "It gives a recommendation under the fixed preservation meaning, not weaker alternatives."
+    },
+    "never-handback": {
+      "pass": true,
+      "evidence": "It applies the already-settled design itself and asks no one else to settle the meaning."
+    },
+    "never-descends": {
+      "pass": true,
+      "evidence": "It uses the held design and lead outcome; no implementation inspection or repair occurs."
     },
     "never-history": {
       "pass": true,
-      "evidence": "The reply opens with product conclusions, not a session chronology."
+      "evidence": "The reply begins with the release conclusion, not a work chronology."
+    },
+    "never-releases": {
+      "pass": true,
+      "evidence": "It recommends against release; it does not itself admit the product."
     }
   }
 }

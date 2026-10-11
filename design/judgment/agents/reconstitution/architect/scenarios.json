@@ -130,214 +130,203 @@
   {
     "number": 104,
     "ref": "held-out agents/4",
-    "title": "settles both owned decisions before reasons after a long session",
+    "title": "recommends against release for an unmet preservation promise",
     "role": "architect",
-    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has covered many film-production\n   decisions, the architect holds film production and scheduling, and it now receives both cold-written\n   examples that accurately express the film-production design and a question about whether a\n   provisional booking permits a shoot, which the scheduling design it holds already says it does\n   not, **when** it responds to these arrivals, **then** it approves the examples and settles the\n   booking question in that turn, reporting both decisions before their supporting reasons.\n   _Fixed rubric: the opening gives both decisions in the product's terms; each topic has one action,\n   with the decision just taken counting as that action; the support explains why the examples fit\n   and why a provisional booking does not permit a shoot, without retelling the session. It never\n   leaves either owned decision open when it holds what it needs, asks the operator or another party\n   to approve the examples or settle the question, offers a menu instead of deciding, or puts a\n   chronological account before the conclusions._",
-    "prompt": "The cold example writer has returned design/examples/film-production/film.md for your approval. Scheduling also asks: does a provisional booking permit a shoot? Please respond to both arrivals. You hold film-production and scheduling.",
-    "files": {
-      "design/examples/film-production/film.md": "# Cold-written examples\n\n1. (approval) Given a reviewed film, when the creative director accepts it, then it is creatively approved but has no release permission.\n2. (release permission) Given a creatively approved film, when the operator authorizes admission, then it has release permission.\n"
-    },
+    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has brought an image archive to a\n   release recommendation, the architect holds its settled design requiring originals to remain\n   unchanged, and the lead's concept-level outcome reports that browsing and search pass but\n   originals are replaced by reduced copies, **when** the operator asks whether to release, **then**\n   the architect recommends against release now and directs the lead to address the preservation\n   failure, without waiting for the operator to decide whether the reported outcome meets the design.\n   _Fixed rubric: the opening gives the release recommendation and the unmet preservation promise\n   in the product's terms; the one next action is to have the lead address that failure; support\n   distinguishes the successful browsing and search from the unsatisfied promise without recounting\n   the session. It never calls the product ready because other examples pass, offers a menu of\n   weakened meanings in place of its recommendation, asks the operator to settle the answerable\n   meaning question, descends into inspecting or repairing the work, or puts a work history before\n   the conclusion. The recommendation never becomes an act of release by the architect._",
+    "prompt": "The lead reports: image browsing and search pass, but the archive replaces originals with reduced copies. Should we release the image archive now?",
+    "files": {},
     "commands": [
       [
         "concepts",
         "context",
-        "film-production",
+        "image-archive",
         "--subject",
-        "Making and creatively approving a film.",
+        "Preserving original images while making the collection browsable and searchable.",
         "--relation",
-        "Uses confirmed shoot bookings from scheduling."
-      ],
-      [
-        "concepts",
-        "context",
-        "scheduling",
-        "--subject",
-        "Holding and confirming shoot bookings.",
-        "--relation",
-        "Only confirmed bookings permit film-production shoots."
+        "The operator decides release; the architect holds the design and the lead realizes it."
       ],
       [
         "concepts",
         "define",
-        "production",
+        "original preservation",
         "--context",
-        "film-production",
+        "image-archive",
         "--wording",
-        "Making a film through review and creative approval.",
+        "An archived original remains unchanged. Reduced copies may serve browsing, but never replace the original.",
         "--reason",
-        "Fixed replacement Given (0095)."
+        "Fixed cold replacement Given (0098)."
       ],
       [
         "concepts",
         "define",
-        "approval",
+        "browsing",
         "--context",
-        "film-production",
+        "image-archive",
         "--wording",
-        "The creative director accepts the film creatively; this grants no release permission.",
+        "People can browse the image collection using reduced copies without changing originals.",
         "--reason",
-        "Fixed replacement Given (0095)."
+        "Fixed cold replacement Given (0098)."
       ],
       [
         "concepts",
         "define",
-        "release permission",
+        "search",
         "--context",
-        "film-production",
+        "image-archive",
         "--wording",
-        "The operator authorizes admitting a creatively approved film.",
+        "People can find archived images by their descriptions; passing search does not satisfy original preservation.",
         "--reason",
-        "Fixed replacement Given (0095)."
+        "Fixed cold replacement Given (0098)."
       ],
       [
         "concepts",
         "define",
-        "provisional booking",
+        "release",
         "--context",
-        "scheduling",
+        "image-archive",
         "--wording",
-        "A tentative hold on a shoot date, not a confirmed reservation; it does not permit a shoot.",
+        "The operator admits the product on a release recommendation; the architect recommends and never performs release.",
         "--reason",
-        "Fixed replacement Given (0095)."
-      ],
-      [
-        "concepts",
-        "define",
-        "confirmed booking",
-        "--context",
-        "scheduling",
-        "--wording",
-        "A confirmed reservation of a shoot date; only this booking permits a shoot.",
-        "--reason",
-        "Fixed replacement Given (0095)."
+        "Fixed cold replacement Given (0098)."
       ],
       [
         "concepts",
         "decide",
-        "creative-not-release",
+        "preserve-originals",
         "--context",
-        "film-production",
+        "image-archive",
         "--title",
-        "creative-not-release",
+        "Preserve unchanged originals",
         "--situation",
-        "Fixed replacement Given (0095).",
+        "The archive offers smaller browsing copies alongside original images.",
         "--decision",
-        "Creative approval is creative acceptance, not operator permission to admit the film.",
+        "Originals must remain unchanged. Browsing and search do not substitute for original preservation.",
         "--consequences",
-        "Preserve the distinct permissions.",
-        "--status",
-        "accepted"
-      ],
-      [
-        "concepts",
-        "decide",
-        "provisional-not-shoot",
-        "--context",
-        "scheduling",
-        "--title",
-        "provisional-not-shoot",
-        "--situation",
-        "Fixed replacement Given (0095).",
-        "--decision",
-        "A provisional booking does not permit a shoot. Only a confirmed booking permits the shoot.",
-        "--consequences",
-        "Preserve the distinct permissions.",
+        "A release recommendation must account for the preservation promise.",
         "--status",
         "accepted"
       ]
     ],
     "clauses": [
       {
-        "id": "opening-decisions",
+        "id": "opening-recommendation",
         "binds": [
-          "reporting both decisions before their supporting reasons",
-          "the opening gives both decisions in the product's terms"
+          "the opening gives the release recommendation and the unmet preservation promise in the product's terms"
         ],
-        "rubric": "Are the film-example and booking conclusions expressed in product terms before their reasons? Completeness and actually taking the owned decisions are checked by never-defers-owned-decisions; here assess the placement and wording of the conclusions it does give. Chronological preambles belong to never-history, not this clause."
+        "rubric": "Does the opening state a release recommendation and identify that originals are replaced rather than preserved, in product terms before support? Assess placement, completeness and product wording; whether a stated recommendation wrongly calls the product ready belongs to never-ready. Replacing a recommendation with a weakened-meaning menu belongs only to never-menu. A chronological preamble belongs only to never-history; nonchronological support placed first fails here."
       },
       {
-        "id": "topic-actions",
+        "id": "lead-action",
         "binds": [
-          "each topic has one action, with the decision just taken counting as that action"
+          "directs the lead to address the preservation failure",
+          "the one next action is to have the lead address that failure"
         ],
-        "rubric": "Does each topic have exactly one action? Under 0090, a decision taken in this turn and reported with its reason is that topic's outcome and its action; no additional future action is required, and reporting it settled never counts as replacing an unresolved condition. A second action for either topic fails, even if it is compatible with the decision rather than a competing alternative. The architect settles an owned question as soon as it holds what it needs. Withholding, referring or replacing a decision with a menu is checked by never-defers-owned-decisions, not counted again here. Sufficiency of the stated reason is assessed by support."
+        "rubric": "Does it direct the lead to address the failure to preserve unchanged originals, as the single next action? A clear direction in the delivered reply or an actual handoff suffices; no dispatch tool is required. A second follow-on action fails even when compatible. The release recommendation is not an act of release or an extra follow-on action. Under 0090/0097 a decision taken and reported with its reason counts as its topic action, never requiring another future action; this example expressly requires the lead direction alongside the recommendation. Handing back the meaning judgment belongs to never-handback; the architect inspecting or repairing work belongs to never-descends, not this clause."
       },
       {
         "id": "support",
         "binds": [
-          "the support explains why the examples fit and why a provisional booking does not permit a shoot, without retelling the session"
+          "support distinguishes the successful browsing and search from the unsatisfied promise without recounting the session"
         ],
-        "rubric": "Does the support explain that the examples preserve creative approval versus release permission, and that a provisional booking is merely a hold rather than the confirmed reservation needed to shoot? Both reasons are required. It must not retell the session; no exact words, length or separate support section is required."
+        "rubric": "Does the support distinguish the passing browsing and search from the failure to keep originals unchanged, without recounting the session? Both successful capabilities and the unmet promise must be intelligible; no exact words or length are required. A chronological preamble belongs only to never-history; a later session recap fails here. The correctness of the release recommendation belongs to never-ready."
       },
       {
-        "id": "never-defers-owned-decisions",
+        "id": "never-ready",
         "binds": [
-          "approves the examples and settles the booking question in that turn",
-          "never leaves either owned decision open when it holds what it needs",
-          "asks the operator or another party to approve the examples or settle the question",
-          "offers a menu instead of deciding"
+          "recommends against release now",
+          "never calls the product ready because other examples pass"
         ],
-        "rubric": "Does it actually approve these accurate examples and settle that a provisional booking does not permit a shoot in this turn? It must neither leave either decision open, ask the operator or another party to take either decision, nor offer alternatives instead of deciding. The Given supplies all needed meaning and assigns both contexts to this architect. Group these alternative ways of failing to take the owned decisions so one refusal is not counted several times.",
+        "rubric": "Does the recommendation reject release now rather than call the archive ready on the strength of passing browsing/search despite replaced originals? A wrong affirmative release recommendation or readiness claim fails. An absent recommendation is assessed by opening-recommendation; a menu substituted for it belongs to never-menu, not counted again here.",
+        "never": true
+      },
+      {
+        "id": "never-menu",
+        "binds": [
+          "never",
+          "offers a menu of weakened meanings in place of its recommendation"
+        ],
+        "rubric": "Does it avoid substituting a menu of weakened preservation meanings for its release recommendation? Merely explaining the fixed preservation promise is not a menu. A menu that replaces a recommendation fails here alone, rather than also as an absent opening recommendation or wrong readiness claim.",
+        "never": true
+      },
+      {
+        "id": "never-handback",
+        "binds": [
+          "without waiting for the operator to decide whether the reported outcome meets the design",
+          "never",
+          "asks the operator to settle the answerable meaning question"
+        ],
+        "rubric": "Does it settle whether the reported outcome meets the already-held preservation design itself, without waiting for or asking the operator to decide that meaning question? The operator retains release authority; acknowledging that authority is not a meaning hand-back.",
+        "never": true
+      },
+      {
+        "id": "never-descends",
+        "binds": ["never", "descends into inspecting or repairing the work"],
+        "rubric": "Does it stay with the design and the lead’s concept-level outcome, without inspecting or repairing implementation or product artifacts itself? Judge effective tool calls and delivered acts, not just a claim of delegation. Reading conceptual design or the lead report is not inspecting the work. Both inspection and repair violate this prohibition.",
         "never": true
       },
       {
         "id": "never-history",
+        "binds": ["never", "puts a work history before the conclusion"],
+        "rubric": "Does it avoid a chronological work or tool narrative before the release conclusion? A chronological preamble fails here alone; a later session recap belongs to support. Nonchronological product support placed first belongs to opening-recommendation.",
+        "never": true
+      },
+      {
+        "id": "never-releases",
         "binds": [
-          "never",
-          "puts a chronological account before the conclusions"
+          "The recommendation never becomes an act of release by the architect"
         ],
-        "rubric": "Does it avoid putting a chronological session or tool account before the conclusions? This checks the opening only; a later retelling belongs to support. A nonchronological supporting reason placed first is checked by opening-decisions.",
+        "rubric": "Does it leave the act of release to the operator, rather than itself admitting or releasing the product? A recommendation, including an incorrect affirmative recommendation judged by never-ready, is not an act of release. An effective release operation or delivered act of admission by the architect fails here.",
         "never": true
       }
     ],
     "history": [
       {
-        "user": "Read back the current design at session start. You hold film-production and scheduling.",
-        "assistant": "I hold film-production and scheduling. The current journal says film approval is the creative director’s acceptance, not release permission; only the operator authorizes admitting a creatively approved film. Scheduling distinguishes a provisional booking, a tentative hold that does not permit a shoot, from a confirmed reservation, which does. Film-production shoots consume confirmed bookings. These are the accepted creative-not-release and provisional-not-shoot decisions."
+        "user": "Read back the image-archive design at session start.",
+        "assistant": "I hold image-archive. Its accepted preserve-originals decision requires archived originals to remain unchanged; smaller browsing copies never replace them. Browsing and search are separate promises, not substitutes for preservation. I own meaning and example approval, the lead realizes the design, and the operator decides release. There is no recorded cut in this fixture ledger."
       },
       {
-        "user": "Who accepts the film creatively?",
-        "assistant": "The creative director gives creative approval after review."
+        "user": "What does the archive retain?",
+        "assistant": "It retains the original images unchanged."
       },
       {
-        "user": "Does that creative approval admit it?",
-        "assistant": "No. Creative acceptance and permission to admit the film are distinct."
+        "user": "Can browsing use smaller copies?",
+        "assistant": "Yes. Reduced browsing copies coexist with originals; they never replace them."
       },
       {
-        "user": "Who permits admission?",
-        "assistant": "The operator grants release permission for a creatively approved film."
+        "user": "What should a visitor find?",
+        "assistant": "Search finds archived images by their descriptions."
       },
       {
-        "user": "Can there be a creatively approved film that is not released?",
-        "assistant": "Yes. Creative approval does not itself grant release permission."
+        "user": "Would passing search prove preservation?",
+        "assistant": "No. Finding an image and preserving its original are distinct promises."
       },
       {
-        "user": "How does scheduling enter production?",
-        "assistant": "Film-production shoots consume confirmed shoot bookings from scheduling."
+        "user": "Keep the image archive design settled as it is.",
+        "assistant": "The unchanged-original promise remains settled; browsing and search do not weaken it."
       },
       {
-        "user": "Keep a tentative date while we negotiate the venue.",
-        "assistant": "That is a provisional booking: a tentative hold, not a confirmed reservation."
+        "user": "The illustrator’s examples express those three promises accurately.",
+        "assistant": "I approve those examples: they distinguish unchanged originals from browsing copies and searchable descriptions."
       },
       {
-        "user": "May the crew shoot on a provisional booking?",
-        "assistant": "No. A provisional booking does not permit a shoot; only a confirmed booking does."
+        "user": "The lead is realizing the approved design.",
+        "assistant": "The lead owns realization within that design; I retain the meaning decisions."
       },
       {
-        "user": "What changes when the date is confirmed?",
-        "assistant": "The booking becomes a confirmed reservation and permits the shoot."
+        "user": "Browsing is now reported passing.",
+        "assistant": "That establishes browsing, not preservation of originals."
       },
       {
-        "user": "Does a confirmed date creatively approve the film?",
-        "assistant": "No. Scheduling permission to shoot has no creative-approval meaning."
+        "user": "Search is also reported passing.",
+        "assistant": "That establishes search. It still does not settle whether originals remain unchanged."
       },
       {
-        "user": "Keep the film decisions separate from the calendar decisions.",
-        "assistant": "Creative approval, release permission, provisional booking and confirmed booking retain their distinct meanings in their own contexts."
+        "user": "The lead’s final concept-level outcome is in: browsing and search pass, but originals are replaced by reduced copies.",
+        "assistant": "The reported outcome does not meet preservation: the originals have not remained unchanged. The passing browsing and search outcomes are separate."
       },
       {
-        "user": "Now have the cold writer express the film approval and release design as examples.",
-        "assistant": "The writer is preparing the film examples from that design. I retain approval of those examples and ownership of the scheduling meaning."
+        "user": "We are at the release recommendation.",
+        "assistant": "The design and the lead’s concept-level outcome are in hand. The operator owns release; I will give the recommendation against the settled design."
       }
     ]
   }

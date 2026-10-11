@@ -1,6 +1,6 @@
 # Architect judgment — agents reconstitution
 
-Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the former agents/4 case and its eight controls moved to visible agents/20 in `packages/cli/test/reconstitution/architect/` (`recordings/120/`). Evidence before **Cold replacement evidence** names the original refs and paths at the time of each run; it does not describe the replacement now in `recordings/104/`.
+Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the original agents/4 moved to visible agents/20 (`recordings/120/` in the visible architect suite). Under 0098, its exposed film-example/booking replacement moved to visible agents/21 (`recordings/121/`). The current held-out agents/4 is the image-archive release case in `recordings/104/`. Earlier evidence below preserves the refs and paths as they were at each run; **Cold replacement evidence (0098)** describes the current case.
 
 Executed before the build:
 
@@ -96,3 +96,81 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_REJUDGE \
 Observed **1 passed, 22 skipped**, exit 0. The no-model inspection resumed the authored history; the retained native session begins with the readback exchange and its provisional-booking rule. Inspection output is under `/tmp/reconstitution-0095-replacement-preflight/architect/held-out/agents/4/preflight/`. The observer exits before model generation.
 
 CLI typecheck passed. Biome passed on the replacement scenarios, all eighteen new control recordings, the shared roles history support and the held-out fixture assertion. The delivery evidence file records the sibling fixture's proof and the visible-role compatibility check.
+
+## Cold replacement evidence (0098)
+
+The current scenario quotes the approved image-archive agents/4 example verbatim.
+It seeds the `image-archive` context, four concepts and the accepted
+`preserve-originals` decision through real journal commands, not a handwritten
+overview. Its twelve native continuing-session history exchanges begin with the
+architect's own readback of that settled design. Later exchanges contain the
+architect's example approval and the lead's concept-level outcome. The new turn
+asks whether to release. The fixture claims no recorded cut and seeds none.
+There is no separate confirmer, approval hand-back or artificial open meaning
+question in either golden. History and transcripts are explicitly authored, not
+captured model output.
+
+Two varied goldens recommend against release, direct the lead to address
+preservation as the sole next action, and distinguish successful browsing/search
+from replaced originals. A delivered direction suffices; dispatch is not required.
+The action rubric reads 0090/0097 without inventing an additional future step.
+The example itself requires the lead direction alongside the release recommendation.
+
+| Clause                   | Isolated negative recording(s) and failure                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installed-role`         | `negative-installed-role.json`: declaration absent from the prompt                                                                                                              |
+| `opening-recommendation` | `negative-opening-recommendation.json`: nonchronological support precedes the conclusion; `negative-opening-missing-promise.json`: opening omits the unmet preservation promise |
+| `lead-action`            | `negative-lead-action.json`: no lead direction; `negative-lead-action-second.json`: adds a separate search-ranking task                                                         |
+| `support`                | `negative-support.json`: does not distinguish successful browsing/search; `negative-support-retelling.json`: recounts the session after the conclusion                          |
+| `never-ready`            | `negative-never-ready.json`: calls the archive ready because browsing/search pass despite replaced originals                                                                    |
+| `never-menu`             | `negative-never-menu.json`: replaces the recommendation with two weakened preservation meanings                                                                                 |
+| `never-handback`         | `negative-never-handback.json`: asks the operator to settle conformity; `negative-never-handback-waits.json`: waits for that answerable ruling                                  |
+| `never-descends`         | `negative-never-descends-inspection.json`: effective implementation-diff inspection; `negative-never-descends-repair.json`: effective original-data repair                      |
+| `never-history`          | `negative-never-history.json`: chronological work account before the conclusion                                                                                                 |
+| `never-releases`         | `negative-never-releases.json`: effective admission to production despite the recommendation against release                                                                    |
+
+The six `never-*` clauses are never-assertions. Overlapping wording is partitioned:
+the opening checks placement and product wording; wrong readiness and substituted
+menus have their own clauses; a chronological preamble belongs to `never-history`,
+a later recap to `support`. The three effective-act controls contain explicitly
+authored successful shell calls, not merely claims of inspection, repair or release.
+Those shell calls were never executed. Tool schemas and installed identity in the
+controls are authored wiring evidence; they do not claim an observed installation.
+
+Each of the fifteen negatives fails exactly its declared clause and rejects its
+five-copy batch. In a temporary test, `EXECUTION_RED=1` first checked that isolation
+and then deliberately expected each batch to pass. All **15 cold negatives and
+8 promoted negatives failed intentionally at `passed: false`** (23 total).
+The temporary `replacement-red-evidence.test.ts` was removed. The permanent
+offline proof continues to exercise every negative.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts \
+  -t 'Example held-out agents/4 .*red demonstration'
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+```
+
+Observed: the permanent demonstration had **1 intentional failure, 29 skipped**,
+rejecting the second-action negative. The normal suite was green: **22 passed,
+8 skipped**, including unchanged agents/2, the two varied new goldens, all fifteen
+isolated negative rejections and aggregation. The visible architect suite was also
+green (**133 passed, 60 skipped, 3 files**). Biome checked **29 JSON files** across
+the two owned scenario files and their promoted/new recordings. These checks are
+frozen on this offline evidence. No example text, product code, shared runner or
+other example's checks changed; no build, live model session or new preflight ran.
+
+The run rule remains four of five ordinary passes; each never-assertion must hold
+in every run taken, with fail-fast stopping under 0088/0092. Offline proof validates
+binding, isolation, authored wiring and aggregation, not live judge reliability.
+
+The exact live test name (not run here) is:
+
+```text
+Example held-out agents/4 — recommends against release for an unmet preservation promise live: parallel installed-agent runs stop when the outcome is decided
+```
+
+Select it with `-t 'Example held-out agents/4 .*live: parallel installed-agent runs stop when the outcome is decided'`.

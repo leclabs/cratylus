@@ -1,6 +1,6 @@
 # Architect behavioral checks — reconstitution
 
-These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–20. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
+These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–21. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
 
 Decision 0086 rebinds workflow/19 and agents/16,18 to the current examples. Workflow/19 gives the architect both contexts and the illustrator's accurate example files: it must approve both itself while preserving the two models. Agents/16 starts after the architect's own approval and the achieved outcome; agents/18 reports that approval and the scheduling meaning question it still owns. Their controls include two differently worded goldens and a negative for each clause and installed-role wiring.
 
@@ -409,3 +409,61 @@ env -u EXECUTION_RED -u EXECUTION_PREFLIGHT \
 Results go to `/tmp/rejudged-architect/architect/visible/workflow/{18,19,23}/`. For future namespaced recordings, omit `EXECUTION_REJUDGE_LEGACY` and set `EXECUTION_REJUDGE` to their `EXECUTION_RECORDINGS` root. The runner's offline regression tests cover large prompt preservation, output separation, collision-safe replay, complete multi-turn reconstruction and rejection of another role's recordings.
 
 After the transport/replay fix, the visible offline suite and runner regressions passed together: **95 passed, 52 skipped** (87 proof/negative/aggregation tests and 8 runner regressions). No live subjects or judges were run for this fix, and the active retained-recordings directory was not modified.
+
+### Promoting the second exposed ordering case (0098)
+
+Agents/21 is the former replacement held-out agents/4: scenario number `121`,
+`recordings/121/`. Its prompt, fixture commands, twelve history exchanges, clauses,
+rubrics and ten recordings are unchanged. Only its number, reference and example
+quotation's indentation change to match the approved visible example. History begins
+with the architect's own session-start readback of film production and scheduling,
+including the settled provisional-booking rule; the evaluated turn is a continuation.
+
+| Clause                         | Isolated negative recording                                                                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installed-role`               | `negative-installed-role.json`: declaration absent from the prompt                                                                                                               |
+| `opening-decisions`            | `negative-opening-decisions.json`: reasons before the two product decisions                                                                                                      |
+| `topic-actions`                | `negative-topic-actions.json`: a separate second scheduling action after its reasoned decision                                                                                   |
+| `support`                      | `negative-support.json`: reasons for the two decisions omitted                                                                                                                   |
+| `never-defers-owned-decisions` | `negative-never-defers-owned-decisions-open.json`, `-handback.json`, `-menu.json`: respectively leaves decisions open, assigns them to someone else, or substitutes alternatives |
+| `never-history`                | `negative-never-history.json`: chronological preamble before the conclusions                                                                                                     |
+
+The last two clauses are never-assertions. The decision itself is each topic's
+one action under 0090/0097; a compatible follow-on action still fails. Ordinary
+clauses require four of five runs, and never-assertions hold in every run taken
+under 0088/0092. The shared runner and its launch logic were not changed.
+
+#### Executed offline proof
+
+The temporary `replacement-red-evidence.test.ts` loaded every negative of agents/21
+and the cold replacement held-out agents/4. For each it first required `assess` to
+fail exactly `[breaks]`, then deliberately expected the five-copy `judgeBatch` to
+return `passed: true`. It ran with `EXECUTION_RED=1`: **23 intentional failures**
+(all eight promoted negatives and all fifteen cold replacement negatives), each at
+the batch expectation because the result was `passed: false`, not at clause isolation.
+The temporary test was removed.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/architect.test.ts \
+  -t 'Example agents/21 .*red demonstration'
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution/architect/
+```
+
+The permanent red demonstration had **1 intentional failure, 177 skipped**,
+rejecting the owned-decision hand-back negative. The complete visible architect
+suite was green: **133 passed, 60 skipped, 3 files**, including both promoted
+goldens, all eight isolated negative rejections and aggregation. The stand-in tests
+used their offline scripted transport, not live models. Biome checked the two
+scenario files and all 27 promoted/new recording files. No build or live model
+session ran.
+
+The exact live test name (not run here) is:
+
+```text
+Example agents/21 — settles both owned decisions before reasons after a long session live: parallel installed-agent runs stop when the outcome is decided
+```
+
+Select it with `-t 'Example agents/21 .*live: parallel installed-agent runs stop when the outcome is decided'`.
