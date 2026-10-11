@@ -1622,6 +1622,31 @@ describe('omp capability interface', () => {
       expect(judge.asked).toHaveLength(1);
     });
 
+    it('counts no readback from a reply a turn-end guard refused at its stop', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      const readback =
+        'Film: approval is settled; night shoots are open; no cut in flight.';
+      await fire('message_end', reply(readback));
+      judge.verdict = JSON.stringify({
+        surveys: true,
+        given: true,
+        reason: 'It opens with mechanics.',
+      });
+      expect(
+        await fire('session_stop', {
+          last_assistant_message: readback,
+          stop_hook_active: false,
+        }),
+      ).toMatchObject({ decision: 'block' });
+      judge.asked.length = 0;
+      expect(await fire('tool_call', changing[1])).toEqual({
+        block: true,
+        reason: READBACK_UNSEEN_REFUSAL,
+      });
+      expect(judge.asked, 'nothing reached the operator').toEqual([]);
+    });
+
     it('lets the act through aloud when the judge gives no verdict', async () => {
       omp.agents = [ARCHITECT()];
       const { fire, relayed } = await twoModules('architect', [replyGuard]);

@@ -178,6 +178,11 @@ const OMP_LAUNCHED_AGENT_KEY = `${CLI_BIN}.launched-agent`;
  *  has read back, and imports no model client of its own. */
 const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
 
+/** The `Symbol.for` key the CRATYLUS module lends its withdrawal under, on
+ *  `globalThis`: the session module calls it with a reply a turn-end guard refused,
+ *  so the readback gate counts only text that reached the operator. */
+const OMP_WITHDRAW_KEY = `${CLI_BIN}.withdraw-reply`;
+
 /** What the judge reads a reconstituting launch's visible text for: the readback. */
 const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
 
@@ -1264,8 +1269,8 @@ const GUARD_BRIDGE: readonly string[] = [
   '  refusal: string;',
   '};',
   '',
-  '/** The act a turn end is judged by: the reply that ended it, and the message it answered. */',
-  'function replyOf(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): string | undefined {',
+  '/** The reply that ended a turn, and the message it answered, as text. */',
+  'function lastReply(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): { reply: string; asked: string } {',
   '  const text = (m: TurnMessage | undefined): string =>',
   '    m === undefined',
   '      ? ""',
@@ -1276,8 +1281,14 @@ const GUARD_BRIDGE: readonly string[] = [
   '  const at = messages.map((m) => m.role).lastIndexOf("assistant");',
   '  const said = event.last_assistant_message;',
   '  const reply = typeof said === "string" && said.trim() !== "" ? said : text(messages[at]);',
-  '  if (reply.trim() === "") return undefined;',
   '  const asked = text(messages.slice(0, at < 0 ? messages.length : at).findLast((m) => m.role === "user"));',
+  '  return { reply, asked };',
+  '}',
+  '',
+  '/** The act a turn end is judged by: the reply that ended it, and the message it answered. */',
+  'function replyOf(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): string | undefined {',
+  '  const { reply, asked } = lastReply(event);',
+  '  if (reply.trim() === "") return undefined;',
   '  return asked.trim() === ""',
   '    ? `Reply:\\n${reply}`',
   '    : `Message the reply answered:\\n${asked}\\n\\nReply:\\n${reply}`;',
@@ -1351,6 +1362,13 @@ const GUARD_EXEC: readonly string[] = [
   '    return reason;',
   '  };',
   '',
+  '  // A reply refused at its stop never reached the operator: the CRATYLUS module, which counts',
+  '  // what the operator was told toward a readback, is told to forget it.',
+  '  const withdraw = (reply: string): void => {',
+  `    const lent = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_WITHDRAW_KEY)})];`,
+  '    if (typeof lent === "function") lent(reply);',
+  '  };',
+  '',
   '  // The judge, lent to the CRATYLUS module, which holds back the acts of a launch that has',
   '  // not read back yet: one verdict field of one judgment, `undefined` when there is none.',
   `  (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)})] = async (`,
@@ -1416,10 +1434,11 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       : '';
     const reentered =
       kind === 'turn' ? 'event.stop_hook_active === true' : 'false';
-    const answer =
+    // A refused stop also withdraws its reply from what the operator was told.
+    const refuse =
       refusal === 'stop'
-        ? '{ decision: "block", reason }'
-        : '{ block: true, reason }';
+        ? '{\n      withdraw(lastReply(event).reply);\n      return { decision: "block", reason };\n    }'
+        : 'return { block: true, reason };';
     lines.push(
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
     const act = ${act};
@@ -1428,7 +1447,7 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       [${names.join(', ')}].map((guard) => guardJudged(guard, ctx, act, reentered)),
     );
     const reason = reasons.filter((r): r is string => r !== undefined).join("\\n\\n");
-    if (reason) return ${answer};
+    if (reason) ${refuse}
   });`,
     );
   }
@@ -1735,6 +1754,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const LAUNCHED_AGENT = Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)});`,
         '// The judge the session module lends, and what a launch that has not read back is held to.',
         `const JUDGE = Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)});`,
+        '// Where this module lends what the session module calls with a reply refused at its stop.',
+        `const WITHDRAW = Symbol.for(${JSON.stringify(OMP_WITHDRAW_KEY)});`,
         'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
         `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
         `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
@@ -2574,6 +2595,12 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (text.trim() !== "") said.push(text);',
         '    return undefined;',
         '  });',
+        '  // A reply a turn-end guard refused at its stop never reached the operator, so it counts',
+        '  // toward no readback: the session module, which refuses it, says which reply it was.',
+        '  (globalThis as Record<symbol, unknown>)[WITHDRAW] = (reply: string): void => {',
+        '    const at = said.findLastIndex((text) => text.trim() === reply.trim());',
+        '    if (at >= 0) said.splice(at, 1);',
+        '  };',
         '  // A launch that owes a readback changes nothing before it: each act that would is refused',
         '  // until a judge finds the readback in what the operator has been told, and from then on',
         '  // none is held. A call that only reads is never held. With no verdict the act goes',
