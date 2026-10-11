@@ -45,7 +45,7 @@ import { conceptsNamed, readCut } from './reading.js';
 /** The flag every verb takes: the cut it acts on. */
 const CUT = {
   cut: valueFlag(
-    'The cut, by its name; its visible examples are every design/examples/<context>/<name>.md',
+    'The cut, by its name: one reviewable change, whose examples are those written for it in each of its contexts',
     { required: true },
   ),
 } as const;
@@ -60,19 +60,19 @@ const PACKAGE = {
 const fields = (required: boolean) =>
   ({
     output: valueFlag(
-      'An output the package writes, a path from the top of the project, ending in / for a directory and all under it; repeat once per output',
+      'An output of the package: a file the work package alone writes, or, ending in /, a folder whose every file it alone writes; repeat once per output',
       { repeats: true, ...(required ? { required: true } : {}) },
     ),
     concept: valueFlag(
-      'A concept the package serves, one the cut’s visible examples name, by its name, or <context>/<name> where the cut’s contexts share the name; repeat once per concept',
+      'A concept the package serves, one the cut’s examples name, by its name, or as <context>/<name> where two of the cut’s contexts share the name; repeat once per concept',
       { repeats: true, ...(required ? { required: true } : {}) },
     ),
     'depends-on': valueFlag(
-      'A work package of the cut that must return first; repeat once per package',
+      'A work package of the cut whose builder must have returned its work first; repeat once per package',
       { repeats: true },
     ),
     needs: valueFlag(
-      'An output of a package it depends on that it uses; repeat once per output',
+      'An output of a package it depends on that it uses but never writes; repeat once per output',
       { repeats: true },
     ),
   }) as const;
@@ -83,8 +83,8 @@ export const VERBS = {
     concept: 'work package',
     effect: 'reads',
     purpose:
-      'Account for every visible example of the cut, by its <context>/<n>: the concepts it names and the work package that owns it, or none; and for every concept of the cut, in its own context, the work packages serving it, or none',
-    when: 'After submitting or updating work packages, to see that every concept is served and every example has its one owner before any builder is dispatched',
+      'Account for every example of the cut, named by its context and number: the concepts it names and the one work package that owns it, or none; and for every concept of the cut, in its own context, the work packages serving it, or none',
+    when: 'After submitting or updating work packages, to see that every concept is served and every example has its one owner before any builder is set to work',
     positional: null,
     flags: CUT,
   },
@@ -92,7 +92,7 @@ export const VERBS = {
     concept: 'work package',
     effect: 'reads',
     purpose:
-      'Give one builder its assignment: its work package’s outputs, concepts, dependencies and needed outputs, and exactly the visible examples it owns, each by its <context>/<n> with its text',
+      'Give one builder, the agent that builds one work package until its examples pass, its assignment: the package’s outputs, concepts, dependencies and needed outputs, and exactly the examples it owns, each with its text',
     when: 'When handing a work package to its builder, so the builder receives its own examples and nothing of another’s',
     positional: PACKAGE,
     flags: CUT,
@@ -101,8 +101,8 @@ export const VERBS = {
     concept: 'dependency graph',
     effect: 'reads',
     purpose:
-      'Show the levels of the cut’s work packages, computed from which must return before which, each package with where it stands; refused while the packages depend on each other in a cycle, naming them',
-    when: 'To see the order and the parallel work the packages allow, before dispatching any builder or after changing their dependencies',
+      'Show the levels of the cut’s work packages, computed from which must return before which, so the packages of one level can be built side by side, each with where it stands; refused while packages depend on each other in a cycle, naming them',
+    when: 'To see the order and the parallel work the packages allow, before any builder is set to work or after changing their dependencies',
     positional: null,
     flags: CUT,
   },
@@ -118,7 +118,7 @@ export const VERBS = {
     concept: 'efficiency',
     effect: 'reads',
     purpose:
-      'Show the cut’s figures: its agent runs in total and by role as the harness reported their returns, its rounds, its whole-check runs, its tokens, and the rounds that made no progress',
+      'Show the cut’s effort: how many times an agent worked on it, in total and by the role it worked in (lead, builder, assayer and so on), the tokens they spent, its rounds (each ending with one run of the whole check, every example of the cut checked at once), and the rounds that resolved none of the previous round’s failures',
     when: 'To see how much effort the cut has taken and whether its rounds are converging',
     positional: null,
     flags: CUT,
@@ -127,8 +127,8 @@ export const VERBS = {
     concept: 'ledger',
     effect: 'reads',
     purpose:
-      'Compute the cut’s state from its ledger: its branch, contexts and meaning-holders, its phase, each work package’s status from the harness’s events and the assayers’ verdicts, the packages ready to dispatch, and the lead’s latest report',
-    when: 'Before acting on a cut, and whenever its progress matters: each answer is computed afresh, so an earlier answer never stands for the current state',
+      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and meaning-holders; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready to start; and the last report its lead (the agent running the cut) returned',
+    when: 'Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state',
     positional: null,
     flags: CUT,
   },
@@ -136,14 +136,16 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch it is built on and the meaning-holder of each of its contexts; refused when its contexts do not all share one meaning-holder, which calls for one cut per context joined by contracts, or when a context has none',
-    when: 'Once, when the cut’s examples are written and before its work is sliced or any agent is dispatched for it',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the meaning-holder, the person who confirms that context’s examples and settles its meaning questions; refused when its contexts do not share one meaning-holder, which calls for one cut per context joined by contracts, or when a context has none',
+    when: 'Once, when the cut’s examples are written and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
       ...CUT,
-      branch: valueFlag('The branch the cut is built on', { required: true }),
+      branch: valueFlag('The branch the cut’s change is built on', {
+        required: true,
+      }),
       'meaning-holder': valueFlag(
-        'A context of the cut and its meaning-holder, as <context>=<holder>; repeat once per context of the cut',
+        'A context of the cut and the person who holds its meaning, as <context>=<holder>; repeat once per context of the cut',
         { repeats: true, required: true },
       ),
     },
@@ -153,7 +155,7 @@ export const VERBS = {
     effect: 'appends',
     purpose:
       'Record a new work package of the cut: the outputs it alone writes, the concepts it serves, the packages it depends on and the outputs of theirs it needs',
-    when: 'When slicing the cut’s work, once per work package, before any builder is dispatched',
+    when: 'When slicing the cut’s work, once per work package, before any builder is set to work',
     positional: PACKAGE,
     flags: { ...CUT, ...fields(true) },
   },
@@ -161,7 +163,7 @@ export const VERBS = {
     concept: 'work package',
     effect: 'appends',
     purpose:
-      'Change a recorded work package: each field given replaces that field, and the levels are computed again',
+      'Change a recorded work package: each field given replaces that field, and the levels are worked out again',
     when: 'When the slicing of the cut changes, to correct a work package’s outputs, concepts, dependencies or needed outputs',
     positional: PACKAGE,
     flags: { ...CUT, ...fields(false) },
@@ -170,14 +172,14 @@ export const VERBS = {
     concept: 'work package',
     effect: 'appends',
     purpose:
-      'Commit the given paths, read literally, as one dispatched work package’s builder and keep the commit in its history; refused, with nothing kept, when a path or a file it would commit lies outside that package’s outputs',
+      'Commit the named files as the builder of one work package that has been started, and keep the commit in its history; refused, with nothing kept, when any file it would commit is not one of that package’s outputs',
     when: 'Whenever a builder commits its work, so no builder ever changes another’s outputs',
     positional: PACKAGE,
     flags: {
       ...CUT,
       message: valueFlag('What the commit says', { required: true }),
       path: valueFlag(
-        'A path to commit, from the top of the project; repeat once per path',
+        'A file, or a folder of files, to commit; repeat once per file or folder',
         { repeats: true, required: true },
       ),
     },
@@ -186,13 +188,13 @@ export const VERBS = {
     concept: 'whole check',
     effect: 'appends',
     purpose:
-      'Record one whole-check run and the failures it revealed; it closes its own round, and the round is flagged when it resolves none of the previous run’s failures',
+      'Record one run of the whole check, every example of the cut checked at once, and the failures it found; it ends its own round, which is flagged when it resolves none of the previous run’s failures',
     when: 'Each time the whole check is run, never for a single fix',
     positional: null,
     flags: {
       ...CUT,
       failure: valueFlag(
-        'A failure the run revealed; repeat once per failure, none when it passed',
+        'A failure the run found; repeat once per failure, none when everything passed',
         { repeats: true },
       ),
     },
@@ -201,8 +203,8 @@ export const VERBS = {
     concept: 'efficiency',
     effect: 'appends',
     purpose:
-      'Record the cut’s current figures in the concept journal, once for each of its contexts, where reading back the design finds them',
-    when: 'When the cut ends, or whenever its figures should outlast the session',
+      'Record the cut’s current effort in the concept journal, once for each of its contexts, where reading back the design finds it',
+    when: 'When the cut ends, or whenever its effort should outlast the session',
     positional: null,
     flags: CUT,
   },
@@ -214,7 +216,7 @@ type WorkPackageVerb = keyof typeof VERBS;
 export const WORK_PACKAGE: CapabilityInterface = {
   name: 'work package',
   purpose: CAPABILITY_SUMMARIES.workPackage,
-  when: 'Whenever a cut’s work is sliced and built: to record the cut and its work packages, read its state from the ledger, keep each builder to its own outputs, and count its whole-check runs and agent runs',
+  when: 'Whenever a cut’s work is sliced and built: to record the cut and its work packages, see where it stands, keep each builder to its own outputs, and count its rounds and the agents’ work on it',
   verbs: VERBS,
 };
 

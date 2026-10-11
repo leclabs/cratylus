@@ -37,8 +37,10 @@ export function completionCheck(from: string): string | undefined {
   }
   const cut = WATCHED.exec(subject)?.[1];
   if (cut === undefined) return undefined;
-  const report =
-    'Report this gap, to whoever dispatched you, as a defect in how the ledger captures the harness’s events.';
+  const report = [
+    'The ledger is written only from what the harness reports of its agents (their dispatches, returns, verdicts and reports), never by hand: do not record, approve or force anything in it yourself.',
+    'If you observed verdicts or returns the ledger lacks, that is a defect in how the harness’s events were captured: report it as such to whoever dispatched you, naming what you observed and what the ledger shows.',
+  ].join('\n');
   try {
     const { state } = cutView(from, cut);
     if (state.phase === 'complete') return undefined;
