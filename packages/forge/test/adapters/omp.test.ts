@@ -547,9 +547,10 @@ describe('omp capability interface', () => {
 
   /** The emitted module's factory, written into an installation projected by
    *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
-   *  with `explanation` under that capability's own name (`<name> <capability>`), and
-   *  any other call with its argv as JSON (or, for a verb named `refuse`, a refusal
-   *  on stderr). */
+   *  with `explanation` under that capability's own name (`<name> <capability>`),
+   *  `workPackage frozen` with the file `STAND_IN_FROZEN` names, when it names one,
+   *  and any other call with its argv, directory and acting agent as JSON (or, for a
+   *  verb named `refuse`, a refusal on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -568,7 +569,8 @@ describe('omp capability interface', () => {
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
-        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
+        "else if (args[0] === 'workPackage' && args[1] === 'frozen' && process.env.STAND_IN_FROZEN) process.stdout.write(require('node:fs').readFileSync(process.env.STAND_IN_FROZEN, 'utf8'));",
+        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd(), agent: process.env.CRATYLUS_AGENT }));',
         '',
       ].join('\n'),
       { mode: 0o755 },
@@ -829,13 +831,219 @@ describe('omp capability interface', () => {
       expect(await args('-')).toEqual(['concepts', 'put', '-']);
     });
 
-    it("fails a refused call with the command's own message", async () => {
+    it("fails a refused call as a tool error with the command's own message", async () => {
       const [tool] = await load(EXPLANATION);
-      await expect(
-        tool?.execute('id', { verb: 'refuse' }, undefined, undefined, {
+      expect(
+        await tool?.execute('id', { verb: 'refuse' }, undefined, undefined, {
           cwd: tmpdir(),
         }),
-      ).rejects.toThrow('cratylus concepts refuse: its own words');
+      ).toEqual({
+        content: [
+          { type: 'text', text: 'cratylus concepts refuse: its own words' },
+        ],
+        isError: true,
+      });
+    });
+
+    describe('names the acting agent on every capability call (F1)', () => {
+      afterEach(() => {
+        omp.agents = [];
+        Reflect.deleteProperty(process.env, 'CRATYLUS_AGENT');
+      });
+      const agentOf = async (
+        session: { flag?: string; sub?: string },
+        kind: 'main' | 'sub',
+      ) => {
+        const [tool] = await load(EXPLANATION, session);
+        const result = await tool?.execute(
+          'id',
+          { verb: 'look' },
+          undefined,
+          undefined,
+          {
+            cwd: tmpdir(),
+            agent: { kind, name: session.sub ?? 'main' },
+          } as { cwd: string },
+        );
+        return JSON.parse(result?.content[0]?.text ?? '').agent;
+      };
+
+      it('as the launched declaration, the dispatched agent, or no one', async () => {
+        omp.agents = [
+          {
+            name: 'lead',
+            description: 'd',
+            systemPrompt: 'The lead body.',
+            source: 'user',
+          },
+        ];
+        expect(await agentOf({ flag: 'lead' }, 'main')).toBe('lead');
+        expect(await agentOf({ sub: 'builder' }, 'sub')).toBe('builder');
+        expect(await agentOf({}, 'main')).toBeUndefined();
+      });
+
+      it('never one the environment carries in', async () => {
+        process.env.CRATYLUS_AGENT = 'architect';
+        expect(await agentOf({}, 'main')).toBeUndefined();
+        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
+      });
+    });
+
+    describe("refuses a change to a frozen path by anyone but the cut's architect (F7)", () => {
+      afterEach(() => {
+        Reflect.deleteProperty(process.env, 'STAND_IN_FROZEN');
+      });
+      /** A repository whose ledger freezes the renewal cut, architect `architect`. */
+      function repository(): string {
+        const cwd = realpathSync(
+          mkdtempSync(join(tmpdir(), 'omp-capability-frozen-')),
+        );
+        tmp.push(cwd);
+        expect(spawnSync('git', ['init', '-q'], { cwd }).status).toBe(0);
+        const frozen = join(cwd, '..', `${cwd.split('/').at(-1)}.json`);
+        tmp.push(frozen);
+        writeFileSync(
+          frozen,
+          JSON.stringify({
+            cuts: [
+              {
+                cut: 'renewal',
+                architects: { library: 'architect' },
+                examples: [
+                  'design/examples/library/renewal.md',
+                  'design/judgment/library/renewal.md',
+                  'design/judgment/library/renewal/',
+                ],
+                checks: ['checks/renewal.test.ts', 'checks/renewal/'],
+                concepts: [{ context: 'library', name: 'renewal' }],
+              },
+            ],
+          }),
+        );
+        process.env.STAND_IN_FROZEN = frozen;
+        return cwd;
+      }
+      /** A dispatched session as `agent` in `cwd`: each tool call answered as omp answers
+       *  it, by every handler in turn until one refuses. */
+      async function session(agent: string, cwd: string) {
+        const factory = await emitted(EXPLANATION);
+        const handlers = new Map<
+          string,
+          ((event: unknown, ctx: unknown) => unknown)[]
+        >();
+        await factory({
+          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+          registerTool: () => {},
+          registerFlag: () => {},
+          getFlag: () => undefined,
+          on: (event: string, fn: (event: unknown, ctx: unknown) => unknown) =>
+            handlers.set(event, [...(handlers.get(event) ?? []), fn]),
+          setModel: async () => {},
+          setThinkingLevel: () => {},
+        });
+        const ctx = {
+          cwd,
+          agent: { kind: 'sub', name: agent },
+          model: { provider: 'fixture', id: 'base' },
+          modelRegistry: {},
+          ui: { setStatus: () => {}, notify: () => {} },
+        };
+        for (const fn of handlers.get('session_start') ?? []) await fn({}, ctx);
+        return async (toolName: string, input: Record<string, unknown>) => {
+          for (const fn of handlers.get('tool_call') ?? []) {
+            const answer = (await fn(
+              { type: 'tool_call', toolName, toolCallId: 'c', input },
+              ctx,
+            )) as { block?: boolean; reason?: string } | undefined;
+            if (answer?.block) return answer;
+          }
+          return undefined;
+        };
+      }
+
+      it('refuses each frozen file, by any tool that changes it, naming the cut and its architect', async () => {
+        const cwd = repository();
+        const call = await session('lead', cwd);
+        for (const [tool, input] of [
+          [
+            'write',
+            { path: 'design/examples/library/renewal.md', content: 'x' },
+          ],
+          [
+            'write',
+            { path: join(cwd, 'checks/renewal.test.ts'), content: 'x' },
+          ],
+          ['write', { path: 'checks/renewal/unaided.test.ts', content: 'x' }],
+          ['edit', { path: 'design/judgment/library/renewal/edge.ts' }],
+          [
+            'edit',
+            {
+              input: '[design/judgment/library/renewal.md#1A2B]\nPUT 1.=1:\n+x',
+            },
+          ],
+          ['ast_edit', { path: 'design' }],
+          [
+            'bash',
+            {
+              command: `printf x > '${cwd}/design/examples/library/renewal.md'`,
+            },
+          ],
+          ['bash', { command: 'rm -r checks/renewal' }],
+          ['eval', { code: 'open("checks/renewal.test.ts", "w")' }],
+          [
+            'bash',
+            { command: 'CRATYLUS_AGENT=architect cratylus concepts look' },
+          ],
+        ] as const) {
+          const answer = await call(tool, input);
+          expect(answer?.block, `${tool} ${JSON.stringify(input)}`).toBe(true);
+          expect(answer?.reason).toContain("the cut 'renewal'");
+          expect(answer?.reason).toContain("'architect'");
+          expect(answer?.reason).toContain("'lead'");
+        }
+      });
+
+      it('lets the architect change them, and anyone change what no cut freezes', async () => {
+        const cwd = repository();
+        const architect = await session('architect', cwd);
+        for (const [tool, input] of [
+          [
+            'write',
+            { path: 'design/examples/library/renewal.md', content: 'x' },
+          ],
+          ['bash', { command: 'rm -r checks/renewal' }],
+          [
+            'bash',
+            { command: 'CRATYLUS_AGENT=architect cratylus concepts look' },
+          ],
+        ] as const)
+          expect(await architect(tool, input)).toBeUndefined();
+        const lead = await session('lead', cwd);
+        for (const [tool, input] of [
+          [
+            'write',
+            { path: 'design/examples/library/renewal-hours.md', content: 'x' },
+          ],
+          ['write', { path: 'checks/renewal.test.ts.bak', content: 'x' }],
+          ['write', { path: 'local://notes.md', content: 'x' }],
+          ['bash', { command: 'cat notes.md' }],
+          ['read', { path: 'design/examples/library/renewal.md' }],
+        ] as const)
+          expect(await lead(tool, input)).toBeUndefined();
+      });
+
+      it('freezes nothing outside a repository', async () => {
+        repository();
+        const outside = mkdtempSync(join(tmpdir(), 'omp-capability-plain-'));
+        tmp.push(outside);
+        const call = await session('lead', outside);
+        expect(
+          await call('write', {
+            path: 'design/examples/library/renewal.md',
+            content: 'x',
+          }),
+        ).toBeUndefined();
+      });
     });
 
     describe('offers every verb of every capability to every agent (open reach, 0081)', () => {
