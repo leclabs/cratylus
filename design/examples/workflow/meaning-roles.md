@@ -63,9 +63,9 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     protected from supersession and retirement by anyone but the architect, and the museum concept
     is not refused on account of the film-production cut. A shared word never merges the concepts
     or extends one cut's freeze across the context boundary.
-30. (freeze, cut) **Given** a renewal cut has completed and no other cut being built realizes renewal,
+30. (freeze, cut) **Given** a renewal cut has been integrated and no other frozen cut realizes renewal,
     **when** an otherwise admissible supersession or retirement of renewal is attempted, **then**
-    the completed cut's freeze no longer refuses it. A completed cut never freezes its concepts
+    the integrated cut's freeze no longer refuses it. An integrated cut never freezes its concepts
     forever, and ending that freeze never removes the journal's existing history or changes the
     agent's decision rights.
 
