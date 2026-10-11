@@ -99,7 +99,7 @@ describe('typed handoffs', () => {
 });
 
 describe('the architect', () => {
-  it('composes bottom-line-up-front ordering, fixed, held by the bottom-line guard at turn end', () => {
+  it('composes bottom-line-up-front ordering, fixed, held by the bottom-line guard at turn end, judged with the decisions recorded that turn', () => {
     const held = architect.communicationStyle.find(
       (e) => e.slot === 'ordering',
     );
@@ -110,6 +110,21 @@ describe('the architect', () => {
       events: ['turn.end'],
       substrate: 'harness',
     });
+    expect(bottomLine.judge.recorded).toBe(true);
+    // Every act on a topic's matter is one of its actions, a recorded decision
+    // included; support carries only the facts and reasons its conclusions rest on.
+    expect(bottomLine.judge.prompt).toContain(
+      "A topic's actions are every act the reply reports or recommends on its matter",
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'Each decision recorded this turn is an act on its topic',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'its support carries anything other than the facts and reasons its conclusions rest on',
+    );
+    expect(bottomLine.refusal).toMatch(
+      /^burying: this reply buries its bottom line\. /,
+    );
     for (const [name, agent] of Object.entries(holders))
       if (name !== 'architect')
         expect(
