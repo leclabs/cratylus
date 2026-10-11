@@ -9,12 +9,22 @@
 //   history     the commits made as one package's, in order
 //   efficiency  the cut's figures: agent runs, rounds, whole-check runs, tokens
 //   state       the cut's record, phase, package statuses and ready packages
-//   open        record the cut: its branch and each context's architect
+//   frozen      every cut opened and not integrated, and what each freezes;
+//               the one verb that takes no --cut
+//   open        record the cut: its branch and each context's architect; from
+//               then the cut is frozen
+//   freeze      freeze with the cut checks that bind its examples
+//   integrate   record the cut integrated, ending its freeze; the architect's
 //   submit      record a new work package
 //   update      replace fields of a recorded work package
 //   commit      commit paths as one package's builder
 //   check       record one whole-check run
 //   record      record the cut's figures in the concept journal
+//
+// A cut is FROZEN from its `open` until its `integrate` (`frozen.ts`). Only the
+// agent making the call, named by the harness (`../../acting-agent.ts`), may
+// integrate a cut, and only when it is the architect the cut records for each
+// of its contexts.
 //
 // Every answer is JSON; a reading that read past ledger entries of kinds this
 // runtime does not know, written by a newer one, also carries `uninterpreted`,
@@ -31,6 +41,9 @@
 // effect and every parameter it takes.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { statSync } from 'node:fs';
+import { join } from 'node:path';
+import { actingAgent } from '../../acting-agent.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import { ulid } from '../../ulid.js';
@@ -39,13 +52,14 @@ import { journalAt } from '../concepts/journal.js';
 import { Folded as Journal } from '../concepts/views.js';
 import { verbOf } from '../plan/argv.js';
 import { type Cut, cutAt } from './cut.js';
-import { type WorkPackage, foldCut } from './fold.js';
+import { type CutRecord, type WorkPackage, foldCut } from './fold.js';
+import { frozenIn } from './frozen.js';
 import { commitPaths, filesOf, topOf } from './git.js';
 import { dependencyGraph } from './graph.js';
-import { type PackageFields, ledgerAt } from './ledger.js';
+import { type Ledger, type PackageFields, ledgerAt } from './ledger.js';
 import { conceptsNamed, readCut } from './reading.js';
 
-/** The flag every verb takes: the cut it acts on. */
+/** The flag every verb but `frozen` takes: the cut it acts on. */
 const CUT = {
   cut: valueFlag(
     'The cut, by its name: one reviewable change, whose examples are those written for it in each of its contexts',
@@ -130,17 +144,26 @@ export const VERBS = {
     concept: 'ledger',
     effect: 'reads',
     purpose:
-      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready for their builder, never started or returned to build by a finding or a failing whole check; and the last report its lead (the agent running the cut) returned',
+      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; whether it is integrated; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready for their builder, never started or returned to build by a finding or a failing whole check; and the last report its lead (the agent running the cut) returned',
     when: 'Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state',
     positional: null,
     flags: CUT,
+  },
+  frozen: {
+    concept: 'freeze',
+    effect: 'reads',
+    purpose:
+      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples, its judgment and everything in its judgment folder, the checks frozen with it, and each concept its examples name, in its own context; with the architect who alone may change them',
+    when: 'Before changing an example, a judgment, a check or a concept, to see whether a cut freezes it and whose change it is; the one account of what is frozen',
+    positional: null,
+    flags: {},
   },
   open: {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
-    when: 'Once, when the cut’s examples are written and before its work is sliced or any agent is set to work on it',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, judgments and the concepts its examples name changed only by its architect until it is integrated; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
+    when: 'Once, when the cut’s examples are approved and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
       ...CUT,
@@ -152,6 +175,30 @@ export const VERBS = {
         { repeats: true, required: true },
       ),
     },
+  },
+  freeze: {
+    concept: 'freeze',
+    effect: 'appends',
+    purpose:
+      'Freeze checks with the cut: checks that bind its examples, each seen failing before the work it checks was built, so that from then only the cut’s architect may change them until the cut is integrated; refused for a cut not opened or already integrated, and for a check that does not exist',
+    when: 'Once a check that binds the cut’s examples has been seen failing, before any builder is set to work on what it checks',
+    positional: null,
+    flags: {
+      ...CUT,
+      check: valueFlag(
+        'A check to freeze, from the top of the project: a file, or, ending in /, a folder whose every file is frozen; repeat once per check',
+        { repeats: true, required: true },
+      ),
+    },
+  },
+  integrate: {
+    concept: 'cut',
+    effect: 'appends',
+    purpose:
+      'Record the cut integrated, which ends its freeze and nothing else: its examples, judgments, checks and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts',
+    when: 'When the cut’s architect takes its change into the design, and never before: no phase, verdict or report stands for it',
+    positional: null,
+    flags: CUT,
   },
   submit: {
     concept: 'work package',
@@ -269,8 +316,14 @@ export function dispatchWorkPackage(
     return given[0];
   };
 
-  const cut: Cut = cutAt(top, required('cut', 'the cut'), refuse);
   const ledger = ledgerAt(top, refuse);
+  if (verb === 'frozen')
+    return withReadPast(
+      verb,
+      { cuts: frozenIn(top, ledger.entries(), refuse) },
+      ledger,
+    );
+  const cut: Cut = cutAt(top, required('cut', 'the cut'), refuse);
   const state = foldCut(ledger.entries(), cut.cut);
   const packages = [...state.packages.values()];
   /** A fresh transition id for an entry a verb appends. */
@@ -284,6 +337,17 @@ export function dispatchWorkPackage(
     if (found === undefined)
       throw refuse(`the cut has no work package '${name}'`);
     return found;
+  };
+
+  /** The cut's record, while the cut is frozen: opened and not integrated. */
+  const frozenRecord = (): CutRecord => {
+    if (state.record === undefined)
+      throw refuse(
+        `the cut '${cut.cut}' is not opened; open it once its examples are approved`,
+      );
+    if (state.integrated)
+      throw refuse(`the cut '${cut.cut}' is integrated; its freeze has ended`);
+    return state.record;
   };
 
   /** The levels of `all`, each package with where it stands. */
@@ -436,6 +500,7 @@ export function dispatchWorkPackage(
           contexts: cut.contexts,
           architects: state.record?.architects ?? {},
           phase: state.phase,
+          integrated: state.integrated,
           workPackages: packages.map(({ name, status, dependsOn }) => ({
             name,
             status,
@@ -489,6 +554,53 @@ export function dispatchWorkPackage(
           branch,
           contexts: cut.contexts,
           architects,
+        });
+      }
+      case 'freeze': {
+        const checks = [...new Set(values('check'))];
+        if (checks.length === 0)
+          throw refuse('give at least one check with --check');
+        for (const check of checks) {
+          if (!isProjectPath(check))
+            throw refuse(
+              `'${check}' is not a path from the top of the project: relative, with / between parts and no ..`,
+            );
+          const found = statSync(join(top, check), { throwIfNoEntry: false });
+          const folder = check.endsWith('/');
+          if (found === undefined || found.isDirectory() !== folder)
+            throw refuse(
+              folder
+                ? `the check folder '${check}' does not exist`
+                : `the check '${check}' is not a file; give a folder ending in /`,
+            );
+        }
+        frozenRecord();
+        return ledger.append({
+          kind: 'freeze',
+          transition: transition('freeze'),
+          cut: cut.cut,
+          checks,
+        });
+      }
+      case 'integrate': {
+        const record = frozenRecord();
+        const agent = actingAgent();
+        const holders = record.contexts.map(
+          (c) =>
+            `'${c}' by ${record.architects[c] === undefined ? 'no architect' : `'${record.architects[c]}'`}`,
+        );
+        if (
+          agent === undefined ||
+          record.contexts.some((c) => record.architects[c] !== agent)
+        )
+          throw refuse(
+            `only the cut’s architect integrates it, and the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}; the cut '${cut.cut}' is held ${holders.join(', ')}; nothing is recorded`,
+          );
+        return ledger.append({
+          kind: 'integrate',
+          transition: `integrate:${cut.cut}`,
+          cut: cut.cut,
+          agent,
         });
       }
       case 'submit': {
@@ -639,6 +751,15 @@ export function dispatchWorkPackage(
       }
     }
   })();
+  return withReadPast(verb, answer, ledger);
+}
+
+/** `answer`, and, when `verb` reads, what `ledger` read past. */
+function withReadPast(
+  verb: WorkPackageVerb,
+  answer: unknown,
+  ledger: Ledger,
+): unknown {
   const report =
     VERBS[verb].effect === 'reads' ? ledger.readPast().report() : undefined;
   return report === undefined

@@ -39,6 +39,11 @@
 // EFFICIENCY: one agent run per `returned` entry, in total and by role; tokens
 // summed over the returns that report them (`null` when none do); rounds and
 // whole-check runs from the `check` entries; the no-progress rounds.
+//
+// FREEZE: a cut opened is frozen until it is integrated; the checks frozen with
+// it are every path its `freeze` entries name, in the order first frozen.
+// Integration ends the freeze and nothing else: the phase, the packages and
+// every entry stay as they were.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
@@ -99,6 +104,10 @@ export interface CutState {
   readonly cut: string;
   /** The cut's record, when it was opened. */
   readonly record: CutRecord | undefined;
+  /** The checks frozen with the cut, in the order first frozen. */
+  readonly frozenChecks: readonly string[];
+  /** Whether the cut is integrated: its freeze ended. */
+  readonly integrated: boolean;
   readonly phase: CutPhase;
   /** Each work package by name, in the order submitted. */
   readonly packages: ReadonlyMap<string, WorkPackage>;
@@ -143,6 +152,8 @@ export function foldCut(
   let record: CutRecord | undefined;
   let dispatched = false;
   let report: unknown = null;
+  const frozenChecks: string[] = [];
+  let integrated = false;
 
   for (const entry of entries) {
     if (entry.cut !== cut) continue;
@@ -158,6 +169,13 @@ export function foldCut(
         };
         break;
       }
+      case 'freeze':
+        for (const check of entry.checks)
+          if (!frozenChecks.includes(check)) frozenChecks.push(check);
+        break;
+      case 'integrate':
+        integrated = true;
+        break;
       case 'submit': {
         const { outputs, concepts, dependsOn, needs } = entry;
         fields.set(entry.workPackage, { outputs, concepts, dependsOn, needs });
@@ -274,6 +292,8 @@ export function foldCut(
   return {
     cut,
     record,
+    frozenChecks,
+    integrated,
     phase,
     packages,
     ready,

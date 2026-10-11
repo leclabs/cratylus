@@ -19,6 +19,9 @@
 //                          ledger read past
 //   cutsInLedger(from)   every recorded cut with its branch, contexts and
 //                        phase, and what the ledger read past
+//   frozenCuts(from)     ≡ `cratylus workPackage frozen`: every cut opened and
+//                        not integrated, with what it freezes; the one home
+//                        of what is frozen, read by the journal and the gate
 //   foldCut(entries,cut) the pure fold, over entries already read
 //   readCut(cut, pkgs)   the pure reading: served concepts and owned examples
 //   appendLifecycle      ≡ `cratylus lifecycle '<json>'` (`../../lifecycle/`)
@@ -27,6 +30,7 @@
 import type { ReadPast } from '../concepts/journal.js';
 import { type Cut, cutAt } from './cut.js';
 import { type CutState, foldCut } from './fold.js';
+import { type FrozenCut, frozenIn } from './frozen.js';
 import { topOf } from './git.js';
 import { ledgerAt } from './ledger.js';
 import { type CutReading, readCut } from './reading.js';
@@ -43,6 +47,7 @@ export {
   type WorkPackage,
   foldCut,
 } from './fold.js';
+export { type FrozenCut, JUDGMENT_DIR, frozenIn } from './frozen.js';
 export {
   type CommitRecord,
   type ConceptVerdict,
@@ -129,6 +134,21 @@ export function cutsInLedger(
           ]
         : [],
     ),
+    readPast: ledger.readPast(),
+  };
+}
+
+/** Every cut the ledger of the repository holding `from` records as opened
+ *  and not integrated, with what it freezes (`frozen.ts`), and the ledger's
+ *  entries of kinds this runtime does not know, read past. */
+export function frozenCuts(
+  from: string,
+  refuse: (message: string) => Error = (m) => new Error(m),
+): { readonly cuts: readonly FrozenCut[]; readonly readPast: ReadPast } {
+  const top = topFrom(from, refuse);
+  const ledger = ledgerAt(top, refuse);
+  return {
+    cuts: frozenIn(top, ledger.entries(), refuse),
     readPast: ledger.readPast(),
   };
 }

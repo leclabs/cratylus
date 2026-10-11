@@ -21,10 +21,18 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `workPackage`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`           |
-| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`, `record` |
+| capability    | verbs                                                                                                                                                                      |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`                               |
+| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`, `record`           |
+
+A cut is frozen from its `open` until its `integrate`: its examples and judgments, the checks
+frozen with it (`freeze`) and the concepts its examples name, each in its own context.
+`workPackage frozen` is the one account of what is frozen. `concepts supersede` and
+`concepts retire` of a frozen concept are refused, before anything is appended, unless the agent
+making the call, named by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing
+it; only that architect integrates a cut. Absent or empty, the agent is unknown, and never an
+architect.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
