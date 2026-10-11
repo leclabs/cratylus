@@ -8,6 +8,7 @@ import {
   success,
 } from '../../capability-port/fixture.js';
 import { launch } from '../../capability-port/omp.js';
+import { judgeSubject } from '../../rubric-judge.js';
 import type { Scenario as ArchitectScenario } from '../architect/check.js';
 import { liveRun as architectRun } from '../architect/runner.js';
 import { type Overview, meanings, relation, subject } from './fixture.js';
@@ -97,7 +98,7 @@ export function capture(scenario: Scenario, h: Host): Recording {
       'film',
       '--branch',
       'feature/film',
-      '--meaning-holder',
+      '--architect',
       'film-production=creative',
     ]),
   );
@@ -192,30 +193,44 @@ export function live(scenario: Scenario, output: string): Recording {
         input: { account: record.output, state: record.input },
         output: result.report,
         answers: result.answers,
+        judgment: result.judgment,
       };
     }
     // Each call creates a separate plain evaluator session. It is not a workflow
     // assayer and claims no typed workflow role. No subject-model run is needed
     // for the two rubrics over mechanically delivered output.
-    const j = host();
-    const old = process.env.CAPABILITY_PORT_RUBRIC;
-    try {
-      process.env.CAPABILITY_PORT_RUBRIC = '1';
-      const prompt = rubricPrompt(scenario, record);
-      const judged = launch(j, prompt, [], join(output, 'judge'));
-      const text = judged.events
-        .filter((event) => event.kind === 'text')
-        .map((event) => event.text)
-        .join('\n');
-      record.answers = parseAnswers(text, scenario);
-      writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-    } finally {
-      if (old === undefined)
-        Reflect.deleteProperty(process.env, 'CAPABILITY_PORT_RUBRIC');
-      else process.env.CAPABILITY_PORT_RUBRIC = old;
-      j.dispose();
-    }
-    return record;
+    return judgeSubject(record, output, [], (model, attemptOutput) => {
+      const j = host();
+      const old = process.env.CAPABILITY_PORT_RUBRIC;
+      try {
+        process.env.CAPABILITY_PORT_RUBRIC = '1';
+        const prompt = rubricPrompt(scenario, record);
+        writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
+        const judged = launch(
+          {
+            ...j,
+            launchArgs(explicit) {
+              const args = j.launchArgs(explicit);
+              args[args.indexOf('--model') + 1] = model;
+              return args;
+            },
+          },
+          prompt,
+          [],
+          attemptOutput,
+        );
+        const text = judged.events
+          .filter((event) => event.kind === 'text')
+          .map((event) => event.text)
+          .join('\n');
+        return parseAnswers(text, scenario);
+      } finally {
+        if (old === undefined)
+          Reflect.deleteProperty(process.env, 'CAPABILITY_PORT_RUBRIC');
+        else process.env.CAPABILITY_PORT_RUBRIC = old;
+        j.dispose();
+      }
+    });
   } finally {
     h.dispose();
   }

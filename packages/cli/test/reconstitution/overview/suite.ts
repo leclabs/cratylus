@@ -14,6 +14,7 @@ import {
 } from '@cratylus/runtime';
 import { describe, expect, it } from 'vitest';
 import { host } from '../../capability-port/fixture.js';
+import { judgeRuns } from '../../rubric-judge.js';
 import { capture, live } from './rubric-runner.js';
 import {
   type Recording,
@@ -146,18 +147,19 @@ export function rubricSuite(directory: string) {
               errors.push(`Run ${index}: ${String(error)}`);
             }
           }
-          expect(errors, output).toEqual([]);
-          const result = await judgeBatch(source, records, {
-            atLeast: 4,
-            of: 5,
-          });
+          const result = await judgeRuns(source, records);
+          writeFileSync(
+            join(output, 'errors.json'),
+            JSON.stringify(errors, null, 2),
+          );
           writeFileSync(
             join(output, 'assessment.json'),
             JSON.stringify(result, null, 2),
           );
+          expect(errors, output).toEqual([]);
           expect(result.passed, JSON.stringify(result)).toBe(true);
         },
-        3_900_000,
+        10_000_000,
       );
     });
 }

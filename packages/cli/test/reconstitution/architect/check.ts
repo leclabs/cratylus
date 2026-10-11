@@ -1,6 +1,10 @@
 import type { BehavioralCheck } from '@cratylus/runtime';
-import { type Recording, wiringHolds } from '../../execution-roles/check.js';
-export type { Recording } from '../../execution-roles/check.js';
+import {
+  type Recording as SubjectRecording,
+  wiringHolds,
+} from '../../execution-roles/check.js';
+import type { Judgment } from '../../rubric-judge.js';
+export type Recording = SubjectRecording & { judgment?: Judgment };
 
 export interface Scenario {
   number: number;

@@ -19,6 +19,7 @@ import {
   checkAssignment,
 } from '../../../schema/src/contract.js';
 import { type Fixture, fixture } from '../agent-launch/fixture.js';
+import { judgeSubject, subjectModels } from '../rubric-judge.js';
 import {
   type Recording,
   type Scenario,
@@ -111,7 +112,7 @@ export function project(scenario: Scenario): Fixture {
     const cut = (assignment as { cut?: unknown } | undefined)?.cut;
     if (scenario.role === 'lead' && typeof cut === 'string') {
       // The typed lead cut: its record names the branch checked out and the
-      // meaning-holder of each of its contexts.
+      // architect holding each of its contexts.
       const contexts = Object.keys(scenario.files).flatMap((path) => {
         const at = /^design\/examples\/([^/]+)\/([^/]+)\.md$/.exec(path);
         return at?.[2] === cut ? [at[1]!] : [];
@@ -129,7 +130,7 @@ export function project(scenario: Scenario): Fixture {
         '--branch',
         branch,
         ...contexts.flatMap((context) => [
-          '--meaning-holder',
+          '--architect',
           `${context}=operator`,
         ]),
       ]);
@@ -169,6 +170,7 @@ function launch(
   prompt: string,
   output: string,
   inspect: boolean,
+  model?: string,
 ) {
   mkdirSync(output, { recursive: true });
   const wiringPath = join(output, 'wiring.json');
@@ -196,6 +198,7 @@ function launch(
     '--config',
     config,
     ...(inspect ? ['--model', 'fixture/base'] : []),
+    ...(model ? ['--model', model] : []),
     prompt,
   ];
   const result = spawnSync('omp', args, {
@@ -277,8 +280,8 @@ export function preflight(scenario: Scenario, output?: string) {
   }
 }
 function credentials(f: Fixture) {
-  // This is the sole opt-in read of the operator's home. Copy no configuration,
-  // memory, declarations, extensions, skills, or other credentials.
+  // Opt-in host reads are limited to credentials and the judge's model role;
+  // never copy host configuration, memory, declarations, or extensions.
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
   for (const suffix of ['', '-wal', '-shm']) {
@@ -296,29 +299,41 @@ export function liveRun(scenario: Scenario, output: string): Recording {
     credentials(f);
     const recording = launch(f, scenario.role, scenario.prompt, output, false);
     if (scenario.clauses.some((clause) => !clause.unchanged)) {
-      // A separate untyped judge session, no conversation with the subject.
-      const j = fixture();
-      try {
-        credentials(j);
-        const prompt = rubricPrompt(scenario, recording);
-        const judged = launch(
-          j,
-          undefined,
-          prompt,
-          join(output, 'rubric'),
-          false,
-        );
-        recording.answers = parseAnswers(judged.report, scenario);
-        writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-      } finally {
-        j.dispose();
-      }
+      return judgeSubject(
+        recording,
+        output,
+        subjectModels(recording),
+        (model, attemptOutput) => {
+          const j = fixture();
+          try {
+            credentials(j);
+            const prompt = rubricPrompt(scenario, recording);
+            writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
+            const judged = launch(
+              j,
+              undefined,
+              prompt,
+              attemptOutput,
+              false,
+              model,
+            );
+            return parseAnswers(judged.report, scenario);
+          } finally {
+            j.dispose();
+          }
+        },
+      );
     }
+    // No rubric criteria: all judgments are mechanical.
+    const result = {
+      ...recording,
+      judgment: { status: 'judged', model: null, attempts: [] },
+    };
     writeFileSync(
       join(output, 'recording.json'),
-      JSON.stringify(recording, null, 2),
+      JSON.stringify(result, null, 2),
     );
-    return recording;
+    return result;
   } finally {
     f.dispose();
   }

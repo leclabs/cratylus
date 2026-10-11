@@ -13,6 +13,7 @@ import {
   proveOffline,
 } from '@cratylus/runtime';
 import { describe, expect, it } from 'vitest';
+import { judgeRuns } from '../rubric-judge.js';
 import { type Recording, type Scenario, assess, check } from './check.js';
 import { liveRun, preflight } from './runner.js';
 
@@ -139,15 +140,15 @@ export function roleSuite(directory: string) {
             join(output, 'errors.json'),
             JSON.stringify(errors, null, 2),
           );
-          expect(errors, `Recordings: ${output}`).toEqual([]);
-          const batch = await judgeBatch(source, runs, { atLeast: 4, of: 5 });
+          const batch = await judgeRuns(source, runs);
           writeFileSync(
             join(output, 'assessment.json'),
             JSON.stringify(batch, null, 2),
           );
+          expect(errors, `Recordings: ${output}`).toEqual([]);
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
-        3_900_000,
+        10_000_000,
       );
     });
 }

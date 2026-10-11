@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 import { type Recording, type Scenario, assess, check } from './check.js';
 import {
   judgeRecording,
+  judgeRuns,
   liveRun,
   preflight,
   recordingDirectory,
@@ -146,15 +147,15 @@ export function architectSuite(directory: string) {
             join(output, 'errors.json'),
             JSON.stringify(errors, null, 2),
           );
-          expect(errors, `Recordings: ${output}`).toEqual([]);
-          const batch = await judgeBatch(source, runs, { atLeast: 4, of: 5 });
+          const batch = await judgeRuns(source, runs);
           writeFileSync(
             join(output, 'assessment.json'),
             JSON.stringify(batch, null, 2),
           );
+          expect(errors, `Recordings: ${output}`).toEqual([]);
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
-        3_900_000,
+        10_000_000,
       );
       it.runIf(Boolean(process.env.EXECUTION_REJUDGE))(
         'rejudge: five retained subjects without new subject sessions',
@@ -196,15 +197,15 @@ export function architectSuite(directory: string) {
             join(output, 'errors.json'),
             JSON.stringify(errors, null, 2),
           );
-          expect(errors, `Re-judgment: ${output}`).toEqual([]);
-          const batch = await judgeBatch(source, runs, { atLeast: 4, of: 5 });
+          const batch = await judgeRuns(source, runs);
           writeFileSync(
             join(output, 'assessment.json'),
             JSON.stringify(batch, null, 2),
           );
+          expect(errors, `Re-judgment: ${output}`).toEqual([]);
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
-        3_900_000,
+        10_000_000,
       );
     });
 }

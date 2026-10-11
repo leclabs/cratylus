@@ -12,6 +12,8 @@ import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
 import { snapshot } from '../../execution-roles/snapshot.js';
+import { judgeSubject, subjectModels } from '../../rubric-judge.js';
+export { judgeRuns } from '../../rubric-judge.js';
 import {
   type Recording,
   type Scenario,
@@ -222,8 +224,8 @@ export function preflight(scenario: Scenario, output?: string) {
   }
 }
 function credentials(f: Fixture) {
-  // This is the sole opt-in read of the operator's home. Copy no configuration,
-  // memory, declarations, extensions, skills, or other credentials.
+  // Opt-in host reads are limited to credentials and the judge's model role;
+  // never copy host configuration, memory, declarations, or extensions.
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
   for (const suffix of ['', '-wal', '-shm']) {
@@ -298,40 +300,37 @@ export function judgeRecording(
 ): Recording {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
-  mkdirSync(output, { recursive: true });
-  // A separate untyped evaluator, not the workflow assayer whose contract
-  // requires a judgment brief and a verdict-per-concept return.
-  const j = fixture();
-  try {
-    credentials(j);
-    j.declaration({
-      name: 'rubric-judge',
-      body: 'Judge supplied evidence against the fixed rubric. Return only the requested JSON.',
-      model: process.env.EXECUTION_JUDGE_MODEL ?? 'anthropic/claude-opus-5-5',
-      effort: 'high',
-    });
-    const prompt = rubricPrompt(scenario, recording);
-    writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-    const judged = launch(
-      j,
-      'rubric-judge',
-      prompt,
-      join(output, 'rubric'),
-      false,
-      true,
-    );
-    const result = {
-      ...recording,
-      answers: parseAnswers(judged.report, scenario),
-    };
-    writeFileSync(
-      join(output, 'recording.json'),
-      JSON.stringify(result, null, 2),
-    );
-    return result;
-  } finally {
-    j.dispose();
-  }
+  return judgeSubject(
+    recording,
+    output,
+    subjectModels(recording),
+    (model, attemptOutput) => {
+      // A separate untyped evaluator, not the workflow assayer.
+      const j = fixture();
+      try {
+        credentials(j);
+        j.declaration({
+          name: 'rubric-judge',
+          body: 'Judge supplied evidence against the fixed rubric. Return only the requested JSON.',
+          model,
+          effort: 'high',
+        });
+        const prompt = rubricPrompt(scenario, recording);
+        writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
+        const judged = launch(
+          j,
+          'rubric-judge',
+          prompt,
+          attemptOutput,
+          false,
+          true,
+        );
+        return parseAnswers(judged.report, scenario);
+      } finally {
+        j.dispose();
+      }
+    },
+  );
 }
 export function liveRun(scenario: Scenario, output: string): Recording {
   if (process.env.EXECUTION_LIVE !== '1')

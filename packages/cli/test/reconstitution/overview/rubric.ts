@@ -1,4 +1,5 @@
 import type { BehavioralCheck } from '@cratylus/runtime';
+import type { Judgment } from '../../rubric-judge.js';
 export interface Clause {
   id: string;
   binds: string[];
@@ -16,6 +17,7 @@ export interface Recording {
   input: unknown;
   output: string;
   answers: Record<string, { pass: boolean; evidence: string }>;
+  judgment?: Judgment;
 }
 export function assess(
   scenario: Scenario,
