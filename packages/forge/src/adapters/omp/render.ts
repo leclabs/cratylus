@@ -1980,7 +1980,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '  return head === state.branch',
         '    ? undefined',
-        '    : `lead dispatch of cut ${cut} refused: its branch ${state.branch} is not checked out (${head} is); check it out first`;',
+        "    : `lead dispatch of cut ${cut} refused: its branch ${state.branch} is not checked out (${head} is); check it out yourself in this session, then dispatch again — checking out the cut's branch is the dispatcher's own act, never a delegate's`;",
         '}',
         '',
         "// A builder's dispatch is the act (ruling 0083): its package must be ready, every concept",
