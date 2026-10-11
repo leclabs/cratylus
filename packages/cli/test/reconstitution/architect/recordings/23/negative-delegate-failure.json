@@ -70,7 +70,7 @@
         "content": [
           {
             "type": "text",
-            "text": "For film production, proceed against the approved creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
+            "text": "For film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
           }
         ],
         "controlClause": "one-action"
@@ -116,7 +116,7 @@
         "controlClause": "never-implementation"
       }
     ],
-    "report": "Delegate: the illustrator could not start. I am reassigning the example-writing assignment.\n\nFilm examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, proceed against the approved creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.",
+    "report": "Delegate: the illustrator could not start. I am reassigning the example-writing assignment.\n\nFilm examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -235,7 +235,7 @@
       },
       "one-action": {
         "pass": true,
-        "evidence": "For film production, proceed against the approved creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
+        "evidence": "For film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
       },
       "product-support": {
         "pass": true,

@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Proceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots."
+            "text": "For film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
           }
         ],
         "controlClause": "one-action"
@@ -77,7 +77,7 @@
         "controlClause": "never-implementation"
       }
     ],
-    "report": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nProceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots.\n\nCreative acceptance does not grant release permission. Night shoots are allowed under the existing reservation rules; I give no reason for that scheduling ruling.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.",
+    "report": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Night shoots are allowed under the existing reservation rules; I give no reason for that scheduling ruling.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -196,7 +196,7 @@
       },
       "one-action": {
         "pass": true,
-        "evidence": "Proceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots."
+        "evidence": "For film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
       },
       "product-support": {
         "pass": false,

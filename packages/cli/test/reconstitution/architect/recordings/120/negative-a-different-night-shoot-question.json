@@ -255,12 +255,12 @@
         "content": [
           {
             "type": "text",
-            "text": "I approve the film-production examples; scheduling’s night-shoot question is settled: a night shoot belongs to the calendar date on which it starts.\n\nFilm: proceed against the approved examples. Scheduling: apply the starting-date convention when recording a night shoot.\n\nCreative acceptance grants no release permission. Using the starting date keeps one shoot together when filming crosses midnight. Those are my recommendations; no scheduling issue remains open."
+            "text": "I approve the film-production examples; scheduling’s night-shoot question is settled: a night shoot belongs to the calendar date on which it starts.\n\nFilm: my decision in this turn is to approve the examples. Scheduling: my decision in this turn is to use the starting date for a night shoot.\n\nCreative acceptance grants no release permission. Using the starting date keeps one shoot together when filming crosses midnight. Those are my recommendations; no scheduling issue remains open."
           }
         ]
       }
     ],
-    "report": "I approve the film-production examples; scheduling’s night-shoot question is settled: a night shoot belongs to the calendar date on which it starts.\n\nFilm: proceed against the approved examples. Scheduling: apply the starting-date convention when recording a night shoot.\n\nCreative acceptance grants no release permission. Using the starting date keeps one shoot together when filming crosses midnight. Those are my recommendations; no scheduling issue remains open.",
+    "report": "I approve the film-production examples; scheduling’s night-shoot question is settled: a night shoot belongs to the calendar date on which it starts.\n\nFilm: my decision in this turn is to approve the examples. Scheduling: my decision in this turn is to use the starting date for a night shoot.\n\nCreative acceptance grants no release permission. Using the starting date keeps one shoot together when filming crosses midnight. Those are my recommendations; no scheduling issue remains open.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -375,7 +375,7 @@
     "answers": {
       "topic-actions": {
         "pass": true,
-        "evidence": "Film: proceed against approved examples. Scheduling: apply the starting-date convention. One recommended action for each of the two topics."
+        "evidence": "The film approval and the starting-date ruling are decisions taken in this turn, each the sole action for its topic. The actual night-shoot permission question is hidden, assessed by never-hides-issue."
       },
       "minimal-support": {
         "pass": true,

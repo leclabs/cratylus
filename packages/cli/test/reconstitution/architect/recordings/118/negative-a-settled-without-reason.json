@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Proceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots."
+            "text": "Proceed to realization against the approved film examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
           }
         ],
         "controlClause": "exactly-one-action"
@@ -97,7 +97,7 @@
         "controlClause": "never-episodic"
       }
     ],
-    "report": "I have approved the film-production examples and settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nProceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots.\n\nHere are the product reasons for those outcomes.\n\nCreative acceptance does not grant release permission. Night shoots are allowed under the existing reservation rules; I give no reason for that scheduling ruling.\n\nThe example approval and the scheduling ruling are my decisions in the contexts I hold.\n\nThose are the two outcomes, not alternatives for you to choose.\n\nBoth film checks already establish the distinction between acceptance and release.\n\nThis is the current product state.",
+    "report": "I have approved the film-production examples and settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nProceed to realization against the approved film examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nHere are the product reasons for those outcomes.\n\nCreative acceptance does not grant release permission. Night shoots are allowed under the existing reservation rules; I give no reason for that scheduling ruling.\n\nThe example approval and the scheduling ruling are my decisions in the contexts I hold.\n\nThose are the two outcomes, not alternatives for you to choose.\n\nBoth film checks already establish the distinction between acceptance and release.\n\nThis is the current product state.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -216,7 +216,7 @@
       },
       "exactly-one-action": {
         "pass": true,
-        "evidence": "Proceed to realization against the approved film examples. For scheduling, apply the existing reservation rules to night shoots."
+        "evidence": "Proceed to realization against the approved film examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules."
       },
       "support-follows": {
         "pass": true,

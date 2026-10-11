@@ -21,12 +21,12 @@
         "content": [
           {
             "type": "text",
-            "text": "I approve the film examples and scheduling is ready. Proceed against the approved film examples. Continue the scheduled shoots. Creative approval stays distinct from release authority."
+            "text": "I approve the film examples and scheduling is ready. Continue the scheduled shoots. Creative approval stays distinct from release authority."
           }
         ]
       }
     ],
-    "report": "I approve the film examples and scheduling is ready. Proceed against the approved film examples. Continue the scheduled shoots. Creative approval stays distinct from release authority.",
+    "report": "I approve the film examples and scheduling is ready. Continue the scheduled shoots. Creative approval stays distinct from release authority.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -141,7 +141,7 @@
     "answers": {
       "topic-actions": {
         "pass": true,
-        "evidence": "One action per topic: confirm film, continue scheduled shoots."
+        "evidence": "One action per topic: approve the film examples in this turn, continue scheduled shoots."
       },
       "minimal-support": {
         "pass": true,

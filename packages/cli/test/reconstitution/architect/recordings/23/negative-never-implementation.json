@@ -71,13 +71,13 @@
         "content": [
           {
             "type": "text",
-            "text": "The film outcome is src/film.ts returning true from approve(); run pnpm test."
+            "text": "The film outcome is src/film.ts returning true from approve(); pnpm test reports success."
           }
         ],
         "controlClause": "never-implementation"
       }
     ],
-    "report": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary.\n\nFilm: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions.\n\nCreative acceptance is separate from release authorization, as the film examples show. The venue's night-time access restrictions are not supplied, and I need them to decide which night hours scheduling may reserve.\n\nThose are the recommended actions.\n\nThe supplied reports establish readiness.\n\nThe film outcome is src/film.ts returning true from approve(); run pnpm test.",
+    "report": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary.\n\nFilm: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions.\n\nCreative acceptance is separate from release authorization, as the film examples show. The venue's night-time access restrictions are not supplied, and I need them to decide which night hours scheduling may reserve.\n\nThose are the recommended actions.\n\nThe supplied reports establish readiness.\n\nThe film outcome is src/film.ts returning true from approve(); pnpm test reports success.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -212,7 +212,7 @@
       },
       "never-implementation": {
         "pass": false,
-        "evidence": "The film outcome is src/film.ts returning true from approve(); run pnpm test."
+        "evidence": "The film outcome is src/film.ts returning true from approve(); pnpm test reports success."
       }
     }
   }
