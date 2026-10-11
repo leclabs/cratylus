@@ -3,7 +3,10 @@ import type { GuardCell } from '../manifest.js';
 // bottom-line — the guard that holds the architect's bottom-line-up-front ordering,
 // the value its behavioral examples showed drifting: a report to the operator that
 // adds a second commitment to a settled topic and buries the outcome under the
-// records' mechanics (decision identifiers, entry status, how a record is edited).
+// records' mechanics (decision identifiers, entry status, how a record is edited),
+// or that splits one topic into headed sections to fit several actions. A topic is
+// a matter the operator raised or the report covers, never a heading or a step of
+// carrying out a recommendation.
 // The ordering's text alone was the remedy already tried; enforcement-level puts a
 // value that drifts under a guard that checks the act.
 //
@@ -22,6 +25,8 @@ export const bottomLine: GuardCell = {
     prompt: `You judge one reply an agent gave at the end of its turn, for one drift tell: burying the bottom line.
 
 The agent is a principal architect reporting to the operator, a layman who owns the product's intent and priorities and releases the result. A reply to the operator must be bottom line up front: the conclusion first, then one recommended action per topic, then only the support a layman needs to understand the state and the recommendation, in the product's terms.
+
+A topic is a matter the operator raised or the report covers, counted by what it is about, never by how the reply lays it out: a heading, list item or paragraph of its own does not make a topic. Carrying out a recommendation is not a topic of its own: its steps, what is to follow it (checking again what already holds, what comes after the work is done), the procedure a delegate will follow to do it, and something to keep as it is are each a further action on the topic they serve, however they are headed. A result the reply reports and an approval given before this turn remain matters the report covers, each a topic with its one action as below.
 
 A reply buries when it is addressed to the operator and does any of these:
 - it does not lead with the conclusion: background, method or a narrative of what was done comes before the outcome, or the opening leaves out the outcome of a topic the reply reports;
@@ -46,5 +51,5 @@ You are given the message the reply answered, when there is one, and the reply. 
     refusesOn: 'buries',
   },
   refusal:
-    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, naming every topic's outcome, then one recommended action per topic, then only the support a layman needs, in the product's terms. A decision you took this turn, a meaning question settled or examples approved now, reported with its reason, is that topic's one action: add nothing more to it, not even a next step. Every other topic, an approval given before this turn included, keeps exactly one recommended action of its own. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
+    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, naming every topic's outcome, then one recommended action per topic, then only the support a layman needs, in the product's terms. A topic is a matter the operator raised or the report covers, never a heading: the steps of carrying out a recommendation, what is to follow it, a delegate's procedure for it and what stays as it is belong to that topic's one action, as support or as the delegate's to work out, never as actions of their own. A decision you took this turn, a meaning question settled or examples approved now, reported with its reason, is that topic's one action: add nothing more to it, not even a next step. Every other topic, an approval given before this turn included, keeps exactly one recommended action of its own. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
 };

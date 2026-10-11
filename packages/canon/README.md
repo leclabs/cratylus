@@ -117,7 +117,10 @@ does, naming the tell.
 `bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge
 whether a reply to the operator buries its bottom line (the conclusion not first, a topic given other
 than exactly one recommended action, a decision taken in the turn being that topic's one action, or support past what a layman needs, such as record identifiers, entry
-status or how records are edited), and refuses the stop when it does, naming the tell `burying`.
+status or how records are edited), and refuses the stop when it does, naming the tell `burying`. A topic
+is a matter the operator raised or the report covers, never a heading: the steps of carrying out a
+recommendation, what follows it, a delegate's procedure and what stays as it is are further actions on
+the topic they serve.
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
