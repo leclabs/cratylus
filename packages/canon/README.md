@@ -114,18 +114,22 @@ hands an owned decision back to the operator, and refuses the stop when it does,
 the call opens the work itself (source, tests, builds, commands outside the design records) instead
 of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
 does, naming the tell.
-`bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge, given
-the decisions recorded that turn (as `unrecorded` reads them) and the reply, whether a reply to the
-operator buries its bottom line (the conclusion not first, a topic given other than exactly one
-action, or support carrying anything but the facts and reasons its conclusions rest on, such as an
-instruction, an offer, record identifiers, entry status or how records are edited), and refuses the
-stop when it does, naming the tell `burying`.
+`bottom-line` holds the architect's bottom-line-up-front ordering, over what it does as over what it
+reports, since an act taken in a turn has happened by the time the turn ends. Before each tool call,
+and at turn end, it asks a judge, given the conversation so far in visible text, the decisions
+recorded that turn (as `unrecorded` reads them) and the act, whether the act buries the bottom line.
+A call does when it takes a second action on a topic the turn has already acted on, or records a
+decision that sets work for someone; a reply to the operator does when its conclusion is not first,
+a topic has other than exactly one action, or its support carries anything but the facts and reasons
+its conclusions rest on, such as an instruction, an offer, record identifiers, entry status or how
+records are edited. It refuses the call or the stop when it does, naming the tell `burying`.
 A topic is a matter the operator asked about, or an outcome that calls for someone's action; support
-states facts and reasons, never instructions. Every act reported or recommended on a topic's matter,
-a decision recorded that turn included, is one of its actions. A decision taken in the turn and
-reported with its reason, an approval included, is that topic's one action, and a separate follow-on
-action on it is a second; a topic decided before the turn, or a reported outcome that calls for
-action, keeps exactly one action of its own.
+states facts and reasons, never instructions. Every act the turn takes or recommends on a topic's
+matter, the question or artifact it settles or changes, is one of its actions, and work a recorded
+decision sets for someone is another. A decision taken in the turn and reported with its reason, an
+approval included, is that topic's one action, and a separate follow-on action on it is a second; a
+topic decided before the turn, or a reported outcome that calls for action, keeps exactly one action
+of its own.
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome

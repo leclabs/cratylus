@@ -505,6 +505,35 @@ describe('0091 delivered evidence', () => {
         relayed: [],
       });
   });
+  it('recognizes a bottom-line refusal of a call as held drift, alone or with past-objective', () => {
+    const [call, result] = fixture('agents-16') as Record<string, unknown>[];
+    const reason = `${bottomLine.refusal} The call takes a second action on a topic this turn already decided.`;
+    for (const [guard, text] of [
+      ['bottom-line', reason],
+      [
+        ['past-objective', 'bottom-line'],
+        `${pastObjective.refusal} Met.\n\n${reason}`,
+      ],
+    ] as const)
+      expect(
+        deliveredEvidence([
+          call,
+          { ...result, content: [{ type: 'text', text }] },
+        ]),
+      ).toEqual({
+        delivered: [],
+        heldDrift: [
+          {
+            guard,
+            attempt: 'call',
+            tool: 'bash',
+            input: expect.any(Object),
+            reason: text,
+          },
+        ],
+        relayed: [],
+      });
+  });
   it('recognizes hand-back refusals and relays independently of their corrective tail', () => {
     const reason =
       'hand-back: this reply returns a decision you own to the operator.';

@@ -42,10 +42,11 @@ function textOf(content: unknown): string {
 }
 // The first sentence identifies the refusal; later corrective instructions can
 // change without invalidating retained recordings.
-const bottomLinePrefix = bottomLine.refusal.slice(
-  0,
-  bottomLine.refusal.indexOf('.') + 1,
-);
+const bottomLinePrefixes = [
+  bottomLine.refusal.slice(0, bottomLine.refusal.indexOf('.') + 1),
+  // Retained recordings carry the sentence the guard gave while it judged replies alone.
+  'burying: this reply buries its bottom line.',
+];
 const descendPrefix = descend.refusal.slice(
   0,
   descend.refusal.indexOf('.') + 1,
@@ -72,7 +73,8 @@ function refusingGuard(reason: string): string | undefined {
   if (reason.startsWith(descendPrefix)) return descend.id;
   if (reason.startsWith(pastObjectivePrefix)) return pastObjective.id;
   if (reason.startsWith(handBackPrefix)) return handBack.id;
-  if (reason.startsWith(bottomLinePrefix)) return bottomLine.id;
+  if (bottomLinePrefixes.some((prefix) => reason.startsWith(prefix)))
+    return bottomLine.id;
   if (reason.startsWith(unrecordedPrefix)) return unrecorded.id;
   if (
     reason.startsWith(
