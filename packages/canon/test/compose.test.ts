@@ -149,6 +149,17 @@ describe('the architect', () => {
     expect(bottomLine.judge.prompt).toContain(
       'a candidate it set aside gets no action of its own',
     );
+    // An act counts however the reply phrases or divides it, and a short answer
+    // still gives its topic exactly one action.
+    expect(bottomLine.judge.prompt).toContain(
+      'however the reply divides, heads or names it',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'An act counts however it is phrased',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'A short direct answer on one topic needs no support, but still gives its topic exactly one action.',
+    );
     for (const guard of [bottomLine, handBack])
       expect(guard.refusal, guard.id).toContain(rulingToDelegate);
     for (const [name, agent] of Object.entries(holders))

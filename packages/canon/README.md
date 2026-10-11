@@ -133,6 +133,8 @@ approval included, is that topic's one action, and a separate follow-on action o
 topic decided before the turn, or a reported outcome that calls for action, keeps exactly one action
 of its own. A ruling given to the delegate who asked is its topic's one action, the decision it
 delivers included; a candidate set aside in favour of a recommended one gets no action of its own.
+An act counts however the reply phrases or divides it (conditional, for later, as an offer or inside
+the support), and a short direct answer on one topic still gives it exactly one action.
 Both `bottom-line` and `hand-back` refusals tell the rewrite to keep a delegate's ruling addressed to
 that delegate (`rulingToDelegate` in `src/guards/owned-question.ts`).
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
