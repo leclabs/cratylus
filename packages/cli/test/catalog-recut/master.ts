@@ -3,11 +3,52 @@
 // master design stays unchanged; never read expected values from canon.
 export type Level = 'advisory' | 'firm' | 'fixed' | null;
 export interface ExpectedEntry {
-  value: string;
+  value: string | Meaning;
   level: Level;
   slot?: string;
   note?: string;
 }
+
+/**
+ * The expected text of a gloss another cut restates and keeps revising: it opens with its
+ * anchor and states what its rulings require, in whatever words its owner chooses.
+ */
+export class Meaning {
+  readonly $$typeof = Symbol.for('jest.asymmetricMatcher');
+  readonly anchor: string;
+  readonly meaning: RegExp;
+  readonly prefix: string;
+  readonly suffix: string;
+  constructor(anchor: string, meaning: RegExp, prefix?: string, suffix = '') {
+    this.anchor = anchor;
+    this.meaning = meaning;
+    this.prefix = prefix ?? `${anchor} ≜ `;
+    this.suffix = suffix;
+  }
+  asymmetricMatch(actual: unknown): boolean {
+    return (
+      typeof actual === 'string' &&
+      actual.length >= this.prefix.length + this.suffix.length &&
+      actual.startsWith(this.prefix) &&
+      actual.endsWith(this.suffix) &&
+      this.meaning.test(
+        actual.slice(this.prefix.length, actual.length - this.suffix.length),
+      )
+    );
+  }
+  /** The same meaning inside a projected line. */
+  framed(prefix: string, suffix: string): Meaning {
+    return new Meaning(this.anchor, this.meaning, prefix, suffix);
+  }
+  toString() {
+    return 'Meaning';
+  }
+  toAsymmetricMatcher() {
+    return `Meaning ${JSON.stringify(this.prefix)} ${this.meaning} ${JSON.stringify(this.suffix)}`;
+  }
+}
+export const anchorOf = (value: string | Meaning): string =>
+  value instanceof Meaning ? value.anchor : (value.split(' ≜ ')[0] ?? value);
 
 /** Keep missing fixture data a loud failure, while narrowing indexed reads. */
 export function requireDefined<T>(value: T | undefined, label: string): T {
@@ -422,10 +463,38 @@ rubric | its output is scored against a fixed rubric
 never-assertions | some things it must never do, checked in every run rather than most
 held-out | it is judged also against examples it never saw`),
 };
+// The meaning-roles cut restates these glosses (0116(1), 0117) and revises them still, so the
+// master's text above is only their record. Each binds what the rulings in force require, in
+// the rulings' own terms: lookaheads for what the gloss must say, sequence for the order 0078
+// fixes. Any wording that keeps that meaning passes; one that drops or reorders it fails.
+export const meanings: Partial<Record<Factor, Record<string, RegExp>>> = {
+  // 0070, 0084: the operator's principal architect, who owns the conceptual design and the
+  // delivery of the product, and holds its meaning: confirms examples, answers its questions.
+  role: {
+    architect:
+      /^the (?:client|operator)'s principal architect\b(?=.*\bconceptual design\b)(?=.*\bdeliver)(?=.*\bexamples\b)(?=.*\bmeaning\b)/s,
+  },
+  // 0070: decides within its authority, never handing back as a question what it holds.
+  stance: {
+    decisive:
+      /^(?=.*\bnever hands\b[^;]*\bback as a question\b)decides within its authority\b/s,
+  },
+  // 0078: the conclusion first, then one recommended action per topic, then only the support
+  // a layman needs; never a menu or a question it can answer itself.
+  'communication-style': {
+    'bottom-line-up-front':
+      /^(?=.*\bper topic\b)(?=.*\bnever a menu\b)(?=.*\ba question it can answer\b)the conclusion first\b.*\bone recommended action\b.*\blayman\b/s,
+  },
+};
 export function body(factor: Factor, anchor: string): string {
   const gloss = values[factor][anchor];
   if (gloss === undefined) throw new Error(`Oracle has no ${factor}/${anchor}`);
   return `${anchor} ≜ ${gloss}`;
+}
+/** A value's expected text: its meaning where another cut owns the words, else the master's. */
+export function expectedBody(factor: Factor, anchor: string): string | Meaning {
+  const meaning = meanings[factor]?.[anchor];
+  return meaning ? new Meaning(anchor, meaning) : body(factor, anchor);
 }
 export function entry(
   factor: Factor,
@@ -433,7 +502,7 @@ export function entry(
   extra: Partial<ExpectedEntry> = {},
 ): ExpectedEntry {
   return {
-    value: body(factor, anchor),
+    value: expectedBody(factor, anchor),
     level: factors[factor].level,
     ...extra,
   };

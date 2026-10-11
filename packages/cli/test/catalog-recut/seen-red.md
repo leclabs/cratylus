@@ -1,5 +1,30 @@
 # Seen red
 
+## 2026-10-11 — rulings 0070, 0078, 0084 under the meaning-roles cut (agents/25)
+
+The meaning-roles cut restates three glosses the master transcription quoted word for word: the architect role, the decisive stance and the bottom-line-up-front ordering (0116(1), 0117), and it is revising the architect gloss again. The catalog re-cut is integrated, so its checks are no longer frozen. `meanings` in `master.ts` now binds each of these glosses to what its rulings require. A `Meaning` matcher takes the gloss's place in every vector, projected line and module comparison. The anchor, level, slot, position and projection framing (`- slot: **anchor** — … (fixed)`) stay exact. Every other value still compares against the master's text.
+
+- role/architect (0070, 0084): the client's or operator's principal architect, which owns the conceptual design, the delivery, the examples and the meaning.
+- stance/decisive (0070): decides within its authority, and in the same clause never hands back as a question what it holds.
+- communication-style/bottom-line-up-front (0078): the conclusion first, then one recommended action, then the support a layman needs, in that order, per topic, never a menu or a question it can answer itself.
+
+### Baseline and command
+
+A `git archive` of `3b98e73c`, built offline, with the rebound checks copied in. In that copy only, one canon gloss string was replaced at a time with a value that breaks its ruling, and canon and cli were rebuilt. `packages/canon` in the working tree was not touched.
+
+```sh
+pnpm --filter cratylus exec vitest run test/catalog-recut
+```
+
+### Observed
+
+- Green: 17 passed against `3b98e73c`'s canon, and 17 passed against the working tree's revised architect gloss.
+- Architect replaced by “the client's assistant: carries out the design and delivery the client decides, …”: 8 failed (examples 2, 3, 4, 5, 7, 10, 11 and 0070).
+- Decisive replaced by “… hands each held conclusion back as a question for the operator to confirm”: 7 failed (examples 2, 3, 4, 5, 7, 10, 11).
+- Bottom-line-up-front replaced by “the support a layman needs first, then the conclusion, then one recommended action per topic; …”: 8 failed (examples 2, 3, 4, 5, 7, 10, 11 and 0078).
+
+Each diff names only the mutated gloss, received against its `Meaning`. The expected values and text of every other check were unchanged. An in-process probe dropped each required clause in turn: missing principal architect, conceptual design, delivery, examples or meaning; a hand-back, or authority exceeded; support before action, action before conclusion, no per-topic, no “never a menu”, no answerable-question clause. Each one is refused. Rewordings that keep the meaning pass, as do the master's own texts and both delivered architect glosses. A regular expression cannot read negation in general: a gloss that contains the required clauses and then contradicts them would pass.
+
 ## 2026-10-11 — decision 0111, agents/9
 
 Re-pointed `examples.test.ts`, “example 9: each installed agent has its own tier-and-effort model role”. No example text changed.

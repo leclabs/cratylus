@@ -16,9 +16,11 @@ import {
 import type { Factor, PersonaName, RoleName } from './master.js';
 import {
   agentNames,
+  anchorOf,
   body,
   camel,
   descriptions,
+  expectedBody,
   factorNames,
   factors,
   marks,
@@ -83,19 +85,17 @@ describe('catalog re-cut: the visible examples', () => {
       });
       const expected = roleVector(name);
       expect(agent.dispatches).toEqual(
-        requireDefined(expected.handoffs, `${name}.handoffs`).map(
-          (entry) => entry.value.split(' ≜ ')[0],
+        requireDefined(expected.handoffs, `${name}.handoffs`).map((entry) =>
+          anchorOf(entry.value),
         ),
       );
       expect(agent.routing).toEqual({
-        tier: requireDefined(
-          expected.model?.[0],
-          `${name}.model tier`,
-        ).value.split(' ≜ ')[0],
-        effort: requireDefined(
-          expected.model?.[1],
-          `${name}.model effort`,
-        ).value.split(' ≜ ')[0],
+        tier: anchorOf(
+          requireDefined(expected.model?.[0], `${name}.model tier`).value,
+        ),
+        effort: anchorOf(
+          requireDefined(expected.model?.[1], `${name}.model effort`).value,
+        ),
       });
       expect(agent.readOnly, name).toBeUndefined();
     }
@@ -173,16 +173,22 @@ describe('catalog re-cut: the visible examples', () => {
       expected.perceptionScope,
       'architect.perceptionScope',
     ).filter(
-      (entry) => !narrowed.removes.perceptionScope.includes(entry.value),
+      // Reach values are never owned glosses: each is the master's text.
+      (entry) =>
+        !narrowed.removes.perceptionScope.includes(entry.value as string),
     );
     expected.actionScope = requireDefined(
       expected.actionScope,
       'architect.actionScope',
-    ).filter((entry) => !narrowed.removes.actionScope.includes(entry.value));
+    ).filter(
+      (entry) => !narrowed.removes.actionScope.includes(entry.value as string),
+    );
     expected.handoffs = requireDefined(
       expected.handoffs,
       'architect.handoffs',
-    ).filter((entry) => !narrowed.removes.handoffs.includes(entry.value));
+    ).filter(
+      (entry) => !narrowed.removes.handoffs.includes(entry.value as string),
+    );
     expect(vectorOf(composed.agent!)).toEqual(expected);
     expect(composed.agent!.dispatches).toEqual(['researcher']);
     f.install();
@@ -356,7 +362,7 @@ describe('catalog re-cut: the visible examples', () => {
         .map((anchor) => `${valueFile(factor, anchor)}.ts`)
         .sort();
       expect(readdirSync(directory).sort(), factor).toEqual(expectedFiles);
-      for (const [anchor, gloss] of Object.entries(values[factor])) {
+      for (const anchor of Object.keys(values[factor])) {
         const file = valueFile(factor as Factor, anchor);
         // Runtime-selected catalog modules: every declared value, not a hand-picked subset.
         const module = await import(
@@ -365,7 +371,9 @@ describe('catalog re-cut: the visible examples', () => {
         expect(Object.keys(module), `${factor}/${file}`).toEqual([camel(file)]);
         const value = module[camel(file)];
         const text = typeof value === 'string' ? value : value.body;
-        expect(text, `${factor}/${file}`).toBe(`${anchor} ≜ ${gloss}`);
+        expect(text, `${factor}/${file}`).toEqual(
+          expectedBody(factor as Factor, anchor),
+        );
       }
     }
   });
@@ -422,12 +430,12 @@ describe('catalog re-cut: rulings 0084–0085', () => {
       'architect.procedure',
     );
     expect(
-      procedure.find((entry) => entry.value.startsWith('reconstitution ≜ ')),
+      procedure.find((entry) => anchorOf(entry.value) === 'reconstitution'),
     ).toEqual(
       requireDefined(
         roleVector('architect').procedure,
         'architect.procedure',
-      ).find((entry) => entry.value.startsWith('reconstitution ≜ ')),
+      ).find((entry) => anchorOf(entry.value) === 'reconstitution'),
     );
   });
 });
