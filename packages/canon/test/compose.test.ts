@@ -1,8 +1,9 @@
 // Composition: a persona that removes `none` from action-scope widens its reach and is
 // refused, while no composed agent is narrowed to read-only (0068); each role's typed
 // handoff rides its agent as `contract`; every agent carries the per-turn persistence
-// protocol; the architect composes bottom-line-up-front ordering and its decisiveness
-// held by the hand-back guard; an optional slot may be left unfilled, never another.
+// protocol; the architect composes bottom-line-up-front ordering, its decisiveness
+// held by the hand-back guard and its elevation held by the descend guard; an
+// optional slot may be left unfilled, never another.
 
 import { anchorOf, enforcing } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
@@ -18,6 +19,7 @@ import { nico } from '../src/agents/nico.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/dimensions/action-scope/none.js';
 import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-line-up-front.js';
+import { descend } from '../src/guards/descend.js';
 import { handBack } from '../src/guards/hand-back.js';
 import { assayerRole } from '../src/roles/assayer.js';
 import { builderRole } from '../src/roles/builder.js';
@@ -106,6 +108,18 @@ describe('the architect', () => {
           agent.stance.some((e) => enforcing(e.value)),
           `${name} composes no guard`,
         ).toBe(false);
+  });
+
+  it('composes its conceptual elevation held by the descend guard on tool calls', () => {
+    const held = architect.stance.find(
+      (e) => anchorOf(e.value) === 'conceptual-elevation',
+    );
+    expect(held?.level).toBe('fixed');
+    expect(held && enforcing(held.value) && held.value).toMatchObject({
+      realizedBy: descend.id,
+      events: ['tool.use.pre'],
+      substrate: 'harness',
+    });
   });
 
   it('carries every drift tell in the persistence protocol, as every agent does', () => {

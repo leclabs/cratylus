@@ -59,6 +59,7 @@ import { proportionate } from '../dimensions/stance/proportionate.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
 import { systemsThinking } from '../dimensions/stance/systems-thinking.js';
 import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
+import { descend } from '../guards/descend.js';
 import { handBack } from '../guards/hand-back.js';
 
 export const architectRole: RoleCell = {
@@ -82,7 +83,7 @@ export const architectRole: RoleCell = {
     // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
       { value: guarded(decisive, handBack), level: 'fixed' },
-      { value: conceptualElevation, level: 'fixed' },
+      { value: guarded(conceptualElevation, descend), level: 'fixed' },
       cratylism,
       firstPrinciples,
       greenField,

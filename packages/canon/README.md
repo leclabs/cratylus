@@ -110,6 +110,10 @@ A value its behavioral examples showed drifting is held by a guard cell (`src/gu
 the role as `guarded(value, guard)`, so the guard binds exactly the agents composing that value.
 `hand-back` holds the architect's decisiveness: at turn end it asks a judge whether the last reply
 hands an owned decision back to the operator, and refuses the stop when it does, naming the tell.
+`descend` holds the architect's conceptual elevation: before each tool call it asks a judge whether
+the call opens the work itself (source, tests, builds, commands outside the design records) instead
+of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
+does, naming the tell.
 A judge answer it cannot read refuses nothing and is reported.
 
 ## The first principle

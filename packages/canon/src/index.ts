@@ -36,6 +36,7 @@ export {
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 export { personaProtocol } from './genus/persona.js';
+export { descend } from './guards/descend.js';
 export { handBack } from './guards/hand-back.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
