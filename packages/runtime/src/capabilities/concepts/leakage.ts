@@ -106,7 +106,6 @@ const SUBCOMMANDS = [
   'concepts',
   'diff',
   'dlx',
-  'eventtap',
   'exec',
   'fetch',
   'init',

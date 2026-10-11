@@ -278,13 +278,6 @@ describe('concepts --explain', () => {
     ]);
   });
 
-  it('refuses --explain of a capability that does not explain itself as a verb it lacks', async () => {
-    const { code, out, err } = await run(['eventTap', '--explain']);
-    expect(code).toBe(1);
-    expect(out).toBe('');
-    expect(err).toContain("unknown verb '--explain'");
-  });
-
   it('reads --explain given as a flag’s value as that value, never as the request', async () => {
     const repo = mkdtempSync(join(tmpdir(), 'explain-'));
     const cwd = process.cwd();

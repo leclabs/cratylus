@@ -71,8 +71,8 @@ and stops, writing nothing, and `--verbose` also prints the per-file detail.
 ### Which practices
 
 A practice is a way of working that install offers as one choice: the agents, skills and guards that
-carry it, installed together. The event tap and the drift notice come with every choice and are
-offered as none. On a terminal, install asks one question that lists each practice with its
+carry it, installed together. The drift notice comes with every choice and is offered as
+none. On a terminal, install asks one question that lists each practice with its
 description, the practices already installed here ticked (on a fresh host, the one the corpus
 preselects).
 
@@ -289,10 +289,6 @@ and warns where it falls short; they are not the same, and this is what a user m
 - **Lifecycle events.** The corpus names 31 canonical events. Claude Code realizes 19 of them by a
   native event of its own, omp 9. The rest have no native peer on that harness and are refused or
   skipped with a warning rather than faked.
-- **`eventTap`.** It works on Claude Code only: it attaches to Claude Code's hook settings
-  (`.claude/settings.json`), and omp has no such file. It taps the requested events that have a
-  native peer, lists and warns about each one that has none as skipped, and refuses, writing
-  nothing, when none can be tapped. On omp it refuses and says why.
 - **Starting as an agent and the badge.** Both harnesses start a session as an agent with their own
   `--agent` flag: Claude Code natively, omp through cratylus's extension. Neither has a launcher.
   The sections on starting a session as an agent and on the badge say the rest.
@@ -385,11 +381,9 @@ file and still succeeds. `cratylus deploy` never touches `config.yml`.
 install` writes into it the corpus's parts, the event vocabulary and each capability's
 configuration, and the stanza of the harness it installed, `harnesses.claude` or `harnesses.omp`:
 that harness's name for each event it can fire. It leaves the other harness's stanza as it found it,
-so installing for Claude Code and then for omp leaves both in the same file. A capability that needs
-a harness's stanza and finds none refuses, and `cratylus install --harness <h>` writes it.
-`cratylus eventTap` needs `claude`'s. The file is yours as much as cratylus's: a key you wrote in it,
-at the top or under `events`, or a capability's configuration the corpus does not write, is carried
-as you left it by every install and deploy.
+so installing for Claude Code and then for omp leaves both in the same file. The file is yours as
+much as cratylus's: a key you wrote in it, at the top or under `events`, or a capability's
+configuration the corpus does not write, is carried as you left it by every install and deploy.
 
 A file there that is not valid JSON, or is JSON but not an object, is not rewritten: `cratylus install`
 (its `--dry-run` too) and `cratylus deploy` end with one line naming the file and what is wrong with
@@ -502,68 +496,13 @@ cratylus uninstall [options]
 
 ## Capabilities
 
-A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `eventTap`, `concepts` and `workPackage`:
+A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `concepts` and `workPackage`:
 
 ```sh
-cratylus eventTap status
 cratylus concepts state
 cratylus concepts supersede 'reservation expiry' --context booking --wording '…' --reason '…'
 cratylus workPackage levels --cut delivery
 ```
-
-### `cratylus eventTap`
-
-Attach a passive observer to the host harness’s lifecycle events.
-
-#### `cratylus eventTap install`
-
-Attach the tap to lifecycle events, capturing them to a sink.
-
-```sh
-cratylus eventTap install [options]
-```
-
-| Flag                 | What it does                                                              |
-| -------------------- | ------------------------------------------------------------------------- |
-| `--events <value>`   | The lifecycle events to tap, comma-separated, from the host’s vocabulary  |
-| `--sink <value>`     | The append-only file the captures are written to                          |
-| `--settings <value>` | The harness settings file the tap is attached in, in place of the default |
-
-#### `cratylus eventTap uninstall`
-
-Detach the tap, leaving no residue.
-
-```sh
-cratylus eventTap uninstall [options]
-```
-
-| Flag                 | What it does                                                              |
-| -------------------- | ------------------------------------------------------------------------- |
-| `--settings <value>` | The harness settings file the tap is attached in, in place of the default |
-
-#### `cratylus eventTap read`
-
-Read back what the tap captured, in the order observed.
-
-```sh
-cratylus eventTap read [options]
-```
-
-| Flag                 | What it does                                                              |
-| -------------------- | ------------------------------------------------------------------------- |
-| `--settings <value>` | The harness settings file the tap is attached in, in place of the default |
-
-#### `cratylus eventTap status`
-
-Report whether the tap is attached, and to which events.
-
-```sh
-cratylus eventTap status [options]
-```
-
-| Flag                 | What it does                                                              |
-| -------------------- | ------------------------------------------------------------------------- |
-| `--settings <value>` | The harness settings file the tap is attached in, in place of the default |
 
 ### `cratylus concepts`
 

@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.10.0",
-  "description": "The per-host runtime: the built-in capabilities (eventTap, concepts, workPackage) and the cut ledger, the event-tap port interface, the host runtime config, and the runtime-owned lifecycle-event taxonomy.",
+  "description": "The per-host runtime: the built-in capabilities (concepts, workPackage) and the cut ledger, and the host runtime config.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -14,18 +14,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./events": {
-      "types": "./dist/events.d.ts",
-      "import": "./dist/events.js"
-    },
-    "./ports/event-tap": {
-      "types": "./dist/ports/event-tap.d.ts",
-      "import": "./dist/ports/event-tap.js"
-    },
-    "./capabilities/event-tap": {
-      "types": "./dist/capabilities/event-tap.d.ts",
-      "import": "./dist/capabilities/event-tap.js"
     },
     "./main": {
       "types": "./dist/main.d.ts",

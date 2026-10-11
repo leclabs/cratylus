@@ -1,10 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // @cratylus/runtime — the per-host RUNTIME contract leaf.
 //
-// The barrel for the `.` export: the runtime-owned lifecycle-event taxonomy, the
-// event-tap capability PORT interface (EventTapHost) and the example substrate.
-// The events and the event-tap port are also reachable at their own subpaths
-// (`./events`, `./ports/event-tap`). Zero `@cratylus/*` deps.
+// The barrel for the `.` export: the example substrate and the offline proof.
+// Zero `@cratylus/*` deps.
 //
 // THE LEDGER API, for a harness binding (the omp extension's builder dispatch
 // check) and for another package (forge): the ledger fold, readiness, served
@@ -15,8 +13,6 @@
 // `cratylus lifecycle '<event-json>'`.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export * from './events.js';
-export * from './ports/event-tap.js';
 export * from './example-substrate.js';
 export * from './offline-proof.js';
 // The concept journal as it explains itself: its verbs, each with its effect.

@@ -2,7 +2,8 @@
 //
 // When a skill cell declares `runtime: {capability}`, projection emits a thin
 // `scripts/<capability>.mjs` shim forwarding to `cratylus <capability>`. This gate
-// pins the shim's shape and executable mode using the surviving eventTap capability.
+// pins the shim's shape and executable mode, read from a real projection of canon
+// with the shim-carrier fixture, whose cell declares `workPackage`.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -18,15 +19,15 @@ import { fileURLToPath } from 'node:url';
 import { emitRuntimeShim } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
-import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
- *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
-const CELL = 'event-tap';
-const CAPABILITY = 'eventTap';
+/** A cell that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
+const CELL = 'carrier';
+const CAPABILITY = 'workPackage';
+const CARRIER = join(canonRoot, 'test', 'fixtures', 'shim-carrier');
 
 const shimOf = (out: string): string =>
   readFileSync(
@@ -75,7 +76,7 @@ beforeAll(async () => {
       '--harness',
       'omp',
       '--config',
-      join(requireRepoRoot(canonRoot), 'cratylus.config.ts'),
+      join(CARRIER, 'cratylus.config.ts'),
       '--out',
       ompOut,
     ],
@@ -106,7 +107,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
     // the runtime binary on PATH — never an imported @cratylus package.
     expect(shim).not.toContain('@cratylus/');
     // No compiled-in capability mechanism (the impl lives host-side behind the port).
-    expect(shim).not.toMatch(/MemoryStrategy|EventTapHost|require\(/);
+    expect(shim).not.toMatch(/MemoryStrategy|dispatchWorkPackage|require\(/);
     // The sole import is node's own child_process — nothing else.
     const imports = shim.match(/^import .*/gm) ?? [];
     expect(imports).toEqual([

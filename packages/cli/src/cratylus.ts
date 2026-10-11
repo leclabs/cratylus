@@ -3,7 +3,7 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`eventTap`, `concepts`, `workPackage`) and the hidden harness-facing commands
+// (`concepts`, `workPackage`) and the hidden harness-facing commands
 // (`lifecycle`, `completion-check`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
@@ -166,8 +166,18 @@ export async function main(argv: readonly string[]): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  // A first word that names no command is refused as one, even with `--help` after
+  // it: Commander answers the program's help before it refuses the word, which
+  // would read as though the program had it.
+  const first = argv[0] as string;
+  const unknown =
+    !first.startsWith('-') &&
+    !program.commands.some(
+      (command) =>
+        command.name() === first || command.aliases().includes(first),
+    );
   try {
-    await program.parseAsync(argv, { from: 'user' });
+    await program.parseAsync(unknown ? [first] : argv, { from: 'user' });
   } catch (error) {
     // Help and version end a parse by the same route a usage error does, with 0.
     if (error instanceof UsageError && error.refusal.exitCode === 0) return;

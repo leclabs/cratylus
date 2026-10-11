@@ -2,12 +2,11 @@
 // The runtime capability keyspace.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const CAPABILITIES = ['eventTap', 'concepts', 'workPackage'] as const;
+export const CAPABILITIES = ['concepts', 'workPackage'] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
 
 export const CAPABILITY_SUMMARIES = {
-  eventTap: 'Attach a passive observer to the host harness’s lifecycle events',
   concepts:
     'Read and record a project’s conceptual design: each bounded context told whole in its overview first (its subject, its concepts, its open decisions and the cuts in flight, the changes to the design being built now), then its decisions and each concept’s history; and record each change to a context, a concept or a decision as a new version with its reason, never an edit',
   workPackage:

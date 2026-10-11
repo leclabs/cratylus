@@ -124,8 +124,8 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // `schema/index.ts → runtime` WAS HERE and is RETIRED BY REPAIR, 2026-08-05.
   //
   // The pin's own note proposed moving `RuntimePlugin` into the shapes package. A
-  // census refuted that remedy: `RuntimePlugin` is typed over `MemoryStrategy` and
-  // `EventTapHost` — the runtime PORTS, which are the whole of what ARCHITECTURE
+  // census refuted that remedy: `RuntimePlugin` was typed over `MemoryStrategy` and
+  // the other runtime PORTS, which are the whole of what ARCHITECTURE
   // assigns to `runtime` — so the move would have traded a ratcheted edge for a
   // fused concern. The detection was right; the remedy was not.
   //

@@ -7,13 +7,11 @@
 
 import { describe, expect, it } from 'vitest';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
-import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
 import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
 import { CAPABILITIES, CAPABILITY_SUMMARIES } from '../src/capability.js';
 import type { Verb, VerbFlags } from '../src/verb-flags.js';
 
 const SURFACES: Record<(typeof CAPABILITIES)[number], VerbFlags> = {
-  eventTap: EVENT_TAP,
   concepts: CONCEPTS,
   workPackage: WORK_PACKAGE,
 };

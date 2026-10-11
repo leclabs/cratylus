@@ -84,10 +84,14 @@ import { cellTargets } from '../tooling/project-targets.js';
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
- *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
-const CELL = 'event-tap';
-const CAPABILITY = 'eventTap';
+/** A cell that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
+const CELL = 'carrier';
+const CAPABILITY = 'workPackage';
+const carrierPlugin = {
+  name: 'shim-carrier',
+  skills: join(canonRoot, 'test', 'fixtures', 'shim-carrier', 'skills'),
+};
 
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
@@ -148,7 +152,7 @@ beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
   const out = scratch;
   const report = await projectPluginSet({
-    plugins: [canonPlugin],
+    plugins: [canonPlugin, carrierPlugin],
     adapter: adapterByName('omp'),
   });
   writeRenderTree(out, report.files);

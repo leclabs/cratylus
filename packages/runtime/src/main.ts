@@ -12,7 +12,7 @@
 // and whether it takes a value from the capability's `VERBS`. Nothing is retyped
 // here, so help cannot say what a verb does not take.
 //
-// A CAPABILITY THAT EXPLAINS ITSELF answers `--explain` with its explanation as
+// EVERY CAPABILITY EXPLAINS ITSELF: it answers `--explain` with its explanation as
 // JSON, and `<verb> --explain` with one verb's: read out of those same
 // declarations by `explain`, beside the help they also print. Its help adds when
 // to reach for it, and each verb's the concept it acts on, when to reach for it,
@@ -28,7 +28,7 @@
 // capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
-// `eventTap`, `concepts` and `workPackage` print their JSON result. A refusal is a loud code-1
+// `concepts` and `workPackage` print their JSON result. A refusal is a loud code-1
 // failure, printed as `cratylus <message>`, a message opening with the
 // capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
@@ -52,8 +52,6 @@ import {
   JOURNAL,
 } from './capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from './capabilities/concepts/index.js';
-import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
-import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
   WORK_PACKAGE,
@@ -81,22 +79,18 @@ import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
  * interface. A refusal throws.
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
- * `eventTap`, never the kebab dir name nor an abbreviation. That is the word the
- * grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED THIN
- * SHIM spawns (the emitter is `f(capability)`, so an `eventTap` cell yields
- * `spawnSync(CLI_BIN, ['eventTap', …])`).
+ * `workPackage`, never the kebab dir name nor an abbreviation. That is the word
+ * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `workPackage` cell
+ * yields `spawnSync(CLI_BIN, ['workPackage', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {
     readonly verbs: VerbFlags;
     readonly run: (argv: string[]) => string;
-    readonly explained?: CapabilityInterface;
+    readonly explained: CapabilityInterface;
   };
 } = {
-  eventTap: {
-    verbs: EVENT_TAP,
-    run: (argv) => JSON.stringify(dispatchEventTap(argv), null, 2),
-  },
   concepts: {
     verbs: CONCEPTS,
     run: (argv) => JSON.stringify(dispatchConcepts(argv), null, 2),
@@ -210,35 +204,31 @@ function printHelp(command: Command, text: string, asked: boolean): void {
   }
 }
 
-/** A capability's help: its verbs, and where to ask for what a verb takes; where
- *  it explains itself, when to reach for it and where to ask for that as JSON. */
+/** A capability's help: its verbs, when to reach for it, and where to ask for
+ *  what a verb takes and for its explanation as JSON. */
 function helpOf(
   command: Command,
   error: boolean,
-  explained: CapabilityInterface | undefined,
+  explained: CapabilityInterface,
 ): string {
   const name = `${CLI_BIN} ${command.name()}`;
   return [
     command.helpInformation({ error }),
-    ...(explained === undefined ? [] : [`When: ${explained.when}\n`]),
+    `When: ${explained.when}\n`,
     `Run ${name} <verb> --help for what a verb takes.\n`,
-    ...(explained === undefined
-      ? []
-      : [
-          `Run ${name} --explain, or ${name} <verb> --explain, for this explanation as JSON.\n`,
-        ]),
+    `Run ${name} --explain, or ${name} <verb> --explain, for this explanation as JSON.\n`,
   ].join('');
 }
 
 /** One capability's command: its verbs in its help, its action routing the verb
  *  and the tokens after it, exactly as given, to the capability's verb surface,
- *  or, where it explains itself, answering `--explain` with its explanation. */
+ *  or answering `--explain` with its explanation. */
 function capabilityCommand(capability: Capability): Command {
   const { verbs, run, explained } = SURFACES[capability];
   const verbCommands = new Map(
     Object.entries(verbs).map(([name, verb]) => [
       name,
-      verbCommand(capability, name, verb, explained?.verbs[name]),
+      verbCommand(capability, name, verb, explained.verbs[name]),
     ]),
   );
   return (
@@ -272,7 +262,7 @@ function capabilityCommand(capability: Capability): Command {
             printHelp(self, helpOf(self, false, explained), true);
             return;
           }
-          if (explained !== undefined && EXPLAIN.includes(verb)) {
+          if (EXPLAIN.includes(verb)) {
             process.stdout.write(
               `${JSON.stringify(explain(explained), null, 2)}\n`,
             );
@@ -288,14 +278,12 @@ function capabilityCommand(capability: Capability): Command {
               ).helpInformation();
               printHelp(
                 self,
-                explained === undefined
-                  ? help
-                  : `${help}Run ${CLI_BIN} ${capability} ${verb} --explain for this explanation as JSON.\n`,
+                `${help}Run ${CLI_BIN} ${capability} ${verb} --explain for this explanation as JSON.\n`,
                 true,
               );
               return;
             }
-            if (explained !== undefined && asksFor(tokens, declared, EXPLAIN)) {
+            if (asksFor(tokens, declared, EXPLAIN)) {
               const explanation = explainVerb(
                 verb,
                 explained.verbs[verb] as ExplainedVerb,
