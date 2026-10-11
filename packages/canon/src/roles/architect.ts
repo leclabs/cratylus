@@ -1,12 +1,16 @@
-// The architect role: master design §3, the architect column.
+// The architect role: master design §3, the architect column, with the client's
+// principal architect restored (0070) and its communication ordered bottom line up
+// front (0078). Its decisiveness is the value its behavioral examples showed
+// drifting, so a guard holds it.
 
-import type { RoleCell } from '../compose.js';
+import { type RoleCell, guarded } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { writeExamples } from '../dimensions/action-scope/write-examples.js';
 import { intent } from '../dimensions/assignment/intent.js';
 import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { principal } from '../dimensions/autonomy/principal.js';
+import { bottomLineUpFront } from '../dimensions/communication-style/bottom-line-up-front.js';
 import { convergence } from '../dimensions/communication-style/convergence.js';
 import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
 import { plain } from '../dimensions/communication-style/plain.js';
@@ -55,11 +59,12 @@ import { proportionate } from '../dimensions/stance/proportionate.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
 import { systemsThinking } from '../dimensions/stance/systems-thinking.js';
 import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
+import { handBack } from '../guards/hand-back.js';
 
 export const architectRole: RoleCell = {
   name: 'architect',
   description:
-    "Holds the conceptual design of the contexts it is given, in cratylus's example-driven workflow.",
+    "The client's principal architect, owning the conceptual design and delivery of the product, in cratylus's example-driven workflow.",
   mark: null,
   values: {
     role: [architect],
@@ -76,7 +81,7 @@ export const architectRole: RoleCell = {
     procedure: [rectify, illustration, freeze, reconstitution],
     // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
-      { value: decisive, level: 'fixed' },
+      { value: guarded(decisive, handBack), level: 'fixed' },
       { value: conceptualElevation, level: 'fixed' },
       cratylism,
       firstPrinciples,
@@ -91,6 +96,7 @@ export const architectRole: RoleCell = {
       { value: plain, slot: 'register' },
       { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
+      { value: bottomLineUpFront, slot: 'ordering', level: 'fixed' },
     ],
     decisionRights: [
       { value: input, slot: 'intent' },

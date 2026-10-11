@@ -300,6 +300,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // runs the leakage detector over text it supplies and the journal verbs in scratch git
   // repositories it builds itself; its leaking and plain passages ARE its fixtures.
   'runtime/leakage.test.ts': 'BEHAVIORAL',
+  // runs the pure ledger fold over entries it builds itself: statuses, approval by two
+  // distinct assayers, failing and disputed packages, phase, ready, figures, report.
+  'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
+  // runs the ledger store, lifecycle, open and completion check in throwaway git repos;
+  // its refused repeated transitions and warnings ARE its fixtures.
+  'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
   // proves checks it supplies, with host reads it makes itself; polices no live artifact.
   'runtime/offline-proof.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
@@ -324,6 +330,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
   // supplies itself; its negative cases ARE its fixtures.
   'schema/enforcing.test.ts': 'BEHAVIORAL',
+  // drives `checkAssignment`/`assignmentIn` with schemas and assignments it supplies;
+  // its missing and ill-typed assignments ARE its fixtures.
+  'schema/contract.test.ts': 'BEHAVIORAL',
 };
 
 /** The vocabulary a convicting fixture announces itself in, as the corpus already

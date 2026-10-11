@@ -27,12 +27,16 @@ import { PLUMBING, PRACTICES } from './practices.js';
 
 export {
   CompositionRefusal,
+  guarded,
   holder,
   persona,
   type Residue,
   type RoleCell,
   type Stated,
 } from './compose.js';
+export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
+export { personaProtocol } from './genus/persona.js';
+export { handBack } from './guards/hand-back.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
 export { assayerRole } from './roles/assayer.js';
@@ -65,4 +69,5 @@ export default defineAgentPlugin({
   agents: dir('./agents'),
   skills: dir('./skills'),
   hooks: dir('./hooks'),
+  guards: dir('./guards'),
 });

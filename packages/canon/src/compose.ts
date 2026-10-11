@@ -18,6 +18,7 @@ import {
   type DimensionManifest,
   type DimensionMeta,
   type EnforcementLevel,
+  type Enforcing,
   type Entry,
   type KebabToCamel,
   type Mark,
@@ -25,7 +26,14 @@ import {
   anchorOf,
   kebabToCamel,
 } from '@cratylus/schema';
-import { type Agent, type Dimension, MANIFEST } from './manifest.js';
+import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
+import { personaProtocol } from './genus/persona.js';
+import {
+  type Agent,
+  type Dimension,
+  type GuardCell,
+  MANIFEST,
+} from './manifest.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
@@ -99,6 +107,25 @@ function refuse(message: string): never {
   throw new CompositionRefusal(message);
 }
 
+/**
+ * A value held by a guard: the same value, enforcing itself through `guard` at the
+ * guard's events. A role states it for a value its behavioral examples showed
+ * drifting, so the guard binds exactly the agents that compose that value.
+ */
+export function guarded<D extends string>(
+  value: Value<D>,
+  guard: GuardCell,
+): Enforcing<D> {
+  if (typeof value !== 'string')
+    refuse(`${anchorOf(value)} is already enforcing; one guard holds a value`);
+  return {
+    body: value,
+    substrate: guard.substrate,
+    events: guard.events,
+    realizedBy: guard.id,
+  };
+}
+
 type StatedObject = Exclude<Stated, Value<string>>;
 
 const statedObject = (stated: Stated): StatedObject =>
@@ -141,13 +168,14 @@ function checked(role: string, held: Held, entries: Entry[]): Entry[] {
       refuse(
         `role ${role} states ${factor} ${anchorOf(entry.value)} in no slot of ${factor}`,
       );
-  return slots.map((slot) => {
+  return slots.flatMap((slot) => {
     const filling = entries.filter((entry) => entry.slot === slot.name);
+    if (filling.length === 0 && slot.optional) return [];
     if (filling.length !== 1)
       refuse(
         `role ${role} fills the ${factor} slot ${slot.name} ${filling.length} times; it takes exactly one value`,
       );
-    return filling[0] as Entry;
+    return filling;
   });
 }
 
@@ -167,9 +195,16 @@ function agentOf(
     const entry = (vector[field] ?? []).find((e) => e.slot === slot);
     return entry ? anchorOf(entry.value) : '';
   };
-  // `none` is the absence of every action: an action-scope holding nothing else
-  // (an empty one included) is read-only.
-  const readOnly = anchors('actionScope').every((anchor) => anchor === 'none');
+  const [assignment] = anchors('assignment');
+  const [deliverable] = anchors('deliverable');
+  const contract = {
+    ...(assignment && ASSIGNMENT_CONTRACTS[assignment]
+      ? { assignment: ASSIGNMENT_CONTRACTS[assignment] }
+      : {}),
+    ...(deliverable && DELIVERABLE_CONTRACTS[deliverable]
+      ? { deliverable: DELIVERABLE_CONTRACTS[deliverable] }
+      : {}),
+  };
   return {
     name: identity.name,
     description: identity.description,
@@ -181,7 +216,8 @@ function agentOf(
       tier: slotAnchor('model', 'tier'),
       effort: slotAnchor('model', 'effort'),
     },
-    ...(readOnly ? { readOnly: true as const } : {}),
+    ...(Object.keys(contract).length > 0 ? { contract } : {}),
+    persistence: personaProtocol,
     ...vector,
   } as unknown as Agent;
 }
@@ -246,18 +282,27 @@ export function persona(over: RoleCell, residue: Residue): Agent {
       continue;
     }
     if (meta.arity === 'slots') {
+      const order = (meta.slots ?? []).map((slot) => slot.name);
       for (const s of stated) {
         const entry = entryOf(s, held);
         if (entry.slot === undefined)
           refuse(
             `${who} states ${factor} ${anchorOf(entry.value)} without a slot`,
           );
-        const at = entries.findIndex((e) => e.slot === entry.slot);
-        if (at < 0)
+        if (!order.includes(entry.slot))
           refuse(
             `${who} states ${factor} ${anchorOf(entry.value)} in ${entry.slot}, which is no slot of ${factor}`,
           );
-        entries[at] = entry;
+        const at = entries.findIndex((e) => e.slot === entry.slot);
+        if (at >= 0) entries[at] = entry;
+        else {
+          // An optional slot the role left unfilled: filled here, in slot order.
+          entries.push(entry);
+          entries.sort(
+            (a, b) =>
+              order.indexOf(a.slot as string) - order.indexOf(b.slot as string),
+          );
+        }
       }
       continue;
     }
