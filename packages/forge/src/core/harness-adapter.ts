@@ -70,19 +70,12 @@ export interface ComposedGuard {
 export const ENFORCING_STAGE_DIR = 'enforcing';
 
 /**
- * The harness-NEUTRAL agent root, relative to a scope's home — the one directory
- * name shared across vendors.
- *
- * NOT this project's invention, which is exactly why it is worth targeting: omp
- * reads `~/.agent[s]/{skills,rules,prompts,commands,AGENTS.md,SYSTEM.md}` through a
- * vendor-neutral provider at discovery priority 70. A corpus that lands here is
- * loaded by omp with no flag, no copy and no per-profile fan-out.
- *
- * It is a SIBLING of every harness home (`.omp`, `.claude`, …), so an adapter
- * addresses it as `../<this>/…` from its own home and deploy must be told it is a
- * legitimate prune root — see `prune/applyPrune`'s `alsoRoots`, added because
- * every destination outside the harness home was silently skipped by the
- * containment guard.
+ * The harness-NEUTRAL agent root, relative to a scope's home (`~/.agents`), where
+ * the EARLIER layout placed omp's skills, as `../.agents/skills/<name>` from the
+ * harness home. Nothing is placed there now: everything an install places lives under
+ * the owned root. It is named so an upgrade, uninstall or deploy prune can take back
+ * what an earlier deploy recorded writing there, as a legitimate prune root
+ * (`prune/applyPrune`'s `alsoRoots`).
  */
 export const NEUTRAL_AGENT_ROOT = '.agents';
 
@@ -475,8 +468,7 @@ export interface HarnessAdapter {
   /**
    * Emit what this harness composes from the COMPOSED AGENTS themselves, beyond each
    * agent's own definition: omp's dispatch isolation module (the agents that declare a
-   * worktree of their own), and on a harness whose status line is one command, the
-   * badge files and the worker {@link statusLine} names. Staged the same way
+   * worktree of their own). Staged the same way
    * `enforcingSurface`'s output is (`scope` = the agent name, or
    * {@link SESSION_SCOPE}).
    *
@@ -515,32 +507,12 @@ export interface HarnessAdapter {
    */
   readonly nativeCapabilities?: Readonly<Record<string, string>>;
   /**
-   * The harness's ONE host-owned status-line command, and the worker this port
-   * ships to fill it — declared by a harness whose status line is a single command
-   * with no segments to add a badge to (claude's `settings.statusLine`), so the
-   * persona badge cannot sit beside the host's own line and must BE the line, or
-   * wrap it.
-   *
-   * `file` is the worker {@link launchSurface} emits at the {@link SESSION_SCOPE}:
-   * one for every persona, which asks the harness's status-line input which persona
-   * runs and prints that persona's baked badge file, or nothing where none was
-   * placed. `command` is the shell command that runs the placed worker, written
-   * against `$HOME` and not a resolved path, for the reason `hookCommand` is: it is
-   * read at RUN time on whatever host it lands on. Install sets it as the host's
-   * status line where the host has none, and appends the host's own command to it,
-   * as one quoted argument, to wrap it.
-   *
-   * Absent ⇒ this harness's status line takes segments (omp's does: see
-   * {@link statusSegment}) or has no status line install could set.
-   */
-  readonly statusLine?: StatusLineWorker;
-  /**
    * Where an extension's status appears in this harness's status line, for a harness
    * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
    * status of the cratylus extension (the agent a session was started as) is an
    * extension status, and it renders INSIDE the line only where
-   * the host's layout lists `segment` — otherwise beneath it. Install adds it, to the
-   * host's own layout and never over it.
+   * the host's layout lists `segment` — otherwise beneath it. Where the host's own
+   * layout hides it, install adds it there, recorded under the owned root.
    *
    * Four facts, all the harness's own. `configRels` is where the host keeps the
    * layout, harness-home relative in the order the harness READS them (the first that
@@ -557,22 +529,26 @@ export interface HarnessAdapter {
   readonly statusSegment?: StatusSegmentHost;
   /**
    * How this harness binds an agent's MODEL through host-configured model roles —
-   * the table that lets a projected definition name a role of its own (the role
-   * named for the agent) and leaves the host to choose the model. The projection
-   * names no model id, ever.
+   * a projected definition names the role named for the agent first, which the host
+   * may bind, and then the tier and effort the agent holds (decision 0111). The
+   * projection names no model id: which model a role or tier runs on is the host's
+   * own setting, which install writes only as the operator answers (decision 0112).
    *
-   * Three facts, all the harness's own: WHERE the host keeps its roles
-   * (`configRels`, harness-home relative, in the order the harness READS them — it
-   * reads the first that exists, so install edits that one and creates the first
-   * only when none does); the value an agent's own role takes for the tier and
-   * effort it holds (`agentRole`); and the value a tier's role is SEEDED with from
-   * the roles the host already has (`seedTier`). Install reads this by harness name
-   * through the registry, so it never imports an adapter.
+   * Three facts, the harness's own: WHERE the host keeps its roles (`configRels`,
+   * harness-home relative, in the order the harness READS them); the role a tier is
+   * bound by (`tierRole`); and the value an agent's model falls back to for the tier
+   * and effort it holds (`agentRole`).
    *
-   * Absent ⇒ this harness has no host-configured role → model table: install
-   * touches no host config.
+   * Absent ⇒ this harness has no host-configured role → model table.
    */
   roleRouting?: RoleRouting;
+  /**
+   * Where this harness loads an EXTENSION PACKAGE by name for every project of one
+   * user, relative to its home: the directory install links the owned root into, as
+   * the harness's own package manager would (omp: `plugins`, as `omp plugin link`
+   * does). Absent ⇒ the harness offers no such reference, and nothing installs to it.
+   */
+  readonly packageDir?: string;
   /**
    * The handoffs this harness supplies an agent for natively, by the handoff's
    * anchor → the harness's own agent name (omp: `researcher` → `scout`). A dispatch
@@ -585,10 +561,11 @@ export interface HarnessAdapter {
   /**
    * How this harness isolates a DISPATCHED agent without an agent-definition field —
    * omp's task isolation: a per-dispatch flag the dispatcher's extension sets, over
-   * host settings that make the flag exist and keep what the copy built out of the
-   * dispatcher's checkout. It is the floor under {@link startsInWorktree} `false`:
-   * the agent that declares a worktree still does not get one off the plan's line,
-   * but it no longer builds in the checkout that dispatches it.
+   * settings that make the flag exist and keep what the copy built out of the
+   * dispatcher's checkout, which the extension holds as the session's own. It is the
+   * floor under {@link startsInWorktree} `false`: the agent that declares a worktree
+   * still does not get one off the plan's line, but it no longer builds in the
+   * checkout that dispatches it.
    *
    * Absent ⇒ no such mechanism: an agent declaring a worktree on a harness that
    * cannot start one runs in the checkout its dispatcher runs in.
@@ -598,27 +575,12 @@ export interface HarnessAdapter {
 
 /** A harness's dispatch-time isolation. See {@link HarnessAdapter.dispatchIsolation}. */
 export interface DispatchIsolation {
-  /** The host config files that hold the settings, relative to the harness home, in
-   *  the harness's read order ({@link RoleRouting.configRels}). */
-  readonly configRels: readonly string[];
-  /** The scalar settings the host must hold, each as a key under the mapping at
-   *  `parent` (a path of nested keys), with the value as it is written. */
-  readonly settings: {
-    readonly parent: readonly string[];
-    readonly entries: Readonly<Record<string, string>>;
-  };
+  /** The settings the isolation holds, by the harness's own dotted setting name. */
+  readonly settings: Readonly<Record<string, string | number | boolean>>;
   /** What the isolation still lacks against a worktree off the plan's line, in words
    *  that complete "an agent that declares isolation runs in an isolated copy of its
    *  dispatcher's checkout, …": said by projection and by install. */
   readonly lacks: string;
-}
-
-/** The status-line worker a harness ships. See {@link HarnessAdapter.statusLine}. */
-export interface StatusLineWorker {
-  /** The worker's filename, at the {@link SESSION_SCOPE}. */
-  readonly file: string;
-  /** The shell command that runs the placed worker, host command not yet appended. */
-  readonly command: string;
 }
 
 /** A status-line layout: the segments each side lists, and the options they carry. */
@@ -650,18 +612,13 @@ export interface StatusSegmentHost {
 /** A harness's model-role table. See {@link HarnessAdapter.roleRouting}. */
 export interface RoleRouting {
   /** The host config files that hold the model roles, relative to the harness home,
-   *  in the harness's read order: it reads the first that exists and ignores the
-   *  rest, so a file created beside an existing later one would shadow it. */
+   *  in the harness's read order: it reads the first that exists. */
   readonly configRels: readonly string[];
-  /** The value of an agent's own model role, for the tier and effort it holds. */
+  /** The model role a tier is bound by in the host's table. */
+  tierRole(tier: string): string;
+  /** The model an agent falls back to, for the tier and effort it holds. */
   agentRole(routing: {
     readonly tier: string;
     readonly effort: string;
   }): string;
-  /** The value the role named for `tier` is seeded with, from the host's model roles
-   *  as they stand (in file order); `undefined` where it cannot be seeded. */
-  seedTier(
-    tier: string,
-    host: readonly (readonly [role: string, value: string])[],
-  ): string | undefined;
 }

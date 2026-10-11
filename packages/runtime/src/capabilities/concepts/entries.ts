@@ -12,6 +12,11 @@
 // (`classify`) are entries of their own, so the decision's record never
 // changes. A cut's efficiency figures (`efficiency`) are recorded by the work
 // package capability; the latest for a cut are its figures.
+//
+// An entry of a kind named here is read only when it carries every field its
+// kind's shape requires; an entry of a kind not named here, or of a known kind
+// holding a value of an open field this runtime does not know, was written by a
+// newer runtime and is read past, never refused, interpreted or rewritten.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** What every entry carries: the ULID naming its file, and when it was minted. */
@@ -129,17 +134,133 @@ export type Entry =
   | ClassifyEntry
   | EfficiencyEntry;
 
-/** Every kind of entry the journal holds. */
-export const KINDS: readonly Entry['kind'][] = [
-  'context',
-  'define',
-  'supersede',
-  'retire',
-  'decide',
-  'accept',
-  'classify',
-  'efficiency',
-];
+/** Whether a field's value fits its place in an entry. */
+type Fits = (value: unknown) => boolean;
+
+const text: Fits = (value) => typeof value === 'string';
+const texts: Fits = (value) => Array.isArray(value) && value.every(text);
+const count: Fits = (value) => typeof value === 'number';
+const optional =
+  (fits: Fits): Fits =>
+  (value) =>
+    value === undefined || fits(value);
+
+/** Every field of entries of kind `K` but its id and kind, each with what fits it. */
+type Shape<K extends Entry['kind']> = {
+  readonly [F in Exclude<keyof (Entry & { kind: K }), 'id' | 'kind'>]-?: Fits;
+};
+
+const worded = {
+  at: text,
+  context: text,
+  name: text,
+  wording: text,
+  builtFrom: texts,
+  reason: text,
+  supersedes: texts,
+} as const;
+
+/** Every kind of entry the journal holds, and the fields an entry of it must
+ *  carry to be read. */
+export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
+  context: {
+    at: text,
+    name: text,
+    subject: text,
+    relation: text,
+    reason: optional(text),
+    supersedes: optional(texts),
+  },
+  define: worded,
+  supersede: worded,
+  retire: {
+    at: text,
+    context: text,
+    name: text,
+    reason: text,
+    supersedes: texts,
+  },
+  decide: {
+    at: text,
+    decisionId: text,
+    context: text,
+    title: text,
+    situation: text,
+    decision: text,
+    consequences: text,
+    status: text,
+    supersedes: (value) => value === null || text(value),
+    supersedesEntry: optional(text),
+    decisionKind: optional(text),
+  },
+  accept: {
+    at: text,
+    decisionId: text,
+    entry: optional(text),
+    reason: optional(text),
+  },
+  classify: {
+    at: text,
+    decisionId: text,
+    entry: text,
+    decisionKind: text,
+    reason: optional(text),
+  },
+  efficiency: {
+    at: text,
+    context: text,
+    cut: text,
+    agentRuns: (value) =>
+      typeof value === 'object' &&
+      value !== null &&
+      'total' in value &&
+      count(value.total) &&
+      'byRole' in value &&
+      typeof value.byRole === 'object' &&
+      value.byRole !== null &&
+      Object.values(value.byRole).every(count),
+    rounds: count,
+    wholeCheckRuns: count,
+    tokens: (value) => value === null || count(value),
+  },
+};
+
+/** Whether `kind` is one the journal holds. */
+export const isKind = (kind: unknown): kind is Entry['kind'] =>
+  typeof kind === 'string' && Object.hasOwn(SHAPES, kind);
+
+/** The fields of `entry`, of kind `kind`, that do not fit its kind: none when
+ *  it can be read. */
+export const unfit = (
+  entry: Readonly<Record<string, unknown>>,
+  kind: Entry['kind'],
+): string[] =>
+  Object.entries(SHAPES[kind] as Readonly<Record<string, Fits>>)
+    .filter(([field, fits]) => !fits(entry[field]))
+    .map(([field]) => field);
+
+/** The open fields of each kind: those a newer runtime may give values this
+ *  one does not know, each with the values it knows. A field's shape still
+ *  says what fits it; a fitting value outside these is newer, not malformed. */
+const KNOWN_VALUES: {
+  readonly [K in Entry['kind']]?: Readonly<Record<string, readonly string[]>>;
+} = {
+  decide: { status: ['open', 'accepted'], decisionKind: DECISION_KINDS },
+  classify: { decisionKind: DECISION_KINDS },
+};
+
+/** Each open field of `entry`, of kind `kind`, holding a value this runtime
+ *  does not know, with that value: none when it can be interpreted. */
+export const newerValues = (
+  entry: Readonly<Record<string, unknown>>,
+  kind: Entry['kind'],
+): [field: string, value: string][] =>
+  Object.entries(KNOWN_VALUES[kind] ?? {}).flatMap(([field, known]) => {
+    const value = entry[field];
+    return typeof value === 'string' && !known.includes(value)
+      ? [[field, value] as [string, string]]
+      : [];
+  });
 
 /** An entry before it is stamped: what a verb asks the journal to append. */
 export type Draft<E extends Entry = Entry> = E extends Entry

@@ -42,7 +42,7 @@ function renderTreeExt(
 }
 
 describe('deploy prune — OMP convergence to the render tree', () => {
-  it('NEUTRAL ROOT: a retired skill is swept out of `../.agents`, foreign files spared', () => {
+  it('a retired skill is swept out of the root it was placed in, foreign files spared', () => {
     const omp = adapterByName('omp');
     const home = tmp('v4-host-');
     const a = renderTreeExt([], omp.agentExt, ['probe', 'wake']);
@@ -61,13 +61,10 @@ describe('deploy prune — OMP convergence to the render tree', () => {
       });
 
     deploy(a);
-    const retired = join(home, '.agents', 'skills', 'wake', 'SKILL.md');
-    expect(
-      existsSync(retired),
-      'the skill landed outside the harness home',
-    ).toBe(true);
+    const retired = join(home, '.omp', 'skills', 'wake', 'SKILL.md');
+    expect(existsSync(retired), 'the skill landed in the root').toBe(true);
     // A file this tool never wrote, in the very dir the prune now reaches into.
-    const foreign = join(home, '.agents', 'skills', 'wake', 'NOTES.md');
+    const foreign = join(home, '.omp', 'skills', 'wake', 'NOTES.md');
     writeFileSync(foreign, 'WAKE LIVED HISTORY\n', 'utf-8');
 
     deploy(b);
@@ -77,8 +74,8 @@ describe('deploy prune — OMP convergence to the render tree', () => {
       'an artifact this tool never recorded is untouchable, in every root',
     ).toBe('WAKE LIVED HISTORY\n');
     // …and the live skill is still there.
-    expect(
-      existsSync(join(home, '.agents', 'skills', 'probe', 'SKILL.md')),
-    ).toBe(true);
+    expect(existsSync(join(home, '.omp', 'skills', 'probe', 'SKILL.md'))).toBe(
+      true,
+    );
   });
 });

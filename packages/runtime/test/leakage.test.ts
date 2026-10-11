@@ -83,8 +83,8 @@ describe('leaks', () => {
     ['Format it with prettier --write.', 'prettier --write', 'names a command'],
     ['Packages are added with yarn add.', 'yarn add', 'names a command'],
     [
-      'It is served by EventTapHostClaude.',
-      'EventTapHostClaude',
+      'It is served by WorkPackageLedger.',
+      'WorkPackageLedger',
       'names a code identifier',
     ],
   ])('%s → %s', (text, words, rule) => {

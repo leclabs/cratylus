@@ -1,0 +1,13 @@
+{
+  "id": "01M4NTDBS2VDQ8HRVQPDKSR0ZZ",
+  "at": "2026-10-11T15:48:26.530Z",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability port",
+  "wording": "each capability has one implementation, the cratylus runtime, which delivery places on every host it installs to; agents reach it through a thin harness tool that calls that implementation and adds no behaviour of its own, and the operator through the cratylus command, so both reach the same version, any difference between them is reported as version skew, and supporting another harness never reimplements a capability.",
+  "builtFrom": [],
+  "reason": "0077: both reaching the same version holds by install; a difference is reported, never resolved by dispatching to another build.",
+  "supersedes": [
+    "01M4JDR3ZG8M88BAZ8CM3GN6FN"
+  ]
+}

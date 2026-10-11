@@ -140,11 +140,28 @@ it.each([
       },
     );
     try {
-      const roles = f.configuration().modelRoles as Record<string, string>;
-      expect(roles.illustrator).toBe('@frontier-other-family:high');
-      expect(roles['frontier-other-family']).toBeUndefined();
-      expect(roles.frontier).toBeUndefined();
-      expect(roles.default).toBeUndefined();
+      const declaration = readFileSync(
+        join(f.home, '.cratylus/omp/agents/illustrator.md'),
+        'utf8',
+      );
+      const front = /^---\r?\n([\s\S]*?)\r?\n---/.exec(declaration);
+      expect(front, 'illustrator has YAML front matter').not.toBeNull();
+      const { model } = JSON.parse(
+        execFileSync(
+          'bun',
+          [
+            '-e',
+            'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
+          ],
+          { cwd: f.cwd, env: f.env, input: front![1], encoding: 'utf8' },
+        ),
+      );
+      expect
+        .soft(model, 'illustrator role precedes its profile fallback')
+        .toEqual(['@illustrator', '@frontier-other-family:high']);
+      expect
+        .soft(f.configuration().modelRoles ?? {}, 'install seeds no host roles')
+        .toEqual({});
       await session.command({
         type: 'prompt',
         message: 'Dispatch both assignments.',

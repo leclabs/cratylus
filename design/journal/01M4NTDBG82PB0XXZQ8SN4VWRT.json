@@ -1,0 +1,15 @@
+{
+  "id": "01M4NTDBG82PB0XXZQ8SN4VWRT",
+  "at": "2026-10-11T15:48:26.248Z",
+  "kind": "decide",
+  "decisionId": "0108",
+  "context": "delivery",
+  "title": "Cut: delivery",
+  "situation": "0029 named the delivery cut: owned root, upgrade, install and uninstall at user scope, and retiring the event tap. Since then 0077 settled version skew and 0066 awaited a ruling on an older reader meeting a newer journal; both belong to this cut. The operator delegated the remaining cuts human-out-of-the-loop.",
+  "decision": "One cut on feature branch feature/delivery, across delivery and the concept journal it carries: install and uninstall for one user across every project, everything placed under the owned root with the harness's surfaces only referring into it; upgrade replacing the owned root whole; version skew reported at every harness start (0077); an older runtime reading past journal entries it does not know (0109); and the event tap retired from what cratylus delivers. The architect holds both contexts and approves the examples.",
+  "consequences": "Realized and judged under the workflow as it now stands: live runs fail fast (0088, 0092), held-out cases run only in judgment (0103), and guards hold only acts checked before they take effect (0106).",
+  "status": "accepted",
+  "supersedes": "0029",
+  "supersedesEntry": "01M4J70D89TV14TSQK88CTB98T",
+  "decisionKind": "realization"
+}

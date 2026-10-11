@@ -305,9 +305,9 @@ export type Evaluation = Value<'evaluation'>;
 // bare `Capability` reads as what an agent is able to do (the `expertise`
 // factor above), which is a different concept; one root would cover two.
 export const RUNTIME_CAPABILITIES = [
-  'eventTap',
   'concepts',
   'workPackage',
+  'versionSkew',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */

@@ -1,0 +1,13 @@
+{
+  "id": "01M4NTDBKQG4HQRWNETM4EPDH4",
+  "at": "2026-10-11T15:48:26.359Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "install",
+  "wording": "placing cratylus on one harness for one user, across every project: the corpus's agents and skills and the harness's adapters are projected under the owned root, the harness's own surfaces only refer into it, and the version that projected them is recorded; install asks only what it has not been told, and installing again with the same version changes nothing.",
+  "builtFrom": [
+    "owned root"
+  ],
+  "reason": "0108: the delivery cut realizes install at user scope; the context named it in its subject but had no concept for it.",
+  "supersedes": []
+}

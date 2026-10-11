@@ -3,6 +3,7 @@
 // bind the contract end to end; these hold what they do not reach: ids minted
 // past the journal's last, a retirement among competing versions, flags given
 // twice, a journal entry that is not one, and a working directory outside git.
+// Entries of unknown kinds are held in `tolerant-reader.test.ts`.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -217,13 +218,21 @@ describe('the concept journal as a library', () => {
   });
 
   it('refuses a journal entry that is not one, rather than reading past it', () => {
-    writeFileSync(
-      join(repo, 'design/journal', '01Z00000000000000000000009.json'),
-      '{"id":"01Z00000000000000000000009","kind":"note"}',
+    const file = join(
+      repo,
+      'design/journal',
+      '01Z00000000000000000000009.json',
     );
-    expect(() => concepts('design')).toThrow(
-      /^concepts design: the journal entry .* is not an entry/,
-    );
+    for (const body of [
+      '{"id":"01Z00000000000000000000009"}',
+      '{"id":"01Z00000000000000000000008","kind":"note"}',
+      '{"id":"01Z00000000000000000000009","kind":7}',
+    ]) {
+      writeFileSync(file, body);
+      expect(() => concepts('design')).toThrow(
+        /^concepts design: the journal entry .*01Z00000000000000000000009\.json is not an entry/,
+      );
+    }
   });
 
   it('reads entries written before identities could be shared, by their names', () => {

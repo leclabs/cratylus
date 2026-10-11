@@ -1,5 +1,5 @@
 // What the capability-command tests share: a temporary git repository to run in,
-// the host runtime config they run under, and what the concept journal holds.
+// and what the concept journal holds.
 
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
@@ -19,10 +19,6 @@ function tmp(prefix: string): string {
 afterAll(() => {
   for (const d of scratch) rmSync(d, { recursive: true, force: true });
 });
-
-const configDir = tmp('verb-surface-config-');
-/** The host runtime config every test runs under. */
-export const CONFIG = join(configDir, 'runtime.json');
 
 function git(cwd: string, ...args: string[]): string {
   return execFileSync(

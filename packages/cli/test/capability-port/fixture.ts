@@ -212,9 +212,15 @@ function hostIn(root: string): Host {
     'default',
   ]);
   const placed = snapshot(home);
-  const extensionRoot = join(home, '.omp/agent/extensions');
+  const extensionRoots = [
+    join(home, '.cratylus/omp/extensions'),
+    join(home, '.omp/agent/extensions'),
+  ];
+  // Omp discovers the installed projection and host-owned observer controls.
   const modules = () =>
-    files(extensionRoot).filter((f) => /\.(?:[cm]?js|ts)$/.test(f));
+    extensionRoots.flatMap((root) =>
+      files(root).filter((f) => /\.(?:[cm]?js|ts)$/.test(f)),
+    );
   let adapter: string | null | undefined;
   const launchArgs = (explicit = true) => [
     '--print',
@@ -232,7 +238,14 @@ function hostIn(root: string): Host {
     ...(explicit ? ['--no-extensions'] : []),
     '--extension',
     tap,
-    ...(explicit && adapter ? ['--extension', adapter] : []),
+    ...(explicit && adapter
+      ? [
+          '--extension',
+          adapter.startsWith(join(home, '.cratylus/omp/'))
+            ? join(home, '.cratylus/omp')
+            : adapter,
+        ]
+      : []),
     '--extension',
     observer,
     '--tools',

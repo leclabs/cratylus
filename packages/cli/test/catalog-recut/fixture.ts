@@ -172,7 +172,7 @@ export default defineConfig({ extends: [canon${
   }
   function declaration(name: string, installed = false): Declaration {
     const file = join(
-      installed ? join(home, '.omp/agent') : out,
+      installed ? join(home, '.cratylus/omp') : out,
       'agents',
       `${name}.md`,
     );
@@ -205,7 +205,7 @@ export default defineConfig({ extends: [canon${
     },
     names(installed = false) {
       return readdirSync(
-        join(installed ? join(home, '.omp/agent') : out, 'agents'),
+        join(installed ? join(home, '.cratylus/omp') : out, 'agents'),
       )
         .filter((name) => name.endsWith('.md'))
         .map((name) => name.slice(0, -3))

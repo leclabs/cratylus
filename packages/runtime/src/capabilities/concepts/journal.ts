@@ -7,7 +7,10 @@
 // edited, moved or deleted, so two branches that both appended merge in git as
 // the union of their files. Entries are read only from this directory of the
 // working tree, never from another branch, ref, worktree or git history, and
-// are ordered by their id.
+// are ordered by their id. An entry of a kind this runtime does not know, or of
+// a known kind holding a value it does not know, is read past and counted by
+// its kind, so every reading can say what it left uninterpreted; an entry of a
+// known kind that cannot be read is refused.
 //
 // A process mints its ids monotonically; an id is also minted past the
 // journal's last, so append order holds across the processes that appended.
@@ -25,7 +28,13 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
-import { type Draft, type Entry, KINDS } from './entries.js';
+import {
+  type Draft,
+  type Entry,
+  isKind,
+  newerValues,
+  unfit,
+} from './entries.js';
 
 /** The journal's place, relative to the top of the repository. */
 export const JOURNAL_DIR = 'design/journal';
@@ -33,12 +42,88 @@ export const JOURNAL_DIR = 'design/journal';
 /** An entry's file name: its id, then `.json`. */
 const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 
+/** What a reading of a ledger read past, written by a newer runtime: each
+ *  kind it left uninterpreted, with how many entries of it, and each value it
+ *  does not know of a known kind's field, with how many entries hold it. The
+ *  concept journal and the work package ledger read past the same way. */
+export class ReadPast {
+  readonly kinds = new Map<string, number>();
+  /** By `<kind>.<field>`, each value with how many entries hold it. */
+  readonly values = new Map<string, Map<string, number>>();
+
+  /** Count one entry of `kind` read past; `newer` names the values of its
+   *  fields this runtime does not know, none when the kind itself is new. */
+  add(kind: string, newer: readonly (readonly [string, string])[] = []): void {
+    count(this.kinds, kind, 1);
+    for (const [field, value] of newer)
+      count(this.#held(`${kind}.${field}`), value, 1);
+  }
+
+  /** This and `other` together. */
+  with(other: ReadPast): ReadPast {
+    const both = new ReadPast();
+    for (const past of [this, other]) {
+      for (const [kind, n] of past.kinds) count(both.kinds, kind, n);
+      for (const [key, held] of past.values)
+        for (const [value, n] of held) count(both.#held(key), value, n);
+    }
+    return both;
+  }
+
+  /** The values counted for `key`, `<kind>.<field>`. */
+  #held(key: string): Map<string, number> {
+    const held = this.values.get(key) ?? new Map<string, number>();
+    this.values.set(key, held);
+    return held;
+  }
+
+  /** What a reading answers beside its view of the rest: `undefined` when
+   *  nothing was read past. */
+  report():
+    | {
+        readonly kinds: Readonly<Record<string, number>>;
+        readonly values?: Readonly<Record<string, Record<string, number>>>;
+        readonly mayBeIncomplete: true;
+        readonly reading: string;
+      }
+    | undefined {
+    if (this.kinds.size === 0) return undefined;
+    return {
+      kinds: Object.fromEntries(this.kinds),
+      ...(this.values.size > 0
+        ? {
+            values: Object.fromEntries(
+              [...this.values].map(([key, held]) => [
+                key,
+                Object.fromEntries(held),
+              ]),
+            ),
+          }
+        : {}),
+      mayBeIncomplete: true,
+      reading: READ_PAST,
+    };
+  }
+}
+
+/** What a reading that read past entries says of how it was read. */
+const READ_PAST =
+  'Entries written by a newer runtime, of a kind this one does not know or of a known kind holding a value it does not know, were read past: this answer is worked out from the rest and may be incomplete; each such kind is counted, with each value not known. Recording still appends, leaving every entry as it was; an entry of a known kind that cannot be read is refused, naming it.';
+
+/** Add `n` to the count of `key` in `counts`. */
+function count(counts: Map<string, number>, key: string, n: number): void {
+  counts.set(key, (counts.get(key) ?? 0) + n);
+}
+
 /** The concept journal of one working tree. */
 export interface Journal {
   /** The top of the git repository holding the journal. */
   readonly root: string;
-  /** Every entry, in append order. */
+  /** Every entry of a kind this runtime knows, in append order. */
   entries(): readonly Entry[];
+  /** What was read past: entries of kinds this runtime does not know, or of a
+   *  known kind holding a value it does not know. */
+  readPast(): ReadPast;
   /** Append `draft` as one new entry, stamped with its id and time. */
   append<D extends Draft>(draft: D): D & { id: string; at: string };
 }
@@ -66,9 +151,16 @@ export function journalAt(
       `${from} is not inside a git working tree; the journal is ${JOURNAL_DIR} at the top of one`,
     );
   const dir = join(top, JOURNAL_DIR);
-  let cached: readonly Entry[] | undefined;
+  /** What the journal holds, read once until the next append. */
+  let cached:
+    | {
+        readonly entries: readonly Entry[];
+        readonly readPast: ReadPast;
+        readonly last: string | undefined;
+      }
+    | undefined;
 
-  const entries = (): readonly Entry[] => {
+  const load = () => {
     if (cached !== undefined) return cached;
     const names = existsSync(dir)
       ? readdirSync(dir, { withFileTypes: true })
@@ -76,16 +168,27 @@ export function journalAt(
           .map((d) => d.name)
           .sort()
       : [];
-    cached = names.map((name) => read(join(dir, name), name, refuse));
+    const entries: Entry[] = [];
+    const readPast = new ReadPast();
+    for (const name of names) {
+      const read = readEntry(join(dir, name), name, refuse);
+      if ('newer' in read) readPast.add(read.kind, read.newer);
+      else entries.push(read);
+    }
+    cached = {
+      entries,
+      readPast,
+      last: names.at(-1)?.slice(0, -'.json'.length),
+    };
     return cached;
   };
 
   return {
     root: top,
-    entries,
+    entries: () => load().entries,
+    readPast: () => load().readPast,
     append(draft) {
-      const last = entries().at(-1)?.id;
-      const id = mintAfter(last);
+      const id = mintAfter(load().last);
       const entry = {
         id,
         at: new Date(decodeTime(id)).toISOString(),
@@ -117,13 +220,15 @@ function mintAfter(last: string | undefined): string {
   return monotonicFactory(Math.random, () => after)();
 }
 
-/** The entry in the file at `path`, named `name`; refuses one that is not an
- *  entry of this journal. */
-function read(
+/** The entry in the file at `path`, named `name`, or, when this runtime does
+ *  not know its kind or a value it holds, that kind with each value it does
+ *  not know; refuses one that is not an entry of this journal, or of a known
+ *  kind but lacking what that kind carries. */
+function readEntry(
   path: string,
   name: string,
   refuse: (message: string) => Error,
-): Entry {
+): Entry | { kind: string; newer: [string, string][] } {
   const entry: unknown = (() => {
     try {
       return JSON.parse(readFileSync(path, 'utf8'));
@@ -131,20 +236,26 @@ function read(
       throw refuse(`the journal entry ${JOURNAL_DIR}/${name} is not JSON`);
     }
   })();
-  // Its file names its id; a kind the journal does not record is no entry.
-  const isEntry =
-    typeof entry === 'object' &&
-    entry !== null &&
-    'id' in entry &&
-    entry.id === name.slice(0, -'.json'.length) &&
-    'kind' in entry &&
-    KINDS.some((kind) => kind === entry.kind);
-  if (!isEntry)
+  // Its file names its id, and it names its kind; one without both is no entry.
+  if (
+    typeof entry !== 'object' ||
+    entry === null ||
+    !('id' in entry) ||
+    entry.id !== name.slice(0, -'.json'.length) ||
+    !('kind' in entry) ||
+    typeof entry.kind !== 'string' ||
+    entry.kind === ''
+  )
     throw refuse(
       `the journal entry ${JOURNAL_DIR}/${name} is not an entry of this journal`,
     );
-  // Appended only by this module and never edited: its id and kind vouch for
-  // the rest of its shape.
-  const appended = entry as Entry;
-  return appended;
+  if (!isKind(entry.kind)) return { kind: entry.kind, newer: [] };
+  const fields = entry as Record<string, unknown>;
+  const missing = unfit(fields, entry.kind);
+  if (missing.length > 0)
+    throw refuse(
+      `the journal entry ${JOURNAL_DIR}/${name} is a ${entry.kind} entry this runtime cannot read: ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or malformed`,
+    );
+  const newer = newerValues(fields, entry.kind);
+  return newer.length > 0 ? { kind: entry.kind, newer } : (entry as Entry);
 }

@@ -94,8 +94,8 @@ export interface DeployManifest {
   // rel path (from the deploy root, POSIX) -> the sha-256 of the bytes this tool last
   // WROTE there, for every path in `kinds`. A placed file whose bytes still hash to this
   // is untouched since; one that does not is the host's own edit, and an uninstall
-  // leaves it. A path with no digest (recorded before digests were kept) cannot be told
-  // either way, and is left too.
+  // leaves it. A path with no digest (recorded before digests were kept) is taken back:
+  // the record of placing it is what makes it cratylus's (decision 0114).
   digests: Record<string, string>;
   // rel path (from the deploy root, POSIX) of a host-owned TEXT file install edited
   // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
@@ -526,19 +526,15 @@ export function undoHunks(
   return { text: lines.join(''), results: results.reverse() };
 }
 
-/** Record what install did to the host-owned text file `file`, in `harnessDir`'s
- *  manifest. Merged with what is already there for the file, and never twice: a hunk
- *  already recorded is not recorded again, and neither is an insertion whose every line
- *  an earlier insertion already covers (a re-install that finds its own lines there). */
-export function noteHostEdit(
-  harnessDir: string,
-  file: string,
+/** What install did to one host-owned text file, merged into what was recorded for it
+ *  before (`prior`), and never twice: a hunk already recorded is not recorded again,
+ *  and neither is an insertion whose every line an earlier insertion already covers (a
+ *  re-install that finds its own lines there). `undefined` where nothing is new. */
+export function mergeHostEdit(
+  prior: HostEdit | undefined,
   edit: HostEdit,
-): void {
-  if (edit.hunks.length === 0) return;
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
+): HostEdit | undefined {
+  if (edit.hunks.length === 0) return undefined;
   const hunks = [...(prior?.hunks ?? [])];
   const covered = new Map<string, number>();
   for (const h of hunks) {
@@ -560,18 +556,12 @@ export function noteHostEdit(
     hunks.push(hunk);
     added += 1;
   }
-  if (added === 0 && prior !== undefined) return;
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: {
-        ...prior,
-        created: (prior?.created ?? false) || edit.created,
-        hunks,
-      },
-    },
-  });
+  if (added === 0 && prior !== undefined) return undefined;
+  return {
+    ...prior,
+    created: (prior?.created ?? false) || edit.created,
+    hunks,
+  };
 }
 
 /** Every line install recorded as its own insertion into `file`, with its terminator:
@@ -584,85 +574,6 @@ export function recordedLines(harnessDir: string, file: string): Set<string> {
     if (hunk.before.length === 0) for (const l of hunk.after) lines.add(l);
   }
   return lines;
-}
-
-/** Move the record of one line install put into `file` to the line that now stands
- *  there: `from` is what was recorded, `to` what install replaced it with. Where no
- *  hunk holds `from` (a host installed before edits were recorded), `adopted` — the
- *  new line as a hunk of its own — is recorded instead. */
-export function retargetHostEdit(
-  harnessDir: string,
-  file: string,
-  from: string,
-  to: string,
-  adopted: LineHunk,
-): void {
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
-  const moved = (prior?.hunks ?? []).map((h) =>
-    h.before.length === 0 && h.after.includes(from)
-      ? { ...h, after: h.after.map((l) => (l === from ? to : l)) }
-      : h,
-  );
-  const found = moved.some((h, i) => h !== prior?.hunks[i]);
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: {
-        created: prior?.created ?? false,
-        ...prior,
-        hunks: found ? moved : [...(prior?.hunks ?? []), adopted],
-      },
-    },
-  });
-}
-
-/** Record which model roles' entries are now the operator's choice (`chosen`), and
- *  which are install's own seed, each with the value install wrote (`seeded`). */
-export function noteHostRoutes(
-  harnessDir: string,
-  chosen: readonly string[],
-  seeded: Readonly<Record<string, string>>,
-): void {
-  const own = Object.keys(seeded);
-  if (chosen.length === 0 && own.length === 0) return;
-  const manifest = readManifest(harnessDir);
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostRoutes: [
-      ...manifest.hostRoutes.filter(
-        (r) => !own.includes(r) && !chosen.includes(r),
-      ),
-      ...chosen,
-    ],
-    modelRoleSeeds: {
-      ...Object.fromEntries(
-        Object.entries(manifest.modelRoleSeeds).filter(
-          ([r]) => !chosen.includes(r),
-        ),
-      ),
-      ...seeded,
-    },
-  });
-}
-
-/** Mark `file` as one an install from before edits were recorded may have changed in ways
- *  nothing records — a value it turned, a line it put in a list of the host's. Called by
- *  the install that migrates the record, so the mark outlives the rewrite that makes the
- *  record look as if it had always recorded edits; an uninstall reports the file for it. */
-export function markMigratedConfig(harnessDir: string, file: string): void {
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: { created: false, hunks: [], ...prior, migrated: true },
-    },
-  });
 }
 
 /** A hunk that records `count` lines ALREADY in `text`, from line `from`, as install's:
@@ -702,7 +613,7 @@ export function recordsHostEdits(harnessDir: string): boolean {
  *  blind to a harness whose agents carry another extension: a tree filtered by
  *  `.md` matches nothing, and nothing reads as "no orphans". */
 const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
-  agent: { dir: 'agent/agents', extended: true },
+  agent: { dir: 'agents', extended: true },
   skill: { dir: 'skills' },
   hooks: { dir: 'hooks' },
 };

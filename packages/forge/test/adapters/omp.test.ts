@@ -356,9 +356,16 @@ describe('omp agent definition', () => {
       name: 'mav',
       description: 'the builder: ships things',
       key: 'null',
-      model: '@mav',
+      model: '["@mav"]',
     });
     expect(Object.keys(front)).toEqual(['name', 'description', 'key', 'model']);
+  });
+
+  it('names its own model role first, then its tier and effort, never a model (0111, 0112)', () => {
+    const routed = agent({ routing: { tier: 'frontier', effort: 'high' } });
+    expect(frontMatter(agentToOmpMd(routed, CTX)).model).toBe(
+      '["@mav", "@frontier:high"]',
+    );
   });
 
   it('writes every setting in the order omp reads them, each only where it applies', () => {
@@ -477,51 +484,10 @@ describe('omp agent definition', () => {
 });
 
 describe('omp model roles', () => {
-  const host = [
-    ['default', 'anthropic/frontier-model:low'],
-    ['smol', 'anthropic/small-model:medium'],
-    ['plan', '@default'],
-    ['second', 'anthropic/other-model:high'],
-    ['alternate', 'openai/other-family:max'],
-    ['later', 'google/third-family'],
-  ] as const;
-
   it("binds an agent's own role to its tier and effort", () => {
     expect(ompRoleRouting.agentRole({ tier: 'frontier', effort: 'high' })).toBe(
       '@frontier:high',
     );
-  });
-
-  it('seeds each tier from the host’s own roles, its thinking level dropped', () => {
-    expect(ompRoleRouting.seedTier('frontier', host)).toBe(
-      'anthropic/frontier-model',
-    );
-    expect(ompRoleRouting.seedTier('fast', host)).toBe('anthropic/small-model');
-    // The first entry, in file order, of another provider than the frontier's; an
-    // alias names no provider.
-    expect(ompRoleRouting.seedTier('frontier-other-family', host)).toBe(
-      'openai/other-family',
-    );
-  });
-
-  it('reads the frontier the host already set when it seeds the other family', () => {
-    expect(
-      ompRoleRouting.seedTier('frontier-other-family', [
-        ['frontier', 'openai/chosen'],
-        ...host,
-      ]),
-    ).toBe('anthropic/frontier-model');
-  });
-
-  it('seeds nothing it has no model for', () => {
-    expect(ompRoleRouting.seedTier('frontier', [])).toBeUndefined();
-    expect(
-      ompRoleRouting.seedTier('fast', [['default', 'a/b']]),
-    ).toBeUndefined();
-    expect(
-      ompRoleRouting.seedTier('frontier-other-family', [['default', 'a/b']]),
-    ).toBeUndefined();
-    expect(ompRoleRouting.seedTier('no-such-tier', host)).toBeUndefined();
   });
 });
 
@@ -534,9 +500,9 @@ describe('omp scopes nothing per agent', () => {
   });
 
   it('places every scoped module in the session root and refuses an agent scope', () => {
-    expect(ompHarnessAdapter.scopedRel?.('m.ts')).toBe('agent/extensions/m.ts');
+    expect(ompHarnessAdapter.scopedRel?.('m.ts')).toBe('extensions/m.ts');
     expect(ompHarnessAdapter.scopedRel?.('m.ts', SESSION_SCOPE)).toBe(
-      'agent/extensions/m.ts',
+      'extensions/m.ts',
     );
     expect(() => ompHarnessAdapter.scopedRel?.('m.ts', 'mav')).toThrow(
       /nothing for one agent/,
@@ -579,10 +545,11 @@ describe('omp capability interface', () => {
     process.env.PATH = PATH;
   });
 
-  /** The emitted module's factory, written to disk beside a `cratylus` on PATH
-   *  that answers `<capability> --explain` with `explanation` under that
-   *  capability's own name (`<name> <capability>`), and any other call with its
-   *  argv as JSON (or, for a verb named `refuse`, a refusal on stderr). */
+  /** The emitted module's factory, written into an installation projected by
+   *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
+   *  with `explanation` under that capability's own name (`<name> <capability>`), and
+   *  any other call with its argv as JSON (or, for a verb named `refuse`, a refusal
+   *  on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -597,7 +564,9 @@ describe('omp capability interface', () => {
       [
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
-        `if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
+        "if (process.env.STAND_IN_CALLS) require('node:fs').appendFileSync(process.env.STAND_IN_CALLS, `${JSON.stringify(args)}\\n`);",
+        "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
+        `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
         'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
         '',
@@ -605,8 +574,14 @@ describe('omp capability interface', () => {
       { mode: 0o755 },
     );
     process.env.PATH = `${bin}:${PATH}`;
+    const root = join(dir, 'root');
+    mkdirSync(join(root, 'extensions'), { recursive: true });
+    writeFileSync(
+      join(root, 'package.json'),
+      JSON.stringify({ name: 'cratylus-omp', version: '1.0.0' }),
+    );
     const [module] = ompCapabilityExtensions();
-    const file = join(dir, OMP_CRATYLUS_MODULE);
+    const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
     writeFileSync(file, module?.content ?? '');
     // Dynamic: the module under test is the emitted bytes, written to disk here.
     return (await import(file)).default;
@@ -620,7 +595,7 @@ describe('omp capability interface', () => {
     expect(OMP_CRATYLUS_MODULE).toBe('cratylus.ts');
     expect(
       ompHarnessAdapter.scopedRel?.(OMP_CRATYLUS_MODULE, SESSION_SCOPE),
-    ).toBe('agent/extensions/cratylus.ts');
+    ).toBe('extensions/cratylus.ts');
   });
 
   it('asks the installed command for each interface and carries none of its own', () => {
@@ -719,9 +694,12 @@ describe('omp capability interface', () => {
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
-     *  order the adapter offers its capabilities. */
-    const TOOLS = OMP_CAPABILITY_TOOLS.map(
-      (capability) => `stand_in_${capability.toLowerCase()}`,
+     *  order the adapter offers its capabilities; the version tool is the one the
+     *  artifacts carry, whatever the command explains. */
+    const TOOLS = OMP_CAPABILITY_TOOLS.map((capability) =>
+      capability === 'versionSkew'
+        ? 'version_skew'
+        : `stand_in_${capability.toLowerCase()}`,
     );
     const EXPLANATION = {
       name: 'stand in',
@@ -767,7 +745,11 @@ describe('omp capability interface', () => {
             tools[i]?.loadMode,
           ]),
         ),
-      ).toEqual({ concepts: 'discoverable', workPackage: 'essential' });
+      ).toEqual({
+        concepts: 'discoverable',
+        workPackage: 'essential',
+        versionSkew: 'discoverable',
+      });
     });
 
     it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {
@@ -873,7 +855,11 @@ describe('omp capability interface', () => {
         tools.map((t) => [t.name, t.parameters.properties.verb?.enum]);
 
       it('whatever tools a declaration lists, in a dispatched or a launched session', async () => {
-        const all = TOOLS.map((n) => [n, ['look', 'put', 'refuse']]);
+        const all = TOOLS.map((n) => [
+          n,
+          // The version tool explains one verb alone, so it takes no `verb`.
+          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
+        ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),
           discovered('builder'),
@@ -903,6 +889,210 @@ describe('omp capability interface', () => {
           'w',
         ]);
       });
+    });
+  });
+
+  describe('says version skew at every start, from the versions each side holds of itself', () => {
+    /** The emitted module placed in an installation projected by `projected`, beside
+     *  a `cratylus` on PATH that answers `--version` with `command` and explains only
+     *  the capabilities in `explains`. Each start's warnings, in order. */
+    async function started(opts: {
+      projected: string;
+      command: string;
+      explains: readonly string[];
+      starts?: number;
+      /** The installation's module replaced on disk after it was loaded. */
+      replaced?: boolean;
+    }): Promise<{
+      warnings: string[][];
+      tools: string[];
+      report: () => Promise<unknown>;
+    }> {
+      const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
+      tmp.push(dir);
+      const root = join(dir, 'root');
+      mkdirSync(join(root, 'extensions'), { recursive: true });
+      writeFileSync(
+        join(root, 'package.json'),
+        JSON.stringify({ name: 'cratylus-omp', version: opts.projected }),
+      );
+      const bin = join(dir, 'bin');
+      mkdirSync(bin);
+      const explanation = {
+        name: 'stand in',
+        purpose: 'p',
+        when: 'w',
+        verbs: [
+          {
+            name: 'report',
+            concept: 'c',
+            purpose: 'p',
+            when: 'w',
+            effect: 'reads',
+            parameters: [],
+          },
+        ],
+      };
+      writeFileSync(
+        join(bin, 'cratylus'),
+        [
+          `#!${process.execPath}`,
+          'const args = process.argv.slice(2);',
+          `if (args[0] === '--version') { process.stdout.write(${JSON.stringify(`${opts.command}\n`)}); process.exit(0); }`,
+          `const explains = ${JSON.stringify(opts.explains)};`,
+          "if (args.includes('--explain') && !explains.includes(args[0])) { process.stderr.write(`error: unknown command '${args[0]}'\\n`); process.exit(1); }",
+          `if (args.includes('--explain')) process.stdout.write(JSON.stringify({ ...${JSON.stringify(explanation)}, name: \`stand in \${args[0]}\` }));`,
+          '',
+        ].join('\n'),
+        { mode: 0o755 },
+      );
+      process.env.PATH = `${bin}:${PATH}`;
+      const [module] = ompCapabilityExtensions();
+      const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
+      writeFileSync(file, module?.content ?? '');
+      const tools: string[] = [];
+      let version:
+        | ((...args: unknown[]) => Promise<{ content: { text: string }[] }>)
+        | undefined;
+      const handlers = new Map<
+        string,
+        (event: unknown, ctx: unknown) => unknown
+      >();
+      // Dynamic: the module under test is the emitted bytes, written to disk here.
+      await (await import(file)).default({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: (tool: {
+          name: string;
+          execute: (
+            ...args: unknown[]
+          ) => Promise<{ content: { text: string }[] }>;
+        }) => {
+          tools.push(tool.name);
+          if (tool.name === 'version_skew') version = tool.execute;
+        },
+        registerFlag: () => {},
+        getFlag: () => undefined,
+        on: (
+          event: string,
+          handler: (event: unknown, ctx: unknown) => unknown,
+        ) => handlers.set(event, handler),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
+      });
+      if (opts.replaced === true)
+        writeFileSync(file, `${module?.content ?? ''}\n// a later install\n`);
+      const warnings: string[][] = [];
+      for (let i = 0; i < (opts.starts ?? 1); i++) {
+        const said: string[] = [];
+        await handlers.get('session_start')?.(
+          {},
+          {
+            cwd: dir,
+            agent: { kind: 'main', name: 'main' },
+            model: { provider: 'fixture', id: 'base' },
+            modelRegistry: {},
+            ui: {
+              setStatus: () => {},
+              notify: (text: string, level: string) => {
+                if (level === 'warning') said.push(text);
+              },
+            },
+          },
+        );
+        warnings.push(said);
+      }
+      const report = async () =>
+        JSON.parse(
+          (await version?.('id', {}, undefined, undefined, { cwd: dir }))
+            ?.content[0]?.text ?? 'null',
+        );
+      return { warnings, tools, report };
+    }
+    const ALL = OMP_CAPABILITY_TOOLS;
+    const remedy =
+      /Install again with the cratylus in use: cratylus install --harness omp/;
+
+    it('is silent where both are the same version, and offers every capability', async () => {
+      const { warnings, tools } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ALL,
+      });
+      expect(warnings).toEqual([[]]);
+      expect(tools).toHaveLength(ALL.length);
+    });
+
+    it('warns at each of two starts where the command is newer, naming both and the remedy', async () => {
+      const { warnings } = await started({
+        projected: '2.4.0',
+        command: '2.5.0',
+        explains: ALL,
+        starts: 2,
+      });
+      for (const said of warnings) {
+        expect(said).toHaveLength(1);
+        expect(said[0]).toContain('projected by cratylus 2.4.0');
+        expect(said[0]).toContain('run is 2.5.0');
+        expect(said[0]).toMatch(remedy);
+      }
+    });
+
+    it('warns where the command is older, as where it is newer', async () => {
+      const { warnings } = await started({
+        projected: '3.1.0',
+        command: '3.0.0',
+        explains: ALL,
+      });
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toContain('projected by cratylus 3.1.0');
+      expect(warnings[0]?.[0]).toContain('run is 3.0.0');
+      expect(warnings[0]?.[0]).toMatch(remedy);
+    });
+
+    it('warns against a command that predates the version tool, still loading, offering the version tool the artifacts carry, which reports both', async () => {
+      const older = ALL.filter((c) => c !== 'versionSkew');
+      const { warnings, tools, report } = await started({
+        projected: '3.1.0',
+        command: '3.0.0',
+        explains: older,
+      });
+      expect(tools).toEqual([
+        ...older.map((c) => `stand_in_${c.toLowerCase()}`),
+        'version_skew',
+      ]);
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toContain('projected by cratylus 3.1.0');
+      expect(warnings[0]?.[0]).toContain('run is 3.0.0');
+      expect(warnings[0]?.[0]).not.toContain('does not provide');
+      expect(warnings[0]?.[0]).toMatch(remedy);
+      expect(await report()).toEqual({ artifacts: '3.1.0', command: '3.0.0' });
+    });
+
+    it('warns where the command lacks a capability the installation expects, though it answers the same version', async () => {
+      const { warnings, tools } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ['concepts'],
+      });
+      expect(tools).toEqual(['stand_in_concepts', 'version_skew']);
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toMatch(/does not provide workPackage /);
+    });
+
+    it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
+      const { warnings } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ALL,
+        replaced: true,
+        starts: 2,
+      });
+      for (const said of warnings) {
+        expect(said).toHaveLength(1);
+        expect(said[0]).toContain('runs the cratylus extension it loaded');
+        expect(said[0]).toContain('ledger capture');
+        expect(said[0]).toMatch(/Restart omp/);
+      }
     });
   });
 
@@ -962,7 +1152,7 @@ describe('omp capability interface', () => {
 
     /** The emitted module loaded into a stand-in omp started with `--agent
      *  <flag>` (or without it), recording every session action it takes. */
-    async function started(flag?: string) {
+    async function started(flag?: string, cwd = '/the/session/cwd') {
       const factory = await emitted({
         name: 'stand in',
         purpose: 'p',
@@ -990,7 +1180,7 @@ describe('omp capability interface', () => {
         setActiveTools: async (tools: unknown) => did.tools.push(tools),
       });
       const ctx = (kind = 'main') => ({
-        cwd: '/the/session/cwd',
+        cwd,
         agent: { kind },
         model: { provider: 'fixture', id: 'base' },
         modelRegistry: { standIn: 'registry' },
@@ -1394,6 +1584,101 @@ describe('omp capability interface', () => {
       expect(refused.reason).toBe(
         `lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
       );
+    });
+
+    it('checks and captures a dispatch whatever the harness calls the tool that carries it', async () => {
+      const ASSAYER = () =>
+        declare(
+          {
+            name: 'assayer',
+            description: 'Judges a cut.',
+            assignment: {
+              type: 'object',
+              properties: {
+                cut: { type: 'string', description: 'The cut, by its name.' },
+              },
+              required: ['cut'],
+            },
+          },
+          'Judge the cut.',
+        );
+      omp.agents = [LEAD(), ASSAYER()];
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-dispatch-cwd-'));
+      tmp.push(cwd);
+      const calls = join(cwd, 'calls.jsonl');
+      process.env.STAND_IN_CALLS = calls;
+      try {
+        for (const toolName of ['task', '_task', 'dispatch']) {
+          const session = await started(undefined, cwd);
+          await session.fire('session_start');
+          // A misfit is refused under any name.
+          const refused = (await session.fire('tool_call', 'main', {
+            toolName,
+            toolCallId: `misfit-${toolName}`,
+            input: { tasks: [{ agent: 'lead', task: 'Realize it.' }] },
+          })) as { block: boolean; reason: string };
+          expect(refused.block, toolName).toBe(true);
+          // A typed dispatch is captured, and its settled return too.
+          writeFileSync(calls, '');
+          await session.fire('tool_call', 'main', {
+            toolName,
+            toolCallId: `call-${toolName}`,
+            input: {
+              tasks: [
+                {
+                  agent: 'assayer',
+                  name: 'A',
+                  task: '```assignment\n{"cut":"film"}\n```',
+                },
+              ],
+            },
+          });
+          await session.fire('tool_result', 'main', {
+            toolName,
+            toolCallId: `call-${toolName}`,
+            details: { results: [{ index: 0, id: 'A', output: 'judged' }] },
+          });
+          const events = readFileSync(calls, 'utf8')
+            .trim()
+            .split('\n')
+            .map((line) => JSON.parse(line) as string[])
+            .filter((args) => args[0] === 'lifecycle')
+            .map(
+              (args) => JSON.parse(args[1] ?? '') as Record<string, unknown>,
+            );
+          expect(events, toolName).toEqual([
+            {
+              kind: 'dispatched',
+              transition: `call-${toolName}/A/dispatched`,
+              cut: 'film',
+              role: 'assayer',
+              run: `call-${toolName}/A`,
+            },
+            {
+              kind: 'returned',
+              transition: `call-${toolName}/A/returned`,
+              cut: 'film',
+              role: 'assayer',
+              run: `call-${toolName}/A`,
+            },
+          ]);
+        }
+      } finally {
+        Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
+      }
+    });
+
+    it('takes no other call for a dispatch: one carrying no agent and task is let through unread', async () => {
+      omp.agents = [LEAD()];
+      const session = await started();
+      await session.fire('session_start');
+      expect(
+        await session.fire('tool_call', 'main', {
+          toolName: 'write',
+          toolCallId: 'w',
+          input: { path: 'agent://lead', content: 'Realize it.' },
+        }),
+      ).toBeUndefined();
     });
 
     it('lists the assignment form of each contracted agent a session may dispatch, launched or not, main or dispatched', async () => {

@@ -93,8 +93,9 @@
 // unpoliced — the ones that already carried convicting fixtures
 // did so because their authors were told to, not because anything checked. The
 // sibling dirs are now read BY PATH, the precedent this corpus already set for a
-// cross-package test (`event-tap-cell.test.ts` reads the runtime's `TapVerb` union
-// as source text rather than invent a package edge to carry a test). Per-package
+// cross-package test (`capability-keyspace.test.ts` reads the runtime's
+// `CAPABILITIES` as source text rather than invent a package edge to carry a
+// test). Per-package
 // copies of this mechanism were the alternative, and duplicated gates drift.
 
 import { readdirSync } from 'node:fs';
@@ -155,7 +156,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // that must make the same worker speak — the control that separates a working
   // in-sync check from one that compared nothing.
   'canon/deploy-drift-notice.test.ts': 'BEHAVIORAL',
-  'canon/event-tap-cell.test.ts': 'GATE',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
   // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
@@ -225,6 +225,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drives `addModelRoles` and install/uninstall over host configs it writes itself,
   // including a document it must refuse and a `--model-roles` name no agent has.
   'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
+  // links and relinks the owned root into a temp host's plugin directory, leaving the
+  // reference places the host holds otherwise.
+  'forge/deploy/owned-root.test.ts': 'BEHAVIORAL',
   // exercises the OMP status-line config editor and install path, including byte-preserving
   // edits, custom layouts, host-owned settings, and dry-run behavior.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
@@ -245,8 +248,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // projects fixture plugins it writes itself; its refusals (an unclosed handoff, a
   // module named by file, duplicate names, a module exporting no Agent) are its fixtures.
   'forge/project/practice-closure.test.ts': 'BEHAVIORAL',
-  // projects an OMP-only fixture and reads the eventTap degradation warning.
-  'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
   // OMP keeps oversized skills available without a main-session hook.
   'forge/project/skill-hook-cap.test.ts': 'BEHAVIORAL',
@@ -286,16 +287,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // refusals (a flag given twice, a journal entry that is not one, a directory
   // outside git) ARE its fixtures.
   'runtime/concepts.test.ts': 'BEHAVIORAL',
-  // the DAG-guard leg scans every capability source file for a forge import.
-  'runtime/event-tap.test.ts': 'GATE',
-  'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
   // asserts over the live concept journal declaration and cratylus's own live design:
   // each verb's concept is a live concept, its help says what it explains, and what
   // it calls required is refused without. A verb whose concept the design retired,
   // in a scratch journal, convicts it.
   'runtime/explanation.test.ts': 'GATE',
-  // drives `install` over requests it builds itself — all mapped, some, none — against
-  // a host config it supplies; polices no live artifact.
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
@@ -322,6 +318,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // refusals (an existing record id, another entity's version) ARE its fixtures.
   'runtime/record-store.test.ts': 'BEHAVIORAL',
   'runtime/runtime-config.test.ts': 'BEHAVIORAL',
+  // reads and appends to concept journals it writes itself in scratch repositories;
+  // its unknown-kind and unreadable entries ARE its fixtures.
+  'runtime/tolerant-reader.test.ts': 'BEHAVIORAL',
   'runtime/ulid.test.ts': 'BEHAVIORAL',
   // the live capabilities' verbs are each checked for a summary, a positional and a
   // description of every flag; a verb and a flag it leaves unsaid are its fixtures.

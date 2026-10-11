@@ -44,11 +44,11 @@ The same shape governs every capability, and it generalizes the bound/steer rule
 enforcing constraints. A harness offers some, all, or none of what the canon declares, and the
 adapter realizes the **highest fidelity available**:
 
-| fidelity    | when                                  | example                                            |
-| ----------- | ------------------------------------- | -------------------------------------------------- |
-| **proxy**   | the harness has the facility natively | an event tap that installs into Claude's own hooks |
-| **provide** | the harness lacks it                  | our implementation behind the same port            |
-| **declare** | neither is possible                   | the rule reaches the agent as prose — a steer      |
+| fidelity    | when                                  | example                                         |
+| ----------- | ------------------------------------- | ----------------------------------------------- |
+| **proxy**   | the harness has the facility natively | a hook cell projected as the harness's own hook |
+| **provide** | the harness lacks it                  | our implementation behind the same port         |
+| **declare** | neither is possible                   | the rule reaches the agent as prose — a steer   |
 
 **A shortfall degrades and warns; it never refuses and never widens.** Degrading changes how strongly
 a subject is bound. Widening changes _which_ subjects are bound, which is a different constraint
@@ -85,20 +85,15 @@ admitted body with a boundary. The right reason, not the convenient one.
 The generic platform beneath **the tools skills route to** — the implementations behind the semantic
 surface.
 
-Its capabilities — `eventTap`, `concepts` and `workPackage` — are **built into the runtime** and known when it is
-built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider. The event
-tap is reached through its **port**, and its Claude strategy is the case with interchangeable
-implementations: it proxies Claude's own hooks from behind the event tap's port, where another
-harness's strategy would stand in its place.
+Its capabilities — `concepts` and `workPackage` — are **built into the runtime** and known when it is
+built: nothing is discovered, no plugin is loaded, and no configuration chooses a provider.
 
-It ships **with** the agent and runs on the host. It knows no corpus: the corpus's event vocabulary and
-each capability's configuration reach it in the host config that deploy writes.
+It ships **with** the agent and runs on the host. It knows no corpus: each capability's configuration
+reaches it in the host config that deploy writes.
 
-It knows no harness beyond the event tap's Claude strategy, which writes Claude's settings format, and
-the tap refuses a caller whose harness has no strategy of its own; `concepts` and `workPackage` are
-repository-scoped and know no harness at all. `workPackage` computes a cut's dependency graph with
-`@dagrejs/graphlib`, wrapped behind the capability, and records the cut's efficiency figures in the
-concept journal.
+It knows no harness: `concepts` and `workPackage` are repository-scoped. `workPackage` computes a
+cut's dependency graph with `@dagrejs/graphlib`, wrapped behind the capability, and records the
+cut's efficiency figures in the concept journal.
 
 A lifecycle guardrail is not the runtime's. It is a canon hook cell that forge projects as the
 harness's own hook — on omp, as an extension module — so the runtime hosts the capabilities above and
@@ -112,6 +107,23 @@ It chooses achievable fidelity and emits accordingly.
 Forge owns nothing semantic and nothing mechanical — **only the mapping**. Anything it _decides_
 about the design, rather than _carries_, is a defect. That single rule is the audit criterion for this
 package.
+
+**Where it places is one root it owns.** Everything forge places for a user on a harness lives under
+`~/.cratylus/<harness>/` (the owned root, decision 0108): the corpus's agents and skills, the
+harness's adapters, and the version of cratylus that projected them. The harness's own surfaces only
+refer into it (for omp, the root linked into its plugin directory as an extension package), and the
+root records every reference and host-file edit it made. So what cratylus placed is known by
+construction, never inferred from names, contents or digests: install replaces the root whole
+(upgrade), uninstall removes it and its references, and a host's own files are never overwritten — a
+reference place the host holds otherwise (linked elsewhere, replaced, naming something else) is the
+host's, left and reported by install, upgrade and uninstall alike.
+Which model a tier or a persona's role runs on is the operator's choice and the host's own setting
+(decision 0112): install writes the operator's answer into the host's model roles and records none
+of it as its own, so upgrade and uninstall keep it.
+omp's extension compares, at every session start, the version the root records against the version
+the reached command answers for itself, and warns of any difference as version skew, naming any
+capability the command lacks and offering the rest; the runtime's `versionSkew report` gives both on
+request. Nothing chooses between builds.
 
 ### `schema` — the shapes
 
@@ -205,10 +217,9 @@ four hold with no exception, and a pin that stopped naming a live breach would f
 That gate holds **import-graph edges and nothing else**. What an edge cannot show needs a gate of its
 own, and has one only where one was written:
 
-- the lifecycle vocabulary has one home, `CANONICAL_EVENTS` in canon's `manifest.ts`. Two of its three
-  consumers are reached by channels no compiler checks — forge's per-harness maps key over open
-  strings, and the runtime reads a host config, which is bytes — so `event-vocabulary.test.ts` holds
-  them.
+- the lifecycle vocabulary has one home, `CANONICAL_EVENTS` in canon's `manifest.ts`. Its consumers
+  are reached by channels no compiler checks — forge's per-harness maps key over open strings — so
+  `event-vocabulary.test.ts` holds them.
 - a package's version has one home, its manifest. `version-single-home.test.ts` holds **where** a
   version lives, never **what** it is; whether a version is published is a fact about npm that nothing
   here asks.

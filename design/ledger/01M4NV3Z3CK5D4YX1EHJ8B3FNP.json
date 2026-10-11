@@ -1,0 +1,14 @@
+{
+  "id": "01M4NV3Z3CK5D4YX1EHJ8B3FNP",
+  "at": "2026-10-11T16:00:47.212Z",
+  "kind": "update",
+  "transition": "update:delivery:01M4NV3Z3B7ZBBN3ZAW8BR0HH6",
+  "cut": "delivery",
+  "workPackage": "retirement",
+  "changes": {
+    "concepts": [
+      "retirement",
+      "upgrade"
+    ]
+  }
+}

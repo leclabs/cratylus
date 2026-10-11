@@ -87,7 +87,7 @@ export function parse(text: string) {
   };
 }
 export function declaration(f: Fixture, role: string) {
-  const filePath = join(f.home, '.omp/agent/agents', `${role}.md`);
+  const filePath = join(f.home, '.cratylus/omp/agents', `${role}.md`);
   const text = readFileSync(filePath, 'utf8');
   const { frontmatter, body } = parse(text);
   return {
@@ -250,7 +250,12 @@ export interface LoadedExtension {
 }
 export async function load(
   f: Fixture,
-  options: { role?: string; kind?: 'main' | 'sub'; grant?: string[] } = {},
+  options: {
+    role?: string;
+    kind?: 'main' | 'sub';
+    grant?: string[];
+    dispatchTool?: string;
+  } = {},
 ): Promise<LoadedExtension> {
   const previous = { PATH: process.env.PATH, HOME: process.env.HOME };
   process.env.PATH = f.env.PATH;
@@ -274,6 +279,30 @@ export async function load(
     sessionManager: { getSessionId: () => 'binding-session' },
   };
   const pi = {
+    getAllTools: () => [
+      {
+        name: options.dispatchTool ?? 'task',
+        parameters: {
+          type: 'object',
+          properties: {
+            agent: { type: 'string' },
+            tasks: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  agent: { type: 'string' },
+                  task: { type: 'string' },
+                  id: { type: 'string' },
+                },
+                required: ['agent', 'task', 'id'],
+              },
+            },
+          },
+          required: ['tasks'],
+        },
+      },
+    ],
     typebox: { Type: { Unsafe: (schema: unknown) => schema } },
     registerTool: (tool: RegisteredTool) => tools.push(tool),
     registerFlag: () => {},

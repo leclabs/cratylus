@@ -98,6 +98,7 @@ export interface Fixture {
 export function fixture(
   options: {
     config?: string;
+    agentStatus?: 'show' | 'hide';
     prepare?(paths: { home: string; cwd: string }): void;
   } = {},
 ): Fixture {
@@ -139,16 +140,20 @@ export function fixture(
       '--all',
       '--model-roles',
       'default',
+      ...(options.agentStatus === undefined
+        ? []
+        : ['--agent-status', options.agentStatus]),
     ],
     { cwd, env, encoding: 'utf8', timeout: 60_000 },
   );
   if (installed.error) throw installed.error;
   expect(installed.status, installed.stderr + installed.stdout).toBe(0);
-  const extension = join(home, '.omp/agent/extensions/cratylus.ts');
+  const extension = join(home, '.cratylus/omp/extensions/cratylus.ts');
   const observer = join(root, 'observe.ts');
   cpSync(join(here, 'observe.ts'), observer);
   const observations = join(root, 'observations.jsonl');
   function models(baseUrl = 'http://127.0.0.1:1/v1') {
+    mkdirSync(join(home, '.omp/agent'), { recursive: true });
     writeFileSync(
       join(home, '.omp/agent/models.yml'),
       JSON.stringify({
@@ -221,7 +226,11 @@ export function fixture(
       '--no-title',
       '--no-pty',
       ...(options.extension || options.onlyInstalled
-        ? ['--no-extensions', '--extension', options.extension ?? extension]
+        ? [
+            '--no-extensions',
+            '--extension',
+            options.extension ?? join(home, '.cratylus/omp'),
+          ]
         : []),
       '--extension',
       observer,
@@ -262,6 +271,7 @@ export function fixture(
     configure: (config) =>
       writeFileSync(configFile, JSON.stringify(config, null, 2)),
     configuration: () => {
+      if (!existsSync(configFile)) return {};
       // Parse the fixture home's actual YAML, including install's edits, with
       // the same Bun YAML parser available to the real omp executable.
       const parsed = spawnSync(

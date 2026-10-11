@@ -16,12 +16,15 @@
 //   check       record one whole-check run
 //   record      record the cut's figures in the concept journal
 //
-// Every answer is JSON. An appending verb appends one entry to the ledger
-// (`ledger.ts`), or, for `record`, entries to the concept journal. Every
-// refusal opens with `workPackage <verb>:` and is thrown before anything is
-// appended, staged or committed. No verb writes a lifecycle entry: a dispatch,
-// a return, a verdict and a report reach the ledger only from the harness's own
-// events, through the `cratylus lifecycle` command (`../../lifecycle/`).
+// Every answer is JSON; a reading that read past ledger entries of kinds this
+// runtime does not know, written by a newer one, also carries `uninterpreted`,
+// saying what it read past and how it was read. An appending verb appends one
+// entry to the ledger (`ledger.ts`), or, for `record`, entries to the concept
+// journal. Every refusal opens with `workPackage <verb>:` and is thrown before
+// anything is appended, staged or committed. No verb writes a lifecycle entry:
+// a dispatch, a return, a verdict and a report reach the ledger only from the
+// harness's own events, through the `cratylus lifecycle` command
+// (`../../lifecycle/`).
 //
 // The capability EXPLAINS ITSELF from the declarations below, as the concept
 // journal does: its name and when, and for each verb its concept, purpose, when,
@@ -235,7 +238,8 @@ const isProjectPath = (path: string): boolean =>
     .every((part) => part !== '' && part !== '.' && part !== '..');
 
 /** Route `workPackage <verb> [args]` to the cut it names in the git
- *  repository holding `from`; returns what the verb prints as JSON. */
+ *  repository holding `from`; returns what the verb prints as JSON, a reading
+ *  with what it read past of the ledger. */
 export function dispatchWorkPackage(
   argv: readonly string[],
   opts: { readonly from?: string } = {},
@@ -360,270 +364,284 @@ export function dispatchWorkPackage(
     };
   };
 
-  switch (verb) {
-    case 'inventory': {
-      const { concepts, examples, unserved, unowned } = readCut(cut, packages);
-      return {
-        cut: cut.cut,
-        concepts: concepts.map(({ name, context, servedBy }) => ({
-          name,
-          context,
-          servedBy,
-        })),
-        unserved,
-        examples: examples.map(
-          ({ ref, context, number, concepts, package: owner }) => ({
-            ref,
-            context,
-            number,
-            concepts,
-            package: owner,
-          }),
-        ),
-        unowned,
-      };
-    }
-    case 'assignment': {
-      const own = named();
-      return {
-        cut: cut.cut,
-        package: own.name,
-        outputs: own.outputs,
-        concepts: own.concepts,
-        dependsOn: own.dependsOn,
-        needs: own.needs,
-        examples: readCut(cut, packages)
-          .examples.filter((e) => e.package === own.name)
-          .map(({ ref, context, number, concepts, text }) => ({
-            ref,
-            context,
-            number,
-            concepts,
-            text,
-          })),
-      };
-    }
-    case 'levels': {
-      const graph = dependencyGraph(packages);
-      if (graph.levels === null)
-        throw refuse(
-          `the work packages depend on each other in a cycle: ${graph.cycles.map((c) => c.join(', ')).join('; and ')}; no levels until it is broken`,
+  const answer = ((): unknown => {
+    switch (verb) {
+      case 'inventory': {
+        const { concepts, examples, unserved, unowned } = readCut(
+          cut,
+          packages,
         );
-      return { cut: cut.cut, levels: levelsOf(packages) };
-    }
-    case 'history': {
-      const own = named();
-      return {
-        cut: cut.cut,
-        package: own.name,
-        commits: state.histories.get(own.name) ?? [],
-      };
-    }
-    case 'efficiency':
-      return { cut: cut.cut, ...state.figures };
-    case 'state':
-      return {
-        cut: cut.cut,
-        branch: state.record?.branch ?? null,
-        contexts: cut.contexts,
-        architects: state.record?.architects ?? {},
-        phase: state.phase,
-        workPackages: packages.map(({ name, status, dependsOn }) => ({
-          name,
-          status,
-          dependsOn,
-        })),
-        ready: state.ready,
-        report: state.report,
-      };
-    case 'open': {
-      if (state.record !== undefined)
-        throw refuse(
-          `the cut '${cut.cut}' is already recorded, on the branch '${state.record.branch}'`,
-        );
-      const branch = required('branch', 'the branch the cut is built on');
-      if (/\s/.test(branch))
-        throw refuse(`the branch '${branch}' holds whitespace; name a branch`);
-      const architects: Record<string, string> = {};
-      for (const given of values('architect')) {
-        const [context = '', architect = ''] = given.split(/=(.*)/s);
-        if (context.trim() === '' || architect.trim() === '')
-          throw refuse(`--architect '${given}' is not <context>=<architect>`);
-        if (!cut.contexts.includes(context))
-          throw refuse(
-            `the cut '${cut.cut}' has no context '${context}'; its contexts are ${cut.contexts.map((c) => `'${c}'`).join(', ')}`,
-          );
-        if (architects[context] !== undefined)
-          throw refuse(`the context '${context}' is given an architect twice`);
-        architects[context] = architect;
-      }
-      const without = cut.contexts.filter((c) => architects[c] === undefined);
-      if (without.length > 0)
-        throw refuse(
-          `the contexts ${without.map((c) => `'${c}'`).join(', ')} of the cut '${cut.cut}' have no architect; give each with --architect <context>=<architect>, never assumed`,
-        );
-      if (new Set(Object.values(architects)).size > 1)
-        throw refuse(
-          `the contexts of the cut '${cut.cut}' are held by different architects (${cut.contexts
-            .map((c) => `'${c}'=${architects[c]}`)
-            .join(
-              ', ',
-            )}); such intent is one cut per context, joined by contracts, never one cut for convenience`,
-        );
-      return ledger.append({
-        kind: 'cut',
-        transition: `open:${cut.cut}`,
-        cut: cut.cut,
-        branch,
-        contexts: cut.contexts,
-        architects,
-      });
-    }
-    case 'submit': {
-      const name = args.positionals[0];
-      if (name === undefined || !/^[^\s/]+$/.test(name))
-        throw refuse(
-          'name the work package it records: a name with no whitespace and no /',
-        );
-      if (state.packages.has(name))
-        throw refuse(
-          `the cut already has the work package '${name}'; update it instead`,
-        );
-      const fields: PackageFields = {
-        outputs: values('output'),
-        concepts: values('concept'),
-        dependsOn: values('depends-on'),
-        needs: values('needs'),
-      };
-      if (fields.outputs.length === 0)
-        throw refuse('give at least one output with --output');
-      if (fields.concepts.length === 0)
-        throw refuse('give at least one concept with --concept');
-      admit(name, fields);
-      ledger.append({
-        kind: 'submit',
-        transition: transition('submit'),
-        cut: cut.cut,
-        workPackage: name,
-        ...fields,
-      });
-      return submitted(name);
-    }
-    case 'update': {
-      const own = named();
-      const changes: Partial<PackageFields> = {
-        ...(args.flags.has('output') ? { outputs: values('output') } : {}),
-        ...(args.flags.has('concept') ? { concepts: values('concept') } : {}),
-        ...(args.flags.has('depends-on')
-          ? { dependsOn: values('depends-on') }
-          : {}),
-        ...(args.flags.has('needs') ? { needs: values('needs') } : {}),
-      };
-      if (Object.keys(changes).length === 0)
-        throw refuse(
-          'give at least one of --output, --concept, --depends-on or --needs',
-        );
-      admit(own.name, { ...own, ...changes });
-      ledger.append({
-        kind: 'update',
-        transition: transition('update'),
-        cut: cut.cut,
-        workPackage: own.name,
-        changes,
-      });
-      return submitted(own.name);
-    }
-    case 'commit': {
-      const own = named();
-      if (own.status === 'submitted')
-        throw refuse(
-          `the work package '${own.name}' has no builder dispatched by the harness; dispatch its builder first`,
-        );
-      const message = required('message', 'what the commit says');
-      const paths = values('path');
-      if (paths.length === 0)
-        throw refuse('give at least one path with --path');
-      const malformed = paths.filter((p) => !isProjectPath(p));
-      if (malformed.length > 0)
-        throw refuse(
-          `${malformed.map((p) => `'${p}'`).join(', ')} is not a path from the top of the project`,
-        );
-      const outside = [...new Set([...paths, ...filesOf(top, paths)])].filter(
-        (path) => !own.outputs.some((o) => covers(o, path)),
-      );
-      if (outside.length > 0)
-        throw refuse(
-          `outside the outputs of '${own.name}': ${outside
-            .map((path) => {
-              const owner = packages.find((p) =>
-                p.outputs.some((o) => covers(o, path)),
-              );
-              return owner === undefined
-                ? `'${path}'`
-                : `'${path}' (an output of '${owner.name}')`;
-            })
-            .join(', ')}; nothing is committed`,
-        );
-      let sha: string;
-      try {
-        sha = commitPaths(top, message, paths);
-      } catch (error) {
-        throw refuse(
-          `git refused the commit, and nothing is committed: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-      const commit = { sha, message, paths };
-      ledger.append({
-        kind: 'commit',
-        transition: `commit:${cut.cut}:${sha}`,
-        cut: cut.cut,
-        workPackage: own.name,
-        commit,
-      });
-      return {
-        cut: cut.cut,
-        package: own.name,
-        commit,
-        history: [...(state.histories.get(own.name) ?? []), commit],
-      };
-    }
-    case 'check': {
-      ledger.append({
-        kind: 'check',
-        transition: transition('check'),
-        cut: cut.cut,
-        failures: [...new Set(values('failure'))],
-      });
-      const { rounds } = foldCut(ledger.entries(), cut.cut);
-      return {
-        cut: cut.cut,
-        round: rounds.length,
-        rounds,
-        wholeCheckRuns: rounds.length,
-      };
-    }
-    case 'record': {
-      const journal = journalAt(top, refuse);
-      const known = new Journal(journal.entries()).contexts;
-      const absent = cut.contexts.filter((c) => !known.has(c));
-      if (absent.length > 0)
-        throw refuse(
-          `the journal has no bounded context ${absent.map((c) => `'${c}'`).join(', ')}; record it with concepts context first`,
-        );
-      const { agentRuns, rounds, wholeCheckRuns, tokens } = state.figures;
-      const recorded = cut.contexts.map((context) =>
-        journal.append({
-          kind: 'efficiency',
-          context,
+        return {
           cut: cut.cut,
-          agentRuns,
+          concepts: concepts.map(({ name, context, servedBy }) => ({
+            name,
+            context,
+            servedBy,
+          })),
+          unserved,
+          examples: examples.map(
+            ({ ref, context, number, concepts, package: owner }) => ({
+              ref,
+              context,
+              number,
+              concepts,
+              package: owner,
+            }),
+          ),
+          unowned,
+        };
+      }
+      case 'assignment': {
+        const own = named();
+        return {
+          cut: cut.cut,
+          package: own.name,
+          outputs: own.outputs,
+          concepts: own.concepts,
+          dependsOn: own.dependsOn,
+          needs: own.needs,
+          examples: readCut(cut, packages)
+            .examples.filter((e) => e.package === own.name)
+            .map(({ ref, context, number, concepts, text }) => ({
+              ref,
+              context,
+              number,
+              concepts,
+              text,
+            })),
+        };
+      }
+      case 'levels': {
+        const graph = dependencyGraph(packages);
+        if (graph.levels === null)
+          throw refuse(
+            `the work packages depend on each other in a cycle: ${graph.cycles.map((c) => c.join(', ')).join('; and ')}; no levels until it is broken`,
+          );
+        return { cut: cut.cut, levels: levelsOf(packages) };
+      }
+      case 'history': {
+        const own = named();
+        return {
+          cut: cut.cut,
+          package: own.name,
+          commits: state.histories.get(own.name) ?? [],
+        };
+      }
+      case 'efficiency':
+        return { cut: cut.cut, ...state.figures };
+      case 'state':
+        return {
+          cut: cut.cut,
+          branch: state.record?.branch ?? null,
+          contexts: cut.contexts,
+          architects: state.record?.architects ?? {},
+          phase: state.phase,
+          workPackages: packages.map(({ name, status, dependsOn }) => ({
+            name,
+            status,
+            dependsOn,
+          })),
+          ready: state.ready,
+          report: state.report,
+        };
+      case 'open': {
+        if (state.record !== undefined)
+          throw refuse(
+            `the cut '${cut.cut}' is already recorded, on the branch '${state.record.branch}'`,
+          );
+        const branch = required('branch', 'the branch the cut is built on');
+        if (/\s/.test(branch))
+          throw refuse(
+            `the branch '${branch}' holds whitespace; name a branch`,
+          );
+        const architects: Record<string, string> = {};
+        for (const given of values('architect')) {
+          const [context = '', architect = ''] = given.split(/=(.*)/s);
+          if (context.trim() === '' || architect.trim() === '')
+            throw refuse(`--architect '${given}' is not <context>=<architect>`);
+          if (!cut.contexts.includes(context))
+            throw refuse(
+              `the cut '${cut.cut}' has no context '${context}'; its contexts are ${cut.contexts.map((c) => `'${c}'`).join(', ')}`,
+            );
+          if (architects[context] !== undefined)
+            throw refuse(
+              `the context '${context}' is given an architect twice`,
+            );
+          architects[context] = architect;
+        }
+        const without = cut.contexts.filter((c) => architects[c] === undefined);
+        if (without.length > 0)
+          throw refuse(
+            `the contexts ${without.map((c) => `'${c}'`).join(', ')} of the cut '${cut.cut}' have no architect; give each with --architect <context>=<architect>, never assumed`,
+          );
+        if (new Set(Object.values(architects)).size > 1)
+          throw refuse(
+            `the contexts of the cut '${cut.cut}' are held by different architects (${cut.contexts
+              .map((c) => `'${c}'=${architects[c]}`)
+              .join(
+                ', ',
+              )}); such intent is one cut per context, joined by contracts, never one cut for convenience`,
+          );
+        return ledger.append({
+          kind: 'cut',
+          transition: `open:${cut.cut}`,
+          cut: cut.cut,
+          branch,
+          contexts: cut.contexts,
+          architects,
+        });
+      }
+      case 'submit': {
+        const name = args.positionals[0];
+        if (name === undefined || !/^[^\s/]+$/.test(name))
+          throw refuse(
+            'name the work package it records: a name with no whitespace and no /',
+          );
+        if (state.packages.has(name))
+          throw refuse(
+            `the cut already has the work package '${name}'; update it instead`,
+          );
+        const fields: PackageFields = {
+          outputs: values('output'),
+          concepts: values('concept'),
+          dependsOn: values('depends-on'),
+          needs: values('needs'),
+        };
+        if (fields.outputs.length === 0)
+          throw refuse('give at least one output with --output');
+        if (fields.concepts.length === 0)
+          throw refuse('give at least one concept with --concept');
+        admit(name, fields);
+        ledger.append({
+          kind: 'submit',
+          transition: transition('submit'),
+          cut: cut.cut,
+          workPackage: name,
+          ...fields,
+        });
+        return submitted(name);
+      }
+      case 'update': {
+        const own = named();
+        const changes: Partial<PackageFields> = {
+          ...(args.flags.has('output') ? { outputs: values('output') } : {}),
+          ...(args.flags.has('concept') ? { concepts: values('concept') } : {}),
+          ...(args.flags.has('depends-on')
+            ? { dependsOn: values('depends-on') }
+            : {}),
+          ...(args.flags.has('needs') ? { needs: values('needs') } : {}),
+        };
+        if (Object.keys(changes).length === 0)
+          throw refuse(
+            'give at least one of --output, --concept, --depends-on or --needs',
+          );
+        admit(own.name, { ...own, ...changes });
+        ledger.append({
+          kind: 'update',
+          transition: transition('update'),
+          cut: cut.cut,
+          workPackage: own.name,
+          changes,
+        });
+        return submitted(own.name);
+      }
+      case 'commit': {
+        const own = named();
+        if (own.status === 'submitted')
+          throw refuse(
+            `the work package '${own.name}' has no builder dispatched by the harness; dispatch its builder first`,
+          );
+        const message = required('message', 'what the commit says');
+        const paths = values('path');
+        if (paths.length === 0)
+          throw refuse('give at least one path with --path');
+        const malformed = paths.filter((p) => !isProjectPath(p));
+        if (malformed.length > 0)
+          throw refuse(
+            `${malformed.map((p) => `'${p}'`).join(', ')} is not a path from the top of the project`,
+          );
+        const outside = [...new Set([...paths, ...filesOf(top, paths)])].filter(
+          (path) => !own.outputs.some((o) => covers(o, path)),
+        );
+        if (outside.length > 0)
+          throw refuse(
+            `outside the outputs of '${own.name}': ${outside
+              .map((path) => {
+                const owner = packages.find((p) =>
+                  p.outputs.some((o) => covers(o, path)),
+                );
+                return owner === undefined
+                  ? `'${path}'`
+                  : `'${path}' (an output of '${owner.name}')`;
+              })
+              .join(', ')}; nothing is committed`,
+          );
+        let sha: string;
+        try {
+          sha = commitPaths(top, message, paths);
+        } catch (error) {
+          throw refuse(
+            `git refused the commit, and nothing is committed: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+        const commit = { sha, message, paths };
+        ledger.append({
+          kind: 'commit',
+          transition: `commit:${cut.cut}:${sha}`,
+          cut: cut.cut,
+          workPackage: own.name,
+          commit,
+        });
+        return {
+          cut: cut.cut,
+          package: own.name,
+          commit,
+          history: [...(state.histories.get(own.name) ?? []), commit],
+        };
+      }
+      case 'check': {
+        ledger.append({
+          kind: 'check',
+          transition: transition('check'),
+          cut: cut.cut,
+          failures: [...new Set(values('failure'))],
+        });
+        const { rounds } = foldCut(ledger.entries(), cut.cut);
+        return {
+          cut: cut.cut,
+          round: rounds.length,
           rounds,
-          wholeCheckRuns,
-          tokens,
-        }),
-      );
-      // One context: its entry; a cut across contexts: one entry for each.
-      return recorded.length === 1 ? recorded[0] : recorded;
+          wholeCheckRuns: rounds.length,
+        };
+      }
+      case 'record': {
+        const journal = journalAt(top, refuse);
+        const known = new Journal(journal.entries()).contexts;
+        const absent = cut.contexts.filter((c) => !known.has(c));
+        if (absent.length > 0)
+          throw refuse(
+            `the journal has no bounded context ${absent.map((c) => `'${c}'`).join(', ')}; record it with concepts context first`,
+          );
+        const { agentRuns, rounds, wholeCheckRuns, tokens } = state.figures;
+        const recorded = cut.contexts.map((context) =>
+          journal.append({
+            kind: 'efficiency',
+            context,
+            cut: cut.cut,
+            agentRuns,
+            rounds,
+            wholeCheckRuns,
+            tokens,
+          }),
+        );
+        // One context: its entry; a cut across contexts: one entry for each.
+        return recorded.length === 1 ? recorded[0] : recorded;
+      }
     }
-  }
+  })();
+  const report =
+    VERBS[verb].effect === 'reads' ? ledger.readPast().report() : undefined;
+  return report === undefined
+    ? answer
+    : { ...(answer as object), uninterpreted: report };
 }

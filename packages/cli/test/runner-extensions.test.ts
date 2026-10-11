@@ -1,5 +1,6 @@
 import type * as ChildProcess from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -40,9 +41,10 @@ vi.mock('./agent-launch/fixture.js', () => ({
     home: control.home,
     cwd: join(control.root, 'project'),
     env: {},
-    extension: join(control.home, '.omp/agent/extensions/cratylus.ts'),
+    extension: join(control.home, '.cratylus/omp/extensions/cratylus.ts'),
     dispose() {},
     declaration({ name, body }: { name: string; body: string }) {
+      mkdirSync(join(control.home, '.omp/agent/agents'), { recursive: true });
       writeFileSync(
         join(control.home, '.omp/agent/agents', `${name}.md`),
         body,
@@ -54,27 +56,55 @@ vi.mock('./rubric-judge.js', async (original) => ({
   ...(await original<typeof JudgeHarness>()),
   runSession: async (
     _binary: string,
-    args: string[],
+    launchArgs: string[],
     options: { env: Record<string, string> },
   ) => {
+    // Model omp's package resolution at this transport boundary. Assertions keep
+    // observing the effective modules, whether argv names a package or a file.
+    const loaded: string[] = [];
+    for (let i = 0; i < launchArgs.length; i++) {
+      const value = launchArgs[i]!;
+      const root = launchArgs[i + 1];
+      if (
+        value === '--extension' &&
+        root &&
+        existsSync(join(root, 'package.json'))
+      ) {
+        const manifest = JSON.parse(
+          readFileSync(join(root, 'package.json'), 'utf8'),
+        ) as {
+          omp: { extensions: string[] };
+        };
+        for (const module of manifest.omp.extensions)
+          loaded.push('--extension', join(root, module));
+        i++;
+      } else loaded.push(value);
+    }
+    const args = loaded;
     const roleIndex = args.indexOf('--agent');
     const role = roleIndex < 0 ? undefined : args[roleIndex + 1];
     control.calls.push({ role, args });
     // The installed cratylus.ts module, not omp itself, registers --agent.
     if (
       roleIndex >= 0 &&
-      !args.includes(join(control.home, '.omp/agent/extensions/cratylus.ts'))
+      !args.includes(join(control.home, '.cratylus/omp/extensions/cratylus.ts'))
     )
       return { status: 1, stdout: '', stderr: 'unknown flag: --agent' };
     const declaration = role
       ? readFileSync(
-          join(control.home, '.omp/agent/agents', `${role}.md`),
+          join(
+            control.home,
+            role === 'rubric-judge' || role === 'film-agent'
+              ? '.omp/agent/agents'
+              : '.cratylus/omp/agents',
+            `${role}.md`,
+          ),
           'utf8',
         )
       : '';
     const judge = !role || role === 'rubric-judge';
     const session = args.includes(
-      join(control.home, '.omp/agent/extensions/cratylus-session.ts'),
+      join(control.home, '.cratylus/omp/extensions/cratylus-session.ts'),
     );
     writeFileSync(
       options.env.EXECUTION_WIRING!,
@@ -153,7 +183,7 @@ beforeEach(() => {
     api: 'openai-completions',
   };
   mkdirSync(join(control.root, 'project'));
-  const directory = join(control.home, '.omp/agent/extensions');
+  const directory = join(control.home, '.cratylus/omp/extensions');
   mkdirSync(directory, { recursive: true });
   for (const filename of [
     'cratylus.ts',
@@ -162,9 +192,24 @@ beforeEach(() => {
     'notes.txt',
   ])
     writeFileSync(join(directory, filename), 'Offline installation control');
-  mkdirSync(join(control.home, '.omp/agent/agents'));
+  writeFileSync(
+    join(control.home, '.cratylus/omp/package.json'),
+    JSON.stringify({
+      omp: {
+        extensions: [
+          'extensions/cratylus.ts',
+          'extensions/cratylus-session.ts',
+          'extensions/extra.mjs',
+        ],
+      },
+    }),
+  );
+  mkdirSync(join(control.home, '.cratylus/omp/agents'));
   for (const role of ['architect', 'builder'])
-    writeFileSync(join(control.home, '.omp/agent/agents', `${role}.md`), body);
+    writeFileSync(
+      join(control.home, '.cratylus/omp/agents', `${role}.md`),
+      body,
+    );
   vi.stubEnv('EXECUTION_LIVE', '1'); // Every session is intercepted; no model can run.
   vi.stubEnv('EXECUTION_JUDGE_MODEL', 'openai-codex/judge');
 });
@@ -184,10 +229,10 @@ describe.each(runners)(
       );
       for (const name of ['cratylus.ts', 'cratylus-session.ts', 'extra.mjs'])
         expect(modules).toContain(
-          join(control.home, '.omp/agent/extensions', name),
+          join(control.home, '.cratylus/omp/extensions', name),
         );
       expect(modules).not.toContain(
-        join(control.home, '.omp/agent/extensions/notes.txt'),
+        join(control.home, '.cratylus/omp/extensions/notes.txt'),
       );
       expect(args).toContain('--no-extensions');
       expect(modules.some((path) => path?.endsWith('/observe.ts'))).toBe(true);
@@ -208,10 +253,10 @@ describe.each(runners)(
       expect(judge).toBeDefined();
       expect(judge!.args).toContain('--no-extensions');
       const installed = judge!.args.filter((arg) =>
-        arg.startsWith(join(control.home, '.omp/agent/extensions/')),
+        arg.startsWith(join(control.home, '.cratylus/omp/extensions/')),
       );
       expect(installed).toEqual([
-        join(control.home, '.omp/agent/extensions/cratylus.ts'),
+        join(control.home, '.cratylus/omp/extensions/cratylus.ts'),
       ]);
       expect(
         judge!.args.some((path) => path.endsWith('/delegate-stand-in.ts')),

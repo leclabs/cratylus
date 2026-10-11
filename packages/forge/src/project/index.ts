@@ -31,7 +31,6 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { hasEventTapStrategy } from '@cratylus/runtime/capabilities/event-tap';
 import {
   type Agent,
   type Binding,
@@ -249,6 +248,10 @@ export interface ProjectedTree extends ProjectReport {
   readonly agentModels: Readonly<
     Record<string, { readonly tier: string; readonly effort: string }>
   >;
+  /** The sorted names of the rendered agents that state a model routing and hold a
+   *  role not named for them (a persona over its role): the agents, besides the tiers,
+   *  whose model role an install asks the operator to bind. */
+  readonly personas: readonly string[];
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
@@ -1174,26 +1177,11 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  let warnedTaplessHarness = false;
   for (const { name, skill: cell } of contributedSkills) {
     const resolved = resolvedSkillOf(cell);
     const cellOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
     files.push({ path: join(cellOut, filename), content });
-    if (
-      cell.runtime?.capability === 'eventTap' &&
-      !warnedTaplessHarness &&
-      !hasEventTapStrategy(opts.adapter.name)
-    ) {
-      // DEGRADE, and say so — once per projection, not once per skill. The runtime's
-      // tap has a strategy for Claude Code alone, so on this harness the skill
-      // ships as a declaration whose `eventTap install` REFUSES; shipping it
-      // without a word would read as a working tap.
-      warnedTaplessHarness = true;
-      warn(
-        `skill '${name}' declares the '${cell.runtime.capability}' capability, which has no tap strategy on '${opts.adapter.name}': only Claude Code has one today. The skill ships as a declaration, but no events are captured here and \`${CLI_BIN} ${cell.runtime.capability} install\` refuses on '${opts.adapter.name}'.`,
-      );
-    }
     if (cell.runtime) {
       files.push({
         path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
@@ -1374,6 +1362,13 @@ export async function projectPluginSet(
   )) {
     agentModels[name] = { tier, effort };
   }
+  const personas = rendered.flatMap((a, i) =>
+    a.routing !== undefined &&
+    a.holds !== undefined &&
+    a.holds !== agentNames[i]
+      ? [agentNames[i] as string]
+      : [],
+  );
 
   return {
     files,
@@ -1382,6 +1377,7 @@ export async function projectPluginSet(
     shims,
     hooks,
     agentModels,
+    personas: [...personas].sort(),
     unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,

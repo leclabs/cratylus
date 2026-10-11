@@ -3,8 +3,8 @@
 // capability's name.
 //
 // WHY THIS FILE EXISTS. A capability has one keyspace name, in its declared
-// camelCase register (`eventTap`), and a matching kebab-case port module
-// (`event-tap`). The conversion between those registers is already declared by
+// camelCase register (`workPackage`), and a matching kebab-case port module
+// (`work-package`). The conversion between those registers is already declared by
 // the corpus and used for `communication-style` / `communicationStyle`; this gate
 // checks that runtime ports and skill declarations remain aligned with the
 // capability vocabulary rather than accumulating alternate names.
@@ -22,24 +22,25 @@
 //     Replaced by the SUBSET direction below, which is the true statement.
 //
 // ── THE AXES THIS GATE DOES CHECK, each with its positive-control count ──────────
-//   1. PORT MODULE ⇒ KEYSPACE (1 in-keyspace control, 1 exempt control). A
+//   1. PORT MODULE ⇒ KEYSPACE (1 exempt control; the in-keyspace direction is
+//      held by the convicting fixtures, since no member codes against a port). A
 //      `ports/*.ts` module is outside the keyspace IFF its basename carries the
 //      `provisional-` prefix. Stated as that equivalence, and not as "…except the
 //      mailbox", so that it SELF-ARMS: a capability landing tomorrow as
 //      `ports/foo.ts` is convicted until it joins the keyspace, and a second
 //      hand-written exception cannot be quietly added, because there is no list to
 //      add it to. The prefix must also be EARNED — see leg 1c. A keyspace member
-//      needs no port module: `concepts` codes against no port, so the converse
+//      needs no port module: no member codes against a port, so the converse
 //      (every member has a `ports/<kebab>.ts`) is false of the corpus and DROPPED.
 //   2. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
-//      declaring a capability is a control). One-directional on purpose: a
-//      capability with no skill cell is legal.
+//      declaring a capability is a control; canon declares none today, so the
+//      reader is proven live on the shim-carrier fixture). One-directional on
+//      purpose: a capability with no skill cell is legal.
 //   3. SAME SET — canon's `RUNTIME_CAPABILITIES` and the runtime's `CAPABILITIES`
 //      name the same capabilities.
 //
-// HOW IT READS THE RUNTIME. By TEXT, over the source path — the precedent
-// `event-tap-cell.test.ts` set. canon
-// depends on runtime, but a textual read needs no build output, so this gate is
+// HOW IT READS THE RUNTIME. By TEXT, over the source path. canon depends on
+// runtime, but a textual read needs no build output, so this gate is
 // live on a cold tree and cannot be quietly satisfied by a stale `dist/`.
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -54,6 +55,14 @@ const packages = join(canonRoot, '..');
 const KEYSPACE_SRC = join(packages, 'runtime', 'src', 'capability.ts');
 const PORTS_DIR = join(packages, 'runtime', 'src', 'ports');
 const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
+/** A fixture plugin's skills: one cell declaring a capability, the reader's witness. */
+const CARRIER_SKILLS_DIR = join(
+  canonRoot,
+  'test',
+  'fixtures',
+  'shim-carrier',
+  'skills',
+);
 
 // ── The two registers of one sign ───────────────────────────────────────────────
 // The map is NOT minted here. `forge/src/core/anatomy-body.ts`'s `dimensionField`
@@ -63,12 +72,12 @@ const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
 // round-trip leg below pins the two against the corpus's live pairs, so a drift
 // between this copy and the declared home is convicted rather than assumed away.
 
-/** kebab register → camel register: `event-tap` → `eventTap`. */
+/** kebab register → camel register: `work-package` → `workPackage`. */
 function camel(kebab: string): string {
   return kebab.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 }
 
-/** camel register → kebab register: `eventTap` → `event-tap`. */
+/** camel register → kebab register: `workPackage` → `work-package`. */
 function kebab(camel: string): string {
   return camel.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
@@ -187,22 +196,23 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['eventTap', 'concepts']),
+      expect.arrayContaining(['concepts', 'workPackage']),
     );
-    expect(BASENAMES).toEqual(
-      expect.arrayContaining(['event-tap', 'provisional-mailbox']),
-    );
-    // The subset axis rests on the surviving skill cell that declares a capability.
-    // One witness is the floor below which a dark read could pass it vacuously.
-    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(1);
+    expect(BASENAMES).toEqual(expect.arrayContaining(['provisional-mailbox']));
+    // No canon cell declares a capability today, so the subset axis's reader is
+    // pinned on the fixture cell that does: a dark reader fails here rather than
+    // passing the live leg empty.
+    expect(skillCapabilities(CARRIER_SKILLS_DIR)).toEqual([
+      { skill: 'carrier', capability: 'workPackage' },
+    ]);
   });
 
   it('the two registers round-trip on the pairs the corpus actually runs', () => {
     // `dimensionField`'s live pair, and this capability's — the map is the corpus's,
     // not this gate's, and these are the witnesses that say so.
     expect(camel('communication-style')).toBe('communicationStyle');
-    expect(camel('event-tap')).toBe('eventTap');
-    expect(kebab('eventTap')).toBe('event-tap');
+    expect(camel('work-package')).toBe('workPackage');
+    expect(kebab('workPackage')).toBe('work-package');
     for (const c of CAPABILITIES) expect(camel(kebab(c))).toBe(c);
   });
 
@@ -244,13 +254,13 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic corpus that violates it', () => {
-    const caps = ['concepts', 'eventTap'];
+    const caps = ['concepts', 'workPackage'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
     // allowlist for it to be added to, so it is convicted by construction.
     expect(
-      portKeyspaceViolations(caps, ['event-tap', 'experimental-x']),
+      portKeyspaceViolations(caps, ['work-package', 'experimental-x']),
     ).toHaveLength(1);
 
     // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the keyspace —
@@ -264,21 +274,21 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(
       portKeyspaceViolations(
         [...caps, 'provisionalX'],
-        ['event-tap', 'provisional-x'],
+        ['work-package', 'provisional-x'],
       ),
     ).toHaveLength(1);
 
     // A keyspace member with no port module is legal: `concepts` has none.
     // …and the clean corpus really is clean through the same function, so the two
     // convictions above are the predicate biting, not the predicate always firing.
-    expect(portKeyspaceViolations(caps, ['event-tap'])).toEqual([]);
+    expect(portKeyspaceViolations(caps, ['work-package'])).toEqual([]);
 
     // AXIS 2: a cell forwarding to a capability no host binds.
     expect(
       subsetViolations(caps, [{ skill: 'ghost', capability: 'unknown' }]),
     ).toHaveLength(1);
     expect(
-      subsetViolations(caps, [{ skill: 'event-tap', capability: 'eventTap' }]),
+      subsetViolations(caps, [{ skill: 'carrier', capability: 'workPackage' }]),
     ).toEqual([]);
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.

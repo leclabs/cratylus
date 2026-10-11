@@ -120,17 +120,31 @@ mapped through the adapter's `nativeAgents` (`researcher` → `scout`), and `""`
 hands off to no one; and, only for an agent that changes nothing (`Agent.readOnly`), `tools` listing
 omp's reading tools alone. Every other agent keeps omp's default tools. `key: null` reserves the key
 of an ipseic agent. The tree reports each agent's tier and effort (`ProjectedTree.agentModels`), from
-which install binds its model role.
+which each declaration's model falls back to after its own role.
 
 ## How deploy places a tree
 
-`deploySingle` places one kind (agents, skills or hooks) of an already-projected render tree into the
-local OMP home. Agent definitions land under `agent/agents/`; skills land in the vendor-neutral
-`~/.agents/skills` tree that OMP reads natively. OMP hook registrations are emitted as extension
-modules, not merged into a settings file.
+At user scope a render tree is placed WHOLE as the owned root, `~/.cratylus/<harness>/`
+(`deploy/owned-root.ts`), by `install` and by `deploy --scope user` alike: agents under `agents/`,
+skills under `skills/`, extension modules under `extensions/`, hook workers under `hooks/`, a
+`package.json` naming the modules (`omp.extensions`) and recording the version that projected it,
+`runtime.json` where the corpus configures a capability, and `installation.json`, the record of
+every reference placed outside the root and every host-file edit. The harness's own surfaces only
+refer into it (`linkOwnedRoot`: for omp, a link in `~/.omp/plugins/node_modules` and a dependency
+entry in `~/.omp/plugins/package.json`), so uninstall (`unlinkOwnedRoot`, then the root) removes
+exactly those, each found from where it points into the root rather than from the record, so none
+is left dangling when the root or its record was edited or removed. An installation from before the
+owned root is taken back by its deploy manifest (`removeEarlierInstallation`), what it placed
+before digests were recorded included.
 
-Deploy stops at the agent, skill and hook destinations (and the runtime config). Model routing is
-host configuration, not a deployed artifact, and `deploy` never writes it.
+At project scope `deploySingle` places one kind (agents, skills or hooks) into the project's
+`.omp/` (`agents/`, `skills/`, `extensions/`), which omp reads natively there. Model routing is
+host configuration, not a deployed artifact: a declaration names its own role first, then its tier
+and effort (decision 0111), and is never rendered with a model. Which model a tier or a persona's
+role runs on is the operator's choice (decision 0112): `install` asks for each the host does not
+bind and writes the answer into the host's `modelRoles` as the host's own entry, recorded in no
+installation record, so upgrade and uninstall keep it; an earlier installation's seeded entries
+stay the same way.
 
 ### The destinations are the adapter's, not the render tree's
 

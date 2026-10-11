@@ -77,7 +77,7 @@ describe('capability port: installed package', () => {
       expect(JSON.stringify(h.concepts('design'))).toContain(
         'A one-hour interval.',
       );
-      const adapter = snapshot(join(h.home, '.omp/agent/extensions'));
+      const adapter = snapshot(join(h.home, '.cratylus/omp/extensions'));
       const before = h.concepts('state');
       replaceRuntime(h);
       const after = h.concepts('state');
@@ -97,7 +97,9 @@ describe('capability port: installed package', () => {
       expect(toolJSON(h.call({ verb: 'state' }).result)).toEqual(
         h.concepts('state'),
       );
-      expect(snapshot(join(h.home, '.omp/agent/extensions'))).toEqual(adapter);
+      expect(snapshot(join(h.home, '.cratylus/omp/extensions'))).toEqual(
+        adapter,
+      );
     } finally {
       h.dispose();
     }
@@ -184,12 +186,14 @@ describe('capability port: installed package', () => {
     try {
       const explanation = checkExplanation(h);
       checkToolExplanation(h.offered(h.inspect()), explanation);
-      const adapter = snapshot(join(h.home, '.omp/agent/extensions'));
+      const adapter = snapshot(join(h.home, '.cratylus/omp/extensions'));
       const sentinel = sentinelExplanation(explanation);
       replaceRuntime(h, sentinel);
       const changed = h.offered(h.inspect());
       checkToolExplanation(changed, sentinel, true);
-      expect(snapshot(join(h.home, '.omp/agent/extensions'))).toEqual(adapter);
+      expect(snapshot(join(h.home, '.cratylus/omp/extensions'))).toEqual(
+        adapter,
+      );
     } finally {
       h.dispose();
     }

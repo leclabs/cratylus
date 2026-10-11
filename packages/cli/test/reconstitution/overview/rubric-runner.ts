@@ -59,7 +59,7 @@ export function capture(scenario: Scenario, h: Host): Recording {
         scenario.ref === 'delivery/6'
           ? {
               interfaces,
-              skills: files(join(h.home, '.agents/skills'))
+              skills: files(join(h.home, '.cratylus/omp/skills'))
                 .filter((path) => path.endsWith('SKILL.md'))
                 .map((path) => readFileSync(path, 'utf8')),
             }

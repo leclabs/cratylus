@@ -43,6 +43,5 @@ export const PRACTICES: readonly Practice[] = [
 ];
 
 export const PLUMBING: Plumbing = {
-  skills: ['event-tap'],
   hooks: ['deploy-drift-notice'],
 };

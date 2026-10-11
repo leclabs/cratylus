@@ -347,7 +347,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
-    expect(count('skill-description')).toBeGreaterThan(10);
+    expect(count('skill-description')).toBeGreaterThanOrEqual(10);
   });
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {

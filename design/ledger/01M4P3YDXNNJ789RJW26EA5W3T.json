@@ -1,0 +1,27 @@
+{
+  "id": "01M4P3YDXNNJ789RJW26EA5W3T",
+  "at": "2026-10-11T18:35:02.965Z",
+  "kind": "update",
+  "transition": "update:delivery:01M4P3YDXKWS6MWGTNNA2GWV09",
+  "cut": "delivery",
+  "workPackage": "journal-reader",
+  "changes": {
+    "outputs": [
+      "packages/runtime/src/capabilities/concepts/entries.ts",
+      "packages/runtime/src/capabilities/concepts/journal.ts",
+      "packages/runtime/src/capabilities/concepts/dispatch.ts",
+      "packages/runtime/test/concepts.test.ts",
+      "packages/runtime/test/overview/",
+      "packages/runtime/test/tolerant-reader.test.ts",
+      ".changeset/delivery-tolerant-journal.md",
+      "packages/runtime/src/capabilities/work-package/",
+      "packages/runtime/src/record-store/",
+      "packages/runtime/src/completion-check/",
+      "packages/runtime/src/capabilities/provisional-mailbox/",
+      "packages/runtime/test/work-package.test.ts",
+      "packages/runtime/test/ledger/",
+      "packages/runtime/test/record-store.test.ts",
+      "packages/runtime/test/provisional-mailbox.test.ts"
+    ]
+  }
+}

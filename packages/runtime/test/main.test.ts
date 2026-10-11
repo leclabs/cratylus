@@ -3,19 +3,18 @@
 // dispatcher throws.
 //
 // Driven the way the bin drives it: argv in, stdout, stderr and the exit code out,
-// in a scratch repository as the working directory, under a host config carrying
-// the event vocabulary. The help each capability and each verb prints is read off
-// the same declarations the verbs are read against.
+// in a scratch repository as the working directory. The help each capability and
+// each verb prints is read off the same declarations the verbs are read against.
 
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { Command } from 'commander';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { VERBS as EVENT_TAP } from '../src/capabilities/event-tap/dispatch.js';
-import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
+import {
+  VERBS as VERSION_SKEW,
+  dispatchVersionSkew,
+} from '../src/capabilities/version-skew/index.js';
 import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
 import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import {
@@ -24,33 +23,10 @@ import {
   type Capability,
 } from '../src/capability.js';
 import { capabilityCommands } from '../src/main.js';
-import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
 import { type VerbFlags, refused } from '../src/verb-flags.js';
-import { CONFIG, everyEntry, repository } from './verb-surface.js';
+import { everyEntry, repository } from './verb-surface.js';
 
 const repo = repository();
-
-let prior: string | undefined;
-beforeAll(() => {
-  prior = process.env[RUNTIME_CONFIG_ENV];
-  writeFileSync(
-    CONFIG,
-    JSON.stringify({
-      events: { vocabulary: ['turn.end'] },
-      harnesses: { omp: { native: { 'turn.end': 'session_stop' } } },
-    }),
-  );
-  process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-});
-afterAll(() => {
-  if (prior === undefined) delete process.env[RUNTIME_CONFIG_ENV];
-  else process.env[RUNTIME_CONFIG_ENV] = prior;
-});
-
-// Keep the event-tap test invocation explicitly OMP-scoped rather than inheriting
-// the environment of whichever harness launched the test runner.
-beforeAll(() => vi.stubEnv('OMPCODE', '1'));
-afterAll(() => vi.unstubAllEnvs());
 
 /** The commands in a program that stops reading options at its first command, as
  *  the program that owns the bin holds them. */
@@ -94,9 +70,9 @@ async function run(
 }
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
-  eventTap: EVENT_TAP,
   concepts: CONCEPTS,
   workPackage: WORK_PACKAGE,
+  versionSkew: VERSION_SKEW,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -116,7 +92,7 @@ describe('the capability commands print their help from the declarations', () =>
 
   it.each([
     ['concepts', 'define', '<concept>'],
-    ['eventTap', 'install', null],
+    ['workPackage', 'open', null],
   ] as const)(
     '%s %s --help documents its positional and every flag',
     async (c, verb, positional) => {
@@ -165,9 +141,9 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   const DISPATCHERS: {
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
-    eventTap: dispatchEventTap,
     concepts: dispatchConcepts,
     workPackage: dispatchWorkPackage,
+    versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 
   it.each(CAPABILITIES)(
@@ -234,7 +210,7 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
 describe('the capability commands refuse a word the verb does not take', () => {
   const cases: [Capability, string, string[]][] = [
     ['concepts', 'history', ['c', 'extra']],
-    ['eventTap', 'status', ['extra']],
+    ['workPackage', 'state', ['extra']],
   ];
 
   it.each(cases)(

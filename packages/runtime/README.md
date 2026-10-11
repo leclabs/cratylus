@@ -16,16 +16,15 @@ author of a corpus whose skills route here, and for a library user of the packag
 
 ## Capabilities
 
-The runtime ships exactly three capabilities, each a module of this package and each known when the
+The runtime ships exactly two capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `eventTap`, `concepts` and `workPackage`. A corpus's skill names one of them as
+names them: `concepts` and `workPackage`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | port           | verbs                                                                                                                                      |
-| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `eventTap`    | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                                                   |
-| `concepts`    | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`           |
-| `workPackage` | —              | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`, `record` |
+| capability    | verbs                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`           |
+| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`, `record` |
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
@@ -43,26 +42,21 @@ a builder's paths only within its package's outputs, counts the cut's rounds, wh
 agent runs, and records those figures in the concept journal as an `efficiency` entry, which
 `concepts state` reads back. It explains itself as `work package`.
 
-The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
-against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is
-contracts and declarations: beside the port contracts it exports `JOURNAL`, the concept journal's
+The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read and which append as code.
 
 ## Subpaths
 
-| subpath                    | what it carries                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`                        | `EventName` and the `EventTapHost` port                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `./events`                 | `EventName` — an event is a name; which names are valid is the corpus's, read from the host runtime config                                                                                                                                                                                                                                                                                                                                                |
-| `./ports/event-tap`        | `EventTapHost` — a harness-neutral passive observer contract                                                                                                                                                                                                                                                                                                                                                                                              |
-| `./capabilities/event-tap` | the event-tap capability: `dispatchEventTap`, `EventTapHostClaude`, `EVENT_TAP_ID`                                                                                                                                                                                                                                                                                                                                                                        |
-| `./capability`             | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                                                                                                                                                                                                                                                                                                                         |
-| `./main`                   | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                                                                                                                                                               |
-| `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `nativeEventsOf`, `nativeActsOf`, `RuntimeConfig`                                                                                                                                                                                                                                                                                                                                                               |
-| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                                                                                                                                                                |
-| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                                                                                                                                                                    |
-| `./verb-flags`             | `VerbFlags`, `Verb`, `Positional`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's purpose, positional (its name and description) and flags (whether each takes a value, its description, and whether it is required, takes one of a few values or repeats), the one reader (a flag that takes no value never takes the next token), and the one refusal of an untaken flag or surplus word |
-| `./package.json`           | the manifest                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| subpath            | what it carries                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                | the example substrate and the offline proof, and the concept journal's `JOURNAL` and the ledger API                                                                                                                                                                                                                                                                                                                                                       |
+| `./capability`     | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                                                                                                                                                                                                                                                                                                                         |
+| `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                                                                                                                                                               |
+| `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                                                                                                                                                                |
+| `./ulid`           | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                                                                                                                                                                    |
+| `./verb-flags`     | `VerbFlags`, `Verb`, `Positional`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's purpose, positional (its name and description) and flags (whether each takes a value, its description, and whether it is required, takes one of a few values or repeats), the one reader (a flag that takes no value never takes the next token), and the one refusal of an untaken flag or surplus word |
+| `./package.json`   | the manifest                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## Verbs and their flags
 
@@ -89,8 +83,8 @@ again, or for the verb's `--help`, in one line.
 
 `capabilityCommands` builds one Commander command per capability, and routes
 `<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
-route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`,
-`concepts` and `workPackage` print their JSON result. A refusal exits `1` as `cratylus <message>` (the message opens
+route does not compile. Each capability's verb surface owns its verbs' flag grammar: `concepts`
+and `workPackage` print their JSON result. A refusal exits `1` as `cratylus <message>` (the message opens
 with the capability and the verb, as `cratylus concepts define: …`),
 and a verb the capability does not declare is refused by `verbOf` in the one wording every dispatcher
 throws when called as a library. Never a silent no-op.
@@ -101,7 +95,7 @@ throws when called as a library. Never a silent no-op.
 
 ## Explaining itself
 
-A capability that explains itself declares, beside its verbs, its name and when to reach for it, and
+Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
 for each verb the concept of cratylus's own conceptual design it acts on, when to reach for it, and
 whether it `reads` or `appends`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
@@ -111,24 +105,23 @@ first (`positional: true`) and then each flag, each with its `description`, whet
 `required`, and its JSON Schema (`string`, `string` with an `enum`, `boolean` for a flag that takes
 no value, or an `array` of `string` for one given once per value). The explanation is read out of
 the same declarations the help prints and the reader reads calls against, so it cannot say what the
-verb does not take. `workPackage` explains itself the same way, as `work package`. `eventTap` does
-not explain itself; `cratylus eventTap --explain` is refused as a verb it does not declare.
+verb does not take. `workPackage` explains itself the same way, as `work package`.
 
 ## The host runtime config
 
-`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`, which deploy and
-install write: the corpus's lifecycle-event vocabulary (`events`), each harness's stanza
-(`harnesses.<harness>`) and each capability's configuration (`configuration`). Any one of the three
-is a live config. A capability that needs a part the host lacks refuses and names the command that
-writes it.
+`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
+install writes into the owned root: each capability's configuration (`configuration`), as the
+corpus's skills declared it. The installation (`installationRoot`) is the one
+`$CRATYLUS_INSTALLATION` names — a harness's adapter names its own on every call — else the one
+root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
+configuration and finds none refuses and names the command that writes it.
 
-A stanza holds the harness's native event names (`native`, canonical name → native name) and, where
-the harness fires an event only as a native event narrowed to the tool that performs it, that act's
-binding (`acts`, canonical act → `{ event, matcher }`). Claude Code's `operator.consult.pre` is
-`PreToolUse` matching `AskUserQuestion`, and `subagent.dispatch.pre` is `PreToolUse` matching
-`Agent|SendMessage`; deploy writes both from the claude adapter, as the projection itself binds
-them. `nativeEventsOf` and `nativeActsOf` each ask for one harness's. A stanza an older deploy wrote
-holds names only and reads with no acts, so an act event is skipped on it, as it was.
+## Version skew
+
+`versionSkew report` prints `{ artifacts, command, installation }`: the version recorded in the
+installation's `package.json` by the cratylus that projected it, and the version of the command,
+which the program holding the commands hands in (`capabilityCommands({ version })`). It chooses
+between no builds.
 
 ## The bin name
 
@@ -136,8 +129,8 @@ holds names only and reads with no acts, so an act event is skipped on it, as it
 from inside an emitted artifact — a projected skill shim, a generated hook script — where no compiler
 can see it. A rename that missed one produced a script that failed on a host rather than at build.
 
-Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus.json`) and
-the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
+Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus.json`) is
+template-derived from it and moves without being edited. The one
 irreducible second copy is [`cratylus`](../cli/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.
 

@@ -1,8 +1,10 @@
-// Install binds each agent's model through omp's model roles: every tier an agent uses
-// as a role named for the tier, seeded from the roles the host already has, and every
-// agent's own role as `@<tier>:<effort>`. An entry the host set is never changed; an
-// entry install seeded follows what it would seed now; a tier with nothing to seed it
-// from is reported; and uninstall takes back exactly what install put in.
+// Which model a tier or a persona's role runs on is the operator's choice and the
+// host's own setting (decision 0112). An agent's declaration names its own role, then
+// its tier and effort, and never a model. Install binds what the operator chooses in
+// the host's `modelRoles`, records none of it as its own, and so upgrade and uninstall
+// keep it; a role the host binds is never changed; told nothing and unable to ask, it
+// names each tier no model is bound to as the next step. An upgrade from the earlier
+// layout leaves the bindings that layout seeded, as the host's.
 
 import {
   mkdirSync,
@@ -144,95 +146,187 @@ describe('install — model roles', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('seeds the tiers from the host’s roles and binds each agent to its tier and effort', async () => {
+  const declared = (name: string) =>
+    /^model: (.*)$/m.exec(
+      readFileSync(join(home, '.cratylus/omp/agents', `${name}.md`), 'utf8'),
+    )?.[1];
+
+  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config (0111)', async () => {
     host(HOST);
     expect(await install()).toBe(0);
-    const added = [
-      '  fast: "anthropic/small"',
-      '  frontier: "anthropic/big"',
-      '  frontier-other-family: "openai/other"',
-      '  alpha: "@frontier:high"',
-      '  beta: "@fast:medium"',
-      '  gamma: "@frontier-other-family:high"',
-    ];
-    expect(readFileSync(config(), 'utf8')).toContain(
-      `${HOST.trimEnd()}\n${added.join('\n')}\n`,
-    );
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
+    expect(declared('beta')).toBe('["@beta", "@fast:medium"]');
+    expect(declared('gamma')).toBe('["@gamma", "@frontier-other-family:high"]');
+    expect(readFileSync(config(), 'utf8')).toBe(HOST);
   });
 
-  it('never changes an entry the host set, and says so', async () => {
-    host(`${HOST}  alpha: "my/own"\n  frontier: "openai/chosen"\n`);
-    expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).toContain('  alpha: "my/own"\n');
-    expect(text).toContain('  frontier: "openai/chosen"\n');
-    expect(text).not.toContain('@frontier:high');
-    // The other family is read against the frontier the host set.
-    expect(text).toContain('  frontier-other-family: "anthropic/big"\n');
-    expect(out).toContain('left alone: the model roles frontier, alpha');
-  });
-
-  it('leaves a tier it has nothing to seed from unseeded, and says so', async () => {
-    host('modelRoles:\n  default: anthropic/big\n');
-    expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).not.toMatch(/^ {2}fast:/m);
-    expect(text).not.toMatch(/^ {2}frontier-other-family:/m);
-    expect(text).toContain('  beta: "@fast:medium"\n');
-    expect(out).toContain('could not seed the model role fast');
+  it('asks nothing about a role the host binds, and says a choice for it is left', async () => {
+    host(`${HOST}  alpha: "my/own"\n`);
+    expect(await install({ modelRoles: 'alpha=openai/picked' })).toBe(0);
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
     expect(out).toContain(
-      'could not seed the model role frontier-other-family',
+      'the host already binds the model role alpha, so it is left as the host set it',
     );
+    expect(readFileSync(config(), 'utf8')).toBe(`${HOST}  alpha: "my/own"\n`);
   });
 
-  it('keys --model-roles by agent name and refuses a name no agent has', async () => {
-    host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toContain(
-      '  beta: "openai/picked"\n',
+  it('names each tier the host leaves unbound as the next step when it cannot ask', async () => {
+    host(`${HOST}  frontier: anthropic/big:high\n`);
+    expect(await install()).toBe(0);
+    expect(out).toMatch(
+      /next:[\s\S]*bind a model to each tier fast, frontier-other-family under modelRoles in /,
     );
-    expect(out).toContain('models you chose: beta → openai/picked');
+    expect(out).not.toMatch(/each tier[^\n]*\bfrontier,/);
+  });
+
+  it('binds a chosen tier or agent role as the host’s own setting, which reinstall and uninstall keep', async () => {
+    host(HOST);
+    expect(
+      await install({ modelRoles: 'frontier=openai/picked,beta=x/y' }),
+    ).toBe(0);
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
+    expect(declared('beta')).toBe('["@beta", "@fast:medium"]');
+    const bound = `${HOST}  frontier: "openai/picked"\n  beta: "x/y"\n`;
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
+    expect(out).toContain('frontier → openai/picked, beta → x/y');
+    expect(
+      JSON.stringify(
+        JSON.parse(
+          readFileSync(join(home, '.cratylus/omp/installation.json'), 'utf8'),
+        ),
+      ),
+    ).not.toContain('openai/picked');
+    expect(await install()).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
     out = '';
     expect(await install({ modelRoles: 'builder=x/y' })).toBe(1);
     expect(out).toContain(
-      "'builder' is no agent this install places (agents: alpha, beta, gamma)",
+      "'builder' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
     );
   });
 
-  it('moves its own seed when the agent’s effort changes, and keeps the operator’s choice', async () => {
-    host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
-    design({ alpha: 'xhigh', beta: 'low' });
-    expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).toContain('  alpha: "@frontier:xhigh"\n');
-    expect(text).not.toContain('@frontier:high"');
-    expect(text).toContain('  beta: "openai/picked"\n');
+  it('asks each tier the host does not bind, and binds the answer in the host’s settings', async () => {
+    host(`${HOST}  fast: anthropic/small\n`);
+    let asked: string[] = [];
+    expect(
+      await install({
+        interactive: true,
+        modelRoles: undefined,
+        prompts: {
+          harness: async () => 'omp',
+          practices: async (offered) => offered.map((p) => p.name),
+          routes: async (questions) => {
+            asked = questions.map((q) => `${q.roleOf}:${q.role}`);
+            return { frontier: 'anthropic/big:high' };
+          },
+          agentStatus: async () => true,
+          confirm: async () => true,
+        },
+      }),
+    ).toBe(0);
+    expect(asked).toEqual(['tier:frontier', 'tier:frontier-other-family']);
+    expect(readFileSync(config(), 'utf8')).toBe(
+      `${HOST}  fast: anthropic/small\n  frontier: "anthropic/big:high"\n`,
+    );
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
   });
 
-  it('edits a host config written as one JSON document', async () => {
-    const doc = {
-      modelRoles: { default: 'anthropic/big:low', smol: 'anthropic/small' },
-    };
-    host(JSON.stringify(doc));
-    expect(await install()).toBe(0);
-    expect(JSON.parse(readFileSync(config(), 'utf8')).modelRoles).toEqual({
-      ...doc.modelRoles,
-      fast: 'anthropic/small',
-      frontier: 'anthropic/big',
-      alpha: '@frontier:high',
-      beta: '@fast:medium',
-      gamma: '@frontier-other-family:high',
-    });
-    expect(runUninstall({ harness: 'omp', home })).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toBe(JSON.stringify(doc));
+  it('upgrading from the earlier layout keeps the bindings it seeded, as the host’s, and takes back the rest', async () => {
+    const seeded = [
+      'modelRoles:\n',
+      '  alpha: "@frontier:high"\n',
+      '  retired: "@frontier:medium"\n',
+    ];
+    const status = ['statusLine:\n', '  preset: custom\n'];
+    host([...seeded, ...status].join(''));
+    mkdirSync(join(home, '.omp/.forge'), { recursive: true });
+    writeFileSync(
+      join(home, '.omp/.forge/deploy-manifest.json'),
+      JSON.stringify({
+        version: 1,
+        kinds: {},
+        hostEdits: {
+          'agent/config.yml': {
+            created: true,
+            hunks: [
+              { context: null, before: [], after: seeded },
+              { context: seeded[2], before: [], after: status },
+            ],
+          },
+        },
+        modelRoleSeeds: {
+          alpha: '@frontier:high',
+          retired: '@frontier:medium',
+        },
+      }),
+    );
+    expect(await install({ modelRoles: 'default' })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(seeded.join(''));
+    expect(out).toContain(
+      'alpha: "@frontier:high" / retired: "@frontier:medium"',
+    );
   });
 
-  it('is taken back by uninstall, the host’s file byte for byte', async () => {
+  it('keeps the bindings an earlier install seeded into a host config kept as JSON, and the comma it ended a host line with', async () => {
+    const host_ = [
+      '{\n',
+      '  "modelRoles": {\n',
+      '    "default": "fixture/base",\n',
+      '    "alternate": "other/model"\n',
+      '  }\n',
+      '}\n',
+    ];
+    const after = [
+      host_[0],
+      host_[1],
+      host_[2],
+      '    "alternate": "other/model",\n',
+      '    "alpha": "@frontier:high",\n',
+      '    "retired": "@frontier:medium"\n',
+      host_[4],
+      host_[5],
+    ].join('');
+    host(after);
+    mkdirSync(join(home, '.omp/.forge'), { recursive: true });
+    writeFileSync(
+      join(home, '.omp/.forge/deploy-manifest.json'),
+      JSON.stringify({
+        version: 1,
+        kinds: {},
+        hostEdits: {
+          'agent/config.yml': {
+            created: false,
+            hunks: [
+              {
+                context: host_[2],
+                before: [host_[3]],
+                after: [
+                  '    "alternate": "other/model",\n',
+                  '    "alpha": "@frontier:high",\n',
+                  '    "retired": "@frontier:medium"\n',
+                ],
+              },
+            ],
+          },
+        },
+        modelRoleSeeds: {
+          alpha: '@frontier:high',
+          retired: '@frontier:medium',
+        },
+      }),
+    );
+    expect(await install({ modelRoles: 'default' })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(after);
+  });
+
+  it('follows the agent’s effort on reinstall, and uninstall leaves the host’s file byte for byte', async () => {
     host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
+    expect(await install()).toBe(0);
     design({ alpha: 'xhigh' });
     expect(await install()).toBe(0);
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:xhigh"]');
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     expect(readFileSync(config(), 'utf8')).toBe(HOST);
   });

@@ -1,0 +1,13 @@
+{
+  "id": "01M4NTG0GWC6K2RAT5NCHMHXCZ",
+  "at": "2026-10-11T15:49:53.308Z",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "owned root",
+  "wording": "everything cratylus places on a host lives under one root it owns, and the harness's own surfaces only refer into it, so what cratylus placed is known by construction, never inferred file by file; the root is cratylus's alone, so a change the host makes inside it is not kept by upgrade or uninstall, while everything the host places or changes outside it, its own harness surfaces included, is kept, with only cratylus's references into the root removed.",
+  "builtFrom": [],
+  "reason": "The delivery cut's illustrator: uninstall keeps what the host placed or changed, while upgrade replaces the root whole, and a host edit inside the root fell between them; ownership stays with the root, as a package manager owns what it installs.",
+  "supersedes": [
+    "01M4J5RB2WYKZF1C31EY623VV8"
+  ]
+}

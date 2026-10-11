@@ -1,0 +1,10 @@
+{
+  "id": "01M4P0HZMK9GRJKT7MQ68R8TTA",
+  "at": "2026-10-11T17:35:49.395Z",
+  "kind": "check",
+  "transition": "check:delivery:01M4P0HZMHCE2PDZSTDA3NAQE5",
+  "cut": "delivery",
+  "failures": [
+    "one sign, one concept: the new install question's field for a tier or a persona's role reuses a sign that already names a model's class"
+  ]
+}

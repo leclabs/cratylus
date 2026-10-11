@@ -94,7 +94,7 @@ function unresolved(skills: Map<string, Skill>): string[] {
 describe('BOUNDARY-BINDING gate — `X @ home` resolves in that home', () => {
   it('every skill-homed boundary-binding resolves', async () => {
     const skills = await loadSkills();
-    expect(skills.size).toBeGreaterThan(10);
+    expect(skills.size).toBeGreaterThanOrEqual(10);
     expect(unresolved(skills)).toEqual([]);
   });
 

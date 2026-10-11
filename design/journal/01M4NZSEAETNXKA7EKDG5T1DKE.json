@@ -1,0 +1,14 @@
+{
+  "id": "01M4NZSEAETNXKA7EKDG5T1DKE",
+  "at": "2026-10-11T17:22:25.230Z",
+  "kind": "decide",
+  "decisionId": "0112",
+  "context": "delivery",
+  "title": "Which model a tier runs on is the operator's choice and the host's setting",
+  "situation": "Installed declarations name their own role and fall back to a tier at an effort; only the host's settings bind a tier to a model, and the owned root keeps cratylus from writing host settings. The earlier install seeded the tiers and the personas' roles into this host's settings and recorded them as its own, so an upgrade as built would remove them and leave agents without a model.",
+  "decision": "The model a tier or a persona's role runs on is the operator's choice. Install asks for it when not told and writes the answer as the host's own setting, never as something cratylus owns: upgrade and uninstall keep it. Where install is neither told nor can ask, it places everything else and names each tier the installed agents fall back to that the host does not bind, as the operator's next step. Upgrading from the earlier layout leaves the bindings it seeded in place, as the host's own from then on, and removes everything else it placed.",
+  "consequences": "No example text changes; the lead routes this to a builder.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

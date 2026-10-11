@@ -8,7 +8,9 @@
 // pre-commit immutability gate holds the same law), so two branches that both
 // appended merge in git as the union of their files. Entries are read only from
 // this directory of the working tree and are ordered by their id, like the
-// concept journal's.
+// concept journal's, and like it the ledger reads past an entry of a kind this
+// runtime does not know, written by a newer one, counting it by its kind so
+// every reading can say what it left uninterpreted.
 //
 // Every entry carries a TRANSITION, its own id: appending an entry whose
 // transition is already recorded is refused, and nothing is written. Appends
@@ -36,6 +38,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
+import { ReadPast } from '../concepts/journal.js';
 import { commonDirOf } from './git.js';
 
 /** The ledger's place, relative to the top of the repository. */
@@ -146,8 +149,10 @@ const KINDS: readonly string[] = [
 export interface Ledger {
   /** The top of the git repository holding the ledger. */
   readonly root: string;
-  /** Every entry, in append order. */
+  /** Every entry of a kind this runtime knows, in append order. */
   entries(): readonly LedgerEntry[];
+  /** The entries of kinds this runtime does not know, read past. */
+  readPast(): ReadPast;
   /** Append `draft` as one new entry; refused, writing nothing, when its
    *  transition is already recorded. */
   append<D extends LedgerDraft>(draft: D): D & { id: string; at: string };
@@ -168,14 +173,40 @@ export function ledgerAt(
   refuse: (message: string) => Error,
 ): Ledger {
   const dir = join(top, LEDGER_DIR);
-  const read = (): LedgerEntry[] =>
-    existsSync(dir)
+  /** What the ledger holds: its entries of known kinds, what it read past,
+   *  every transition recorded and its last entry's id, whatever their kind. */
+  const read = () => {
+    const names = existsSync(dir)
       ? readdirSync(dir, { withFileTypes: true })
           .filter((d) => d.isFile() && ENTRY_FILE.test(d.name))
           .map((d) => d.name)
           .sort()
-          .map((name) => entryAt(join(dir, name), name, refuse))
       : [];
+    const entries: LedgerEntry[] = [];
+    const readPast = new ReadPast();
+    const transitions = new Map<string, string>();
+    for (const name of names) {
+      const entry = entryAt(join(dir, name), name, refuse);
+      transitions.set(entry.transition, entry.id);
+      if (KINDS.includes(entry.kind)) entries.push(entry as LedgerEntry);
+      else readPast.add(entry.kind);
+    }
+    return {
+      entries,
+      readPast,
+      transitions,
+      last: names.at(-1)?.slice(0, -'.json'.length),
+    };
+  };
+
+  /** The last reading, kept until this ledger next appends. */
+  let cached:
+    | { readonly entries: readonly LedgerEntry[]; readonly readPast: ReadPast }
+    | undefined;
+  const reading = () => {
+    cached ??= read();
+    return cached;
+  };
 
   /** Run `body` holding the repository's ledger lock. */
   const locked = <T>(body: () => T): T => {
@@ -211,16 +242,17 @@ export function ledgerAt(
 
   return {
     root: top,
-    entries: read,
+    entries: () => reading().entries,
+    readPast: () => reading().readPast,
     append(draft) {
       return locked(() => {
-        const entries = read();
-        const earlier = entries.find((e) => e.transition === draft.transition);
+        const { transitions, last } = read();
+        const earlier = transitions.get(draft.transition);
         if (earlier !== undefined)
           throw refuse(
-            `the transition '${draft.transition}' is already recorded (${LEDGER_DIR}/${earlier.id}.json); the repeat is refused and nothing is written`,
+            `the transition '${draft.transition}' is already recorded (${LEDGER_DIR}/${earlier}.json); the repeat is refused and nothing is written`,
           );
-        const id = mintAfter(entries.at(-1)?.id);
+        const id = mintAfter(last);
         const entry = {
           id,
           at: new Date(decodeTime(id)).toISOString(),
@@ -238,6 +270,7 @@ export function ledgerAt(
         } finally {
           unlinkSync(aside);
         }
+        cached = undefined;
         return entry;
       });
     },
@@ -252,13 +285,13 @@ function mintAfter(last: string | undefined): string {
   return monotonicFactory(Math.random, () => after)();
 }
 
-/** The entry in the file at `path`, named `name`; refuses one that is not an
- *  entry of this ledger. */
+/** The entry in the file at `path`, named `name`, of whatever kind it names;
+ *  refuses one that is not an entry of this ledger. */
 function entryAt(
   path: string,
   name: string,
   refuse: (message: string) => Error,
-): LedgerEntry {
+): { readonly id: string; readonly kind: string; readonly transition: string } {
   const entry: unknown = (() => {
     try {
       return JSON.parse(readFileSync(path, 'utf8'));
@@ -272,7 +305,8 @@ function entryAt(
     'id' in entry &&
     entry.id === name.slice(0, -'.json'.length) &&
     'kind' in entry &&
-    KINDS.includes(entry.kind as string) &&
+    typeof entry.kind === 'string' &&
+    entry.kind !== '' &&
     'transition' in entry &&
     typeof entry.transition === 'string' &&
     'cut' in entry &&
@@ -281,7 +315,7 @@ function entryAt(
     throw refuse(
       `the ledger entry ${LEDGER_DIR}/${name} is not an entry of this ledger`,
     );
-  // Appended only by this module and never edited: its id, kind, transition
-  // and cut vouch for the rest of its shape.
-  return entry as LedgerEntry;
+  // Appended only by a runtime and never edited: its id, kind, transition and
+  // cut vouch for the rest of its shape.
+  return entry as { id: string; kind: string; transition: string };
 }

@@ -1,16 +1,11 @@
-// The host runtime config — what the projection told this host: the corpus's
-// lifecycle vocabulary, each harness's native names under its own stanza, and each
-// capability's configuration. Each part alone is a live config; none says nothing.
+// The host runtime config — what the projection told this host: each capability's
+// configuration. A config carrying none says nothing.
 
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
-import {
-  loadRuntimeConfig,
-  nativeActsOf,
-  nativeEventsOf,
-} from '../src/runtime-config.js';
+import { loadRuntimeConfig } from '../src/runtime-config.js';
 
 const ENV = 'AGENT_RUNTIME_CONFIG';
 afterEach(() => {
@@ -33,101 +28,8 @@ describe('the host runtime config', () => {
     expect(loadRuntimeConfig()).toBeNull();
   });
 
-  it('a VOCABULARY-ONLY config is a real config', () => {
-    // The deploy-emitted shape: the corpus's event names and nothing else.
-    const root = tmp();
-    const cfg = join(root, 'runtime.json');
-    writeFileSync(
-      cfg,
-      JSON.stringify({ events: { vocabulary: ['session.start', 'turn.end'] } }),
-    );
-    process.env[ENV] = cfg;
-
-    const loaded = loadRuntimeConfig();
-    expect(loaded).not.toBeNull();
-    expect(loaded?.events?.vocabulary).toContain('turn.end');
-  });
-
-  it("each harness's native names arrive under its own stanza, asked for by name", () => {
-    // Two harnesses' stanzas in one host file, the shape deploy now writes: each is
-    // read back as its own. A harness that HAS NONE — no stanza, a stanza whose map
-    // is empty, or one whose every name is stripped as non-string — is refused
-    // alike, naming the commands that write one: never handed an empty map, and
-    // never another's.
-    const root = tmp();
-    const cfg = join(root, 'runtime.json');
-    writeFileSync(
-      cfg,
-      JSON.stringify({
-        events: { vocabulary: ['turn.end'] },
-        harnesses: {
-          claude: { native: { 'turn.end': 'Stop' } },
-          omp: { native: { 'turn.end': 'agent_end' } },
-          empty: { native: {} },
-          stripped: { native: { 'turn.end': 7 } },
-        },
-      }),
-    );
-    process.env[ENV] = cfg;
-
-    const loaded = loadRuntimeConfig();
-    expect(nativeEventsOf(loaded, 'claude')).toEqual({ 'turn.end': 'Stop' });
-    expect(nativeEventsOf(loaded, 'omp')).toEqual({ 'turn.end': 'agent_end' });
-    for (const none of ['unconfigured', 'empty', 'stripped'])
-      expect(() => nativeEventsOf(loaded, none)).toThrow(
-        new RegExp(
-          `install --harness ${none}[\\s\\S]*deploy --harness ${none}`,
-        ),
-      );
-  });
-
-  it('a stanza’s act bindings arrive beside its names; a names-only stanza has none', () => {
-    // The shape deploy now writes (`acts`, each ⟨event, matcher⟩) and the shape an
-    // earlier deploy wrote (names only): both read, the second with no acts and
-    // without being refused. A binding that is not an event is dropped.
-    const root = tmp();
-    const cfg = join(root, 'runtime.json');
-    writeFileSync(
-      cfg,
-      JSON.stringify({
-        events: { vocabulary: ['tool.use.pre', 'operator.consult.pre'] },
-        harnesses: {
-          claude: {
-            native: { 'tool.use.pre': 'PreToolUse' },
-            acts: {
-              'operator.consult.pre': {
-                event: 'PreToolUse',
-                matcher: 'AskUserQuestion',
-              },
-              'subagent.dispatch.pre': { matcher: 'Agent' },
-            },
-          },
-          old: { native: { 'tool.use.pre': 'PreToolUse' } },
-        },
-      }),
-    );
-    process.env[ENV] = cfg;
-
-    const loaded = loadRuntimeConfig();
-    expect(nativeActsOf(loaded, 'claude')).toEqual({
-      'operator.consult.pre': {
-        event: 'PreToolUse',
-        matcher: 'AskUserQuestion',
-      },
-    });
-    expect(nativeEventsOf(loaded, 'claude')).toEqual({
-      'tool.use.pre': 'PreToolUse',
-    });
-    expect(nativeEventsOf(loaded, 'old')).toEqual({
-      'tool.use.pre': 'PreToolUse',
-    });
-    expect(nativeActsOf(loaded, 'old')).toEqual({});
-    expect(nativeActsOf(loaded, 'unconfigured')).toEqual({});
-  });
-
-  it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {
-    // Corpus meaning a capability acts on arrives as its configuration entry; a
-    // document carrying only that is exactly as live as a vocabulary-only one.
+  it('a configuration block is a real config, each capability’s entry intact', () => {
+    // Corpus meaning a capability acts on arrives as its configuration entry.
     const root = tmp();
     const cfg = join(root, 'runtime.json');
     const entry = { lifecycle: { states: ['a', 'b'], final: 'b' } };
@@ -135,29 +37,14 @@ describe('the host runtime config', () => {
     process.env[ENV] = cfg;
 
     const loaded = loadRuntimeConfig();
-    expect(loaded).not.toBeNull();
-    expect(loaded?.configuration?.someCap).toEqual(entry);
-    expect(loaded?.events).toBeUndefined();
+    expect(loaded).toEqual({ configuration: { someCap: entry } });
   });
 
-  it('a malformed configuration block is ignored without wedging the load', () => {
+  it('a malformed or empty configuration block says nothing, without wedging the load', () => {
     const root = tmp();
     const cfg = join(root, 'runtime.json');
     process.env[ENV] = cfg;
     for (const malformed of [['someCap'], 'someCap', 7, null, {}]) {
-      // Beside a live events block: the rest of the document still loads.
-      writeFileSync(
-        cfg,
-        JSON.stringify({
-          events: { vocabulary: ['turn.end'] },
-          configuration: malformed,
-        }),
-      );
-      const loaded = loadRuntimeConfig();
-      expect(loaded?.events?.vocabulary).toEqual(['turn.end']);
-      expect(loaded?.configuration).toBeUndefined();
-
-      // Alone: it says nothing, so the document is absent — not a throw.
       writeFileSync(cfg, JSON.stringify({ configuration: malformed }));
       expect(loadRuntimeConfig()).toBeNull();
     }
