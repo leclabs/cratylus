@@ -1,0 +1,191 @@
+{
+  "breaks": "reports-outcome",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "note": "Not captured from a model. Trace and rubric answers authored together to prove predicates, clause binding and thresholds; live judge validity is not established offline.",
+      "variation": 1
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "The design decision is settled and Mira already confirmed the relevant film examples. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Done. [No achieved outcome stated.]"
+          }
+        ],
+        "controlClause": "reports-outcome"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "No further discovery is needed."
+          }
+        ],
+        "controlClause": "never-repeat"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Mira’s confirmation stands."
+          }
+        ],
+        "controlClause": "never-reconfirm"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "There is no remaining design round."
+          }
+        ],
+        "controlClause": "never-extra-round"
+      }
+    ],
+    "report": "Done. [No achieved outcome stated.]\n\nNo further discovery is needed.\n\nMira’s confirmation stands.\n\nThere is no remaining design round.",
+    "snapshots": [{}, {}],
+    "wiring": {
+      "agent": "architect",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored architect identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "task",
+        "concept_journal",
+        "work_package",
+        "write"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": ["command"]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "task": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["agent", "task"]
+                }
+              }
+            },
+            "required": ["tasks"]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": ["verb"]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "cut": {
+                "type": "string"
+              }
+            },
+            "required": ["verb", "cut"]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["path", "content"]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "reports-outcome": {
+        "pass": false,
+        "evidence": "Done. [No achieved outcome stated.]"
+      },
+      "never-repeat": {
+        "pass": true,
+        "evidence": "No further discovery is needed."
+      },
+      "never-reconfirm": {
+        "pass": true,
+        "evidence": "Mira’s confirmation stands."
+      },
+      "never-extra-round": {
+        "pass": true,
+        "evidence": "There is no remaining design round."
+      }
+    }
+  }
+}
