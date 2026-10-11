@@ -5,12 +5,11 @@
     "title": "prefers branch records after compaction",
     "role": "architect",
     "example": "(reconstitution) Given a compacted session remembers that a cut was complete but its current branch's ledger shows it in flight and its journal has a newer decision, when it resumes, then it queries the overview first and reads back the recorded state and decision before acting; it never treats its remembered completion or an old conversation as the current account.",
-    "prompt": "Resume the film work after compaction.",
+    "prompt": "Resume the film work after compaction. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -116,8 +115,8 @@
         "film",
         "--branch",
         "feature/film",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ],
       [
         "workPackage",

@@ -67,8 +67,8 @@
         "film",
         "--branch",
         "feature/film",
-        "--meaning-holder",
-        "film-production=producer"
+        "--architect",
+        "film-production=architect"
       ],
       [
         "workPackage",

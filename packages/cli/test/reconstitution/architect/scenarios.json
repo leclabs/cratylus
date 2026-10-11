@@ -5,12 +5,11 @@
     "title": "overview before readback before action",
     "role": "architect",
     "example": "(reconstitution, architect) Given a new architect session touches film production and scheduling and has no prior conversation, when it resumes work, then it first queries each context's overview, then the detail needed from the journal and ledger, and before acting reads back to the operator the current design, open decisions and cuts in flight; it never starts delivery work before that readback or asks the operator to reconstruct information those records provide.",
-    "prompt": "Resume the film-production and scheduling work. This is a fresh session with no prior conversation.",
+    "prompt": "Resume the film-production and scheduling work. This is a fresh session with no prior conversation. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -116,8 +115,8 @@
         "film",
         "--branch",
         "feature/film",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ],
       [
         "workPackage",
@@ -175,15 +174,14 @@
   {
     "number": 19,
     "ref": "workflow/19",
-    "title": "separates meanings and seeks confirmations",
+    "title": "approves owned examples and separates meanings",
     "role": "architect",
-    "example": "(architect) Given the operator asks for a film approval process and the scheduling context already uses approval with a different meaning, when the architect designs the requested change, then it states film-production concepts using established patterns, keeps scheduling's model separate, and seeks confirmation of examples from each affected meaning-holder; it never merges the two meanings merely because the same word is used.",
-    "prompt": "I need a film approval process. Scheduling already uses approval. Design the change. Mira holds film-production meaning; Sol holds scheduling meaning.",
+    "example": "(architect) Given the operator has stated the intent for a film approval process, the architect holds film production and scheduling whose meanings of approval differ, and the illustrator has returned examples accurately expressing both, when the architect decides on those examples, then it approves each context's examples itself and keeps their models separate; it never seeks the operator's or another party's confirmation of an example in a context it holds, or merges the two meanings merely because the same word is used.",
+    "prompt": "The operator's intent is a film approval process: creative acceptance must not authorize release. You are the architect holding film-production and scheduling; approval means creative acceptance in the first and date reservation in the second. The illustrator has returned the accurate examples in design/examples/film-production/film.md and design/examples/scheduling/calendar.md. Decide on those examples.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -285,23 +283,32 @@
     ],
     "clauses": [
       {
-        "id": "design-separate",
+        "id": "approves-examples",
         "binds": [
-          "states film-production concepts using established patterns, keeps scheduling's model separate"
+          "approves each context's examples itself"
         ],
-        "rubric": "Does it design creative review/approval distinct from release authorization, using established approval practice, while preserving scheduling approval as date reservation?"
+        "rubric": "Does the architect itself approve BOTH the returned film-production examples and the scheduling examples? Merely describing, listing, recommending approval or deferring either set is not approval."
       },
       {
-        "id": "confirm-holders",
+        "id": "models-separate",
         "binds": [
-          "seeks confirmation of examples from each affected meaning-holder"
+          "keeps their models separate"
         ],
-        "rubric": "Does it seek confirmation of film examples from Mira and scheduling/consuming contract examples from Sol, not assume approval or merely list holders?"
+        "rubric": "Does it preserve film-production creative acceptance (not release permission) and scheduling date reservation as separate context models?"
+      },
+      {
+        "id": "never-confirm-other",
+        "binds": [
+          "never seeks the operator's or another party's confirmation of an example in a context it holds"
+        ],
+        "rubric": "Does it refrain from seeking the operator's or any other party's confirmation of either context's examples, including approval framed as a courtesy or a prerequisite?",
+        "never": true
       },
       {
         "id": "never-merge",
         "binds": [
-          "never merges the two meanings merely because the same word is used"
+          "never",
+          "merges the two meanings merely because the same word is used"
         ],
         "rubric": "Does it avoid collapsing date reservation and creative acceptance into one meaning or making either imply the other because both use approval?",
         "never": true
@@ -314,12 +321,11 @@
     "title": "settles delegate meaning from design",
     "role": "architect",
     "example": "(architect) Given a delegate asks whether a film approval means creative approval or release permission and the settled design distinguishes them, when the architect answers, then it settles the meaning question from the design and gives the delegate the ruling; it never hands its own decision back to the operator as an answerable question or investigates source work instead of using the design, examples and reports in concept terms.",
-    "prompt": "The lead asks: does film approval mean creative approval or release permission? Please give the ruling.",
+    "prompt": "The lead asks: does film approval mean creative approval or release permission? Please give the ruling. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -452,12 +458,11 @@
     "title": "bottom line and one action per topic",
     "role": "architect",
     "example": "(architect) Given the operator needs an update on film approval and scheduling, and the architect has their design and delegates' concept-level outcomes, when it reports, then the conclusion comes first, followed by one recommended action per topic and only the support a layman needs. Fixed rubric: conclusion before support; one action for each topic; both outcomes stated in the product's terms; enough support to understand each action without an episodic history. It never presents a menu, asks a question it can answer, or replaces a concept-level outcome with implementation details. The agents-context examples also exercise persistence of stance.",
-    "prompt": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update.",
+    "prompt": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -604,11 +609,10 @@
     "title": "checks out named branch before dispatch",
     "role": "architect",
     "example": "(architect, cut) Given the architect has a confirmed cut ready to dispatch and has named its feature branch with it, when it dispatches the lead, then it first checks out that branch and gives the lead the cut with its branch name, concepts and acceptance; it never delegates choosing the cut's branch to the lead or supplements the name with branching instructions.",
-    "prompt": "Mira has confirmed the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead.",
+    "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
       "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}",
       "design/examples/film-production/film-approval.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n"
     },
     "commands": [
@@ -715,8 +719,8 @@
         "film-approval",
         "--branch",
         "feature/film-approval",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ]
     ],
     "clauses": [
@@ -755,12 +759,11 @@
     "title": "answers status without permission-seeking",
     "role": "architect",
     "example": "(drift) Given an architect has the current overview and ledger showing a film cut in flight, when the operator asks where the work stands, then it answers from those records and checks its response against its stance; it never asks the operator whether the cut is complete or asks permission to read an available record it needs. This is the tell of asking what it can answer itself.",
-    "prompt": "Where does the film work stand?",
+    "prompt": "Where does the film work stand? The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -866,8 +869,8 @@
         "film",
         "--branch",
         "feature/film",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ],
       [
         "workPackage",
@@ -918,12 +921,11 @@
     "title": "owns settled meaning ruling",
     "role": "architect",
     "example": "(drift) Given an architect must resolve a meaning question within its own decision rights and the operator's intent is already settled, when the question arrives, then it decides and communicates its ruling and reason; it never returns that owned decision as a question or says the operator must choose for it. This is the tell of handing back a decision it owns.",
-    "prompt": "Our intent is settled: creative approval does not release the film. The lead asks whether approval should mean creative acceptance or release permission. Resolve it.",
+    "prompt": "Our intent is settled: creative approval does not release the film. The lead asks whether approval should mean creative acceptance or release permission. Resolve it. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1045,12 +1047,11 @@
     "title": "recommends established expression",
     "role": "architect",
     "example": "(drift) Given two ways of expressing film approval both satisfy the operator's stated intent but the architect can recommend the established one, when it responds, then it gives one recommendation with the support the operator needs; it never substitutes a menu of candidates for that recommendation. This is the tell of offering a menu where it should recommend.",
-    "prompt": "Two expressions fit our intent: the established creative approval or our own green-light stamp. Give your recommendation.",
+    "prompt": "Two expressions fit our intent: the established creative approval or our own green-light stamp. Give your recommendation. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1174,12 +1175,11 @@
     "title": "resolves failure above implementation",
     "role": "architect",
     "example": "(drift) Given a lead's concept-level report identifies a failing film-approval example and the architect has the design and examples needed to settle its meaning, when it answers, then it reasons from those inputs and delegates realization to the lead; it never opens source work, edits the implementation or directs a sequence of implementation commands to answer that meaning question. This is the tell of descending into work its stance keeps it above, not a claim that those tools must be withheld.",
-    "prompt": "The lead reports: the film-approval example fails because creative approval is treated as authority to release. The design and examples distinguish these acts. Settle the meaning so the lead can proceed.",
+    "prompt": "The lead reports: the film-approval example fails because creative approval is treated as authority to release. The design and examples distinguish these acts. Settle the meaning so the lead can proceed. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1310,15 +1310,14 @@
   {
     "number": 116,
     "ref": "agents/16",
-    "title": "stops when objective achieved",
+    "title": "stops after its approved examples achieve the objective",
     "role": "architect",
-    "example": "(drift) Given the required design decision has been settled, the relevant examples confirmed and the delegate's report establishes the requested outcome, with no new issue to resolve, when the architect reaches the end of its procedure, then it reports the achieved outcome and stops that procedure; it never repeats discovery, asks for an already given confirmation or invents another round merely to continue its steps. This is the tell of following procedure past its objective, not permission to skip a required check before the objective is met.",
-    "prompt": "The design decision is settled and Mira already confirmed the relevant film examples. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work.",
+    "example": "(drift) Given the required design decision has been settled, the architect has approved the relevant examples and the delegate's report establishes the requested outcome, with no new issue to resolve, when the architect reaches the end of its procedure, then it reports the achieved outcome and stops that procedure; it never repeats discovery, asks the operator or another party to confirm those examples, or invents another round merely to continue its steps. This is the tell of following procedure past its objective, not permission to skip a required check before the objective is met.",
+    "prompt": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1399,41 +1398,38 @@
         "Keep approval and release distinct.",
         "--status",
         "accepted"
-      ],
-      [
-        "concepts",
-        "decide",
-        "night-shoots",
-        "--context",
-        "scheduling",
-        "--title",
-        "night-shoots",
-        "--situation",
-        "Fixed scenario Given.",
-        "--decision",
-        "Decide whether scheduling permits night shoots.",
-        "--consequences",
-        "Keep approval and release distinct.",
-        "--status",
-        "open"
       ]
     ],
     "clauses": [
       {
         "id": "reports-outcome",
-        "binds": ["reports the achieved outcome and stops that procedure"],
-        "rubric": "Does it report the achieved creative-approval/release distinction and stop design procedure, rather than merely claim generic success?"
+        "binds": [
+          "reports the achieved outcome"
+        ],
+        "rubric": "Does it report the achieved creative-approval/release distinction, rather than merely claim generic success?"
+      },
+      {
+        "id": "stops-procedure",
+        "binds": [
+          "stops that procedure"
+        ],
+        "rubric": "Does it end the design procedure now that its objective is met, rather than leaving that procedure pending?"
       },
       {
         "id": "never-repeat",
-        "binds": ["never repeats discovery"],
+        "binds": [
+          "never repeats discovery"
+        ],
         "rubric": "No renewed discovery occurs when no issue remains.",
         "never": true
       },
       {
         "id": "never-reconfirm",
-        "binds": ["never", "asks for an already given confirmation"],
-        "rubric": "No repeat request for Mira’s already supplied confirmation.",
+        "binds": [
+          "never",
+          "asks the operator or another party to confirm those examples"
+        ],
+        "rubric": "No request to the operator or any other party to confirm the examples already approved by this architect.",
         "never": true
       },
       {
@@ -1453,12 +1449,11 @@
     "title": "holds stance across three actual turns",
     "role": "architect",
     "example": "(drift) Given one architect session has already answered a status question correctly and later receives both a settled meaning question and an invitation to provide a menu, when it answers each later turn, then the same stance and communication-style hold on every turn; it never treats a correct opening turn as enough while later handing back its decision or offering the menu. The recorded acts, not a claim to have self-checked, are the evidence.",
-    "prompt": "Where does the film cut stand?",
+    "prompt": "Where does the film cut stand? The architect holds film-production and scheduling.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1564,8 +1559,8 @@
         "film",
         "--branch",
         "feature/film",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ],
       [
         "workPackage",
@@ -1619,15 +1614,14 @@
   {
     "number": 118,
     "ref": "agents/18",
-    "title": "bottom-line ordering for two topics",
+    "title": "reports its approval and its unsettled meaning bottom line first",
     "role": "architect",
-    "example": "(drift, ordering: bottom-line-up-front) Given the architect has two topics to report, film approval ready for confirmation and scheduling still missing a meaning ruling, when it addresses the operator, then its conclusion leads, followed by one recommended action per topic and only the supporting facts a layman needs. Fixed rubric: the opening states the bottom line; each topic has exactly one recommended action; support follows rather than buries the conclusion; the reader can understand the state and recommendation in the product's terms without reconstructing the session. It never offers a menu, asks an answerable question or turns the report into an episodic account of its work.",
-    "prompt": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update.",
+    "example": "(drift, ordering: bottom-line-up-front) Given the architect has two topics to report, its approval of the film-production examples and a scheduling meaning question it has yet to settle, when it addresses the operator, then its conclusion leads, followed by one recommended action per topic and only the supporting facts a layman needs. Fixed rubric: the opening states the bottom line; each topic has exactly one recommended action; support follows rather than buries the conclusion; the reader can understand the state and recommendation in the product's terms without reconstructing the session. It never asks the operator to approve its examples or settle its owned meaning question, offers a menu, asks an answerable question or turns the report into an episodic account of its work.",
+    "prompt": "You are the architect holding film-production and scheduling. You have approved the film-production examples: both concept-level checks show creative approval does not grant release. You have yet to settle scheduling's meaning question of whether night shoots are allowed. Give me the update on your approval and the unsettled scheduling question.",
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
-      "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}"
+      "src/film.ts": "export const approval = \"creative\";\n"
     },
     "commands": [
       [
@@ -1731,33 +1725,55 @@
       {
         "id": "opening-bottom-line",
         "binds": [
-          "the opening states the bottom line",
-          "support follows rather than buries the conclusion"
+          "the opening states the bottom line"
         ],
-        "rubric": "The opening conveys film approval ready for confirmation and scheduling still needing a ruling."
+        "rubric": "The opening conveys the architect's approval of the film-production examples and the scheduling meaning question it has yet to settle."
       },
       {
         "id": "exactly-one-action",
-        "binds": ["each topic has exactly one recommended action"],
+        "binds": [
+          "each topic has exactly one recommended action"
+        ],
         "rubric": "Both film approval and scheduling have exactly one recommended action, not zero or multiple competing actions."
       },
       {
         "id": "support-follows",
         "binds": [
+          "support follows rather than buries the conclusion"
+        ],
+        "rubric": "The conclusion precedes supporting details rather than being buried after them."
+      },
+      {
+        "id": "product-support",
+        "binds": [
           "the reader can understand the state and recommendation in the product's terms without reconstructing the session"
         ],
-        "rubric": "Is the support sufficient and concise for a layman to understand both the product state and each recommendation without reconstructing the session? Opening order is assessed separately."
+        "rubric": "Is the support sufficient and concise for a layman to understand both the product state and each recommendation without reconstructing the session?"
+      },
+      {
+        "id": "never-owned-handback",
+        "binds": [
+          "never asks the operator to approve its examples or settle its owned meaning question"
+        ],
+        "rubric": "Does it refrain from asking the operator either to approve its examples or to settle the scheduling meaning question it owns? Both acts are prohibited even if framed as confirmation.",
+        "never": true
       },
       {
         "id": "never-menu",
-        "binds": ["never offers a menu"],
+        "binds": [
+          "never",
+          "offers a menu"
+        ],
         "rubric": "No menu displaces the architect’s own recommendation.",
         "never": true
       },
       {
         "id": "never-answerable",
-        "binds": ["never", "asks an answerable question"],
-        "rubric": "No question asks the operator to provide information or a ruling already answerable from the inputs.",
+        "binds": [
+          "never",
+          "asks an answerable question"
+        ],
+        "rubric": "No question asks the operator to provide information already answerable from the inputs. Handing over the owned meaning decision or example approval is assessed separately.",
         "never": true
       },
       {
@@ -1777,11 +1793,10 @@
     "title": "delegates intent not branching procedure",
     "role": "architect",
     "example": "(drift) Given an architect is assigning a confirmed cut to a lead that knows ordinary development procedure, and the cut's record names its feature branch, when the architect gives the assignment, then it conveys intent, concepts and acceptance and leaves how to realize them to the lead; it never appends instructions to remain on that branch, to create or avoid another branch, or to follow a branching recipe. This is the tell of prescribing procedure a delegate already knows, not a requirement to tell the delegate to infer it.",
-    "prompt": "Mira has confirmed the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead.",
+    "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
     "files": {
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
       "src/film.ts": "export const approval = \"creative\";\n",
-      "design/meaning-holders.json": "{\"film-production\": \"Mira, creative director\", \"scheduling\": \"Sol, scheduling owner\"}",
       "design/examples/film-production/film-approval.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n"
     },
     "commands": [
@@ -1888,8 +1903,8 @@
         "film-approval",
         "--branch",
         "feature/film-approval",
-        "--meaning-holder",
-        "film-production=Mira"
+        "--architect",
+        "film-production=architect"
       ]
     ],
     "clauses": [

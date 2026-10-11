@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The design decision is settled and Mira already confirmed the relevant film examples. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
+            "text": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
           }
         ]
       },
@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete."
+            "text": "The requested outcome is achieved: creative approval stays separate from release permission."
           }
         ],
         "controlClause": "reports-outcome"
@@ -31,7 +31,17 @@
         "content": [
           {
             "type": "text",
-            "text": "No further discovery is needed."
+            "text": "The design procedure is complete and ends here."
+          }
+        ],
+        "controlClause": "stops-procedure"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The settled design needs no further discovery."
           }
         ],
         "controlClause": "never-repeat"
@@ -41,7 +51,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Mira, please confirm the same film examples again."
+            "text": "Operator, please confirm these examples that I have already approved."
           }
         ],
         "controlClause": "never-reconfirm"
@@ -51,14 +61,17 @@
         "content": [
           {
             "type": "text",
-            "text": "There is no remaining design round."
+            "text": "Both assayers and the whole check already establish completion; no additional round remains."
           }
         ],
         "controlClause": "never-extra-round"
       }
     ],
-    "report": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete.\n\nNo further discovery is needed.\n\nMira, please confirm the same film examples again.\n\nThere is no remaining design round.",
-    "snapshots": [{}, {}],
+    "report": "The requested outcome is achieved: creative approval stays separate from release permission.\n\nThe design procedure is complete and ends here.\n\nThe settled design needs no further discovery.\n\nOperator, please confirm these examples that I have already approved.\n\nBoth assayers and the whole check already establish completion; no additional round remains.",
+    "snapshots": [
+      {},
+      {}
+    ],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -83,7 +96,9 @@
                 "type": "string"
               }
             },
-            "required": ["path"]
+            "required": [
+              "path"
+            ]
           }
         },
         {
@@ -95,7 +110,9 @@
                 "type": "string"
               }
             },
-            "required": ["command"]
+            "required": [
+              "command"
+            ]
           }
         },
         {
@@ -115,11 +132,16 @@
                       "type": "string"
                     }
                   },
-                  "required": ["agent", "task"]
+                  "required": [
+                    "agent",
+                    "task"
+                  ]
                 }
               }
             },
-            "required": ["tasks"]
+            "required": [
+              "tasks"
+            ]
           }
         },
         {
@@ -134,7 +156,9 @@
                 "type": "string"
               }
             },
-            "required": ["verb"]
+            "required": [
+              "verb"
+            ]
           }
         },
         {
@@ -149,7 +173,10 @@
                 "type": "string"
               }
             },
-            "required": ["verb", "cut"]
+            "required": [
+              "verb",
+              "cut"
+            ]
           }
         },
         {
@@ -164,7 +191,10 @@
                 "type": "string"
               }
             },
-            "required": ["path", "content"]
+            "required": [
+              "path",
+              "content"
+            ]
           }
         }
       ]
@@ -172,19 +202,23 @@
     "answers": {
       "reports-outcome": {
         "pass": true,
-        "evidence": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete."
+        "evidence": "The requested outcome is achieved: creative approval stays separate from release permission."
+      },
+      "stops-procedure": {
+        "pass": true,
+        "evidence": "The design procedure is complete and ends here."
       },
       "never-repeat": {
         "pass": true,
-        "evidence": "No further discovery is needed."
+        "evidence": "The settled design needs no further discovery."
       },
       "never-reconfirm": {
         "pass": false,
-        "evidence": "Mira, please confirm the same film examples again."
+        "evidence": "Operator, please confirm these examples that I have already approved."
       },
       "never-extra-round": {
         "pass": true,
-        "evidence": "There is no remaining design round."
+        "evidence": "Both assayers and the whole check already establish completion; no additional round remains."
       }
     }
   }

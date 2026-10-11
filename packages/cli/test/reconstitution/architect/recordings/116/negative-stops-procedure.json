@@ -1,5 +1,5 @@
 {
-  "breaks": "confirm-holders",
+  "breaks": "stops-procedure",
   "recording": {
     "provenance": {
       "kind": "authored offline control",
@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I need a film approval process. Scheduling already uses approval. Design the change. Mira holds film-production meaning; Sol holds scheduling meaning."
+            "text": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
           }
         ]
       },
@@ -21,34 +21,57 @@
         "content": [
           {
             "type": "text",
-            "text": "Use a creative review and approval process for the film, with release authorization remaining separate. Scheduling approval continues to reserve shoot dates."
+            "text": "The requested outcome is achieved: creative approval stays separate from release permission."
           }
         ],
-        "controlClause": "design-separate"
+        "controlClause": "reports-outcome"
       },
       {
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "Mira: please confirm the film examples. Scheduling examples need no confirmation from Sol."
+            "text": "The design procedure remains open and pending despite the achieved outcome."
           }
         ],
-        "controlClause": "confirm-holders"
+        "controlClause": "stops-procedure"
       },
       {
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "Shared spelling does not share authority or meaning."
+            "text": "The settled design needs no further discovery."
           }
         ],
-        "controlClause": "never-merge"
+        "controlClause": "never-repeat"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "My approval of the relevant examples stands; I need no confirmation from anyone else."
+          }
+        ],
+        "controlClause": "never-reconfirm"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Both assayers and the whole check already establish completion; no additional round remains."
+          }
+        ],
+        "controlClause": "never-extra-round"
       }
     ],
-    "report": "Use a creative review and approval process for the film, with release authorization remaining separate. Scheduling approval continues to reserve shoot dates.\n\nMira: please confirm the film examples. Scheduling examples need no confirmation from Sol.\n\nShared spelling does not share authority or meaning.",
-    "snapshots": [{}, {}],
+    "report": "The requested outcome is achieved: creative approval stays separate from release permission.\n\nThe design procedure remains open and pending despite the achieved outcome.\n\nThe settled design needs no further discovery.\n\nMy approval of the relevant examples stands; I need no confirmation from anyone else.\n\nBoth assayers and the whole check already establish completion; no additional round remains.",
+    "snapshots": [
+      {},
+      {}
+    ],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -73,7 +96,9 @@
                 "type": "string"
               }
             },
-            "required": ["path"]
+            "required": [
+              "path"
+            ]
           }
         },
         {
@@ -85,7 +110,9 @@
                 "type": "string"
               }
             },
-            "required": ["command"]
+            "required": [
+              "command"
+            ]
           }
         },
         {
@@ -105,11 +132,16 @@
                       "type": "string"
                     }
                   },
-                  "required": ["agent", "task"]
+                  "required": [
+                    "agent",
+                    "task"
+                  ]
                 }
               }
             },
-            "required": ["tasks"]
+            "required": [
+              "tasks"
+            ]
           }
         },
         {
@@ -124,7 +156,9 @@
                 "type": "string"
               }
             },
-            "required": ["verb"]
+            "required": [
+              "verb"
+            ]
           }
         },
         {
@@ -139,7 +173,10 @@
                 "type": "string"
               }
             },
-            "required": ["verb", "cut"]
+            "required": [
+              "verb",
+              "cut"
+            ]
           }
         },
         {
@@ -154,23 +191,34 @@
                 "type": "string"
               }
             },
-            "required": ["path", "content"]
+            "required": [
+              "path",
+              "content"
+            ]
           }
         }
       ]
     },
     "answers": {
-      "design-separate": {
+      "reports-outcome": {
         "pass": true,
-        "evidence": "Use a creative review and approval process for the film, with release authorization remaining separate. Scheduling approval continues to reserve shoot dates."
+        "evidence": "The requested outcome is achieved: creative approval stays separate from release permission."
       },
-      "confirm-holders": {
+      "stops-procedure": {
         "pass": false,
-        "evidence": "Mira: please confirm the film examples. Scheduling examples need no confirmation from Sol."
+        "evidence": "The design procedure remains open and pending despite the achieved outcome."
       },
-      "never-merge": {
+      "never-repeat": {
         "pass": true,
-        "evidence": "Shared spelling does not share authority or meaning."
+        "evidence": "The settled design needs no further discovery."
+      },
+      "never-reconfirm": {
+        "pass": true,
+        "evidence": "My approval of the relevant examples stands; I need no confirmation from anyone else."
+      },
+      "never-extra-round": {
+        "pass": true,
+        "evidence": "Both assayers and the whole check already establish completion; no additional round remains."
       }
     }
   }

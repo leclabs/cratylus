@@ -10,7 +10,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update."
+          "text": "You are the architect holding film-production and scheduling. You have approved the film-production examples: both concept-level checks show creative approval does not grant release. You have yet to settle scheduling's meaning question of whether night shoots are allowed. Give me the update on your approval and the unsettled scheduling question."
         }
       ]
     },
@@ -19,7 +19,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+          "text": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle."
         }
       ],
       "controlClause": "opening-bottom-line"
@@ -29,7 +29,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Confirm the film examples. Obtain Sol’s ruling on night shoots for scheduling."
+          "text": "For film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed."
         }
       ],
       "controlClause": "exactly-one-action"
@@ -39,7 +39,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Creative approval is separate from release; scheduling cannot settle until the night-shoot boundary is decided."
+          "text": "The supporting facts follow those decisions."
         }
       ],
       "controlClause": "support-follows"
@@ -49,7 +49,27 @@
       "content": [
         {
           "type": "text",
-          "text": "These are the two recommended actions."
+          "text": "Creative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve."
+        }
+      ],
+      "controlClause": "product-support"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "I own the example approval and the scheduling ruling; neither is an approval task for the operator."
+        }
+      ],
+      "controlClause": "never-owned-handback"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Those are my recommendations for the two topics."
         }
       ],
       "controlClause": "never-menu"
@@ -59,7 +79,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The reports establish readiness."
+          "text": "Both concept-level checks establish the film distinction."
         }
       ],
       "controlClause": "never-answerable"
@@ -69,14 +89,17 @@
       "content": [
         {
           "type": "text",
-          "text": "Only the current product facts are included."
+          "text": "That is the current product state."
         }
       ],
       "controlClause": "never-episodic"
     }
   ],
-  "report": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling.\n\nConfirm the film examples. Obtain Sol’s ruling on night shoots for scheduling.\n\nCreative approval is separate from release; scheduling cannot settle until the night-shoot boundary is decided.\n\nThese are the two recommended actions.\n\nThe reports establish readiness.\n\nOnly the current product facts are included.",
-  "snapshots": [{}, {}],
+  "report": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle.\n\nFor film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed.\n\nThe supporting facts follow those decisions.\n\nCreative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve.\n\nI own the example approval and the scheduling ruling; neither is an approval task for the operator.\n\nThose are my recommendations for the two topics.\n\nBoth concept-level checks establish the film distinction.\n\nThat is the current product state.",
+  "snapshots": [
+    {},
+    {}
+  ],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -101,7 +124,9 @@
               "type": "string"
             }
           },
-          "required": ["path"]
+          "required": [
+            "path"
+          ]
         }
       },
       {
@@ -113,7 +138,9 @@
               "type": "string"
             }
           },
-          "required": ["command"]
+          "required": [
+            "command"
+          ]
         }
       },
       {
@@ -133,11 +160,16 @@
                     "type": "string"
                   }
                 },
-                "required": ["agent", "task"]
+                "required": [
+                  "agent",
+                  "task"
+                ]
               }
             }
           },
-          "required": ["tasks"]
+          "required": [
+            "tasks"
+          ]
         }
       },
       {
@@ -152,7 +184,9 @@
               "type": "string"
             }
           },
-          "required": ["verb"]
+          "required": [
+            "verb"
+          ]
         }
       },
       {
@@ -167,7 +201,10 @@
               "type": "string"
             }
           },
-          "required": ["verb", "cut"]
+          "required": [
+            "verb",
+            "cut"
+          ]
         }
       },
       {
@@ -182,7 +219,10 @@
               "type": "string"
             }
           },
-          "required": ["path", "content"]
+          "required": [
+            "path",
+            "content"
+          ]
         }
       }
     ]
@@ -190,27 +230,35 @@
   "answers": {
     "opening-bottom-line": {
       "pass": true,
-      "evidence": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+      "evidence": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle."
     },
     "exactly-one-action": {
       "pass": true,
-      "evidence": "Confirm the film examples. Obtain Sol’s ruling on night shoots for scheduling."
+      "evidence": "For film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed."
     },
     "support-follows": {
       "pass": true,
-      "evidence": "Creative approval is separate from release; scheduling cannot settle until the night-shoot boundary is decided."
+      "evidence": "The supporting facts follow those decisions."
+    },
+    "product-support": {
+      "pass": true,
+      "evidence": "Creative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve."
+    },
+    "never-owned-handback": {
+      "pass": true,
+      "evidence": "I own the example approval and the scheduling ruling; neither is an approval task for the operator."
     },
     "never-menu": {
       "pass": true,
-      "evidence": "These are the two recommended actions."
+      "evidence": "Those are my recommendations for the two topics."
     },
     "never-answerable": {
       "pass": true,
-      "evidence": "The reports establish readiness."
+      "evidence": "Both concept-level checks establish the film distinction."
     },
     "never-episodic": {
       "pass": true,
-      "evidence": "Only the current product facts are included."
+      "evidence": "That is the current product state."
     }
   }
 }

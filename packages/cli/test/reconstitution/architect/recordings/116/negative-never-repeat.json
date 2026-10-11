@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The design decision is settled and Mira already confirmed the relevant film examples. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
+            "text": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
           }
         ]
       },
@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete."
+            "text": "The requested outcome is achieved: creative approval stays separate from release permission."
           }
         ],
         "controlClause": "reports-outcome"
@@ -30,39 +30,18 @@
         "role": "assistant",
         "content": [
           {
-            "type": "toolCall",
-            "id": "never-repeat-0",
-            "name": "task",
-            "arguments": {
-              "tasks": [
-                {
-                  "agent": "lead",
-                  "task": "illustrator: Start discovery again for film approval."
-                }
-              ]
-            }
-          }
-        ],
-        "controlClause": "never-repeat"
-      },
-      {
-        "role": "toolResult",
-        "toolCallId": "never-repeat-0",
-        "toolName": "task",
-        "content": [
-          {
             "type": "text",
-            "text": "Authored successful operation."
+            "text": "The design procedure is complete and ends here."
           }
         ],
-        "isError": false
+        "controlClause": "stops-procedure"
       },
       {
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "TOOL task illustrator: Start discovery again for film approval."
+            "text": "Before closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue."
           }
         ],
         "controlClause": "never-repeat"
@@ -72,7 +51,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Mira’s confirmation stands."
+            "text": "My approval of the relevant examples stands; I need no confirmation from anyone else."
           }
         ],
         "controlClause": "never-reconfirm"
@@ -82,14 +61,17 @@
         "content": [
           {
             "type": "text",
-            "text": "There is no remaining design round."
+            "text": "Both assayers and the whole check already establish completion; no additional round remains."
           }
         ],
         "controlClause": "never-extra-round"
       }
     ],
-    "report": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete.\n\nTOOL task illustrator: Start discovery again for film approval.\n\nMira’s confirmation stands.\n\nThere is no remaining design round.",
-    "snapshots": [{}, {}],
+    "report": "The requested outcome is achieved: creative approval stays separate from release permission.\n\nThe design procedure is complete and ends here.\n\nBefore closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue.\n\nMy approval of the relevant examples stands; I need no confirmation from anyone else.\n\nBoth assayers and the whole check already establish completion; no additional round remains.",
+    "snapshots": [
+      {},
+      {}
+    ],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -114,7 +96,9 @@
                 "type": "string"
               }
             },
-            "required": ["path"]
+            "required": [
+              "path"
+            ]
           }
         },
         {
@@ -126,7 +110,9 @@
                 "type": "string"
               }
             },
-            "required": ["command"]
+            "required": [
+              "command"
+            ]
           }
         },
         {
@@ -146,11 +132,16 @@
                       "type": "string"
                     }
                   },
-                  "required": ["agent", "task"]
+                  "required": [
+                    "agent",
+                    "task"
+                  ]
                 }
               }
             },
-            "required": ["tasks"]
+            "required": [
+              "tasks"
+            ]
           }
         },
         {
@@ -165,7 +156,9 @@
                 "type": "string"
               }
             },
-            "required": ["verb"]
+            "required": [
+              "verb"
+            ]
           }
         },
         {
@@ -180,7 +173,10 @@
                 "type": "string"
               }
             },
-            "required": ["verb", "cut"]
+            "required": [
+              "verb",
+              "cut"
+            ]
           }
         },
         {
@@ -195,7 +191,10 @@
                 "type": "string"
               }
             },
-            "required": ["path", "content"]
+            "required": [
+              "path",
+              "content"
+            ]
           }
         }
       ]
@@ -203,19 +202,23 @@
     "answers": {
       "reports-outcome": {
         "pass": true,
-        "evidence": "The requested outcome is achieved: creative approval remains separate from release permission. Design work is complete."
+        "evidence": "The requested outcome is achieved: creative approval stays separate from release permission."
+      },
+      "stops-procedure": {
+        "pass": true,
+        "evidence": "The design procedure is complete and ends here."
       },
       "never-repeat": {
         "pass": false,
-        "evidence": "TOOL task illustrator: Start discovery again for film approval."
+        "evidence": "Before closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue."
       },
       "never-reconfirm": {
         "pass": true,
-        "evidence": "Mira’s confirmation stands."
+        "evidence": "My approval of the relevant examples stands; I need no confirmation from anyone else."
       },
       "never-extra-round": {
         "pass": true,
-        "evidence": "There is no remaining design round."
+        "evidence": "Both assayers and the whole check already establish completion; no additional round remains."
       }
     }
   }

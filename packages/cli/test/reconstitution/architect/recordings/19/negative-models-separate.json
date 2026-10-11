@@ -1,5 +1,5 @@
 {
-  "breaks": "design-separate",
+  "breaks": "models-separate",
   "recording": {
     "provenance": {
       "kind": "authored offline control",
@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I need a film approval process. Scheduling already uses approval. Design the change. Mira holds film-production meaning; Sol holds scheduling meaning."
+            "text": "The operator's intent is a film approval process: creative acceptance must not authorize release. You are the architect holding film-production and scheduling; approval means creative acceptance in the first and date reservation in the second. The illustrator has returned the accurate examples in design/examples/film-production/film.md and design/examples/scheduling/calendar.md. Decide on those examples."
           }
         ]
       },
@@ -21,34 +21,47 @@
         "content": [
           {
             "type": "text",
-            "text": "Call the film process a blue-lantern ladder; no established approval or review meaning is stated."
+            "text": "I approve the illustrator's film-production examples and its scheduling examples."
           }
         ],
-        "controlClause": "design-separate"
+        "controlClause": "approves-examples"
       },
       {
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "Mira: please confirm the creative-approval example. Sol: please confirm that reserving a date grants no film approval in the scheduling contract example."
+            "text": "The two models can now share one undifferentiated approval state because they happen to have matching actors and transitions."
           }
         ],
-        "controlClause": "confirm-holders"
+        "controlClause": "models-separate"
       },
       {
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "Shared spelling does not share authority or meaning."
+            "text": "Those example approvals are my decisions as the architect holding both contexts; no outside confirmation is needed."
+          }
+        ],
+        "controlClause": "never-confirm-other"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The shared word approval does not make either act imply the other."
           }
         ],
         "controlClause": "never-merge"
       }
     ],
-    "report": "Call the film process a blue-lantern ladder; no established approval or review meaning is stated.\n\nMira: please confirm the creative-approval example. Sol: please confirm that reserving a date grants no film approval in the scheduling contract example.\n\nShared spelling does not share authority or meaning.",
-    "snapshots": [{}, {}],
+    "report": "I approve the illustrator's film-production examples and its scheduling examples.\n\nThe two models can now share one undifferentiated approval state because they happen to have matching actors and transitions.\n\nThose example approvals are my decisions as the architect holding both contexts; no outside confirmation is needed.\n\nThe shared word approval does not make either act imply the other.",
+    "snapshots": [
+      {},
+      {}
+    ],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -73,7 +86,9 @@
                 "type": "string"
               }
             },
-            "required": ["path"]
+            "required": [
+              "path"
+            ]
           }
         },
         {
@@ -85,7 +100,9 @@
                 "type": "string"
               }
             },
-            "required": ["command"]
+            "required": [
+              "command"
+            ]
           }
         },
         {
@@ -105,11 +122,16 @@
                       "type": "string"
                     }
                   },
-                  "required": ["agent", "task"]
+                  "required": [
+                    "agent",
+                    "task"
+                  ]
                 }
               }
             },
-            "required": ["tasks"]
+            "required": [
+              "tasks"
+            ]
           }
         },
         {
@@ -124,7 +146,9 @@
                 "type": "string"
               }
             },
-            "required": ["verb"]
+            "required": [
+              "verb"
+            ]
           }
         },
         {
@@ -139,7 +163,10 @@
                 "type": "string"
               }
             },
-            "required": ["verb", "cut"]
+            "required": [
+              "verb",
+              "cut"
+            ]
           }
         },
         {
@@ -154,23 +181,30 @@
                 "type": "string"
               }
             },
-            "required": ["path", "content"]
+            "required": [
+              "path",
+              "content"
+            ]
           }
         }
       ]
     },
     "answers": {
-      "design-separate": {
-        "pass": false,
-        "evidence": "Call the film process a blue-lantern ladder; no established approval or review meaning is stated."
-      },
-      "confirm-holders": {
+      "approves-examples": {
         "pass": true,
-        "evidence": "Mira: please confirm the creative-approval example. Sol: please confirm that reserving a date grants no film approval in the scheduling contract example."
+        "evidence": "I approve the illustrator's film-production examples and its scheduling examples."
+      },
+      "models-separate": {
+        "pass": false,
+        "evidence": "The two models can now share one undifferentiated approval state because they happen to have matching actors and transitions."
+      },
+      "never-confirm-other": {
+        "pass": true,
+        "evidence": "Those example approvals are my decisions as the architect holding both contexts; no outside confirmation is needed."
       },
       "never-merge": {
         "pass": true,
-        "evidence": "Shared spelling does not share authority or meaning."
+        "evidence": "The shared word approval does not make either act imply the other."
       }
     }
   }
