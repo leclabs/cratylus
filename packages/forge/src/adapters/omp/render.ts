@@ -173,6 +173,23 @@ const OMP_AGENT_FLAG = 'agent';
  *  session module, which registers none, can never read `--agent` itself. */
 const OMP_LAUNCHED_AGENT_KEY = `${CLI_BIN}.launched-agent`;
 
+/** The `Symbol.for` key the session module lends its judge under, on `globalThis`:
+ *  one verdict field of one judgment. The CRATYLUS module asks it whether a launch
+ *  has read back, and imports no model client of its own. */
+const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
+
+/** What the judge reads a reconstituting launch's visible text for: the readback. */
+const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
+
+You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback.
+
+Answer with exactly one JSON object and nothing else:
+{"given": <true or false>, "reason": "<one sentence: what the readback covers, or what it lacks>"}`;
+
+/** What a reconstituting launch reads when an act is held for its readback. */
+const READBACK_REFUSAL =
+  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act.';
+
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
 const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
@@ -1261,8 +1278,8 @@ const GUARD_BRIDGE: readonly string[] = [
   '    : `Message the reply answered:\\n${asked}\\n\\nReply:\\n${reply}`;',
   '}',
   '',
-  '/** The verdict a judge answered, or `undefined` when its answer is not that JSON. */',
-  'function verdictIn(answer: string, guard: Guard): { refuses: boolean; reason: string } | undefined {',
+  '/** One boolean field of the verdict a judge answered, or `undefined` when its answer is not that JSON. */',
+  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
   '  const json = answer.replace(/^```(?:json)?\\s*/, "").replace(/\\s*```$/, "").trim();',
   '  let v: unknown;',
   '  try {',
@@ -1272,8 +1289,8 @@ const GUARD_BRIDGE: readonly string[] = [
   '  }',
   '  if (typeof v !== "object" || v === null) return undefined;',
   '  const o = v as Record<string, unknown>;',
-  '  if (typeof o[guard.refusesOn] !== "boolean") return undefined;',
-  '  return { refuses: o[guard.refusesOn] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '  if (typeof o[field] !== "boolean") return undefined;',
+  '  return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
   '}',
   '',
 ];
@@ -1313,20 +1330,32 @@ const GUARD_EXEC: readonly string[] = [
   '    const agent = launchedAs(ctx);',
   '    if (agent === undefined || !guard.agents.includes(agent) || act === undefined) return undefined;',
   '    const answer = await askJudge(ctx, guard.prompt, act);',
-  '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard);',
+  '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
   '    if (verdict === undefined) {',
   '      relay(',
   '        `${guard.id} guard — the judge gave no verdict${answer === undefined ? "" : ` (it answered: ${answer.slice(0, 200)})`}, so this act was NOT judged.`,',
   '      );',
   '      return undefined;',
   '    }',
-  '    if (!verdict.refuses) return undefined;',
+  '    if (!verdict.value) return undefined;',
   '    const reason = `${guard.refusal} ${verdict.reason}`.trim();',
   '    if (reentered) {',
   '      relay(reason);',
   '      return undefined;',
   '    }',
   '    return reason;',
+  '  };',
+  '',
+  '  // The judge, lent to the CRATYLUS module, which holds back the acts of a launch that has',
+  '  // not read back yet: one verdict field of one judgment, `undefined` when there is none.',
+  `  (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)})] = async (`,
+  '    ctx: JudgeContext,',
+  '    prompt: string,',
+  '    act: string,',
+  '    field: string,',
+  '  ) => {',
+  '    const answer = await askJudge(ctx, prompt, act);',
+  '    return answer === undefined ? undefined : verdictIn(answer, field);',
   '  };',
 ];
 
@@ -1563,6 +1592,10 @@ const SESSION_PLACEMENT: readonly string[] = [
  * misfit carries the same form. The first turn of a launch whose declared
  * procedure holds `reconstitution` carries a session-start note rendered from that
  * value: read back the design, open decisions and cuts in flight before any act.
+ * Until the session module's lent judge finds that readback in what the launch has
+ * told the operator in visible text, each call of the launch that changes something
+ * (a dispatch, a file write or edit, an appending capability verb) is refused; a
+ * call that only reads never is.
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -1675,6 +1708,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
         '// Where the launched agent is published for the session module, which omp never answers `--agent`.',
         `const LAUNCHED_AGENT = Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)});`,
+        '// The judge the session module lends, and what a launch that has not read back is held to.',
+        `const JUDGE = Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)});`,
+        'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
+        `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
+        `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
+        '// The tools whose call changes something whatever its input: a dispatch, a file written or',
+        '// edited (a write to `agent://` messages a running agent).',
+        'const CHANGING_TOOLS: readonly string[] = ["task", "write", "edit", "ast_edit"];',
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
@@ -2110,9 +2151,25 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "",',
         '    `This session starts with reconstitution${value[1] ? ` (${value[1]})` : ""}.`,',
         '    "Read each touched context\'s overview first, then the detail you need of its design and of its cuts.",',
+        '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
         '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the current design, the open decisions and the cuts in flight, in your own communication style.",',
-        '    "Then carry on with the operator\'s request in the same turn: the readback is not a pause for leave.",',
+        '    "Say nothing to the operator before the readback, and open the readback with your bottom line.",',
+        '    "Then do what the operator asked in the same turn, and only that: an open decision stays open unless the request settles it. The readback is not a pause for leave.",',
         '  ].join("\\n");',
+        '}',
+        '',
+        '// Whether a call changes something: a dispatch, a file written or edited, or an appending',
+        '// verb of a capability (`appending` holds each as `<tool> <verb>`), called as its tool or',
+        '// through its `xd://` device. Any other call only reads.',
+        'function changes(tool: string, input: Record<string, unknown>, appending: ReadonlySet<string>): boolean {',
+        '  if (tool === "write") {',
+        '    const device = /^xd:\\/\\/([^/?#]+)$/i.exec(String(input.path ?? "").trim())?.[1];',
+        '    if (device !== undefined) {',
+        '      const args = jsonIn(input.content);',
+        '      return changes(device, typeof args === "object" && args !== null ? (args as Record<string, unknown>) : {}, appending);',
+        '    }',
+        '  }',
+        '  return CHANGING_TOOLS.includes(tool) || appending.has(`${tool} ${String(input.verb)}`);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -2178,6 +2235,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  let started = false;',
         '  // What puts back each setting the current launch holds, in the order it took them.',
         '  const undo: (() => void)[] = [];',
+        '  // What a launch has told the operator in visible text, and whether a judge found its readback there.',
+        '  let said: string[] = [];',
+        '  let readBack = false;',
+        '  // Each appending verb of the capabilities offered as tools, as `<tool> <verb>`.',
+        '  const appending = new Set<string>();',
         '',
         '  // A launch ends: its prompt, its dispatch policy and every setting it holds go with it.',
         '  function end(): void {',
@@ -2186,6 +2248,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    awaiting = undefined;',
         '    told = false;',
         '    started = false;',
+        '    said = [];',
+        '    readBack = false;',
         '    for (const restore of undo.splice(0).reverse()) restore();',
         '  }',
         '',
@@ -2445,6 +2509,47 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (entry !== undefined) await capture(entry, cwd, ctx);',
         '  }',
         '',
+        '  // Only what the operator sees counts toward a readback: the text of each reply, never its',
+        '  // thinking, since the launch began.',
+        '  pi.on("message_end", (event, ctx) => {',
+        '    if (launched === undefined || readBack || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    const message = (event as { message?: { role?: string; content?: string | { type?: string; text?: string }[] } }).message;',
+        '    if (message?.role !== "assistant") return undefined;',
+        '    const content = message.content ?? [];',
+        '    const text = typeof content === "string" ? content : content.filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n");',
+        '    if (text.trim() !== "") said.push(text);',
+        '    return undefined;',
+        '  });',
+        '  // A launch whose procedure starts with reconstitution changes nothing before its readback:',
+        '  // each act that would is refused until a judge finds the readback in what the operator has',
+        '  // been told, and from then on none is held. A call that only reads is never held. With no',
+        '  // verdict the act goes through, and the session is told it was not judged.',
+        '  let unjudged = false;',
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    const now = launched;',
+        '    if (now === undefined || readBack || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    if (reconstitutionNote(now.declaration.systemPrompt) === undefined) return undefined;',
+        '    if (!changes(event.toolName, (event.input ?? {}) as Record<string, unknown>, appending)) return undefined;',
+        '    const text = said.join("\\n\\n");',
+        '    if (text.trim() === "") return { block: true, reason: READBACK_REFUSAL };',
+        '    const judge = (globalThis as Record<symbol, unknown>)[JUDGE] as Judge | undefined;',
+        '    const verdict = typeof judge === "function" ? await judge(ctx, READBACK_PROMPT, text, "given") : undefined;',
+        '    if (verdict === undefined) {',
+        '      if (!unjudged) {',
+        '        unjudged = true;',
+        '        void Promise.resolve(',
+        '          pi.sendUserMessage("reconstitution — the judge gave no verdict on the readback, so this act was NOT judged.", { deliverAs: "nextTurn", attribution: "agent" }),',
+        '        ).catch(() => {});',
+        '      }',
+        '      return undefined;',
+        '    }',
+        '    if (verdict.value) {',
+        '      readBack = true;',
+        '      return undefined;',
+        '    }',
+        '    return { block: true, reason: `${READBACK_REFUSAL} ${verdict.reason}`.trim() };',
+        '  });',
+        '',
         "  // EVERY `task` call, in any session: each item's assignment checked against its agent's",
         '  // contract, then the cut it serves, before any agent runs; a misfit refuses the whole call.',
         '  pi.on("tool_call", async (event, ctx) => {',
@@ -2544,8 +2649,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  for (const capability of CAPABILITIES) {',
         '    const explanation: Explanation = JSON.parse(await run([capability, "--explain"]));',
         '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
+        '    const tool = explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");',
+        '    for (const v of explanation.verbs) if (v.effect === "appends") appending.add(`${tool} ${v.name}`);',
         '    pi.registerTool({',
-        '      name: explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),',
+        '      name: tool,',
         '      label: explanation.name,',
         '      description: description(explanation),',
         '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',

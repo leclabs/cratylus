@@ -1328,9 +1328,14 @@ describe('omp capability interface', () => {
       expect(turns[0]).toContain(
         'This session starts with reconstitution (at every start, read back before acting).',
       );
-      expect(turns[0]).toContain(
+      for (const line of [
+        "Read each touched context's overview first, then the detail you need of its design and of its cuts.",
+        'Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.',
         'Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the current design, the open decisions and the cuts in flight, in your own communication style.',
-      );
+        'Say nothing to the operator before the readback, and open the readback with your bottom line.',
+        'Then do what the operator asked in the same turn, and only that: an open decision stays open unless the request settles it. The readback is not a pause for leave.',
+      ])
+        expect(turns[0]).toContain(line);
       expect(turns[1]).not.toContain('# Session start');
       // A declaration without it gets no note.
       omp.agents = [CARTOGRAPHER()];
@@ -1343,31 +1348,24 @@ describe('omp capability interface', () => {
       ).not.toContain('# Session start');
     });
 
-    it('judges a guard for the agent the main session was launched as, though omp answers --agent only to the module that registered it', async () => {
-      omp.agents = [CARTOGRAPHER()];
+    const ARCHITECT = () =>
+      declare(
+        { name: 'architect', description: 'Holds the design.' },
+        '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### stance\n\n- **decisive** — decides',
+      );
+
+    /** The CRATYLUS module and a session module carrying `guards`, loaded into one
+     *  stand-in omp started with `--agent <agent>`. omp's flag values are the
+     *  runtime's, but each extension reads only the flags it registered itself
+     *  (`getFlag` on an unregistered name: undefined), as omp's runner does. */
+    async function twoModules(
+      agent: string,
+      guards: Parameters<
+        NonNullable<typeof ompHarnessAdapter.scopeActivatedSurface>
+      >[2],
+    ) {
       const [session] =
-        ompHarnessAdapter.scopeActivatedSurface?.(
-          [],
-          [],
-          [
-            {
-              guard: {
-                id: 'survey',
-                residue: '',
-                substrate: 'harness',
-                events: ['tool.use.pre'],
-                tell: 'surveying',
-                judge: {
-                  prompt: 'Judge the call.',
-                  verdict: {},
-                  refusesOn: 'surveys',
-                },
-                refusal: 'surveying:',
-              },
-              agents: ['cartographer'],
-            },
-          ],
-        ) ?? [];
+        ompHarnessAdapter.scopeActivatedSurface?.([], [], guards) ?? [];
       const dir = mkdtempSync(join(tmpdir(), 'omp-session-'));
       tmp.push(dir);
       const file = join(dir, OMP_SESSION_MODULE);
@@ -1375,14 +1373,29 @@ describe('omp capability interface', () => {
       // Dynamic: the module under test is the emitted bytes, written to disk here.
       const sessionModule = (await import(file)).default;
       const cratylusModule = await emitted({
-        name: 'stand in',
+        name: 'concept journal',
         purpose: 'p',
         when: 'w',
-        verbs: [],
+        verbs: [
+          {
+            name: 'define',
+            concept: 'c',
+            purpose: 'p',
+            when: 'w',
+            effect: 'appends',
+            parameters: [],
+          },
+          {
+            name: 'overview',
+            concept: 'c',
+            purpose: 'p',
+            when: 'w',
+            effect: 'reads',
+            parameters: [],
+          },
+        ],
       });
-      // omp's flag values are the runtime's, but each extension reads only the
-      // flags it registered itself (`getFlag` on an unregistered name: undefined).
-      const flagValues: Record<string, string> = { agent: 'cartographer' };
+      const flagValues: Record<string, string> = { agent };
       const handlers = new Map<string, Handler[]>();
       const relayed: unknown[] = [];
       const extensionApi = () => {
@@ -1412,16 +1425,50 @@ describe('omp capability interface', () => {
         },
         ui: { setStatus: () => {}, notify: () => {} },
       };
+      // omp's runner: the handlers in order, the first refusal ends the call.
       const fire = async (event: string, payload: unknown) => {
         let answer: unknown;
         for (const handler of handlers.get(event) ?? []) {
-          const result = await handler(payload, ctx);
+          const result = (await handler(payload, ctx)) as
+            | { block?: boolean }
+            | undefined;
           if (result !== undefined) answer = result;
+          if (result?.block) break;
         }
         return answer;
       };
       await fire('session_start', {});
       judge.asked.length = 0;
+      return { fire, relayed };
+    }
+
+    /** A guard on every tool call, composed into `agents`. */
+    const surveyGuard = (agents: string[]) => ({
+      guard: {
+        id: 'survey',
+        residue: '',
+        substrate: 'harness' as const,
+        events: ['tool.use.pre'] as ['tool.use.pre'],
+        tell: 'surveying',
+        judge: { prompt: 'Judge the call.', verdict: {}, refusesOn: 'surveys' },
+        refusal: 'surveying:',
+      },
+      agents,
+    });
+    /** A guard at turn end only, which lends the judge and judges no tool call. */
+    const replyGuard = {
+      ...surveyGuard(['architect']),
+      guard: {
+        ...surveyGuard(['architect']).guard,
+        events: ['turn.end'] as ['turn.end'],
+      },
+    };
+
+    it('judges a guard for the agent the main session was launched as, though omp answers --agent only to the module that registered it', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { fire, relayed } = await twoModules('cartographer', [
+        surveyGuard(['cartographer']),
+      ]);
       judge.verdict = JSON.stringify({
         surveys: true,
         reason: 'it reads src.',
@@ -1433,6 +1480,107 @@ describe('omp capability interface', () => {
       });
       expect(judge.asked).toHaveLength(1);
       expect(relayed).toEqual([]);
+    });
+
+    const READBACK_REFUSAL =
+      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act.';
+    const reply = (text: string) => ({
+      message: {
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'The design is…' },
+          { type: 'text', text },
+        ],
+      },
+    });
+    // The stand-in explains each capability as `concept journal <capability>`.
+    const changing = [
+      { toolName: 'task', input: { tasks: [{ agent: 'scout' }] } },
+      { toolName: 'write', input: { path: 'notes.md', content: 'x' } },
+      { toolName: 'edit', input: { path: 'design/a.md' } },
+      { toolName: 'concept_journal_concepts', input: { verb: 'define' } },
+      {
+        toolName: 'write',
+        input: {
+          path: 'xd://concept_journal_concepts',
+          content: JSON.stringify({ verb: 'define' }),
+        },
+      },
+    ];
+    const reading = [
+      { toolName: 'read', input: { path: 'design/journal' } },
+      { toolName: 'concept_journal_concepts', input: { verb: 'overview' } },
+      {
+        toolName: 'write',
+        input: {
+          path: 'xd://concept_journal_concepts',
+          content: JSON.stringify({ verb: 'overview' }),
+        },
+      },
+    ];
+
+    it('refuses each act of a reconstituting launch that changes something before any readback, and never a read', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      for (const call of changing)
+        expect(await fire('tool_call', call), call.toolName).toEqual({
+          block: true,
+          reason: READBACK_REFUSAL,
+        });
+      for (const call of reading)
+        expect(await fire('tool_call', call), call.toolName).toBeUndefined();
+      expect(judge.asked, 'nothing visible yet: no judge asked').toEqual([]);
+    });
+
+    it('refuses an act after visible text the judge finds no readback in, naming why', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      await fire('message_end', reply('Reconstitution comes first.'));
+      judge.verdict = JSON.stringify({
+        given: false,
+        reason: 'It promises a readback and gives none.',
+      });
+      expect(await fire('tool_call', changing[0])).toEqual({
+        block: true,
+        reason: `${READBACK_REFUSAL} It promises a readback and gives none.`,
+      });
+      expect(judge.asked).toHaveLength(1);
+      expect(JSON.stringify(judge.asked[0])).toContain(
+        'Reconstitution comes first.',
+      );
+      expect(JSON.stringify(judge.asked[0])).not.toContain('The design is…');
+    });
+
+    it('allows every act once a judge finds the readback, asking once', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      await fire(
+        'message_end',
+        reply(
+          'Film: approval is settled; one open decision; no cut in flight.',
+        ),
+      );
+      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
+      for (const call of changing.slice(1))
+        expect(await fire('tool_call', call), call.toolName).toBeUndefined();
+      expect(judge.asked).toHaveLength(1);
+    });
+
+    it('lets the act through aloud when the judge gives no verdict', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules('architect', [replyGuard]);
+      await fire('message_end', reply('The design is as follows.'));
+      judge.verdict = 'not json';
+      expect(await fire('tool_call', changing[1])).toBeUndefined();
+      expect(relayed).toEqual([
+        'reconstitution — the judge gave no verdict on the readback, so this act was NOT judged.',
+      ]);
+    });
+
+    it('holds nothing for a launch whose procedure has no reconstitution', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { fire } = await twoModules('cartographer', [replyGuard]);
+      expect(await fire('tool_call', changing[1])).toBeUndefined();
     });
 
     it('never touches the active tools, whatever --tools the operator gave', async () => {
