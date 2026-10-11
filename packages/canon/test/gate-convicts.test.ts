@@ -225,6 +225,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drives `addModelRoles` and install/uninstall over host configs it writes itself,
   // including a document it must refuse and a `--model-roles` name no agent has.
   'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
+  // links and relinks the owned root into a temp host's plugin directory, leaving the
+  // reference places the host holds otherwise.
+  'forge/deploy/owned-root.test.ts': 'BEHAVIORAL',
   // exercises the OMP status-line config editor and install path, including byte-preserving
   // edits, custom layouts, host-owned settings, and dry-run behavior.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
