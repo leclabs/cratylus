@@ -259,23 +259,37 @@ describe('reconstitution: ledger and cut', () => {
       'dispatched',
     );
   });
-  it('workflow/27 — shared meaning-holder records one cut with separate context example sets', () => {
+  it('workflow/27 — one architect records one cut with separate context models and example sets', () => {
     const contexts = ['workflow', 'agents', 'delivery'];
-    open(f, 'film', contexts);
+    examples(f, 'film', contexts);
+    const opened = run(
+      f,
+      'workPackage',
+      'open',
+      '--cut',
+      'film',
+      '--branch',
+      'feature/film',
+      ...contexts.flatMap((context) => ['--architect', `${context}=creative`]),
+    );
     const answer = state(f);
-    expect(answer.cut, 'one cut, never three cuts').toBe('film');
     expect(
-      [...answer.contexts].sort(),
-      'examples kept in each own context',
-    ).toEqual([...contexts].sort());
-    expect(
-      answer.meaningHolders,
-      'contexts share their meaning-holder',
+      answer.architects,
+      'each context is held by the same architect, with no separate approver',
     ).toEqual({
       workflow: 'creative',
       agents: 'creative',
       delivery: 'creative',
     });
+    expect(
+      opened.code,
+      `one architect can open the shared cut without a separate approver: ${opened.stderr}${opened.stdout}`,
+    ).toBe(0);
+    expect(answer.cut, 'one cut, never three cuts').toBe('film');
+    expect(
+      [...answer.contexts].sort(),
+      'examples kept in each own context',
+    ).toEqual([...contexts].sort());
     expect(
       entries(f).filter((e) => e.kind === 'cut'),
       'one recorded cut',
@@ -287,6 +301,10 @@ describe('reconstitution: ledger and cut', () => {
     ).toEqual(
       contexts.flatMap((context) => [`${context}/1`, `${context}/2`]).sort(),
     );
+    expect(
+      inventory.concepts,
+      'three context models, never one merged model',
+    ).toHaveLength(6);
     for (const context of contexts) {
       expect(
         inventory.concepts,
@@ -299,7 +317,7 @@ describe('reconstitution: ledger and cut', () => {
       );
     }
   });
-  it('workflow/28 — distinct or missing meaning-holders refuse one convenient cross-context cut', () => {
+  it('workflow/28 — different or missing architects refuse one cross-context cut without recording it', () => {
     examples(f, 'film', ['film-production', 'scheduling']);
     const before = ledger(f);
     const refused = run(
@@ -310,23 +328,32 @@ describe('reconstitution: ledger and cut', () => {
       'film',
       '--branch',
       'feature/film',
-      '--meaning-holder',
+      '--architect',
       'film-production=creative',
-      '--meaning-holder',
+      '--architect',
       'scheduling=planner',
     );
-    expect(
-      refused.code,
-      'never one cut justified solely by convenience',
-    ).not.toBe(0);
+    expect
+      .soft(
+        refused.code,
+        'different architects require one cut per context, never convenience',
+      )
+      .not.toBe(0);
     const reason = refused.stderr + refused.stdout;
     for (const word of ['film-production', 'scheduling', 'creative', 'planner'])
-      expect(reason, 'names contexts and holders').toContain(word);
-    expect(reason, 'one cut per context joined by contracts').toMatch(
-      /contract/i,
-    );
-    expect(reason, 'one cut per context').toMatch(/(?:per|each) context/i);
-    expect(ledger(f), 'refused cut not recorded').toEqual(before);
+      expect
+        .soft(reason, 'names both contexts and both architects')
+        .toContain(word);
+    expect
+      .soft(reason, 'names the architects whose contexts cannot share a cut')
+      .toMatch(/architect/i);
+    expect
+      .soft(reason, 'one cut per context joined by contracts')
+      .toMatch(/contract/i);
+    expect
+      .soft(reason, 'one cut per context')
+      .toMatch(/one cut (?:per|for each) context/i);
+    expect.soft(ledger(f), 'refused cut not recorded').toEqual(before);
     const missing = run(
       f,
       'workPackage',
@@ -335,16 +362,26 @@ describe('reconstitution: ledger and cut', () => {
       'film',
       '--branch',
       'feature/film',
-      '--meaning-holder',
+      '--architect',
       'film-production=creative',
     );
-    expect(missing.code, 'shared exception never assumes a holder').not.toBe(0);
-    expect(
-      missing.stderr + missing.stdout,
-      'names context without holder',
-    ).toContain('scheduling');
-    expect(ledger(f), 'missing holder refusal writes nothing').toEqual(before);
-    // Reviewable size is a judgment, not a machine field in contract section 10.
+    expect
+      .soft(missing.code, 'a context without an architect is refused')
+      .not.toBe(0);
+    const missingReason = missing.stderr + missing.stdout;
+    expect
+      .soft(missingReason, 'names the context without an architect')
+      .toContain('scheduling');
+    expect
+      .soft(missingReason, 'an architect is never assumed')
+      .toMatch(/architect/i);
+    expect
+      .soft(missingReason, 'missing architect is never assumed')
+      .toMatch(/never assumed/i);
+    expect
+      .soft(ledger(f), 'missing architect refusal writes nothing')
+      .toEqual(before);
+    // Approval by each architect and reviewable size require judgment, not a ledger field.
   });
 });
 

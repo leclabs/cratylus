@@ -116,7 +116,7 @@ export function examples(f: ExecutionFixture, entries: Example[]): void {
     'open',
     '--branch',
     'feature/delivery',
-    '--meaning-holder',
+    '--architect',
     'booking=operator',
   );
 }

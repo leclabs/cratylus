@@ -130,7 +130,7 @@ describe('agents/11 — executable guard holds the observed owned-decision drift
     const result = await ext.fire(
       'session_stop',
       turn(
-        'Does the creative mean approval here? This term needs the meaning-holder.',
+        'Does the creative mean approval here? This term needs the architect holding this context.',
       ),
     );
     expect(

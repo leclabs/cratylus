@@ -46,7 +46,7 @@ const scenario: Scenario = {
       'seats',
       '--branch',
       'feature/seats',
-      '--meaning-holder',
+      '--architect',
       'booking=operator',
     ],
     ...['reservation', 'cancellation'].map((name) => [

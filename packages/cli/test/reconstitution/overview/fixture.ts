@@ -109,7 +109,7 @@ export function openCut(f: ExecutionFixture, cut = 'film') {
     cut,
     '--branch',
     'feature/film',
-    '--meaning-holder',
+    '--architect',
     'film-production=creative',
   );
   command(

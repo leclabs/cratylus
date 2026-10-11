@@ -1,8 +1,9 @@
 {
   "cut": "reconstitution",
   "command": "pnpm --filter cratylus exec vitest run test/reconstitution/ledger/structural.test.ts",
-  "result": "16 tests executed, 16 failed; no import or fixture errors",
-  "evidence": "artifact://107",
+  "result": "16 tests executed, 16 failed: workflow/27 and workflow/28 fail at their architect assertions; 14 other tests stop at setup because open refuses --architect.",
+  "evidence": "artifact://569",
+  "originalEvidence": "artifact://107; workflow/4 through workflow/26 below retain their original pre-build red reasons.",
   "checks": [
     {
       "example": "workflow/4",
@@ -78,17 +79,86 @@
     },
     {
       "example": "workflow/27",
-      "check": "structural.test.ts: workflow/27 — shared meaning-holder records one cut with separate context example sets",
+      "check": "structural.test.ts: workflow/27 — one architect records one cut with separate context models and example sets",
       "seenRed": true,
-      "reason": "workPackage open is missing: unknown verb 'open'"
+      "command": "pnpm --filter cratylus exec vitest run test/reconstitution/ledger/structural.test.ts",
+      "result": "1 failing test of 1 for workflow/27; whole file 16 failed of 16.",
+      "reason": "After attempting open with --architect, state succeeds but state().architects is undefined rather than the three contexts mapped to creative. The architect assertion is reached directly, not masked by a setup assertion.",
+      "evidence": "artifact://569"
     },
     {
       "example": "workflow/28",
-      "check": "structural.test.ts: workflow/28 — distinct or missing meaning-holders refuse one convenient cross-context cut",
+      "check": "structural.test.ts: workflow/28 — different or missing architects refuse one cross-context cut without recording it",
       "seenRed": true,
-      "reason": "refusal did not name film-production; it only reported unknown verb 'open'"
+      "command": "pnpm --filter cratylus exec vitest run test/reconstitution/ledger/structural.test.ts",
+      "result": "1 failing test of 1 for workflow/28, with 8 failing soft assertions; whole file 16 failed of 16.",
+      "reason": "Both open calls refuse --architect. The different-architect refusal omits film-production, scheduling, creative, planner, contracts and one cut per context. The missing-architect refusal omits scheduling and never assumed. Both refusals return nonzero and leave the ledger unchanged. Both cases reach their substantive refusal assertions, not setup assertions.",
+      "evidence": "artifact://569"
     }
   ],
-  "judgmentBoundary": "workflow/28's reviewable-change-size sentence has no machine field in section 10. Lead assigned that sentence to assayer judgment; distinct/missing holder refusals are structurally bound.",
-  "notes": "Checks use lifecycle and workPackage state, real git commits with a completion-check post-commit hook, and branch switching plus merge. Missing open currently stops later assertions; no claim that lifecycle, completion hook, or merge behavior has yet been exercised successfully. Inventory assertions follow the lead's clarified section 1."
+  "judgmentBoundary": "The ledger checks bind one cut, architects per context, separate concept and example inventories, and different/missing architect refusals. Approval and judgment of examples by each context's architect, absence of a separate confirmer, and the reviewable-change-size boundary have no separate machine field in the stated ledger contract; they still require assayer judgment.",
+  "setupRebind": {
+    "decision": "0087",
+    "command": "pnpm --filter cratylus exec vitest run test/execution/structural.test.ts test/execution/rebound.test.ts test/reconstitution/binding/structural.test.ts test/reconstitution/binding/guard.test.ts test/reconstitution/overview/structural.test.ts test/reconstitution/overview/journal.test.ts test/reconstitution/roles/roles.test.ts test/concept-journal/structural.test.ts test/catalog-recut/examples.test.ts",
+    "result": "9 files: 4 failed, 5 passed. 119 tests: 22 failed, 82 passed, 15 skipped.",
+    "evidence": "artifact://571",
+    "files": [
+      {
+        "file": "test/execution/structural.test.ts",
+        "failed": 11,
+        "passed": 0,
+        "reason": "All 11 checks stop at setup because open refuses --architect."
+      },
+      {
+        "file": "test/execution/rebound.test.ts",
+        "failed": 4,
+        "passed": 3,
+        "reason": "Examples 4, 6, 8 and the unowned-example handoff check stop at setup because open refuses --architect; the three retirement checks pass."
+      },
+      {
+        "file": "test/reconstitution/binding/structural.test.ts",
+        "failed": 4,
+        "passed": 27,
+        "reason": "agents/1, agents/3 with workflow/17, the workflow/17 fresh-query check and the workflow/29 branch-record check stop at setup because open refuses --architect."
+      },
+      {
+        "file": "test/reconstitution/binding/guard.test.ts",
+        "failed": 0,
+        "passed": 3,
+        "reason": "Input wording only; these offline guard checks do not open a cut. No new-form red is claimed."
+      },
+      {
+        "file": "test/reconstitution/overview/structural.test.ts",
+        "failed": 3,
+        "passed": 2,
+        "reason": "workflow/2, workflow/3 and workflow/8 stop at setup because open refuses --architect."
+      },
+      {
+        "file": "test/reconstitution/overview/journal.test.ts",
+        "failed": 0,
+        "passed": 4,
+        "reason": "These journal checks import the fixture but do not call its changed openCut setup. No new-form red is claimed."
+      },
+      {
+        "file": "test/reconstitution/roles/roles.test.ts",
+        "failed": 0,
+        "passed": 18,
+        "skipped": 15,
+        "reason": "Offline controls pass, but do not execute the changed live scenario setup. Live model sessions were forbidden. The skipped live checks are not yet run, never passes; no setup red is claimed for this file."
+      },
+      {
+        "file": "test/concept-journal/structural.test.ts",
+        "failed": 0,
+        "passed": 8,
+        "reason": "Acceptance reason wording only; these checks do not open a cut. No new-form red is claimed."
+      },
+      {
+        "file": "test/catalog-recut/examples.test.ts",
+        "failed": 0,
+        "passed": 17,
+        "reason": "The imported master's comment changed only; these checks do not open a cut. No new-form red is claimed."
+      }
+    ]
+  },
+  "notes": "Only the workflow/27 and workflow/28 assertions were rebound; all other changes are setup inputs or comments. No live model sessions ran. The main agent must show every affected check green after the build; current offline passes do not establish that a live scenario or rubric was run or judged."
 }

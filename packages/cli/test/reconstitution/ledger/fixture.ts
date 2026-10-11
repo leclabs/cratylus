@@ -17,7 +17,7 @@ export interface State {
   cut: string;
   branch: string;
   contexts: string[];
-  meaningHolders: Record<string, string>;
+  architects: Record<string, string>;
   phase: 'open' | 'in flight' | 'complete';
   workPackages: { name: string; status: string; dependsOn: string[] }[];
   ready: string[];
@@ -63,10 +63,7 @@ export function open(
     'open',
     '--branch',
     'feature/film',
-    ...contexts.flatMap((context) => [
-      '--meaning-holder',
-      `${context}=creative`,
-    ]),
+    ...contexts.flatMap((context) => ['--architect', `${context}=creative`]),
   );
 }
 export function pair(f: ExecutionFixture, cut = 'film') {

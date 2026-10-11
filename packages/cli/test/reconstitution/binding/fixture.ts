@@ -179,7 +179,7 @@ export function open(f: Fixture) {
     'film',
     '--branch',
     'feature/film',
-    '--meaning-holder',
+    '--architect',
     'film-production=creative',
   );
 }

@@ -491,7 +491,7 @@ const columns: Record<string, string[]> = {
     'plain,convergence,answer-only',
     'plain,maintenance,decision-rationale',
   ],
-  // Builder's unspecified classes are –; confirmed by the meaning-holder.
+  // Builder's unspecified classes are –; confirmed by the architect.
   'decision-rights': [
     'I,R,D,D,–,D,–,R',
     'I,I,I,I,D,I,I,I',

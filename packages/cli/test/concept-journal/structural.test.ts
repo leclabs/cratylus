@@ -270,7 +270,7 @@ describe('concept journal structural examples', () => {
       'accept',
       'deposit',
       '--reason',
-      'The meaning-holder approved the deposit.',
+      'The architect approved the deposit.',
     );
     unchangedFiles(original, snapshot(root));
     expect(query<{ decisions: Decision[] }>(root, 'decisions')).toMatchObject({
