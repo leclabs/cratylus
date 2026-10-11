@@ -1,7 +1,7 @@
 // The architect role: master design §3, the architect column, with the client's
 // principal architect restored (0070) and its communication ordered bottom line up
-// front (0078). Its decisiveness, elevation, ordering, stopping rule and deliverable are
-// the values its behavioral examples showed drifting, so a guard holds each.
+// front (0078). Its elevation and stopping rule are values its behavioral examples
+// showed drifting, so a guard holds each, checking the act before it takes effect (0106).
 
 import { type RoleCell, guarded } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -59,11 +59,8 @@ import { proportionate } from '../dimensions/stance/proportionate.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
 import { systemsThinking } from '../dimensions/stance/systems-thinking.js';
 import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
-import { bottomLine } from '../guards/bottom-line.js';
 import { descend } from '../guards/descend.js';
-import { handBack } from '../guards/hand-back.js';
 import { pastObjective } from '../guards/past-objective.js';
-import { unrecorded } from '../guards/unrecorded.js';
 
 export const architectRole: RoleCell = {
   name: 'architect',
@@ -85,7 +82,7 @@ export const architectRole: RoleCell = {
     procedure: [rectify, illustration, freeze, reconstitution],
     // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
-      { value: guarded(decisive, handBack), level: 'fixed' },
+      { value: decisive, level: 'fixed' },
       { value: guarded(conceptualElevation, descend), level: 'fixed' },
       cratylism,
       firstPrinciples,
@@ -100,11 +97,7 @@ export const architectRole: RoleCell = {
       { value: plain, slot: 'register' },
       { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
-      {
-        value: guarded(bottomLineUpFront, bottomLine),
-        slot: 'ordering',
-        level: 'fixed',
-      },
+      { value: bottomLineUpFront, slot: 'ordering', level: 'fixed' },
     ],
     decisionRights: [
       { value: input, slot: 'intent' },
@@ -132,8 +125,7 @@ export const architectRole: RoleCell = {
     ],
     memory: [sourceOfTruth, working, memoryReconstitution],
     assignment: [intent],
-    // 0090: a decision is taken when it is recorded.
-    deliverable: [guarded(decisionsWithReasons, unrecorded)],
+    deliverable: [decisionsWithReasons],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],
     evaluation: [behavioralExamples, neverAssertions],
   },
