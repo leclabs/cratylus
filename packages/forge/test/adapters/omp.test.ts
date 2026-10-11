@@ -1203,6 +1203,138 @@ describe('omp capability interface', () => {
       ).toBeUndefined();
     });
 
+    /** A lead declaring a typed assignment, as projection writes one. */
+    const LEAD = () =>
+      declare(
+        {
+          name: 'lead',
+          description: 'Realizes a cut.',
+          assignment: {
+            type: 'object',
+            properties: {
+              cut: { type: 'string', description: 'The cut, by its name.' },
+              examples: {
+                type: 'array',
+                items: { type: 'string' },
+                minItems: 1,
+                description: 'The visible examples, as <context>/<number>.',
+              },
+              decisions: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'The decisions in force.',
+              },
+            },
+            required: ['cut', 'examples', 'decisions'],
+          },
+        },
+        'Realize the cut.',
+      );
+    const LEAD_FORM = [
+      '- lead: give its assignment in the task text as one fenced code block with info string `assignment` holding one JSON object:',
+      '  ```assignment',
+      '  {"cut": …, "examples": …, "decisions": …}',
+      '  ```',
+      '  - `cut` (string, required): The cut, by its name.',
+      '  - `examples` (list of strings, at least 1, required): The visible examples, as <context>/<number>.',
+      '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
+    ].join('\n');
+
+    it('teaches the assignment form in the refusal of a misfit dispatch', async () => {
+      omp.agents = [LEAD()];
+      const plain = await started();
+      await plain.fire('session_start');
+      const refused = (await plain.fire('tool_call', 'main', {
+        toolName: 'task',
+        toolCallId: 'call',
+        input: {
+          context: 'A long prose brief.',
+          tasks: [{ agent: 'lead', task: 'Realize the film cut, please.' }],
+        },
+      })) as { block: boolean; reason: string };
+      expect(refused.block).toBe(true);
+      expect(refused.reason).toBe(
+        `lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
+      );
+    });
+
+    it('lists the assignment form of each contracted agent a session may dispatch, launched or not, main or dispatched', async () => {
+      omp.agents = [
+        LEAD(),
+        // omp's discovery parses `spawns` onto the declaration.
+        {
+          ...declare(
+            { name: 'pilot', description: 'd', spawns: 'lead' },
+            'Fly.',
+          ),
+          spawns: 'lead',
+        },
+      ];
+      const forms = `# Assignment forms\n\nA dispatch of these agents is refused unless its task text carries the assignment so:\n\n${LEAD_FORM}`;
+      for (const [flag, kind] of [
+        [undefined, 'main'],
+        ['pilot', 'main'],
+        [undefined, 'sub'],
+      ] as const) {
+        const session = await started(flag);
+        await session.fire('session_start', kind);
+        const { systemPrompt } = (await session.fire(
+          'before_agent_start',
+          kind,
+        )) as { systemPrompt: string[] };
+        expect(systemPrompt, `${flag ?? 'plain'} ${kind}`).toContain(forms);
+      }
+      // A session whose dispatch policy excludes the lead lists no form.
+      omp.agents = [
+        LEAD(),
+        declare(
+          { name: 'scout', description: 'd', spawns: 'cartographer' },
+          'Look.',
+        ),
+      ];
+      const scout = await started('scout');
+      await scout.fire('session_start');
+      const { systemPrompt } = (await scout.fire('before_agent_start')) as {
+        systemPrompt: string[];
+      };
+      expect(systemPrompt.join('\n')).not.toContain('# Assignment forms');
+    });
+
+    it('opens a launch whose procedure starts with reconstitution with a note on its first turn alone', async () => {
+      omp.agents = [
+        declare(
+          { name: 'architect', description: 'Holds the design.' },
+          '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n- **judgment** — judge once\n\n### stance\n\n- **decisive** — decides',
+        ),
+      ];
+      const { fire } = await started('architect');
+      await fire('session_start');
+      const turns: string[] = [];
+      for (const _turn of [1, 2])
+        turns.push(
+          (
+            (await fire('before_agent_start')) as { systemPrompt: string[] }
+          ).systemPrompt.join('\n'),
+        );
+      expect(turns[0]).toContain('# Session start: reconstitution');
+      expect(turns[0]).toContain(
+        'This session starts with reconstitution (at every start, read back before acting).',
+      );
+      expect(turns[0]).toContain(
+        'as your first message, before any act: no dispatch, no journal append, no edit.',
+      );
+      expect(turns[1]).not.toContain('# Session start');
+      // A declaration without it gets no note.
+      omp.agents = [CARTOGRAPHER()];
+      const other = await started('cartographer');
+      await other.fire('session_start');
+      expect(
+        (
+          (await other.fire('before_agent_start')) as { systemPrompt: string[] }
+        ).systemPrompt.join('\n'),
+      ).not.toContain('# Session start');
+    });
+
     it('never touches the active tools, whatever --tools the operator gave', async () => {
       omp.agents = [CARTOGRAPHER()];
       omp.args = { tools: ['read', 'grep'] };
@@ -1225,7 +1357,8 @@ describe('omp capability interface', () => {
       const { systemPrompt } = (await fire('before_agent_start')) as {
         systemPrompt: string[];
       };
-      expect(omp.discovered).toHaveLength(2);
+      // Once per launch, and once for the turn's dispatch forms.
+      expect(omp.discovered).toHaveLength(3);
       expect(systemPrompt.join('\n')).toContain('The revised charting brief.');
       expect(systemPrompt.join('\n')).not.toContain('Map the estuary');
     });
@@ -1247,7 +1380,8 @@ describe('omp capability interface', () => {
           status: [],
           notices: [],
         });
-      expect(omp.discovered).toEqual([]);
+      // Only the turn's dispatch forms are looked up; nothing is launched.
+      expect(omp.discovered).toEqual(['/the/session/cwd', '/the/session/cwd']);
       expect(omp.runtime).toEqual({});
       expect(omp.writes).toEqual([]);
       for (const { fire } of [sub, plain])

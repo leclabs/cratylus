@@ -46,38 +46,82 @@ const said = (schema: JsonSchema, description: string): JsonSchema => ({
   description,
 });
 
+// What a field of an assignment names, said once for every assignment that holds it.
+const cutField = said(
+  text,
+  'The cut, by its name (its examples are design/examples/<context>/<cut>.md).',
+);
+const exampleRefs = (schema: JsonSchema, whose: string): JsonSchema =>
+  said(
+    schema,
+    `${whose}, each as \`<context>/<number>\` (e.g. \`booking/1\`).`,
+  );
+
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
     cutBrief,
     record({
-      cut: text,
-      concepts: someTexts,
-      examples: someTexts,
-      decisions: someTexts,
+      cut: cutField,
+      concepts: said(
+        someTexts,
+        'The concepts the cut realizes, by their names in the design.',
+      ),
+      examples: exampleRefs(someTexts, "The cut's visible examples"),
+      decisions: said(
+        someTexts,
+        'The decisions in force for the cut, by their ids (e.g. `0081`).',
+      ),
     }),
   ],
   [
     workPackage,
     record({
-      cut: text,
-      workPackage: text,
-      outputs: someTexts,
-      concepts: someTexts,
+      cut: cutField,
+      workPackage: said(text, 'The work package, by its name in the ledger.'),
+      outputs: said(
+        someTexts,
+        'The paths the package owns, which no other builder changes.',
+      ),
+      concepts: said(someTexts, 'The concepts the package serves, by name.'),
       // A shared-output package owns no example, which a work package may do.
-      examples: texts,
+      examples: exampleRefs(
+        texts,
+        'The visible examples the package owns (none for a package sharing outputs)',
+      ),
     }),
   ],
   [
     judgmentBrief,
     record({
-      cut: text,
-      workPackages: someTexts,
-      examples: someTexts,
-      decisions: texts,
+      cut: cutField,
+      workPackages: said(
+        someTexts,
+        'The work packages to judge, by their names in the ledger.',
+      ),
+      examples: exampleRefs(someTexts, 'The examples to judge against'),
+      decisions: said(
+        texts,
+        'The decisions in force, by their ids; empty when there are none.',
+      ),
     }),
   ],
-  [examples, record({ cut: text, examples: someTexts })],
-  [concepts, record({ cut: text, concepts: someTexts })],
+  [
+    examples,
+    record({
+      cut: cutField,
+      examples: exampleRefs(someTexts, 'The examples to bind checks to'),
+    }),
+  ],
+  [
+    concepts,
+    record({
+      cut: cutField,
+      concepts: said(
+        someTexts,
+        'The concepts to illustrate with examples, by name.',
+      ),
+    }),
+  ],
 ];
 
 const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
