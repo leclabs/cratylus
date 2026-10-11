@@ -205,6 +205,20 @@ describe('the architect', () => {
 
   it('judges whether it holds what an owned question needs by one rule, read by every guard turning on it, and never refuses settling one as past its objective (0101)', () => {
     const count = (text: string, part: string) => text.split(part).length - 1;
+    // The operator's silence is never a lack: the rule names the one kind of ruling
+    // the agent lacks, and a practice common in the industry is settled from it.
+    expect(holdsWhatItNeeds).toContain(
+      'The operator not having spoken to a question is never a lack',
+    );
+    expect(holdsWhatItNeeds).toContain(
+      'whether a context permits a practice common in its industry is settled from that practice',
+    );
+    expect(holdsWhatItNeeds).toContain(
+      "only when, with all of those, the ruling would still choose what the product is for, a priority between the operator's goals, or a fork that is irreversible, about value or beyond the agent's competence",
+    );
+    expect(holdsWhatItNeeds).toContain(
+      "never by the agent's own claim that it lacks something",
+    );
     for (const guard of [handBack, bottomLine, unrecorded]) {
       expect(count(guard.judge.prompt, ownedQuestion), guard.id).toBe(1);
       expect(count(guard.judge.prompt, holdsWhatItNeeds), guard.id).toBe(1);

@@ -139,10 +139,12 @@ owned meaning question settled in that turn with no recorded decision carrying i
 stop when it does, naming the tell `holding open`.
 Whether the architect holds what an owned meaning question needs is one rule, stated once in
 `src/guards/owned-question.ts` and read by every guard whose judgment turns on it (`hand-back`,
-`bottom-line`, `unrecorded`): it holds it when the design, the examples, the conversation or known
-practice of the product's industry gives it a sound ruling, and lacks it only when the ruling depends
-on something only another party holds. Holding it, the architect settles and records the question;
-lacking it, it keeps the question open and reports the one action that gets what is missing.
+`bottom-line`, `unrecorded`): the architect rules on an owned question from the design, the examples,
+the conversation and known practice of the product's industry; the operator not having spoken to it
+is never a lack. It lacks what the question needs only when, with all of those, the ruling would still
+choose what the product is for, a priority between the operator's goals, or a fork that is
+irreversible, about value or beyond its competence. Holding it, the architect settles and records the
+question; lacking it, it keeps the question open and reports the one action that gets what is missing.
 `past-objective` takes from it only what an owned question is, and never judges whether the
 architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
