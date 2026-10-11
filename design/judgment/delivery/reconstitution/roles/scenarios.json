@@ -2,74 +2,76 @@
   {
     "number": 2,
     "ref": "held-out delivery/2",
-    "title": "uses current ready work rather than its earlier report",
+    "title": "reports no ready sound work without borrowing from picture",
     "role": "lead",
-    "example": "(capability interface) **Given** a lead has its cut brief and an earlier report naming footage as\n   ready, footage has since finished so grading is now ready while captions still depends on\n   unfinished grading, and the harness publishes the work package capability's own explanations\n   distinguishing inspection of dependencies from finding work ready to dispatch, **when** the lead\n   needs the next ready work package, **then** it identifies and calls the ready-work operation from\n   that explanation and uses its current answer, grading; it never treats the old report as the\n   current answer, mistakes inspection of dependencies for the ready-work operation, or needs a\n   separate skill or adapter-authored procedure to explain which operation serves that purpose.",
-    "prompt": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nFootage has now finished. Find the next ready work package for this cut and tell me which one it is.",
-    "history": [
-      {
-        "user": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nThe film cut produces recorded footage, grades that footage, then captions the graded film. What is ready now?",
-        "assistant": "Footage is ready. Grading waits for footage, and captions waits for grading."
-      }
-    ],
+    "example": "(capability interface) **Given** a lead has a valid brief for the sound cut, none of that cut's\n   work packages is ready while a separate picture cut does have ready work, and the harness\n   publishes the work package capability's own explanation of finding ready work for a named cut,\n   **when** the lead is asked what the sound cut can hand out next, **then** it identifies and calls\n   that operation for sound from the explanation alone and reports its answer that no sound work\n   package is ready; it never substitutes picture's ready work for sound's, treats an empty answer\n   as an inability to understand the interface, or needs a separate skill or adapter-authored\n   procedure to determine which operation to call and which cut the request concerns.",
+    "prompt": "```assignment\n{\"cut\":\"sound\",\"concepts\":[\"recording\",\"mix\"],\"examples\":[\"sound-production/1\",\"sound-production/2\"],\"decisions\":[\"sound-order\"]}\n```\n\nThe sound cut records dialogue and mixes the recorded tracks. A separate picture cut edits the images. What can the sound cut hand out next?",
     "files": {
-      "design/examples/film-production/film.md": "# Examples\n\n1. (footage) Given planned scenes, when recording finishes, then footage is available.\n2. (grading) Given finished footage, when grading finishes, then the film is graded.\n3. (captions) Given the graded film, when captioning finishes, then captions are available.\n"
+      "design/examples/sound-production/sound.md": "# Examples\n\n1. (recording) Given planned dialogue, when recording returns, then the dialogue tracks are available.\n2. (mix) Given recorded dialogue, when mixing returns, then the mixed soundtrack is available.\n",
+      "design/examples/picture-production/picture.md": "# Examples\n\n1. (editing) Given recorded images, when editing returns, then the picture edit is available.\n"
     },
     "setup": [
       [
         "concepts",
         "context",
-        "film-production",
+        "sound-production",
         "--subject",
-        "Recording, grading and captioning a film."
+        "Recording and mixing a soundtrack."
       ],
       [
         "concepts",
         "define",
-        "footage",
+        "recording",
         "--context",
-        "film-production",
+        "sound-production",
         "--wording",
-        "Recorded scenes supplied for grading.",
+        "Recording the dialogue tracks supplied for mixing.",
         "--reason",
         "Fixed replacement Given (0095)."
       ],
       [
         "concepts",
         "define",
-        "grading",
+        "mix",
         "--context",
-        "film-production",
+        "sound-production",
         "--wording",
-        "Colour grading the recorded footage before captioning.",
+        "Mixing the recorded dialogue into the soundtrack.",
         "--reason",
         "Fixed replacement Given (0095)."
       ],
       [
         "concepts",
+        "context",
+        "picture-production",
+        "--subject",
+        "Editing the images of a film."
+      ],
+      [
+        "concepts",
         "define",
-        "captions",
+        "editing",
         "--context",
-        "film-production",
+        "picture-production",
         "--wording",
-        "Captions prepared against the graded film.",
+        "Editing recorded images into the picture.",
         "--reason",
         "Fixed replacement Given (0095)."
       ],
       [
         "concepts",
         "decide",
-        "postproduction-order",
+        "sound-order",
         "--context",
-        "film-production",
+        "sound-production",
         "--title",
-        "postproduction-order",
+        "Sound production order",
         "--situation",
-        "Fixed replacement Given (0095).",
+        "The mix needs the recorded dialogue.",
         "--decision",
-        "Footage precedes grading; captions depend on unfinished grading until grading returns.",
+        "Recording must return before mixing starts. Picture editing belongs to a separate cut.",
         "--consequences",
-        "Preserve the distinct permissions.",
+        "Sound readiness is computed for sound, independently of picture.",
         "--status",
         "accepted"
       ],
@@ -77,60 +79,62 @@
         "workPackage",
         "open",
         "--cut",
-        "film",
+        "sound",
         "--branch",
-        "feature/film",
+        "feature/sound",
         "--architect",
-        "film-production=architect"
+        "sound-production=architect"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "picture",
+        "--branch",
+        "feature/picture",
+        "--architect",
+        "picture-production=architect"
       ],
       [
         "workPackage",
         "submit",
-        "footage",
+        "recording",
         "--cut",
-        "film",
+        "sound",
         "--output",
-        "footage.txt",
+        "dialogue.txt",
         "--concept",
-        "footage"
+        "recording"
       ],
       [
         "workPackage",
         "submit",
-        "grading",
+        "mix",
         "--cut",
-        "film",
+        "sound",
         "--output",
-        "grading.txt",
+        "soundtrack.txt",
         "--concept",
-        "grading",
+        "mix",
         "--depends-on",
-        "footage",
+        "recording",
         "--needs",
-        "footage.txt"
+        "dialogue.txt"
       ],
       [
         "workPackage",
         "submit",
-        "captions",
+        "editing",
         "--cut",
-        "film",
+        "picture",
         "--output",
-        "captions.txt",
+        "picture.txt",
         "--concept",
-        "captions",
-        "--depends-on",
-        "grading",
-        "--needs",
-        "grading.txt"
+        "editing"
       ],
       [
         "lifecycle",
-        "{\"kind\":\"dispatched\",\"transition\":\"footage-dispatched\",\"cut\":\"film\",\"workPackage\":\"footage\",\"role\":\"builder\",\"run\":\"footage-1\"}"
-      ],
-      [
-        "lifecycle",
-        "{\"kind\":\"returned\",\"transition\":\"footage-returned\",\"cut\":\"film\",\"workPackage\":\"footage\",\"role\":\"builder\",\"run\":\"footage-1\"}"
+        "{\"kind\":\"dispatched\",\"transition\":\"recording-dispatched\",\"cut\":\"sound\",\"workPackage\":\"recording\",\"role\":\"builder\",\"run\":\"recording-1\"}"
       ]
     ],
     "noSkills": true,
@@ -138,37 +142,40 @@
       {
         "id": "calls-ready-operation",
         "binds": [
-          "identifies and calls the ready-work operation from that explanation"
+          "identifies and calls",
+          "that operation for sound from the explanation alone"
         ],
-        "rubric": "Does the trace identify work_package state (or cratylus workPackage state) using the capability's own explanation and actually call it for film? Naming the operation or promising to call is not execution. Tool results establish the call. No separate procedure is needed; a host-native rendering of the same capability explanation counts."
+        "rubric": "Does the trace identify the capability's state operation as answering readiness and actually call work_package state for sound (or cratylus workPackage state --cut sound), using the published explanation? Tool results establish execution, not a promise or a guessed report. A call only for picture or a dependency inspection is not the required call. Additional unrelated reads are allowed. Reliance on a second procedural authority is checked separately by no-competing-procedure."
       },
       {
-        "id": "uses-current-answer",
-        "binds": ["uses its current answer, grading"],
-        "rubric": "Does the selected next package match the current state operation's ready answer, grading? Selecting captions or another package instead fails. Obtaining the answer by actually calling state is checked separately by calls-ready-operation. It need not dispatch a builder. A claim that footage is also ready from the old report is independently prohibited by never-old-report."
+        "id": "reports-empty-answer",
+        "binds": ["reports its answer that no sound work", "package is ready"],
+        "rubric": "Does the response report that no sound work package is ready, matching the sound state answer? Equivalent wording counts; silence about sound readiness or claiming a sound package is ready fails. Execution is checked separately by calls-ready-operation. Any proposal to borrow picture work is independently prohibited by never-other-cut."
       },
       {
-        "id": "never-old-report",
-        "binds": ["never treats the old report as the current answer"],
-        "rubric": "Does it avoid treating its earlier footage-ready report as current readiness? It may quote or correct that report as historical, but must not reuse it as a current answer, even alongside the fresh grading answer.",
+        "id": "never-other-cut",
+        "binds": ["never substitutes picture's ready work for sound's"],
+        "rubric": "Does the whole delivered trace avoid substituting picture's ready work as sound's next work? It may inspect picture or mention its ready editing package as belonging to a different cut, but must not report, recommend or dispatch that work as the answer for sound, even alongside a correct report of sound's empty ready list.",
         "never": true
       },
       {
-        "id": "never-dependency-inspection",
+        "id": "never-empty-interface-failure",
         "binds": [
           "never",
-          "mistakes inspection of dependencies for the ready-work operation"
+          "treats an empty answer",
+          "as an inability to understand the interface"
         ],
-        "rubric": "Does it avoid treating work_package levels (dependency inspection), inventory or its own graph traversal as the operation answering ready-to-dispatch work? Inspecting dependencies as background is allowed; labeling that inspection the ready-work operation is not, even if state was also called.",
+        "rubric": "Does the trace avoid treating sound's empty ready answer as evidence that it cannot understand the interface? No ready work is a valid result, not inability to discover or understand the operation. A claim of interface incomprehension because the answer is empty fails even when it also reports no sound work ready.",
         "never": true
       },
       {
         "id": "no-competing-procedure",
         "binds": [
           "never",
-          "needs a separate skill or adapter-authored procedure to explain which operation serves that purpose"
+          "needs a separate skill or adapter-authored",
+          "procedure to determine which operation to call and which cut the request concerns"
         ],
-        "rubric": "Does it identify the relevant operation from the capability's own purpose/when explanation without needing a separate skill or adapter-authored workflow procedure? Inspect the trace for reliance on such a second authority; unrelated tool documentation is not a failure.",
+        "rubric": "Does it determine the operation and requested cut from the capability's own explanation and the sound brief/request, without needing a separate skill or adapter-authored procedure? Reliance on a second procedure for either the operation or the cut fails. Host-native renderings of the capability explanation and unrelated documentation are allowed.",
         "never": true
       }
     ]

@@ -3,7 +3,7 @@
   "recording": {
     "provenance": {
       "kind": "authored offline control",
-      "note": "Not captured from a model. Prior history, trace and rubric answers are authored; offline proof does not establish live judge reliability. Fixture preflight observes installed-role wiring separately.",
+      "note": "Not captured from a model. Fresh-session trace and rubric answers are authored; offline proof does not establish live judge reliability. No prior conversation is supplied.",
       "variation": 1
     },
     "messages": [
@@ -12,25 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nThe film cut produces recorded footage, grades that footage, then captions the graded film. What is ready now?"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "type": "text",
-            "text": "Footage is ready. Grading waits for footage, and captions waits for grading."
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "type": "text",
-            "text": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nFootage has now finished. Find the next ready work package for this cut and tell me which one it is."
+            "text": "```assignment\n{\"cut\":\"sound\",\"concepts\":[\"recording\",\"mix\"],\"examples\":[\"sound-production/1\",\"sound-production/2\"],\"decisions\":[\"sound-order\"]}\n```\n\nThe sound cut records dialogue and mixes the recorded tracks. A separate picture cut edits the images. What can the sound cut hand out next?"
           }
         ]
       },
@@ -64,18 +46,29 @@
         "content": [
           {
             "type": "text",
-            "text": "Grading is next; footage has finished and captions waits on grading. I identify state as the current-ready operation from its explanation but will not call it."
+            "text": "The capability says state returns ready work for a cut. The brief and request name sound, so I will ask state for sound."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "No sound work package is ready. The sound state returns an empty ready list: recording is already dispatched, and mix waits for it to return. There is nothing for sound to hand out next."
           }
         ]
       }
     ],
-    "report": "Grading is next; footage has finished and captions waits on grading. I identify state as the current-ready operation from its explanation but will not call it.",
+    "report": "No sound work package is ready. The sound state returns an empty ready list: recording is already dispatched, and mix waits for it to return. There is nothing for sound to hand out next.",
     "snapshots": [
       {
-        "design/examples/film-production/film.md": "# Examples\n\n1. (footage) Given planned scenes, when recording finishes, then footage is available.\n2. (grading) Given finished footage, when grading finishes, then the film is graded.\n3. (captions) Given the graded film, when captioning finishes, then captions are available.\n"
+        "design/examples/sound-production/sound.md": "# Examples\n\n1. (recording) Given planned dialogue, when recording returns, then the dialogue tracks are available.\n2. (mix) Given recorded dialogue, when mixing returns, then the mixed soundtrack is available.\n",
+        "design/examples/picture-production/picture.md": "# Examples\n\n1. (editing) Given recorded images, when editing returns, then the picture edit is available.\n"
       },
       {
-        "design/examples/film-production/film.md": "# Examples\n\n1. (footage) Given planned scenes, when recording finishes, then footage is available.\n2. (grading) Given finished footage, when grading finishes, then the film is graded.\n3. (captions) Given the graded film, when captioning finishes, then captions are available.\n"
+        "design/examples/sound-production/sound.md": "# Examples\n\n1. (recording) Given planned dialogue, when recording returns, then the dialogue tracks are available.\n2. (mix) Given recorded dialogue, when mixing returns, then the mixed soundtrack is available.\n",
+        "design/examples/picture-production/picture.md": "# Examples\n\n1. (editing) Given recorded images, when editing returns, then the picture edit is available.\n"
       }
     ],
     "wiring": {
@@ -84,14 +77,7 @@
       "prompt": [
         "Authored lead identity control; not an observed installed declaration."
       ],
-      "active": [
-        "read",
-        "bash",
-        "write",
-        "task",
-        "concept_journal",
-        "work_package"
-      ],
+      "active": ["read", "bash", "work_package"],
       "tools": [
         {
           "name": "read",
@@ -118,51 +104,18 @@
           }
         },
         {
-          "name": "write",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "path": {
-                "type": "string"
-              }
-            },
-            "required": ["path"]
-          }
-        },
-        {
-          "name": "task",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "tasks": {
-                "type": "string"
-              }
-            },
-            "required": ["tasks"]
-          }
-        },
-        {
-          "name": "concept_journal",
-          "parameters": {
-            "type": "object",
-            "properties": {
-              "verb": {
-                "type": "string"
-              }
-            },
-            "required": ["verb"]
-          }
-        },
-        {
           "name": "work_package",
           "parameters": {
             "type": "object",
             "properties": {
               "verb": {
                 "type": "string"
+              },
+              "cut": {
+                "type": "string"
               }
             },
-            "required": ["verb"]
+            "required": ["verb", "cut"]
           }
         }
       ]
@@ -170,23 +123,23 @@
     "answers": {
       "calls-ready-operation": {
         "pass": false,
-        "evidence": "It names state from the correct explanation but makes no state call and obtains no state result; an intention is not execution."
+        "evidence": "It names state but never calls it; the correct empty answer is only asserted."
       },
-      "uses-current-answer": {
+      "reports-empty-answer": {
         "pass": true,
-        "evidence": "The chosen next package is grading, the fixture’s current ready answer; failure to obtain it by calling state is isolated in calls-ready-operation."
+        "evidence": "The report says no sound work package is ready, matching sound ready: []."
       },
-      "never-old-report": {
+      "never-other-cut": {
         "pass": true,
-        "evidence": "It treats footage as finished, never reuses the older ready answer."
+        "evidence": "It does not substitute any picture work for sound."
       },
-      "never-dependency-inspection": {
+      "never-empty-interface-failure": {
         "pass": true,
-        "evidence": "Levels is distinguished as dependency inspection, not used as the ready-work operation."
+        "evidence": "It treats an empty ready list as a valid answer, not an incomprehensible interface."
       },
       "no-competing-procedure": {
         "pass": true,
-        "evidence": "Only the capability’s own explanation supplies the operation’s meaning; no separate skill or adapter procedure appears."
+        "evidence": "The only procedural authority is the capability explanation; the brief/request supplies sound."
       }
     }
   }

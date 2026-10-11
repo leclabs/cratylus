@@ -3,91 +3,107 @@
   "decision": "0095",
   "area": "roles",
   "example": "held-out delivery/2",
-  "method": "Two varied authored goldens and six isolated negative controls. All trace text and rubric answers in these controls are authored, not live judge results. Offline proof validates binding, wiring predicates, clause isolation, no host reads during judgment, and thresholds; it does not establish a model judge’s semantic reliability.",
-  "aggregation": "At least 4 of 5 ordinary assertions; every never-assertion in all 5. The suite rejects two ordinary failures and one never failure.",
+  "frozen": true,
+  "method": "Two varied authored goldens and eight isolated negative controls. All traces and rubric answers are authored, not live judge results. Offline proof validates binding, wiring predicates, clause isolation, no host reads during judgment, and thresholds; it does not establish semantic reliability of a model judge.",
+  "aggregation": "At least 4 of 5 runs; every never-assertion holds in every run taken (0092). The unchanged offline suite also proves that two ordinary failures or one never failure reject a five-run batch. The lead runs smoke then early-stopping live batches under 0088.",
   "liveRun": false,
   "fixture": {
-    "source": "scenarios.json quotes the fixed example verbatim, including Markdown and wrapping.",
-    "records": "CLI commands create the film-production context, footage/grading/captions concepts, the accepted postproduction-order decision, the film cut and its three dependent packages. Dispatched and returned lifecycle events finish footage. No handwritten journal overview or ledger substitute.",
-    "continuation": "Optional native history support in the shared roles runner retains the lead’s earlier footage-ready report and typed cut brief as prior user/assistant turns. The new prompt reports footage finished and asks for next ready work; it does not state grading is ready or name the operation.",
-    "model": "History uses the model resolved by an initial installed-role inspection. No model generation is needed. The resumed launch keeps the delegate stand-in and handoff observer (0094), active capability schemas, and --no-skills.",
-    "assertion": "Given: finished footage unlocks grading, not captions runs workPackage state against the real seeded ledger and asserts ready == [grading], footage returned, grading submitted depending on footage, and captions submitted depending on grading.",
-    "compatibility": "Scenarios without history retain their existing no-session path. No visible scenario or recording changed."
+    "source": "The scenario quotes the approved replacement example verbatim, including Markdown and wrapping. Example text is unchanged.",
+    "records": "Installed cratylus setup commands create sound-production and picture-production, recording/mix/editing concepts, accepted sound-order decision, sound and picture cuts, and their work packages. A dispatched lifecycle event leaves recording in flight; mix depends on its return. Picture editing remains submitted and ready.",
+    "brief": "The typed sound assignment names its two recorded concepts, two example references and accepted decision. The prompt does not disclose readiness or name the state operation.",
+    "history": false,
+    "session": "Fresh session: no history field or prior assistant turns. Session-start reconstitution remains available (0089); the roles runner and its launch logic are unchanged.",
+    "authority": "Each context is held by architect. No separate confirmer or approval hand-back appears in setup or goldens.",
+    "assertion": "Given: sound has no ready work while picture does, in a fresh session checks absent history and queries both cuts through installed cratylus: sound ready == [], recording dispatched, mix submitted depending on recording; picture ready == [editing], editing submitted.",
+    "goldens": "Golden 1 uses the native work_package tool for sound. Golden 2 uses the CLI, inspects picture as well as sound and correctly distinguishes picture readiness from sound readiness."
   },
   "clauses": [
     {
       "id": "installed-role",
       "never": false,
-      "negative": "Installed declaration absent from composed prompt."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-installed-role.json",
+          "failure": "Installed declaration absent from composed prompt."
+        }
+      ]
     },
     {
       "id": "calls-ready-operation",
       "never": false,
-      "negative": "Names state from the capability explanation and gives the right next package but never calls the operation."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-calls-ready-operation.json",
+          "failure": "It names state but never calls it; the correct empty answer is only asserted."
+        },
+        {
+          "file": "recordings/2/negative-calls-ready-operation-wrong-cut.json",
+          "failure": "It executes state only for picture, never for sound, though it guesses sound has no ready work."
+        }
+      ]
     },
     {
-      "id": "uses-current-answer",
+      "id": "reports-empty-answer",
       "never": false,
-      "negative": "Calls state and receives grading, then selects captions instead."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-reports-empty-answer.json",
+          "failure": "It does not report the empty sound readiness answer despite obtaining it."
+        }
+      ]
     },
     {
-      "id": "never-old-report",
+      "id": "never-other-cut",
       "never": true,
-      "negative": "Selects fresh grading but also treats the earlier footage-ready report as a current answer."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-never-other-cut.json",
+          "failure": "It reports no sound work ready but substitutes picture editing as what sound should hand out."
+        }
+      ]
     },
     {
-      "id": "never-dependency-inspection",
+      "id": "never-empty-interface-failure",
       "never": true,
-      "negative": "Correctly calls state, then also mislabels dependency inspection as the ready-work operation."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-never-empty-interface-failure.json",
+          "failure": "It takes the empty sound answer as inability to understand the interface, despite correctly reporting the empty list."
+        }
+      ]
     },
     {
       "id": "no-competing-procedure",
       "never": true,
-      "negative": "Reads an adapter-authored workflow procedure before calling state and declares that second explanation necessary."
+      "negatives": [
+        {
+          "file": "recordings/2/negative-no-competing-procedure.json",
+          "failure": "It relies on a separate adapter-authored procedure to determine the operation."
+        },
+        {
+          "file": "recordings/2/negative-no-competing-procedure-cut.json",
+          "failure": "It relies on a separate adapter-authored procedure to determine the cut."
+        }
+      ]
     }
   ],
   "offline": {
     "command": "env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts",
-    "passed": 9,
-    "skipped": 7,
+    "passed": 11,
+    "skipped": 9,
     "exitCode": 0,
-    "observed": "Each of the six negatives fails exactly its own clause and rejects its five-copy batch. Both goldens pass; aggregation and the real fixture-state assertion pass."
+    "observed": "Both goldens pass; all eight negatives fail exactly their named clause and reject a five-copy batch. Aggregation and the installed-command Given assertion pass."
   },
   "red": {
-    "command": "env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE EXECUTION_RED=1 pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts -t 'red demonstration: calls-ready-operation'",
-    "failed": 1,
-    "skipped": 15,
+    "command": "env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE EXECUTION_RED=1 pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts -t 'red demonstration'",
+    "failed": 7,
+    "skipped": 13,
     "exitCode": 1,
-    "observed": "calls-ready-operation returns passed: false, failing the deliberate passed: true expectation at shared roles/suite.ts:116. Not a setup or import failure."
+    "observed": "All seven behavioral negatives deliberately fail passed: true at shared roles/suite.ts:116 with actual passed: false. Installed-role is independently seen false by the ordinary seen-red test. No import or setup failure."
   },
-  "preflight": {
-    "command": "env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_REJUDGE EXECUTION_PREFLIGHT=1 EXECUTION_RECORDINGS=/tmp/reconstitution-0095-replacement-preflight pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/reconstitution/roles/vitest.config.ts -t 'preflight|Given'",
-    "passed": 2,
-    "skipped": 14,
-    "exitCode": 0,
-    "output": "/tmp/reconstitution-0095-replacement-preflight/2/preflight/",
-    "observed": "launch.json contains --resume, installed lead, --no-skills, delegate stand-in and handoff observer. session.jsonl contains the earlier typed brief and footage-ready report as native prior turns. Observer exits before generation.",
-    "repairEvidence": "An initial attempt failed to restore an invented fixture/authored-history model. The runner now records the actually resolved installed-role model, as the architect runner does; the subsequent resumed preflight passed."
-  },
-  "visibleCompatibility": {
-    "command": "env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE pnpm --filter cratylus exec vitest run test/reconstitution/roles/roles.test.ts",
-    "passed": 23,
-    "skipped": 19,
-    "exitCode": 0
-  },
-  "static": {
-    "typecheck": {
-      "command": "pnpm --filter cratylus typecheck",
-      "exitCode": 0
-    },
-    "heldoutTypecheck": {
-      "command": "pnpm --filter cratylus exec tsc --noEmit --project /tmp/reconstitution-0095-replacement-types.json",
-      "exitCode": 0,
-      "configuration": "Temporary configuration extended the repository tsconfig.base.json, included design/judgment/delivery/reconstitution/roles/roles.test.ts, and mapped vitest to packages/cli/node_modules/vitest to match the CLI test runner’s resolution outside the package tree. The temporary configuration was removed after the check."
-    },
-    "biome": {
-      "command": "pnpm exec biome check design/judgment/agents/reconstitution/architect/scenarios.json design/judgment/agents/reconstitution/architect/recordings/104 design/judgment/delivery/reconstitution/roles packages/cli/test/reconstitution/roles/check.ts packages/cli/test/reconstitution/roles/runner.ts",
-      "exitCode": 0
-    }
+  "liveBatch": {
+    "testName": "held-out delivery/2 — reports no ready sound work without borrowing from picture live: parallel installed-agent runs stop when the outcome is decided",
+    "filter": "-t 'held-out delivery/2 — reports no ready sound work without borrowing from picture live: parallel installed-agent runs stop when the outcome is decided'",
+    "runBy": "lead; not run by this offline check assignment"
   }
 }
