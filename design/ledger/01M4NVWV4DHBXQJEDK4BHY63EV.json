@@ -1,0 +1,13 @@
+{
+  "id": "01M4NVWV4DHBXQJEDK4BHY63EV",
+  "at": "2026-10-11T16:14:22.349Z",
+  "kind": "update",
+  "transition": "update:delivery:01M4NVWV4BWNXMS915RDT3DWWC",
+  "cut": "delivery",
+  "workPackage": "installation",
+  "changes": {
+    "dependsOn": [
+      "retirement"
+    ]
+  }
+}
