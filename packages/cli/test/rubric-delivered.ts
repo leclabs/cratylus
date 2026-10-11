@@ -9,12 +9,6 @@ export interface HeldDrift {
   reason: string;
 }
 
-export interface RelayedTell {
-  guard: string;
-  text: string;
-  reason: string;
-}
-
 function object(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object'
     ? (value as Record<string, unknown>)
@@ -32,23 +26,6 @@ function textOf(content: unknown): string {
         : [];
     })
     .join('\n');
-}
-// Retained turn-end notices are diagnostic only: their replies already took
-// effect (0106). These historical sentences are not installed guard definitions.
-function replyGuard(reason: string): string | undefined {
-  if (
-    reason.startsWith('burying: this reply buries its bottom line.') ||
-    reason.startsWith('burying: this turn buries its bottom line.')
-  )
-    return 'bottom-line';
-  if (
-    reason.startsWith(
-      'hand-back: this reply returns a decision you own to the operator.',
-    )
-  )
-    return 'hand-back';
-  if (reason.startsWith('unrecorded:')) return 'unrecorded';
-  return undefined;
 }
 // The first sentence identifies a pre-act refusal independently of its tail.
 const descendPrefix = descend.refusal.slice(
@@ -93,7 +70,6 @@ function refusingGuard(reason: string): string | undefined {
 export function deliveredEvidence(messages: readonly unknown[]): {
   delivered: unknown[];
   heldDrift: HeldDrift[];
-  relayed: RelayedTell[];
 } {
   const removedMessages = new Set<number>();
   const removedBlocks = new Map<number, Set<number>>();
@@ -102,8 +78,6 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     { message: number; block: number; call: Record<string, unknown> }
   >();
   const heldDrift: HeldDrift[] = [];
-  const relayed: RelayedTell[] = [];
-  let relayReply = '';
   const removeBlock = (message: number, block: number) => {
     let blocks = removedBlocks.get(message);
     if (!blocks) {
@@ -115,25 +89,6 @@ export function deliveredEvidence(messages: readonly unknown[]): {
   for (const [index, value] of messages.entries()) {
     const message = object(value);
     if (!message) continue;
-    const relayReason = message.role === 'user' ? textOf(message.content) : '';
-    const relayGuard = replyGuard(relayReason);
-    if (
-      message.role === 'user' &&
-      message.steering === true &&
-      message.attribution === 'agent' &&
-      relayGuard
-    ) {
-      // Historical steering notices remain evidence alongside the reply.
-      // Several notices can concern the same preceding reply.
-      if (relayReply)
-        relayed.push({
-          guard: relayGuard,
-          text: relayReply,
-          reason: relayReason,
-        });
-      continue;
-    }
-    relayReply = message.role === 'assistant' ? textOf(message.content) : '';
     if (message.role === 'assistant' && Array.isArray(message.content)) {
       for (const [block, value] of message.content.entries()) {
         const call = object(value);
@@ -182,7 +137,7 @@ export function deliveredEvidence(messages: readonly unknown[]): {
     );
     return content.length ? [{ ...message, content }] : [];
   });
-  return { delivered, heldDrift, relayed };
+  return { delivered, heldDrift };
 }
 
 export interface HeldDriftCount {

@@ -13,7 +13,7 @@ The following scenarios, their recordings and their dedicated checks and documen
 | agents/17, agents/18                       | 117, 118           |
 | agents/20, agents/21, agents/22, agents/23 | 120, 121, 122, 123 |
 
-Agents/11's hand-back guard check (`../binding/guard.test.ts`), the shared owned-question judgment test and held-out agents/4 (scenario 104) also leave this cut. No example text under `design/examples/` changes. The catalog values remain; only the turn-end guard realization and the checks held only by it leave. Readback, descend, past-objective and pre-act dispatch checks stay.
+Agents/11's hand-back guard check (`../binding/guard.test.ts`), the shared owned-question judgment test and held-out agents/4 (scenario 104) also leave this cut. Under 0106, the moved examples' text now lives in `design/examples/{workflow,agents}/cut-7.md`, unchanged in meaning; the burned held-out agents/4 is visible there as agents/24. The catalog values remain; only the turn-end guard realization and the checks held only by it leave. Readback, descend, past-objective and pre-act dispatch checks stay.
 
 ## Evaluation
 
@@ -53,17 +53,17 @@ The 0095 recording sweep made the workflow/31 and agents/19 controls begin with 
 
 ## Delivered evidence and held drift (0106)
 
-`test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift, relayed }`. Both architect and execution-role rubric prompts use the delivered messages; the duplicate final `report` is omitted. A reply has already reached its reader when a turn-end refusal arrives. Both the refused reply and its rewrite remain delivered, in order, including string and block replies and replies sharing a message with successful calls. The judge instructions explicitly require judging both.
+`test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift }`. Both architect and execution-role rubric prompts use the delivered messages; the duplicate final `report` is omitted. Every shown reply remains delivered, in order, including string and block replies and replies sharing a message with successful calls. Synthetic tests preserve 0106(2): a later refusal cannot withdraw any reply. The judge instructions require judging all replies.
 
 Only matched tool calls refused before taking effect are removed. Readback, descend, past-objective and dispatch refusals remain held drift; ordinary errors, successful calls and quoted refusal text remain delivered. One jointly refused call counts once overall and once for each refusing guard. Historical reply entries in retained held-drift metadata are not counted.
 
-`subject.json` and raw messages remain intact. Judged recordings persist held drift separately from verdicts, and `assessment.json` reports it per run and overall, including returned siblings not consumed by fail-fast. Historical agent-attributed steering notices may still be reported as `relayed` diagnostics, but never withdraw replies or add held drift. Their historical text is fixture evidence, not a live guard definition or compatibility export.
+`subject.json` and raw messages remain intact. Judged recordings persist held drift separately from verdicts, and `assessment.json` reports it per run and overall, including returned siblings not consumed by fail-fast. Reply-guard recognition and the `relayed` diagnostic have been removed; new judged recordings contain no such field.
 
-The transcript fixture `fixtures/agents-13.json` remains solely as a delivery/accounting regression, not as the moved agents/13 behavioral scenario. It retains three refused pre-act calls, successful calls, a refused reply and a rewrite from `/tmp/smoke11/agents-13/subject.json`. `workflow-31.json` and `agents-16.json` retain pre-act refusal excerpts. `heldout-workflow-3-relay.json` retains a reply and historical steering notice from `/tmp/heldout1/heldout-workflow-3/subject.json`. These are existing transcript controls, not new model runs.
+The agents/13 reply-refusal transcript and held-out workflow/3 relay transcript have been removed from the visible fixture tree. Delivery, readback accounting, prompt projection and persistence tests use synthetic evidence, not those runs. `fixtures/workflow-31.json` and `fixtures/agents-16.json` remain as additional retained pre-act refusal controls; synthetic controls independently exercise readback, descend, past-objective and all dispatch gates.
 
 ### Rebound logic seen red first
 
-Before changing the projection, ran:
+Before the original 0106 projection change, ran:
 
 ```sh
 env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
@@ -71,7 +71,9 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUD
   -t '0106 keeps the refused reply'
 ```
 
-Observed **1 failed, 39 skipped**, exit 1 (`artifact://1901`). The old projection omitted “so I won't settle it without your intent” from the architect's actual rubric prompt, although it retained the rewrite “Scheduling allows night shoots.” The permanent rebound check requires both in architect and execution-role prompts. Other regression checks cover delivery order, no subject mutation, persistence, mixed string/block messages, consecutive historical notices, pre-act isolation and batch accounting. No model judge was called; this proves the evidence sent for judgment, not semantic model reliability.
+Observed **1 failed, 39 skipped**, exit 1 (`artifact://1901`). The old projection omitted the refused reply from the architect's actual rubric prompt while retaining its rewrite. That historical check has been replaced by synthetic evidence requiring every shown reply in both architect and execution-role prompts. Other regression checks cover delivery order, no subject mutation, persistence without reply diagnostics, mixed string/block messages, pre-act isolation and batch accounting. No model judge was called; this proves the evidence sent for judgment, not semantic model reliability.
+
+Before removing the harness remnants, the synthetic `0106 delivered evidence` checks ran against the old harness: **17 failed, 4 passed, 11 skipped**, exit 1 (`artifact://2024`). The failures identified the obsolete `relayed` projection field and its persistence in judged recordings, not fixture setup or model transport. The second-stop relay and guard-specific reply diagnostic checks are no longer part of this cut.
 
 ## Native history, prompt transport and replay
 
@@ -119,3 +121,7 @@ Observed: CLI **532 passed, 83 skipped; 37 files passed, 1 skipped** (`artifact:
 | **Total**              | **36** |  **23** |
 
 `pnpm lint` passed, checking **933 files** without fixes. Typecheck, lint and all tests exited 0. Intentional-red, model, preflight and rejudge modes were disabled for acceptance; no live model session ran.
+
+### Offline acceptance after harness-remnant removal
+
+The same offline commands above passed after removing the reply diagnostics and replacing the two obsolete transcript fixtures with synthetic evidence. `pnpm typecheck:test` passed **9/9 tasks**, rebuilding the package artifacts before the suites ran. CLI acceptance passed **524 tests, 83 skipped; 37 files passed, 1 skipped** (`artifact://2028`), including all **32 rubric-judge** and **12 rubric-batch** tests. The eight held-out suites passed with the same per-suite counts in the table above: **36 passed, 23 skipped**, each command exiting 0. `pnpm lint` passed on **931 files**, with no fixes. No live model session, preflight or rejudge ran.

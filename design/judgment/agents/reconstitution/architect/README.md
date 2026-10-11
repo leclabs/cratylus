@@ -4,7 +4,7 @@ This suite owns held-out agents/2: rectifying overloaded release wording. `archi
 
 ## Reply-guard checks moved to cut 7 (0106)
 
-Held-out agents/4 (scenario 104), its thirteen recordings, and its dedicated documentation are parked unchanged on branch `cut-7/reply-guards` (at `eea6a7d3`). They are removed from this branch, not skipped or weakened. Earlier exposed versions now numbered visible agents/20–23 leave with the visible reply-guard scenarios. No text under `design/examples/` changes.
+Held-out agents/4 (scenario 104), its thirteen recordings, and its dedicated documentation are parked unchanged on branch `cut-7/reply-guards` (at `eea6a7d3`). They are removed from this branch, not skipped or weakened. Earlier exposed versions now numbered visible agents/20–23 leave with the visible reply-guard scenarios. Under 0106, as recorded in `a55cbf4a`, the moved examples' text left the reconstitution example files for `design/examples/{workflow,agents}/cut-7.md`, unchanged in meaning. The burned held-out agents/4 is now visible there as agents/24.
 
 Decision 0106 supersedes 0091's treatment of replies: a turn-end refusal cannot undo a reply already shown. Shared architect and roles judgment keeps the refused reply and its rewrite delivered. Held drift is only refused pre-act attempts, including readback, descend, past-objective and dispatch checks.
 
@@ -16,7 +16,7 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUD
   -t '0106 keeps the refused reply'
 ```
 
-Observed **1 failed, 39 skipped**, exit 1 (`artifact://1901`): the old actual rubric prompt omitted the refused reply from a retained recording followed by a rewrite. The permanent check requires both replies in architect and execution-role rubric prompts. This is offline evidence projection proof, not a model judge's semantic verdict. The visible architect README details persistence and held-drift accounting.
+Observed **1 failed, 39 skipped**, exit 1 (`artifact://1901`): the old actual rubric prompt omitted the refused reply from a retained recording followed by a rewrite. The current checks use synthetic transcripts, requiring every shown reply in architect and execution-role rubric prompts without retaining reply-guard diagnostics or held-out run replies in the visible fixture tree. This is offline evidence projection proof, not a model judge's semantic verdict. The visible architect README details persistence and held-drift accounting.
 
 ## Remaining check's red evidence
 
@@ -37,3 +37,5 @@ No live subject, model judge, smoke, batch or preflight was run for the 0106 spl
 ## Offline acceptance after 0106
 
 Against package artifacts rebuilt by the successful `pnpm typecheck:test` (**9/9 tasks**), this suite passed **5 tests, 4 skipped**. All eight held-out suites passed **36 tests, 23 skipped** in total. The full CLI suite passed **532 tests, 83 skipped**; `pnpm lint` passed on **933 files** with no fixes. The visible architect README records the commands and full per-suite counts. No live model session ran.
+
+After the harness-remnant cleanup, this suite again passed **5 tests, 4 skipped**; all eight held-out suites passed **36 tests, 23 skipped**. CLI acceptance passed **524 tests, 83 skipped**, including all **32 rubric-judge** tests. `pnpm typecheck:test` passed **9/9 tasks** before the suites, and `pnpm lint` passed on **931 files** without fixes. All acceptance commands exited 0; no live model session ran.
