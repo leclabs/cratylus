@@ -1,0 +1,238 @@
+{
+  "breaks": "never-recording",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "note": "Authored transcript and rubric answers. Demonstrates the check, not subject or judge reliability."
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "You hold the library design. Read back the current design before we continue."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I hold library. Patrons renew loans without staff intervention. Borrowing charges stop when the library receives the returned book. These meanings are settled; no cut is in flight."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Keep the return boundary distinct from renewal."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Receipt ends borrowing charges; renewal extends an existing loan without requiring staff."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "The cold writer returned the renewal examples for your approval. They express our settled design. After approval the lead can take this cut into realization. Please respond."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "record-ruling",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "decide",
+              "kind": "decide",
+              "id": "renewal-examples-approved",
+              "context": "library",
+              "title": "Renewal examples approved",
+              "situation": "Cold-written examples received.",
+              "decision": "Approve the renewal examples: patrons renew without staff intervention.",
+              "consequences": "Lead takes the cut into realization.",
+              "status": "accepted"
+            }
+          }
+        ]
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "record-ruling",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "Journal refused this record."
+          }
+        ],
+        "isError": true
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I approve the renewal examples. I recommend that the lead take this cut into realization.\n\nThey preserve patrons’ ability to renew without staff intervention."
+          }
+        ]
+      }
+    ],
+    "report": "I approve the renewal examples. I recommend that the lead take this cut into realization.\n\nThey preserve patrons’ ability to renew without staff intervention.",
+    "snapshots": [
+      {
+        "design/examples/library/renewal.md": "# Examples\n\n1. (renewal) Given a patron has a renewable loan, when they renew it themselves, then its due date extends without staff intervention.\n"
+      },
+      {
+        "design/examples/library/renewal.md": "# Examples\n\n1. (renewal) Given a patron has a renewable loan, when they renew it themselves, then its due date extends without staff intervention.\n"
+      }
+    ],
+    "wiring": {
+      "agent": "architect",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored architect identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "write",
+        "task",
+        "concept_journal",
+        "work_package"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tasks"
+            ]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb"
+            ]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb"
+            ]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "approval-order": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: approves the examples, records that decision before reporting the approval; leads its reply with the approval"
+      },
+      "one-next-action": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: the recommendation is the topic's one next action"
+      },
+      "support": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: only the reasons the operator needs"
+      },
+      "never-handback": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: never asks the operator to approve the examples"
+      },
+      "never-recording": {
+        "pass": false,
+        "evidence": "A settled ruling was delivered before a successful record; later recording or correction cannot erase that violation."
+      },
+      "never-menu": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: never; offers a menu instead of its recommendation"
+      },
+      "never-support-instructions": {
+        "pass": true,
+        "evidence": "The delivered reply satisfies: never; hides additional instructions in the support"
+      }
+    }
+  }
+}

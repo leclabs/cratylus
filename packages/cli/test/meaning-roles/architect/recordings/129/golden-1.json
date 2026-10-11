@@ -1,0 +1,221 @@
+{
+  "provenance": {
+    "kind": "authored offline control",
+    "note": "Authored transcript and rubric answers. Demonstrates the check, not subject or judge reliability."
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "You hold the library design. Read back the current design before we continue."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "I hold library. Patrons renew loans without staff intervention. Borrowing charges stop when the library receives the returned book. These meanings are settled; no cut is in flight."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Keep the return boundary distinct from renewal."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Receipt ends borrowing charges; renewal extends an existing loan without requiring staff."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Do borrowing charges continue after the library receives a returned book? Nothing remains for anyone once this meaning question is settled."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "record-ruling",
+          "name": "concept_journal",
+          "arguments": {
+            "verb": "decide",
+            "kind": "decide",
+            "id": "charges-stop-on-receipt",
+            "context": "library",
+            "title": "Charges stop on receipt",
+            "situation": "Question about charges after return.",
+            "decision": "Borrowing charges stop when the library receives the returned book.",
+            "consequences": "Nothing remains to do.",
+            "status": "accepted"
+          }
+        }
+      ]
+    },
+    {
+      "role": "toolResult",
+      "toolCallId": "record-ruling",
+      "toolName": "concept_journal",
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"kind\":\"decide\",\"id\":\"charges-stop-on-receipt\",\"context\":\"library\",\"title\":\"Charges stop on receipt\",\"situation\":\"Question about charges after return.\",\"decision\":\"Borrowing charges stop when the library receives the returned book.\",\"consequences\":\"Nothing remains to do.\",\"status\":\"accepted\"}"
+        }
+      ],
+      "isError": false
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Charges stop when the library receives the book. I recorded that ruling.\n\nReceipt is the settled boundary for borrowing charges."
+        }
+      ]
+    }
+  ],
+  "report": "Charges stop when the library receives the book. I recorded that ruling.\n\nReceipt is the settled boundary for borrowing charges.",
+  "snapshots": [
+    {},
+    {
+      "design/journal/ruling.json": "journal:{\"kind\":\"decide\",\"id\":\"charges-stop-on-receipt\",\"context\":\"library\",\"title\":\"Charges stop on receipt\",\"situation\":\"Question about charges after return.\",\"decision\":\"Borrowing charges stop when the library receives the returned book.\",\"consequences\":\"Nothing remains to do.\",\"status\":\"accepted\"}"
+    }
+  ],
+  "wiring": {
+    "agent": "architect",
+    "declaration": "Authored architect identity control; not an observed installed declaration.",
+    "prompt": [
+      "Authored architect identity control; not an observed installed declaration."
+    ],
+    "active": [
+      "read",
+      "bash",
+      "write",
+      "task",
+      "concept_journal",
+      "work_package"
+    ],
+    "tools": [
+      {
+        "name": "read",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "bash",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      },
+      {
+        "name": "write",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        }
+      },
+      {
+        "name": "task",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "tasks": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tasks"
+          ]
+        }
+      },
+      {
+        "name": "concept_journal",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "verb"
+          ]
+        }
+      },
+      {
+        "name": "work_package",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "verb"
+          ]
+        }
+      }
+    ]
+  },
+  "answers": {
+    "ruling-reason": {
+      "pass": true,
+      "evidence": "The delivered reply satisfies: settles and records the ruling before reporting that charges stop on receipt, with only the supporting reason"
+    },
+    "never-handback": {
+      "pass": true,
+      "evidence": "The delivered reply satisfies: never asks the operator to decide what the design already settles"
+    },
+    "never-work": {
+      "pass": true,
+      "evidence": "The delivered reply satisfies: never; invents work to fill an action slot"
+    },
+    "never-recording": {
+      "pass": true,
+      "evidence": "Successful journal result precedes the first report of the ruling."
+    }
+  }
+}

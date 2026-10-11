@@ -1,0 +1,192 @@
+{
+  "breaks": "one-action",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "source": "cut-7/reply-guards:packages/cli/test/reconstitution/architect/recordings/23/golden-3.json",
+      "note": "Reused transcript and clause-specific negative. Rebound to current meaning-roles examples and 0117; outcome/action labels normalized. Answers are authored controls, not captured model judgments. Split final-reply control blocks consolidated; report and delivered text agree."
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update. The architect holds film-production and scheduling."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.\n\nNext, lead, realize the approved film examples. Also commission an independent review of those same film examples."
+          }
+        ]
+      }
+    ],
+    "report": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.\n\nNext, lead, realize the approved film examples. Also commission an independent review of those same film examples.",
+    "snapshots": [
+      {},
+      {}
+    ],
+    "wiring": {
+      "agent": "architect",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored architect identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "task",
+        "concept_journal",
+        "work_package",
+        "write"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "task": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "agent",
+                    "task"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "tasks"
+            ]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "context": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb"
+            ]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              },
+              "cut": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb",
+              "cut"
+            ]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "content"
+            ]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "conclusion-first": {
+        "pass": true,
+        "evidence": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots."
+      },
+      "one-action": {
+        "pass": false,
+        "evidence": "Two distinct future requests address the same topic; acts already taken are not counted."
+      },
+      "product-support": {
+        "pass": true,
+        "evidence": "Creative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night."
+      },
+      "never-menu": {
+        "pass": true,
+        "evidence": "These are my decisions for the two topics."
+      },
+      "never-question": {
+        "pass": true,
+        "evidence": "The supplied film checks establish the creative-approval distinction."
+      },
+      "never-implementation": {
+        "pass": true,
+        "evidence": "The film outcome is creative acceptance without release authority."
+      },
+      "never-outcome-actions": {
+        "pass": true,
+        "evidence": "Completed decisions and requests are reported as outcomes; none is treated as using up a next-action slot."
+      }
+    }
+  }
+}

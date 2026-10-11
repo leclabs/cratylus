@@ -1,0 +1,382 @@
+{
+  "breaks": "installed-role",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "source": "cut-7/reply-guards:packages/cli/test/reconstitution/architect/recordings/121/negative-installed-role.json",
+      "note": "Reused transcript and clause-specific negative. Rebound to current meaning-roles examples and 0117; outcome/action labels normalized. Answers are authored controls, not captured model judgments."
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Read back the current design at session start. You hold film-production and scheduling."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I hold film-production and scheduling. The current journal says film approval is the creative director’s acceptance, not release permission; only the operator authorizes admitting a creatively approved film. Scheduling distinguishes a provisional booking, a tentative hold that does not permit a shoot, from a confirmed reservation, which does. Film-production shoots consume confirmed bookings. These are the accepted creative-not-release and provisional-not-shoot decisions."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Who accepts the film creatively?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The creative director gives creative approval after review."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Does that creative approval admit it?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "No. Creative acceptance and permission to admit the film are distinct."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Who permits admission?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The operator grants release permission for a creatively approved film."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Can there be a creatively approved film that is not released?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Yes. Creative approval does not itself grant release permission."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "How does scheduling enter production?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Film-production shoots consume confirmed shoot bookings from scheduling."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Keep a tentative date while we negotiate the venue."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "That is a provisional booking: a tentative hold, not a confirmed reservation."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "May the crew shoot on a provisional booking?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "No. A provisional booking does not permit a shoot; only a confirmed booking does."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What changes when the date is confirmed?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The booking becomes a confirmed reservation and permits the shoot."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Does a confirmed date creatively approve the film?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "No. Scheduling permission to shoot has no creative-approval meaning."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Keep the film decisions separate from the calendar decisions."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Creative approval, release permission, provisional booking and confirmed booking retain their distinct meanings in their own contexts."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Now have the cold writer express the film approval and release design as examples."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The writer is preparing the film examples from that design. I retain approval of those examples and ownership of the scheduling meaning."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "The cold example writer has returned design/examples/film-production/film.md for your approval. Scheduling also asks: does a provisional booking permit a shoot? Please respond to both arrivals. You hold film-production and scheduling."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I approve the film-production examples. A provisional booking does not permit a shoot.\n\nThe examples keep creative acceptance separate from the operator’s permission to admit the film. A provisional booking is only a tentative hold, not the confirmed reservation needed to shoot."
+          }
+        ]
+      }
+    ],
+    "report": "I approve the film-production examples. A provisional booking does not permit a shoot.\n\nThe examples keep creative acceptance separate from the operator’s permission to admit the film. A provisional booking is only a tentative hold, not the confirmed reservation needed to shoot.",
+    "snapshots": [
+      {
+        "design/examples/film-production/film.md": "# Cold-written examples\n\n1. (approval) Given a reviewed film, when the creative director accepts it, then it is creatively approved but has no release permission.\n2. (release permission) Given a creatively approved film, when the operator authorizes admission, then it has release permission.\n"
+      },
+      {
+        "design/examples/film-production/film.md": "# Cold-written examples\n\n1. (approval) Given a reviewed film, when the creative director accepts it, then it is creatively approved but has no release permission.\n2. (release permission) Given a creatively approved film, when the operator authorizes admission, then it has release permission.\n"
+      }
+    ],
+    "wiring": {
+      "agent": "architect",
+      "declaration": "Authored architect identity control; not an observed installed declaration.",
+      "prompt": [
+        "Harness prompt without installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "write",
+        "task",
+        "concept_journal",
+        "work_package"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tasks"
+            ]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb"
+            ]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "verb"
+            ]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "opening-decisions": {
+        "pass": true,
+        "evidence": "The first two sentences name approval of the film examples and denial of shoot permission before either reason."
+      },
+      "topic-actions": {
+        "pass": true,
+        "evidence": "0117 rebind: completed acts are outcomes; the reply contains no more than the permitted next request(s). Recorded consequences are not instructions in the reply."
+      },
+      "support": {
+        "pass": true,
+        "evidence": "The support names the preserved creative-approval/release-permission distinction and tentative-hold versus confirmed-reservation distinction, without a recap."
+      },
+      "never-defers-owned-decisions": {
+        "pass": true,
+        "evidence": "The architect itself approves the examples and rules out shooting on a provisional booking now; no request for another decision or menu."
+      },
+      "never-history": {
+        "pass": true,
+        "evidence": "The reply opens with product conclusions, not a session chronology."
+      },
+      "never-outcome-actions": {
+        "pass": true,
+        "evidence": "Completed decisions and requests are reported as outcomes; none is treated as using up a next-action slot."
+      }
+    }
+  }
+}
