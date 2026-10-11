@@ -1,5 +1,6 @@
-// Independent transcription of master-design.md §§1–4 and the realization contract.
-// Never read expected values from canon: these are the fixed examples' oracle.
+// Independent transcription of master-design.md §§1–4 and the realization contract,
+// rebound under rulings 0084 (0068, 0070, 0078) and 0085 (reconstitution). The historical
+// master design stays unchanged; never read expected values from canon.
 export type Level = 'advisory' | 'firm' | 'fixed' | null;
 export interface ExpectedEntry {
   value: string;
@@ -71,7 +72,14 @@ export const factors = {
     repertoire: 'curated',
     level: 'firm',
     projection: 'text',
-    slots: slots('register', 'density', 'rationale'),
+    slots: [
+      ...slots('register', 'density', 'rationale'),
+      {
+        name: 'ordering',
+        gloss: 'the sequence a reply presents its content in',
+        optional: true,
+      },
+    ],
   },
   'decision-rights': {
     group: 'Authority',
@@ -180,7 +188,7 @@ function glossary(text: string): Record<string, string> {
 }
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
-architect | holds the conceptual design of the contexts it is given: turns intent into concepts, confirms examples and answers meaning questions
+architect | the client's principal architect: owns the conceptual design of the contexts it is given and the delivery of the product, turns intent into concepts, confirms examples and answers meaning questions
 lead | owns a cut's realization and settles every question of realization the accepted decisions leave open
 builder | owns one work package and changes only its outputs until their examples pass
 assayer | judges a cut once against fixed criteria and the held-out results, and never builds
@@ -215,7 +223,7 @@ freeze | fix examples, their checks and their concepts while a build realizes th
 build | change the work until its visible examples pass
 judgment | judge the finished work once, when its build is green, against fixed criteria and held-out examples
 whole check | run every check of everything affected in one run, fixing everything it revealed in one round
-reconstitution | at every start, recover the design from its source of truth and read it back before acting`),
+reconstitution | at every start, read the overview of each context it touches first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work
@@ -247,7 +255,8 @@ convergence | density set by a layman reader
 maintenance | a peer's density, in the notation that peer works in
 answer-only | the answer, without its reasoning
 decision-rationale | each decision with its reasons
-provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred`),
+provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred
+bottom-line-up-front | the conclusion first, then one recommended action per topic, then only the support a layman needs; never a menu or a question it can answer`),
   'decision-rights': glossary(`
 D | decides
 R | recommends
@@ -399,7 +408,7 @@ const columns: Record<string, string[]> = {
     'adversarial,simplicity',
   ],
   'communication-style': [
-    'plain,convergence,decision-rationale',
+    'plain,convergence,decision-rationale,bottom-line-up-front',
     'plain,maintenance,decision-rationale',
     'plain,maintenance,answer-only',
     'plain,maintenance,decision-rationale',
@@ -530,6 +539,11 @@ export function roleVector(role: RoleName): Vector {
                   )
                     ? { level: 'fixed' as const }
                     : {}),
+                  ...(role === 'architect' &&
+                  factor === 'communication-style' &&
+                  anchor === 'bottom-line-up-front'
+                    ? { level: 'fixed' as const }
+                    : {}),
                 },
               );
             });
@@ -545,7 +559,7 @@ export const marks = {
 export type PersonaName = keyof typeof marks;
 export const descriptions: Record<string, string> = {
   architect:
-    "Holds the conceptual design of the contexts it is given, in cratylus's example-driven workflow.",
+    "The client's principal architect, owning the conceptual design and delivery of the product, in cratylus's example-driven workflow.",
   lead: "Owns a cut's realization in the example-driven workflow.",
   builder: 'Builds one work package until its visible examples pass.',
   assayer: 'Judges a cut once against its examples and held-out results.',

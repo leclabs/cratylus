@@ -19,7 +19,6 @@ import {
   agentFactors,
   agentNames,
   camel,
-  decisionSlots,
   factors,
   requireDefined,
 } from './master.js';
@@ -272,10 +271,12 @@ export function expectProjection(
     if (entries.length === 0) lines.push('- (none)');
     for (const entry of entries) {
       const [anchor, gloss] = entry.value.split(' ≜ ');
-      const slotGloss =
-        factor === 'decision-rights'
-          ? decisionSlots.find(([slot]) => slot === entry.slot)?.[1]
+      const slotMeta =
+        'slots' in meta
+          ? meta.slots.find((slot) => slot.name === entry.slot)
           : undefined;
+      const slotGloss =
+        slotMeta && 'gloss' in slotMeta ? slotMeta.gloss : undefined;
       const slot = entry.slot
         ? `${entry.slot}${slotGloss ? ` (${slotGloss})` : ''}: `
         : '';
