@@ -98,6 +98,7 @@ export interface Fixture {
 export function fixture(
   options: {
     config?: string;
+    agentStatus?: 'show' | 'hide';
     prepare?(paths: { home: string; cwd: string }): void;
   } = {},
 ): Fixture {
@@ -139,6 +140,9 @@ export function fixture(
       '--all',
       '--model-roles',
       'default',
+      ...(options.agentStatus === undefined
+        ? []
+        : ['--agent-status', options.agentStatus]),
     ],
     { cwd, env, encoding: 'utf8', timeout: 60_000 },
   );

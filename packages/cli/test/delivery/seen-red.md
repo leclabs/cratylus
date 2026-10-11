@@ -170,3 +170,18 @@ e03b9003e1aeb68b24c09b6980666aad8fc3b702a2c6e3416e106234a7b22132
 ```
 
 Earlier fixture/setup failures (a skill-specific link assumption where the installation links its whole root, an incomplete builder assignment, a wrongly shaped fixture mark, and npm's empty temporary-HOME cache) were corrected and are not counted as red evidence. No production code or example text changed. The lead owns verification against the completed build.
+
+## Whole-check 5: existing fixtures supply the operator's display choice
+
+The lead's whole-check output `/tmp/wc5-test.log:711–724` records agent-launch judgment case 3 failing without a supplied display answer: its custom layout still has only `model`, no right-hand segments, and `showHookStatus: false`; the unchanged visible-status assertion receives false instead of true. Under 0113 this host is correctly left hidden, not silently modified. That observed failure was not rerun.
+
+The agent-launch fixture now accepts an optional `agentStatus` install answer. Judgment case 3 alone supplies `show`, passed to the actual installed command as `--agent-status show`; its name, mark, and visible-status assertions are unchanged. Other fixture callers supply no new answer. Delivery/4 and /5's prompt stand-ins also implement the new `agentStatus` question, recording any invocation rather than concealing an unexpected question.
+
+At the lead's explicit request, checks on the current tree after this fixture-only change:
+
+```sh
+pnpm --filter cratylus typecheck
+pnpm --filter cratylus exec vitest run test/agent-launch/judgment-cases.test.ts -t 'judgment case 3' --reporter verbose
+```
+
+Observed: typecheck passes; judgment case 3 passes (one test, the two other cases skipped). No production code, example text, or assertion changed.

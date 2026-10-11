@@ -137,6 +137,10 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
         asked.push('models');
         return {};
       },
+      agentStatus: async () => {
+        asked.push('agent-status');
+        return true;
+      },
       confirm: async () => {
         asked.push('confirmation');
         return true;
@@ -172,6 +176,10 @@ it('delivery/5 — after an answer interactive install asks only missing informa
       routes: async () => {
         record('models');
         return {};
+      },
+      agentStatus: async () => {
+        record('agent-status');
+        return true;
       },
       confirm: async () => {
         record('confirmation');

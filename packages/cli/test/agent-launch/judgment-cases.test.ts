@@ -115,6 +115,7 @@ it('judgment case 2: keeps the effort on a model selector, directly and through 
 
 it('judgment case 3: shows name and mark when the host had hidden extension status', async () => {
   const f = fixture({
+    agentStatus: 'show',
     config:
       'statusLine:\n  preset: custom\n  leftSegments: [model]\n  rightSegments: []\n  showHookStatus: false\n',
   });
