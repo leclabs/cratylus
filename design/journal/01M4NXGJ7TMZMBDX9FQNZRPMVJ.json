@@ -1,0 +1,14 @@
+{
+  "id": "01M4NXGJ7TMZMBDX9FQNZRPMVJ",
+  "at": "2026-10-11T16:42:37.178Z",
+  "kind": "decide",
+  "decisionId": "0111",
+  "context": "delivery",
+  "title": "Check ruling: an agent's model role binding lives in its installed declaration, not the host's settings",
+  "situation": "Under owned root cratylus writes nothing to the host's surfaces but references into its root, yet two frozen checks (catalog re-cut agents 9 and the reconstitution delegate stand-in) assert install seeds each agent's model role into the host's settings.",
+  "decision": "Yes. Each installed declaration, under the root, names its own model role and falls back to the tier and effort its profile states, so the host's own binding of that role wins where it has one and the design's holds otherwise; nothing is seeded into the host's settings. Both checks are re-pointed to read the binding from the installed declaration, with no example text changed, each seen to fail first.",
+  "consequences": "The binding concept's 'model role named for it' holds without cratylus writing host settings.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
