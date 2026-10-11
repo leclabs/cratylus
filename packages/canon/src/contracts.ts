@@ -40,6 +40,12 @@ const record = (
   required: Object.keys(properties).filter((f) => !optional.includes(f)),
 });
 
+/** `schema`, with what its field means to the agent that fills it. */
+const said = (schema: JsonSchema, description: string): JsonSchema => ({
+  ...schema,
+  description,
+});
+
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
     cutBrief,
@@ -77,37 +83,76 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
 const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
   [
     outcomeWithEfficiency,
-    record({
-      cut: text,
-      outcomes: {
-        type: 'array',
-        minItems: 1,
-        items: record({
-          example: text,
-          concept: text,
-          outcome: { type: 'string', enum: ['pass', 'fail'] },
-          evidence: text,
-        }),
-      },
-      verdicts: {
-        type: 'array',
-        items: record({
-          assayer: text,
-          verdict: { type: 'string', enum: ['accept', 'reject'] },
-          findings: texts,
-        }),
-      },
-      efficiency: record({
-        agentRuns: record({
-          total: count,
-          byRole: { type: 'object', additionalProperties: count },
-        }),
-        rounds: count,
-        wholeCheckRuns: count,
-        tokens: count,
+    said(
+      record({
+        cut: said(text, 'The cut this report is for, by its name.'),
+        outcomes: said(
+          {
+            type: 'array',
+            minItems: 1,
+            items: record({
+              example: said(
+                text,
+                'The visible example, as `<context>/<number>`.',
+              ),
+              concept: said(
+                text,
+                'The concept the example shows, by its name in the design.',
+              ),
+              outcome: said(
+                { type: 'string', enum: ['pass', 'fail'] },
+                'Whether the example holds in the delivered work.',
+              ),
+              evidence: said(
+                text,
+                "Why the outcome holds, named by the example and by the check that binds it, in the design's concepts: what the check showed of the concept. Never a file, function, path or command, even where a verdict cites one: translate it into the concept it bears on.",
+              ),
+            }),
+          },
+          "One outcome per visible example of the cut, each in the design's concepts.",
+        ),
+        verdicts: said(
+          {
+            type: 'array',
+            items: record({
+              assayer: said(text, 'The assayer that judged, by its run.'),
+              verdict: said(
+                { type: 'string', enum: ['accept', 'reject'] },
+                "The assayer's verdict on the cut, as it returned it.",
+              ),
+              findings: said(
+                texts,
+                "The assayer's findings, each restated in the design's concepts; empty when it found none.",
+              ),
+            }),
+          },
+          "Each assayer's verdict, as it returned it.",
+        ),
+        efficiency: said(
+          record({
+            agentRuns: said(
+              record({
+                total: said(count, 'Every agent run the cut took.'),
+                byRole: said(
+                  { type: 'object', additionalProperties: count },
+                  'The agent runs by role.',
+                ),
+              }),
+              'The agent runs the harness reports for the cut.',
+            ),
+            rounds: said(count, 'The rounds of build and judgment.'),
+            wholeCheckRuns: said(count, 'The runs of the whole check.'),
+            tokens: said(count, 'The tokens the runs reported, summed.'),
+          }),
+          "The cut's figures, as the ledger computes them.",
+        ),
+        hardeningNotes: said(
+          texts,
+          "What would make the cut's examples or checks harder to pass by accident, each in the design's concepts; empty when there is none.",
+        ),
       }),
-      hardeningNotes: texts,
-    }),
+      "The lead's report of the cut to whoever dispatched it, in the design's concepts: each example's outcome with its evidence, the assayers' verdicts, the figures and the hardening notes.",
+    ),
   ],
   [
     doneOrFailingCase,

@@ -12,6 +12,7 @@ import type {
   DimensionManifest,
   DimensionMeta,
   Entry,
+  JsonSchema,
   Slot,
 } from '@cratylus/schema';
 import { anchorOf, bodyOf, dimensionValueOf } from '@cratylus/schema';
@@ -66,8 +67,9 @@ function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
  * per TEXT factor in catalog order, each held entry a line in held order (an empty
  * factor the line `- (none)`). A `binding` factor is never text — it compiles to
  * harness settings — and an `attribute` factor occupies no field; a group with no
- * text factor is omitted. Then the agent's per-turn persistence protocol
- * ({@link Agent.persistence}), verbatim, where it carries one. Closed
+ * text factor is omitted. Then the agent's deliverable, field by field, where its
+ * contract states one ({@link Agent.contract}), and its per-turn persistence
+ * protocol ({@link Agent.persistence}), verbatim, where it carries one. Closed
  * `rstrip() + "\n"`.
  *
  * The SECTION ORDER is the catalog's own declaration order — which is why the
@@ -96,8 +98,59 @@ export function agentBody(a: Agent, manifest: DimensionManifest): string {
       out.push('');
     }
   }
+  if (a.contract?.deliverable !== undefined)
+    out.push(...deliverableSection(a.contract.deliverable), '');
   if (a.persistence !== undefined) out.push(a.persistence, '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
+}
+
+/** What a schema holds, in a few words: its type, the item type of a list, the
+ *  values it allows and the least number of items. */
+function shapeOf(s: JsonSchema): string {
+  const items = s.items;
+  const base =
+    s.type === 'array'
+      ? `list of ${items?.type === 'object' ? 'objects' : `${items?.type ?? 'value'}s`}`
+      : s.type === 'object' && s.additionalProperties !== undefined
+        ? `map of ${typeof s.additionalProperties === 'object' ? (s.additionalProperties.type ?? 'value') : 'value'}s`
+        : (s.type ?? 'value');
+  const allowed = (s.enum ?? items?.enum)?.map((v) => `\`${v}\``).join(' or ');
+  return [
+    base,
+    ...(allowed ? [allowed] : []),
+    ...(s.minItems ? [`at least ${s.minItems}`] : []),
+  ].join(', ');
+}
+
+/** Each field of an object schema as a line, `required` or `optional`, with what
+ *  it means; an object's or a list of objects' own fields nested beneath it. */
+function fieldLines(s: JsonSchema, depth: number): string[] {
+  const object = s.type === 'array' ? s.items : s;
+  return Object.entries(object?.properties ?? {}).flatMap(([name, field]) => {
+    const need = object?.required?.includes(name) ? 'required' : 'optional';
+    const meaning = field.description ? `: ${field.description}` : '';
+    return [
+      `${'  '.repeat(depth)}- \`${name}\` (${shapeOf(field)}, ${need})${meaning}`,
+      ...fieldLines(field, depth + 1),
+    ];
+  });
+}
+
+/**
+ * The agent's DELIVERABLE, as its contract states it ({@link Agent.contract}): what
+ * it returns, field by field with what each means, so the agent knows what it
+ * reports before it reports, launched or dispatched alike. The harness checks the
+ * same schema at the return.
+ */
+function deliverableSection(schema: JsonSchema): string[] {
+  return [
+    '## Deliverable',
+    '',
+    ...(schema.description ? [schema.description, ''] : []),
+    'Return it as one JSON object with these fields:',
+    '',
+    ...fieldLines(schema, 0),
+  ];
 }
 
 // ── Resolved skill shape + body ──────────────────────────────────────────────
