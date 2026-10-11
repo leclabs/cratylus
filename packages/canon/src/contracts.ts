@@ -57,7 +57,8 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
       workPackage: text,
       outputs: someTexts,
       concepts: someTexts,
-      examples: someTexts,
+      // A shared-output package owns no example, which a work package may do.
+      examples: texts,
     }),
   ],
   [

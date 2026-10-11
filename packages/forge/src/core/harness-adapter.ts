@@ -16,7 +16,12 @@
 // surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
 // exactly that sense: the global config extent a harness offers, not a file.
 
-import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
+import type {
+  Agent,
+  Binding,
+  DimensionManifest,
+  GuardCell,
+} from '@cratylus/schema';
 import type {
   EventName,
   HarnessMechanism,
@@ -37,6 +42,18 @@ import type { ResolvedSkill } from './body.js';
  * with one — canon agent names are cold-derived words, never `_`-prefixed.
  */
 export const SESSION_SCOPE = '_session';
+
+/**
+ * A guard cell and the agents that compose a value it holds: what a harness judges,
+ * and for whom. A harness realizing it judges the guard's act only in a session
+ * running as one of `agents`, so it binds the value observed drifting and nothing
+ * else.
+ */
+export interface ComposedGuard {
+  readonly guard: GuardCell;
+  /** The agents whose composition holds the guarded value, sorted. */
+  readonly agents: readonly string[];
+}
 
 /**
  * The render tree's staging dir for SCOPED mechanism artifacts —
@@ -419,12 +436,19 @@ export interface HarnessAdapter {
    * no artifact governs an agent that did not compose it; these cells compose no
    * agent by construction.
    *
+   * `guards` are the guard cells the projected agents compose ({@link
+   * ComposedGuard}), carried in the same session module: each judges its act only
+   * in a main session launched as one of the agents composing it. Absent or empty ⇒
+   * no guard is composed. A harness without this op realizes no guard, and
+   * `project` reports each as a declaration alone.
+   *
    * Absent ⇒ this harness registers scope-activated cells in a config file, or
    * cannot carry them at all (the degrade `project` reports).
    */
   scopeActivatedSurface?(
     hooks: readonly Hook[],
     agentNames: readonly string[],
+    guards?: readonly ComposedGuard[],
   ): readonly HarnessProjection[];
   /**
    * Where a SCOPED artifact lands ON THE HOST, harness-home relative — the
@@ -480,6 +504,16 @@ export interface HarnessAdapter {
    * Absent ⇒ this harness is offered no capability as a tool.
    */
   capabilitySurface?(): readonly HarnessProjection[];
+  /**
+   * The harness's OWN facilities that hold a runtime capability, by capability id
+   * (`concepts`, `workPackage`) → the facility's name. Projection chooses, for each
+   * capability, the native facility first (no extension tool and no prose for it),
+   * then the {@link capabilitySurface} extension, then prose generated from the
+   * capability's own explanation, and reports which form each took.
+   *
+   * Absent ⇒ the harness holds no capability natively.
+   */
+  readonly nativeCapabilities?: Readonly<Record<string, string>>;
   /**
    * The harness's ONE host-owned status-line command, and the worker this port
    * ships to fill it — declared by a harness whose status line is a single command

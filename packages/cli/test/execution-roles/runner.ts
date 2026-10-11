@@ -10,6 +10,14 @@ import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
+import { OMP_ASSIGNMENT_KEY } from '../../../forge/src/adapters/omp/index.js';
+// The schema package's own contract check, the one every handoff runs: a dispatch
+// through the extension, a launch, and this preparation alike.
+import {
+  type JsonSchema,
+  assignmentIn,
+  checkAssignment,
+} from '../../../schema/src/contract.js';
 import { type Fixture, fixture } from '../agent-launch/fixture.js';
 import {
   type Recording,
@@ -32,9 +40,43 @@ function command(f: Fixture, binary: string, args: string[]) {
   expect(result.status, result.stdout + result.stderr).toBe(0);
   return result;
 }
+/** The installed declaration's front matter and body, as written by install. */
+function installed(f: Fixture, role: string) {
+  // The declaration is installed, never rewritten into a test-owned identity.
+  const text = readFileSync(
+    join(f.home, '.omp/agent/agents', `${role}.md`),
+    'utf8',
+  );
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
+  return { frontmatter: match?.[1] ?? '', body: text.slice(match?.[0].length) };
+}
+/** The assignment schema the installed declaration carries, when it carries one:
+ *  one line of JSON under its key, as projection writes it. */
+function assignmentSchema(f: Fixture, role: string): JsonSchema | undefined {
+  const line = new RegExp(`^${OMP_ASSIGNMENT_KEY}: (.*)$`, 'm').exec(
+    installed(f, role).frontmatter,
+  );
+  return line ? (JSON.parse(line[1]!) as JsonSchema) : undefined;
+}
+/**
+ * The scenario's project, prepared through the same assignment contract a
+ * dispatch runs: a scenario whose role declares an assignment and whose prompt
+ * carries no fitting block is rejected here, before any live run, naming the
+ * missing fields. A lead's cut brief opens its cut as the architect would, on the
+ * branch checked out.
+ */
 export function project(scenario: Scenario): Fixture {
   const f = fixture();
   try {
+    const schema = assignmentSchema(f, scenario.role);
+    const assignment = assignmentIn(scenario.prompt);
+    if (schema !== undefined) {
+      const { reason } = checkAssignment(scenario.role, schema, assignment);
+      if (reason !== undefined)
+        throw new Error(
+          `Example ${scenario.number} is not prepared: ${reason}`,
+        );
+    }
     command(f, 'git', ['init', '-q']);
     command(f, 'git', ['config', 'user.email', 'fixture@example.invalid']);
     command(f, 'git', ['config', 'user.name', 'Execution fixture']);
@@ -66,6 +108,34 @@ export function project(scenario: Scenario): Fixture {
     }
     command(f, 'git', ['add', '--', '.']);
     command(f, 'git', ['commit', '-qm', 'Fixture Given']);
+    const cut = (assignment as { cut?: unknown } | undefined)?.cut;
+    if (scenario.role === 'lead' && typeof cut === 'string') {
+      // The typed lead cut: its record names the branch checked out and the
+      // meaning-holder of each of its contexts.
+      const contexts = Object.keys(scenario.files).flatMap((path) => {
+        const at = /^design\/examples\/([^/]+)\/([^/]+)\.md$/.exec(path);
+        return at?.[2] === cut ? [at[1]!] : [];
+      });
+      const branch = command(f, 'git', [
+        'rev-parse',
+        '--abbrev-ref',
+        'HEAD',
+      ]).stdout.trim();
+      command(f, 'cratylus', [
+        'workPackage',
+        'open',
+        '--cut',
+        cut,
+        '--branch',
+        branch,
+        ...contexts.flatMap((context) => [
+          '--meaning-holder',
+          `${context}=operator`,
+        ]),
+      ]);
+      command(f, 'git', ['add', '--', 'design']);
+      command(f, 'git', ['commit', '-qm', 'Fixture cut record']);
+    }
     // Establish the Given by actual execution, not just the scenario's prose.
     for (const path of ['checks/reservation.mjs', 'checks/cancellation.mjs']) {
       const result = spawnSync(process.execPath, [path], {
@@ -89,21 +159,16 @@ export function project(scenario: Scenario): Fixture {
     throw error;
   }
 }
-function declaration(f: Fixture, role: string): string {
-  // The declaration is installed, never rewritten into a test-owned identity.
-  const text = readFileSync(
-    join(f.home, '.omp/agent/agents', `${role}.md`),
-    'utf8',
-  );
-  return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim();
-}
+/**
+ * One omp session: as the installed agent `role`, or, with none, the untyped
+ * rubric judge — a plain session with no tools, which takes no assignment.
+ */
 function launch(
   f: Fixture,
-  role: string,
+  role: string | undefined,
   prompt: string,
   output: string,
   inspect: boolean,
-  judge = false,
 ) {
   mkdirSync(output, { recursive: true });
   const wiringPath = join(output, 'wiring.json');
@@ -117,8 +182,7 @@ function launch(
     '--print',
     '--mode',
     'json',
-    '--agent',
-    role,
+    ...(role === undefined ? ['--tools', ''] : ['--agent', role]),
     '--no-session',
     '--no-rules',
     '--no-lsp',
@@ -132,7 +196,6 @@ function launch(
     '--config',
     config,
     ...(inspect ? ['--model', 'fixture/base'] : []),
-    ...(judge ? ['--tools', ''] : []),
     prompt,
   ];
   const result = spawnSync('omp', args, {
@@ -160,8 +223,8 @@ function launch(
   expect(result.status, result.stdout + result.stderr).toBe(0);
   const wiring = {
     ...JSON.parse(readFileSync(wiringPath, 'utf8')),
-    agent: role,
-    declaration: declaration(f, role),
+    agent: role ?? 'rubric judge',
+    declaration: role === undefined ? '' : installed(f, role).body.trim(),
   };
   const messages = readFileSync(messagesPath, 'utf8')
     .split('\n')
@@ -188,8 +251,7 @@ function launch(
     wiring,
     answers: {},
   };
-  if (judge) expect(wiring.prompt.join('\n')).toContain(wiring.declaration);
-  else
+  if (role !== undefined)
     expect(
       wiringHolds(recording, role),
       'installed declaration and active tool schemas reach the turn',
@@ -234,18 +296,17 @@ export function liveRun(scenario: Scenario, output: string): Recording {
     credentials(f);
     const recording = launch(f, scenario.role, scenario.prompt, output, false);
     if (scenario.clauses.some((clause) => !clause.unchanged)) {
-      // Separate installed assayer session, no conversation with the subject.
+      // A separate untyped judge session, no conversation with the subject.
       const j = fixture();
       try {
         credentials(j);
         const prompt = rubricPrompt(scenario, recording);
         const judged = launch(
           j,
-          'assayer',
+          undefined,
           prompt,
           join(output, 'rubric'),
           false,
-          true,
         );
         recording.answers = parseAnswers(judged.report, scenario);
         writeFileSync(join(output, 'rubric-prompt.txt'), prompt);

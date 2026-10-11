@@ -19,8 +19,12 @@ export * from './events.js';
 export * from './ports/event-tap.js';
 export * from './example-substrate.js';
 export * from './offline-proof.js';
-// The concept journal as it explains itself: its verbs, each with its effect.
+// The capabilities as they explain themselves (the concept journal and the work
+// package capability), and the explanation each answers `--explain` with: what a
+// projection generates a harness's account of a capability from.
 export { JOURNAL } from './capabilities/concepts/dispatch.js';
+export { WORK_PACKAGE } from './capabilities/work-package/dispatch.js';
+export { type Explanation, explain } from './explanation.js';
 export {
   type CommitRecord,
   type ConceptVerdict,

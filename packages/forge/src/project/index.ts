@@ -29,6 +29,12 @@
 
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  type Explanation,
+  JOURNAL,
+  WORK_PACKAGE,
+  explain,
+} from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { hasEventTapStrategy } from '@cratylus/runtime/capabilities/event-tap';
 import {
@@ -37,6 +43,7 @@ import {
   type DimensionManifest,
   type Enforcing,
   type Entry,
+  type GuardCell,
   type HookCell,
   type Plumbing,
   type Practice,
@@ -61,6 +68,7 @@ import {
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
 import {
+  type ComposedGuard,
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
@@ -131,6 +139,9 @@ export interface ProjectablePlugin {
   readonly fragments?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
+  /** Dir of guard cell modules this plugin contributes: each judges an act for the
+   *  agents composing a value it holds (`realizedBy` its id). */
+  readonly guards?: string;
   /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
   readonly manifest?: DimensionManifest;
   /** WHICH practices this plugin offers (`AgentPlugin.practices`). */
@@ -251,6 +262,29 @@ export interface ProjectedTree extends ProjectReport {
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
   readonly practices: readonly OfferedPractice[];
+  /** Which form each runtime capability took on this harness, in capability order:
+   *  the harness's own facility, the extension tool, or prose generated from the
+   *  capability's explanation, the last resort. */
+  readonly capabilities: readonly ProjectedCapability[];
+  /** Each guard the rendered agents compose, with the agents composing it and
+   *  whether this harness carries its judgment (`false`: a declaration alone). */
+  readonly guards: readonly ProjectedGuard[];
+}
+
+/** The form a runtime capability takes on a harness. */
+export interface ProjectedCapability {
+  readonly capability: 'concepts' | 'workPackage';
+  readonly form: 'native' | 'extension' | 'prose';
+  /** The harness's own facility holding it, for the native form. */
+  readonly facility?: string;
+}
+
+/** A guard as projected: its id, the drift tell it holds, the agents composing it. */
+export interface ProjectedGuard {
+  readonly guard: string;
+  readonly tell: string;
+  readonly agents: readonly string[];
+  readonly realized: boolean;
 }
 
 /** A declared practice as an install offers it. */
@@ -329,6 +363,78 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
   return cell ?? null;
+}
+
+/** The `GuardCell` export of a guard module (the object carrying a `judge`). */
+async function guardOf(modPath: string): Promise<GuardCell | null> {
+  const mod = (await import(pathToFileURL(modPath).href)) as Record<
+    string,
+    unknown
+  >;
+  const cell = Object.values(mod).find(
+    (v): v is GuardCell =>
+      typeof v === 'object' && v !== null && 'judge' in v && 'tell' in v,
+  );
+  return cell ?? null;
+}
+
+/** Every guard cell of the plugin set, by id; a later plugin's same id wins. */
+async function declaredGuards(
+  plugins: readonly ProjectablePlugin[],
+): Promise<Map<string, GuardCell>> {
+  const byId = new Map<string, GuardCell>();
+  for (const p of plugins) {
+    if (!p.guards) continue;
+    for (const n of await scanModuleNames(p.guards)) {
+      const modPath = await resolveModulePath(p.guards, n);
+      if (!modPath) continue;
+      const cell = await guardOf(modPath);
+      if (cell) byId.set(cell.id, cell);
+    }
+  }
+  return byId;
+}
+
+/** The runtime capabilities a harness is offered, each as it explains itself. */
+const EXPLAINED_CAPABILITIES: readonly (readonly [
+  ProjectedCapability['capability'],
+  Explanation,
+])[] = [
+  ['concepts', explain(JOURNAL)],
+  ['workPackage', explain(WORK_PACKAGE)],
+];
+
+/**
+ * A capability as prose, the last resort: generated from its own explanation
+ * alone (purpose, when, each verb's concept, purpose, when, effect and
+ * parameters), and saying it is reached through the command, since no tool holds
+ * it here.
+ */
+export function capabilityProse(capability: string, e: Explanation): string {
+  const command = `${CLI_BIN} ${capability}`;
+  return [
+    `# ${e.name}`,
+    '',
+    e.purpose,
+    '',
+    `When: ${e.when}`,
+    '',
+    `Reached through the \`${command}\` command: run \`${command} <verb>\` with the parameters below, in the repository it concerns. \`${command} --explain\` prints this explanation as JSON.`,
+    ...e.verbs.flatMap((v) => [
+      '',
+      `## ${v.name} (concept: ${v.concept}; ${v.effect})`,
+      '',
+      v.purpose,
+      '',
+      `When: ${v.when}`,
+      ...(v.parameters.length > 0 ? [''] : []),
+      ...v.parameters.map(
+        (p) =>
+          `- \`${p.positional === true ? `<${p.name}>` : `--${p.name}`}\` (${p.required ? 'required' : 'optional'}): ${p.description}`,
+      ),
+    ]),
+    '',
+  ].join('\n');
 }
 
 /**
@@ -813,7 +919,78 @@ export async function projectPluginSet(
   // written, and withhold the mechanism of any that degraded. The DECLARATION
   // face needs no decision — `agentBody` publishes it for every composed value on
   // every harness, which is why a shortfall here is a warning and not a refusal.
-  const bindings = bindingsOf(composed, manifest);
+  // A GUARD JUDGES THE ACT, and is realized apart from the worker mechanisms: a
+  // value `realizedBy` a guard cell of the plugin set binds that guard to exactly
+  // the agents composing the value, carried in the harness's session module where
+  // it judges only a session running as one of them.
+  const guardCells = await declaredGuards(opts.plugins);
+  const guardOfBinding = (b: Binding): GuardCell | undefined =>
+    b.fragment.realizedBy === undefined
+      ? undefined
+      : guardCells.get(b.fragment.realizedBy);
+  const allBindings = bindingsOf(composed, manifest);
+  const bindings = allBindings.filter((b) => guardOfBinding(b) === undefined);
+  const guardAgents = new Map<string, { guard: GuardCell; agents: string[] }>();
+  for (const b of allBindings) {
+    const guard = guardOfBinding(b);
+    if (guard === undefined) continue;
+    const held = guardAgents.get(guard.id) ?? { guard, agents: [] };
+    held.agents.push(...b.agents.filter((a) => !held.agents.includes(a)));
+    guardAgents.set(guard.id, held);
+  }
+  // Carried only where the session module is a program (`scopeActivatedSurface`,
+  // with no settings file to register in instead) firing every one of its events.
+  const carriesGuards =
+    opts.adapter.scopeActivatedSurface !== undefined &&
+    opts.adapter.hooks === undefined;
+  const guards: ComposedGuard[] = [];
+  const projectedGuards: ProjectedGuard[] = [];
+  for (const { guard, agents: composing } of guardAgents.values()) {
+    const agentsOf = [...composing].sort();
+    const realized =
+      carriesGuards &&
+      guard.substrate === opts.adapter.substrate &&
+      guard.events.every((event) => opts.adapter.realizes(event));
+    if (realized) guards.push({ guard, agents: agentsOf });
+    else
+      warn(
+        `guard '${guard.id}' is composed into ${agentsOf.join(', ')}, but the '${opts.adapter.name}' adapter carries no session module that judges ${guard.events.join(', ')} for them. The guarded value reaches those agents as a declaration alone — a steer, not a bound.`,
+      );
+    projectedGuards.push({
+      guard: guard.id,
+      tell: guard.tell,
+      agents: agentsOf,
+      realized,
+    });
+    log(
+      `${realized ? 'EMIT' : 'STEER'} guard ${guard.id} → ${agentsOf.join(' ')}`,
+    );
+  }
+
+  // CAPABILITY FIDELITY. Each runtime capability takes the highest form this
+  // harness offers: its own facility, else the cratylus extension tool, else prose
+  // generated from the capability's own explanation — the last resort, which every
+  // rendered agent carries and the tree holds as a file of its own.
+  const nativeCapabilities = opts.adapter.nativeCapabilities ?? {};
+  const capabilities: ProjectedCapability[] = EXPLAINED_CAPABILITIES.map(
+    ([capability]) => {
+      const facility = nativeCapabilities[capability];
+      if (facility !== undefined)
+        return { capability, form: 'native', facility };
+      return {
+        capability,
+        form:
+          opts.adapter.capabilitySurface !== undefined ? 'extension' : 'prose',
+      };
+    },
+  );
+  const prose = EXPLAINED_CAPABILITIES.flatMap(([capability, explained]) =>
+    capabilities.some((c) => c.capability === capability && c.form === 'prose')
+      ? [{ capability, text: capabilityProse(capability, explained) }]
+      : [],
+  );
+  const agentProse =
+    prose.length === 0 ? '' : `\n${prose.map((p) => p.text).join('\n')}`;
   const degraded = new Set<string>();
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
@@ -843,7 +1020,10 @@ export async function projectPluginSet(
       ...(mechanisms ? { mechanisms } : {}),
       ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
     });
-    files.push({ path: join('agents', filename), content });
+    files.push({
+      path: join('agents', filename),
+      content: content + agentProse,
+    });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
     rendered.push(agent);
@@ -936,16 +1116,24 @@ export async function projectPluginSet(
   }
 
   // THE CAPABILITY INTERFACE: what offers the runtime's capabilities as tools,
-  // staged by scope as the agent surface is. Optional: an adapter offering no
-  // capability as a tool composes nothing here.
-  for (const s of opts.adapter.capabilitySurface?.() ?? []) {
-    const path = join(
-      ENFORCING_STAGE_DIR,
-      s.scope ?? SESSION_SCOPE,
-      s.filename,
-    );
-    files.push({ path, content: s.content });
-    log(`EMIT capability interface ${path}`);
+  // staged by scope as the agent surface is — asked for only where some capability
+  // took the extension form, so a harness holding every one natively is given no
+  // lower-fidelity tool beside its own facility.
+  if (capabilities.some((c) => c.form === 'extension')) {
+    for (const s of opts.adapter.capabilitySurface?.() ?? []) {
+      const path = join(
+        ENFORCING_STAGE_DIR,
+        s.scope ?? SESSION_SCOPE,
+        s.filename,
+      );
+      files.push({ path, content: s.content });
+      log(`EMIT capability interface ${path}`);
+    }
+  }
+  for (const { capability, text } of prose) {
+    const path = join('capabilities', `${capability}.md`);
+    files.push({ path, content: text });
+    log(`EMIT capability prose ${path}`);
   }
 
   let skills = 0;
@@ -1039,7 +1227,7 @@ export async function projectPluginSet(
   const carried = hookCells.filter((cell) => !unfired.has(cell.id));
 
   let hooks = 0;
-  if (carried.length > 0) {
+  if (carried.length > 0 || guards.length > 0) {
     const renderHooks = opts.adapter.hooks;
     // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
     // only the first. `hooks` returns a settings fragment (claude);
@@ -1092,6 +1280,7 @@ export async function projectPluginSet(
         const surface = renderScopeActivated(
           sources.map((s) => s.hook),
           agentNames,
+          guards,
         );
         // EMPTY IS A DEGRADE, not a quiet success: an adapter that realized none of
         // these cells' events registers nothing, and worker bytes beside no
@@ -1163,6 +1352,8 @@ export async function projectPluginSet(
       description: p.description,
       preselected: p.preselected === true,
     })),
+    capabilities,
+    guards: projectedGuards,
   };
 }
 

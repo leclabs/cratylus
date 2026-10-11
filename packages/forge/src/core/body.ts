@@ -66,7 +66,9 @@ function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
  * per TEXT factor in catalog order, each held entry a line in held order (an empty
  * factor the line `- (none)`). A `binding` factor is never text — it compiles to
  * harness settings — and an `attribute` factor occupies no field; a group with no
- * text factor is omitted. Closed `rstrip() + "\n"`.
+ * text factor is omitted. Then the agent's per-turn persistence protocol
+ * ({@link Agent.persistence}), verbatim, where it carries one. Closed
+ * `rstrip() + "\n"`.
  *
  * The SECTION ORDER is the catalog's own declaration order — which is why the
  * catalog is a parameter and not a module read: the sequence of an agent's
@@ -94,6 +96,7 @@ export function agentBody(a: Agent, manifest: DimensionManifest): string {
       out.push('');
     }
   }
+  if (a.persistence !== undefined) out.push(a.persistence, '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
 }
 

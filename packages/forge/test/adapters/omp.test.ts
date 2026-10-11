@@ -23,7 +23,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
   OMP_ISOLATION_MODULE,
-  OMP_READ_ONLY_TOOLS,
   OMP_SESSION_MODULE,
   agentToOmpMd,
   ompCapabilityExtensions,
@@ -345,7 +344,10 @@ describe('omp agent definition', () => {
         agent({
           mark: { emoji: '✈️', hue: 'green' },
           dispatches: ['illustrator', 'lead', 'researcher'],
-          readOnly: true,
+          contract: {
+            assignment: { type: 'object', required: ['cut'] },
+            deliverable: { type: 'object', required: ['done'] },
+          },
           skills: ['design'],
         }),
         CTX,
@@ -358,7 +360,8 @@ describe('omp agent definition', () => {
       'key',
       'model',
       'spawns',
-      'tools',
+      'output',
+      'assignment',
       'autoloadSkills',
     ]);
     expect(front.mark).toBe('✈️');
@@ -377,11 +380,27 @@ describe('omp agent definition', () => {
     expect(ompHarnessAdapter.nativeAgents).toEqual({ researcher: 'scout' });
   });
 
-  it('lists tools only for an agent that changes nothing, keeping omp’s defaults for the rest', () => {
-    expect(
-      frontMatter(agentToOmpMd(agent({ readOnly: true }), CTX)).tools,
-    ).toBe('[read, grep, glob, find, ast_grep, web_search]');
-    expect(frontMatter(agentToOmpMd(AGENT, CTX))).not.toHaveProperty('tools');
+  it('carries the typed handoff as omp’s output and the assignment the extension reads, and never a tools list', () => {
+    const contract = {
+      assignment: {
+        type: 'object',
+        properties: { cut: { type: 'string' } },
+        required: ['cut'],
+      },
+      deliverable: {
+        type: 'object',
+        properties: { done: { type: 'boolean' } },
+        required: ['done'],
+      },
+    } as const;
+    const front = frontMatter(agentToOmpMd(agent({ contract }), CTX));
+    expect(JSON.parse(front.output as string)).toEqual(contract.deliverable);
+    expect(JSON.parse(front.assignment as string)).toEqual(contract.assignment);
+    expect(front).not.toHaveProperty('tools');
+    expect(frontMatter(agentToOmpMd(AGENT, CTX))).not.toHaveProperty('output');
+    expect(frontMatter(agentToOmpMd(AGENT, CTX))).not.toHaveProperty(
+      'assignment',
+    );
   });
 
   it('emits `autoloadSkills` for an agent given skills, and only then', () => {
@@ -617,9 +636,9 @@ describe('omp capability interface', () => {
         ctx: { cwd: string },
       ): Promise<{ content: { text: string }[] }>;
     }
-    /** The tools the emitted module registers against the stand-in command, once
-     *  a session starts: a main one (with `--agent <flag>`, if given) or one omp
-     *  dispatched and names `sub`. */
+    /** The tools the emitted module registers against the stand-in command, at
+     *  load, once a session has started: a main one (with `--agent <flag>`, if
+     *  given) or one omp dispatched and names `sub`. */
     async function load(
       explanation: unknown,
       session: { flag?: string; sub?: string } = {},
@@ -643,10 +662,6 @@ describe('omp capability interface', () => {
         setModel: async () => {},
         setThinkingLevel: () => {},
       });
-      expect(
-        registered,
-        'nothing is offered before the session starts',
-      ).toEqual([]);
       await handlers.get('session_start')?.(
         {},
         {
@@ -804,7 +819,7 @@ describe('omp capability interface', () => {
       ).rejects.toThrow('cratylus concepts refuse: its own words');
     });
 
-    describe('offers an agent that changes nothing its reading verbs alone', () => {
+    describe('offers every verb of every capability to every agent (open reach, 0081)', () => {
       afterEach(() => {
         omp.agents = [];
         omp.discovered.length = 0;
@@ -820,71 +835,36 @@ describe('omp capability interface', () => {
       const verbsOf = (tools: Registered[]) =>
         tools.map((t) => [t.name, t.parameters.properties.verb?.enum]);
 
-      it('in a session dispatched as a read-only declaration, found by the lowercased name omp gives it', async () => {
-        omp.agents = [discovered('Assayer', [...OMP_READ_ONLY_TOOLS])];
-        const [tool, ...rest] = await load(EXPLANATION, { sub: 'assayer' });
-        expect(omp.discovered).toEqual(['/the/session/cwd']);
-        expect(verbsOf(rest)).toEqual(TOOLS.slice(1).map((n) => [n, ['look']]));
-        expect(tool?.parameters.properties.verb?.enum).toEqual(['look']);
-        // Nothing of a withheld verb is said: its parameters are not parameters.
-        expect(Object.keys(tool?.parameters.properties ?? {}).sort()).toEqual([
-          'context',
-          'mode',
-          'verb',
-        ]);
-        expect(tool?.parameters.properties.mode).toEqual({
-          type: 'string',
-          description: 'look (optional): the mode',
-        });
-      });
-
-      it('in a main session `--agent` started as a read-only declaration', async () => {
-        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
-        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual(
-          TOOLS.map((n) => [n, ['look']]),
-        );
-      });
-
-      it('refuses a withheld verb, called anyway, before the command runs', async () => {
-        omp.agents = [discovered('assayer', ['read'])];
-        const [tool] = await load(EXPLANATION, { sub: 'assayer' });
-        await expect(
-          tool?.execute(
-            'id',
-            { verb: 'put', word: 'w' },
-            undefined,
-            undefined,
-            {
-              cwd: tmpdir(),
-            },
-          ),
-        ).rejects.toThrow(
-          'Verb put appends, and is not offered to an agent that changes nothing',
-        );
-      });
-
-      it('offers no tool of a capability whose every verb appends', async () => {
-        omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
-        const appendsOnly = {
-          ...EXPLANATION,
-          verbs: EXPLANATION.verbs.slice(1),
-        };
-        expect(await load(appendsOnly, { sub: 'assayer' })).toEqual([]);
-      });
-
-      it('offers every verb to any other agent or session', async () => {
+      it('whatever tools a declaration lists, in a dispatched or a launched session', async () => {
         const all = TOOLS.map((n) => [n, ['look', 'put', 'refuse']]);
         omp.agents = [
+          discovered('assayer', ['read', 'grep']),
           discovered('builder'),
-          discovered('cartographer', ['read', 'write']),
           discovered('scout', ['read', 'bash']),
         ];
-        for (const sub of ['builder', 'cartographer', 'scout', 'sub', 'absent'])
+        for (const sub of ['assayer', 'builder', 'scout', 'sub', 'absent'])
           expect(verbsOf(await load(EXPLANATION, { sub })), sub).toEqual(all);
-        expect(verbsOf(await load(EXPLANATION, { flag: 'builder' }))).toEqual(
+        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual(
           all,
         );
         expect(verbsOf(await load(EXPLANATION))).toEqual(all);
+      });
+
+      it('runs an appending verb for an agent whose declaration lists reading tools alone', async () => {
+        omp.agents = [discovered('assayer', ['read'])];
+        const [tool] = await load(EXPLANATION, { sub: 'assayer' });
+        const result = await tool?.execute(
+          'id',
+          { verb: 'put', word: 'w' },
+          undefined,
+          undefined,
+          { cwd: tmpdir() },
+        );
+        expect(JSON.parse(result?.content[0]?.text ?? '').args).toEqual([
+          'concepts',
+          'put',
+          'w',
+        ]);
       });
     });
   });
