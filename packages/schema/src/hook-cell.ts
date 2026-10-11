@@ -134,6 +134,12 @@ export interface GuardJudge {
   readonly verdict: JsonSchema;
   /** The boolean verdict field whose `true` refuses the act. */
   readonly refusesOn: string;
+  /**
+   * Whether the judge also reads the session's conversation so far, as the operator
+   * and the agent exchanged it in visible text (delegates' reports included), ahead
+   * of the act. Absent ⇒ the act alone.
+   */
+  readonly conversation?: boolean;
 }
 
 /**

@@ -825,6 +825,14 @@ const TURN_BRIDGE: readonly string[] = [
   '      model: Model<Api>,',
   '    ): Promise<{ ok: boolean; apiKey?: string }>;',
   '  };',
+  "  // The session's entries on its current branch, as omp's session manager keeps them:",
+  '  // the conversation a guard judging with it reads.',
+  '  sessionManager?: { getBranch?(): readonly BranchEntry[] };',
+  '};',
+  '',
+  'type BranchEntry = {',
+  '  type?: string;',
+  '  message?: TurnMessage & { attribution?: string; toolName?: string; isError?: boolean };',
   '};',
   '',
   '// A GUARD BINDS A PERSONA’S MAIN SESSION ONLY. omp hands a spawned subagent its',
@@ -1267,6 +1275,8 @@ const GUARD_BRIDGE: readonly string[] = [
   '  prompt: string;',
   '  refusesOn: string;',
   '  refusal: string;',
+  '  // Whether the judge also reads the conversation so far, ahead of the act.',
+  '  conversation?: boolean;',
   '};',
   '',
   '/** The reply that ended a turn, and the message it answered, as text. */',
@@ -1307,6 +1317,32 @@ const GUARD_BRIDGE: readonly string[] = [
   '  const o = v as Record<string, unknown>;',
   '  if (typeof o[field] !== "boolean") return undefined;',
   '  return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '}',
+  '',
+  '// How much of the conversation a judge reads: its most recent characters, a bound like',
+  "// the workers' 12 KB, so a judgement fits the time the harness allows.",
+  'const CONVERSATION_LIMIT = 12_000;',
+  '',
+  "/** The conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports",
+  " *  included: the session's branch since its last compaction, never thinking, calls or the guards' own notices. */",
+  'function conversationOf(ctx: JudgeContext): string {',
+  '  const branch = ctx.sessionManager?.getBranch?.() ?? [];',
+  '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
+  '  const turns = branch.slice(since + 1).flatMap(({ type, message: m }) => {',
+  '    if (type !== "message" || m === undefined) return [];',
+  '    const said = (',
+  '      typeof m.content === "string"',
+  '        ? m.content',
+  '        : (m.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n")',
+  '    ).trim();',
+  '    if (said === "") return [];',
+  '    if (m.role === "user" && m.attribution !== "agent") return [`Operator:\\n${said}`];',
+  '    if (m.role === "assistant") return [`Agent:\\n${said}`];',
+  '    if (m.role === "toolResult" && m.toolName === "task" && m.isError !== true) return [`Delegate report:\\n${said}`];',
+  '    return [];',
+  '  });',
+  '  const all = turns.join("\\n\\n");',
+  '  return all.length > CONVERSATION_LIMIT ? `…${all.slice(-CONVERSATION_LIMIT)}` : all;',
   '}',
   '',
 ];
@@ -1357,7 +1393,11 @@ const GUARD_EXEC: readonly string[] = [
   '  ): Promise<string | undefined> => {',
   '    const agent = launchedAs(ctx);',
   '    if (agent === undefined || !guard.agents.includes(agent) || act === undefined) return undefined;',
-  '    const answer = await askJudge(ctx, guard.prompt, act);',
+  '    // A guard whose judge reads the conversation gets it ahead of the act.',
+  '    const judgedAct = guard.conversation',
+  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${act}`',
+  '      : act;',
+  '    const answer = await askJudge(ctx, guard.prompt, judgedAct);',
   '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
   '    if (verdict === undefined) {',
   '      relay(',
@@ -1397,7 +1437,9 @@ const GUARD_EXEC: readonly string[] = [
 /**
  * The guards' registrations: each guard's data, then ONE handler per event omp
  * fires, judging every guard bound to it. A turn end is judged by its last reply, a
- * tool call by the call itself; each refuses in the shape its own caller reads
+ * tool call by the call itself, and a guard whose judge reads the conversation
+ * (`GuardJudge.conversation`) gets the session's conversation so far ahead of the
+ * act; each refuses in the shape its own caller reads
  * ({@link OMP_REFUSAL_SHAPE}).
  *
  * ONE HANDLER PER EVENT, NOT PER GUARD. omp keeps the last answer its handlers gave
@@ -1417,6 +1459,7 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       prompt: guard.judge.prompt,
       refusesOn: guard.judge.refusesOn,
       refusal: guard.refusal,
+      ...(guard.judge.conversation === true ? { conversation: true } : {}),
     };
     lines.push(
       `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,

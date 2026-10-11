@@ -1485,6 +1485,177 @@ describe('omp capability interface', () => {
       expect(relayed).toEqual([]);
     });
 
+    /** A tool-call guard whose judge reads the conversation, composed into `agents`. */
+    const pastGuard = (agents: string[]) => ({
+      guard: {
+        ...surveyGuard(agents).guard,
+        id: 'past',
+        tell: 'procedure past objective',
+        judge: {
+          prompt: 'Judge the call in its conversation.',
+          verdict: {},
+          refusesOn: 'pastObjective',
+          conversation: true,
+        },
+        refusal:
+          'procedure past objective: your objective is met; report the outcome and stop.',
+      },
+      agents,
+    });
+    const message = (m: Record<string, unknown>) => ({
+      type: 'message',
+      message: m,
+    });
+    /** A continuing session: a request, its outcome reported, a closing request. */
+    const exchanged = [
+      message({ role: 'user', content: 'Before compaction, forgotten.' }),
+      { type: 'compaction', summary: 'Earlier work.' },
+      message({
+        role: 'user',
+        content: [{ type: 'text', text: 'Separate approval from release.' }],
+      }),
+      message({
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'Private reasoning.' },
+          { type: 'text', text: 'I dispatched the lead.' },
+          { type: 'toolCall', name: 'task', arguments: { agent: 'lead' } },
+        ],
+      }),
+      message({
+        role: 'toolResult',
+        toolName: 'task',
+        isError: true,
+        content: [{ type: 'text', text: 'lead dispatch refused.' }],
+      }),
+      message({
+        role: 'toolResult',
+        toolName: 'task',
+        content: [
+          { type: 'text', text: 'Outcome achieved; both assayers accept.' },
+        ],
+      }),
+      message({
+        role: 'toolResult',
+        toolName: 'read',
+        content: [{ type: 'text', text: 'file bytes' }],
+      }),
+      message({
+        role: 'user',
+        attribution: 'agent',
+        content: 'descend guard — the judge gave no verdict.',
+      }),
+      message({ role: 'user', content: 'Close the design work.' }),
+    ];
+    /** The text the judge was asked about: the one user message of its input. */
+    const payload = (asked: unknown): string => {
+      const messages =
+        asked !== null &&
+        typeof asked === 'object' &&
+        'messages' in asked &&
+        Array.isArray(asked.messages)
+          ? asked.messages
+          : [];
+      const first: unknown = messages[0];
+      return first !== null &&
+        typeof first === 'object' &&
+        'content' in first &&
+        typeof first.content === 'string'
+        ? first.content
+        : '';
+    };
+    const closing = {
+      toolName: 'bash',
+      input: { command: 'cat design/journal/*.json' },
+    };
+
+    it('gives a guard whose judge reads the conversation the visible exchange so far, then the call, and refuses on its verdict', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        [pastGuard(['architect'])],
+        exchanged,
+      );
+      judge.verdict = JSON.stringify({
+        pastObjective: true,
+        reason:
+          'The lead reported the outcome achieved; the call reads the design again.',
+      });
+      expect(await fire('tool_call', closing)).toEqual({
+        block: true,
+        reason:
+          'procedure past objective: your objective is met; report the outcome and stop. The lead reported the outcome achieved; the call reads the design again.',
+      });
+      expect(judge.asked).toHaveLength(1);
+      expect(payload(judge.asked[0])).toBe(
+        [
+          'Conversation so far:',
+          'Operator:\nSeparate approval from release.',
+          '',
+          'Agent:\nI dispatched the lead.',
+          '',
+          'Delegate report:\nOutcome achieved; both assayers accept.',
+          '',
+          'Operator:\nClose the design work.',
+          '',
+          'Act:',
+          JSON.stringify({ tool: closing.toolName, input: closing.input }),
+        ].join('\n'),
+      );
+      expect(relayed).toEqual([]);
+    });
+
+    it('allows the call when its conversation-reading judge finds the objective not met', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules(
+        'architect',
+        [pastGuard(['architect'])],
+        exchanged,
+      );
+      judge.verdict = JSON.stringify({
+        pastObjective: false,
+        reason: 'The request is not met yet.',
+      });
+      expect(await fire('tool_call', closing)).toBeUndefined();
+      expect(judge.asked).toHaveLength(1);
+    });
+
+    it('fails open, aloud, when the conversation-reading judge gives no verdict', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        [pastGuard(['architect'])],
+        exchanged,
+      );
+      judge.verdict = 'The objective seems met.';
+      expect(await fire('tool_call', closing)).toBeUndefined();
+      expect(relayed).toEqual([
+        'past guard — the judge gave no verdict (it answered: The objective seems met.), so this act was NOT judged.',
+      ]);
+    });
+
+    it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {
+      omp.agents = [ARCHITECT(), CARTOGRAPHER()];
+      const architect = await twoModules(
+        'architect',
+        [surveyGuard(['architect'])],
+        exchanged,
+      );
+      judge.verdict = JSON.stringify({ surveys: false, reason: 'in place.' });
+      await architect.fire('tool_call', closing);
+      expect(payload(judge.asked[0])).toBe(
+        JSON.stringify({ tool: closing.toolName, input: closing.input }),
+      );
+      const other = await twoModules(
+        'cartographer',
+        [pastGuard(['architect'])],
+        exchanged,
+      );
+      judge.verdict = JSON.stringify({ pastObjective: true, reason: 'met.' });
+      expect(await other.fire('tool_call', closing)).toBeUndefined();
+      expect(judge.asked).toEqual([]);
+    });
+
     it('judges every guard on one stop and refuses it twice in a turn, each time with each reason', async () => {
       omp.agents = [ARCHITECT()];
       const second = {
