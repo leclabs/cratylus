@@ -1,8 +1,8 @@
 # Examples · cut 2a · workflow execution
 
 Context: workflow. Concepts: roles, lead, builder, assayer, build, work package, judgment, whole check,
-proportionality, meaning question and dependency graph (see `cratylus concepts design --context workflow`). Confirmed by the
-meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
+proportionality, meaning question and dependency graph (see `cratylus concepts design --context workflow`). Approved by the
+architect holding the context on 2026-10-09. Changed only with that architect's approval, with a reason.
 
 **Structural** examples are properties the harness or the freeze guarantees, checked once, deterministically.
 **Behavioral** examples are decisions that need judgment: the agent runs 5 times in a fixed scenario with
@@ -41,7 +41,7 @@ something must never happen holds in all 5.
 
 ## Moved out of this cut
 
-Approved by the meaning-holder on 2026-10-09 (decision 0015). These examples are bookkeeping that code does
+Approved by the architect holding the context on 2026-10-09 (decision 0015). These examples are bookkeeping that code does
 reliably and an agent does not: dispatching computed levels, counting whole-check runs, recognizing an empty
 dispatch. They move to the **execution bookkeeping** cut, where they are re-illustrated as structural examples
 of the work package capability. Their numbers are retired here, not reused.

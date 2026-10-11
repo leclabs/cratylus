@@ -1,8 +1,8 @@
 # Examples · agent launch
 
 Context: delivery. Concept: agent launch. Decision in force: 0047 (agent launch: omp --agent through the
-cratylus extension). Confirmed by the meaning-holder on 2026-10-10, by direction: any agent declaration, its
-name and mark on the status line.
+cratylus extension). Approved by the architect holding the context on 2026-10-10, by direction: any agent
+declaration, its name and mark on the status line.
 
 **Structural** examples install, start or dispatch, and assert on what the session holds, deterministically.
 

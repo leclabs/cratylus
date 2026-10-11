@@ -1,7 +1,7 @@
 # Examples · cut 1 · example substrate
 
 Context: workflow. Concepts: example, held-out example, freeze (see `cratylus concepts design --context workflow`).
-Confirmed by the meaning-holder on 2026-10-09. Changed only with the meaning-holder's approval, with a reason.
+Approved by the architect holding the context on 2026-10-09. Changed only with that architect's approval, with a reason.
 
 ## example
 
@@ -30,6 +30,6 @@ Confirmed by the meaning-holder on 2026-10-09. Changed only with the meaning-hol
    confirmed, **then** the example and its check are frozen against changes by builders.
 2. **Given** an example whose check has never been seen to fail, **when** freezing it is attempted,
    **then** it is refused, and the reason is that the check has not shown it can fail.
-3. **Given** the meaning-holder approves a change to a frozen example, **when** the change is applied,
+3. **Given** the architect holding the context approves a change to a frozen example, **when** the change is applied,
    **then** it is accepted, recorded with its reason, and frozen again only after its check fails against
    work that does not yet satisfy it.
