@@ -612,6 +612,16 @@
     "role": "architect",
     "example": "(architect, cut) Given the architect has a confirmed cut ready to dispatch and has named its feature branch with it, when it dispatches the lead, then it first checks out that branch and gives the lead the cut with its branch name, concepts and acceptance; it never delegates choosing the cut's branch to the lead or supplements the name with branching instructions.",
     "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before we continue with film approval.",
+        "assistant": "The film-approval cut is recorded and awaits dispatch; creative acceptance remains separate from release permission. I have read both context overviews, the relevant journal detail and the ledger. I hold film-production and scheduling without merging their models: film approval is creative acceptance, while scheduling approval reserves a shoot date. The creative-not-release decision is accepted; only the operator grants release permission. Scheduling's night-shoots decision remains open and separate from this film-production cut. The ledger records film-approval on feature/film-approval, held by me for film-production, with no work packages dispatched. I will settle this cut's examples against the accepted film distinction."
+      },
+      {
+        "user": "The illustrator's film-approval examples distinguish creative acceptance from the operator's separate release permission. Decide on the cut and its examples.",
+        "assistant": "I approve the film-approval cut and its examples; it is ready for lead dispatch. I have named feature/film-approval as its feature branch in the cut record. The intent is a film approval process whose creative acceptance never grants release permission. Its concepts are approval and release permission; acceptance is the two film-production examples that preserve their distinction. The scheduling model remains separate."
+      }
+    ],
     "files": {
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
       "src/film.ts": "export const approval = \"creative\";\n",
@@ -1798,6 +1808,16 @@
     "role": "architect",
     "example": "(drift) Given an architect is assigning a confirmed cut to a lead that knows ordinary development procedure, and the cut's record names its feature branch, when the architect gives the assignment, then it conveys intent, concepts and acceptance and leaves how to realize them to the lead; it never appends instructions to remain on that branch, to create or avoid another branch, or to follow a branching recipe. This is the tell of prescribing procedure a delegate already knows, not a requirement to tell the delegate to infer it.",
     "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before we continue with film approval.",
+        "assistant": "The film-approval cut is recorded and awaits dispatch; creative acceptance remains separate from release permission. I have read both context overviews, the relevant journal detail and the ledger. I hold film-production and scheduling without merging their models: film approval is creative acceptance, while scheduling approval reserves a shoot date. The creative-not-release decision is accepted; only the operator grants release permission. Scheduling's night-shoots decision remains open and separate from this film-production cut. The ledger records film-approval on feature/film-approval, held by me for film-production, with no work packages dispatched. I will settle this cut's examples against the accepted film distinction."
+      },
+      {
+        "user": "The illustrator's film-approval examples distinguish creative acceptance from the operator's separate release permission. Decide on the cut and its examples.",
+        "assistant": "I approve the film-approval cut and its examples; it is ready for lead dispatch. I have named feature/film-approval as its feature branch in the cut record. The intent is a film approval process whose creative acceptance never grants release permission. Its concepts are approval and release permission; acceptance is the two film-production examples that preserve their distinction. The scheduling model remains separate."
+      }
+    ],
     "files": {
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
       "src/film.ts": "export const approval = \"creative\";\n",

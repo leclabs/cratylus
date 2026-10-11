@@ -102,6 +102,15 @@ EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution
 
 The three intentional failures returned `passed: false`: agents/16 rejected `never-repeat` after the continuing-session history; agents/18 still rejected its missing scheduling action (`exactly-one-action`); workflow/23 still rejected support before the conclusion (`conclusion-first`). The offline proof also passed the updated negative's clause isolation, tool-schema wiring and never-assertion aggregation. Preflight verifies scenario preparation and installed declaration/tool composition without a model; it is not a live behavioral verdict. No live sessions were run.
 
+The same 0089 setup rule also applies to workflow/31 and agents/19: each Given already has a confirmed cut ready for lead dispatch. Their `history` now includes the architect's earlier readback of both models, the accepted `creative-not-release` decision, the open scheduling `night-shoots` decision, and the recorded `film-approval` cut on `feature/film-approval`. A second prior turn approves the cut and its examples and names its branch. History does not claim that checkout or dispatch has happened; those remain the evaluated acts. No prompt, example text, clause, rubric or threshold changed.
+
+```sh
+EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (workflow/31|agents/19) '
+EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (workflow/31|agents/19) .*preflight'
+```
+
+Observed: **12 passed, 2 intentionally failed, 129 skipped** for the selected offline/red run, and **2 passed, 141 skipped** for no-model preflight. Workflow/31 still rejects checkout after dispatch (`checkout-first`); agents/19 still rejects the handoff missing concepts and acceptance (`intent-concepts-acceptance`). Both intentional demonstrations returned `passed: false`; all selected offline proofs, individual negatives and aggregation checks passed. No live sessions were run.
+
 ## Lead commands
 
 The normal package test inclusion already discovers `architect.test.ts`. Without `EXECUTION_RED`, intentional failure demonstrations stay skipped.
