@@ -106,7 +106,7 @@ beforeEach(() => {
   corpus = join(root, 'corpus');
   home = join(root, 'home');
   tree = join(corpus, '.cratylus/omp');
-  deployedAgents = join(home, '.omp', 'agent', 'agents');
+  deployedAgents = join(home, '.cratylus', 'omp', 'agents');
 
   // THE CORPUS MARKER — the file `deploy` itself reads to learn which corpus it is
   // operating on, and therefore the one the worker walks up for.
@@ -224,7 +224,7 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     put(join(tree, 'agents', 'mav.md'), `name: mav\n${RENDERED_AXIOM}\n`);
     const { stdout } = run();
     expect(stdout).toMatch(/DEPLOY DRIFT/);
-    expect(stdout).toMatch(/ABSENT\s+agent\/agents\/mav\.md/);
+    expect(stdout).toMatch(/ABSENT\s+agents\/mav\.md/);
   });
 
   it('REFUSES to read a comparator that returned no verdict as an in-sync host', () => {

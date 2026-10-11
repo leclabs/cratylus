@@ -474,8 +474,7 @@ export interface HarnessAdapter {
   /**
    * Emit what this harness composes from the COMPOSED AGENTS themselves, beyond each
    * agent's own definition: omp's dispatch isolation module (the agents that declare a
-   * worktree of their own), and on a harness whose status line is one command, the
-   * badge files and the worker {@link statusLine} names. Staged the same way
+   * worktree of their own). Staged the same way
    * `enforcingSurface`'s output is (`scope` = the agent name, or
    * {@link SESSION_SCOPE}).
    *
@@ -513,26 +512,6 @@ export interface HarnessAdapter {
    * Absent ⇒ the harness holds no capability natively.
    */
   readonly nativeCapabilities?: Readonly<Record<string, string>>;
-  /**
-   * The harness's ONE host-owned status-line command, and the worker this port
-   * ships to fill it — declared by a harness whose status line is a single command
-   * with no segments to add a badge to (claude's `settings.statusLine`), so the
-   * persona badge cannot sit beside the host's own line and must BE the line, or
-   * wrap it.
-   *
-   * `file` is the worker {@link launchSurface} emits at the {@link SESSION_SCOPE}:
-   * one for every persona, which asks the harness's status-line input which persona
-   * runs and prints that persona's baked badge file, or nothing where none was
-   * placed. `command` is the shell command that runs the placed worker, written
-   * against `$HOME` and not a resolved path, for the reason `hookCommand` is: it is
-   * read at RUN time on whatever host it lands on. Install sets it as the host's
-   * status line where the host has none, and appends the host's own command to it,
-   * as one quoted argument, to wrap it.
-   *
-   * Absent ⇒ this harness's status line takes segments (omp's does: see
-   * {@link statusSegment}) or has no status line install could set.
-   */
-  readonly statusLine?: StatusLineWorker;
   /**
    * Where an extension's status appears in this harness's status line, for a harness
    * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
@@ -607,14 +586,6 @@ export interface DispatchIsolation {
    *  that complete "an agent that declares isolation runs in an isolated copy of its
    *  dispatcher's checkout, …": said by projection and by install. */
   readonly lacks: string;
-}
-
-/** The status-line worker a harness ships. See {@link HarnessAdapter.statusLine}. */
-export interface StatusLineWorker {
-  /** The worker's filename, at the {@link SESSION_SCOPE}. */
-  readonly file: string;
-  /** The shell command that runs the placed worker, host command not yet appended. */
-  readonly command: string;
 }
 
 /** A status-line layout: the segments each side lists, and the options they carry. */
