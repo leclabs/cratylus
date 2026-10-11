@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
+import { files } from '../../capability-port/fixture.js';
 import { snapshot } from '../../execution-roles/snapshot.js';
 import { judgeSubject, runSession, subjectModels } from '../../rubric-judge.js';
 import {
@@ -94,6 +95,11 @@ async function launch(
   writeFileSync(snapshotsPath, `${JSON.stringify(snapshot(f.cwd))}\n`);
   const config = join(f.root, 'session-config.json');
   writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
+  const extensions = judge
+    ? []
+    : files(join(f.home, '.omp/agent/extensions')).filter((path) =>
+        /\.(?:[cm]?js|ts)$/.test(path),
+      );
   const args = [
     '--print',
     '--mode',
@@ -107,8 +113,7 @@ async function launch(
     '--no-title',
     '--no-pty',
     '--no-extensions',
-    '--extension',
-    f.extension,
+    ...extensions.flatMap((path) => ['--extension', path]),
     '--extension',
     join(here, 'observe.ts'),
     '--config',
@@ -142,7 +147,20 @@ async function launch(
     ...JSON.parse(readFileSync(wiringPath, 'utf8')),
     agent: role,
     declaration: declaration(f, role),
+    extensions,
   };
+  wiring.sessionModuleObserved = wiring.prompt.some((part: string) =>
+    part.includes('# Session start: reconstitution'),
+  );
+  if (
+    inspect &&
+    extensions.some((path) => path.endsWith('/cratylus-session.ts')) &&
+    /^- \*\*reconstitution\*\*/m.test(wiring.declaration)
+  )
+    expect(
+      wiring.sessionModuleObserved,
+      'installed session module contributed its first-turn reconstitution note',
+    ).toBe(true);
   const messages = readFileSync(messagesPath, 'utf8')
     .split('\n')
     .filter(Boolean)
