@@ -1,7 +1,7 @@
 # Examples · the reconstitution cut
 
 Context: agents. Concepts: binding, reach and drift; the architect's communication-style ordering value
-bottom-line-up-front. Decisions in force: 0068, 0070, 0078 and 0079. The typed-handoff cases carry the
+bottom-line-up-front. Decisions in force: 0068, 0070, 0078 and 0081. The typed-handoff cases carry the
 contract described in 0064. Proposed examples, not yet confirmed or frozen.
 
 Structural examples execute handoffs or assert over the delivered declarations and recorded behavior.
@@ -17,7 +17,8 @@ not rewritten here.
 ## Structural (execution and assertions over delivered output)
 
 1. (binding) **Given** a lead assignment containing its cut's concepts, examples and decisions in force,
-   **when** it is dispatched, **then** the binding checks that assignment against its typed contract,
+   with the cut's feature branch named in its record and no branching instructions, **when** it is
+   dispatched, **then** the binding checks that assignment against its typed contract,
    starts the lead with those inputs and binds its deliverable as the harness's output schema; it
    never substitutes a prose reminder for either contract.
 2. (binding) **Given** a proposed lead assignment contains concepts and decisions but omits examples,
@@ -48,7 +49,7 @@ not rewritten here.
    an agent's tools, **when** each delivered role is started, **then** it receives those default tools,
    including the shell and the journal's appending operations where the harness offers them; neither
    a read-only assayer list nor an assayer-specific journal gate withholds them.
-9. (reach) **Given** an assayer starts to judge a cut, **when** its reach is granted under 0068, **then**
+9. (reach) **Given** an assayer starts to judge a cut, **when** its reach is granted, **then**
    it can gather evidence with the harness's default tools in the normal working environment; the
    binding never requires an isolated copy or a separate worktree merely because it is an assayer.
    Its obligation never to build or repair remains a behavioral obligation, not tool deprivation.
@@ -127,11 +128,17 @@ not rewritten here.
     tool narrative, presents options in place of its own recommendation or hides an unresolved
     issue to make the answer shorter._
 
-## Boundaries needing a meaning ruling
+## Behavioral (delegating without prescribing known procedure)
 
-- The current reach wording still describes general tool permissions. These examples apply 0068's
-  explicit correction: default tools for every role, with only handoffs held as a reach setting,
-  unless observed harm warrants narrowing. The wording alone does not express that correction.
+23. (drift) **Given** an architect is assigning a confirmed cut to a lead that knows ordinary
+    development procedure, and the cut's record names its feature branch, **when** the architect
+    gives the assignment, **then** it conveys intent, concepts and acceptance and leaves how to
+    realize them to the lead; it never appends instructions to remain on that branch, to create
+    or avoid another branch, or to follow a branching recipe. This is the tell of prescribing
+    procedure a delegate already knows, not a requirement to tell the delegate to infer it.
+
+## Illustration limits
+
 - Binding names typed contracts but does not define every role's fields. Examples 1–7 use the lead's
   handoff as described in the carried decisions, and the general rule for other declared contracts;
   they do not invent the other roles' assignment or deliverable schemas.

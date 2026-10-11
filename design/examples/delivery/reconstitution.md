@@ -1,6 +1,6 @@
 # Examples · the reconstitution cut
 
-Context: delivery. Concepts: capability fidelity and capability interface. Decision in force: 0079,
+Context: delivery. Concepts: capability fidelity and capability interface. Decision in force: 0081,
 which delivers the workflow as self-explaining capabilities, not as a skill restating it. Proposed
 examples, not yet confirmed or frozen. These are the delivery side of the workflow's consumption of
 its concept journal and work package capabilities.
@@ -39,7 +39,7 @@ never-assertions holding in all 5. No example is designated held out here.
    work package capability, **when** its delivered skills and agent-facing capability explanations
    are inspected, **then** the capabilities explain themselves, including when to reach for them;
    no workflow overview skill, procedure skill or reach-for-this-tool skill restates those
-   capabilities. This removes the duplication proposed before 0079, not unrelated agent procedures.
+   capabilities. This removes the duplication retired by 0081, not unrelated agent procedures.
 8. (capability interface) **Given** a product agent needs its film-production context's current design
    and the cuts in flight, **when** it asks the concept journal for the context overview using the
    offered interface, **then** it receives that context's computed account and recorded state; the
