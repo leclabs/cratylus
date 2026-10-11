@@ -8,9 +8,10 @@
 // the current ones, the earlier kept in the context's history. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
-// id, and its acceptance (`accept`) is an entry of its own, so the decision's
-// record never changes. A cut's efficiency figures (`efficiency`) are recorded
-// by the work package capability; the latest for a cut are its figures.
+// id, and its acceptance (`accept`) and each classification of its kind
+// (`classify`) are entries of their own, so the decision's record never
+// changes. A cut's efficiency figures (`efficiency`) are recorded by the work
+// package capability; the latest for a cut are its figures.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** What every entry carries: the ULID naming its file, and when it was minted. */
@@ -58,11 +59,18 @@ export interface RetireEntry extends Stamped {
 /** A version of a concept: what `history` lists. */
 export type VersionEntry = WordedEntry | RetireEntry;
 
+/** What a decision is about: stating what the design means, or constraining
+ *  how it is realized. */
+export const DECISION_KINDS = ['meaning', 'realization'] as const;
+export type DecisionKind = (typeof DECISION_KINDS)[number];
+
 /** A decision, recorded open or accepted, optionally superseding an earlier
  *  one. Its identity is its entry's id; `decisionId` is the name the caller
  *  gave, which two branches may each give. `supersedes` is the superseded
  *  decision's name and `supersedesEntry` its entry (absent on entries written
- *  before names could be shared, which are read by their name alone). */
+ *  before names could be shared, which are read by their name alone).
+ *  `decisionKind` is present only where the decision was recorded with its
+ *  kind. */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;
@@ -74,6 +82,7 @@ export interface DecideEntry extends Stamped {
   readonly status: 'open' | 'accepted';
   readonly supersedes: string | null;
   readonly supersedesEntry?: string;
+  readonly decisionKind?: DecisionKind;
 }
 
 /** The acceptance of an open decision: its name, and its entry (absent on
@@ -82,6 +91,16 @@ export interface AcceptEntry extends Stamped {
   readonly kind: 'accept';
   readonly decisionId: string;
   readonly entry?: string;
+  readonly reason?: string;
+}
+
+/** The kind of a recorded decision, recorded after it: its name, its entry,
+ *  the kind, and the reason where one was given. */
+export interface ClassifyEntry extends Stamped {
+  readonly kind: 'classify';
+  readonly decisionId: string;
+  readonly entry: string;
+  readonly decisionKind: DecisionKind;
   readonly reason?: string;
 }
 
@@ -107,6 +126,7 @@ export type Entry =
   | VersionEntry
   | DecideEntry
   | AcceptEntry
+  | ClassifyEntry
   | EfficiencyEntry;
 
 /** Every kind of entry the journal holds. */
@@ -117,6 +137,7 @@ export const KINDS: readonly Entry['kind'][] = [
   'retire',
   'decide',
   'accept',
+  'classify',
   'efficiency',
 ];
 

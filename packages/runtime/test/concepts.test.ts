@@ -306,6 +306,145 @@ describe('the concept journal as a library', () => {
       /^concepts context: .*already recorded/,
     );
   });
+
+  it('records a decision’s kind on it or by classification, the latest governing', () => {
+    const decide = (id: string, ...kind: string[]) =>
+      concepts(
+        'decide',
+        id,
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+        ...kind,
+      ) as { id: string };
+    refused(
+      [
+        'decide',
+        'x',
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+        '--kind',
+        'other',
+      ],
+      /^concepts decide: the kind is 'other'/,
+    );
+    const told = decide('told', '--kind', 'meaning');
+    const untold = decide('untold');
+    refused(
+      ['classify', 'absent', '--kind', 'meaning'],
+      /^concepts classify: /,
+    );
+    refused(['classify', 'untold'], /^concepts classify: give the kind/);
+    refused(
+      ['classify', 'untold', '--kind', 'both'],
+      /^concepts classify: the kind is 'both'/,
+    );
+    refused(
+      ['classify', 'untold', '--kind', 'meaning', '--reason', ' '],
+      /^concepts classify: the reason is empty/,
+    );
+    refused(
+      ['classify', 'told', '--kind', 'realization'],
+      /^concepts classify: .*already recorded as meaning; give --reason/,
+    );
+    const first = concepts('classify', 'untold', '--kind', 'realization') as {
+      id: string;
+    };
+    expect(first).toMatchObject({
+      kind: 'classify',
+      decisionId: 'untold',
+      entry: untold.id,
+      decisionKind: 'realization',
+    });
+    expect(first).not.toHaveProperty('reason');
+    refused(
+      ['classify', 'untold', '--kind', 'meaning'],
+      /^concepts classify: .*already recorded as realization; give --reason/,
+    );
+    const again = concepts(
+      'classify',
+      told.id,
+      '--kind',
+      'realization',
+      '--reason',
+      'It constrains.',
+    ) as { id: string };
+    expect(concepts('decisions')).toMatchObject({
+      decisions: [
+        {
+          id: 'told',
+          kind: 'realization',
+          kinds: [
+            { entry: told.id, kind: 'meaning' },
+            { entry: again.id, kind: 'realization', reason: 'It constrains.' },
+          ],
+        },
+        {
+          id: 'untold',
+          kind: 'realization',
+          kinds: [{ entry: first.id, kind: 'realization' }],
+        },
+      ],
+    });
+  });
+
+  it('changes a context none of whose descriptions is current only by giving every field', () => {
+    const [recorded] = journal();
+    const id = (recorded as string).slice(0, -'.json'.length);
+    writeFileSync(
+      join(repo, 'design/journal', '01Z00000000000000000000001.json'),
+      JSON.stringify({
+        id: '01Z00000000000000000000001',
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Other.',
+        relation: '',
+        reason: 'Crafted.',
+        supersedes: [id, '01Z00000000000000000000001'],
+      }),
+    );
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ subject: null, relation: null, competingDescriptions: [] }],
+    });
+    expect(concepts('leakage')).toEqual({ warnings: [] });
+    refused(
+      ['context', 'booking', '--subject', 'Again.', '--reason', 'Settle.'],
+      /^concepts context: the bounded context 'booking' has no current description; give --relation/,
+    );
+    concepts(
+      'context',
+      'booking',
+      '--subject',
+      'Again.',
+      '--relation',
+      '',
+      '--reason',
+      'Settle.',
+    );
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ subject: 'Again.', relation: '' }],
+    });
+  });
 });
 
 it('refuses a working directory outside any git repository', () => {

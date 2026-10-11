@@ -21,6 +21,9 @@
 // branches may each give, so a reference by id holds only while one decision
 // has it. A decision is SUPERSEDED once any decision supersedes it, else
 // ACCEPTED once recorded accepted or its acceptance is recorded, else OPEN.
+// Its KIND, stating meaning or constraining realization, is the latest one
+// recorded for it, on the decision itself or by a classification after it;
+// it has none until one is recorded.
 //
 // A cut's EFFICIENCY figures are its context's latest efficiency entry for it.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,6 +31,7 @@
 import type {
   ContextEntry,
   DecideEntry,
+  DecisionKind,
   EfficiencyEntry,
   Entry,
   RetireEntry,
@@ -73,6 +77,14 @@ export interface ContextView {
   }[];
 }
 
+/** One kind recorded for a decision: the entry that recorded it, the kind,
+ *  and the reason where one was given. */
+export interface KindRecord {
+  readonly entry: string;
+  readonly kind: DecisionKind;
+  readonly reason?: string;
+}
+
 export interface DecisionView {
   readonly entry: string;
   readonly id: string;
@@ -84,6 +96,10 @@ export interface DecisionView {
   readonly status: 'open' | 'accepted' | 'superseded';
   readonly supersedes: string | null;
   readonly supersededBy: readonly string[];
+  /** The governing kind: the latest recorded, `null` where none is. */
+  readonly kind: DecisionKind | null;
+  /** Every kind recorded for the decision, in the order recorded. */
+  readonly kinds: readonly KindRecord[];
 }
 
 export interface HistoryView {
@@ -137,6 +153,8 @@ export class Folded {
   readonly acceptances = new Set<string>();
   /** The ids of the decisions superseding each decision's entry. */
   readonly supersededBy = new Map<string, string[]>();
+  /** The kinds recorded for each decision's entry, in append order. */
+  readonly kinds = new Map<string, KindRecord[]>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
 
@@ -169,6 +187,10 @@ export class Folded {
               ? undefined
               : this.only(entry.supersedes));
           this.decisions.set(entry.id, entry);
+          if (entry.decisionKind !== undefined)
+            this.kinds.set(entry.id, [
+              { entry: entry.id, kind: entry.decisionKind },
+            ]);
           this.named.set(entry.decisionId, [
             ...(this.named.get(entry.decisionId) ?? []),
             entry.id,
@@ -193,6 +215,16 @@ export class Folded {
           cuts.set(entry.cut, entry);
           break;
         }
+        case 'classify':
+          this.kinds.set(entry.entry, [
+            ...(this.kinds.get(entry.entry) ?? []),
+            {
+              entry: entry.id,
+              kind: entry.decisionKind,
+              ...(entry.reason === undefined ? {} : { reason: entry.reason }),
+            },
+          ]);
+          break;
       }
   }
 
@@ -358,6 +390,8 @@ export class Folded {
       status: this.status(d.id),
       supersedes: d.supersedes,
       supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
+      kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
+      kinds: [...(this.kinds.get(d.id) ?? [])],
     }));
   }
 }

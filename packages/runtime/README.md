@@ -24,7 +24,7 @@ names them: `eventTap`, `concepts` and `workPackage`. A corpus's skill names one
 | capability    | port           | verbs                                                                                                                                      |
 | ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `eventTap`    | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                                                   |
-| `concepts`    | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`                       |
+| `concepts`    | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`           |
 | `workPackage` | —              | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`, `record` |
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
@@ -32,7 +32,9 @@ names them: `eventTap`, `concepts` and `workPackage`. A corpus's skill names one
 [the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
 `supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
-warns; a context's own concept names are never leakage.
+warns; a context's own words, its concept names and each plain word its current subject names,
+are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
+`realization` is never inspected (decision 0058).
 
 `workPackage` slices a cut into work packages: it records each package's outputs, concepts and
 dependencies in an append-only log per cut under the repository's git common directory, computes the
