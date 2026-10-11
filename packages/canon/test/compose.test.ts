@@ -138,6 +138,18 @@ describe('the architect', () => {
     expect(bottomLine.judge.prompt).toContain(
       'it offers a menu of options in place of its one recommendation, or asks a question the agent can answer itself',
     );
+    // 0097: a decision from before the turn is no action of it; 0086: an outcome
+    // calling for action has that step, directed to whoever takes it.
+    expect(bottomLine.judge.prompt).toContain(
+      'A decision taken before this turn is no action of this turn',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      "An outcome that calls for someone's action has, as its one action, that step, directed to whoever takes it or taken by the agent in the turn",
+    );
+    // Honesty guardrail: facts as the records show them, inferences as inferred.
+    expect(bottomLine.judge.prompt).toContain(
+      "A fact is what the records and the delegates' reports show, stated no stronger than they show it",
+    );
     expect(bottomLine.refusal).toMatch(
       /^burying: this reply buries its bottom line\. /,
     );
@@ -253,7 +265,14 @@ describe('the architect', () => {
       'The operator is asked nothing between stating intent and release unless a fork is irreversible, about value, or beyond the agent',
     );
     expect(holdsWhatItNeeds).toContain(
-      "The agent lacks what a question needs only when answering it would still decide what is wanted and why or a priority between the operator's goals",
+      "The agent lacks what a question needs only when every answer it could reason from all of those would still choose what the product is for or a priority between the operator's goals",
+    );
+    expect(holdsWhatItNeeds).toContain(
+      "turning it into what each concept includes, allows or excludes is the agent's work, never the operator's",
+    );
+    // 0081, 0086: realization, branch use among it, is never an owned question.
+    expect(ownedQuestion).toContain(
+      'Realization is not either: the lead decides it within the agent',
     );
     expect(holdsWhatItNeeds).toContain(
       "never by the agent's own word that it does or does not",

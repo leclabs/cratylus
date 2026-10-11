@@ -117,27 +117,33 @@ does, naming the tell.
 `bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge, given
 the conversation so far in visible text, the decisions recorded that turn (as `unrecorded` reads
 them) and the reply, whether a reply to the operator buries its bottom line (the conclusion not
-first, a topic given other than exactly one action, a menu in place of one recommendation, a
-question the architect can answer itself, or support carrying an instruction or more than a layman
-needs, such as record identifiers, entry status or how records are edited), and refuses the stop
+first or stated stronger than the records and reports show, a topic given other than exactly one
+action, a menu in place of one recommendation, a question the architect can answer itself, or
+support carrying an instruction or more than a layman needs, such as how the architect worked this
+session, record identifiers, entry status or how records are edited), and refuses the stop
 when it does, naming the tell `burying`. Ordering is the sequence a reply presents its content in
 (0078), so it judges replies, never tool calls: an act the turn takes counts through the reply that
 reports it (0103).
 A topic is a matter the operator asked about, or an outcome that calls for someone's action; support
-states facts and reasons, never instructions (0100). A topic's actions are what the reply itself
+states facts and reasons, never instructions (0100), facts no stronger than the records show and
+inferences as inferred (the honesty guardrail). A topic's actions are what the reply itself
 directs and the acts the turn took and reports; a decision taken in the turn and reported with its
 reason, an approval included, or any other act taken and reported, is that topic's one action, and a
 separate follow-on action on it is a second (0090, 0097, 0103); a recorded decision's consequences
-are its record's, never an action (0102). A topic decided before the turn, or a reported outcome that
-calls for action, keeps exactly one action of its own.
+are its record's, never an action (0102). A decision taken before the turn is no action of it: that
+topic, like a reported outcome that calls for action, keeps exactly one action of its own, directed
+to whoever takes it, since the architect owns delivery and the operator decides only intent,
+priority and release (0086, 0097).
 Both `bottom-line` and `hand-back` refusals tell the rewrite to keep answering whoever asked, giving a
 delegate's ruling to that delegate (`rulingToDelegate` in `src/guards/owned-question.ts`).
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
 achieved with nothing open left, and the call takes a further step instead of reporting the outcome, and refuses the
-call when it does, naming the tell `procedure past objective`. A call that takes or records a
-decision on a meaning question the architect owns is never past the objective, in any turn.
+call when it does, naming the tell `procedure past objective`. An outcome reported short of what the
+design describes is not achieved, so a step that gets it achieved is not past the objective. A call
+that takes or records a decision on a meaning question the architect owns is never past the
+objective, in any turn.
 `unrecorded` holds the architect's deliverable, decisions with their reasons: at turn end it asks a
 judge, given the decisions recorded that turn (each concept-journal append that took effect since
 the operator's last message, as its verb and content) and the reply, whether the reply reports an
@@ -148,21 +154,27 @@ Whether the architect holds what an owned meaning question needs is one judgment
 rule and read by every guard whose judgment turns on it (`hand-back`, `bottom-line`, `unrecorded`,
 each through `judge.reads`): given the conversation so far and the reply, it lists each owned question
 the turn takes up with whether the architect holds what it needs. The rule states the architect's
-decision rights (0086): it holds what a question needs when the operator's stated intent and
-priorities, the design and its decisions, the examples, its delegates' reports and known practice
-of the product's industry answer it; the operator, asked nothing between intent and release but an
-irreversible fork, one about value or one beyond the architect's competence, not having spoken to it
-is not by itself a lack. It lacks what the question needs only when answering it would still decide
-what is wanted, a priority, or such a fork. The guards reading it never weigh a question's grounds
-themselves; they judge from it what follows (0090): holding it, the architect settles the question
-in that turn, records it with its reason and reports it settled; lacking it, it leaves the question
+decision rights (0086): it rectifies the operator's intent, what the product is for, into what each
+concept includes, allows or excludes, using known practice where stated intent does not reach; it
+holds what a question needs when the operator's stated intent and priorities, the design and its
+decisions, the examples, its delegates' reports and known practice of the product's industry
+answer it; the operator, asked nothing between intent and release but an irreversible fork, one
+about value or one beyond the architect's competence, not having spoken to it is not by itself a
+lack. It lacks what the question needs only when every answer it could reason from all of those
+would still choose what the product is for or a priority, or the question is such a fork. The
+guards reading it never weigh a question's grounds themselves; they judge from it what follows
+(0090): holding it, the architect settles the question in the turn it is taken up, records it with
+its reason and reports it settled; lacking it, it leaves the question
 open and reports the one action it is taking to get what is missing. The harness makes the judgment
 at most once per act, when the first guard in force reads it, and gives that one answer to each; a
 judgment that cannot be made is reported, and its readers are told none was made, still judge the
 act, and refuse nothing on it (0091).
 An owned question is one of meaning, constraints on realization or a check ruling; priority, such as
 which work comes next, is the operator's to decide and the architect's to recommend with its facts and
-reasons, recording nothing, and `hand-back` and `unrecorded` never fault it (0102).
+reasons, recording nothing, and `hand-back` and `unrecorded` never fault it (0102). Realization is
+the lead's within the architect's decisions, and how a cut's work uses branches, beyond the branch
+name the architect gives the cut, is left to the lead and the project, never decided or recorded
+(0081, 0086).
 `past-objective` takes from `owned-question` only what an owned question is, reads no judgment, and
 never judges whether the architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
