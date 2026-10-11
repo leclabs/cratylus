@@ -109,6 +109,14 @@ const omp = vi.hoisted(() => {
     },
   };
 });
+/** The judge the session module's guards ask (`completeSimple`), answering `verdict`. */
+const judge = vi.hoisted(() => ({ verdict: '', asked: [] as unknown[] }));
+vi.mock('@oh-my-pi/pi-ai', () => ({
+  completeSimple: async (_model: unknown, input: unknown) => {
+    judge.asked.push(input);
+    return { content: [{ type: 'text', text: judge.verdict }] };
+  },
+}));
 vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
   discoverAgents: async (cwd: string) => {
     omp.discovered.push(cwd);
@@ -1333,6 +1341,98 @@ describe('omp capability interface', () => {
           (await other.fire('before_agent_start')) as { systemPrompt: string[] }
         ).systemPrompt.join('\n'),
       ).not.toContain('# Session start');
+    });
+
+    it('judges a guard for the agent the main session was launched as, though omp answers --agent only to the module that registered it', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const [session] =
+        ompHarnessAdapter.scopeActivatedSurface?.(
+          [],
+          [],
+          [
+            {
+              guard: {
+                id: 'survey',
+                residue: '',
+                substrate: 'harness',
+                events: ['tool.use.pre'],
+                tell: 'surveying',
+                judge: {
+                  prompt: 'Judge the call.',
+                  verdict: {},
+                  refusesOn: 'surveys',
+                },
+                refusal: 'surveying:',
+              },
+              agents: ['cartographer'],
+            },
+          ],
+        ) ?? [];
+      const dir = mkdtempSync(join(tmpdir(), 'omp-session-'));
+      tmp.push(dir);
+      const file = join(dir, OMP_SESSION_MODULE);
+      writeFileSync(file, session?.content ?? '');
+      // Dynamic: the module under test is the emitted bytes, written to disk here.
+      const sessionModule = (await import(file)).default;
+      const cratylusModule = await emitted({
+        name: 'stand in',
+        purpose: 'p',
+        when: 'w',
+        verbs: [],
+      });
+      // omp's flag values are the runtime's, but each extension reads only the
+      // flags it registered itself (`getFlag` on an unregistered name: undefined).
+      const flagValues: Record<string, string> = { agent: 'cartographer' };
+      const handlers = new Map<string, Handler[]>();
+      const relayed: unknown[] = [];
+      const extensionApi = () => {
+        const registered = new Set<string>();
+        return {
+          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+          registerTool: () => {},
+          registerFlag: (name: string) => registered.add(name),
+          getFlag: (name: string) =>
+            registered.has(name) ? flagValues[name] : undefined,
+          on: (event: string, handler: Handler) =>
+            handlers.set(event, [...(handlers.get(event) ?? []), handler]),
+          setModel: async () => {},
+          setThinkingLevel: () => {},
+          setActiveTools: async () => {},
+          sendUserMessage: (message: unknown) => relayed.push(message),
+        };
+      };
+      await cratylusModule(extensionApi());
+      await sessionModule(extensionApi());
+      const ctx = {
+        cwd: '/the/session/cwd',
+        agent: { kind: 'main' },
+        model: { provider: 'fixture', id: 'base' },
+        modelRegistry: {
+          getApiKeyAndHeaders: async () => ({ ok: true, apiKey: 'fixture' }),
+        },
+        ui: { setStatus: () => {}, notify: () => {} },
+      };
+      const fire = async (event: string, payload: unknown) => {
+        let answer: unknown;
+        for (const handler of handlers.get(event) ?? []) {
+          const result = await handler(payload, ctx);
+          if (result !== undefined) answer = result;
+        }
+        return answer;
+      };
+      await fire('session_start', {});
+      judge.asked.length = 0;
+      judge.verdict = JSON.stringify({
+        surveys: true,
+        reason: 'it reads src.',
+      });
+      const call = { toolName: 'read', input: { path: 'src/film.ts' } };
+      expect(await fire('tool_call', call)).toEqual({
+        block: true,
+        reason: 'surveying: it reads src.',
+      });
+      expect(judge.asked).toHaveLength(1);
+      expect(relayed).toEqual([]);
     });
 
     it('never touches the active tools, whatever --tools the operator gave', async () => {

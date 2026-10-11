@@ -167,6 +167,12 @@ export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
  *  0047). */
 const OMP_AGENT_FLAG = 'agent';
 
+/** The `Symbol.for` key the CRATYLUS module publishes the agent the main session
+ *  was launched as under, on `globalThis`, and the session module reads it from.
+ *  omp's `getFlag` answers only the extension that registered the flag, so the
+ *  session module, which registers none, can never read `--agent` itself. */
+const OMP_LAUNCHED_AGENT_KEY = `${CLI_BIN}.launched-agent`;
+
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
 const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
@@ -1278,8 +1284,10 @@ const GUARD_BRIDGE: readonly string[] = [
  *
  * ONLY A MAIN SESSION LAUNCHED AS A COMPOSING AGENT. The guard binds the agents
  * whose composition holds its value, so a subagent, a plain session and a session
- * launched as any other agent are judged by nothing. The launched agent is omp's
- * `--agent` flag, which the cratylus module registers.
+ * launched as any other agent are judged by nothing. The launched agent is the one
+ * the cratylus module, which registers omp's `--agent` flag, publishes under
+ * {@link OMP_LAUNCHED_AGENT_KEY}: omp answers a flag only to the extension that
+ * registered it.
  *
  * FAILS OPEN, ALOUD. A judge that does not answer, or answers anything but the
  * verdict, refuses nothing, and the session is told the act went unjudged. A stop
@@ -1288,10 +1296,10 @@ const GUARD_BRIDGE: readonly string[] = [
  */
 const GUARD_EXEC: readonly string[] = [
   '',
-  '  /** The agent this main session was launched as (`--agent`); none for a subagent or a plain session. */',
+  '  /** The agent this main session was launched as, as the cratylus module publishes it; none for a subagent or a plain session. */',
   '  const launchedAs = (ctx: JudgeContext): string | undefined => {',
   '    if (ctx.agent?.kind !== "main") return undefined;',
-  `    const name = pi.getFlag(${JSON.stringify(OMP_AGENT_FLAG)});`,
+  `    const name = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)})];`,
   '    return typeof name === "string" && name !== "" ? name : undefined;',
   '  };',
   '',
@@ -1665,6 +1673,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const assignmentIn: (text: string) => unknown = (${String(assignmentIn)});`,
         `const checkAssignment: (agent: string, schema: unknown, value: unknown) => { reason?: string } = (${String(checkAssignment)});`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
+        '// Where the launched agent is published for the session module, which omp never answers `--agent`.',
+        `const LAUNCHED_AGENT = Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)});`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
@@ -2172,6 +2182,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // A launch ends: its prompt, its dispatch policy and every setting it holds go with it.',
         '  function end(): void {',
         '    launched = undefined;',
+        '    delete (globalThis as Record<symbol, unknown>)[LAUNCHED_AGENT];',
         '    awaiting = undefined;',
         '    told = false;',
         '    started = false;',
@@ -2298,6 +2309,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    await settle(scope, declaration, operator);',
         '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
         '    launched = found;',
+        '    (globalThis as Record<symbol, unknown>)[LAUNCHED_AGENT] = name;',
         '  }',
         '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
