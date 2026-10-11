@@ -183,6 +183,15 @@ const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
  *  so the readback gate counts only text that reached the operator. */
 const OMP_WITHDRAW_KEY = `${CLI_BIN}.withdraw-reply`;
 
+/** The `Symbol.for` key the CRATYLUS module lends, on `globalThis`, what a stop a
+ *  turn-end guard refused adds while the launch still owes its readback: the
+ *  refusal then withdraws the reply that may have carried it. */
+const OMP_READBACK_OWED_KEY = `${CLI_BIN}.readback-owed`;
+
+/** What a refused stop adds while the launch still owes its readback. */
+const READBACK_OWED_NOTE =
+  'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
+
 /** What the judge reads a reconstituting launch's visible text for: the readback. */
 const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
 
@@ -1462,6 +1471,14 @@ const GUARD_EXEC: readonly string[] = [
   '    if (typeof lent === "function") lent(reply);',
   '  };',
   '',
+  '  // While the launch still owes its readback, the CRATYLUS module says so: a refused stop then',
+  '  // tells the rewrite to give it first. `undefined` when none is owed.',
+  '  const readbackOwed = (): string | undefined => {',
+  `    const lent = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_READBACK_OWED_KEY)})];`,
+  '    const note: unknown = typeof lent === "function" ? lent() : undefined;',
+  '    return typeof note === "string" ? note : undefined;',
+  '  };',
+  '',
   '  // The judge, lent to the CRATYLUS module, which holds back the acts of a launch that has',
   '  // not read back yet: one verdict field of one judgment, `undefined` when there is none.',
   `  (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)})] = async (`,
@@ -1532,10 +1549,11 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       kind === 'turn'
         ? `(event.stop_hook_active === true ? stopsRefused : (stopsRefused = 0)) >= ${STOP_REFUSALS}`
         : 'false';
-    // A refused stop also withdraws its reply from what the operator was told.
+    // A refused stop also withdraws its reply from what the operator was told, and, while
+    // the launch still owes its readback, says the rewrite gives it first.
     const refuse =
       refusal === 'stop'
-        ? '{\n      stopsRefused += 1;\n      withdraw(lastReply(event).reply);\n      return { decision: "block", reason };\n    }'
+        ? '{\n      stopsRefused += 1;\n      withdraw(lastReply(event).reply);\n      const owed = readbackOwed();\n      return { decision: "block", reason: owed === undefined ? reason : `${reason}\\n\\n${owed}` };\n    }'
         : 'return { block: true, reason };';
     lines.push(
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
@@ -1862,6 +1880,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const JUDGE = Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)});`,
         '// Where this module lends what the session module calls with a reply refused at its stop.',
         `const WITHDRAW = Symbol.for(${JSON.stringify(OMP_WITHDRAW_KEY)});`,
+        '// Where this module lends what a refused stop adds while the readback is still owed.',
+        `const READBACK_OWED = Symbol.for(${JSON.stringify(OMP_READBACK_OWED_KEY)});`,
+        `const READBACK_OWED_NOTE = ${JSON.stringify(READBACK_OWED_NOTE)};`,
         'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
         `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
         `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
@@ -2727,6 +2748,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (at >= 0) said.splice(at, 1);',
         '    if (saying.trim() === reply.trim()) saying = "";',
         '  };',
+        '  // A stop a turn-end guard refused withdraws its reply, readback and all; while the readback',
+        '  // is still owed, the session module adds that it goes first in the rewrite.',
+        '  (globalThis as Record<symbol, unknown>)[READBACK_OWED] = (): string | undefined =>',
+        '    owed ? READBACK_OWED_NOTE : undefined;',
         '  // A launch that owes a readback changes nothing before it: each act that would is refused',
         '  // until a judge finds the readback in what the operator has been told, and from then on',
         '  // none is held. A call that only reads is never held. With no verdict the act goes',

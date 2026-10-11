@@ -408,6 +408,35 @@ describe('0091 delivered evidence', () => {
       relayed: [],
     });
   });
+  it('classifies a refused stop carrying the readback-owed line by its refusing guards alone', () => {
+    const reply = {
+      role: 'assistant',
+      content: 'Decisions first; entry 7 recorded.',
+    };
+    const owed =
+      'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
+    for (const [guard, reason] of [
+      ['bottom-line', `${bottomLine.refusal} Mechanics.\n\n${owed}`],
+      [
+        ['bottom-line', 'hand-back'],
+        `${bottomLine.refusal} Mechanics.\n\n${handBack.refusal} Deferred.\n\n${owed}`,
+      ],
+    ] as const)
+      expect(
+        deliveredEvidence([
+          reply,
+          {
+            role: 'custom',
+            customType: 'session-stop-continuation',
+            content: reason,
+          },
+        ]),
+      ).toEqual({
+        delivered: [],
+        heldDrift: [{ guard, attempt: 'reply', text: reply.content, reason }],
+        relayed: [],
+      });
+  });
   it('recognizes a past-objective refusal of a call as held drift, alone or with descend', () => {
     const [call, result] = fixture('agents-16') as Record<string, unknown>[];
     const reason = `${pastObjective.refusal} The lead reported the outcome achieved; the call reads the design again.`;

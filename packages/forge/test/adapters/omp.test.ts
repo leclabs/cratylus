@@ -1814,10 +1814,12 @@ describe('omp capability interface', () => {
           refusal: 'misshapen:',
         },
       };
-      const { fire, relayed } = await twoModules('architect', [
-        replyGuard,
-        second,
-      ]);
+      // A continuing session, which owes no readback: each refusal is the guards' alone.
+      const { fire, relayed } = await twoModules(
+        'architect',
+        [replyGuard, second],
+        [{ type: 'message', message: { role: 'user', content: 'Go on.' } }],
+      );
       judge.verdict = JSON.stringify({
         surveys: true,
         misshapen: true,
@@ -1992,6 +1994,46 @@ describe('omp capability interface', () => {
         reason: READBACK_UNSEEN_REFUSAL,
       });
       expect(judge.asked, 'nothing reached the operator').toEqual([]);
+    });
+
+    it('adds to a refused stop that the readback is still owed and goes first, only while it is owed', async () => {
+      omp.agents = [ARCHITECT()];
+      const OWED =
+        'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
+      const readback =
+        'Film: approval is settled; night shoots are open; no cut in flight. Decision 0091 is recorded.';
+      const stop = {
+        last_assistant_message: readback,
+        stop_hook_active: false,
+      };
+      // Owed: the refusal carries every guard's reason, then the line.
+      const owing = await twoModules('architect', [replyGuard]);
+      await owing.fire('message_end', reply(readback));
+      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
+      expect(await owing.fire('session_stop', stop)).toEqual({
+        decision: 'block',
+        reason: `surveying: buried.\n\n${OWED}`,
+      });
+      // A session continuing a conversation owes none: the refusal is the guard's alone.
+      const continuing = await twoModules(
+        'architect',
+        [replyGuard],
+        [{ type: 'message', message: { role: 'user', content: 'Go on.' } }],
+      );
+      expect(await continuing.fire('session_stop', stop)).toEqual({
+        decision: 'block',
+        reason: 'surveying: buried.',
+      });
+      // Once the readback is counted, none is owed any more.
+      const counted = await twoModules('architect', [replyGuard]);
+      await counted.fire('message_end', reply(readback));
+      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
+      expect(await counted.fire('tool_call', changing[1])).toBeUndefined();
+      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
+      expect(await counted.fire('session_stop', stop)).toEqual({
+        decision: 'block',
+        reason: 'surveying: buried.',
+      });
     });
 
     it('counts a readback given in the same message as the act, before that message ends', async () => {
