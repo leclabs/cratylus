@@ -10,17 +10,17 @@ import type { SharedJudgment } from '../manifest.js';
 // cannot be made is handed over as not made, and its readers refuse nothing on it
 // (0091). Not a guard cell: the guards that read it are.
 
-/** What a meaning question the agent owns is. */
+/** What a meaning question the agent owns is (0086, 0102). */
 export const ownedQuestion =
-  "A meaning question the agent owns is a question on the meaning (concepts and examples), on the constraints of realization or on a check ruling of a context it holds, a question its delegates raise on them included. What a context means or permits in its domain is such a question. Priority is not: which work comes next is the operator's to decide and the agent's to recommend, so applying a priority the operator stated, the agent leads with one recommendation and the facts and reasons for it, records nothing, and neither hands back nor holds open a decision by doing so.";
+  "A meaning question the agent owns is a question on the meaning (concepts and examples), on a constraint on realization or on a check ruling, in a context it holds, a question its delegates raise on them included. Priority is not: which work comes next is the operator's to decide and the agent's to recommend, so applying a priority the operator stated, the agent leads with one recommendation and the facts and reasons for it, records nothing, and neither hands back nor holds open a decision by doing so.";
 
-/** The one rule of whether the agent holds what an owned question needs: the judgment's alone. */
+/** The one rule of whether the agent holds what an owned question needs (0086, 0090, 0101). */
 export const holdsWhatItNeeds =
-  "Whether the agent holds what an owned question needs is one judgment, made by this rule alone and never by the agent's own claim that it lacks something. The agent rules on an owned question from the design, the examples, the conversation and known practice of the product's industry, whether or not the conversation states that practice; whether a context permits a practice common in its industry is settled from that practice. The operator not having spoken to a question is never a lack, and calling what a context permits a choice about what the business wants does not make it the operator's. Approving examples judges only whether they express the design, so the agent holds what approving examples that do needs, whatever else the context may later need. The agent lacks what a question needs only when, with all of those, the ruling would still choose what the product is for, a priority between the operator's goals, or a fork that is irreversible, about value or beyond the agent's competence.";
+  "Whether the agent holds what an owned question needs is judged by this one rule, never by the agent's own word that it does or does not. The agent decides everything about the meaning of the contexts it holds, the approval of their examples included, and every constraint on realization: it turns the operator's intent into concepts using known patterns and conventions, and brings the decisions already taken, with their reasons. So it holds what a question needs when the question can be answered from what it has: the operator's stated intent and priorities, the design and its decisions, the examples, its delegates' reports and known practice of the product's industry. The operator is asked nothing between stating intent and release unless a fork is irreversible, about value, or beyond the agent's competence, so the operator not having spoken to a question is not, by itself, something the agent lacks. Approving examples is deciding whether they express the concepts of the context they illustrate. The agent lacks what a question needs only when answering it would still decide what is wanted and why or a priority between the operator's goals, which are the operator's, or a fork that is irreversible, about value or beyond its competence.";
 
-/** What follows from the judgment, for each owned question it judges. */
+/** What follows from the judgment, for each owned question it judges (0090). */
 export const whatFollows =
-  'Holding what an owned question needs, the agent settles the question in that turn, whatever the latest message asked, and records the decision with its reason, never taking it only on a condition, and approves in that turn the examples that express the design; lacking it, the agent keeps the question visibly open and reports the one action that gets what is missing.';
+  'Holding what an owned question needs, the agent settles it as soon as it arises, in whatever turn, an update included: it records the decision with its reason and reports it settled, and approves the examples it holds that express their concepts. Lacking it, the agent leaves the question open and reports the one action it is taking to get what it lacks.';
 
 export const ownedQuestionJudgment: SharedJudgment = {
   id: 'owned-question',
@@ -60,6 +60,6 @@ You are given the conversation so far, as the operator and the agent exchanged i
 /** How a guard whose judgment turns on it reads the owned-question judgment. */
 export const readsOwnedQuestion = `Whether the agent holds what an owned question needs is never yours to judge: it is judged once, by one rule, for every guard, and at the end of a turn you are given that owned-question judgment ahead of the act, each owned question the turn takes up with whether the agent holds what it needs. Take it as given, and never weigh a question's grounds yourself. ${whatFollows} When the judgment says none could be made, or does not list a question, refuse nothing on whether the agent held what that question needs.`;
 
-/** Where a ruling on a question a delegate asked goes, through every rewrite a guard asks for. */
+/** Who a ruling answers, kept through every rewrite a guard asks for (0103). */
 export const rulingToDelegate =
-  "A ruling on a question a delegate asked reaches that delegate: address it to the delegate by name in your reply, and keep it addressed to it in every rewrite. That ruling is the topic's one action; reporting it to the operator adds none.";
+  "Keep the reply answering whoever asked, giving a delegate's ruling to that delegate: a ruling given in the turn and reported is that topic's one action.";

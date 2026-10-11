@@ -103,70 +103,62 @@ describe('typed handoffs', () => {
 });
 
 describe('the architect', () => {
-  it('composes bottom-line-up-front ordering, fixed, held by the bottom-line guard on tool calls and at turn end, judged with the conversation and the decisions recorded that turn', () => {
+  it('composes bottom-line-up-front ordering, fixed, held by the bottom-line guard at turn end only, judged with the conversation and the decisions recorded that turn', () => {
     const held = architect.communicationStyle.find(
       (e) => e.slot === 'ordering',
     );
     expect(held?.level).toBe('fixed');
     expect(held && anchorOf(held.value)).toBe(anchorOf(bottomLineUpFront));
+    // Ordering is the sequence a reply presents its content in (0078): a reply is
+    // judged, never a tool call; an act counts through the reply that reports it (0103).
     expect(held && enforcing(held.value) && held.value).toMatchObject({
       realizedBy: bottomLine.id,
-      events: ['turn.end', 'tool.use.pre'],
+      events: ['turn.end'],
       substrate: 'harness',
     });
     expect(bottomLine.judge.conversation).toBe(true);
     expect(bottomLine.judge.recorded).toBe(true);
-    // One action per topic holds over acts as over words: every act this turn takes
-    // on a topic's matter is one of its actions, work a recorded decision sets for
-    // someone included; support carries only the facts and reasons its conclusions
-    // rest on.
+    expect(bottomLine.judge.prompt).not.toContain('tool call');
+    // 0100: what a topic is and what support carries.
     expect(bottomLine.judge.prompt).toContain(
-      'One action per topic holds over what the agent does as over what it reports.',
+      "A topic is a matter the operator asked about, or an outcome that calls for someone's action. Support states facts and reasons, never instructions: a topic's one action is its only instruction",
+    );
+    // 0090, 0097, 0103(3): a decision or other act taken in the turn and reported is
+    // the topic's one action; 0102(2): a record's consequences are no action.
+    expect(bottomLine.judge.prompt).toContain(
+      "A topic's actions are what the reply itself directs on it and the acts this turn took on it that the reply reports.",
     );
     expect(bottomLine.judge.prompt).toContain(
-      "A topic's actions are every act this turn takes or recommends on its matter",
+      'a separate follow-on action on that topic is a second action, even when it does not compete',
     );
     expect(bottomLine.judge.prompt).toContain(
-      "Its consequences are part of the record, not an action: only what the reply itself directs, and the acts the turn takes, count as a topic's actions.",
+      "A recorded decision's consequences are part of its record, not an action of the reply.",
     );
-    expect(bottomLine.judge.prompt).not.toContain('sets work for someone');
+    // 0078: never a menu or a question it can answer itself.
     expect(bottomLine.judge.prompt).toContain(
-      'Recording a decision is taking it',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'A tool call buries when it takes a second action on a topic this turn has already acted on',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'its support carries anything other than the facts and reasons its conclusions rest on',
+      'it offers a menu of options in place of its one recommendation, or asks a question the agent can answer itself',
     );
     expect(bottomLine.refusal).toMatch(
-      /^burying: this buries your bottom line\. /,
+      /^burying: this reply buries its bottom line\. /,
     );
-    // Recording mechanics are never support; a delegate's ruling is its topic's one
-    // action and reaches that delegate; a candidate set aside gets no action.
-    expect(bottomLine.judge.prompt).toContain(
-      'That a decision was recorded is never support',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'it answers a question a delegate asked without addressing the ruling to that delegate',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'the decision it delivers, recorded this turn, is the same action, and reporting the ruling to the operator adds none',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'a candidate it set aside gets no action of its own',
-    );
-    // An act counts however the reply phrases or divides it, and a short answer
-    // still gives its topic exactly one action.
-    expect(bottomLine.judge.prompt).toContain(
-      'however the reply divides, heads or names it',
-    );
-    expect(bottomLine.judge.prompt).toContain(
+    // 0103: no sentence states a case; the clauses the held-out runs shaped are gone.
+    for (const gone of [
+      'a candidate it set aside',
       'An act counts however it is phrased',
-    );
-    expect(bottomLine.judge.prompt).toContain(
-      'A short direct answer on one topic needs no support, but still gives its topic exactly one action.',
-    );
+      'however the reply divides, heads or names it',
+      'That a decision was recorded is never support',
+      'only on a condition',
+      'permits a practice',
+    ])
+      for (const text of [
+        bottomLine.judge.prompt,
+        bottomLine.refusal,
+        handBack.judge.prompt,
+        holdsWhatItNeeds,
+        whatFollows,
+        ownedQuestion,
+      ])
+        expect(text).not.toContain(gone);
     for (const guard of [bottomLine, handBack])
       expect(guard.refusal, guard.id).toContain(rulingToDelegate);
     for (const [name, agent] of Object.entries(holders))
@@ -252,19 +244,19 @@ describe('the architect', () => {
 
   it('judges whether it holds what an owned question needs once, by one rule, in one judgment every guard turning on it reads, and never refuses settling one as past its objective (0101)', () => {
     const count = (text: string, part: string) => text.split(part).length - 1;
-    // The operator's silence is never a lack: the rule names the one kind of ruling
-    // the agent lacks, and a practice common in the industry is settled from it.
+    // The rule states the decision rights (0086) and the operator concept: the
+    // operator's silence is not by itself a lack, and the agent's own word decides nothing.
     expect(holdsWhatItNeeds).toContain(
-      'The operator not having spoken to a question is never a lack',
+      'the operator not having spoken to a question is not, by itself, something the agent lacks',
     );
     expect(holdsWhatItNeeds).toContain(
-      'whether a context permits a practice common in its industry is settled from that practice',
+      'The operator is asked nothing between stating intent and release unless a fork is irreversible, about value, or beyond the agent',
     );
     expect(holdsWhatItNeeds).toContain(
-      "only when, with all of those, the ruling would still choose what the product is for, a priority between the operator's goals, or a fork that is irreversible, about value or beyond the agent's competence",
+      "The agent lacks what a question needs only when answering it would still decide what is wanted and why or a priority between the operator's goals",
     );
     expect(holdsWhatItNeeds).toContain(
-      "never by the agent's own claim that it lacks something",
+      "never by the agent's own word that it does or does not",
     );
     // 0102: priority is the operator's, recommended by the agent, never owned.
     expect(ownedQuestion).toContain(
@@ -272,16 +264,20 @@ describe('the architect', () => {
     );
     expect(ownedQuestion).toContain('on a check ruling');
     expect(handBack.judge.prompt).toContain(
-      'it is not a hand-back to give one recommendation on priority',
+      'It is not a hand-back to give one recommendation on priority',
     );
     expect(unrecorded.judge.prompt).toContain(
       'when it gives a recommendation on priority, which is no decision the agent owns and is never recorded',
     );
+    // 0090: settled in whatever turn, recorded with its reason; else one action.
     expect(whatFollows).toContain(
-      'records the decision with its reason, never taking it only on a condition',
+      'it records the decision with its reason and reports it settled',
+    );
+    expect(whatFollows).toContain(
+      'reports the one action it is taking to get what it lacks',
     );
     expect(holdsWhatItNeeds).toContain(
-      'Approving examples judges only whether they express the design',
+      'Approving examples is deciding whether they express the concepts of the context they illustrate',
     );
     // The rule lives in the one judgment, made at turn end, and nowhere else.
     expect(ownedQuestionJudgment.events).toEqual(['turn.end']);
