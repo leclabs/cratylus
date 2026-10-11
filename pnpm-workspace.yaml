@@ -29,6 +29,7 @@ catalog:
   chalk: ^5.4.0
   chokidar: ^4.0.1
   "@clack/prompts": ^1.8.1
+  "@dagrejs/graphlib": ^4.0.5
 
 # INJECTION IS WHAT MAKES `pnpm deploy` PRODUCE A CONSUMER ARTIFACT. Without it,
 # deploy leaves `workspace:*` specifiers unresolved and the result cannot be

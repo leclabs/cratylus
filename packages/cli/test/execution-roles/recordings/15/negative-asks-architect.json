@@ -1,0 +1,69 @@
+{
+  "breaks": "asks-architect",
+  "recording": {
+    "messages": [
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The example admits two meanings. I am stopping here."
+          }
+        ]
+      }
+    ],
+    "report": "The example admits two meanings. I am stopping here.",
+    "snapshots": [
+      {
+        "design/concepts.md": "# Booking\nreservation: a claim remains reserved until its expiry.\n",
+        "design/examples/booking/seats.md": "1. (reservation) A reservation expires after one day.\n",
+        "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+        "src/cancel.mjs": "export function cancel() { return true; }\n",
+        "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+        "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+        "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+      },
+      {
+        "design/concepts.md": "# Booking\nreservation: a claim remains reserved until its expiry.\n",
+        "design/examples/booking/seats.md": "1. (reservation) A reservation expires after one day.\n",
+        "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+        "src/cancel.mjs": "export function cancel() { return true; }\n",
+        "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+        "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+        "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+      }
+    ],
+    "wiring": {
+      "agent": "lead",
+      "declaration": "Installed composed lead declaration (synthetic offline control).",
+      "prompt": [
+        "Harness prompt",
+        "Installed composed lead declaration (synthetic offline control)."
+      ],
+      "active": ["read"],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "answers": {
+      "asks-architect": {
+        "pass": false,
+        "evidence": "Control annotation: The example admits two meanings. I am stopping here."
+      },
+      "never-picks": {
+        "pass": true,
+        "evidence": "Control annotation: the other clause remains satisfied by the trace."
+      }
+    }
+  }
+}

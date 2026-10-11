@@ -21,13 +21,17 @@ interface RegistrationAPI {
   registerTool(tool: Definition): void;
 }
 const registryKey = Symbol.for('cratylus.cut6.observed-omp-registry');
+const registrationsKey = Symbol.for('cratylus.cut6.observed-omp-registrations');
 // Omp may import a CLI extension and its transitive import under different URLs.
 // This harness-owned symbol shares observations, never registrations or behavior.
 const store = globalThis as typeof globalThis & {
   [registryKey]?: Map<string, RegisteredTool>;
+  [registrationsKey]?: { name: string; path: string }[];
 };
 store[registryKey] ??= new Map<string, RegisteredTool>();
 export const entries = store[registryKey];
+store[registrationsKey] ??= [];
+export const registrations = store[registrationsKey];
 export default function tap(pi: RegistrationAPI) {
   const prototype = Object.getPrototypeOf(pi) as RegistrationAPI;
   const register = prototype.registerTool;
@@ -36,5 +40,6 @@ export default function tap(pi: RegistrationAPI) {
     const entry = this.extension.tools.get(definition.name);
     if (!entry) throw new Error('omp registration did not reach its registry');
     entries.set(definition.name, entry);
+    registrations.push({ name: definition.name, path: entry.sourceInfo.path });
   };
 }

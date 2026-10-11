@@ -21,11 +21,14 @@
 // branches may each give, so a reference by id holds only while one decision
 // has it. A decision is SUPERSEDED once any decision supersedes it, else
 // ACCEPTED once recorded accepted or its acceptance is recorded, else OPEN.
+//
+// A cut's EFFICIENCY figures are its context's latest efficiency entry for it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
   ContextEntry,
   DecideEntry,
+  EfficiencyEntry,
   Entry,
   RetireEntry,
   VersionEntry,
@@ -110,6 +113,9 @@ export interface ContextHistoryView {
   }[];
 }
 
+/** A cut's figures as last recorded, and when. */
+export type EfficiencyView = Omit<EfficiencyEntry, 'id' | 'kind' | 'context'>;
+
 /** Where a concept stands: live in one version, retired, or competing. */
 export type Standing =
   | { readonly is: 'live'; readonly current: WordedEntry }
@@ -131,6 +137,8 @@ export class Folded {
   readonly acceptances = new Set<string>();
   /** The ids of the decisions superseding each decision's entry. */
   readonly supersededBy = new Map<string, string[]>();
+  /** Each context's cuts by name, each with its latest efficiency entry. */
+  readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
 
   constructor(entries: readonly Entry[]) {
     for (const entry of entries)
@@ -177,6 +185,14 @@ export class Folded {
           if (target !== undefined) this.acceptances.add(target);
           break;
         }
+        case 'efficiency': {
+          const cuts =
+            this.efficiencies.get(entry.context) ??
+            new Map<string, EfficiencyEntry>();
+          this.efficiencies.set(entry.context, cuts);
+          cuts.set(entry.cut, entry);
+          break;
+        }
       }
   }
 
@@ -192,6 +208,21 @@ export class Folded {
    *  names: one, none, or several when an id is shared. */
   resolve(ref: string): readonly string[] {
     return this.decisions.has(ref) ? [ref] : (this.named.get(ref) ?? []);
+  }
+
+  /** Each cut of `context` with the figures last recorded for it, in the order
+   *  its cuts were first recorded. */
+  efficiency(context: string): EfficiencyView[] {
+    return [...(this.efficiencies.get(context)?.values() ?? [])].map(
+      ({ cut, agentRuns, rounds, wholeCheckRuns, tokens, at }) => ({
+        cut,
+        agentRuns,
+        rounds,
+        wholeCheckRuns,
+        tokens,
+        at,
+      }),
+    );
   }
 
   /** The current entries of `context`, a context the journal has: those no

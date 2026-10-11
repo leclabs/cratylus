@@ -97,6 +97,27 @@ export function success(r: CommandResult) {
   expect(r.code, r.stderr + r.stdout).toBe(0);
   return r.stdout;
 }
+// Architect's check ruling, 2026-10-10: bind one tool per capability the
+// installed runtime explains, not a closed list of today's capabilities.
+export function runtimeCapabilityTools(command: Host['command']): string[] {
+  const help = success(command(['--help']));
+  const section = help.split(/^Capabilities:\s*$/m)[1]?.split(/^\S.*:\s*$/m)[0];
+  expect(section, 'runtime help declares its capabilities').toBeDefined();
+  const commands = [...section!.matchAll(/^\s{2}([A-Za-z][\w-]*)\s/gm)].map(
+    (match) => match[1]!,
+  );
+  expect(commands.length).toBeGreaterThan(0);
+  return commands
+    .flatMap((name) => {
+      const result = command([name, '--explain']);
+      // Legacy capabilities without an explanation are not adapter tools.
+      if (result.code !== 0) return [];
+      const explanation = JSON.parse(result.stdout) as { name: string };
+      expect(explanation.name).toEqual(expect.any(String));
+      return [explanation.name.replace(/ /g, '_')];
+    })
+    .sort();
+}
 export function files(root: string, ancestors: string[] = []): string[] {
   if (!existsSync(root)) return [];
   const real = realpathSync(root);
@@ -256,15 +277,13 @@ function hostIn(root: string): Host {
     const wiring: Wiring = JSON.parse(readFileSync(output, 'utf8'));
     expect(wiring.observerError).toBeUndefined();
     if (explicit && wiring.tools.some((t) => t.name === 'concept_journal')) {
-      // Architect's decision 0006 ruling: omp's own built-in extensions also
-      // register tools under --no-extensions. Only this adapter's provenance
-      // belongs to the one-capability-tool assertion.
       expect(
         wiring.registered
           .filter((registration) => registration.path === adapter)
-          .map((registration) => registration.name),
-        'the adapter registers one capability tool',
-      ).toEqual(['concept_journal']);
+          .map((registration) => registration.name)
+          .sort(),
+        'the adapter registers one capability tool per runtime capability, exactly once',
+      ).toEqual(runtimeCapabilityTools(command));
     }
     return wiring;
   }

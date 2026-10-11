@@ -30,6 +30,7 @@ import {
   ompHarnessAdapter,
   ompRoleRouting,
 } from '../../src/adapters/omp/index.js';
+import { OMP_CAPABILITY_TOOLS } from '../../src/adapters/omp/render.js';
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
@@ -537,8 +538,9 @@ describe('omp capability interface', () => {
   });
 
   /** The emitted module's factory, written to disk beside a `cratylus` on PATH
-   *  that answers `--explain` with `explanation` and any other call with its argv
-   *  as JSON (or, for a verb named `refuse`, a refusal on stderr). */
+   *  that answers `<capability> --explain` with `explanation` under that
+   *  capability's own name (`<name> <capability>`), and any other call with its
+   *  argv as JSON (or, for a verb named `refuse`, a refusal on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -553,7 +555,7 @@ describe('omp capability interface', () => {
       [
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
-        `if (args.includes('--explain')) process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8'));`,
+        `if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
         'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
         '',
@@ -584,7 +586,7 @@ describe('omp capability interface', () => {
     const content = module?.content ?? '';
     expect(content).toContain('const COMMAND = "cratylus";');
     expect(content).toContain(
-      'const CAPABILITIES: readonly string[] = ["concepts"];',
+      `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
     );
     expect(content).toContain('[capability, "--explain"]');
     // No verb, journal location or entry field of a capability is spelled here.
@@ -594,6 +596,7 @@ describe('omp capability interface', () => {
       'decide',
       'design/journal',
       'concept journal',
+      'work-packages',
     ])
       expect(content).not.toContain(word);
   });
@@ -676,6 +679,11 @@ describe('omp capability interface', () => {
       effect: 'reads' | 'appends',
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
+    /** The tool the stand-in's explanation of each capability registers, in the
+     *  order the adapter offers its capabilities. */
+    const TOOLS = OMP_CAPABILITY_TOOLS.map(
+      (capability) => `stand_in_${capability.toLowerCase()}`,
+    );
     const EXPLANATION = {
       name: 'stand in',
       purpose: 'p',
@@ -697,9 +705,9 @@ describe('omp capability interface', () => {
     };
 
     it('registers one tool per capability, its verb required, approval by effect', async () => {
-      const [tool, ...rest] = await load(EXPLANATION);
-      expect(rest).toEqual([]);
-      expect(tool?.name).toBe('stand_in');
+      const tools = await load(EXPLANATION);
+      expect(tools.map((t) => t.name)).toEqual(TOOLS);
+      const [tool] = tools;
       expect(tool?.parameters.required).toEqual(['verb']);
       expect(tool?.parameters.properties.verb?.enum).toEqual([
         'look',
@@ -816,7 +824,7 @@ describe('omp capability interface', () => {
         omp.agents = [discovered('Assayer', [...OMP_READ_ONLY_TOOLS])];
         const [tool, ...rest] = await load(EXPLANATION, { sub: 'assayer' });
         expect(omp.discovered).toEqual(['/the/session/cwd']);
-        expect(rest).toEqual([]);
+        expect(verbsOf(rest)).toEqual(TOOLS.slice(1).map((n) => [n, ['look']]));
         expect(tool?.parameters.properties.verb?.enum).toEqual(['look']);
         // Nothing of a withheld verb is said: its parameters are not parameters.
         expect(Object.keys(tool?.parameters.properties ?? {}).sort()).toEqual([
@@ -832,9 +840,9 @@ describe('omp capability interface', () => {
 
       it('in a main session `--agent` started as a read-only declaration', async () => {
         omp.agents = [discovered('assayer', [...OMP_READ_ONLY_TOOLS])];
-        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual([
-          ['stand_in', ['look']],
-        ]);
+        expect(verbsOf(await load(EXPLANATION, { flag: 'assayer' }))).toEqual(
+          TOOLS.map((n) => [n, ['look']]),
+        );
       });
 
       it('refuses a withheld verb, called anyway, before the command runs', async () => {
@@ -865,7 +873,7 @@ describe('omp capability interface', () => {
       });
 
       it('offers every verb to any other agent or session', async () => {
-        const all = [['stand_in', ['look', 'put', 'refuse']]];
+        const all = TOOLS.map((n) => [n, ['look', 'put', 'refuse']]);
         omp.agents = [
           discovered('builder'),
           discovered('cartographer', ['read', 'write']),

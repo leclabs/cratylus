@@ -146,8 +146,12 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
- *  (`<bin> <capability> --explain`), which the concept journal does. */
-const OMP_CAPABILITY_TOOLS: readonly Capability[] = ['concepts'];
+ *  (`<bin> <capability> --explain`), the concept journal and the work package
+ *  capability. */
+export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
+  'concepts',
+  'workPackage',
+];
 
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains

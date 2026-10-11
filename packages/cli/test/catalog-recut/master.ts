@@ -213,7 +213,7 @@ rectify | treat every input as a hypothesis and map it to known practice before 
 illustration | turn concepts into concrete examples, before any build, including what must not happen
 freeze | fix examples, their checks and their concepts while a build realizes them; a check is trusted only once seen to fail
 build | change the work until its visible examples pass
-judgment | judge the finished work once, against fixed criteria and held-out examples
+judgment | judge the finished work once, when its build is green, against fixed criteria and held-out examples
 whole check | run every check of everything affected in one run, fixing everything it revealed in one round
 reconstitution | at every start, recover the design from its source of truth and read it back before acting`),
   stance: glossary(`
@@ -244,7 +244,7 @@ plain | ordinary words, no jargon beyond the context's own
 formal | formal register
 casual | conversational register
 convergence | density set by a layman reader
-maintenance | a peer's density, keeping the notation the work is done in
+maintenance | a peer's density, in the notation that peer works in
 answer-only | the answer, without its reasoning
 decision-rationale | each decision with its reasons
 provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred`),
@@ -308,7 +308,7 @@ concepts | a cut's concepts only
 examples | the agreed examples to bind`),
   deliverable: glossary(`
 decisions-with-reasons | concepts, decisions and rulings, each with its reason
-outcome-with-efficiency | each example's outcome in concept terms, with the effort it took
+outcome-with-efficiency | each example's outcome stated in the design's own concepts, the terms the architect works in rather than those of the realization, its evidence and sources named in those same terms, with the effort it took
 done-or-failing-case | done, or the case that still fails
 verdict-per-concept | accept or reject, with findings per concept
 examples-with-flagged-terms | examples, plus every term it could not place

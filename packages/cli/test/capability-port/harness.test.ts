@@ -3,7 +3,12 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
-import { host, shellTools, toolJSON } from './fixture.js';
+import {
+  host,
+  runtimeCapabilityTools,
+  shellTools,
+  toolJSON,
+} from './fixture.js';
 import { replaceRuntime } from './replacement.js';
 
 it('observer control: real omp registers and executes a non-journal witness', () => {
@@ -88,15 +93,16 @@ function registrationHost(names: string[]) {
 }
 
 it('registration provenance control: omp-owned tools do not count as adapter tools', () => {
-  const h = registrationHost(['concept_journal']);
+  const h = host();
   try {
     const wiring = h.inspect();
     const tool = h.offered(wiring);
     expect(
       wiring.registered
         .filter((registration) => registration.path === tool.sourceInfo.path)
-        .map((registration) => registration.name),
-    ).toEqual(['concept_journal']);
+        .map((registration) => registration.name)
+        .sort(),
+    ).toEqual(runtimeCapabilityTools(h.command));
     expect(
       wiring.registered.some(
         (registration) => registration.path !== tool.sourceInfo.path,
@@ -109,6 +115,17 @@ it('registration provenance control: omp-owned tools do not count as adapter too
 
 it('registration provenance negative: a second adapter tool is refused', () => {
   const h = registrationHost(['concept_journal', 'cut6_extra_tool']);
+  try {
+    expect(() => h.inspect()).toThrow(
+      'the adapter registers one capability tool',
+    );
+  } finally {
+    h.dispose();
+  }
+});
+
+it('registration provenance negative: registering a capability twice is refused', () => {
+  const h = registrationHost(['concept_journal', 'concept_journal']);
   try {
     expect(() => h.inspect()).toThrow(
       'the adapter registers one capability tool',

@@ -52,6 +52,12 @@ export function assessIsolation(
     .join('\n');
   return {
     'only-requested-tools':
+      // The cut-6 Given offers only the journal capability, even after the
+      // runtime gains others. Shell tools in example 7 stay available.
+      !expectedTools.includes('work_package') &&
+      !wiring.active.includes('work_package') &&
+      !wiring.tools.some((tool) => tool.name === 'work_package') &&
+      !/\bwork_package\b/.test(prompt) &&
       JSON.stringify([...wiring.active].sort()) ===
         JSON.stringify([...expectedTools].sort()) &&
       JSON.stringify(wiring.tools.map((t) => t.name).sort()) ===
