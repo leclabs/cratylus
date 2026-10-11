@@ -1355,14 +1355,16 @@ describe('omp capability interface', () => {
       );
 
     /** The CRATYLUS module and a session module carrying `guards`, loaded into one
-     *  stand-in omp started with `--agent <agent>`. omp's flag values are the
-     *  runtime's, but each extension reads only the flags it registered itself
-     *  (`getFlag` on an unregistered name: undefined), as omp's runner does. */
+     *  stand-in omp started with `--agent <agent>` on a session whose branch holds
+     *  `branch`. omp's flag values are the runtime's, but each extension reads only
+     *  the flags it registered itself (`getFlag` on an unregistered name:
+     *  undefined), as omp's runner does. */
     async function twoModules(
       agent: string,
       guards: Parameters<
         NonNullable<typeof ompHarnessAdapter.scopeActivatedSurface>
       >[2],
+      branch: readonly unknown[] = [],
     ) {
       const [session] =
         ompHarnessAdapter.scopeActivatedSurface?.([], [], guards) ?? [];
@@ -1424,6 +1426,7 @@ describe('omp capability interface', () => {
           getApiKeyAndHeaders: async () => ({ ok: true, apiKey: 'fixture' }),
         },
         ui: { setStatus: () => {}, notify: () => {} },
+        sessionManager: { getBranch: () => branch },
       };
       // omp's runner: the handlers in order, the first refusal ends the call.
       const fire = async (event: string, payload: unknown) => {
@@ -1581,6 +1584,81 @@ describe('omp capability interface', () => {
       omp.agents = [CARTOGRAPHER()];
       const { fire } = await twoModules('cartographer', [replyGuard]);
       expect(await fire('tool_call', changing[1])).toBeUndefined();
+    });
+
+    const conversation = [
+      {
+        type: 'message',
+        message: { role: 'user', content: 'Approve the cut.' },
+      },
+      { type: 'message', message: { role: 'assistant', content: 'Done.' } },
+    ];
+    /** The system prompt of the next turn, joined. */
+    const note = async (fire: (e: string, p: unknown) => Promise<unknown>) => {
+      const turn = await fire('before_agent_start', { systemPrompt: BASE });
+      return turn && typeof turn === 'object' && 'systemPrompt' in turn
+        ? String((turn.systemPrompt as string[]).join('\n'))
+        : '';
+    };
+
+    it('reconstitutes a new session: the note on its first turn, its acts held', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      expect(await note(fire)).toContain('# Session start: reconstitution');
+      expect(await fire('tool_call', changing[1])).toEqual({
+        block: true,
+        reason: READBACK_REFUSAL,
+      });
+    });
+
+    it('reconstitutes nothing in a resumed session continuing a conversation', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules(
+        'architect',
+        [replyGuard],
+        conversation,
+      );
+      expect(await note(fire)).not.toContain('# Session start');
+      for (const call of changing)
+        expect(await fire('tool_call', call), call.toolName).toBeUndefined();
+      expect(judge.asked).toEqual([]);
+    });
+
+    it('reconstitutes a resumed session compacted since it last spoke', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules(
+        'architect',
+        [replyGuard],
+        [
+          ...conversation,
+          { type: 'compaction', summary: 'The cut was approved.' },
+        ],
+      );
+      expect(await note(fire)).toContain('# Session start: reconstitution');
+      expect((await fire('tool_call', changing[1])) as object).toMatchObject({
+        block: true,
+      });
+    });
+
+    it('reconstitutes again once the session is compacted', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules(
+        'architect',
+        [replyGuard],
+        conversation,
+      );
+      expect(await note(fire)).not.toContain('# Session start');
+      await fire('session_compact', {
+        compactionEntry: { type: 'compaction' },
+      });
+      expect(await note(fire)).toContain('# Session start: reconstitution');
+      expect(await fire('tool_call', changing[1])).toEqual({
+        block: true,
+        reason: READBACK_REFUSAL,
+      });
+      expect(await note(fire), 'the first turn after it alone').not.toContain(
+        '# Session start',
+      );
     });
 
     it('never touches the active tools, whatever --tools the operator gave', async () => {
