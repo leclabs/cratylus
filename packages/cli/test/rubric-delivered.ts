@@ -28,18 +28,25 @@ function textOf(content: unknown): string {
     })
     .join('\n');
 }
+// The first sentence identifies the refusal; later corrective instructions can
+// change without invalidating retained recordings.
+const bottomLinePrefix = bottomLine.refusal.slice(
+  0,
+  bottomLine.refusal.indexOf('.') + 1,
+);
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
-// READBACK_REFUSAL, leadRefusal, builderRefusal, before_subagent_spawn and the
-// task tool_call handler. The latter uses schema/src/contract.ts checkAssignment.
+// READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, leadRefusal, builderRefusal,
+// before_subagent_spawn and the task tool_call handler. The latter uses
+// schema/src/contract.ts checkAssignment.
 // Match only those leading sentences, not arbitrary command errors or mentions.
 function refusingGuard(reason: string): string | undefined {
   if (reason.startsWith(descend.refusal)) return descend.id;
   if (reason.startsWith(handBack.refusal)) return handBack.id;
-  if (reason.startsWith(bottomLine.refusal)) return bottomLine.id;
+  if (reason.startsWith(bottomLinePrefix)) return bottomLine.id;
   if (
     reason.startsWith(
-      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.',
+      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) ',
     )
   )
     return 'readback-gate';

@@ -167,6 +167,14 @@ pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.t
 
 Before the prompt change, the first command was **1 failed, 11 skipped**: the actual architect prompt still contained “so I won't settle it without your intent.” Before wiring projection/reporting into judging, the second command was **5 failed, 10 passed, 19 skipped**: both prompts still included that reply, judged recordings lacked drift, and both batch paths lacked drift counts. The combined-refusal check was then **3 failed, 34 skipped**: the newly installed bottom-line guard was not recognized, joint refusals lost their second guard, and totals did not count them. Final acceptance was **6 files passed; 185 passed, 82 skipped**. No subject or judge model sessions ran.
 
+After the sibling guard change added an unseen-readback refusal and extended bottom-line's corrective instructions, this targeted regression command was run before updating the matcher:
+
+```sh
+pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'combined refusal|recognizes the generated'
+```
+
+Observed: **2 failed, 6 passed, 20 skipped**. The unseen-readback call remained in evidence, and a retained bottom-line refusal with the previous corrective instructions was no longer recognized. Readback matching now uses the shared leading request of both emitted variants; bottom-line matching reads its identifying first sentence from the canonical guard, not the changeable corrective instructions. The full acceptance command above then passed **6 files; 187 passed, 82 skipped**, with no model sessions.
+
 ### Re-judging a flat smoke directory
 
 The existing namespaced replay path already accepts symlinked `run-1` directories. For example, the **lead may run** the following (not executed for this change):

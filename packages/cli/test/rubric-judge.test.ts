@@ -305,6 +305,12 @@ describe('0091 delivered evidence', () => {
   it.each([
     { reason: bottomLine.refusal, guard: 'bottom-line' },
     {
+      // Retained before the guard's corrective instruction was extended.
+      reason:
+        "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms.",
+      guard: 'bottom-line',
+    },
+    {
       reason: `${handBack.refusal} Owned ruling deferred.\n\n${bottomLine.refusal} Conclusion last.`,
       guard: ['hand-back', 'bottom-line'],
     },
@@ -454,6 +460,10 @@ describe('0091 delivered evidence', () => {
     ]);
   });
   it.each([
+    [
+      'readback-gate',
+      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.',
+    ],
     [
       'builder-dispatch',
       'builder dispatch of cut film-approval refused: concepts no work package serves: approval',
