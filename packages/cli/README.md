@@ -51,15 +51,15 @@ and installs only the practices it is named, or every practice when told `--all`
 Three decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
-| Decision                                | Flag                                     | Asked when                                                        | Where nothing is asked               |
-| --------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------- | ------------------------------------ |
-| Which harness                           | `--harness <claude\|omp>`                | absent, and the host does not have exactly one supported harness  | none: refused                        |
-| Which practices                         | `--practices <name,…>` / `--all`         | neither is given, on a terminal                                   | none: refused, whatever `--yes` says |
-| Which model each agent's role routes to | `--model-roles <agent=model,…\|default>` | there are installed agents whose role the host has not set itself | each agent's tier and effort         |
+| Decision                                  | Flag                                    | Asked when                                                                       | Where nothing is asked                                   |
+| ----------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Which harness                             | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness                 | none: refused                                            |
+| Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                  | none: refused, whatever `--yes` says                     |
+| Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
-question first asks whether to choose a model per agent at all, and answering no keeps each agent's
-tier and effort.
+question asks about each tier, then each persona, that your config does not bind; leaving one
+unbound is an answer.
 Unless a flag settled every decision, the preview ends with that last question. Answering no, or
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
@@ -87,20 +87,27 @@ since none is not every; to take it all out, run `cratylus uninstall --harness <
 Installing again is how you change the choice. A practice installed before and not chosen now is
 removed, with what no chosen practice still carries.
 
-### Which model each agent's role routes to
+### Which model each tier and persona runs on
 
-Each agent runs on a model role named for it, never on a model, and the host maps the role to a
-model. Install binds each agent's role to the tier and effort its design gives it, as
-`architect: "@frontier:high"`, over a role per tier that install seeds (the section on omp's model
-routing). `--model-roles` settles that decision whenever it is given, keyed by the agent's name: an
-agent it does not name keeps its tier and effort, and `--model-roles default` keeps them for every
-agent. A model is a `modelRoles` entry in the host's config (`builder=@frontier:low`, or a model
-such as `anthropic/claude-opus-5-5:high`). An agent you name is yours from then on: a later install keeps
-it. The entry install seeds for an agent you did not choose is not yours: it stays as install wrote
-it until you edit it, and a later install asks that agent again and moves the entry to your answer.
-A role the host already set itself is never asked and never changed, is named as the host's in the
-preview, and a `--model-roles` entry for it is left as the host set it and said so. The section on
-omp's model routing says more.
+Which model runs an agent is yours to choose, and it is your harness's own setting, never
+cratylus's (decision 0112). Each agent's declaration names its own model role first, then the tier
+and effort its design gives it: `builder` declares `["@builder", "@frontier:medium"]`, and is never
+rewritten with a model. So two kinds of role decide the model: a tier the agents fall back to
+(`frontier`, `frontier-other-family`, …), and the role named for an agent, which wins over its tier
+where you bind it.
+
+On a terminal, install asks for a model for each tier, and each persona's role, that your
+`~/.omp/agent/config.yml` does not bind under `modelRoles`, and writes each answer there as an
+ordinary entry of yours (`frontier: "anthropic/claude-opus-5-5"`). `--model-roles` settles the
+decision instead, keyed by a tier or an agent's name (`frontier=anthropic/claude-opus-5-5,builder=openai/gpt-6`);
+`--model-roles default` binds nothing. Nothing install binds for you is recorded as cratylus's, so
+installing again, upgrading and uninstalling all keep it, and you change it by editing your config.
+A role your config already binds is never asked and never changed; a `--model-roles` entry for it is
+left as you set it, and said so.
+
+Where install is neither told nor able to ask (no terminal, or `--yes`), it places everything else
+and ends by naming, as your next step, each tier the installed agents fall back to that your config
+binds no model to. Until you bind it, an agent on that tier runs on the session's own model.
 
 ### What it places
 
@@ -120,11 +127,11 @@ Everything install places for you on a harness lives under one root it owns: `~/
 
 omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over a declaration of the same name.
 
-Install writes nothing else of yours, with one exception: where your `~/.omp/agent/config.yml` hides the row an extension's status shows in (`statusLine.showHookStatus: false`), install lists omp's `status` segment in your layout (or shows the row again), so a session started as an agent shows its name and mark. That edit is recorded in the root, and uninstall takes it out while it stands as written.
+Install writes nothing else of yours, with two exceptions. The models you choose for tiers and roles go into your `~/.omp/agent/config.yml` as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where that file hides the row an extension's status shows in (`statusLine.showHookStatus: false`), install lists omp's `status` segment in your layout (or shows the row again), so a session started as an agent shows its name and mark. That edit is recorded in the root, and uninstall takes it out while it stands as written.
 
 **Installing again is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
-**An earlier installation** — cratylus before the owned root placed its agents in `~/.omp/agent/agents`, its skills in `~/.agents/skills`, its extensions in `~/.omp/agent/extensions`, hook workers in `~/.omp/hooks`, `modelRoles` and a status line in `config.yml`, and `~/.cratylus.json` — is taken back by the next install, by its own record (`~/.omp/.forge/deploy-manifest.json`): each file it placed while it is still the bytes it wrote, each line it added while it stands as written, and the record last. A file of the same name you placed or changed since is yours, and is left and named.
+**An earlier installation** — cratylus before the owned root placed its agents in `~/.omp/agent/agents`, its skills in `~/.agents/skills`, its extensions in `~/.omp/agent/extensions`, hook workers in `~/.omp/hooks`, `modelRoles` and a status line in `config.yml`, and `~/.cratylus.json` — is taken back by the next install, by its own record (`~/.omp/.forge/deploy-manifest.json`): each file it placed while it is still the bytes it wrote, each line it added while it stands as written, and the record last. The `modelRoles` entries it seeded are the one exception: which model a role runs on is your setting, so they stay in your config as your own from then on, and the run names them. A file of the same name you placed or changed since is yours, and is left and named.
 
 ### When it refuses
 
@@ -140,9 +147,9 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 - `--practices: '<name>' is no practice of this corpus (declared: …)`, and `no practice was chosen`:
   name only declared practices, and at least one.
 - `--practices and --all were both given`: give one.
-- `--model-roles: '<name>' is no agent this install places (agents: …)`: an entry must be
-  `<agent>=<model>`, keyed by one of the agents it lists, and a model must be a name the harness
-  accepts.
+- `--model-roles: '<name>' is no tier or agent of this install (tiers: …; agents: …)`: an entry must
+  be `<role>=<model>`, keyed by one of the tiers or agents it lists, and a model must be a name the
+  harness accepts.
 - `<path>/cratylus.config.ts imports '<package>', which is not installed; run …`, or
   `… does not parse`: the `cratylus.config.ts` in this directory cannot be loaded. Do what the line
   says, or run install from a directory with no config.
@@ -286,7 +293,7 @@ and warns where it falls short; they are not the same, and this is what a user m
 
 ## The host's model routing on omp
 
-An agent's declaration names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in `~/.omp/agent/config.yml` wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). Install writes no role into your config. `--model-roles builder=openai/x` puts your choice in the declaration's second place, `["@builder", "openai/x"]`; a role you already bind is never asked about, and a choice for it is said to be left as you set it.
+An agent's declaration names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in `~/.omp/agent/config.yml` wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The declaration is never rewritten with a model: a model install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in that file (decision 0112), which upgrade and uninstall keep. A role you already bind is never asked about, and a choice for it is said to be left as you set it.
 
 ## The host runtime config
 
@@ -304,7 +311,7 @@ cratylus uninstall --harness omp --dry-run       # the same report, nothing writ
 cratylus uninstall --harness omp --home <dir>    # another user's installation
 ```
 
-`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; every reference into it its record names (the link in `~/.omp/plugins/node_modules`, and the dependency entry in `~/.omp/plugins/package.json`, the file too where install created it and nothing else is in it), each while it still refers to the root; and the line install added to your status line, while it stands as written. It also takes back an earlier installation by its own record, as install does. Everything you placed or changed outside the root is left, and what was left is named, with why. Your projects' journals, ledgers and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
+`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; every reference into it its record names (the link in `~/.omp/plugins/node_modules`, and the dependency entry in `~/.omp/plugins/package.json`, the file too where install created it and nothing else is in it), each while it still refers to the root; and the line install added to your status line, while it stands as written. It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, and what was left is named, with why. Your projects' journals, ledgers and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
 
 ## Exit codes and streams
 
@@ -329,16 +336,16 @@ Install the bundled corpus into a harness on this machine, asking what you have 
 cratylus install [options]
 ```
 
-| Flag                    | What it does                                                                                                                                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`      | The harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                  |
-| `--practices <names>`   | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                              |
-| `--all`                 | Install every practice, without asking                                                                                                                                                                        |
-| `--model-roles <roles>` | The model the model role named for each agent routes to, as agent=model comma-separated (keys are agent names), or 'default' (default: asked; an agent's model role the host already routes is left as it is) |
-| `-y, --yes`             | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                |
-| `--verbose`             | Also print the per-file detail of the run                                                                                                                                                                     |
-| `--dry-run`             | Print what would be placed and stop, writing nothing                                                                                                                                                          |
-| `--home <dir>`          | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                              |
+| Flag                    | What it does                                                                                                                                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`      | The harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                   |
+| `--practices <names>`   | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                               |
+| `--all`                 | Install every practice, without asking                                                                                                                                                                                                         |
+| `--model-roles <roles>` | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked) |
+| `-y, --yes`             | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                 |
+| `--verbose`             | Also print the per-file detail of the run                                                                                                                                                                                                      |
+| `--dry-run`             | Print what would be placed and stop, writing nothing                                                                                                                                                                                           |
+| `--home <dir>`          | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                               |
 
 ### `cratylus uninstall`
 

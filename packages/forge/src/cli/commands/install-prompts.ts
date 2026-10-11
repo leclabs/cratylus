@@ -13,16 +13,17 @@
 import * as clack from '@clack/prompts';
 import type { OfferedPractice } from '../../project/index.js';
 
-/** One agent's model role whose model the operator may route, and what is offered for
- *  it. */
+/** One model role the host binds no model to, which the operator may bind: a tier the
+ *  installed agents fall back to, or a persona's own role (decision 0112). */
 export interface RoleQuestion {
-  /** The model role, named for its agent. */
+  /** The model role, as the host's settings name it. */
   readonly role: string;
-  /** The models offered for it, besides a typed one. */
+  /** A tier, or the role named for a persona, which otherwise runs on its tier. */
+  readonly kind: 'tier' | 'persona';
+  /** The agents that run on it. */
+  readonly agents: readonly string[];
+  /** The models offered for it, besides a typed one: those the host already binds. */
   readonly options: readonly string[];
-  /** Preselected: cratylus's own routing for the role, or `undefined` where it routes
-   *  none (the session's model). Answering it is leaving the role at its default. */
-  readonly initial: string | undefined;
 }
 
 export interface InstallPrompts {
@@ -39,8 +40,8 @@ export interface InstallPrompts {
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
-  /** The model per agent's model role: the answer of every role asked, a role left at
-   *  its default answering its `initial` (or absent, where it has none). */
+  /** The model per role asked: the answer of each role bound, a role left unbound
+   *  absent. */
   routes(
     questions: readonly RoleQuestion[],
   ): Promise<Record<string, string> | undefined>;
@@ -60,27 +61,31 @@ function answer<T>(value: T): Exclude<T, symbol> | undefined {
 
 // Sentinels among the model names offered: no model name holds a space.
 const OTHER = 'another model';
-const DEFAULT = "the session's model";
+const UNBOUND = 'leave unbound';
 
 async function askRoute(q: RoleQuestion): Promise<string | undefined> {
   const picked = answer(
     await clack.select<string>({
-      message: `Model for the ${q.role} agent`,
+      message:
+        q.kind === 'tier'
+          ? `Model for the ${q.role} tier (${q.agents.join(', ')} fall back to it)`
+          : `Model for the ${q.role} persona`,
       options: [
-        ...(q.initial === undefined
-          ? [{ value: DEFAULT, label: DEFAULT }]
-          : []),
-        ...q.options.map((o) => ({
-          value: o,
-          label: o === q.initial ? `${o} (default)` : o,
-        })),
+        ...q.options.map((o) => ({ value: o, label: o })),
         { value: OTHER, label: 'another model…' },
+        {
+          value: UNBOUND,
+          label:
+            q.kind === 'tier'
+              ? 'none now (bind it in your settings later)'
+              : 'none (it runs on its tier)',
+        },
       ],
-      initialValue: q.initial ?? DEFAULT,
+      initialValue: q.kind === 'persona' ? UNBOUND : (q.options[0] ?? OTHER),
     }),
   );
   if (picked === undefined) return undefined;
-  if (picked === DEFAULT) return '';
+  if (picked === UNBOUND) return '';
   if (picked !== OTHER) return picked;
   const typed = answer(
     await clack.text({
@@ -121,15 +126,7 @@ export const terminalPrompts: InstallPrompts = {
   },
 
   async routes(questions) {
-    const customize = answer(
-      await clack.confirm({
-        message: `Choose the model for each of ${questions.length} agent${questions.length === 1 ? '' : 's'}? (No keeps each on the tier and effort it holds.)`,
-        initialValue: false,
-      }),
-    );
-    if (customize === undefined) return undefined;
     const picked: Record<string, string> = {};
-    if (!customize) return picked;
     for (const q of questions) {
       const model = await askRoute(q);
       if (model === undefined) return undefined;

@@ -141,12 +141,6 @@ export interface AgentDefContext {
    * harness's own skill tool loads it on demand. Absent or empty: every skill fits.
    */
   readonly oversizedSkills?: ReadonlySet<string>;
-  /**
-   * The model the operator chose for this agent at install, which the definition
-   * names in place of the tier and effort the agent holds, after the role named for
-   * the agent (decision 0111). Absent: the tier and effort stand.
-   */
-  readonly model?: string;
 }
 
 /** The projection port a harness adapter implements. */
@@ -537,12 +531,13 @@ export interface HarnessAdapter {
    * How this harness binds an agent's MODEL through host-configured model roles —
    * a projected definition names the role named for the agent first, which the host
    * may bind, and then the tier and effort the agent holds (decision 0111). The
-   * projection names no model id, save one the operator chose at install.
+   * projection names no model id: which model a role or tier runs on is the host's
+   * own setting, which install writes only as the operator answers (decision 0112).
    *
-   * Two facts, the harness's own: WHERE the host keeps its roles (`configRels`,
-   * harness-home relative, in the order the harness READS them), which install only
-   * reads, to ask no question about a role the host already binds; and the value an
-   * agent's model falls back to for the tier and effort it holds (`agentRole`).
+   * Three facts, the harness's own: WHERE the host keeps its roles (`configRels`,
+   * harness-home relative, in the order the harness READS them); the role a tier is
+   * bound by (`tierRole`); and the value an agent's model falls back to for the tier
+   * and effort it holds (`agentRole`).
    *
    * Absent ⇒ this harness has no host-configured role → model table.
    */
@@ -619,6 +614,8 @@ export interface RoleRouting {
   /** The host config files that hold the model roles, relative to the harness home,
    *  in the harness's read order: it reads the first that exists. */
   readonly configRels: readonly string[];
+  /** The model role a tier is bound by in the host's table. */
+  tierRole(tier: string): string;
   /** The model an agent falls back to, for the tier and effort it holds. */
   agentRole(routing: {
     readonly tier: string;

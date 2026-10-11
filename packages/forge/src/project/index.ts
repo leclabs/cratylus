@@ -202,12 +202,6 @@ export interface ProjectOpts {
    * no declared practice.
    */
   readonly practices?: readonly string[];
-  /**
-   * The model the operator chose for each agent, by agent name: each agent named
-   * here is defined with it in place of the tier and effort it holds
-   * ({@link AgentDefContext.model}). Absent: every agent's tier and effort stand.
-   */
-  readonly models?: Readonly<Record<string, string>>;
 }
 
 /** One agent of the plugin set, as its module declares it: the agent is identified by
@@ -254,6 +248,10 @@ export interface ProjectedTree extends ProjectReport {
   readonly agentModels: Readonly<
     Record<string, { readonly tier: string; readonly effort: string }>
   >;
+  /** The sorted names of the rendered agents that state a model routing and hold a
+   *  role not named for them (a persona over its role): the agents, besides the tiers,
+   *  whose model role an install asks the operator to bind. */
+  readonly personas: readonly string[];
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
@@ -1060,9 +1058,6 @@ export async function projectPluginSet(
       manifest,
       ...(mechanisms ? { mechanisms } : {}),
       ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
-      ...(opts.models?.[name] !== undefined
-        ? { model: opts.models[name] }
-        : {}),
     });
     files.push({
       path: join('agents', filename),
@@ -1367,6 +1362,13 @@ export async function projectPluginSet(
   )) {
     agentModels[name] = { tier, effort };
   }
+  const personas = rendered.flatMap((a, i) =>
+    a.routing !== undefined &&
+    a.holds !== undefined &&
+    a.holds !== agentNames[i]
+      ? [agentNames[i] as string]
+      : [],
+  );
 
   return {
     files,
@@ -1375,6 +1377,7 @@ export async function projectPluginSet(
     shims,
     hooks,
     agentModels,
+    personas: [...personas].sort(),
     unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,

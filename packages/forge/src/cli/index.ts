@@ -315,7 +315,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--model-roles <roles>',
-        "The model the model role named for each agent routes to, as agent=model comma-separated (keys are agent names), or 'default' (default: asked; an agent's model role the host already routes is left as it is)",
+        "The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked)",
       ),
     )
     .addOption(

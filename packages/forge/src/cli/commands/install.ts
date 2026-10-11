@@ -36,26 +36,32 @@
 // changed.
 //
 // THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
-// which harness, which of the corpus's practices, and which model each agent's model
-// role falls back to. Each has a flag; a decision given by flag is never asked. The
-// practices are the one decision no run takes for the operator: with neither
-// `--practices` nor `--all`, a terminal is asked (or, under `--yes`, given the practices
-// already installed here, or on a fresh host the corpus's preselected ones) and a run
-// with no terminal refuses, writing nothing. Of the rest a run with no terminal (or
-// `--yes`) takes the default. Before anything is written the run shows what it would
-// place, and on a terminal that is not fully decided it asks once to go ahead:
-// declining writes nothing. What it places is then summarised in a few lines; the
-// per-file detail is `--verbose`'s.
+// which harness, which of the corpus's practices, and which model each tier the agents
+// fall back to, and each persona's own role, runs on. Each has a flag; a decision given
+// by flag is never asked. The practices are the one decision no run takes for the
+// operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
+// `--yes`, given the practices already installed here, or on a fresh host the corpus's
+// preselected ones) and a run with no terminal refuses, writing nothing. Of the rest a
+// run with no terminal (or `--yes`) takes the default. Before anything is written the
+// run shows what it would place, and on a terminal that is not fully decided it asks
+// once to go ahead: declining writes nothing. What it places is then summarised in a
+// few lines; the per-file detail is `--verbose`'s.
 //
 // THE PREVIEW IS THE RUN, DRY. The same steps run once with `dry` set, and what they
 // report is what is shown — so the preview cannot describe something the placement
 // then does differently.
 //
-// WHAT THE HOST HAS ALREADY SET IS NEVER ASKED AND NEVER CHANGED. An agent declaration
-// names its own model role first (decision 0111), so a role the host binds wins, and
-// install writes no role into the host's settings; it asks nothing about a role the
-// host already binds. The host's status line is edited only where the host has hidden
-// the row an extension's status shows in, and that edit is recorded under the root.
+// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING (decision 0112). An agent
+// declaration names its own model role first, then the tier and effort it holds
+// (decision 0111), and is never re-rendered with a model. The model a tier or a
+// persona's role runs on is the operator's to choose: install asks for it where the host
+// binds none and writes the answer into the host's own model roles, recording nothing of
+// it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
+// never asked and never changed. Where install is neither told nor can ask, it places
+// everything else and names, as the next step, each tier the agents fall back to that
+// the host does not bind. The host's status line is edited only where the host has
+// hidden the row an extension's status shows in, and that edit is recorded under the
+// root.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -89,7 +95,6 @@ import {
   placeOwnedRoot,
   readInstallationRecord,
   readManifest,
-  recordedLines,
   rootFiles,
 } from '../../deploy/index.js';
 import { harnessDirIn } from '../../deploy/scope.js';
@@ -127,10 +132,10 @@ export interface InstallCmdOpts {
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
   all?: boolean;
-  /** `--model-roles <name=model,…|default>`: the model each named agent's declaration
-   *  falls back to after its own model role, keyed by agent name; `default` leaves
-   *  every agent on the tier and effort it holds. Given at all, it settles the
-   *  decision: an agent it does not name takes the default. Absent: asked. */
+  /** `--model-roles <role=model,…|default>`: the model each named role runs on,
+   *  bound in the host's own settings: a tier the agents fall back to, or the role
+   *  named for an agent. `default` binds none. Given at all, it settles the decision.
+   *  Absent: each tier and persona role the host does not bind is asked. */
   modelRoles?: string;
   /** `--yes`: on a terminal, take the default of every decision not given (the
    *  practices already installed here, or on a fresh host the corpus's preselected
@@ -182,8 +187,10 @@ interface Findings {
   references: string[];
   /** How many items of an earlier installation were taken back. */
   earlier: number;
-  /** The models the operator chose for agents' declarations, as `name → model`. */
+  /** The model roles bound for the operator in the host's settings, as `role → model`. */
   routes: string[];
+  /** The tiers the agents fall back to that the host binds no model to. */
+  unbound: string[];
   /** What the host had set and was left alone. */
   left: string[];
 }
@@ -196,6 +203,7 @@ function emptyFindings(): Findings {
     references: [],
     earlier: 0,
     routes: [],
+    unbound: [],
     left: [],
   };
 }
@@ -211,7 +219,7 @@ function parseNames(raw: string): string[] {
     .filter(Boolean);
 }
 
-/** `--model-roles`, parsed: the models by agent name, or `default` for none. */
+/** `--model-roles`, parsed: the models by role, or `default` for none. */
 function parseModelRoles(
   raw: string,
   valid: RegExp,
@@ -358,10 +366,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     await discoverFragments(plugins),
     [],
   );
-  const render = async (
-    practices: readonly string[] | undefined,
-    models: Readonly<Record<string, string>> = {},
-  ) => {
+  const render = async (practices: readonly string[] | undefined) => {
     const warnings: string[] = [];
     const report = await projectPluginSet({
       plugins,
@@ -373,7 +378,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       // depends on this path; the projection cannot know it, install does.
       hostHome: opts.home ?? homedir(),
       ...(practices !== undefined ? { practices } : {}),
-      models,
     });
     return { report, warnings };
   };
@@ -456,36 +460,29 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const tree: ProjectedTree = rendered.report;
 
   // ── WHICH MODELS ─────────────────────────────────────────────────────────────
-  // Each agent's declaration names its own model role first, then the tier and effort
-  // it holds, or the model the operator chooses here (decision 0111). A role the host
-  // binds itself wins at run time, so it is never asked about, and a `--model-roles`
-  // entry for it is said to be left as the host set it. A role an earlier install
-  // seeded into the host's config is install's own, which that installation's removal
-  // takes back, and so is asked about like any other.
+  // The model each tier the agents fall back to, and each persona's own role, runs on
+  // (decision 0112): told by flag, or asked where the host binds none, and bound as the
+  // host's own setting. A role the host binds is its own: never asked, never changed.
   const routing = adapter.roleRouting;
   const agentModels = tree.agentModels;
   const agentRoles = Object.keys(agentModels).sort();
-  const hostRouted = new Set<string>();
+  const tierAgents = new Map<string, string[]>();
   if (routing !== undefined) {
-    const path = hostConfigPath(routing.configRels, harnessDir);
-    const probe = addModelRoles(
-      path,
-      agentRoles.map((role) => ({ role, value: '' })),
-      { dry: true },
-    );
-    const earlier = readManifest(harnessDir);
-    const written = recordedLines(harnessDir, path);
-    for (const [role, value] of probe.host) {
-      if (!agentRoles.includes(role)) continue;
-      const line = probe.current[role];
-      const seeded =
-        !earlier.hostRoutes.includes(role) &&
-        (earlier.modelRoleSeeds[role] === value ||
-          (line !== undefined && written.has(line)));
-      if (!seeded) hostRouted.add(role);
+    for (const [agent, { tier }] of Object.entries(agentModels)) {
+      const role = routing.tierRole(tier);
+      tierAgents.set(role, [...(tierAgents.get(role) ?? []), agent]);
     }
   }
-  const askable = agentRoles.filter((r) => !hostRouted.has(r));
+  const tierRoles = [...tierAgents.keys()].sort();
+  const configFile =
+    routing === undefined
+      ? undefined
+      : hostConfigPath(routing.configRels, harnessDir);
+  const hostBound = new Map(
+    configFile === undefined
+      ? []
+      : addModelRoles(configFile, [], { dry: true }).host,
+  );
 
   const choices: Record<string, string> = {};
   const left: string[] = [];
@@ -497,14 +494,16 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     }
     const given = parseModelRoles(opts.modelRoles, OMP_MODEL);
     if (given !== 'default') {
-      const unknown = Object.keys(given).filter((r) => !agentRoles.includes(r));
+      const unknown = Object.keys(given).filter(
+        (r) => !tierRoles.includes(r) && !agentRoles.includes(r),
+      );
       if (unknown.length > 0) {
         throw new Refusal(
-          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no agent this install places (agents: ${list(agentRoles)}); name one of those agents`,
+          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no tier or agent of this install (tiers: ${list(tierRoles)}; agents: ${list(agentRoles)}); name one of those`,
         );
       }
       for (const [role, model] of Object.entries(given)) {
-        if (hostRouted.has(role)) {
+        if (hostBound.has(role)) {
           left.push(
             `--model-roles ${role}=${model}: the host already binds the model role ${role}, so it is left as the host set it`,
           );
@@ -513,21 +512,30 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         }
       }
     }
-  } else if (routing !== undefined && askable.length > 0) {
-    open = true;
-    if (interactive) {
-      const seeds = Object.values(agentModels).map((m) => routing.agentRole(m));
-      const questions: RoleQuestion[] = askable.map((role) => ({
+  } else if (routing !== undefined) {
+    const options = [...new Set(hostBound.values())]
+      .filter((m) => !m.startsWith('@'))
+      .sort();
+    const questions: RoleQuestion[] = [
+      ...tierRoles.map((role) => ({
         role,
-        options: [...new Set(seeds)].sort(),
-        initial: routing.agentRole(
-          agentModels[role] as ProjectedTree['agentModels'][string],
-        ),
-      }));
+        kind: 'tier' as const,
+        agents: tierAgents.get(role) ?? [],
+        options,
+      })),
+      ...tree.personas.map((role) => ({
+        role,
+        kind: 'persona' as const,
+        agents: [role],
+        options,
+      })),
+    ].filter((q) => !hostBound.has(q.role));
+    if (questions.length > 0) open = true;
+    if (interactive && questions.length > 0) {
       const picked = await answered(prompts.routes(questions));
       for (const q of questions) {
         const model = picked[q.role];
-        if (model === undefined || model === q.initial) continue;
+        if (model === undefined) continue;
         if (!OMP_MODEL.test(model)) {
           throw new Refusal(
             `'${model}' is not a usable model name; pass a name the harness accepts`,
@@ -536,9 +544,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         choices[q.role] = model;
       }
     }
-  }
-  if (Object.keys(choices).length > 0) {
-    rendered = await render(chosen, choices);
   }
   const placedTree: ProjectedTree = rendered.report;
   // Each capability's configuration, as the corpus's skills declare it.
@@ -551,8 +556,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     found.warnings.push(...rendered.warnings);
     found.left.push(...left);
     found.detail.push(`corpus: ${source}`, `harness: ${harness} → ${root}`);
-    for (const [role, model] of Object.entries(choices))
-      found.routes.push(`${role} → ${model}`);
     // An earlier installation first: what it placed on the harness's own surfaces is
     // taken back by its record, so what follows meets the host's own files.
     const earlier = removeEarlierInstallation(adapter, {
@@ -573,6 +576,28 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       const merged = mergeHostEdit(hostEdits[key], status.edit);
       if (merged !== undefined) hostEdits[key] = merged;
     }
+    // The models the operator chose, bound in the host's own model roles and recorded
+    // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
+    const bound = new Set<string>();
+    const wanted = Object.entries(choices).map(([role, value]) => ({
+      role,
+      value,
+    }));
+    if (configFile !== undefined && wanted.length > 0) {
+      const result = addModelRoles(configFile, wanted, { dry });
+      if (result.refused !== undefined) {
+        found.warnings.push(
+          `did not bind ${list(wanted.map((e) => e.role))} in ${configFile}: ${result.refused}; bind ${wanted.length === 1 ? 'it' : 'them'} under modelRoles there yourself`,
+        );
+      }
+      for (const e of result.added) {
+        bound.add(e.role);
+        found.routes.push(`${e.role} → ${e.value}`);
+      }
+    }
+    found.unbound.push(
+      ...tierRoles.filter((t) => !hostBound.has(t) && !bound.has(t)),
+    );
     const linked = linkOwnedRoot({ adapter, harnessDir, root, prior, dry });
     found.references.push(
       ...linked.references.map((r) => join(harnessDir, r.path)),
@@ -603,6 +628,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       root,
       tree: placedTree,
       practices: decided,
+      config: configFile,
       dry,
     })) {
       say(line);
@@ -627,7 +653,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
  * What a run shows an operator, before it places (`dry`) and after: the root and the
  * harness; the practices; the counts; the references into the root; an earlier
  * installation taken back; each host file edited and what changed in it; the models
- * chosen; what the host had set and was left alone — and, once placed, what to do next.
+ * bound for the operator; what the host had set and was left alone — and, once placed,
+ * what to do next, the tiers no model is bound to among it.
  */
 function describe(
   found: Findings,
@@ -640,6 +667,8 @@ function describe(
     practices:
       | { chosen: readonly string[]; removed: readonly string[] }
       | undefined;
+    /** The host config file holding its model roles, where the harness has one. */
+    config: string | undefined;
     dry: boolean;
   },
 ): string[] {
@@ -679,7 +708,7 @@ function describe(
   }
   if (found.routes.length > 0) {
     lines.push(
-      `  models you chose: ${list(found.routes)}; every other agent runs on the tier and effort it holds`,
+      `  ${dry ? 'would bind' : 'bound'} in ${ctx.config}, as your own setting (upgrade and uninstall keep it): ${list(found.routes)}`,
     );
   }
   // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
@@ -709,6 +738,11 @@ function describe(
 
   const next = [
     `start or restart ${adapter.name}`,
+    ...(found.unbound.length > 0
+      ? [
+          `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
+        ]
+      : []),
     `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));

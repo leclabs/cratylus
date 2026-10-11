@@ -361,19 +361,11 @@ describe('omp agent definition', () => {
     expect(Object.keys(front)).toEqual(['name', 'description', 'key', 'model']);
   });
 
-  it('names its own model role first, then its tier and effort or the model chosen for it (0111)', () => {
+  it('names its own model role first, then its tier and effort, never a model (0111, 0112)', () => {
     const routed = agent({ routing: { tier: 'frontier', effort: 'high' } });
     expect(frontMatter(agentToOmpMd(routed, CTX)).model).toBe(
       '["@mav", "@frontier:high"]',
     );
-    expect(
-      frontMatter(
-        agentToOmpMd(routed, {
-          manifest: FIXTURE_MANIFEST,
-          model: 'openai/chosen',
-        } as never),
-      ).model,
-    ).toBe('["@mav", "openai/chosen"]');
   });
 
   it('writes every setting in the order omp reads them, each only where it applies', () => {

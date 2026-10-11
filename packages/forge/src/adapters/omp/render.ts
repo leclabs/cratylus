@@ -207,9 +207,11 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
- *  binds no such role. Install reads the host's roles and writes none. */
+ *  binds no such role: the role named for the tier, at that effort. Install binds a
+ *  role only as the operator answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
+  tierRole: (tier) => tier,
   agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
 };
 
@@ -311,12 +313,12 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * every agent this corpus composes holds it empty.
  *
  * **`model` NAMES THE AGENT'S OWN ROLE, THEN ITS TIER AND EFFORT, NEVER A MODEL**
- * (decision 0111). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order by omp:
- * the role named for the agent, which the host may bind in its own `modelRoles`, and
- * where it binds none, the tier and effort the agent holds. A model the operator chose
- * for the agent at install ({@link AgentDefContext.model}) takes the second place.
- * Install writes no role into the host's settings. Each entry is quoted, because a
- * YAML value starting with `@` is a scanner error unquoted.
+ * (decisions 0111, 0112). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order
+ * by omp: the role named for the agent, which the host may bind in its own
+ * `modelRoles`, and where it binds none, the tier and effort the agent holds. Which
+ * model a role or tier runs on is the host's own setting, never this declaration's.
+ * Each entry is quoted, because a YAML value starting with `@` is a scanner error
+ * unquoted.
  *
  * **`spawns` IS THE AGENT'S HANDOFFS**, each mapped through {@link OMP_NATIVE_AGENTS}
  * to the agent omp supplies for it (the researcher is omp's `scout`). `""` denies
@@ -360,8 +362,7 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
   if (a.mark !== null) fm.push(`mark: ${yamlString(a.mark.emoji)}`);
   const fallback =
-    ctx.model ??
-    (a.routing === undefined ? undefined : ompRoleRouting.agentRole(a.routing));
+    a.routing === undefined ? undefined : ompRoleRouting.agentRole(a.routing);
   const model = [`@${a.name}`, ...(fallback === undefined ? [] : [fallback])];
   fm.push('key: null', `model: [${model.map(yamlString).join(', ')}]`);
   if (a.dispatches !== undefined) {
@@ -2878,7 +2879,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // the agent gets instead.
   startsInWorktree: false,
   // The model roles: a definition names the role named for its agent, then the tier
-  // and effort it holds; install reads the host's roles and writes none.
+  // and effort it holds; the host binds roles and tiers, install only as answered.
   roleRouting: ompRoleRouting,
   // The owned root is linked into omp's plugin directory, as `omp plugin link` does.
   packageDir: OMP_PACKAGE_DIR,

@@ -138,7 +138,11 @@ deploy manifest (`removeEarlierInstallation`).
 At project scope `deploySingle` places one kind (agents, skills or hooks) into the project's
 `.omp/` (`agents/`, `skills/`, `extensions/`), which omp reads natively there. Model routing is
 host configuration, not a deployed artifact: a declaration names its own role first, then its tier
-and effort (decision 0111), and nothing writes the host's `modelRoles`.
+and effort (decision 0111), and is never rendered with a model. Which model a tier or a persona's
+role runs on is the operator's choice (decision 0112): `install` asks for each the host does not
+bind and writes the answer into the host's `modelRoles` as the host's own entry, recorded in no
+installation record, so upgrade and uninstall keep it; an earlier installation's seeded entries
+stay the same way.
 
 ### The destinations are the adapter's, not the render tree's
 

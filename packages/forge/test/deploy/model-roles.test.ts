@@ -1,8 +1,10 @@
-// Install binds each agent's model through omp's model roles: every tier an agent uses
-// as a role named for the tier, seeded from the roles the host already has, and every
-// agent's own role as `@<tier>:<effort>`. An entry the host set is never changed; an
-// entry install seeded follows what it would seed now; a tier with nothing to seed it
-// from is reported; and uninstall takes back exactly what install put in.
+// Which model a tier or a persona's role runs on is the operator's choice and the
+// host's own setting (decision 0112). An agent's declaration names its own role, then
+// its tier and effort, and never a model. Install binds what the operator chooses in
+// the host's `modelRoles`, records none of it as its own, and so upgrade and uninstall
+// keep it; a role the host binds is never changed; told nothing and unable to ask, it
+// names each tier no model is bound to as the next step. An upgrade from the earlier
+// layout leaves the bindings that layout seeded, as the host's.
 
 import {
   mkdirSync,
@@ -168,17 +170,101 @@ describe('install — model roles', () => {
     expect(readFileSync(config(), 'utf8')).toBe(`${HOST}  alpha: "my/own"\n`);
   });
 
-  it('keys --model-roles by agent name, puts the choice in the declaration, and refuses a name no agent has', async () => {
+  it('names each tier the host leaves unbound as the next step when it cannot ask', async () => {
+    host(`${HOST}  frontier: anthropic/big:high\n`);
+    expect(await install()).toBe(0);
+    expect(out).toMatch(
+      /next:[\s\S]*bind a model to each tier fast, frontier-other-family under modelRoles in /,
+    );
+    expect(out).not.toMatch(/each tier[^\n]*\bfrontier,/);
+  });
+
+  it('binds a chosen tier or agent role as the host’s own setting, which reinstall and uninstall keep', async () => {
     host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
-    expect(declared('beta')).toBe('["@beta", "openai/picked"]');
+    expect(
+      await install({ modelRoles: 'frontier=openai/picked,beta=x/y' }),
+    ).toBe(0);
     expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
-    expect(out).toContain('models you chose: beta → openai/picked');
-    expect(readFileSync(config(), 'utf8')).toBe(HOST);
+    expect(declared('beta')).toBe('["@beta", "@fast:medium"]');
+    const bound = `${HOST}  frontier: "openai/picked"\n  beta: "x/y"\n`;
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
+    expect(out).toContain('frontier → openai/picked, beta → x/y');
+    expect(
+      JSON.stringify(
+        JSON.parse(
+          readFileSync(join(home, '.cratylus/omp/installation.json'), 'utf8'),
+        ),
+      ),
+    ).not.toContain('openai/picked');
+    expect(await install()).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
+    expect(runUninstall({ harness: 'omp', home })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(bound);
     out = '';
     expect(await install({ modelRoles: 'builder=x/y' })).toBe(1);
     expect(out).toContain(
-      "'builder' is no agent this install places (agents: alpha, beta, gamma)",
+      "'builder' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
+    );
+  });
+
+  it('asks each tier the host does not bind, and binds the answer in the host’s settings', async () => {
+    host(`${HOST}  fast: anthropic/small\n`);
+    let asked: string[] = [];
+    expect(
+      await install({
+        interactive: true,
+        modelRoles: undefined,
+        prompts: {
+          harness: async () => 'omp',
+          practices: async (offered) => offered.map((p) => p.name),
+          routes: async (questions) => {
+            asked = questions.map((q) => `${q.kind}:${q.role}`);
+            return { frontier: 'anthropic/big:high' };
+          },
+          confirm: async () => true,
+        },
+      }),
+    ).toBe(0);
+    expect(asked).toEqual(['tier:frontier', 'tier:frontier-other-family']);
+    expect(readFileSync(config(), 'utf8')).toBe(
+      `${HOST}  fast: anthropic/small\n  frontier: "anthropic/big:high"\n`,
+    );
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
+  });
+
+  it('upgrading from the earlier layout keeps the bindings it seeded, as the host’s, and takes back the rest', async () => {
+    const seeded = [
+      'modelRoles:\n',
+      '  alpha: "@frontier:high"\n',
+      '  retired: "@frontier:medium"\n',
+    ];
+    const status = ['statusLine:\n', '  preset: custom\n'];
+    host([...seeded, ...status].join(''));
+    mkdirSync(join(home, '.omp/.forge'), { recursive: true });
+    writeFileSync(
+      join(home, '.omp/.forge/deploy-manifest.json'),
+      JSON.stringify({
+        version: 1,
+        kinds: {},
+        hostEdits: {
+          'agent/config.yml': {
+            created: true,
+            hunks: [
+              { context: null, before: [], after: seeded },
+              { context: seeded[2], before: [], after: status },
+            ],
+          },
+        },
+        modelRoleSeeds: {
+          alpha: '@frontier:high',
+          retired: '@frontier:medium',
+        },
+      }),
+    );
+    expect(await install({ modelRoles: 'default' })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(seeded.join(''));
+    expect(out).toContain(
+      'alpha: "@frontier:high" / retired: "@frontier:medium"',
     );
   });
 

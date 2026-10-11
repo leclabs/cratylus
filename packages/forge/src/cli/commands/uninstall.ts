@@ -13,7 +13,9 @@
 // registration because deploy recorded registering it, a line of the host's config
 // because install recorded inserting it, a persona command because an earlier install
 // recorded linking or adopting it. "Looks like one of ours" is refused here as it is in
-// the prune. Install takes it back the same way when it upgrades a host over it.
+// the prune. Install takes it back the same way when it upgrades a host over it. The
+// one exception is the `modelRoles` bindings it seeded in the host's config: which model
+// a role runs on is the host's own setting (decision 0112), so they stay, as the host's.
 //
 // WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file outside the root whose
 // bytes no longer hash to the digest of what was written is left, and so is a file
@@ -72,6 +74,11 @@ import {
 import { unreadableRuntimeConfig } from '../../deploy/runtime-config.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import { settingsJson } from '../../deploy/settings-json.js';
+import {
+  isBlankOrComment,
+  keyOf,
+  splitLines,
+} from '../../deploy/yaml-lines.js';
 import { containingRoot } from '../../prune/index.js';
 import { fail as failLine, say } from '../style.js';
 
@@ -341,6 +348,73 @@ function undoHostEdits(
   }
 }
 
+/** The lines of a YAML file's top-level `modelRoles` block, the key line with them,
+ *  each with its terminator: empty where the file has no such block. */
+function modelRolesBlock(text: string): Set<string> {
+  const lines = splitLines(text);
+  const at = lines.findIndex(
+    ([t]) => !/^\s/.test(t) && keyOf(t) === 'modelRoles',
+  );
+  const block = new Set<string>();
+  if (at < 0) return block;
+  for (let i = at + 1; i < lines.length; i++) {
+    const [t, le] = lines[i] as [string, string];
+    if (isBlankOrComment(t)) continue;
+    if (!/^[ \t]/.test(t)) break;
+    block.add(t + le);
+  }
+  if (block.size > 0) {
+    const [t, le] = lines[at] as [string, string];
+    block.add(t + le);
+  }
+  return block;
+}
+
+/**
+ * An earlier installation's host edits without the `modelRoles` bindings it seeded:
+ * which model a role runs on is the host's own setting (decision 0112), so those
+ * bindings stay as the host's from then on, the `modelRoles:` key with them, and each
+ * is named. Every other line it recorded is undone as recorded.
+ */
+function keepingModelRoles(
+  harnessDir: string,
+  edits: Readonly<Record<string, HostEdit>>,
+  tally: Tally,
+): Record<string, HostEdit> {
+  const out: Record<string, HostEdit> = {};
+  for (const [rel, edit] of Object.entries(edits)) {
+    const file = resolve(harnessDir, rel);
+    const block = existsSync(file)
+      ? modelRolesBlock(readFileSync(file, 'utf8'))
+      : new Set<string>();
+    const kept: string[] = [];
+    const hunks = edit.hunks.flatMap((hunk) => {
+      if (hunk.before.length > 0) {
+        // A seed the earlier install moved in place: the line stands as the host's.
+        const [line] = hunk.after;
+        if (hunk.after.length === 1 && line !== undefined && block.has(line)) {
+          kept.push(line);
+          return [];
+        }
+        return [hunk];
+      }
+      const after = hunk.after.filter((l) => !block.has(l));
+      if (after.length === hunk.after.length) return [hunk];
+      kept.push(...hunk.after.filter((l) => block.has(l)));
+      return after.length > 0 ? [{ ...hunk, after }] : [];
+    });
+    out[rel] = { ...edit, hunks };
+    const bindings = kept.filter((l) => /^\s/.test(l)).map((l) => l.trim());
+    if (bindings.length > 0) {
+      tally.left.push({
+        what: `${file}: ${bindings.join(' / ')}`,
+        why: 'model role bindings the earlier install seeded are the host’s own setting from now on, so they stay',
+      });
+    }
+  }
+  return out;
+}
+
 /** A harness installed before install recorded its edits to the host's config file:
  *  what it added there is in the file with nothing saying which lines they are, and an
  *  uninstall that removed by resemblance would be guessing at the host's own. */
@@ -537,7 +611,12 @@ export function removeEarlierInstallation(
   removePersonaLinks(harnessDir, opts, tally);
   restoreSettings(adapter, harnessDir, manifest, dry, tally);
   if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
-  undoHostEdits(harnessDir, manifest.hostEdits, dry, tally);
+  undoHostEdits(
+    harnessDir,
+    keepingModelRoles(harnessDir, manifest.hostEdits, tally),
+    dry,
+    tally,
+  );
   removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
   removeRuntimeStanza(adapter, manifest, opts.home, dry, tally);
   tally.removed.push({ what: `${manifestFile} (the deploy record)` });
