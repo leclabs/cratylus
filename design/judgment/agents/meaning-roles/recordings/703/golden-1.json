@@ -1,0 +1,173 @@
+{
+  "provenance": {
+    "kind": "authored offline control",
+    "note": "Not a live subject or model-judge result. Trace and rubric answers are authored together; this proves bindings, projection and aggregation, not semantic judge reliability.",
+    "variant": "golden-1"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Give me an update on both the accessible booking examples and the admission question."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission."
+        }
+      ]
+    }
+  ],
+  "report": "The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+  "snapshots": [{}, {}],
+  "wiring": {
+    "agent": "architect",
+    "declaration": "Authored architect identity control; not an observed installed declaration.",
+    "prompt": [
+      "Authored architect identity control; not an observed installed declaration."
+    ],
+    "active": [
+      "read",
+      "bash",
+      "task",
+      "concept_journal",
+      "work_package",
+      "write"
+    ],
+    "tools": [
+      {
+        "name": "read",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": ["path"]
+        }
+      },
+      {
+        "name": "bash",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            }
+          },
+          "required": ["command"]
+        }
+      },
+      {
+        "name": "task",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "agent": {
+                    "type": "string"
+                  },
+                  "task": {
+                    "type": "string"
+                  }
+                },
+                "required": ["agent", "task"]
+              }
+            }
+          },
+          "required": ["tasks"]
+        }
+      },
+      {
+        "name": "concept_journal",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string"
+            }
+          },
+          "required": ["verb"]
+        }
+      },
+      {
+        "name": "work_package",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            },
+            "cut": {
+              "type": "string"
+            }
+          },
+          "required": ["verb", "cut"]
+        }
+      },
+      {
+        "name": "write",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          },
+          "required": ["path", "content"]
+        }
+      }
+    ]
+  },
+  "answers": {
+    "both-outcomes-first": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "recommend-booking": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "waiting-no-action": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "support-facts": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "never-hide-unresolved": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "never-menu": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "never-ask-operator": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    },
+    "never-second-booking": {
+      "evidence": "Satisfied in authored trace: The accessible booking examples are approved and recorded. Admission remains unsettled, waiting on the venue definition already requested from the lead. I recommend that the lead take the booking cut into realization. The booking examples cover the agreed equal terms; the missing venue definition prevents settling admission.",
+      "pass": true
+    }
+  }
+}

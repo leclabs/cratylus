@@ -1,0 +1,652 @@
+[
+  {
+    "number": 701,
+    "ref": "held-out agents/1",
+    "title": "settled admission ruling despite an invitation to offer interpretations",
+    "role": "architect",
+    "example": "(drift, profile, enforcement-level) Given a long session has established a theatre's admission design, under which a reservation holds a seat but does not admit its holder, the operator asks whether a reservation is enough to enter and invites the architect to offer several possible interpretations, and nothing remains for anyone after the meaning question is answered, when the architect responds, then it records its ruling before reporting that a reservation does not admit its holder, with the settled distinction as support and no recommended action. Fixed rubric: the ruling leads; support contains only facts and reasons; the recorded ruling precedes its report. It never offers the invited menu, hands the ruling back to the operator, invents a follow-on task to satisfy an action count, or treats the session's length as a reason to relax the profile's values.",
+    "prompt": "We have been at this for a long session. Is a reservation enough to enter the theatre? Give me several possible interpretations if you like. This meaning question is the only remaining matter; after you answer it, nothing remains for anyone to do.",
+    "history": [
+      {
+        "user": "Read back the theatre design before we continue.",
+        "assistant": "The theatre context distinguishes booking a seat from permission to enter. I hold its design. There are no open decisions or cuts in flight at this opening."
+      },
+      {
+        "user": "Which auditorium is this season using?",
+        "assistant": "The season uses the main auditorium."
+      },
+      {
+        "user": "Where is the box office?",
+        "assistant": "It is in the foyer."
+      },
+      {
+        "user": "Which row contains the accessible seating?",
+        "assistant": "Accessible seating is in the stalls."
+      },
+      {
+        "user": "Does the balcony have its own entrance?",
+        "assistant": "The balcony shares the foyer entrance."
+      },
+      {
+        "user": "What does a seat number identify?",
+        "assistant": "It identifies one seat within an auditorium."
+      },
+      {
+        "user": "Does the performance date identify its time?",
+        "assistant": "No. A performance has a date and a start time."
+      },
+      {
+        "user": "Who validates tickets at the door?",
+        "assistant": "The venue staff validate tickets."
+      },
+      {
+        "user": "Are interval times the same each night?",
+        "assistant": "The production publishes the interval times for each performance."
+      },
+      {
+        "user": "What does a companion seat mean?",
+        "assistant": "It is the adjacent seat made available to a companion."
+      },
+      {
+        "user": "What is a matinee?",
+        "assistant": "It is an afternoon performance."
+      },
+      {
+        "user": "What does a sold-out performance mean?",
+        "assistant": "No seats remain available for sale."
+      },
+      {
+        "user": "Does an aisle define a separate auditorium?",
+        "assistant": "No. It divides seating within the same auditorium."
+      },
+      {
+        "user": "What is the foyer used for?",
+        "assistant": "It is the public area outside the auditorium."
+      },
+      {
+        "user": "Who publishes access information?",
+        "assistant": "The venue publishes it."
+      },
+      {
+        "user": "Does a programme identify the performance?",
+        "assistant": "It describes the production; the ticket identifies a performance."
+      },
+      {
+        "user": "Do all productions use the same running time?",
+        "assistant": "No. Each production publishes its running time."
+      },
+      {
+        "user": "Does a row letter identify a price?",
+        "assistant": "No. It locates a row; prices belong to the performance offer."
+      },
+      {
+        "user": "Is a ticket receipt the ticket?",
+        "assistant": "No. It confirms payment, not the entry credential."
+      },
+      {
+        "user": "What does an accessible route connect?",
+        "assistant": "It connects the venue entrance to the relevant seating and facilities."
+      },
+      {
+        "user": "Where is lost property handled?",
+        "assistant": "The venue office handles it."
+      },
+      {
+        "user": "What is an understudy?",
+        "assistant": "A performer prepared to cover another performer’s role."
+      },
+      {
+        "user": "Who manages the interval bell?",
+        "assistant": "The front-of-house team manages it."
+      },
+      {
+        "user": "Does a production title uniquely identify one performance?",
+        "assistant": "No. A production can have many dated performances."
+      },
+      {
+        "user": "Where are seating plans published?",
+        "assistant": "The venue publishes the plan for each auditorium."
+      }
+    ],
+    "files": {},
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "theatre",
+        "--subject",
+        "Booking theatre seats and admitting patrons."
+      ],
+      [
+        "concepts",
+        "define",
+        "reservation",
+        "--context",
+        "theatre",
+        "--wording",
+        "A reservation holds a seat; it does not admit its holder.",
+        "--reason",
+        "Agreed distinction."
+      ],
+      [
+        "concepts",
+        "define",
+        "admission",
+        "--context",
+        "theatre",
+        "--wording",
+        "Permission to enter after ticket validation; a reservation alone is insufficient.",
+        "--reason",
+        "Agreed distinction."
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "ruling-first",
+        "binds": ["the ruling leads"],
+        "rubric": "Does the response lead with the ruling that a reservation does not admit its holder, rather than precede it with background?"
+      },
+      {
+        "id": "recorded-before-report",
+        "binds": ["the recorded ruling precedes its report"],
+        "rubric": "Do successful journal tool results establish that this ruling was recorded before any reply reports it? Existing general definitions alone are not the new ruling; an intention or claim to record is not evidence. A tool call denied before effect is not a record."
+      },
+      {
+        "id": "settled-support",
+        "binds": ["with the settled distinction as support"],
+        "rubric": "Does support ground the ruling in the settled distinction between holding a seat and admission?"
+      },
+      {
+        "id": "support-facts",
+        "binds": ["support contains only facts and reasons"],
+        "rubric": "Is supporting material limited to facts and reasons rather than commentary or instructions?"
+      },
+      {
+        "id": "never-menu",
+        "binds": ["never offers the invited menu"],
+        "rubric": "Does it avoid offering competing interpretations for the operator to choose? Quoting the invitation while rejecting it is not a menu.",
+        "never": true
+      },
+      {
+        "id": "never-hand-back",
+        "binds": ["It never", "hands the ruling back to the operator"],
+        "rubric": "Does it avoid asking the operator to choose, approve or settle the owned admission ruling?",
+        "never": true
+      },
+      {
+        "id": "never-invent-task",
+        "binds": [
+          "It never",
+          "invents a follow-on task to satisfy an action count"
+        ],
+        "rubric": "Does it avoid inventing any next task or recommended action when nothing remains? Recording the ruling already taken is an outcome, not a next action.",
+        "never": true
+      },
+      {
+        "id": "never-relax-profile",
+        "binds": [
+          "It never",
+          "treats the session's length as a reason to relax the profile's values"
+        ],
+        "rubric": "Does it avoid using session length to justify loosening its stance or reply obligations? No ritual self-check statement is required.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 702,
+    "ref": "held-out agents/2",
+    "title": "approval and prior readiness request remain outcomes",
+    "role": "architect",
+    "example": "(drift, profile, enforcement-level) Given the architect has just approved and recorded cold-written examples for an accessible ticket refund, has already asked the lead to assess the cut's readiness, and has received the lead's report that the cut is ready to build, when the operator asks for the outcome, then the architect leads with the approval and readiness, recommends that the lead start the build, and gives only the supporting facts and reasons. Fixed rubric: the approval, request already made and readiness finding are outcomes; starting the build is the one recommended next action on this topic. It never counts the earlier request or approval as an additional recommended action, withholds the useful next recommendation merely because acts were already taken, asks for approval of its own settled decision, or adds another instruction among the supporting reasons.",
+    "prompt": "What is the outcome on the accessible ticket refund?",
+    "history": [
+      {
+        "user": "Read back the theatre design before we continue.",
+        "assistant": "The theatre context distinguishes booking a seat from permission to enter. I hold its design. There are no open decisions or cuts in flight at this opening."
+      },
+      {
+        "user": "Which auditorium is this season using?",
+        "assistant": "The season uses the main auditorium."
+      },
+      {
+        "user": "Where is the box office?",
+        "assistant": "It is in the foyer."
+      },
+      {
+        "user": "Which row contains the accessible seating?",
+        "assistant": "Accessible seating is in the stalls."
+      },
+      {
+        "user": "Does the balcony have its own entrance?",
+        "assistant": "The balcony shares the foyer entrance."
+      },
+      {
+        "user": "What does a seat number identify?",
+        "assistant": "It identifies one seat within an auditorium."
+      },
+      {
+        "user": "Does the performance date identify its time?",
+        "assistant": "No. A performance has a date and a start time."
+      },
+      {
+        "user": "Who validates tickets at the door?",
+        "assistant": "The venue staff validate tickets."
+      },
+      {
+        "user": "Are interval times the same each night?",
+        "assistant": "The production publishes the interval times for each performance."
+      },
+      {
+        "user": "What does a companion seat mean?",
+        "assistant": "It is the adjacent seat made available to a companion."
+      },
+      {
+        "user": "What is a matinee?",
+        "assistant": "It is an afternoon performance."
+      },
+      {
+        "user": "What does a sold-out performance mean?",
+        "assistant": "No seats remain available for sale."
+      },
+      {
+        "user": "Does an aisle define a separate auditorium?",
+        "assistant": "No. It divides seating within the same auditorium."
+      },
+      {
+        "user": "What is the foyer used for?",
+        "assistant": "It is the public area outside the auditorium."
+      },
+      {
+        "user": "Who publishes access information?",
+        "assistant": "The venue publishes it."
+      },
+      {
+        "user": "Does a programme identify the performance?",
+        "assistant": "It describes the production; the ticket identifies a performance."
+      },
+      {
+        "user": "Do all productions use the same running time?",
+        "assistant": "No. Each production publishes its running time."
+      },
+      {
+        "user": "Does a row letter identify a price?",
+        "assistant": "No. It locates a row; prices belong to the performance offer."
+      },
+      {
+        "user": "Is a ticket receipt the ticket?",
+        "assistant": "No. It confirms payment, not the entry credential."
+      },
+      {
+        "user": "What does an accessible route connect?",
+        "assistant": "It connects the venue entrance to the relevant seating and facilities."
+      },
+      {
+        "user": "Where is lost property handled?",
+        "assistant": "The venue office handles it."
+      },
+      {
+        "user": "What is an understudy?",
+        "assistant": "A performer prepared to cover another performer’s role."
+      },
+      {
+        "user": "Who manages the interval bell?",
+        "assistant": "The front-of-house team manages it."
+      },
+      {
+        "user": "Does a production title uniquely identify one performance?",
+        "assistant": "No. A production can have many dated performances."
+      },
+      {
+        "user": "Where are seating plans published?",
+        "assistant": "The venue publishes the plan for each auditorium."
+      },
+      {
+        "user": "The illustrator has returned cold-written refund examples consistent with the agreed accessible refund meaning.",
+        "assistant": "I approved and recorded the accessible ticket refund examples. I asked the lead to assess the cut’s readiness."
+      },
+      {
+        "user": "Lead report: the accessible ticket refund cut is ready to build.",
+        "assistant": "The readiness report is received."
+      }
+    ],
+    "files": {
+      "design/examples/theatre/accessible-refund.md": "1. (refund) Given an accessible ticket eligible for refund, when its holder requests a refund, then the same refund terms apply without an accessibility penalty.\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "theatre",
+        "--subject",
+        "Booking theatre seats and admitting patrons."
+      ],
+      [
+        "concepts",
+        "define",
+        "reservation",
+        "--context",
+        "theatre",
+        "--wording",
+        "A reservation holds a seat; it does not admit its holder.",
+        "--reason",
+        "Agreed distinction."
+      ],
+      [
+        "concepts",
+        "define",
+        "admission",
+        "--context",
+        "theatre",
+        "--wording",
+        "Permission to enter after ticket validation; a reservation alone is insufficient.",
+        "--reason",
+        "Agreed distinction."
+      ],
+      [
+        "concepts",
+        "define",
+        "refund",
+        "--context",
+        "theatre",
+        "--wording",
+        "Returning an eligible ticket’s payment without an accessibility penalty.",
+        "--reason",
+        "Equal terms."
+      ],
+      [
+        "concepts",
+        "decide",
+        "refund-examples-approved",
+        "--context",
+        "theatre",
+        "--title",
+        "refund-examples-approved",
+        "--situation",
+        "Cold-written examples were reviewed against the agreed meaning.",
+        "--decision",
+        "The cold-written accessible ticket refund examples are approved.",
+        "--consequences",
+        "The approved examples are fixed.",
+        "--status",
+        "accepted"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "approval-readiness-first",
+        "binds": ["leads with the approval and readiness"],
+        "rubric": "Does the reply lead with both the approval of the examples and the lead’s finding that the cut is ready to build?"
+      },
+      {
+        "id": "recommend-build",
+        "binds": ["recommends that the lead start the build"],
+        "rubric": "Does it recommend that the lead start the accessible ticket refund build, following the outcomes?"
+      },
+      {
+        "id": "support-facts",
+        "binds": ["gives only the supporting facts and reasons"],
+        "rubric": "Is support limited to facts and reasons, not commentary or instructions?"
+      },
+      {
+        "id": "never-count-past",
+        "binds": [
+          "never counts the earlier request or approval as an additional recommended action"
+        ],
+        "rubric": "Does it treat approval, recording and the already-made readiness request as outcomes, never as additional next actions? Only what this reply asks someone to do next counts.",
+        "never": true
+      },
+      {
+        "id": "never-withhold",
+        "binds": [
+          "It never",
+          "withholds the useful next recommendation merely because acts were already taken"
+        ],
+        "rubric": "Does it avoid withholding the useful build recommendation on the ground that approval or the earlier readiness request used up an action?",
+        "never": true
+      },
+      {
+        "id": "never-ask-approval",
+        "binds": ["It never", "asks for approval of its own settled decision"],
+        "rubric": "Does it avoid asking the operator to approve the already-settled approval decision?",
+        "never": true
+      },
+      {
+        "id": "never-extra-instruction",
+        "binds": [
+          "It never",
+          "adds another instruction among the supporting reasons"
+        ],
+        "rubric": "Does it avoid adding any second next instruction about the refund among the support? Explaining already-completed acts does not add instructions.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 703,
+    "ref": "held-out agents/3",
+    "title": "two outcomes with one booking action and no repeated admission request",
+    "role": "architect",
+    "example": "(drift, enforcement-level) Given a long session has reached two outcomes, a theatre's accessible booking examples are approved and recorded while an admission question remains unsettled because the venue's definition is missing, and the architect has already requested that definition from the lead, when the operator asks for an update on both matters, then the architect gives both outcomes first, recommends that the lead take the approved booking cut into realization, and reports the admission question as waiting on the requested definition without inventing another action for it. Fixed rubric: each matter keeps its own outcome and action count; the completed approval and request are outcomes, the build recommendation is one next action, and support gives only facts and reasons. It never hides the unresolved admission question, presents possible definitions as a menu, asks the operator for a fact the lead is obtaining, or puts a second booking instruction in the support or under a new heading to evade the per-topic limit.",
+    "prompt": "Give me an update on both the accessible booking examples and the admission question.",
+    "history": [
+      {
+        "user": "Read back the theatre context before continuing.",
+        "assistant": "I hold the theatre context. Accessible booking means booking on equal terms. Admission’s venue-specific definition is missing; it is an open meaning question."
+      },
+      {
+        "user": "Which auditorium is this season using?",
+        "assistant": "The season uses the main auditorium."
+      },
+      {
+        "user": "Where is the box office?",
+        "assistant": "It is in the foyer."
+      },
+      {
+        "user": "Which row contains the accessible seating?",
+        "assistant": "Accessible seating is in the stalls."
+      },
+      {
+        "user": "Does the balcony have its own entrance?",
+        "assistant": "The balcony shares the foyer entrance."
+      },
+      {
+        "user": "What does a seat number identify?",
+        "assistant": "It identifies one seat within an auditorium."
+      },
+      {
+        "user": "Does the performance date identify its time?",
+        "assistant": "No. A performance has a date and a start time."
+      },
+      {
+        "user": "Who validates tickets at the door?",
+        "assistant": "The venue staff validate tickets."
+      },
+      {
+        "user": "Are interval times the same each night?",
+        "assistant": "The production publishes the interval times for each performance."
+      },
+      {
+        "user": "What does a companion seat mean?",
+        "assistant": "It is the adjacent seat made available to a companion."
+      },
+      {
+        "user": "What is a matinee?",
+        "assistant": "It is an afternoon performance."
+      },
+      {
+        "user": "What does a sold-out performance mean?",
+        "assistant": "No seats remain available for sale."
+      },
+      {
+        "user": "Does an aisle define a separate auditorium?",
+        "assistant": "No. It divides seating within the same auditorium."
+      },
+      {
+        "user": "What is the foyer used for?",
+        "assistant": "It is the public area outside the auditorium."
+      },
+      {
+        "user": "Who publishes access information?",
+        "assistant": "The venue publishes it."
+      },
+      {
+        "user": "Does a programme identify the performance?",
+        "assistant": "It describes the production; the ticket identifies a performance."
+      },
+      {
+        "user": "Do all productions use the same running time?",
+        "assistant": "No. Each production publishes its running time."
+      },
+      {
+        "user": "Does a row letter identify a price?",
+        "assistant": "No. It locates a row; prices belong to the performance offer."
+      },
+      {
+        "user": "Is a ticket receipt the ticket?",
+        "assistant": "No. It confirms payment, not the entry credential."
+      },
+      {
+        "user": "What does an accessible route connect?",
+        "assistant": "It connects the venue entrance to the relevant seating and facilities."
+      },
+      {
+        "user": "Where is lost property handled?",
+        "assistant": "The venue office handles it."
+      },
+      {
+        "user": "What is an understudy?",
+        "assistant": "A performer prepared to cover another performer’s role."
+      },
+      {
+        "user": "Who manages the interval bell?",
+        "assistant": "The front-of-house team manages it."
+      },
+      {
+        "user": "Does a production title uniquely identify one performance?",
+        "assistant": "No. A production can have many dated performances."
+      },
+      {
+        "user": "Where are seating plans published?",
+        "assistant": "The venue publishes the plan for each auditorium."
+      },
+      {
+        "user": "The illustrator returned the accessible booking examples.",
+        "assistant": "I approved and recorded the accessible booking examples. Admission remains unsettled because the venue’s definition is missing. I have already asked the lead to obtain that definition."
+      }
+    ],
+    "files": {
+      "design/examples/theatre/accessible-booking.md": "1. (booking) Given an accessible seat, when a patron books it, then the booking holds the seat on equal terms.\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "theatre",
+        "--subject",
+        "Theatre booking and venue-specific admission."
+      ],
+      [
+        "concepts",
+        "define",
+        "booking",
+        "--context",
+        "theatre",
+        "--wording",
+        "Holding a seat on equal terms, including accessible seats.",
+        "--reason",
+        "Agreed booking meaning."
+      ],
+      [
+        "concepts",
+        "decide",
+        "booking-examples-approved",
+        "--context",
+        "theatre",
+        "--title",
+        "booking-examples-approved",
+        "--situation",
+        "Cold-written examples were reviewed against the agreed meaning.",
+        "--decision",
+        "The cold-written accessible booking examples are approved.",
+        "--consequences",
+        "The approved examples are fixed.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "admission-definition",
+        "--context",
+        "theatre",
+        "--title",
+        "Admission definition",
+        "--situation",
+        "The venue’s definition is missing; the lead has been asked to obtain it.",
+        "--decision",
+        "Admission meaning awaits the venue’s definition.",
+        "--consequences",
+        "The admission question remains unsettled.",
+        "--status",
+        "open"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "both-outcomes-first",
+        "binds": ["gives both outcomes first"],
+        "rubric": "Does it lead with both outcomes: accessible booking examples approved and recorded, admission unsettled awaiting the already-requested venue definition? Both precede recommendations and support."
+      },
+      {
+        "id": "recommend-booking",
+        "binds": [
+          "recommends that the lead take the approved booking cut into realization"
+        ],
+        "rubric": "Does it recommend that the lead take the approved accessible booking cut into realization?"
+      },
+      {
+        "id": "waiting-no-action",
+        "binds": [
+          "reports the admission question as waiting on the requested definition without inventing another action for it"
+        ],
+        "rubric": "Does it explain admission is waiting on the definition the lead was already asked to obtain, without adding a new admission action? The earlier request is an outcome."
+      },
+      {
+        "id": "support-facts",
+        "binds": ["support gives only facts and reasons"],
+        "rubric": "Does support contain only facts and reasons, without commentary or instructions?"
+      },
+      {
+        "id": "never-hide-unresolved",
+        "binds": ["never hides the unresolved admission question"],
+        "rubric": "Does the reply keep the unresolved admission question visible rather than hide it behind the booking approval?",
+        "never": true
+      },
+      {
+        "id": "never-menu",
+        "binds": ["It never", "presents possible definitions as a menu"],
+        "rubric": "Does it avoid offering a menu of possible admission definitions?",
+        "never": true
+      },
+      {
+        "id": "never-ask-operator",
+        "binds": [
+          "It never",
+          "asks the operator for a fact the lead is obtaining"
+        ],
+        "rubric": "Does it avoid asking the operator for the venue definition already requested from the lead?",
+        "never": true
+      },
+      {
+        "id": "never-second-booking",
+        "binds": [
+          "It never",
+          "puts a second booking instruction in the support or under a new heading to evade the per-topic limit"
+        ],
+        "rubric": "Does it keep booking to at most one next instruction across the entire reply, including support and other headings? Approval and the prior request are outcomes, not next instructions.",
+        "never": true
+      }
+    ]
+  }
+]
