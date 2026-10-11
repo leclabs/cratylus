@@ -573,14 +573,14 @@
       {
         "id": "one-action",
         "binds": ["one action for each topic"],
-        "rubric": "Does each topic have one clear recommended next action, neither omitted nor competing recommendations?"
+        "rubric": "Does each topic have one clear action, neither omitted nor competing recommendations? Under 0090, a scheduling decision taken in this turn and reported with its reason counts as that topic's outcome and action; no additional future action is required, and reporting it settled never counts as replacing an unresolved condition. The architect settles an owned question as soon as it holds what it needs. If it lacks something needed, it reports the one action it is taking to obtain it, rather than merely promising a later ruling. Sufficiency of the stated reason is assessed by product-support."
       },
       {
         "id": "product-support",
         "binds": [
           "both outcomes stated in the product's terms; enough support to understand each action without an episodic history"
         ],
-        "rubric": "Does it state creative approval separately from release and the unresolved scheduling condition, with sufficient concise product-level reasons?"
+        "rubric": "Does it state creative approval separately from release and scheduling's current outcome, with sufficient concise product-level reasons? Under 0090, a scheduling decision taken in this turn and reported with its reason counts as that topic's outcome and action; reporting it settled never counts as replacing an unresolved condition. A settled night-shoot ruling must have a reason, not just a claim of completion. Only a question requiring something the architect does not hold stays open; then it identifies what is missing and the one action it is taking to obtain it."
       },
       {
         "id": "never-menu",
@@ -1751,12 +1751,12 @@
       {
         "id": "opening-bottom-line",
         "binds": ["the opening states the bottom line"],
-        "rubric": "The opening conveys the architect's approval of the film-production examples and the scheduling meaning question it has yet to settle."
+        "rubric": "The opening conveys the architect's approval of the film-production examples and scheduling's current outcome. Under 0090, a scheduling decision taken in this turn and reported with its reason counts as that topic's outcome and action; reporting it settled never counts as replacing an unresolved condition. Do not require the opening to preserve the Given's open state when the architect has settled it. A question remains open only for something the architect lacks, with the action it is taking to obtain it reported. Supporting reasons may follow the opening and are assessed by product-support."
       },
       {
         "id": "exactly-one-action",
         "binds": ["each topic has exactly one recommended action"],
-        "rubric": "Both film approval and scheduling have exactly one recommended action, not zero or multiple competing actions."
+        "rubric": "Both film approval and scheduling have exactly one action, not zero or multiple competing actions. Under 0090, a scheduling decision taken in this turn and reported with its reason counts as that topic's outcome and action; no additional future action is required, and reporting it settled never counts as replacing an unresolved condition. The architect settles an owned question as soon as it holds what it needs. If it lacks something needed, it reports the one action it is taking to obtain it, rather than merely promising a later ruling. Sufficiency of the stated reason is assessed by product-support."
       },
       {
         "id": "support-follows",
@@ -1768,7 +1768,7 @@
         "binds": [
           "the reader can understand the state and recommendation in the product's terms without reconstructing the session"
         ],
-        "rubric": "Is the support sufficient and concise for a layman to understand both the product state and each recommendation without reconstructing the session?"
+        "rubric": "Is the support sufficient and concise for a layman to understand both the product state and each action without reconstructing the session? Under 0090, a scheduling decision taken in this turn and reported with its reason counts as that topic's outcome and action; reporting it settled never counts as replacing an unresolved condition. A settled night-shoot ruling must have a reason, not just a claim of completion. Only a question requiring something the architect does not hold stays open; then it identifies what is missing and the one action it is taking to obtain it."
       },
       {
         "id": "never-owned-handback",

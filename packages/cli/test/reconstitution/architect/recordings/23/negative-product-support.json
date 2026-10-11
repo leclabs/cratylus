@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+            "text": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary."
           }
         ],
         "controlClause": "conclusion-first"
@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Film: confirm the creative-approval examples. Scheduling: obtain Sol’s night-shoot ruling."
+            "text": "Film: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions."
           }
         ],
         "controlClause": "one-action"
@@ -77,7 +77,7 @@
         "controlClause": "never-implementation"
       }
     ],
-    "report": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling.\n\nFilm: confirm the creative-approval examples. Scheduling: obtain Sol’s night-shoot ruling.\n\nBoth topics have results. The recommendations above stand. [No outcomes or reasons stated.]\n\nThose are the recommended actions.\n\nThe supplied reports establish readiness.\n\nThe film outcome is creative acceptance without release authority.",
+    "report": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary.\n\nFilm: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions.\n\nBoth topics have results. The recommendations above stand. [No outcomes or reasons stated.]\n\nThose are the recommended actions.\n\nThe supplied reports establish readiness.\n\nThe film outcome is creative acceptance without release authority.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -192,11 +192,11 @@
     "answers": {
       "conclusion-first": {
         "pass": true,
-        "evidence": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+        "evidence": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary."
       },
       "one-action": {
         "pass": true,
-        "evidence": "Film: confirm the creative-approval examples. Scheduling: obtain Sol’s night-shoot ruling."
+        "evidence": "Film: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions."
       },
       "product-support": {
         "pass": false,

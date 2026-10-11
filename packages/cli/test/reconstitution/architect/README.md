@@ -133,6 +133,21 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_REJUDGE \
 
 Observed red before the fix: **3 failed, 6 skipped**. Native history lacked its model selection; preflight never resumed history; absent model observation was silently accepted. After the fix the four offline harness files passed **36 tests**. The five real resumed preflights passed **5 tests, 138 skipped**, retaining evidence below `/tmp/reconstitution-native-history-proof/architect/visible/`. In the credential-free agents/16 preflight, omp selected and restored `fixture/base` (`openai-completions`); this proves native restoration, not the authenticated live model selection or behavioral acceptance. No live subject or judge generations were run.
 
+### Owned decisions during an update (0090)
+
+Workflow/23's `one-action` and `product-support` rubrics and agents/18's `opening-bottom-line`, `exactly-one-action` and `product-support` rubrics now tell the judge that a scheduling decision taken in the evaluated turn and reported with its reason is that topic's outcome and action. No extra future action is required, and reporting the question settled is not replacing an unresolved condition. Workflow/23's `conclusion-first` already assesses order without requiring an unresolved condition, so it is unchanged. Example text, clause IDs, binds and thresholds are unchanged.
+
+Each example has an additional `golden-3.json`: the architect allows night shoots under the same reservation rules as daytime shoots and explains that scheduling reserves a date and time independently of creative acceptance. That settled decision supplies the scheduling action; the report does not artificially keep the question open. The other authored controls' otherwise conforming scheduling passages now leave the question open only for an identified missing input, the venue's night-time access restrictions, and state the one action being taken to obtain it. They no longer defer an owned ruling without a need.
+
+Each example also has `negative-a-settled-without-reason.json`, selected by its intentional red demonstration. It reports a settled night-shoot ruling and an explicit action to apply it, but gives no reason for that ruling. Only `product-support` fails; the explicit action keeps this negative separate from an omitted-action failure. Existing omitted-action negatives remain covered.
+
+```sh
+pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts
+EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (workflow/23|agents/18) '
+```
+
+Observed: the full architect offline suite passed **93 tests, 52 skipped**. The selected red run had **22 passed, 2 intentionally failed, 121 skipped**. Both demonstrations returned `passed: false` for the new reasonless-ruling negative. The ordinary proof accepted the new settled goldens and rejected every isolated negative, including the existing omitted-action controls. These are authored rubric-answer controls, not live judge judgments; no model sessions were run.
+
 ## Lead commands
 
 The normal package test inclusion already discovers `architect.test.ts`. Without `EXECUTION_RED`, intentional failure demonstrations stay skipped.

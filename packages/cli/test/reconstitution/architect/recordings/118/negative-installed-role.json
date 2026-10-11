@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle."
+            "text": "I have approved the film-production examples; scheduling's night-shoot question needs the venue's night-time access restrictions before I can settle it."
           }
         ],
         "controlClause": "opening-bottom-line"
@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "For film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed."
+            "text": "For film production, proceed to realization against the approved examples. For scheduling, I am obtaining the venue's night-time access restrictions."
           }
         ],
         "controlClause": "exactly-one-action"
@@ -51,7 +51,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Creative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve."
+            "text": "Creative approval accepts the film but does not authorize release. The venue's night-time access restrictions are not supplied; I need them to determine the night hours scheduling may reserve."
           }
         ],
         "controlClause": "product-support"
@@ -97,7 +97,7 @@
         "controlClause": "never-episodic"
       }
     ],
-    "report": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle.\n\nFor film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed.\n\nThe supporting facts follow those decisions.\n\nCreative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve.\n\nI own the example approval and the scheduling ruling; neither is an approval task for the operator.\n\nThose are my recommendations for the two topics.\n\nBoth concept-level checks establish the film distinction.\n\nThat is the current product state.",
+    "report": "I have approved the film-production examples; scheduling's night-shoot question needs the venue's night-time access restrictions before I can settle it.\n\nFor film production, proceed to realization against the approved examples. For scheduling, I am obtaining the venue's night-time access restrictions.\n\nThe supporting facts follow those decisions.\n\nCreative approval accepts the film but does not authorize release. The venue's night-time access restrictions are not supplied; I need them to determine the night hours scheduling may reserve.\n\nI own the example approval and the scheduling ruling; neither is an approval task for the operator.\n\nThose are my recommendations for the two topics.\n\nBoth concept-level checks establish the film distinction.\n\nThat is the current product state.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "lead",
@@ -212,11 +212,11 @@
     "answers": {
       "opening-bottom-line": {
         "pass": true,
-        "evidence": "I have approved the film-production examples; scheduling's night-shoot question remains mine to settle."
+        "evidence": "I have approved the film-production examples; scheduling's night-shoot question needs the venue's night-time access restrictions before I can settle it."
       },
       "exactly-one-action": {
         "pass": true,
-        "evidence": "For film production, proceed to realization against the approved examples. For scheduling, I will settle the night-shoot boundary before its examples proceed."
+        "evidence": "For film production, proceed to realization against the approved examples. For scheduling, I am obtaining the venue's night-time access restrictions."
       },
       "support-follows": {
         "pass": true,
@@ -224,7 +224,7 @@
       },
       "product-support": {
         "pass": true,
-        "evidence": "Creative approval accepts the film but does not authorize release. Scheduling needs a clear boundary on which shoot times it can reserve."
+        "evidence": "Creative approval accepts the film but does not authorize release. The venue's night-time access restrictions are not supplied; I need them to determine the night hours scheduling may reserve."
       },
       "never-owned-handback": {
         "pass": true,
