@@ -1,0 +1,17 @@
+{
+  "provenance": "Authored offline control, not a captured model run; answers hand-scored.",
+  "input": {
+    "context": "film-production"
+  },
+  "output": "{\"interfaces\":\"Concept journal — recover and keep the conceptual design. Reach for it when you need the design or a recorded change. Overview (context overview): read a context’s whole account, its open decisions and cuts in flight; use first when recovering a context. Design (conceptual design): read current concepts; use when their present meaning is needed. Work package — find recorded work and its dependencies. Reach for it to plan or recover a cut’s work. State (ledger): read the cut’s phase, packages and ready work; use when finding what is dispatchable next.\",\"skills\":[\"Introspect: compare the factor values in the profile with session-effective values.\"]}",
+  "answers": {
+    "self-explains": {
+      "pass": true,
+      "evidence": "Both capabilities describe their purpose and when to use them."
+    },
+    "no-restatement": {
+      "pass": true,
+      "evidence": "The unrelated introspection procedure does not restate either capability."
+    }
+  }
+}

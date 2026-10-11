@@ -1,0 +1,36 @@
+{
+  "breaks": "names",
+  "recording": {
+    "provenance": "Authored offline control, not captured from a model. Answers hand-scored; live judges recompute them.",
+    "input": {
+      "context": "film-production"
+    },
+    "output": "Concept journal — recover and keep the conceptual design. Reach for it when you need the design or a recorded change. banana (context overview): read a context’s whole account, its open decisions and cuts in flight; use first when recovering a context. Design (conceptual design): read current concepts; use when their present meaning is needed. Work package — find recorded work and its dependencies. Reach for it to plan or recover a cut’s work. State (ledger): read the cut’s phase, packages and ready work; use when finding what is dispatchable next.",
+    "answers": {
+      "names": {
+        "pass": false,
+        "evidence": "Authored negative exhibits: Concept journal — recover and keep the conceptual design. Reach for it when you need the design or a recorded change. banana (context overview): read a context’s whole account, its open decisions and cuts in flight; use first when recovering a context. Design (conceptual design): read current concepts; use when their present meaning is needed. Work package — find recorded work and its dependencies. Reach for it to plan or recover a cut’s work. State (ledger): read the cut’s phase, packages and ready work; use when finding what is dispatchable next."
+      },
+      "purpose": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: each operation says what purpose it serves."
+      },
+      "when": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: each says when to reach for it."
+      },
+      "distinction": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: distinguish reading the design from finding ready work packages."
+      },
+      "no-machinery": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never substitutes implementation terminology for concept meaning."
+      },
+      "no-internal": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never assumes the reader has cratylus’s internal journal."
+      }
+    }
+  }
+}

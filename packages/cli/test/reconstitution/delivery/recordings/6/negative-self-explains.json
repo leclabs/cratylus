@@ -1,0 +1,20 @@
+{
+  "breaks": "self-explains",
+  "recording": {
+    "provenance": "Authored offline control, not a captured model run; answers hand-scored.",
+    "input": {
+      "context": "film-production"
+    },
+    "output": "{\"interfaces\":\"concept_journal and work_package. No further explanation.\",\"skills\":[]}",
+    "answers": {
+      "self-explains": {
+        "pass": false,
+        "evidence": "Interfaces name tools without purpose or when."
+      },
+      "no-restatement": {
+        "pass": true,
+        "evidence": "The unrelated introspection procedure does not restate either capability."
+      }
+    }
+  }
+}

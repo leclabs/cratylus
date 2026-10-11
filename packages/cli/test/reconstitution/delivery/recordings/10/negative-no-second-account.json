@@ -1,0 +1,61 @@
+{
+  "breaks": "no-second-account",
+  "recording": {
+    "provenance": "Authored offline control, not captured from a model. Answers hand-scored; live judges recompute them.",
+    "input": {
+      "context": "film-production",
+      "subject": "Making a film from recorded performances.",
+      "relation": "Film production asks scheduling for available shooting dates.",
+      "concepts": [
+        {
+          "name": "production",
+          "meaning": "The making of a film through its shoots."
+        },
+        {
+          "name": "shoot",
+          "meaning": "A recording occasion made up of takes."
+        },
+        {
+          "name": "take",
+          "meaning": "One uninterrupted recorded performance."
+        }
+      ],
+      "openDecisions": [
+        {
+          "id": "colour",
+          "title": "Choose the colour treatment"
+        }
+      ],
+      "cutsInFlight": [
+        {
+          "cut": "film",
+          "phase": "in flight",
+          "branch": "feature/film"
+        }
+      ]
+    },
+    "output": "Production makes a film through its shoots. Each shoot records takes; a take is one uninterrupted performance. Colour treatment is an open choice, not a settled concept. Film is in flight. I can ask the work package capability for state to find recorded work in flight, or ask the concept journal for its context overview. A workflow skill’s second description outranks the capability account.",
+    "answers": {
+      "whole": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: state the context’s whole before its parts."
+      },
+      "decision": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: distinguish an open decision from a settled concept."
+      },
+      "recorded-work": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: identify where to ask for the recorded work in flight."
+      },
+      "no-second-account": {
+        "pass": false,
+        "evidence": "Authored negative exhibits: Production makes a film through its shoots. Each shoot records takes; a take is one uninterrupted performance. Colour treatment is an open choice, not a settled concept. Film is in flight. I can ask the work package capability for state to find recorded work in flight, or ask the concept journal for its context overview. A workflow skill’s second description outranks the capability account."
+      },
+      "no-invention": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never invent missing workflow state."
+      }
+    }
+  }
+}
