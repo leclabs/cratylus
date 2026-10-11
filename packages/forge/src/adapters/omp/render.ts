@@ -181,7 +181,7 @@ const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
 /** What the judge reads a reconstituting launch's visible text for: the readback. */
 const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
 
-You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback.
+You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback. A readback reports the recorded state as it stands: each open decision as open, even when the agent means to settle it next. A reply that presents a decision not yet recorded as already settled has not read that decision back.
 
 Answer with exactly one JSON object and nothing else:
 {"given": <true or false>, "reason": "<one sentence: what the readback covers, or what it lacks>"}`;
@@ -189,6 +189,11 @@ Answer with exactly one JSON object and nothing else:
 /** What a reconstituting launch reads when an act is held for its readback. */
 const READBACK_REFUSAL =
   'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
+
+/** What a reconstituting launch reads when an act is held and it has said nothing
+ *  visible yet: a readback written only in its thinking is one the operator never saw. */
+const READBACK_UNSEEN_REFUSAL =
+  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.';
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
@@ -1733,6 +1738,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
         `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
         `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
+        `const READBACK_UNSEEN_REFUSAL = ${JSON.stringify(READBACK_UNSEEN_REFUSAL)};`,
         '// The tools whose call changes something whatever its input: a dispatch, a file written or',
         '// edited (a write to `agent://` messages a running agent).',
         'const CHANGING_TOOLS: readonly string[] = ["task", "write", "edit", "ast_edit"];',
@@ -2577,7 +2583,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (!owed || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
         '    if (!changes(event.toolName, (event.input ?? {}) as Record<string, unknown>, appending)) return undefined;',
         '    const text = said.join("\\n\\n");',
-        '    if (text.trim() === "") return { block: true, reason: READBACK_REFUSAL };',
+        '    if (text.trim() === "") return { block: true, reason: READBACK_UNSEEN_REFUSAL };',
         '    const judge = (globalThis as Record<symbol, unknown>)[JUDGE] as Judge | undefined;',
         '    const verdict = typeof judge === "function" ? await judge(ctx, READBACK_PROMPT, text, "given") : undefined;',
         '    if (verdict === undefined) {',

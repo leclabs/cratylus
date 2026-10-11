@@ -1527,6 +1527,8 @@ describe('omp capability interface', () => {
 
     const READBACK_REFUSAL =
       'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
+    const READBACK_UNSEEN_REFUSAL =
+      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.';
     const reply = (text: string) => ({
       message: {
         role: 'assistant',
@@ -1568,11 +1570,22 @@ describe('omp capability interface', () => {
       for (const call of changing)
         expect(await fire('tool_call', call), call.toolName).toEqual({
           block: true,
-          reason: READBACK_REFUSAL,
+          reason: READBACK_UNSEEN_REFUSAL,
         });
       for (const call of reading)
         expect(await fire('tool_call', call), call.toolName).toBeUndefined();
       expect(judge.asked, 'nothing visible yet: no judge asked').toEqual([]);
+    });
+
+    it('tells a launch whose readback is only in its thinking that the operator has seen no text yet', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      await fire('message_end', reply(''));
+      expect(await fire('tool_call', changing[0])).toEqual({
+        block: true,
+        reason: READBACK_UNSEEN_REFUSAL,
+      });
+      expect(judge.asked, 'nothing visible: no judge asked').toEqual([]);
     });
 
     it('refuses an act after visible text the judge finds no readback in, naming why', async () => {
@@ -1647,7 +1660,7 @@ describe('omp capability interface', () => {
       expect(await note(fire)).toContain('# Session start: reconstitution');
       expect(await fire('tool_call', changing[1])).toEqual({
         block: true,
-        reason: READBACK_REFUSAL,
+        reason: READBACK_UNSEEN_REFUSAL,
       });
     });
 
@@ -1694,7 +1707,7 @@ describe('omp capability interface', () => {
       expect(await note(fire)).toContain('# Session start: reconstitution');
       expect(await fire('tool_call', changing[1])).toEqual({
         block: true,
-        reason: READBACK_REFUSAL,
+        reason: READBACK_UNSEEN_REFUSAL,
       });
       expect(await note(fire), 'the first turn after it alone').not.toContain(
         '# Session start',
