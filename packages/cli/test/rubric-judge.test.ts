@@ -10,7 +10,7 @@ import {
 import type * as OS from 'node:os';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { bottomLine, descend, handBack } from '@cratylus/canon';
+import { bottomLine, descend, handBack, pastObjective } from '@cratylus/canon';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rubricPrompt as roleRubricPrompt } from './execution-roles/check.js';
@@ -371,6 +371,35 @@ describe('0091 delivered evidence', () => {
       });
     },
   );
+  it('recognizes a past-objective refusal of a call as held drift, alone or with descend', () => {
+    const [call, result] = fixture('agents-16') as Record<string, unknown>[];
+    const reason = `${pastObjective.refusal} The lead reported the outcome achieved; the call reads the design again.`;
+    for (const [guard, text] of [
+      ['past-objective', reason],
+      [
+        ['descend', 'past-objective'],
+        `${descend.refusal} It reads source.\n\n${reason}`,
+      ],
+    ] as const)
+      expect(
+        deliveredEvidence([
+          call,
+          { ...result, content: [{ type: 'text', text }] },
+        ]),
+      ).toEqual({
+        delivered: [],
+        heldDrift: [
+          {
+            guard,
+            attempt: 'call',
+            tool: 'bash',
+            input: expect.any(Object),
+            reason: text,
+          },
+        ],
+        relayed: [],
+      });
+  });
   it('recognizes hand-back refusals and relays independently of their corrective tail', () => {
     const reason =
       'hand-back: this reply returns a decision you own to the operator.';

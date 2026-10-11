@@ -1,4 +1,4 @@
-import { bottomLine, descend, handBack } from '@cratylus/canon';
+import { bottomLine, descend, handBack, pastObjective } from '@cratylus/canon';
 
 export interface HeldDrift {
   // Several guards can jointly refuse one attempt.
@@ -48,6 +48,10 @@ const handBackPrefix = handBack.refusal.slice(
   0,
   handBack.refusal.indexOf('.') + 1,
 );
+const pastObjectivePrefix = pastObjective.refusal.slice(
+  0,
+  pastObjective.refusal.indexOf('.') + 1,
+);
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
 // READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, leadRefusal, builderRefusal,
@@ -56,6 +60,7 @@ const handBackPrefix = handBack.refusal.slice(
 // Match only those leading sentences, not arbitrary command errors or mentions.
 function refusingGuard(reason: string): string | undefined {
   if (reason.startsWith(descendPrefix)) return descend.id;
+  if (reason.startsWith(pastObjectivePrefix)) return pastObjective.id;
   if (reason.startsWith(handBackPrefix)) return handBack.id;
   if (reason.startsWith(bottomLinePrefix)) return bottomLine.id;
   if (
