@@ -254,9 +254,7 @@
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
-      "prompt": [
-        "Harness prompt without installed declaration."
-      ],
+      "prompt": ["Harness prompt without installed declaration."],
       "active": [
         "read",
         "bash",
@@ -275,9 +273,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -289,9 +285,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -303,9 +297,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -317,9 +309,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -331,9 +321,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -345,9 +333,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         }
       ]

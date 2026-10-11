@@ -243,10 +243,7 @@
       }
     ],
     "report": "Make renewal usable with only a keyboard the next improvement.\n\nRenewal currently needs a mouse, so patrons who use only a keyboard cannot extend their loans independently. Removing that barrier serves your stated priority of independent borrowing. The cover-layout change affects appearance only; it does not remove that barrier.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -269,9 +266,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -283,9 +278,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -297,9 +290,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -311,9 +302,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -325,9 +314,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -339,9 +326,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         }
       ]

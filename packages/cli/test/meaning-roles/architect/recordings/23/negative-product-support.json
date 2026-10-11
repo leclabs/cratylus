@@ -78,10 +78,7 @@
       }
     ],
     "report": "Film examples are ready for my approval; scheduling needs the venue's night-time access restrictions before I can settle its night-shoot boundary.\n\nFilm: I approve the creative-approval examples. Scheduling: I am obtaining the venue's night-time access restrictions.\n\nBoth topics have results. The recommendations above stand. [No outcomes or reasons stated.]\n\nThe supplied reports establish readiness.\n\nThe film outcome is creative acceptance without release authority.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -106,9 +103,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -120,9 +115,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -142,16 +135,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "agent",
-                    "task"
-                  ]
+                  "required": ["agent", "task"]
                 }
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -166,9 +154,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -183,10 +169,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb",
-              "cut"
-            ]
+            "required": ["verb", "cut"]
           }
         },
         {
@@ -201,10 +184,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path",
-              "content"
-            ]
+            "required": ["path", "content"]
           }
         }
       ]

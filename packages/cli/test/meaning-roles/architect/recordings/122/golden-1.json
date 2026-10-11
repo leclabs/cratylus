@@ -241,10 +241,7 @@
     }
   ],
   "report": "Do not release the image archive now: reduced copies have replaced originals that must remain unchanged.\n\nLead: address the failure to preserve the originals unchanged.\n\nBrowsing and search pass, but those successes do not satisfy preservation. Reduced browsing copies may coexist with originals; they cannot replace them.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -269,9 +266,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -283,9 +278,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -297,9 +290,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -311,9 +302,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -325,9 +314,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -339,9 +326,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       }
     ]

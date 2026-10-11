@@ -125,9 +125,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -139,9 +137,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -153,9 +149,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -167,9 +161,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -181,9 +173,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -195,9 +185,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         }
       ]

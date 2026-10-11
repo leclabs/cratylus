@@ -83,10 +83,7 @@
     }
   ],
   "report": "TURN 1: TOOL workPackage state film -> in flight. Film work is still underway, edit dispatched.\n\nTURN 2: Approval means acceptance of the film’s creative content, not release, because the settled design reserves release authority. TURN 3: Use creative approval; it is the established expression and preserves that distinction.\n\nThe later ruling stays with the architect.\n\nThe later answer remains a recommendation.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -111,9 +108,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -125,9 +120,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -147,16 +140,11 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent",
-                  "task"
-                ]
+                "required": ["agent", "task"]
               }
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -171,9 +159,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -188,10 +174,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb",
-            "cut"
-          ]
+          "required": ["verb", "cut"]
         }
       },
       {
@@ -206,10 +189,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path",
-            "content"
-          ]
+          "required": ["path", "content"]
         }
       }
     ]

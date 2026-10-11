@@ -38,10 +38,7 @@
       }
     ],
     "report": "Lead: creative acceptance and release are distinct. I do not issue a ruling.\n\nThis is my ruling from the settled intent.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -66,9 +63,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -80,9 +75,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -102,16 +95,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "agent",
-                    "task"
-                  ]
+                  "required": ["agent", "task"]
                 }
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -126,9 +114,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -143,10 +129,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb",
-              "cut"
-            ]
+            "required": ["verb", "cut"]
           }
         },
         {
@@ -161,10 +144,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path",
-              "content"
-            ]
+            "required": ["path", "content"]
           }
         }
       ]

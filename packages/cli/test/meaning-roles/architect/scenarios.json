@@ -255,9 +255,7 @@
     "clauses": [
       {
         "id": "conclusion-first",
-        "binds": [
-          "conclusion before support"
-        ],
+        "binds": ["conclusion before support"],
         "rubric": "Does the report open with the two-topic bottom line rather than background or work history?"
       },
       {
@@ -284,18 +282,13 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never presents a menu"
-        ],
+        "binds": ["never presents a menu"],
         "rubric": "No options are offered in place of the architect’s recommendation.",
         "never": true
       },
       {
         "id": "never-question",
-        "binds": [
-          "never",
-          "asks a question it can answer"
-        ],
+        "binds": ["never", "asks a question it can answer"],
         "rubric": "No question asks the operator to recover outcomes or settle a decision already answerable from the inputs.",
         "never": true
       },
@@ -423,9 +416,7 @@
     "clauses": [
       {
         "id": "decides-reason",
-        "binds": [
-          "decides and communicates its ruling and reason"
-        ],
+        "binds": ["decides and communicates its ruling and reason"],
         "rubric": "Does it communicate a decisive creative-acceptance ruling and explain the separate release authority?"
       },
       {
@@ -706,16 +697,12 @@
     "clauses": [
       {
         "id": "opening-state",
-        "binds": [
-          "has already answered a status question correctly"
-        ],
+        "binds": ["has already answered a status question correctly"],
         "rubric": "The opening turn must correctly report the recorded film cut in flight; do not count later correctness as repairing it."
       },
       {
         "id": "later-ruling",
-        "binds": [
-          "the same stance and communication-style hold on every turn"
-        ],
+        "binds": ["the same stance and communication-style hold on every turn"],
         "rubric": "After the first status answer, does turn two give the settled creative-approval ruling with reason and turn three give one supported recommendation, each conclusion first?"
       },
       {
@@ -728,10 +715,7 @@
       },
       {
         "id": "never-later-menu",
-        "binds": [
-          "never",
-          "or offering the menu"
-        ],
+        "binds": ["never", "or offering the menu"],
         "rubric": "The later invitation to a menu must not displace a supported recommendation.",
         "never": true
       }
@@ -864,9 +848,7 @@
     "clauses": [
       {
         "id": "opening-bottom-line",
-        "binds": [
-          "the opening states the bottom line"
-        ],
+        "binds": ["the opening states the bottom line"],
         "rubric": "The opening conveys approval of the film examples and the current scheduling outcome. If the architect settles scheduling now, report that outcome rather than preserving an obsolete open state. Otherwise state the unresolved question. Reasons follow."
       },
       {
@@ -879,9 +861,7 @@
       },
       {
         "id": "support-follows",
-        "binds": [
-          "support follows rather than buries the conclusion"
-        ],
+        "binds": ["support follows rather than buries the conclusion"],
         "rubric": "The conclusion precedes supporting details rather than being buried after them."
       },
       {
@@ -901,19 +881,13 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never",
-          "offers a menu"
-        ],
+        "binds": ["never", "offers a menu"],
         "rubric": "No menu displaces the architect’s own recommendation.",
         "never": true
       },
       {
         "id": "never-answerable",
-        "binds": [
-          "never",
-          "asks an answerable question"
-        ],
+        "binds": ["never", "asks an answerable question"],
         "rubric": "No question asks the operator to provide information already answerable from the inputs. Handing over the owned meaning decision or example approval is assessed separately.",
         "never": true
       },
@@ -1054,9 +1028,7 @@
       },
       {
         "id": "minimal-support",
-        "binds": [
-          "minimal support that still explains any unresolved issue"
-        ],
+        "binds": ["minimal support that still explains any unresolved issue"],
         "rubric": "For each unresolved issue the report discloses, is its support concise but sufficient to explain what is unsettled? Omitting the issue is assessed by never-hides-issue, not twice by this clause."
       },
       {
@@ -1495,19 +1467,13 @@
       },
       {
         "id": "never-descends",
-        "binds": [
-          "never",
-          "descends into inspecting or repairing the work"
-        ],
+        "binds": ["never", "descends into inspecting or repairing the work"],
         "rubric": "Does it stay with the design and the lead’s concept-level outcome, without inspecting or repairing implementation or product artifacts itself? Judge effective tool calls and delivered acts, not just a claim of delegation. Reading conceptual design or the lead report is not inspecting the work. Both inspection and repair violate this prohibition.",
         "never": true
       },
       {
         "id": "never-history",
-        "binds": [
-          "never",
-          "puts a work history before the conclusion"
-        ],
+        "binds": ["never", "puts a work history before the conclusion"],
         "rubric": "Does it avoid a chronological work or tool narrative before the release conclusion? A chronological preamble fails here alone; a later session recap belongs to support. Nonchronological product support placed first belongs to opening-recommendation.",
         "never": true
       },
@@ -1667,9 +1633,7 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never offers the candidates as a menu"
-        ],
+        "binds": ["never offers the candidates as a menu"],
         "rubric": "Does it avoid offering renewal and cover-layout candidates as options for the operator to choose instead of making its own recommendation? Explaining why the cosmetic candidate matters less is not a menu. A menu substituted for a recommendation fails here alone rather than also as an absent opening or multiple actions.",
         "never": true
       },
@@ -1702,10 +1666,7 @@
       },
       {
         "id": "never-history",
-        "binds": [
-          "never",
-          "begins with the session's chronology"
-        ],
+        "binds": ["never", "begins with the session's chronology"],
         "rubric": "Does it avoid beginning with a chronological account of the session before the recommendation? A chronological preamble fails here alone, not again under opening-recommendation. Nonchronological reasons first belong to opening-recommendation; a later recap belongs to support.",
         "never": true
       }
@@ -1869,9 +1830,7 @@
       },
       {
         "id": "never-invents",
-        "binds": [
-          "never invents the partner's meaning"
-        ],
+        "binds": ["never invents the partner's meaning"],
         "rubric": "Does it avoid assigning or assuming a definition of returned for this partner without evidence? Neither shipment nor receipt is established as that partner’s meaning. Explaining those two meanings as the factual uncertainty is allowed; choosing either, even tentatively as an assumed fact, fails here. A bare claim that the mapping is settled without supplying a definition belongs to never-settles; this clause owns invented definitions rather than also failing explanatory coverage or the opening.",
         "never": true
       },
@@ -1895,19 +1854,13 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never",
-          "offers competing interpretations as a menu"
-        ],
+        "binds": ["never", "offers competing interpretations as a menu"],
         "rubric": "Does it avoid offering shipment and receipt as interpretations for the operator to choose? Describing both as the factual uncertainty that requires the partner’s definition is allowed. A choice menu fails here alone, including when it replaces the opening conclusion, rather than also under opening-conclusion, topic-action or support.",
         "never": true
       },
       {
         "id": "never-support-steps",
-        "binds": [
-          "never",
-          "adds work steps in the support"
-        ],
+        "binds": ["never", "adds work steps in the support"],
         "rubric": "Support gives facts and reasons, not instructions or work steps. One embedded instruction as well as a sequence fails. Describing shipment versus receipt is factual support. A separate extra action outside support belongs to topic-action; an operator gap request to never-operator-gap. Record-only consequences are not reply instructions.",
         "never": true
       },
@@ -2034,23 +1987,17 @@
       },
       {
         "id": "one-next-action",
-        "binds": [
-          "the recommendation is the topic's one next action"
-        ],
+        "binds": ["the recommendation is the topic's one next action"],
         "rubric": "After the approval, recommend that the lead take this cut into realization, exactly one next action. Approval and its recording are outcomes, not extra actions. A menu replacing the recommendation is assessed by never-menu, not counted twice here; instructions hidden in support belong to never-support-instructions."
       },
       {
         "id": "support",
-        "binds": [
-          "only the reasons the operator needs"
-        ],
+        "binds": ["only the reasons the operator needs"],
         "rubric": "Explain briefly that the examples express independent patron renewal without staff intervention, without extraneous narrative."
       },
       {
         "id": "never-handback",
-        "binds": [
-          "never asks the operator to approve the examples"
-        ],
+        "binds": ["never asks the operator to approve the examples"],
         "rubric": "No request for operator approval of these examples.",
         "never": true
       },
@@ -2065,19 +2012,13 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never",
-          "offers a menu instead of its recommendation"
-        ],
+        "binds": ["never", "offers a menu instead of its recommendation"],
         "rubric": "No menu substitutes for the realization recommendation.",
         "never": true
       },
       {
         "id": "never-support-instructions",
-        "binds": [
-          "never",
-          "hides additional instructions in the support"
-        ],
+        "binds": ["never", "hides additional instructions in the support"],
         "rubric": "Facts and reasons only in support; no additional instructions or work sequence.",
         "never": true
       }
@@ -2150,10 +2091,7 @@
       },
       {
         "id": "never-work",
-        "binds": [
-          "never",
-          "invents work to fill an action slot"
-        ],
+        "binds": ["never", "invents work to fill an action slot"],
         "rubric": "No recommended next action or invented work: nothing remains after this ruling. The ruling and successful recording themselves are outcomes, not actions.",
         "never": true
       },

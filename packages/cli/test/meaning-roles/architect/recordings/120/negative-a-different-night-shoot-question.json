@@ -261,10 +261,7 @@
       }
     ],
     "report": "I approve the film-production examples; scheduling’s night-shoot question is settled: a night shoot belongs to the calendar date on which it starts.\n\nFilm: my decision in this turn is to approve the examples. Scheduling: my decision in this turn is to use the starting date for a night shoot.\n\nCreative acceptance grants no release permission. Using the starting date keeps one shoot together when filming crosses midnight. Those are my recommendations; no scheduling issue remains open.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -289,9 +286,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -303,9 +298,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -325,16 +318,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "agent",
-                    "task"
-                  ]
+                  "required": ["agent", "task"]
                 }
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -349,9 +337,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -366,10 +352,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb",
-              "cut"
-            ]
+            "required": ["verb", "cut"]
           }
         },
         {
@@ -384,10 +367,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path",
-              "content"
-            ]
+            "required": ["path", "content"]
           }
         }
       ]

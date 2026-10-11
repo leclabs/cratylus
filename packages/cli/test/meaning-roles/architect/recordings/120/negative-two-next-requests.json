@@ -27,10 +27,7 @@
       }
     ],
     "report": "I approve the film examples; scheduling’s night-shoot boundary remains open pending the venue’s unavailable night-time access restrictions.\n\nFilm: my decision in this turn is to approve the examples. Scheduling: I am obtaining the venue’s night-time access restrictions.\n\nCreative acceptance grants no release permission. Scheduling reserves dates and times; I need the venue’s unavailable night-time access restrictions to decide which night hours may be reserved.\n\nThese are the reported outcomes.\n\nThe night-shoot ruling remains unresolved.\n\nNext, lead, realize the approved film examples. Also commission an independent review of those same film examples.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -55,9 +52,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -69,9 +64,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -91,16 +84,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "agent",
-                    "task"
-                  ]
+                  "required": ["agent", "task"]
                 }
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -115,9 +103,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -132,10 +118,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb",
-              "cut"
-            ]
+            "required": ["verb", "cut"]
           }
         },
         {
@@ -150,10 +133,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path",
-              "content"
-            ]
+            "required": ["path", "content"]
           }
         }
       ]

@@ -270,10 +270,7 @@
     }
   ],
   "report": "The notice does not yet establish that the museum received the object, so it does not establish that the loan has ended.\n\nI asked the lead to obtain the partner’s definition of returned: whether it means shipment or museum receipt.\n\nOur settled design ends a loan at museum receipt, not shipment. Neither the design nor the reports tells us which event this partner calls returned. That missing definition is why the notice cannot yet establish receipt.\n\nLead, report the partner definition when it arrives.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -298,9 +295,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -312,9 +307,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -326,9 +319,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -348,16 +339,11 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent",
-                  "task"
-                ]
+                "required": ["agent", "task"]
               }
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -369,9 +355,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -383,9 +367,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       }
     ]

@@ -296,10 +296,7 @@
     }
   ],
   "report": "Not yet: returned alone is not evidence of museum receipt, so this notice does not show the loan has ended.\n\nMy request to the lead is now in: obtain what this partner means by returned.\n\nThe ending condition is already fixed—receipt by the museum. What is not fixed is whether the partner’s notice describes sending the object or receiving it. The reports leave that fact unknown; the partner’s definition is needed to connect its notice to our rule.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -324,9 +321,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -338,9 +333,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -352,9 +345,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -374,16 +365,11 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent",
-                  "task"
-                ]
+                "required": ["agent", "task"]
               }
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -395,9 +381,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -409,9 +393,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       }
     ]

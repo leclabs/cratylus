@@ -26,10 +26,7 @@
       }
     ],
     "report": "Film examples are approved by me, and I have settled scheduling: night shoots are allowed under the same reservation rules as daytime shoots.\n\nFor film production, my decision in this turn is to approve the creative-approval examples. For scheduling, my decision in this turn is to permit night-time reservations under the existing rules.\n\nCreative acceptance does not grant release permission. Scheduling approval reserves a date and time, not creative acceptance; night hours do not change that reservation's meaning, so the same reservation rules apply at night.\n\nThese are my decisions for the two topics.\n\nThe supplied film checks establish the creative-approval distinction.\n\nThe film outcome is creative acceptance without release authority.\n\nThat completed decision or request is this topic’s recommended next action; a further recommendation would be a forbidden second action.",
-    "snapshots": [
-      {},
-      {}
-    ],
+    "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
       "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -54,9 +51,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path"
-            ]
+            "required": ["path"]
           }
         },
         {
@@ -68,9 +63,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "command"
-            ]
+            "required": ["command"]
           }
         },
         {
@@ -90,16 +83,11 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "agent",
-                    "task"
-                  ]
+                  "required": ["agent", "task"]
                 }
               }
             },
-            "required": [
-              "tasks"
-            ]
+            "required": ["tasks"]
           }
         },
         {
@@ -114,9 +102,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb"
-            ]
+            "required": ["verb"]
           }
         },
         {
@@ -131,10 +117,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "verb",
-              "cut"
-            ]
+            "required": ["verb", "cut"]
           }
         },
         {
@@ -149,10 +132,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "path",
-              "content"
-            ]
+            "required": ["path", "content"]
           }
         }
       ]
