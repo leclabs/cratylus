@@ -1,0 +1,14 @@
+{
+  "id": "01M4M643PJMKP9PCBAMKSRJHZ0",
+  "at": "2026-10-11T00:34:37.394Z",
+  "kind": "decide",
+  "decisionId": "0073",
+  "context": "workflow",
+  "title": "Cut: reconstitution and handoffs (corrected)",
+  "situation": "0071 said the workflow ships to product users as skills and that a cut's state is recorded; both misstate the design. The workflow reaches a product's users as its capabilities, which explain themselves in the product's terms (capability interface): the work package capability already holds a cut as an append-only event log, from which it computes the dependency graph, the topological levels and the next dispatchable frontier on every request, and the lead records its decomposition there and pulls the next level from it. A fresh session still could not tell which cuts were in flight: cut-level events (dispatched, judged, integrated) are not appended anywhere, and the journal has no whole account of the workflow.",
+  "decision": "One cut. (1) A computed overview of each context, rendered by the journal from its concepts as plain prose, root concept first and the rest in the order they build on each other, with what is open; read first at every reconstitution. (2) The workflow ships as its capabilities: the work package capability and the concept journal, each explaining itself in the product's terms, the overview included, so a consumer's agents learn the workflow from the tools they call; a skill says only when to reach for them (capability fidelity). (3) A cut's lifecycle is event-sourced like its work packages: dispatched, judged, integrated and released are appended as events, and each cut's phase, its work packages' status and the frontier are computed on request, never stored as state. (4) Typed handoffs, with example 19 as the first example. (5) The architect as principal (0070). (6) Every agent's default tools (0068).",
+  "consequences": "Next in 0072's order.",
+  "status": "open",
+  "supersedes": "0071",
+  "supersedesEntry": "01M4M4P6DV2W368DNH54G5JW0S"
+}
