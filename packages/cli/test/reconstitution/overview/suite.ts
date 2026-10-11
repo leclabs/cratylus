@@ -1,10 +1,4 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -14,7 +8,7 @@ import {
 } from '@cratylus/runtime';
 import { describe, expect, it } from 'vitest';
 import { host } from '../../capability-port/fixture.js';
-import { judgeRuns } from '../../rubric-judge.js';
+import { liveBatch } from '../../rubric-judge.js';
 import { capture, live } from './rubric-runner.js';
 import {
   type Recording,
@@ -125,38 +119,29 @@ export function rubricSuite(directory: string) {
         },
       );
       it.runIf(process.env.EXECUTION_LIVE === '1')(
-        'live — five separate rubric sessions, four-of-five and all never assertions',
+        'live — parallel rubric sessions stop when the outcome is decided',
         async () => {
           const output = join(
             process.env.EXECUTION_RECORDINGS ??
               mkdtempSync(join(tmpdir(), 'reconstitution-rubrics-')),
             scenario.ref.replace('/', '-'),
           );
-          mkdirSync(output, { recursive: true });
-          const records: Recording[] = [];
-          const errors: string[] = [];
-          for (let index = 1; index <= 5; index++) {
-            try {
-              const recording = live(scenario, join(output, `run-${index}`));
+          const result = await liveBatch(
+            source,
+            async (index, signal) => {
+              const recording = await live(
+                scenario,
+                join(output, `run-${index}`),
+                signal,
+              );
               writeFileSync(
                 join(output, `run-${index}.json`),
                 JSON.stringify(recording, null, 2),
               );
-              records.push(recording);
-            } catch (error) {
-              errors.push(`Run ${index}: ${String(error)}`);
-            }
-          }
-          const result = await judgeRuns(source, records);
-          writeFileSync(
-            join(output, 'errors.json'),
-            JSON.stringify(errors, null, 2),
+              return recording;
+            },
+            output,
           );
-          writeFileSync(
-            join(output, 'assessment.json'),
-            JSON.stringify(result, null, 2),
-          );
-          expect(errors, output).toEqual([]);
           expect(result.passed, JSON.stringify(result)).toBe(true);
         },
         10_000_000,

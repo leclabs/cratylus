@@ -7,7 +7,7 @@ import {
   host,
   success,
 } from '../../capability-port/fixture.js';
-import { launch } from '../../capability-port/omp.js';
+import { launchAsync } from '../../capability-port/omp.js';
 import { judgeSubject } from '../../rubric-judge.js';
 import type { Scenario as ArchitectScenario } from '../architect/check.js';
 import { liveRun as architectRun } from '../architect/runner.js';
@@ -158,9 +158,14 @@ export function capture(scenario: Scenario, h: Host): Recording {
   };
 }
 
-export function live(scenario: Scenario, output: string): Recording {
+export async function live(
+  scenario: Scenario,
+  output: string,
+  signal?: AbortSignal,
+): Promise<Recording> {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
+  signal?.throwIfAborted();
   const h = host();
   try {
     const record = capture(scenario, h);
@@ -186,7 +191,7 @@ export function live(scenario: Scenario, output: string): Recording {
         ),
         commands: [],
       };
-      const result = architectRun(intent, output);
+      const result = await architectRun(intent, output, signal);
       return {
         provenance:
           'Installed architect given free-text product intent; separate live rubric judge.',
@@ -199,38 +204,40 @@ export function live(scenario: Scenario, output: string): Recording {
     // Each call creates a separate plain evaluator session. It is not a workflow
     // assayer and claims no typed workflow role. No subject-model run is needed
     // for the two rubrics over mechanically delivered output.
-    return judgeSubject(record, output, [], (model, attemptOutput) => {
-      const j = host();
-      const old = process.env.CAPABILITY_PORT_RUBRIC;
-      try {
-        process.env.CAPABILITY_PORT_RUBRIC = '1';
-        const prompt = rubricPrompt(scenario, record);
-        writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-        const judged = launch(
-          {
-            ...j,
-            launchArgs(explicit) {
-              const args = j.launchArgs(explicit);
-              args[args.indexOf('--model') + 1] = model;
-              return args;
+    return await judgeSubject(
+      record,
+      output,
+      [],
+      async (model, attemptOutput) => {
+        const j = host();
+        try {
+          const prompt = rubricPrompt(scenario, record);
+          writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
+          const judged = await launchAsync(
+            {
+              ...j,
+              launchArgs(explicit) {
+                const args = j.launchArgs(explicit);
+                args[args.indexOf('--model') + 1] = model;
+                return args;
+              },
             },
-          },
-          prompt,
-          [],
-          attemptOutput,
-        );
-        const text = judged.events
-          .filter((event) => event.kind === 'text')
-          .map((event) => event.text)
-          .join('\n');
-        return parseAnswers(text, scenario);
-      } finally {
-        if (old === undefined)
-          Reflect.deleteProperty(process.env, 'CAPABILITY_PORT_RUBRIC');
-        else process.env.CAPABILITY_PORT_RUBRIC = old;
-        j.dispose();
-      }
-    });
+            prompt,
+            [],
+            attemptOutput,
+            signal,
+          );
+          const text = judged.events
+            .filter((event) => event.kind === 'text')
+            .map((event) => event.text)
+            .join('\n');
+          return parseAnswers(text, scenario);
+        } finally {
+          j.dispose();
+        }
+      },
+      signal,
+    );
   } finally {
     h.dispose();
   }

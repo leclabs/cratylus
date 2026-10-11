@@ -19,7 +19,7 @@ import {
   checkAssignment,
 } from '../../../schema/src/contract.js';
 import { type Fixture, fixture } from '../agent-launch/fixture.js';
-import { judgeSubject, subjectModels } from '../rubric-judge.js';
+import { judgeSubject, runSession, subjectModels } from '../rubric-judge.js';
 import {
   type Recording,
   type Scenario,
@@ -164,14 +164,16 @@ export function project(scenario: Scenario): Fixture {
  * One omp session: as the installed agent `role`, or, with none, the untyped
  * rubric judge — a plain session with no tools, which takes no assignment.
  */
-function launch(
+async function launch(
   f: Fixture,
   role: string | undefined,
   prompt: string,
   output: string,
   inspect: boolean,
   model?: string,
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted();
   mkdirSync(output, { recursive: true });
   const wiringPath = join(output, 'wiring.json');
   const messagesPath = join(output, 'messages.jsonl');
@@ -201,12 +203,10 @@ function launch(
     ...(model ? ['--model', model] : []),
     prompt,
   ];
-  const result = spawnSync('omp', args, {
+  const result = await runSession('omp', args, {
     cwd: f.cwd,
-    input: '',
-    encoding: 'utf8',
     timeout: inspect ? 60_000 : 300_000,
-    maxBuffer: 32 * 1024 * 1024,
+    signal,
     env: {
       ...f.env,
       EXECUTION_INSPECT: inspect ? '1' : '0',
@@ -265,10 +265,10 @@ function launch(
   );
   return recording;
 }
-export function preflight(scenario: Scenario, output?: string) {
+export async function preflight(scenario: Scenario, output?: string) {
   const f = project(scenario);
   try {
-    return launch(
+    return await launch(
       f,
       scenario.role,
       scenario.prompt,
@@ -290,38 +290,61 @@ function credentials(f: Fixture) {
       cpSync(source, join(f.home, '.omp/agent', `agent.db${suffix}`));
   }
 }
-export function liveRun(scenario: Scenario, output: string): Recording {
+export async function liveRun(
+  scenario: Scenario,
+  output: string,
+  signal?: AbortSignal,
+): Promise<Recording> {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
+  signal?.throwIfAborted();
   const f = project(scenario);
   try {
-    launch(f, scenario.role, scenario.prompt, join(output, 'preflight'), true);
+    await launch(
+      f,
+      scenario.role,
+      scenario.prompt,
+      join(output, 'preflight'),
+      true,
+      undefined,
+      signal,
+    );
     credentials(f);
-    const recording = launch(f, scenario.role, scenario.prompt, output, false);
+    const recording = await launch(
+      f,
+      scenario.role,
+      scenario.prompt,
+      output,
+      false,
+      undefined,
+      signal,
+    );
     if (scenario.clauses.some((clause) => !clause.unchanged)) {
-      return judgeSubject(
+      return await judgeSubject(
         recording,
         output,
         subjectModels(recording),
-        (model, attemptOutput) => {
+        async (model, attemptOutput) => {
           const j = fixture();
           try {
             credentials(j);
             const prompt = rubricPrompt(scenario, recording);
             writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-            const judged = launch(
+            const judged = await launch(
               j,
               undefined,
               prompt,
               attemptOutput,
               false,
               model,
+              signal,
             );
             return parseAnswers(judged.report, scenario);
           } finally {
             j.dispose();
           }
         },
+        signal,
       );
     }
     // No rubric criteria: all judgments are mechanical.

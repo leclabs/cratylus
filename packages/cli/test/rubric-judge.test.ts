@@ -1,4 +1,5 @@
 import type * as ChildProcess from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -13,6 +14,7 @@ import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Recording, Scenario } from './reconstitution/architect/check.js';
 import * as runner from './reconstitution/architect/runner.js';
+import type * as JudgeHarness from './rubric-judge.js';
 
 const control = vi.hoisted(() => ({
   root: '',
@@ -43,6 +45,15 @@ vi.mock('./agent-launch/fixture.js', () => ({
       writeFileSync(join(directory, `${name}.md`), body);
     },
   }),
+}));
+vi.mock('./rubric-judge.js', async (original) => ({
+  ...(await original<typeof JudgeHarness>()),
+  // Session transport only is replaced; retries and batch decisions stay real.
+  runSession: async (
+    binary: string,
+    args: string[],
+    options: { env: Record<string, string> },
+  ) => spawnSync(binary, args, { ...options, encoding: 'utf8' }),
 }));
 vi.mock('node:child_process', async (original) => {
   const actual = await original<typeof ChildProcess>();
@@ -143,7 +154,7 @@ afterEach(() => {
 describe('live rubric judge contract, exercised without model sessions', () => {
   it.each(['anthropic/judge', 'openai/judge', 'openai-codex/judge'])(
     'refuses same-family %s before launching',
-    (model) => {
+    async (model) => {
       vi.stubEnv('EXECUTION_JUDGE_MODEL', model);
       const input = subject(
         model.startsWith('anthropic/')
@@ -152,14 +163,14 @@ describe('live rubric judge contract, exercised without model sessions', () => {
             ? 'openai-codex/subject'
             : 'openai/subject',
       );
-      expect(() =>
+      await expect(async () =>
         runner.judgeRecording(scenario, input, join(control.root, 'result')),
-      ).toThrow(/same.*family/i);
+      ).rejects.toThrow(/same.*family/i);
       expect(control.calls).toBe(0);
     },
   );
-  it('chooses the host other-family role and retains the actual judge model', () => {
-    const result = runner.judgeRecording(
+  it('chooses the host other-family role and retains the actual judge model', async () => {
+    const result = await runner.judgeRecording(
       scenario,
       subject(),
       join(control.root, 'result'),
@@ -174,19 +185,23 @@ describe('live rubric judge contract, exercised without model sessions', () => {
       ),
     ).toEqual(result);
   });
-  it('honours an explicit other-family model override', () => {
+  it('honours an explicit other-family model override', async () => {
     vi.stubEnv('EXECUTION_JUDGE_MODEL', 'google/judge');
     expect(
-      runner.judgeRecording(scenario, subject(), join(control.root, 'result')),
+      await runner.judgeRecording(
+        scenario,
+        subject(),
+        join(control.root, 'result'),
+      ),
     ).toMatchObject({ judgment: { model: 'google/judge', status: 'judged' } });
     expect(control.models).toEqual(['google/judge']);
   });
   it.each(['exit', 'timeout', 'not JSON', '{}'])(
-    'retains an unjudged run after bounded %s retries',
-    (failure) => {
+    'retries an unjudged %s run only once',
+    async (failure) => {
       control.responses = Array(3).fill(failure);
       const input = subject();
-      const result = runner.judgeRecording(
+      const result = await runner.judgeRecording(
         scenario,
         input,
         join(control.root, 'result'),
@@ -196,7 +211,7 @@ describe('live rubric judge contract, exercised without model sessions', () => {
         judgment: { status: 'unjudged', model: 'openai-codex/gpt-6-astra' },
       });
       expect(result.messages).toEqual(input.messages);
-      expect(control.calls).toBe(3);
+      expect(control.calls).toBe(2);
       expect(
         JSON.parse(
           readFileSync(join(control.root, 'result/subject.json'), 'utf8'),
@@ -204,13 +219,12 @@ describe('live rubric judge contract, exercised without model sessions', () => {
       ).toEqual(input.messages);
     },
   );
-  it('rejudges the retained subject before returning, preserving attempt evidence', () => {
+  it('rejudges the retained subject before returning, preserving attempt evidence', async () => {
     control.responses = [
       'exit',
-      'not JSON',
       '{"criterion":{"pass":false,"evidence":"Missing"}}',
     ];
-    const result = runner.judgeRecording(
+    const result = await runner.judgeRecording(
       scenario,
       subject(),
       join(control.root, 'result'),
@@ -219,14 +233,10 @@ describe('live rubric judge contract, exercised without model sessions', () => {
       answers: { criterion: { pass: false } },
       judgment: {
         status: 'judged',
-        attempts: [
-          { error: expect.any(String) },
-          { error: expect.any(String) },
-          {},
-        ],
+        attempts: [{ error: expect.any(String) }, {}],
       },
     });
-    expect(control.calls).toBe(3);
+    expect(control.calls).toBe(2);
     expect(
       readFileSync(
         join(control.root, 'result/rubric/attempt-1/stderr'),
@@ -234,7 +244,7 @@ describe('live rubric judge contract, exercised without model sessions', () => {
       ),
     ).toBe('Judge exited');
   });
-  it('reports four judged and one unjudged as incomplete, never a pass or a failed subject', async () => {
+  it('four judged passes decide the batch despite an unjudged or missing fifth run', async () => {
     const source: BehavioralCheck<Recording> = {
       example: 'criterion holds',
       assertions: [{ id: 'criterion', binds: ['criterion holds'] }],
@@ -264,15 +274,14 @@ describe('live rubric judge contract, exercised without model sessions', () => {
     expect(
       await aggregate(source, [good, good, good, good, unjudged]),
     ).toMatchObject({
-      passed: false,
-      status: 'incomplete',
+      passed: true,
+      status: 'passed',
       judged: 4,
       unjudged: 1,
-      assertions: [],
     });
     expect(await aggregate(source, [good, good, good, good])).toMatchObject({
-      passed: false,
-      status: 'incomplete',
+      passed: true,
+      status: 'passed',
       judged: 4,
       unjudged: 1,
     });

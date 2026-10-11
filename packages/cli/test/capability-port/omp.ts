@@ -9,6 +9,7 @@ import {
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { runSession } from '../rubric-judge.js';
 import {
   type Recording,
   type Scenario,
@@ -34,8 +35,21 @@ interface ModelWiring extends Wiring {
   memory: { backend: string; active: boolean };
   credentialResolved: boolean;
 }
+interface PreparedLaunch {
+  executable: string;
+  args: string[];
+  env: NodeJS.ProcessEnv & {
+    CAPABILITY_WIRING: string;
+    CAPABILITY_TRANSCRIPT: string;
+    CAPABILITY_PROMPTS: string;
+  };
+}
 
-export function modelLaunch(h: Host, tools: string[], output: string) {
+export function modelLaunch(
+  h: Host,
+  tools: string[],
+  output: string,
+): PreparedLaunch {
   // Context-file discovery is separate from --no-rules in omp. Do not expose
   // the operator's home: copy ONLY the credential store to another empty home.
   // The installed adapter remains in h.home and is passed explicitly.
@@ -137,6 +151,49 @@ export function launch(
   writeFileSync(join(output, 'stdout'), result.stdout);
   writeFileSync(join(output, 'stderr'), result.stderr);
   success(result);
+  return collect(prepared, tools, output);
+}
+
+/** Parallel rubric runs need cancellation; the existing sync launch stays unchanged. */
+export async function launchAsync(
+  h: Host,
+  prompt: string,
+  tools: string[],
+  output: string,
+  signal?: AbortSignal,
+): Promise<Recording> {
+  if (process.env.EXECUTION_LIVE !== '1')
+    throw new Error('A live rubric launch needs EXECUTION_LIVE=1');
+  signal?.throwIfAborted();
+  const prepared = modelLaunch(h, tools, output);
+  writeFileSync(prepared.env.CAPABILITY_TRANSCRIPT, '');
+  writeFileSync(prepared.env.CAPABILITY_PROMPTS, '');
+  const result = await runSession(
+    prepared.executable,
+    [...prepared.args, prompt],
+    {
+      cwd: h.cwd,
+      env: prepared.env,
+      timeout: 300_000,
+      signal,
+    },
+  );
+  writeFileSync(join(output, 'stdout'), result.stdout);
+  writeFileSync(join(output, 'stderr'), result.stderr);
+  if (result.error) throw result.error;
+  success({
+    code: result.status,
+    stdout: result.stdout,
+    stderr: result.stderr,
+  });
+  return collect(prepared, tools, output);
+}
+
+function collect(
+  prepared: PreparedLaunch,
+  tools: string[],
+  output: string,
+): Recording {
   const wiring: ModelWiring = JSON.parse(
     readFileSync(prepared.env.CAPABILITY_WIRING, 'utf8'),
   );
@@ -155,7 +212,10 @@ export function launch(
   ).toBeGreaterThan(0);
   for (const turn of prompts)
     expect(failures(assessIsolation(turn, tools))).toEqual([]);
-  const messages: unknown[] = readFileSync(transcript, 'utf8')
+  const messages: unknown[] = readFileSync(
+    prepared.env.CAPABILITY_TRANSCRIPT,
+    'utf8',
+  )
     .split('\n')
     .filter(Boolean)
     .map((line) => JSON.parse(line));

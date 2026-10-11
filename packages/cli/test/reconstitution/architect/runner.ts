@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
 import { snapshot } from '../../execution-roles/snapshot.js';
-import { judgeSubject, subjectModels } from '../../rubric-judge.js';
+import { judgeSubject, runSession, subjectModels } from '../../rubric-judge.js';
 export { judgeRuns } from '../../rubric-judge.js';
 import {
   type Recording,
@@ -103,7 +103,7 @@ export function retainedSubject(scenario: Scenario, input: string): Recording {
     answers: {},
   };
 }
-function launch(
+async function launch(
   f: Fixture,
   role: string,
   prompt: string,
@@ -111,7 +111,9 @@ function launch(
   inspect: boolean,
   judge = false,
   session?: string,
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted();
   mkdirSync(output, { recursive: true });
   const wiringPath = join(output, 'wiring.json');
   const messagesPath = join(output, 'messages.jsonl');
@@ -144,12 +146,10 @@ function launch(
     ...(judge ? ['--tools', ''] : []),
     promptArgument(prompt, output),
   ];
-  const result = spawnSync('omp', args, {
+  const result = await runSession('omp', args, {
     cwd: f.cwd,
-    input: '',
-    encoding: 'utf8',
     timeout: inspect ? 60_000 : 300_000,
-    maxBuffer: 32 * 1024 * 1024,
+    signal,
     env: {
       ...f.env,
       EXECUTION_INSPECT: inspect ? '1' : '0',
@@ -209,10 +209,10 @@ function launch(
   );
   return recording;
 }
-export function preflight(scenario: Scenario, output?: string) {
+export async function preflight(scenario: Scenario, output?: string) {
   const f = project(scenario);
   try {
-    return launch(
+    return await launch(
       f,
       scenario.role,
       scenario.prompt,
@@ -293,18 +293,19 @@ function sessionFile(f: Fixture, scenario: Scenario): string {
   return file;
 }
 
-export function judgeRecording(
+export async function judgeRecording(
   scenario: Scenario,
   recording: Recording,
   output: string,
-): Recording {
+  signal?: AbortSignal,
+): Promise<Recording> {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
   return judgeSubject(
     recording,
     output,
     subjectModels(recording),
-    (model, attemptOutput) => {
+    async (model, attemptOutput) => {
       // A separate untyped evaluator, not the workflow assayer.
       const j = fixture();
       try {
@@ -317,32 +318,54 @@ export function judgeRecording(
         });
         const prompt = rubricPrompt(scenario, recording);
         writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-        const judged = launch(
+        const judged = await launch(
           j,
           'rubric-judge',
           prompt,
           attemptOutput,
           false,
           true,
+          undefined,
+          signal,
         );
         return parseAnswers(judged.report, scenario);
       } finally {
         j.dispose();
       }
     },
+    signal,
   );
 }
-export function liveRun(scenario: Scenario, output: string): Recording {
+export async function liveRun(
+  scenario: Scenario,
+  output: string,
+  signal?: AbortSignal,
+): Promise<Recording> {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
+  signal?.throwIfAborted();
   const f = project(scenario);
   try {
-    launch(f, scenario.role, scenario.prompt, join(output, 'preflight'), true);
+    await launch(
+      f,
+      scenario.role,
+      scenario.prompt,
+      join(output, 'preflight'),
+      true,
+      false,
+      undefined,
+      signal,
+    );
     credentials(f);
     const session = sessionFile(f, scenario);
-    const records = [scenario.prompt, ...(scenario.turns ?? [])].map(
-      (prompt, index) =>
-        launch(
+    const records: Recording[] = [];
+    // Turns share one session and must stay sequential; batches run in parallel.
+    for (const [index, prompt] of [
+      scenario.prompt,
+      ...(scenario.turns ?? []),
+    ].entries())
+      records.push(
+        await launch(
           f,
           scenario.role,
           prompt,
@@ -350,8 +373,9 @@ export function liveRun(scenario: Scenario, output: string): Recording {
           false,
           false,
           session,
+          signal,
         ),
-    );
+      );
     const recording: Recording = {
       ...records.at(-1)!,
       messages: records.flatMap((record) => record.messages),
@@ -364,7 +388,7 @@ export function liveRun(scenario: Scenario, output: string): Recording {
       JSON.stringify(recording, null, 2),
     );
     writeFileSync(join(output, 'session.jsonl'), readFileSync(session));
-    return judgeRecording(scenario, recording, output);
+    return await judgeRecording(scenario, recording, output, signal);
   } finally {
     f.dispose();
   }

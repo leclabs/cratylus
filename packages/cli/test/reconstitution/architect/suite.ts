@@ -1,10 +1,4 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import {
@@ -13,10 +7,10 @@ import {
   proveOffline,
 } from '@cratylus/runtime';
 import { describe, expect, it } from 'vitest';
+import { liveBatch } from '../../rubric-judge.js';
 import { type Recording, type Scenario, assess, check } from './check.js';
 import {
   judgeRecording,
-  judgeRuns,
   liveRun,
   preflight,
   recordingDirectory,
@@ -120,45 +114,31 @@ export function architectSuite(directory: string) {
                 'preflight',
               )
             : undefined;
-          preflight(scenario, output);
+          return preflight(scenario, output);
         },
         90_000,
       );
       it.runIf(
         process.env.EXECUTION_LIVE === '1' && !process.env.EXECUTION_REJUDGE,
       )(
-        'live: five installed-agent runs against the fixed scenario',
+        'live: parallel installed-agent runs stop when the outcome is decided',
         async () => {
           const directory =
             process.env.EXECUTION_RECORDINGS ??
             mkdtempSync(join(tmpdir(), 'architect-recordings-'));
           const output = recordingDirectory(directory, scenario);
-          mkdirSync(output, { recursive: true });
-          const runs: Recording[] = [];
-          const errors: string[] = [];
-          for (let index = 1; index <= 5; index++) {
-            try {
-              runs.push(liveRun(scenario, join(output, `run-${index}`)));
-            } catch (error) {
-              errors.push(`Run ${index}: ${String(error)}`);
-            }
-          }
-          writeFileSync(
-            join(output, 'errors.json'),
-            JSON.stringify(errors, null, 2),
+          const batch = await liveBatch(
+            source,
+            (index, signal) =>
+              liveRun(scenario, join(output, `run-${index}`), signal),
+            output,
           );
-          const batch = await judgeRuns(source, runs);
-          writeFileSync(
-            join(output, 'assessment.json'),
-            JSON.stringify(batch, null, 2),
-          );
-          expect(errors, `Recordings: ${output}`).toEqual([]);
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
         10_000_000,
       );
       it.runIf(Boolean(process.env.EXECUTION_REJUDGE))(
-        'rejudge: five retained subjects without new subject sessions',
+        'rejudge: parallel retained subjects without new subject sessions',
         async () => {
           const inputRoot = resolve(process.env.EXECUTION_REJUDGE!);
           const directory =
@@ -173,36 +153,17 @@ export function architectSuite(directory: string) {
             process.env.EXECUTION_REJUDGE_LEGACY === '1'
               ? join(inputRoot, String(scenario.number))
               : recordingDirectory(inputRoot, scenario);
-          mkdirSync(output, { recursive: true });
-          const runs: Recording[] = [];
-          const errors: string[] = [];
-          for (let index = 1; index <= 5; index++) {
-            try {
-              const subject = retainedSubject(
+          const batch = await liveBatch(
+            source,
+            (index, signal) =>
+              judgeRecording(
                 scenario,
-                join(input, `run-${index}`),
-              );
-              const destination = join(output, `run-${index}`);
-              mkdirSync(destination, { recursive: true });
-              writeFileSync(
-                join(destination, 'subject.json'),
-                JSON.stringify(subject, null, 2),
-              );
-              runs.push(judgeRecording(scenario, subject, destination));
-            } catch (error) {
-              errors.push(`Run ${index}: ${String(error)}`);
-            }
-          }
-          writeFileSync(
-            join(output, 'errors.json'),
-            JSON.stringify(errors, null, 2),
+                retainedSubject(scenario, join(input, `run-${index}`)),
+                join(output, `run-${index}`),
+                signal,
+              ),
+            output,
           );
-          const batch = await judgeRuns(source, runs);
-          writeFileSync(
-            join(output, 'assessment.json'),
-            JSON.stringify(batch, null, 2),
-          );
-          expect(errors, `Re-judgment: ${output}`).toEqual([]);
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
         10_000_000,
