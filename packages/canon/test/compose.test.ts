@@ -29,6 +29,7 @@ import { handBack } from '../src/guards/hand-back.js';
 import {
   holdsWhatItNeeds,
   ownedQuestion,
+  rulingToDelegate,
 } from '../src/guards/owned-question.js';
 import { pastObjective } from '../src/guards/past-objective.js';
 import { unrecorded } from '../src/guards/unrecorded.js';
@@ -134,6 +135,22 @@ describe('the architect', () => {
     expect(bottomLine.refusal).toMatch(
       /^burying: this buries your bottom line\. /,
     );
+    // Recording mechanics are never support; a delegate's ruling is its topic's one
+    // action and reaches that delegate; a candidate set aside gets no action.
+    expect(bottomLine.judge.prompt).toContain(
+      'That a decision was recorded is never support',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'it answers a question a delegate asked without addressing the ruling to that delegate',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'the decision it delivers, recorded this turn, is the same action, and reporting the ruling to the operator adds none',
+    );
+    expect(bottomLine.judge.prompt).toContain(
+      'a candidate it set aside gets no action of its own',
+    );
+    for (const guard of [bottomLine, handBack])
+      expect(guard.refusal, guard.id).toContain(rulingToDelegate);
     for (const [name, agent] of Object.entries(holders))
       if (name !== 'architect')
         expect(
@@ -150,6 +167,9 @@ describe('the architect', () => {
       events: ['turn.end'],
       substrate: 'harness',
     });
+    expect(handBack.refusal).toMatch(
+      /^hand-back: this reply returns a decision you own to the operator\. /,
+    );
     for (const [name, agent] of Object.entries(holders))
       if (name !== 'architect')
         expect(
@@ -227,6 +247,9 @@ describe('the architect', () => {
     );
     expect(holdsWhatItNeeds).toContain(
       "never by the agent's own claim that it lacks something",
+    );
+    expect(holdsWhatItNeeds).toContain(
+      'never taking it only on a condition; approving examples judges only whether they express the design',
     );
     for (const guard of [handBack, bottomLine, unrecorded]) {
       expect(count(guard.judge.prompt, ownedQuestion), guard.id).toBe(1);
