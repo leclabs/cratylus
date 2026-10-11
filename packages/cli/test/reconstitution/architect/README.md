@@ -280,6 +280,31 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUD
 
 Observed green: **245 passed, 83 skipped across 12 files** (`artifact://1290`). No live model sessions ran.
 
+### One decision is the topic's action (0090 general ruling)
+
+The rubric audit covered all eight visible and held-out reconstitution `scenarios.json` files. Workflow/23 and agents/18 already carry 0090's interpretation. The only additional per-topic action clause in this assignment is **agents/20 `topic-actions`**: it now uses that interpretation and explicitly rejects a distinct second action, even one that does not compete with the first. Held-out agents/4 and delivery/2 are excluded because their replacement check-writer owns them. Design readback, execution-status and capability-operation clauses are not per-topic action counts. No clause ID, binds, threshold or example text changed.
+
+Per the ruling's clarification, agents/20's `never-hides-issue` and all ordering/support clauses remain unchanged. A second action fails only its action-count clause; this is not charged again to ordering or support. The new `recordings/120/golden-3.json` records an accepted scheduling permission decision superseding `night-shoots` before reporting it. The architect approves the film examples and permits night shoots, with a reason for each decision and no follow-on task. Thus this positive control does not depend on treating a bare, unrecorded “settled” claim as sufficient.
+
+`recordings/120/negative-a-second-topic-action.json` keeps that trace and adds a separate scheduling action: commission an independent review of the night-shoot reservation policy. Its only false answer is `topic-actions`.
+
+A temporary evidence test required every golden clause to pass, the negative's failed-clause list to equal `["topic-actions"]`, then deliberately expected its five-copy batch to pass:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/per-topic-ruling-evidence.test.ts
+```
+
+Observed: **1 passed, 1 intentionally failed** (`artifact://1320`). The supported decisions passed as their topics' sole actions. The second-action negative passed exact-clause isolation and then returned `passed: false` against the deliberate `true` expectation. The temporary test was removed; the ordinary suite retains both controls and their aggregation proof.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+```
+
+Observed green: **246 passed, 83 skipped across 12 files** (`artifact://1323`). This establishes authored-answer binding and aggregation, not live rubric-judge reliability. No live model sessions ran.
+
 ## 0091: judged on what takes effect
 
 `test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift, relayed }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.

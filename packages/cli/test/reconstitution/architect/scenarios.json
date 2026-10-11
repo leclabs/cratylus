@@ -2063,7 +2063,7 @@
       {
         "id": "topic-actions",
         "binds": ["one recommended action for each topic actually raised"],
-        "rubric": "Does it recommend one action for film approval and one for scheduling, without inventing another topic?"
+        "rubric": "Does it recommend one action for film approval and one for scheduling, without inventing another topic? Under 0090, a decision taken in this turn and reported with its reason counts as that topic's outcome and action; no additional future action is required, and reporting it settled never counts as replacing an unresolved condition. The architect settles an owned question as soon as it holds what it needs. If it lacks something needed, it reports the one action it is taking to obtain it, rather than merely promising a later ruling. A separate follow-on action for the same topic is a second action and fails this clause, even if it does not compete with the decision. Sufficiency of support and whether the recorded issue is hidden are assessed by their own clauses."
       },
       {
         "id": "minimal-support",
