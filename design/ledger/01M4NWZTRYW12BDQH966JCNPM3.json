@@ -1,0 +1,24 @@
+{
+  "id": "01M4NWZTRYW12BDQH966JCNPM3",
+  "at": "2026-10-11T16:33:28.862Z",
+  "kind": "update",
+  "transition": "update:delivery:01M4NWZTRWTNYYJGQVJWQ8GYHJ",
+  "cut": "delivery",
+  "workPackage": "installation",
+  "changes": {
+    "outputs": [
+      "packages/forge/src/cli/",
+      "packages/forge/src/deploy/",
+      "packages/forge/src/adapters/",
+      "packages/forge/src/prune/",
+      "packages/forge/test/deploy/",
+      "packages/forge/test/cli/",
+      "packages/forge/test/adapters/",
+      "packages/cli/src/index.ts",
+      "packages/cli/package.json",
+      "README.md",
+      "packages/forge/README.md",
+      ".changeset/delivery-owned-root.md"
+    ]
+  }
+}
