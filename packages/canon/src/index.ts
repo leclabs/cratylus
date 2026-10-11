@@ -39,6 +39,7 @@ export { personaProtocol } from './genus/persona.js';
 export { bottomLine } from './guards/bottom-line.js';
 export { descend } from './guards/descend.js';
 export { handBack } from './guards/hand-back.js';
+export { pastObjective } from './guards/past-objective.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
 export { assayerRole } from './roles/assayer.js';

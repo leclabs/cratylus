@@ -2,8 +2,8 @@
 // refused, while no composed agent is narrowed to read-only (0068); each role's typed
 // handoff rides its agent as `contract`; every agent carries the per-turn persistence
 // protocol; the architect composes bottom-line-up-front ordering held by the
-// bottom-line guard, its decisiveness held by the hand-back guard and its elevation
-// held by the descend guard; an
+// bottom-line guard, its decisiveness held by the hand-back guard, its elevation
+// held by the descend guard and its stopping rule held by the past-objective guard; an
 // optional slot may be left unfilled, never another.
 
 import { anchorOf, enforcing } from '@cratylus/schema';
@@ -23,6 +23,7 @@ import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-
 import { bottomLine } from '../src/guards/bottom-line.js';
 import { descend } from '../src/guards/descend.js';
 import { handBack } from '../src/guards/hand-back.js';
+import { pastObjective } from '../src/guards/past-objective.js';
 import { assayerRole } from '../src/roles/assayer.js';
 import { builderRole } from '../src/roles/builder.js';
 
@@ -135,6 +136,27 @@ describe('the architect', () => {
       events: ['tool.use.pre'],
       substrate: 'harness',
     });
+  });
+
+  it('composes its stopping rule held by the past-objective guard on tool calls, judged with the conversation', () => {
+    const held = architect.objective.find((e) => e.slot === 'stopping-rule');
+    expect(held && anchorOf(held.value)).toBe('optimize');
+    expect(held && enforcing(held.value) && held.value).toMatchObject({
+      realizedBy: pastObjective.id,
+      events: ['tool.use.pre'],
+      substrate: 'harness',
+    });
+    expect(pastObjective.tell).toBe('procedure past objective');
+    expect(pastObjective.judge.conversation).toBe(true);
+    expect(pastObjective.refusal).toBe(
+      'procedure past objective: your objective is met; report the outcome and stop.',
+    );
+    for (const [name, agent] of Object.entries(holders))
+      if (name !== 'architect')
+        expect(
+          agent.objective.some((e) => enforcing(e.value)),
+          `${name} composes no guard`,
+        ).toBe(false);
   });
 
   it('carries every drift tell in the persistence protocol, as every agent does', () => {

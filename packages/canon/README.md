@@ -118,6 +118,11 @@ does, naming the tell.
 whether a reply to the operator buries its bottom line (the conclusion not first, a topic given more
 than one recommended action, or support past what a layman needs, such as record identifiers, entry
 status or how records are edited), and refuses the stop when it does, naming the tell `burying`.
+`past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
+the conversation so far in visible text (the operator's requests, the agent's replies and its
+delegates' reports) and the call, whether the objective of the operator's current request is
+already met and the call takes a further step instead of reporting the outcome, and refuses the
+call when it does, naming the tell `procedure past objective`.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
 A judge answer it cannot read refuses nothing and is reported.
 

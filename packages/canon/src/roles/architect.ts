@@ -1,7 +1,7 @@
 // The architect role: master design §3, the architect column, with the client's
 // principal architect restored (0070) and its communication ordered bottom line up
-// front (0078). Its decisiveness, elevation and ordering are the values its
-// behavioral examples showed drifting, so a guard holds each.
+// front (0078). Its decisiveness, elevation, ordering and stopping rule are the values
+// its behavioral examples showed drifting, so a guard holds each.
 
 import { type RoleCell, guarded } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -62,6 +62,7 @@ import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
 import { bottomLine } from '../guards/bottom-line.js';
 import { descend } from '../guards/descend.js';
 import { handBack } from '../guards/hand-back.js';
+import { pastObjective } from '../guards/past-objective.js';
 
 export const architectRole: RoleCell = {
   name: 'architect',
@@ -72,7 +73,7 @@ export const architectRole: RoleCell = {
     role: [architect],
     objective: [
       { value: conceptualIntegrity, slot: 'drive' },
-      { value: optimize, slot: 'stopping-rule' },
+      { value: guarded(optimize, pastObjective), slot: 'stopping-rule' },
     ],
     expertise: [
       domainModeling,
