@@ -1589,14 +1589,8 @@ describe('omp capability interface', () => {
       },
       agents,
     });
-    /** A guard at turn end only, which lends the judge and judges no tool call. */
-    const replyGuard = {
-      ...surveyGuard(['architect']),
-      guard: {
-        ...surveyGuard(['architect']).guard,
-        events: ['turn.end'] as ['turn.end'],
-      },
-    };
+    /** A guard no agent composes, which lends the judge and judges nothing. */
+    const lender = surveyGuard([]);
 
     it('judges a guard for the agent the main session was launched as, though omp answers --agent only to the module that registered it', async () => {
       omp.agents = [CARTOGRAPHER()];
@@ -1676,7 +1670,7 @@ describe('omp capability interface', () => {
         attribution: 'agent',
         content: 'descend guard — the judge gave no verdict.',
       }),
-      // A reply refused at its stop never reached the operator: the judge never reads it.
+      // A reply shown has taken effect, a stop refused after it or not (0106): the judge reads it.
       message({
         role: 'assistant',
         content: [
@@ -1686,7 +1680,7 @@ describe('omp capability interface', () => {
       {
         type: 'custom_message',
         customType: 'session-stop-continuation',
-        content: 'hand-back: this reply hands back a decision you own.',
+        content: 'a refusal of the stop, after the reply was shown.',
       },
       message({ role: 'user', content: 'Close the design work.' }),
     ];
@@ -1738,6 +1732,8 @@ describe('omp capability interface', () => {
           'Agent:\nI dispatched the lead.',
           '',
           'Delegate report:\nOutcome achieved; both assayers accept.',
+          '',
+          'Agent:\nNight shoots are the operator’s call.',
           '',
           'Operator:\nClose the design work.',
           '',
@@ -1810,337 +1806,6 @@ describe('omp capability interface', () => {
       expect(relayed).toHaveLength(4);
     });
 
-    /** A turn-end guard whose judge reads the decisions recorded this turn, composed into `agents`. */
-    const recordGuard = (agents: string[]) => ({
-      guard: {
-        ...surveyGuard(agents).guard,
-        id: 'unrecorded',
-        events: ['turn.end'] as ['turn.end'],
-        tell: 'holding open',
-        judge: {
-          prompt: 'Judge the reply against what was recorded.',
-          verdict: {},
-          refusesOn: 'unrecorded',
-          recorded: true,
-        },
-        refusal:
-          'holding open: a decision is taken when it is recorded. Record it, then report it.',
-      },
-      agents,
-    });
-    /** One call of the stand-in journal (`concept journal <capability>`), and its result. */
-    const journalCall = (
-      id: string,
-      call: { name: string; arguments: Record<string, unknown> },
-      isError = false,
-    ) => [
-      message({
-        role: 'assistant',
-        content: [{ type: 'toolCall', id, ...call }],
-      }),
-      message({
-        role: 'toolResult',
-        toolCallId: id,
-        toolName: call.name,
-        isError,
-        content: [{ type: 'text', text: isError ? 'refused' : 'appended' }],
-      }),
-    ];
-    const JOURNAL = 'concept_journal_concepts';
-    /** A session whose current turn recorded two decisions, one each way of calling the journal. */
-    const recordedTurn = [
-      message({ role: 'user', content: 'Settle night shoots.' }),
-      ...journalCall('earlier', {
-        name: JOURNAL,
-        arguments: { verb: 'define', name: 'earlier turn' },
-      }),
-      message({ role: 'user', content: 'Now settle approval.' }),
-      message({
-        role: 'user',
-        attribution: 'agent',
-        content: 'a guard notice, never the operator',
-      }),
-      ...journalCall('tool', {
-        name: JOURNAL,
-        arguments: { verb: 'define', name: 'approval', reason: 'distinct' },
-      }),
-      ...journalCall('device', {
-        name: 'write',
-        arguments: {
-          path: `xd://${JOURNAL}`,
-          content: JSON.stringify({ verb: 'define', name: 'release' }),
-        },
-      }),
-      ...journalCall(
-        'refused',
-        { name: JOURNAL, arguments: { verb: 'define', name: 'refused' } },
-        true,
-      ),
-      ...journalCall('read', {
-        name: JOURNAL,
-        arguments: { verb: 'overview' },
-      }),
-      ...journalCall('file', {
-        name: 'write',
-        arguments: { path: 'notes.md', content: 'x' },
-      }),
-    ];
-    const settled = {
-      last_assistant_message: 'Approval is settled: it is not release.',
-      stop_hook_active: false,
-    };
-
-    it("gives a guard whose judge reads the decisions recorded this turn each journal append that took effect since the operator's last message, and refuses the stop on its verdict", async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        [recordGuard(['architect']), replyGuard],
-        recordedTurn,
-      );
-      judge.verdict = JSON.stringify({
-        unrecorded: true,
-        surveys: true,
-        reason: 'Release is reported settled and is not recorded.',
-      });
-      expect(await fire('session_stop', settled)).toEqual({
-        decision: 'block',
-        reason:
-          'holding open: a decision is taken when it is recorded. Record it, then report it. Release is reported settled and is not recorded.\n\nsurveying: Release is reported settled and is not recorded.',
-      });
-      expect(judge.asked.map(payload)).toEqual([
-        [
-          'Decisions recorded this turn:',
-          'define {"name":"approval","reason":"distinct"}',
-          'define {"name":"release"}',
-          '',
-          'Reply:\nApproval is settled: it is not release.',
-        ].join('\n'),
-        'Reply:\nApproval is settled: it is not release.',
-      ]);
-      expect(relayed).toEqual([]);
-      // It counts toward the turn's stop allowance with the other turn-end guards.
-      expect(
-        await fire('session_stop', { ...settled, stop_hook_active: true }),
-      ).toMatchObject({ decision: 'block' });
-      expect(
-        await fire('session_stop', { ...settled, stop_hook_active: true }),
-      ).toBeUndefined();
-      expect(relayed).toHaveLength(2);
-    });
-
-    it('tells the judge none was recorded this turn, and allows the stop when it finds nothing held open', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules(
-        'architect',
-        [recordGuard(['architect'])],
-        [
-          ...recordedTurn,
-          message({ role: 'user', content: 'And scheduling?' }),
-        ],
-      );
-      judge.verdict = JSON.stringify({
-        unrecorded: false,
-        reason: 'It keeps the question open.',
-      });
-      expect(await fire('session_stop', settled)).toBeUndefined();
-      expect(judge.asked.map(payload)).toEqual([
-        'Decisions recorded this turn:\n(none)\n\nReply:\nApproval is settled: it is not release.',
-      ]);
-    });
-
-    it('fails open, aloud, when the decisions recorded this turn cannot be read or the judge gives no verdict', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        [recordGuard(['architect'])],
-        recordedTurn,
-      );
-      judge.verdict = 'It reports a settled question.';
-      expect(await fire('session_stop', settled)).toBeUndefined();
-      const reader = Symbol.for('cratylus.recorded-this-turn');
-      const globals: Record<symbol, unknown> = globalThis;
-      const lent = globals[reader];
-      delete globals[reader];
-      try {
-        expect(
-          await fire('session_stop', { ...settled, stop_hook_active: true }),
-        ).toBeUndefined();
-      } finally {
-        globals[reader] = lent;
-      }
-      expect(relayed).toEqual([
-        'unrecorded guard — the judge gave no verdict (it answered: It reports a settled question.), so this act was NOT judged.',
-        'unrecorded guard — the decisions recorded this turn could not be read, so this act was NOT judged.',
-      ]);
-      expect(judge.asked).toHaveLength(1);
-    });
-
-    /** A judgment the guards below read, made at turn end only. */
-    const heldJudgment = {
-      id: 'owned-question',
-      events: ['turn.end'] as ['turn.end'],
-      prompt: 'Judge what each owned question needs.',
-      verdict: {},
-      carries: 'questions',
-      conversation: true,
-    };
-    type GuardEvent = 'turn.end' | 'tool.use.pre';
-    /** A guard on `events`, refusing on `field`, whose judge reads `heldJudgment`. */
-    const readingGuard = (
-      id: string,
-      field: string,
-      events: readonly [GuardEvent, ...GuardEvent[]],
-    ) => ({
-      guard: {
-        ...surveyGuard(['architect']).guard,
-        id,
-        events,
-        tell: id,
-        judge: {
-          prompt: `Judge for ${id}.`,
-          verdict: {},
-          refusesOn: field,
-          reads: heldJudgment,
-        },
-        refusal: `${id}:`,
-      },
-      agents: ['architect'],
-    });
-    const readers = () => [
-      readingGuard('hand-back', 'handsBack', ['turn.end']),
-      readingGuard('bottom-line', 'buries', ['turn.end', 'tool.use.pre']),
-      replyGuard,
-    ];
-    /** The system prompt the judge was asked with. */
-    const promptOf = (asked: unknown): string => {
-      const prompts =
-        asked !== null && typeof asked === 'object' && 'systemPrompt' in asked
-          ? asked.systemPrompt
-          : undefined;
-      const prompt: unknown = Array.isArray(prompts) ? prompts[0] : undefined;
-      return typeof prompt === 'string' ? prompt : '';
-    };
-    /** What the judge was asked under `prompt`, each time it was. */
-    const askedUnder = (prompt: string): string[] =>
-      judge.asked.filter((a) => promptOf(a) === prompt).map(payload);
-    const handedBack = {
-      last_assistant_message: 'Is approval release? You choose.',
-      stop_hook_active: false,
-    };
-    const handedBackAct = 'Reply:\nIs approval release? You choose.';
-
-    it('makes a shared judgment once per act and gives that one answer to every guard reading it, and none to a guard that does not', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        readers(),
-        exchanged,
-      );
-      const held = {
-        questions: [
-          {
-            question: 'Is approval release?',
-            holds: true,
-            reason: 'The design separates them.',
-          },
-        ],
-      };
-      judge.answers = {
-        [heldJudgment.prompt]: `Judged:\n${JSON.stringify(held)}`,
-        'Judge for hand-back.': JSON.stringify({
-          handsBack: true,
-          reason: 'It asks the operator what it holds.',
-        }),
-        'Judge for bottom-line.': JSON.stringify({
-          buries: false,
-          reason: 'In shape.',
-        }),
-      };
-      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
-      expect(await fire('session_stop', handedBack)).toEqual({
-        decision: 'block',
-        reason: 'hand-back: It asks the operator what it holds.',
-      });
-      expect(relayed).toEqual([]);
-      expect(judge.asked).toHaveLength(4);
-      // The judgment, once, by its own prompt, over the conversation and the reply.
-      expect(askedUnder(heldJudgment.prompt)).toEqual([
-        [
-          'Conversation so far:',
-          'Operator:\nSeparate approval from release.',
-          '',
-          'Agent:\nI dispatched the lead.',
-          '',
-          'Delegate report:\nOutcome achieved; both assayers accept.',
-          '',
-          'Operator:\nClose the design work.',
-          '',
-          `Act:\n${handedBackAct}`,
-          '',
-          'Answer with exactly one JSON object and nothing else, carrying "questions" as your instructions give it.',
-        ].join('\n'),
-      ]);
-      // Each guard reading it is given that one answer ahead of the act, and judges by its own prompt.
-      const given = `Judgment owned-question, made once for this act:\n${JSON.stringify(held)}`;
-      for (const id of ['hand-back', 'bottom-line'])
-        expect(askedUnder(`Judge for ${id}.`), id).toEqual([
-          `${given}\n\n${handedBackAct}`,
-        ]);
-      expect(askedUnder('Judge the call.')).toEqual([handedBackAct]);
-      // A tool call is no act it is made for: its reader on the call is given nothing.
-      judge.asked.length = 0;
-      judge.answers['Judge for bottom-line.'] = JSON.stringify({
-        buries: false,
-        reason: 'A first action.',
-      });
-      expect(await fire('tool_call', closing)).toBeUndefined();
-      expect(judge.asked.map(promptOf)).toEqual(['Judge for bottom-line.']);
-      expect(payload(judge.asked[0])).toBe(
-        JSON.stringify({ tool: closing.toolName, input: closing.input }),
-      );
-    });
-
-    it('fails open, aloud, when a shared judgment cannot be made: its readers are told none was made and still judge the act', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        readers(),
-        exchanged,
-      );
-      judge.answers = {
-        [heldJudgment.prompt]: 'It seems held.',
-        'Judge for hand-back.': JSON.stringify({
-          handsBack: false,
-          reason: 'Nothing is handed back on a judgment never made.',
-        }),
-        'Judge for bottom-line.': JSON.stringify({
-          buries: true,
-          reason: 'Its conclusion comes last.',
-        }),
-      };
-      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
-      expect(await fire('session_stop', handedBack)).toEqual({
-        decision: 'block',
-        reason: 'bottom-line: Its conclusion comes last.',
-      });
-      expect(relayed).toEqual([
-        'owned-question judgment — the judge gave no judgment (it answered: It seems held.), so it was NOT made for this act, and the guards reading it refused nothing on it.',
-      ]);
-      expect(askedUnder(heldJudgment.prompt)).toHaveLength(1);
-      for (const id of ['hand-back', 'bottom-line'])
-        expect(askedUnder(`Judge for ${id}.`), id).toEqual([
-          `Judgment owned-question: none could be made for this act.\n\n${handedBackAct}`,
-        ]);
-    });
-
-    it('makes no shared judgment where no guard reading it is in force', async () => {
-      omp.agents = [ARCHITECT(), CARTOGRAPHER()];
-      const { fire } = await twoModules('cartographer', readers());
-      judge.verdict = JSON.stringify({ handsBack: true, reason: 'never.' });
-      expect(await fire('session_stop', handedBack)).toBeUndefined();
-      expect(judge.asked).toEqual([]);
-    });
-
     it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {
       omp.agents = [ARCHITECT(), CARTOGRAPHER()];
       const architect = await twoModules(
@@ -2163,76 +1828,43 @@ describe('omp capability interface', () => {
       expect(judge.asked).toEqual([]);
     });
 
-    it('judges every guard on one stop and refuses it twice in a turn, each time with each reason', async () => {
+    it('judges every guard on one call and refuses it with each reason', async () => {
       omp.agents = [ARCHITECT()];
+      const survey = surveyGuard(['architect']);
       const second = {
-        ...replyGuard,
+        ...survey,
         guard: {
-          ...replyGuard.guard,
+          ...survey.guard,
           id: 'shape',
           tell: 'misshapen',
-          judge: { ...replyGuard.guard.judge, refusesOn: 'misshapen' },
+          judge: { ...survey.guard.judge, refusesOn: 'misshapen' },
           refusal: 'misshapen:',
         },
       };
-      // A continuing session, which owes no readback: each refusal is the guards' alone.
-      const { fire, relayed } = await twoModules(
-        'architect',
-        [replyGuard, second],
-        [{ type: 'message', message: { role: 'user', content: 'Go on.' } }],
-      );
+      const { fire, relayed } = await twoModules('architect', [survey, second]);
       judge.verdict = JSON.stringify({
         surveys: true,
         misshapen: true,
-        reason: 'it buries the outcome.',
+        reason: 'it reads the work.',
       });
-      const stop = (active: boolean) => ({
-        last_assistant_message:
-          'Decision 0091 is recorded; entry 7 is a placeholder.',
-        stop_hook_active: active,
-      });
-      const refused = {
-        decision: 'block',
+      expect(await fire('tool_call', closing)).toEqual({
+        block: true,
         reason:
-          'surveying: it buries the outcome.\n\nmisshapen: it buries the outcome.',
-      };
-      expect(await fire('session_stop', stop(false))).toEqual(refused);
+          'surveying: it reads the work.\n\nmisshapen: it reads the work.',
+      });
       expect(judge.asked).toHaveLength(2);
-      // The rewrite the refusal forced is judged and refused again, in the same shape.
-      expect(await fire('session_stop', stop(true))).toEqual(refused);
       expect(relayed).toEqual([]);
-      // The third stop of the turn is refused no more: each reason is relayed.
-      expect(await fire('session_stop', stop(true))).toBeUndefined();
-      expect(relayed).toEqual([
-        'surveying: it buries the outcome.',
-        'misshapen: it buries the outcome.',
-      ]);
-      // A new turn's first stop (omp's `stop_hook_active` false again) starts the count over.
-      expect(await fire('session_stop', stop(false))).toEqual(refused);
-      expect(await fire('session_stop', stop(true))).toEqual(refused);
-      expect(await fire('session_stop', stop(true))).toBeUndefined();
     });
 
-    it('starts the count over when a turn ends with its stop let through', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
-      const stop = (active: boolean) => ({
-        last_assistant_message: 'Night shoots are settled.',
-        stop_hook_active: active,
-      });
-      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
-      expect(await fire('session_stop', stop(false))).toMatchObject({
-        decision: 'block',
-      });
-      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
-      expect(await fire('session_stop', stop(true))).toBeUndefined();
-      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
-      expect(await fire('session_stop', stop(false))).toMatchObject({
-        decision: 'block',
-      });
-      expect(await fire('session_stop', stop(true))).toMatchObject({
-        decision: 'block',
-      });
+    it('projects no guard on a turn end: a reply shown has taken effect, so a guard judges only an act before it does (0106)', () => {
+      const survey = surveyGuard(['architect']);
+      const atTurnEnd = {
+        ...survey,
+        guard: { ...survey.guard, events: ['turn.end'] as ['turn.end'] },
+      };
+      expect(() =>
+        ompHarnessAdapter.scopeActivatedSurface?.([], [], [atTurnEnd]),
+      ).toThrow("guard 'survey' binds 'turn.end'");
     });
 
     const READBACK_REFUSAL =
@@ -2276,7 +1908,7 @@ describe('omp capability interface', () => {
 
     it('refuses each act of a reconstituting launch that changes something before any readback, and never a read', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       for (const call of changing)
         expect(await fire('tool_call', call), call.toolName).toEqual({
           block: true,
@@ -2289,7 +1921,7 @@ describe('omp capability interface', () => {
 
     it('tells a launch whose readback is only in its thinking that the operator has seen no text yet', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       await fire('message_end', reply(''));
       expect(await fire('tool_call', changing[0])).toEqual({
         block: true,
@@ -2300,7 +1932,7 @@ describe('omp capability interface', () => {
 
     it('refuses an act after visible text the judge finds no readback in, naming why', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       await fire('message_end', reply('Reconstitution comes first.'));
       judge.verdict = JSON.stringify({
         given: false,
@@ -2319,7 +1951,7 @@ describe('omp capability interface', () => {
 
     it('allows every act once a judge finds the readback, asking once', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       await fire(
         'message_end',
         reply(
@@ -2332,74 +1964,9 @@ describe('omp capability interface', () => {
       expect(judge.asked).toHaveLength(1);
     });
 
-    it('counts no readback from a reply a turn-end guard refused at its stop', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
-      const readback =
-        'Film: approval is settled; night shoots are open; no cut in flight.';
-      await fire('message_end', reply(readback));
-      judge.verdict = JSON.stringify({
-        surveys: true,
-        given: true,
-        reason: 'It opens with mechanics.',
-      });
-      expect(
-        await fire('session_stop', {
-          last_assistant_message: readback,
-          stop_hook_active: false,
-        }),
-      ).toMatchObject({ decision: 'block' });
-      judge.asked.length = 0;
-      expect(await fire('tool_call', changing[1])).toEqual({
-        block: true,
-        reason: READBACK_UNSEEN_REFUSAL,
-      });
-      expect(judge.asked, 'nothing reached the operator').toEqual([]);
-    });
-
-    it('adds to a refused stop that the readback is still owed and goes first, only while it is owed', async () => {
-      omp.agents = [ARCHITECT()];
-      const OWED =
-        'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
-      const readback =
-        'Film: approval is settled; night shoots are open; no cut in flight. Decision 0091 is recorded.';
-      const stop = {
-        last_assistant_message: readback,
-        stop_hook_active: false,
-      };
-      // Owed: the refusal carries every guard's reason, then the line.
-      const owing = await twoModules('architect', [replyGuard]);
-      await owing.fire('message_end', reply(readback));
-      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
-      expect(await owing.fire('session_stop', stop)).toEqual({
-        decision: 'block',
-        reason: `surveying: buried.\n\n${OWED}`,
-      });
-      // A session continuing a conversation owes none: the refusal is the guard's alone.
-      const continuing = await twoModules(
-        'architect',
-        [replyGuard],
-        [{ type: 'message', message: { role: 'user', content: 'Go on.' } }],
-      );
-      expect(await continuing.fire('session_stop', stop)).toEqual({
-        decision: 'block',
-        reason: 'surveying: buried.',
-      });
-      // Once the readback is counted, none is owed any more.
-      const counted = await twoModules('architect', [replyGuard]);
-      await counted.fire('message_end', reply(readback));
-      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
-      expect(await counted.fire('tool_call', changing[1])).toBeUndefined();
-      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
-      expect(await counted.fire('session_stop', stop)).toEqual({
-        decision: 'block',
-        reason: 'surveying: buried.',
-      });
-    });
-
     it('counts a readback given in the same message as the act, before that message ends', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       const readback =
         'Film: approval is settled; night shoots are open; no cut in flight.';
       // omp finalizes the message before it dispatches its calls; `message_end` comes later.
@@ -2411,30 +1978,9 @@ describe('omp capability interface', () => {
       expect(JSON.stringify(judge.asked[0])).toContain('night shoots are open');
     });
 
-    it('still counts no in-progress reply a turn-end guard withdrew', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
-      const readback =
-        'Film: approval is settled; night shoots are open; no cut in flight.';
-      await fire('assistant_message', reply(readback));
-      judge.verdict = JSON.stringify({
-        surveys: true,
-        reason: 'It opens with mechanics.',
-      });
-      await fire('session_stop', {
-        last_assistant_message: readback,
-        stop_hook_active: false,
-      });
-      judge.asked.length = 0;
-      expect(await fire('tool_call', changing[1])).toEqual({
-        block: true,
-        reason: READBACK_UNSEEN_REFUSAL,
-      });
-    });
-
     it('lets the act through aloud when the judge gives no verdict', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules('architect', [replyGuard]);
+      const { fire, relayed } = await twoModules('architect', [lender]);
       await fire('message_end', reply('The design is as follows.'));
       judge.verdict = 'not json';
       expect(await fire('tool_call', changing[1])).toBeUndefined();
@@ -2445,7 +1991,7 @@ describe('omp capability interface', () => {
 
     it('holds nothing for a launch whose procedure has no reconstitution', async () => {
       omp.agents = [CARTOGRAPHER()];
-      const { fire } = await twoModules('cartographer', [replyGuard]);
+      const { fire } = await twoModules('cartographer', [lender]);
       expect(await fire('tool_call', changing[1])).toBeUndefined();
     });
 
@@ -2466,7 +2012,7 @@ describe('omp capability interface', () => {
 
     it('reconstitutes a new session: the note on its first turn, its acts held', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [replyGuard]);
+      const { fire } = await twoModules('architect', [lender]);
       expect(await note(fire)).toContain('# Session start: reconstitution');
       expect(await fire('tool_call', changing[1])).toEqual({
         block: true,
@@ -2476,11 +2022,7 @@ describe('omp capability interface', () => {
 
     it('reconstitutes nothing in a resumed session continuing a conversation', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules(
-        'architect',
-        [replyGuard],
-        conversation,
-      );
+      const { fire } = await twoModules('architect', [lender], conversation);
       expect(await note(fire)).not.toContain('# Session start');
       for (const call of changing)
         expect(await fire('tool_call', call), call.toolName).toBeUndefined();
@@ -2491,7 +2033,7 @@ describe('omp capability interface', () => {
       omp.agents = [ARCHITECT()];
       const { fire } = await twoModules(
         'architect',
-        [replyGuard],
+        [lender],
         [
           ...conversation,
           { type: 'compaction', summary: 'The cut was approved.' },
@@ -2505,11 +2047,7 @@ describe('omp capability interface', () => {
 
     it('reconstitutes again once the session is compacted', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules(
-        'architect',
-        [replyGuard],
-        conversation,
-      );
+      const { fire } = await twoModules('architect', [lender], conversation);
       expect(await note(fire)).not.toContain('# Session start');
       await fire('session_compact', {
         compactionEntry: { type: 'compaction' },

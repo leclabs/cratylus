@@ -65,12 +65,7 @@
 // `bin-name-single-home` catches and rightly refused.
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
-import {
-  type Agent,
-  type SharedJudgment,
-  assignmentIn,
-  checkAssignment,
-} from '@cratylus/schema';
+import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
 import type { Hook, NativeBinding } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -194,25 +189,6 @@ const OMP_LAUNCHED_AGENT_KEY = `${CLI_BIN}.launched-agent`;
  *  one verdict field of one judgment. The CRATYLUS module asks it whether a launch
  *  has read back, and imports no model client of its own. */
 const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
-
-/** The `Symbol.for` key the CRATYLUS module lends its withdrawal under, on
- *  `globalThis`: the session module calls it with a reply a turn-end guard refused,
- *  so the readback gate counts only text that reached the operator. */
-const OMP_WITHDRAW_KEY = `${CLI_BIN}.withdraw-reply`;
-
-/** The `Symbol.for` key the CRATYLUS module lends, on `globalThis`, what a stop a
- *  turn-end guard refused adds while the launch still owes its readback: the
- *  refusal then withdraws the reply that may have carried it. */
-const OMP_READBACK_OWED_KEY = `${CLI_BIN}.readback-owed`;
-
-/** What a refused stop adds while the launch still owes its readback. */
-const READBACK_OWED_NOTE =
-  'reconstitution: your readback (current design, open decisions, cuts in flight) is still owed; give it first.';
-
-/** The `Symbol.for` key the CRATYLUS module lends, on `globalThis`, the decisions the
- *  agent recorded this turn under: it alone knows which tool and verbs append to the
- *  concept journal. A guard whose judge reads them (`GuardJudge.recorded`) asks it. */
-const OMP_RECORDED_KEY = `${CLI_BIN}.recorded-this-turn`;
 
 /** What the judge reads a reconstituting launch's visible text for: the readback. */
 const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
@@ -873,8 +849,6 @@ const TURN_BRIDGE: readonly string[] = [
   '',
   'type BranchEntry = {',
   '  type?: string;',
-  "  // A custom message's kind: `session-stop-continuation` is omp's record of a refused stop.",
-  '  customType?: string;',
   '  message?: TurnMessage & { attribution?: string; toolName?: string; isError?: boolean };',
   '};',
   '',
@@ -1304,8 +1278,8 @@ const TURN_EXEC: readonly string[] = [
 ];
 
 /**
- * Module-level half of a GUARD: its shape, the act a turn end judges, and the
- * verdict read back. Emitted after {@link TURN_BRIDGE}, whose message types and
+ * Module-level half of a GUARD: its shape, the conversation its judge may read, and
+ * the verdict read back. Emitted after {@link TURN_BRIDGE}, whose message types and
  * judge context it reads.
  */
 const GUARD_BRIDGE: readonly string[] = [
@@ -1320,45 +1294,7 @@ const GUARD_BRIDGE: readonly string[] = [
   '  refusal: string;',
   '  // Whether the judge also reads the conversation so far, ahead of the act.',
   '  conversation?: boolean;',
-  '  // Whether the judge also reads the decisions recorded this turn, ahead of the act.',
-  '  recorded?: boolean;',
   '};',
-  '',
-  '// A JUDGMENT several guards read: made once per act, by one prompt, and given to each guard that',
-  '// reads it ahead of the act, which never makes it itself.',
-  'type Judgment = {',
-  '  id: string;',
-  '  prompt: string;',
-  '  // The answer field that carries the judgment: an answer without it is no judgment.',
-  '  carries: string;',
-  '  conversation?: boolean;',
-  '  recorded?: boolean;',
-  '};',
-  '',
-  '/** The reply that ended a turn, and the message it answered, as text. */',
-  'function lastReply(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): { reply: string; asked: string } {',
-  '  const text = (m: TurnMessage | undefined): string =>',
-  '    m === undefined',
-  '      ? ""',
-  '      : typeof m.content === "string"',
-  '        ? m.content',
-  '        : (m.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n");',
-  '  const messages = event.messages ?? [];',
-  '  const at = messages.map((m) => m.role).lastIndexOf("assistant");',
-  '  const said = event.last_assistant_message;',
-  '  const reply = typeof said === "string" && said.trim() !== "" ? said : text(messages[at]);',
-  '  const asked = text(messages.slice(0, at < 0 ? messages.length : at).findLast((m) => m.role === "user"));',
-  '  return { reply, asked };',
-  '}',
-  '',
-  '/** The act a turn end is judged by: the reply that ended it, and the message it answered. */',
-  'function replyOf(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): string | undefined {',
-  '  const { reply, asked } = lastReply(event);',
-  '  if (reply.trim() === "") return undefined;',
-  '  return asked.trim() === ""',
-  '    ? `Reply:\\n${reply}`',
-  '    : `Message the reply answered:\\n${asked}\\n\\nReply:\\n${reply}`;',
-  '}',
   '',
   '/** Where the JSON object opening at `start` closes, strings and nesting respected; `undefined` when it never does. */',
   'function objectEnd(text: string, start: number): number | undefined {',
@@ -1376,8 +1312,9 @@ const GUARD_BRIDGE: readonly string[] = [
   '  return undefined;',
   '}',
   '',
-  '/** The last JSON object in an answer, bare, fenced or after prose, that `accepts`; `undefined` when none does. */',
-  'function objectIn(answer: string, accepts: (o: Record<string, unknown>) => boolean): Record<string, unknown> | undefined {',
+  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
+  ' *  field, bare, fenced or after prose; `undefined` when no object in it does. */',
+  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
   '  for (let start = answer.lastIndexOf("{"); start >= 0; start = start > 0 ? answer.lastIndexOf("{", start - 1) : -1) {',
   '    const end = objectEnd(answer, start);',
   '    if (end === undefined) continue;',
@@ -1390,16 +1327,10 @@ const GUARD_BRIDGE: readonly string[] = [
   '    if (typeof v !== "object" || v === null || Array.isArray(v)) continue;',
   '    // A parsed non-array object: its fields are read and each is checked before use.',
   '    const o = v as Record<string, unknown>;',
-  '    if (accepts(o)) return o;',
+  '    if (typeof o[field] !== "boolean") continue;',
+  '    return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
   '  }',
   '  return undefined;',
-  '}',
-  '',
-  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
-  ' *  field; `undefined` when no object in it does. */',
-  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
-  '  const o = objectIn(answer, (v) => typeof v[field] === "boolean");',
-  '  return o === undefined ? undefined : { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
   '}',
   '',
   '// How much of the conversation a judge reads: its most recent characters, a bound like',
@@ -1407,38 +1338,28 @@ const GUARD_BRIDGE: readonly string[] = [
   'const CONVERSATION_LIMIT = 12_000;',
   '',
   "/** The conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports",
-  " *  included: the session's branch since its last compaction, never thinking, calls or the guards' own notices,",
-  ' *  and never a reply refused at its stop, which never reached the operator. */',
+  " *  included: the session's branch since its last compaction, never thinking, calls or the guards' own notices. */",
   'function conversationOf(ctx: JudgeContext): string {',
   '  const branch = ctx.sessionManager?.getBranch?.() ?? [];',
   '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
-  '  const turns: string[] = [];',
-  '  for (const { type, customType, message: m } of branch.slice(since + 1)) {',
-  '    if (type === "custom_message" && customType === "session-stop-continuation") {',
-  '      const refused = turns.findLastIndex((t) => t.startsWith("Agent:\\n"));',
-  '      if (refused >= 0) turns.splice(refused, 1);',
-  '      continue;',
-  '    }',
-  '    if (type !== "message" || m === undefined) continue;',
+  '  const turns = branch.slice(since + 1).flatMap(({ type, message: m }) => {',
+  '    if (type !== "message" || m === undefined) return [];',
   '    const said = (',
   '      typeof m.content === "string"',
   '        ? m.content',
   '        : (m.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n")',
   '    ).trim();',
-  '    if (said === "") continue;',
-  '    if (m.role === "user" && m.attribution !== "agent") turns.push(`Operator:\\n${said}`);',
-  '    else if (m.role === "assistant") turns.push(`Agent:\\n${said}`);',
-  '    else if (m.role === "toolResult" && m.toolName === "task" && m.isError !== true) turns.push(`Delegate report:\\n${said}`);',
-  '  }',
+  '    if (said === "") return [];',
+  '    if (m.role === "user" && m.attribution !== "agent") return [`Operator:\\n${said}`];',
+  '    if (m.role === "assistant") return [`Agent:\\n${said}`];',
+  '    if (m.role === "toolResult" && m.toolName === "task" && m.isError !== true) return [`Delegate report:\\n${said}`];',
+  '    return [];',
+  '  });',
   '  const all = turns.join("\\n\\n");',
   '  return all.length > CONVERSATION_LIMIT ? `…${all.slice(-CONVERSATION_LIMIT)}` : all;',
   '}',
   '',
 ];
-
-/** How many times in a row a turn-end guard refuses one turn's stop before it only
- *  relays: a rewrite forced by one refusal is judged once more, and no further. */
-const STOP_REFUSALS = 2;
 
 /**
  * Function-level half of a GUARD, emitted after {@link TURN_EXEC}, whose
@@ -1452,21 +1373,9 @@ const STOP_REFUSALS = 2;
  * registered it.
  *
  * FAILS OPEN, ALOUD. A judge that does not answer, or answers anything but the
- * verdict, refuses nothing, and the session is told the act went unjudged. A shared
- * judgment that cannot be made is given to the guards reading it as not made, and the
- * session is told; they still judge the act, refusing nothing on it. A turn's
- * stop is refused at most {@link STOP_REFUSALS} times in a row; past that the reason
- * is relayed instead, so a guard never holds a turn open forever. omp's own
- * `stop_hook_active` is a boolean and cannot count past one, so the count is kept
- * here, and starts again whenever omp says the stop is a fresh one
- * (`stop_hook_active` false: the first stop of a prompt, after any stop let through
- * or any abort). `agent_start` cannot mark it: omp's continuation after a refused
- * stop is itself a new prompt and fires it again.
+ * verdict, refuses nothing, and the session is told the act went unjudged.
  */
 const GUARD_EXEC: readonly string[] = [
-  '',
-  '  // Stops of the current turn refused so far, in a row.',
-  '  let stopsRefused = 0;',
   '',
   '  /** The agent this main session was launched as, as the cratylus module publishes it; none for a subagent or a plain session. */',
   '  const launchedAs = (ctx: JudgeContext): string | undefined => {',
@@ -1475,87 +1384,16 @@ const GUARD_EXEC: readonly string[] = [
   '    return typeof name === "string" && name !== "" ? name : undefined;',
   '  };',
   '',
-  '  /** The decisions the agent recorded this turn, as the CRATYLUS module reads them off the',
-  "   *  session's branch; `undefined` when it lends no reader. */",
-  '  const recordedThisTurn = (ctx: JudgeContext): readonly string[] | undefined => {',
-  `    const lent = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_RECORDED_KEY)})];`,
-  '    const recorded: unknown = typeof lent === "function" ? lent(ctx) : undefined;',
-  '    return Array.isArray(recorded) ? recorded.filter((r): r is string => typeof r === "string") : undefined;',
-  '  };',
-  '',
-  '  /** What a judge reads: the act, after what it is `given` and the decisions recorded this turn when it reads',
-  '   *  them; and, for a judge that reads the conversation, that conversation ahead of the act and, the long',
-  "   *  conversation now standing between the prompt and the answer, the answer's `form` after it. */",
-  '  const framed = (',
-  '    ctx: JudgeContext,',
-  '    conversation: boolean | undefined,',
-  '    recorded: readonly string[] | undefined,',
-  '    given: string | undefined,',
-  '    act: string,',
-  '    form: string,',
-  '  ): string => {',
-  '    const withGiven = given === undefined ? act : `${given}\\n\\n${act}`;',
-  '    const withRecorded =',
-  '      recorded === undefined',
-  '        ? withGiven',
-  '        : `Decisions recorded this turn:\\n${recorded.length === 0 ? "(none)" : recorded.join("\\n")}\\n\\n${withGiven}`;',
-  '    return conversation',
-  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${withRecorded}\\n\\n${form}`',
-  '      : withRecorded;',
-  '  };',
-  '',
-  '  /** One shared judgment over one act, as the guards reading it are given it: what the judge answered, or,',
-  '   *  said aloud, that none could be made, on which its readers refuse nothing. */',
-  '  const judgmentGiven = async (judgment: Judgment, ctx: JudgeContext, act: string): Promise<string> => {',
-  '    const unmade = (why: string): string => {',
-  '      relay(`${judgment.id} judgment — ${why}, so it was NOT made for this act, and the guards reading it refused nothing on it.`);',
-  '      return `Judgment ${judgment.id}: none could be made for this act.`;',
-  '    };',
-  '    const recorded = judgment.recorded ? recordedThisTurn(ctx) : undefined;',
-  '    if (judgment.recorded && recorded === undefined) return unmade("the decisions recorded this turn could not be read");',
-  '    const form = `Answer with exactly one JSON object and nothing else, carrying "${judgment.carries}" as your instructions give it.`;',
-  '    const answer = await askJudge(ctx, judgment.prompt, framed(ctx, judgment.conversation, recorded, undefined, act, form));',
-  '    const made = answer === undefined ? undefined : objectIn(answer, (o) => o[judgment.carries] !== undefined);',
-  '    if (made === undefined)',
-  '      return unmade(`the judge gave no judgment${answer === undefined ? "" : ` (it answered: ${answer.slice(0, 200)})`}`);',
-  '    return `Judgment ${judgment.id}, made once for this act:\\n${JSON.stringify(made)}`;',
-  '  };',
-  '',
-  "  /** The shared judgments of one event's act, each made at most once, when a guard first reads it, and",
-  '   *  the same one given to every guard reading it. */',
-  '  const judgedOnce = (ctx: JudgeContext): ((judgment: Judgment, act: string) => Promise<string>) => {',
-  '    const made = new Map<string, Promise<string>>();',
-  '    return (judgment, act) => {',
-  '      let given = made.get(judgment.id);',
-  '      if (given === undefined) {',
-  '        given = judgmentGiven(judgment, ctx, act);',
-  '        made.set(judgment.id, given);',
-  '      }',
-  '      return given;',
-  '    };',
-  '  };',
-  '',
-  '  /** One guard over one act, given the shared judgment it `reads` on this event, if any. `undefined` ⇒ no refusal. */',
-  '  const guardJudged = async (',
-  '    guard: Guard,',
-  '    ctx: JudgeContext,',
-  '    act: string | undefined,',
-  '    reentered: boolean,',
-  '    reads: ((act: string) => Promise<string>) | undefined,',
-  '  ): Promise<string | undefined> => {',
+  '  /** One guard over one act. `undefined` ⇒ no refusal. */',
+  '  const guardJudged = async (guard: Guard, ctx: JudgeContext, act: string): Promise<string | undefined> => {',
   '    const agent = launchedAs(ctx);',
-  '    if (agent === undefined || !guard.agents.includes(agent) || act === undefined) return undefined;',
-  '    // A guard whose judge reads the decisions recorded this turn gets them ahead of the act; with',
-  '    // no reader of them, it judges nothing and says so.',
-  '    const recorded = guard.recorded ? recordedThisTurn(ctx) : undefined;',
-  '    if (guard.recorded && recorded === undefined) {',
-  '      relay(`${guard.id} guard — the decisions recorded this turn could not be read, so this act was NOT judged.`);',
-  '      return undefined;',
-  '    }',
-  '    // A guard that reads a shared judgment is given it ahead of the act, never making it itself.',
-  '    const given = reads === undefined ? undefined : await reads(act);',
-  '    const form = `Answer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`;',
-  '    const answer = await askJudge(ctx, guard.prompt, framed(ctx, guard.conversation, recorded, given, act, form));',
+  '    if (agent === undefined || !guard.agents.includes(agent)) return undefined;',
+  '    // A guard whose judge reads the conversation gets it ahead of the act, and, the long',
+  "    // conversation now standing between the prompt and the answer, the answer's form after it.",
+  '    const judgedAct = guard.conversation',
+  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${act}\\n\\nAnswer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`',
+  '      : act;',
+  '    const answer = await askJudge(ctx, guard.prompt, judgedAct);',
   '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
   '    if (verdict === undefined) {',
   '      relay(',
@@ -1563,28 +1401,7 @@ const GUARD_EXEC: readonly string[] = [
   '      );',
   '      return undefined;',
   '    }',
-  '    if (!verdict.value) return undefined;',
-  '    const reason = `${guard.refusal} ${verdict.reason}`.trim();',
-  '    if (reentered) {',
-  '      relay(reason);',
-  '      return undefined;',
-  '    }',
-  '    return reason;',
-  '  };',
-  '',
-  '  // A reply refused at its stop never reached the operator: the CRATYLUS module, which counts',
-  '  // what the operator was told toward a readback, is told to forget it.',
-  '  const withdraw = (reply: string): void => {',
-  `    const lent = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_WITHDRAW_KEY)})];`,
-  '    if (typeof lent === "function") lent(reply);',
-  '  };',
-  '',
-  '  // While the launch still owes its readback, the CRATYLUS module says so: a refused stop then',
-  '  // tells the rewrite to give it first. `undefined` when none is owed.',
-  '  const readbackOwed = (): string | undefined => {',
-  `    const lent = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_READBACK_OWED_KEY)})];`,
-  '    const note: unknown = typeof lent === "function" ? lent() : undefined;',
-  '    return typeof note === "string" ? note : undefined;',
+  '    return verdict.value ? `${guard.refusal} ${verdict.reason}`.trim() : undefined;',
   '  };',
   '',
   '  // The judge, lent to the CRATYLUS module, which holds back the acts of a launch that has',
@@ -1601,65 +1418,23 @@ const GUARD_EXEC: readonly string[] = [
 ];
 
 /**
- * The guards' registrations: each guard's data and each shared judgment's, then ONE
- * handler per event omp fires, judging every guard bound to it. A turn end is judged
- * by its last reply, a tool call by the call itself, and a guard whose judge reads the
- * conversation (`GuardJudge.conversation`) gets the session's conversation so far
- * ahead of the act; each refuses in the shape its own caller reads
- * ({@link OMP_REFUSAL_SHAPE}).
+ * The guards' registrations: each guard's data, then ONE handler per event omp fires,
+ * judging every guard bound to it. A guard judges a tool call before it runs, by the
+ * call itself, and a guard whose judge reads the conversation
+ * (`GuardJudge.conversation`) gets the session's conversation so far ahead of the
+ * act; a refusal is the shape the tool wrapper reads ({@link OMP_REFUSAL_SHAPE}).
  *
- * ONE HANDLER PER EVENT, NOT PER GUARD. omp keeps the last answer its handlers gave
- * a stop, so two guards refusing the same stop from two handlers left one refusal
- * hiding the other. Here every guard on the event is judged, together, and their
- * refusals reach the agent as one, each reason in it.
+ * ONLY AN ACT BEFORE IT TAKES EFFECT (0106). A refused call never ran; a reply shown
+ * as it is written has taken effect, refused or not, so no guard judges a turn's
+ * end, and a guard bound to any event but a tool call is a projection error.
  *
- * ONE SHARED JUDGMENT PER ACT. A guard reading a shared judgment
- * (`GuardJudge.reads`) is given it on the events that judgment is made for: the
- * handler makes it at most once per act, when the first guard in force reads it, and
- * gives that one answer to every guard reading it, so no guard decides it apart.
+ * ONE HANDLER PER EVENT, NOT PER GUARD, so one guard's refusal never hides
+ * another's: every guard on the event is judged, together, and their refusals reach
+ * the agent as one, each reason in it.
  */
 function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
   const lines: string[] = [];
-  const keyOf = (binding: NativeBinding): string =>
-    `${binding.event}\0${binding.matcher ?? ''}`;
-  const bound = new Map<
-    string,
-    { binding: NativeBinding; entries: string[] }
-  >();
-  const judgments = new Map<
-    string,
-    { name: string; judgment: SharedJudgment; keys: Set<string> }
-  >();
-  const judgmentOf = (judgment: SharedJudgment) => {
-    const known = judgments.get(judgment.id);
-    if (known !== undefined) {
-      if (known.judgment !== judgment)
-        throw new Error(
-          `guardRegistrations: two shared judgments are named '${judgment.id}'; one judgment, one id.`,
-        );
-      return known;
-    }
-    const name = `judgment${judgments.size}`;
-    const keys = new Set<string>();
-    for (const event of judgment.events) {
-      const binding = ompBindingOf(event);
-      if (binding) keys.add(keyOf(binding));
-    }
-    const data = {
-      id: judgment.id,
-      prompt: judgment.prompt,
-      carries: judgment.carries,
-      ...(judgment.conversation === true ? { conversation: true } : {}),
-      ...(judgment.recorded === true ? { recorded: true } : {}),
-    };
-    lines.push(
-      `  // ${judgment.id} — one judgment, made once per act and read by the guards that read it.`,
-      `  const ${name}: Judgment = ${JSON.stringify(data)};`,
-    );
-    const made = { name, judgment, keys };
-    judgments.set(judgment.id, made);
-    return made;
-  };
+  const bound = new Map<string, { binding: NativeBinding; names: string[] }>();
   guards.forEach(({ guard, agents }, index) => {
     const name = `guard${index}`;
     const data = {
@@ -1670,12 +1445,7 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       refusesOn: guard.judge.refusesOn,
       refusal: guard.refusal,
       ...(guard.judge.conversation === true ? { conversation: true } : {}),
-      ...(guard.judge.recorded === true ? { recorded: true } : {}),
     };
-    const reads =
-      guard.judge.reads === undefined
-        ? undefined
-        : judgmentOf(guard.judge.reads);
     lines.push(
       `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,
       `  const ${name}: Guard = ${JSON.stringify(data)};`,
@@ -1683,50 +1453,26 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
     for (const event of guard.events) {
       const binding = ompBindingOf(event);
       if (!binding) continue;
-      const key = keyOf(binding);
-      const at = bound.get(key) ?? { binding, entries: [] };
-      at.entries.push(
-        reads?.keys.has(key) ? `[${name}, ${reads.name}]` : `[${name}]`,
-      );
+      if (OMP_ENVELOPE_KIND[binding.event] !== 'tool')
+        throw new Error(
+          `guardRegistrations: guard '${guard.id}' binds '${event}', which is no act checked before it takes effect; a guard judges a tool call.`,
+        );
+      const key = `${binding.event}\0${binding.matcher ?? ''}`;
+      const at = bound.get(key) ?? { binding, names: [] };
+      at.names.push(name);
       bound.set(key, at);
     }
   });
-  for (const { binding, entries } of bound.values()) {
-    const kind = OMP_ENVELOPE_KIND[binding.event];
-    const refusal = OMP_REFUSAL_SHAPE[binding.event];
-    const act =
-      kind === 'turn'
-        ? 'replyOf(event)'
-        : kind === 'tool'
-          ? 'JSON.stringify({ tool: event.toolName, input: event.input })'
-          : undefined;
-    if (act === undefined || refusal === undefined) continue;
+  for (const { binding, names } of bound.values()) {
     const narrow = binding.matcher
       ? `\n    if (event.toolName !== ${JSON.stringify(binding.matcher)}) return;`
       : '';
-    const reentered =
-      kind === 'turn'
-        ? `(event.stop_hook_active === true ? stopsRefused : (stopsRefused = 0)) >= ${STOP_REFUSALS}`
-        : 'false';
-    // A refused stop also withdraws its reply from what the operator was told, and, while
-    // the launch still owes its readback, says the rewrite gives it first.
-    const refuse =
-      refusal === 'stop'
-        ? '{\n      stopsRefused += 1;\n      withdraw(lastReply(event).reply);\n      const owed = readbackOwed();\n      return { decision: "block", reason: owed === undefined ? reason : `${reason}\\n\\n${owed}` };\n    }'
-        : 'return { block: true, reason };';
     lines.push(
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
-    const act = ${act};
-    const reentered = ${reentered};
-    const reads = judgedOnce(ctx);
-    const judged: [Guard, Judgment?][] = [${entries.join(', ')}];
-    const reasons = await Promise.all(
-      judged.map(([guard, judgment]) =>
-        guardJudged(guard, ctx, act, reentered, judgment === undefined ? undefined : (judgedAct) => reads(judgment, judgedAct)),
-      ),
-    );
+    const act = JSON.stringify({ tool: event.toolName, input: event.input });
+    const reasons = await Promise.all([${names.join(', ')}].map((guard) => guardJudged(guard, ctx, act)));
     const reason = reasons.filter((r): r is string => r !== undefined).join("\\n\\n");
-    if (reason) ${refuse}
+    if (reason) return { block: true, reason };
   });`,
     );
   }
@@ -1927,10 +1673,6 @@ const SESSION_PLACEMENT: readonly string[] = [
  * call that only reads never is. Both hold only where the launch starts a session
  * with no conversation since its last compaction, and again after the session is
  * compacted; a resumed session continuing a conversation reconstitutes nothing.
- * Every turn of a launch whose declared communication style orders
- * `bottom-line-up-front` carries a note rendered from that value: any text written
- * in a turn reaches the operator ahead of the reply, so none goes alongside a tool
- * call, the session-start readback alone excepted.
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -2048,13 +1790,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const LAUNCHED_AGENT = Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)});`,
         '// The judge the session module lends, and what a launch that has not read back is held to.',
         `const JUDGE = Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)});`,
-        '// Where this module lends what the session module calls with a reply refused at its stop.',
-        `const WITHDRAW = Symbol.for(${JSON.stringify(OMP_WITHDRAW_KEY)});`,
-        '// Where this module lends what a refused stop adds while the readback is still owed.',
-        `const READBACK_OWED = Symbol.for(${JSON.stringify(OMP_READBACK_OWED_KEY)});`,
-        `const READBACK_OWED_NOTE = ${JSON.stringify(READBACK_OWED_NOTE)};`,
-        '// Where this module lends the decisions the agent recorded this turn, for the guards that read them.',
-        `const RECORDED = Symbol.for(${JSON.stringify(OMP_RECORDED_KEY)});`,
         'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
         `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
         `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
@@ -2190,19 +1925,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
         '  };',
         "  // The session's entries on its current branch, as omp's session manager keeps them.",
-        '  sessionManager?: { getBranch?(): readonly BranchEntry[] };',
-        '}',
-        '',
-        '// One entry of the branch: a message, with what a call and its result carry.',
-        'interface BranchEntry {',
-        '  type?: string;',
-        '  message?: {',
-        '    role?: string;',
-        '    attribution?: string;',
-        '    toolCallId?: string;',
-        '    isError?: boolean;',
-        '    content?: string | { type?: string; id?: string; name?: string; arguments?: unknown }[];',
-        '  };',
+        '  sessionManager?: { getBranch?(): readonly { type?: string; message?: { role?: string } }[] };',
         '}',
         '',
         '// Whether the session already holds a conversation since its last compaction: a resumed',
@@ -2531,20 +2254,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  ].join("\\n");',
         '}',
         '',
-        '// The per-turn note of a declaration whose communication style orders bottom line up front,',
-        '// rendered from that ordering value; none for any other.',
-        'function orderingNote(body: string): string | undefined {',
-        '  const style = /^### communication-style\\s*\\n([\\s\\S]*?)(?=^#{1,3} |(?![\\s\\S]))/m.exec(body)?.[1] ?? "";',
-        '  if (!/^- ordering(?: \\([^)]*\\))?: \\*\\*bottom-line-up-front\\*\\*/m.test(style)) return undefined;',
-        '  return [',
-        '    "# Ordering: bottom line up front",',
-        '    "",',
-        '    "Everything you write in a turn reaches the operator as you write it, ahead of your reply, so any text before your reply comes before your conclusion.",',
-        '    "Write nothing alongside a tool call: no word of what you are reading, checking, deciding or about to do. The operator hears from you in your reply, conclusion first.",',
-        '    "The one text that comes before it is the readback a session start asks for, given before you act.",',
-        '  ].join("\\n");',
-        '}',
-        '',
         '// Whether a call changes something: a dispatch, a file written or edited, or an appending',
         '// verb of a capability (`appending` holds each as `<tool> <verb>`), called as its tool or',
         '// through its `xd://` device. Any other call only reads.',
@@ -2634,8 +2343,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  let saying = "";',
         '  // Each appending verb of the capabilities offered as tools, as `<tool> <verb>`.',
         '  const appending = new Set<string>();',
-        "  // The `concepts` capability's tool, as it is offered: its appending verbs record decisions.",
-        '  let journalTool: string | undefined;',
         '',
         '  // A launch ends: its prompt, its dispatch policy and every setting it holds go with it.',
         '  function end(): void {',
@@ -2808,9 +2515,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // by: while the launch still awaits its assignment, a turn whose prompt does not carry a',
         '  // fitting one is refused. In every session, launched or not, main or dispatched, the',
         '  // turn also carries the assignment form of each contracted agent the session may',
-        '  // dispatch; the first turn of a launch whose procedure starts with reconstitution carries',
-        '  // a note saying so; and every turn of a launch whose ordering is bottom line up front',
-        '  // carries a note that its text reaches the operator ahead of its reply.',
+        '  // dispatch; and the first turn of a launch whose procedure starts with reconstitution',
+        '  // carries a note saying so.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
@@ -2837,7 +2543,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    // every later turn.',
         '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
         '    noted = true;',
-        '    const ordering = orderingNote(now.declaration.systemPrompt);',
         '    return {',
         '      systemPrompt: [',
         '        ...base,',
@@ -2845,7 +2550,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...(await skills(now.declaration)),',
         '        ...(forms === undefined ? [] : [forms]),',
         '        ...(start === undefined ? [] : [start]),',
-        '        ...(ordering === undefined ? [] : [ordering]),',
         '      ],',
         '    };',
         '  });',
@@ -2944,64 +2648,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (saying === text) saying = "";',
         '    return undefined;',
         '  });',
-        '  // A reply a turn-end guard refused at its stop never reached the operator, so it counts',
-        '  // toward no readback: the session module, which refuses it, says which reply it was.',
-        '  (globalThis as Record<symbol, unknown>)[WITHDRAW] = (reply: string): void => {',
-        '    const at = said.findLastIndex((text) => text.trim() === reply.trim());',
-        '    if (at >= 0) said.splice(at, 1);',
-        '    if (saying.trim() === reply.trim()) saying = "";',
-        '  };',
-        '  // A stop a turn-end guard refused withdraws its reply, readback and all; while the readback',
-        '  // is still owed, the session module adds that it goes first in the rewrite.',
-        '  (globalThis as Record<symbol, unknown>)[READBACK_OWED] = (): string | undefined =>',
-        '    owed ? READBACK_OWED_NOTE : undefined;',
         '',
-        '  // A record a call appends through the `concepts` tool, as its verb and its arguments: the',
-        '  // call to that tool, or a write to its `xd://` device, of one of its appending verbs.',
-        '  const journalAppend = (tool: string, input: Record<string, unknown>): string | undefined => {',
-        '    if (tool === "write") {',
-        '      const device = /^xd:\\/\\/([^/?#]+)$/i.exec(String(input.path ?? "").trim())?.[1];',
-        '      const args = jsonIn(input.content);',
-        '      return device !== undefined && typeof args === "object" && args !== null',
-        '        ? journalAppend(device, args as Record<string, unknown>)',
-        '        : undefined;',
-        '    }',
-        '    if (tool !== journalTool || !appending.has(`${tool} ${String(input.verb)}`)) return undefined;',
-        '    const { verb, ...args } = input;',
-        '    return `${String(verb)} ${JSON.stringify(args)}`;',
-        '  };',
-        "  // The decisions the agent recorded this turn, read off the session's branch: each",
-        "  // append through the `concepts` tool whose call took effect since the operator's last message (or the",
-        '  // last compaction), as its verb and its arguments. Lent to the session module, whose guards',
-        '  // judge a reply against what was recorded.',
-        '  (globalThis as Record<symbol, unknown>)[RECORDED] = (ctx: unknown): string[] => {',
-        '    const session = ctx as Session;',
-        '    const calls = new Map<string, string>();',
-        '    let recorded: string[] = [];',
-        '    for (const { type, message: m } of session.sessionManager?.getBranch?.() ?? []) {',
-        '      const operator = m?.role === "user" && m.attribution !== "agent";',
-        '      if (type === "compaction" || (type === "message" && operator)) {',
-        '        calls.clear();',
-        '        recorded = [];',
-        '      }',
-        '      if (type !== "message" || m === undefined) continue;',
-        '      if (m.role === "assistant" && Array.isArray(m.content)) {',
-        '        for (const c of m.content) {',
-        '          if (c.type !== "toolCall" || typeof c.id !== "string") continue;',
-        '          const input = c.arguments;',
-        '          const append =',
-        '            typeof input === "object" && input !== null',
-        '              ? journalAppend(String(c.name ?? ""), input as Record<string, unknown>)',
-        '              : undefined;',
-        '          if (append !== undefined) calls.set(c.id, append);',
-        '        }',
-        '      } else if (m.role === "toolResult" && m.isError !== true && typeof m.toolCallId === "string") {',
-        '        const append = calls.get(m.toolCallId);',
-        '        if (append !== undefined) recorded.push(append);',
-        '      }',
-        '    }',
-        '    return recorded;',
-        '  };',
         '  // A launch that owes a readback changes nothing before it: each act that would is refused',
         '  // until a judge finds the readback in what the operator has been told, and from then on',
         '  // none is held. A call that only reads is never held. With no verdict the act goes',
@@ -3151,7 +2798,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
         '    const tool = explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");',
         '    for (const v of explanation.verbs) if (v.effect === "appends") appending.add(`${tool} ${v.name}`);',
-        '    if (capability === "concepts") journalTool = tool;',
         '    pi.registerTool({',
         '      name: tool,',
         '      label: explanation.name,',
