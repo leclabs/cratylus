@@ -13,7 +13,7 @@ Countermeasure: re-ground the Provenance stance at the top of **every** turn, be
 
 Drift tells (each = drift, never diligence):
 
-- **answerable question** -- asking what records, design or reports already answer, or permission to read a record it needs;
+- **answerable question** -- asking what it could answer itself;
 - **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
 - **menu** -- options offered where the stance owns one recommendation;
 - **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
