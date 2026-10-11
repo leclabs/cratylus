@@ -1248,6 +1248,83 @@ describe('omp capability interface', () => {
       '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
     ].join('\n');
 
+    it('refuses an eval call whose code dispatches a delegate, for a launched or dispatched agent, and no other eval code', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const EVAL_DISPATCH_REFUSAL =
+        'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
+      /** Every `tool_call` handler of the module, in order, as omp's runner fires them. */
+      const loaded = async (flag?: string) => {
+        const factory = await emitted({
+          name: 'stand in',
+          purpose: 'p',
+          when: 'w',
+          verbs: [],
+        });
+        const handlers = new Map<string, Handler[]>();
+        await factory({
+          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+          registerTool: () => {},
+          registerFlag: () => {},
+          getFlag: (name: string) => (name === 'agent' ? flag : undefined),
+          on: (event: string, handler: Handler) =>
+            handlers.set(event, [...(handlers.get(event) ?? []), handler]),
+          setModel: async () => {},
+          setThinkingLevel: () => {},
+          setActiveTools: async () => {},
+        });
+        const ctx = (kind: string) => ({
+          cwd: '/the/session/cwd',
+          agent: { kind },
+          model: { provider: 'fixture', id: 'base' },
+          modelRegistry: { standIn: 'registry' },
+          ui: { setStatus: () => {}, notify: () => {} },
+        });
+        const fire = async (event: string, payload: unknown, kind = 'main') => {
+          for (const handler of handlers.get(event) ?? []) {
+            const result = (await handler(payload, ctx(kind))) as
+              | { block?: boolean }
+              | undefined;
+            if (result?.block) return result;
+          }
+          return undefined;
+        };
+        await fire('session_start', {});
+        return fire;
+      };
+      const evalOf = (code: string) => ({
+        toolName: 'eval',
+        input: { language: 'py', code },
+      });
+      const dispatching = [
+        'h = agent(prompt, agent="lead", label="film-approval lead")\nprint(h.id, h.status)',
+        'const h = await agent({ agent: "lead", task: "Lead the cut." });',
+        'pool = workpool([("lead", "Lead the cut.")])',
+        'await tool.task({ tasks: [{ agent: "lead", task: "t" }] })',
+        'await tool["task"]({"tasks": []})',
+      ];
+      const ordinary = [
+        'print(read("design/journal/a.json"))',
+        'await tool.read({ path: "design/a.md" })',
+        'my_agent(1); x.agent(2); print(tool.tasks)',
+      ];
+      const launched = await loaded('cartographer');
+      for (const code of dispatching)
+        for (const kind of ['main', 'sub'])
+          expect(await launched('tool_call', evalOf(code), kind), code).toEqual(
+            { block: true, reason: EVAL_DISPATCH_REFUSAL },
+          );
+      for (const code of ordinary)
+        expect(await launched('tool_call', evalOf(code)), code).toBeUndefined();
+      // A plain main session is no agent: its eval code is never refused.
+      const plain = await loaded();
+      for (const code of dispatching)
+        expect(await plain('tool_call', evalOf(code)), code).toBeUndefined();
+      expect(await plain('tool_call', evalOf(dispatching[0]!), 'sub')).toEqual({
+        block: true,
+        reason: EVAL_DISPATCH_REFUSAL,
+      });
+    });
+
     it('teaches the assignment form in the refusal of a misfit dispatch', async () => {
       omp.agents = [LEAD()];
       const plain = await started();
@@ -1600,6 +1677,8 @@ describe('omp capability interface', () => {
           '',
           'Act:',
           JSON.stringify({ tool: closing.toolName, input: closing.input }),
+          '',
+          'Answer with exactly one JSON object and nothing else: {"pastObjective": <true or false>, "reason": "<one sentence>"}',
         ].join('\n'),
       );
       expect(relayed).toEqual([]);
@@ -1632,6 +1711,37 @@ describe('omp capability interface', () => {
       expect(relayed).toEqual([
         'past guard — the judge gave no verdict (it answered: The objective seems met.), so this act was NOT judged.',
       ]);
+    });
+
+    it("reads a guard's verdict from the last JSON object carrying its field, whatever prose or fence surrounds it", async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules('architect', [
+        surveyGuard(['architect']),
+      ]);
+      const call = { toolName: 'read', input: { path: 'src/film.ts' } };
+      for (const answer of [
+        'The call reads source.\n{"surveys": true, "reason": "it reads src."}',
+        '```json\n{"surveys": true, "reason": "it reads src."}\n```',
+        'Draft: {"surveys": false, "reason": "draft"}. Final, with {"note": {"x": 1}} beside it:\n```\n{"surveys": true, "reason": "it reads src.", "detail": {"path": "src/film.ts"}}\n```\nDone.',
+        '{"surveys": true, "reason": "it reads src."} {"other": "no verdict field"}',
+      ]) {
+        judge.verdict = answer;
+        expect(await fire('tool_call', call), answer).toEqual({
+          block: true,
+          reason: 'surveying: it reads src.',
+        });
+      }
+      expect(relayed).toEqual([]);
+      for (const answer of [
+        'The objective is not met, so the call is allowed.',
+        '{"reason": "no verdict field"}',
+        '{"surveys": "yes", "reason": "not a boolean"}',
+        '{"surveys": true, "reason": "never closed"',
+      ]) {
+        judge.verdict = answer;
+        expect(await fire('tool_call', call), answer).toBeUndefined();
+      }
+      expect(relayed).toHaveLength(4);
     });
 
     it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {

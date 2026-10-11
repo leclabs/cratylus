@@ -200,6 +200,16 @@ const READBACK_REFUSAL =
 const READBACK_UNSEEN_REFUSAL =
   'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.';
 
+/** What an agent reads when it dispatches a delegate from `eval` code, where no
+ *  assignment check, dispatch guard or readback gate sees the dispatch. */
+const EVAL_DISPATCH_REFUSAL =
+  'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
+
+/** `eval` code that dispatches a delegate: the eval prelude's `agent(…)` or `workpool(…)`,
+ *  or the task tool called as `tool.task` or `tool["task"]`. */
+const EVAL_DISPATCH =
+  /(?<![\w.$])(?:agent|workpool)\s*\(|(?<![\w.$])tool\s*(?:\??\.\s*task\b|\[\s*["'`]task["'`]\s*\])/;
+
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
 const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
@@ -1304,19 +1314,41 @@ const GUARD_BRIDGE: readonly string[] = [
   '    : `Message the reply answered:\\n${asked}\\n\\nReply:\\n${reply}`;',
   '}',
   '',
-  '/** One boolean field of the verdict a judge answered, or `undefined` when its answer is not that JSON. */',
-  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
-  '  const json = answer.replace(/^```(?:json)?\\s*/, "").replace(/\\s*```$/, "").trim();',
-  '  let v: unknown;',
-  '  try {',
-  '    v = JSON.parse(json);',
-  '  } catch {',
-  '    return undefined;',
+  '/** Where the JSON object opening at `start` closes, strings and nesting respected; `undefined` when it never does. */',
+  'function objectEnd(text: string, start: number): number | undefined {',
+  '  let depth = 0;',
+  '  let quoted = false;',
+  '  for (let i = start; i < text.length; i++) {',
+  '    const c = text[i];',
+  '    if (quoted) {',
+  '      if (c === "\\\\") i++;',
+  "      else if (c === '\"') quoted = false;",
+  "    } else if (c === '\"') quoted = true;",
+  '    else if (c === "{") depth++;',
+  '    else if (c === "}" && --depth === 0) return i;',
   '  }',
-  '  if (typeof v !== "object" || v === null) return undefined;',
-  '  const o = v as Record<string, unknown>;',
-  '  if (typeof o[field] !== "boolean") return undefined;',
-  '  return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '  return undefined;',
+  '}',
+  '',
+  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
+  ' *  field, bare, fenced or after prose; `undefined` when no object in it does. */',
+  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
+  '  for (let start = answer.lastIndexOf("{"); start >= 0; start = start > 0 ? answer.lastIndexOf("{", start - 1) : -1) {',
+  '    const end = objectEnd(answer, start);',
+  '    if (end === undefined) continue;',
+  '    let v: unknown;',
+  '    try {',
+  '      v = JSON.parse(answer.slice(start, end + 1));',
+  '    } catch {',
+  '      continue;',
+  '    }',
+  '    if (typeof v !== "object" || v === null || Array.isArray(v)) continue;',
+  '    // A parsed non-array object: its fields are read and each is checked before use.',
+  '    const o = v as Record<string, unknown>;',
+  '    if (typeof o[field] !== "boolean") continue;',
+  '    return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '  }',
+  '  return undefined;',
   '}',
   '',
   '// How much of the conversation a judge reads: its most recent characters, a bound like',
@@ -1393,9 +1425,10 @@ const GUARD_EXEC: readonly string[] = [
   '  ): Promise<string | undefined> => {',
   '    const agent = launchedAs(ctx);',
   '    if (agent === undefined || !guard.agents.includes(agent) || act === undefined) return undefined;',
-  '    // A guard whose judge reads the conversation gets it ahead of the act.',
+  '    // A guard whose judge reads the conversation gets it ahead of the act, and, the long',
+  "    // conversation now standing between the prompt and the answer, the answer's form after it.",
   '    const judgedAct = guard.conversation',
-  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${act}`',
+  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${act}\\n\\nAnswer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`',
   '      : act;',
   '    const answer = await askJudge(ctx, guard.prompt, judgedAct);',
   '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
@@ -1646,6 +1679,14 @@ const SESSION_PLACEMENT: readonly string[] = [
  * refused before the agent starts it (`before_agent_start`), whatever route the
  * prompt came by.
  *
+ * DISPATCH ONLY THROUGH `task`. A dispatch from `eval` code (the prelude's
+ * `agent(…)` or `workpool(…)`, or the task tool called as `tool.task` or
+ * `tool["task"]`) reaches no `task` call, so no assignment is checked, no guard on
+ * the dispatch act judges it and the readback gate never holds it. A session
+ * launched as an agent, and every dispatched one, is refused that `eval` call
+ * ({@link EVAL_DISPATCH_REFUSAL}), with no judge; other `eval` code, and a plain
+ * main session, are never refused it.
+ *
  * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
  * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
  * task call id, the item, the kind), so one event delivered twice is refused:
@@ -1817,6 +1858,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
         `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
         `const READBACK_UNSEEN_REFUSAL = ${JSON.stringify(READBACK_UNSEEN_REFUSAL)};`,
+        '// What an agent dispatching a delegate from `eval` code is refused with, and that code.',
+        `const EVAL_DISPATCH_REFUSAL = ${JSON.stringify(EVAL_DISPATCH_REFUSAL)};`,
+        `const EVAL_DISPATCH = ${String(EVAL_DISPATCH)};`,
         '// The tools whose call changes something whatever its input: a dispatch, a file written or',
         '// edited (a write to `agent://` messages a running agent).',
         'const CHANGING_TOOLS: readonly string[] = ["task", "write", "edit", "ast_edit"];',
@@ -2701,6 +2745,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      return undefined;',
         '    }',
         '    return { block: true, reason: `${READBACK_REFUSAL} ${verdict.reason}`.trim() };',
+        '  });',
+        '',
+        "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
+        '  // through `tool`) never reaches the `task` call where its assignment is checked, the guards on',
+        '  // the dispatch act judge it and the readback gate holds it. So an agent, a session launched as',
+        '  // one or dispatched, is refused that code, and dispatches with the task tool.',
+        '  pi.on("tool_call", (event, ctx) => {',
+        '    if (event.toolName !== "eval") return undefined;',
+        '    const kind = (ctx as unknown as Session).agent?.kind;',
+        '    if (kind === "main" ? launched === undefined : kind !== "sub") return undefined;',
+        '    const input: unknown = event.input;',
+        '    const code = input !== null && typeof input === "object" && "code" in input ? input.code : undefined;',
+        '    if (typeof code !== "string" || !EVAL_DISPATCH.test(code)) return undefined;',
+        '    return { block: true, reason: EVAL_DISPATCH_REFUSAL };',
         '  });',
         '',
         "  // EVERY `task` call, in any session: each item's assignment checked against its agent's",
