@@ -116,14 +116,13 @@ of the design, the examples, the journal, the ledger or a delegate, and refuses 
 does, naming the tell.
 `bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge
 whether a reply to the operator buries its bottom line (the conclusion not first, a topic given other
-than exactly one recommended action, a decision taken in the turn being that topic's one action, or support past what a layman needs, such as record identifiers, entry
-status or how records are edited), and refuses the stop when it does, naming the tell `burying`. A topic
-is a matter the operator asked about, or an outcome the report delivers that calls for someone's action,
-never a heading. A fact that supports a conclusion is support and takes no action. The steps of carrying
-out a recommendation, what follows it and a delegate's procedure are further actions on the topic they
-serve. After a topic's one action, or the decision that is its action, nothing tells anyone to do, wait
-for, check or keep anything more on that topic; a ruling's consequence is stated as part of the rule,
-and support states facts and reasons, never instructions.
+than exactly one recommended action, or support past what a layman needs, such as record identifiers,
+entry status or how records are edited), and refuses the stop when it does, naming the tell `burying`.
+A topic is a matter the operator asked about, or an outcome that calls for someone's action; support
+states facts and reasons, never instructions. A decision taken in the turn and reported with its
+reason, an approval included, is that topic's one action, and a separate follow-on action on it is a
+second; a topic decided before the turn, or a reported outcome that calls for action, keeps exactly
+one action of its own.
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
