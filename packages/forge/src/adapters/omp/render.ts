@@ -188,7 +188,7 @@ Answer with exactly one JSON object and nothing else:
 
 /** What a reconstituting launch reads when an act is held for its readback. */
 const READBACK_REFUSAL =
-  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act.';
+  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */

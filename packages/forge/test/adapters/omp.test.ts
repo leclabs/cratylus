@@ -1486,7 +1486,7 @@ describe('omp capability interface', () => {
     });
 
     const READBACK_REFUSAL =
-      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act.';
+      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
     const reply = (text: string) => ({
       message: {
         role: 'assistant',
