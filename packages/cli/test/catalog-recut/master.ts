@@ -1,5 +1,5 @@
 // Independent transcription of master-design.md §§1–4 and the realization contract,
-// rebound under rulings 0084 and 0085, including per-turn persistence. The historical
+// rebound under rulings 0084 and 0085, including persistence and deliverables. The historical
 // master design stays unchanged; never read expected values from canon.
 export type Level = 'advisory' | 'firm' | 'fixed' | null;
 export interface ExpectedEntry {
@@ -39,6 +39,60 @@ Drift tells (each = drift, never diligence):
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 
 Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signifier-carrying by construction, never long-form human prose. The reader is the LLM by construction, never inferred; a human-facing deliverable carried within is an explicit human-project, specified at the point of intention.`;
+
+// Decision 0081's typed deliverables, rebound under 0085. These are independent
+// expected projections, not schemas read from canon or rendered by forge.
+export const deliverableSections: Record<string, string> = {
+  'decisions-with-reasons': '',
+  'outcome-with-efficiency': `## Deliverable
+The lead's report of the cut to whoever dispatched it, in the design's concepts: each example's outcome with its evidence, the assayers' verdicts, the figures and the hardening notes.
+Return it as one JSON object with these fields:
+- \`cut\` (string, required): The cut this report is for, by its name.
+- \`outcomes\` (list of objects, at least 1, required): One outcome per visible example of the cut, each in the design's concepts.
+  - \`example\` (string, required): The visible example, as \`<context>/<number>\`.
+  - \`concept\` (string, required): The concept the example shows, by its name in the design.
+  - \`outcome\` (string, \`pass\` or \`fail\`, required): Whether the example holds in the delivered work.
+  - \`evidence\` (string, required): Why the outcome holds, named by the example and by the check that binds it, in the design's concepts: what the check showed of the concept. Never a file, function, path or command, even where a verdict cites one: translate it into the concept it bears on.
+- \`verdicts\` (list of objects, required): Each assayer's verdict, as it returned it.
+  - \`assayer\` (string, required): The assayer that judged, by its run.
+  - \`verdict\` (string, \`accept\` or \`reject\`, required): The assayer's verdict on the cut, as it returned it.
+  - \`findings\` (list of strings, required): The assayer's findings, each restated in the design's concepts; empty when it found none.
+- \`efficiency\` (object, required): The cut's figures, as the ledger computes them.
+  - \`agentRuns\` (object, required): The agent runs the harness reports for the cut.
+    - \`total\` (integer, required): Every agent run the cut took.
+    - \`byRole\` (map of integers, required): The agent runs by role.
+  - \`rounds\` (integer, required): The rounds of build and judgment.
+  - \`wholeCheckRuns\` (integer, required): The runs of the whole check.
+  - \`tokens\` (integer, required): The tokens the runs reported, summed.
+- \`hardeningNotes\` (list of strings, required): What would make the cut's examples or checks harder to pass by accident, each in the design's concepts; empty when there is none.`,
+  'done-or-failing-case': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`workPackage\` (string, required)
+- \`done\` (boolean, required)
+- \`failingCase\` (string, optional)`,
+  'verdict-per-concept': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`verdicts\` (list of objects, at least 1, required)
+  - \`workPackage\` (string, required)
+  - \`concept\` (string, required)
+  - \`passes\` (boolean, required)
+  - \`evidence\` (string, required)
+  - \`finding\` (string, optional)
+- \`hardeningNotes\` (list of strings, required)`,
+  'checks-seen-red': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`checks\` (list of objects, required)
+  - \`example\` (string, required)
+  - \`check\` (string, required)
+  - \`seenRed\` (boolean, required)`,
+  'examples-with-flagged-terms': `## Deliverable
+Return it as one JSON object with these fields:
+- \`examples\` (list of strings, required)
+- \`flaggedTerms\` (list of strings, required)`,
+};
 
 export const decisionSlots = [
   ['intent', 'what is wanted and why'],

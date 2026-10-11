@@ -19,6 +19,7 @@ import {
   agentFactors,
   agentNames,
   camel,
+  deliverableSections,
   factors,
   personaProtocol,
   requireDefined,
@@ -286,6 +287,21 @@ export function expectProjection(
       );
     }
   }
+  const deliverable = requireDefined(
+    vector.deliverable?.[0],
+    `${name}.deliverable`,
+  ).value.split(' ≜ ')[0];
+  lines.push(
+    ...requireDefined(
+      deliverableSections[
+        requireDefined(deliverable, `${name} deliverable anchor`)
+      ],
+      `${name} deliverable section`,
+    )
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean),
+  );
   lines.push(...personaProtocol.split('\n').filter(Boolean));
   // Blank lines and line endings are formatting; ordered headings and entry meaning are not.
   expect(
