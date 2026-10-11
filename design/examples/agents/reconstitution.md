@@ -2,7 +2,7 @@
 
 Context: agents. Concepts: binding, reach and drift. Decisions in force: 0068, 0070, 0081 and 0086.
 The typed-handoff cases carry the contract described in 0064. Proposed examples, not yet confirmed
-or frozen. The examples transferred under 0104, 0106 and 0107 are in [cut 7](cut-7.md); the remaining
+or frozen. The examples transferred under 0104, 0106 and 0107 are in [meaning roles](meaning-roles.md); the remaining
 examples retain their numbers.
 
 Structural examples execute handoffs or assert over the delivered declarations and recorded behavior.

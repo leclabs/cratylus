@@ -4,7 +4,7 @@ Context: workflow. Concepts: context overview, ledger, completion check, reconst
 cut, architect, lead and roles. Decisions in force: 0081 and 0086, including the architect restored by
 0070 and the typed handoffs carried from 0064. Proposed examples, not yet confirmed or frozen.
 Companion examples in the agents and delivery contexts cover the contracts this context consumes.
-Examples 20 and 23 belong to [cut 7](cut-7.md) under decisions 0104, 0106 and 0107; the remaining
+Examples 20 and 23 belong to [meaning roles](meaning-roles.md) under decisions 0104, 0106 and 0107; the remaining
 examples retain their numbers.
 
 Structural examples execute capabilities or assert over their delivered output. Behavioral examples run
