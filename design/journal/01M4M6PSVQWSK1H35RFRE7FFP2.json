@@ -1,0 +1,15 @@
+{
+  "id": "01M4M6PSVQWSK1H35RFRE7FFP2",
+  "at": "2026-10-11T00:44:49.911Z",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability fidelity",
+  "wording": "a capability reaches the harness at the highest fidelity the harness offers: its own native facility first, then cratylus's own extension to the harness, and prose only where neither is possible; the harness publishes each capability's own explanation, including when to reach for it, to every agent at session start, so no skill restates it, and agents call a capability as a tool rather than follow instructions about it.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "The harness already publishes tools with their self-explanation (capability interface); a skill saying when to reach for one duplicates it.",
+  "supersedes": [
+    "01M4J5RAZZ0P5J6NGQTHYDRADJ"
+  ]
+}

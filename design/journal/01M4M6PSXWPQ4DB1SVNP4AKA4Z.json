@@ -1,0 +1,14 @@
+{
+  "id": "01M4M6PSXWPQ4DB1SVNP4AKA4Z",
+  "at": "2026-10-11T00:44:49.980Z",
+  "kind": "decide",
+  "decisionId": "0074",
+  "context": "workflow",
+  "title": "Cut: reconstitution and handoffs, with a deterministic record",
+  "situation": "The work package capability folds a pure, deterministic state from its log, but the log itself is not deterministic (its lead, 2026-10-10): an event exists only if an agent remembers to call a verb (215 of the execution cut's 226 runs were recorded afterwards); update, check, run and record append on every retry; commit runs git before appending, so a crash leaves a commit with no event; validation and append race between parallel builders; a builder's plain commit goes unseen; the log is untracked, one file per host, with no merge story; cut-level events (judged, integrated, released) do not exist. 0073 also had a skill say when to reach for the capabilities, which the harness already publishes.",
+  "decision": "One cut. (1) A computed overview of each context, read first at every reconstitution. (2) The workflow ships as its self-explaining capabilities, with no skill restating them. (3) A deterministic, event-sourced record of every cut and work package: the verb is the act, so the capability performs each transition (dispatch, commit, judgment recorded, integration, release) and appends its event in the same step, or not at all; each event carries a transition id, so a repeat is refused rather than duplicated; events are entries of their own, created exclusively and ordered like the concept journal's, versioned with the repository and merged as the union; an act outside its verb, such as a plain commit, is held by a gate that refuses it. Each cut's phase, its work packages' status and the frontier are computed on request. (4) Typed handoffs, with example 19 first. (5) The architect as principal (0070). (6) Every agent's default tools (0068).",
+  "consequences": "Next in 0072's order.",
+  "status": "open",
+  "supersedes": "0073",
+  "supersedesEntry": "01M4M643PJMKP9PCBAMKSRJHZ0"
+}
