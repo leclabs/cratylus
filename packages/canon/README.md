@@ -121,7 +121,9 @@ status or how records are edited), and refuses the stop when it does, naming the
 is a matter the operator asked about, or an outcome the report delivers that calls for someone's action,
 never a heading. A fact that supports a conclusion is support and takes no action. The steps of carrying
 out a recommendation, what follows it and a delegate's procedure are further actions on the topic they
-serve; the condition under which a recommendation is revisited, stated within its one action, is not.
+serve. After a topic's one action, or the decision that is its action, nothing tells anyone to do, wait
+for, check or keep anything more on that topic; a ruling's consequence is stated as part of the rule,
+and support states facts and reasons, never instructions.
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
