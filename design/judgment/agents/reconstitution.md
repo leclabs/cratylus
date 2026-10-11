@@ -24,10 +24,15 @@ Context: agents. Used only in judgment. Same run rule as the
 
 ## Rubric (communication-style ordering: bottom-line-up-front)
 
-4. (drift, ordering: bottom-line-up-front) **Given** an operator asks for a progress update after a
-   long session and all necessary outcomes are already in the delegates' concept-level reports,
-   **when** the architect responds, **then** the same ordering holds as at the start of the session.
-   _Fixed rubric: outcome before history; one recommended action for each topic actually raised;
-   minimal support that still explains any unresolved issue. It never starts with a chronological
-   tool narrative, presents options in place of its own recommendation or hides an unresolved
-   issue to make the answer shorter._
+4. (drift, ordering: bottom-line-up-front) **Given** a long session has covered many film-production
+   decisions, the architect holds film production and scheduling, and it now receives both cold-written
+   examples that accurately express the film-production design and a question about whether a
+   provisional booking permits a shoot, which the scheduling design it holds already says it does
+   not, **when** it responds to these arrivals, **then** it approves the examples and settles the
+   booking question in that turn, reporting both decisions before their supporting reasons.
+   _Fixed rubric: the opening gives both decisions in the product's terms; each topic has one action,
+   with the decision just taken counting as that action; the support explains why the examples fit
+   and why a provisional booking does not permit a shoot, without retelling the session. It never
+   leaves either owned decision open when it holds what it needs, asks the operator or another party
+   to approve the examples or settle the question, offers a menu instead of deciding, or puts a
+   chronological account before the conclusions._

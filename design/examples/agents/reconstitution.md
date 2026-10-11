@@ -129,3 +129,13 @@ not rewritten here.
   absence and a delivered guard can demonstrate that an act is checked; private self-checking cannot
   be distinguished from identical conforming behavior from this wording alone. No example requires
   the agent to disclose private reasoning or emit a ritual self-check statement.
+
+## Rubric (communication-style ordering after a long session)
+
+20. (drift, ordering: bottom-line-up-front) **Given** an operator asks for a progress update after a
+    long session and all necessary outcomes are already in the delegates' concept-level reports,
+    **when** the architect responds, **then** the same ordering holds as at the start of the session.
+    _Fixed rubric: outcome before history; one recommended action for each topic actually raised;
+    minimal support that still explains any unresolved issue. It never starts with a chronological
+    tool narrative, presents options in place of its own recommendation or hides an unresolved
+    issue to make the answer shorter._

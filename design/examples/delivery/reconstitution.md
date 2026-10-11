@@ -68,3 +68,11 @@ never-assertions holding in all 5.
     before its parts, distinguish an open decision from a settled concept, and identify where to ask
     for the recorded work in flight. It never has to treat a skill's second description as more
     authoritative than the capability or invent missing workflow state._
+
+## Behavioral (finding ready work)
+
+11. (capability interface) **Given** a lead knows its cut's concepts and examples, has a valid cut
+    brief, and the harness publishes the work package capability's own explanation, **when** it needs
+    to see which work packages can be dispatched next, **then** it can identify that capability and
+    the relevant operation from their purpose and context words; it never needs a separate skill
+    that redefines work packages or teaches a competing way to compute their order.

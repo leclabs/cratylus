@@ -12,8 +12,11 @@ Context: delivery. Used only in judgment. Same run rule as the
 
 ## Behavioral (recorded agent behavior)
 
-2. (capability interface) **Given** a lead knows its cut's concepts and examples, has a valid cut
-   brief, and the harness publishes the work package capability's own explanation, **when** it needs
-   to see which work packages can be dispatched next, **then** it can identify that capability and
-   the relevant operation from their purpose and context words; it never needs a separate skill
-   that redefines work packages or teaches a competing way to compute their order.
+2. (capability interface) **Given** a lead has its cut brief and an earlier report naming footage as
+   ready, footage has since finished so grading is now ready while captions still depends on
+   unfinished grading, and the harness publishes the work package capability's own explanations
+   distinguishing inspection of dependencies from finding work ready to dispatch, **when** the lead
+   needs the next ready work package, **then** it identifies and calls the ready-work operation from
+   that explanation and uses its current answer, grading; it never treats the old report as the
+   current answer, mistakes inspection of dependencies for the ready-work operation, or needs a
+   separate skill or adapter-authored procedure to explain which operation serves that purpose.
