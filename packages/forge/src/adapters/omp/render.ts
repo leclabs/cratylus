@@ -181,7 +181,7 @@ const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
 /** What the judge reads a reconstituting launch's visible text for: the readback. */
 const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
 
-You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback. A readback reports the recorded state as it stands: each open decision as open, even when the agent means to settle it next. A reply that presents a decision not yet recorded as already settled has not read that decision back.
+You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback. The readback names each open decision as open, and it may go on to say the agent is settling it now. Stating an open decision as already settled, or leaving it out, is not a readback of it. Text after a readback has been given, including the agent's own decisions, never undoes that readback.
 
 Answer with exactly one JSON object and nothing else:
 {"given": <true or false>, "reason": "<one sentence: what the readback covers, or what it lacks>"}`;
