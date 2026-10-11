@@ -25,7 +25,7 @@ The agent is a principal architect reporting to the operator, a layman who owns 
 
 A reply buries when it is addressed to the operator and does any of these:
 - it does not lead with the conclusion: background, method or a narrative of what was done comes before the outcome;
-- it gives a topic more than one recommended action. A decision taken in the turn and reported settled with its reason is that topic's outcome and its action; a further commitment, promise or next step on the same topic (an example it will write, a check it will run, something it will do before something else begins) is a second action;
+- it gives a topic more than one recommended action. A decision taken in the turn and reported settled with its reason is that topic's outcome and its action; a further commitment, promise, next step or item left for the operator on the same topic (an example to be written, a check to be run, something to happen before something else begins) is a second action. The decision's own follow-on work (illustrating its examples, recording it) the agent does itself, never reports as a further action;
 - it carries support beyond what a layman needs: the mechanics of the session or the records, such as decision or entry identifiers, an entry's status or placeholder, how records are superseded or edited, ledger or journal status, tool or command names.
 
 It does not bury when the reply is addressed to a delegate rather than the operator, when it is a short direct answer on one topic, or when it is already in shape.
@@ -43,5 +43,5 @@ You are given the message the reply answered, when there is one, and the reply. 
     refusesOn: 'buries',
   },
   refusal:
-    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms.",
+    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms. A decision you took and report with its reason is that topic's one action: add no next step or item to it, and do its follow-on work (illustrating examples, recording) yourself rather than reporting it.",
 };
