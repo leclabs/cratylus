@@ -367,8 +367,12 @@ describe('omp agent definition', () => {
       '["@mav", "@frontier:high"]',
     );
     expect(
-      frontMatter(agentToOmpMd(routed, { ...CTX, model: 'openai/chosen' }))
-        .model,
+      frontMatter(
+        agentToOmpMd(routed, {
+          manifest: FIXTURE_MANIFEST,
+          model: 'openai/chosen',
+        } as never),
+      ).model,
     ).toBe('["@mav", "openai/chosen"]');
   });
 
