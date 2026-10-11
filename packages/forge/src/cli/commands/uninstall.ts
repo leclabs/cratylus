@@ -3,8 +3,9 @@
 //
 // WHAT IS THIS TOOL'S TO REMOVE is known by construction: the owned root
 // (`~/.cratylus/<harness>`) is cratylus's alone, so it goes whole, edits and additions
-// inside it included; and its record (`installation.json`) names every reference the
-// harness's own surfaces hold into it, so exactly those go. The operator's answers
+// inside it included; and every reference the harness's own surfaces hold into it is
+// found from where it points, so exactly those go, even where the root or its record
+// (`installation.json`) was edited or removed. The operator's answers
 // install wrote into the host's settings (models, whether the status line shows the
 // session's agent) are the host's, and stay. Nothing else of the host's is looked at.
 //
@@ -19,8 +20,8 @@
 // a role runs on is the host's own setting (decision 0112), so they stay, as the host's.
 //
 // WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file outside the root whose
-// bytes no longer hash to the digest of what was written is left, and so is a file
-// recorded before digests were kept, which cannot be told from an edit. A reference the
+// bytes no longer hash to the digest of what was written is left; a file recorded before
+// digests were kept is cratylus's by that record, and taken back (decision 0114). A reference the
 // host has pointed elsewhere, a hook registration in an entry that now runs a command
 // of the host's, a config line the host has rewritten: each is left, and NAMED, so the
 // operator sees what remains and why. The report is two lists — removed, and left.
@@ -55,6 +56,7 @@ import {
   MANIFEST_REL,
   MANIFEST_VERSION,
   applyPrune,
+  ensureStatusSegment,
   placedFileState,
   readManifest,
   recordsHostEdits,
@@ -430,22 +432,31 @@ function keepingModelRoles(
   return out;
 }
 
-/** A harness installed before install recorded its edits to the host's config file:
- *  what it added there is in the file with nothing saying which lines they are, and an
- *  uninstall that removed by resemblance would be guessing at the host's own. */
-function reportUnrecordedConfig(
+/**
+ * A harness installed before install recorded its edits to the host's config file:
+ * the status line layout it wrote there is recorded nowhere. A `statusLine` block byte
+ * for byte the one it wrote is cratylus's by that installation (decision 0114), so it
+ * is adopted as a recorded edit and taken out; one that is not cannot be told from the
+ * host's, and stands, named. The `modelRoles` bindings it seeded are the host's own
+ * either way (decision 0112).
+ */
+function unrecordedStatusLine(
   adapter: HarnessAdapter,
   harnessDir: string,
   tally: Tally,
-): void {
-  const rels =
-    adapter.roleRouting?.configRels ?? adapter.statusSegment?.configRels ?? [];
-  const file = rels.map((rel) => join(harnessDir, rel)).find(existsSync);
-  if (file === undefined) return;
-  tally.left.push({
-    what: file,
-    why: `${adapter.name} was installed before install recorded its edits to this file, so a \`modelRoles\` entry or status line layout it added cannot be told from yours; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records the lines it finds there byte for byte as it would write them, then uninstall`,
-  });
+): Record<string, HostEdit> {
+  const host = adapter.statusSegment;
+  const rel = host?.configRels.find((r) => existsSync(join(harnessDir, r)));
+  if (host === undefined || rel === undefined) return {};
+  const file = join(harnessDir, rel);
+  const { edit } = ensureStatusSegment(file, host, { adopt: true, dry: true });
+  if (edit !== undefined) return { [rel]: edit };
+  if (/^statusLine\s*:/m.test(readFileSync(file, 'utf8')))
+    tally.left.push({
+      what: file,
+      why: `${adapter.name} was installed before install recorded its edits to this file, and the status line layout there is not byte for byte the one it wrote, so it cannot be told from yours and stands as it is`,
+    });
+  return {};
 }
 
 /** Every path a placer recorded, once each. */
@@ -484,14 +495,8 @@ function removePlacedFiles(
     const abs = resolve(harnessDir, rel);
     const state = placedFileState(harnessDir, rel, manifest.digests);
     if (state === 'absent') continue;
-    if (state === 'changed' || state === 'unverified') {
-      tally.left.push({
-        what: abs,
-        why:
-          state === 'changed'
-            ? 'the host changed it since install'
-            : 'no digest was recorded when it was placed, so a change by the host cannot be ruled out',
-      });
+    if (state === 'changed') {
+      tally.left.push({ what: abs, why: 'the host changed it since install' });
       continue;
     }
     if (containingRoot(roots, abs) === null) {
@@ -556,7 +561,7 @@ function removeRuntimeStanza(
     record: manifest.runtimeConfig,
   });
   if (removal === undefined) return;
-  const { rest, removed, changed, unrecorded, left } = removal;
+  const { rest, removed, changed, left } = removal;
   if (rest === null) {
     tally.removed.push({
       what: `${file} (the runtime config: ${adapter.name} was its last harness)`,
@@ -572,12 +577,6 @@ function removeRuntimeStanza(
     tally.left.push({
       what: `${file}: ${changed.join(', ')}`,
       why: 'the host changed what install wrote there since install',
-    });
-  }
-  if (unrecorded.length > 0) {
-    tally.left.push({
-      what: `${file}: ${unrecorded.join(', ')}`,
-      why: `no record was kept of what ${adapter.name}'s deploy wrote there, so a change by the host cannot be ruled out; run \`${CLI_BIN} install --harness ${adapter.name}\` again, which records it, then uninstall`,
     });
   }
   if (left.length > 0) {
@@ -625,10 +624,15 @@ export function removeEarlierInstallation(
   const tally: Tally = { removed: [], left: [] };
   removePersonaLinks(harnessDir, opts, tally);
   restoreSettings(adapter, harnessDir, manifest, dry, tally);
-  if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
   undoHostEdits(
     harnessDir,
-    keepingModelRoles(harnessDir, manifest.hostEdits, tally),
+    keepingModelRoles(
+      harnessDir,
+      editsRecorded
+        ? manifest.hostEdits
+        : unrecordedStatusLine(adapter, harnessDir, tally),
+      tally,
+    ),
     dry,
     tally,
   );
@@ -640,10 +644,11 @@ export function removeEarlierInstallation(
 }
 
 /**
- * Take back the installation of `adapter` under its owned root: every reference the
- * record names, while it still refers into the root; then the root, whole. The
- * operator's answers install wrote into the host's settings are the host's, and stay.
- * `undefined` where there is no root.
+ * Take back the installation of `adapter` under its owned root: every reference into
+ * the root, found from where it points, so a root or record the host edited or removed
+ * leaves none dangling; then the root, whole. The operator's answers install wrote
+ * into the host's settings are the host's, and stay. `undefined` where there is
+ * neither a root nor a reference into one.
  */
 export function removeOwnedInstallation(
   adapter: HarnessAdapter,
@@ -652,19 +657,17 @@ export function removeOwnedInstallation(
   const dry = opts.dryRun ?? false;
   const harnessDir = harnessDirIn(adapter, opts.home);
   const root = ownedRootIn(adapter, opts.home);
-  if (!existsSync(root)) return undefined;
-  const tally: Tally = { removed: [], left: [] };
-  const record = readInstallationRecord(root);
-  if (record !== null) {
-    const unlinked = unlinkOwnedRoot({ harnessDir, root, record, dry });
-    for (const what of unlinked.changed)
-      tally.removed.push({
-        what: `${what} (a reference into ${root})`,
-        outside: { area: dirname(what), noun: 'reference' },
-      });
-    tally.left.push(...unlinked.left);
-  }
-  tally.removed.push({ what: `${root} (the owned root, whole)` });
+  const present = existsSync(root);
+  const record = present ? readInstallationRecord(root) : null;
+  const unlinked = unlinkOwnedRoot({ adapter, harnessDir, root, record, dry });
+  if (!present && unlinked.changed.length === 0) return undefined;
+  const tally: Tally = { removed: [], left: [...unlinked.left] };
+  for (const what of unlinked.changed)
+    tally.removed.push({
+      what: `${what} (a reference into ${root})`,
+      outside: { area: dirname(what), noun: 'reference' },
+    });
+  if (present) tally.removed.push({ what: `${root} (the owned root, whole)` });
   if (!dry) removeOwnedRoot(root);
   return tally;
 }

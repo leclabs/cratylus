@@ -10,9 +10,11 @@ hook workers, and a `package.json` recording the cratylus version that projected
 linked into omp's plugin directory as `omp plugin link` would, so every project of the
 user is offered it and no host file is overwritten. Installing again replaces the root
 whole (upgrade); an earlier installation on omp's own surfaces, the event tap's skill
-included, is taken back by its deploy record, save the `modelRoles` entries it seeded,
-which stay in the host's config as the host's own. `cratylus uninstall --harness omp
-[--home <dir>]` removes the root and every reference into it. Agent declarations name
+included, is taken back by its deploy record, what it placed before it recorded digests
+included (decision 0114), save the `modelRoles` entries it seeded, which stay in the
+host's config as the host's own. `cratylus uninstall --harness omp [--home <dir>]`
+removes the root and every reference into it, found from where each points, so none is
+left dangling when the root or its record was edited or removed. Agent declarations name
 their own model role first, then their tier and effort (decision 0111), and are never
 rewritten with a model. Which model a tier or a persona's role runs on is the operator's
 choice and the host's own setting (decision 0112): install asks for each the host does

@@ -132,8 +132,10 @@ skills under `skills/`, extension modules under `extensions/`, hook workers unde
 every reference placed outside the root and every host-file edit. The harness's own surfaces only
 refer into it (`linkOwnedRoot`: for omp, a link in `~/.omp/plugins/node_modules` and a dependency
 entry in `~/.omp/plugins/package.json`), so uninstall (`unlinkOwnedRoot`, then the root) removes
-exactly what install placed. An installation from before the owned root is taken back by its
-deploy manifest (`removeEarlierInstallation`).
+exactly those, each found from where it points into the root rather than from the record, so none
+is left dangling when the root or its record was edited or removed. An installation from before the
+owned root is taken back by its deploy manifest (`removeEarlierInstallation`), what it placed
+before digests were recorded included.
 
 At project scope `deploySingle` places one kind (agents, skills or hooks) into the project's
 `.omp/` (`agents/`, `skills/`, `extensions/`), which omp reads natively there. Model routing is

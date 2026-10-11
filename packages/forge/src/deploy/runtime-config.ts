@@ -10,8 +10,9 @@
 // The EARLIER layout wrote a host config beside the harness home, `<home>/.<bin>.json`
 // (or `$AGENT_RUNTIME_CONFIG`), with the event vocabulary, each harness's stanza and the
 // configuration, and recorded what it wrote by digest in its deploy manifest. An upgrade
-// or uninstall takes those parts out again while they are what was written
-// ({@link withoutRuntimeParts}), and leaves every part the host placed or changed.
+// or uninstall takes those parts out again while they are what was written, or where it
+// was written before such a record was kept ({@link withoutRuntimeParts}), and leaves
+// every part the host placed or changed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createHash } from 'node:crypto';
@@ -128,9 +129,6 @@ export interface RuntimeConfigRemoval {
   readonly removed: readonly string[];
   /** Parts cratylus placed that the host has changed since, which stand. */
   readonly changed: readonly string[];
-  /** Parts of cratylus's that stand because the deploy recorded nothing of what it wrote,
-   *  so a change by the host cannot be ruled out. */
-  readonly unrecorded: readonly string[];
   /** What stands because the host placed it; reported only for the last harness, for
    *  the others share the file with their own parts. */
   readonly left: readonly string[];
@@ -142,9 +140,10 @@ export interface RuntimeConfigRemoval {
  * the deploy recorded writing (`record`, by digest of its value): this harness's stanza,
  * and — when no other harness of `installed` still has a stanza in the file — the
  * vocabulary and the configuration of each capability the deploy wrote. A part the host
- * has changed since stands and is named, as does every part when `record` is `null`, a
- * deploy from before it was kept. `undefined` when the config holds no stanza of this
- * harness, so there is nothing of its to remove.
+ * has changed since stands and is named. Where `record` is `null`, a deploy from before
+ * it was kept, every one of those parts is cratylus's by that deploy, and goes
+ * (decision 0114). `undefined` when the config holds no stanza of this harness, so
+ * there is nothing of its to remove.
  */
 export function withoutRuntimeParts(
   doc: Plain,
@@ -164,18 +163,20 @@ export function withoutRuntimeParts(
   );
   const removed: string[] = [];
   const changed: string[] = [];
-  const unrecorded: string[] = [];
   /** Whether the part at `path` is cratylus's to take out, said once either way. */
   const settle = (
     path: string,
     value: unknown,
     recorded: string | undefined,
   ): boolean => {
-    if (record === null) unrecorded.push(path);
-    else if (recorded !== undefined && digestOf(value) === recorded) {
+    if (
+      record === null ||
+      (recorded !== undefined && digestOf(value) === recorded)
+    ) {
       removed.push(path);
       return true;
-    } else changed.push(path);
+    }
+    changed.push(path);
     return false;
   };
 
@@ -230,13 +231,12 @@ export function withoutRuntimeParts(
 
   const left: string[] = [];
   if (last) {
-    const named = new Set([...changed, ...unrecorded]);
     for (const [key, value] of Object.entries(rest)) {
       const paths =
         isPlain(value) && ['events', 'harnesses', 'configuration'].includes(key)
           ? Object.keys(value).map((k) => `${key}.${k}`)
           : [key];
-      for (const path of paths) if (!named.has(path)) left.push(path);
+      for (const path of paths) if (!changed.includes(path)) left.push(path);
     }
   }
   return {
@@ -244,7 +244,6 @@ export function withoutRuntimeParts(
     rest: Object.keys(rest).length > 0 ? rest : null,
     removed,
     changed,
-    unrecorded,
     left,
   };
 }

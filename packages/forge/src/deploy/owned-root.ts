@@ -23,8 +23,9 @@
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
 // every project of a user from its plugin directory (`~/.omp/plugins`), as `omp plugin
 // link` places one: a link `node_modules/<package>` → the root, and the package's
-// dependency entry in the directory's `package.json`. Those are the references, and
-// the record names each, so an uninstall removes exactly them.
+// dependency entry in the directory's `package.json`. Those are the references; an
+// uninstall finds each from where it points, into the root, so none is left dangling
+// when the root or its record was edited or removed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -44,7 +45,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   INSTALLATIONS_DIR,
   RUNTIME_CONFIG_FILE,
@@ -120,13 +121,26 @@ function packageName(adapter: Pick<HarnessAdapter, 'name'>): string {
   return `${CLI_BIN}-${adapter.name}`;
 }
 
-/** The record in `root`, or `null` where nothing is installed there. */
+/** The record in `root`, or `null` where nothing is installed there or the host has
+ *  edited it past reading: the root is cratylus's, but nothing in it is trusted to
+ *  find what lies outside it (decision 0114). */
 export function readInstallationRecord(
   root: string,
 ): InstallationRecord | null {
   const file = join(root, INSTALLATION_RECORD);
   if (!existsSync(file)) return null;
-  return JSON.parse(readFileSync(file, 'utf8')) as InstallationRecord;
+  try {
+    const doc: unknown = JSON.parse(readFileSync(file, 'utf8'));
+    if (doc === null || typeof doc !== 'object' || Array.isArray(doc))
+      return null;
+    const record = doc as Partial<InstallationRecord>;
+    return {
+      ...record,
+      references: Array.isArray(record.references) ? record.references : [],
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -403,73 +417,123 @@ function pruneEmpty(dir: string, stop: string): void {
 }
 
 /**
- * Take back the references `record` names into `root`: a link while it still points
- * at the root, a dependency entry while it still names it (and the manifest, where
- * install made it and nothing else is left in it). A reference the host has since
- * pointed elsewhere is the host's, left and reported.
+ * Take back every reference the harness's own surfaces hold into `root`, found from
+ * where each points, never from the record: the root, or its record, may have been
+ * edited or removed, and a reference into it is cratylus's by construction (decision
+ * 0114). Where the harness loads extension packages (`adapter.packageDir`), that is
+ * each link under `node_modules` whose target is the root or inside it, and each
+ * dependency entry of the directory's manifest that names the root or a path inside
+ * it. Whatever else those surfaces hold is the host's and stays. The record, where it
+ * can be read, says only whether install made the manifest (so it goes once nothing
+ * else is left in it) and which recorded references the host has since pointed
+ * elsewhere, left and reported.
  */
 export function unlinkOwnedRoot(opts: {
+  readonly adapter: Pick<HarnessAdapter, 'packageDir'>;
   readonly harnessDir: string;
   readonly root: string;
-  readonly record: InstallationRecord;
+  readonly record: InstallationRecord | null;
   readonly dry: boolean;
 }): ReferenceReport {
-  const { harnessDir, root, dry } = opts;
+  const { adapter, harnessDir, root, dry } = opts;
+  const references: OwnedReference[] = [];
   const changed: string[] = [];
   const left: { what: string; why: string }[] = [];
-  for (const ref of opts.record.references) {
-    const abs = join(harnessDir, ref.path);
-    if (ref.kind === 'link') {
-      const stat = lstatSync(abs, { throwIfNoEntry: false });
-      if (stat === undefined) continue;
-      if (
-        !stat.isSymbolicLink() ||
-        resolve(dirname(abs), readlinkSync(abs)) !== root
-      ) {
-        left.push({ what: abs, why: `it no longer points at ${root}` });
-        continue;
-      }
-      changed.push(abs);
-      if (!dry) {
-        unlinkSync(abs);
-        pruneEmpty(dirname(abs), harnessDir);
-      }
-      continue;
-    }
-    if (!existsSync(abs)) continue;
-    const read = jsonObject(abs);
-    if ('why' in read) {
-      left.push({
-        what: abs,
-        why: `${read.why}, so its entry for ${ref.name} cannot be taken out; remove it by hand`,
-      });
-      continue;
-    }
-    const deps = dependenciesOf(read.doc);
-    if (deps[ref.name] !== pathToFileURL(root).href) {
-      if (Object.hasOwn(deps, ref.name))
-        left.push({
-          what: `${abs}: dependencies.${ref.name}`,
-          why: `it no longer names ${root}`,
-        });
-      continue;
-    }
+  if (adapter.packageDir === undefined) return { references, changed, left };
+  const into = (path: string): boolean =>
+    path === root || path.startsWith(`${root}/`);
+  const packages = join(harnessDir, adapter.packageDir);
+
+  // The links: every entry of `node_modules`, scoped packages' too.
+  const modules = join(packages, 'node_modules');
+  const entries = (dir: string): string[] =>
+    existsSync(dir) && statSync(dir).isDirectory()
+      ? readdirSync(dir).map((name) => join(dir, name))
+      : [];
+  const links = entries(modules).flatMap((abs) =>
+    abs.slice(modules.length + 1).startsWith('@') &&
+    lstatSync(abs).isDirectory()
+      ? entries(abs)
+      : [abs],
+  );
+  for (const abs of links) {
+    if (!lstatSync(abs).isSymbolicLink()) continue;
+    if (!into(resolve(dirname(abs), readlinkSync(abs)))) continue;
+    references.push({ kind: 'link', path: abs.slice(harnessDir.length + 1) });
     changed.push(abs);
-    if (dry) continue;
-    const { [ref.name]: _ours, ...rest } = deps;
-    const { dependencies: _deps, ...others } = read.doc;
-    const doc =
-      Object.keys(rest).length > 0 || !ref.created
-        ? { ...others, dependencies: rest }
-        : others;
-    if (ref.created && Object.keys(doc).length === 0) {
+    if (!dry) {
       unlinkSync(abs);
       pruneEmpty(dirname(abs), harnessDir);
-    } else {
-      writeFileSync(abs, settingsJson(doc, read.text));
     }
   }
-  return { references: opts.record.references, changed, left };
+
+  // The dependency entries of the directory's manifest.
+  const manifestRel = join(adapter.packageDir, PACKAGE_MANIFEST);
+  const manifest = join(harnessDir, manifestRel);
+  const recorded = opts.record?.references.find(
+    (r) => r.kind === 'dependency' && r.path === manifestRel,
+  );
+  const created = recorded?.kind === 'dependency' && recorded.created;
+  const read = existsSync(manifest) ? jsonObject(manifest) : undefined;
+  const deps =
+    read !== undefined && !('why' in read) ? dependenciesOf(read.doc) : {};
+  if (read !== undefined && 'why' in read)
+    left.push({
+      what: manifest,
+      why: `${read.why}, so its entries naming ${root} cannot be taken out; remove them by hand`,
+    });
+  const ours = Object.keys(deps).filter((name) => {
+    const spec = deps[name];
+    if (typeof spec !== 'string') return false;
+    if (spec.startsWith('file://')) {
+      try {
+        return into(fileURLToPath(spec));
+      } catch {
+        return false;
+      }
+    }
+    const local = /^(?:file|link):(.*)$/.exec(spec)?.[1];
+    return local !== undefined && into(resolve(packages, local));
+  });
+  for (const name of ours)
+    references.push({ kind: 'dependency', path: manifestRel, name, created });
+  if (ours.length > 0 && read !== undefined && !('why' in read)) {
+    changed.push(manifest);
+    if (!dry) {
+      const rest = Object.fromEntries(
+        Object.entries(deps).filter(([name]) => !ours.includes(name)),
+      );
+      const { dependencies: _deps, ...others } = read.doc;
+      const doc =
+        Object.keys(rest).length > 0 || !created
+          ? { ...others, dependencies: rest }
+          : others;
+      if (created && Object.keys(doc).length === 0) {
+        unlinkSync(manifest);
+        pruneEmpty(dirname(manifest), harnessDir);
+      } else {
+        writeFileSync(manifest, settingsJson(doc, read.text));
+      }
+    }
+  }
+
+  // A recorded reference the host has since pointed elsewhere is the host's.
+  for (const ref of opts.record?.references ?? []) {
+    const abs = join(harnessDir, ref.path);
+    if (ref.kind === 'link') {
+      if (
+        !changed.includes(abs) &&
+        lstatSync(abs, { throwIfNoEntry: false }) !== undefined
+      )
+        left.push({ what: abs, why: `it no longer points at ${root}` });
+    } else if (Object.hasOwn(deps, ref.name) && !ours.includes(ref.name)) {
+      left.push({
+        what: `${abs}: dependencies.${ref.name}`,
+        why: `it no longer names ${root}`,
+      });
+    }
+  }
+  return { references, changed, left };
 }
 
 /** Remove `root` whole, and the directory holding every installation where it is

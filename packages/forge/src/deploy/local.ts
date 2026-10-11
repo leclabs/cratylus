@@ -739,16 +739,16 @@ function kindDir(kind: DeployKind): string {
 // this tool laid down? The answer is the manifest's digest of the write, compared with
 // the bytes now — a REPORT, like the audit. Nothing is opened for writing.
 //
-// A file the host has changed since is the host's, and an uninstall leaves it. So is a
-// file with no recorded digest (placed before digests were kept): it cannot be told
-// from a host's edit, and the safe direction is to keep it.
+// A file the host has changed since is the host's, and an uninstall leaves it. A file
+// with no recorded digest (placed before digests were kept) is cratylus's: the earlier
+// installation recorded placing it, and that record is what makes it so (decision 0114).
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * How a recorded file stands.
  *   - `unchanged`  — its bytes hash to the digest recorded when it was written.
  *   - `changed`    — they do not: the host edited it.
- *   - `unverified` — no digest was recorded, so an edit cannot be ruled out.
+ *   - `unverified` — no digest was recorded: placed before digests were kept.
  *   - `absent`     — nothing is there any more.
  */
 export type PlacedFileState = 'unchanged' | 'changed' | 'unverified' | 'absent';

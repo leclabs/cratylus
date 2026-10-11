@@ -188,7 +188,7 @@ export interface StatusSegmentResult {
    *  where the file is otherwise as it was. */
   readonly hookRowShown?: boolean;
   /** What was put in the file, for the deploy manifest — an uninstall takes exactly
-   *  this out. Present only when the file was written. */
+   *  this out. Present when the file was written, or a block adopted. */
   readonly edit?: HostEdit;
 }
 
@@ -196,7 +196,8 @@ export interface EnsureStatusSegmentOpts {
   /** Report what would be added and write nothing. */
   readonly dry?: boolean;
   /** Record as install's own the layout block the host has that is byte for byte the one
-   *  this would write: for a host installed before edits were recorded. */
+   *  this would write: for a host installed before edits were recorded. Adopting writes
+   *  nothing, so it is reported under `dry` too. */
   readonly adopt?: boolean;
 }
 
@@ -619,9 +620,10 @@ export function ensureStatusSegment(
 
   // A `statusLine:` block that is byte for byte the one this writes where the host had
   // none was written by an earlier install. Under `adopt` (a host installed before edits
-  // were recorded) it is recorded as install's own, so an uninstall takes it out; the
-  // same block written by hand is indistinguishable, and adopted alike.
-  if (opts.adopt === true && !dry && at !== -1) {
+  // were recorded) it is recorded as install's own, so an upgrade or uninstall takes it
+  // out (decision 0114); the same block written by hand is indistinguishable, and
+  // adopted alike.
+  if (opts.adopt === true && at !== -1) {
     const block = [
       'statusLine:',
       ...layoutLines(host, '  '),

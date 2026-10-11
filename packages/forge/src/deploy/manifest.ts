@@ -94,8 +94,8 @@ export interface DeployManifest {
   // rel path (from the deploy root, POSIX) -> the sha-256 of the bytes this tool last
   // WROTE there, for every path in `kinds`. A placed file whose bytes still hash to this
   // is untouched since; one that does not is the host's own edit, and an uninstall
-  // leaves it. A path with no digest (recorded before digests were kept) cannot be told
-  // either way, and is left too.
+  // leaves it. A path with no digest (recorded before digests were kept) is taken back:
+  // the record of placing it is what makes it cratylus's (decision 0114).
   digests: Record<string, string>;
   // rel path (from the deploy root, POSIX) of a host-owned TEXT file install edited
   // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
