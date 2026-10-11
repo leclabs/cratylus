@@ -160,9 +160,9 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 dispatch drops what the declaration says, launch holds what it says — a known omp limitation: an
 explicitly empty `spawns` with `task` among the `tools` is no one (omp's discovery reads it as `*`),
 and `read-summarize: true` turns summarised reads on (omp's dispatch applies only `false`). One
-definition, no launcher, nothing to drift. A launched or dispatched agent dispatches only through
-`task`, where each assignment is checked: an `eval` call whose code dispatches a delegate (`agent(…)`,
-`workpool(…)`, `tool.task`, `tool["task"]`) is refused.
+definition, no launcher, nothing to drift. A launched agent, and a delegate with a typed assignment,
+dispatches only through `task`, where each assignment is checked: an `eval` call whose code dispatches
+a delegate (`agent(…)`, `workpool(…)`, `tool.task`, `tool["task"]`) is refused.
 
 ## The harness adapter port
 

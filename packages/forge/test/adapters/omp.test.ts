@@ -1248,8 +1248,8 @@ describe('omp capability interface', () => {
       '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
     ].join('\n');
 
-    it('refuses an eval call whose code dispatches a delegate, for a launched or dispatched agent, and no other eval code', async () => {
-      omp.agents = [CARTOGRAPHER()];
+    it('refuses an eval call whose code dispatches a delegate, for a launched agent or a typed delegate, and no other eval code', async () => {
+      omp.agents = [CARTOGRAPHER(), LEAD()];
       const EVAL_DISPATCH_REFUSAL =
         'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
       /** Every `tool_call` handler of the module, in order, as omp's runner fires them. */
@@ -1272,16 +1272,21 @@ describe('omp capability interface', () => {
           setThinkingLevel: () => {},
           setActiveTools: async () => {},
         });
-        const ctx = (kind: string) => ({
+        const ctx = (kind: string, name?: string) => ({
           cwd: '/the/session/cwd',
-          agent: { kind },
+          agent: { kind, name },
           model: { provider: 'fixture', id: 'base' },
           modelRegistry: { standIn: 'registry' },
           ui: { setStatus: () => {}, notify: () => {} },
         });
-        const fire = async (event: string, payload: unknown, kind = 'main') => {
+        const fire = async (
+          event: string,
+          payload: unknown,
+          kind = 'main',
+          name?: string,
+        ) => {
           for (const handler of handlers.get(event) ?? []) {
-            const result = (await handler(payload, ctx(kind))) as
+            const result = (await handler(payload, ctx(kind, name))) as
               | { block?: boolean }
               | undefined;
             if (result?.block) return result;
@@ -1307,22 +1312,41 @@ describe('omp capability interface', () => {
         'await tool.read({ path: "design/a.md" })',
         'my_agent(1); x.agent(2); print(tool.tasks)',
       ];
+      const refused = { block: true, reason: EVAL_DISPATCH_REFUSAL };
       const launched = await loaded('cartographer');
-      for (const code of dispatching)
-        for (const kind of ['main', 'sub'])
-          expect(await launched('tool_call', evalOf(code), kind), code).toEqual(
-            { block: true, reason: EVAL_DISPATCH_REFUSAL },
-          );
-      for (const code of ordinary)
+      for (const code of dispatching) {
+        expect(await launched('tool_call', evalOf(code)), code).toEqual(
+          refused,
+        );
+        // A delegate whose declaration carries a typed assignment is a cratylus agent too.
+        expect(
+          await launched('tool_call', evalOf(code), 'sub', 'lead'),
+          code,
+        ).toEqual(refused);
+      }
+      for (const code of ordinary) {
         expect(await launched('tool_call', evalOf(code)), code).toBeUndefined();
-      // A plain main session is no agent: its eval code is never refused.
+        expect(
+          await launched('tool_call', evalOf(code), 'sub', 'lead'),
+          code,
+        ).toBeUndefined();
+      }
+      // A plain main session is no agent, nor are omp's own delegates or an untyped one: never refused.
       const plain = await loaded();
-      for (const code of dispatching)
+      for (const code of dispatching) {
         expect(await plain('tool_call', evalOf(code)), code).toBeUndefined();
-      expect(await plain('tool_call', evalOf(dispatching[0]!), 'sub')).toEqual({
-        block: true,
-        reason: EVAL_DISPATCH_REFUSAL,
-      });
+        expect(
+          await plain('tool_call', evalOf(code), 'sub', 'task'),
+          code,
+        ).toBeUndefined();
+        expect(
+          await plain('tool_call', evalOf(code), 'sub', 'cartographer'),
+          code,
+        ).toBeUndefined();
+      }
+      expect(
+        await plain('tool_call', evalOf(dispatching[0]!), 'sub', 'lead'),
+      ).toEqual(refused);
     });
 
     it('teaches the assignment form in the refusal of a misfit dispatch', async () => {

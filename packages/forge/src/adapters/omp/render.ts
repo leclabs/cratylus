@@ -1683,9 +1683,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `agent(…)` or `workpool(…)`, or the task tool called as `tool.task` or
  * `tool["task"]`) reaches no `task` call, so no assignment is checked, no guard on
  * the dispatch act judges it and the readback gate never holds it. A session
- * launched as an agent, and every dispatched one, is refused that `eval` call
- * ({@link EVAL_DISPATCH_REFUSAL}), with no judge; other `eval` code, and a plain
- * main session, are never refused it.
+ * launched as an agent, and a delegate whose declaration carries a typed assignment,
+ * is refused that `eval` call ({@link EVAL_DISPATCH_REFUSAL}), with no judge; other
+ * `eval` code, a plain main session and omp's own delegates are never refused it.
  *
  * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
  * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
@@ -2749,15 +2749,21 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
         '  // through `tool`) never reaches the `task` call where its assignment is checked, the guards on',
-        '  // the dispatch act judge it and the readback gate holds it. So an agent, a session launched as',
-        '  // one or dispatched, is refused that code, and dispatches with the task tool.',
-        '  pi.on("tool_call", (event, ctx) => {',
+        '  // the dispatch act judge it and the readback gate holds it. So a cratylus agent, a session',
+        '  // launched as one or dispatched as one with a typed assignment, is refused that code, and',
+        "  // dispatches with the task tool. A plain session and omp's own delegates are never refused.",
+        '  pi.on("tool_call", async (event, ctx) => {',
         '    if (event.toolName !== "eval") return undefined;',
-        '    const kind = (ctx as unknown as Session).agent?.kind;',
-        '    if (kind === "main" ? launched === undefined : kind !== "sub") return undefined;',
         '    const input: unknown = event.input;',
         '    const code = input !== null && typeof input === "object" && "code" in input ? input.code : undefined;',
         '    if (typeof code !== "string" || !EVAL_DISPATCH.test(code)) return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const agent = session.agent;',
+        '    if (agent?.kind === "main" && launched === undefined) return undefined;',
+        '    if (agent?.kind === "sub") {',
+        '      const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === agent.name);',
+        '      if (schemaOf(frontmatterOf(declaration)) === undefined) return undefined;',
+        '    } else if (agent?.kind !== "main") return undefined;',
         '    return { block: true, reason: EVAL_DISPATCH_REFUSAL };',
         '  });',
         '',
