@@ -1,0 +1,21 @@
+{
+  "id": "01M4KYCVBNBFH38K809NSWNXKV",
+  "at": "2026-10-10T22:19:35.157Z",
+  "kind": "efficiency",
+  "context": "workflow",
+  "cut": "execution",
+  "agentRuns": {
+    "total": 226,
+    "byRole": {
+      "scout": 2,
+      "assayer": 3,
+      "check-writer": 9,
+      "builder": 7,
+      "live-eval": 110,
+      "rubric-judge": 95
+    }
+  },
+  "rounds": 4,
+  "wholeCheckRuns": 4,
+  "tokens": null
+}

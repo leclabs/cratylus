@@ -10,8 +10,14 @@
 // span is the same leak and is reported once, as the wider; a quotation in
 // code type that is plain prose is no leak itself, so only the leaks inside it
 // are reported. A context's own words are never leakage: a span made only of
-// the words of its concepts' names raises nothing, nor a command a concept's
-// name names, and an ordinary English word is a leak only used as a command.
+// the words of its concepts' names raises nothing, nor a command one of them
+// names. A word its current subject names is its own only as that plain word:
+// a command, a quotation in code type or a flag that holds it still leaks.
+// An ordinary English word is a leak only used as a command.
+//
+// Leakage warns only where realization replaces meaning: a decision recorded
+// as constraining realization names what it constrains on purpose, and is
+// never inspected; one stating meaning, or of no recorded kind, is.
 //
 // A leak is a WARNING, never a refusal: a word list cannot tell every
 // legitimate use from a leak, so the architect reads the warnings and judges.
@@ -250,23 +256,47 @@ const RULES: readonly {
   },
 ];
 
-/** The words of a context: the names of its concepts, and each word in them. */
-export function vocabulary(names: readonly string[]): ReadonlySet<string> {
-  const words = new Set<string>();
-  for (const name of names) {
-    const lower = name.toLowerCase();
-    words.add(lower);
-    for (const word of lower.split(/\s+/)) words.add(word);
-  }
-  return words;
+/** The words a context owns: `names`, its concepts' names and each word in
+ *  them, which own any span they make up and any command one of them names;
+ *  and `plain`, each bare word its subject names, owned only on its own. */
+export interface Vocabulary {
+  readonly names: ReadonlySet<string>;
+  readonly plain: ReadonlySet<string>;
 }
 
-/** The leaks in `text`, in the order they appear; spans made only of `own`
- *  words, the context's own, raise none, nor a command one of them names. */
+/** The words of a context: the names of its concepts, and each word in them,
+ *  and each bare word its `subjects` name: a word joined to others by a
+ *  possessive, leading dashes or a hyphen still names its bare word. */
+export function vocabulary(
+  names: readonly string[],
+  subjects: readonly string[] = [],
+): Vocabulary {
+  const named = new Set<string>();
+  for (const name of names) {
+    const lower = name.toLowerCase();
+    named.add(lower);
+    for (const word of lower.split(/\s+/)) named.add(word);
+  }
+  const plain = new Set<string>();
+  for (const subject of subjects)
+    for (const word of subject
+      .toLowerCase()
+      .replace(/['’]s(?![\p{L}\p{N}])/gu, '')
+      .split(/[^\p{L}\p{N}.]+/u)) {
+      const bare = word.replace(/^\.+|\.+$/g, '');
+      if (bare !== '') plain.add(bare);
+    }
+  return { names: named, plain };
+}
+
+/** The leaks in `text`, in the order they appear; spans made only of the
+ *  context's concept-name words raise none, nor a command one of them names,
+ *  nor a span that is just a plain word its subject names. */
 export function leaks(
   text: string,
-  own: ReadonlySet<string> = new Set(),
+  own: Vocabulary = { names: new Set(), plain: new Set() },
 ): Leak[] {
+  const { names, plain } = own;
   const found: { start: number; end: number; rule: string }[] = [];
   for (const { rule, pattern, keep } of RULES)
     for (const match of text.matchAll(pattern)) {
@@ -274,9 +304,10 @@ export function leaks(
       if (keep !== undefined && !keep(span)) continue;
       const words = span.toLowerCase().replace(/`/g, '').trim().split(/\s+/);
       if (
-        own.has(words.join(' ')) ||
-        words.every((w) => own.has(w)) ||
-        (rule === 'names a command' && own.has(words[0] as string))
+        plain.has(span.toLowerCase()) ||
+        names.has(words.join(' ')) ||
+        words.every((w) => names.has(w)) ||
+        (rule === 'names a command' && names.has(words[0] as string))
       )
         continue;
       found.push({ start: match.index, end: match.index + span.length, rule });

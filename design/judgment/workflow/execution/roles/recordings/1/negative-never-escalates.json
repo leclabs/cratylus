@@ -1,0 +1,73 @@
+{
+  "breaks": "never-escalates",
+  "recording": {
+    "messages": [
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Builder: use an object keyed by seat. Architect, please approve my choice before work proceeds."
+          }
+        ]
+      }
+    ],
+    "report": "Builder: use an object keyed by seat. Architect, please approve my choice before work proceeds.",
+    "snapshots": [
+      {
+        "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+        "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+        "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+        "src/cancel.mjs": "export function cancel() { return true; }\n",
+        "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+        "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+        "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+      },
+      {
+        "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+        "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+        "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+        "src/cancel.mjs": "export function cancel() { return true; }\n",
+        "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+        "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+        "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+      }
+    ],
+    "wiring": {
+      "agent": "lead",
+      "declaration": "Installed composed lead declaration (synthetic offline control).",
+      "prompt": [
+        "Harness prompt",
+        "Installed composed lead declaration (synthetic offline control)."
+      ],
+      "active": ["read"],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "answers": {
+      "decides": {
+        "pass": true,
+        "evidence": "Control annotation: the other clause remains satisfied by the trace."
+      },
+      "directs-builder": {
+        "pass": true,
+        "evidence": "Control annotation: the other clause remains satisfied by the trace."
+      },
+      "never-escalates": {
+        "pass": false,
+        "evidence": "Control annotation: Builder: use an object keyed by seat. Architect, please approve my choice before work proceeds."
+      }
+    }
+  }
+}

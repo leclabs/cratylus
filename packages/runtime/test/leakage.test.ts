@@ -145,6 +145,52 @@ describe('leaks', () => {
       { words: 'omp', rule: 'names a tool or library' },
     ]);
   });
+
+  it('counts the words a subject names as the context’s own, punctuation dropped', () => {
+    const own = vocabulary(
+      ['plan'],
+      ['Work kept in git, checked with vitest.'],
+    );
+    expect(leaks('Checked with vitest; kept with git.', own)).toEqual([]);
+    expect(leaks('Checked with zod.', own)).toEqual([
+      { words: 'zod', rule: 'names a tool or library' },
+    ]);
+  });
+
+  it('owns a subject’s word only as the plain word, never a command, code span or flag', () => {
+    const own = vocabulary(['plan'], ['Work checked with vitest.']);
+    expect(leaks('The work is checked with vitest.', own)).toEqual([]);
+    expect(leaks('The work is checked with vitest run.', own)).toEqual([
+      { words: 'vitest run', rule: 'names a command' },
+    ]);
+    expect(leaks('The work is checked with `vitest`.', own)).toEqual([
+      { words: '`vitest`', rule: 'quotes code' },
+    ]);
+    expect(leaks('The work is checked with --vitest.', own)).toEqual([
+      { words: '--vitest', rule: 'names a command-line flag' },
+    ]);
+  });
+
+  it('keeps every exemption a concept name gives, inside a code span too', () => {
+    const own = vocabulary(['vitest'], ['Work checked with vitest.']);
+    expect(
+      leaks('Checked with vitest, vitest run and `vitest run`.', own),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["The practice of omp's sessions.", 'omp'],
+    ['The practice of omp’s sessions.', 'omp'],
+    ['The practice of each --agent.', 'agent'],
+    ['The practice of vitest-based checking.', 'vitest'],
+  ])('gives the bare word a subject joins to others: %s', (subject, word) => {
+    const own = vocabulary(['plan'], [subject]);
+    expect(own.plain.has(word)).toBe(true);
+    expect(leaks(`Sessions run in ${word}.`, own)).toEqual([]);
+    expect(leaks(`Sessions run in \`${word}\`.`, own)).toEqual([
+      { words: `\`${word}\``, rule: 'quotes code' },
+    ]);
+  });
 });
 
 describe('visibleExamples', () => {
@@ -262,5 +308,50 @@ describe('concepts leakage, and the warnings of an append', () => {
       ].flat(),
     });
     expect(concepts('leakage')).toHaveProperty('warnings.length', 3);
+  });
+
+  it('inspects a decision unless its governing kind is realization', () => {
+    top = mkdtempSync(join(tmpdir(), 'leakage-'));
+    execFileSync('git', ['init', '-q'], { cwd: top });
+    const from = top;
+    const concepts = (...argv: string[]) => dispatchConcepts(argv, { from });
+    concepts('context', 'booking', '--subject', 'A subject.');
+    const decide = (id: string, ...kind: string[]) =>
+      concepts(
+        'decide',
+        id,
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'Validated with zod.',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+        ...kind,
+      );
+    expect(decide('built', '--kind', 'realization')).not.toHaveProperty(
+      'warnings',
+    );
+    expect(decide('meant', '--kind', 'meaning')).toHaveProperty(
+      'warnings.length',
+      1,
+    );
+    expect(decide('unsaid')).toHaveProperty('warnings.length', 1);
+    const warned = () => {
+      // The leakage query's answer, as the verb prints it.
+      const answer = concepts('leakage') as {
+        warnings: { passage: { id: string } }[];
+      };
+      return answer.warnings.map((w) => w.passage.id);
+    };
+    expect(warned()).toEqual(['meant', 'unsaid']);
+    concepts('classify', 'unsaid', '--kind', 'realization');
+    concepts('classify', 'built', '--kind', 'meaning', '--reason', 'It means.');
+    expect(warned()).toEqual(['built', 'meant']);
   });
 });

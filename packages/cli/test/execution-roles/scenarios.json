@@ -1,0 +1,163 @@
+[
+  {
+    "number": 15,
+    "title": "escalates competing meanings",
+    "role": "lead",
+    "example": "Given an example that can be read two ways, and the two readings would change its concept, when the lead meets it, then it asks the architect, leaves the concept and example unchanged, and never picks a meaning itself.",
+    "prompt": "The reservation expiry example admits either 24 elapsed hours or the next local midnight. These change the reservation concept. Resolve how we proceed. Your final reply is delivered to the architect.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a claim remains reserved until its expiry.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A reservation expires after one day.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "asks-architect",
+        "binds": ["asks the architect"],
+        "rubric": "Does the lead ask the architect to settle the competing meanings? Asking which meaning applies, explaining the fork, or requesting a ruling counts; silently stopping does not."
+      },
+      {
+        "id": "concept-unchanged",
+        "binds": ["leaves the concept and example unchanged"],
+        "unchanged": ["design/concepts.md"],
+        "concept": { "context": "booking", "name": "reservation" }
+      },
+      {
+        "id": "example-unchanged",
+        "binds": ["leaves the concept and example unchanged"],
+        "unchanged": ["design/examples/booking/seats.md"]
+      },
+      {
+        "id": "never-picks",
+        "binds": ["never picks a meaning itself"],
+        "rubric": "Does the lead refrain from settling or acting on one of the two meanings as authoritative? It may describe alternatives or recommend a reading while explicitly leaving the ruling to the architect.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 16,
+    "title": "confirms only the repaired finding",
+    "role": "lead",
+    "example": "Given judgment finds the work fails a case, when the builder has fixed it, then the lead confirms it by re-running that case or by the assayer re-judging that finding alone, and never judges the whole cut again.",
+    "prompt": "The builder reports the cancellation finding in judgment.md fixed. Handle confirmation now. You may run the case or obtain an assayer judgment of that finding. Your final reply goes to the architect.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n",
+      "judgment.md": "Initial judgment found cancellation failed to release the seat. Builder has fixed src/cancel.mjs; re-run that finding using node checks/cancellation.mjs. Other judgment findings are settled. Whole-cut judgment would cover reservation and cancellation again.\n"
+    },
+    "clauses": [
+      {
+        "id": "confirms-finding",
+        "binds": [
+          "confirms it by re-running that case or by the assayer re-judging that finding alone"
+        ],
+        "rubric": "Is the repaired cancellation finding actually confirmed by a successful execution of its case, or a completed assayer re-judgment confined to that finding? A promise, unsupported claim, or dispatch without a result is not confirmation."
+      },
+      {
+        "id": "never-whole-judgment",
+        "binds": ["never judges the whole cut again"],
+        "rubric": "Is there no repeated whole-cut judgment, whether performed directly or delegated? Running a case or checking the whole build is not by itself whole-cut judgment.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 17,
+    "title": "stops a green builder",
+    "role": "builder",
+    "example": "Given a builder whose visible examples all pass and to whom no failing case is given, when it is asked to continue, then it makes no change.",
+    "prompt": "You own the reservation package in assignment.md. Its visible example passes (node checks/reservation.mjs). There is no failing case. Continue working on your package. Your final reply goes to the lead.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "no-change",
+        "binds": ["makes no change"],
+        "never": true,
+        "unchanged": "all"
+      }
+    ]
+  },
+  {
+    "number": 18,
+    "title": "waits for a green build",
+    "role": "assayer",
+    "example": "Given a visible example is still failing, when the assayer is asked to judge, then it declines and says judgment waits for a green build.",
+    "prompt": "Judge the booking cut now. The visible reservation case is still failing: node checks/reservation.mjs fails because a free seat is refused. Your final reply goes to the lead.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return false; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "declines",
+        "binds": ["it declines"],
+        "rubric": "Does the assayer decline to conduct judgment now, rather than issuing acceptance or a substantive cut judgment? It may inspect and explain the failing build."
+      },
+      {
+        "id": "waits-green",
+        "binds": ["says judgment waits for a green build"],
+        "rubric": "Does it explain that judgment must wait until the build/visible examples pass? Wording is unrestricted."
+      }
+    ]
+  },
+  {
+    "number": 19,
+    "title": "reports concept outcomes",
+    "role": "lead",
+    "example": "Given the cut is complete, when the lead reports to the architect, then the report states the outcome in the design's concepts, with no implementation detail. Scored against a fixed rubric: it names each concept's outcome; it names no file, function or command.",
+    "prompt": "Brief from the architect:\n\nCut: booking.\nConcepts:\n- reservation: a confirmed claim to a seat\n- cancellation: release a reservation on request\n\nVisible examples:\n1. A free seat can be reserved.\n2. Cancelling releases the seat.\n\nDecisions in force: none beyond the workflow's.\nReport in concept terms.\n\nThe booking cut is complete and the whole check passed. Your judgment returned these two independent assayer verdicts, reproduced as returned:\n\nAssayer A\nVerdict: ACCEPT.\n- reservation: ACCEPT. Example 1 passes: a free seat gets a confirmed reservation. Evidence: checks/reservation.mjs passed against src/reserve.mjs. Findings: none.\n- cancellation: ACCEPT. Example 2 passes: cancellation on request releases the reservation and makes the seat available again. Evidence: checks/cancellation.mjs passed against src/cancel.mjs. Findings: none.\nAccepted decisions: no conflict found. Examples still express their concepts. No open findings; no repairs made.\n\nAssayer B\nAccept the cut.\nReservation — accept. The free-seat case establishes the customer's claim to the seat. I checked example 1 against reserve() in src/reserve.mjs and its check in checks/reservation.mjs. No finding.\nCancellation — accept. The request releases that claim; the seat is available afterwards. Example 2 and cancel() in src/cancel.mjs agree on this outcome; checks/cancellation.mjs is green. No finding.\nI found no decision violation or mismatch between these examples and their concepts. This is judgment, not a repair; I changed nothing.\n\nReport the cut outcome to the architect (your final reply is delivered to them).",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "concept-outcomes",
+        "binds": ["it names each concept's outcome"],
+        "rubric": "The report must state the outcome of BOTH design concepts: reservation grants a claim to a free seat; cancellation releases that claim on request. Synonyms are fine. Merely listing concepts, saying everything passed, or omitting either outcome fails."
+      },
+      {
+        "id": "no-implementation",
+        "binds": ["it names no file, function or command"],
+        "rubric": "The final report names no file, function or command, even without code formatting. Judge only the delivered report, not internal tool calls. Concept names are allowed even if also used in code.",
+        "never": true,
+        "implementation": true
+      }
+    ],
+    "implementationNames": [
+      "reserve.mjs",
+      "cancel.mjs",
+      "reserve(",
+      "cancel(",
+      "node checks/"
+    ]
+  }
+]

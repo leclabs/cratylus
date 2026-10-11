@@ -11,14 +11,17 @@
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
 //   retire     record a concept's retirement
-//   decide     record a decision, open or accepted
+//   decide     record a decision, open or accepted, and optionally its kind
 //   accept     record the acceptance of an open decision
+//   classify   record which kind a recorded decision is: meaning or realization
 //
 // A query appends nothing and prints JSON. An appending verb appends exactly one
 // entry and prints it as JSON; when what it recorded leaks implementation, the
-// answer also carries the `warnings`, and nothing is refused for leakage. Every
-// refusal is one line opening with `concepts <verb>:`, thrown before anything
-// is appended.
+// answer also carries the `warnings`, and nothing is refused for leakage. A
+// decision constraining realization is never warned, and a context's own words
+// include each plain word its current subject names, though never a command, a
+// quotation in code type or a flag that holds it. Every refusal is one line
+// opening with `concepts <verb>:`, thrown before anything is appended.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -36,16 +39,24 @@ import {
   valueFlag,
 } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
-import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
+import {
+  type ClassifyEntry,
+  type ContextEntry,
+  DECISION_KINDS,
+  type DecideEntry,
+  type DecisionKind,
+  type WordedEntry,
+} from './entries.js';
 import { journalAt } from './journal.js';
 import {
   type Passage,
+  type Vocabulary,
   type Warning,
   leaks,
   visibleExamples,
   vocabulary,
 } from './leakage.js';
-import { type DecisionView, type Description, Folded } from './views.js';
+import { type DecisionView, Folded } from './views.js';
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
 const inContext = (what: string) =>
@@ -75,6 +86,10 @@ const STATUSES = ['open', 'accepted'] as const;
 const isStatus = (status: string): status is (typeof STATUSES)[number] =>
   (STATUSES as readonly string[]).includes(status);
 
+/** Whether `kind` is one a decision is of. */
+const isDecisionKind = (kind: string): kind is DecisionKind =>
+  (DECISION_KINDS as readonly string[]).includes(kind);
+
 /** The concepts capability's verbs, queries first, each with the concept it acts
  *  on, its purpose, when to reach for it, whether it reads or appends, the
  *  positional it acts on and the flags it takes. */
@@ -83,7 +98,7 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled) and open decisions (not settled)',
+      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled), open decisions (not settled) and the efficiency figures last recorded for each of its cuts',
     when: 'At the start of a session, or after it was compacted, to reconstitute the conceptual design, its decisions and what is still open from the journal rather than from memory, and read them back before acting',
     positional: null,
     flags: {
@@ -142,8 +157,8 @@ export const VERBS = {
     concept: 'implementation leakage',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak',
-    when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
+      'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
+    when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak, and a decision of no recorded kind is inspected as stating meaning',
     positional: null,
     flags: {
       context: valueFlag(
@@ -259,6 +274,10 @@ export const VERBS = {
       supersedes: valueFlag(
         'An earlier decision this one replaces: its id, or its entry where two decisions share the id',
       ),
+      kind: valueFlag(
+        'What the decision is about: meaning, stating what the design means, or realization, constraining how it is realized; a decision recorded without it is inspected as stating meaning',
+        { values: DECISION_KINDS },
+      ),
     },
   },
   accept: {
@@ -275,6 +294,27 @@ export const VERBS = {
     flags: {
       reason: valueFlag(
         'Why it is accepted; the acceptance carries no reason when left out',
+      ),
+    },
+  },
+  classify: {
+    concept: 'decision',
+    effect: 'appends',
+    purpose:
+      'Record which kind a recorded decision is, stating meaning or constraining realization, as an entry of its own, so the decision’s record never changes; the latest kind recorded governs and every earlier one stays in its history',
+    when: 'When a decision recorded without its kind must say it, or when what a decision is about was recorded wrongly; a decision constraining realization is then no longer inspected for leakage, and one already of a kind changes kind only with a reason',
+    positional: {
+      name: 'id',
+      description:
+        'The decision to classify: its id, or its entry where two decisions share the id',
+    },
+    flags: {
+      kind: valueFlag(
+        'Which kind the decision is: meaning, stating what the design means, or realization, constraining how it is realized',
+        { required: true, values: DECISION_KINDS },
+      ),
+      reason: valueFlag(
+        'Why the decision is of this kind; needed when a kind is already recorded for it, and a first classification carries none when left out',
       ),
     },
   },
@@ -300,6 +340,8 @@ const READING = {
   'decisions.open': 'decisions recorded and not yet accepted: not settled',
   'decisions.entry':
     'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
+  efficiency:
+    'each cut of the context with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
@@ -364,16 +406,22 @@ export function dispatchConcepts(
       ),
       open: decisions.filter((d) => d.context === where && d.status === 'open'),
     },
+    efficiency: folded.efficiency(where),
   });
-  /** The words of `where`: the names of its live concepts and of `also`. */
+  /** The words of `where`: the names of its live concepts and of `also`, and
+   *  the plain words its current subject names (each, while descriptions
+   *  compete). */
   const own = (where: string, ...also: string[]) =>
-    vocabulary([...folded.design(where).concepts.map((c) => c.name), ...also]);
+    vocabulary(
+      [...folded.design(where).concepts.map((c) => c.name), ...also],
+      folded.descriptions(where).map((d) => d.subject),
+    );
   /** The warnings on `passage`, one per distinct leak in `texts`, read
    *  against `words`, its context's own. */
   const warnings = (
     passage: Passage,
     texts: readonly string[],
-    words: ReadonlySet<string>,
+    words: Vocabulary,
   ): Warning[] => {
     const found = texts.flatMap((text) => leaks(text, words));
     return found
@@ -410,7 +458,12 @@ export function dispatchConcepts(
               ),
             ),
           ...decisions
-            .filter((d) => d.context === where && d.status !== 'superseded')
+            .filter(
+              (d) =>
+                d.context === where &&
+                d.status !== 'superseded' &&
+                d.kind !== 'realization',
+            )
             .flatMap((d) =>
               warnings(
                 { kind: 'decision', context: where, id: d.id },
@@ -428,7 +481,7 @@ export function dispatchConcepts(
           warnings(
             { kind: 'example', file: e.file, number: e.number },
             [e.text],
-            folded.contexts.has(e.context) ? own(e.context) : new Set(),
+            folded.contexts.has(e.context) ? own(e.context) : vocabulary([]),
           ),
         );
       return { warnings: [...recorded, ...examples] };
@@ -488,13 +541,18 @@ export function dispatchConcepts(
         );
       const descriptions = folded.descriptions(name);
       /** The current `field`, carried over; refused while competing
-       *  descriptions differ on it. */
+       *  descriptions differ on it, or where none is current. */
       const carried = (field: 'subject' | 'relation'): string => {
+        const [first] = descriptions;
+        if (first === undefined)
+          throw refuse(
+            `the bounded context '${name}' has no current description; give --${field} to settle it`,
+          );
         if (new Set(descriptions.map((d) => d[field])).size > 1)
           throw refuse(
             `the competing descriptions differ in their ${field}; give --${field} to settle it`,
           );
-        return (descriptions[0] as Description)[field];
+        return first[field];
       };
       const draft: Omit<ContextEntry, 'id' | 'at'> = {
         kind: 'context',
@@ -566,6 +624,11 @@ export function dispatchConcepts(
           `the status is '${status}'; a decision is recorded open or accepted`,
         );
       const ref = read.optional('supersedes');
+      const kind = read.optional('kind');
+      if (kind !== undefined && !isDecisionKind(kind))
+        throw refuse(
+          `the kind is '${kind}'; a decision states meaning or constrains realization`,
+        );
       if (folded.named.has(decisionId) || folded.decisions.has(decisionId))
         throw refuse(`the decision '${decisionId}' is already recorded`);
       const superseded = ref === undefined ? undefined : decisionOf(ref);
@@ -583,12 +646,16 @@ export function dispatchConcepts(
             ? null
             : (folded.decisions.get(superseded) as DecideEntry).decisionId,
         ...(superseded === undefined ? {} : { supersedesEntry: superseded }),
+        ...(kind === undefined ? {} : { decisionKind: kind }),
       };
-      const found = warnings(
-        { kind: 'decision', context: where, id: decisionId },
-        [title, situation, decision, consequences],
-        own(where),
-      );
+      const found =
+        kind === 'realization'
+          ? []
+          : warnings(
+              { kind: 'decision', context: where, id: decisionId },
+              [title, situation, decision, consequences],
+              own(where),
+            );
       const entry = journal.append(draft);
       return found.length === 0 ? entry : { ...entry, warnings: found };
     }
@@ -609,6 +676,31 @@ export function dispatchConcepts(
         entry,
         ...(reason === undefined ? {} : { reason }),
       });
+    }
+    case 'classify': {
+      const ref = read.named('decision');
+      const kind = read.required('kind', 'the kind (meaning or realization)');
+      if (!isDecisionKind(kind))
+        throw refuse(
+          `the kind is '${kind}'; a decision states meaning or constrains realization`,
+        );
+      const reason = read.optional('reason');
+      if (reason !== undefined && reason.trim() === '')
+        throw refuse('the reason is empty; give why the decision is this kind');
+      const entry = decisionOf(ref);
+      const recorded = (folded.kinds.get(entry) ?? []).at(-1);
+      if (recorded !== undefined && reason === undefined)
+        throw refuse(
+          `the decision '${ref}' is already recorded as ${recorded.kind}; give --reason to classify it again`,
+        );
+      const draft: Omit<ClassifyEntry, 'id' | 'at'> = {
+        kind: 'classify',
+        decisionId: (folded.decisions.get(entry) as DecideEntry).decisionId,
+        entry,
+        decisionKind: kind,
+        ...(reason === undefined ? {} : { reason }),
+      };
+      return journal.append(draft);
     }
   }
 }

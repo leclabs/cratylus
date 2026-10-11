@@ -43,6 +43,8 @@ if (!globalThis[cut6Key]) {
   globalThis[cut6Key] = true;
   const original = process.stdout.write.bind(process.stdout);
   process.stdout.write = function(chunk, ...args) {
+    // Only the journal changes in this stand-in release; other capabilities pass through.
+    if (process.argv[2] !== 'concepts') return original(chunk, ...args);
     let data;
     try { data = JSON.parse(String(chunk)); } catch { return original(chunk, ...args); }
     if (process.argv.includes('--explain')) {
@@ -51,7 +53,7 @@ if (!globalThis[cut6Key]) {
         const verb = process.argv[process.argv.indexOf('concepts') + 1];
         data = verb === '--explain' ? explanation : explanation.verbs.find(v => v.name === verb);
       }
-    } else if (process.argv.includes('concepts')) data = { ...data, cut6Runtime: 'newer-installed-package' };
+    } else data = { ...data, cut6Runtime: 'newer-installed-package' };
     return original(JSON.stringify(data) + '\\n', ...args);
   };
 }\n`;

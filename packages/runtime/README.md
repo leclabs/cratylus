@@ -16,22 +16,32 @@ author of a corpus whose skills route here, and for a library user of the packag
 
 ## Capabilities
 
-The runtime ships exactly two capabilities, each a module of this package and each known when the
+The runtime ships exactly three capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `eventTap` and `concepts`. A corpus's skill names one of them as
+names them: `eventTap`, `concepts` and `workPackage`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability | port           | verbs                                                                                                                |
-| ---------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `eventTap` | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                             |
-| `concepts` | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` |
+| capability    | port           | verbs                                                                                                                                      |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `eventTap`    | `EventTapHost` | `install`, `uninstall`, `read`, `status`                                                                                                   |
+| `concepts`    | —              | `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`           |
+| `workPackage` | —              | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`, `record` |
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
 `supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
-warns; a context's own concept names are never leakage.
+warns; a context's own words, its concept names and each plain word its current subject names,
+are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
+`realization` is never inspected (decision 0058).
+
+`workPackage` slices a cut into work packages: it records each package's outputs, concepts and
+dependencies in an append-only log per cut under the repository's git common directory, computes the
+levels of their dependency graph with `@dagrejs/graphlib`, hands out a whole level at a time, commits
+a builder's paths only within its package's outputs, counts the cut's rounds, whole-check runs and
+agent runs, and records those figures in the concept journal as an `efficiency` entry, which
+`concepts state` reads back. It explains itself as `work package`.
 
 The abstraction is a **port**; an implementation of it is a **strategy**. Each capability codes
 against its port, and the event tap's Claude strategy is `EventTapHostClaude`. The `.` barrel is
@@ -79,8 +89,8 @@ again, or for the verb's `--help`, in one line.
 
 `capabilityCommands` builds one Commander command per capability, and routes
 `<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
-route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap` and
-`concepts` print their JSON result. A refusal exits `1` as `cratylus <message>` (the message opens
+route does not compile. Each capability's verb surface owns its verbs' flag grammar: `eventTap`,
+`concepts` and `workPackage` print their JSON result. A refusal exits `1` as `cratylus <message>` (the message opens
 with the capability and the verb, as `cratylus concepts define: …`),
 and a verb the capability does not declare is refused by `verbOf` in the one wording every dispatcher
 throws when called as a library. Never a silent no-op.
@@ -101,8 +111,8 @@ first (`positional: true`) and then each flag, each with its `description`, whet
 `required`, and its JSON Schema (`string`, `string` with an `enum`, `boolean` for a flag that takes
 no value, or an `array` of `string` for one given once per value). The explanation is read out of
 the same declarations the help prints and the reader reads calls against, so it cannot say what the
-verb does not take. `eventTap` does not explain itself; `cratylus eventTap --explain` is refused as
-a verb it does not declare.
+verb does not take. `workPackage` explains itself the same way, as `work package`. `eventTap` does
+not explain itself; `cratylus eventTap --explain` is refused as a verb it does not declare.
 
 ## The host runtime config
 

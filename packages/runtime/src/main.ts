@@ -28,7 +28,7 @@
 // capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
-// `eventTap` and `concepts` print their JSON result. A refusal is a loud code-1
+// `eventTap`, `concepts` and `workPackage` print their JSON result. A refusal is a loud code-1
 // failure, printed as `cratylus <message>`, a message opening with the
 // capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
@@ -50,6 +50,11 @@ import { dispatchConcepts } from './capabilities/concepts/index.js';
 import { VERBS as EVENT_TAP } from './capabilities/event-tap/dispatch.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
+import {
+  WORK_PACKAGE,
+  VERBS as WORK_PACKAGE_VERBS,
+} from './capabilities/work-package/dispatch.js';
+import { dispatchWorkPackage } from './capabilities/work-package/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
@@ -89,6 +94,11 @@ const SURFACES: {
     verbs: CONCEPTS,
     run: (argv) => JSON.stringify(dispatchConcepts(argv), null, 2),
     explained: JOURNAL,
+  },
+  workPackage: {
+    verbs: WORK_PACKAGE_VERBS,
+    run: (argv) => JSON.stringify(dispatchWorkPackage(argv), null, 2),
+    explained: WORK_PACKAGE,
   },
 };
 

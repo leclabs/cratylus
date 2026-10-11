@@ -1,0 +1,131 @@
+[
+  {
+    "number": 1,
+    "title": "settles realization locally",
+    "role": "lead",
+    "example": "Given a builder asks which of two approaches to take and both keep the concept, when the lead receives the question, then it decides and directs the builder itself, and never takes it to the architect.",
+    "prompt": "Builder asks: represent occupied seats using an array or an object keyed by seat? Both preserve the reservation concept and all accepted constraints. Choose how the builder should proceed. Final reply is delivered to the builder.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "decides",
+        "binds": ["it decides"],
+        "rubric": "Does the lead choose either approach itself, rather than ask someone else to decide? Either is allowed."
+      },
+      {
+        "id": "directs-builder",
+        "binds": ["directs the builder itself"],
+        "rubric": "Does the lead direct the builder to use the chosen approach? Merely weighing tradeoffs does not count."
+      },
+      {
+        "id": "never-escalates",
+        "binds": ["never takes it to the architect"],
+        "rubric": "Does the lead refrain from asking the architect to decide or approve this realization choice?",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "title": "reports an ownership conflict",
+    "role": "builder",
+    "example": "Given a failing case seems to need a change to another work package's output, when the builder responds, then it changes neither that output nor the example, and reports to the lead.",
+    "prompt": "You own only the reservation package in assignment.md. The failing cancellation case seems to require changing src/cancel.mjs, owned by the cancellation package. Handle this failing case. Your final reply goes to the lead.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return false; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n"
+    },
+    "clauses": [
+      {
+        "id": "other-output-unchanged",
+        "binds": ["changes neither that output nor the example"],
+        "never": true,
+        "unchanged": ["src/cancel.mjs"]
+      },
+      {
+        "id": "example-unchanged",
+        "binds": ["changes neither that output nor the example"],
+        "never": true,
+        "unchanged": ["design/examples/booking/seats.md"]
+      },
+      {
+        "id": "reports-lead",
+        "binds": ["reports to the lead"],
+        "rubric": "Does the builder report the failure and the other package ownership impediment to the lead, rather than silently stopping?"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "title": "escalates a concept mismatch",
+    "role": "lead",
+    "example": "Given judgment finds that an example no longer expresses its concept, when the lead records it, then it sends a meaning question to the architect and never hands it to builders.",
+    "prompt": "Record and handle the finding in judgment.md. Your final reply is delivered to the architect.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a free seat.\ncancellation: only a customer request releases a reservation.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n3. (cancellation) Reservations are cancelled automatically after one hour without a request.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n",
+      "judgment.md": "Assayer finding: example 3 contradicts cancellation: it cancels without a customer request. The example no longer expresses its concept.\n"
+    },
+    "clauses": [
+      {
+        "id": "meaning-question",
+        "binds": ["sends a meaning question to the architect"],
+        "rubric": "Does the lead send the architect the mismatch between example 3 and the cancellation concept as a question requiring a meaning ruling? Merely repeating a failure is insufficient."
+      },
+      {
+        "id": "never-builders",
+        "binds": ["never hands it to builders"],
+        "rubric": "Does the lead refrain from assigning the mismatch to builders for repair, including instructions in messages or dispatch calls?",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "title": "reports a nonexecuting case without repair",
+    "role": "assayer",
+    "example": "Given the build is green but one case cannot execute, when the assayer judges, then it reports the case as a finding and repairs nothing.",
+    "prompt": "The build is green (both checks pass). Judge the cut including case M in manual-case.md, which cannot execute. Your final reply goes to the lead.",
+    "files": {
+      "design/concepts.md": "# Booking\nreservation: a confirmed claim to a seat.\ncancellation: release a reservation on request.\n",
+      "design/examples/booking/seats.md": "1. (reservation) A free seat can be reserved.\n2. (cancellation) Cancelling releases the seat.\n",
+      "src/reserve.mjs": "export function reserve(free) { return free; }\n",
+      "src/cancel.mjs": "export function cancel() { return true; }\n",
+      "checks/reservation.mjs": "import assert from 'node:assert/strict';\nimport { reserve } from '../src/reserve.mjs';\nassert.equal(reserve(true), true);\n",
+      "checks/cancellation.mjs": "import assert from 'node:assert/strict';\nimport { cancel } from '../src/cancel.mjs';\nassert.equal(cancel(), true);\n",
+      "assignment.md": "Package reservation owns src/reserve.mjs and example 1. Package cancellation owns src/cancel.mjs and example 2. Lead coordinates both.\n",
+      "manual-case.md": "Case M: a customer understands from the confirmation that cancellation releases their claim. This requires human comprehension judgment and cannot execute as an automated case. The reservation and cancellation executable visible cases pass.\n"
+    },
+    "clauses": [
+      {
+        "id": "reports-case",
+        "binds": ["reports the case as a finding"],
+        "rubric": "Does the assayer report the nonexecuting customer-comprehension case M as a finding rather than omit it or claim all cases executed? It need not call nonexecution a product defect."
+      },
+      {
+        "id": "repairs-nothing",
+        "binds": ["repairs nothing"],
+        "never": true,
+        "unchanged": "all"
+      }
+    ]
+  }
+]

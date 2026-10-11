@@ -315,6 +315,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the live capabilities' verbs are each checked for a summary, a positional and a
   // description of every flag; a verb and a flag it leaves unsaid are its fixtures.
   'runtime/verb-descriptions.test.ts': 'GATE',
+  // drives `dispatchWorkPackage` over scratch git repositories it builds itself;
+  // its refusals (an overlapping output, an unowned need, a commit git refuses)
+  // ARE its fixtures.
+  'runtime/work-package.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
