@@ -124,7 +124,11 @@ describe('the architect', () => {
       "A topic's actions are every act this turn takes or recommends on its matter",
     );
     expect(bottomLine.judge.prompt).toContain(
-      "work a decision sets for someone, in its consequences or anywhere in it, is a further action on that decision's topic",
+      "Its consequences are part of the record, not an action: only what the reply itself directs, and the acts the turn takes, count as a topic's actions.",
+    );
+    expect(bottomLine.judge.prompt).not.toContain('sets work for someone');
+    expect(bottomLine.judge.prompt).toContain(
+      'Recording a decision is taking it',
     );
     expect(bottomLine.judge.prompt).toContain(
       'A tool call buries when it takes a second action on a topic this turn has already acted on',
@@ -258,6 +262,17 @@ describe('the architect', () => {
     );
     expect(holdsWhatItNeeds).toContain(
       "never by the agent's own claim that it lacks something",
+    );
+    // 0102: priority is the operator's, recommended by the agent, never owned.
+    expect(ownedQuestion).toContain(
+      "Priority is not: which work comes next is the operator's to decide and the agent's to recommend",
+    );
+    expect(ownedQuestion).toContain('on a check ruling');
+    expect(handBack.judge.prompt).toContain(
+      'it is not a hand-back to give one recommendation on priority',
+    );
+    expect(unrecorded.judge.prompt).toContain(
+      'when it gives a recommendation on priority, which is no decision the agent owns and is never recorded',
     );
     expect(holdsWhatItNeeds).toContain(
       'never taking it only on a condition; approving examples judges only whether they express the design',

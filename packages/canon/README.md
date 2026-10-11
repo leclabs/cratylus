@@ -118,8 +118,9 @@ does, naming the tell.
 reports, since an act taken in a turn has happened by the time the turn ends. Before each tool call,
 and at turn end, it asks a judge, given the conversation so far in visible text, the decisions
 recorded that turn (as `unrecorded` reads them) and the act, whether the act buries the bottom line.
-A call does when it takes a second action on a topic the turn has already acted on, or records a
-decision that sets work for someone; a reply to the operator does when its conclusion is not first,
+A call does when it takes a second action on a topic the turn has already acted on; recording the
+decision the turn takes is that decision, never a second action, and its consequences belong to the
+record, not to any action (0102); a reply to the operator does when its conclusion is not first,
 a topic has other than exactly one action, a delegate's ruling is not addressed to that delegate, or
 its support carries anything but the facts and reasons its conclusions rest on, such as an
 instruction, an offer, record identifiers, entry status or how the records were read, written, kept
@@ -127,8 +128,8 @@ or replaced (that a decision was recorded is never support). It refuses the call
 does, naming the tell `burying`.
 A topic is a matter the operator asked about, or an outcome that calls for someone's action; support
 states facts and reasons, never instructions. Every act the turn takes or recommends on a topic's
-matter, the question or artifact it settles or changes, is one of its actions, and work a recorded
-decision sets for someone is another. A decision taken in the turn and reported with its reason, an
+matter, the question or artifact it settles or changes, is one of its actions; only what the reply
+itself directs, and the acts the turn takes, count, never a recorded decision's consequences. A decision taken in the turn and reported with its reason, an
 approval included, is that topic's one action, and a separate follow-on action on it is a second; a
 topic decided before the turn, or a reported outcome that calls for action, keeps exactly one action
 of its own. A ruling given to the delegate who asked is its topic's one action, the decision it
@@ -157,6 +158,9 @@ choose what the product is for, a priority between the operator's goals, or a fo
 irreversible, about value or beyond its competence. Holding it, the architect settles and records the
 question in that turn, never only on a condition, and approves examples that express the design;
 lacking it, it keeps the question open and reports the one action that gets what is missing.
+An owned question is one of meaning, constraints on realization or a check ruling; priority, such as
+which work comes next, is the operator's to decide and the architect's to recommend with its facts and
+reasons, recording nothing, and `hand-back` and `unrecorded` never fault it (0102).
 `past-objective` takes from it only what an owned question is, and never judges whether the
 architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.

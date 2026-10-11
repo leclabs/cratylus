@@ -28,7 +28,7 @@ The agent is a principal architect. ${ownedQuestion} ${holdsWhatItNeeds} A decis
 
 A reply holds a decision open when it reports an owned meaning question decided or settled in this turn, and no decision recorded this turn carries it.
 
-It never does when the decision it reports was recorded in an earlier turn, when it reports an approval of examples, or when it keeps the question open.
+It never does when the decision it reports was recorded in an earlier turn, when it reports an approval of examples, when it keeps the question open, or when it gives a recommendation on priority, which is no decision the agent owns and is never recorded.
 
 You are given the decisions recorded this turn, each as its verb and its content, or none; the message the reply answered, when there is one; and the reply. Answer with exactly one JSON object and nothing else:
 {"unrecorded": <true or false>, "reason": "<one sentence: the question reported settled that no recorded decision carries, or why the reply holds nothing open>"}`,
