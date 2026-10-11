@@ -127,7 +127,7 @@ export const VERBS = {
     concept: 'ledger',
     effect: 'reads',
     purpose:
-      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready to start; and the last report its lead (the agent running the cut) returned',
+      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready for their builder, never started or returned to build by a finding or a failing whole check; and the last report its lead (the agent running the cut) returned',
     when: 'Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state',
     positional: null,
     flags: CUT,

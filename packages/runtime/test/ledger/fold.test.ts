@@ -147,6 +147,101 @@ describe('the ledger fold', () => {
     ).toBe('returned');
   });
 
+  it('a failing package is ready again, then dispatched again and no longer ready', () => {
+    const failing = [
+      ...returned,
+      verdict('a', { edit: false }),
+      verdict('b', { edit: false }),
+    ] as const;
+    expect(foldCut(ledger(...failing), 'film').ready).toEqual(['edit']);
+    const again = foldCut(
+      ledger(...failing, builder('dispatched', 'edit')),
+      'film',
+    );
+    expect(again.packages.get('edit')?.status).toBe('dispatched');
+    expect(again.ready).toEqual([]);
+  });
+
+  it('a returned package is ready for a fix round after a failing whole-check run since its return', () => {
+    const check = (failures: string[]) =>
+      ({ kind: 'check', failures }) as const;
+    expect(foldCut(ledger(...returned), 'film').ready).toEqual([]);
+    expect(foldCut(ledger(...returned, check(['x'])), 'film').ready).toEqual([
+      'shoot',
+      'edit',
+    ]);
+    expect(
+      foldCut(ledger(...returned, check(['x']), check([])), 'film').ready,
+      'a passing run since the return ends the fix round',
+    ).toEqual([]);
+    expect(
+      foldCut(
+        ledger(...returned, check(['x']), builder('dispatched', 'edit')),
+        'film',
+      ).ready,
+      'dispatched again, not ready until it returns into a failing run again',
+    ).toEqual(['shoot']);
+    expect(
+      foldCut(
+        ledger(
+          ...returned,
+          check(['x']),
+          builder('dispatched', 'edit'),
+          builder('returned', 'edit'),
+        ),
+        'film',
+      ).ready,
+      'a failing run before its latest return is not its fix round',
+    ).toEqual(['shoot']);
+  });
+
+  it('a dispatched, approved or disputed package is never ready', () => {
+    const dispatched = foldCut(
+      ledger(submit('shoot'), builder('dispatched', 'shoot'), {
+        kind: 'check',
+        failures: ['x'],
+      }),
+      'film',
+    );
+    expect(dispatched.ready).toEqual([]);
+    const judged = foldCut(
+      ledger(
+        ...returned,
+        verdict('a', { shoot: true, edit: true }),
+        verdict('b', { shoot: true, edit: false }),
+        { kind: 'check', failures: ['x'] },
+      ),
+      'film',
+    );
+    expect(judged.packages.get('shoot')?.status).toBe('approved');
+    expect(judged.packages.get('edit')?.status).toBe('disputed');
+    expect(judged.ready).toEqual([]);
+  });
+
+  it('a first dispatch, or a failing package, waits on an unreturned dependency', () => {
+    const waiting = foldCut(
+      ledger(
+        submit('shoot'),
+        submit('edit', ['shoot']),
+        builder('dispatched', 'shoot'),
+      ),
+      'film',
+    );
+    expect(waiting.ready).toEqual([]);
+    const shootFailing = foldCut(
+      ledger(
+        ...returned,
+        verdict('a', { shoot: false, edit: false }),
+        verdict('b', { shoot: false, edit: false }),
+      ),
+      'film',
+    );
+    expect(
+      shootFailing.ready,
+      'edit waits while shoot is back in build',
+    ).toEqual(['shoot']);
+  });
+
   it('counts one agent run per return, with the tokens reported', () => {
     const { figures } = foldCut(
       ledger(

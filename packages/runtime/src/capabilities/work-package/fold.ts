@@ -23,8 +23,14 @@
 // the first `dispatched` of any role) → `complete` (every work package
 // approved).
 //
-// READY: the work packages not yet dispatched whose every dependency is
-// `returned` or `approved`.
+// READY: the work packages whose builder is to be dispatched next, every
+// dependency of which is `returned` or `approved`: one never dispatched
+// (`submitted`); one a verdict with a finding returned to build (`failing`);
+// and one `returned` whose latest whole-check run since its latest return has
+// failures, which its builder takes up again for a fix round. A package
+// dispatched and not yet returned, `approved`, `disputed` (a meaning question
+// for the architect), or returned with no failing whole-check run since, is
+// not ready.
 //
 // ROUNDS: each whole-check run is the run of its own round: run n closes round
 // n. A round RESOLVES the failures of the previous run absent from its own, and
@@ -96,7 +102,8 @@ export interface CutState {
   readonly phase: CutPhase;
   /** Each work package by name, in the order submitted. */
   readonly packages: ReadonlyMap<string, WorkPackage>;
-  /** The names of the packages ready to dispatch, in the order submitted. */
+  /** The names of the packages ready to dispatch (see READY), in the order
+   *  submitted. */
   readonly ready: readonly string[];
   /** The commits made as each package's, in the order made. */
   readonly histories: ReadonlyMap<string, readonly CommitRecord[]>;
@@ -129,6 +136,9 @@ export function foldCut(
   const builder = new Map<string, 'dispatched' | 'returned'>();
   const verdicts = new Map<string, Map<string, ConceptVerdict[]>>();
   const checks: (readonly string[])[] = [];
+  /** The packages returned whose latest whole-check run since their latest
+   *  return has failures. */
+  const fixRound = new Set<string>();
   const runs: { role: string; tokens: number | undefined }[] = [];
   let record: CutRecord | undefined;
   let dispatched = false;
@@ -165,18 +175,25 @@ export function foldCut(
         break;
       case 'check':
         checks.push(entry.failures);
+        for (const [name, event] of builder)
+          if (event === 'returned' && entry.failures.length > 0)
+            fixRound.add(name);
+          else fixRound.delete(name);
         break;
       case 'dispatched':
         dispatched = true;
         if (entry.workPackage !== undefined) {
           builder.set(entry.workPackage, 'dispatched');
           verdicts.set(entry.workPackage, new Map());
+          fixRound.delete(entry.workPackage);
         }
         break;
       case 'returned':
         runs.push({ role: entry.role, tokens: entry.tokens });
-        if (entry.workPackage !== undefined)
+        if (entry.workPackage !== undefined) {
           builder.set(entry.workPackage, 'returned');
+          fixRound.delete(entry.workPackage);
+        }
         break;
       case 'verdict': {
         const byPackage = new Map<string, ConceptVerdict[]>();
@@ -214,7 +231,13 @@ export function foldCut(
     return status === 'returned' || status === 'approved';
   };
   const ready = [...packages.values()]
-    .filter((p) => p.status === 'submitted' && p.dependsOn.every(finished))
+    .filter(
+      (p) =>
+        (p.status === 'submitted' ||
+          p.status === 'failing' ||
+          (p.status === 'returned' && fixRound.has(p.name))) &&
+        p.dependsOn.every(finished),
+    )
     .map((p) => p.name);
   const all = [...packages.values()];
   const phase: CutPhase =
