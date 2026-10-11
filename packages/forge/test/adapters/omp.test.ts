@@ -1485,7 +1485,7 @@ describe('omp capability interface', () => {
       expect(relayed).toEqual([]);
     });
 
-    it('judges every guard on one stop and refuses it once, with each reason', async () => {
+    it('judges every guard on one stop and refuses it twice in a turn, each time with each reason', async () => {
       omp.agents = [ARCHITECT()];
       const second = {
         ...replyGuard,
@@ -1511,18 +1511,48 @@ describe('omp capability interface', () => {
           'Decision 0091 is recorded; entry 7 is a placeholder.',
         stop_hook_active: active,
       });
-      expect(await fire('session_stop', stop(false))).toEqual({
+      const refused = {
         decision: 'block',
         reason:
           'surveying: it buries the outcome.\n\nmisshapen: it buries the outcome.',
-      });
+      };
+      expect(await fire('session_stop', stop(false))).toEqual(refused);
       expect(judge.asked).toHaveLength(2);
-      // A stop already refused once is not refused again: each reason is relayed.
+      // The rewrite the refusal forced is judged and refused again, in the same shape.
+      expect(await fire('session_stop', stop(true))).toEqual(refused);
+      expect(relayed).toEqual([]);
+      // The third stop of the turn is refused no more: each reason is relayed.
       expect(await fire('session_stop', stop(true))).toBeUndefined();
       expect(relayed).toEqual([
         'surveying: it buries the outcome.',
         'misshapen: it buries the outcome.',
       ]);
+      // A new turn's first stop (omp's `stop_hook_active` false again) starts the count over.
+      expect(await fire('session_stop', stop(false))).toEqual(refused);
+      expect(await fire('session_stop', stop(true))).toEqual(refused);
+      expect(await fire('session_stop', stop(true))).toBeUndefined();
+    });
+
+    it('starts the count over when a turn ends with its stop let through', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire } = await twoModules('architect', [replyGuard]);
+      const stop = (active: boolean) => ({
+        last_assistant_message: 'Night shoots are settled.',
+        stop_hook_active: active,
+      });
+      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
+      expect(await fire('session_stop', stop(false))).toMatchObject({
+        decision: 'block',
+      });
+      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
+      expect(await fire('session_stop', stop(true))).toBeUndefined();
+      judge.verdict = JSON.stringify({ surveys: true, reason: 'buried.' });
+      expect(await fire('session_stop', stop(false))).toMatchObject({
+        decision: 'block',
+      });
+      expect(await fire('session_stop', stop(true))).toMatchObject({
+        decision: 'block',
+      });
     });
 
     const READBACK_REFUSAL =

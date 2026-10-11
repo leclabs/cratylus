@@ -1311,6 +1311,10 @@ const GUARD_BRIDGE: readonly string[] = [
   '',
 ];
 
+/** How many times in a row a turn-end guard refuses one turn's stop before it only
+ *  relays: a rewrite forced by one refusal is judged once more, and no further. */
+const STOP_REFUSALS = 2;
+
 /**
  * Function-level half of a GUARD, emitted after {@link TURN_EXEC}, whose
  * `askJudge` and `relay` it calls: whom it judges, and the judgment.
@@ -1323,11 +1327,19 @@ const GUARD_BRIDGE: readonly string[] = [
  * registered it.
  *
  * FAILS OPEN, ALOUD. A judge that does not answer, or answers anything but the
- * verdict, refuses nothing, and the session is told the act went unjudged. A stop
- * already refused once (`stop_hook_active`) is not refused again: the reason is
- * relayed instead, so a guard never holds a turn open forever.
+ * verdict, refuses nothing, and the session is told the act went unjudged. A turn's
+ * stop is refused at most {@link STOP_REFUSALS} times in a row; past that the reason
+ * is relayed instead, so a guard never holds a turn open forever. omp's own
+ * `stop_hook_active` is a boolean and cannot count past one, so the count is kept
+ * here, and starts again whenever omp says the stop is a fresh one
+ * (`stop_hook_active` false: the first stop of a prompt, after any stop let through
+ * or any abort). `agent_start` cannot mark it: omp's continuation after a refused
+ * stop is itself a new prompt and fires it again.
  */
 const GUARD_EXEC: readonly string[] = [
+  '',
+  '  // Stops of the current turn refused so far, in a row.',
+  '  let stopsRefused = 0;',
   '',
   '  /** The agent this main session was launched as, as the cratylus module publishes it; none for a subagent or a plain session. */',
   '  const launchedAs = (ctx: JudgeContext): string | undefined => {',
@@ -1433,11 +1445,13 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       ? `\n    if (event.toolName !== ${JSON.stringify(binding.matcher)}) return;`
       : '';
     const reentered =
-      kind === 'turn' ? 'event.stop_hook_active === true' : 'false';
+      kind === 'turn'
+        ? `(event.stop_hook_active === true ? stopsRefused : (stopsRefused = 0)) >= ${STOP_REFUSALS}`
+        : 'false';
     // A refused stop also withdraws its reply from what the operator was told.
     const refuse =
       refusal === 'stop'
-        ? '{\n      withdraw(lastReply(event).reply);\n      return { decision: "block", reason };\n    }'
+        ? '{\n      stopsRefused += 1;\n      withdraw(lastReply(event).reply);\n      return { decision: "block", reason };\n    }'
         : 'return { block: true, reason };';
     lines.push(
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
