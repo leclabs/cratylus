@@ -46,7 +46,7 @@ function command(f: Fixture, binary: string, args: string[]) {
 function installed(f: Fixture, role: string) {
   // The declaration is installed, never rewritten into a test-owned identity.
   const text = readFileSync(
-    join(f.home, '.omp/agent/agents', `${role}.md`),
+    join(f.home, '.cratylus/omp/agents', `${role}.md`),
     'utf8',
   );
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
@@ -186,7 +186,7 @@ async function launch(
   const extensions =
     role === undefined
       ? [f.extension] // Keep the adapter, never the subject's session hooks.
-      : files(join(f.home, '.omp/agent/extensions')).filter((path) =>
+      : files(join(f.home, '.cratylus/omp/extensions')).filter((path) =>
           /\.(?:[cm]?js|ts)$/.test(path),
         );
   const args = [

@@ -1,0 +1,574 @@
+import { spawnSync } from 'node:child_process';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  symlinkSync,
+} from 'node:fs';
+import { join } from 'node:path';
+import canon from '@cratylus/canon';
+import { afterEach, expect, it } from 'vitest';
+import { runInstall } from '../../../forge/src/cli/commands/install.js';
+import type { Host } from '../capability-port/fixture.js';
+import { run, toolText } from '../capability-port/fixture.js';
+import {
+  assertOwned,
+  assertRemoved,
+  discover,
+  earlier,
+  fresh,
+  hostMaterial,
+  install,
+  load,
+  noTap,
+  normalizeProjection,
+  owned,
+  preserved,
+  put,
+  skew,
+  success,
+  toolJSON,
+  traceCommand,
+  tree,
+  uninstall,
+  version,
+  versions,
+} from './fixture.js';
+
+let h: Host | undefined;
+afterEach(() => {
+  h?.dispose();
+  h = undefined;
+});
+const negative = process.env.DELIVERY_NEGATIVE;
+
+it('delivery/1 — one user installation is offered in existing and later projects, without changing another user', () => {
+  h = fresh();
+  const second = join(h.root, 'second-user');
+  mkdirSync(second);
+  put(join(second, '.omp/agent/config.yml'), 'theme: another-user\n');
+  const otherBefore = tree(second);
+  const projects = [h.cwd, join(h.root, 'project-two')];
+  mkdirSync(projects[1]!);
+  success(install(h));
+  const afterInstall = tree(owned(h));
+  projects.push(join(h.root, 'later-project'));
+  mkdirSync(projects[2]!);
+  const agentRoot = existsSync(owned(h))
+    ? join(owned(h), 'agents')
+    : join(h.home, '.omp/agent/agents');
+  const skillRoot = existsSync(owned(h))
+    ? join(owned(h), 'skills')
+    : join(h.home, '.agents/skills');
+  const expectedAgents = Object.keys(tree(agentRoot))
+    .filter((p) => p.endsWith('.md'))
+    .map((p) => p.slice(0, -3));
+  const expectedSkills = Object.keys(tree(skillRoot))
+    .filter((p) => p.endsWith('/SKILL.md'))
+    .map((p) => p.split('/')[0]);
+  expect(expectedAgents.length, 'installed corpus agents').toBeGreaterThan(0);
+  expect(expectedSkills.length, 'installed corpus skills').toBeGreaterThan(0);
+  for (const cwd of projects) {
+    const offered = discover(h, cwd);
+    if (negative === '1' && cwd === projects[2]) offered.agents = []; // Negative recording: a later project cannot discover the installation.
+    expect(offered.agents.map((a) => a.name)).toEqual(
+      expect.arrayContaining(expectedAgents),
+    );
+    expect(offered.skills.map((s) => s.name)).toEqual(
+      expect.arrayContaining(expectedSkills),
+    );
+    expect(offered.tools).toEqual(
+      expect.arrayContaining(['concept_journal', 'work_package']),
+    );
+    expect(tree(cwd)).not.toHaveProperty(
+      '.cratylus/omp/extensions/cratylus.ts',
+    );
+  }
+  expect(tree(owned(h))).toEqual(afterInstall);
+  expect(tree(second)).toEqual(otherBefore);
+});
+
+it('delivery/2 — every projected leaf belongs to the owned root and outside surfaces are references, never copies', () => {
+  h = fresh();
+  const before = tree(h.home);
+  success(install(h));
+  assertOwned(h, before);
+  for (const directory of ['agents', 'skills', 'extensions'])
+    expect(
+      Object.keys(tree(join(owned(h), directory))).length,
+      directory,
+    ).toBeGreaterThan(0);
+});
+
+it('delivery/3 — colliding host agent, skill, extension and settings survive installation', () => {
+  h = fresh();
+  const material = hostMaterial(h);
+  const before = tree(h.home);
+  success(install(h));
+  preserved(h, material);
+  assertOwned(h, before);
+});
+
+it('delivery/4 — interactive install with all supplied answers asks nothing', async () => {
+  h = fresh();
+  const asked: string[] = [];
+  const rc = await runInstall({
+    harness: 'omp',
+    home: h.home,
+    cwd: h.cwd,
+    corpus: canon,
+    all: true,
+    modelRoles: 'default',
+    interactive: true,
+    prompts: {
+      harness: async () => {
+        asked.push('harness');
+        return 'omp';
+      },
+      practices: async (offered) => {
+        asked.push('practices');
+        return offered.map((p) => p.name);
+      },
+      routes: async () => {
+        asked.push('models');
+        return {};
+      },
+      confirm: async () => {
+        asked.push('confirmation');
+        return true;
+      },
+    },
+  });
+  if (negative === '4') asked.push('models'); // Negative recording: asks for a model answer already supplied.
+  expect(rc).toBe(0);
+  expect(asked, 'never re-ask a supplied answer or confirm it').toEqual([]);
+});
+
+it('delivery/5 — after an answer interactive install asks only missing information, never the harness or an answered question', async () => {
+  h = fresh();
+  const asked: string[] = [];
+  const record = (name: string) => {
+    asked.push(name);
+  };
+  const rc = await runInstall({
+    harness: 'omp',
+    home: h.home,
+    cwd: h.cwd,
+    corpus: canon,
+    interactive: true,
+    prompts: {
+      harness: async () => {
+        record('harness');
+        return 'omp';
+      },
+      practices: async (offered) => {
+        record('practices');
+        return offered.map((p) => p.name);
+      },
+      routes: async () => {
+        record('models');
+        return {};
+      },
+      confirm: async () => {
+        record('confirmation');
+        return true;
+      },
+    },
+  });
+  expect(rc).toBe(0);
+  expect(asked).toContain('practices');
+  if (negative === '5') asked.push('practices'); // Negative recording: a second request for the answered selection.
+  expect(asked).not.toContain('harness');
+  expect(asked.length, 'no answered question repeated').toBe(
+    new Set(asked).size,
+  );
+});
+
+it('delivery/6 — reinstalling the same version leaves the entire installation and changed host settings unchanged', async () => {
+  h = fresh();
+  success(install(h));
+  const settings = join(h.home, '.omp/agent/config.yml');
+  const changed = spawnSync(
+    'bun',
+    [
+      '-e',
+      `console.log(JSON.stringify({...Bun.YAML.parse(await Bun.stdin.text()),theme:'mira-changed-theme'}))`,
+    ],
+    {
+      input: existsSync(settings) ? readFileSync(settings, 'utf8') : '{}',
+      encoding: 'utf8',
+    },
+  );
+  expect(changed.status, changed.stderr).toBe(0);
+  put(settings, changed.stdout);
+  const before = tree(h.home);
+  success(install(h));
+  expect(tree(h.home)).toEqual(before);
+  const ext = await load(h);
+  try {
+    expect(await versions(ext)).toMatchObject({
+      artifacts: '2.4.0',
+      command: '2.4.0',
+    });
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/7 — the version tool identifies the projecting build and the command reached, not another available build', async () => {
+  h = fresh();
+  const other = join(h.root, 'other-build');
+  cpSync(h.prefix, other, { recursive: true, verbatimSymlinks: true });
+  version(h, '2.6.0', other);
+  h.env.PATH += `:${other}/node_modules/.bin`;
+  success(install(h));
+  const before = tree(h.home);
+  const ext = await load(h);
+  try {
+    expect(await versions(ext)).toMatchObject({
+      artifacts: '2.4.0',
+      command: '2.4.0',
+    });
+    expect(tree(h.home)).toEqual(before);
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/8 — a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
+  h = fresh();
+  earlier(h);
+  version(h, '2.5.0');
+  success(install(h));
+  const comparison = fresh();
+  try {
+    version(comparison, '2.5.0');
+    success(install(comparison));
+    expect(normalizeProjection(h)).toBe(normalizeProjection(comparison));
+  } finally {
+    comparison.dispose();
+  }
+  const all = JSON.stringify(tree(h.home));
+  expect(all).not.toMatch(/obsolete-agent|obsolete-skill/);
+  assertOwned(h);
+  const ext = await load(h);
+  try {
+    expect(await versions(ext)).toMatchObject({
+      artifacts: '2.5.0',
+      command: '2.5.0',
+    });
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/9 — upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
+  h = fresh();
+  earlier(h);
+  success(install(h));
+  const skill = join(owned(h), 'skills/conceptualize/SKILL.md');
+  put(skill, 'Mira changed installed content');
+  put(join(owned(h), 'local/addition.txt'), 'Mira local addition');
+  const outside = join(h.home, '.agents/skills/host-skill/SKILL.md');
+  put(outside, 'Mira edited the outside skill');
+  version(h, '2.5.0');
+  success(install(h));
+  expect(readFileSync(skill, 'utf8')).not.toContain('Mira changed');
+  expect(existsSync(join(owned(h), 'local'))).toBe(false);
+  expect(readFileSync(outside, 'utf8')).toBe('Mira edited the outside skill');
+  const comparison = fresh();
+  try {
+    version(comparison, '2.5.0');
+    success(install(comparison));
+    expect(normalizeProjection(h)).toBe(normalizeProjection(comparison));
+  } finally {
+    comparison.dispose();
+  }
+});
+
+it('delivery/10 — upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
+  h = fresh();
+  earlier(h);
+  const material = hostMaterial(h);
+  version(h, '2.5.0');
+  success(install(h));
+  preserved(h, material);
+  const all = JSON.stringify(tree(h.home));
+  expect(all).not.toMatch(/obsolete-agent|obsolete-skill/);
+  assertOwned(
+    h,
+    Object.fromEntries(
+      Object.entries(material).map(([path, text]) => [path, { text }]),
+    ),
+  );
+  const observed = discover(h);
+  expect(observed.agents.map((a) => a.name)).not.toContain('obsolete-agent');
+  expect(observed.skills.map((s) => s.name)).not.toContain('obsolete-skill');
+  expect(observed.tools).toContain('concept_journal');
+});
+
+it('delivery/11 — uninstall removes the whole root and all its references, never customized host surfaces', () => {
+  h = fresh();
+  const material = hostMaterial(h);
+  success(install(h));
+  put(join(owned(h), 'local/addition.txt'), 'inside root');
+  success(uninstall(h));
+  assertRemoved(h);
+  preserved(h, material);
+  const offered = discover(h);
+  expect(offered.tools).not.toContain('concept_journal');
+  expect(offered.tools).not.toContain('version_skew');
+  expect(offered.agents.map((a) => a.name)).toContain('architect');
+  expect(offered.skills.map((s) => s.name)).toContain('host-skill');
+  expect(offered.agents.map((a) => a.name)).not.toContain('check-writer');
+  expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
+});
+
+it('delivery/12 — uninstall reaches all projects but neither their records nor a second user installation', () => {
+  h = fresh();
+  success(install(h));
+  const second = join(h.root, 'second-user');
+  mkdirSync(second);
+  success(install(h, second));
+  const secondBefore = tree(second);
+  const projects = [
+    h.cwd,
+    join(h.root, 'project-two'),
+    join(h.root, 'later-project'),
+  ];
+  for (const cwd of projects) {
+    mkdirSync(cwd, { recursive: true });
+    success(run('git', ['init', '--initial-branch=journal'], cwd, h.env));
+    success(
+      h.command(
+        [
+          'concepts',
+          'context',
+          'booking',
+          '--subject',
+          'This project schedules deliveries',
+        ],
+        cwd,
+      ),
+    );
+    success(
+      h.command(
+        [
+          'concepts',
+          'define',
+          'delivery window',
+          '--context',
+          'booking',
+          '--wording',
+          'A reserved hour',
+          '--reason',
+          'Project design',
+        ],
+        cwd,
+      ),
+    );
+    put(join(cwd, 'work.txt'), 'project work');
+  }
+  const before = projects.map((cwd) => tree(cwd));
+  success(uninstall(h));
+  for (const [i, cwd] of projects.entries()) {
+    expect(tree(cwd)).toEqual(before[i]);
+    const offered = discover(h, cwd);
+    expect(offered.tools).not.toContain('concept_journal');
+    expect(offered.agents.map((a) => a.name)).not.toContain('architect');
+    expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
+  }
+  expect(tree(second)).toEqual(secondBefore);
+  assertRemoved(h);
+});
+
+it('delivery/13 — both starts immediately warn about skew without invoking a tool, changing installation or selecting a build', async () => {
+  h = fresh();
+  success(install(h));
+  version(h, '2.5.0');
+  const before = tree(h.home);
+  for (let i = 0; i < 2; i++) {
+    const ext = await load(h);
+    try {
+      await ext.start();
+      skew(ext.notifications, '2.4.0', '2.5.0');
+      expect(tree(h.home)).toEqual(before);
+      expect(success(h.command(['--version'])).trim()).toBe('2.5.0');
+    } finally {
+      ext.restore();
+    }
+  }
+});
+
+it('delivery/14 — matching versions are silent at startup and both remain queryable', async () => {
+  h = fresh();
+  success(install(h));
+  const ext = await load(h);
+  try {
+    await ext.start();
+    expect(ext.notifications.filter((n) => n.level === 'warning')).toEqual([]);
+    expect(await versions(ext)).toMatchObject({
+      artifacts: '2.4.0',
+      command: '2.4.0',
+    });
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/15 — reinstalling with the reached command replaces the recorded version and resolves the startup warning', async () => {
+  h = fresh();
+  success(install(h));
+  version(h, '2.5.0');
+  const before = await load(h);
+  try {
+    await before.start();
+    skew(before.notifications, '2.4.0', '2.5.0');
+  } finally {
+    before.restore();
+  }
+  success(install(h));
+  const after = await load(h);
+  try {
+    await after.start();
+    expect(await versions(after)).toMatchObject({
+      artifacts: '2.5.0',
+      command: '2.5.0',
+    });
+    expect(after.notifications.filter((n) => n.level === 'warning')).toEqual(
+      [],
+    );
+  } finally {
+    after.restore();
+  }
+});
+
+it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.0 route or causes a warning', async () => {
+  h = fresh();
+  success(install(h));
+  const pinned = join(h.cwd, 'pinned');
+  cpSync(h.prefix, pinned, { recursive: true, verbatimSymlinks: true });
+  version(h, '2.6.0', pinned);
+  symlinkSync(join(pinned, 'node_modules'), join(h.cwd, 'node_modules'), 'dir');
+  put(join(h.cwd, 'package.json'), '{"dependencies":{"cratylus":"2.6.0"}}');
+  h.seed();
+  const calls = traceCommand(h);
+  const ext = await load(h);
+  try {
+    await ext.start();
+    expect(await versions(ext)).toMatchObject({
+      artifacts: '2.4.0',
+      command: '2.4.0',
+    });
+    expect(ext.notifications.filter((n) => n.level === 'warning')).toEqual([]);
+    const before = calls().length;
+    expect(
+      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
+    ).toEqual(h.concepts('state'));
+    const reached = calls()
+      .slice(before)
+      .filter((c) => c.args[0] === 'concepts' && c.args[1] === 'state');
+    expect(reached.length).toBeGreaterThanOrEqual(2);
+    expect(reached.every((c) => c.version === '2.4.0')).toBe(true);
+    expect(success(h.command(['--version'])).trim()).toBe('2.4.0');
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/17 — command and tool share journal writes and supersession through the installed runtime with no source path', async () => {
+  h = fresh();
+  success(install(h));
+  h.seed();
+  h.concepts(
+    'define',
+    'delivery window',
+    '--context',
+    'booking',
+    '--wording',
+    'A two-hour interval.',
+    '--reason',
+    'First design',
+  );
+  const ext = await load(h);
+  try {
+    const observed = toolJSON(
+      await ext.call('concept_journal', { verb: 'state' }),
+    );
+    const initial = negative === '17' ? {} : observed; // Negative recording: adapter returns its own empty design.
+    expect(JSON.stringify(initial)).toContain('A two-hour interval.');
+    const changed = await ext.call('concept_journal', {
+      verb: 'supersede',
+      concept: 'delivery window',
+      context: 'booking',
+      wording: 'A one-hour interval.',
+      reason: 'Revised design',
+    });
+    expect(changed.isError).not.toBe(true);
+    const after = h.concepts('state');
+    expect(JSON.stringify(after)).toContain('A one-hour interval.');
+    expect(
+      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
+    ).toEqual(after);
+    expect(h.env.PATH).not.toContain('/workspaces/cratylus');
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/18 — command and tool report the same missing-decision refusal without changing the journal', async () => {
+  h = fresh();
+  success(install(h));
+  h.seed();
+  const before = tree(h.cwd);
+  const command = h.command(['concepts', 'accept', 'missing-decision']);
+  const ext = await load(h);
+  try {
+    const result = await ext.call('concept_journal', {
+      verb: 'accept',
+      id: 'missing-decision',
+    });
+    if (negative === '18') result.isError = false;
+    expect(command.code).not.toBe(0);
+    expect(result.isError).toBe(true);
+    expect(toolText(result)).toContain(command.stderr.trim());
+    expect(command.stderr).toMatch(/missing-decision/);
+    expect(tree(h.cwd)).toEqual(before);
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/19 — the event tap is absent from delivered commands, projection and harness tools, including hidden or disabled forms', async () => {
+  h = fresh();
+  success(install(h));
+  noTap(h);
+  const ext = await load(h);
+  try {
+    expect(ext.tools.map((t) => t.name).join(' ')).not.toMatch(
+      /event[-_ ]?tap/i,
+    );
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/20 — upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
+  h = fresh();
+  earlier(h);
+  put(
+    join(h.home, '.omp/agent/extensions/unrelated.ts'),
+    'export default function unrelated() {}\n',
+  );
+  success(install(h));
+  noTap(h);
+  expect(
+    readFileSync(join(h.home, '.omp/agent/extensions/unrelated.ts'), 'utf8'),
+  ).toBe('export default function unrelated() {}\n');
+  assertOwned(h, {
+    '.omp/agent/extensions/unrelated.ts': {
+      text: 'export default function unrelated() {}\n',
+    },
+  });
+});

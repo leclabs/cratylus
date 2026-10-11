@@ -72,7 +72,13 @@ export function project(scenario: Scenario): Fixture {
 function declaration(f: Fixture, role: string): string {
   // Workflow identities stay installed; the consumer and rubric judge are fixtures.
   const text = readFileSync(
-    join(f.home, '.omp/agent/agents', `${role}.md`),
+    join(
+      f.home,
+      role === 'rubric-judge' || role === 'film-agent'
+        ? '.omp/agent/agents'
+        : '.cratylus/omp/agents',
+      `${role}.md`,
+    ),
     'utf8',
   );
   return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim();
@@ -100,7 +106,7 @@ async function launch(
   writeFileSync(config, JSON.stringify({ memory: { backend: 'off' } }));
   const extensions = judge
     ? [f.extension] // Registers --agent; session hooks stay subject-only.
-    : files(join(f.home, '.omp/agent/extensions')).filter((path) =>
+    : files(join(f.home, '.cratylus/omp/extensions')).filter((path) =>
         /\.(?:[cm]?js|ts)$/.test(path),
       );
   const args = [

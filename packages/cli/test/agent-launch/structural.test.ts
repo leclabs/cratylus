@@ -283,7 +283,10 @@ describe('agent launch — visible examples', () => {
     try {
       // “installed with a corpus that delivers agents”: install really places it.
       expect(
-        readFileSync(join(f.home, '.omp/agent/agents', `${name}.md`), 'utf8'),
+        readFileSync(
+          join(f.home, '.cratylus/omp/agents', `${name}.md`),
+          'utf8',
+        ),
       ).toContain(body);
       // Inspect only what install places in this fixture HOME. Directory entries
       // include symlinks, so a broken linked command cannot pass as absent.

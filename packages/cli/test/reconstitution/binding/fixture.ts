@@ -87,7 +87,7 @@ export function parse(text: string) {
   };
 }
 export function declaration(f: Fixture, role: string) {
-  const filePath = join(f.home, '.omp/agent/agents', `${role}.md`);
+  const filePath = join(f.home, '.cratylus/omp/agents', `${role}.md`);
   const text = readFileSync(filePath, 'utf8');
   const { frontmatter, body } = parse(text);
   return {

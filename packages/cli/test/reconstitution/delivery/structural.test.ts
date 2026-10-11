@@ -189,7 +189,7 @@ it('delivery/5 — CLI explanation and published tool preserve the same purposes
 
 it('delivery/6 — delivered capabilities explain when; no workflow-restating overview procedure or reach-for skill', () => {
   h = host();
-  const skills = files(join(h.home, '.agents/skills'))
+  const skills = files(join(h.home, '.cratylus/omp/skills'))
     .filter((path) => path.endsWith('SKILL.md'))
     .map((path) => readFileSync(path, 'utf8'));
   if (process.env.RECONSTITUTION_RED === '1')

@@ -144,7 +144,7 @@ export function fixture(
   );
   if (installed.error) throw installed.error;
   expect(installed.status, installed.stderr + installed.stdout).toBe(0);
-  const extension = join(home, '.omp/agent/extensions/cratylus.ts');
+  const extension = join(home, '.cratylus/omp/extensions/cratylus.ts');
   const observer = join(root, 'observe.ts');
   cpSync(join(here, 'observe.ts'), observer);
   const observations = join(root, 'observations.jsonl');

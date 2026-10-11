@@ -212,7 +212,7 @@ function hostIn(root: string): Host {
     'default',
   ]);
   const placed = snapshot(home);
-  const extensionRoot = join(home, '.omp/agent/extensions');
+  const extensionRoot = join(home, '.cratylus/omp/extensions');
   const modules = () =>
     files(extensionRoot).filter((f) => /\.(?:[cm]?js|ts)$/.test(f));
   let adapter: string | null | undefined;

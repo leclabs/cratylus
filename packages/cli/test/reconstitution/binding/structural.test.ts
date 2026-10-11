@@ -353,7 +353,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     ).not.toBe('worktree');
     const isolationModule = join(
       f.home,
-      '.omp/agent/extensions/cratylus-isolation.ts',
+      '.cratylus/omp/extensions/cratylus-isolation.ts',
     );
     const isolationHooks: ((event: unknown) => Promise<unknown>)[] = [];
     if (existsSync(isolationModule)) {
