@@ -1,0 +1,10 @@
+{
+  "id": "01M4MG563NKRS2N3HCJ8R4V529",
+  "at": "2026-10-11T03:29:58.389Z",
+  "kind": "check",
+  "transition": "check:reconstitution:01M4MG563MS2QNW0CBY2BN5T4N",
+  "cut": "reconstitution",
+  "failures": [
+    "canon gate-convicts: optional-slot vector test unclassified"
+  ]
+}

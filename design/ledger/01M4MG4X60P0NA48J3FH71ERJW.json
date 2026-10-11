@@ -1,0 +1,18 @@
+{
+  "id": "01M4MG4X60P0NA48J3FH71ERJW",
+  "at": "2026-10-11T03:29:49.248Z",
+  "kind": "cut",
+  "transition": "open:reconstitution",
+  "cut": "reconstitution",
+  "branch": "feature/reconstitution",
+  "contexts": [
+    "agents",
+    "delivery",
+    "workflow"
+  ],
+  "meaningHolders": {
+    "workflow": "architect",
+    "agents": "architect",
+    "delivery": "architect"
+  }
+}

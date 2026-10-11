@@ -1,0 +1,14 @@
+{
+  "id": "01M4MG561GHRHMXYFJ27YRYY7Q",
+  "at": "2026-10-11T03:29:58.320Z",
+  "kind": "check",
+  "transition": "check:reconstitution:01M4MG561ENN8Q9B0Y3WEZW477",
+  "cut": "reconstitution",
+  "failures": [
+    "canon gate-convicts: overview test unclassified",
+    "cli command-tree: README lacks concepts overview",
+    "agent-launch read-only-reach: frozen expectation of the retired journal gate",
+    "catalog-recut examples 2,3,4,5,7: projection lacks the per-turn protocol",
+    "capability-port: forge statically imports the runtime"
+  ]
+}
