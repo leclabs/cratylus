@@ -1,0 +1,14 @@
+{
+  "id": "01M4P6W7133D7KC8N71XX3J9P3",
+  "at": "2026-10-11T19:26:16.099Z",
+  "kind": "decide",
+  "decisionId": "0120",
+  "context": "agents",
+  "title": "A turn's own acts are outcomes: 0117 governs 0103(3)'s parenthetical",
+  "situation": "0103(3) confirmed that an act the architect takes in the turn and reports is the topic's one action. 0117 later says acts already taken are outcomes, never actions, and only what the reply asks of someone next counts as the action; it supersedes 0097 but not 0103. The approved cut 7 examples (workflow 23, agents 18, 20-24, 28) state 0117's reading. Raised by the meaning-roles lead.",
+  "decision": "0117 governs: an act the architect takes in the turn and reports is an outcome; the topic's one action is only what the reply asks of someone next. 0103(3)'s parenthetical no longer holds; its rebind to what the reply itself directs stands.",
+  "consequences": "The meaning-roles cut is built and judged to 0117 and its approved examples meanwhile; acceptance settles the conflict in the journal.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
