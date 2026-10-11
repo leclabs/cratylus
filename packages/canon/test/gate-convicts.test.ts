@@ -308,6 +308,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
   // proves checks it supplies, with host reads it makes itself; polices no live artifact.
   'runtime/offline-proof.test.ts': 'BEHAVIORAL',
+  // runs the pure context overview over designs, decisions and cuts it builds itself:
+  // whole before parts, named cycles, and the account told in that order.
+  'runtime/overview/overview.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
   // capability's, a first word that is no capability) ARE its fixtures.
   'runtime/main.test.ts': 'BEHAVIORAL',
