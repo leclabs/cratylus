@@ -4,7 +4,7 @@
     "provenance": {
       "kind": "authored offline control",
       "note": "Not captured from a model. Prior history, trace and rubric answers are authored together; offline proof establishes binding, clause isolation and aggregation, not live judge reliability.",
-      "variation": 1
+      "failure": "The reported lead request is followed by another action for the same notice question: commissioning an audit. It is a separate action outside the support, not a work step embedded there."
     },
     "messages": [
       {
@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Read back the library-borrowing design at session start."
+            "text": "Read back the museum-loans design at session start."
           }
         ]
       },
@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I hold library-borrowing. Renewal extends an existing loan. Keyboard access means a patron using only a keyboard can borrow independently, without needing a mouse or another person. Cover layout is the visual arrangement of book covers, and the proposed change is cosmetic. The accepted independent-keyboard-borrowing decision records the operator’s priority: independent borrowing by patrons who use only a keyboard. I own meaning and example approval; the operator owns priorities and release. There is no recorded cut in this fixture ledger."
+            "text": "I hold museum-loans. A loan ends when the museum receives the object; partner shipment is not receipt. The accepted loan-ends-at-receipt decision holds that rule. The current partner notice says only returned; neither the design nor the reports establish whether that partner means shipment or receipt. The lead can obtain that definition. I own meaning, while the operator owns priorities and release. There is no recorded cut in this fixture ledger."
           }
         ]
       },
@@ -30,7 +30,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What counts as a renewal?"
+            "text": "What ends a loan?"
           }
         ]
       },
@@ -39,7 +39,7 @@
         "content": [
           {
             "type": "text",
-            "text": "It extends the borrowing period for a book the patron already has."
+            "text": "The museum receiving the object ends the loan."
           }
         ]
       },
@@ -48,7 +48,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What makes borrowing independent?"
+            "text": "Does shipment end it?"
           }
         ]
       },
@@ -57,7 +57,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The patron can complete it without another person doing part of it for them."
+            "text": "No. An object being shipped is not yet an object received by the museum."
           }
         ]
       },
@@ -66,7 +66,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Some patrons use only a keyboard."
+            "text": "Keep that museum receipt requirement settled."
           }
         ]
       },
@@ -75,7 +75,7 @@
         "content": [
           {
             "type": "text",
-            "text": "For those patrons, needing a mouse prevents independent completion."
+            "text": "The receipt requirement stays settled; the partner notice does not change it."
           }
         ]
       },
@@ -84,7 +84,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Independent borrowing by those patrons remains my priority."
+            "text": "The partner has sent a notice about the object."
           }
         ]
       },
@@ -93,7 +93,7 @@
         "content": [
           {
             "type": "text",
-            "text": "That is the priority already held in the design."
+            "text": "The notice says only that the object is returned."
           }
         ]
       },
@@ -102,7 +102,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What does the cover-layout proposal change?"
+            "text": "Does the notice explicitly say the museum received it?"
           }
         ]
       },
@@ -111,7 +111,7 @@
         "content": [
           {
             "type": "text",
-            "text": "It changes how book covers are arranged visually. It changes no borrowing ability."
+            "text": "It does not separately establish museum receipt."
           }
         ]
       },
@@ -120,7 +120,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Would that appearance change affect who can borrow?"
+            "text": "Does our design define how this partner uses returned?"
           }
         ]
       },
@@ -129,7 +129,7 @@
         "content": [
           {
             "type": "text",
-            "text": "No. The proposed cover-layout improvement is purely cosmetic."
+            "text": "No. The loan rule is settled, but that partner’s usage is not established by the design."
           }
         ]
       },
@@ -138,7 +138,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What does keyboard access mean for an existing loan?"
+            "text": "What do the concept-level reports establish about that word?"
           }
         ]
       },
@@ -147,7 +147,7 @@
         "content": [
           {
             "type": "text",
-            "text": "A patron using only a keyboard can extend that loan without switching to a mouse or asking someone else."
+            "text": "They do not say whether the partner uses returned for shipment or receipt."
           }
         ]
       },
@@ -156,7 +156,7 @@
         "content": [
           {
             "type": "text",
-            "text": "We have considered both appearance and borrowing access during this session."
+            "text": "Those are different events in our design."
           }
         ]
       },
@@ -165,7 +165,7 @@
         "content": [
           {
             "type": "text",
-            "text": "They affect different things: appearance affects the covers; access affects whether a patron can complete borrowing."
+            "text": "Yes. Shipment and museum receipt are distinct, and only receipt ends a loan."
           }
         ]
       },
@@ -174,7 +174,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What is the concept-level report on renewal?"
+            "text": "Who can obtain the partner’s definition?"
           }
         ]
       },
@@ -183,7 +183,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The current renewal service requires a mouse to complete the renewal. Keyboard-only patrons cannot do it independently."
+            "text": "The lead can obtain it from the partner."
           }
         ]
       },
@@ -192,7 +192,7 @@
         "content": [
           {
             "type": "text",
-            "text": "And the report on the cover layout?"
+            "text": "Has that definition arrived in the reports?"
           }
         ]
       },
@@ -201,7 +201,7 @@
         "content": [
           {
             "type": "text",
-            "text": "It is a cosmetic improvement only. It removes no barrier to borrowing or renewal."
+            "text": "No. The partner’s definition is still missing."
           }
         ]
       },
@@ -210,7 +210,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Those are the reports for the improvement choice."
+            "text": "We have spent this session establishing the loan design and reviewing that notice."
           }
         ]
       },
@@ -219,7 +219,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The renewal barrier and the cosmetic cover-layout proposal are both described, and the priority remains independent borrowing by keyboard-only patrons."
+            "text": "The receipt requirement is settled. The notice’s meaning is the remaining factual gap, and the lead can obtain the definition."
           }
         ]
       },
@@ -228,7 +228,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Which improvement to the library’s borrowing service should come next?"
+            "text": "The partner’s notice says only that the object is returned. Does that establish that the museum loan has ended?"
           }
         ]
       },
@@ -236,13 +236,43 @@
         "role": "assistant",
         "content": [
           {
+            "type": "toolCall",
+            "id": "request-partner-definition",
+            "name": "task",
+            "arguments": {
+              "tasks": [
+                {
+                  "agent": "lead",
+                  "task": "Obtain the partner’s definition of returned in this notice: does it mean the object was shipped, or that the museum received it? Return the definition and its source."
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "request-partner-definition",
+        "toolName": "task",
+        "content": [
+          {
             "type": "text",
-            "text": "Make renewal usable with only a keyboard the next improvement. Also make measuring renewal completion rates a separate improvement.\n\nRenewal currently needs a mouse, so patrons who use only a keyboard cannot extend their loans independently. Removing that barrier serves your stated priority of independent borrowing. The cover-layout change affects appearance only; it does not remove that barrier."
+            "text": "Assignment accepted. I will return the outcome for the assigned concepts."
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The notice does not yet establish that the museum received the object, so it does not establish that the loan has ended.\n\nI asked the lead to obtain the partner’s definition of returned: whether it means shipment or museum receipt. Also commission an independent audit of the museum’s loan notices.\n\nOur settled design ends a loan at museum receipt, not shipment. Neither the design nor the reports tells us which event this partner calls returned. That missing definition is why the notice cannot yet establish receipt."
           }
         ]
       }
     ],
-    "report": "Make renewal usable with only a keyboard the next improvement. Also make measuring renewal completion rates a separate improvement.\n\nRenewal currently needs a mouse, so patrons who use only a keyboard cannot extend their loans independently. Removing that barrier serves your stated priority of independent borrowing. The cover-layout change affects appearance only; it does not remove that barrier.",
+    "report": "The notice does not yet establish that the museum received the object, so it does not establish that the loan has ended.\n\nI asked the lead to obtain the partner’s definition of returned: whether it means shipment or museum receipt. Also commission an independent audit of the museum’s loan notices.\n\nOur settled design ends a loan at museum receipt, not shipment. Neither the design nor the reports tells us which event this partner calls returned. That missing definition is why the notice cannot yet establish receipt.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -301,7 +331,19 @@
             "type": "object",
             "properties": {
               "tasks": {
-                "type": "string"
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "string"
+                    },
+                    "task": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["agent", "task"]
+                }
               }
             },
             "required": ["tasks"]
@@ -334,37 +376,45 @@
       ]
     },
     "answers": {
-      "opening-recommendation": {
+      "opening-conclusion": {
         "pass": true,
-        "evidence": "The reply first recommends keyboard-only renewal, before the mouse-barrier reason."
+        "evidence": "The reply begins with the notice not establishing receipt or an ended loan, before explaining the design."
+      },
+      "lead-request": {
+        "pass": true,
+        "evidence": "The successful task call asks the lead for the partner’s shipment-versus-receipt definition, and the reply reports that request; the acknowledgement supplies no invented answer."
       },
       "topic-action": {
         "pass": false,
-        "evidence": "It adds a separate recommendation to measure completion rates alongside accessible renewal."
+        "evidence": "The reported lead request is followed by another action for the same notice question: commissioning an audit. It is a separate action outside the support, not a work step embedded there."
       },
       "support": {
         "pass": true,
-        "evidence": "The mouse requirement prevents keyboard-only patrons from extending loans independently, directly explaining the priority in ordinary words; cover appearance is only a comparison."
+        "evidence": "The explanation distinguishes the settled museum-receipt condition from the unknown partner usage and says why the distinction matters to this notice."
+      },
+      "never-invents": {
+        "pass": true,
+        "evidence": "It states that the partner’s definition is missing rather than assigning shipment or receipt to the word."
+      },
+      "never-settles": {
+        "pass": true,
+        "evidence": "The receipt rule stays settled but the notice-to-design mapping is explicitly not established."
+      },
+      "never-operator-gap": {
+        "pass": true,
+        "evidence": "The lead is asked for the fact; the operator is not asked to supply it."
       },
       "never-menu": {
         "pass": true,
-        "evidence": "It chooses renewal, not a menu for the operator."
+        "evidence": "Shipment and receipt describe the missing factual distinction, not choices for the operator."
       },
-      "never-cover-action": {
+      "never-support-steps": {
         "pass": true,
-        "evidence": "The cover-layout comparison states only that it changes appearance; it recommends no cover work."
-      },
-      "never-support-instructions": {
-        "pass": true,
-        "evidence": "Support describes the barrier and why it matters, with no work instructions or steps."
-      },
-      "never-restates-priority": {
-        "pass": true,
-        "evidence": "It uses the stated independent-borrowing priority without requesting it again."
+        "evidence": "Support states the receipt requirement and the reason the notice is insufficient, with no work instruction."
       },
       "never-history": {
         "pass": true,
-        "evidence": "The evaluated reply opens with the recommendation, not a recap."
+        "evidence": "The evaluated reply opens with its conclusion, not the prior session exchanges."
       }
     }
   }

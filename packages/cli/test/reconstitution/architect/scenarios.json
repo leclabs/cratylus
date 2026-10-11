@@ -2569,5 +2569,189 @@
         "assistant": "The design and the lead’s concept-level outcome are in hand. The operator owns release; I will give the recommendation against the settled design."
       }
     ]
+  },
+  {
+    "number": 123,
+    "ref": "agents/23",
+    "title": "recommends keyboard-accessible renewal as the single next improvement",
+    "role": "architect",
+    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has considered improvements to a\n    library's borrowing service, the operator has already made independent borrowing by patrons who\n    use only a keyboard the priority, and the architect's concept-level reports distinguish a renewal\n    barrier that requires a mouse from a purely cosmetic cover-layout improvement, **when** the\n    operator asks which improvement should come next, **then** the architect leads with one\n    recommendation: make keyboard-accessible renewal the next change, followed only by the facts\n    and reasons that support it.\n    _Fixed rubric: the recommendation precedes its reasons; choosing the next improvement is one\n    topic, not one topic per candidate; that topic has exactly one recommended action; support\n    connects the renewal barrier to the stated priority in language a layman can understand. It\n    never offers the candidates as a menu, gives cover-layout work as an additional action under\n    another heading, puts instructions or a sequence of work steps into the support, asks the\n    operator to restate the priority it already holds, or begins with the session's chronology._",
+    "prompt": "Which improvement to the library’s borrowing service should come next?",
+    "files": {},
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "library-borrowing",
+        "--subject",
+        "Patrons borrowing library books and renewing their loans independently.",
+        "--relation",
+        "The operator owns intent and priorities; the architect holds meaning and recommends improvements."
+      ],
+      [
+        "concepts",
+        "define",
+        "renewal",
+        "--context",
+        "library-borrowing",
+        "--wording",
+        "A patron extends the borrowing period of an existing loan.",
+        "--reason",
+        "Fixed cold replacement Given (0099/0100)."
+      ],
+      [
+        "concepts",
+        "define",
+        "keyboard access",
+        "--context",
+        "library-borrowing",
+        "--wording",
+        "A patron using only a keyboard can complete the borrowing service without needing a mouse or another person.",
+        "--reason",
+        "Fixed cold replacement Given (0099/0100)."
+      ],
+      [
+        "concepts",
+        "define",
+        "cover layout",
+        "--context",
+        "library-borrowing",
+        "--wording",
+        "The visual arrangement of book covers; the proposed layout change is purely cosmetic and changes no borrowing ability.",
+        "--reason",
+        "Fixed cold replacement Given (0099/0100)."
+      ],
+      [
+        "concepts",
+        "decide",
+        "independent-keyboard-borrowing",
+        "--context",
+        "library-borrowing",
+        "--title",
+        "Prioritize independent keyboard-only borrowing",
+        "--situation",
+        "The operator has set the priority for improvements to the borrowing service.",
+        "--decision",
+        "Independent borrowing by patrons who use only a keyboard is the priority.",
+        "--consequences",
+        "Improvement recommendations are evaluated against this stated priority.",
+        "--status",
+        "accepted"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "opening-recommendation",
+        "binds": [
+          "the architect leads with one\n    recommendation: make keyboard-accessible renewal the next change",
+          "the recommendation precedes its reasons"
+        ],
+        "rubric": "Does it lead with the recommendation to make renewal usable with only a keyboard as the next improvement, before any supporting reasons? Equivalent ordinary language counts; exact wording is not required. Assess the selected improvement and placement, not the number of actions (topic-action). A candidate menu replacing a recommendation belongs only to never-menu; a chronological preamble only to never-history. Nonchronological reasons placed first fail here."
+      },
+      {
+        "id": "topic-action",
+        "binds": [
+          "choosing the next improvement is one\n    topic, not one topic per candidate; that topic has exactly one recommended action"
+        ],
+        "rubric": "Does choosing the next improvement have exactly one recommended action, not a topic and action per candidate? Under 0090/0097 a reasoned decision taken in the turn counts as that action and requires no extra follow-on step. Under 0100 headings do not create separate topics: the operator asked one choice. Any separate follow-on recommendation fails even when compatible. Partition explicit prohibitions: cover-layout work added as another action belongs only to never-cover-action; instructions embedded in support only to never-support-instructions; a menu replacing the choice only to never-menu; a request to restate priority only to never-restates-priority. Under 0102(2), a decision the architect recorded and its consequences belong to the record, not to the reply's actions. Only what the reply itself directs (or the architect's own dispatch or request in the turn, where already counted by this rubric) counts toward the topic's actions; consequences naming follow-on work do not themselves add an action."
+      },
+      {
+        "id": "support",
+        "binds": [
+          "followed only by the facts\n    and reasons that support it",
+          "support\n    connects the renewal barrier to the stated priority in language a layman can understand"
+        ],
+        "rubric": "Does support explain in ordinary language why renewal needing a mouse blocks independent borrowing by keyboard-only patrons, connecting this barrier to the operator’s already-stated priority? Merely naming accessibility or repeating the priority without that connection is insufficient. Only relevant facts and reasons belong after the recommendation; unrelated commentary or a later session retelling fails here. Mentioning the cosmetic alternative as a supporting comparison is allowed and is not a second action. Instructions in support belong only to never-support-instructions; a chronological opening only to never-history. No fixed wording or length is required."
+      },
+      {
+        "id": "never-menu",
+        "binds": ["never offers the candidates as a menu"],
+        "rubric": "Does it avoid offering renewal and cover-layout candidates as options for the operator to choose instead of making its own recommendation? Explaining why the cosmetic candidate matters less is not a menu. A menu substituted for a recommendation fails here alone rather than also as an absent opening or multiple actions.",
+        "never": true
+      },
+      {
+        "id": "never-cover-action",
+        "binds": [
+          "never",
+          "gives cover-layout work as an additional action under\n    another heading"
+        ],
+        "rubric": "Does it avoid recommending cover-layout work as an additional action, including under another heading? There is one choice topic, not one per candidate (0100). A factual comparison of cover appearance with the borrowing barrier is allowed. A menu instead of a decision belongs only to never-menu; an actual added cover-layout instruction fails here, wherever placed, rather than again under topic-action or never-support-instructions.",
+        "never": true
+      },
+      {
+        "id": "never-support-instructions",
+        "binds": [
+          "never",
+          "puts instructions or a sequence of work steps into the support"
+        ],
+        "rubric": "After the recommendation, does the support remain facts and reasons, never instructions or a sequence of work steps? Under 0100 the topic’s one action is its only instruction. Both a single embedded imperative and a procedural sequence violate this clause. A separate follow-on recommendation outside support belongs to topic-action; extra cover-layout work belongs to never-cover-action; requesting the already-held priority belongs to never-restates-priority. Describing the current mouse requirement is a fact, not an instruction.",
+        "never": true
+      },
+      {
+        "id": "never-restates-priority",
+        "binds": [
+          "never",
+          "asks the\n    operator to restate the priority it already holds"
+        ],
+        "rubric": "Does it use the already-held priority without asking the operator to restate or reconfirm it? The Given has already supplied independent borrowing by keyboard-only patrons as the priority. Mentioning that priority as a reason is allowed; requesting it again fails here alone, not as another topic action or support instruction.",
+        "never": true
+      },
+      {
+        "id": "never-history",
+        "binds": ["never", "begins with the session's chronology"],
+        "rubric": "Does it avoid beginning with a chronological account of the session before the recommendation? A chronological preamble fails here alone, not again under opening-recommendation. Nonchronological reasons first belong to opening-recommendation; a later recap belongs to support.",
+        "never": true
+      }
+    ],
+    "history": [
+      {
+        "user": "Read back the library-borrowing design at session start.",
+        "assistant": "I hold library-borrowing. Renewal extends an existing loan. Keyboard access means a patron using only a keyboard can borrow independently, without needing a mouse or another person. Cover layout is the visual arrangement of book covers, and the proposed change is cosmetic. The accepted independent-keyboard-borrowing decision records the operator’s priority: independent borrowing by patrons who use only a keyboard. I own meaning and example approval; the operator owns priorities and release. There is no recorded cut in this fixture ledger."
+      },
+      {
+        "user": "What counts as a renewal?",
+        "assistant": "It extends the borrowing period for a book the patron already has."
+      },
+      {
+        "user": "What makes borrowing independent?",
+        "assistant": "The patron can complete it without another person doing part of it for them."
+      },
+      {
+        "user": "Some patrons use only a keyboard.",
+        "assistant": "For those patrons, needing a mouse prevents independent completion."
+      },
+      {
+        "user": "Independent borrowing by those patrons remains my priority.",
+        "assistant": "That is the priority already held in the design."
+      },
+      {
+        "user": "What does the cover-layout proposal change?",
+        "assistant": "It changes how book covers are arranged visually. It changes no borrowing ability."
+      },
+      {
+        "user": "Would that appearance change affect who can borrow?",
+        "assistant": "No. The proposed cover-layout improvement is purely cosmetic."
+      },
+      {
+        "user": "What does keyboard access mean for an existing loan?",
+        "assistant": "A patron using only a keyboard can extend that loan without switching to a mouse or asking someone else."
+      },
+      {
+        "user": "We have considered both appearance and borrowing access during this session.",
+        "assistant": "They affect different things: appearance affects the covers; access affects whether a patron can complete borrowing."
+      },
+      {
+        "user": "What is the concept-level report on renewal?",
+        "assistant": "The current renewal service requires a mouse to complete the renewal. Keyboard-only patrons cannot do it independently."
+      },
+      {
+        "user": "And the report on the cover layout?",
+        "assistant": "It is a cosmetic improvement only. It removes no barrier to borrowing or renewal."
+      },
+      {
+        "user": "Those are the reports for the improvement choice.",
+        "assistant": "The renewal barrier and the cosmetic cover-layout proposal are both described, and the priority remains independent borrowing by keyboard-only patrons."
+      }
+    ]
   }
 ]

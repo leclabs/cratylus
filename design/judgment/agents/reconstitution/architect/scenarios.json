@@ -130,184 +130,197 @@
   {
     "number": 104,
     "ref": "held-out agents/4",
-    "title": "recommends keyboard-accessible renewal as the single next improvement",
+    "title": "requests the missing partner definition before treating a loan as ended",
     "role": "architect",
-    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has considered improvements to a\n   library's borrowing service, the operator has already made independent borrowing by patrons who\n   use only a keyboard the priority, and the architect's concept-level reports distinguish a renewal\n   barrier that requires a mouse from a purely cosmetic cover-layout improvement, **when** the\n   operator asks which improvement should come next, **then** the architect leads with one\n   recommendation: make keyboard-accessible renewal the next change, followed only by the facts\n   and reasons that support it.\n   _Fixed rubric: the recommendation precedes its reasons; choosing the next improvement is one\n   topic, not one topic per candidate; that topic has exactly one recommended action; support\n   connects the renewal barrier to the stated priority in language a layman can understand. It\n   never offers the candidates as a menu, gives cover-layout work as an additional action under\n   another heading, puts instructions or a sequence of work steps into the support, asks the\n   operator to restate the priority it already holds, or begins with the session's chronology._",
-    "prompt": "Which improvement to the library’s borrowing service should come next?",
+    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has established a museum's loan\n   design, under which a loan ends when the museum receives the object, a partner sends a notice\n   saying only that an object is returned, and neither the design nor the reports say whether that\n   partner means shipment or receipt, while the lead can obtain the partner's definition, **when**\n   the operator asks whether that notice establishes that the loan has ended, **then** the architect\n   leads with the conclusion that the notice does not yet establish receipt, requests the missing\n   definition from the lead, and reports that request as its one action on the question.\n   _Fixed rubric: the conclusion comes before the supporting explanation; the reply distinguishes\n   the settled receipt requirement from the unknown meaning of the partner's notice; the reported\n   request is the topic's one action, with no second instruction added; support gives only the facts\n   and reasons for needing that definition. It never invents the partner's meaning, reports the\n   mapping settled while that fact is missing, asks the operator to resolve a factual gap the lead\n   can fill, offers competing interpretations as a menu, adds work steps in the support, or buries\n   the conclusion beneath a history of the session._",
+    "prompt": "The partner’s notice says only that the object is returned. Does that establish that the museum loan has ended?",
     "files": {},
     "commands": [
       [
         "concepts",
         "context",
-        "library-borrowing",
+        "museum-loans",
         "--subject",
-        "Patrons borrowing library books and renewing their loans independently.",
+        "Museum objects on loan, their receipt and the meaning of partner notices.",
         "--relation",
-        "The operator owns intent and priorities; the architect holds meaning and recommends improvements."
+        "The architect holds meaning; the lead can obtain a partner’s factual definition; the operator owns priorities and release."
       ],
       [
         "concepts",
         "define",
-        "renewal",
+        "loan",
         "--context",
-        "library-borrowing",
+        "museum-loans",
         "--wording",
-        "A patron extends the borrowing period of an existing loan.",
+        "An object is on loan until the museum receives it. Shipment by a partner does not end the loan.",
         "--reason",
-        "Fixed cold replacement Given (0099/0100)."
+        "Fixed cold replacement Given (0103)."
       ],
       [
         "concepts",
         "define",
-        "keyboard access",
+        "receipt",
         "--context",
-        "library-borrowing",
+        "museum-loans",
         "--wording",
-        "A patron using only a keyboard can complete the borrowing service without needing a mouse or another person.",
+        "The museum has received the loaned object, distinct from a partner shipping it.",
         "--reason",
-        "Fixed cold replacement Given (0099/0100)."
+        "Fixed cold replacement Given (0103)."
       ],
       [
         "concepts",
         "define",
-        "cover layout",
+        "partner notice",
         "--context",
-        "library-borrowing",
+        "museum-loans",
         "--wording",
-        "The visual arrangement of book covers; the proposed layout change is purely cosmetic and changes no borrowing ability.",
+        "The current partner notice says only that the object is returned. Neither the design nor the concept-level reports establish whether this partner means shipment or receipt. The lead can obtain the partner’s definition.",
         "--reason",
-        "Fixed cold replacement Given (0099/0100)."
+        "Fixed cold replacement Given (0103)."
       ],
       [
         "concepts",
         "decide",
-        "independent-keyboard-borrowing",
+        "loan-ends-at-receipt",
         "--context",
-        "library-borrowing",
+        "museum-loans",
         "--title",
-        "Prioritize independent keyboard-only borrowing",
+        "Receipt ends a museum loan",
         "--situation",
-        "The operator has set the priority for improvements to the borrowing service.",
+        "The museum loan design distinguishes shipment from receipt.",
         "--decision",
-        "Independent borrowing by patrons who use only a keyboard is the priority.",
+        "A loan ends when the museum receives the object, not when the partner ships it.",
         "--consequences",
-        "Improvement recommendations are evaluated against this stated priority.",
+        "Update the loan register when receipt is established. This partner’s meaning of returned remains unknown.",
         "--status",
         "accepted"
       ]
     ],
     "clauses": [
       {
-        "id": "opening-recommendation",
+        "id": "opening-conclusion",
         "binds": [
-          "the architect leads with one\n   recommendation: make keyboard-accessible renewal the next change",
-          "the recommendation precedes its reasons"
+          "leads with the conclusion that the notice does not yet establish receipt",
+          "the conclusion comes before the supporting explanation"
         ],
-        "rubric": "Does it lead with the recommendation to make renewal usable with only a keyboard as the next improvement, before any supporting reasons? Equivalent ordinary language counts; exact wording is not required. Assess the selected improvement and placement, not the number of actions (topic-action). A candidate menu replacing a recommendation belongs only to never-menu; a chronological preamble only to never-history. Nonchronological reasons placed first fail here."
+        "rubric": "Does the reply lead with the conclusion that the notice does not yet establish receipt, before supporting reasons? Equivalent ordinary language counts. Assess conclusion and placement, not whether the lead request is present. Nonchronological explanation before the conclusion fails here. A chronological preamble belongs only to never-history; a menu replacing the conclusion only to never-menu; asserting an invented partner definition or a settled mapping belongs to its respective never-clause."
+      },
+      {
+        "id": "lead-request",
+        "binds": [
+          "requests the missing\n   definition from the lead, and reports that request as its one action on the question"
+        ],
+        "rubric": "Does the architect actually request the partner’s definition of returned from the lead in this turn and report that request to the operator? A successful tool request or delivered handoff addressed to the lead establishes the act; merely promising or claiming it happened does not. The request must ask for whether the partner means shipment or museum receipt, with no fixed wording or tool required. A lead acknowledgement need not supply the still-missing definition (0094). Absence, wrong target and an unreported request fail here; asking the operator instead belongs only to never-operator-gap. Assess the required request, not additional actions (topic-action)."
       },
       {
         "id": "topic-action",
         "binds": [
-          "choosing the next improvement is one\n   topic, not one topic per candidate; that topic has exactly one recommended action"
+          "the reported\n   request is the topic's one action, with no second instruction added"
         ],
-        "rubric": "Does choosing the next improvement have exactly one recommended action, not a topic and action per candidate? Under 0090/0097 a reasoned decision taken in the turn counts as that action and requires no extra follow-on step. Under 0100 headings do not create separate topics: the operator asked one choice. Any separate follow-on recommendation fails even when compatible. Partition explicit prohibitions: cover-layout work added as another action belongs only to never-cover-action; instructions embedded in support only to never-support-instructions; a menu replacing the choice only to never-menu; a request to restate priority only to never-restates-priority. Under 0102(2), a decision the architect recorded and its consequences belong to the record, not to the reply's actions. Only what the reply itself directs (or the architect's own dispatch or request in the turn, where already counted by this rubric) counts toward the topic's actions; consequences naming follow-on work do not themselves add an action."
+        "rubric": "Does the reply give this question just one action, the request to the lead for the missing definition, without another instruction even when compatible? Under 0090/0097, a decision owned by the architect, taken in the turn and reported with its reason, is that topic’s outcome and action; it needs no extra follow-on step. Here the partner’s factual definition is missing, so a reasoned assertion alone does not replace the required request. Under 0103 the actual request in the turn and its report are one action, not two. Under 0100 headings do not create separate topics. Under 0102(2), recorded decisions and their consequences belong to the record, not the reply’s actions: count only what the reply itself directs (or the architect’s own dispatch or request in the turn, where counted here); record-only consequences do not add an action. Missing or unreported requests belong only to lead-request; operator gap-filling to never-operator-gap; competing interpretations as choices to never-menu; work steps embedded in support to never-support-steps."
       },
       {
         "id": "support",
         "binds": [
-          "followed only by the facts\n   and reasons that support it",
-          "support\n   connects the renewal barrier to the stated priority in language a layman can understand"
+          "the reply distinguishes\n   the settled receipt requirement from the unknown meaning of the partner's notice",
+          "support gives only the facts\n   and reasons for needing that definition"
         ],
-        "rubric": "Does support explain in ordinary language why renewal needing a mouse blocks independent borrowing by keyboard-only patrons, connecting this barrier to the operator’s already-stated priority? Merely naming accessibility or repeating the priority without that connection is insufficient. Only relevant facts and reasons belong after the recommendation; unrelated commentary or a later session retelling fails here. Mentioning the cosmetic alternative as a supporting comparison is allowed and is not a second action. Instructions in support belong only to never-support-instructions; a chronological opening only to never-history. No fixed wording or length is required."
+        "rubric": "Does the reply explain that the design already requires museum receipt to end a loan, but the notice’s word returned has no established partner definition, so it cannot distinguish shipment from receipt? Support must give the facts and reasons for needing the definition, not unrelated commentary or a later session retelling. Merely saying there is a gap without explaining the known requirement and unknown notice meaning is insufficient. Naming shipment and receipt as the missing factual distinction is allowed, not an options menu. Score explanatory coverage and relevance; false assertions about the partner, premature settlement, operator requests, menus and work steps are scored only in their respective never-clauses. A chronological opening belongs only to never-history."
+      },
+      {
+        "id": "never-invents",
+        "binds": ["never invents the partner's meaning"],
+        "rubric": "Does it avoid assigning or assuming a definition of returned for this partner without evidence? Neither shipment nor receipt is established as that partner’s meaning. Explaining those two meanings as the factual uncertainty is allowed; choosing either, even tentatively as an assumed fact, fails here. A bare claim that the mapping is settled without supplying a definition belongs to never-settles; this clause owns invented definitions rather than also failing explanatory coverage or the opening.",
+        "never": true
+      },
+      {
+        "id": "never-settles",
+        "binds": [
+          "never",
+          "reports the\n   mapping settled while that fact is missing"
+        ],
+        "rubric": "Does it leave the notice-to-design mapping unsettled until the partner’s factual definition is known? The receipt requirement is already settled and may be reported as such; that does not settle the notice’s mapping. Reporting or recording the mapping resolved despite the absent definition fails here. An invented concrete definition belongs only to never-invents; a bare premature settlement belongs here, not again to opening-conclusion or support.",
+        "never": true
+      },
+      {
+        "id": "never-operator-gap",
+        "binds": [
+          "never",
+          "asks the operator to resolve a factual gap the lead\n   can fill"
+        ],
+        "rubric": "Does it avoid asking the operator to obtain, supply or decide the partner’s missing factual definition when the lead can obtain it? A report to the operator that the lead has been asked is allowed. Handing that factual gap to the operator fails here alone, whether instead of or in addition to the lead request, rather than again under lead-request, topic-action or support.",
+        "never": true
       },
       {
         "id": "never-menu",
-        "binds": ["never offers the candidates as a menu"],
-        "rubric": "Does it avoid offering renewal and cover-layout candidates as options for the operator to choose instead of making its own recommendation? Explaining why the cosmetic candidate matters less is not a menu. A menu substituted for a recommendation fails here alone rather than also as an absent opening or multiple actions.",
+        "binds": ["never", "offers competing interpretations as a menu"],
+        "rubric": "Does it avoid offering shipment and receipt as interpretations for the operator to choose? Describing both as the factual uncertainty that requires the partner’s definition is allowed. A choice menu fails here alone, including when it replaces the opening conclusion, rather than also under opening-conclusion, topic-action or support.",
         "never": true
       },
       {
-        "id": "never-cover-action",
-        "binds": [
-          "never",
-          "gives cover-layout work as an additional action under\n   another heading"
-        ],
-        "rubric": "Does it avoid recommending cover-layout work as an additional action, including under another heading? There is one choice topic, not one per candidate (0100). A factual comparison of cover appearance with the borrowing barrier is allowed. A menu instead of a decision belongs only to never-menu; an actual added cover-layout instruction fails here, wherever placed, rather than again under topic-action or never-support-instructions.",
-        "never": true
-      },
-      {
-        "id": "never-support-instructions",
-        "binds": [
-          "never",
-          "puts instructions or a sequence of work steps into the support"
-        ],
-        "rubric": "After the recommendation, does the support remain facts and reasons, never instructions or a sequence of work steps? Under 0100 the topic’s one action is its only instruction. Both a single embedded imperative and a procedural sequence violate this clause. A separate follow-on recommendation outside support belongs to topic-action; extra cover-layout work belongs to never-cover-action; requesting the already-held priority belongs to never-restates-priority. Describing the current mouse requirement is a fact, not an instruction.",
-        "never": true
-      },
-      {
-        "id": "never-restates-priority",
-        "binds": [
-          "never",
-          "asks the\n   operator to restate the priority it already holds"
-        ],
-        "rubric": "Does it use the already-held priority without asking the operator to restate or reconfirm it? The Given has already supplied independent borrowing by keyboard-only patrons as the priority. Mentioning that priority as a reason is allowed; requesting it again fails here alone, not as another topic action or support instruction.",
+        "id": "never-support-steps",
+        "binds": ["never", "adds work steps in the support"],
+        "rubric": "After the conclusion and reported request, is support only facts and reasons, not instructions or work steps? A single embedded work instruction as well as a sequence fails here; 0100 allows only the topic’s one action as its instruction. Describing why shipment is not receipt is factual support. A separate extra action outside support belongs to topic-action; an operator gap request to never-operator-gap; record-only consequences are not reply instructions under 0102(2).",
         "never": true
       },
       {
         "id": "never-history",
-        "binds": ["never", "begins with the session's chronology"],
-        "rubric": "Does it avoid beginning with a chronological account of the session before the recommendation? A chronological preamble fails here alone, not again under opening-recommendation. Nonchronological reasons first belong to opening-recommendation; a later recap belongs to support.",
+        "binds": [
+          "never",
+          "buries\n   the conclusion beneath a history of the session"
+        ],
+        "rubric": "Does it avoid putting session chronology before the conclusion? A chronological preamble fails here alone, not again under opening-conclusion. Nonchronological explanation first belongs to opening-conclusion; a later session recap belongs to support.",
         "never": true
       }
     ],
     "history": [
       {
-        "user": "Read back the library-borrowing design at session start.",
-        "assistant": "I hold library-borrowing. Renewal extends an existing loan. Keyboard access means a patron using only a keyboard can borrow independently, without needing a mouse or another person. Cover layout is the visual arrangement of book covers, and the proposed change is cosmetic. The accepted independent-keyboard-borrowing decision records the operator’s priority: independent borrowing by patrons who use only a keyboard. I own meaning and example approval; the operator owns priorities and release. There is no recorded cut in this fixture ledger."
+        "user": "Read back the museum-loans design at session start.",
+        "assistant": "I hold museum-loans. A loan ends when the museum receives the object; partner shipment is not receipt. The accepted loan-ends-at-receipt decision holds that rule. The current partner notice says only returned; neither the design nor the reports establish whether that partner means shipment or receipt. The lead can obtain that definition. I own meaning, while the operator owns priorities and release. There is no recorded cut in this fixture ledger."
       },
       {
-        "user": "What counts as a renewal?",
-        "assistant": "It extends the borrowing period for a book the patron already has."
+        "user": "What ends a loan?",
+        "assistant": "The museum receiving the object ends the loan."
       },
       {
-        "user": "What makes borrowing independent?",
-        "assistant": "The patron can complete it without another person doing part of it for them."
+        "user": "Does shipment end it?",
+        "assistant": "No. An object being shipped is not yet an object received by the museum."
       },
       {
-        "user": "Some patrons use only a keyboard.",
-        "assistant": "For those patrons, needing a mouse prevents independent completion."
+        "user": "Keep that museum receipt requirement settled.",
+        "assistant": "The receipt requirement stays settled; the partner notice does not change it."
       },
       {
-        "user": "Independent borrowing by those patrons remains my priority.",
-        "assistant": "That is the priority already held in the design."
+        "user": "The partner has sent a notice about the object.",
+        "assistant": "The notice says only that the object is returned."
       },
       {
-        "user": "What does the cover-layout proposal change?",
-        "assistant": "It changes how book covers are arranged visually. It changes no borrowing ability."
+        "user": "Does the notice explicitly say the museum received it?",
+        "assistant": "It does not separately establish museum receipt."
       },
       {
-        "user": "Would that appearance change affect who can borrow?",
-        "assistant": "No. The proposed cover-layout improvement is purely cosmetic."
+        "user": "Does our design define how this partner uses returned?",
+        "assistant": "No. The loan rule is settled, but that partner’s usage is not established by the design."
       },
       {
-        "user": "What does keyboard access mean for an existing loan?",
-        "assistant": "A patron using only a keyboard can extend that loan without switching to a mouse or asking someone else."
+        "user": "What do the concept-level reports establish about that word?",
+        "assistant": "They do not say whether the partner uses returned for shipment or receipt."
       },
       {
-        "user": "We have considered both appearance and borrowing access during this session.",
-        "assistant": "They affect different things: appearance affects the covers; access affects whether a patron can complete borrowing."
+        "user": "Those are different events in our design.",
+        "assistant": "Yes. Shipment and museum receipt are distinct, and only receipt ends a loan."
       },
       {
-        "user": "What is the concept-level report on renewal?",
-        "assistant": "The current renewal service requires a mouse to complete the renewal. Keyboard-only patrons cannot do it independently."
+        "user": "Who can obtain the partner’s definition?",
+        "assistant": "The lead can obtain it from the partner."
       },
       {
-        "user": "And the report on the cover layout?",
-        "assistant": "It is a cosmetic improvement only. It removes no barrier to borrowing or renewal."
+        "user": "Has that definition arrived in the reports?",
+        "assistant": "No. The partner’s definition is still missing."
       },
       {
-        "user": "Those are the reports for the improvement choice.",
-        "assistant": "The renewal barrier and the cosmetic cover-layout proposal are both described, and the priority remains independent borrowing by keyboard-only patrons."
+        "user": "We have spent this session establishing the loan design and reviewing that notice.",
+        "assistant": "The receipt requirement is settled. The notice’s meaning is the remaining factual gap, and the lead can obtain the definition."
       }
     ]
   }

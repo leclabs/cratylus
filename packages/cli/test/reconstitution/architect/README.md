@@ -1,6 +1,6 @@
 # Architect behavioral checks — reconstitution
 
-These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–22. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
+These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–23. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
 
 Decision 0086 rebinds workflow/19 and agents/16,18 to the current examples. Workflow/19 gives the architect both contexts and the illustrator's accurate example files: it must approve both itself while preserving the two models. Agents/16 starts after the architect's own approval and the achieved outcome; agents/18 reports that approval and the scheduling meaning question it still owns. Their controls include two differently worded goldens and a negative for each clause and installed-role wiring.
 
@@ -618,3 +618,74 @@ goldens and paired negatives without runner changes, retaining exact-clause
 isolation, wiring and four-of-five/never-assertion aggregation.
 
 `pnpm lint` passed: Biome checked **1052 files**, with no fixes applied.
+
+## Promoting the burned library-borrowing case (0103)
+
+Agents/23 is scenario **123**, promoted from the former held-out scenario 104.
+The current visible paragraph differs from the frozen example only in continuation
+indentation (four spaces instead of three); its meaning is identical. The scenario
+now quotes the visible paragraph exactly, and its `binds` phrases follow that
+indentation. All rubrics, fixture commands, twelve continuing-session exchanges,
+thresholds and recording bytes are retained, including the 0102(2) rebind from
+529aeb0a. No other example's checks change.
+
+All sixteen recordings moved to `recordings/123/`: three goldens (including
+`golden-recorded-consequences.json`) and thirteen isolated negatives (including
+`negative-reply-second-action.json`). The record-only consequences remain distinct
+from directions actually given in the reply.
+
+| Clause                       | Retained isolated negative(s)                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| `installed-role`             | Missing declaration from the composed prompt.                                   |
+| `opening-recommendation`     | Nonchronological reasons before the recommendation.                             |
+| `topic-action`               | Extra compatible action; paired second reply action with recorded consequences. |
+| `support`                    | Missing explanation, jargon, or unrelated commentary.                           |
+| `never-menu`                 | Candidates offered for the operator to choose.                                  |
+| `never-cover-action`         | Cover-layout work added as another action.                                      |
+| `never-support-instructions` | A single instruction or a work sequence embedded in support.                    |
+| `never-restates-priority`    | Asking for the already-held priority again.                                     |
+| `never-history`              | Session chronology before the recommendation.                                   |
+
+### Red proof after promotion
+
+A temporary `promotion-freeze-evidence.test.ts` first required each negative to
+fail exactly its declared `breaks` clause, then deliberately expected its
+five-copy batch to pass:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/promotion-freeze-evidence.test.ts
+```
+
+Observed **24 intentional failures and 6 passes**: thirteen promoted negatives
+and eleven replacement negatives all reached the deliberate `passed: true`
+expectation at line 51 and received `false`, after exact-clause isolation passed.
+All five goldens passed every clause and their batches. The sixth pass executed
+the replacement's real fixture commands without a model. The temporary test
+was removed before normal acceptance.
+
+These are authored trace-and-answer controls, not captured model output.
+Offline proof establishes binding, wiring, isolation and aggregation, not a live
+judge's interpretation of rubric prose. No live subject, judge, smoke or batch
+ran. The promoted visible live test name, for subsequent build work, is:
+
+```text
+Example agents/23 — recommends keyboard-accessible renewal as the single next improvement live: parallel installed-agent runs stop when the outcome is decided
+```
+
+### Offline acceptance after the 0103 freeze
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+pnpm lint
+```
+
+Observed: visible **305 passed, 102 skipped across 12 files**; held-out architect
+**18 passed, 8 skipped**. `pnpm lint` passed, checking **1066 files** without fixes.
+Before acceptance, Biome formatted the two owned scenario files and thirteen
+replacement recordings; promoted recording bytes were not rewritten.

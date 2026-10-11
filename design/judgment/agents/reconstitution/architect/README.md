@@ -1,6 +1,6 @@
 # Architect judgment — agents reconstitution
 
-Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the original agents/4 moved to visible agents/20 (`recordings/120/` in the visible architect suite). Under 0098, its exposed film-example/booking replacement moved to visible agents/21 (`recordings/121/`). Under 0099, the exposed image-archive release case moved to visible agents/22 (`recordings/122/`). The current held-out agents/4 is the library-borrowing improvement case in `recordings/104/`. Earlier evidence below preserves the refs and paths as they were at each run; **Cold replacement evidence (0099/0100)** describes the current case.
+Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the original agents/4 moved to visible agents/20 (`recordings/120/` in the visible architect suite). Under 0098, its exposed film-example/booking replacement moved to visible agents/21 (`recordings/121/`). Under 0099, the exposed image-archive release case moved to visible agents/22 (`recordings/122/`). Under 0103, the burned library-borrowing case, including its 0102(2) rebind, moved to visible agents/23 (`recordings/123/`). The current held-out agents/4 is the museum-loan notice case in `recordings/104/`. Earlier evidence below preserves the refs and paths as they were at each run; **Cold replacement evidence (0103)** describes the current case. Its live runs belong only to judgment, never the build.
 
 Executed before the build:
 
@@ -321,3 +321,93 @@ The complete visible offline suite also passed **290 tests, 98 skipped across
 12 files** (`artifact://1741`). No product or shared-runner code changed.
 
 `pnpm lint` passed: Biome checked **1052 files**, with no fixes applied.
+
+## Cold replacement evidence (0103)
+
+Scenario 104 quotes the new held-out agents/4 paragraph exactly. Its fixture
+commands create the museum-loans context, loan, receipt and partner-notice
+concepts, and the accepted receipt requirement. Both the fixture and the twelve
+native continuing-session exchanges distinguish that settled rule from the
+missing factual definition. The first exchange is the architect's session-start
+readback. Neither a handwritten journal overview nor a supplied partner
+definition replaces the Given. Executing these fixture commands passed offline.
+
+Two varied authored goldens and **one isolated negative per clause**, including
+installed-role wiring, are retained. Each golden contains a successful request
+to the lead for the missing definition and reports it as its one action. The
+0094 stand-in acknowledges the assignment without supplying the missing fact.
+Golden 2 additionally reads the accepted receipt decision: its recorded
+consequence, updating the loan register when receipt is established, is not an
+instruction of the reply and adds no action under 0102(2). Only `topic-action`
+applies the 0090/0097 action-counting reading, because that is where this
+example asks for the topic's one action. The request and its report count once,
+as 0103 confirms.
+
+| Clause                | Binding / isolated negative                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `installed-role`      | Composed architect wiring; negative removes the declaration from the prompt.                                                     |
+| `opening-conclusion`  | Notice does not yet establish receipt, before reasons; negative puts nonchronological reasons first.                             |
+| `lead-request`        | Actually requests the definition from the lead and reports it; negative claims a request with no corresponding act in the trace. |
+| `topic-action`        | The reported request is the only action; negative adds a separate compatible audit instruction outside support.                  |
+| `support`             | Settled receipt rule versus unknown notice meaning, and why the definition is needed; negative gives only “There is a gap here.” |
+| `never-invents`       | No invented partner definition; negative asserts shipment as the partner's usage.                                                |
+| `never-settles`       | No settled mapping while its fact is absent; negative claims settlement without supplying any definition.                        |
+| `never-operator-gap`  | No factual gap handed to the operator when the lead can fill it; negative asks the operator for the definition.                  |
+| `never-menu`          | No competing interpretations offered for choice; negative offers shipment and receipt as options.                                |
+| `never-support-steps` | Support is facts and reasons; negative embeds a work sequence.                                                                   |
+| `never-history`       | Conclusion is not buried beneath chronology; negative prepends the session's history.                                            |
+
+The six `never-*` clauses are never-assertions. Overlap is partitioned rather than
+scored twice: explicit forbidden acts belong to their specific never-clause;
+ordinary extra instructions belong to `topic-action`; an absent or unreported
+lead request belongs to `lead-request`. Naming shipment and receipt as a factual
+uncertainty is not a menu. Reporting the already-settled receipt rule is not
+settling the unknown notice mapping. Nonchronological reasons first and a
+chronological opening belong to different clauses.
+
+### Executed red proof
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/promotion-freeze-evidence.test.ts
+```
+
+The temporary test loaded the promoted and replacement recordings. It first
+required each negative to fail exactly `[breaks]`, then deliberately expected
+its five-copy batch to return `passed: true`. Observed **24 intentional failures,
+6 passes**: all eleven replacement negatives and thirteen promoted negatives
+reached that deliberate expectation at line 51 and returned `false`, after
+exact-clause isolation passed. Both replacement goldens and all three promoted
+goldens passed every clause and their batches; the real replacement fixture
+commands also passed without a model. The temporary test was removed.
+
+These are authored recordings and authored rubric answers. They prove binding,
+schema/wiring, clause isolation and aggregation, not a model judge's semantic
+reliability. No live subject, judge, smoke or batch ran. Agents/2, every other
+example's checks, example text, product code and shared runners are unchanged.
+Ordinary assertions retain four-of-five; never-assertions must hold in every
+run taken under 0088/0092.
+
+The exact live test name, **only for the next judgment**, is:
+
+```text
+Example held-out agents/4 — requests the missing partner definition before treating a loan as ended live: parallel installed-agent runs stop when the outcome is decided
+```
+
+### Offline acceptance after the 0103 freeze
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+pnpm lint
+```
+
+Observed: visible **305 passed, 102 skipped across 12 files**; held-out architect
+**18 passed, 8 skipped**, including unchanged agents/2 and the new scenario's
+varied goldens, eleven exact-clause negative rejections and aggregation.
+`pnpm lint` passed, checking **1066 files** without fixes. The two owned scenario
+files and thirteen replacement recordings were formatted before acceptance.
