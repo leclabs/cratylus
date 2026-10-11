@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
@@ -61,6 +61,46 @@ function declaration(f: Fixture, role: string): string {
   );
   return text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim();
 }
+
+// omp expands @files as prompt input; only the short filename enters argv.
+export function promptArgument(prompt: string, output: string): string {
+  const path = resolve(output, 'prompt.txt');
+  writeFileSync(path, prompt);
+  return `@${path}`;
+}
+
+export function recordingDirectory(root: string, scenario: Scenario): string {
+  const heldOut = scenario.ref.startsWith('held-out ');
+  const ref = scenario.ref.replace(/^held-out /, '');
+  return join(root, 'architect', heldOut ? 'held-out' : 'visible', ref);
+}
+
+// Old runs saved each turn before attempting judgment. Read those, never the
+// collided top-level recording.json that another suite may have overwritten.
+export function retainedSubject(scenario: Scenario, input: string): Recording {
+  const subject = join(input, 'subject.json');
+  const records: Recording[] = existsSync(subject)
+    ? [JSON.parse(readFileSync(subject, 'utf8'))]
+    : [scenario.prompt, ...(scenario.turns ?? [])].map((_, index) =>
+        JSON.parse(
+          readFileSync(
+            join(input, `turn-${index + 1}`, 'recording.json'),
+            'utf8',
+          ),
+        ),
+      );
+  for (const record of records)
+    if (!wiringHolds(record, scenario.role))
+      throw new Error(
+        `Retained subject is not a wired ${scenario.role}: ${input}`,
+      );
+  return {
+    ...records.at(-1)!,
+    messages: records.flatMap((record) => record.messages),
+    snapshots: records.flatMap((record) => record.snapshots),
+    answers: {},
+  };
+}
 function launch(
   f: Fixture,
   role: string,
@@ -100,7 +140,7 @@ function launch(
     config,
     ...(inspect ? ['--model', 'fixture/base'] : []),
     ...(judge ? ['--tools', ''] : []),
-    prompt,
+    promptArgument(prompt, output),
   ];
   const result = spawnSync('omp', args, {
     cwd: f.cwd,
@@ -250,6 +290,49 @@ function sessionFile(f: Fixture, scenario: Scenario): string {
   );
   return file;
 }
+
+export function judgeRecording(
+  scenario: Scenario,
+  recording: Recording,
+  output: string,
+): Recording {
+  if (process.env.EXECUTION_LIVE !== '1')
+    throw new Error('Requires EXECUTION_LIVE=1');
+  mkdirSync(output, { recursive: true });
+  // A separate untyped evaluator, not the workflow assayer whose contract
+  // requires a judgment brief and a verdict-per-concept return.
+  const j = fixture();
+  try {
+    credentials(j);
+    j.declaration({
+      name: 'rubric-judge',
+      body: 'Judge supplied evidence against the fixed rubric. Return only the requested JSON.',
+      model: process.env.EXECUTION_JUDGE_MODEL ?? 'anthropic/claude-opus-5-5',
+      effort: 'high',
+    });
+    const prompt = rubricPrompt(scenario, recording);
+    writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
+    const judged = launch(
+      j,
+      'rubric-judge',
+      prompt,
+      join(output, 'rubric'),
+      false,
+      true,
+    );
+    const result = {
+      ...recording,
+      answers: parseAnswers(judged.report, scenario),
+    };
+    writeFileSync(
+      join(output, 'recording.json'),
+      JSON.stringify(result, null, 2),
+    );
+    return result;
+  } finally {
+    j.dispose();
+  }
+}
 export function liveRun(scenario: Scenario, output: string): Recording {
   if (process.env.EXECUTION_LIVE !== '1')
     throw new Error('Requires EXECUTION_LIVE=1');
@@ -275,37 +358,14 @@ export function liveRun(scenario: Scenario, output: string): Recording {
       messages: records.flatMap((record) => record.messages),
       snapshots: records.flatMap((record) => record.snapshots),
     };
-    // A separate untyped evaluator, not the workflow assayer whose contract
-    // requires a judgment brief and a verdict-per-concept return.
-    const j = fixture();
-    try {
-      credentials(j);
-      j.declaration({
-        name: 'rubric-judge',
-        body: 'Judge supplied evidence against the fixed rubric. Return only the requested JSON.',
-        model: process.env.EXECUTION_JUDGE_MODEL ?? 'anthropic/claude-opus-5-5',
-        effort: 'high',
-      });
-      const prompt = rubricPrompt(scenario, recording);
-      const judged = launch(
-        j,
-        'rubric-judge',
-        prompt,
-        join(output, 'rubric'),
-        false,
-        true,
-      );
-      recording.answers = parseAnswers(judged.report, scenario);
-      writeFileSync(join(output, 'rubric-prompt.txt'), prompt);
-    } finally {
-      j.dispose();
-    }
+    // Preserve the subject independently of judgment, including when the judge
+    // fails. Re-judgment never needs another architect session.
     writeFileSync(
-      join(output, 'recording.json'),
+      join(output, 'subject.json'),
       JSON.stringify(recording, null, 2),
     );
     writeFileSync(join(output, 'session.jsonl'), readFileSync(session));
-    return recording;
+    return judgeRecording(scenario, recording, output);
   } finally {
     f.dispose();
   }

@@ -53,3 +53,28 @@ EXECUTION_LIVE=1 EXECUTION_RECORDINGS=/absolute/output/path pnpm --filter cratyl
 ```
 
 Live execution is opt-in, five installed-agent runs per example, after the build supplies the contract's new journal/ledger commands. No live model sessions or repository-wide checks were run by this check-writer.
+
+## Prompt transport and retained-subject re-judgment
+
+Both subject and rubric-judge prompts are written verbatim to each launch's `prompt.txt` and passed through omp's documented `@file` input. Only the filename enters argv, so a large trace does not hit the operating system's per-argument size limit.
+
+Under `EXECUTION_RECORDINGS`, this suite writes `architect/visible/<context>/<example>/`. Other suites' numeric example directories cannot collide with these paths. Each new run preserves `subject.json` and the native session before starting its judge.
+
+`EXECUTION_REJUDGE` selects retained subjects instead of launching architects. It still requires `EXECUTION_LIVE=1` for the separate judges. The destination must be outside the retained input tree; the source is only read. Re-judgment keeps the original clauses, rubrics and five-run thresholds. For older runs lacking `subject.json`, it reconstructs the subject from all required `turn-N/recording.json` files, checks architect wiring, and ignores the collision-prone top-level `recording.json`. Missing turns refuse re-judgment rather than silently narrowing its evidence.
+
+To re-judge the retained workflow/18, workflow/19 and workflow/23 subjects in the old numeric layout, without changing `/tmp/live-visible` or starting new subject sessions:
+
+```sh
+env -u EXECUTION_RED -u EXECUTION_PREFLIGHT \
+  EXECUTION_LIVE=1 \
+  EXECUTION_REJUDGE=/tmp/live-visible \
+  EXECUTION_REJUDGE_LEGACY=1 \
+  EXECUTION_RECORDINGS=/tmp/rejudged-architect \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/architect.test.ts \
+  -t 'Example workflow/(18|19|23) .*rejudge:'
+```
+
+Results go to `/tmp/rejudged-architect/architect/visible/workflow/{18,19,23}/`. For future namespaced recordings, omit `EXECUTION_REJUDGE_LEGACY` and set `EXECUTION_REJUDGE` to their `EXECUTION_RECORDINGS` root. The runner's offline regression tests cover large prompt preservation, output separation, collision-safe replay, complete multi-turn reconstruction and rejection of another role's recordings.
+
+After the transport/replay fix, the visible offline suite and runner regressions passed together: **95 passed, 52 skipped** (87 proof/negative/aggregation tests and 8 runner regressions). No live subjects or judges were run for this fix, and the active retained-recordings directory was not modified.
