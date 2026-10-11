@@ -9,7 +9,7 @@ export type Capability = (typeof CAPABILITIES)[number];
 export const CAPABILITY_SUMMARIES = {
   eventTap: 'Attach a passive observer to the host harness’s lifecycle events',
   concepts:
-    'Keep the concept journal: the conceptual design and its decisions, each bounded context’s concepts appended version by version with the reason each was written and never edited, from which the current design, every concept’s history and the open decisions are read',
+    'Read and record a project’s conceptual design: each bounded context told whole in its overview first (its subject, its concepts, its open decisions and the cuts in flight, the changes to the design being built now), then its decisions and each concept’s history; and record each change to a context, a concept or a decision as a new version with its reason, never an edit',
   workPackage:
-    'Slice a cut into work packages and hand them out level by level: each package’s outputs no other builder changes, every concept served and every example owned, the builders’ commits kept to their own outputs, and the cut’s rounds, whole-check runs and agent runs counted',
+    'Slice a cut, one reviewable change, into work packages and keep its ledger: each package’s outputs, the files it alone writes, no other builder changes; every concept served and every example owned; each builder’s commits kept to its own outputs; where the cut stands, from what its agents were given and returned; and its rounds and the agents’ work on it counted',
 } as const satisfies Readonly<Record<Capability, string>>;

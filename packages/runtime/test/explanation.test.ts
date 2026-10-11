@@ -53,6 +53,7 @@ async function run(
 }
 
 const VERBS = [
+  'overview',
   'state',
   'design',
   'history',
@@ -69,6 +70,7 @@ const VERBS = [
 
 /** Each verb's parameters, as the realization contract names them. */
 const PARAMETERS: Record<string, string[]> = {
+  overview: ['context'],
   state: ['context'],
   design: ['context'],
   history: ['concept', 'context'],
@@ -130,7 +132,14 @@ describe('concepts --explain', () => {
         'parameters',
       ]);
       expect(explained.effect).toBe(
-        ['state', 'design', 'history', 'decisions', 'leakage'].includes(verb)
+        [
+          'overview',
+          'state',
+          'design',
+          'history',
+          'decisions',
+          'leakage',
+        ].includes(verb)
           ? 'reads'
           : 'appends',
       );
@@ -173,7 +182,7 @@ describe('concepts --explain', () => {
     expect(positional('decide')).toEqual(['id']);
     expect(positional('accept')).toEqual(['id']);
     expect(positional('classify')).toEqual(['id']);
-    for (const verb of ['state', 'design', 'decisions', 'leakage'])
+    for (const verb of ['overview', 'state', 'design', 'decisions', 'leakage'])
       expect(positional(verb), verb).toEqual([]);
   });
 
@@ -203,6 +212,7 @@ describe('concepts --explain', () => {
       explain(JOURNAL).verbs.map((v) => [v.name, v.concept]),
     );
     expect(concepts).toEqual({
+      overview: 'context overview',
       state: 'conceptual design',
       design: 'conceptual design',
       history: 'concept',

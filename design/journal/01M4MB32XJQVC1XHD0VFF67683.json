@@ -1,0 +1,19 @@
+{
+  "id": "01M4MB32XJQVC1XHD0VFF67683",
+  "at": "2026-10-11T02:01:26.706Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "context overview",
+  "wording": "an account of one bounded context computed from the concept journal and the ledger, never written by hand: its subject and place in the context map, then its concepts as plain prose, whole before parts, the concept no other is built from first and every other after a concept built from it, then its open decisions and the cuts in flight on it; it is read first at every reconstitution, so a session meets the design as one whole before its parts.",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "context map",
+    "decision",
+    "concept journal",
+    "ledger",
+    "cut"
+  ],
+  "reason": "Reconstitution cut (0076), part 1: a fresh session met about sixty separate concepts and no whole account, and could not tell which cuts were in flight.",
+  "supersedes": []
+}

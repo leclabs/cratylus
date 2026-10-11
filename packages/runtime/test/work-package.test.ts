@@ -14,6 +14,7 @@ import { WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
 import { dependencyGraph } from '../src/capabilities/work-package/graph.js';
 import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import { explain } from '../src/explanation.js';
+import { appendLifecycle } from '../src/lifecycle/index.js';
 
 const repositoryRoot = fileURLToPath(new URL('../../..', import.meta.url));
 const scratch: string[] = [];
@@ -24,7 +25,8 @@ afterAll(() => {
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' }).trim();
 
-/** A repository whose cut `booking/delivery` has one example per concept. */
+/** A repository whose cut `delivery` has one example per concept, in the
+ *  context `booking`. */
 function repository(...concepts: string[]): string {
   const repo = join(mkdtempSync(join(tmpdir(), 'work-package-')), 'repo');
   scratch.push(join(repo, '..'));
@@ -42,7 +44,7 @@ function repository(...concepts: string[]): string {
 }
 
 const wp = (repo: string, verb: string, ...args: string[]) =>
-  dispatchWorkPackage([verb, '--cut', 'booking/delivery', ...args], {
+  dispatchWorkPackage([verb, '--cut', 'delivery', ...args], {
     from: repo,
   });
 
@@ -54,6 +56,17 @@ const refused = (repo: string, verb: string, ...args: string[]): string => {
   }
   throw new Error(`workPackage ${verb} was not refused`);
 };
+
+/** The harness reports `name`'s builder dispatched, as the binding does. */
+const dispatched = (repo: string, name: string) =>
+  appendLifecycle(repo, {
+    kind: 'dispatched',
+    transition: `${name}-dispatched`,
+    cut: 'delivery',
+    workPackage: name,
+    role: 'builder',
+    run: name,
+  });
 
 describe('the dependency graph', () => {
   it('computes levels as 1 plus the longest chain below', () => {
@@ -85,7 +98,7 @@ describe('workPackage refusals', () => {
     expect(
       (() => {
         try {
-          dispatchWorkPackage(['levels', '--cut', 'booking/absent'], {
+          dispatchWorkPackage(['levels', '--cut', 'absent'], {
             from: repo,
           });
         } catch (error) {
@@ -93,7 +106,7 @@ describe('workPackage refusals', () => {
         }
       })(),
     ).toMatch(
-      /^workPackage levels: .*design\/examples\/booking\/absent\.md is missing/,
+      /^workPackage levels: .*no design\/examples\/<context>\/absent\.md exists/,
     );
   });
 
@@ -153,7 +166,7 @@ describe('workPackage refusals', () => {
   it('REFUSES a commit git refuses, leaving the index as it was', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'a/');
-    wp(repo, 'dispatch');
+    dispatched(repo, 'a');
     writeFileSync(join(repo, 'staged.txt'), 'staged\n');
     git(repo, 'add', 'staged.txt');
     const index = git(repo, 'ls-files', '--stage');
@@ -186,7 +199,7 @@ describe('workPackage refusals', () => {
       '--depends-on',
       'a',
     );
-    wp(repo, 'dispatch');
+    dispatched(repo, 'a');
     mkdirSync(join(repo, 'src/reserve'), { recursive: true });
     writeFileSync(join(repo, 'src/reserve/x.ts'), 'theirs\n');
     const index = git(repo, 'ls-files', '--stage');
@@ -221,7 +234,7 @@ describe('workPackage refusals', () => {
       '--depends-on',
       'a',
     );
-    wp(repo, 'dispatch');
+    dispatched(repo, 'a');
     writeFileSync(join(repo, 'a[b].ts'), 'mine\n');
     writeFileSync(join(repo, 'ab.ts'), 'theirs\n');
     wp(repo, 'commit', 'a', '--message', 'mine', '--path', 'a[b].ts');
@@ -229,16 +242,17 @@ describe('workPackage refusals', () => {
     expect(git(repo, 'ls-files', '--stage', '--', 'ab.ts')).toBe('');
   });
 
-  it('REFUSES dispatch while an example names no concept, naming its number', () => {
+  it('REPORTS an example that names no concept as unowned, by its ref', () => {
     const repo = repository('delivery');
     writeFileSync(
       join(repo, 'design/examples/booking/delivery.md'),
       '1. (delivery) **Given** delivery.\n\n2. **Given** no concept.\n',
     );
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'a/');
-    expect(refused(repo, 'dispatch')).toBe(
-      'workPackage dispatch: example 2 has no owner; nothing is handed out',
-    );
+    expect(wp(repo, 'inventory')).toMatchObject({
+      unserved: [],
+      unowned: ['booking/2'],
+    });
     expect(wp(repo, 'levels')).toMatchObject({
       levels: [{ level: 1, packages: [{ name: 'a', state: 'submitted' }] }],
     });
@@ -255,7 +269,14 @@ describe('the whole check', () => {
     const repo = repository('delivery');
     wp(repo, 'check', '--failure', 'a');
     wp(repo, 'check', '--failure', 'a', '--failure', 'b');
-    wp(repo, 'run', '--role', 'builder', '--tokens', '7');
+    appendLifecycle(repo, {
+      kind: 'returned',
+      transition: 'fix-returned',
+      cut: 'delivery',
+      role: 'builder',
+      run: 'fix',
+      tokens: 7,
+    });
     expect(wp(repo, 'check', '--failure', 'b')).toMatchObject({
       round: 3,
       wholeCheckRuns: 3,
@@ -266,7 +287,7 @@ describe('the whole check', () => {
       ],
     });
     expect(wp(repo, 'efficiency')).toEqual({
-      cut: 'booking/delivery',
+      cut: 'delivery',
       agentRuns: { total: 1, byRole: { builder: 1 } },
       rounds: 3,
       wholeCheckRuns: 3,

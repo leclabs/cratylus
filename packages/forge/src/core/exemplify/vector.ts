@@ -213,14 +213,26 @@ export function renderAgentVector(
       continue;
     }
     if (arity === 'slots') {
-      const declared = (meta.slots ?? []).map((s) => s.name);
+      const slots = meta.slots ?? [];
+      const declared = slots.map((s) => s.name);
       const filled = plan.fragments.map((f) => f.slot);
-      if (
-        filled.length !== declared.length ||
-        declared.some((slot) => !filled.includes(slot))
-      ) {
+      // An optional slot may be left unfilled; every other slot takes exactly one.
+      const fits =
+        filled.every(
+          (slot, at) =>
+            slot !== undefined &&
+            declared.includes(slot) &&
+            filled.indexOf(slot) === at,
+        ) && slots.every((s) => s.optional === true || filled.includes(s.name));
+      if (!fits) {
+        const required = slots
+          .filter((s) => s.optional !== true)
+          .map((s) => s.name);
+        const optional = slots
+          .filter((s) => s.optional === true)
+          .map((s) => s.name);
         reasons.push(
-          `dimension '${dimension}' has slots: exactly one fragment per slot (${declared.join(', ')}), got ${filled.map((s) => s ?? '(no slot)').join(', ')}`,
+          `dimension '${dimension}' has slots: exactly one fragment per slot (${required.join(', ')}${optional.length > 0 ? `; optional: ${optional.join(', ')}` : ''}), got ${filled.map((s) => s ?? '(no slot)').join(', ')}`,
         );
         continue;
       }

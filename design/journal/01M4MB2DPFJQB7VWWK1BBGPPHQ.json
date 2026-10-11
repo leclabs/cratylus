@@ -1,0 +1,14 @@
+{
+  "id": "01M4MB2DPFJQB7VWWK1BBGPPHQ",
+  "at": "2026-10-11T02:01:04.975Z",
+  "kind": "decide",
+  "decisionId": "0078",
+  "context": "agents",
+  "title": "The communication-style ordering slot: bottom-line-up-front",
+  "situation": "0070 makes bottom line up front a fixed value of the architect's communication-style, a factor value whose sign the cold-decode oracle decides. 0070's acceptance reason summarized that day's batch and misstated it: conclusion-first and answer-first did carry recommendation or answer first, as bottom-line-up-front did. The batch, three cold runs per candidate, slot named alone under communication-style, value named alone: ordering read as the sequence a reply presents its content, conclusion before support, in 3 of 3; order in 1 of 3, the rest reading it as the factor's priority; structure, shape and arrangement read mainly as format (headings, lists, prose). Values bottom-line-up-front, conclusion-first, answer-first and bluf all read as the main conclusion, answer or recommendation first, then support, in 3 of 3; inverted-pyramid added decreasing importance.",
+  "decision": "The slot is ordering, the sequence a reply presents its content in. Its value for the architect is bottom-line-up-front, fixed: the conclusion first, then one recommended action per topic, then only the support a layman needs; never a menu of options or a question it can answer itself. Among the values tied in the batch, bottom-line-up-front is kept as the industry's own name for this practice and the one the operator named; its residue, one recommended action per topic and no menu, is stated in the value's explanation.",
+  "consequences": "Realized in the reconstitution cut with 0070. This decision states the batch's evidence correctly and governs over the summary in 0070's acceptance reason.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

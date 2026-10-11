@@ -1,6 +1,6 @@
 // The builder role: master design §3, the builder column. The design states only its
 // realization right (P); every other decision class is – (no part), as confirmed by
-// the meaning-holder.
+// the architect.
 
 import type { RoleCell } from '../compose.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';

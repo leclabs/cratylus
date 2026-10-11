@@ -1,6 +1,6 @@
 # Examples · cut 6 · capability port and capability interface
 
-Context: delivery. Confirmed by the meaning-holder on 2026-10-10. Concepts: capability port, capability fidelity, capability interface. Realized for the
+Context: delivery. Approved by the architect holding the context on 2026-10-10. Concepts: capability port, capability fidelity, capability interface. Realized for the
 concept journal. Decision in force: 0037 (capability interface on omp, described by the runtime).
 
 **Structural** examples install and call the tool or the command and assert on what is offered and what comes

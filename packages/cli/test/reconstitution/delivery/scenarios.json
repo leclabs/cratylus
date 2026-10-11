@@ -1,0 +1,105 @@
+[
+  {
+    "ref": "delivery/6",
+    "example": "Given a product delivers the concept journal and work package capability, when its delivered skills and agent-facing capability explanations are inspected, then the capabilities explain themselves, including when to reach for them; no workflow overview skill, procedure skill or reach-for-this-tool skill restates those capabilities. This removes the duplication retired by 0081, not unrelated agent procedures.",
+    "clauses": [
+      {
+        "id": "self-explains",
+        "binds": [
+          "the capabilities explain themselves, including when to reach for them"
+        ],
+        "rubric": "Both capability explanations include their purpose and when to reach for them without depending on a separate skill."
+      },
+      {
+        "id": "no-restatement",
+        "binds": [
+          "no workflow overview skill, procedure skill or reach-for-this-tool skill restates those capabilities"
+        ],
+        "rubric": "No delivered skill independently describes these capabilities' meaning, when to reach for them, or how to follow the workflow they provide. A mention in an unrelated agent procedure is not a restatement and must not fail.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "ref": "delivery/9",
+    "example": "Given a reader knows the product’s context but not how the workflow is realized, when the reader sees the delivered concept journal and work package interfaces, then each interface explains the concepts it serves. Names and verbs use those concepts’ own words; each operation says what purpose it serves; each says when to reach for it; the reader can distinguish reading the design from finding ready work packages without consulting another account. The interface never substitutes implementation terminology for concept meaning or assumes the reader has cratylus’s internal journal.",
+    "clauses": [
+      {
+        "id": "names",
+        "binds": ["Names and verbs use those concepts’ own words"],
+        "rubric": "Names and operations speak of concepts, journal, decisions, cuts and work packages rather than storage machinery."
+      },
+      {
+        "id": "purpose",
+        "binds": ["each operation says what purpose it serves"],
+        "rubric": "Every offered operation explains its purpose, not merely its name."
+      },
+      {
+        "id": "when",
+        "binds": ["each says when to reach for it"],
+        "rubric": "Every offered operation gives meaningful when-to-use guidance."
+      },
+      {
+        "id": "distinction",
+        "binds": [
+          "distinguish reading the design from finding ready work packages"
+        ],
+        "rubric": "The reader can tell which capability reads the design and which finds work ready for dispatch."
+      },
+      {
+        "id": "no-machinery",
+        "binds": [
+          "never substitutes implementation terminology for concept meaning"
+        ],
+        "rubric": "Implementation terminology never replaces the concepts’ meanings.",
+        "never": true
+      },
+      {
+        "id": "no-internal",
+        "binds": [
+          "never substitutes implementation terminology for concept meaning or assumes the reader has cratylus’s internal journal"
+        ],
+        "rubric": "The descriptions stand on their own without assuming access to cratylus’s design.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "ref": "delivery/10",
+    "prompt": "Recover our film-production context from the supplied overview and available capability explanations, and tell me what the current design, unsettled choice and recorded work in flight are.",
+    "example": "Given the product’s agent is given its context overview through the capability and no workflow-restating skill, when its understanding of that account is judged, then the account is sufficient to orient it to that context and the purpose of the available workflow capabilities. It can state the context’s whole before its parts, distinguish an open decision from a settled concept, and identify where to ask for the recorded work in flight. It never has to treat a skill’s second description as more authoritative than the capability or invent missing workflow state.",
+    "clauses": [
+      {
+        "id": "whole",
+        "binds": ["state the context’s whole before its parts"],
+        "rubric": "States production before shoot and take; faithfully explains what those concepts mean."
+      },
+      {
+        "id": "decision",
+        "binds": ["distinguish an open decision from a settled concept"],
+        "rubric": "Treats colour treatment as undecided, distinct from settled production concepts."
+      },
+      {
+        "id": "recorded-work",
+        "binds": ["identify where to ask for the recorded work in flight"],
+        "rubric": "Identifies the work package capability state or concept journal overview as where to query recorded work in flight."
+      },
+      {
+        "id": "no-second-account",
+        "binds": [
+          "never has to treat a skill’s second description as more authoritative"
+        ],
+        "rubric": "Uses the capability account, not a competing workflow skill as authority.",
+        "never": true
+      },
+      {
+        "id": "no-invention",
+        "binds": [
+          "never has to treat a skill’s second description as more authoritative than the capability or invent missing workflow state"
+        ],
+        "rubric": "Does not invent cuts, status, approvals or decisions beyond the supplied account.",
+        "never": true
+      }
+    ]
+  }
+]

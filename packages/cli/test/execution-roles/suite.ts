@@ -1,10 +1,4 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -13,6 +7,7 @@ import {
   proveOffline,
 } from '@cratylus/runtime';
 import { describe, expect, it } from 'vitest';
+import { liveBatch } from '../rubric-judge.js';
 import { type Recording, type Scenario, assess, check } from './check.js';
 import { liveRun, preflight } from './runner.js';
 
@@ -114,40 +109,26 @@ export function roleSuite(directory: string) {
                 'preflight',
               )
             : undefined;
-          preflight(scenario, output);
+          return preflight(scenario, output);
         },
         90_000,
       );
       it.runIf(process.env.EXECUTION_LIVE === '1')(
-        'live: five installed-agent runs against the fixed scenario',
+        'live: parallel installed-agent runs stop when the outcome is decided',
         async () => {
           const directory =
             process.env.EXECUTION_RECORDINGS ??
             mkdtempSync(join(tmpdir(), 'execution-roles-'));
           const output = join(directory, String(scenario.number));
-          mkdirSync(output, { recursive: true });
-          const runs: Recording[] = [];
-          const errors: string[] = [];
-          for (let index = 1; index <= 5; index++) {
-            try {
-              runs.push(liveRun(scenario, join(output, `run-${index}`)));
-            } catch (error) {
-              errors.push(`Run ${index}: ${String(error)}`);
-            }
-          }
-          writeFileSync(
-            join(output, 'errors.json'),
-            JSON.stringify(errors, null, 2),
-          );
-          expect(errors, `Recordings: ${output}`).toEqual([]);
-          const batch = await judgeBatch(source, runs, { atLeast: 4, of: 5 });
-          writeFileSync(
-            join(output, 'assessment.json'),
-            JSON.stringify(batch, null, 2),
+          const batch = await liveBatch(
+            source,
+            (index, signal) =>
+              liveRun(scenario, join(output, `run-${index}`), signal),
+            output,
           );
           expect(batch.passed, JSON.stringify(batch)).toBe(true);
         },
-        3_900_000,
+        10_000_000,
       );
     });
 }

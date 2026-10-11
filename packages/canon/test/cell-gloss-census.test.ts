@@ -221,6 +221,7 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
     const fields = await census();
     const cells = new Set(fields.map((f) => f.cell));
     expect([...cells].sort(), 'the cell interfaces censused').toEqual([
+      'GuardCell',
       'HookCell',
       'RuleCell',
     ]);

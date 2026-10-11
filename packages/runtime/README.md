@@ -189,6 +189,6 @@ through the global or the module while judging.
 holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.
 
 An example's `behavioral` check (`ExampleCheck`) carries the check, its recordings, a threshold
-and a runner. The meaning-holder's `confirm` and `refreeze` freeze it only when offline proof over
+and a runner. The architect's `confirm` and `refreeze` freeze it only when offline proof over
 its recordings succeeds, never running the runner, and otherwise refuse with the findings;
 `checkExample` runs the runner `of` times and passes when `judgeBatch` passes.

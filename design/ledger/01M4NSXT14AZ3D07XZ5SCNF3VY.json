@@ -1,0 +1,17 @@
+{
+  "id": "01M4NSXT14AZ3D07XZ5SCNF3VY",
+  "at": "2026-10-11T15:39:56.836Z",
+  "kind": "update",
+  "transition": "update:reconstitution:01M4NSXT134S150BB5G2YMFHDN",
+  "cut": "reconstitution",
+  "workPackage": "contracts",
+  "changes": {
+    "concepts": [
+      "binding",
+      "reach",
+      "drift",
+      "architect",
+      "roles"
+    ]
+  }
+}

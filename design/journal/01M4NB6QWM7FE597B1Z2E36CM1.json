@@ -1,0 +1,14 @@
+{
+  "id": "01M4NB6QWM7FE597B1Z2E36CM1",
+  "at": "2026-10-11T11:22:40.916Z",
+  "kind": "decide",
+  "decisionId": "0097",
+  "context": "agents",
+  "title": "Check rulings on record: per-topic rubrics read 0090 generally; agents 20 opens with the architect's readback",
+  "situation": "Two check rulings given in conversation during the reconstitution cut rest on nothing in the journal, and an assayer asked that they be recorded: 0090's reading for every per-topic rubric, and agents 20's history opening with the architect's own session-start readback.",
+  "decision": "(1) Every rubric asking for an outcome or an action per topic reads 0090 the same way: a decision taken in the turn, an approval included, and reported with its reason is that topic's one outcome and action; a separate follow-on action for the same topic fails the clause even where it does not compete. Workflow 23's one-action and agents 18's exactly-one-action rubrics rebind to this, each seen red first. (2) Under 0089, agents 20's continuing-session history opens with the architect's own session-start readback, which names the open question as recorded, so the Given's 'all necessary outcomes are in hand' holds in the fixture.",
+  "consequences": "No clause, threshold or example text changes.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

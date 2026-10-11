@@ -33,6 +33,7 @@
 // `@cratylus/forge` are a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { AgentContract } from './contract.js';
 import type { HookSubstrate } from './hook-cell.js';
 import type { EventName } from './hook/index.js';
 
@@ -160,6 +161,8 @@ export type Arity = 'scalar' | 'set' | 'slots' | 'attribute';
 export interface Slot {
   readonly name: string;
   readonly gloss?: string;
+  /** `true` ⇒ a role may leave this coordinate unfilled; every other slot takes exactly one value. */
+  readonly optional?: true;
 }
 
 // ── The mark ────────────────────────────────────────────────────────────────
@@ -600,8 +603,22 @@ export interface Agent {
    * host's default. A harness binds it through a model role named for the agent.
    */
   readonly routing?: { readonly tier: string; readonly effort: string };
-  /** OPTIONAL — the agent has no tool that changes anything. Absent ⇒ it may. */
-  readonly readOnly?: true;
+  /**
+   * OPTIONAL — the agent's typed handoff: the JSON Schema its assignment must fit
+   * when it is dispatched or launched, and the one its deliverable must fit when
+   * it returns. Copied by the corpus's own fold from the contracts its assignment
+   * and deliverable values carry. Absent ⇒ its handoff is free text.
+   *
+   * A harness binds the deliverable as its own output schema and checks the
+   * assignment with `checkAssignment` before the agent runs.
+   */
+  readonly contract?: AgentContract;
+  /**
+   * OPTIONAL — the per-turn persistence protocol the agent re-grounds its stance
+   * by at the top of every turn, naming its drift tells. Text the corpus's fold
+   * carries for every agent; a harness renders it into the agent's instructions.
+   */
+  readonly persistence?: string;
   /**
    * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
    * omitted, and an empty list means the same thing as absent. Carried on the
@@ -755,6 +772,8 @@ export function markToColor(mark: Mark): string {
 // The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
 // concrete cell instances live in the consuming corpus (canon).
 export {
+  type GuardCell,
+  type GuardJudge,
   type HookCell,
   type HookMessage,
   type HookSource,
@@ -766,6 +785,13 @@ export {
   resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
+export {
+  type AgentContract,
+  type ContractCheck,
+  type JsonSchema,
+  assignmentIn,
+  checkAssignment,
+} from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
 // shapes it types. The MEMBERS are the corpus's (`MODEL.md:22`), so there is
@@ -787,12 +813,12 @@ export type { EventName } from './hook/index.js';
 // against" is this package's charter.
 
 /**
- * WHERE a plugin's cells live on disk — the four package-relative dirs a
+ * WHERE a plugin's cells live on disk — the package-relative dirs a
  * projector scans to discover them.
  *
  * This is the half of a plugin declaration that is pure DISCOVERY MECHANICS: it
  * answers "where do I look", which is mapping, and mapping is the projector's to
- * own. It is named rather than left as four loose fields so the resolver can take
+ * own. It is named rather than left as loose fields so the resolver can take
  * a `Layout` without taking a whole plugin.
  *
  * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
@@ -810,6 +836,8 @@ export interface Layout {
   readonly skills?: string;
   /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
+  /** Dir of guard cell modules this plugin contributes — each judges an act for the agents composing a value it holds. */
+  readonly guards?: string;
 }
 
 /**

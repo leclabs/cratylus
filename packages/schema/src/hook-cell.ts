@@ -6,6 +6,7 @@
 // resolves those placeholders into the bytes deployed from each `targetPath`;
 // the schema carries the template, never its runtime-dependent values.
 
+import type { JsonSchema } from './contract.js';
 import type { EventName, Hook, Substrate } from './hook/index.js';
 
 /** Which substrate a hook's event fires in — the `realize`-target family. */
@@ -117,6 +118,55 @@ export interface HookCell<E extends EventName = EventName> {
    * worker template. Absent on a hook that says nothing to a reader.
    */
   readonly speech?: readonly HookMessage[];
+  /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
+  readonly refs?: readonly string[];
+}
+
+/**
+ * The judge a guard asks about an act: the prompt it reads the act with, and the
+ * one JSON verdict it must answer. The guard judges inside the harness's own
+ * session through the session's model, with no worker process.
+ */
+export interface GuardJudge {
+  /** The judge's system prompt: what it reads the act for, and the exact JSON it answers with. */
+  readonly prompt: string;
+  /** The JSON Schema of the verdict the judge answers. */
+  readonly verdict: JsonSchema;
+  /** The boolean verdict field whose `true` refuses the act. */
+  readonly refusesOn: string;
+  /**
+   * Whether the judge also reads the session's conversation so far, as the operator
+   * and the agent exchanged it in visible text (delegates' reports included), ahead
+   * of the act. Absent ⇒ the act alone.
+   */
+  readonly conversation?: boolean;
+}
+
+/**
+ * A `guard` source cell: a hook cell that JUDGES an act rather than running a
+ * worker. It is bound to an act by its events and to agents by composition: an
+ * enforcing value `realizedBy` its id puts it on exactly the agents that compose
+ * that value, so it guards the value observed drifting and nothing else.
+ *
+ * When the judge's verdict sets `refusesOn`, the act is refused with `refusal`
+ * followed by the judge's reason. An answer that is not the verdict refuses
+ * nothing and is reported: a guard that could not judge fails open, aloud.
+ */
+export interface GuardCell<E extends EventName = EventName> {
+  /** Stable id; the anchor α(c) an enforcing value's `realizedBy` names. */
+  readonly id: string;
+  /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */
+  readonly residue: string;
+  /** Which substrate the event fires in. */
+  readonly substrate: HookSubstrate;
+  /** The harness-agnostic events that trigger the hook (≥1). */
+  readonly events: readonly [E, ...E[]];
+  /** The drift tell the guard holds, by its name, which every refusal names. */
+  readonly tell: string;
+  /** The judge the guard asks about the act. */
+  readonly judge: GuardJudge;
+  /** What the refused agent reads, ahead of the judge's reason. */
+  readonly refusal: string;
   /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
   readonly refs?: readonly string[];
 }

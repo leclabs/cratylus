@@ -1,0 +1,14 @@
+{
+  "id": "01M4MC7Q9VG3N1ZFZF0JKBVYWE",
+  "at": "2026-10-11T02:21:27.227Z",
+  "kind": "decide",
+  "decisionId": "0082",
+  "context": "workflow",
+  "title": "Reconstitution cut: examples confirmed",
+  "situation": "The reconstitution cut's examples were written cold by the illustrator, revised after the architect settled the boundaries it flagged, and partitioned: 60 visible across workflow, agents and delivery, 11 held out. The operator, 2026-10-10, delegated the rest of the cut human-out-of-the-loop until it is terminal.",
+  "decision": "The examples are confirmed as they stand on the cut's branch, under the operator's delegation; the architect acts as meaning-holder for all three contexts until the cut is integrated, and they freeze as each check is seen to fail.",
+  "consequences": "The lead is dispatched with the cut; the cut ends integrated into dev under 0080, and pushing stays the operator's.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

@@ -62,6 +62,8 @@ import {
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
+import * as personaGenus from '../src/genus/persona.js';
+import * as primePrincipleGenus from '../src/genus/prime-principle.js';
 import type { Dimension, Value } from '../src/manifest.js';
 import { RESIDUE_OPERATORS, declaredGlyphs } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
@@ -142,33 +144,17 @@ async function allSurfaces(): Promise<Surface[]> {
       text: s.description,
     });
   }
-  for (const name of ['persona.md']) {
-    const raw = readFileSync(join(srcRoot, 'genus', name), 'utf8');
-    const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
-    // ρ binds at the finest separately-consumed grain: `## Protocol` projects
-    // into every Target; the sibling sections are corpus/skill-dir surfaces.
-    // Each section is its own artifact — none silently skipped.
-    for (const section of body.split(/^(?=## )/m)) {
-      const head = section.startsWith('## ')
-        ? (section.split('\n')[0] as string).split(' — ')[0]
-        : '(preamble)';
-      surfaces.push({
-        label: `genus src/genus/${name} ${head}`,
-        cls: 'genus-protocol',
-        text: section,
-      });
-    }
-  }
-  // The prime principle rides into every skill whose laws apply it — the same
-  // ship-whole verbatim carry as the genus protocol, so the same class.
-  {
-    const mod = (await import(
-      pathToFileURL(join(srcRoot, 'genus/prime-principle.ts')).href
-    )) as Record<string, unknown>;
+  // The genus modules ship whole and verbatim: the persona protocol rides every
+  // composed agent (`Agent.persistence`), the prime principle every skill whose
+  // laws apply it, so both are the genus-protocol class.
+  for (const [name, mod] of [
+    ['persona', personaGenus],
+    ['prime-principle', primePrincipleGenus],
+  ] as const) {
     for (const [k, v] of Object.entries(mod)) {
       if (typeof v === 'string') {
         surfaces.push({
-          label: `genus prime-principle ${k}`,
+          label: `genus ${name} ${k}`,
           cls: 'genus-protocol',
           text: v,
         });
@@ -357,7 +343,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     // Named artifacts, not counts-as-exit-codes: a wrong glob yields the empty set,
     // and the empty set travels through every downstream assertion as success.
     const labels = surfaces.map((s) => s.label);
-    expect(labels).toContain('genus src/genus/persona.md ## Protocol');
+    expect(labels).toContain('genus persona personaProtocol');
     expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
@@ -373,7 +359,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);
-    expect(genusLabels).toContain('genus src/genus/persona.md ## Protocol');
+    expect(genusLabels).toContain('genus persona personaProtocol');
     expect(
       surfaces.filter((s) => s.cls === 'dimension-definiens').length,
     ).toBeGreaterThan(100);

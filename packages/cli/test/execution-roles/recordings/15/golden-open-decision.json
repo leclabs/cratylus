@@ -17,7 +17,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The reservation expiry example admits either 24 elapsed hours or the next local midnight. These change the reservation concept. Resolve how we proceed. Your final reply is delivered to the architect."
+          "text": "```assignment\n{\"cut\":\"seats\",\"concepts\":[\"reservation\"],\"examples\":[\"booking/1\"],\"decisions\":[\"0001\"]}\n```\n\nThe reservation expiry example admits either 24 elapsed hours or the next local midnight. These change the reservation concept. Resolve how we proceed. Your final reply is delivered to the architect."
         }
       ],
       "attribution": "user",
@@ -1629,6 +1629,6 @@
   },
   "provenance": {
     "source": "/tmp/execution-visible-live/15/run-1/recording.json",
-    "normalization": "Only newly appended journal snapshots were expanded from their recorded tool-result bytes, after verifying the SHA-256 against every original snapshot. Messages, reports, wiring, other snapshots and rubric answers are unchanged."
+    "normalization": "Newly appended journal snapshots were expanded from recorded tool-result bytes after verifying SHA-256 against each original snapshot. For the 0062 typed-assignment rebind, the existing user prompt now has the seats lead assignment prepended. This is an adapted offline control, not a new live run: the response was captured under the original untyped prompt. All other messages, reports, wiring, snapshots and rubric answers retain their prior bytes."
   }
 }

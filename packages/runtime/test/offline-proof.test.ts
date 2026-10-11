@@ -564,9 +564,9 @@ describe('a behavioral example', () => {
       runs += 1;
       return { text: 'hello' };
     };
-    const ledger = createExampleLedger([behavioral(runner)], 'meaning-holder');
-    await ledger.meaningHolder.confirm('greeting');
-    const unvaried = ledger.meaningHolder.approveChange('greeting', 'narrow', {
+    const ledger = createExampleLedger([behavioral(runner)], 'architect');
+    await ledger.architect.confirm('greeting');
+    const unvaried = ledger.architect.approveChange('greeting', 'narrow', {
       check: {
         kind: 'behavioral',
         check: checkReading(() => {}),
@@ -575,7 +575,7 @@ describe('a behavioral example', () => {
         runner,
       },
     });
-    await expect(ledger.meaningHolder.refreeze(unvaried)).rejects.toThrow(
+    await expect(ledger.architect.refreeze(unvaried)).rejects.toThrow(
       'offline proof did not succeed',
     );
     expect(runs).toBe(0);

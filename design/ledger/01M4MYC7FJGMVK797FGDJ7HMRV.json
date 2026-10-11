@@ -1,0 +1,10 @@
+{
+  "id": "01M4MYC7FJGMVK797FGDJ7HMRV",
+  "at": "2026-10-11T07:38:29.234Z",
+  "kind": "check",
+  "transition": "check:reconstitution:01M4MYC7FGWS8H6XAQ0DDT0MT7",
+  "cut": "reconstitution",
+  "failures": [
+    "catalog-recut examples 2,3,4,5,7: protocol expectation predates the sharpened procedure-past-objective tell (rebound under 0085, seen red against the earlier protocol, in the same round)"
+  ]
+}

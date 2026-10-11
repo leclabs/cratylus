@@ -195,6 +195,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
+  // drives the slots-dimension reader over vectors it builds itself, an optional slot left unfilled.
+  'forge/core/vector-slots.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'forge/catalog/manifest-descriptor.test.ts': 'GATE',
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
@@ -300,8 +302,17 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // runs the leakage detector over text it supplies and the journal verbs in scratch git
   // repositories it builds itself; its leaking and plain passages ARE its fixtures.
   'runtime/leakage.test.ts': 'BEHAVIORAL',
+  // runs the pure ledger fold over entries it builds itself: statuses, approval by two
+  // distinct assayers, failing and disputed packages, phase, ready, figures, report.
+  'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
+  // runs the ledger store, lifecycle, open and completion check in throwaway git repos;
+  // its refused repeated transitions and warnings ARE its fixtures.
+  'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
   // proves checks it supplies, with host reads it makes itself; polices no live artifact.
   'runtime/offline-proof.test.ts': 'BEHAVIORAL',
+  // runs the pure context overview over designs, decisions and cuts it builds itself:
+  // whole before parts, named cycles, and the account told in that order.
+  'runtime/overview/overview.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
   // capability's, a first word that is no capability) ARE its fixtures.
   'runtime/main.test.ts': 'BEHAVIORAL',
@@ -324,6 +335,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
   // supplies itself; its negative cases ARE its fixtures.
   'schema/enforcing.test.ts': 'BEHAVIORAL',
+  // drives `checkAssignment`/`assignmentIn` with schemas and assignments it supplies;
+  // its missing and ill-typed assignments ARE its fixtures.
+  'schema/contract.test.ts': 'BEHAVIORAL',
 };
 
 /** The vocabulary a convicting fixture announces itself in, as the corpus already

@@ -3,6 +3,15 @@
   "recording": {
     "messages": [
       {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "```assignment\n{\"cut\":\"seats\",\"workPackage\":\"reservation\",\"outputs\":[\"src/reserve.mjs\"],\"concepts\":[\"reservation\"],\"examples\":[\"booking/1\"]}\n```\n\nYou own the reservation package in assignment.md. Its visible example passes (node checks/reservation.mjs). There is no failing case. Continue working on your package. Your final reply goes to the lead."
+          }
+        ]
+      },
+      {
         "role": "assistant",
         "content": [
           {

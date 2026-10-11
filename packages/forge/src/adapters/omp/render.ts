@@ -43,13 +43,16 @@
 // for every session (`agent/extensions/` under `~/.omp`), and nothing in an agent
 // declaration names a module of its own. So every module this adapter emits is
 // SESSION-WIDE, and nothing lands under `agent/personas/`: the per-agent modules that
-// once did were reached by no session. A guard composed into named agents is
+// once did were reached by no session. A worker hook composed into named agents is
 // therefore one omp cannot scope (`scopes` is false), and projection reports it as
-// such rather than widen it to every session.
+// such rather than widen it to every session. A GUARD cell is the exception by
+// construction: it judges inside the session module, and only in a main session
+// launched (`--agent`) as an agent whose composition holds the guarded value.
 //
-// WHAT AN AGENT'S REACH AND MODEL BECOME are omp's own declaration settings: the
-// handoffs as `spawns`, a read-only agent's tools as `tools`, and the model as a model
-// role named for the agent, which install binds to the tier and effort it holds.
+// WHAT AN AGENT'S REACH, HANDOFF AND MODEL BECOME are omp's own declaration
+// settings: the handoffs as `spawns`, the deliverable as `output`, and the model as
+// a model role named for the agent, which install binds to the tier and effort it
+// holds. Every agent keeps omp's default tools.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -62,11 +65,12 @@
 // `bin-name-single-home` catches and rightly refused.
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
-import type { Agent } from '@cratylus/schema';
-import type { Hook } from '@cratylus/schema/hook';
+import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import type { Hook, NativeBinding } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
   type AgentDefContext,
+  type ComposedGuard,
   type DispatchIsolation,
   type HarnessAdapter,
   type HarnessProjection,
@@ -153,6 +157,18 @@ export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'workPackage',
 ];
 
+/** The capabilities omp offers whole, as a tool of every turn, rather than mounted
+ *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
+ *  `when` and no verb, so the work package capability's line ended before where
+ *  the cut stands, and an agent asked where its cut stands never met the verb that
+ *  works it out from the ledger. Offered whole, its own explanation, each verb's
+ *  purpose and `when` included, reaches every turn. The concept journal stays a
+ *  device: its line leads with reading the design, and the agents that recover it
+ *  first are sent to it by their session-start note. */
+export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = [
+  'workPackage',
+];
+
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains
  *  itself as a tool and launches a session as an agent declaration. */
@@ -162,6 +178,44 @@ export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
  *  main session as the agent declaration omp discovers by that name (decision
  *  0047). */
 const OMP_AGENT_FLAG = 'agent';
+
+/** The `Symbol.for` key the CRATYLUS module publishes the agent the main session
+ *  was launched as under, on `globalThis`, and the session module reads it from.
+ *  omp's `getFlag` answers only the extension that registered the flag, so the
+ *  session module, which registers none, can never read `--agent` itself. */
+const OMP_LAUNCHED_AGENT_KEY = `${CLI_BIN}.launched-agent`;
+
+/** The `Symbol.for` key the session module lends its judge under, on `globalThis`:
+ *  one verdict field of one judgment. The CRATYLUS module asks it whether a launch
+ *  has read back, and imports no model client of its own. */
+const OMP_JUDGE_KEY = `${CLI_BIN}.judge`;
+
+/** What the judge reads a reconstituting launch's visible text for: the readback. */
+const READBACK_PROMPT = `You judge whether an agent has given the operator its readback, for one drift tell: acting before reading back.
+
+You are given everything the agent has told the operator in visible text this session. The readback tells the operator the current design of the bounded contexts the work touches, their open decisions, and the cuts in flight, saying so plainly where there are none. A promise to read back, a plan or a summary of the request is not a readback. The readback names each open decision as open, and it may go on to say the agent is settling it now. Stating an open decision as already settled, or leaving it out, is not a readback of it. Text after a readback has been given, including the agent's own decisions, never undoes that readback.
+
+Answer with exactly one JSON object and nothing else:
+{"given": <true or false>, "reason": "<one sentence: what the readback covers, or what it lacks>"}`;
+
+/** What a reconstituting launch reads when an act is held for its readback. */
+const READBACK_REFUSAL =
+  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
+
+/** What a reconstituting launch reads when an act is held and it has said nothing
+ *  visible yet: a readback written only in its thinking is one the operator never saw. */
+const READBACK_UNSEEN_REFUSAL =
+  'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.';
+
+/** What an agent reads when it dispatches a delegate from `eval` code, where no
+ *  assignment check, dispatch guard or readback gate sees the dispatch. */
+const EVAL_DISPATCH_REFUSAL =
+  'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
+
+/** `eval` code that dispatches a delegate: the eval prelude's `agent(…)` or `workpool(…)`,
+ *  or the task tool called as `tool.task` or `tool["task"]`. */
+const EVAL_DISPATCH =
+  /(?<![\w.$])(?:agent|workpool)\s*\(|(?<![\w.$])tool\s*(?:\??\.\s*task\b|\[\s*["'`]task["'`]\s*\])/;
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
@@ -307,17 +361,9 @@ export const OMP_NATIVE_AGENTS: Readonly<Record<string, string>> = {
   researcher: 'scout',
 };
 
-/** The tools of an agent that has no tool that changes anything: omp's reading and
- *  searching tools. omp itself still adds `yield`, `write` for agent messaging, and
- *  extension tools. */
-export const OMP_READ_ONLY_TOOLS: readonly string[] = [
-  'read',
-  'grep',
-  'glob',
-  'find',
-  'ast_grep',
-  'web_search',
-];
+/** The front-matter key an agent's assignment schema is carried under, where the
+ *  cratylus extension reads it (omp passes unknown keys through untouched). */
+export const OMP_ASSIGNMENT_KEY = 'assignment';
 
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
 
@@ -327,7 +373,8 @@ export const OMP_READ_ONLY_TOOLS: readonly string[] = [
  *
  * **FRONT-MATTER, in this order:** `name`, `description`, `mark` (only with one),
  * `key: null`, `model`, `spawns` (only where the agent's handoffs are declared),
- * `tools` (only for a read-only agent), `autoloadSkills` (only with skills).
+ * `output` and `assignment` (only with a typed handoff), `autoloadSkills` (only
+ * with skills). No `tools`: every agent keeps omp's default tools (decision 0081).
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
  * and SKIPS the file — a persona that silently does not exist.
  *
@@ -345,9 +392,11 @@ export const OMP_READ_ONLY_TOOLS: readonly string[] = [
  * every dispatch: an agent that hands off to no one dispatches no one. An agent
  * whose handoffs are undeclared carries no `spawns`, and omp's default stands.
  *
- * **`tools` ONLY FOR AN AGENT THAT CHANGES NOTHING** (decision 0051): an explicit
- * list replaces omp's default tools, so it is written for a read-only agent alone —
- * {@link OMP_READ_ONLY_TOOLS} — and every other agent keeps omp's defaults.
+ * **THE TYPED HANDOFF** ({@link Agent.contract}): the deliverable schema is omp's
+ * own `output`, which task dispatch uses as the child's structured-output schema
+ * (made strict on each dispatch by the cratylus extension), and the assignment
+ * schema is {@link OMP_ASSIGNMENT_KEY}, which the extension checks each dispatch
+ * and each launch of the agent against.
  *
  * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
@@ -384,7 +433,13 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
     const spawns = a.dispatches.map((h) => OMP_NATIVE_AGENTS[h] ?? h);
     fm.push(`spawns: ${yamlString(spawns.join(', '))}`);
   }
-  if (a.readOnly) fm.push(`tools: [${OMP_READ_ONLY_TOOLS.join(', ')}]`);
+  // The typed handoff: the deliverable as omp's own output schema, the assignment
+  // where the cratylus extension reads it to check each dispatch and launch. Each
+  // is one line of JSON, which YAML reads as the same object.
+  if (a.contract?.deliverable !== undefined)
+    fm.push(`output: ${JSON.stringify(a.contract.deliverable)}`);
+  if (a.contract?.assignment !== undefined)
+    fm.push(`${OMP_ASSIGNMENT_KEY}: ${JSON.stringify(a.contract.assignment)}`);
   // omp's own preload field. claude has one too (`skills`); a harness without one
   // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
@@ -444,10 +499,15 @@ interface OmpRegistration {
  *
  * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
  * constraint filtering itself at runtime; these cells compose no agent — they bind
- * the session — and nothing emitted here asks who is running.
+ * the session — and nothing emitted for them asks who is running.
+ *
+ * THE GUARDS the projected agents compose land in the same module
+ * ({@link guardRegistrations}): each judges only a main session launched as an agent
+ * whose composition holds the guarded value.
  */
 export function ompScopeActivatedExtensions(
   hooks: readonly Hook[],
+  guards: readonly ComposedGuard[] = [],
 ): HarnessProjection[] {
   const regs: OmpRegistration[] = [];
   for (const hook of hooks) {
@@ -467,12 +527,12 @@ export function ompScopeActivatedExtensions(
     }
   }
   const lines = renderRegistrations(regs);
-  if (lines.length === 0) return [];
+  if (lines.length === 0 && guards.length === 0) return [];
   return [
     {
       filename: OMP_SESSION_MODULE,
       scope: SESSION_SCOPE,
-      content: ompExtensionModule('every session', lines),
+      content: ompExtensionModule('every session', lines, guards),
     },
   ];
 }
@@ -782,6 +842,14 @@ const TURN_BRIDGE: readonly string[] = [
   '      model: Model<Api>,',
   '    ): Promise<{ ok: boolean; apiKey?: string }>;',
   '  };',
+  "  // The session's entries on its current branch, as omp's session manager keeps them:",
+  '  // the conversation a guard judging with it reads.',
+  '  sessionManager?: { getBranch?(): readonly BranchEntry[] };',
+  '};',
+  '',
+  'type BranchEntry = {',
+  '  type?: string;',
+  '  message?: TurnMessage & { attribution?: string; toolName?: string; isError?: boolean };',
   '};',
   '',
   '// A GUARD BINDS A PERSONA’S MAIN SESSION ONLY. omp hands a spawned subagent its',
@@ -1210,17 +1278,228 @@ const TURN_EXEC: readonly string[] = [
 ];
 
 /**
+ * Module-level half of a GUARD: its shape, the conversation its judge may read, and
+ * the verdict read back. Emitted after {@link TURN_BRIDGE}, whose message types and
+ * judge context it reads.
+ */
+const GUARD_BRIDGE: readonly string[] = [
+  '// A GUARD judges one act for the agents whose composition holds the value it guards,',
+  '// through the judge this session already holds, which answers one JSON verdict.',
+  'type Guard = {',
+  '  id: string;',
+  '  tell: string;',
+  '  agents: readonly string[];',
+  '  prompt: string;',
+  '  refusesOn: string;',
+  '  refusal: string;',
+  '  // Whether the judge also reads the conversation so far, ahead of the act.',
+  '  conversation?: boolean;',
+  '};',
+  '',
+  '/** Where the JSON object opening at `start` closes, strings and nesting respected; `undefined` when it never does. */',
+  'function objectEnd(text: string, start: number): number | undefined {',
+  '  let depth = 0;',
+  '  let quoted = false;',
+  '  for (let i = start; i < text.length; i++) {',
+  '    const c = text[i];',
+  '    if (quoted) {',
+  '      if (c === "\\\\") i++;',
+  "      else if (c === '\"') quoted = false;",
+  "    } else if (c === '\"') quoted = true;",
+  '    else if (c === "{") depth++;',
+  '    else if (c === "}" && --depth === 0) return i;',
+  '  }',
+  '  return undefined;',
+  '}',
+  '',
+  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
+  ' *  field, bare, fenced or after prose; `undefined` when no object in it does. */',
+  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
+  '  for (let start = answer.lastIndexOf("{"); start >= 0; start = start > 0 ? answer.lastIndexOf("{", start - 1) : -1) {',
+  '    const end = objectEnd(answer, start);',
+  '    if (end === undefined) continue;',
+  '    let v: unknown;',
+  '    try {',
+  '      v = JSON.parse(answer.slice(start, end + 1));',
+  '    } catch {',
+  '      continue;',
+  '    }',
+  '    if (typeof v !== "object" || v === null || Array.isArray(v)) continue;',
+  '    // A parsed non-array object: its fields are read and each is checked before use.',
+  '    const o = v as Record<string, unknown>;',
+  '    if (typeof o[field] !== "boolean") continue;',
+  '    return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '  }',
+  '  return undefined;',
+  '}',
+  '',
+  '// How much of the conversation a judge reads: its most recent characters, a bound like',
+  "// the workers' 12 KB, so a judgement fits the time the harness allows.",
+  'const CONVERSATION_LIMIT = 12_000;',
+  '',
+  "/** The conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports",
+  " *  included: the session's branch since its last compaction, never thinking, calls or the guards' own notices. */",
+  'function conversationOf(ctx: JudgeContext): string {',
+  '  const branch = ctx.sessionManager?.getBranch?.() ?? [];',
+  '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
+  '  const turns = branch.slice(since + 1).flatMap(({ type, message: m }) => {',
+  '    if (type !== "message" || m === undefined) return [];',
+  '    const said = (',
+  '      typeof m.content === "string"',
+  '        ? m.content',
+  '        : (m.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n")',
+  '    ).trim();',
+  '    if (said === "") return [];',
+  '    if (m.role === "user" && m.attribution !== "agent") return [`Operator:\\n${said}`];',
+  '    if (m.role === "assistant") return [`Agent:\\n${said}`];',
+  '    if (m.role === "toolResult" && m.toolName === "task" && m.isError !== true) return [`Delegate report:\\n${said}`];',
+  '    return [];',
+  '  });',
+  '  const all = turns.join("\\n\\n");',
+  '  return all.length > CONVERSATION_LIMIT ? `…${all.slice(-CONVERSATION_LIMIT)}` : all;',
+  '}',
+  '',
+];
+
+/**
+ * Function-level half of a GUARD, emitted after {@link TURN_EXEC}, whose
+ * `askJudge` and `relay` it calls: whom it judges, and the judgment.
+ *
+ * ONLY A MAIN SESSION LAUNCHED AS A COMPOSING AGENT. The guard binds the agents
+ * whose composition holds its value, so a subagent, a plain session and a session
+ * launched as any other agent are judged by nothing. The launched agent is the one
+ * the cratylus module, which registers omp's `--agent` flag, publishes under
+ * {@link OMP_LAUNCHED_AGENT_KEY}: omp answers a flag only to the extension that
+ * registered it.
+ *
+ * FAILS OPEN, ALOUD. A judge that does not answer, or answers anything but the
+ * verdict, refuses nothing, and the session is told the act went unjudged.
+ */
+const GUARD_EXEC: readonly string[] = [
+  '',
+  '  /** The agent this main session was launched as, as the cratylus module publishes it; none for a subagent or a plain session. */',
+  '  const launchedAs = (ctx: JudgeContext): string | undefined => {',
+  '    if (ctx.agent?.kind !== "main") return undefined;',
+  `    const name = (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)})];`,
+  '    return typeof name === "string" && name !== "" ? name : undefined;',
+  '  };',
+  '',
+  '  /** One guard over one act. `undefined` ⇒ no refusal. */',
+  '  const guardJudged = async (guard: Guard, ctx: JudgeContext, act: string): Promise<string | undefined> => {',
+  '    const agent = launchedAs(ctx);',
+  '    if (agent === undefined || !guard.agents.includes(agent)) return undefined;',
+  '    // A guard whose judge reads the conversation gets it ahead of the act, and, the long',
+  "    // conversation now standing between the prompt and the answer, the answer's form after it.",
+  '    const judgedAct = guard.conversation',
+  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${act}\\n\\nAnswer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`',
+  '      : act;',
+  '    const answer = await askJudge(ctx, guard.prompt, judgedAct);',
+  '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
+  '    if (verdict === undefined) {',
+  '      relay(',
+  '        `${guard.id} guard — the judge gave no verdict${answer === undefined ? "" : ` (it answered: ${answer.slice(0, 200)})`}, so this act was NOT judged.`,',
+  '      );',
+  '      return undefined;',
+  '    }',
+  '    return verdict.value ? `${guard.refusal} ${verdict.reason}`.trim() : undefined;',
+  '  };',
+  '',
+  '  // The judge, lent to the CRATYLUS module, which holds back the acts of a launch that has',
+  '  // not read back yet: one verdict field of one judgment, `undefined` when there is none.',
+  `  (globalThis as Record<symbol, unknown>)[Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)})] = async (`,
+  '    ctx: JudgeContext,',
+  '    prompt: string,',
+  '    act: string,',
+  '    field: string,',
+  '  ) => {',
+  '    const answer = await askJudge(ctx, prompt, act);',
+  '    return answer === undefined ? undefined : verdictIn(answer, field);',
+  '  };',
+];
+
+/**
+ * The guards' registrations: each guard's data, then ONE handler per event omp fires,
+ * judging every guard bound to it. A guard judges a tool call before it runs, by the
+ * call itself, and a guard whose judge reads the conversation
+ * (`GuardJudge.conversation`) gets the session's conversation so far ahead of the
+ * act; a refusal is the shape the tool wrapper reads ({@link OMP_REFUSAL_SHAPE}).
+ *
+ * ONLY AN ACT BEFORE IT TAKES EFFECT (0106). A refused call never ran; a reply shown
+ * as it is written has taken effect, refused or not, so no guard judges a turn's
+ * end, and a guard bound to any event but a tool call is a projection error.
+ *
+ * ONE HANDLER PER EVENT, NOT PER GUARD, so one guard's refusal never hides
+ * another's: every guard on the event is judged, together, and their refusals reach
+ * the agent as one, each reason in it.
+ */
+function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
+  const lines: string[] = [];
+  const bound = new Map<string, { binding: NativeBinding; names: string[] }>();
+  guards.forEach(({ guard, agents }, index) => {
+    const name = `guard${index}`;
+    const data = {
+      id: guard.id,
+      tell: guard.tell,
+      agents,
+      prompt: guard.judge.prompt,
+      refusesOn: guard.judge.refusesOn,
+      refusal: guard.refusal,
+      ...(guard.judge.conversation === true ? { conversation: true } : {}),
+    };
+    lines.push(
+      `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,
+      `  const ${name}: Guard = ${JSON.stringify(data)};`,
+    );
+    for (const event of guard.events) {
+      const binding = ompBindingOf(event);
+      if (!binding) continue;
+      if (OMP_ENVELOPE_KIND[binding.event] !== 'tool')
+        throw new Error(
+          `guardRegistrations: guard '${guard.id}' binds '${event}', which is no act checked before it takes effect; a guard judges a tool call.`,
+        );
+      const key = `${binding.event}\0${binding.matcher ?? ''}`;
+      const at = bound.get(key) ?? { binding, names: [] };
+      at.names.push(name);
+      bound.set(key, at);
+    }
+  });
+  for (const { binding, names } of bound.values()) {
+    const narrow = binding.matcher
+      ? `\n    if (event.toolName !== ${JSON.stringify(binding.matcher)}) return;`
+      : '';
+    lines.push(
+      `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
+    const act = JSON.stringify({ tool: event.toolName, input: event.input });
+    const reasons = await Promise.all([${names.join(', ')}].map((guard) => guardJudged(guard, ctx, act)));
+    const reason = reasons.filter((r): r is string => r !== undefined).join("\\n\\n");
+    if (reason) return { block: true, reason };
+  });`,
+    );
+  }
+  return lines;
+}
+
+/**
  * The extension module's text.
  *
- * It names what it governs in a comment and nowhere in its LOGIC: it binds every
- * session, and nothing in it asks which agent is running.
+ * Its hooks bind every session, and nothing in them asks which agent is running.
+ * Its GUARDS ({@link ComposedGuard}) are the one question of identity, and the one
+ * allowed: each judges only a main session launched as an agent whose composition
+ * holds the guarded value, named in the module at projection.
  */
-function ompExtensionModule(governs: string, registrations: string[]): string {
+function ompExtensionModule(
+  governs: string,
+  registrations: string[],
+  guards: readonly ComposedGuard[] = [],
+): string {
+  const guardLines = guardRegistrations(guards);
   // The payload bridge is emitted only where a registration reads one, so a module
   // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
   // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever
-  // calls the latter still needs every line of the bridge.
-  const needsTurn = registrations.some((r) => r.includes('judged('));
+  // calls the latter still needs every line of the bridge. A guard asks the same
+  // in-process judge, so it needs the bridge too.
+  const needsTurn =
+    guardLines.length > 0 || registrations.some((r) => r.includes('judged('));
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no
@@ -1229,9 +1508,10 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     `// The constraints in force for ${governs}.`,
     '//',
     ...SESSION_PLACEMENT,
-    '// There is no AGENT identity check below and there must not be one: these hooks',
-    '// bind the session. The one runtime question is which session is running, and',
-    '// only the main one is judged.',
+    '// The hooks below carry no AGENT identity check and must not: they bind the',
+    '// session. The one runtime question they ask is which session is running, and',
+    '// only the main one is judged. A guard asks one more, which agent the main',
+    '// session was launched as, and judges only the agents composing its value.',
     '',
     ...(needsTurn
       ? [
@@ -1260,6 +1540,7 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
     ...(needsTurn ? TURN_BRIDGE : []),
+    ...(guardLines.length > 0 ? GUARD_BRIDGE : []),
     'export default function (pi: ExtensionAPI) {',
     // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
     // does `ptree.exec([command, ...args])`. Passing an options object in its slot
@@ -1271,7 +1552,9 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     // named explicitly.
     '  const exec = (cmd: string) => pi.exec("sh", ["-c", cmd]);',
     ...(needsTurn ? TURN_EXEC : []),
+    ...(guardLines.length > 0 ? GUARD_EXEC : []),
     ...registrations,
+    ...guardLines,
     '}',
     '',
   ].join('\n');
@@ -1310,15 +1593,41 @@ const SESSION_PLACEMENT: readonly string[] = [
  * capability says, so a newer installed package changes the tools in the next
  * session, these bytes unchanged.
  *
- * READ-ONLY REACH (decision 0051). An agent that changes nothing is offered a
- * capability's reading verbs alone, and a capability with none is no tool for it;
- * a withheld verb, called anyway, is refused before the command runs. The module
- * knows the agent from omp: a main session runs as the declaration `--agent`
- * launched, a dispatched one as the declaration omp's discovery finds by the name
- * omp gives the session (`ctx.agent.name`, lowercased). That declaration changes
- * nothing when it lists its tools and each is one of {@link OMP_READ_ONLY_TOOLS}
- * (or the `yield` omp adds to every list) — the very list
- * {@link agentToOmpMd} writes for a read-only agent, so no field of its own says so.
+ * OPEN REACH (decision 0081). Every agent, main or dispatched, is offered every verb
+ * of every capability: no verb is withheld and no declaration narrows the tools.
+ *
+ * TYPED HANDOFFS. On every `task` call, in any session, each item whose agent
+ * declares an assignment schema ({@link OMP_ASSIGNMENT_KEY}) is checked with the
+ * same `checkAssignment` the schema package exports (its source carried here
+ * verbatim) against the one fenced `assignment` block of the item's text or of the
+ * batch's shared context; a misfit refuses the whole call before any agent runs,
+ * naming the agent and each missing or ill-typed field. A dispatch whose
+ * assignment briefs a cut (`cut`, `concepts`, `examples`, `decisions`: a lead)
+ * also needs the cut's record and its branch checked out; one that names a
+ * `workPackage` (a builder) needs that package ready, every concept of the cut
+ * served and every visible example owned (ruling 0083) — each answered by
+ * `<bin> workPackage state|inventory`. An item whose agent declares an `output`
+ * runs with `schemaMode: "strict"`, so a return omitting a required field does not
+ * pass. A main session launched as an agent with an assignment schema checks the
+ * launch prompt the same way: a misfit given on the command line ends startup, one
+ * typed later is refused, and, until one fits, every turn whose prompt misfits is
+ * refused before the agent starts it (`before_agent_start`), whatever route the
+ * prompt came by.
+ *
+ * DISPATCH ONLY THROUGH `task`. A dispatch from `eval` code (the prelude's
+ * `agent(…)` or `workpool(…)`, or the task tool called as `tool.task` or
+ * `tool["task"]`) reaches no `task` call, so no assignment is checked, no guard on
+ * the dispatch act judges it and the readback gate never holds it. A session
+ * launched as an agent, and a delegate whose declaration carries a typed assignment,
+ * is refused that `eval` call ({@link EVAL_DISPATCH_REFUSAL}), with no judge; other
+ * `eval` code, a plain main session and omp's own delegates are never refused it.
+ *
+ * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
+ * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
+ * task call id, the item, the kind), so one event delivered twice is refused:
+ * `dispatched` for each item whose assignment names a cut, `returned` when it
+ * returns (with its tokens when reported), `verdict` from an assayer's returned
+ * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`).
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
@@ -1341,6 +1650,38 @@ const SESSION_PLACEMENT: readonly string[] = [
  * The operator's explicit `--model` and `--thinking`, read with omp's own
  * `parseArgs`, win over the declaration's — each for its own dimension — and the
  * declaration's body is carried either way.
+ *
+ * THE DECLARATION IS THE ONLY SOURCE OF IDENTITY, STANCE AND PROCEDURE. omp's own
+ * system prompt opens a launched session's turn, and parts of it prescribe a coding
+ * assistant's identity and workflow. So, for a main session launched as a
+ * declaration (never a plain one), each turn keeps omp's sections that describe the
+ * harness and every section it does not know, and drops, by heading, those that
+ * prescribe: Role, Engineering, Workflow, Delivery, Critical, the project context's
+ * `<critical>` blocks, and the tool policy's line against settling for plausibility.
+ * The titles removed are notified once per launch.
+ *
+ * HANDOFF FORMS AND THE SESSION START. In every session, main or dispatched, each
+ * turn carries the assignment form of every contracted agent the session may
+ * dispatch: a fenced `assignment` block, then each field with its type, least
+ * number of items and meaning, read from the agent's schema. Every refusal of a
+ * misfit carries the same form. The first turn of a launch whose declared
+ * procedure holds `reconstitution` carries a session-start note rendered from that
+ * value: read back the design, open decisions and cuts in flight before any act.
+ * Until the session module's lent judge finds that readback in what the launch has
+ * told the operator in visible text, each call of the launch that changes something
+ * (a dispatch, a file write or edit, an appending capability verb) is refused; a
+ * call that only reads never is. Both hold only where the launch starts a session
+ * with no conversation since its last compaction, and again after the session is
+ * compacted; a resumed session continuing a conversation reconstitutes nothing.
+ * Every turn of a launch whose declared decision rights hold meaning (D) carries a
+ * note rendered from that right: the meaning of the contexts it holds is its own,
+ * the approval of their examples included, approved as they stand when they express
+ * their meaning, and a decision whose grounds it holds is taken in the turn it holds
+ * them (0086, 0090). Every turn of a launch whose memory keeps the records as its
+ * source of truth under the honesty guardrail carries a note rendered from those
+ * values: where things stand is what the records show, and what they do not record
+ * is unknown. These hold what the agent's replies say by its own text, not by a
+ * check on the reply (0106).
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -1445,8 +1786,29 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
-        `const READ_ONLY_TOOLS: readonly string[] = ${JSON.stringify(OMP_READ_ONLY_TOOLS)};`,
+        '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
+        '// its purpose cut short.',
+        `const ESSENTIAL: readonly string[] = ${JSON.stringify(OMP_ESSENTIAL_CAPABILITIES)};`,
+        `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
+        "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
+        '// check every handoff runs, here, at a launch and in an evaluation alike.',
+        `const assignmentIn: (text: string) => unknown = (${String(assignmentIn)});`,
+        `const checkAssignment: (agent: string, schema: unknown, value: unknown) => { reason?: string } = (${String(checkAssignment)});`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
+        '// Where the launched agent is published for the session module, which omp never answers `--agent`.',
+        `const LAUNCHED_AGENT = Symbol.for(${JSON.stringify(OMP_LAUNCHED_AGENT_KEY)});`,
+        '// The judge the session module lends, and what a launch that has not read back is held to.',
+        `const JUDGE = Symbol.for(${JSON.stringify(OMP_JUDGE_KEY)});`,
+        'type Judge = (ctx: unknown, prompt: string, act: string, field: string) => Promise<{ value: boolean; reason: string } | undefined>;',
+        `const READBACK_PROMPT = ${JSON.stringify(READBACK_PROMPT)};`,
+        `const READBACK_REFUSAL = ${JSON.stringify(READBACK_REFUSAL)};`,
+        `const READBACK_UNSEEN_REFUSAL = ${JSON.stringify(READBACK_UNSEEN_REFUSAL)};`,
+        '// What an agent dispatching a delegate from `eval` code is refused with, and that code.',
+        `const EVAL_DISPATCH_REFUSAL = ${JSON.stringify(EVAL_DISPATCH_REFUSAL)};`,
+        `const EVAL_DISPATCH = ${String(EVAL_DISPATCH)};`,
+        '// The tools whose call changes something whatever its input: a dispatch, a file written or',
+        '// edited (a write to `agent://` messages a running agent).',
+        'const CHANGING_TOOLS: readonly string[] = ["task", "write", "edit", "ast_edit"];',
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
@@ -1473,15 +1835,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  verbs: Verb[];',
         '}',
         '',
-        "// The installed command's output; its own message, when it refuses.",
-        'function run(args: string[], cwd?: string, signal?: AbortSignal): Promise<string> {',
+        "// A program's output; its own message, when it refuses.",
+        'function execOf(file: string, args: string[], cwd?: string, signal?: AbortSignal): Promise<string> {',
         '  const { promise, resolve, reject } = Promise.withResolvers<string>();',
-        '  execFile(COMMAND, args, { cwd, signal, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {',
+        '  execFile(file, args, { cwd, signal, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {',
         '    if (error) reject(new Error(String(stderr).trim() || String(stdout).trim() || error.message));',
         '    else resolve(String(stdout));',
         '  });',
         '  return promise;',
         '}',
+        "// The installed command's output; its own message, when it refuses.",
+        'const run = (args: string[], cwd?: string, signal?: AbortSignal): Promise<string> => execOf(COMMAND, args, cwd, signal);',
         '',
         'const requirement = (p: Parameter): string => (p.required ? "required" : "optional");',
         '',
@@ -1556,6 +1920,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  mark?: string;',
         "  // Whom the session may dispatch: omp's spawn policy of the declaration's `spawns`.",
         '  spawns: ResolvedSpawnPolicy;',
+        '  // The schema its assignment must fit, when the declaration carries one.',
+        '  assignment?: Schema;',
         '}',
         '// What of a session the launch reads or sets.',
         'interface Session {',
@@ -1567,6 +1933,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    setStatus(key: string, text: string | undefined): void;',
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
         '  };',
+        "  // The session's entries on its current branch, as omp's session manager keeps them.",
+        '  sessionManager?: { getBranch?(): readonly { type?: string; message?: { role?: string } }[] };',
+        '}',
+        '',
+        '// Whether the session already holds a conversation since its last compaction: a resumed',
+        '// session continuing one, not a new session or one compacted since it last spoke.',
+        'function conversed(session: Session): boolean {',
+        '  const branch = session.sessionManager?.getBranch?.() ?? [];',
+        '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
+        '  return branch',
+        '    .slice(since + 1)',
+        '    .some((entry) => entry.type === "message" && (entry.message?.role === "user" || entry.message?.role === "assistant"));',
         '}',
         'type Level = Parameters<ExtensionAPI["setThinkingLevel"]>[0];',
         '// A setting a launch holds as a runtime override.',
@@ -1586,11 +1964,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const names = agents.map((a) => a.name);',
         '  const declaration = agents.find((a) => a.name === name);',
         '  if (declaration === undefined) return { names };',
-        '  const file = declaration.filePath;',
-        '  const said: Record<string, unknown> =',
-        '    file !== undefined && isAbsolute(file) && existsSync(file)',
-        '      ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter',
-        '      : {};',
+        '  const said = frontmatterOf(declaration);',
         '  const mark = typeof said.mark === "string" && said.mark.trim() !== "" ? said.mark.trim() : undefined;',
         '  // Whom it may dispatch, as dispatch passes `spawns` to a child: `*` anyone, a list exactly',
         "  // those, absent as omp's discovery reads it (`*` with `task` among the tools, else no one).",
@@ -1602,14 +1976,338 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const policy = resolveSpawnPolicy(',
         '    spawns === undefined ? "" : Array.isArray(spawns) ? spawns.join(",") : spawns,',
         '  );',
-        '  return { found: { declaration, mark, spawns: policy }, names };',
+        '  return { found: { declaration, mark, spawns: policy, assignment: schemaOf(said) }, names };',
         '}',
         '',
-        '// A declaration that changes nothing: it lists its tools, and each one reads or searches',
-        '// (omp adds `yield` to every list it reads).',
-        'function changesNothing(declaration: AgentDefinition | undefined): boolean {',
-        '  const tools = declaration?.tools;',
-        '  return tools !== undefined && tools.every((t) => t === "yield" || READ_ONLY_TOOLS.includes(t));',
+        "// A declaration's front matter as its file says it, read with omp's own parser. A bundled",
+        '// declaration has no file (`embedded:<name>.md`), and so none.',
+        'function frontmatterOf(declaration: AgentDefinition | undefined): Record<string, unknown> {',
+        '  const file = declaration?.filePath;',
+        '  return file !== undefined && isAbsolute(file) && existsSync(file)',
+        '    ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter',
+        '    : {};',
+        '}',
+        '',
+        '// The assignment schema a declaration carries, when it carries one.',
+        'function schemaOf(said: Record<string, unknown>): Schema | undefined {',
+        '  const schema = said[ASSIGNMENT_KEY];',
+        '  return typeof schema === "object" && schema !== null ? (schema as Schema) : undefined;',
+        '}',
+        '',
+        '// ── Typed handoffs ──',
+        '',
+        '// The fields a schema requires, as typed handoffs state them.',
+        'interface Schema {',
+        '  required?: readonly string[];',
+        '}',
+        '// What a cut brief requires: a dispatch whose agent takes one opens the cut (a lead).',
+        'const CUT_BRIEF: readonly string[] = ["cut", "concepts", "examples", "decisions"];',
+        'const requires = (schema: Schema | undefined, fields: readonly string[]): boolean =>',
+        '  schema !== undefined && fields.every((f) => (schema.required ?? []).includes(f));',
+        '',
+        '// One item of a `task` call: the agent it runs as and its own id (its name, else its',
+        '// position), with its assignment once checked.',
+        'interface Handoff {',
+        '  item: Record<string, unknown>;',
+        '  agent: string;',
+        '  id: string;',
+        '  index: number;',
+        '  schema?: Schema;',
+        '  assignment?: Record<string, unknown>;',
+        '  strict: boolean;',
+        '}',
+        '',
+        '// The items of a `task` call, batch (`tasks[]`) or flat, each with the agent it names.',
+        'function itemsOf(input: Record<string, unknown>): Handoff[] {',
+        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
+        '  return items.flatMap((raw, index) => {',
+        '    if (typeof raw !== "object" || raw === null) return [];',
+        '    const item = raw as Record<string, unknown>;',
+        '    const agent = typeof item.agent === "string" ? item.agent : typeof input.agent === "string" ? input.agent : "task";',
+        '    const named = [item.name, item.id].find((v): v is string => typeof v === "string" && v !== "");',
+        '    return [{ item, agent, id: named ?? String(index), index, strict: false }];',
+        '  });',
+        '}',
+        '',
+        '// The assignment an item is dispatched with: the block in its own text, else the one in the',
+        "// batch's shared context.",
+        'function assignmentOf(item: Record<string, unknown>, input: Record<string, unknown>): unknown {',
+        '  const own = typeof item.task === "string" ? assignmentIn(item.task) : undefined;',
+        '  if (own !== undefined) return own;',
+        '  return typeof input.context === "string" ? assignmentIn(input.context) : undefined;',
+        '}',
+        '',
+        "// The cut's state and reading, as the work package capability computes them now.",
+        'interface CutState {',
+        '  branch: string | null;',
+        '  workPackages: { name: string; status: string }[];',
+        '  ready: string[];',
+        '}',
+        'interface CutInventory {',
+        '  unserved: string[];',
+        '  unowned: string[];',
+        '}',
+        'const cutRead = async <T>(verb: string, cut: string, cwd: string): Promise<T> =>',
+        '  JSON.parse(await run(["workPackage", verb, "--cut", cut], cwd)) as T;',
+        'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
+        '',
+        "// A lead's dispatch opens the cut's work, so the cut must be recorded with its branch, and",
+        '// that branch checked out.',
+        'async function leadRefusal(cut: string, cwd: string): Promise<string | undefined> {',
+        '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --architect <context>=<architect>`;',
+        '  let state: CutState;',
+        '  try {',
+        '    state = await cutRead<CutState>("state", cut, cwd);',
+        '  } catch (error) {',
+        '    return `lead dispatch of cut ${cut} refused: ${messageOf(error)}; record the cut with its branch first (${open})`;',
+        '  }',
+        '  if (typeof state.branch !== "string")',
+        '    return `lead dispatch of cut ${cut} refused: the cut has no record naming its branch; record it first (${open})`;',
+        '  let head: string;',
+        '  try {',
+        '    head = (await execOf("git", ["rev-parse", "--abbrev-ref", "HEAD"], cwd)).trim();',
+        '  } catch (error) {',
+        '    head = `no branch (${messageOf(error)})`;',
+        '  }',
+        '  return head === state.branch',
+        '    ? undefined',
+        "    : `lead dispatch of cut ${cut} refused: its branch ${state.branch} is not checked out (${head} is); check it out yourself in this session, then dispatch again — checking out the cut's branch is the dispatcher's own act, never a delegate's`;",
+        '}',
+        '',
+        "// A builder's dispatch is the act (ruling 0083): its package must be ready, every concept",
+        '// of the cut served and every visible example owned.',
+        'async function builderRefusal(cut: string, packages: readonly string[], cwd: string): Promise<string | undefined> {',
+        '  let state: CutState;',
+        '  let inventory: CutInventory;',
+        '  try {',
+        '    [state, inventory] = await Promise.all([',
+        '      cutRead<CutState>("state", cut, cwd),',
+        '      cutRead<CutInventory>("inventory", cut, cwd),',
+        '    ]);',
+        '  } catch (error) {',
+        '    return `builder dispatch of cut ${cut} refused: ${messageOf(error)}`;',
+        '  }',
+        '  const reasons: string[] = [];',
+        '  if (inventory.unserved.length > 0)',
+        '    reasons.push(`concepts no work package serves: ${inventory.unserved.join(", ")}`);',
+        '  if (inventory.unowned.length > 0)',
+        '    reasons.push(`visible examples no work package owns: ${inventory.unowned.join(", ")}`);',
+        '  for (const name of packages) {',
+        '    const known = state.workPackages.find((p) => p.name === name);',
+        '    if (known === undefined) reasons.push(`${name} is no work package of the cut`);',
+        '    else if (!state.ready.includes(name))',
+        '      reasons.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once every package it depends on has returned and it is not yet dispatched, returned to build by a finding, or returned into a fix round by a failing whole check)`);',
+        '  }',
+        '  return reasons.length === 0 ? undefined : `builder dispatch of cut ${cut} refused: ${reasons.join("; ")}`;',
+        '}',
+        '',
+        "// What a returned deliverable records: a lead's report (`outcomes`) or an assayer's",
+        '// verdicts (`verdicts`, each on a work package).',
+        'function deliverableEntry(',
+        '  deliverable: unknown,',
+        '  at: { cut: string; run: string; assayer: string },',
+        '): Record<string, unknown> | undefined {',
+        '  if (typeof deliverable !== "object" || deliverable === null) return undefined;',
+        '  const d = deliverable as Record<string, unknown>;',
+        '  if (Array.isArray(d.outcomes))',
+        '    return { kind: "reported", transition: `${at.run}/reported`, cut: at.cut, run: at.run, report: d };',
+        '  if (Array.isArray(d.verdicts) && d.verdicts.every((v) => typeof v === "object" && v !== null && "workPackage" in v))',
+        '    return {',
+        '      kind: "verdict",',
+        '      transition: `${at.run}/verdict`,',
+        '      cut: at.cut,',
+        '      assayer: at.assayer,',
+        '      run: at.run,',
+        '      verdicts: d.verdicts,',
+        '      hardeningNotes: Array.isArray(d.hardeningNotes) ? d.hardeningNotes : [],',
+        '    };',
+        '  return undefined;',
+        '}',
+        '',
+        "// A returned text's JSON, when it is JSON.",
+        'function jsonIn(text: unknown): unknown {',
+        '  if (typeof text !== "string") return undefined;',
+        '  try {',
+        '    return JSON.parse(text);',
+        '  } catch {',
+        '    return undefined;',
+        '  }',
+        '}',
+        '',
+        "// omp's own sections that prescribe an identity, a stance or a procedure, by heading: a session",
+        '// launched as a declaration takes all three from the declaration alone. Every other section,',
+        '// one omp adds later included, describes the harness and is kept.',
+        'const PRESCRIBES: readonly string[] = ["Role", "Engineering", "Workflow", "Delivery", "Critical"];',
+        "// The line of omp's tool policy that prescribes a stance (never settle for plausibility).",
+        'const PRESCRIBED_LINE = /settle for plausibility/i;',
+        '',
+        "// One part of omp's system prompt without the sections that prescribe: a `§` section or a `#`",
+        '// one so titled, to its next heading of the same or a higher level; the `<critical>` blocks',
+        '// opening the Critical section, which ends where they do; the `<critical>` blocks of the',
+        '// project context; and the prescriptive line of the tool policy. The titles removed are said.',
+        'function harnessOnly(text: string): { text: string; removed: string[] } {',
+        '  const removed: string[] = [];',
+        '  const say = (title: string) => {',
+        '    if (!removed.includes(title)) removed.push(title);',
+        '  };',
+        '  const out: string[] = [];',
+        '  let section = "";',
+        '  let dropping = 0;',
+        '  let critical = false;',
+        '  let inBlock = false;',
+        '  for (const raw of text.split("\\n")) {',
+        '    let line = raw;',
+        '    const top = /^§\\s+(.+?)\\s*$/.exec(line);',
+        '    if (top) {',
+        '      section = top[1] ?? "";',
+        '      critical = false;',
+        '      inBlock = false;',
+        '      dropping = PRESCRIBES.includes(section) ? 1 : 0;',
+        '      if (dropping === 0) out.push(line);',
+        '      else {',
+        '        say(section);',
+        '        critical = section === "Critical";',
+        '      }',
+        '      continue;',
+        '    }',
+        '    if (critical) {',
+        '      // The Critical section is its opening `<critical>` blocks; what follows them is not.',
+        '      let rest = line;',
+        '      for (;;) {',
+        '        if (inBlock) {',
+        '          const end = rest.indexOf("</critical>");',
+        '          if (end < 0) {',
+        '            rest = "";',
+        '            break;',
+        '          }',
+        '          rest = rest.slice(end + "</critical>".length);',
+        '          inBlock = false;',
+        '          continue;',
+        '        }',
+        '        const trimmed = rest.trimStart();',
+        '        if (!trimmed.startsWith("<critical>")) {',
+        '          rest = trimmed;',
+        '          break;',
+        '        }',
+        '        inBlock = true;',
+        '        rest = trimmed.slice("<critical>".length);',
+        '      }',
+        '      if (inBlock || rest === "") continue;',
+        '      critical = false;',
+        '      dropping = 0;',
+        '      line = rest;',
+        '    }',
+        '    const sub = /^#{1,2}\\s+(.+?)\\s*$/.exec(line);',
+        '    if (sub) {',
+        '      if (dropping === 2) dropping = 0;',
+        '      if (PRESCRIBES.includes(sub[1] ?? "")) {',
+        '        say(sub[1] ?? "");',
+        '        if (dropping === 0) dropping = 2;',
+        '      }',
+        '    }',
+        '    if (dropping > 0) continue;',
+        '    if (section === "Tool Policy" && PRESCRIBED_LINE.test(line)) {',
+        '      say("Tool Policy: plausibility");',
+        '      continue;',
+        '    }',
+        '    out.push(line);',
+        '  }',
+        '  // The project context describes the host; its `<critical>` blocks, inside it or right after',
+        '  // it, prescribe.',
+        '  const joined = out',
+        '    .join("\\n")',
+        '    .replace(/(<project-context>[\\s\\S]*?<\\/project-context>)((?:\\s*<critical>[\\s\\S]*?<\\/critical>)*)/g, (_all, context: string, after: string) => {',
+        '      const inner = context.replace(/\\s*<critical>[\\s\\S]*?<\\/critical>/g, "");',
+        '      if (inner !== context || after !== "") say("project context <critical>");',
+        '      return inner;',
+        '    });',
+        '  return { text: joined, removed };',
+        '}',
+        '',
+        '// The form an agent takes its assignment in, read from its schema: one fenced `assignment`',
+        '// block holding a JSON object, then each field with its type, its least number of items,',
+        '// whether it is required, and what it names.',
+        'function formOf(agent: string, schema: Schema): string {',
+        '  const s = schema as {',
+        '    properties?: Record<string, { type?: string; minItems?: number; description?: string; items?: { type?: string } }>;',
+        '    required?: readonly string[];',
+        '  };',
+        '  const fields = Object.entries(s.properties ?? {}).map(([name, f]) => {',
+        '    const type = f.type === "array" ? `list of ${f.items?.type ?? "value"}s` : (f.type ?? "value");',
+        '    const least = f.minItems ? `, at least ${f.minItems}` : f.type === "array" ? ", may be empty" : "";',
+        '    const need = (s.required ?? []).includes(name) ? "required" : "optional";',
+        '    return `  - \\`${name}\\` (${type}${least}, ${need})${f.description ? `: ${f.description}` : ""}`;',
+        '  });',
+        '  return [',
+        '    `- ${agent}: give its assignment in the task text as one fenced code block with info string \\`assignment\\` holding one JSON object:`,',
+        '    `  \\`\\`\\`assignment\\n  {${Object.keys(s.properties ?? {}).map((n) => `"${n}": …`).join(", ")}}\\n  \\`\\`\\``,',
+        '    ...fields,',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// One `### <name>` section of a declaration body, without its heading; empty when absent.',
+        'function declared(body: string, name: string): string {',
+        '  return new RegExp(`^### ${name}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=^#{1,3} |(?![\\\\s\\\\S]))`, "m").exec(body)?.[1] ?? "";',
+        '}',
+        '',
+        '// The session-start note of a declaration whose procedure starts with reconstitution,',
+        '// rendered from that procedure value as its body states it; none for any other.',
+        'function reconstitutionNote(body: string): string | undefined {',
+        '  const value = /^- \\*\\*reconstitution\\*\\*(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
+        '  if (value === null) return undefined;',
+        '  return [',
+        '    "# Session start: reconstitution",',
+        '    "",',
+        '    `This session starts with reconstitution${value[1] ? ` (${value[1]})` : ""}.`,',
+        '    "Read each touched context\'s overview first, then the detail you need of its design and of its cuts.",',
+        '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
+        '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.",',
+        '    "Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.",',
+        '    "Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration whose decision rights hold meaning (D), rendered from',
+        '// that right as the design holds it: the meaning of the contexts it holds is its own,',
+        '// the approval of their examples included (0086), and a decision whose grounds it holds is',
+        '// taken in the turn it holds them (0090); none for any other.',
+        'function meaningNote(body: string): string | undefined {',
+        '  if (!/^- meaning(?: \\([^)]*\\))?: \\*\\*D\\*\\*/m.test(declared(body, "decision-rights"))) return undefined;',
+        '  return [',
+        '    "# Meaning: yours",',
+        '    "",',
+        '    "The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.",',
+        '    "Approval judges one thing: whether an example expresses its concepts\' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context\'s model its own; send back only an example that misses its meaning, naming the meaning it misses.",',
+        '    "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party\'s return or anyone\'s answer.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration that keeps the records as its source of truth under the',
+        '// honesty guardrail, rendered from those two values: where things stand is what the records',
+        '// show, observed apart from inferred; none for any other.',
+        'function recordsNote(body: string): string | undefined {',
+        '  if (!/^- \\*\\*source-of-truth\\*\\*/m.test(declared(body, "memory"))) return undefined;',
+        '  if (!/^- \\*\\*honesty\\*\\*/m.test(declared(body, "guardrails"))) return undefined;',
+        '  return [',
+        '    "# The records",',
+        '    "",',
+        '    "The journal, the ledger and your delegates\' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
+        '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// Whether a call changes something: a dispatch, a file written or edited, or an appending',
+        '// verb of a capability (`appending` holds each as `<tool> <verb>`), called as its tool or',
+        '// through its `xd://` device. Any other call only reads.',
+        'function changes(tool: string, input: Record<string, unknown>, appending: ReadonlySet<string>): boolean {',
+        '  if (tool === "write") {',
+        '    const device = /^xd:\\/\\/([^/?#]+)$/i.exec(String(input.path ?? "").trim())?.[1];',
+        '    if (device !== undefined) {',
+        '      const args = jsonIn(input.content);',
+        '      return changes(device, typeof args === "object" && args !== null ? (args as Record<string, unknown>) : {}, appending);',
+        '    }',
+        '  }',
+        '  return CHANGING_TOOLS.includes(tool) || appending.has(`${tool} ${String(input.verb)}`);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -1667,13 +2365,46 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    type: "string",',
         '  });',
         '  let launched: Launched | undefined;',
+        '  // The launch whose typed assignment no prompt has carried yet.',
+        '  let awaiting: { name: string; schema: Schema } | undefined;',
+        "  // Whether the launch has been told which of omp's prompt sections it runs without.",
+        '  let told = false;',
+        '  // Whether the launch owes the operator a readback: its procedure starts with reconstitution',
+        '  // and its session is new, or was compacted, rather than continuing a conversation. While',
+        '  // it is owed, the first turn carries the session-start note and acts that change something',
+        '  // wait for it.',
+        '  let owed = false;',
+        '  let noted = false;',
         '  // What puts back each setting the current launch holds, in the order it took them.',
         '  const undo: (() => void)[] = [];',
+        '  // What the launch has told the operator in visible text since it came to owe the readback.',
+        '  let said: string[] = [];',
+        '  // The visible text of the assistant message now carrying tool calls: omp finalizes it',
+        '  // (`assistant_message`) before it dispatches them, while `message_end` is not awaited, so',
+        '  // a readback given in the same message as an act is here and not yet in `said`.',
+        '  let saying = "";',
+        '  // Each appending verb of the capabilities offered as tools, as `<tool> <verb>`.',
+        '  const appending = new Set<string>();',
         '',
         '  // A launch ends: its prompt, its dispatch policy and every setting it holds go with it.',
         '  function end(): void {',
         '    launched = undefined;',
+        '    delete (globalThis as Record<symbol, unknown>)[LAUNCHED_AGENT];',
+        '    awaiting = undefined;',
+        '    told = false;',
+        '    owed = false;',
+        '    noted = false;',
+        '    said = [];',
+        '    saying = "";',
         '    for (const restore of undo.splice(0).reverse()) restore();',
+        '  }',
+        '',
+        '  // The launch comes to owe a readback, when its procedure starts with reconstitution.',
+        '  function owe(declaration: AgentDefinition): void {',
+        '    owed = reconstitutionNote(declaration.systemPrompt) !== undefined;',
+        '    noted = false;',
+        '    said = [];',
+        '    saying = "";',
         '  }',
         '',
         "  // The rest of the declaration, as omp's task dispatch resolves it for a child, each held",
@@ -1751,6 +2482,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
         '    // omp reads its command line, win; the declaration applies where the operator gave none.',
         '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
+        '    // A launch as an agent taking a typed assignment is checked as a dispatch of it is: a',
+        '    // prompt given on the command line must carry a fitting block, or startup ends; with',
+        '    // none, each prompt typed is checked until one fits.',
+        '    if (found.assignment !== undefined) {',
+        '      const given = (operator as { messages?: unknown }).messages;',
+        '      const prompts = Array.isArray(given) ? given.filter((m): m is string => typeof m === "string") : [];',
+        '      if (startup && prompts.length > 0) {',
+        '        const { reason } = checkAssignment(name, found.assignment, assignmentIn(prompts.join("\\n\\n")));',
+        '        if (reason !== undefined) {',
+        '          process.stderr.write(`${COMMAND}: launch refused: ${reason}\\n${formOf(name, found.assignment)}\\n`);',
+        '          process.exit(1);',
+        '        }',
+        '      } else awaiting = { name, schema: found.assignment };',
+        '    }',
         '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
         "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
         '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
@@ -1782,22 +2527,105 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    await settle(scope, declaration, operator);',
         '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
         '    launched = found;',
+        '    (globalThis as Record<symbol, unknown>)[LAUNCHED_AGENT] = name;',
+        '    if (!conversed(ctx)) owe(declaration);',
         '  }',
-        '  pi.on("session_start", async (_event, ctx) => {',
-        '    const session = ctx as unknown as Session;',
-        '    await launch(session, true);',
-        '    offer(changesNothing(await running(session)));',
-        '  });',
+        '  pi.on("session_start", (_event, ctx) => launch(ctx as unknown as Session, true));',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
-        "  // Every turn's prompt carries the declaration and the full instructions of the skills it",
-        '  // loads at start, so a rebuilt base prompt drops neither.',
+        '  // A compacted session has lost its conversation, so the launch owes a readback again.',
+        '  pi.on("session_compact", (_event, ctx) => {',
+        '    if (launched !== undefined && (ctx as unknown as Session).agent?.kind === "main") owe(launched.declaration);',
+        '  });',
+        '  // A launch whose assignment is still to come: each prompt is checked until one fits, and a',
+        '  // misfit is refused before the agent reads it, naming the missing or ill-typed fields.',
+        '  pi.on("input", (event, ctx) => {',
+        '    const waiting = awaiting;',
+        '    if (waiting === undefined || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    const { reason } = checkAssignment(waiting.name, waiting.schema, assignmentIn(String(event.text ?? "")));',
+        '    if (reason === undefined) {',
+        '      awaiting = undefined;',
+        '      return undefined;',
+        '    }',
+        '    (ctx as unknown as Session).ui.notify(`launch refused: ${reason}\\n${formOf(waiting.name, waiting.schema)}`, "error");',
+        '    return { handled: true };',
+        '  });',
+        "  // Every turn's prompt is omp's own, kept where it describes the harness and without what",
+        '  // prescribes an identity, a stance or a procedure, then the declaration and the full',
+        '  // instructions of the skills it loads at start, so the declaration is the only source of',
+        '  // who the agent is and how it works, and a rebuilt base prompt drops neither. It is also',
+        '  // the last point before the launched agent takes a turn, whatever route its prompt came',
+        '  // by: while the launch still awaits its assignment, a turn whose prompt does not carry a',
+        '  // fitting one is refused. In every session, launched or not, main or dispatched, the',
+        '  // turn also carries the assignment form of each contracted agent the session may',
+        '  // dispatch; the first turn of a launch whose procedure starts with reconstitution carries',
+        '  // a note saying so; and every turn of a launch whose decision rights hold meaning, or',
+        '  // that keeps the records as its source of truth under honesty, carries a note of each.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
-        '    if (now === undefined || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const forms = await dispatchForms(session);',
+        '    if (now === undefined || session.agent?.kind !== "main")',
+        '      return forms === undefined ? undefined : { systemPrompt: [...event.systemPrompt, forms] };',
+        '    const waiting = awaiting;',
+        '    if (waiting !== undefined) {',
+        '      const { reason } = checkAssignment(waiting.name, waiting.schema, assignmentIn(String(event.prompt ?? "")));',
+        '      if (reason !== undefined) throw new Error(`launch refused: ${reason}\\n${formOf(waiting.name, waiting.schema)}`);',
+        '      awaiting = undefined;',
+        '    }',
+        '    const removed: string[] = [];',
+        '    const base = event.systemPrompt.map((part: string) => {',
+        '      const kept = harnessOnly(part);',
+        '      removed.push(...kept.removed.filter((title) => !removed.includes(title)));',
+        '      return kept.text;',
+        '    });',
+        '    if (removed.length > 0 && !told) {',
+        '      told = true;',
+        '      session.ui.notify(`Launched as ${now.declaration.name}: omp prompt sections removed: ${removed.join(", ")}`, "info");',
+        '    }',
+        '    // The first turn of a launch that owes a readback alone: a turn-scoped note, gone from',
+        '    // every later turn.',
+        '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
+        '    noted = true;',
+        '    const meaning = meaningNote(now.declaration.systemPrompt);',
+        '    const records = recordsNote(now.declaration.systemPrompt);',
         '    return {',
-        '      systemPrompt: [...event.systemPrompt, instructions(now.declaration), ...(await skills(now.declaration))],',
+        '      systemPrompt: [',
+        '        ...base,',
+        '        instructions(now.declaration),',
+        '        ...(await skills(now.declaration)),',
+        '        ...(forms === undefined ? [] : [forms]),',
+        '        ...(start === undefined ? [] : [start]),',
+        '        ...(meaning === undefined ? [] : [meaning]),',
+        '        ...(records === undefined ? [] : [records]),',
+        '      ],',
         '    };',
         '  });',
+        '',
+        '  // The assignment form of each agent this session may dispatch that takes a typed one: a',
+        "  // launched main session as its declaration's `spawns` allows, a dispatched one as its own",
+        '  // declaration allows, any other session whomever omp allows. None: no section.',
+        '  async function dispatchForms(session: Session): Promise<string | undefined> {',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    let policy: ResolvedSpawnPolicy | undefined;',
+        '    if (session.agent?.kind === "main") policy = launched?.spawns;',
+        '    else {',
+        '      // A dispatched session as its declaration allows; one no declaration names, as omp allows.',
+        '      const self = agents.find((a) => a.name.toLowerCase() === session.agent?.name?.toLowerCase());',
+        '      const spawns = self?.spawns;',
+        '      if (self !== undefined)',
+        '        policy = resolveSpawnPolicy(spawns === undefined ? "" : Array.isArray(spawns) ? spawns.join(",") : spawns);',
+        '    }',
+        '    if (policy !== undefined && !policy.enabled) return undefined;',
+        '    const allowed = policy?.allowedAgents ?? null;',
+        '    const forms = agents.flatMap((a) => {',
+        '      if (allowed !== null && !allowed.includes(a.name)) return [];',
+        '      const schema = schemaOf(frontmatterOf(a));',
+        '      return schema === undefined ? [] : [formOf(a.name, schema)];',
+        '    });',
+        '    return forms.length === 0',
+        '      ? undefined',
+        '      : ["# Assignment forms", "", "A dispatch of these agents is refused unless its task text carries the assignment so:", "", ...forms].join("\\n");',
+        '  }',
         "  // The launched session dispatches only whom its declaration's `spawns` names, refused in",
         "  // omp's own words; the `task` tool itself stays the operator's grant.",
         '  pi.on("before_subagent_spawn", (event, ctx) => {',
@@ -1808,46 +2636,228 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    return { block: true, reason: `Cannot spawn '${event.agent}'. Allowed: ${policy.allowedErrorText}` };",
         '  });',
         '',
-        '  // Each capability as its installed command explains it, asked once, at load.',
-        '  const explanations: [string, Explanation][] = [];',
-        '  for (const capability of CAPABILITIES)',
-        '    explanations.push([capability, JSON.parse(await run([capability, "--explain"]))]);',
-        '',
-        '  // The declaration the session runs as: in a main session, the one `--agent` launched;',
-        '  // in a dispatched one, the one omp discovers by the name it gives the session, lowercased.',
-        '  async function running(ctx: Session): Promise<AgentDefinition | undefined> {',
-        '    if (ctx.agent?.kind === "main") return launched?.declaration;',
-        '    const name = ctx.agent?.name;',
-        '    if (name === undefined) return undefined;',
-        '    const agents: AgentDefinition[] = (await discoverAgents(ctx.cwd)).agents;',
-        '    return agents.find((a) => a.name.toLowerCase() === name);',
+        '  // The harness event appended to the ledger of the repository holding `cwd`. A refusal of a',
+        '  // transition already written is the same event delivered twice, and nothing more.',
+        '  async function capture(event: Record<string, unknown>, cwd: string, ctx?: Session): Promise<void> {',
+        '    try {',
+        '      await run(["lifecycle", JSON.stringify(event)], cwd);',
+        '    } catch (error) {',
+        '      const message = messageOf(error);',
+        '      if (!message.includes(String(event.transition))) ctx?.ui.notify(`${COMMAND} lifecycle: ${message}`, "warning");',
+        '    }',
+        '  }',
+        '  // Each item dispatched for a cut, by its task call and position: what its return records.',
+        '  interface Dispatch {',
+        '    cut: string;',
+        '    role: string;',
+        '    run: string;',
+        '    workPackage?: string;',
+        '    cwd: string;',
+        '  }',
+        '  const dispatches = new Map<string, Dispatch>();',
+        '  async function returned(at: Dispatch, assayer: string, deliverable: unknown, tokens: unknown, ctx?: Session): Promise<void> {',
+        '    const { cut, role, run: runId, workPackage, cwd } = at;',
+        '    await capture(',
+        '      {',
+        '        kind: "returned",',
+        '        transition: `${runId}/returned`,',
+        '        cut,',
+        '        role,',
+        '        run: runId,',
+        '        ...(workPackage === undefined ? {} : { workPackage }),',
+        '        ...(typeof tokens === "number" ? { tokens } : {}),',
+        '      },',
+        '      cwd,',
+        '      ctx,',
+        '    );',
+        '    const entry = deliverableEntry(deliverable, { cut, run: runId, assayer });',
+        '    if (entry !== undefined) await capture(entry, cwd, ctx);',
         '  }',
         '',
-        "  // Each capability as one tool, once the session's agent is known: with every verb it",
-        '  // explains, or, to an agent that changes nothing, its reading verbs alone (none: no tool).',
-        '  function offer(readsOnly: boolean): void {',
-        '    for (const [capability, explained] of explanations) {',
-        '      const offered = explained.verbs.filter((v) => !readsOnly || v.effect === "reads");',
-        '      if (offered.length === 0) continue;',
-        '      const explanation: Explanation = { ...explained, verbs: offered };',
-        '      const verbs = new Map(offered.map((v) => [v.name, v]));',
-        '      const withheld = new Set(explained.verbs.filter((v) => !verbs.has(v.name)).map((v) => v.name));',
-        '      pi.registerTool({',
-        '        name: explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""),',
-        '        label: explanation.name,',
-        '        description: description(explanation),',
-        '        parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
-        '        approval: (args: Record<string, unknown>) =>',
-        '          verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
-        '        async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
-        '          const verb = String(args.verb);',
-        '          if (withheld.has(verb))',
-        '            throw new Error(`Verb ${verb} appends, and is not offered to an agent that changes nothing`);',
-        '          const text = await run(argv(capability, verbs.get(verb), args), ctx.cwd, signal);',
-        '          return { content: [{ type: "text" as const, text }] };',
-        '        },',
-        '      });',
+        '  // Only what the operator sees counts toward a readback: the text of each reply, never its',
+        '  // thinking, since the readback came to be owed.',
+        '  const visible = (event: unknown): string | undefined => {',
+        '    const message = (event as { message?: { role?: string; content?: string | { type?: string; text?: string }[] } }).message;',
+        '    if (message?.role !== "assistant") return undefined;',
+        '    const content = message.content ?? [];',
+        '    return typeof content === "string" ? content : content.filter((c) => c.type === "text").map((c) => c.text ?? "").join("\\n");',
+        '  };',
+        '  pi.on("assistant_message", (event, ctx) => {',
+        '    if (!owed || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    saying = visible(event) ?? "";',
+        '    return undefined;',
+        '  });',
+        '  pi.on("message_end", (event, ctx) => {',
+        '    if (!owed || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    const text = visible(event);',
+        '    if (text === undefined) return undefined;',
+        '    if (text.trim() !== "") said.push(text);',
+        '    if (saying === text) saying = "";',
+        '    return undefined;',
+        '  });',
+        '',
+        '  // A launch that owes a readback changes nothing before it: each act that would is refused',
+        '  // until a judge finds the readback in what the operator has been told, and from then on',
+        '  // none is held. A call that only reads is never held. With no verdict the act goes',
+        '  // through, and the session is told it was not judged.',
+        '  let unjudged = false;',
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    if (!owed || (ctx as unknown as Session).agent?.kind !== "main") return undefined;',
+        '    if (!changes(event.toolName, (event.input ?? {}) as Record<string, unknown>, appending)) return undefined;',
+        '    const text = [...said, saying].filter((t) => t.trim() !== "").join("\\n\\n");',
+        '    if (text.trim() === "") return { block: true, reason: READBACK_UNSEEN_REFUSAL };',
+        '    const judge = (globalThis as Record<symbol, unknown>)[JUDGE] as Judge | undefined;',
+        '    const verdict = typeof judge === "function" ? await judge(ctx, READBACK_PROMPT, text, "given") : undefined;',
+        '    if (verdict === undefined) {',
+        '      if (!unjudged) {',
+        '        unjudged = true;',
+        '        void Promise.resolve(',
+        '          pi.sendUserMessage("reconstitution — the judge gave no verdict on the readback, so this act was NOT judged.", { deliverAs: "nextTurn", attribution: "agent" }),',
+        '        ).catch(() => {});',
+        '      }',
+        '      return undefined;',
         '    }',
+        '    if (verdict.value) {',
+        '      owed = false;',
+        '      return undefined;',
+        '    }',
+        '    return { block: true, reason: `${READBACK_REFUSAL} ${verdict.reason}`.trim() };',
+        '  });',
+        '',
+        "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
+        '  // through `tool`) never reaches the `task` call where its assignment is checked, the guards on',
+        '  // the dispatch act judge it and the readback gate holds it. So a composed agent, a session',
+        '  // launched as one or a delegate whose declaration carries a typed assignment, is refused that code, and',
+        "  // dispatches with the task tool. A plain session and omp's own delegates are never refused.",
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    if (event.toolName !== "eval") return undefined;',
+        '    const input: unknown = event.input;',
+        '    const code = input !== null && typeof input === "object" && "code" in input ? input.code : undefined;',
+        '    if (typeof code !== "string" || !EVAL_DISPATCH.test(code)) return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const agent = session.agent;',
+        '    if (agent?.kind === "main" && launched === undefined) return undefined;',
+        '    if (agent?.kind === "sub") {',
+        '      const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === agent.name);',
+        '      if (schemaOf(frontmatterOf(declaration)) === undefined) return undefined;',
+        '    } else if (agent?.kind !== "main") return undefined;',
+        '    return { block: true, reason: EVAL_DISPATCH_REFUSAL };',
+        '  });',
+        '',
+        "  // EVERY `task` call, in any session: each item's assignment checked against its agent's",
+        '  // contract, then the cut it serves, before any agent runs; a misfit refuses the whole call.',
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    if (event.toolName !== "task") return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const input = (event.input ?? {}) as Record<string, unknown>;',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const handoffs = itemsOf(input);',
+        '    const reasons: string[] = [];',
+        '    for (const h of handoffs) {',
+        '      const declaration = agents.find((a) => a.name === h.agent);',
+        '      const said = frontmatterOf(declaration);',
+        '      h.strict = (said.output ?? declaration?.output) !== undefined;',
+        '      h.schema = schemaOf(said);',
+        '      if (h.schema === undefined) continue;',
+        '      const value = assignmentOf(h.item, input);',
+        '      const { reason } = checkAssignment(h.agent, h.schema, value);',
+        '      if (reason !== undefined) reasons.push(`${reason}\\n${formOf(h.agent, h.schema)}`);',
+        '      else h.assignment = value as Record<string, unknown>;',
+        '    }',
+        '    if (reasons.length > 0) return { block: true, reason: reasons.join("\\n") };',
+        '    const leads = new Set<string>();',
+        '    const builders = new Map<string, string[]>();',
+        '    for (const { schema, assignment } of handoffs) {',
+        '      const cut = assignment?.cut;',
+        '      if (typeof cut !== "string") continue;',
+        '      if (requires(schema, CUT_BRIEF)) leads.add(cut);',
+        '      if (requires(schema, ["workPackage"]) && typeof assignment?.workPackage === "string")',
+        '        builders.set(cut, [...(builders.get(cut) ?? []), assignment.workPackage]);',
+        '    }',
+        '    for (const cut of leads) {',
+        '      const reason = await leadRefusal(cut, session.cwd);',
+        '      if (reason !== undefined) reasons.push(reason);',
+        '    }',
+        '    for (const [cut, packages] of builders) {',
+        '      const reason = await builderRefusal(cut, packages, session.cwd);',
+        '      if (reason !== undefined) reasons.push(reason);',
+        '    }',
+        '    if (reasons.length > 0) return { block: true, reason: reasons.join("\\n") };',
+        '    for (const h of handoffs) {',
+        '      const cut = h.assignment?.cut;',
+        '      if (typeof cut !== "string") continue;',
+        '      const workPackage = typeof h.assignment?.workPackage === "string" ? h.assignment.workPackage : undefined;',
+        '      const at: Dispatch = { cut, role: h.agent, run: `${event.toolCallId}/${h.id}`, workPackage, cwd: session.cwd };',
+        '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
+        '      await capture(',
+        '        {',
+        '          kind: "dispatched",',
+        '          transition: `${at.run}/dispatched`,',
+        '          cut,',
+        '          role: h.agent,',
+        '          run: at.run,',
+        '          ...(workPackage === undefined ? {} : { workPackage }),',
+        '        },',
+        '        session.cwd,',
+        '        session,',
+        '      );',
+        '    }',
+        '    // A return checked strictly against its output schema: one omitting a required field fails.',
+        '    if (!handoffs.some((h) => h.strict && h.item.schemaMode === undefined)) return undefined;',
+        '    const strict = (h: Handoff) => (h.strict && h.item.schemaMode === undefined ? { ...h.item, schemaMode: "strict" } : h.item);',
+        '    return {',
+        '      input: Array.isArray(input.tasks) ? { ...input, tasks: handoffs.map(strict) } : strict(handoffs[0] as Handoff),',
+        '    };',
+        '  });',
+        '',
+        '  // A settled `task` call returns each item it ran: its return, tokens and deliverable.',
+        '  pi.on("tool_result", async (event, ctx) => {',
+        '    if (event.toolName !== "task") return undefined;',
+        '    const details = (event as { details?: { results?: unknown } }).details;',
+        '    const results = Array.isArray(details?.results) ? details.results : [];',
+        '    for (const raw of results) {',
+        '      const r = (raw ?? {}) as Record<string, unknown>;',
+        '      const at = dispatches.get(`${event.toolCallId}#${String(r.index)}`);',
+        '      if (at === undefined) continue;',
+        '      const structured = r.structuredOutput as { data?: unknown } | undefined;',
+        '      const deliverable = structured?.data ?? jsonIn(r.output);',
+        '      await returned(at, typeof r.id === "string" ? r.id : at.run, deliverable, r.tokens, ctx as unknown as Session);',
+        '    }',
+        '    return undefined;',
+        '  });',
+        "  // A background item settles outside its call: omp's own lifecycle event says so, and its",
+        '  // structured deliverable sits beside its session file.',
+        '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
+        '  bus?.on?.("task:subagent:lifecycle", (data) => {',
+        '    const e = (data ?? {}) as Record<string, unknown>;',
+        '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
+        '    const at = dispatches.get(`${String(e.parentToolCallId)}#${String(e.index)}`);',
+        '    if (at === undefined) return;',
+        '    const file = typeof e.sessionFile === "string" ? e.sessionFile.replace(/\\.jsonl$/, ".json") : undefined;',
+        '    const deliverable = file !== undefined && existsSync(file) ? jsonIn(readFileSync(file, "utf8")) : undefined;',
+        '    void returned(at, typeof e.id === "string" ? e.id : at.run, deliverable, undefined);',
+        '  });',
+        '',
+        '  // Each capability as its installed command explains it, asked once, at load, and offered',
+        '  // as one tool with every verb it explains, to every agent.',
+        '  for (const capability of CAPABILITIES) {',
+        '    const explanation: Explanation = JSON.parse(await run([capability, "--explain"]));',
+        '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
+        '    const tool = explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");',
+        '    for (const v of explanation.verbs) if (v.effect === "appends") appending.add(`${tool} ${v.name}`);',
+        '    pi.registerTool({',
+        '      name: tool,',
+        '      label: explanation.name,',
+        '      description: description(explanation),',
+        '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
+        '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
+        '      approval: (args: Record<string, unknown>) =>',
+        '        verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
+        '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
+        '        const text = await run(argv(capability, verbs.get(String(args.verb)), args), ctx.cwd, signal);',
+        '        return { content: [{ type: "text" as const, text }] };',
+        '      },',
+        '    });',
         '  }',
         '}',
         '',
@@ -1908,7 +2918,9 @@ export const ompHarnessAdapter: HarnessAdapter = {
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
   skillRel: ompSkillRel,
-  scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),
+  // The session module: the cells no agent composes, and the guards the agents do.
+  scopeActivatedSurface: (hooks, _agents, guards) =>
+    ompScopeActivatedExtensions(hooks, guards),
   // The dispatch isolation module: what this harness composes from the agents
   // beyond their definitions. Starting a session as one goes through `omp --agent`,
   // which the capability module below registers, so nothing here launches anything.

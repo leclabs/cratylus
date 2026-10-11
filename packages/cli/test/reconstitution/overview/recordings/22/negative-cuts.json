@@ -1,0 +1,69 @@
+{
+  "breaks": "cuts",
+  "recording": {
+    "provenance": "Authored offline control, not captured from a model. Answers hand-scored; live judges recompute them.",
+    "input": {
+      "context": "film-production",
+      "subject": "Making a film from recorded performances.",
+      "relation": "Film production asks scheduling for available shooting dates.",
+      "concepts": [
+        {
+          "name": "production",
+          "meaning": "The making of a film through its shoots."
+        },
+        {
+          "name": "shoot",
+          "meaning": "A recording occasion made up of takes."
+        },
+        {
+          "name": "take",
+          "meaning": "One uninterrupted recorded performance."
+        }
+      ],
+      "openDecisions": [
+        {
+          "id": "colour",
+          "title": "Choose the colour treatment"
+        }
+      ],
+      "cutsInFlight": [
+        {
+          "cut": "film",
+          "phase": "in flight",
+          "branch": "feature/film"
+        }
+      ]
+    },
+    "output": "Film production makes a film from recorded performances and asks scheduling for available shooting dates. Production is the making of a film through its shoots. A shoot is a recording occasion made up of takes. A take is one uninterrupted recorded performance. Choosing the colour treatment remains an open decision, separate from those settled concepts. ",
+    "answers": {
+      "whole": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: whole account rather than a catalog dump."
+      },
+      "subject": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: identifies the subject and relation."
+      },
+      "order": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: explains production before its parts."
+      },
+      "meaning": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: preserves every supplied concept’s meaning."
+      },
+      "open": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: separates open decisions from current meaning."
+      },
+      "cuts": {
+        "pass": false,
+        "evidence": "Authored negative exhibits: Film production makes a film from recorded performances and asks scheduling for available shooting dates. Production is the making of a film through its shoots. A shoot is a recording occasion made up of takes. A take is one uninterrupted recorded performance. Choosing the colour treatment remains an open decision, separate from those settled concepts. "
+      },
+      "no-invention": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never invents a concept, decision or cut."
+      }
+    }
+  }
+}

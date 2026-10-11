@@ -1,0 +1,169 @@
+{
+  "provenance": {
+    "kind": "authored offline control",
+    "note": "Not captured from a model. Fresh-session trace and rubric answers are authored; offline proof does not establish live judge reliability. No prior conversation is supplied.",
+    "variation": 1
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "```assignment\n{\"cut\":\"sound\",\"concepts\":[\"recording\",\"mix\"],\"examples\":[\"sound-production/1\",\"sound-production/2\"],\"decisions\":[\"sound-order\"]}\n```\n\nThe sound cut records dialogue and mixes the recorded tracks. A separate picture cut edits the images. What can the sound cut hand out next?"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "capability",
+          "name": "read",
+          "arguments": {
+            "path": "xd://work_package"
+          }
+        }
+      ]
+    },
+    {
+      "role": "toolResult",
+      "toolCallId": "capability",
+      "toolName": "read",
+      "content": [
+        {
+          "type": "text",
+          "text": "Verb levels (concept: dependency graph; reads)\nPurpose: Show the levels of the cut’s work packages, computed from which must return before which, so the packages of one level can be built side by side, each with where it stands; refused while packages depend on each other in a cycle, naming them\nWhen: To see the order and the parallel work the packages allow, before any builder is set to work or after changing their dependencies\n\nVerb state (concept: ledger; reads)\nPurpose: Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready for their builder, never started or returned to build by a finding or a failing whole check; and the last report its lead (the agent running the cut) returned\nWhen: Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state"
+        }
+      ],
+      "isError": false
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "The capability says state returns ready work for a cut. The brief and request name sound, so I will ask state for sound."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "sound-state",
+          "name": "work_package",
+          "arguments": {
+            "verb": "state",
+            "cut": "sound"
+          }
+        }
+      ]
+    },
+    {
+      "role": "toolResult",
+      "toolCallId": "sound-state",
+      "toolName": "work_package",
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"cut\": \"sound\", \"branch\": \"feature/sound\", \"contexts\": [\"sound-production\"], \"architects\": {\"sound-production\": \"architect\"}, \"phase\": \"in flight\", \"workPackages\": [{\"name\": \"recording\", \"status\": \"dispatched\", \"dependsOn\": []}, {\"name\": \"mix\", \"status\": \"submitted\", \"dependsOn\": [\"recording\"]}], \"ready\": [], \"report\": null}"
+        }
+      ],
+      "isError": false
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "No sound work package is ready. The sound state returns an empty ready list: recording is already dispatched, and mix waits for it to return. There is nothing for sound to hand out next."
+        }
+      ]
+    }
+  ],
+  "report": "No sound work package is ready. The sound state returns an empty ready list: recording is already dispatched, and mix waits for it to return. There is nothing for sound to hand out next.",
+  "snapshots": [
+    {
+      "design/examples/sound-production/sound.md": "# Examples\n\n1. (recording) Given planned dialogue, when recording returns, then the dialogue tracks are available.\n2. (mix) Given recorded dialogue, when mixing returns, then the mixed soundtrack is available.\n",
+      "design/examples/picture-production/picture.md": "# Examples\n\n1. (editing) Given recorded images, when editing returns, then the picture edit is available.\n"
+    },
+    {
+      "design/examples/sound-production/sound.md": "# Examples\n\n1. (recording) Given planned dialogue, when recording returns, then the dialogue tracks are available.\n2. (mix) Given recorded dialogue, when mixing returns, then the mixed soundtrack is available.\n",
+      "design/examples/picture-production/picture.md": "# Examples\n\n1. (editing) Given recorded images, when editing returns, then the picture edit is available.\n"
+    }
+  ],
+  "wiring": {
+    "agent": "lead",
+    "declaration": "Authored lead identity control; not an observed installed declaration.",
+    "prompt": [
+      "Authored lead identity control; not an observed installed declaration."
+    ],
+    "active": ["read", "bash", "work_package"],
+    "tools": [
+      {
+        "name": "read",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": ["path"]
+        }
+      },
+      {
+        "name": "bash",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            }
+          },
+          "required": ["command"]
+        }
+      },
+      {
+        "name": "work_package",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "verb": {
+              "type": "string"
+            },
+            "cut": {
+              "type": "string"
+            }
+          },
+          "required": ["verb", "cut"]
+        }
+      }
+    ]
+  },
+  "answers": {
+    "calls-ready-operation": {
+      "pass": true,
+      "evidence": "It selects state from the published purpose and receives a successful state result for sound."
+    },
+    "reports-empty-answer": {
+      "pass": true,
+      "evidence": "The report says no sound work package is ready, matching sound ready: []."
+    },
+    "never-other-cut": {
+      "pass": true,
+      "evidence": "It does not substitute any picture work for sound."
+    },
+    "never-empty-interface-failure": {
+      "pass": true,
+      "evidence": "It treats an empty ready list as a valid answer, not an incomprehensible interface."
+    },
+    "no-competing-procedure": {
+      "pass": true,
+      "evidence": "The only procedural authority is the capability explanation; the brief/request supplies sound."
+    }
+  }
+}

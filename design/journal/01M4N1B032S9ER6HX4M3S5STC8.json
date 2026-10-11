@@ -1,0 +1,14 @@
+{
+  "id": "01M4N1B032S9ER6HX4M3S5STC8",
+  "at": "2026-10-11T08:30:14.626Z",
+  "kind": "decide",
+  "decisionId": "0093",
+  "context": "agents",
+  "title": "Check ruling: the procedure-past-objective tell states its rule, not its cases",
+  "situation": "Reverted to 'the ritual outliving what it serves', the tell no longer holds agents 16 live; the lead proposed a line naming re-reading, re-checking and another round, close to the example's own never-assertions, which an assayer already judged lets the example be read off the role definition.",
+  "decision": "Yes to rebinding the one catalog expectation, with the line stating the concept's rule and no cases: once its objective is met, any further step is drift; report the outcome and stop. The parenthetical cases are left out, so the example is not read off the definition. Rebound and seen red against the current protocol first. If agents 16 still fails, the guard holds what the text does not (0091), and the held drift is reported.",
+  "consequences": "Tells in role text state concepts, never the cases their examples test.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

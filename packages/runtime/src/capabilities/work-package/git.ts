@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The GIT the work package capability speaks: the top of the repository it runs
-// in, the common directory every worktree of it shares, the files a commit of
-// some paths would take, and a builder's commit.
+// in, the common directory every worktree of it shares (where the ledger's
+// append lock is held), the files a commit of some paths would take, and a
+// builder's commit.
 //
 // Every path reaches git as a LITERAL pathspec (`--literal-pathspecs`), so a
 // path names itself and nothing a glob of it would match. A path naming a

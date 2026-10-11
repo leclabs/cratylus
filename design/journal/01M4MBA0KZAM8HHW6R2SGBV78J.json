@@ -1,0 +1,15 @@
+{
+  "id": "01M4MBA0KZAM8HHW6R2SGBV78J",
+  "at": "2026-10-11T02:05:13.727Z",
+  "kind": "decide",
+  "decisionId": "0080",
+  "context": "workflow",
+  "title": "Order of the open cuts, and cuts close themselves on their feature branch",
+  "situation": "0072 ended a lead's cut with its worktree removed. The operator, 2026-10-10: a cut needs a feature branch of its own and nothing more; worktrees are not the normal development workflow and add complexity and hygiene overhead, and agents already know how to branch. The first step of 0072's order, integrating the two parked cuts and settling 0065, is done.",
+  "decision": "The reconstitution cut (0079), now started; then the delivery cut (0029, 0066, 0077); then a consumer trial, kino on a film-production project, before dev is released to main; then cut 7 (0028); then the ipseic round (0048). A lead's cut ends integrated: its feature branch merged with its whole check green, installed by the integration step only, and released into dev under the operator's standing delegation; pushing stays the operator's.",
+  "consequences": "Replaces 0072's closing step: no worktree is created or removed by any role.",
+  "status": "accepted",
+  "supersedes": "0072",
+  "supersedesEntry": "01M4M4P6FZ486D8JXA00FECSMJ",
+  "decisionKind": "meaning"
+}

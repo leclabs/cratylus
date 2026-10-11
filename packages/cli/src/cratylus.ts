@@ -3,7 +3,8 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`eventTap`, `concepts`), and `@cratylus/canon` the corpus `install`
+// (`eventTap`, `concepts`, `workPackage`) and the hidden harness-facing commands
+// (`lifecycle`, `completion-check`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through.
@@ -30,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import canon from '@cratylus/canon';
 import { fail, projectorCommands, usageExitCode } from '@cratylus/forge/cli';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { capabilityCommands } from '@cratylus/runtime/main';
+import { capabilityCommands, harnessCommands } from '@cratylus/runtime/main';
 import { Command, type CommanderError } from 'commander';
 
 /**
@@ -149,7 +150,17 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
-  const program = commandLine();
+  // A harness-facing command (`lifecycle`, `completion-check`) is held by a program
+  // of its own, never by the one whose help, README and agent tools list commands:
+  // the harness's channel and the post-commit hook's check are no one's to offer.
+  const harness = harnessCommands().find(
+    (command) => command.name() === argv[0],
+  );
+  const program =
+    harness === undefined
+      ? commandLine()
+      : new Command(CLI_BIN).addCommand(harness);
+  if (harness !== undefined) register(program);
   if (argv.length === 0) {
     program.outputHelp({ error: true });
     process.exitCode = 1;

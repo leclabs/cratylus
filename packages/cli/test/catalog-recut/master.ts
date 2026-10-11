@@ -1,5 +1,6 @@
-// Independent transcription of master-design.md §§1–4 and the realization contract.
-// Never read expected values from canon: these are the fixed examples' oracle.
+// Independent transcription of master-design.md §§1–4 and the realization contract,
+// rebound under rulings 0084 and 0085, including persistence and deliverables. The historical
+// master design stays unchanged; never read expected values from canon.
 export type Level = 'advisory' | 'firm' | 'fixed' | null;
 export interface ExpectedEntry {
   value: string;
@@ -16,6 +17,83 @@ export function requireDefined<T>(value: T | undefined, label: string): T {
 }
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+
+// Decision 0070 and the drift concept, rebound under 0085 and 0090. Keep this expectation
+// independent of canon so an omitted protocol or drift tell cannot pass.
+export const personaProtocol = `## Protocol
+
+**persona drift** ≜ decay of the Provenance-declared stance, across a long conversation, toward the passive/deferential/generic default; its deferential face = sycophancy. Provenance fires once, at reconstitution -- left there it decays.
+
+Countermeasure: re-ground the Provenance stance at the top of **every** turn, before reading the operator's message -- per turn, never once.
+
+Drift tells (each = drift, never diligence):
+
+- **answerable question** -- asking what it could answer itself;
+- **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
+- **menu** -- options offered where the stance owns one recommendation;
+- **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
+- **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
+- **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
+- **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
+- **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.
+
+Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
+
+Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signifier-carrying by construction, never long-form human prose. The reader is the LLM by construction, never inferred; a human-facing deliverable carried within is an explicit human-project, specified at the point of intention.`;
+
+// Decision 0081's typed deliverables, rebound under 0085. These are independent
+// expected projections, not schemas read from canon or rendered by forge.
+export const deliverableSections: Record<string, string> = {
+  'decisions-with-reasons': '',
+  'outcome-with-efficiency': `## Deliverable
+The lead's report of the cut to whoever dispatched it, in the design's concepts: each example's outcome with its evidence, the assayers' verdicts, the figures and the hardening notes.
+Return it as one JSON object with these fields:
+- \`cut\` (string, required): The cut this report is for, by its name.
+- \`outcomes\` (list of objects, at least 1, required): One outcome per visible example of the cut, each in the design's concepts.
+  - \`example\` (string, required): The visible example, as \`<context>/<number>\`.
+  - \`concept\` (string, required): The concept the example shows, by its name in the design.
+  - \`outcome\` (string, \`pass\` or \`fail\`, required): Whether the example holds in the delivered work.
+  - \`evidence\` (string, required): Why the outcome holds, named by the example and by the check that binds it, in the design's concepts: what the check showed of the concept. Never a file, function, path or command, even where a verdict cites one: translate it into the concept it bears on.
+- \`verdicts\` (list of objects, required): Each assayer's verdict, as it returned it.
+  - \`assayer\` (string, required): The assayer that judged, by its run.
+  - \`verdict\` (string, \`accept\` or \`reject\`, required): The assayer's verdict on the cut, as it returned it.
+  - \`findings\` (list of strings, required): The assayer's findings, each restated in the design's concepts; empty when it found none.
+- \`efficiency\` (object, required): The cut's figures, as the ledger computes them.
+  - \`agentRuns\` (object, required): The agent runs the harness reports for the cut.
+    - \`total\` (integer, required): Every agent run the cut took.
+    - \`byRole\` (map of integers, required): The agent runs by role.
+  - \`rounds\` (integer, required): The rounds of build and judgment.
+  - \`wholeCheckRuns\` (integer, required): The runs of the whole check.
+  - \`tokens\` (integer, required): The tokens the runs reported, summed.
+- \`hardeningNotes\` (list of strings, required): What would make the cut's examples or checks harder to pass by accident, each in the design's concepts; empty when there is none.`,
+  'done-or-failing-case': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`workPackage\` (string, required)
+- \`done\` (boolean, required)
+- \`failingCase\` (string, optional)`,
+  'verdict-per-concept': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`verdicts\` (list of objects, at least 1, required)
+  - \`workPackage\` (string, required)
+  - \`concept\` (string, required)
+  - \`passes\` (boolean, required)
+  - \`evidence\` (string, required)
+  - \`finding\` (string, optional)
+- \`hardeningNotes\` (list of strings, required)`,
+  'checks-seen-red': `## Deliverable
+Return it as one JSON object with these fields:
+- \`cut\` (string, required)
+- \`checks\` (list of objects, required)
+  - \`example\` (string, required)
+  - \`check\` (string, required)
+  - \`seenRed\` (boolean, required)`,
+  'examples-with-flagged-terms': `## Deliverable
+Return it as one JSON object with these fields:
+- \`examples\` (list of strings, required)
+- \`flaggedTerms\` (list of strings, required)`,
+};
 
 export const decisionSlots = [
   ['intent', 'what is wanted and why'],
@@ -71,7 +149,14 @@ export const factors = {
     repertoire: 'curated',
     level: 'firm',
     projection: 'text',
-    slots: slots('register', 'density', 'rationale'),
+    slots: [
+      ...slots('register', 'density', 'rationale'),
+      {
+        name: 'ordering',
+        gloss: 'the sequence a reply presents its content in',
+        optional: true,
+      },
+    ],
   },
   'decision-rights': {
     group: 'Authority',
@@ -180,7 +265,7 @@ function glossary(text: string): Record<string, string> {
 }
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
-architect | holds the conceptual design of the contexts it is given: turns intent into concepts, confirms examples and answers meaning questions
+architect | the client's principal architect: owns the conceptual design of the contexts it is given and the delivery of the product, turns intent into concepts, confirms examples and answers meaning questions
 lead | owns a cut's realization and settles every question of realization the accepted decisions leave open
 builder | owns one work package and changes only its outputs until their examples pass
 assayer | judges a cut once against fixed criteria and the held-out results, and never builds
@@ -215,7 +300,7 @@ freeze | fix examples, their checks and their concepts while a build realizes th
 build | change the work until its visible examples pass
 judgment | judge the finished work once, when its build is green, against fixed criteria and held-out examples
 whole check | run every check of everything affected in one run, fixing everything it revealed in one round
-reconstitution | at every start, recover the design from its source of truth and read it back before acting`),
+reconstitution | at every start, read the overview of each context it touches first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work
@@ -247,7 +332,8 @@ convergence | density set by a layman reader
 maintenance | a peer's density, in the notation that peer works in
 answer-only | the answer, without its reasoning
 decision-rationale | each decision with its reasons
-provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred`),
+provenance-attribution | each recommendation traced to a named outside source, observed marked apart from inferred
+bottom-line-up-front | the conclusion first, then one recommended action per topic, then only the support a layman needs; never a menu or a question it can answer`),
   'decision-rights': glossary(`
 D | decides
 R | recommends
@@ -399,14 +485,14 @@ const columns: Record<string, string[]> = {
     'adversarial,simplicity',
   ],
   'communication-style': [
-    'plain,convergence,decision-rationale',
+    'plain,convergence,decision-rationale,bottom-line-up-front',
     'plain,maintenance,decision-rationale',
     'plain,maintenance,answer-only',
     'plain,maintenance,decision-rationale',
     'plain,convergence,answer-only',
     'plain,maintenance,decision-rationale',
   ],
-  // Builder's unspecified classes are –; confirmed by the meaning-holder.
+  // Builder's unspecified classes are –; confirmed by the architect.
   'decision-rights': [
     'I,R,D,D,–,D,–,R',
     'I,I,I,I,D,I,I,I',
@@ -530,6 +616,11 @@ export function roleVector(role: RoleName): Vector {
                   )
                     ? { level: 'fixed' as const }
                     : {}),
+                  ...(role === 'architect' &&
+                  factor === 'communication-style' &&
+                  anchor === 'bottom-line-up-front'
+                    ? { level: 'fixed' as const }
+                    : {}),
                 },
               );
             });
@@ -545,7 +636,7 @@ export const marks = {
 export type PersonaName = keyof typeof marks;
 export const descriptions: Record<string, string> = {
   architect:
-    "Holds the conceptual design of the contexts it is given, in cratylus's example-driven workflow.",
+    "The client's principal architect, owning the conceptual design and delivery of the product, in cratylus's example-driven workflow.",
   lead: "Owns a cut's realization in the example-driven workflow.",
   builder: 'Builds one work package until its visible examples pass.',
   assayer: 'Judges a cut once against its examples and held-out results.',

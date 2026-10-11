@@ -97,8 +97,7 @@ describe('catalog re-cut: the visible examples', () => {
           `${name}.model effort`,
         ).value.split(' ≜ ')[0],
       });
-      if (name === 'assayer') expect(agent.readOnly).toBe(true);
-      else expect(agent.readOnly).toBeUndefined();
+      expect(agent.readOnly, name).toBeUndefined();
     }
     // The shipped holders, not just calls to holder(), must carry the same vectors.
     const f = fixture();
@@ -255,7 +254,7 @@ describe('catalog re-cut: the visible examples', () => {
     }
   });
 
-  it('example 8: omp settings retain default tools except assayer and bind exactly the handoffs', () => {
+  it('example 8: omp settings retain default tools for every agent and bind exactly the handoffs', () => {
     const f = fixture();
     f.install();
     expect(f.names(true)).toEqual([...agentNames].sort());
@@ -285,19 +284,7 @@ describe('catalog re-cut: the visible examples', () => {
           .map((name) => name.trim())
           .filter(Boolean),
       );
-      if (name === 'assayer') {
-        expect(front.tools).toEqual(
-          expect.arrayContaining([
-            'read',
-            'grep',
-            'glob',
-            'find',
-            'ast_grep',
-            'web_search',
-          ]),
-        );
-        expect(front.tools).toHaveLength(6);
-      } else expect(front, name).not.toHaveProperty('tools');
+      expect(front, name).not.toHaveProperty('tools');
     }
   });
 
@@ -366,7 +353,7 @@ describe('catalog re-cut: the visible examples', () => {
     }
   });
 
-  it('example 11: every catalog module has exactly its master-design name and explanation', async () => {
+  it('example 11: every catalog module has exactly its name and explanation under the decisions in force', async () => {
     for (const factor of factorNames) {
       const directory = join(repo, 'packages/canon/src/dimensions', factor);
       const expectedFiles = Object.keys(values[factor])
@@ -396,5 +383,55 @@ describe('catalog re-cut: the visible examples', () => {
       expect(front, name).toHaveProperty('key', null);
       expect(body).not.toMatch(/^#+ key\b/im);
     }
+  });
+});
+
+// Rulings 0084–0085: isolate the rebound assertions so one old coordinate cannot
+// mask another's red proof. Other assertions above keep their original meaning.
+describe('catalog re-cut: rulings 0084–0085', () => {
+  it('0068: the assayer has no read-only restriction', () => {
+    expect(composedRole('assayer').readOnly).toBeUndefined();
+  });
+
+  it("0070: the architect is the operator's principal architect", () => {
+    const architect = composedRole('architect');
+    expect.soft(architect.description).toBe(descriptions.architect);
+    expect.soft(vectorOf(architect).role).toEqual(roleVector('architect').role);
+  });
+
+  it('0078: ordering is an optional communication-style slot', () => {
+    expect(canon.MANIFEST['communication-style']).toEqual(
+      factors['communication-style'],
+    );
+  });
+
+  it('0078: ordering is fixed bottom-line-up-front for the architect and otherwise unset', () => {
+    for (const name of roleNames) {
+      const ordering = requireDefined(
+        vectorOf(composedRole(name)).communicationStyle,
+        `${name}.communicationStyle`,
+      ).filter((entry) => entry.slot === 'ordering');
+      expect(ordering, name).toEqual(
+        requireDefined(
+          roleVector(name).communicationStyle,
+          `${name}.communicationStyle`,
+        ).filter((entry) => entry.slot === 'ordering'),
+      );
+    }
+  });
+
+  it('0085: reconstitution reads context overviews before detail and readback', () => {
+    const procedure = requireDefined(
+      vectorOf(composedRole('architect')).procedure,
+      'architect.procedure',
+    );
+    expect(
+      procedure.find((entry) => entry.value.startsWith('reconstitution ≜ ')),
+    ).toEqual(
+      requireDefined(
+        roleVector('architect').procedure,
+        'architect.procedure',
+      ).find((entry) => entry.value.startsWith('reconstitution ≜ ')),
+    );
   });
 });

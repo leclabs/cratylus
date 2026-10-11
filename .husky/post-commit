@@ -1,0 +1,9 @@
+# The completion check (decision 0081): a commit whose subject opens
+# `feat(cut:<id>): ` is compared with the ledger, and when the ledger does not show
+# cut <id> complete, a warning naming the cut, its phase and every work package not
+# approved is written to this commit's output, asking its author to report the gap
+# as a defect in how the ledger captures the harness's events. It is silent
+# otherwise, never refuses (the commit is already made) and never writes the
+# ledger. It is `cratylus completion-check`, run from source (`tsx`), as the
+# immutability gate is, so it needs no build.
+pnpm --silent --filter @cratylus/runtime completion-check || true

@@ -1,0 +1,29 @@
+[
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "toolCall",
+        "id": "toolu_01B8764iTRcJ2Ftv4xEqzork",
+        "name": "bash",
+        "arguments": {
+          "command": "ls -la; find . -maxdepth 4 -not -path './.git*' | sort | awk 'NR<=200'",
+          "i": "Listing project records"
+        },
+        "intent": "Listing project records"
+      }
+    ]
+  },
+  {
+    "role": "toolResult",
+    "content": [
+      {
+        "type": "text",
+        "text": "descending: this call opens the work your stance keeps you above. Answer from the design, the examples and your delegates' reports, and leave realization to the lead. The command lists the entire repository tree, source and implementation files included, rather than reading the design records, so it is surveying the work itself."
+      }
+    ],
+    "toolCallId": "toolu_01B8764iTRcJ2Ftv4xEqzork",
+    "toolName": "bash",
+    "isError": true
+  }
+]

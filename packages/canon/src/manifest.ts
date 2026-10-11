@@ -29,6 +29,7 @@ import type {
   CapabilityName,
   DimensionMeta,
   EventName,
+  GuardCell as GuardCellOf,
   HookCell as HookCellOf,
   RequiredDimensionOf,
   SetDimensionOf,
@@ -93,7 +94,16 @@ export const MANIFEST = {
     repertoire: 'curated',
     level: 'firm',
     projection: 'text',
-    slots: [{ name: 'register' }, { name: 'density' }, { name: 'rationale' }],
+    slots: [
+      { name: 'register' },
+      { name: 'density' },
+      { name: 'rationale' },
+      {
+        name: 'ordering',
+        gloss: 'the sequence a reply presents its content in',
+        optional: true,
+      },
+    ],
   },
   // Authority
   'decision-rights': {
@@ -428,3 +438,6 @@ export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
 
 /** This corpus's hook-cell shape, narrowed to its declared event vocabulary. */
 export type HookCell = HookCellOf<CanonicalEvent>;
+
+/** This corpus's guard-cell shape, narrowed to its declared event vocabulary. */
+export type GuardCell = GuardCellOf<CanonicalEvent>;

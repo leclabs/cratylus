@@ -196,10 +196,10 @@ describe('example freeze', () => {
       execute: async () => true,
       expect: true,
     });
-    const passingLedger = createExampleLedger([passing], 'meaning-holder');
-    await expect(
-      passingLedger.meaningHolder.confirm(passing.id),
-    ).rejects.toThrow(/fail/i);
+    const passingLedger = createExampleLedger([passing], 'architect');
+    await expect(passingLedger.architect.confirm(passing.id)).rejects.toThrow(
+      /fail/i,
+    );
 
     const example = visible({
       kind: 'output-assertion',
@@ -208,10 +208,10 @@ describe('example freeze', () => {
       value: true,
       produce: async () => ({ ready: false }),
     });
-    const ledger = createExampleLedger([example], 'meaning-holder');
-    const frozen = await ledger.meaningHolder.confirm(example.id);
+    const ledger = createExampleLedger([example], 'architect');
+    const frozen = await ledger.architect.confirm(example.id);
     const builder = ledger.builder;
-    expect('meaningHolder' in builder).toBe(false);
+    expect('architect' in builder).toBe(false);
     expect('replaceExample' in builder).toBe(false);
     expect('approveChange' in builder).toBe(false);
     const view = builder.get(example.id);
@@ -237,8 +237,8 @@ describe('example freeze', () => {
       value: true,
       produce,
     });
-    const ledger = createExampleLedger([example], 'meaning-holder');
-    await ledger.meaningHolder.confirm(example.id);
+    const ledger = createExampleLedger([example], 'architect');
+    await ledger.architect.confirm(example.id);
     const view = ledger.builder.get(example.id);
     if (!view || view.check.kind !== 'output-assertion')
       throw new Error('The confirmed check should be visible.');
@@ -249,7 +249,7 @@ describe('example freeze', () => {
     });
   });
 
-  it('accepts only holder-approved same-id changes and requires a new red result', async () => {
+  it('accepts only architect-approved same-id changes and requires a new red result', async () => {
     const example = visible({
       kind: 'output-assertion',
       path: 'ready',
@@ -257,25 +257,25 @@ describe('example freeze', () => {
       value: true,
       produce: async () => ({ ready: false }),
     });
-    const ledger = createExampleLedger([example], 'meaning-holder');
-    const frozen = await ledger.meaningHolder.confirm(example.id);
+    const ledger = createExampleLedger([example], 'architect');
+    const frozen = await ledger.architect.confirm(example.id);
     const forged = {
       example: { ...example, situation: 'forged same-id replacement' },
       history: [{ approvedBy: 'builder', reason: 'forged' }],
     };
     await expect(
-      Reflect.apply(ledger.meaningHolder.refreeze, undefined, [forged]),
-    ).rejects.toThrow(/approved by this meaning-holder/);
+      Reflect.apply(ledger.architect.refreeze, undefined, [forged]),
+    ).rejects.toThrow(/approved by this architect/);
 
-    const changed = ledger.meaningHolder.approveChange(
+    const changed = ledger.architect.approveChange(
       example.id,
       'Clarify the expected behavior',
       { situation: 'updated' },
     );
     expect(changed.history[0]?.reason).toBe('Clarify the expected behavior');
-    const refrozen = await ledger.meaningHolder.refreeze(changed);
+    const refrozen = await ledger.architect.refreeze(changed);
     expect(refrozen.history).toEqual(changed.history);
-    const passingChange = ledger.meaningHolder.approveChange(
+    const passingChange = ledger.architect.approveChange(
       example.id,
       'The output is now correct',
       {
@@ -288,7 +288,7 @@ describe('example freeze', () => {
         },
       },
     );
-    await expect(ledger.meaningHolder.refreeze(passingChange)).rejects.toThrow(
+    await expect(ledger.architect.refreeze(passingChange)).rejects.toThrow(
       /fail/i,
     );
     expect(ledger.builder.get(example.id)?.situation).toBe('updated');

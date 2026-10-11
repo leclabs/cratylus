@@ -1,6 +1,6 @@
 # Examples · cut 3 · concept journal
 
-Context: workflow. Confirmed by the meaning-holder on 2026-10-10. Concepts: concept journal, decision, reconstitution, with concept, bounded context,
+Context: workflow. Approved by the architect holding the context on 2026-10-10. Concepts: concept journal, decision, reconstitution, with concept, bounded context,
 supersession and retirement as the journal records them (see `cratylus concepts design --context workflow`). The freeze of concepts
 during a build belongs to the meaning-roles cut, not this one.
 

@@ -1,0 +1,61 @@
+{
+  "breaks": "whole",
+  "recording": {
+    "provenance": "Authored offline control, not captured from a model. Answers hand-scored; live judges recompute them.",
+    "input": {
+      "context": "film-production",
+      "subject": "Making a film from recorded performances.",
+      "relation": "Film production asks scheduling for available shooting dates.",
+      "concepts": [
+        {
+          "name": "production",
+          "meaning": "The making of a film through its shoots."
+        },
+        {
+          "name": "shoot",
+          "meaning": "A recording occasion made up of takes."
+        },
+        {
+          "name": "take",
+          "meaning": "One uninterrupted recorded performance."
+        }
+      ],
+      "openDecisions": [
+        {
+          "id": "colour",
+          "title": "Choose the colour treatment"
+        }
+      ],
+      "cutsInFlight": [
+        {
+          "cut": "film",
+          "phase": "in flight",
+          "branch": "feature/film"
+        }
+      ]
+    },
+    "output": "A take is one uninterrupted performance; a shoot records takes; production makes a film through shoots. Colour treatment is an open choice, not a settled concept. Film is in flight. I can ask the work package capability for state to find recorded work in flight, or ask the concept journal for its context overview. This comes from the capability account.",
+    "answers": {
+      "whole": {
+        "pass": false,
+        "evidence": "Authored negative exhibits: A take is one uninterrupted performance; a shoot records takes; production makes a film through shoots. Colour treatment is an open choice, not a settled concept. Film is in flight. I can ask the work package capability for state to find recorded work in flight, or ask the concept journal for its context overview. This comes from the capability account."
+      },
+      "decision": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: distinguish an open decision from a settled concept."
+      },
+      "recorded-work": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: identify where to ask for the recorded work in flight."
+      },
+      "no-second-account": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never has to treat a skill’s second description as more authoritative."
+      },
+      "no-invention": {
+        "pass": true,
+        "evidence": "Authored positive control satisfies: never invent missing workflow state."
+      }
+    }
+  }
+}

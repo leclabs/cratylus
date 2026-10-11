@@ -1,0 +1,14 @@
+{
+  "id": "01M4MTCRWH821YBR0KGG602435",
+  "at": "2026-10-11T06:28:52.753Z",
+  "kind": "decide",
+  "decisionId": "0089",
+  "context": "agents",
+  "title": "Check ruling: agents 16 runs as the continuing session its Given describes",
+  "situation": "Agents example 16 (following procedure past its objective) is given a session that has already settled the decision, approved the examples and received the delegate's report, but its check launched the architect fresh, so reconstitution at session start, which the design requires, ran first and was judged as renewed discovery.",
+  "decision": "Yes. The scenario's setup becomes the continuing session its Given describes, its prior conversation, the architect's own earlier readback and approval, supplied as history, so reconstitution at session start is not in play. No clause, rubric, threshold or example text changes; the rebound check is seen to fail against an architect that repeats discovery in a continuing session.",
+  "consequences": "A behavioral scenario's setup matches its Given's session state: a fresh session where the Given is a start, a continuing one where it is not.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

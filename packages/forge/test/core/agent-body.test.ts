@@ -136,4 +136,53 @@ describe('agentBody — the projected text of an agent', () => {
       agentBody({ ...agent, stance: null } as unknown as Agent, CATALOG),
     ).toThrow(/agent 'reviewer': its 'stance' field is not a list of entries/);
   });
+
+  it('states the deliverable field by field, with what each field means', () => {
+    const body = agentBody(
+      {
+        ...agent,
+        contract: {
+          deliverable: {
+            type: 'object',
+            description: 'The report of the cut.',
+            properties: {
+              outcomes: {
+                type: 'array',
+                minItems: 1,
+                description: 'One per example.',
+                items: {
+                  type: 'object',
+                  properties: {
+                    outcome: {
+                      type: 'string',
+                      enum: ['pass', 'fail'],
+                      description: 'Whether it holds.',
+                    },
+                    evidence: { type: 'string', description: 'In concepts.' },
+                  },
+                  required: ['outcome'],
+                },
+              },
+            },
+            required: ['outcomes'],
+          },
+        },
+      },
+      CATALOG,
+    );
+    expect(body).toContain(
+      [
+        '## Deliverable',
+        '',
+        'The report of the cut.',
+        '',
+        'Return it as one JSON object with these fields:',
+        '',
+        '- `outcomes` (list of objects, at least 1, required): One per example.',
+        '  - `outcome` (string, `pass` or `fail`, required): Whether it holds.',
+        '  - `evidence` (string, optional): In concepts.',
+      ].join('\n'),
+    );
+    expect(agentBody(agent, CATALOG)).not.toContain('## Deliverable');
+  });
 });

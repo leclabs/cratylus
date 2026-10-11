@@ -744,6 +744,13 @@ function describe(
         : '';
     lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
   }
+  // Each guard the agents compose: the tell it holds and whom it judges, or that the
+  // harness carries it as a declaration alone.
+  for (const guard of tree.guards) {
+    lines.push(
+      `  guard ${guard.guard} (${guard.tell}): ${guard.realized ? 'judges' : 'not realized on this harness, a declaration alone for'} ${list(guard.agents)}`,
+    );
+  }
   for (const edit of found.edits) {
     lines.push(`  ${dry ? 'would edit' : 'edited'} ${edit.path}: ${edit.what}`);
   }

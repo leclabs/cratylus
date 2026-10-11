@@ -1,0 +1,47 @@
+[
+  {
+    "ref": "workflow/22",
+    "example": "Given the small film-production context of example 2, when its overview is read by a reader of that context, then it is a whole account rather than a catalog dump. It identifies the subject and relation; explains production before its parts; preserves every supplied concept’s meaning; separates open decisions from current meaning; and identifies the cuts in flight. It never invents a concept, decision or cut to fill a gap. Companion structural example 2 fixes its account order: the subject and context-map relation come first, followed by plain prose about production, shoot and take in that order, then its open decisions and cuts in flight; the parts never precede the whole they explain.",
+    "clauses": [
+      {
+        "id": "whole",
+        "binds": ["whole account rather than a catalog dump"],
+        "rubric": "Connected plain prose explains the context, not a list of records or JSON."
+      },
+      {
+        "id": "subject",
+        "binds": ["identifies the subject and relation"],
+        "rubric": "Identifies making a film and its relation to scheduling dates."
+      },
+      {
+        "id": "order",
+        "binds": [
+          "explains production before its parts",
+          "the subject and context-map relation come first, followed by plain prose about production, shoot and take in that order, then its open decisions and cuts in flight"
+        ],
+        "rubric": "Subject and relation come first. Then the account explains production, shoot and take, then open decisions, then cuts in flight. Mentioning a part in explaining its whole is not a violation. Missing subject/relation belongs to the subject criterion; this criterion judges relative order of supplied material."
+      },
+      {
+        "id": "meaning",
+        "binds": ["preserves every supplied concept’s meaning"],
+        "rubric": "Preserves each supplied meaning without conflating the concepts."
+      },
+      {
+        "id": "open",
+        "binds": ["separates open decisions from current meaning"],
+        "rubric": "Colour treatment is an unsettled decision, not established meaning."
+      },
+      {
+        "id": "cuts",
+        "binds": ["identifies the cuts in flight"],
+        "rubric": "Identifies film as in flight."
+      },
+      {
+        "id": "no-invention",
+        "binds": ["never invents a concept, decision or cut"],
+        "rubric": "No extra concept, decision or cut is asserted as recorded.",
+        "never": true
+      }
+    ]
+  }
+]

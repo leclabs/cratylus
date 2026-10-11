@@ -76,10 +76,59 @@ factor the catalog does not have, or has no mark or its role's; the `Composition
 names what it refused.
 
 A composed agent also says, for the projector, the role it holds (`holds`), the roles its handoffs
-name (`dispatches`), its model's tier and effort (`routing`), and whether it changes nothing
-(`readOnly`, when its action-scope is exactly `none`). Its `key` is reserved for ipseic agents and is
-empty. `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named
-exports, for a corpus that composes agents of its own over these roles.
+name (`dispatches`), its model's tier and effort (`routing`), its typed handoff (`contract`) and the
+per-turn persistence protocol every agent re-grounds its stance by (`persistence`). Nothing narrows
+its tools: every agent keeps the harness's defaults, and only its handoffs are a permission. Its
+`key` is reserved for ipseic agents and is empty. `holder`, `persona`, `guarded`,
+`CompositionRefusal`, the six role cells and `MANIFEST` are also named exports, for a corpus that
+composes agents of its own over these roles.
+
+## Typed handoffs
+
+An assignment and a deliverable are values of their factors, and each carries its contract as JSON
+Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
+the value's anchor). Composition copies the pair onto the agent as `contract`:
+
+| Role         | Assignment                                                             | Deliverable                                                                         |
+| ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| lead         | cut brief `{cut, concepts[≥1], examples[≥1], decisions[≥1]}`           | outcome with efficiency `{cut, outcomes[≥1], verdicts, efficiency, hardeningNotes}` |
+| builder      | work package `{cut, workPackage, outputs[≥1], concepts[≥1], examples}` | done or failing case `{cut, workPackage, done, failingCase?}`                       |
+| assayer      | judgment brief `{cut, workPackages[≥1], examples[≥1], decisions}`      | verdict per concept `{cut, verdicts[≥1], hardeningNotes}`                           |
+| check-writer | examples `{cut, examples[≥1]}`                                         | checks seen red `{cut, checks}`                                                     |
+| illustrator  | concepts `{cut, concepts[≥1]}`                                         | examples with flagged terms `{examples, flaggedTerms}`                              |
+
+The architect's assignment is free-text intent and its deliverable goes to the operator, so it
+carries no contract. A builder's `examples` may be empty: a package sharing outputs owns no example.
+A harness binds the deliverable as its own output schema, checked strictly, and checks the
+assignment (one fenced `assignment` JSON block in the dispatch text) with the schema package's
+`checkAssignment` before the agent runs, refusing a misfit and naming each missing or ill-typed
+field.
+
+## Guards
+
+A value its behavioral examples showed drifting is held by a guard cell (`src/guards/`), stated in
+the role as `guarded(value, guard)`, so the guard binds exactly the agents composing that value.
+A guard holds a value only by checking an act before it takes effect: a dispatch, a change to the
+journal or the work, a tool call. A refused act never took effect. A reply shown as it is written
+has taken effect, refused or not, so no guard judges a reply at turn end (0106).
+`descend` holds the architect's conceptual elevation: before each tool call it asks a judge whether
+the call opens the work itself (source, tests, builds, commands outside the design records) instead
+of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
+does, naming the tell.
+`past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
+the conversation so far in visible text (the operator's requests, the agent's replies and its
+delegates' reports) and the call, whether the conversation shows the objective met, its outcome
+achieved with nothing open left, and the call takes a further step instead of reporting the outcome, and refuses the
+call when it does, naming the tell `procedure past objective`. An outcome reported short of what the
+design describes is not achieved, so a step that gets it achieved is not past the objective. A call
+that takes or records a decision on a meaning question the architect owns is never past the
+objective, in any turn (0090, 0101). Its prompt states what an owned question is: one of meaning,
+constraints on realization or a check ruling (whether a frozen check may change), open only when
+the design records it open, or the operator or a delegate raises it and the design does not already
+answer it (0102); priority and realization are not owned questions. It never judges whether the
+architect held what a decision needed.
+Every guard on the same tool call is judged on that call, and their refusals reach the agent as one.
+A judge answer it cannot read refuses nothing and is reported.
 
 ## The first principle
 

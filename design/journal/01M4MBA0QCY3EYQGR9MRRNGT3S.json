@@ -1,0 +1,18 @@
+{
+  "id": "01M4MBA0QCY3EYQGR9MRRNGT3S",
+  "at": "2026-10-11T02:05:13.836Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "concept journal",
+  "wording": "the conceptual design and its decisions kept as an append-only journal: each concept version belongs to one bounded context and carries the reason it was written, the latest version of a concept or of a context's description is its current one, two versions that supersede the same one are reported as competing until a later version supersedes both, and nothing is edited or deleted; the current conceptual design of each context, the history of each concept and each context's description, and the open decisions are computed from it, and nothing outside it is an account of the design, and it is amended only by appending through named commands, so supersession holds by construction; it is versioned with the project, and the entries about a cut, its concepts, its decisions and their acceptance, are appended on the cut's feature branch and land with its merge, so no branch's journal claims what that branch does not hold.",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "supersession",
+    "decision"
+  ],
+  "reason": "0079: a cut's entries are kept on its feature branch, with no worktree. The operator, 2026-10-10: a cut needs a feature branch of its own and nothing more; worktrees are not the normal development workflow and add complexity and hygiene overhead, and agents already know how to branch.",
+  "supersedes": [
+    "01M4MB334FT6HP8WJYD6JS69JR"
+  ]
+}

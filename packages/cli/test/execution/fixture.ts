@@ -1,6 +1,12 @@
 // Black-box execution fixtures. Every command starts the built CLI in a new process.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { expect } from 'vitest';
 import {
@@ -11,7 +17,7 @@ import {
 } from '../concept-journal/fixture.js';
 
 export { git };
-export const cut = 'booking/delivery';
+export const cut = 'delivery';
 export interface Example {
   number: number;
   concepts: string[];
@@ -23,7 +29,7 @@ export interface Package {
   concepts: string[];
   dependsOn: string[];
   needs: string[];
-  state: 'submitted' | 'dispatched' | 'finished';
+  state: 'submitted' | 'dispatched' | 'returned';
 }
 export interface Levels {
   levels: { level: number; packages: Pick<Package, 'name' | 'state'>[] }[];
@@ -34,20 +40,16 @@ export interface Submission extends Levels {
   cycles: string[][];
 }
 export interface Inventory {
-  concepts: { name: string; servedBy: string[] }[];
+  concepts: { name: string; context: string; servedBy: string[] }[];
   unserved: string[];
-  examples: { number: number; concepts: string[]; package: string | null }[];
-  unowned: number[];
-}
-export interface Dispatch {
-  level: number;
-  packages: {
-    name: string;
-    outputs: string[];
+  examples: {
+    ref: string;
+    context: string;
+    number: number;
     concepts: string[];
-    examples: number[];
+    package: string | null;
   }[];
-  concepts: Inventory['concepts'];
+  unowned: string[];
 }
 export interface Assignment {
   package: string;
@@ -55,7 +57,7 @@ export interface Assignment {
   concepts: string[];
   dependsOn: string[];
   needs: string[];
-  examples: Example[];
+  examples: (Example & { ref: string; context: string })[];
 }
 export interface Commit {
   sha: string;
@@ -101,13 +103,21 @@ export function write(f: ExecutionFixture, path: string, text: string): void {
 export function examples(f: ExecutionFixture, entries: Example[]): void {
   write(
     f,
-    `design/examples/${cut}.md`,
+    `design/examples/booking/${cut}.md`,
     `${entries
       .map(
         (entry) =>
           `${entry.number}. (${entry.concepts.join(', ')}) ${entry.text}`,
       )
       .join('\n\n')}\n`,
+  );
+  command(
+    f,
+    'open',
+    '--branch',
+    'feature/delivery',
+    '--architect',
+    'booking=operator',
   );
 }
 export function example(number: number, ...concepts: string[]): Example {
@@ -151,9 +161,14 @@ export function command<T>(
   return JSON.parse(result.stdout) as T;
 }
 export function log(f: ExecutionFixture): string | null {
-  const common = git(f.root, 'rev-parse', '--git-common-dir').trim();
-  const path = join(f.root, common, 'cratylus/work-packages', `${cut}.jsonl`);
-  return existsSync(path) ? readFileSync(path, 'utf8') : null;
+  const directory = join(f.root, 'design/ledger');
+  return existsSync(directory)
+    ? JSON.stringify(
+        readdirSync(directory)
+          .sort()
+          .map((name) => [name, readFileSync(join(directory, name), 'utf8')]),
+      )
+    : null;
 }
 export function refuse(
   f: ExecutionFixture,
@@ -196,13 +211,28 @@ export function levelNames(
     packages: packages.map((p) => p.name).sort(),
   }));
 }
-export function dispatch(
+// Incidental setup for commit/count examples; dispatch refusals are tested at
+// the actual task handoff in rebound.test.ts (0083), never via an agent verb.
+export function harnessEvent(
   f: ExecutionFixture,
-  level: number,
-  names: string[],
-): Dispatch {
-  const answer = command<Dispatch>(f, 'dispatch');
-  expect(answer.level).toBe(level);
-  expect(answer.packages.map((p) => p.name).sort()).toEqual([...names].sort());
-  return answer;
+  kind: 'dispatched' | 'returned',
+  role: string,
+  runId: string,
+  workPackage?: string,
+  tokens?: number,
+): void {
+  const event = {
+    kind,
+    transition: `${runId}-${kind}`,
+    cut,
+    role,
+    run: runId,
+    ...(workPackage === undefined ? {} : { workPackage }),
+    ...(tokens === undefined ? {} : { tokens }),
+  };
+  const result = run(f, 'lifecycle', JSON.stringify(event));
+  expect(
+    result.code,
+    `harness ${kind} capability\n${result.stderr}${result.stdout}`,
+  ).toBe(0);
 }

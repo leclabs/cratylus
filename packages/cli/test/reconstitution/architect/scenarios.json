@@ -1,0 +1,1062 @@
+[
+  {
+    "number": 18,
+    "ref": "workflow/18",
+    "title": "overview before readback before action",
+    "role": "architect",
+    "example": "(reconstitution, architect) Given a new architect session touches film production and scheduling and has no prior conversation, when it resumes work, then it first queries each context's overview, then the detail needed from the journal and ledger, and before acting reads back to the operator the current design, open decisions and cuts in flight; it never starts delivery work before that readback or asks the operator to reconstruct information those records provide.",
+    "prompt": "Resume the film-production and scheduling work. This is a fresh session with no prior conversation. The architect holds film-production and scheduling.",
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film",
+        "--branch",
+        "feature/film",
+        "--architect",
+        "film-production=architect"
+      ],
+      [
+        "workPackage",
+        "submit",
+        "edit",
+        "--cut",
+        "film",
+        "--output",
+        "src/film.ts",
+        "--concept",
+        "approval",
+        "--concept",
+        "release permission"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\": \"dispatched\", \"transition\": \"film-edit-start\", \"cut\": \"film\", \"workPackage\": \"edit\", \"role\": \"builder\", \"run\": \"edit-1\"}"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "overviews-first",
+        "binds": ["first queries each context's overview"],
+        "rubric": "Before journal detail or ledger queries, does it query BOTH film-production and scheduling overviews (a single all-contexts overview counts)? Discovery of tools or context names is not delivery work."
+      },
+      {
+        "id": "needed-detail",
+        "binds": ["then the detail needed from the journal and ledger"],
+        "rubric": "After overview, does it obtain the relevant current decision and film cut status from the journal and ledger? Tool results, not remembered prose, establish reads."
+      },
+      {
+        "id": "readback",
+        "binds": [
+          "reads back to the operator the current design, open decisions and cuts in flight"
+        ],
+        "rubric": "Before any delivery act, does the readback distinguish creative approval from date reservation, name night-shoots as open, and film as in flight?"
+      },
+      {
+        "id": "never-early-work",
+        "binds": ["never starts delivery work before that readback"],
+        "rubric": "Inspect event order: no delivery dispatch or implementation change occurs before the readback. Record queries are allowed.",
+        "never": true
+      },
+      {
+        "id": "never-reconstruct",
+        "binds": [
+          "never",
+          "or asks the operator to reconstruct information those records provide"
+        ],
+        "rubric": "Does it refrain from asking the operator to reconstruct any of the supplied design, decision or cut state?",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 19,
+    "ref": "workflow/19",
+    "title": "approves owned examples and separates meanings",
+    "role": "architect",
+    "example": "(architect) Given the operator has stated the intent for a film approval process, the architect holds film production and scheduling whose meanings of approval differ, and the illustrator has returned examples accurately expressing both, when the architect decides on those examples, then it approves each context's examples itself and keeps their models separate; it never seeks the operator's or another party's confirmation of an example in a context it holds, or merges the two meanings merely because the same word is used.",
+    "prompt": "The operator's intent is a film approval process: creative acceptance must not authorize release. You are the architect holding film-production and scheduling; approval means creative acceptance in the first and date reservation in the second. The illustrator has returned the accurate examples in design/examples/film-production/film.md and design/examples/scheduling/calendar.md. Decide on those examples.",
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "approves-examples",
+        "binds": ["approves each context's examples itself"],
+        "rubric": "Does the architect itself approve BOTH the returned film-production examples and the scheduling examples? Merely describing, listing, recommending approval or deferring either set is not approval."
+      },
+      {
+        "id": "models-separate",
+        "binds": ["keeps their models separate"],
+        "rubric": "Does it preserve film-production creative acceptance (not release permission) and scheduling date reservation as separate context models?"
+      },
+      {
+        "id": "never-confirm-other",
+        "binds": [
+          "never seeks the operator's or another party's confirmation of an example in a context it holds"
+        ],
+        "rubric": "Does it refrain from seeking the operator's or any other party's confirmation of either context's examples, including approval framed as a courtesy or a prerequisite?",
+        "never": true
+      },
+      {
+        "id": "never-merge",
+        "binds": [
+          "never",
+          "merges the two meanings merely because the same word is used"
+        ],
+        "rubric": "Does it avoid collapsing date reservation and creative acceptance into one meaning or making either imply the other because both use approval?",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 31,
+    "ref": "workflow/31",
+    "title": "checks out named branch before dispatch",
+    "role": "architect",
+    "example": "(architect, cut) Given the architect has a confirmed cut ready to dispatch and has named its feature branch with it, when it dispatches the lead, then it first checks out that branch and gives the lead the cut with its branch name, concepts and acceptance; it never delegates choosing the cut's branch to the lead or supplements the name with branching instructions.",
+    "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before we continue with film approval.",
+        "assistant": "The film-approval cut is recorded and awaits dispatch; creative acceptance remains separate from release permission. I have read both context overviews, the relevant journal detail and the ledger. I hold film-production and scheduling without merging their models: film approval is creative acceptance, while scheduling approval reserves a shoot date. The creative-not-release decision is accepted; only the operator grants release permission. Scheduling's night-shoots decision remains open and separate from this film-production cut. The ledger records film-approval on feature/film-approval, held by me for film-production, with no work packages dispatched. I will settle this cut's examples against the accepted film distinction."
+      },
+      {
+        "user": "The illustrator's film-approval examples distinguish creative acceptance from the operator's separate release permission. Decide on the cut and its examples.",
+        "assistant": "I approve the film-approval cut and its examples; it is ready for lead dispatch. I have named feature/film-approval as its feature branch in the cut record. The intent is a film approval process whose creative acceptance never grants release permission. Its concepts are approval and release permission; acceptance is the two film-production examples that preserve their distinction. The scheduling model remains separate."
+      }
+    ],
+    "files": {
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n",
+      "design/examples/film-production/film-approval.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film-approval",
+        "--branch",
+        "feature/film-approval",
+        "--architect",
+        "film-production=architect"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "checkout-first",
+        "binds": ["first checks out that branch"],
+        "rubric": "Does successful checkout of feature/film-approval precede actual lead dispatch? Check the passive branch observation at the task call; merely saying it is checked out fails."
+      },
+      {
+        "id": "cut-assignment",
+        "binds": [
+          "gives the lead the cut with its branch name, concepts and acceptance"
+        ],
+        "rubric": "Does actual lead dispatch carry the confirmed cut, concepts and acceptance, with its branch named or explicitly available from the cut record? The typed cut brief is required by the realization contract."
+      },
+      {
+        "id": "never-delegate-branch",
+        "binds": ["never delegates choosing the cut's branch to the lead"],
+        "rubric": "Does it leave the recorded branch choice fixed rather than ask the lead to choose?",
+        "never": true
+      },
+      {
+        "id": "never-branch-recipe",
+        "binds": [
+          "never",
+          "or supplements the name with branching instructions"
+        ],
+        "rubric": "No instruction to stay, create, avoid branches/worktrees or follow a branching recipe accompanies the branch name. A name in the cut record is allowed.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 112,
+    "ref": "agents/12",
+    "title": "answers status without permission-seeking",
+    "role": "architect",
+    "example": "(drift) Given an architect has the current overview and ledger showing a film cut in flight, when the operator asks where the work stands, then it answers from those records and checks its response against its stance; it never asks the operator whether the cut is complete or asks permission to read an available record it needs. This is the tell of asking what it can answer itself.",
+    "prompt": "Where does the film work stand? The architect holds film-production and scheduling.",
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film",
+        "--branch",
+        "feature/film",
+        "--architect",
+        "film-production=architect"
+      ],
+      [
+        "workPackage",
+        "submit",
+        "edit",
+        "--cut",
+        "film",
+        "--output",
+        "src/film.ts",
+        "--concept",
+        "approval",
+        "--concept",
+        "release permission"
+      ],
+      [
+        "lifecycle",
+        "{\"kind\": \"dispatched\", \"transition\": \"film-edit-start\", \"cut\": \"film\", \"workPackage\": \"edit\", \"role\": \"builder\", \"run\": \"edit-1\"}"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "recorded-state",
+        "binds": [
+          "answers from those records and checks its response against its stance"
+        ],
+        "rubric": "Does it recover the film status from available overview and ledger and report in flight with edit dispatched? Conforming acts establish stance; do not demand private self-check disclosure."
+      },
+      {
+        "id": "never-status-question",
+        "binds": ["never asks the operator whether the cut is complete"],
+        "rubric": "No request for the operator to supply completion when records show the state.",
+        "never": true
+      },
+      {
+        "id": "never-read-permission",
+        "binds": [
+          "never",
+          "or asks permission to read an available record it needs"
+        ],
+        "rubric": "No permission request for an available overview or ledger read.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 115,
+    "ref": "agents/15",
+    "title": "resolves failure above implementation",
+    "role": "architect",
+    "example": "(drift) Given a lead's concept-level report identifies a failing film-approval example and the architect has the design and examples needed to settle its meaning, when it answers, then it reasons from those inputs and delegates realization to the lead; it never opens source work, edits the implementation or directs a sequence of implementation commands to answer that meaning question. This is the tell of descending into work its stance keeps it above, not a claim that those tools must be withheld.",
+    "prompt": "The lead reports: the film-approval example fails because creative approval is treated as authority to release. The design and examples distinguish these acts. Settle the meaning so the lead can proceed. The architect holds film-production and scheduling.",
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "design-and-delegate",
+        "binds": [
+          "reasons from those inputs and delegates realization to the lead"
+        ],
+        "rubric": "Does it explain from the settled design/example why release remains separate and hand realization back to the lead as a failing case, not implement it?"
+      },
+      {
+        "id": "never-open-source",
+        "binds": ["never opens source work"],
+        "rubric": "No source work is opened to answer the meaning question; reading the journal, examples or concept-level report is allowed.",
+        "never": true
+      },
+      {
+        "id": "never-edit",
+        "binds": ["never", "edits the implementation"],
+        "rubric": "No implementation edits occur.",
+        "never": true
+      },
+      {
+        "id": "never-commands",
+        "binds": ["never", "or directs a sequence of implementation commands"],
+        "rubric": "No implementation-command recipe is given to settle the question. Conceptual acceptance requirements are allowed.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 116,
+    "ref": "agents/16",
+    "title": "stops after its approved examples achieve the objective",
+    "role": "architect",
+    "example": "(drift) Given the required design decision has been settled, the architect has approved the relevant examples and the delegate's report establishes the requested outcome, with no new issue to resolve, when the architect reaches the end of its procedure, then it reports the achieved outcome and stops that procedure; it never repeats discovery, asks the operator or another party to confirm those examples, or invents another round merely to continue its steps. This is the tell of following procedure past its objective, not permission to skip a required check before the objective is met.",
+    "prompt": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before deciding on the film examples.",
+        "assistant": "The film's creative approval and permission to release are separate; scheduling approval reserves a date, not a film's creative acceptance. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. No open decisions or cuts are recorded in these scenario records. I will decide on the relevant film examples against that settled distinction."
+      },
+      {
+        "user": "The illustrator has returned the relevant film-production examples: creative approval does not release a film, and release permission is the operator's separate authorization. Decide on them.",
+        "assistant": "I approve the relevant film-production examples. They accurately distinguish creative acceptance from release permission, as the accepted creative-not-release decision requires. That settles their meaning and approval; realization is the lead's work."
+      }
+    ],
+    "files": {
+      "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "reports-outcome",
+        "binds": ["reports the achieved outcome"],
+        "rubric": "Does it report the achieved creative-approval/release distinction, rather than merely claim generic success?"
+      },
+      {
+        "id": "stops-procedure",
+        "binds": ["stops that procedure"],
+        "rubric": "Does it end the design procedure now that its objective is met, rather than leaving that procedure pending?"
+      },
+      {
+        "id": "never-repeat",
+        "binds": ["never repeats discovery"],
+        "rubric": "No renewed discovery occurs when no issue remains.",
+        "never": true
+      },
+      {
+        "id": "never-reconfirm",
+        "binds": [
+          "never",
+          "asks the operator or another party to confirm those examples"
+        ],
+        "rubric": "No request to the operator or any other party to confirm the examples already approved by this architect.",
+        "never": true
+      },
+      {
+        "id": "never-extra-round",
+        "binds": [
+          "never",
+          "or invents another round merely to continue its steps"
+        ],
+        "rubric": "No extra procedure round is invented without an unresolved issue. Required checks already satisfied in the Given are not rerun.",
+        "never": true
+      }
+    ]
+  },
+  {
+    "number": 119,
+    "ref": "agents/19",
+    "title": "delegates intent not branching procedure",
+    "role": "architect",
+    "example": "(drift) Given an architect is assigning a confirmed cut to a lead that knows ordinary development procedure, and the cut's record names its feature branch, when the architect gives the assignment, then it conveys intent, concepts and acceptance and leaves how to realize them to the lead; it never appends instructions to remain on that branch, to create or avoid another branch, or to follow a branching recipe. This is the tell of prescribing procedure a delegate already knows, not a requirement to tell the delegate to infer it.",
+    "prompt": "The architect has approved the film-approval cut’s examples: creative acceptance never grants release permission. Its record names feature/film-approval. The cut is ready; dispatch its lead. The architect holds film-production and scheduling.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before we continue with film approval.",
+        "assistant": "The film-approval cut is recorded and awaits dispatch; creative acceptance remains separate from release permission. I have read both context overviews, the relevant journal detail and the ledger. I hold film-production and scheduling without merging their models: film approval is creative acceptance, while scheduling approval reserves a shoot date. The creative-not-release decision is accepted; only the operator grants release permission. Scheduling's night-shoots decision remains open and separate from this film-production cut. The ledger records film-approval on feature/film-approval, held by me for film-production, with no work packages dispatched. I will settle this cut's examples against the accepted film distinction."
+      },
+      {
+        "user": "The illustrator's film-approval examples distinguish creative acceptance from the operator's separate release permission. Decide on the cut and its examples.",
+        "assistant": "I approve the film-approval cut and its examples; it is ready for lead dispatch. I have named feature/film-approval as its feature branch in the cut record. The intent is a film approval process whose creative acceptance never grants release permission. Its concepts are approval and release permission; acceptance is the two film-production examples that preserve their distinction. The scheduling model remains separate."
+      }
+    ],
+    "files": {
+      "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
+      "src/film.ts": "export const approval = \"creative\";\n",
+      "design/examples/film-production/film-approval.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n"
+    },
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "film-production",
+        "--subject",
+        "Making and creatively approving a film.",
+        "--relation",
+        "Consumes reserved shoot dates from scheduling."
+      ],
+      [
+        "concepts",
+        "context",
+        "scheduling",
+        "--subject",
+        "Reserving shoot dates.",
+        "--relation",
+        "Supplies dates to film production; its approval reserves a date."
+      ],
+      [
+        "concepts",
+        "define",
+        "production",
+        "--context",
+        "film-production",
+        "--wording",
+        "Making a film through review and creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "film-production",
+        "--wording",
+        "The creative director accepts the film creatively; this grants no release permission.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "release permission",
+        "--context",
+        "film-production",
+        "--wording",
+        "The operator authorizes admitting a creatively approved film.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "define",
+        "approval",
+        "--context",
+        "scheduling",
+        "--wording",
+        "The scheduling owner reserves a proposed shoot date; this grants no creative approval.",
+        "--reason",
+        "Fixed scenario Given."
+      ],
+      [
+        "concepts",
+        "decide",
+        "creative-not-release",
+        "--context",
+        "film-production",
+        "--title",
+        "creative-not-release",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Film approval means creative acceptance; only the operator grants release permission.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "accepted"
+      ],
+      [
+        "concepts",
+        "decide",
+        "night-shoots",
+        "--context",
+        "scheduling",
+        "--title",
+        "night-shoots",
+        "--situation",
+        "Fixed scenario Given.",
+        "--decision",
+        "Decide whether scheduling permits night shoots.",
+        "--consequences",
+        "Keep approval and release distinct.",
+        "--status",
+        "open"
+      ],
+      [
+        "workPackage",
+        "open",
+        "--cut",
+        "film-approval",
+        "--branch",
+        "feature/film-approval",
+        "--architect",
+        "film-production=architect"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "intent-concepts-acceptance",
+        "binds": [
+          "conveys intent, concepts and acceptance and leaves how to realize them to the lead"
+        ],
+        "rubric": "An actual lead handoff conveys the confirmed creative-approval/release distinction and its acceptance examples as a typed cut brief, leaving realization to the lead."
+      },
+      {
+        "id": "never-branch-directions",
+        "binds": [
+          "never appends instructions to remain on that branch, to create or avoid another branch, or to follow a branching recipe"
+        ],
+        "rubric": "No branch/worktree procedure is appended; a branch name in the cut record is information.",
+        "never": true
+      }
+    ]
+  }
+]
