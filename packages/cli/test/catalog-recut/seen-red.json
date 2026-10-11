@@ -1,13 +1,25 @@
 {
   "decision": "0093",
   "command": "pnpm --filter cratylus exec vitest run test/catalog-recut",
-  "result": "1 file failed; 5 tests failed, 12 passed, 17 total.",
   "expectation": "personaProtocol in master.ts",
-  "reboundLine": "- **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.",
-  "replacedLine": "- **procedure past objective** -- the ritual outliving what it serves.",
+  "rebindings": [
+    {
+      "tell": "procedure past objective",
+      "result": "1 file failed; 5 tests failed, 12 passed, 17 total.",
+      "reboundLine": "- **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.",
+      "replacedLine": "- **procedure past objective** -- the ritual outliving what it serves."
+    },
+    {
+      "tell": "answerable question",
+      "why": "Judgment 2 found its case 'permission to read a record it needs' to be a visible example's never-assertion; under 0093 a tell states its concept's rule, never the cases its examples test.",
+      "result": "1 file failed; 5 tests failed, 12 passed, 17 total.",
+      "reboundLine": "- **answerable question** -- asking what it could answer itself;",
+      "replacedLine": "- **answerable question** -- asking what records, design or reports already answer, or permission to read a record it needs;"
+    }
+  ],
   "failedExamples": [2, 3, 4, 5, 7],
   "reason": "Each failing projection comparison reports the delivered declaration still carrying the replaced line where the rebound line is expected. These are substantive expected-versus-delivered text failures, not setup failures.",
-  "scope": "Only the personaProtocol procedure-past-objective tell changes, stating the concept's rule with no cases; other expectations, example text, rubrics and thresholds are unchanged. No live model sessions ran.",
+  "scope": "Only the personaProtocol tell lines change, each stating the drift concept's rule with no cases; other expectations, example text, rubrics and thresholds are unchanged. No live model sessions ran.",
   "previous": {
     "decision": "0090",
     "result": "1 file failed; 5 tests failed, 12 passed, 17 total, for the added holding open line; green after the persona protocol carried it."
