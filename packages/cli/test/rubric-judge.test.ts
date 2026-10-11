@@ -488,11 +488,17 @@ describe('0091 delivered evidence', () => {
       customType: 'session-stop-continuation',
       content: handBack.refusal,
     };
-    const result = deliveredEvidence([firstAttempt, continuation, ...messages]);
+    const result = deliveredEvidence([
+      firstAttempt,
+      continuation,
+      { ...firstAttempt, content: 'Second refused reply' },
+      continuation,
+      ...messages,
+    ]);
     expect(result.delivered).toEqual(messages);
     expect(countHeldDrift(result)).toEqual({
-      total: 1,
-      byGuard: { 'hand-back': 1 },
+      total: 2,
+      byGuard: { 'hand-back': 2 },
     });
     expect(result.relayed).toEqual(deliveredEvidence(messages).relayed);
   });

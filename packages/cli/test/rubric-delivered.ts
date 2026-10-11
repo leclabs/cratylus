@@ -107,9 +107,9 @@ export function deliveredEvidence(messages: readonly unknown[]): {
       message.attribution === 'agent' &&
       (relayGuard === bottomLine.id || relayGuard === handBack.id)
     ) {
-      // render.ts guardJudged relays on stop_hook_active and returns undefined:
-      // the handler neither blocks the stop nor withdraws its reply. This is
-      // an unheld tell, not a refused attempt under 0091. Keep both messages.
+      // render.ts guardJudged relays after its refusal allowance is exhausted
+      // and returns undefined: the handler neither blocks nor withdraws the
+      // reply. This is an unheld tell under 0091. Keep both messages.
       // Several turn guards can each relay a reason about the same reply.
       if (relayReply)
         relayed.push({

@@ -175,9 +175,9 @@ pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'combined re
 
 Observed: **2 failed, 6 passed, 20 skipped**. The unseen-readback call remained in evidence, and a retained bottom-line refusal with the previous corrective instructions was no longer recognized. Readback matching now uses the shared leading request of both emitted variants; bottom-line matching reads its identifying first sentence from the canonical guard, not the changeable corrective instructions. The full acceptance command above then passed **6 files; 187 passed, 82 skipped**, with no model sessions.
 
-#### Second-stop relays are not refused replies
+#### Relayed tells are not refused replies
 
-In `forge/src/adapters/omp/render.ts`, `guardJudged` calls `relay(reason)` and returns `undefined` when `stop_hook_active` is true. The stop handler only withdraws the reply and returns `decision: "block"` when a guard returns a reason. The second-stop reply therefore stands: the relay is an unheld tell, not held drift under 0091. `relay` sends a next-turn user message attributed to `agent`; retained sessions mark it `steering: true`.
+In `forge/src/adapters/omp/render.ts`, `guardJudged` calls `relay(reason)` and returns `undefined` once the turn's refusal allowance is exhausted. The stop handler only withdraws the reply and returns `decision: "block"` when a guard returns a reason. The relayed reply therefore stands: the relay is an unheld tell, not held drift under 0091. `relay` sends a next-turn user message attributed to `agent`; retained sessions mark it `steering: true`. The recordings below used the earlier one-refusal allowance, so their second stop was relayed. Round 6 allows two refusals before relaying: both `session-stop-continuation` messages still identify held attempts; only the later steering relay is unheld. The projection follows message shape, not a fixed stop count.
 
 The projection keeps that reply and notice in delivered evidence. It separately reports `relayed: { guard, text, reason }[]`, also persisted in `recording.json` and `judged.json`, without adding to held-drift totals or manufacturing a rubric verdict. Only agent-attributed steering messages beginning with a turn guard's refusal identify these relays; ordinary user quotations, tool-guard text, and no-verdict notices do not. Consecutive guard relays can concern the same preceding reply.
 
@@ -189,7 +189,7 @@ Seen red before changing the projection:
 pnpm --filter cratylus exec vitest run test/rubric-judge.test.ts -t 'second-stop relay|consecutive turn-guard relays'
 ```
 
-Observed: **2 failed, 28 skipped** because `relayed` was absent, including on the real retained shape. After the projection change, persistence was independently **1 failed, 1 passed, 28 skipped**: the judged recording still lacked `relayed`. The checks also retain the reply in both rubric prompts, preserve raw subject evidence, and distinguish an actual first-stop refusal from later unheld tells.
+Observed: **2 failed, 28 skipped** because `relayed` was absent, including on the real retained shape. After the projection change, persistence was independently **1 failed, 1 passed, 28 skipped**: the judged recording still lacked `relayed`. The checks also retain the reply in both rubric prompts, preserve raw subject evidence, and distinguish actual stop refusals from later unheld tells. The accounting assertion now includes both allowed refused replies before the relay.
 
 After the relay and persistence changes, the full acceptance command above passed **6 files; 189 passed, 82 skipped**. `pnpm --filter cratylus typecheck` passed, and Biome checked the four changed TypeScript/JSON files. No live subject or judge sessions ran.
 
