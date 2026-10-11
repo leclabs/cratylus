@@ -2168,7 +2168,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
         '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the current design, the open decisions and the cuts in flight, in your own communication style.",',
         '    "Say nothing to the operator before the readback, and open the readback with your bottom line.",',
-        '    "Then do what the operator asked in the same turn, and only that: an open decision stays open unless the request settles it. The readback is not a pause for leave.",',
+        '    "Then do what the operator asked in the same turn, and decide what you hold, on sight. The readback is not a pause for leave.",',
         '  ].join("\\n");',
         '}',
         '',
