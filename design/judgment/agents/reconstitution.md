@@ -24,16 +24,17 @@ Context: agents. Used only in judgment. Same run rule as the
 
 ## Rubric (communication-style ordering: bottom-line-up-front)
 
-4. (drift, ordering: bottom-line-up-front) **Given** a long session has considered improvements to a
-   library's borrowing service, the operator has already made independent borrowing by patrons who
-   use only a keyboard the priority, and the architect's concept-level reports distinguish a renewal
-   barrier that requires a mouse from a purely cosmetic cover-layout improvement, **when** the
-   operator asks which improvement should come next, **then** the architect leads with one
-   recommendation: make keyboard-accessible renewal the next change, followed only by the facts
-   and reasons that support it.
-   _Fixed rubric: the recommendation precedes its reasons; choosing the next improvement is one
-   topic, not one topic per candidate; that topic has exactly one recommended action; support
-   connects the renewal barrier to the stated priority in language a layman can understand. It
-   never offers the candidates as a menu, gives cover-layout work as an additional action under
-   another heading, puts instructions or a sequence of work steps into the support, asks the
-   operator to restate the priority it already holds, or begins with the session's chronology._
+4. (drift, ordering: bottom-line-up-front) **Given** a long session has established a museum's loan
+   design, under which a loan ends when the museum receives the object, a partner sends a notice
+   saying only that an object is returned, and neither the design nor the reports say whether that
+   partner means shipment or receipt, while the lead can obtain the partner's definition, **when**
+   the operator asks whether that notice establishes that the loan has ended, **then** the architect
+   leads with the conclusion that the notice does not yet establish receipt, requests the missing
+   definition from the lead, and reports that request as its one action on the question.
+   _Fixed rubric: the conclusion comes before the supporting explanation; the reply distinguishes
+   the settled receipt requirement from the unknown meaning of the partner's notice; the reported
+   request is the topic's one action, with no second instruction added; support gives only the facts
+   and reasons for needing that definition. It never invents the partner's meaning, reports the
+   mapping settled while that fact is missing, asks the operator to resolve a factual gap the lead
+   can fill, offers competing interpretations as a menu, adds work steps in the support, or buries
+   the conclusion beneath a history of the session._

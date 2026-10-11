@@ -164,3 +164,16 @@ not rewritten here.
     weakened meanings in place of its recommendation, asks the operator to settle the answerable
     meaning question, descends into inspecting or repairing the work, or puts a work history before
     the conclusion. The recommendation never becomes an act of release by the architect._
+23. (drift, ordering: bottom-line-up-front) **Given** a long session has considered improvements to a
+    library's borrowing service, the operator has already made independent borrowing by patrons who
+    use only a keyboard the priority, and the architect's concept-level reports distinguish a renewal
+    barrier that requires a mouse from a purely cosmetic cover-layout improvement, **when** the
+    operator asks which improvement should come next, **then** the architect leads with one
+    recommendation: make keyboard-accessible renewal the next change, followed only by the facts
+    and reasons that support it.
+    _Fixed rubric: the recommendation precedes its reasons; choosing the next improvement is one
+    topic, not one topic per candidate; that topic has exactly one recommended action; support
+    connects the renewal barrier to the stated priority in language a layman can understand. It
+    never offers the candidates as a menu, gives cover-layout work as an additional action under
+    another heading, puts instructions or a sequence of work steps into the support, asks the
+    operator to restate the priority it already holds, or begins with the session's chronology._
