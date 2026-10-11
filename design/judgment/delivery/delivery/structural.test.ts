@@ -12,6 +12,7 @@ import type { Host } from '../../../../packages/cli/test/capability-port/fixture
 import {
   assertRemoved,
   earlier,
+  earlierCommand,
   fresh,
   install,
   load,
@@ -42,19 +43,19 @@ it('delivery/1 — newer artifacts still warn about an older reached command, ne
   const available = join(h.root, 'available');
   cpSync(h.prefix, available, { recursive: true, verbatimSymlinks: true });
   h.env.PATH += `:${available}/node_modules/.bin`;
-  version(h, '3.0.0');
+  const old = earlierCommand(h);
   const before = tree(h.home);
-  const calls = traceCommand(h);
+  expect(success(h.command(['--version'])).trim()).toBe(old.version);
   const ext = await load(h);
   try {
     await ext.start();
-    skew(ext.notifications, '3.1.0', '3.0.0');
+    skew(ext.notifications, '3.1.0', old.version);
     expect(await versions(ext)).toMatchObject({
       artifacts: '3.1.0',
-      command: '3.0.0',
+      command: old.version,
     });
     expect(tree(h.home)).toEqual(before);
-    expect(calls().every((c) => c.version === '3.0.0')).toBe(true);
+    expect(success(h.command(['--version'])).trim()).toBe(old.version);
   } finally {
     ext.restore();
   }

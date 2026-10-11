@@ -35,3 +35,15 @@ pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/d
 ```
 
 Observed red against the pre-0112 build: the first upgrade deleted `.omp/agent/config.yml`, and `preserved(h, bindings)` failed with `ENOENT` before the second upgrade. The captured earlier answers are read before migration; no synthetic replacement answers are used. An initial attempt from the workspace root with `pnpm exec vitest` could not resolve Vitest and is not counted as evidence.
+
+## Decision 0113(2): a real earlier reached command
+
+Held-out delivery/1 now places the actual pre-delivery packed cratylus **0.11.0** and its four earlier cratylus dependencies first on PATH after projecting the newer artifacts; another current build remains available later on PATH. The shared fixture checks that the earlier command genuinely lacks `versionSkew --explain`. The archives and their SHA-256 provenance are recorded in `packages/cli/test/delivery/seen-red.md`; no package version label is rewritten on the older side.
+
+Freeze subject: **fb0a6d87**, archived and built in `/tmp/delivery-checks-0113` with offline dependency installation. Only check files were copied into the isolated build. Run:
+
+```sh
+pnpm --filter cratylus exec vitest run --config ../../design/judgment/delivery/delivery/vitest.config.ts -t 'delivery/1 —' --reporter verbose
+```
+
+Observed red: startup throws `cratylus: unknown command 'versionSkew'; run cratylus --help` instead of warning about the real reached older command. This is the check's freeze, not a judgment run during the build; 0113(2–3) explicitly keeps this example held out. No example text changed.

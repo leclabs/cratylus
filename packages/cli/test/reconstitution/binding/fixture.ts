@@ -250,7 +250,12 @@ export interface LoadedExtension {
 }
 export async function load(
   f: Fixture,
-  options: { role?: string; kind?: 'main' | 'sub'; grant?: string[] } = {},
+  options: {
+    role?: string;
+    kind?: 'main' | 'sub';
+    grant?: string[];
+    dispatchTool?: string;
+  } = {},
 ): Promise<LoadedExtension> {
   const previous = { PATH: process.env.PATH, HOME: process.env.HOME };
   process.env.PATH = f.env.PATH;
@@ -274,6 +279,30 @@ export async function load(
     sessionManager: { getSessionId: () => 'binding-session' },
   };
   const pi = {
+    getAllTools: () => [
+      {
+        name: options.dispatchTool ?? 'task',
+        parameters: {
+          type: 'object',
+          properties: {
+            agent: { type: 'string' },
+            tasks: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  agent: { type: 'string' },
+                  task: { type: 'string' },
+                  id: { type: 'string' },
+                },
+                required: ['agent', 'task', 'id'],
+              },
+            },
+          },
+          required: ['tasks'],
+        },
+      },
+    ],
     typebox: { Type: { Unsafe: (schema: unknown) => schema } },
     registerTool: (tool: RegisteredTool) => tools.push(tool),
     registerFlag: () => {},

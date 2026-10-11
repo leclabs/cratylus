@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  rmSync,
   symlinkSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -17,6 +18,7 @@ import {
   assertRemoved,
   discover,
   earlier,
+  earlierCommand,
   fresh,
   hostMaterial,
   install,
@@ -194,7 +196,7 @@ it('delivery/6 — reinstalling the same version leaves the entire installation 
     'bun',
     [
       '-e',
-      `console.log(JSON.stringify({...Bun.YAML.parse(await Bun.stdin.text()),theme:'mira-changed-theme'}))`,
+      `const c=Bun.YAML.parse(await Bun.stdin.text());console.log(JSON.stringify({...c,theme:'mira-changed-theme',modelRoles:{...c.modelRoles,frontier:'host/changed-model'},statusLine:{preset:'custom',leftSegments:['model'],rightSegments:['cwd'],showHookStatus:false}}))`,
     ],
     {
       input: existsSync(settings) ? readFileSync(settings, 'utf8') : '{}',
@@ -332,6 +334,47 @@ it('delivery/10 — upgrade rewrites every reference while retaining the host re
   expect(observed.tools).toContain('concept_journal');
 });
 
+it.each(['redirected', 'replaced'])(
+  'delivery/10 — upgrade preserves a host-%s installation reference location',
+  (change) => {
+    h = fresh();
+    success(install(h));
+    const reference = Object.entries(tree(h.home)).find(
+      ([path, item]) =>
+        !path.startsWith('.cratylus/omp/') &&
+        item.link?.includes('.cratylus/omp'),
+    );
+    expect(reference, 'an installed root reference').toBeDefined();
+    const path = join(h.home, reference![0]);
+    rmSync(path, { recursive: true, force: true });
+    const text =
+      '---\nname: mira-replacement\ndescription: Host replacement\n---\nHost-owned material.\n';
+    if (change === 'redirected') {
+      const target = join(h.home, 'mira/skill');
+      put(join(target, 'SKILL.md'), text);
+      symlinkSync(target, path);
+    } else put(join(path, 'SKILL.md'), text);
+    const before = tree(h.home);
+    version(h, '2.5.0');
+    success(install(h));
+    const after = tree(h.home);
+    // Negative observation: upgrade erased the directory the host put at the old link.
+    if (negative === '10-reference' && change === 'replaced')
+      delete after[`${reference![0]}/SKILL.md`];
+    for (const [name, value] of Object.entries(before))
+      if (
+        name === reference![0] ||
+        name.startsWith(`${reference![0]}/`) ||
+        name.startsWith('mira/')
+      )
+        expect(
+          after[name],
+          'host replacement is not an obsolete cratylus reference',
+        ).toEqual(value);
+    expect(existsSync(join(owned(h), 'extensions/cratylus.ts'))).toBe(true);
+  },
+);
+
 it('delivery/11 — uninstall removes the whole root and all its references, never customized host surfaces', () => {
   h = fresh();
   const material = hostMaterial(h);
@@ -457,6 +500,75 @@ it('delivery/15 — reinstalling with the reached command replaces the recorded 
   try {
     await after.start();
     expect(await versions(after)).toMatchObject({
+      artifacts: '2.5.0',
+      command: '2.5.0',
+    });
+    expect(after.notifications.filter((n) => n.level === 'warning')).toEqual(
+      [],
+    );
+  } finally {
+    after.restore();
+  }
+});
+
+it('delivery/13 — each startup reports a genuinely earlier command even when it cannot explain version skew', async () => {
+  h = fresh();
+  success(install(h));
+  const old = earlierCommand(h);
+  const snapshot = tree(h.home);
+  for (let i = 0; i < 2; i++) {
+    const ext = await load(h);
+    try {
+      await ext.start();
+      skew(ext.notifications, '2.4.0', old.version);
+      expect(tree(h.home)).toEqual(snapshot);
+      expect(success(h.command(['--version'])).trim()).toBe(old.version);
+    } finally {
+      ext.restore();
+    }
+  }
+});
+
+it('delivery/14 — matching an actual earlier command stays silent with both versions queryable', async () => {
+  h = fresh();
+  version(h, '0.11.0');
+  success(install(h));
+  const old = earlierCommand(h);
+  const ext = await load(h);
+  try {
+    await ext.start();
+    expect(
+      ext.notifications.filter(
+        (n) => n.level === 'warning' && /skew/i.test(n.text),
+      ),
+    ).toEqual([]);
+    expect(await versions(ext)).toEqual({
+      artifacts: old.version,
+      command: old.version,
+    });
+  } finally {
+    ext.restore();
+  }
+});
+
+it('delivery/15 — restoring the current command and reinstalling resolves real-build skew', async () => {
+  h = fresh();
+  success(install(h));
+  const old = earlierCommand(h);
+  const before = await load(h);
+  try {
+    await before.start();
+    skew(before.notifications, '2.4.0', old.version);
+  } finally {
+    before.restore();
+  }
+  old.restore();
+  version(h, '2.5.0');
+  success(install(h));
+  const after = await load(h);
+  try {
+    await after.start();
+    expect(await versions(after)).toEqual({
       artifacts: '2.5.0',
       command: '2.5.0',
     });

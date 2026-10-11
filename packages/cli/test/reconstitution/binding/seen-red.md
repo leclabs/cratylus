@@ -30,3 +30,17 @@ Every test title starts with the example reference it binds. Assertions describe
 ## Handoff
 
 The package's existing `test/**/*.test.ts` include discovers `structural.test.ts`. After the implementation lands, rebuild the affected packages and run it without `BINDING_RED`; the lead owns that verification. The output checks compile the delivered schema using the workspace's pinned Ajv with coercion, defaults and property removal disabled. No test-authored schema substitutes for the delivered contract.
+
+## Delivery decision 0113(5): lifecycle capture independent of dispatch spelling
+
+The earlier examples are **reconstitution workflow/4** (the harness's dispatch and return put a cut in flight without approving it) and **workflow/5** (two assayer verdicts approve the packages). Their ledger checks call the lifecycle boundary directly; the new `lifecycle.test.ts` binds the delivered extension to the harness events, using the binding fixture's installed declarations and real installed command.
+
+The fixture presents the dispatch tool with a parameter schema through `getAllTools`. Both `task` and `dispatch_agents` carry exactly the same dispatch/return contracts. The check dispatches one builder, reads the resulting dispatched state, delivers its structured return, reads returned rather than approved, then delivers two independent assayer dispatches and structured verdicts and reads approved. It also checks the exact verdict evidence and counts of recorded dispatches and returns. No agent calls a recording verb.
+
+Subject: **fb0a6d87**, `git archive` into `/tmp/delivery-checks-0113`, `pnpm install --offline`, `pnpm build`, then copy only checks. All hosts are temporary. Command:
+
+```sh
+pnpm --filter cratylus exec vitest run test/reconstitution/binding/lifecycle.test.ts --reporter verbose
+```
+
+Observed: canonical `task` passes the whole dispatch/return/two-verdict sequence. With the same contract under `dispatch_agents`, the first read is still `submitted`, not `dispatched`: the extension ignores that harness dispatch. This is the strengthened check's seen-red. Initial incomplete builder-assignment and unsupported submit-flag setup mistakes were fixed and are not counted.

@@ -110,7 +110,8 @@ export function earlier(h: Host) {
   // Decision 0112: these answers became the host's own, not removable projection.
   return { '.omp/agent/config.yml': JSON.stringify({ modelRoles }) };
 }
-function settings(h: Host): Record<string, unknown> {
+export function settings(h: Host): Record<string, unknown> {
+  const text = readFileSync(join(h.home, '.omp/agent/config.yml'), 'utf8');
   const parsed = spawnSync(
     'bun',
     [
@@ -118,11 +119,14 @@ function settings(h: Host): Record<string, unknown> {
       'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
     ],
     {
-      input: readFileSync(join(h.home, '.omp/agent/config.yml'), 'utf8'),
+      input: text,
       encoding: 'utf8',
     },
   );
-  expect(parsed.status, parsed.stderr).toBe(0);
+  expect(
+    parsed.status,
+    `${parsed.stderr}\nHost settings after install:\n${text}`,
+  ).toBe(0);
   return JSON.parse(parsed.stdout);
 }
 export function treeWithoutBindings(h: Host): Tree {
@@ -141,7 +145,7 @@ export function hostMaterial(h: Host, inherited: Record<string, string> = {}) {
     '.agents/skills/host-skill/SKILL.md':
       '---\nname: host-skill\ndescription: Host skill\n---\nMira owns this skill.\n',
     '.omp/agent/extensions/host.ts': 'export default function host() {}\n',
-    '.omp/agent/config.yml': `${JSON.stringify({ modelRoles: { ...JSON.parse(inherited['.omp/agent/config.yml'] ?? '{}').modelRoles, default: 'host/model' }, theme: 'host-theme', extensions: ['./extensions/host.ts'] })}\n`,
+    '.omp/agent/config.yml': `${JSON.stringify({ modelRoles: { ...JSON.parse(inherited['.omp/agent/config.yml'] ?? '{}').modelRoles, default: 'host/model' }, theme: 'host-theme', extensions: ['./extensions/host.ts'], statusLine: { preset: 'custom', leftSegments: ['model'], rightSegments: ['cwd'], showHookStatus: false } })}\n`,
   };
   for (const [path, text] of Object.entries(material))
     put(join(h.home, path), text);
@@ -519,4 +523,49 @@ export function traceCommand(h: Host) {
             (line) => JSON.parse(line) as { version: string; args: string[] },
           )
       : [];
+}
+
+// These are the actual pre-delivery packages, not today's code with another label.
+export function earlierCommand(h: Host) {
+  const prefix = join(h.root, 'earlier-command');
+  cpSync(h.prefix, prefix, { recursive: true, verbatimSymlinks: true });
+  for (const [archive, name] of [
+    ['cratylus-0.11.0.tgz', 'cratylus'],
+    ['cratylus-canon-0.14.0.tgz', '@cratylus/canon'],
+    ['cratylus-forge-0.14.5.tgz', '@cratylus/forge'],
+    ['cratylus-runtime-0.10.0.tgz', '@cratylus/runtime'],
+    ['cratylus-schema-0.9.1.tgz', '@cratylus/schema'],
+  ]) {
+    const target = join(prefix, 'node_modules', name!);
+    rmSync(target, { recursive: true, force: true });
+    mkdirSync(target, { recursive: true });
+    success(
+      run(
+        'tar',
+        [
+          '-xzf',
+          join(here, 'earlier-build', archive!),
+          '--strip-components=1',
+          '-C',
+          target,
+        ],
+        h.cwd,
+        h.env,
+      ),
+    );
+  }
+  const currentPath = h.env.PATH;
+  h.env.PATH = `${join(prefix, 'node_modules/.bin')}:${currentPath}`;
+  const value = success(h.command(['--version'])).trim();
+  expect(value).toBe('0.11.0');
+  expect(
+    h.command(['versionSkew', '--explain']).code,
+    'genuinely predates the version capability',
+  ).not.toBe(0);
+  return {
+    version: value,
+    restore: () => {
+      h.env.PATH = currentPath;
+    },
+  };
 }
