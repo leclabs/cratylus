@@ -141,6 +141,7 @@ async function launch(
     '--no-pty',
     '--no-extensions',
     ...extensions.flatMap((path) => ['--extension', path]),
+    ...(judge ? [] : ['--extension', join(here, 'delegate-stand-in.ts')]),
     '--extension',
     join(here, '../../execution-roles/observe.ts'),
     '--extension',

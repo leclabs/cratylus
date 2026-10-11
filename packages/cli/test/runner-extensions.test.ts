@@ -175,7 +175,7 @@ afterEach(() => {
 
 describe.each(runners)(
   '$name installed-extension wiring',
-  ({ preflight, live }) => {
+  ({ name, preflight, live }) => {
     it('loads every installed subject module, including session guards, without host discovery', async () => {
       await preflight(join(control.root, 'inspection'));
       const args = control.calls[0]!.args;
@@ -191,6 +191,13 @@ describe.each(runners)(
       );
       expect(args).toContain('--no-extensions');
       expect(modules.some((path) => path?.endsWith('/observe.ts'))).toBe(true);
+      expect(
+        modules.some((path) => path?.endsWith('/delegate-stand-in.ts')),
+      ).toBe(name !== 'execution-roles');
+      if (name !== 'execution-roles')
+        expect(
+          modules.some((path) => path?.endsWith('/handoff-observe.ts')),
+        ).toBe(true);
     });
     it('keeps the flag-registering module but excludes session hooks from the rubric judge', async () => {
       const result = await live(join(control.root, 'run'));
@@ -206,6 +213,9 @@ describe.each(runners)(
       expect(installed).toEqual([
         join(control.home, '.omp/agent/extensions/cratylus.ts'),
       ]);
+      expect(
+        judge!.args.some((path) => path.endsWith('/delegate-stand-in.ts')),
+      ).toBe(false);
     });
   },
 );

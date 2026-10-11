@@ -14,6 +14,10 @@ Each fixture has its own repository and home. CLI commands seed real journal and
 
 Subject launches keep `--no-extensions` to exclude host discovery, then explicitly load every JavaScript/TypeScript extension module installed in the fixture's `.omp/agent/extensions/`, including `cratylus-session.ts` and its guards and session hooks, before the passive observers. Rubric judges load the installed `cratylus.ts` adapter, which registers `--agent`, plus observers; they never load `cratylus-session.ts` or other subject extension modules. Retained wiring lists the installed module paths. For a declaration with the reconstitution procedure, no-model preflight also checks that the session module contributed its first-turn reconstitution note; the recording preserves that observation without adding or changing any example assertion.
 
+Decision 0094 routes fixture delegates to `delegate-stand-in.ts`, loaded explicitly for subjects in both the architect and sibling roles runners, never for rubric judges. At `session_start` it registers a replacement executor for the native `task`, preserving its description and parameter schema and not activating it for a role that lacks dispatch. Every assignment receives the same deterministic acknowledgement: “Assignment accepted. I will return the outcome for the assigned concepts.” It starts no child session and makes no model call; this is acceptance of an assignment, not a claim that its work passed or produced artifacts. Installed `tool_call` guards and the unchanged passive handoff observer still run before execution, so the subject's decision to dispatch, role, complete assignment and checked-out branch remain evidence under the same rubrics. The roles runner also loads that observer.
+
+A retained run identifies the routing in its `launch.json` extension arguments and in each successful `task` tool result: `details.fixture` is `delegate-stand-in`, `details.input` is the complete dispatched input, and `content` contains one acknowledgement per task. `messages.jsonl` and the resulting subject/turn recordings also keep the original assistant call and the passive `branch-at-handoff` observation. No failure result is suppressed or rewritten: the native child executor is never entered.
+
 Agents/17 runs three turns by resuming one native session, so later turns receive the architect's actual earlier answers.
 
 The suite follows `execution-roles`: two varied authored golden recordings per example; one negative per assertion (including wiring); offline clause-isolation and host-read proof; five-run aggregation with ordinary assertions at least four of five and never-assertions five of five. Recorded rubric answers are deliberately authored controls, **not live judgments or captured model goldens**. The offline proof validates the binding and aggregation, not the semantic reliability of a model judge. A live run uses a separate, test-owned, untyped `rubric-judge` session, because the workflow assayer now has a different typed assignment and return contract. Its model is `EXECUTION_JUDGE_MODEL` when set, otherwise `modelRoles.frontier-other-family` in the host's `~/.omp/agent/config.yml`. A judge in any recorded subject model's provider family is refused before launch (`openai` and `openai-codex` are one family). Each retained result records its judge model, judgment status and attempt errors.
@@ -49,6 +53,31 @@ Observed: **91 passed, 13 intentionally failed, 39 skipped** (143 tests). Every 
 | agents/19   | delegates intent not branching procedure                         | `intent-concepts-acceptance`: handoff omits concepts and acceptance         |
 
 These are negative-fixture reds; no claim is made that today's installed architect was observed failing or passing live. Every other assertion also rejected its own isolated negative in a `seen red: <assertion>` test.
+
+### Fixture delegates (0094)
+
+The original failure is retained at `/tmp/batch4/architect/visible/workflow/23/run-5/turn-1/recording.json`: the architect dispatched `NightShootExamples` to the installed `illustrator`; the native task started an asynchronous job, whose result failed with “No model selected” and named `/tmp/agent-launch-0L3pOp/home/.omp/agent/agent.db`. Its final reply then made the helper's inability to start part of its update. That evidence was read, not replayed.
+
+The fixture's allowlisted environment sets `HOME` to its own empty home. Installation with `--model-roles default` seeds agent aliases, not missing host model choices: `illustrator` points to `@frontier-other-family:high`, but that tier, `frontier` and `default` are unset. Live setup copies authentication databases only, not host configuration. In omp, `task` resolves the delegate's own role and constructs a child session inside this fixture environment; it is not another CLI launch receiving the parent's `--agent` setup. Native `resolveModelOverrideWithAuthFallback` returns an unresolved primary when there is no model, rather than repairing an absent tier with the parent's active model. `AgentSession` then refuses the child's prompt before a model request. The authenticated parent's working model therefore does not establish that an installed delegate's alias resolves. The routing test checks the installed illustrator alias and absent tiers directly; 0094 removes this fixture dependency instead of copying more host state or changing the product.
+
+`recordings/23/negative-delegate-failure.json` is an **authored offline control**, not a model judgment. Its tool result says the delegate could not start; the subject opens its report with that failure and reassignment as a separate topic, before the film/scheduling bottom line. The existing `conclusion-first` clause rejects it. The two product outcomes, their single actions and reasons remain intact; offline clause isolation rejects only that ordering clause.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/delegate-stand-in.test.ts -t 'seen red \(0094\)'
+```
+
+Observed: **1 intentionally failed, 3 skipped**. The five-copy batch returned `passed: false` when the demonstration expected `true`; this was an ordering-control rejection, not an import, fixture-setup or model error (`artifact://1111`). The normal test expects that rejection. No clause, rubric, threshold, scenario or example text changed.
+
+The routing check uses the real installed omp and fixture adapter with a loopback scripted transport, not a live model. One task call carries lead and illustrator assignments; the native guards admit it after checkout of `feature/film-approval`. The result contains two fixed acknowledgements, the original input and the `delegate-stand-in` marker. The unchanged passive observer records the same input and branch. Exactly two scripted subject requests occur (dispatch and final response), with no child turn or child model request. Unit checks also preserve native schema/description and avoid introducing dispatch when task is absent. Runner wiring checks cover both subject launchers and exclusion from rubric judges.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution test/runner-extensions.test.ts
+```
+
+Observed: **237 passed, 75 skipped across 13 files** (`artifact://1113`), including all four stand-in tests, the new negative's ordinary clause-isolation proof and both launchers' wiring checks. Biome passed on the six changed TypeScript/JSON files. No live subject or rubric-judge model sessions were run.
 
 ### Previous goldens and refused setup
 

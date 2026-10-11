@@ -114,6 +114,14 @@ async function launch(
     '--no-pty',
     '--no-extensions',
     ...extensions.flatMap((path) => ['--extension', path]),
+    ...(judge
+      ? []
+      : [
+          '--extension',
+          join(here, '../reconstitution/architect/delegate-stand-in.ts'),
+          '--extension',
+          join(here, '../reconstitution/architect/handoff-observe.ts'),
+        ]),
     '--extension',
     join(here, 'observe.ts'),
     '--config',
