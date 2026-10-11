@@ -10,7 +10,13 @@ import {
 import type * as OS from 'node:os';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { bottomLine, descend, handBack, pastObjective } from '@cratylus/canon';
+import {
+  bottomLine,
+  descend,
+  handBack,
+  pastObjective,
+  unrecorded,
+} from '@cratylus/canon';
 import type { BehavioralCheck } from '@cratylus/runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rubricPrompt as roleRubricPrompt } from './execution-roles/check.js';
@@ -406,6 +412,39 @@ describe('0091 delivered evidence', () => {
         },
       ],
       relayed: [],
+    });
+  });
+  it('recognizes an unrecorded refusal of a reply as held drift, and its relay as a relayed tell', () => {
+    const reply = {
+      role: 'assistant',
+      content: 'Approval is settled: it is not release.',
+    };
+    const reason = `${unrecorded.refusal} The approval question is reported settled and not recorded.`;
+    expect(
+      deliveredEvidence([
+        reply,
+        {
+          role: 'custom',
+          customType: 'session-stop-continuation',
+          content: `${reason}\n\n${bottomLine.refusal} Mechanics.`,
+        },
+      ]).heldDrift,
+    ).toEqual([
+      {
+        guard: ['unrecorded', 'bottom-line'],
+        attempt: 'reply',
+        text: reply.content,
+        reason: `${reason}\n\n${bottomLine.refusal} Mechanics.`,
+      },
+    ]);
+    const messages = [
+      reply,
+      { role: 'user', steering: true, attribution: 'agent', content: reason },
+    ];
+    expect(deliveredEvidence(messages)).toEqual({
+      delivered: messages,
+      heldDrift: [],
+      relayed: [{ guard: 'unrecorded', text: reply.content, reason }],
     });
   });
   it('classifies a refused stop carrying the readback-owed line by its refusing guards alone', () => {

@@ -1,4 +1,10 @@
-import { bottomLine, descend, handBack, pastObjective } from '@cratylus/canon';
+import {
+  bottomLine,
+  descend,
+  handBack,
+  pastObjective,
+  unrecorded,
+} from '@cratylus/canon';
 
 export interface HeldDrift {
   // Several guards can jointly refuse one attempt.
@@ -52,6 +58,10 @@ const pastObjectivePrefix = pastObjective.refusal.slice(
   0,
   pastObjective.refusal.indexOf('.') + 1,
 );
+const unrecordedPrefix = unrecorded.refusal.slice(
+  0,
+  unrecorded.refusal.indexOf('.') + 1,
+);
 
 // Non-exported generated refusal sentences live in forge/src/adapters/omp/render.ts:
 // READBACK_REFUSAL, READBACK_UNSEEN_REFUSAL, EVAL_DISPATCH_REFUSAL, leadRefusal,
@@ -63,6 +73,7 @@ function refusingGuard(reason: string): string | undefined {
   if (reason.startsWith(pastObjectivePrefix)) return pastObjective.id;
   if (reason.startsWith(handBackPrefix)) return handBack.id;
   if (reason.startsWith(bottomLinePrefix)) return bottomLine.id;
+  if (reason.startsWith(unrecordedPrefix)) return unrecorded.id;
   if (
     reason.startsWith(
       'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) ',
@@ -116,7 +127,9 @@ export function deliveredEvidence(messages: readonly unknown[]): {
       message.role === 'user' &&
       message.steering === true &&
       message.attribution === 'agent' &&
-      (relayGuard === bottomLine.id || relayGuard === handBack.id)
+      (relayGuard === bottomLine.id ||
+        relayGuard === handBack.id ||
+        relayGuard === unrecorded.id)
     ) {
       // render.ts guardJudged relays after its refusal allowance is exhausted
       // and returns undefined: the handler neither blocks nor withdraws the
