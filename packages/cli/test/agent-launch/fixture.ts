@@ -222,7 +222,11 @@ export function fixture(
       '--no-title',
       '--no-pty',
       ...(options.extension || options.onlyInstalled
-        ? ['--no-extensions', '--extension', options.extension ?? extension]
+        ? [
+            '--no-extensions',
+            '--extension',
+            options.extension ?? join(home, '.cratylus/omp'),
+          ]
         : []),
       '--extension',
       observer,

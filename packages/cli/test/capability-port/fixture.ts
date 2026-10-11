@@ -238,7 +238,14 @@ function hostIn(root: string): Host {
     ...(explicit ? ['--no-extensions'] : []),
     '--extension',
     tap,
-    ...(explicit && adapter ? ['--extension', adapter] : []),
+    ...(explicit && adapter
+      ? [
+          '--extension',
+          adapter.startsWith(join(home, '.cratylus/omp/'))
+            ? join(home, '.cratylus/omp')
+            : adapter,
+        ]
+      : []),
     '--extension',
     observer,
     '--tools',

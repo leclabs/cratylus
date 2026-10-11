@@ -65,7 +65,7 @@ export function compactedSession(cwd: string, summary: string) {
 }
 export function launchArgs(
   session: string,
-  extension: string,
+  packageRoot: string,
   model = 'fixture/base',
   agent: string | null = 'architect',
 ) {
@@ -89,7 +89,7 @@ export function launchArgs(
     '--no-title',
     '--no-pty',
     '--extension',
-    extension,
+    packageRoot,
     '--extension',
     join(here, 'observe-omp.ts'),
   ];
@@ -106,7 +106,12 @@ export function inspectLaunch(cwd: string, summary: string) {
       const result = spawnSync(
         'omp',
         [
-          ...launchArgs(session, f.extension, 'fixture/base', agent),
+          ...launchArgs(
+            session,
+            join(f.home, '.cratylus/omp'),
+            'fixture/base',
+            agent,
+          ),
           'Continue the work.',
         ],
         {
@@ -209,7 +214,7 @@ export function liveRun(
     const transcript = `${output}.messages.jsonl`;
     writeFileSync(transcript, '');
     const args = [
-      ...launchArgs(session, f.extension, model),
+      ...launchArgs(session, join(f.home, '.cratylus/omp'), model),
       '--config',
       config,
       'Continue the work.',

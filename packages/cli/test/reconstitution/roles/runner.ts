@@ -122,7 +122,9 @@ async function launch(
     '--no-title',
     '--no-pty',
     '--no-extensions',
-    ...extensions.flatMap((path) => ['--extension', path]),
+    ...(judge ? extensions : [join(f.home, '.cratylus/omp')]).flatMap(
+      (path) => ['--extension', path],
+    ),
     ...(judge
       ? []
       : [

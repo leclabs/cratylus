@@ -87,3 +87,14 @@ pnpm --filter cratylus exec vitest run test/capability-port test/delivery --repo
 ```
 
 Observed: CLI typecheck passed; 6 test files passed and 1 was skipped, with 102 tests passed and 4 skipped. The substring filter also selected `test/delivery-journal`; all selected tests passed. Every visible delivery example passed, as did the package replacement, host-witness and registration controls. No live model run was taken.
+
+## Explicit-package preflight repair
+
+The lead's no-model preflights reported `Unknown agent "builder"` because explicit-only omp loading was given individual installed modules rather than the installation's package root. Subject runners and installed-extension fixture launches now name `.cratylus/omp` explicitly, so omp discovers its agents and skills alongside its declared extensions. Rubric judges retain adapter-only loading and their synthetic host declarations, preserving the existing session-hook isolation assertions. The offline transport control now models omp's package-to-module resolution; no assertions changed.
+
+```sh
+EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect test/reconstitution/roles test/reconstitution/overview test/execution-roles -t preflight --reporter verbose
+pnpm --filter cratylus exec vitest run test/agent-launch test/runner-extensions.test.ts --reporter verbose
+```
+
+Observed: all 18 selected no-model preflights passed (206 unrelated tests skipped). All 29 agent-launch and runner-control checks passed, including installed-only discovery and judge session-hook isolation. No live model runs were taken.

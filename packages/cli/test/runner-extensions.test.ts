@@ -1,5 +1,6 @@
 import type * as ChildProcess from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -55,9 +56,31 @@ vi.mock('./rubric-judge.js', async (original) => ({
   ...(await original<typeof JudgeHarness>()),
   runSession: async (
     _binary: string,
-    args: string[],
+    launchArgs: string[],
     options: { env: Record<string, string> },
   ) => {
+    // Model omp's package resolution at this transport boundary. Assertions keep
+    // observing the effective modules, whether argv names a package or a file.
+    const loaded: string[] = [];
+    for (let i = 0; i < launchArgs.length; i++) {
+      const value = launchArgs[i]!;
+      const root = launchArgs[i + 1];
+      if (
+        value === '--extension' &&
+        root &&
+        existsSync(join(root, 'package.json'))
+      ) {
+        const manifest = JSON.parse(
+          readFileSync(join(root, 'package.json'), 'utf8'),
+        ) as {
+          omp: { extensions: string[] };
+        };
+        for (const module of manifest.omp.extensions)
+          loaded.push('--extension', join(root, module));
+        i++;
+      } else loaded.push(value);
+    }
+    const args = loaded;
     const roleIndex = args.indexOf('--agent');
     const role = roleIndex < 0 ? undefined : args[roleIndex + 1];
     control.calls.push({ role, args });
@@ -169,6 +192,18 @@ beforeEach(() => {
     'notes.txt',
   ])
     writeFileSync(join(directory, filename), 'Offline installation control');
+  writeFileSync(
+    join(control.home, '.cratylus/omp/package.json'),
+    JSON.stringify({
+      omp: {
+        extensions: [
+          'extensions/cratylus.ts',
+          'extensions/cratylus-session.ts',
+          'extensions/extra.mjs',
+        ],
+      },
+    }),
+  );
   mkdirSync(join(control.home, '.cratylus/omp/agents'));
   for (const role of ['architect', 'builder'])
     writeFileSync(

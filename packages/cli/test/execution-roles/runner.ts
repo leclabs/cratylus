@@ -200,7 +200,10 @@ async function launch(
     '--no-title',
     '--no-pty',
     '--no-extensions',
-    ...extensions.flatMap((path) => ['--extension', path]),
+    ...(role === undefined
+      ? extensions
+      : [join(f.home, '.cratylus/omp')]
+    ).flatMap((path) => ['--extension', path]),
     '--extension',
     join(here, 'observe.ts'),
     '--config',
