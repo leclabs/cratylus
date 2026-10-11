@@ -1646,6 +1646,18 @@ describe('omp capability interface', () => {
         attribution: 'agent',
         content: 'descend guard — the judge gave no verdict.',
       }),
+      // A reply refused at its stop never reached the operator: the judge never reads it.
+      message({
+        role: 'assistant',
+        content: [
+          { type: 'text', text: 'Night shoots are the operator’s call.' },
+        ],
+      }),
+      {
+        type: 'custom_message',
+        customType: 'session-stop-continuation',
+        content: 'hand-back: this reply hands back a decision you own.',
+      },
       message({ role: 'user', content: 'Close the design work.' }),
     ];
     /** The text the judge was asked about: the one user message of its input. */
