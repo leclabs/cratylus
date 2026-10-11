@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for Mira’s confirmation; scheduling still needs Sol’s ruling on night shoots. All necessary outcomes are in those reports."
+            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for your approval; scheduling still needs your ruling on night shoots, but the venue’s night-time access restrictions are not supplied. You hold film-production and scheduling. All available outcomes are in those reports."
           }
         ]
       },
@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+            "text": "I approve the film examples; scheduling’s night-shoot ruling remains unresolved."
           }
         ],
         "controlClause": "never-tool-history"
@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Confirm the film examples with Mira. Obtain Sol’s scheduling ruling."
+            "text": "Film: proceed against the examples I have approved. Scheduling: I am obtaining the missing venue information."
           }
         ],
         "controlClause": "topic-actions"
@@ -67,7 +67,7 @@
         "controlClause": "never-hides-issue"
       }
     ],
-    "report": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling.\n\nConfirm the film examples with Mira. Obtain Sol’s scheduling ruling.\n\nScheduling has an unresolved night-shoot issue, for reasons I will not explain.\n\nThe actions above are the recommendations.\n\nThe night-shoot ruling remains unresolved.",
+    "report": "I approve the film examples; scheduling’s night-shoot ruling remains unresolved.\n\nFilm: proceed against the examples I have approved. Scheduling: I am obtaining the missing venue information.\n\nScheduling has an unresolved night-shoot issue, for reasons I will not explain.\n\nThe actions above are the recommendations.\n\nThe night-shoot ruling remains unresolved.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -182,11 +182,11 @@
     "answers": {
       "never-tool-history": {
         "pass": true,
-        "evidence": "Film approval is ready to confirm; scheduling still needs its night-shoot ruling."
+        "evidence": "I approve the film examples; scheduling’s night-shoot ruling remains unresolved."
       },
       "topic-actions": {
         "pass": true,
-        "evidence": "Confirm the film examples with Mira. Obtain Sol’s scheduling ruling."
+        "evidence": "Film: proceed against the examples I have approved. Scheduling: I am obtaining the missing venue information."
       },
       "minimal-support": {
         "pass": false,

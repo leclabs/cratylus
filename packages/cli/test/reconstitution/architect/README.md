@@ -203,6 +203,36 @@ EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/archi
 
 Observed: the full architect offline suite passed **93 tests, 52 skipped**. The selected red run had **22 passed, 2 intentionally failed, 121 skipped**. Both demonstrations returned `passed: false` for the new reasonless-ruling negative. The ordinary proof accepted the new settled goldens and rejected every isolated negative, including the existing omitted-action controls. These are authored rubric-answer controls, not live judge judgments; no model sessions were run.
 
+### Recording and fixture sweep (0095)
+
+The complete [174-artifact audit](../RECORDING-AUDIT.md) distinguishes example approval from domain acts such as creatively accepting a film. Workflow/23's omitted-action negative now approves the film examples itself. All twelve workflow/31 and agents/19 controls now begin with the architect's prior approval instead of Mira's confirmation. Existing hand-back and reconfirmation negatives remain deliberate failures, including the retained agents/13 refused-reply fixture.
+
+The temporary `recording-sweep-evidence.test.ts` used `assess` to require each rebound negative's failures to equal `[breaks]`, then deliberately expected the five-copy `judgeBatch(check(scenario), Array(5).fill(recording), { atLeast: 4, of: 5 })` to pass. It also tested the previous goldens using `git show 16e04430b104e234bcf1061d91c99605f1fd96bb:<path>`. The temporary test was removed after this command:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/recording-sweep-evidence.test.ts
+```
+
+Observed: **17 intentionally failed, 4 passed** (`artifact://1251`). Fifteen negatives first passed exact-clause isolation and then failed at `passed: false`; two previous held-out agents/4 goldens failed `minimal-support` with explicitly authored current-clause answers (see that suite's README). The visible negatives were `23/one-action`, all five in `31/`, and all three in `119/`, including installed-role wiring.
+
+The four passing previous goldens are the two variations in `31/` and `119/`: their Given contains obsolete confirmation, but their actual dispatch behavior still satisfies every current dispatch clause. They contain no fresh confirmation request or approval hand-back. No rejection of those setup-only defects is claimed; adding a clause to detect them was outside this assignment.
+
+Acceptance, with no live model sessions:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+# For each of the eight design/judgment/*/reconstitution/*/vitest.config.ts files:
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run --config ../../<config>
+pnpm --filter cratylus typecheck
+pnpm exec biome check <the 21 rebound JSON paths listed in RECORDING-AUDIT.md>
+```
+
+Observed: visible **231 passed, 75 skipped, 12 files** (`artifact://1253`); all eight held-out configurations passed, totaling **38 passed, 22 skipped** (`artifact://1254`). CLI typecheck passed; Biome checked all **21 changed JSON files**, with no fixes. This sweep changed no scenario, clause, rubric, threshold, example or product code.
+
 ## 0091: judged on what takes effect
 
 `test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift, relayed }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.

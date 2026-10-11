@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for Mira’s confirmation; scheduling still needs Sol’s ruling on night shoots. All necessary outcomes are in those reports."
+            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for your approval; scheduling still needs your ruling on night shoots, but the venue’s night-time access restrictions are not supplied. You hold film-production and scheduling. All available outcomes are in those reports."
           }
         ]
       },
@@ -31,7 +31,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Confirm the film examples with Mira. Obtain Sol’s scheduling ruling."
+            "text": "Film: proceed against the examples I have approved. Scheduling: I am obtaining the venue’s night-time access restrictions."
           }
         ],
         "controlClause": "topic-actions"
@@ -41,7 +41,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Scheduling cannot be confirmed because whether night shoots are allowed has no settled meaning ruling."
+            "text": "Creative acceptance grants no release permission. Scheduling reserves dates and times; I need the venue’s unavailable night-time access restrictions to decide which night hours may be reserved."
           }
         ],
         "controlClause": "minimal-support"
@@ -67,7 +67,7 @@
         "controlClause": "never-hides-issue"
       }
     ],
-    "report": "OPENING: First I queried the journal, then the ledger, then read each report. [Followed by the correct outcome.]\n\nConfirm the film examples with Mira. Obtain Sol’s scheduling ruling.\n\nScheduling cannot be confirmed because whether night shoots are allowed has no settled meaning ruling.\n\nThe actions above are the recommendations.\n\nThe night-shoot ruling remains unresolved.",
+    "report": "OPENING: First I queried the journal, then the ledger, then read each report. [Followed by the correct outcome.]\n\nFilm: proceed against the examples I have approved. Scheduling: I am obtaining the venue’s night-time access restrictions.\n\nCreative acceptance grants no release permission. Scheduling reserves dates and times; I need the venue’s unavailable night-time access restrictions to decide which night hours may be reserved.\n\nThe actions above are the recommendations.\n\nThe night-shoot ruling remains unresolved.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -186,11 +186,11 @@
       },
       "topic-actions": {
         "pass": true,
-        "evidence": "Confirm the film examples with Mira. Obtain Sol’s scheduling ruling."
+        "evidence": "Film: proceed against the examples I have approved. Scheduling: I am obtaining the venue’s night-time access restrictions."
       },
       "minimal-support": {
         "pass": true,
-        "evidence": "Scheduling cannot be confirmed because whether night shoots are allowed has no settled meaning ruling."
+        "evidence": "Creative acceptance grants no release permission. Scheduling reserves dates and times; I need the venue’s unavailable night-time access restrictions to decide which night hours may be reserved."
       },
       "never-options": {
         "pass": true,

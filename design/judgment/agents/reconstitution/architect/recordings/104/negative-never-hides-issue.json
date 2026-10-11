@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for Mira’s confirmation; scheduling still needs Sol’s ruling on night shoots. All necessary outcomes are in those reports."
+            "text": "After this long session, give me the film approval and scheduling progress update. Latest delegate reports: film creative-approval examples are ready for your approval; scheduling still needs your ruling on night shoots, but the venue’s night-time access restrictions are not supplied. You hold film-production and scheduling. All available outcomes are in those reports."
           }
         ]
       },
@@ -21,12 +21,12 @@
         "content": [
           {
             "type": "text",
-            "text": "Film approval is ready to confirm and scheduling is ready. Confirm the film examples with Mira. Continue the scheduled shoots. Creative approval stays distinct from release authority."
+            "text": "I approve the film examples and scheduling is ready. Proceed against the approved film examples. Continue the scheduled shoots. Creative approval stays distinct from release authority."
           }
         ]
       }
     ],
-    "report": "Film approval is ready to confirm and scheduling is ready. Confirm the film examples with Mira. Continue the scheduled shoots. Creative approval stays distinct from release authority.",
+    "report": "I approve the film examples and scheduling is ready. Proceed against the approved film examples. Continue the scheduled shoots. Creative approval stays distinct from release authority.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
