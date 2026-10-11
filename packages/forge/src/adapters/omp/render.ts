@@ -65,7 +65,12 @@
 // `bin-name-single-home` catches and rightly refused.
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
-import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import {
+  type Agent,
+  type SharedJudgment,
+  assignmentIn,
+  checkAssignment,
+} from '@cratylus/schema';
 import type { Hook, NativeBinding } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -1319,6 +1324,17 @@ const GUARD_BRIDGE: readonly string[] = [
   '  recorded?: boolean;',
   '};',
   '',
+  '// A JUDGMENT several guards read: made once per act, by one prompt, and given to each guard that',
+  '// reads it ahead of the act, which never makes it itself.',
+  'type Judgment = {',
+  '  id: string;',
+  '  prompt: string;',
+  '  // The answer field that carries the judgment: an answer without it is no judgment.',
+  '  carries: string;',
+  '  conversation?: boolean;',
+  '  recorded?: boolean;',
+  '};',
+  '',
   '/** The reply that ended a turn, and the message it answered, as text. */',
   'function lastReply(event: { last_assistant_message?: unknown; messages?: readonly TurnMessage[] }): { reply: string; asked: string } {',
   '  const text = (m: TurnMessage | undefined): string =>',
@@ -1360,9 +1376,8 @@ const GUARD_BRIDGE: readonly string[] = [
   '  return undefined;',
   '}',
   '',
-  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
-  ' *  field, bare, fenced or after prose; `undefined` when no object in it does. */',
-  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
+  '/** The last JSON object in an answer, bare, fenced or after prose, that `accepts`; `undefined` when none does. */',
+  'function objectIn(answer: string, accepts: (o: Record<string, unknown>) => boolean): Record<string, unknown> | undefined {',
   '  for (let start = answer.lastIndexOf("{"); start >= 0; start = start > 0 ? answer.lastIndexOf("{", start - 1) : -1) {',
   '    const end = objectEnd(answer, start);',
   '    if (end === undefined) continue;',
@@ -1375,10 +1390,16 @@ const GUARD_BRIDGE: readonly string[] = [
   '    if (typeof v !== "object" || v === null || Array.isArray(v)) continue;',
   '    // A parsed non-array object: its fields are read and each is checked before use.',
   '    const o = v as Record<string, unknown>;',
-  '    if (typeof o[field] !== "boolean") continue;',
-  '    return { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
+  '    if (accepts(o)) return o;',
   '  }',
   '  return undefined;',
+  '}',
+  '',
+  '/** One boolean field of the verdict a judge answered: the last JSON object in its answer carrying that',
+  ' *  field; `undefined` when no object in it does. */',
+  'function verdictIn(answer: string, field: string): { value: boolean; reason: string } | undefined {',
+  '  const o = objectIn(answer, (v) => typeof v[field] === "boolean");',
+  '  return o === undefined ? undefined : { value: o[field] === true, reason: typeof o.reason === "string" ? o.reason.trim() : "" };',
   '}',
   '',
   '// How much of the conversation a judge reads: its most recent characters, a bound like',
@@ -1431,7 +1452,9 @@ const STOP_REFUSALS = 2;
  * registered it.
  *
  * FAILS OPEN, ALOUD. A judge that does not answer, or answers anything but the
- * verdict, refuses nothing, and the session is told the act went unjudged. A turn's
+ * verdict, refuses nothing, and the session is told the act went unjudged. A shared
+ * judgment that cannot be made is given to the guards reading it as not made, and the
+ * session is told; they still judge the act, refusing nothing on it. A turn's
  * stop is refused at most {@link STOP_REFUSALS} times in a row; past that the reason
  * is relayed instead, so a guard never holds a turn open forever. omp's own
  * `stop_hook_active` is a boolean and cannot count past one, so the count is kept
@@ -1460,12 +1483,65 @@ const GUARD_EXEC: readonly string[] = [
   '    return Array.isArray(recorded) ? recorded.filter((r): r is string => typeof r === "string") : undefined;',
   '  };',
   '',
-  '  /** One guard over one act. `undefined` ⇒ no refusal. */',
+  '  /** What a judge reads: the act, after what it is `given` and the decisions recorded this turn when it reads',
+  '   *  them; and, for a judge that reads the conversation, that conversation ahead of the act and, the long',
+  "   *  conversation now standing between the prompt and the answer, the answer's `form` after it. */",
+  '  const framed = (',
+  '    ctx: JudgeContext,',
+  '    conversation: boolean | undefined,',
+  '    recorded: readonly string[] | undefined,',
+  '    given: string | undefined,',
+  '    act: string,',
+  '    form: string,',
+  '  ): string => {',
+  '    const withGiven = given === undefined ? act : `${given}\\n\\n${act}`;',
+  '    const withRecorded =',
+  '      recorded === undefined',
+  '        ? withGiven',
+  '        : `Decisions recorded this turn:\\n${recorded.length === 0 ? "(none)" : recorded.join("\\n")}\\n\\n${withGiven}`;',
+  '    return conversation',
+  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${withRecorded}\\n\\n${form}`',
+  '      : withRecorded;',
+  '  };',
+  '',
+  '  /** One shared judgment over one act, as the guards reading it are given it: what the judge answered, or,',
+  '   *  said aloud, that none could be made, on which its readers refuse nothing. */',
+  '  const judgmentGiven = async (judgment: Judgment, ctx: JudgeContext, act: string): Promise<string> => {',
+  '    const unmade = (why: string): string => {',
+  '      relay(`${judgment.id} judgment — ${why}, so it was NOT made for this act, and the guards reading it refused nothing on it.`);',
+  '      return `Judgment ${judgment.id}: none could be made for this act.`;',
+  '    };',
+  '    const recorded = judgment.recorded ? recordedThisTurn(ctx) : undefined;',
+  '    if (judgment.recorded && recorded === undefined) return unmade("the decisions recorded this turn could not be read");',
+  '    const form = `Answer with exactly one JSON object and nothing else, carrying "${judgment.carries}" as your instructions give it.`;',
+  '    const answer = await askJudge(ctx, judgment.prompt, framed(ctx, judgment.conversation, recorded, undefined, act, form));',
+  '    const made = answer === undefined ? undefined : objectIn(answer, (o) => o[judgment.carries] !== undefined);',
+  '    if (made === undefined)',
+  '      return unmade(`the judge gave no judgment${answer === undefined ? "" : ` (it answered: ${answer.slice(0, 200)})`}`);',
+  '    return `Judgment ${judgment.id}, made once for this act:\\n${JSON.stringify(made)}`;',
+  '  };',
+  '',
+  "  /** The shared judgments of one event's act, each made at most once, when a guard first reads it, and",
+  '   *  the same one given to every guard reading it. */',
+  '  const judgedOnce = (ctx: JudgeContext): ((judgment: Judgment, act: string) => Promise<string>) => {',
+  '    const made = new Map<string, Promise<string>>();',
+  '    return (judgment, act) => {',
+  '      let given = made.get(judgment.id);',
+  '      if (given === undefined) {',
+  '        given = judgmentGiven(judgment, ctx, act);',
+  '        made.set(judgment.id, given);',
+  '      }',
+  '      return given;',
+  '    };',
+  '  };',
+  '',
+  '  /** One guard over one act, given the shared judgment it `reads` on this event, if any. `undefined` ⇒ no refusal. */',
   '  const guardJudged = async (',
   '    guard: Guard,',
   '    ctx: JudgeContext,',
   '    act: string | undefined,',
   '    reentered: boolean,',
+  '    reads: ((act: string) => Promise<string>) | undefined,',
   '  ): Promise<string | undefined> => {',
   '    const agent = launchedAs(ctx);',
   '    if (agent === undefined || !guard.agents.includes(agent) || act === undefined) return undefined;',
@@ -1476,16 +1552,10 @@ const GUARD_EXEC: readonly string[] = [
   '      relay(`${guard.id} guard — the decisions recorded this turn could not be read, so this act was NOT judged.`);',
   '      return undefined;',
   '    }',
-  '    const withRecorded =',
-  '      recorded === undefined',
-  '        ? act',
-  '        : `Decisions recorded this turn:\\n${recorded.length === 0 ? "(none)" : recorded.join("\\n")}\\n\\n${act}`;',
-  '    // A guard whose judge reads the conversation gets it ahead of the act, and, the long',
-  "    // conversation now standing between the prompt and the answer, the answer's form after it.",
-  '    const judgedAct = guard.conversation',
-  '      ? `Conversation so far:\\n${conversationOf(ctx) || "(none)"}\\n\\nAct:\\n${withRecorded}\\n\\nAnswer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`',
-  '      : withRecorded;',
-  '    const answer = await askJudge(ctx, guard.prompt, judgedAct);',
+  '    // A guard that reads a shared judgment is given it ahead of the act, never making it itself.',
+  '    const given = reads === undefined ? undefined : await reads(act);',
+  '    const form = `Answer with exactly one JSON object and nothing else: {"${guard.refusesOn}": <true or false>, "reason": "<one sentence>"}`;',
+  '    const answer = await askJudge(ctx, guard.prompt, framed(ctx, guard.conversation, recorded, given, act, form));',
   '    const verdict = answer === undefined ? undefined : verdictIn(answer, guard.refusesOn);',
   '    if (verdict === undefined) {',
   '      relay(',
@@ -1531,21 +1601,65 @@ const GUARD_EXEC: readonly string[] = [
 ];
 
 /**
- * The guards' registrations: each guard's data, then ONE handler per event omp
- * fires, judging every guard bound to it. A turn end is judged by its last reply, a
- * tool call by the call itself, and a guard whose judge reads the conversation
- * (`GuardJudge.conversation`) gets the session's conversation so far ahead of the
- * act; each refuses in the shape its own caller reads
+ * The guards' registrations: each guard's data and each shared judgment's, then ONE
+ * handler per event omp fires, judging every guard bound to it. A turn end is judged
+ * by its last reply, a tool call by the call itself, and a guard whose judge reads the
+ * conversation (`GuardJudge.conversation`) gets the session's conversation so far
+ * ahead of the act; each refuses in the shape its own caller reads
  * ({@link OMP_REFUSAL_SHAPE}).
  *
  * ONE HANDLER PER EVENT, NOT PER GUARD. omp keeps the last answer its handlers gave
  * a stop, so two guards refusing the same stop from two handlers left one refusal
  * hiding the other. Here every guard on the event is judged, together, and their
  * refusals reach the agent as one, each reason in it.
+ *
+ * ONE SHARED JUDGMENT PER ACT. A guard reading a shared judgment
+ * (`GuardJudge.reads`) is given it on the events that judgment is made for: the
+ * handler makes it at most once per act, when the first guard in force reads it, and
+ * gives that one answer to every guard reading it, so no guard decides it apart.
  */
 function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
   const lines: string[] = [];
-  const bound = new Map<string, { binding: NativeBinding; names: string[] }>();
+  const keyOf = (binding: NativeBinding): string =>
+    `${binding.event}\0${binding.matcher ?? ''}`;
+  const bound = new Map<
+    string,
+    { binding: NativeBinding; entries: string[] }
+  >();
+  const judgments = new Map<
+    string,
+    { name: string; judgment: SharedJudgment; keys: Set<string> }
+  >();
+  const judgmentOf = (judgment: SharedJudgment) => {
+    const known = judgments.get(judgment.id);
+    if (known !== undefined) {
+      if (known.judgment !== judgment)
+        throw new Error(
+          `guardRegistrations: two shared judgments are named '${judgment.id}'; one judgment, one id.`,
+        );
+      return known;
+    }
+    const name = `judgment${judgments.size}`;
+    const keys = new Set<string>();
+    for (const event of judgment.events) {
+      const binding = ompBindingOf(event);
+      if (binding) keys.add(keyOf(binding));
+    }
+    const data = {
+      id: judgment.id,
+      prompt: judgment.prompt,
+      carries: judgment.carries,
+      ...(judgment.conversation === true ? { conversation: true } : {}),
+      ...(judgment.recorded === true ? { recorded: true } : {}),
+    };
+    lines.push(
+      `  // ${judgment.id} — one judgment, made once per act and read by the guards that read it.`,
+      `  const ${name}: Judgment = ${JSON.stringify(data)};`,
+    );
+    const made = { name, judgment, keys };
+    judgments.set(judgment.id, made);
+    return made;
+  };
   guards.forEach(({ guard, agents }, index) => {
     const name = `guard${index}`;
     const data = {
@@ -1558,6 +1672,10 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       ...(guard.judge.conversation === true ? { conversation: true } : {}),
       ...(guard.judge.recorded === true ? { recorded: true } : {}),
     };
+    const reads =
+      guard.judge.reads === undefined
+        ? undefined
+        : judgmentOf(guard.judge.reads);
     lines.push(
       `  // ${guard.id} — holds the tell \`${guard.tell}\` for ${agents.join(', ')}.`,
       `  const ${name}: Guard = ${JSON.stringify(data)};`,
@@ -1565,13 +1683,15 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
     for (const event of guard.events) {
       const binding = ompBindingOf(event);
       if (!binding) continue;
-      const key = `${binding.event}\0${binding.matcher ?? ''}`;
-      const at = bound.get(key) ?? { binding, names: [] };
-      at.names.push(name);
+      const key = keyOf(binding);
+      const at = bound.get(key) ?? { binding, entries: [] };
+      at.entries.push(
+        reads?.keys.has(key) ? `[${name}, ${reads.name}]` : `[${name}]`,
+      );
       bound.set(key, at);
     }
   });
-  for (const { binding, names } of bound.values()) {
+  for (const { binding, entries } of bound.values()) {
     const kind = OMP_ENVELOPE_KIND[binding.event];
     const refusal = OMP_REFUSAL_SHAPE[binding.event];
     const act =
@@ -1598,8 +1718,12 @@ function guardRegistrations(guards: readonly ComposedGuard[]): string[] {
       `  pi.on(${JSON.stringify(binding.event)}, async (event, ctx: JudgeContext) => {${narrow}
     const act = ${act};
     const reentered = ${reentered};
+    const reads = judgedOnce(ctx);
+    const judged: [Guard, Judgment?][] = [${entries.join(', ')}];
     const reasons = await Promise.all(
-      [${names.join(', ')}].map((guard) => guardJudged(guard, ctx, act, reentered)),
+      judged.map(([guard, judgment]) =>
+        guardJudged(guard, ctx, act, reentered, judgment === undefined ? undefined : (judgedAct) => reads(judgment, judgedAct)),
+      ),
     );
     const reason = reasons.filter((r): r is string => r !== undefined).join("\\n\\n");
     if (reason) ${refuse}

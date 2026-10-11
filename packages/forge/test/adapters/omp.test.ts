@@ -112,12 +112,24 @@ const omp = vi.hoisted(() => {
     },
   };
 });
-/** The judge the session module's guards ask (`completeSimple`), answering `verdict`. */
-const judge = vi.hoisted(() => ({ verdict: '', asked: [] as unknown[] }));
+/** The judge the session module's guards ask (`completeSimple`), answering `verdict`, or, for a
+ *  system prompt `answers` names, its answer there. */
+const judge = vi.hoisted(() => ({
+  verdict: '',
+  answers: {} as Record<string, string>,
+  asked: [] as unknown[],
+}));
 vi.mock('@oh-my-pi/pi-ai', () => ({
   completeSimple: async (_model: unknown, input: unknown) => {
     judge.asked.push(input);
-    return { content: [{ type: 'text', text: judge.verdict }] };
+    const prompts =
+      input !== null && typeof input === 'object' && 'systemPrompt' in input
+        ? input.systemPrompt
+        : undefined;
+    const prompt = Array.isArray(prompts) ? prompts[0] : undefined;
+    const answer =
+      typeof prompt === 'string' ? judge.answers[prompt] : undefined;
+    return { content: [{ type: 'text', text: answer ?? judge.verdict }] };
   },
 }));
 vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
@@ -1560,6 +1572,7 @@ describe('omp capability interface', () => {
       };
       await fire('session_start', {});
       judge.asked.length = 0;
+      judge.answers = {};
       return { fire, relayed };
     }
 
@@ -1960,6 +1973,172 @@ describe('omp capability interface', () => {
         'unrecorded guard — the decisions recorded this turn could not be read, so this act was NOT judged.',
       ]);
       expect(judge.asked).toHaveLength(1);
+    });
+
+    /** A judgment the guards below read, made at turn end only. */
+    const heldJudgment = {
+      id: 'owned-question',
+      events: ['turn.end'] as ['turn.end'],
+      prompt: 'Judge what each owned question needs.',
+      verdict: {},
+      carries: 'questions',
+      conversation: true,
+    };
+    type GuardEvent = 'turn.end' | 'tool.use.pre';
+    /** A guard on `events`, refusing on `field`, whose judge reads `heldJudgment`. */
+    const readingGuard = (
+      id: string,
+      field: string,
+      events: readonly [GuardEvent, ...GuardEvent[]],
+    ) => ({
+      guard: {
+        ...surveyGuard(['architect']).guard,
+        id,
+        events,
+        tell: id,
+        judge: {
+          prompt: `Judge for ${id}.`,
+          verdict: {},
+          refusesOn: field,
+          reads: heldJudgment,
+        },
+        refusal: `${id}:`,
+      },
+      agents: ['architect'],
+    });
+    const readers = () => [
+      readingGuard('hand-back', 'handsBack', ['turn.end']),
+      readingGuard('bottom-line', 'buries', ['turn.end', 'tool.use.pre']),
+      replyGuard,
+    ];
+    /** The system prompt the judge was asked with. */
+    const promptOf = (asked: unknown): string => {
+      const prompts =
+        asked !== null && typeof asked === 'object' && 'systemPrompt' in asked
+          ? asked.systemPrompt
+          : undefined;
+      const prompt: unknown = Array.isArray(prompts) ? prompts[0] : undefined;
+      return typeof prompt === 'string' ? prompt : '';
+    };
+    /** What the judge was asked under `prompt`, each time it was. */
+    const askedUnder = (prompt: string): string[] =>
+      judge.asked.filter((a) => promptOf(a) === prompt).map(payload);
+    const handedBack = {
+      last_assistant_message: 'Is approval release? You choose.',
+      stop_hook_active: false,
+    };
+    const handedBackAct = 'Reply:\nIs approval release? You choose.';
+
+    it('makes a shared judgment once per act and gives that one answer to every guard reading it, and none to a guard that does not', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        readers(),
+        exchanged,
+      );
+      const held = {
+        questions: [
+          {
+            question: 'Is approval release?',
+            holds: true,
+            reason: 'The design separates them.',
+          },
+        ],
+      };
+      judge.answers = {
+        [heldJudgment.prompt]: `Judged:\n${JSON.stringify(held)}`,
+        'Judge for hand-back.': JSON.stringify({
+          handsBack: true,
+          reason: 'It asks the operator what it holds.',
+        }),
+        'Judge for bottom-line.': JSON.stringify({
+          buries: false,
+          reason: 'In shape.',
+        }),
+      };
+      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
+      expect(await fire('session_stop', handedBack)).toEqual({
+        decision: 'block',
+        reason: 'hand-back: It asks the operator what it holds.',
+      });
+      expect(relayed).toEqual([]);
+      expect(judge.asked).toHaveLength(4);
+      // The judgment, once, by its own prompt, over the conversation and the reply.
+      expect(askedUnder(heldJudgment.prompt)).toEqual([
+        [
+          'Conversation so far:',
+          'Operator:\nSeparate approval from release.',
+          '',
+          'Agent:\nI dispatched the lead.',
+          '',
+          'Delegate report:\nOutcome achieved; both assayers accept.',
+          '',
+          'Operator:\nClose the design work.',
+          '',
+          `Act:\n${handedBackAct}`,
+          '',
+          'Answer with exactly one JSON object and nothing else, carrying "questions" as your instructions give it.',
+        ].join('\n'),
+      ]);
+      // Each guard reading it is given that one answer ahead of the act, and judges by its own prompt.
+      const given = `Judgment owned-question, made once for this act:\n${JSON.stringify(held)}`;
+      for (const id of ['hand-back', 'bottom-line'])
+        expect(askedUnder(`Judge for ${id}.`), id).toEqual([
+          `${given}\n\n${handedBackAct}`,
+        ]);
+      expect(askedUnder('Judge the call.')).toEqual([handedBackAct]);
+      // A tool call is no act it is made for: its reader on the call is given nothing.
+      judge.asked.length = 0;
+      judge.answers['Judge for bottom-line.'] = JSON.stringify({
+        buries: false,
+        reason: 'A first action.',
+      });
+      expect(await fire('tool_call', closing)).toBeUndefined();
+      expect(judge.asked.map(promptOf)).toEqual(['Judge for bottom-line.']);
+      expect(payload(judge.asked[0])).toBe(
+        JSON.stringify({ tool: closing.toolName, input: closing.input }),
+      );
+    });
+
+    it('fails open, aloud, when a shared judgment cannot be made: its readers are told none was made and still judge the act', async () => {
+      omp.agents = [ARCHITECT()];
+      const { fire, relayed } = await twoModules(
+        'architect',
+        readers(),
+        exchanged,
+      );
+      judge.answers = {
+        [heldJudgment.prompt]: 'It seems held.',
+        'Judge for hand-back.': JSON.stringify({
+          handsBack: false,
+          reason: 'Nothing is handed back on a judgment never made.',
+        }),
+        'Judge for bottom-line.': JSON.stringify({
+          buries: true,
+          reason: 'Its conclusion comes last.',
+        }),
+      };
+      judge.verdict = JSON.stringify({ surveys: false, reason: 'in shape.' });
+      expect(await fire('session_stop', handedBack)).toEqual({
+        decision: 'block',
+        reason: 'bottom-line: Its conclusion comes last.',
+      });
+      expect(relayed).toEqual([
+        'owned-question judgment — the judge gave no judgment (it answered: It seems held.), so it was NOT made for this act, and the guards reading it refused nothing on it.',
+      ]);
+      expect(askedUnder(heldJudgment.prompt)).toHaveLength(1);
+      for (const id of ['hand-back', 'bottom-line'])
+        expect(askedUnder(`Judge for ${id}.`), id).toEqual([
+          `Judgment owned-question: none could be made for this act.\n\n${handedBackAct}`,
+        ]);
+    });
+
+    it('makes no shared judgment where no guard reading it is in force', async () => {
+      omp.agents = [ARCHITECT(), CARTOGRAPHER()];
+      const { fire } = await twoModules('cartographer', readers());
+      judge.verdict = JSON.stringify({ handsBack: true, reason: 'never.' });
+      expect(await fire('session_stop', handedBack)).toBeUndefined();
+      expect(judge.asked).toEqual([]);
     });
 
     it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {

@@ -781,6 +781,7 @@ export {
   type HookWorker,
   type ProjectionFact,
   type ProjectionFacts,
+  type SharedJudgment,
   hookIrOf,
   resolveWorker,
 } from './hook-cell.js';

@@ -123,11 +123,35 @@ export interface HookCell<E extends EventName = EventName> {
 }
 
 /**
+ * A judgment several guards read: made once per act, on the events it names, by one
+ * prompt, and handed to each guard that reads it ahead of the act. A guard reading it
+ * takes it as given and never makes it itself, so the guards share one judgment rather
+ * than each deciding it. A judgment that cannot be made is handed over as not made,
+ * said aloud, and the guards reading it refuse nothing on it.
+ */
+export interface SharedJudgment<E extends EventName = EventName> {
+  /** Stable id, which names the judgment where its readers are given it. */
+  readonly id: string;
+  /** The events whose acts it is made for; on any other, its readers are given nothing. */
+  readonly events: readonly [E, ...E[]];
+  /** The judge's system prompt: the one rule it judges by, and the exact JSON it answers with. */
+  readonly prompt: string;
+  /** The JSON Schema of the answer. */
+  readonly verdict: JsonSchema;
+  /** The answer's field that carries the judgment: an answer without it is no judgment. */
+  readonly carries: string;
+  /** Whether it also reads the conversation so far, as `GuardJudge.conversation`. */
+  readonly conversation?: boolean;
+  /** Whether it also reads the decisions recorded this turn, as `GuardJudge.recorded`. */
+  readonly recorded?: boolean;
+}
+
+/**
  * The judge a guard asks about an act: the prompt it reads the act with, and the
  * one JSON verdict it must answer. The guard judges inside the harness's own
  * session through the session's model, with no worker process.
  */
-export interface GuardJudge {
+export interface GuardJudge<E extends EventName = EventName> {
   /** The judge's system prompt: what it reads the act for, and the exact JSON it answers with. */
   readonly prompt: string;
   /** The JSON Schema of the verdict the judge answers. */
@@ -146,6 +170,11 @@ export interface GuardJudge {
    * verb and its content, ahead of the act. Absent ⇒ not.
    */
   readonly recorded?: boolean;
+  /**
+   * The shared judgment the judge reads, given ahead of the act on the events that
+   * judgment is made for. Absent ⇒ none.
+   */
+  readonly reads?: SharedJudgment<E>;
 }
 
 /**
@@ -170,7 +199,7 @@ export interface GuardCell<E extends EventName = EventName> {
   /** The drift tell the guard holds, by its name, which every refusal names. */
   readonly tell: string;
   /** The judge the guard asks about the act. */
-  readonly judge: GuardJudge;
+  readonly judge: GuardJudge<E>;
   /** What the refused agent reads, ahead of the judge's reason. */
   readonly refusal: string;
   /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
