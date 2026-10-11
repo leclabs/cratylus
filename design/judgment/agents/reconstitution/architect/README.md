@@ -1,6 +1,6 @@
 # Architect judgment — agents reconstitution
 
-Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the original agents/4 moved to visible agents/20 (`recordings/120/` in the visible architect suite). Under 0098, its exposed film-example/booking replacement moved to visible agents/21 (`recordings/121/`). The current held-out agents/4 is the image-archive release case in `recordings/104/`. Earlier evidence below preserves the refs and paths as they were at each run; **Cold replacement evidence (0098)** describes the current case.
+Owns held-out agents/2 and the cold replacement held-out agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the original agents/4 moved to visible agents/20 (`recordings/120/` in the visible architect suite). Under 0098, its exposed film-example/booking replacement moved to visible agents/21 (`recordings/121/`). Under 0099, the exposed image-archive release case moved to visible agents/22 (`recordings/122/`). The current held-out agents/4 is the library-borrowing improvement case in `recordings/104/`. Earlier evidence below preserves the refs and paths as they were at each run; **Cold replacement evidence (0099/0100)** describes the current case.
 
 Executed before the build:
 
@@ -99,7 +99,7 @@ CLI typecheck passed. Biome passed on the replacement scenarios, all eighteen ne
 
 ## Cold replacement evidence (0098)
 
-The current scenario quotes the approved image-archive agents/4 example verbatim.
+At this freeze, the scenario quoted the approved image-archive agents/4 example verbatim.
 It seeds the `image-archive` context, four concepts and the accepted
 `preserve-originals` decision through real journal commands, not a handwritten
 overview. Its twelve native continuing-session history exchanges begin with the
@@ -174,3 +174,87 @@ Example held-out agents/4 — recommends against release for an unmet preservati
 ```
 
 Select it with `-t 'Example held-out agents/4 .*live: parallel installed-agent runs stop when the outcome is decided'`.
+
+## Cold replacement evidence (0099/0100)
+
+The library-borrowing scenario quotes the newly approved agents/4 paragraph
+verbatim, including its fixed rubric. Its fixture seeds one context, three
+concepts and the accepted `independent-keyboard-borrowing` priority decision
+through journal commands. The twelve authored native-history exchanges begin
+with the architect's own session-start readback of that design and priority.
+The history contains its concept-level reports of the mouse-dependent renewal
+barrier and the cosmetic cover proposal. The evaluated continuation asks only
+which improvement should come next. No cut is claimed or seeded.
+
+Two varied authored goldens recommend keyboard-accessible renewal first, then
+explain in ordinary language how needing a mouse prevents keyboard-only patrons
+from borrowing independently. A factual comparison with cosmetic work is allowed;
+it is not a second topic or action. There is no separate confirmer or approval
+hand-back. Under 0090/0097 a reasoned decision is its topic's action, not a reason
+to demand an extra future step. Under 0100 the choice is one topic, and support
+contains facts and reasons, never more instructions.
+
+| Clause                       | Isolated negative recording(s)                                                                                                                                                                                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installed-role`             | `negative-installed-role.json`: installed declaration absent from the prompt                                                                                                                                                                                                 |
+| `opening-recommendation`     | `negative-opening-recommendation.json`: nonchronological supporting reasons precede the recommendation                                                                                                                                                                       |
+| `topic-action`               | `negative-topic-action.json`: adds a separate recommendation to measure renewal completion rates                                                                                                                                                                             |
+| `support`                    | `negative-support.json`: names the priority but omits the barrier-to-independence connection; `negative-support-jargon.json`: replaces lay explanation with unexplained technical abstractions; `negative-support-unrelated.json`: adds an irrelevant building-painting fact |
+| `never-menu`                 | `negative-never-menu.json`: offers renewal and cover layout for the operator to choose                                                                                                                                                                                       |
+| `never-cover-action`         | `negative-never-cover-action.json`: adds cover-layout work under another heading                                                                                                                                                                                             |
+| `never-support-instructions` | `negative-never-support-instruction.json`: embeds a work imperative in support; `negative-never-support-sequence.json`: embeds a three-step work sequence                                                                                                                    |
+| `never-restates-priority`    | `negative-never-restates-priority.json`: asks the operator to reconfirm the priority already held                                                                                                                                                                            |
+| `never-history`              | `negative-never-history.json`: opens with the session chronology                                                                                                                                                                                                             |
+
+The five `never-*` clauses are never-assertions. Overlapping wording is
+partitioned, not scored twice: explicit prohibited actions belong to their
+specific never-clause; the ordinary action clause catches other extra
+recommendations. A menu belongs to `never-menu`, a chronological preamble to
+`never-history`, and nonchronological reasons first to `opening-recommendation`.
+Support checks relevance, explanation and lay language; work instructions have
+their own never-clause.
+
+### Executed offline checks
+
+A temporary `replacement-red-evidence.test.ts` loaded every negative of the
+promoted agents/22 and replacement held-out agents/4. It first asserted that
+`assess` failed exactly `[breaks]`, then deliberately expected the five-copy
+`judgeBatch` result to pass. With `EXECUTION_RED=1`, all **27 negatives failed
+intentionally at `passed: false`**, after clause isolation succeeded: fifteen
+promoted negatives and twelve new negatives. The same invocation also exercised
+the permanent agents/22 demonstration, for **28 intentional failures, 198 skipped**
+(`artifact://1601`). The temporary test was removed.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts \
+  -t 'Example held-out agents/4 .*red demonstration'
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+```
+
+The permanent held-out demonstration had **1 intentional failure, 26 skipped**,
+rejecting the additional cover-layout action at `suite.ts:105`, not setup.
+The normal suite was green: **19 passed, 8 skipped**, including unchanged agents/2,
+both varied goldens, all twelve isolated negative rejections and aggregation.
+The full visible architect suite passed **150 tests, 64 skipped across 3 files**.
+`pnpm exec biome check --write` checked **33 JSON files**: the two owned scenario
+files and all promoted/new recordings.
+
+The run rule remains four of five ordinary passes; every never-assertion must
+hold in every run taken, with fail-fast stopping under 0088/0092. These checks
+are frozen on offline evidence. Authored traces and rubric answers prove binding,
+clause isolation, wiring and aggregation, not live judge reliability. No live
+model sessions, build, preflight, product changes or shared-runner changes were
+made. Example text and other examples' checks are unchanged.
+
+The exact live test name (not run here) is:
+
+```text
+Example held-out agents/4 — recommends keyboard-accessible renewal as the single next improvement live: parallel installed-agent runs stop when the outcome is decided
+```
+
+Select it with `-t 'Example held-out agents/4 — recommends keyboard-accessible renewal as the single next improvement live: parallel installed-agent runs stop when the outcome is decided'`.
+This check **carries history**: twelve native continuing-session exchanges.

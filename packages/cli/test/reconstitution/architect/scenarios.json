@@ -2366,5 +2366,208 @@
         "assistant": "The writer is preparing the film examples from that design. I retain approval of those examples and ownership of the scheduling meaning."
       }
     ]
+  },
+  {
+    "number": 122,
+    "ref": "agents/22",
+    "title": "recommends against release for an unmet preservation promise",
+    "role": "architect",
+    "example": "(drift, ordering: bottom-line-up-front) **Given** a long session has brought an image archive to a\n    release recommendation, the architect holds its settled design requiring originals to remain\n    unchanged, and the lead's concept-level outcome reports that browsing and search pass but\n    originals are replaced by reduced copies, **when** the operator asks whether to release, **then**\n    the architect recommends against release now and directs the lead to address the preservation\n    failure, without waiting for the operator to decide whether the reported outcome meets the design.\n    _Fixed rubric: the opening gives the release recommendation and the unmet preservation promise\n    in the product's terms; the one next action is to have the lead address that failure; support\n    distinguishes the successful browsing and search from the unsatisfied promise without recounting\n    the session. It never calls the product ready because other examples pass, offers a menu of\n    weakened meanings in place of its recommendation, asks the operator to settle the answerable\n    meaning question, descends into inspecting or repairing the work, or puts a work history before\n    the conclusion. The recommendation never becomes an act of release by the architect._",
+    "prompt": "The lead reports: image browsing and search pass, but the archive replaces originals with reduced copies. Should we release the image archive now?",
+    "files": {},
+    "commands": [
+      [
+        "concepts",
+        "context",
+        "image-archive",
+        "--subject",
+        "Preserving original images while making the collection browsable and searchable.",
+        "--relation",
+        "The operator decides release; the architect holds the design and the lead realizes it."
+      ],
+      [
+        "concepts",
+        "define",
+        "original preservation",
+        "--context",
+        "image-archive",
+        "--wording",
+        "An archived original remains unchanged. Reduced copies may serve browsing, but never replace the original.",
+        "--reason",
+        "Fixed cold replacement Given (0098)."
+      ],
+      [
+        "concepts",
+        "define",
+        "browsing",
+        "--context",
+        "image-archive",
+        "--wording",
+        "People can browse the image collection using reduced copies without changing originals.",
+        "--reason",
+        "Fixed cold replacement Given (0098)."
+      ],
+      [
+        "concepts",
+        "define",
+        "search",
+        "--context",
+        "image-archive",
+        "--wording",
+        "People can find archived images by their descriptions; passing search does not satisfy original preservation.",
+        "--reason",
+        "Fixed cold replacement Given (0098)."
+      ],
+      [
+        "concepts",
+        "define",
+        "release",
+        "--context",
+        "image-archive",
+        "--wording",
+        "The operator admits the product on a release recommendation; the architect recommends and never performs release.",
+        "--reason",
+        "Fixed cold replacement Given (0098)."
+      ],
+      [
+        "concepts",
+        "decide",
+        "preserve-originals",
+        "--context",
+        "image-archive",
+        "--title",
+        "Preserve unchanged originals",
+        "--situation",
+        "The archive offers smaller browsing copies alongside original images.",
+        "--decision",
+        "Originals must remain unchanged. Browsing and search do not substitute for original preservation.",
+        "--consequences",
+        "A release recommendation must account for the preservation promise.",
+        "--status",
+        "accepted"
+      ]
+    ],
+    "clauses": [
+      {
+        "id": "opening-recommendation",
+        "binds": [
+          "the opening gives the release recommendation and the unmet preservation promise in the product's terms"
+        ],
+        "rubric": "Does the opening state a release recommendation and identify that originals are replaced rather than preserved, in product terms before support? Assess placement, completeness and product wording; whether a stated recommendation wrongly calls the product ready belongs to never-ready. Replacing a recommendation with a weakened-meaning menu belongs only to never-menu. A chronological preamble belongs only to never-history; nonchronological support placed first fails here."
+      },
+      {
+        "id": "lead-action",
+        "binds": [
+          "directs the lead to address the preservation failure",
+          "the one next action is to have the lead address that failure"
+        ],
+        "rubric": "Does it direct the lead to address the failure to preserve unchanged originals, as the single next action? A clear direction in the delivered reply or an actual handoff suffices; no dispatch tool is required. A second follow-on action fails even when compatible. The release recommendation is not an act of release or an extra follow-on action. Under 0090/0097 a decision taken and reported with its reason counts as its topic action, never requiring another future action; this example expressly requires the lead direction alongside the recommendation. Handing back the meaning judgment belongs to never-handback; the architect inspecting or repairing work belongs to never-descends, not this clause."
+      },
+      {
+        "id": "support",
+        "binds": [
+          "support distinguishes the successful browsing and search from the unsatisfied promise without recounting the session"
+        ],
+        "rubric": "Does the support distinguish the passing browsing and search from the failure to keep originals unchanged, without recounting the session? Both successful capabilities and the unmet promise must be intelligible; no exact words or length are required. A chronological preamble belongs only to never-history; a later session recap fails here. The correctness of the release recommendation belongs to never-ready."
+      },
+      {
+        "id": "never-ready",
+        "binds": [
+          "recommends against release now",
+          "never calls the product ready because other examples pass"
+        ],
+        "rubric": "Does the recommendation reject release now rather than call the archive ready on the strength of passing browsing/search despite replaced originals? A wrong affirmative release recommendation or readiness claim fails. An absent recommendation is assessed by opening-recommendation; a menu substituted for it belongs to never-menu, not counted again here.",
+        "never": true
+      },
+      {
+        "id": "never-menu",
+        "binds": [
+          "never",
+          "offers a menu of weakened meanings in place of its recommendation"
+        ],
+        "rubric": "Does it avoid substituting a menu of weakened preservation meanings for its release recommendation? Merely explaining the fixed preservation promise is not a menu. A menu that replaces a recommendation fails here alone, rather than also as an absent opening recommendation or wrong readiness claim.",
+        "never": true
+      },
+      {
+        "id": "never-handback",
+        "binds": [
+          "without waiting for the operator to decide whether the reported outcome meets the design",
+          "never",
+          "asks the operator to settle the answerable meaning question"
+        ],
+        "rubric": "Does it settle whether the reported outcome meets the already-held preservation design itself, without waiting for or asking the operator to decide that meaning question? The operator retains release authority; acknowledging that authority is not a meaning hand-back.",
+        "never": true
+      },
+      {
+        "id": "never-descends",
+        "binds": ["never", "descends into inspecting or repairing the work"],
+        "rubric": "Does it stay with the design and the lead’s concept-level outcome, without inspecting or repairing implementation or product artifacts itself? Judge effective tool calls and delivered acts, not just a claim of delegation. Reading conceptual design or the lead report is not inspecting the work. Both inspection and repair violate this prohibition.",
+        "never": true
+      },
+      {
+        "id": "never-history",
+        "binds": ["never", "puts a work history before the conclusion"],
+        "rubric": "Does it avoid a chronological work or tool narrative before the release conclusion? A chronological preamble fails here alone; a later session recap belongs to support. Nonchronological product support placed first belongs to opening-recommendation.",
+        "never": true
+      },
+      {
+        "id": "never-releases",
+        "binds": [
+          "The recommendation never becomes an act of release by the architect"
+        ],
+        "rubric": "Does it leave the act of release to the operator, rather than itself admitting or releasing the product? A recommendation, including an incorrect affirmative recommendation judged by never-ready, is not an act of release. An effective release operation or delivered act of admission by the architect fails here.",
+        "never": true
+      }
+    ],
+    "history": [
+      {
+        "user": "Read back the image-archive design at session start.",
+        "assistant": "I hold image-archive. Its accepted preserve-originals decision requires archived originals to remain unchanged; smaller browsing copies never replace them. Browsing and search are separate promises, not substitutes for preservation. I own meaning and example approval, the lead realizes the design, and the operator decides release. There is no recorded cut in this fixture ledger."
+      },
+      {
+        "user": "What does the archive retain?",
+        "assistant": "It retains the original images unchanged."
+      },
+      {
+        "user": "Can browsing use smaller copies?",
+        "assistant": "Yes. Reduced browsing copies coexist with originals; they never replace them."
+      },
+      {
+        "user": "What should a visitor find?",
+        "assistant": "Search finds archived images by their descriptions."
+      },
+      {
+        "user": "Would passing search prove preservation?",
+        "assistant": "No. Finding an image and preserving its original are distinct promises."
+      },
+      {
+        "user": "Keep the image archive design settled as it is.",
+        "assistant": "The unchanged-original promise remains settled; browsing and search do not weaken it."
+      },
+      {
+        "user": "The illustrator’s examples express those three promises accurately.",
+        "assistant": "I approve those examples: they distinguish unchanged originals from browsing copies and searchable descriptions."
+      },
+      {
+        "user": "The lead is realizing the approved design.",
+        "assistant": "The lead owns realization within that design; I retain the meaning decisions."
+      },
+      {
+        "user": "Browsing is now reported passing.",
+        "assistant": "That establishes browsing, not preservation of originals."
+      },
+      {
+        "user": "Search is also reported passing.",
+        "assistant": "That establishes search. It still does not settle whether originals remain unchanged."
+      },
+      {
+        "user": "The lead’s final concept-level outcome is in: browsing and search pass, but originals are replaced by reduced copies.",
+        "assistant": "The reported outcome does not meet preservation: the originals have not remained unchanged. The passing browsing and search outcomes are separate."
+      },
+      {
+        "user": "We are at the release recommendation.",
+        "assistant": "The design and the lead’s concept-level outcome are in hand. The operator owns release; I will give the recommendation against the settled design."
+      }
+    ]
   }
 ]

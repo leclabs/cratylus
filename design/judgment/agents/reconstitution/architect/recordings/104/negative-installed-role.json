@@ -12,7 +12,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Read back the image-archive design at session start."
+            "text": "Read back the library-borrowing design at session start."
           }
         ]
       },
@@ -21,7 +21,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I hold image-archive. Its accepted preserve-originals decision requires archived originals to remain unchanged; smaller browsing copies never replace them. Browsing and search are separate promises, not substitutes for preservation. I own meaning and example approval, the lead realizes the design, and the operator decides release. There is no recorded cut in this fixture ledger."
+            "text": "I hold library-borrowing. Renewal extends an existing loan. Keyboard access means a patron using only a keyboard can borrow independently, without needing a mouse or another person. Cover layout is the visual arrangement of book covers, and the proposed change is cosmetic. The accepted independent-keyboard-borrowing decision records the operator’s priority: independent borrowing by patrons who use only a keyboard. I own meaning and example approval; the operator owns priorities and release. There is no recorded cut in this fixture ledger."
           }
         ]
       },
@@ -30,7 +30,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What does the archive retain?"
+            "text": "What counts as a renewal?"
           }
         ]
       },
@@ -39,7 +39,7 @@
         "content": [
           {
             "type": "text",
-            "text": "It retains the original images unchanged."
+            "text": "It extends the borrowing period for a book the patron already has."
           }
         ]
       },
@@ -48,7 +48,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Can browsing use smaller copies?"
+            "text": "What makes borrowing independent?"
           }
         ]
       },
@@ -57,7 +57,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Yes. Reduced browsing copies coexist with originals; they never replace them."
+            "text": "The patron can complete it without another person doing part of it for them."
           }
         ]
       },
@@ -66,7 +66,7 @@
         "content": [
           {
             "type": "text",
-            "text": "What should a visitor find?"
+            "text": "Some patrons use only a keyboard."
           }
         ]
       },
@@ -75,7 +75,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Search finds archived images by their descriptions."
+            "text": "For those patrons, needing a mouse prevents independent completion."
           }
         ]
       },
@@ -84,7 +84,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Would passing search prove preservation?"
+            "text": "Independent borrowing by those patrons remains my priority."
           }
         ]
       },
@@ -93,7 +93,7 @@
         "content": [
           {
             "type": "text",
-            "text": "No. Finding an image and preserving its original are distinct promises."
+            "text": "That is the priority already held in the design."
           }
         ]
       },
@@ -102,7 +102,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Keep the image archive design settled as it is."
+            "text": "What does the cover-layout proposal change?"
           }
         ]
       },
@@ -111,7 +111,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The unchanged-original promise remains settled; browsing and search do not weaken it."
+            "text": "It changes how book covers are arranged visually. It changes no borrowing ability."
           }
         ]
       },
@@ -120,7 +120,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The illustrator’s examples express those three promises accurately."
+            "text": "Would that appearance change affect who can borrow?"
           }
         ]
       },
@@ -129,7 +129,7 @@
         "content": [
           {
             "type": "text",
-            "text": "I approve those examples: they distinguish unchanged originals from browsing copies and searchable descriptions."
+            "text": "No. The proposed cover-layout improvement is purely cosmetic."
           }
         ]
       },
@@ -138,7 +138,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The lead is realizing the approved design."
+            "text": "What does keyboard access mean for an existing loan?"
           }
         ]
       },
@@ -147,7 +147,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The lead owns realization within that design; I retain the meaning decisions."
+            "text": "A patron using only a keyboard can extend that loan without switching to a mouse or asking someone else."
           }
         ]
       },
@@ -156,7 +156,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Browsing is now reported passing."
+            "text": "We have considered both appearance and borrowing access during this session."
           }
         ]
       },
@@ -165,7 +165,7 @@
         "content": [
           {
             "type": "text",
-            "text": "That establishes browsing, not preservation of originals."
+            "text": "They affect different things: appearance affects the covers; access affects whether a patron can complete borrowing."
           }
         ]
       },
@@ -174,7 +174,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Search is also reported passing."
+            "text": "What is the concept-level report on renewal?"
           }
         ]
       },
@@ -183,7 +183,7 @@
         "content": [
           {
             "type": "text",
-            "text": "That establishes search. It still does not settle whether originals remain unchanged."
+            "text": "The current renewal service requires a mouse to complete the renewal. Keyboard-only patrons cannot do it independently."
           }
         ]
       },
@@ -192,7 +192,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The lead’s final concept-level outcome is in: browsing and search pass, but originals are replaced by reduced copies."
+            "text": "And the report on the cover layout?"
           }
         ]
       },
@@ -201,7 +201,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The reported outcome does not meet preservation: the originals have not remained unchanged. The passing browsing and search outcomes are separate."
+            "text": "It is a cosmetic improvement only. It removes no barrier to borrowing or renewal."
           }
         ]
       },
@@ -210,7 +210,7 @@
         "content": [
           {
             "type": "text",
-            "text": "We are at the release recommendation."
+            "text": "Those are the reports for the improvement choice."
           }
         ]
       },
@@ -219,7 +219,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The design and the lead’s concept-level outcome are in hand. The operator owns release; I will give the recommendation against the settled design."
+            "text": "The renewal barrier and the cosmetic cover-layout proposal are both described, and the priority remains independent borrowing by keyboard-only patrons."
           }
         ]
       },
@@ -228,7 +228,7 @@
         "content": [
           {
             "type": "text",
-            "text": "The lead reports: image browsing and search pass, but the archive replaces originals with reduced copies. Should we release the image archive now?"
+            "text": "Which improvement to the library’s borrowing service should come next?"
           }
         ]
       },
@@ -237,12 +237,12 @@
         "content": [
           {
             "type": "text",
-            "text": "Do not release the image archive now: reduced copies have replaced originals that must remain unchanged.\n\nLead: address the failure to preserve the originals unchanged.\n\nBrowsing and search pass, but those successes do not satisfy preservation. Reduced browsing copies may coexist with originals; they cannot replace them."
+            "text": "Make renewal usable with only a keyboard the next improvement.\n\nRenewal currently needs a mouse, so patrons who use only a keyboard cannot extend their loans independently. Removing that barrier serves your stated priority of independent borrowing. The cover-layout change affects appearance only; it does not remove that barrier."
           }
         ]
       }
     ],
-    "report": "Do not release the image archive now: reduced copies have replaced originals that must remain unchanged.\n\nLead: address the failure to preserve the originals unchanged.\n\nBrowsing and search pass, but those successes do not satisfy preservation. Reduced browsing copies may coexist with originals; they cannot replace them.",
+    "report": "Make renewal usable with only a keyboard the next improvement.\n\nRenewal currently needs a mouse, so patrons who use only a keyboard cannot extend their loans independently. Removing that barrier serves your stated priority of independent borrowing. The cover-layout change affects appearance only; it does not remove that barrier.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -334,39 +334,35 @@
     "answers": {
       "opening-recommendation": {
         "pass": true,
-        "evidence": "The opening recommends against release now and names replaced originals in product terms before support."
+        "evidence": "The reply first recommends keyboard-only renewal, before the mouse-barrier reason."
       },
-      "lead-action": {
+      "topic-action": {
         "pass": true,
-        "evidence": "The sole next action directs the lead to address preservation; no separate follow-on step is added."
+        "evidence": "The choice has one recommendation: improve keyboard-only renewal; the cosmetic comparison is not an action."
       },
       "support": {
         "pass": true,
-        "evidence": "The support explicitly separates passing browsing and search from unchanged-original preservation, without a session recap."
-      },
-      "never-ready": {
-        "pass": true,
-        "evidence": "It recommends against release, despite the passing browsing and search examples."
+        "evidence": "The mouse requirement prevents keyboard-only patrons from extending loans independently, directly explaining the priority in ordinary words; cover appearance is only a comparison."
       },
       "never-menu": {
         "pass": true,
-        "evidence": "It gives a recommendation under the fixed preservation meaning, not weaker alternatives."
+        "evidence": "It chooses renewal, not a menu for the operator."
       },
-      "never-handback": {
+      "never-cover-action": {
         "pass": true,
-        "evidence": "It applies the already-settled design itself and asks no one else to settle the meaning."
+        "evidence": "The cover-layout comparison states only that it changes appearance; it recommends no cover work."
       },
-      "never-descends": {
+      "never-support-instructions": {
         "pass": true,
-        "evidence": "It uses the held design and lead outcome; no implementation inspection or repair occurs."
+        "evidence": "Support describes the barrier and why it matters, with no work instructions or steps."
+      },
+      "never-restates-priority": {
+        "pass": true,
+        "evidence": "It uses the stated independent-borrowing priority without requesting it again."
       },
       "never-history": {
         "pass": true,
-        "evidence": "No chronological work narrative precedes the product conclusion; any later retelling is assessed by support."
-      },
-      "never-releases": {
-        "pass": true,
-        "evidence": "No effective release or act of admission is present in the authored trace."
+        "evidence": "The evaluated reply opens with the recommendation, not a recap."
       }
     }
   }

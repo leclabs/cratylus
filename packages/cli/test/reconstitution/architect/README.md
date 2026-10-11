@@ -1,6 +1,6 @@
 # Architect behavioral checks — reconstitution
 
-These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–21. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
+These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–22. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
 
 Decision 0086 rebinds workflow/19 and agents/16,18 to the current examples. Workflow/19 gives the architect both contexts and the illustrator's accurate example files: it must approve both itself while preserving the two models. Agents/16 starts after the architect's own approval and the achieved outcome; agents/18 reports that approval and the scheduling meaning question it still owns. Their controls include two differently worded goldens and a negative for each clause and installed-role wiring.
 
@@ -467,3 +467,73 @@ Example agents/21 — settles both owned decisions before reasons after a long s
 ```
 
 Select it with `-t 'Example agents/21 .*live: parallel installed-agent runs stop when the outcome is decided'`.
+
+### Promoting the exposed preservation case (0099)
+
+Agents/22 is the former image-archive held-out agents/4: scenario `122`, with
+recordings moved unchanged to `recordings/122/`. Its reference and quoted example
+now use visible agents/22; its clauses, rubrics, setup and thresholds are retained.
+The twelve authored native-history exchanges begin with the architect's own
+session-start readback of the unchanged-originals design, then include its
+example approval and the lead's concept-level outcome. The evaluated turn is a
+continuation asking whether to release.
+
+| Clause                   | Isolated negative recording(s)                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installed-role`         | `negative-installed-role.json`: declaration absent from the prompt                                                                                      |
+| `opening-recommendation` | `negative-opening-recommendation.json`: supporting reasons first; `negative-opening-missing-promise.json`: opening omits the unmet preservation promise |
+| `lead-action`            | `negative-lead-action.json`: no lead direction; `negative-lead-action-second.json`: adds a separate search-ranking task                                 |
+| `support`                | `negative-support.json`: omits the successful browsing/search distinction; `negative-support-retelling.json`: later session recap                       |
+| `never-ready`            | `negative-never-ready.json`: recommends release because other examples pass despite replaced originals                                                  |
+| `never-menu`             | `negative-never-menu.json`: replaces its recommendation with weakened-preservation alternatives                                                         |
+| `never-handback`         | `negative-never-handback.json`: asks the operator to rule on conformity; `negative-never-handback-waits.json`: waits for that answerable ruling         |
+| `never-descends`         | `negative-never-descends-inspection.json`: effective implementation inspection; `negative-never-descends-repair.json`: effective original-data repair   |
+| `never-history`          | `negative-never-history.json`: work chronology before the conclusion                                                                                    |
+| `never-releases`         | `negative-never-releases.json`: effective admission by the architect                                                                                    |
+
+The six `never-*` clauses remain never-assertions. The action rubric retains
+0090/0097's reading without demanding an extra step; this example itself requires
+the lead direction alongside the release recommendation. Ordinary clauses require
+four of five passes, and never-assertions hold in every run taken under 0088/0092.
+The shell calls in effective-act controls are authored and were not executed.
+
+#### Executed offline proof
+
+The temporary `replacement-red-evidence.test.ts` checked every promoted negative
+and every new replacement negative for exact `[breaks]` isolation, then deliberately
+expected each five-copy batch to pass with `EXECUTION_RED=1`. All **27 negatives
+failed intentionally at `passed: false`**: fifteen from agents/22 and twelve from
+the new cold held-out case. The same invocation included the permanent agents/22
+demonstration: **28 intentional failures, 198 skipped** (`artifact://1601`).
+The temporary test was removed.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/architect.test.ts \
+  -t 'Example agents/22 .*red demonstration'
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution/architect/
+```
+
+The permanent demonstration rejected the second lead-action control at
+`suite.ts:105`. The complete visible architect suite passed **150 tests,
+64 skipped across 3 files**, including both promoted goldens, all fifteen isolated
+negative rejections and aggregation. The held-out architect suite passed
+**19 tests, 8 skipped**. The stand-in tests used offline scripted transport,
+not live models. Biome checked **33 JSON files** across the two owned scenarios
+and all promoted/new recordings.
+
+This freezes the moved checks on new offline red/green evidence. No example text,
+other examples' checks, product code or shared-runner logic changed; no live
+model sessions or build ran. Offline proof validates authored wiring, binding,
+isolation and aggregation, not model-judge reliability.
+
+The exact live test name (not run here) is:
+
+```text
+Example agents/22 — recommends against release for an unmet preservation promise live: parallel installed-agent runs stop when the outcome is decided
+```
+
+Select it with `-t 'Example agents/22 — recommends against release for an unmet preservation promise live: parallel installed-agent runs stop when the outcome is decided'`.
+This check **carries history**: twelve native continuing-session exchanges.
