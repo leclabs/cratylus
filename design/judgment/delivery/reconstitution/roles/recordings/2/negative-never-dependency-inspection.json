@@ -1,0 +1,228 @@
+{
+  "breaks": "never-dependency-inspection",
+  "recording": {
+    "provenance": {
+      "kind": "authored offline control",
+      "note": "Not captured from a model. Prior history, trace and rubric answers are authored; offline proof does not establish live judge reliability. Fixture preflight observes installed-role wiring separately.",
+      "variation": 1
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nThe film cut produces recorded footage, grades that footage, then captions the graded film. What is ready now?"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Footage is ready. Grading waits for footage, and captions waits for grading."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "```assignment\n{\"cut\":\"film\",\"concepts\":[\"footage\",\"grading\",\"captions\"],\"examples\":[\"film-production/1\",\"film-production/2\",\"film-production/3\"],\"decisions\":[\"postproduction-order\"]}\n```\n\nFootage has now finished. Find the next ready work package for this cut and tell me which one it is."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "capability",
+            "name": "read",
+            "arguments": {
+              "path": "xd://work_package"
+            }
+          }
+        ]
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "capability",
+        "toolName": "read",
+        "content": [
+          {
+            "type": "text",
+            "text": "Verb levels (concept: dependency graph; reads)\nPurpose: Show the levels of the cut’s work packages, computed from which must return before which, so the packages of one level can be built side by side, each with where it stands; refused while packages depend on each other in a cycle, naming them\nWhen: To see the order and the parallel work the packages allow, before any builder is set to work or after changing their dependencies\n\nVerb state (concept: ledger; reads)\nPurpose: Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready for their builder, never started or returned to build by a finding or a failing whole check; and the last report its lead (the agent running the cut) returned\nWhen: Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state"
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The capability says state gives the freshly computed packages ready for builders; levels inspects dependencies. I will ask state for film."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "current-state",
+            "name": "work_package",
+            "arguments": {
+              "verb": "state",
+              "cut": "film"
+            }
+          }
+        ]
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "current-state",
+        "toolName": "work_package",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"cut\": \"film\", \"branch\": \"feature/film\", \"contexts\": [\"film-production\"], \"architects\": {\"film-production\": \"architect\"}, \"phase\": \"in flight\", \"workPackages\": [{\"name\": \"footage\", \"status\": \"returned\", \"dependsOn\": []}, {\"name\": \"grading\", \"status\": \"submitted\", \"dependsOn\": [\"footage\"]}, {\"name\": \"captions\", \"status\": \"submitted\", \"dependsOn\": [\"grading\"]}], \"ready\": [\"grading\"], \"report\": null}"
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Grading is the next ready package. The current state returns ready: grading. Footage has returned, so my earlier footage-ready report is historical; captions still waits for grading.\n\nThe levels dependency inspection is also the ready-work operation; I treat its package levels as ready-to-dispatch work."
+          }
+        ]
+      }
+    ],
+    "report": "Grading is the next ready package. The current state returns ready: grading. Footage has returned, so my earlier footage-ready report is historical; captions still waits for grading.\n\nThe levels dependency inspection is also the ready-work operation; I treat its package levels as ready-to-dispatch work.",
+    "snapshots": [
+      {
+        "design/examples/film-production/film.md": "# Examples\n\n1. (footage) Given planned scenes, when recording finishes, then footage is available.\n2. (grading) Given finished footage, when grading finishes, then the film is graded.\n3. (captions) Given the graded film, when captioning finishes, then captions are available.\n"
+      },
+      {
+        "design/examples/film-production/film.md": "# Examples\n\n1. (footage) Given planned scenes, when recording finishes, then footage is available.\n2. (grading) Given finished footage, when grading finishes, then the film is graded.\n3. (captions) Given the graded film, when captioning finishes, then captions are available.\n"
+      }
+    ],
+    "wiring": {
+      "agent": "lead",
+      "declaration": "Authored lead identity control; not an observed installed declaration.",
+      "prompt": [
+        "Authored lead identity control; not an observed installed declaration."
+      ],
+      "active": [
+        "read",
+        "bash",
+        "write",
+        "task",
+        "concept_journal",
+        "work_package"
+      ],
+      "tools": [
+        {
+          "name": "read",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "bash",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": ["command"]
+          }
+        },
+        {
+          "name": "write",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "task",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "tasks": {
+                "type": "string"
+              }
+            },
+            "required": ["tasks"]
+          }
+        },
+        {
+          "name": "concept_journal",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": ["verb"]
+          }
+        },
+        {
+          "name": "work_package",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "verb": {
+                "type": "string"
+              }
+            },
+            "required": ["verb"]
+          }
+        }
+      ]
+    },
+    "answers": {
+      "calls-ready-operation": {
+        "pass": true,
+        "evidence": "The trace reads the capability’s own levels/state explanations, selects state for its freshly computed ready list, and receives the result of work_package state for film."
+      },
+      "uses-current-answer": {
+        "pass": true,
+        "evidence": "The selected next package is grading, matching ready: [grading] in the current state result."
+      },
+      "never-old-report": {
+        "pass": true,
+        "evidence": "The earlier footage-ready answer is explicitly corrected as historical, not used as current readiness."
+      },
+      "never-dependency-inspection": {
+        "pass": false,
+        "evidence": "Although state was correctly called and grading selected, it additionally misidentifies dependency inspection as a ready-work operation."
+      },
+      "no-competing-procedure": {
+        "pass": true,
+        "evidence": "Only the capability’s own explanation supplies the operation’s meaning; no separate skill or adapter procedure appears."
+      }
+    }
+  }
+}

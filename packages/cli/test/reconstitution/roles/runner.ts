@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import {
   cpSync,
   existsSync,
@@ -85,6 +86,8 @@ async function launch(
   judge = false,
   noSkills = false,
   signal?: AbortSignal,
+  session?: string,
+  resolveModel = false,
 ) {
   signal?.throwIfAborted();
   mkdirSync(output, { recursive: true });
@@ -106,7 +109,7 @@ async function launch(
     'json',
     '--agent',
     role,
-    '--no-session',
+    ...(session ? ['--resume', session] : ['--no-session']),
     '--no-rules',
     ...(noSkills ? ['--no-skills'] : []),
     '--no-lsp',
@@ -126,7 +129,9 @@ async function launch(
     join(here, 'observe.ts'),
     '--config',
     config,
-    ...(inspect ? ['--model', 'fixture/base'] : []),
+    ...(inspect && !session && !resolveModel
+      ? ['--model', 'fixture/base']
+      : []),
     ...(judge ? ['--tools', ''] : []),
     prompt,
   ];
@@ -162,6 +167,7 @@ async function launch(
   );
   if (
     inspect &&
+    !session &&
     extensions.some((path) => path.endsWith('/cratylus-session.ts')) &&
     /^- \*\*reconstitution\*\*/m.test(wiring.declaration)
   )
@@ -206,18 +212,125 @@ async function launch(
   );
   return recording;
 }
+// As in the architect fixture, prior turns are native session entries, not
+// instructions embedded in the new user prompt. Only continuing Givens opt in.
+function sessionFile(
+  f: Fixture,
+  scenario: Scenario,
+  inspection: Recording,
+): string | undefined {
+  if (!scenario.history?.length) return undefined;
+  const model: unknown = Reflect.get(inspection.wiring, 'model');
+  if (
+    !model ||
+    typeof model !== 'object' ||
+    !('provider' in model) ||
+    typeof model.provider !== 'string' ||
+    !model.provider ||
+    !('id' in model) ||
+    typeof model.id !== 'string' ||
+    !model.id ||
+    !('api' in model) ||
+    typeof model.api !== 'string' ||
+    !model.api
+  )
+    throw new Error('History requires the resolved installed-role model');
+  const file = join(f.root, 'role-session.jsonl');
+  const timestamp = new Date().toISOString();
+  let parentId = randomUUID().slice(0, 8);
+  const entries: Record<string, unknown>[] = [
+    { type: 'session', version: 3, id: randomUUID(), timestamp, cwd: f.cwd },
+    {
+      type: 'model_change',
+      id: parentId,
+      parentId: null,
+      timestamp,
+      model: `${model.provider}/${model.id}`,
+      resolvedModelIsFallback: false,
+    },
+  ];
+  for (const turn of scenario.history) {
+    for (const [role, text] of [
+      ['user', turn.user],
+      ['assistant', turn.assistant],
+    ]) {
+      const id = randomUUID().slice(0, 8);
+      entries.push({
+        type: 'message',
+        id,
+        parentId,
+        timestamp,
+        message: {
+          role,
+          content: [{ type: 'text', text }],
+          timestamp: Date.now(),
+          ...(role === 'assistant'
+            ? {
+                // Authored history is setup, never a charged model generation.
+                provider: model.provider,
+                model: model.id,
+                api: model.api,
+                stopReason: 'stop',
+                usage: {
+                  input: 0,
+                  output: 0,
+                  cacheRead: 0,
+                  cacheWrite: 0,
+                  totalTokens: 0,
+                  cost: {
+                    input: 0,
+                    output: 0,
+                    cacheRead: 0,
+                    cacheWrite: 0,
+                    total: 0,
+                  },
+                },
+              }
+            : {}),
+        },
+      });
+      parentId = id;
+    }
+  }
+  writeFileSync(
+    file,
+    `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
+  );
+  return file;
+}
+
 export async function preflight(scenario: Scenario, output?: string) {
   const f = project(scenario);
   try {
-    return await launch(
+    const directory = output ?? join(f.root, 'inspection');
+    const continuing = Boolean(scenario.history?.length);
+    const inspection = await launch(
       f,
       scenario.role,
       scenario.prompt,
-      output ?? join(f.root, 'inspection'),
+      continuing ? join(directory, 'initial') : directory,
       true,
       false,
       scenario.noSkills,
+      undefined,
+      undefined,
+      continuing,
     );
+    const session = sessionFile(f, scenario, inspection);
+    if (!session) return inspection;
+    const recording = await launch(
+      f,
+      scenario.role,
+      scenario.prompt,
+      directory,
+      true,
+      false,
+      scenario.noSkills,
+      undefined,
+      session,
+    );
+    cpSync(session, join(directory, 'session.jsonl'));
+    return recording;
   } finally {
     f.dispose();
   }
@@ -243,7 +356,7 @@ export async function liveRun(
   signal?.throwIfAborted();
   const f = project(scenario);
   try {
-    await launch(
+    const inspection = await launch(
       f,
       scenario.role,
       scenario.prompt,
@@ -252,7 +365,10 @@ export async function liveRun(
       false,
       scenario.noSkills,
       signal,
+      undefined,
+      Boolean(scenario.history?.length),
     );
+    const session = sessionFile(f, scenario, inspection);
     credentials(f);
     const recording = await launch(
       f,
@@ -263,7 +379,9 @@ export async function liveRun(
       false,
       scenario.noSkills,
       signal,
+      session,
     );
+    if (session) cpSync(session, join(output, 'session.jsonl'));
     if (scenario.clauses.some((clause) => !clause.unchanged)) {
       return await judgeSubject(
         recording,

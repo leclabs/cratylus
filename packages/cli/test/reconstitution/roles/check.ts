@@ -13,6 +13,7 @@ export type Scenario = Omit<BaseScenario, 'role'> & {
   ref: string;
   setup: string[][];
   noSkills?: boolean;
+  history?: { user: string; assistant: string }[];
 };
 // The reused predicates compare role names as strings; their narrow role union
 // predates consumer agents. No installed declaration is replaced by this adapter.
