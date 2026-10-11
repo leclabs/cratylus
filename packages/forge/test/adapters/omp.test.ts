@@ -29,7 +29,10 @@ import {
   ompHarnessAdapter,
   ompRoleRouting,
 } from '../../src/adapters/omp/index.js';
-import { OMP_CAPABILITY_TOOLS } from '../../src/adapters/omp/render.js';
+import {
+  OMP_CAPABILITY_TOOLS,
+  OMP_ESSENTIAL_CAPABILITIES,
+} from '../../src/adapters/omp/render.js';
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
@@ -635,6 +638,7 @@ describe('omp capability interface', () => {
         properties: Record<string, Record<string, unknown>>;
         required: string[];
       };
+      loadMode: string;
       approval(args: Record<string, unknown>): string;
       execute(
         id: string,
@@ -739,6 +743,19 @@ describe('omp capability interface', () => {
       ]);
       expect(tool?.approval({ verb: 'look' })).toBe('read');
       expect(tool?.approval({ verb: 'put' })).toBe('write');
+    });
+
+    it('offers the work package capability whole every turn, the concept journal as a device', async () => {
+      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['workPackage']);
+      const tools = await load(EXPLANATION);
+      expect(
+        Object.fromEntries(
+          OMP_CAPABILITY_TOOLS.map((capability, i) => [
+            capability,
+            tools[i]?.loadMode,
+          ]),
+        ),
+      ).toEqual({ concepts: 'discoverable', workPackage: 'essential' });
     });
 
     it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {

@@ -157,6 +157,18 @@ export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'workPackage',
 ];
 
+/** The capabilities omp offers whole, as a tool of every turn, rather than mounted
+ *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
+ *  `when` and no verb, so the work package capability's line ended before where
+ *  the cut stands, and an agent asked where its cut stands never met the verb that
+ *  works it out from the ledger. Offered whole, its own explanation, each verb's
+ *  purpose and `when` included, reaches every turn. The concept journal stays a
+ *  device: its line leads with reading the design, and the agents that recover it
+ *  first are sent to it by their session-start note. */
+export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = [
+  'workPackage',
+];
+
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains
  *  itself as a tool and launches a session as an agent declaration. */
@@ -1895,6 +1907,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
+        '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
+        '// its purpose cut short.',
+        `const ESSENTIAL: readonly string[] = ${JSON.stringify(OMP_ESSENTIAL_CAPABILITIES)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
         "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
         '// check every handoff runs, here, at a launch and in an evaluation alike.',
@@ -2996,6 +3011,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      name: tool,',
         '      label: explanation.name,',
         '      description: description(explanation),',
+        '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
         '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
         '      approval: (args: Record<string, unknown>) =>',
         '        verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
