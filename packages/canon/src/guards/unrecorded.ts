@@ -30,9 +30,9 @@ export const unrecorded: GuardCell = {
 
 The agent is a principal architect. ${ownedQuestion} ${readsOwnedQuestion} A decision is taken only when it is recorded; until then the question stays open in the design, whatever a reply says.
 
-A reply holds a decision open when it reports an owned meaning question decided or settled in this turn, and no decision recorded this turn carries it.
+A reply holds a decision open when it reports an owned meaning question that was open, by the definition above, decided or settled in this turn, and no decision recorded this turn carries it.
 
-It never does when the decision it reports was recorded in an earlier turn, when it reports an approval of examples, when it keeps the question open, or when it gives a recommendation on priority, which is no decision the agent owns and is never recorded.
+It never does when the decision it reports was recorded in an earlier turn, when it reports what the design already answers or applies it to a report or a request, when it reports an approval of examples, when it keeps the question open, or when it gives a recommendation on priority, which is no decision the agent owns and is never recorded.
 
 You are given the decisions recorded this turn, each as its verb and its content, or none; the owned-question judgment; the message the reply answered, when there is one; and the reply. Answer with exactly one JSON object and nothing else:
 {"unrecorded": <true or false>, "reason": "<one sentence: the question reported settled that no recorded decision carries, or why the reply holds nothing open>"}`,

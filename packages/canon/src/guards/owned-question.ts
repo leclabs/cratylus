@@ -10,9 +10,9 @@ import type { SharedJudgment } from '../manifest.js';
 // cannot be made is handed over as not made, and its readers refuse nothing on it
 // (0091). Not a guard cell: the guards that read it are.
 
-/** What a meaning question the agent owns is (0081, 0086, 0102). */
+/** What a meaning question the agent owns is, and when one is open (0014, 0081, 0086, 0090, 0102). */
 export const ownedQuestion =
-  "A meaning question the agent owns is a question on the meaning (concepts and examples), on a constraint on realization or on a check ruling, in a context it holds, a question its delegates raise on them included. What a concept includes, allows or excludes is its meaning. Priority is not: which work comes next is the operator's to decide and the agent's to recommend, so applying a priority the operator stated, the agent leads with one recommendation and the facts and reasons for it, records nothing, and neither hands back nor holds open a decision by doing so. Realization is not either: the lead decides it within the agent's decisions, and how a cut's work uses branches, beyond the branch name the agent gives the cut, is left to the lead and the project's conventions, so the agent neither decides nor records it.";
+  "A meaning question the agent owns is a question on the meaning (concepts and examples), on a constraint on realization or on a check ruling (whether a frozen check may change), in a context it holds, a question its delegates raise on them included. What a concept includes, allows or excludes is its meaning. Such a question is open only when the design records it as open, or the operator or a delegate raises it and the design does not already answer it. A question the design already answers is settled: applying the design to a report or a request is reporting that answer, never a new decision to take or record. A question no one raised and the design does not hold open is not open, and no reply owes a ruling on it. Priority is not an owned question: which work comes next is the operator's to decide and the agent's to recommend, so applying a priority the operator stated, the agent leads with one recommendation and the facts and reasons for it, records nothing, and neither hands back nor holds open a decision by doing so. Realization is not either: the lead decides it within the agent's decisions, and how a cut's work uses branches, beyond the branch name the agent gives the cut, is left to the lead and the project's conventions, so the agent neither decides nor records it.";
 
 /** The one rule of whether the agent holds what an owned question needs (0086, 0090, 0101). */
 export const holdsWhatItNeeds =
@@ -25,7 +25,7 @@ export const whatFollows =
 export const ownedQuestionJudgment: SharedJudgment = {
   id: 'owned-question',
   events: ['turn.end'],
-  prompt: `You make one judgment, which several guards read, about the reply an agent gave at the end of its turn: for each meaning question the agent owns that the reply or the turn takes up, whether the agent holds what that question needs.
+  prompt: `You make one judgment, which several guards read, about the reply an agent gave at the end of its turn: for each meaning question the agent owns that is open in this turn, by the definition below, whether the agent holds what that question needs.
 
 The agent is a principal architect. ${ownedQuestion}
 
@@ -33,7 +33,7 @@ ${holdsWhatItNeeds}
 
 Judge only that. Whether the reply settles, records, hands back or keeps open a question is for the guards that read this judgment, never for you.
 
-You are given the conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports included, and then the act: the message the reply answered, when there is one, and the reply. Answer with exactly one JSON object and nothing else, its list empty when the reply and the turn take up no question the agent owns:
+You are given the conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports included, and then the act: the message the reply answered, when there is one, and the reply. List only open owned questions; never one you or the reply raise that no one asked and the design does not hold open. Answer with exactly one JSON object and nothing else, its list empty when no owned question is open in this turn:
 {"questions": [{"question": "<the owned question, as asked or recorded>", "holds": <true or false>, "reason": "<one sentence: what the ruling rests on, or the one thing it needs that the agent does not hold>"}]}`,
   verdict: {
     type: 'object',
@@ -58,7 +58,7 @@ You are given the conversation so far, as the operator and the agent exchanged i
 };
 
 /** How a guard whose judgment turns on it reads the owned-question judgment. */
-export const readsOwnedQuestion = `Whether the agent holds what an owned question needs is never yours to judge: it is judged once, by one rule, for every guard, and at the end of a turn you are given that owned-question judgment ahead of the act, each owned question the turn takes up with whether the agent holds what it needs. Take it as given, and never weigh a question's grounds yourself. ${whatFollows} When the judgment says none could be made, or does not list a question, refuse nothing on whether the agent held what that question needs.`;
+export const readsOwnedQuestion = `Whether the agent holds what an owned question needs is never yours to judge: it is judged once, by one rule, for every guard, and at the end of a turn you are given that owned-question judgment ahead of the act, each owned question open in the turn with whether the agent holds what it needs. Take it as given, and never weigh a question's grounds yourself. ${whatFollows} Never raise an owned question yourself, and never require a ruling, a record or an approval on one the judgment does not list. When the judgment says none could be made, or does not list a question, refuse nothing on whether the agent held what that question needs.`;
 
 /** Who a ruling answers, kept through every rewrite a guard asks for (0103). */
 export const rulingToDelegate =

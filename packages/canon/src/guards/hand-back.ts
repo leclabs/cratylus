@@ -47,5 +47,5 @@ You are given the owned-question judgment, the message the reply answered, when 
     refusesOn: 'handsBack',
     reads: ownedQuestionJudgment,
   },
-  refusal: `hand-back: this reply returns a decision you own to the operator. Decide it, then give your whole reply again: bottom line first, one recommended action per topic, the ruling with its reason. ${rulingToDelegate}`,
+  refusal: `hand-back: this reply returns a decision you own to the operator. Decide an open question you own, then give your whole reply again: bottom line first, one recommended action per topic, the ruling with its reason. A question no one raised and the design does not hold open is no topic of your reply: leave it out rather than decide it. ${rulingToDelegate}`,
 };

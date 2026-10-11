@@ -125,8 +125,8 @@ when it does, naming the tell `burying`. Ordering is the sequence a reply presen
 (0078), so it judges replies, never tool calls: an act the turn takes counts through the reply that
 reports it (0103).
 A topic is a matter the operator asked about, or an outcome that calls for someone's action; support
-states facts and reasons, never instructions (0100), facts no stronger than the records show and
-inferences as inferred (the honesty guardrail). A topic's actions are what the reply itself
+states facts and reasons, never instructions (0100), facts no stronger than the records show, what
+they do not show left unknown (the honesty guardrail). A topic's actions are what the reply itself
 directs and the acts the turn took and reports; a decision taken in the turn and reported with its
 reason, an approval included, or any other act taken and reported, is that topic's one action, and a
 separate follow-on action on it is a second (0090, 0097, 0103); a recorded decision's consequences
@@ -169,12 +169,17 @@ open and reports the one action it is taking to get what is missing. The harness
 at most once per act, when the first guard in force reads it, and gives that one answer to each; a
 judgment that cannot be made is reported, and its readers are told none was made, still judge the
 act, and refuse nothing on it (0091).
-An owned question is one of meaning, constraints on realization or a check ruling; priority, such as
-which work comes next, is the operator's to decide and the architect's to recommend with its facts and
-reasons, recording nothing, and `hand-back` and `unrecorded` never fault it (0102). Realization is
-the lead's within the architect's decisions, and how a cut's work uses branches, beyond the branch
-name the architect gives the cut, is left to the lead and the project, never decided or recorded
-(0081, 0086).
+An owned question is one of meaning, constraints on realization or a check ruling (whether a frozen
+check may change). It is open only when the design records it open, or the operator or a delegate
+raises it and the design does not already answer it; applying the design to a report or a request
+reports that answer and is no new decision, and a question no one raised is no topic. The judgment
+lists only open owned questions, and its readers never raise one themselves nor require a ruling,
+record or approval on one it does not list (0090, 0100, 0101). Priority, such as which work comes
+next, is the operator's to decide and the architect's to recommend with its facts and reasons,
+recording nothing, and `hand-back` and `unrecorded` never fault it (0102). Realization is the lead's
+within the architect's decisions, and how a cut's work uses branches, beyond the branch name the
+architect gives the cut, is left to the lead and the project, never decided or recorded (0081,
+0086).
 `past-objective` takes from `owned-question` only what an owned question is, reads no judgment, and
 never judges whether the architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.

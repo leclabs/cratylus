@@ -121,7 +121,7 @@ describe('the architect', () => {
     expect(bottomLine.judge.prompt).not.toContain('tool call');
     // 0100: what a topic is and what support carries.
     expect(bottomLine.judge.prompt).toContain(
-      "A topic is a matter the operator asked about, or an outcome that calls for someone's action. Support states facts and reasons, never instructions: a topic's one action is its only instruction",
+      "A topic is a matter the operator asked about, or an outcome that calls for someone's action; a question no one raised is no topic. Support states facts and reasons, never instructions: a topic's one action is its only instruction",
     );
     // 0090, 0097, 0103(3): a decision or other act taken in the turn and reported is
     // the topic's one action; 0102(2): a record's consequences are no action.
@@ -279,9 +279,22 @@ describe('the architect', () => {
     );
     // 0102: priority is the operator's, recommended by the agent, never owned.
     expect(ownedQuestion).toContain(
-      "Priority is not: which work comes next is the operator's to decide and the agent's to recommend",
+      "Priority is not an owned question: which work comes next is the operator's to decide and the agent's to recommend",
     );
-    expect(ownedQuestion).toContain('on a check ruling');
+    expect(ownedQuestion).toContain(
+      'on a check ruling (whether a frozen check may change)',
+    );
+    // 0090, 0101: only an open owned question is judged, settled or recorded; applying
+    // the design is no new decision, and no guard raises a question itself.
+    expect(ownedQuestion).toContain(
+      'Such a question is open only when the design records it as open, or the operator or a delegate raises it and the design does not already answer it.',
+    );
+    expect(ownedQuestion).toContain(
+      'applying the design to a report or a request is reporting that answer, never a new decision to take or record',
+    );
+    expect(readsOwnedQuestion).toContain(
+      'Never raise an owned question yourself, and never require a ruling, a record or an approval on one the judgment does not list.',
+    );
     expect(handBack.judge.prompt).toContain(
       'It is not a hand-back to give one recommendation on priority',
     );
