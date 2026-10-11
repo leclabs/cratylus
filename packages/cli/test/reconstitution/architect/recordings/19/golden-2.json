@@ -56,10 +56,7 @@
     }
   ],
   "report": "Both returned sets are approved: the film-production examples accurately separate creative approval from release, and the scheduling examples accurately describe reservation.\n\nKeep the film's creative acceptance in film production and the reservation of dates in scheduling, with their existing contract between them.\n\nI have made the example decisions for the two contexts I hold. The operator's release decision is a different matter.\n\nIdentical spelling gives us no reason to unify these two meanings.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -84,9 +81,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -98,9 +93,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -120,16 +113,11 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent",
-                  "task"
-                ]
+                "required": ["agent", "task"]
               }
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -144,9 +132,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -161,10 +147,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb",
-            "cut"
-          ]
+          "required": ["verb", "cut"]
         }
       },
       {
@@ -179,10 +162,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path",
-            "content"
-          ]
+          "required": ["path", "content"]
         }
       }
     ]

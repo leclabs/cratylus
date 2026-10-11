@@ -284,16 +284,12 @@
     "clauses": [
       {
         "id": "approves-examples",
-        "binds": [
-          "approves each context's examples itself"
-        ],
+        "binds": ["approves each context's examples itself"],
         "rubric": "Does the architect itself approve BOTH the returned film-production examples and the scheduling examples? Merely describing, listing, recommending approval or deferring either set is not approval."
       },
       {
         "id": "models-separate",
-        "binds": [
-          "keeps their models separate"
-        ],
+        "binds": ["keeps their models separate"],
         "rubric": "Does it preserve film-production creative acceptance (not release permission) and scheduling date reservation as separate context models?"
       },
       {
@@ -1403,23 +1399,17 @@
     "clauses": [
       {
         "id": "reports-outcome",
-        "binds": [
-          "reports the achieved outcome"
-        ],
+        "binds": ["reports the achieved outcome"],
         "rubric": "Does it report the achieved creative-approval/release distinction, rather than merely claim generic success?"
       },
       {
         "id": "stops-procedure",
-        "binds": [
-          "stops that procedure"
-        ],
+        "binds": ["stops that procedure"],
         "rubric": "Does it end the design procedure now that its objective is met, rather than leaving that procedure pending?"
       },
       {
         "id": "never-repeat",
-        "binds": [
-          "never repeats discovery"
-        ],
+        "binds": ["never repeats discovery"],
         "rubric": "No renewed discovery occurs when no issue remains.",
         "never": true
       },
@@ -1724,23 +1714,17 @@
     "clauses": [
       {
         "id": "opening-bottom-line",
-        "binds": [
-          "the opening states the bottom line"
-        ],
+        "binds": ["the opening states the bottom line"],
         "rubric": "The opening conveys the architect's approval of the film-production examples and the scheduling meaning question it has yet to settle."
       },
       {
         "id": "exactly-one-action",
-        "binds": [
-          "each topic has exactly one recommended action"
-        ],
+        "binds": ["each topic has exactly one recommended action"],
         "rubric": "Both film approval and scheduling have exactly one recommended action, not zero or multiple competing actions."
       },
       {
         "id": "support-follows",
-        "binds": [
-          "support follows rather than buries the conclusion"
-        ],
+        "binds": ["support follows rather than buries the conclusion"],
         "rubric": "The conclusion precedes supporting details rather than being buried after them."
       },
       {
@@ -1760,19 +1744,13 @@
       },
       {
         "id": "never-menu",
-        "binds": [
-          "never",
-          "offers a menu"
-        ],
+        "binds": ["never", "offers a menu"],
         "rubric": "No menu displaces the architect’s own recommendation.",
         "never": true
       },
       {
         "id": "never-answerable",
-        "binds": [
-          "never",
-          "asks an answerable question"
-        ],
+        "binds": ["never", "asks an answerable question"],
         "rubric": "No question asks the operator to provide information already answerable from the inputs. Handing over the owned meaning decision or example approval is assessed separately.",
         "never": true
       },

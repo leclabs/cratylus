@@ -96,10 +96,7 @@
     }
   ],
   "report": "Film-production examples are approved by me; I still owe the scheduling meaning decision on night shoots.\n\nMove the approved film examples into build. Hold scheduling at design while I resolve which dates and times reservation may cover.\n\nHere is the reason for that split.\n\nA creative's acceptance must never count as permission to release a film. A reserved shoot date, in the separate scheduling model, still needs a settled night-time boundary.\n\nNo example approval or owned meaning ruling is being passed to you.\n\nI recommend those actions, not alternative paths for you to select.\n\nThe film checks already show the distinction holds.\n\nThis update concerns the outcomes, not the order of my work.",
-  "snapshots": [
-    {},
-    {}
-  ],
+  "snapshots": [{}, {}],
   "wiring": {
     "agent": "architect",
     "declaration": "Authored architect identity control; not an observed installed declaration.",
@@ -124,9 +121,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         }
       },
       {
@@ -138,9 +133,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         }
       },
       {
@@ -160,16 +153,11 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent",
-                  "task"
-                ]
+                "required": ["agent", "task"]
               }
             }
           },
-          "required": [
-            "tasks"
-          ]
+          "required": ["tasks"]
         }
       },
       {
@@ -184,9 +172,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb"
-          ]
+          "required": ["verb"]
         }
       },
       {
@@ -201,10 +187,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "verb",
-            "cut"
-          ]
+          "required": ["verb", "cut"]
         }
       },
       {
@@ -219,10 +202,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "path",
-            "content"
-          ]
+          "required": ["path", "content"]
         }
       }
     ]
