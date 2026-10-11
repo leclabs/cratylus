@@ -1,0 +1,14 @@
+{
+  "id": "01M4NHX7PDW7TGSK8T8F1S1VRS",
+  "at": "2026-10-11T13:19:49.453Z",
+  "kind": "decide",
+  "decisionId": "0102",
+  "context": "workflow",
+  "title": "Which work comes next is priority: the architect recommends it",
+  "situation": "With the operator's priority set, the operator asks which of two candidate improvements comes next; the architect's guards treated choosing as a decision it owns and must record, then judged the recorded decision's consequences as a second action.",
+  "decision": "(1) What comes next is priority, which the operator decides and the architect recommends (0086). Applying a priority the operator stated, the architect leads with one recommendation and the facts and reasons for it: that is neither a hand-back nor an unrecorded decision, and nothing is recorded. The hand-back and holding-open tells concern only decisions the architect owns: meaning, constraints on realization and check rulings. (2) A recorded decision's consequences are part of the record, not an action of the reply; only what the reply itself directs counts as a topic's action under 0097.",
+  "consequences": "The guards distinguish a recommendation on priority from a decision the architect owns.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
