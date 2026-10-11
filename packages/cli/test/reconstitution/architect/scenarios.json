@@ -2100,6 +2100,10 @@
     ],
     "history": [
       {
+        "user": "Read back the film-production and scheduling design, open decisions and cuts before we continue.",
+        "assistant": "Film approval is creative acceptance, not permission to release; scheduling approval reserves a shoot date. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. In scheduling, night-shoots remains open: I have yet to settle whether scheduling permits night shoots. No cuts are recorded in the ledger. I will carry the settled film distinction forward and resolve scheduling's night-shoot boundary in its own context."
+      },
+      {
         "user": "Progress checkpoint 1: keep the accepted creative-approval and release distinction.",
         "assistant": "Checkpoint 1: creative approval accepts the film, while release authorization remains separate."
       },

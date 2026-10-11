@@ -257,6 +257,29 @@ pnpm exec biome check \
 
 Observed after relocation: visible **244 passed, 83 skipped, 12 files** (`artifact://1274`); remaining held-out architect **5 passed, 4 skipped**. CLI typecheck and Biome on all **17 moved/changed JSON files** passed. The remaining held-out refs are `["held-out agents/2"]` for agents/architect and `[]` for delivery/roles. Per the lead's instruction, the latter scenario catalogue is left empty for the replacement writer: no placeholder assertion or ref prohibition was added, and its empty Vitest suite was not run or claimed green. Earlier evidence files retain the refs and commands actually exercised before promotion. No live model sessions ran.
 
+### Agents/20 starts from the recorded question (0089 ruling)
+
+The scenario's `history` now opens with the same session-start readback exchange as agents/18, before its twelve progress checkpoints. It names the accepted creative-approval/release distinction, the two separate contexts, no recorded cuts, and `night-shoots` as open: **whether scheduling permits night shoots**. Those statements match the existing seeded records; no seed, prompt, example, clause, rubric or threshold changed. The eight existing controls contain only the evaluated exchange, not embedded history, so none needed a history rewrite.
+
+`recordings/120/negative-a-different-night-shoot-question.json` adds an authored subject that receives that complete history and the unchanged evaluated prompt, then substitutes a ruling about which calendar date a night shoot belongs to. It falsely reports scheduling settled without addressing whether scheduling permits night shoots. Its only false rubric answer is `never-hides-issue`: omission is not also charged to explanatory support. Its answer still leads with outcomes, gives one action per topic and offers no menu.
+
+Seen red first, using the suite's ordinary intentional-red method (the new `negative-a-` control is the selected negative):
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  EXECUTION_RED=1 pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/architect.test.ts -t 'Example agents/20 '
+```
+
+Observed: **1 intentionally failed, 9 passed, 149 skipped**. The red demonstration expected `passed: true` and received `passed: false`. The nine passing checks include offline proof, exact-clause isolation for all seven negatives and ordinary/never aggregation; the new subject fails exactly `never-hides-issue`. This is an authored rubric-answer control, not a live judge's semantic verdict.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+```
+
+Observed green: **245 passed, 83 skipped across 12 files** (`artifact://1290`). No live model sessions ran.
+
 ## 0091: judged on what takes effect
 
 `test/rubric-delivered.ts` projects retained messages into `{ delivered, heldDrift, relayed }`. Both architect and execution-role rubric prompts use only the delivered messages (and the architect's snapshots); they do not reintroduce a refused reply through the duplicate raw `report`. Refused calls and replies are not evidence for any clause. Ordinary tool errors and successful acts remain evidence, in order. No example, clause, rubric or threshold changed.
