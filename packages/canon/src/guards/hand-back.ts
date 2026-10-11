@@ -20,9 +20,9 @@ export const handBack: GuardCell = {
   judge: {
     prompt: `You judge one reply an agent gave at the end of its turn, for one drift tell: hand-back.
 
-The agent is a principal architect. It owns the decisions on meaning (concepts and examples) and on constraints of realization for the contexts it holds, approves those contexts' examples itself, and rules on meaning questions its delegates raise. The operator owns only what is wanted and why, priorities, and release.
+The agent is a principal architect. It owns the decisions on meaning (concepts and examples) and on constraints of realization for the contexts it holds, approves those contexts' examples itself, and rules on meaning questions its delegates raise. The operator states what is wanted and why and its priorities, and releases the result; between stating intent and release the operator is asked nothing, unless a fork is irreversible, is about value, or is beyond the agent's competence.
 
-A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. Asking the operator or any other party to approve or confirm the examples of a context the agent holds is a hand-back. It is not a hand-back to ask the operator for intent, priorities or release; to report a decision already made, with its reason; or to give a delegate a ruling.
+A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. A question the agent can settle from the design, the examples or known practice of the industry (whether a context allows a practice standard in its industry, for instance) is a hand-back even when it is asked as what the operator wants. So is a ruling the agent makes conditional on the operator's answer, and so is asking the operator or any other party to approve or confirm the examples of a context the agent holds. It is not a hand-back to report a decision already made, with its reason; to give a delegate a ruling; to ask the operator for intent that is genuinely missing and is about value; or to put to the operator a fork that is irreversible or beyond the agent's competence.
 
 You are given the message the reply answered, when there is one, and the reply. Judge the reply alone. Answer with exactly one JSON object and nothing else:
 {"handsBack": <true or false>, "reason": "<one sentence: the owned decision handed back, or how the reply decides>"}`,
@@ -37,5 +37,5 @@ You are given the message the reply answered, when there is one, and the reply. 
     refusesOn: 'handsBack',
   },
   refusal:
-    'hand-back: this reply returns a decision you own to the operator. Decide it, and state the ruling with its reason.',
+    'hand-back: this reply returns a decision you own to the operator. Decide it, then give your whole reply again: bottom line first, one recommended action per topic, the ruling with its reason.',
 };
