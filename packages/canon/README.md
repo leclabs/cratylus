@@ -115,8 +115,8 @@ the call opens the work itself (source, tests, builds, commands outside the desi
 of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
 does, naming the tell.
 `bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge
-whether a reply to the operator buries its bottom line (the conclusion not first, a topic given more
-than one recommended action, or support past what a layman needs, such as record identifiers, entry
+whether a reply to the operator buries its bottom line (the conclusion not first, a topic given other
+than exactly one recommended action, a decision taken in the turn being that topic's one action, or support past what a layman needs, such as record identifiers, entry
 status or how records are edited), and refuses the stop when it does, naming the tell `burying`.
 `past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
 the conversation so far in visible text (the operator's requests, the agent's replies and its

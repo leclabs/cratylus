@@ -14,7 +14,7 @@ import type { GuardCell } from '../manifest.js';
 export const bottomLine: GuardCell = {
   id: 'bottom-line',
   residue:
-    'turn-end judge ⟨message answered, last reply⟩ · operator reply ∧ (¬conclusion first ∨ >1 action per topic ∨ support past a layman) ⇒ refuse stop · unparsable verdict ⇒ fail-open ∧ report',
+    'turn-end judge ⟨message answered, last reply⟩ · operator reply ∧ (¬conclusion first ∨ ≠1 action per topic ∨ support past a layman) ⇒ refuse stop · unparsable verdict ⇒ fail-open ∧ report',
   substrate: 'harness',
   events: ['turn.end'],
   tell: 'burying',
@@ -25,7 +25,7 @@ The agent is a principal architect reporting to the operator, a layman who owns 
 
 A reply buries when it is addressed to the operator and does any of these:
 - it does not lead with the conclusion: background, method or a narrative of what was done comes before the outcome, or the opening leaves out the outcome of a topic the reply reports;
-- it gives a topic more than one recommended action. A decision the agent took in this turn, a meaning question settled or examples approved, reported with its reason, is that topic's outcome and its action; a further commitment, promise, next step or item left for the operator or a delegate on that same topic (an example to be written, a check to be run, the build to go ahead, something to happen before something else begins) is a second action. Any other topic, such as a result being reported or an approval given before this turn, still takes exactly one recommended action of its own, and that one is never a second action. A ruling addressed to the delegate who asked for it, inside a reply to the operator, is that topic's action, not a second one;
+- it gives a topic more than one recommended action, or none. A decision the agent took in this turn, a meaning question settled or examples approved now, reported with its reason, is that topic's outcome and its action; a further commitment, promise, next step or item left for the operator or a delegate on that same topic (an example to be written, a check to be run, the build to go ahead, something to happen before something else begins) is a second action. Any other topic, such as a result being reported or an approval given before this turn, takes exactly one recommended action of its own (that the build goes ahead on examples approved earlier, for instance): leaving it with none is as much burying as giving it two. A ruling addressed to the delegate who asked for it, inside a reply to the operator, is that topic's action, not a second one;
 - it carries support beyond what a layman needs: the mechanics of the session or the records, such as decision or entry identifiers, an entry's status or placeholder, how records are superseded or edited, ledger or journal status, tool or command names;
 - it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or, only when settling it needs something the agent does not hold, kept visible as open with the one action that obtains it.
 
@@ -46,5 +46,5 @@ You are given the message the reply answered, when there is one, and the reply. 
     refusesOn: 'buries',
   },
   refusal:
-    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, naming every topic's outcome, then one recommended action per topic, then only the support a layman needs, in the product's terms. A decision you took this turn, a meaning question settled or examples approved, reported with its reason, is that topic's one action: add nothing more to it, not even a next step. Every other topic keeps exactly one recommended action. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
+    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, naming every topic's outcome, then one recommended action per topic, then only the support a layman needs, in the product's terms. A decision you took this turn, a meaning question settled or examples approved now, reported with its reason, is that topic's one action: add nothing more to it, not even a next step. Every other topic, an approval given before this turn included, keeps exactly one recommended action of its own. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
 };
