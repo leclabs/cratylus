@@ -2,6 +2,7 @@
 
 Context: delivery. Concepts: install, uninstall, owned root, upgrade, version skew and capability port.
 Decisions in force: 0108 (delivery cut) and 0077 (version skew). The event tap is retired by 0108.
+The operator's choices are covered by 0112 and 0113(1).
 
 **Structural** examples assert on the installation, what the harness offers, and the results of the
 operator's command and the harness's tools, deterministically. Every example states what must hold and
@@ -96,3 +97,54 @@ what must not happen.
     references, **when** the delivery cut's version is installed over it, **then** the event tap and its
     cratylus-owned references are absent from the resulting installation; the earlier tap is never left
     reachable as a fallback, and retiring it does not remove unrelated host-owned extensions.
+21. (install) **Given** Mira has supplied a model for each tier the installed agents use, a model choice
+    for one persona's role, and her choice to show the session's agent on a status line that currently
+    hides it, **when** installation runs, **then** it writes those answers as the host's own settings
+    and the harness uses the chosen models and shows the session's agent; it never asks for those answers
+    again, substitutes cratylus's preferred models or records any of those settings as cratylus-owned.
+22. (install) **Given** the installed agents use two tiers, the host already binds the first to Mira's
+    chosen model, the second has no binding or supplied answer, and the status line already shows the
+    session's agent, **when** installation can ask Mira and she supplies the second tier's model,
+    **then** it asks for that missing model and writes her answer as a host-owned binding, keeping the
+    first tier's model and the status-line setting; it never asks her to choose the first tier's model
+    again, asks about an agent display that is already shown, or chooses the missing model on her behalf.
+23. (install) **Given** all model choices are settled but the host hides the session's agent on its
+    status line and Mira has supplied no display choice, **when** installation asks and she chooses to
+    show it, **then** the host's own setting records that answer and the session's agent is shown;
+    installation never enables the display before receiving her answer, claims ownership of the setting
+    or changes unrelated status-line choices.
+24. (install) **Given** all model choices are settled but the host hides the session's agent on its
+    status line and Mira has supplied no display choice, **when** installation asks and she chooses to
+    keep it hidden, **then** installation completes with her answer retained as the host's own setting
+    and the display stays hidden; it never overrides her refusal, treats that answer as a missing choice
+    or tells her that she still needs to enable the display. The same holds when she supplies that
+    answer before installation, without a question being asked.
+25. (install) **Given** the installed agents use four tiers, one already has a host binding, Mira has
+    supplied a model for a second, the remaining two have no answer, and the host hides the session's
+    agent with no supplied display choice, **when** installation cannot ask questions, **then** it places
+    the agents, skills and adapters, keeps the existing binding, writes the supplied one as the host's
+    own, and names each of the two unbound tiers and the display choice as Mira's next steps; it never
+    invents models or enables the display, names a settled choice as unbound, gives only an unnamed
+    warning that setup is incomplete, or refuses to place everything else because answers are missing.
+26. (install) **Given** installation recorded Mira's model choices and her choice to show the session's
+    agent as host settings, and she later changes one model and hides the agent, **when** the same version
+    is installed again with the original answers, **then** her current model bindings and hidden-display
+    setting remain unchanged; installation never re-applies its earlier answers, reclaims those settings
+    as its own or treats the host's changes as damage to repair.
+27. (install, upgrade) **Given** an installation wrote two tier bindings, a persona's model choice and
+    the agent-display choice as host settings, and Mira later changes one tier's model and the display
+    choice but leaves the other answers untouched, **when** she upgrades, **then** the projection is
+    replaced while all those host settings retain their current values, both edited and unedited;
+    upgrade never removes an unedited answer because installation originally wrote it or resets an
+    edited answer to what cratylus previously asked for.
+28. (install, uninstall) **Given** installation wrote Mira's tier models, a persona's model choice and
+    her agent-display choice as host settings, and she later changes one model, **when** she uninstalls,
+    **then** the owned root and its references are removed while every one of those settings retains its
+    current value; uninstall never deletes the answers it originally wrote, restores earlier values or
+    removes the changed model along with cratylus's projection.
+29. (install, upgrade) **Given** an earlier installation seeded tier and persona model bindings into the
+    host's settings and recorded them as cratylus-owned, and Mira has changed one binding but left the
+    others as seeded, **when** she upgrades to the delivery cut's version, **then** every binding keeps its
+    current value and belongs to the host from then on, while the earlier cratylus-owned projection is
+    removed and replaced; upgrade never deletes those bindings with the old installation, preserves only
+    the edited binding or leaves the old projection in place to keep the bindings usable.
