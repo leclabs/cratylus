@@ -221,6 +221,7 @@ describe('install — model roles', () => {
             asked = questions.map((q) => `${q.roleOf}:${q.role}`);
             return { frontier: 'anthropic/big:high' };
           },
+          agentStatus: async () => true,
           confirm: async () => true,
         },
       }),

@@ -14,6 +14,7 @@ import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
+import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import type { StatusSegmentHost } from '../../src/core/harness-adapter.js';
 import { ensureStatusSegment } from '../../src/deploy/status-line.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
@@ -642,22 +643,22 @@ describe('install — the status line', () => {
       plugin = { ...plugin, agents, practices: undefined };
       const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
       const read = seed(host);
-      expect(await install('omp', { practices: undefined })).toBe(0);
+      expect(
+        await install('omp', { practices: undefined, agentStatus: 'show' }),
+      ).toBe(0);
       expect(read()).toContain('leftSegments: [model, status]');
     });
 
-    it('appends status to a host on custom that hid the row beneath the editor, changing no other byte, and a second install changes none', async () => {
+    it('appends status to a host on custom that hid the row beneath the editor, as told, changing no other byte, and a second install changes none', async () => {
       const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\n  showHookStatus: false\ntheme: dark\n`;
       const read = seed(host);
-      expect(await install('omp')).toBe(0);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
       expect(read()).toBe(
         host.replace('    - model\n', '    - model\n    - status\n'),
       );
       const after = read();
-      out = '';
-      expect(await install('omp')).toBe(0);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
       expect(read()).toBe(after);
-      expect(out).toContain('`status` already listed');
     });
 
     it('leaves a host on another named preset that shows extension status byte-identical', async () => {
@@ -667,20 +668,15 @@ describe('install — the status line', () => {
       expect(read()).toBe(host);
     });
 
-    it('shows the row beneath the editor for a host that hid it on a layout with no status segment, and says so', async () => {
+    it('shows the row beneath the editor for a host that hid it on a layout with no status segment, as told, and says so', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n  showHookStatus: false\n`;
       const read = seed(host);
-      expect(await install('omp')).toBe(0);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
       expect(read()).toBe(
         host.replace('showHookStatus: false', 'showHookStatus: true'),
       );
       expect(out).toContain('`showHookStatus` was false');
       expect(out).toContain('it is now true');
-      const after = read();
-      out = '';
-      expect(await install('omp')).toBe(0);
-      expect(read()).toBe(after);
-      expect(out).not.toContain('`showHookStatus` was false');
     });
 
     it('leaves a no-preset host with a layout of its own byte-identical', async () => {
@@ -693,9 +689,114 @@ describe('install — the status line', () => {
     it('writes nothing under --dry-run, and says what it would add', async () => {
       const hidden = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
       const read = seed(hidden);
-      expect(await install('omp', { dryRun: true })).toBe(0);
+      expect(await install('omp', { dryRun: true, agentStatus: 'show' })).toBe(
+        0,
+      );
       expect(read()).toBe(hidden);
       expect(out).toContain('would add');
+    });
+  });
+
+  // Decision 0113: whether the status line shows the session's agent is the
+  // operator's choice, written as the host's own setting.
+  describe("the operator's choice of showing the session's agent", () => {
+    const HIDDEN = `modelRoles:\n  default: "@default"\nstatusLine:\n  preset: minimal\n  showHookStatus: false\n`;
+    const SHOWN = HIDDEN.replace(
+      'showHookStatus: false',
+      'showHookStatus: true',
+    );
+    const seed = (host: string) => {
+      mkdirSync(dirname(ompConfig()), { recursive: true });
+      writeFileSync(ompConfig(), host);
+      return () => readFileSync(ompConfig(), 'utf8');
+    };
+    /** An install that may ask, recording whether the display was asked. */
+    const asking = (show: boolean) => {
+      const asked: string[] = [];
+      return {
+        asked,
+        run: () =>
+          install('omp', {
+            interactive: true,
+            prompts: {
+              harness: async () => 'omp',
+              practices: async (_offered, initial) => [...initial],
+              routes: async () => ({}),
+              agentStatus: async () => {
+                asked.push('agentStatus');
+                return show;
+              },
+              confirm: async () => true,
+            },
+          }),
+      };
+    };
+
+    it('asks where the host hides it, and writes "show" as the host’s own setting, recorded nowhere as cratylus’s', async () => {
+      const read = seed(HIDDEN);
+      const { asked, run } = asking(true);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual(['agentStatus']);
+      expect(read()).toBe(SHOWN);
+      expect(
+        readFileSync(join(home, '.cratylus/omp/installation.json'), 'utf8'),
+      ).not.toMatch(/hostEdits|statusLine|showHookStatus/);
+    });
+
+    it('keeps it hidden where she answers so, and names no next step for it', async () => {
+      const read = seed(HIDDEN);
+      const { asked, run } = asking(false);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual(['agentStatus']);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain("show the session's agent");
+    });
+
+    it('takes --agent-status hide as the same answer, without asking', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'hide' })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain("show the session's agent");
+    });
+
+    it('never asks where the host already shows it', async () => {
+      const read = seed(SHOWN);
+      const { asked, run } = asking(false);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual([]);
+      expect(read()).toBe(SHOWN);
+    });
+
+    it('names the choice as a next step where it can neither be told nor asked, enabling nothing', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      expect(out).toContain("show the session's agent");
+      expect(out).toContain('--agent-status show');
+    });
+
+    it('never applies an earlier answer again: the host’s later change survives a reinstall with the same answer, an upgrade and an uninstall', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(SHOWN);
+      // The host hides it again, its own setting.
+      writeFileSync(ompConfig(), HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      const { asked, run } = asking(true);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual([]);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain('--agent-status show (or');
+      expect(runUninstall({ harness: 'omp', home })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+    });
+
+    it('leaves a shown status line as it is on uninstall', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(runUninstall({ harness: 'omp', home })).toBe(0);
+      expect(read()).toBe(SHOWN);
     });
   });
 });

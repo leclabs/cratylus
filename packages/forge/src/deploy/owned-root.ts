@@ -16,8 +16,9 @@
 //                           projected it, and the modules omp loads (`omp.extensions`)
 //   runtime.json            each capability's configuration, where the corpus has any
 //   installation.json       what install did outside the root: the references it
-//                           placed and the lines it added to a host file, and the
-//                           practices it installed
+//                           placed; the practices it installed; and which of the
+//                           operator's choices it has been answered, never their
+//                           values, which are the host's own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
 // every project of a user from its plugin directory (`~/.omp/plugins`), as `omp plugin
@@ -53,7 +54,6 @@ import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
 } from '../core/harness-adapter.js';
-import type { HostEdit } from './manifest.js';
 import { settingsJson } from './settings-json.js';
 import type { RenderTree } from './types.js';
 
@@ -86,16 +86,20 @@ export type OwnedReference =
       readonly created: boolean;
     };
 
+/** An operator's choice install asks for and writes as the host's own setting:
+ *  whether the status line shows the session's agent. */
+export type OperatorChoice = 'agentStatus';
+
 /** What install did outside the root, and the practices it installed. */
 export interface InstallationRecord {
   /** The practices installed, in the corpus's order; absent where the corpus
    *  declares none. */
   readonly practices?: readonly string[];
   readonly references: readonly OwnedReference[];
-  /** The lines install added to host-owned text files, by the file's path relative
-   *  to the harness's home, for an uninstall to take out while they stand as
-   *  written. */
-  readonly hostEdits: Readonly<Record<string, HostEdit>>;
+  /** The operator's choices install has been answered, by flag or question: each
+   *  answer is the host's own setting from then on, so no later install asks for it
+   *  or applies it again. Absent where none has been. */
+  readonly answered?: readonly OperatorChoice[];
 }
 
 /** The owned root of `adapter`'s harness under `home` (the process's home when none

@@ -20,7 +20,12 @@ not bind (or takes `--model-roles <role=model,…|default>`, keyed by tier or ag
 writes the answer into `~/.omp/agent/config.yml` as an ordinary `modelRoles` entry,
 recorded nowhere as cratylus's, so upgrade and uninstall keep it. A run that is neither
 told nor able to ask places everything else and names, as the next step, each tier the
-agents fall back to that the host does not bind. The new `versionSkew` capability
+agents fall back to that the host does not bind. Whether omp's status line shows the session's agent, where the host hides it, is the
+operator's choice the same way (decision 0113): asked, or `--agent-status show|hide`,
+written as the host's own setting and never applied again. Install and upgrade leave a
+reference place the host has redirected or replaced, and say what to do. The new `versionSkew` capability
 (`version_skew` in omp) reports the projecting and the reached cratylus versions, and
-every omp session start warns when they differ. `deploy --scope user` goes through the
+every omp session start warns when they differ, whichever is older, comparing the
+version the root records with the command's own `--version`; a command lacking a
+capability the installation expects is named in the warning, and the rest still load. `deploy --scope user` goes through the
 same owned root.

@@ -67,6 +67,7 @@ export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
     harness: async (found) => found[0],
     practices: async (_offered, initial) => [...initial],
     routes: async () => ({}),
+    agentStatus: async () => true,
     confirm: async () => true,
     ...over,
   };

@@ -320,6 +320,12 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     )
     .addOption(
       new Option(
+        '--agent-status <choice>',
+        "Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it)",
+      ).choices(['show', 'hide']),
+    )
+    .addOption(
+      new Option(
         '-y, --yes',
         'Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)',
       ),
@@ -345,6 +351,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         practices?: string;
         all?: boolean;
         modelRoles?: string;
+        agentStatus?: string;
         yes?: boolean;
         verbose?: boolean;
         dryRun?: boolean;
@@ -357,6 +364,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           practices: opts.practices,
           all: opts.all,
           modelRoles: opts.modelRoles,
+          agentStatus: opts.agentStatus,
           yes: opts.yes,
           verbose: opts.verbose,
           dryRun: opts.dryRun,

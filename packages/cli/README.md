@@ -129,7 +129,7 @@ omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/p
 
 Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
 
-Install writes nothing else of yours, with two exceptions. The models you choose for tiers and roles go into your `~/.omp/agent/config.yml` as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where that file hides the row an extension's status shows in (`statusLine.showHookStatus: false`), install lists omp's `status` segment in your layout (or shows the row again), so a session started as an agent shows its name and mark. That edit is recorded in the root, and uninstall takes it out while it stands as written.
+Install writes nothing else of yours, with two exceptions. The models you choose for tiers and roles go into your `~/.omp/agent/config.yml` as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where that file hides the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
 **Installing again is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
@@ -182,7 +182,7 @@ removes them too.
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
 a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
-subagent's, and it carries no color. `cratylus install` makes the host's status line show it. What
+subagent's, and it carries no color. Where the host's status line hides it, `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. What
 that takes differs by harness, and the host's own configuration is only ever added to. `--dry-run`
 says what would be set and writes nothing.
 
@@ -205,7 +205,7 @@ agent: any session may be started as any declaration omp discovers. An extension
 inside the status line only where the host's layout lists omp's `status` segment, and omp reads a
 segment list (`statusLine.leftSegments`) only under `statusLine.preset: custom`. Under any other
 preset, the default one included, the list is ignored and the badge renders on a row beneath the
-status line. Install edits `~/.omp/agent/config.yml` (`config.yaml` where that is the file omp
+status line. On `show`, install edits `~/.omp/agent/config.yml` (`config.yaml` where that is the file omp
 reads) according to the preset the host is on:
 
 - **No preset set** (a file with no `statusLine` included): install writes `preset: custom` with the
@@ -226,7 +226,7 @@ Wherever install leaves `status` in the live layout, it also writes `showHookSta
 you set that key, because omp prints every extension's status on a row beneath the editor by default
 and the `status` segment already draws it inline. Where you had turned that row off
 (`showHookStatus: false`) on a layout that does not list `status`, the badge would show nowhere, so
-install turns that one value to `true`, changes no other byte, and says so.
+on `show` install turns that one value to `true`, changes no other byte, and says so.
 
 A `statusLine`, `preset` or `leftSegments` that cannot be extended by inserting lines (a flow
 mapping, an alias, a list split across lines in flow style) is reported and left as it is, apart
@@ -313,7 +313,7 @@ cratylus uninstall --harness omp --dry-run       # the same report, nothing writ
 cratylus uninstall --harness omp --home <dir>    # another user's installation
 ```
 
-`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; every reference into it its record names (the link in `~/.omp/plugins/node_modules`, and the dependency entry in `~/.omp/plugins/package.json`, the file too where install created it and nothing else is in it), each while it still refers to the root; and the line install added to your status line, while it stands as written. It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, and what was left is named, with why. Your projects' journals, ledgers and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
+`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; every reference into it its record names (the link in `~/.omp/plugins/node_modules`, and the dependency entry in `~/.omp/plugins/package.json`, the file too where install created it and nothing else is in it), each while it still refers to the root. It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included, and so does your status line, shown or hidden as you answered: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, and what was left is named, with why. Your projects' journals, ledgers and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
 
 ## Exit codes and streams
 

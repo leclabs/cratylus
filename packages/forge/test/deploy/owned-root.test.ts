@@ -76,7 +76,7 @@ describe('install and upgrade claim only the reference places still theirs', () 
   it('changes nothing where both references already point into the root', () => {
     const h = host();
     const first = link(h);
-    const again = link(h, { references: first.references, hostEdits: {} });
+    const again = link(h, { references: first.references });
     expect(again.changed).toEqual([]);
     expect(again.references).toEqual(first.references);
   });
@@ -88,7 +88,7 @@ describe('install and upgrade claim only the reference places still theirs', () 
     mkdirSync(mine);
     rmSync(h.link);
     symlinkSync(mine, h.link, 'dir');
-    const again = link(h, { references: first.references, hostEdits: {} });
+    const again = link(h, { references: first.references });
     expect(readlinkSync(h.link)).toBe(mine);
     expect(again.references.map((r) => r.kind)).toEqual(['dependency']);
     expect(again.changed).not.toContain(h.link);
@@ -117,7 +117,7 @@ describe('install and upgrade claim only the reference places still theirs', () 
     };
     writeFileSync(h.manifest, JSON.stringify(doc));
     const before = readFileSync(h.manifest, 'utf8');
-    const again = link(h, { references: first.references, hostEdits: {} });
+    const again = link(h, { references: first.references });
     expect(readFileSync(h.manifest, 'utf8')).toBe(before);
     expect(again.references.map((r) => r.kind)).toEqual(['link']);
     expect(again.left).toEqual([

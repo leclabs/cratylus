@@ -4,8 +4,9 @@
 // WHAT IS THIS TOOL'S TO REMOVE is known by construction: the owned root
 // (`~/.cratylus/<harness>`) is cratylus's alone, so it goes whole, edits and additions
 // inside it included; and its record (`installation.json`) names every reference the
-// harness's own surfaces hold into it and every line install added to a host file, so
-// exactly those go. Nothing else of the host's is looked at.
+// harness's own surfaces hold into it, so exactly those go. The operator's answers
+// install wrote into the host's settings (models, whether the status line shows the
+// session's agent) are the host's, and stay. Nothing else of the host's is looked at.
 //
 // AN EARLIER INSTALLATION is the layout before the owned root: files placed on the
 // harness's own surfaces, named by a deploy manifest (`deploy/manifest.ts`). It is taken
@@ -24,10 +25,10 @@
 // of the host's, a config line the host has rewritten: each is left, and NAMED, so the
 // operator sees what remains and why. The report is two lists — removed, and left.
 //
-// THE ORDER makes a half-finished run recoverable: the references first, then the lines
-// added to host files, then the root with its record LAST; for an earlier installation,
-// its persona commands, settings, config lines, placed files and runtime config, and its
-// manifest last. A run that stops before a record is removed can be run again.
+// THE ORDER makes a half-finished run recoverable: the references first, then the root
+// with its record LAST; for an earlier installation, its persona commands, settings,
+// config lines, placed files and runtime config, and its manifest last. A run that
+// stops before a record is removed can be run again.
 //
 // `--dry-run` runs every step and writes none, so its report is exactly what a real run
 // would say.
@@ -626,9 +627,9 @@ export function removeEarlierInstallation(
 
 /**
  * Take back the installation of `adapter` under its owned root: every reference the
- * record names, while it still refers into the root; every line it added to a host
- * file, while it stands as written; then the root, whole. `undefined` where there is
- * no root.
+ * record names, while it still refers into the root; then the root, whole. The
+ * operator's answers install wrote into the host's settings are the host's, and stay.
+ * `undefined` where there is no root.
  */
 export function removeOwnedInstallation(
   adapter: HarnessAdapter,
@@ -648,7 +649,6 @@ export function removeOwnedInstallation(
         outside: { area: dirname(what), noun: 'reference' },
       });
     tally.left.push(...unlinked.left);
-    undoHostEdits(harnessDir, record.hostEdits, dry, tally);
   }
   tally.removed.push({ what: `${root} (the owned root, whole)` });
   if (!dry) removeOwnedRoot(root);

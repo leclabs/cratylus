@@ -59,13 +59,19 @@
 // it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
 // never asked and never changed. Where install is neither told nor can ask, it places
 // everything else and names, as the next step, each tier the agents fall back to that
-// the host does not bind. The host's status line is edited only where the host has
-// hidden the row an extension's status shows in, and that edit is recorded under the
-// root.
+// the host does not bind.
+//
+// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT (decision 0113). It is asked
+// only where the host hides the row an extension's status shows in, and was neither
+// told (`--agent-status`) nor answered at an earlier install of this root. The answer
+// is written as the host's own setting — shown, or left hidden as it is — and the record
+// says only that it was answered, never what, so no later install asks for it or applies
+// it again, and upgrade and uninstall leave the setting as the host has it. Where it can
+// neither be told nor asked, it is named as a next step beside the unbound tiers.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { mergeManifest } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
@@ -84,13 +90,11 @@ import {
 } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
-  type HostEdit,
   addModelRoles,
   capabilityConfiguration,
   ensureStatusSegment,
   hidesExtensionStatus,
   linkOwnedRoot,
-  mergeHostEdit,
   ownedRootIn,
   placeOwnedRoot,
   readInstallationRecord,
@@ -115,6 +119,9 @@ import {
 } from './install-prompts.js';
 import { removeEarlierInstallation } from './uninstall.js';
 
+/** The operator's answer to whether the status line shows the session's agent. */
+type AgentStatus = 'show' | 'hide';
+
 export interface InstallCmdOpts {
   /** Harness adapter name (`--harness`). Absent: the one the host has, or asked. */
   harness?: string;
@@ -137,6 +144,10 @@ export interface InstallCmdOpts {
    *  named for an agent. `default` binds none. Given at all, it settles the decision.
    *  Absent: each tier and persona role the host does not bind is asked. */
   modelRoles?: string;
+  /** `--agent-status <show|hide>`: whether the host's status line, where the host
+   *  hides it, shows the session's agent. Given at all, it settles the decision.
+   *  Absent: asked where the host hides it and no earlier install was answered. */
+  agentStatus?: string;
   /** `--yes`: on a terminal, take the default of every decision not given (the
    *  practices already installed here, or on a fresh host the corpus's preselected
    *  ones), ask nothing, and place without asking to go ahead. It is no answer to the
@@ -191,6 +202,9 @@ interface Findings {
   routes: string[];
   /** The tiers the agents fall back to that the host binds no model to. */
   unbound: string[];
+  /** Whether the host hides the session's agent and was neither told nor asked
+   *  whether to show it. */
+  displayOpen: boolean;
   /** What the host had set and was left alone. */
   left: string[];
 }
@@ -204,6 +218,7 @@ function emptyFindings(): Findings {
     earlier: 0,
     routes: [],
     unbound: [],
+    displayOpen: false,
     left: [],
   };
 }
@@ -545,6 +560,58 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       }
     }
   }
+  // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
+  // Asked only where the host hides it and it was neither told nor answered before
+  // (decision 0113); the answer is the host's own setting from then on.
+  const statusHost =
+    adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
+  const statusFile =
+    statusHost === undefined
+      ? undefined
+      : hostConfigPath(statusHost.configRels, harnessDir);
+  // Hidden: the host turned the row beneath the editor off, and its layout does not
+  // list the segment that shows the session's agent inside the line instead.
+  const hidden =
+    statusHost !== undefined &&
+    statusFile !== undefined &&
+    existsSync(statusFile) &&
+    hidesExtensionStatus(readFileSync(statusFile, 'utf8')) &&
+    ensureStatusSegment(statusFile, statusHost, { dry: true }).state !==
+      'present';
+  const answeredBefore = prior?.answered?.includes('agentStatus') === true;
+  let agentStatus: AgentStatus | undefined;
+  let statusAnswered = answeredBefore;
+  if (opts.agentStatus !== undefined) {
+    const told = opts.agentStatus.trim();
+    if (told !== 'show' && told !== 'hide') {
+      throw new Refusal(
+        `--agent-status: '${told}' is neither show nor hide; pass --agent-status show or --agent-status hide`,
+      );
+    }
+    if (statusHost === undefined) {
+      throw new Refusal(
+        `--agent-status: the '${adapter.name}' harness has no status line install shows an agent on; drop --agent-status`,
+      );
+    }
+    if (answeredBefore) {
+      left.push(
+        `--agent-status ${told}: answered at an earlier install, so whether the status line shows the session's agent is the host's own setting, left as it is`,
+      );
+    } else {
+      statusAnswered = true;
+      if (hidden) agentStatus = told;
+      else if (told === 'hide')
+        left.push(
+          `--agent-status hide: the host's status line already shows the session's agent, as the host set it, so it is left as it is`,
+        );
+    }
+  } else if (hidden && !answeredBefore && interactive) {
+    open = true;
+    agentStatus = (await answered(prompts.agentStatus())) ? 'show' : 'hide';
+    statusAnswered = true;
+  }
+  const displayOpen = hidden && !statusAnswered;
+
   const placedTree: ProjectedTree = rendered.report;
   // Each capability's configuration, as the corpus's skills declare it.
   const configuration = capabilityConfiguration(
@@ -568,14 +635,15 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
     }
-    // The host's status line, where the host has hidden an extension's status.
-    const hostEdits: Record<string, HostEdit> = { ...prior?.hostEdits };
-    const status = showAgentStatus(found, adapter, { harnessDir, dry });
-    if (status !== undefined) {
-      const key = relative(harnessDir, status.path);
-      const merged = mergeHostEdit(hostEdits[key], status.edit);
-      if (merged !== undefined) hostEdits[key] = merged;
-    }
+    // Whether the status line shows the session's agent: the operator's answer, written
+    // as the host's own setting and recorded nowhere as cratylus's (decision 0113).
+    if (agentStatus === 'show' && statusFile !== undefined)
+      showAgentStatus(found, statusFile, adapter, dry);
+    else if (agentStatus === 'hide')
+      found.detail.push(
+        `  statusLine: ${statusFile} — the session's agent stays hidden, as answered`,
+      );
+    found.displayOpen = displayOpen;
     // The models the operator chose, bound in the host's own model roles and recorded
     // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
     const bound = new Set<string>();
@@ -613,7 +681,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       record: {
         ...(chosen === undefined ? {} : { practices: chosen }),
         references: linked.references,
-        hostEdits,
+        ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
       },
       dry,
     });
@@ -743,6 +811,11 @@ function describe(
           `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
         ]
       : []),
+    ...(found.displayOpen
+      ? [
+          `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
+        ]
+      : []),
     `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
@@ -760,34 +833,27 @@ function hostConfigPath(
 }
 
 /**
- * Make the host's status line show which agent a session is, where the host has hidden
- * it, and say what was done; the edit, for the record under the root.
+ * Show the session's agent on the host's status line at `path`, which hides it, as the
+ * operator answered, and say what was done. The edit is the host's own setting from
+ * then on: recorded nowhere as cratylus's (decision 0113).
  *
  * omp's status line is a list of segments (`adapter.statusSegment`). An extension's
  * status — where the cratylus extension puts the name and mark of the agent a session
  * was started as — renders in the row beneath the editor unless the host set
  * `statusLine.showHookStatus: false`, and inside the line only where the layout lists
- * `status`. A host that hid that row is the one host that would see a session's agent
- * nowhere, so it alone is edited: `status` listed in its own layout, or, where that
- * layout is not one install can extend, the row shown again. Every other host's
- * settings are left as they are. A failure to edit is reported, and the install itself
- * still succeeds.
+ * `status`. So `status` is listed in the host's own layout, or, where that layout is not
+ * one install can extend, the row is shown again. A failure to edit is reported, and the
+ * install itself still succeeds.
  */
 function showAgentStatus(
   found: Findings,
+  path: string,
   adapter: HarnessAdapter,
-  run: { harnessDir: string; dry: boolean },
-): { path: string; edit: HostEdit } | undefined {
+  dry: boolean,
+): void {
   const host = adapter.statusSegment;
-  if (host === undefined || adapter.capabilitySurface === undefined)
-    return undefined;
-  const { dry } = run;
-  const path = hostConfigPath(host.configRels, run.harnessDir);
-  if (!existsSync(path) || !hidesExtensionStatus(readFileSync(path, 'utf8')))
-    return undefined;
+  if (host === undefined) return;
   const result = ensureStatusSegment(path, host, { dry });
-  const edit =
-    result.edit === undefined ? undefined : { path, edit: result.edit };
   const rowShown = result.hookRowShown
     ? ` Its \`showHookStatus\` was false, which hid the only place there for the name and mark of the agent a session was started as, so ${dry ? 'it would be' : 'it is'} now true.`
     : '';
@@ -796,12 +862,12 @@ function showAgentStatus(
       found.warnings.push(
         `did not edit ${path} — ${result.refused}. A session's agent shows nowhere while \`statusLine.showHookStatus\` is false; set it true, or list the \`${host.segment}\` segment in a \`custom\` layout, to see it.`,
       );
-      return edit;
+      return;
     case 'present':
       found.detail.push(
         `  statusLine: ${path} — \`${host.segment}\` already listed in leftSegments`,
       );
-      return edit;
+      return;
     case 'other-preset':
     case 'own-layout':
       found.detail.push(
@@ -811,17 +877,17 @@ function showAgentStatus(
       if (result.hookRowShown)
         found.edits.push({
           path,
-          what: "the row beneath the editor shows again, where a session's agent renders",
+          what: "the row beneath the editor shows again, where a session's agent renders, as you answered",
         });
-      return edit;
+      return;
     case 'added':
       found.detail.push(
         `  statusLine${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join('; ')}`,
       );
       found.edits.push({
         path,
-        what: "the status line lists the segment that shows a session's agent",
+        what: "the status line lists the segment that shows a session's agent, as you answered",
       });
-      return edit;
+      return;
   }
 }

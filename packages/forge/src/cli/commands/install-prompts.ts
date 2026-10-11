@@ -45,6 +45,9 @@ export interface InstallPrompts {
   routes(
     questions: readonly RoleQuestion[],
   ): Promise<Record<string, string> | undefined>;
+  /** Whether the status line, which the host hides, should show the session's agent:
+   *  true to show it, false to keep it hidden. */
+  agentStatus(): Promise<boolean | undefined>;
   /** The one confirmation before anything is written. */
   confirm(question: string): Promise<boolean | undefined>;
 }
@@ -133,6 +136,16 @@ export const terminalPrompts: InstallPrompts = {
       if (model !== '') picked[q.role] = model;
     }
     return picked;
+  },
+
+  async agentStatus() {
+    return answer(
+      await clack.confirm({
+        message:
+          "Your status line hides an extension's status. Show the agent each session was started as there?",
+        initialValue: true,
+      }),
+    );
   },
 
   async confirm(question) {

@@ -362,7 +362,7 @@ async function deployOwned(
     record: {
       ...(prior?.practices === undefined ? {} : { practices: prior.practices }),
       references: linked.references,
-      hostEdits: prior?.hostEdits ?? {},
+      ...(prior?.answered === undefined ? {} : { answered: prior.answered }),
     },
     dry,
   });
