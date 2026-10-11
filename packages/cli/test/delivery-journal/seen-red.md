@@ -37,3 +37,32 @@ The final checks retain the observed failing command assertions. Post-proof refi
 - workflow/5: current context and concept, ordered context and concept histories, accepted decision, no unknown/incomplete warning, journal unchanged while reading; negative variants prove the assertions can fail.
 
 After the build, run the first command against freshly built package artifacts. This evidence claims no post-build pass and no whole-check run.
+
+## Decision 0114(3): unknown values and every ledger
+
+Subject: **3d5f6f00f76586827e581f05d0e3737f2c4f4d0e**, freshly built. The ordinary
+visible run is recorded in `../delivery/seen-red.md` (`artifact://2831`); no negative
+observation or substituted runtime supplies these failures.
+
+| Example                                       | Check title                                                                        | Observed red on 3d5f6f00                                                                                                                                                                                                                                |
+| --------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| workflow/1                                    | every view reads past an unknown decision status inside a known entry kind         | All seven views exit 1 on decide entry `01ARZ3NDEKTSV4RRFFQ69G5F04`: `status is missing or malformed`, although `status: deferred` is a present newer value and the rest of the entry is readable.                                                      |
+| workflow/1                                    | every view reads past an unknown decision kind inside a known entry kind           | All seven views exit 1 on the same decide identity: `decisionKind is missing or malformed`, for newer `decisionKind: policy`.                                                                                                                           |
+| workflow/1                                    | every view reads past an unknown classification kind inside a known entry kind     | All seven views exit 1 on the classify identity: `decisionKind is missing or malformed`, for newer `decisionKind: policy`.                                                                                                                              |
+| workflow/1, extended by 0114(3) to the ledger | work-package %s reads past an unknown ledger kind and computes later known entries | Each of state, inventory, assignment, levels, history, and efficiency exits 1 on `design/ledger/01ARZ3NDEKTSV4RRFFQ69G5F04.json`: `is not an entry of this ledger`. It is an `annotation` interleaved between understood submission and update entries. |
+
+Every case first obtains its known-only baseline through the real installed command.
+After inserting the newer entry it requires the same known view, a report associating
+the skipped kind with its count, and incompleteness; it never interprets unknown
+content as part of the known view. The work-package assignment's baseline contains
+the later update, not the earlier submission's outputs. Both journals and ledgers
+are checked for byte preservation. Report assertions reuse the existing format-neutral
+helper; no new report field names are prescribed.
+
+All **14 existing delivery-journal tests pass** on this subject, including workflow/4:
+a known `define` entry with missing wording is refused and named, rather than
+misclassified as unknown. Thus tolerating newer values cannot be implemented by
+silently skipping all malformed known entries. Existing unknown-kind counts,
+repeated views, append preservation, known-only views, and assertion-control proofs
+also remain green. This run adds three real unknown-value reds and six real ledger
+reds without changing any example.

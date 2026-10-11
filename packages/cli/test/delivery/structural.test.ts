@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   symlinkSync,
 } from 'node:fs';
@@ -280,6 +281,62 @@ it('delivery/8 — a real earlier projection is replaced by exactly the new proj
   }
 });
 
+it('delivery/8 — a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings', () => {
+  h = fresh();
+  const bindings = earlier(h, 'pre-digest-installation.json');
+  const manifest = JSON.parse(
+    readFileSync(join(h.home, '.omp/.forge/deploy-manifest.json'), 'utf8'),
+  );
+  expect(manifest).not.toHaveProperty('digests');
+  expect(existsSync(join(h.home, '.omp/agent/agents/implementer.md'))).toBe(
+    true,
+  );
+  expect(existsSync(join(h.home, '.agents/skills/carry-on/SKILL.md'))).toBe(
+    true,
+  );
+  version(h, '2.5.0');
+  success(install(h));
+  preserved(h, bindings);
+  const comparison = fresh();
+  try {
+    version(comparison, '2.5.0');
+    success(install(comparison));
+    expect(normalizeProjection(h)).toBe(normalizeProjection(comparison));
+  } finally {
+    comparison.dispose();
+  }
+  assertOwned(
+    h,
+    Object.fromEntries(
+      Object.entries(bindings).map(([path, text]) => [path, { text }]),
+    ),
+  );
+});
+
+it('delivery/8 — no earlier same-name agent outside the root wins harness discovery after upgrade', () => {
+  h = fresh();
+  const bindings = earlier(h, 'pre-digest-installation.json');
+  const oldArchitect = join(h.home, '.omp/agent/agents/architect.md');
+  expect(
+    existsSync(oldArchitect),
+    'real earlier declaration outside the root',
+  ).toBe(true);
+  version(h, '2.5.0');
+  success(install(h));
+  preserved(h, bindings);
+  const offered = discover(h);
+  for (const path of Object.keys(tree(join(owned(h), 'agents')))) {
+    if (!path.endsWith('.md')) continue;
+    const name = path.slice(0, -3);
+    const agent = offered.agents.find((a) => a.name === name);
+    expect(agent, `${name} is offered`).toBeDefined();
+    expect(
+      realpathSync(agent!.filePath),
+      `${name} resolves to the new declaration, not an earlier same-name copy`,
+    ).toBe(realpathSync(join(owned(h), 'agents', path)));
+  }
+});
+
 it('delivery/9 — upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
   h = fresh();
   const bindings = earlier(h);
@@ -399,6 +456,71 @@ it('delivery/11 — uninstall removes the whole root and all its references, nev
   expect(offered.agents.map((a) => a.name)).not.toContain('check-writer');
   expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
 });
+
+it.each([
+  'missing-record',
+  'empty-record',
+  'malformed-record',
+  'removed-root',
+  'unrecorded-reference',
+])(
+  'delivery/11 — uninstall follows reference targets despite a %s and keeps shared host surfaces',
+  (damage) => {
+    h = fresh();
+    const material = hostMaterial(h);
+    const pluginManifest = join(h.home, '.omp/plugins/package.json');
+    const hostPlugin = join(h.home, 'mira-plugin');
+    put(
+      join(hostPlugin, 'package.json'),
+      '{"name":"mira-plugin","version":"1.0.0"}',
+    );
+    put(
+      pluginManifest,
+      JSON.stringify({
+        private: true,
+        dependencies: { 'mira-plugin': `file://${hostPlugin}` },
+      }),
+    );
+    mkdirSync(join(h.home, '.omp/plugins/node_modules'), { recursive: true });
+    symlinkSync(
+      hostPlugin,
+      join(h.home, '.omp/plugins/node_modules/mira-plugin'),
+    );
+    success(install(h));
+    const shared = JSON.parse(readFileSync(pluginManifest, 'utf8'));
+    expect(shared.dependencies['cratylus-omp']).toContain(owned(h));
+    shared.description = 'Mira customized this shared surface after install';
+    shared.dependencies['earlier-projection'] = `file://${owned(h)}`;
+    symlinkSync(
+      '../../../.cratylus/omp',
+      join(h.home, '.omp/plugins/node_modules/earlier-projection'),
+    );
+    put(pluginManifest, JSON.stringify(shared));
+    put(join(owned(h), 'local/addition.txt'), 'inside root');
+    const record = join(owned(h), 'installation.json');
+    if (damage === 'missing-record') rmSync(record);
+    if (damage === 'empty-record') put(record, '{"references":[]}');
+    if (damage === 'malformed-record') put(record, '{host edit');
+    if (damage === 'removed-root') rmSync(owned(h), { recursive: true });
+    success(uninstall(h));
+    assertRemoved(h);
+    preserved(h, material);
+    expect(JSON.parse(readFileSync(pluginManifest, 'utf8'))).toEqual({
+      private: true,
+      description: shared.description,
+      dependencies: { 'mira-plugin': `file://${hostPlugin}` },
+    });
+    expect(
+      realpathSync(join(h.home, '.omp/plugins/node_modules/mira-plugin')),
+    ).toBe(hostPlugin);
+    const offered = discover(h);
+    expect(offered.tools).not.toContain('concept_journal');
+    expect(offered.agents.map((a) => a.name)).toContain('architect');
+    expect(offered.skills.map((s) => s.name)).toContain('host-skill');
+    expect(offered.agents.map((a) => a.name)).not.toContain('check-writer');
+    expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
+  },
+);
 
 it('delivery/12 — uninstall reaches all projects but neither their records nor a second user installation', () => {
   h = fresh();

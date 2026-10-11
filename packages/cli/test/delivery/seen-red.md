@@ -185,3 +185,77 @@ pnpm --filter cratylus exec vitest run test/agent-launch/judgment-cases.test.ts 
 ```
 
 Observed: typecheck passes; judgment case 3 passes (one test, the two other cases skipped). No production code, example text, or assertion changed.
+
+## Decision 0114: legacy ownership and reference discovery
+
+Subject: **3d5f6f00f76586827e581f05d0e3737f2c4f4d0e**, built once with `pnpm build`.
+The ordinary visible suite, without negative-observation switches, produced **16 failed,
+56 passed** across delivery structural/choices, delivery-journal structural, and
+reconstitution delivery structural checks. Every existing test passed; only the new
+0114 checks failed. The build succeeded. Output: `artifact://2831`.
+
+```sh
+pnpm --filter cratylus exec vitest run \
+  test/delivery/structural.test.ts test/delivery/choices.test.ts \
+  test/delivery-journal/structural.test.ts \
+  test/reconstitution/delivery/structural.test.ts \
+  --no-file-parallelism --reporter verbose
+```
+
+| Ruling   | Example     | Check title                                                                              | Observed red on 3d5f6f00                                                                                                                                                                                                                                    |
+| -------- | ----------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0114(1a) | delivery/8  | a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings | Upgrade succeeds and seeded bindings survive; the owned-root projection equals a fresh install. `assertOwned` then finds `.agents/purview-guardrail/purview-judge-prompt.md` still present as a projected copy outside the root, with zero root references. |
+| 0114(1b) | delivery/8  | no earlier same-name agent outside the root wins harness discovery after upgrade         | Real omp discovery selects `.omp/agent/agents/architect.md`, not `.cratylus/omp/agents/architect.md`. The check compares resolved paths for every installed agent, not names alone. Seeded bindings survive before this assertion too.                      |
+| 0114(2)  | delivery/11 | uninstall follows reference targets despite a %s and keeps shared host surfaces          | With the root's record missing or emptied, or the root removed entirely, uninstall reports success but leaves the plugin-root symlink dangling. With a malformed record, uninstall exits 1 on JSON parsing instead of removing the root's references.       |
+
+The unchanged delivery/8 captured-installation test still passes. All other delivery
+structural tests, including host changes at reference locations, pass; all ten
+delivery/21–29 choice cases pass, including migration of real seeded tier/persona
+bindings and an edited binding. Nothing changes production code or example text.
+
+### Real pre-digest provenance
+
+`pre-digest-installation.json` is an actual installation, not today's manifest with
+digests deleted. Its source is **4cf7d6db85cb9a06e27031b8e57e87c060dfcab4**, the
+parent of **f4f59d80**, which introduced the digest record. The historical build
+identifies itself as cratylus **0.5.2**. The source was extracted to a temporary
+directory, installed with `pnpm install --offline --ignore-scripts`, and built with
+`pnpm build`. The actual command was:
+
+```sh
+HOME=<temporary-home> PATH=<historical-build>/node_modules/.bin:$PATH \
+  cratylus install --harness omp
+```
+
+It ran in an empty temporary project with empty stdin. This historical command has
+no `--home`, `--all`, or `--model-roles` options. It installed eight agents and sixteen
+skills, including the now-removed `implementer` agent and `carry-on` skill, and seeded
+model-role bindings. Its manifest has no `digests` field. All 72 physical files/links
+were captured with their modes, using the existing capture fixture's representation;
+only the temporary HOME, build prefix, and project prefixes were normalized.
+No historical output was edited to manufacture missing digests. The fixture is
+self-contained and has no dependency on the capture's temporary directories.
+
+0114(3)'s evidence is in `../delivery-journal/seen-red.md`; 0114(4)'s real-text red
+is in `../reconstitution/delivery/EVIDENCE.md`.
+
+### References absent from the root's record
+
+The uninstall fixture also places a relative symlink named `earlier-projection` on
+omp's plugin surface and a dependency of that name pointing into the root, neither
+listed in the installation record. A fifth case keeps the record intact. This
+distinguishes discovery by destination from merely restoring the usual reference
+names when a record is missing.
+
+After this strengthening, the targeted command below produced **5 failed, 27 skipped**
+on the same build. The four root-damage cases fail for the reasons recorded above.
+The intact-record case removes the usual plugin link but leaves
+`.omp/plugins/node_modules/earlier-projection -> ../../../.cratylus/omp`; the
+no-dangling-reference assertion fails on that relative target. Host plugin references,
+the shared manifest's unrelated metadata, and host agent/skill/settings contents
+remain explicit preservation obligations in every case.
+
+```sh
+pnpm --filter cratylus exec vitest run test/delivery/structural.test.ts \
+  -t 'uninstall follows reference targets' --reporter verbose
+```

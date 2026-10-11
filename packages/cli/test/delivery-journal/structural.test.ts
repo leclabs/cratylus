@@ -1,3 +1,5 @@
+import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   afterAll,
   afterEach,
@@ -7,7 +9,11 @@ import {
   expect,
   it,
 } from 'vitest';
-import { success } from '../capability-port/fixture.js';
+import {
+  snapshot as fileSnapshot,
+  success,
+} from '../capability-port/fixture.js';
+import { repositoryRoot } from '../concept-journal/fixture.js';
 import {
   type Host,
   type TemporaryRepository,
@@ -88,6 +94,138 @@ describe('delivery: older concept journal readers', () => {
         'INVENTED MEANING',
       );
       reportsUnknown(value, { annotation: 1 });
+    },
+  );
+
+  it.each([
+    {
+      label: 'decision status',
+      kind: 'decide',
+      fields: { status: 'deferred' },
+    },
+    {
+      label: 'decision kind',
+      kind: 'decide',
+      fields: { decisionKind: 'policy' },
+    },
+    {
+      label: 'classification kind',
+      kind: 'classify',
+      fields: { decisionKind: 'policy' },
+    },
+  ])(
+    'workflow/1 — every view reads past an unknown $label inside a known entry kind',
+    ({ kind, fields }) => {
+      knownJournal(journal.root);
+      const baselines = views.map((args) =>
+        query(installed, journal.root, ...args),
+      );
+      entry(
+        journal.root,
+        4,
+        kind === 'decide'
+          ? {
+              kind,
+              decisionId: 'future-choice',
+              context: 'workflow',
+              title: 'A newer decision',
+              situation: 'A newer writer knows another value.',
+              decision: 'INVENTED MEANING FROM AN UNINTERPRETED ENTRY',
+              consequences: 'Not interpreted by this reader.',
+              status: 'open',
+              supersedes: null,
+              ...fields,
+            }
+          : {
+              kind,
+              decisionId: 'reservation-time',
+              entry: id(8),
+              ...fields,
+            },
+      );
+      const before = snapshot(journal.root);
+      for (const [index, args] of views.entries()) {
+        const result = installed.command(['concepts', ...args], journal.root);
+        expect.soft(result.code, `${args.join(' ')}: ${result.stderr}`).toBe(0);
+        if (result.code !== 0) continue;
+        const value = JSON.parse(result.stdout) as Record<string, unknown>;
+        // Compare only the known view, allowing additional diagnostic fields.
+        for (const [key, expected] of Object.entries(baselines[index]!))
+          if (key !== 'warnings')
+            expect.soft(value[key], key).toEqual(expected);
+        reportsUnknown(value, { [kind]: 1 });
+      }
+      expect(snapshot(journal.root)).toEqual(before);
+    },
+  );
+
+  it.each([
+    ['state'],
+    ['inventory'],
+    ['assignment', 'reader'],
+    ['levels'],
+    ['history', 'reader'],
+    ['efficiency'],
+  ])(
+    'workflow/1 — work-package %s reads past an unknown ledger kind and computes later known entries',
+    (...args) => {
+      const examples = join(journal.root, 'design/examples/workflow');
+      mkdirSync(examples, { recursive: true });
+      cpSync(
+        join(repositoryRoot, 'design/examples/workflow/delivery.md'),
+        join(examples, 'delivery.md'),
+      );
+      const directory = join(journal.root, 'design/ledger');
+      mkdirSync(directory, { recursive: true });
+      const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
+        writeFileSync(
+          join(directory, `${id(n)}.json`),
+          JSON.stringify({
+            id: id(n),
+            at: '2016-07-30T23:54:10.259Z',
+            transition: `fixture:${n}`,
+            cut: 'delivery',
+            ...fields,
+          }),
+          { flag: 'wx' },
+        );
+      ledgerEntry(1, {
+        kind: 'cut',
+        branch: 'feature/delivery',
+        contexts: ['workflow'],
+        architects: { workflow: 'architect' },
+      });
+      ledgerEntry(3, {
+        kind: 'submit',
+        workPackage: 'reader',
+        outputs: ['before.ts'],
+        concepts: ['concept journal'],
+        dependsOn: [],
+        needs: [],
+      });
+      ledgerEntry(5, {
+        kind: 'update',
+        workPackage: 'reader',
+        changes: { outputs: ['after.ts'] },
+      });
+      const command = ['workPackage', ...args, '--cut', 'delivery'];
+      const baseline = JSON.parse(
+        success(installed.command(command, journal.root)),
+      );
+      ledgerEntry(4, {
+        kind: 'annotation',
+        workPackage: 'reader',
+        changes: { outputs: ['INVENTED.ts'] },
+        payload: 'A future ledger entry',
+      });
+      const before = fileSnapshot(directory);
+      const value = JSON.parse(
+        success(installed.command(command, journal.root)),
+      );
+      for (const [key, expected] of Object.entries(baseline))
+        expect(value[key], `known ledger view: ${key}`).toEqual(expected);
+      reportsUnknown(value, { annotation: 1 });
+      expect(fileSnapshot(directory)).toEqual(before);
     },
   );
 

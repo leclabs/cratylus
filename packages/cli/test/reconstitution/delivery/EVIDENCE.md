@@ -28,3 +28,22 @@ From `packages/cli`:
 All recordings are authored controls, not claims of live model success. `EXECUTION_LIVE=1` runs five independent rubric sessions; ordinary criteria require four of five and never-assertions all five. Delivery/10 uses the installed architect as the product agent with its actual free-text intent assignment (contract section 5 explicitly exempts architect from a typed assignment contract), the computed account and the published capability descriptions. It uses the architect suite's runner for a separate live judge. Structured fixture truth is not added to the reader's prompt as another account.
 
 The lead should build once after implementations land, then run these files, type checking, and the opt-in live cases. Do not set `RECONSTITUTION_RED=1` in the normal package test run: it deliberately supplies nonconforming output variants to demonstrate that passing existing behavior has a falsifiable check.
+
+## Decision 0114(4): capability when-text is routing, not reader policy
+
+On freshly built **3d5f6f00f76586827e581f05d0e3737f2c4f4d0e**, the new check
+`delivery/6 — concept journal when-text gives occasions for use, not reader behavior`
+fails against the installed command's actual `concepts --explain` output.
+The `when` field says: “Entries of kinds this runtime does not know, recorded by a
+newer one, are read past: every reading is worked out from the rest” and later
+“an entry of a known kind that cannot be read is refused, naming it.”
+These are the reader policies 0114(4) assigns to the verbs and their output, not
+occasions for choosing the capability. The assertion rejects behavioral clauses,
+not bare words such as “unknown entry,” which can legitimately occur in an occasion
+for use. It also keeps the existing requirement that when-text is not empty.
+
+This is a real-text red, not a negative observation. It binds delivery/6 in
+`design/examples/delivery/reconstitution.md`. All **seven pre-existing structural
+checks in this file still pass**, including the earlier delivery/6 skill-duplication
+check. The combined visible run and command are recorded in
+`../../delivery/seen-red.md`; raw output is `artifact://2831`.

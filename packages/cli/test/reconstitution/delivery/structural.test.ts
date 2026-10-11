@@ -224,6 +224,23 @@ it('delivery/6 — delivered capabilities explain when; no workflow-restating ov
   }
 });
 
+it('delivery/6 — concept journal when-text gives occasions for use, not reader behavior', () => {
+  h = host();
+  const explanation = h.concepts<Explanation>('--explain');
+  expect(explanation.when.trim(), 'when to reach for the capability').not.toBe(
+    '',
+  );
+  // 0114(4): these are reader policies, not occasions for choosing the tool.
+  // Match clauses, not words: "when investigating an unknown entry" is a valid
+  // occasion and must not fail merely for mentioning an unknown entry.
+  const readerPolicy =
+    /\b(?:read(?:s|ing)? past|(?:is|are) (?:read past|skipped)|(?:every|each) (?:reading|view) (?:is|reports|answers)|(?:reader|runtime|entry|journal)[^.;]*\brefus(?:e[sd]?|al)|recording still appends)\b/i;
+  expect(
+    explanation.when,
+    'reader policies belong to the verbs and their output, not when-text',
+  ).not.toMatch(readerPolicy);
+});
+
 it('delivery/7 — offered overview returns the consuming context computed account and state, never cratylus contexts', () => {
   h = host();
   seedProduct(h);

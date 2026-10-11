@@ -79,12 +79,10 @@ export function install(h: Host, home = h.home, cwd = h.cwd) {
 export function uninstall(h: Host) {
   return h.command(['uninstall', '--harness', 'omp', '--home', h.home]);
 }
-export function earlier(h: Host) {
+export function earlier(h: Host, fixture = 'earlier-installation.json') {
   rmSync(h.home, { recursive: true, force: true });
   mkdirSync(h.home);
-  const saved = JSON.parse(
-    readFileSync(join(here, 'earlier-installation.json'), 'utf8'),
-  ) as {
+  const saved = JSON.parse(readFileSync(join(here, fixture), 'utf8')) as {
     entries: Record<string, { text?: string; link?: string; mode?: number }>;
   };
   for (const [name, item] of Object.entries(saved.entries)) {
