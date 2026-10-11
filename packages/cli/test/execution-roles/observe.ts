@@ -14,15 +14,23 @@ export default function observe(pi: {
   }[];
   on(
     event: string,
-    handler: (event: { systemPrompt: string[]; message: unknown }) => void,
+    handler: (
+      event: { systemPrompt: string[]; message: unknown },
+      ctx: { model?: { provider: string; id: string; api: string } },
+    ) => void,
   ): void;
 }) {
-  pi.on('before_agent_start', (event) => {
+  pi.on('before_agent_start', (event, ctx) => {
     const active = pi.getActiveTools();
     writeFileSync(
       process.env.EXECUTION_WIRING!,
       JSON.stringify({
         prompt: event.systemPrompt,
+        model: ctx.model && {
+          provider: ctx.model.provider,
+          id: ctx.model.id,
+          api: ctx.model.api,
+        },
         active,
         tools: pi
           .getAllTools()

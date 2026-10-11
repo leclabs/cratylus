@@ -22,6 +22,7 @@ const control = vi.hoisted(() => ({
   root: '',
   home: '',
   calls: [] as { role: string | undefined; args: string[] }[],
+  model: undefined as { provider: string; id: string; api: string } | undefined,
 }));
 const body =
   'Fixture role\n### procedure\n- **reconstitution** — recover the design\n';
@@ -84,6 +85,7 @@ vi.mock('./rubric-judge.js', async (original) => ({
         ],
         active: judge ? [] : ['read'],
         tools: judge ? [] : [{ name: 'read', parameters: { type: 'object' } }],
+        model: control.model,
       }),
     );
     writeFileSync(
@@ -145,6 +147,11 @@ beforeEach(() => {
   control.root = mkdtempSync(join(tmpdir(), 'runner-extensions-'));
   control.home = join(control.root, 'home');
   control.calls = [];
+  control.model = {
+    provider: 'fixture',
+    id: 'installed-architect',
+    api: 'openai-completions',
+  };
   mkdirSync(join(control.root, 'project'));
   const directory = join(control.home, '.omp/agent/extensions');
   mkdirSync(directory, { recursive: true });
@@ -202,3 +209,56 @@ describe.each(runners)(
     });
   },
 );
+
+describe('architect native history restoration', () => {
+  const scenario: ArchitectScenario = {
+    ...architectScenario,
+    history: [{ user: 'Recover the design.', assistant: 'I recovered it.' }],
+  };
+
+  it('seeds native history with the model resolved by the installed architect', async () => {
+    await architect.liveRun(scenario, join(control.root, 'run'));
+    const resumed = control.calls.find((call) =>
+      call.args.includes('--resume'),
+    )!;
+    const file = resumed.args[resumed.args.indexOf('--resume') + 1]!;
+    const entries = readFileSync(file, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    const selected = entries.find((entry) => entry.type === 'model_change');
+    expect(selected).toMatchObject({ model: 'fixture/installed-architect' });
+    const messages = entries.filter((entry) => entry.type === 'message');
+    expect(messages[0].parentId).toBe(selected.id);
+    expect(messages[1].parentId).toBe(messages[0].id);
+    expect(messages[1].message).toMatchObject({
+      role: 'assistant',
+      provider: 'fixture',
+      model: 'installed-architect',
+      api: 'openai-completions',
+      content: [{ type: 'text', text: scenario.history![0]!.assistant }],
+      stopReason: 'stop',
+    });
+    expect(control.calls[0]!.args).not.toContain('--model');
+  });
+
+  it('preflights the resumed history without masking model restoration with a CLI override', async () => {
+    await architect.preflight(scenario, join(control.root, 'inspection'));
+    const resumed = control.calls.find((call) =>
+      call.args.includes('--resume'),
+    );
+    expect(resumed).toBeDefined();
+    expect(resumed!.args).not.toContain('--model');
+    expect(control.calls.every((call) => call.role === 'architect')).toBe(true);
+  });
+
+  it('refuses to manufacture model metadata when inspection did not resolve a model', async () => {
+    control.model = undefined;
+    await expect(
+      architect.liveRun(scenario, join(control.root, 'run')),
+    ).rejects.toThrow('resolved architect model');
+    expect(control.calls.some((call) => call.args.includes('--resume'))).toBe(
+      false,
+    );
+  });
+});

@@ -147,7 +147,6 @@ async function launch(
     join(here, 'handoff-observe.ts'),
     '--config',
     config,
-    ...(inspect ? ['--model', 'fixture/base'] : []),
     ...(judge ? ['--tools', ''] : []),
     promptArgument(prompt, output),
   ];
@@ -183,6 +182,7 @@ async function launch(
   );
   if (
     inspect &&
+    !session &&
     extensions.some((path) => path.endsWith('/cratylus-session.ts')) &&
     /^- \*\*reconstitution\*\*/m.test(wiring.declaration)
   )
@@ -230,13 +230,28 @@ async function launch(
 export async function preflight(scenario: Scenario, output?: string) {
   const f = project(scenario);
   try {
-    return await launch(
+    const directory = output ?? join(f.root, 'inspection');
+    const continuing = Boolean(scenario.history?.length || scenario.compacted);
+    const inspection = await launch(
       f,
       scenario.role,
       scenario.prompt,
-      output ?? join(f.root, 'inspection'),
+      continuing ? join(directory, 'initial') : directory,
       true,
     );
+    if (!continuing) return inspection;
+    const session = sessionFile(f, scenario, inspection);
+    const resumed = await launch(
+      f,
+      scenario.role,
+      scenario.prompt,
+      directory,
+      true,
+      false,
+      session,
+    );
+    cpSync(session, join(directory, 'session.jsonl'));
+    return resumed;
   } finally {
     f.dispose();
   }
@@ -254,13 +269,42 @@ function credentials(f: Fixture) {
 }
 // A native session is resumed for every turn: later prompts see the actual earlier
 // model answers, never test-authored replacements. Compaction is a native entry.
-function sessionFile(f: Fixture, scenario: Scenario): string {
+function sessionFile(
+  f: Fixture,
+  scenario: Scenario,
+  inspection: Recording,
+): string {
+  // Observe omp's own resolution of the installed declaration, including role
+  // aliases and auth fallback. A --model inspection override would mask it.
+  const model: unknown = Reflect.get(inspection.wiring, 'model');
+  if (
+    !model ||
+    typeof model !== 'object' ||
+    !('provider' in model) ||
+    typeof model.provider !== 'string' ||
+    !model.provider ||
+    !('id' in model) ||
+    typeof model.id !== 'string' ||
+    !model.id ||
+    !('api' in model) ||
+    typeof model.api !== 'string' ||
+    !model.api
+  )
+    throw new Error('History requires the resolved architect model');
   const file = join(f.root, 'architect-session.jsonl');
   const timestamp = new Date().toISOString();
+  let parentId = randomUUID().slice(0, 8);
   const entries: Record<string, unknown>[] = [
     { type: 'session', version: 3, id: randomUUID(), timestamp, cwd: f.cwd },
+    {
+      type: 'model_change',
+      id: parentId,
+      parentId: null,
+      timestamp,
+      model: `${model.provider}/${model.id}`,
+      resolvedModelIsFallback: false,
+    },
   ];
-  let parentId: string | null = null;
   for (const turn of scenario.history ?? []) {
     for (const [role, text] of [
       ['user', turn.user],
@@ -276,6 +320,29 @@ function sessionFile(f: Fixture, scenario: Scenario): string {
           role,
           content: [{ type: 'text', text }],
           timestamp: Date.now(),
+          ...(role === 'assistant'
+            ? {
+                provider: model.provider,
+                model: model.id,
+                api: model.api,
+                stopReason: 'stop',
+                // These are authored setup turns, not charged generations.
+                usage: {
+                  input: 0,
+                  output: 0,
+                  cacheRead: 0,
+                  cacheWrite: 0,
+                  totalTokens: 0,
+                  cost: {
+                    input: 0,
+                    output: 0,
+                    cacheRead: 0,
+                    cacheWrite: 0,
+                    total: 0,
+                  },
+                },
+              }
+            : {}),
         },
       });
       parentId = id;
@@ -364,7 +431,8 @@ export async function liveRun(
   signal?.throwIfAborted();
   const f = project(scenario);
   try {
-    await launch(
+    credentials(f);
+    const inspection = await launch(
       f,
       scenario.role,
       scenario.prompt,
@@ -374,8 +442,7 @@ export async function liveRun(
       undefined,
       signal,
     );
-    credentials(f);
-    const session = sessionFile(f, scenario);
+    const session = sessionFile(f, scenario, inspection);
     const records: Recording[] = [];
     // Turns share one session and must stay sequential; batches run in parallel.
     for (const [index, prompt] of [

@@ -94,11 +94,11 @@ EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/archi
 EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (agents/(16|18)|workflow/23) .*preflight'
 ```
 
-| Run | Observed result |
-| --- | --- |
-| Architect offline suite | **91 passed, 52 skipped** |
+| Run                                          | Observed result                                    |
+| -------------------------------------------- | -------------------------------------------------- |
+| Architect offline suite                      | **91 passed, 52 skipped**                          |
 | Three examples with intentional reds enabled | **28 passed, 3 intentionally failed, 112 skipped** |
-| Three no-model preflights | **3 passed, 140 skipped** |
+| Three no-model preflights                    | **3 passed, 140 skipped**                          |
 
 The three intentional failures returned `passed: false`: agents/16 rejected `never-repeat` after the continuing-session history; agents/18 still rejected its missing scheduling action (`exactly-one-action`); workflow/23 still rejected support before the conclusion (`conclusion-first`). The offline proof also passed the updated negative's clause isolation, tool-schema wiring and never-assertion aggregation. Preflight verifies scenario preparation and installed declaration/tool composition without a model; it is not a live behavioral verdict. No live sessions were run.
 
@@ -110,6 +110,28 @@ EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution
 ```
 
 Observed: **12 passed, 2 intentionally failed, 129 skipped** for the selected offline/red run, and **2 passed, 141 skipped** for no-model preflight. Workflow/31 still rejects checkout after dispatch (`checkout-first`); agents/19 still rejects the handoff missing concepts and acceptance (`intent-concepts-acceptance`). Both intentional demonstrations returned `passed: false`; all selected offline proofs, individual negatives and aggregation checks passed. No live sessions were run.
+
+### Native model restoration for continuing sessions
+
+The earlier preflights above checked preparation and installed composition, not history restoration. History and compaction preflights now also resume the synthesized native session and reach `before_agent_start`, still exiting before a provider request. Neither the initial inspection nor the resumed launch supplies a `--model` override.
+
+The passive observer retains omp's resolved provider, model ID and API. The native history records that identity in both its `model_change` entry and every authored assistant message, with valid zero-usage setup metadata. Live execution copies its authorized credentials **before** the initial inspection, so omp resolves the installed architect's declaration, role aliases and authentication fallback just as it does for the live turn. Missing model observation refuses session construction instead of inventing an identity.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/runner-extensions.test.ts \
+  -t 'architect native history restoration' --no-file-parallelism
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/runner-extensions.test.ts \
+  test/rubric-judge.test.ts test/rubric-batch.test.ts \
+  test/reconstitution/architect/runner.test.ts --no-file-parallelism
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_REJUDGE \
+  EXECUTION_PREFLIGHT=1 EXECUTION_RECORDINGS=/tmp/reconstitution-native-history-proof \
+  pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts \
+  -t 'Example (agents/(16|18|19)|workflow/(23|31)) .*preflight' --no-file-parallelism
+```
+
+Observed red before the fix: **3 failed, 6 skipped**. Native history lacked its model selection; preflight never resumed history; absent model observation was silently accepted. After the fix the four offline harness files passed **36 tests**. The five real resumed preflights passed **5 tests, 138 skipped**, retaining evidence below `/tmp/reconstitution-native-history-proof/architect/visible/`. In the credential-free agents/16 preflight, omp selected and restored `fixture/base` (`openai-completions`); this proves native restoration, not the authenticated live model selection or behavioral acceptance. No live subject or judge generations were run.
 
 ## Lead commands
 
