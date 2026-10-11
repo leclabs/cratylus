@@ -16,10 +16,11 @@ interface Dispatch {
 export default function standIn(pi: {
   on(event: 'session_start', handler: () => void): void;
   getAllTools(): TaskTool[];
+  getActiveTools(): string[];
   registerTool(
     tool: TaskTool & {
       label: string;
-      defaultInactive: true;
+      defaultInactive: boolean;
       execute(
         toolCallId: string,
         input: Dispatch,
@@ -36,7 +37,8 @@ export default function standIn(pi: {
     pi.registerTool({
       name: task.name,
       label: 'Task',
-      defaultInactive: true, // Do not grant dispatch to a role without it.
+      // Registration re-evaluates activation; a blanket true hides native task.
+      defaultInactive: !pi.getActiveTools().includes(task.name),
       description: task.description,
       parameters: task.parameters,
       async execute(_toolCallId, input) {

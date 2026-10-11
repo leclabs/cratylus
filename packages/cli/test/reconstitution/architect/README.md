@@ -16,6 +16,8 @@ Subject launches keep `--no-extensions` to exclude host discovery, then explicit
 
 Decision 0094 routes fixture delegates to `delegate-stand-in.ts`, loaded explicitly for subjects in both the architect and sibling roles runners, never for rubric judges. At `session_start` it registers a replacement executor for the native `task`, preserving its description and parameter schema and not activating it for a role that lacks dispatch. Every assignment receives the same deterministic acknowledgement: “Assignment accepted. I will return the outcome for the assigned concepts.” It starts no child session and makes no model call; this is acceptance of an assignment, not a claim that its work passed or produced artifacts. Installed `tool_call` guards and the unchanged passive handoff observer still run before execution, so the subject's decision to dispatch, role, complete assignment and checked-out branch remain evidence under the same rubrics. The roles runner also loads that observer.
 
+Replacement samples `pi.getActiveTools()` before registering and sets `defaultInactive` to the inverse of the native task's active state. A blanket `defaultInactive: true` is not preservation: omp re-evaluates activation on registration and removes task from an otherwise active surface. Main-session tool selection belongs to omp/operator flags; a declaration's `tools` alone narrows dispatched children, not the main session.
+
 A retained run identifies the routing in its `launch.json` extension arguments and in each successful `task` tool result: `details.fixture` is `delegate-stand-in`, `details.input` is the complete dispatched input, and `content` contains one acknowledgement per task. `messages.jsonl` and the resulting subject/turn recordings also keep the original assistant call and the passive `branch-at-handoff` observation. No failure result is suppressed or rewritten: the native child executor is never entered.
 
 Agents/17 runs three turns by resuming one native session, so later turns receive the architect's actual earlier answers.
@@ -78,6 +80,30 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUD
 ```
 
 Observed: **237 passed, 75 skipped across 13 files** (`artifact://1113`), including all four stand-in tests, the new negative's ordinary clause-isolation proof and both launchers' wiring checks. Biome passed on the six changed TypeScript/JSON files. No live subject or rubric-judge model sessions were run.
+
+#### Preserving the offered task tool
+
+The initial routing proof had a blind spot: its scripted transport issued `task` without checking that the subject's request actually offered it. The registration's blanket `defaultInactive: true` hid task in ordinary subject launches. The rebound real-omp check now inspects the first model request's tool list, and its script dispatches only when task is offered. Both native-default and task-declaring subjects must expose it without a `--tools` override; a read-only-tools declaration launched with the operator's `--tools read` selection must not gain it. Active cases still check both acknowledgements, complete inputs, checked-out branch and absence of child requests.
+
+Seen red against the unchanged stand-in from `1a19b3b5`:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/delegate-stand-in.test.ts -t 'real omp preserves'
+```
+
+Observed: **2 failed, 1 passed, 3 skipped**. Both active cases failed the new request-tool assertion with `false` instead of `true`: task was absent. No live model sessions ran.
+
+After preserving the sampled active state:
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  test/reconstitution/architect/delegate-stand-in.test.ts test/runner-extensions.test.ts
+```
+
+Observed: **16 passed across 2 files**: seven stand-in checks, including both active surfaces and the operator-narrowed inactive surface, plus nine launcher wiring/restoration checks. The active subjects received the acknowledgements through an actually offered task tool; the inactive subject made no tool call.
 
 ### Previous goldens and refused setup
 
