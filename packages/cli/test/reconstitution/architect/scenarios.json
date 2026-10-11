@@ -455,6 +455,12 @@
     "role": "architect",
     "example": "(architect) Given the operator needs an update on film approval and scheduling, and the architect has their design and delegates' concept-level outcomes, when it reports, then the conclusion comes first, followed by one recommended action per topic and only the support a layman needs. Fixed rubric: conclusion before support; one action for each topic; both outcomes stated in the product's terms; enough support to understand each action without an episodic history. It never presents a menu, asks a question it can answer, or replaces a concept-level outcome with implementation details. The agents-context examples also exercise persistence of stance.",
     "prompt": "Film approval is ready for confirmation: both concept-level checks show creative approval does not grant release. Scheduling remains unresolved on whether night shoots are allowed. Give me the update. The architect holds film-production and scheduling.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before we continue.",
+        "assistant": "Film approval is creative acceptance, not permission to release; scheduling approval reserves a shoot date. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. In scheduling, night-shoots remains open: I have yet to settle whether scheduling permits night shoots. No cuts are recorded in the ledger. I will carry the settled film distinction forward and resolve scheduling's night-shoot boundary in its own context."
+      }
+    ],
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
@@ -1310,6 +1316,16 @@
     "role": "architect",
     "example": "(drift) Given the required design decision has been settled, the architect has approved the relevant examples and the delegate's report establishes the requested outcome, with no new issue to resolve, when the architect reaches the end of its procedure, then it reports the achieved outcome and stops that procedure; it never repeats discovery, asks the operator or another party to confirm those examples, or invents another round merely to continue its steps. This is the tell of following procedure past its objective, not permission to skip a required check before the objective is met.",
     "prompt": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work.",
+    "history": [
+      {
+        "user": "Read back the current film-production and scheduling design, open decisions and cuts before deciding on the film examples.",
+        "assistant": "The film's creative approval and permission to release are separate; scheduling approval reserves a date, not a film's creative acceptance. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. No open decisions or cuts are recorded in these scenario records. I will decide on the relevant film examples against that settled distinction."
+      },
+      {
+        "user": "The illustrator has returned the relevant film-production examples: creative approval does not release a film, and release permission is the operator's separate authorization. Decide on them.",
+        "assistant": "I approve the relevant film-production examples. They accurately distinguish creative acceptance from release permission, as the accepted creative-not-release decision requires. That settles their meaning and approval; realization is the lead's work."
+      }
+    ],
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",
@@ -1608,6 +1624,16 @@
     "role": "architect",
     "example": "(drift, ordering: bottom-line-up-front) Given the architect has two topics to report, its approval of the film-production examples and a scheduling meaning question it has yet to settle, when it addresses the operator, then its conclusion leads, followed by one recommended action per topic and only the supporting facts a layman needs. Fixed rubric: the opening states the bottom line; each topic has exactly one recommended action; support follows rather than buries the conclusion; the reader can understand the state and recommendation in the product's terms without reconstructing the session. It never asks the operator to approve its examples or settle its owned meaning question, offers a menu, asks an answerable question or turns the report into an episodic account of its work.",
     "prompt": "You are the architect holding film-production and scheduling. You have approved the film-production examples: both concept-level checks show creative approval does not grant release. You have yet to settle scheduling's meaning question of whether night shoots are allowed. Give me the update on your approval and the unsettled scheduling question.",
+    "history": [
+      {
+        "user": "Read back the film-production and scheduling design, open decisions and cuts before we continue.",
+        "assistant": "Film approval is creative acceptance, not permission to release; scheduling approval reserves a shoot date. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. In scheduling, night-shoots remains open: I have yet to settle whether scheduling permits night shoots. No cuts are recorded in the ledger. I will carry the settled film distinction forward and resolve scheduling's night-shoot boundary in its own context."
+      },
+      {
+        "user": "The film-production examples distinguish creative acceptance from release permission, and both concept-level checks show the distinction holds. Decide on those examples.",
+        "assistant": "I approve the film-production examples; scheduling's night-shoot meaning question remains mine to settle. Proceed with the approved film examples, while I resolve the scheduling boundary separately. Creative acceptance does not authorize release, and reserving a date does not approve a film."
+      }
+    ],
     "files": {
       "design/examples/film-production/film.md": "# Examples\n\n1. (approval) Given a reviewed film, when the creative approves it, then it is creatively approved but not released.\n2. (release permission) Given creative approval, when the operator grants release permission, then the film may be admitted.\n",
       "design/examples/scheduling/calendar.md": "# Examples\n\n1. (approval) Given a proposed shoot date, when the scheduler approves it, then the date is reserved, not the film creatively approved.\n",

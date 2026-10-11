@@ -12,9 +12,125 @@
         "content": [
           {
             "type": "text",
+            "text": "Read back the current film-production and scheduling design, open decisions and cuts before deciding on the film examples."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The film's creative approval and permission to release are separate; scheduling approval reserves a date, not a film's creative acceptance. I hold both contexts and keep their models separate. I have read both context overviews, the relevant journal detail and the ledger. In film-production, production takes the film through review and creative approval; the operator alone grants release permission. The creative-not-release decision is accepted. No open decisions or cuts are recorded in these scenario records. I will decide on the relevant film examples against that settled distinction."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "The illustrator has returned the relevant film-production examples: creative approval does not release a film, and release permission is the operator's separate authorization. Decide on them."
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I approve the relevant film-production examples. They accurately distinguish creative acceptance from release permission, as the accepted creative-not-release decision requires. That settles their meaning and approval; realization is the lead's work."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
             "text": "You are the architect holding film-production and scheduling. The design decision is settled and you have approved the relevant film examples yourself. The lead reports the requested outcome achieved: creative approval stays separate from release permission; both assayers accept and the whole check passed. No new issue remains. Close the design work."
           }
         ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "repeat-film-overview",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "overview",
+              "context": "film-production"
+            }
+          }
+        ],
+        "controlClause": "never-repeat"
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "repeat-film-overview",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "Film-production: making and creatively approving a film. Creative approval is separate from the operator's release permission. No open decisions."
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "repeat-scheduling-overview",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "overview",
+              "context": "scheduling"
+            }
+          }
+        ],
+        "controlClause": "never-repeat"
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "repeat-scheduling-overview",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "Scheduling: reserving shoot dates. Approval reserves a date, not creative acceptance of the film. No open decisions."
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "repeat-design-state",
+            "name": "concept_journal",
+            "arguments": {
+              "verb": "state"
+            }
+          }
+        ],
+        "controlClause": "never-repeat"
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "repeat-design-state",
+        "toolName": "concept_journal",
+        "content": [
+          {
+            "type": "text",
+            "text": "Unchanged design: film-production approval is creative acceptance; release permission is separate. Scheduling approval reserves a date. creative-not-release accepted; no open decisions or recorded cuts."
+          }
+        ],
+        "isError": false
       },
       {
         "role": "assistant",
@@ -41,7 +157,7 @@
         "content": [
           {
             "type": "text",
-            "text": "Before closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue."
+            "text": "I reread both overviews and the design state after my earlier readback and approval, although no new issue remained."
           }
         ],
         "controlClause": "never-repeat"
@@ -67,7 +183,7 @@
         "controlClause": "never-extra-round"
       }
     ],
-    "report": "The requested outcome is achieved: creative approval stays separate from release permission.\n\nThe design procedure is complete and ends here.\n\nBefore closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue.\n\nMy approval of the relevant examples stands; I need no confirmation from anyone else.\n\nBoth assayers and the whole check already establish completion; no additional round remains.",
+    "report": "The requested outcome is achieved: creative approval stays separate from release permission.\n\nThe design procedure is complete and ends here.\n\nI reread both overviews and the design state after my earlier readback and approval, although no new issue remained.\n\nMy approval of the relevant examples stands; I need no confirmation from anyone else.\n\nBoth assayers and the whole check already establish completion; no additional round remains.",
     "snapshots": [{}, {}],
     "wiring": {
       "agent": "architect",
@@ -190,7 +306,7 @@
       },
       "never-repeat": {
         "pass": false,
-        "evidence": "Before closing, I repeated discovery of the settled creative-approval meaning with the illustrator, although there was no new issue."
+        "evidence": "After the earlier readback and example approval, and after the delegate's completed-outcome report, repeat-film-overview, repeat-scheduling-overview and repeat-design-state query the unchanged design again. No new issue justified this renewed discovery."
       },
       "never-reconfirm": {
         "pass": true,

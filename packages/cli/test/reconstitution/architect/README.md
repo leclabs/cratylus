@@ -80,6 +80,28 @@ For setup it loaded the six affected scenario files, selected every scenario who
 
 The held-out agents architect file has no seeded `open` command, so no command-refusal red is claimed for it. Its authority setup alone was rebound. Post-build preparation and held-out behavioral greens remain the lead's responsibility; authored offline proof is not a substitute for those runs or for a judged live run.
 
+### Continuing-session setup (0089)
+
+Agents/16, agents/18 and workflow/23 now supply the architect's earlier readback through `history`, rather than presenting a mid-session Given to a fresh session. The existing runner writes these user/assistant turns into its native session file and resumes that session for the evaluated turn. Each readback distinguishes creative acceptance, release permission and date reservation, names `creative-not-release` as accepted, and reports no recorded cuts, matching the seeded ledger. Agents/18 and workflow/23 also name `night-shoots` as open. Agents/16 does not seed that open decision, so its readback does not invent one. Agents/16 and agents/18 include the architect's earlier approval of the film-production examples.
+
+No example text, prompt intent, clause, rubric or threshold changed. The agents/16 `never-repeat` negative is now `negative-continuing-discovery.json`: it includes the prior readback and approval, then the completed-outcome prompt, then recorded calls that reread both overviews and the design state. Its authored answer rejects that renewed discovery; it is not rejecting required reconstitution at a fresh session's start. The filename makes this the example's selected intentional red demonstration.
+
+Observed offline evidence after this setup rebind:
+
+```sh
+pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts
+EXECUTION_RED=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (agents/(16|18)|workflow/23) '
+EXECUTION_PREFLIGHT=1 pnpm --filter cratylus exec vitest run test/reconstitution/architect/architect.test.ts -t 'Example (agents/(16|18)|workflow/23) .*preflight'
+```
+
+| Run | Observed result |
+| --- | --- |
+| Architect offline suite | **91 passed, 52 skipped** |
+| Three examples with intentional reds enabled | **28 passed, 3 intentionally failed, 112 skipped** |
+| Three no-model preflights | **3 passed, 140 skipped** |
+
+The three intentional failures returned `passed: false`: agents/16 rejected `never-repeat` after the continuing-session history; agents/18 still rejected its missing scheduling action (`exactly-one-action`); workflow/23 still rejected support before the conclusion (`conclusion-first`). The offline proof also passed the updated negative's clause isolation, tool-schema wiring and never-assertion aggregation. Preflight verifies scenario preparation and installed declaration/tool composition without a model; it is not a live behavioral verdict. No live sessions were run.
+
 ## Lead commands
 
 The normal package test inclusion already discovers `architect.test.ts`. Without `EXECUTION_RED`, intentional failure demonstrations stay skipped.
