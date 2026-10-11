@@ -14,7 +14,7 @@ if [ -n "$STAGED_MD" ]; then
 fi
 
 # The immutability gate: a staged change that modifies, moves or deletes an existing
-# record under a protected root (`records/`, or a concept journal entry under
-# `design/journal/`) is refused, naming its paths; additions pass. It
+# record under a protected root (`records/`, a concept journal entry under
+# `design/journal/`, or a ledger entry under `design/ledger/`) is refused, naming its paths; additions pass. It
 # runs from source (`tsx`), because pre-commit runs before any build.
 pnpm --silent --filter @cratylus/runtime immutability-gate

@@ -3,7 +3,8 @@
 // modifies or deletes an existing record is refused, at commit and in CI.
 //
 // A change under a protected root (`PROTECTED_ROOTS`: the records root
-// `RECORDS_ROOT` and the concept journal `JOURNAL_DIR`) whose git status is not
+// `RECORDS_ROOT`, the concept journal `JOURNAL_DIR` and the ledger `LEDGER_DIR`)
+// whose git status is not
 // an addition — modified, deleted, renamed, type-changed — is refused, and the
 // refusal names every offending path. Additions pass; paths outside the roots
 // are ignored. A branch merge adds records only, so it passes.
@@ -37,11 +38,12 @@
 
 import { execFileSync } from 'node:child_process';
 import { JOURNAL_DIR } from '../capabilities/concepts/journal.js';
+import { LEDGER_DIR } from '../capabilities/work-package/ledger.js';
 import { RECORDS_ROOT } from './store.js';
 
-/** The roots whose files are only ever added: the record store's records and
- *  the concept journal's entries. */
-export const PROTECTED_ROOTS = [RECORDS_ROOT, JOURNAL_DIR] as const;
+/** The roots whose files are only ever added: the record store's records, the
+ *  concept journal's entries and the ledger's entries. */
+export const PROTECTED_ROOTS = [RECORDS_ROOT, JOURNAL_DIR, LEDGER_DIR] as const;
 
 /** One path's change, as `git diff --name-status` reports it: its status letter
  *  and its path relative to the repository root. */

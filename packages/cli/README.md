@@ -508,7 +508,7 @@ A capability is a command whose verbs a deployed skill calls back into. `cratylu
 cratylus eventTap status
 cratylus concepts state
 cratylus concepts supersede 'reservation expiry' --context booking --wording '…' --reason '…'
-cratylus workPackage levels --cut booking/delivery
+cratylus workPackage levels --cut delivery
 ```
 
 ### `cratylus eventTap`
@@ -719,13 +719,17 @@ cratylus concepts classify [options] <id>
 
 ### `cratylus workPackage`
 
-The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run` and `record`.
+The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `open`, `submit`, `update`, `commit`, `check` and `record`.
 
 As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus workPackage --help` and `cratylus workPackage <verb> --help` print them, and `cratylus workPackage --explain` and `cratylus workPackage <verb> --explain` print the same explanation as JSON (its name `work package`). The entries below name only each verb's usage and the flags it takes.
 
-Every verb takes `--cut <context>/<name>`, a cut whose visible examples are `design/examples/<context>/<name>.md` in the git repository you run it in; an example's concepts are the names in the parenthesis that opens it. Each cut keeps an append-only log under the repository's git common directory, `cratylus/work-packages/<context>/<name>.jsonl`, shared by every worktree and never tracked; its state is read back from the log on every call. The appending verbs (`submit`, `update`, `dispatch`, `finish`, `commit`, `check`, `run`) each append one event; `record` appends one `efficiency` entry to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
+Every verb takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`.
 
-The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared, and `dispatch` refuses while any visible example has no owner. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
+The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted (the pre-commit immutability gate holds it as it holds `design/journal/`), so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
+
+No verb records a dispatch, a return, an assayer's verdict or the lead's report: those reach the ledger only from the harness's own agent events, through the harness binding. A work package is `submitted`, then `dispatched` and `returned` as the harness reports its builder, then `approved` once at least two distinct assayers' latest verdicts on it all pass, `failing` when every one has a finding, or `disputed` when they disagree; the cut is `open`, then `in flight` from its first dispatch, then `complete` once every work package is approved. A commit whose subject opens `feat(cut:<name>): ` while the ledger does not show that cut complete gets a warning from this repository's post-commit hook, and is never refused.
+
+The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
 
 #### `cratylus workPackage inventory`
 
@@ -777,6 +781,28 @@ cratylus workPackage efficiency [options]
 | --------------- |
 | `--cut <value>` |
 
+#### `cratylus workPackage state`
+
+```sh
+cratylus workPackage state [options]
+```
+
+| Flag            |
+| --------------- |
+| `--cut <value>` |
+
+#### `cratylus workPackage open`
+
+```sh
+cratylus workPackage open [options]
+```
+
+| Flag                       |
+| -------------------------- |
+| `--cut <value>`            |
+| `--branch <value>`         |
+| `--meaning-holder <value>` |
+
 #### `cratylus workPackage submit`
 
 ```sh
@@ -805,26 +831,6 @@ cratylus workPackage update [options] <package>
 | `--depends-on <value>` |
 | `--needs <value>`      |
 
-#### `cratylus workPackage dispatch`
-
-```sh
-cratylus workPackage dispatch [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage finish`
-
-```sh
-cratylus workPackage finish [options] <package>
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
 #### `cratylus workPackage commit`
 
 ```sh
@@ -847,18 +853,6 @@ cratylus workPackage check [options]
 | ------------------- |
 | `--cut <value>`     |
 | `--failure <value>` |
-
-#### `cratylus workPackage run`
-
-```sh
-cratylus workPackage run [options]
-```
-
-| Flag               |
-| ------------------ |
-| `--cut <value>`    |
-| `--role <value>`   |
-| `--tokens <value>` |
 
 #### `cratylus workPackage record`
 

@@ -1,6 +1,7 @@
 // The immutability gate, driven over temporary git repositories it builds itself:
 // staged changes (the pre-commit reading) and commit ranges (the CI reading) that
-// modify, delete, rename or retype a record or a concept journal entry must refuse,
+// modify, delete, rename or retype a record, a concept journal entry or a ledger
+// entry must refuse,
 // naming the path; additions, changes outside the protected roots, and a merge of
 // two branches' records must pass.
 
@@ -16,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { JOURNAL_DIR } from '../src/capabilities/concepts/journal.js';
+import { LEDGER_DIR } from '../src/capabilities/work-package/ledger.js';
 import {
   changes,
   immutabilityGate,
@@ -50,9 +52,11 @@ afterAll(() => {
   for (const d of scratch) rmSync(d, { recursive: true, force: true });
 });
 
-/** Where a fresh file of each protected root goes: a record, or a journal entry. */
+/** Where a fresh file of each protected root goes: a record, a journal entry,
+ *  or a ledger entry. */
 const RECORD = () => `${RECORDS_ROOT}/concept/${ulid()}.json`;
 const ENTRY = () => `${JOURNAL_DIR}/${ulid()}.json`;
+const LEDGER_ENTRY = () => `${LEDGER_DIR}/${ulid()}.json`;
 
 /** A repository whose first commit holds one file at `fresh()`, a record unless
  *  told otherwise; returns it and the file's path. */
@@ -90,6 +94,7 @@ function refusedStagedAndCommitted(repo: string): {
 describe.each([
   ['a record', RECORD],
   ['a concept journal entry', ENTRY],
+  ['a ledger entry', LEDGER_ENTRY],
 ] as const)('immutability gate over %s', (_, fresh) => {
   it('a modified one REFUSES, naming its path', () => {
     const { repo, record } = repositoryWithRecord(fresh);

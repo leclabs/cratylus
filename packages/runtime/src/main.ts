@@ -34,6 +34,11 @@
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
 //
+// HARNESS-FACING COMMANDS are no capability: `lifecycle` (a lifecycle entry from
+// the harness's own agent event) and `completion-check` (run by the post-commit
+// hook). `harnessCommands` exports them for the program to hold HIDDEN, so no
+// help lists them and no capability surface, and so no agent tool, offers them.
+//
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
 // not written here: its one home is `./bin-name.ts`. See that module for why the
 // single home is load-bearing (three of its four consumers speak it from inside a
@@ -60,12 +65,14 @@ import {
   CAPABILITY_SUMMARIES,
   type Capability,
 } from './capability.js';
+import { completionCheckCommand } from './completion-check/index.js';
 import {
   type CapabilityInterface,
   type ExplainedVerb,
   explain,
   explainVerb,
 } from './explanation.js';
+import { lifecycleCommand } from './lifecycle/index.js';
 import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 
 /**
@@ -314,4 +321,10 @@ function capabilityCommand(capability: Capability): Command {
  */
 export function capabilityCommands(): Command[] {
   return CAPABILITIES.map(capabilityCommand);
+}
+
+/** The harness-facing commands, `lifecycle` and `completion-check`: no
+ *  capability, never an agent tool; the program holds them hidden. */
+export function harnessCommands(): Command[] {
+  return [lifecycleCommand(), completionCheckCommand()];
 }
