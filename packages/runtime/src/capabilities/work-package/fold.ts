@@ -85,7 +85,7 @@ export interface Figures {
 export interface CutRecord {
   readonly branch: string;
   readonly contexts: readonly string[];
-  readonly meaningHolders: Readonly<Record<string, string>>;
+  readonly architects: Readonly<Record<string, string>>;
 }
 
 /** A cut's state, folded from its ledger entries. */
@@ -137,13 +137,17 @@ export function foldCut(
   for (const entry of entries) {
     if (entry.cut !== cut) continue;
     switch (entry.kind) {
-      case 'cut':
+      case 'cut': {
+        const recorded: object = entry;
+        const earlier =
+          'meaningHolders' in recorded ? recorded.meaningHolders : undefined;
         record = {
           branch: entry.branch,
           contexts: entry.contexts,
-          meaningHolders: entry.meaningHolders,
+          architects: entry.architects ?? (earlier as CutRecord['architects']),
         };
         break;
+      }
       case 'submit': {
         const { outputs, concepts, dependsOn, needs } = entry;
         fields.set(entry.workPackage, { outputs, concepts, dependsOn, needs });

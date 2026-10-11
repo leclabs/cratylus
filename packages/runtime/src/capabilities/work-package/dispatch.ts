@@ -9,7 +9,7 @@
 //   history     the commits made as one package's, in order
 //   efficiency  the cut's figures: agent runs, rounds, whole-check runs, tokens
 //   state       the cut's record, phase, package statuses and ready packages
-//   open        record the cut: its branch and each context's meaning-holder
+//   open        record the cut: its branch and each context's architect
 //   submit      record a new work package
 //   update      replace fields of a recorded work package
 //   commit      commit paths as one package's builder
@@ -127,7 +127,7 @@ export const VERBS = {
     concept: 'ledger',
     effect: 'reads',
     purpose:
-      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and meaning-holders; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready to start; and the last report its lead (the agent running the cut) returned',
+      'Tell where the cut stands, from its ledger (the cut’s history of what its agents were given and returned): its branch, contexts and the architect holding each; its phase; each work package’s status, approved only once two independent assayers (agents who judge the work against its examples) both pass it; the packages ready to start; and the last report its lead (the agent running the cut) returned',
     when: 'Before acting on a cut, and whenever its progress matters: each answer is worked out afresh, so an earlier answer never stands for the current state',
     positional: null,
     flags: CUT,
@@ -136,7 +136,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch its change is built on and, for each of its contexts, the meaning-holder, the person who confirms that context’s examples and settles its meaning questions; refused when its contexts do not share one meaning-holder, which calls for one cut per context joined by contracts, or when a context has none',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
     when: 'Once, when the cut’s examples are written and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
@@ -144,8 +144,8 @@ export const VERBS = {
       branch: valueFlag('The branch the cut’s change is built on', {
         required: true,
       }),
-      'meaning-holder': valueFlag(
-        'A context of the cut and the person who holds its meaning, as <context>=<holder>; repeat once per context of the cut',
+      architect: valueFlag(
+        'A context of the cut and the architect who holds it, as <context>=<architect>; repeat once per context of the cut',
         { repeats: true, required: true },
       ),
     },
@@ -426,7 +426,7 @@ export function dispatchWorkPackage(
         cut: cut.cut,
         branch: state.record?.branch ?? null,
         contexts: cut.contexts,
-        meaningHolders: state.record?.meaningHolders ?? {},
+        architects: state.record?.architects ?? {},
         phase: state.phase,
         workPackages: packages.map(({ name, status, dependsOn }) => ({
           name,
@@ -444,32 +444,28 @@ export function dispatchWorkPackage(
       const branch = required('branch', 'the branch the cut is built on');
       if (/\s/.test(branch))
         throw refuse(`the branch '${branch}' holds whitespace; name a branch`);
-      const meaningHolders: Record<string, string> = {};
-      for (const given of values('meaning-holder')) {
-        const [context = '', holder = ''] = given.split(/=(.*)/s);
-        if (context.trim() === '' || holder.trim() === '')
-          throw refuse(`--meaning-holder '${given}' is not <context>=<holder>`);
+      const architects: Record<string, string> = {};
+      for (const given of values('architect')) {
+        const [context = '', architect = ''] = given.split(/=(.*)/s);
+        if (context.trim() === '' || architect.trim() === '')
+          throw refuse(`--architect '${given}' is not <context>=<architect>`);
         if (!cut.contexts.includes(context))
           throw refuse(
             `the cut '${cut.cut}' has no context '${context}'; its contexts are ${cut.contexts.map((c) => `'${c}'`).join(', ')}`,
           );
-        if (meaningHolders[context] !== undefined)
-          throw refuse(
-            `the context '${context}' is given a meaning-holder twice`,
-          );
-        meaningHolders[context] = holder;
+        if (architects[context] !== undefined)
+          throw refuse(`the context '${context}' is given an architect twice`);
+        architects[context] = architect;
       }
-      const without = cut.contexts.filter(
-        (c) => meaningHolders[c] === undefined,
-      );
+      const without = cut.contexts.filter((c) => architects[c] === undefined);
       if (without.length > 0)
         throw refuse(
-          `the contexts ${without.map((c) => `'${c}'`).join(', ')} of the cut '${cut.cut}' have no meaning-holder; give each with --meaning-holder <context>=<holder>, never assumed`,
+          `the contexts ${without.map((c) => `'${c}'`).join(', ')} of the cut '${cut.cut}' have no architect; give each with --architect <context>=<architect>, never assumed`,
         );
-      if (new Set(Object.values(meaningHolders)).size > 1)
+      if (new Set(Object.values(architects)).size > 1)
         throw refuse(
-          `the contexts of the cut '${cut.cut}' have different meaning-holders (${cut.contexts
-            .map((c) => `'${c}'=${meaningHolders[c]}`)
+          `the contexts of the cut '${cut.cut}' are held by different architects (${cut.contexts
+            .map((c) => `'${c}'=${architects[c]}`)
             .join(
               ', ',
             )}); such intent is one cut per context, joined by contracts, never one cut for convenience`,
@@ -480,7 +476,7 @@ export function dispatchWorkPackage(
         cut: cut.cut,
         branch,
         contexts: cut.contexts,
-        meaningHolders,
+        architects,
       });
     }
     case 'submit': {

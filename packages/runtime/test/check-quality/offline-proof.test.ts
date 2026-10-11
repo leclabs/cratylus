@@ -235,7 +235,7 @@ for (const { name, check, recordings, proven, finding } of proofCases) {
       id: 'behavioral-example',
       concept: 'offline proof',
       situation: 'a behavioral check has golden and negative recordings',
-      trigger: 'the meaning-holder confirms the example',
+      trigger: 'the architect confirms the example',
       outcome: check.example,
       check: {
         kind: 'behavioral',
@@ -248,19 +248,19 @@ for (const { name, check, recordings, proven, finding } of proofCases) {
         },
       },
     };
-    const ledger = createExampleLedger([example], 'meaning-holder');
+    const ledger = createExampleLedger([example], 'architect');
     if (proven) {
-      await expect(
-        ledger.meaningHolder.confirm(example.id),
-      ).resolves.toMatchObject({
-        example,
-      });
+      await expect(ledger.architect.confirm(example.id)).resolves.toMatchObject(
+        {
+          example,
+        },
+      );
     } else {
-      await expect(ledger.meaningHolder.confirm(example.id)).rejects.toThrow();
+      await expect(ledger.architect.confirm(example.id)).rejects.toThrow();
       expect(ledger.builder.get(example.id)).toEqual(example);
       // A rejected proof must not create a confirmed example.
       expect(() =>
-        ledger.meaningHolder.approveChange(example.id, 'not frozen', {}),
+        ledger.architect.approveChange(example.id, 'not frozen', {}),
       ).toThrow();
     }
     expect(liveRuns).toBe(0);

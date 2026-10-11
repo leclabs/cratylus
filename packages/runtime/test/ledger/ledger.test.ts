@@ -193,25 +193,27 @@ describe('the cut', () => {
     });
   });
 
-  it('opens once, with every context’s one shared meaning-holder', () => {
+  it('opens once, with every context’s one shared architect', () => {
     const repo = repository(['workflow', 'agents']);
-    const holders = ['--meaning-holder', 'workflow=lex'];
+    const architects = ['--architect', 'workflow=lex'];
     expect(
-      refusal(() => wp(repo, 'open', '--branch', 'feature/film', ...holders)),
+      refusal(() =>
+        wp(repo, 'open', '--branch', 'feature/film', ...architects),
+      ),
     ).toContain("'agents'");
     wp(
       repo,
       'open',
       '--branch',
       'feature/film',
-      ...holders,
-      '--meaning-holder',
+      ...architects,
+      '--architect',
       'agents=lex',
     );
     expect(wp(repo, 'state')).toMatchObject({
       branch: 'feature/film',
       contexts: ['agents', 'workflow'],
-      meaningHolders: { workflow: 'lex', agents: 'lex' },
+      architects: { workflow: 'lex', agents: 'lex' },
       phase: 'open',
     });
     expect(
@@ -221,8 +223,8 @@ describe('the cut', () => {
           'open',
           '--branch',
           'x',
-          ...holders,
-          '--meaning-holder',
+          ...architects,
+          '--architect',
           'agents=lex',
         ),
       ),

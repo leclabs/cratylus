@@ -310,7 +310,7 @@ export type ExampleBuilderAccess = Readonly<{
   get: (id: string) => Example | undefined;
   check: (id: string) => Promise<CheckResult>;
 }>;
-export type MeaningHolderAccess = Readonly<{
+export type ArchitectAccess = Readonly<{
   confirm: (id: string) => Promise<FrozenExample>;
   approveChange: (
     id: string,
@@ -321,7 +321,7 @@ export type MeaningHolderAccess = Readonly<{
 }>;
 export type ExampleLedger = Readonly<{
   builder: ExampleBuilderAccess;
-  meaningHolder: MeaningHolderAccess;
+  architect: ArchitectAccess;
 }>;
 
 type PendingChange = Readonly<{
@@ -333,10 +333,9 @@ const pendingExampleChanges = new WeakMap<object, PendingChange>();
 
 export function createExampleLedger(
   examples: readonly Example[],
-  meaningHolder: string,
+  architect: string,
 ): ExampleLedger {
-  if (!meaningHolder.trim())
-    throw new Error('A meaning-holder identity is required.');
+  if (!architect.trim()) throw new Error('An architect identity is required.');
   const drafts = new Map<string, Example>();
   const confirmed = new Map<string, FrozenExample>();
   for (const source of examples) {
@@ -367,7 +366,7 @@ export function createExampleLedger(
     },
     check: (id) => checkExample(currentExample(id)),
   });
-  const meaningHolderAccess: MeaningHolderAccess = Object.freeze({
+  const architectAccess: ArchitectAccess = Object.freeze({
     confirm: async (id) => {
       const example = drafts.get(id);
       if (!example) throw new Error(`No unconfirmed example with id ${id}.`);
@@ -387,10 +386,7 @@ export function createExampleLedger(
         throw new Error('A reason is required to change a confirmed example.');
       const example = { ...clone(frozen.example), ...clone(change) };
       validateExample(example);
-      const history = [
-        ...frozen.history,
-        { approvedBy: meaningHolder, reason },
-      ];
+      const history = [...frozen.history, { approvedBy: architect, reason }];
       const approved = deepFreeze({ example, history });
       pendingExampleChanges.set(approved, {
         ledger,
@@ -403,7 +399,7 @@ export function createExampleLedger(
       const pending = pendingExampleChanges.get(change);
       if (!pending || pending.ledger !== ledger)
         throw new Error(
-          'Refreeze requires a change approved by this meaning-holder.',
+          'Refreeze requires a change approved by this architect.',
         );
       if (confirmed.get(pending.id) !== pending.confirmed)
         throw new Error('The confirmed example changed after this approval.');
@@ -417,7 +413,7 @@ export function createExampleLedger(
       return frozen;
     },
   });
-  return Object.freeze({ builder, meaningHolder: meaningHolderAccess });
+  return Object.freeze({ builder, architect: architectAccess });
 }
 
 // A check is frozen only once it is shown it can fail: a behavioral one by offline proof over its

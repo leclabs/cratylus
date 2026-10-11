@@ -85,7 +85,7 @@ export type LedgerDraft = {
       readonly kind: 'cut';
       readonly branch: string;
       readonly contexts: readonly string[];
-      readonly meaningHolders: Readonly<Record<string, string>>;
+      readonly architects: Readonly<Record<string, string>>;
     }
   | ({ readonly kind: 'submit'; readonly workPackage: string } & PackageFields)
   | {

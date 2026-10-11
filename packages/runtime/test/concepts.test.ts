@@ -473,7 +473,7 @@ describe('the concept journal as a library', () => {
         'seats',
         '--branch',
         'feature/seats',
-        '--meaning-holder',
+        '--architect',
         'booking=desk',
       ],
       { from },

@@ -807,11 +807,11 @@ cratylus workPackage state [options]
 cratylus workPackage open [options]
 ```
 
-| Flag                       |
-| -------------------------- |
-| `--cut <value>`            |
-| `--branch <value>`         |
-| `--meaning-holder <value>` |
+| Flag                  |
+| --------------------- |
+| `--cut <value>`       |
+| `--branch <value>`    |
+| `--architect <value>` |
 
 #### `cratylus workPackage submit`
 
