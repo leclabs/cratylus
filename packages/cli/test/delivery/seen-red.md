@@ -70,3 +70,20 @@ The warning assertions run before any tool call. Version fixtures change the ins
 Installed agents, skills and adapters now use `.cratylus/omp/{agents,skills,extensions}`. Host-owned synthetic declarations, model settings, credential stores, observer extensions and project-local declarations intentionally retain their harness locations. The consumer `film-agent` and synthetic `rubric-judge` readers distinguish those host declarations from installed corpus declarations. Existing capability-inventory equality is unchanged: the lead settled version skew as a runtime-explained capability, so its thin adapter remains covered by that equality.
 
 Only these delivery checks were run; earlier suites are left for the lead's whole check after the build.
+
+## Whole-check harness repair
+
+The lead's first whole check found three plumbing faults, not changes to example meaning:
+
+- The real-omp discovery observer lacked ambient declarations in the CLI's TypeScript environment. `delivery/omp.d.ts` now describes only the read-only host APIs the observer consumes, following the existing agent-launch observer convention.
+- The capability-port fixture enumerated only owned-root modules, excluding its own host-placed witness and registration controls. Its module inventory now includes both the owned-root projection and the host extension surface; provenance assertions remain unchanged.
+- The replacement-package fixture bumped the runtime but left forge pinning the previous version, allowing npm to install a registry runtime below forge. It now packs a dependency-consistent runtime, forge and command together. Its post-install assertions require exactly one runtime in the lockfile, version `999.0.0-cut6`, resolved from a local packed file rather than the registry.
+
+After those repairs, the lead-requested commands ran on the current tree:
+
+```sh
+pnpm --filter cratylus typecheck
+pnpm --filter cratylus exec vitest run test/capability-port test/delivery --reporter verbose
+```
+
+Observed: CLI typecheck passed; 6 test files passed and 1 was skipped, with 102 tests passed and 4 skipped. The substring filter also selected `test/delivery-journal`; all selected tests passed. Every visible delivery example passed, as did the package replacement, host-witness and registration controls. No live model run was taken.

@@ -9,6 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { expect } from 'vitest';
 import { type Host, run, success } from './fixture.js';
 
 export function replaceRuntime(h: Host, explanation?: unknown) {
@@ -18,7 +19,7 @@ export function replaceRuntime(h: Host, explanation?: unknown) {
   );
   mkdirSync(work);
   const packed: string[] = [];
-  for (const name of ['@cratylus/runtime', 'cratylus']) {
+  for (const name of ['@cratylus/runtime', '@cratylus/forge', 'cratylus']) {
     const directory = join(work, name.replace('/', '-'));
     cpSync(join(h.prefix, 'node_modules', name), directory, {
       recursive: true,
@@ -27,9 +28,11 @@ export function replaceRuntime(h: Host, explanation?: unknown) {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     manifest.version = '999.0.0-cut6';
     manifest.scripts = undefined;
-    if (name === 'cratylus')
+    if (name !== '@cratylus/runtime') {
       manifest.dependencies['@cratylus/runtime'] = '999.0.0-cut6';
-    else {
+      if (name === 'cratylus')
+        manifest.dependencies['@cratylus/forge'] = '999.0.0-cut6';
+    } else {
       const entrypoints = new Set<string>();
       function collect(value: unknown) {
         if (typeof value === 'string' && /\.m?js$/.test(value))
@@ -100,4 +103,22 @@ if (!globalThis[cut6Key]) {
       180_000,
     ),
   );
+  const lock = JSON.parse(
+    readFileSync(join(h.prefix, 'package-lock.json'), 'utf8'),
+  ) as {
+    packages: Record<string, { version?: string; resolved?: string }>;
+  };
+  const runtimes = Object.entries(lock.packages).filter(([path]) =>
+    path.endsWith('node_modules/@cratylus/runtime'),
+  );
+  expect(
+    runtimes.map(([path]) => path),
+    'every dependent shares the replacement runtime, with no nested registry copy',
+  ).toEqual(['node_modules/@cratylus/runtime']);
+  const runtime = runtimes[0]![1];
+  expect(runtime.version).toBe('999.0.0-cut6');
+  expect(
+    runtime.resolved,
+    'the replacement runtime comes from the packed fixture, never the registry',
+  ).toMatch(/^file:/);
 }
