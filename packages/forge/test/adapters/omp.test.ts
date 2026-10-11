@@ -939,6 +939,7 @@ describe('omp capability interface', () => {
         efforts: [] as unknown[],
         tools: [] as unknown[],
         status: [] as [string, unknown][],
+        notices: [] as unknown[],
       };
       await factory({
         typebox: { Type: { Unsafe: (schema: unknown) => schema } },
@@ -959,7 +960,7 @@ describe('omp capability interface', () => {
         ui: {
           setStatus: (key: string, text: unknown) =>
             did.status.push([key, text]),
-          notify: () => {},
+          notify: (message: unknown) => did.notices.push(message),
         },
       });
       const fire = async (
@@ -1097,6 +1098,111 @@ describe('omp capability interface', () => {
       }
     });
 
+    /** omp's own system prompt, in its shape: `§` sections, `#` sub-sections, and
+     *  the `<critical>` and project-context blocks. */
+    const OMP_PROMPT = [
+      '§ Role',
+      "You are omp's trusted coding assistant.",
+      '',
+      '# Engineering',
+      '- Correctness, then maintainability.',
+      '§ Runtime',
+      '# Skills & Rules',
+      'Matching skill → read it first.',
+      '# Tool Inventory',
+      '- Read: `read`',
+      '§ Tool Policy',
+      '# General',
+      'SHOULD resolve prerequisites, parallelize independent calls.',
+      'Retry differently; NEVER settle for plausibility when another call reduces uncertainty.',
+      '# Tool I/O',
+      '- Prefer relative paths.',
+      '§ Workflow',
+      '# 1. Scope',
+      '- Plan before opening files.',
+      '# 5. Hand-off',
+      '- Verify with smoke runs.',
+      '§ Delivery',
+      '<contract>',
+      'NEVER fabricate output; ground code/tool/test/doc/source claims.',
+      '</contract>',
+      '§ Critical',
+      '<critical>',
+      '- NEVER yield while actionable work remains.',
+      '</critical><project-context>',
+      '<workstation>',
+      '- OS: linux',
+      '</workstation>',
+      '</project-context>',
+      '',
+      '<critical>',
+      '- MUST default to informed action; do not ask for confirmation.',
+      '</critical>',
+      '',
+      '# Memory',
+      'Recalled memories are background knowledge.',
+      '§ Something omp adds later',
+      'A new harness section.',
+    ].join('\n');
+
+    it('keeps the harness sections of omp’s prompt and drops those prescribing identity, stance or procedure', async () => {
+      omp.agents = [CARTOGRAPHER()];
+      const { did, fire } = await started('cartographer');
+      await fire('session_start');
+      const { systemPrompt } = (await fire('before_agent_start', 'main', {
+        systemPrompt: [OMP_PROMPT],
+      })) as { systemPrompt: string[] };
+      const [base, ...added] = systemPrompt;
+      for (const kept of [
+        '§ Runtime',
+        '# Skills & Rules',
+        '# Tool Inventory',
+        '§ Tool Policy',
+        'SHOULD resolve prerequisites, parallelize independent calls.',
+        '# Tool I/O',
+        '<project-context>',
+        '- OS: linux',
+        '# Memory',
+        '§ Something omp adds later',
+        'A new harness section.',
+      ])
+        expect(base, kept).toContain(kept);
+      for (const dropped of [
+        '§ Role',
+        'trusted coding assistant',
+        '# Engineering',
+        'settle for plausibility',
+        '§ Workflow',
+        '# 1. Scope',
+        'smoke runs',
+        '§ Delivery',
+        'ground code/tool/test/doc/source claims',
+        '§ Critical',
+        '<critical>',
+        'informed action',
+        'actionable work remains',
+      ])
+        expect(base, dropped).not.toContain(dropped);
+      expect(added.join('\n')).toContain(
+        'Map the estuary before drawing its shipping routes.',
+      );
+      // The titles removed are said to the session, once per launch.
+      await fire('before_agent_start', 'main', { systemPrompt: [OMP_PROMPT] });
+      expect(did.notices).toEqual([
+        'Launched as cartographer: omp prompt sections removed: Role, Engineering, Tool Policy: plausibility, Workflow, Delivery, Critical, project context <critical>',
+      ]);
+    });
+
+    it('leaves omp’s prompt of a plain session untouched', async () => {
+      const plain = await started();
+      await plain.fire('session_start');
+      expect(
+        await plain.fire('before_agent_start', 'main', {
+          systemPrompt: [OMP_PROMPT],
+        }),
+      ).toBeUndefined();
+    });
+
     it('never touches the active tools, whatever --tools the operator gave', async () => {
       omp.agents = [CARTOGRAPHER()];
       omp.args = { tools: ['read', 'grep'] };
@@ -1139,6 +1245,7 @@ describe('omp capability interface', () => {
           efforts: [],
           tools: [],
           status: [],
+          notices: [],
         });
       expect(omp.discovered).toEqual([]);
       expect(omp.runtime).toEqual({});
