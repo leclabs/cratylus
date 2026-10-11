@@ -19,7 +19,7 @@ export interface RoleQuestion {
   /** The model role, as the host's settings name it. */
   readonly role: string;
   /** A tier, or the role named for a persona, which otherwise runs on its tier. */
-  readonly kind: 'tier' | 'persona';
+  readonly roleOf: 'tier' | 'persona';
   /** The agents that run on it. */
   readonly agents: readonly string[];
   /** The models offered for it, besides a typed one: those the host already binds. */
@@ -67,7 +67,7 @@ async function askRoute(q: RoleQuestion): Promise<string | undefined> {
   const picked = answer(
     await clack.select<string>({
       message:
-        q.kind === 'tier'
+        q.roleOf === 'tier'
           ? `Model for the ${q.role} tier (${q.agents.join(', ')} fall back to it)`
           : `Model for the ${q.role} persona`,
       options: [
@@ -76,12 +76,12 @@ async function askRoute(q: RoleQuestion): Promise<string | undefined> {
         {
           value: UNBOUND,
           label:
-            q.kind === 'tier'
+            q.roleOf === 'tier'
               ? 'none now (bind it in your settings later)'
               : 'none (it runs on its tier)',
         },
       ],
-      initialValue: q.kind === 'persona' ? UNBOUND : (q.options[0] ?? OTHER),
+      initialValue: q.roleOf === 'persona' ? UNBOUND : (q.options[0] ?? OTHER),
     }),
   );
   if (picked === undefined) return undefined;

@@ -218,7 +218,7 @@ describe('install — model roles', () => {
           harness: async () => 'omp',
           practices: async (offered) => offered.map((p) => p.name),
           routes: async (questions) => {
-            asked = questions.map((q) => `${q.kind}:${q.role}`);
+            asked = questions.map((q) => `${q.roleOf}:${q.role}`);
             return { frontier: 'anthropic/big:high' };
           },
           confirm: async () => true,

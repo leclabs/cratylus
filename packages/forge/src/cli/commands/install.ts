@@ -519,13 +519,13 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     const questions: RoleQuestion[] = [
       ...tierRoles.map((role) => ({
         role,
-        kind: 'tier' as const,
+        roleOf: 'tier' as const,
         agents: tierAgents.get(role) ?? [],
         options,
       })),
       ...tree.personas.map((role) => ({
         role,
-        kind: 'persona' as const,
+        roleOf: 'persona' as const,
         agents: [role],
         options,
       })),
