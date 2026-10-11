@@ -1,8 +1,9 @@
 // Composition: a persona that removes `none` from action-scope widens its reach and is
 // refused, while no composed agent is narrowed to read-only (0068); each role's typed
 // handoff rides its agent as `contract`; every agent carries the per-turn persistence
-// protocol; the architect composes bottom-line-up-front ordering, its decisiveness
-// held by the hand-back guard and its elevation held by the descend guard; an
+// protocol; the architect composes bottom-line-up-front ordering held by the
+// bottom-line guard, its decisiveness held by the hand-back guard and its elevation
+// held by the descend guard; an
 // optional slot may be left unfilled, never another.
 
 import { anchorOf, enforcing } from '@cratylus/schema';
@@ -19,6 +20,7 @@ import { nico } from '../src/agents/nico.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/dimensions/action-scope/none.js';
 import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-line-up-front.js';
+import { bottomLine } from '../src/guards/bottom-line.js';
 import { descend } from '../src/guards/descend.js';
 import { handBack } from '../src/guards/hand-back.js';
 import { assayerRole } from '../src/roles/assayer.js';
@@ -88,10 +90,23 @@ describe('typed handoffs', () => {
 });
 
 describe('the architect', () => {
-  it('composes bottom-line-up-front ordering, fixed', () => {
-    expect(
-      architect.communicationStyle.find((e) => e.slot === 'ordering'),
-    ).toEqual({ value: bottomLineUpFront, level: 'fixed', slot: 'ordering' });
+  it('composes bottom-line-up-front ordering, fixed, held by the bottom-line guard at turn end', () => {
+    const held = architect.communicationStyle.find(
+      (e) => e.slot === 'ordering',
+    );
+    expect(held?.level).toBe('fixed');
+    expect(held && anchorOf(held.value)).toBe(anchorOf(bottomLineUpFront));
+    expect(held && enforcing(held.value) && held.value).toMatchObject({
+      realizedBy: bottomLine.id,
+      events: ['turn.end'],
+      substrate: 'harness',
+    });
+    for (const [name, agent] of Object.entries(holders))
+      if (name !== 'architect')
+        expect(
+          agent.communicationStyle.some((e) => enforcing(e.value)),
+          `${name} composes no guard`,
+        ).toBe(false);
   });
 
   it('composes its decisiveness held by the hand-back guard at turn end', () => {

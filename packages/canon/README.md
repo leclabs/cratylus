@@ -114,6 +114,11 @@ hands an owned decision back to the operator, and refuses the stop when it does,
 the call opens the work itself (source, tests, builds, commands outside the design records) instead
 of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
 does, naming the tell.
+`bottom-line` holds the architect's bottom-line-up-front ordering: at turn end it asks a judge
+whether a reply to the operator buries its bottom line (the conclusion not first, a topic given more
+than one recommended action, or support past what a layman needs, such as record identifiers, entry
+status or how records are edited), and refuses the stop when it does, naming the tell `burying`.
+Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
 A judge answer it cannot read refuses nothing and is reported.
 
 ## The first principle
