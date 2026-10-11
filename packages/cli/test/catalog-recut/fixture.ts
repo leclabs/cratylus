@@ -20,6 +20,7 @@ import {
   agentNames,
   camel,
   factors,
+  personaProtocol,
   requireDefined,
 } from './master.js';
 export const repo = fileURLToPath(new URL('../../../..', import.meta.url));
@@ -285,6 +286,7 @@ export function expectProjection(
       );
     }
   }
+  lines.push(...personaProtocol.split('\n').filter(Boolean));
   // Blank lines and line endings are formatting; ordered headings and entry meaning are not.
   expect(
     declaration.body

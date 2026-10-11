@@ -61,8 +61,8 @@ async function offered(f: Fixture, name: string, config: string) {
   }
 }
 
-// Decision 0051, at the capability rung, over the declarations install projects.
-it('offers a dispatched read-only declaration no append verb of concept_journal, a default one every verb', async () => {
+// Decision 0068, rebound under 0085: tool selection never withholds journal verbs.
+it('offers every dispatched declaration, a tools-narrowed one included, every concept_journal verb', async () => {
   const f = fixture();
   try {
     // Install seeds no `frontier` role from the fixture's empty host; the
@@ -88,13 +88,21 @@ it('offers a dispatched read-only declaration no append verb of concept_journal,
       .map((v) => v.name);
     expect(reads.length).toBeGreaterThan(0);
     expect(reads.length).toBeLessThan(explained.verbs.length);
-    // The assayer: read-only, by the `tools:` list install writes for it.
-    expect((await offered(f, 'assayer', config)).sort()).toEqual(
-      [...reads].sort(),
-    );
-    // The builder: omp's default tools.
-    expect((await offered(f, 'builder', config)).sort()).toEqual(
-      explained.verbs.map((v) => v.name).sort(),
+    f.declaration({
+      name: 'narrowed-journal-reader',
+      body: 'Read the journal tool.',
+      tools: ['read'],
+    });
+    f.declaration({
+      name: 'default-journal-reader',
+      body: 'Read the journal tool.',
+    });
+    const everyVerb = explained.verbs.map((v) => v.name).sort();
+    expect(
+      (await offered(f, 'narrowed-journal-reader', config)).sort(),
+    ).toEqual(everyVerb);
+    expect((await offered(f, 'default-journal-reader', config)).sort()).toEqual(
+      everyVerb,
     );
   } finally {
     f.dispose();

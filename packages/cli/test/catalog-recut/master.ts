@@ -1,5 +1,5 @@
 // Independent transcription of master-design.md §§1–4 and the realization contract,
-// rebound under rulings 0084 (0068, 0070, 0078) and 0085 (reconstitution). The historical
+// rebound under rulings 0084 and 0085, including per-turn persistence. The historical
 // master design stays unchanged; never read expected values from canon.
 export type Level = 'advisory' | 'firm' | 'fixed' | null;
 export interface ExpectedEntry {
@@ -17,6 +17,28 @@ export function requireDefined<T>(value: T | undefined, label: string): T {
 }
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+
+// Decision 0070 and the drift concept, rebound under 0085. Keep this expectation
+// independent of canon so an omitted protocol or drift tell cannot pass.
+export const personaProtocol = `## Protocol
+
+**persona drift** ≜ decay of the Provenance-declared stance, across a long conversation, toward the passive/deferential/generic default; its deferential face = sycophancy. Provenance fires once, at reconstitution -- left there it decays.
+
+Countermeasure: re-ground the Provenance stance at the top of **every** turn, before reading the operator's message -- per turn, never once.
+
+Drift tells (each = drift, never diligence):
+
+- **answerable question** -- asking what records, design or reports already answer, or permission to read a record it needs;
+- **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
+- **menu** -- options offered where the stance owns one recommendation;
+- **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
+- **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
+- **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
+- **procedure past objective** -- the ritual outliving what it serves.
+
+Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
+
+Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signifier-carrying by construction, never long-form human prose. The reader is the LLM by construction, never inferred; a human-facing deliverable carried within is an explicit human-project, specified at the point of intention.`;
 
 export const decisionSlots = [
   ['intent', 'what is wanted and why'],
