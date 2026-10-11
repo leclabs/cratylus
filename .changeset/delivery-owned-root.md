@@ -29,3 +29,6 @@ every omp session start warns when they differ, whichever is older, comparing th
 version the root records with the command's own `--version`; a command lacking a
 capability the installation expects is named in the warning, and the rest still load. `deploy --scope user` goes through the
 same owned root.
+A session started in an omp process that still runs an extension the installation has
+since replaced says so and asks for a restart; dispatch checks and ledger capture know a
+dispatch by its items, never by the name the harness gives its dispatch tool.

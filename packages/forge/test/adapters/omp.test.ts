@@ -564,6 +564,7 @@ describe('omp capability interface', () => {
       [
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
+        "if (process.env.STAND_IN_CALLS) require('node:fs').appendFileSync(process.env.STAND_IN_CALLS, `${JSON.stringify(args)}\\n`);",
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
@@ -893,6 +894,8 @@ describe('omp capability interface', () => {
       command: string;
       explains: readonly string[];
       starts?: number;
+      /** The installation's module replaced on disk after it was loaded. */
+      replaced?: boolean;
     }): Promise<{ warnings: string[][]; tools: string[] }> {
       const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
       tmp.push(dir);
@@ -954,6 +957,8 @@ describe('omp capability interface', () => {
         setModel: async () => {},
         setThinkingLevel: () => {},
       });
+      if (opts.replaced === true)
+        writeFileSync(file, `${module?.content ?? ''}\n// a later install\n`);
       const warnings: string[][] = [];
       for (let i = 0; i < (opts.starts ?? 1); i++) {
         const said: string[] = [];
@@ -1044,6 +1049,22 @@ describe('omp capability interface', () => {
         /does not provide workPackage .*, versionSkew /,
       );
     });
+
+    it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
+      const { warnings } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ALL,
+        replaced: true,
+        starts: 2,
+      });
+      for (const said of warnings) {
+        expect(said).toHaveLength(1);
+        expect(said[0]).toContain('runs the cratylus extension it loaded');
+        expect(said[0]).toContain('ledger capture');
+        expect(said[0]).toMatch(/Restart omp/);
+      }
+    });
   });
 
   describe('launches a main session as an agent declaration omp discovers', () => {
@@ -1102,7 +1123,7 @@ describe('omp capability interface', () => {
 
     /** The emitted module loaded into a stand-in omp started with `--agent
      *  <flag>` (or without it), recording every session action it takes. */
-    async function started(flag?: string) {
+    async function started(flag?: string, cwd = '/the/session/cwd') {
       const factory = await emitted({
         name: 'stand in',
         purpose: 'p',
@@ -1130,7 +1151,7 @@ describe('omp capability interface', () => {
         setActiveTools: async (tools: unknown) => did.tools.push(tools),
       });
       const ctx = (kind = 'main') => ({
-        cwd: '/the/session/cwd',
+        cwd,
         agent: { kind },
         model: { provider: 'fixture', id: 'base' },
         modelRegistry: { standIn: 'registry' },
@@ -1534,6 +1555,101 @@ describe('omp capability interface', () => {
       expect(refused.reason).toBe(
         `lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
       );
+    });
+
+    it('checks and captures a dispatch whatever the harness calls the tool that carries it', async () => {
+      const ASSAYER = () =>
+        declare(
+          {
+            name: 'assayer',
+            description: 'Judges a cut.',
+            assignment: {
+              type: 'object',
+              properties: {
+                cut: { type: 'string', description: 'The cut, by its name.' },
+              },
+              required: ['cut'],
+            },
+          },
+          'Judge the cut.',
+        );
+      omp.agents = [LEAD(), ASSAYER()];
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-dispatch-cwd-'));
+      tmp.push(cwd);
+      const calls = join(cwd, 'calls.jsonl');
+      process.env.STAND_IN_CALLS = calls;
+      try {
+        for (const toolName of ['task', '_task', 'dispatch']) {
+          const session = await started(undefined, cwd);
+          await session.fire('session_start');
+          // A misfit is refused under any name.
+          const refused = (await session.fire('tool_call', 'main', {
+            toolName,
+            toolCallId: `misfit-${toolName}`,
+            input: { tasks: [{ agent: 'lead', task: 'Realize it.' }] },
+          })) as { block: boolean; reason: string };
+          expect(refused.block, toolName).toBe(true);
+          // A typed dispatch is captured, and its settled return too.
+          writeFileSync(calls, '');
+          await session.fire('tool_call', 'main', {
+            toolName,
+            toolCallId: `call-${toolName}`,
+            input: {
+              tasks: [
+                {
+                  agent: 'assayer',
+                  name: 'A',
+                  task: '```assignment\n{"cut":"film"}\n```',
+                },
+              ],
+            },
+          });
+          await session.fire('tool_result', 'main', {
+            toolName,
+            toolCallId: `call-${toolName}`,
+            details: { results: [{ index: 0, id: 'A', output: 'judged' }] },
+          });
+          const events = readFileSync(calls, 'utf8')
+            .trim()
+            .split('\n')
+            .map((line) => JSON.parse(line) as string[])
+            .filter((args) => args[0] === 'lifecycle')
+            .map(
+              (args) => JSON.parse(args[1] ?? '') as Record<string, unknown>,
+            );
+          expect(events, toolName).toEqual([
+            {
+              kind: 'dispatched',
+              transition: `call-${toolName}/A/dispatched`,
+              cut: 'film',
+              role: 'assayer',
+              run: `call-${toolName}/A`,
+            },
+            {
+              kind: 'returned',
+              transition: `call-${toolName}/A/returned`,
+              cut: 'film',
+              role: 'assayer',
+              run: `call-${toolName}/A`,
+            },
+          ]);
+        }
+      } finally {
+        Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
+      }
+    });
+
+    it('takes no other call for a dispatch: one carrying no agent and task is let through unread', async () => {
+      omp.agents = [LEAD()];
+      const session = await started();
+      await session.fire('session_start');
+      expect(
+        await session.fire('tool_call', 'main', {
+          toolName: 'write',
+          toolCallId: 'w',
+          input: { path: 'agent://lead', content: 'Realize it.' },
+        }),
+      ).toBeUndefined();
     });
 
     it('lists the assignment form of each contracted agent a session may dispatch, launched or not, main or dispatched', async () => {

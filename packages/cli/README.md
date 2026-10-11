@@ -305,6 +305,8 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report`, and the `version_skew` tool in omp, report both at any time. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
+omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks and its ledger capture included. Those know a dispatch by what it carries, the agent and task of each item, never by what the harness calls its dispatch tool.
+
 ## Taking it away again
 
 ```sh
