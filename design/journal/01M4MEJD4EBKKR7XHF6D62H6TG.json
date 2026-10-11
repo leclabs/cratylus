@@ -1,0 +1,14 @@
+{
+  "id": "01M4MEJD4EBKKR7XHF6D62H6TG",
+  "at": "2026-10-11T03:02:14.414Z",
+  "kind": "decide",
+  "decisionId": "0084",
+  "context": "agents",
+  "title": "Check ruling: the catalog re-cut's frozen checks rebind to 0068, 0070 and 0078",
+  "situation": "The catalog re-cut's frozen checks assert the assayer read-only, the removal 0068 names for the reconstitution cut, and compare the catalog against the re-cut's master design, whose architect and three-slot communication-style predate 0070 and 0078. The lead asked for a ruling.",
+  "decision": "Yes. Only those assertions rebind to the decisions now in force: the assayer holds the harness's default tools; the architect is the operator's principal architect; communication-style gains the ordering slot, set to bottom-line-up-front and fixed for the architect, left unset for roles that state none. No example text changes; each rebound assertion is seen to fail against the old catalog before it is frozen again.",
+  "consequences": "The re-cut's master design stays as its record; the decisions in force, not the master, are what the rebound checks compare against.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
