@@ -29,3 +29,16 @@ Exit 1. All three task variants (default active, explicit active and inactive) f
 Soft assertions allowed the existing dispatch checks to continue; no dispatch or tool-exposure assertion failed. The joint run reported four failed test cases and 19 skipped, with only the rebound model-binding assertions failing. Full session output: `artifact://2308`.
 
 The main agent should run the same targeted command against the completed delivery build. No green run against the concurrent working tree was performed here.
+
+## 2026-10-11 — fixture location follow-through
+
+After the delivery build landed, the lead requested two location-only fixture fixes and an explicit working-tree verification. `agent-launch/fixture.ts` now creates the host's `.omp/agent/` directory when writing its own `models.yml`; `configuration()` treats a missing host `config.yml` as an empty configuration. Install no longer needs to create either host-owned file or directory. No model-binding, dispatch or example expectation changed.
+
+```sh
+pnpm --filter cratylus exec vitest run \
+  test/agent-launch \
+  test/reconstitution/architect/delegate-stand-in.test.ts \
+  --maxWorkers=1 --no-file-parallelism
+```
+
+Observed against the rebuilt working-tree packages: **5 test files passed, 26 tests passed**, including all six delegate stand-in tests and all three task variants of the rebound illustrator assertion. This later green run does not replace the baseline red evidence above.

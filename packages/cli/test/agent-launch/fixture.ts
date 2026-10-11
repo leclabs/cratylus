@@ -149,6 +149,7 @@ export function fixture(
   cpSync(join(here, 'observe.ts'), observer);
   const observations = join(root, 'observations.jsonl');
   function models(baseUrl = 'http://127.0.0.1:1/v1') {
+    mkdirSync(join(home, '.omp/agent'), { recursive: true });
     writeFileSync(
       join(home, '.omp/agent/models.yml'),
       JSON.stringify({
@@ -262,6 +263,7 @@ export function fixture(
     configure: (config) =>
       writeFileSync(configFile, JSON.stringify(config, null, 2)),
     configuration: () => {
+      if (!existsSync(configFile)) return {};
       // Parse the fixture home's actual YAML, including install's edits, with
       // the same Bun YAML parser available to the real omp executable.
       const parsed = spawnSync(
