@@ -123,6 +123,11 @@ the conversation so far in visible text (the operator's requests, the agent's re
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
 achieved with nothing open left, and the call takes a further step instead of reporting the outcome, and refuses the
 call when it does, naming the tell `procedure past objective`.
+`unrecorded` holds the architect's deliverable, decisions with their reasons: at turn end it asks a
+judge, given the decisions recorded that turn (each concept-journal append that took effect since
+the operator's last message, as its verb and content) and the reply, whether the reply reports an
+owned meaning question settled in that turn with no recorded decision carrying it, and refuses the
+stop when it does, naming the tell `holding open`.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
 A judge answer it cannot read refuses nothing and is reported.
 
