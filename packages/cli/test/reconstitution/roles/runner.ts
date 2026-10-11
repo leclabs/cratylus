@@ -356,6 +356,9 @@ export async function liveRun(
   signal?.throwIfAborted();
   const f = project(scenario);
   try {
+    // Credentials come first, so a continuing session's history carries the
+    // installed role's own model rather than the fixture's fallback.
+    credentials(f);
     const inspection = await launch(
       f,
       scenario.role,
@@ -369,7 +372,6 @@ export async function liveRun(
       Boolean(scenario.history?.length),
     );
     const session = sessionFile(f, scenario, inspection);
-    credentials(f);
     const recording = await launch(
       f,
       scenario.role,
