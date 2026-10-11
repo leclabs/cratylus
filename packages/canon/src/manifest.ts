@@ -307,6 +307,7 @@ export type Evaluation = Value<'evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'concepts',
   'workPackage',
+  'versionSkew',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */

@@ -625,13 +625,13 @@ describe('install — the status line', () => {
     // as they are, and only the status line changes.
     const ROLES = 'modelRoles:\n  default: "@default"\n';
 
-    it('moves a host with no statusLine to custom with the default preset’s own layout plus status, the hook row off', async () => {
+    it('leaves a host that never hid an extension’s status untouched, creating no config', async () => {
       expect(await install('omp')).toBe(0);
-      expect(readFileSync(ompConfig(), 'utf8')).toContain(
-        `statusLine:\n${FULL('  ')}\n`,
-      );
-      expect(out).toContain('added preset: custom; leftSegments: pi, vim');
-      expect(out).toContain('showHookStatus: false');
+      expect(existsSync(ompConfig())).toBe(false);
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n`;
+      const read = seed(host);
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(host);
     });
 
     it('lists status for a corpus that delivers no agent, since any session may start as one', async () => {
@@ -646,15 +646,12 @@ describe('install — the status line', () => {
       expect(read()).toContain('leftSegments: [model, status]');
     });
 
-    it('appends status to a host already on custom and switches the hook row off, changing no other byte, and a second install changes none', async () => {
-      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n`;
+    it('appends status to a host on custom that hid the row beneath the editor, changing no other byte, and a second install changes none', async () => {
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\n  showHookStatus: false\ntheme: dark\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(
-        host.replace(
-          '    - model\n',
-          '    - model\n    - status\n  showHookStatus: false\n',
-        ),
+        host.replace('    - model\n', '    - model\n    - status\n'),
       );
       const after = read();
       out = '';
@@ -663,15 +660,11 @@ describe('install — the status line', () => {
       expect(out).toContain('`status` already listed');
     });
 
-    it('leaves a host on another named preset byte-identical, hook row untouched, and tells it that custom replaces the layout', async () => {
+    it('leaves a host on another named preset that shows extension status byte-identical', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(host);
-      expect(out).toContain('preset `minimal`');
-      expect(out).toContain("REPLACES the `minimal` preset's layout");
-      expect(out).toContain("<each of minimal's own left segments, in order>");
-      expect(out).toContain('showHookStatus: false');
     });
 
     it('shows the row beneath the editor for a host that hid it on a layout with no status segment, and says so', async () => {
@@ -690,28 +683,19 @@ describe('install — the status line', () => {
       expect(out).not.toContain('`showHookStatus` was false');
     });
 
-    it('leaves a no-preset host with a layout of its own byte-identical and gives it the block to write', async () => {
+    it('leaves a no-preset host with a layout of its own byte-identical', async () => {
       const host = `${ROLES}statusLine:\n  leftSegments:\n    - model\n  separator: ascii\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(host);
-      expect(out).toContain('the host set `leftSegments` with no preset');
-      // The exact default-preset block, ready to write (install indents each line).
-      const pad = ' '.repeat(10);
-      expect(out).toContain(
-        `${pad}statusLine:\n${FULL('  ')
-          .split('\n')
-          .map((l) => `${pad}${l}`)
-          .join('\n')}`,
-      );
     });
 
     it('writes nothing under --dry-run, and says what it would add', async () => {
-      const bare = 'theme: dark\n';
-      const read = seed(bare);
+      const hidden = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
+      const read = seed(hidden);
       expect(await install('omp', { dryRun: true })).toBe(0);
-      expect(read()).toBe(bare);
-      expect(out).toContain('would add preset: custom');
+      expect(read()).toBe(hidden);
+      expect(out).toContain('would add');
     });
   });
 });

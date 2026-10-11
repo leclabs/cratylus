@@ -108,6 +108,16 @@ Forge owns nothing semantic and nothing mechanical — **only the mapping**. Any
 about the design, rather than _carries_, is a defect. That single rule is the audit criterion for this
 package.
 
+**Where it places is one root it owns.** Everything forge places for a user on a harness lives under
+`~/.cratylus/<harness>/` (the owned root, decision 0108): the corpus's agents and skills, the
+harness's adapters, and the version of cratylus that projected them. The harness's own surfaces only
+refer into it (for omp, the root linked into its plugin directory as an extension package), and the
+root records every reference and host-file edit it made. So what cratylus placed is known by
+construction, never inferred from names, contents or digests: install replaces the root whole
+(upgrade), uninstall removes it and its references, and a host's own files are never overwritten.
+The runtime reads the recorded version beside its own and reports any difference as version skew,
+choosing between no builds.
+
 ### `schema` — the shapes
 
 The shapes a corpus authors against: what a cell is, what a value is, what carries enforcement —

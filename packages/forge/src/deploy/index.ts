@@ -102,16 +102,13 @@ export {
   type KindRecord,
   type LineHunk,
   lineHunks,
-  markMigratedConfig,
   MANIFEST_REL,
   MANIFEST_VERSION,
   nextDigests,
   nextKindRecord,
   mergeHostEdit,
-  noteHostRoutes,
   readManifest,
   recordedLines,
-  retargetHostEdit,
   type RuntimeConfigRecord,
   staleFiles,
   unattributable,
@@ -159,14 +156,6 @@ export {
   modelRoleLine,
 } from './model-roles.js';
 
-// Scalar settings the host must hold, set where they are nested in its YAML config.
-export {
-  type EnsureHostSettingsResult,
-  type HostSettingChange,
-  type HostSettings,
-  ensureHostSettings,
-} from './host-settings.js';
-
 // The persona commands earlier installs linked into the user's bin dir, removed as
 // recorded: install links none any more, and takes away what an earlier one placed.
 export {
@@ -183,11 +172,7 @@ export {
 // omp's `statusLine` layout (the `status` segment listed, under the `custom` preset that
 // reads a list at all).
 export {
-  type BadgeStatusLineResult,
-  type BadgeStatusLineState,
-  type EnsureBadgeStatusLineOpts,
   type EnsureStatusSegmentOpts,
-  ensureBadgeStatusLine,
   ensureStatusSegment,
   hidesExtensionStatus,
   restoreHostStatusLine,

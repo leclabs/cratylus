@@ -356,9 +356,20 @@ describe('omp agent definition', () => {
       name: 'mav',
       description: 'the builder: ships things',
       key: 'null',
-      model: '@mav',
+      model: '["@mav"]',
     });
     expect(Object.keys(front)).toEqual(['name', 'description', 'key', 'model']);
+  });
+
+  it('names its own model role first, then its tier and effort or the model chosen for it (0111)', () => {
+    const routed = agent({ routing: { tier: 'frontier', effort: 'high' } });
+    expect(frontMatter(agentToOmpMd(routed, CTX)).model).toBe(
+      '["@mav", "@frontier:high"]',
+    );
+    expect(
+      frontMatter(agentToOmpMd(routed, { ...CTX, model: 'openai/chosen' }))
+        .model,
+    ).toBe('["@mav", "openai/chosen"]');
   });
 
   it('writes every setting in the order omp reads them, each only where it applies', () => {
@@ -477,51 +488,10 @@ describe('omp agent definition', () => {
 });
 
 describe('omp model roles', () => {
-  const host = [
-    ['default', 'anthropic/frontier-model:low'],
-    ['smol', 'anthropic/small-model:medium'],
-    ['plan', '@default'],
-    ['second', 'anthropic/other-model:high'],
-    ['alternate', 'openai/other-family:max'],
-    ['later', 'google/third-family'],
-  ] as const;
-
   it("binds an agent's own role to its tier and effort", () => {
     expect(ompRoleRouting.agentRole({ tier: 'frontier', effort: 'high' })).toBe(
       '@frontier:high',
     );
-  });
-
-  it('seeds each tier from the host’s own roles, its thinking level dropped', () => {
-    expect(ompRoleRouting.seedTier('frontier', host)).toBe(
-      'anthropic/frontier-model',
-    );
-    expect(ompRoleRouting.seedTier('fast', host)).toBe('anthropic/small-model');
-    // The first entry, in file order, of another provider than the frontier's; an
-    // alias names no provider.
-    expect(ompRoleRouting.seedTier('frontier-other-family', host)).toBe(
-      'openai/other-family',
-    );
-  });
-
-  it('reads the frontier the host already set when it seeds the other family', () => {
-    expect(
-      ompRoleRouting.seedTier('frontier-other-family', [
-        ['frontier', 'openai/chosen'],
-        ...host,
-      ]),
-    ).toBe('anthropic/frontier-model');
-  });
-
-  it('seeds nothing it has no model for', () => {
-    expect(ompRoleRouting.seedTier('frontier', [])).toBeUndefined();
-    expect(
-      ompRoleRouting.seedTier('fast', [['default', 'a/b']]),
-    ).toBeUndefined();
-    expect(
-      ompRoleRouting.seedTier('frontier-other-family', [['default', 'a/b']]),
-    ).toBeUndefined();
-    expect(ompRoleRouting.seedTier('no-such-tier', host)).toBeUndefined();
   });
 });
 
@@ -534,9 +504,9 @@ describe('omp scopes nothing per agent', () => {
   });
 
   it('places every scoped module in the session root and refuses an agent scope', () => {
-    expect(ompHarnessAdapter.scopedRel?.('m.ts')).toBe('agent/extensions/m.ts');
+    expect(ompHarnessAdapter.scopedRel?.('m.ts')).toBe('extensions/m.ts');
     expect(ompHarnessAdapter.scopedRel?.('m.ts', SESSION_SCOPE)).toBe(
-      'agent/extensions/m.ts',
+      'extensions/m.ts',
     );
     expect(() => ompHarnessAdapter.scopedRel?.('m.ts', 'mav')).toThrow(
       /nothing for one agent/,
@@ -620,7 +590,7 @@ describe('omp capability interface', () => {
     expect(OMP_CRATYLUS_MODULE).toBe('cratylus.ts');
     expect(
       ompHarnessAdapter.scopedRel?.(OMP_CRATYLUS_MODULE, SESSION_SCOPE),
-    ).toBe('agent/extensions/cratylus.ts');
+    ).toBe('extensions/cratylus.ts');
   });
 
   it('asks the installed command for each interface and carries none of its own', () => {
@@ -767,7 +737,11 @@ describe('omp capability interface', () => {
             tools[i]?.loadMode,
           ]),
         ),
-      ).toEqual({ concepts: 'discoverable', workPackage: 'essential' });
+      ).toEqual({
+        concepts: 'discoverable',
+        workPackage: 'essential',
+        versionSkew: 'discoverable',
+      });
     });
 
     it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {

@@ -144,54 +144,37 @@ describe('install — model roles', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('seeds the tiers from the host’s roles and binds each agent to its tier and effort', async () => {
+  const declared = (name: string) =>
+    /^model: (.*)$/m.exec(
+      readFileSync(join(home, '.cratylus/omp/agents', `${name}.md`), 'utf8'),
+    )?.[1];
+
+  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config (0111)', async () => {
     host(HOST);
     expect(await install()).toBe(0);
-    const added = [
-      '  fast: "anthropic/small"',
-      '  frontier: "anthropic/big"',
-      '  frontier-other-family: "openai/other"',
-      '  alpha: "@frontier:high"',
-      '  beta: "@fast:medium"',
-      '  gamma: "@frontier-other-family:high"',
-    ];
-    expect(readFileSync(config(), 'utf8')).toContain(
-      `${HOST.trimEnd()}\n${added.join('\n')}\n`,
-    );
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
+    expect(declared('beta')).toBe('["@beta", "@fast:medium"]');
+    expect(declared('gamma')).toBe('["@gamma", "@frontier-other-family:high"]');
+    expect(readFileSync(config(), 'utf8')).toBe(HOST);
   });
 
-  it('never changes an entry the host set, and says so', async () => {
-    host(`${HOST}  alpha: "my/own"\n  frontier: "openai/chosen"\n`);
-    expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).toContain('  alpha: "my/own"\n');
-    expect(text).toContain('  frontier: "openai/chosen"\n');
-    expect(text).not.toContain('@frontier:high');
-    // The other family is read against the frontier the host set.
-    expect(text).toContain('  frontier-other-family: "anthropic/big"\n');
-    expect(out).toContain('left alone: the model roles frontier, alpha');
-  });
-
-  it('leaves a tier it has nothing to seed from unseeded, and says so', async () => {
-    host('modelRoles:\n  default: anthropic/big\n');
-    expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).not.toMatch(/^ {2}fast:/m);
-    expect(text).not.toMatch(/^ {2}frontier-other-family:/m);
-    expect(text).toContain('  beta: "@fast:medium"\n');
-    expect(out).toContain('could not seed the model role fast');
+  it('asks nothing about a role the host binds, and says a choice for it is left', async () => {
+    host(`${HOST}  alpha: "my/own"\n`);
+    expect(await install({ modelRoles: 'alpha=openai/picked' })).toBe(0);
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
     expect(out).toContain(
-      'could not seed the model role frontier-other-family',
+      'the host already binds the model role alpha, so it is left as the host set it',
     );
+    expect(readFileSync(config(), 'utf8')).toBe(`${HOST}  alpha: "my/own"\n`);
   });
 
-  it('keys --model-roles by agent name and refuses a name no agent has', async () => {
+  it('keys --model-roles by agent name, puts the choice in the declaration, and refuses a name no agent has', async () => {
     host(HOST);
     expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toContain(
-      '  beta: "openai/picked"\n',
-    );
+    expect(declared('beta')).toBe('["@beta", "openai/picked"]');
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
     expect(out).toContain('models you chose: beta → openai/picked');
+    expect(readFileSync(config(), 'utf8')).toBe(HOST);
     out = '';
     expect(await install({ modelRoles: 'builder=x/y' })).toBe(1);
     expect(out).toContain(
@@ -199,40 +182,12 @@ describe('install — model roles', () => {
     );
   });
 
-  it('moves its own seed when the agent’s effort changes, and keeps the operator’s choice', async () => {
+  it('follows the agent’s effort on reinstall, and uninstall leaves the host’s file byte for byte', async () => {
     host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
-    design({ alpha: 'xhigh', beta: 'low' });
     expect(await install()).toBe(0);
-    const text = readFileSync(config(), 'utf8');
-    expect(text).toContain('  alpha: "@frontier:xhigh"\n');
-    expect(text).not.toContain('@frontier:high"');
-    expect(text).toContain('  beta: "openai/picked"\n');
-  });
-
-  it('edits a host config written as one JSON document', async () => {
-    const doc = {
-      modelRoles: { default: 'anthropic/big:low', smol: 'anthropic/small' },
-    };
-    host(JSON.stringify(doc));
-    expect(await install()).toBe(0);
-    expect(JSON.parse(readFileSync(config(), 'utf8')).modelRoles).toEqual({
-      ...doc.modelRoles,
-      fast: 'anthropic/small',
-      frontier: 'anthropic/big',
-      alpha: '@frontier:high',
-      beta: '@fast:medium',
-      gamma: '@frontier-other-family:high',
-    });
-    expect(runUninstall({ harness: 'omp', home })).toBe(0);
-    expect(readFileSync(config(), 'utf8')).toBe(JSON.stringify(doc));
-  });
-
-  it('is taken back by uninstall, the host’s file byte for byte', async () => {
-    host(HOST);
-    expect(await install({ modelRoles: 'beta=openai/picked' })).toBe(0);
     design({ alpha: 'xhigh' });
     expect(await install()).toBe(0);
+    expect(declared('alpha')).toBe('["@alpha", "@frontier:xhigh"]');
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     expect(readFileSync(config(), 'utf8')).toBe(HOST);
   });

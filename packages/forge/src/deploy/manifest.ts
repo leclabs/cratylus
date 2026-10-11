@@ -576,85 +576,6 @@ export function recordedLines(harnessDir: string, file: string): Set<string> {
   return lines;
 }
 
-/** Move the record of one line install put into `file` to the line that now stands
- *  there: `from` is what was recorded, `to` what install replaced it with. Where no
- *  hunk holds `from` (a host installed before edits were recorded), `adopted` — the
- *  new line as a hunk of its own — is recorded instead. */
-export function retargetHostEdit(
-  harnessDir: string,
-  file: string,
-  from: string,
-  to: string,
-  adopted: LineHunk,
-): void {
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
-  const moved = (prior?.hunks ?? []).map((h) =>
-    h.before.length === 0 && h.after.includes(from)
-      ? { ...h, after: h.after.map((l) => (l === from ? to : l)) }
-      : h,
-  );
-  const found = moved.some((h, i) => h !== prior?.hunks[i]);
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: {
-        created: prior?.created ?? false,
-        ...prior,
-        hunks: found ? moved : [...(prior?.hunks ?? []), adopted],
-      },
-    },
-  });
-}
-
-/** Record which model roles' entries are now the operator's choice (`chosen`), and
- *  which are install's own seed, each with the value install wrote (`seeded`). */
-export function noteHostRoutes(
-  harnessDir: string,
-  chosen: readonly string[],
-  seeded: Readonly<Record<string, string>>,
-): void {
-  const own = Object.keys(seeded);
-  if (chosen.length === 0 && own.length === 0) return;
-  const manifest = readManifest(harnessDir);
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostRoutes: [
-      ...manifest.hostRoutes.filter(
-        (r) => !own.includes(r) && !chosen.includes(r),
-      ),
-      ...chosen,
-    ],
-    modelRoleSeeds: {
-      ...Object.fromEntries(
-        Object.entries(manifest.modelRoleSeeds).filter(
-          ([r]) => !chosen.includes(r),
-        ),
-      ),
-      ...seeded,
-    },
-  });
-}
-
-/** Mark `file` as one an install from before edits were recorded may have changed in ways
- *  nothing records — a value it turned, a line it put in a list of the host's. Called by
- *  the install that migrates the record, so the mark outlives the rewrite that makes the
- *  record look as if it had always recorded edits; an uninstall reports the file for it. */
-export function markMigratedConfig(harnessDir: string, file: string): void {
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: { created: false, hunks: [], ...prior, migrated: true },
-    },
-  });
-}
-
 /** A hunk that records `count` lines ALREADY in `text`, from line `from`, as install's:
  *  what an install from before edits were recorded put there. */
 export function adoptedHunk(
@@ -692,7 +613,7 @@ export function recordsHostEdits(harnessDir: string): boolean {
  *  blind to a harness whose agents carry another extension: a tree filtered by
  *  `.md` matches nothing, and nothing reads as "no orphans". */
 const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
-  agent: { dir: 'agent/agents', extended: true },
+  agent: { dir: 'agents', extended: true },
   skill: { dir: 'skills' },
   hooks: { dir: 'hooks' },
 };

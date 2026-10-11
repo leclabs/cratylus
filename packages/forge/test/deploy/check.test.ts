@@ -30,7 +30,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runDeploy } from '../../src/cli/commands/deploy.js';
-import { deploySingle } from '../../src/deploy/index.js';
+import { deploySingle, ownedRootIn } from '../../src/deploy/index.js';
 import {
   type AuditOpts,
   auditLocal,
@@ -81,8 +81,9 @@ function deployedHost(): DeployedHost {
       kind,
       scope: 'user',
       tree: { agentsDir, skillsDir },
-      home,
-      harnessHome: OMP.home,
+      // A user-scope host IS the owned root: the placers write its layout there.
+      home: ownedRootIn(OMP, home),
+      harnessHome: OMP.name,
       agentExt: OMP.agentExt,
       agentRel: (name) => OMP.agentRel(name),
       skillRel: (name, agents) => OMP.skillRel(name, agents),
@@ -95,7 +96,7 @@ function deployedHost(): DeployedHost {
     agentsDir,
     skillsDir,
     home,
-    harnessDir: join(home, '.omp'),
+    harnessDir: ownedRootIn(OMP, home),
     layout: OMP_LAYOUT,
   };
 }
@@ -343,7 +344,7 @@ describe('cratylus deploy --check', () => {
     expect(rc).toBe(1);
     const said = lines.join('\n');
     expect(said).toMatch(/STALE/);
-    expect(said).toMatch(/agent\/agents\/nico\.md/);
+    expect(said).toMatch(/(?<!\/)agents\/nico\.md/);
     expect(said).toContain(LIVE);
     expect(said).toContain(SUPERSEDED);
   });

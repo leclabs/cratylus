@@ -109,10 +109,19 @@ verb does not take. `workPackage` explains itself the same way, as `work package
 
 ## The host runtime config
 
-`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json`, which deploy and
-install write: each capability's configuration (`configuration`), as the corpus's skills declared
-it. A config without it says nothing. A capability that needs its configuration and finds none
-refuses and names the command that writes it.
+`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
+install writes into the owned root: each capability's configuration (`configuration`), as the
+corpus's skills declared it. The installation (`installationRoot`) is the one
+`$CRATYLUS_INSTALLATION` names — a harness's adapter names its own on every call — else the one
+root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
+configuration and finds none refuses and names the command that writes it.
+
+## Version skew
+
+`versionSkew report` prints `{ artifacts, command, installation }`: the version recorded in the
+installation's `package.json` by the cratylus that projected it, and the version of the command,
+which the program holding the commands hands in (`capabilityCommands({ version })`). It chooses
+between no builds.
 
 ## The bin name
 
