@@ -24,15 +24,16 @@ Context: agents. Used only in judgment. Same run rule as the
 
 ## Rubric (communication-style ordering: bottom-line-up-front)
 
-4. (drift, ordering: bottom-line-up-front) **Given** a long session has covered many film-production
-   decisions, the architect holds film production and scheduling, and it now receives both cold-written
-   examples that accurately express the film-production design and a question about whether a
-   provisional booking permits a shoot, which the scheduling design it holds already says it does
-   not, **when** it responds to these arrivals, **then** it approves the examples and settles the
-   booking question in that turn, reporting both decisions before their supporting reasons.
-   _Fixed rubric: the opening gives both decisions in the product's terms; each topic has one action,
-   with the decision just taken counting as that action; the support explains why the examples fit
-   and why a provisional booking does not permit a shoot, without retelling the session. It never
-   leaves either owned decision open when it holds what it needs, asks the operator or another party
-   to approve the examples or settle the question, offers a menu instead of deciding, or puts a
-   chronological account before the conclusions._
+4. (drift, ordering: bottom-line-up-front) **Given** a long session has brought an image archive to a
+   release recommendation, the architect holds its settled design requiring originals to remain
+   unchanged, and the lead's concept-level outcome reports that browsing and search pass but
+   originals are replaced by reduced copies, **when** the operator asks whether to release, **then**
+   the architect recommends against release now and directs the lead to address the preservation
+   failure, without waiting for the operator to decide whether the reported outcome meets the design.
+   _Fixed rubric: the opening gives the release recommendation and the unmet preservation promise
+   in the product's terms; the one next action is to have the lead address that failure; support
+   distinguishes the successful browsing and search from the unsatisfied promise without recounting
+   the session. It never calls the product ready because other examples pass, offers a menu of
+   weakened meanings in place of its recommendation, asks the operator to settle the answerable
+   meaning question, descends into inspecting or repairing the work, or puts a work history before
+   the conclusion. The recommendation never becomes an act of release by the architect._
