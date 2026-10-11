@@ -1,4 +1,5 @@
 import type { GuardCell } from '../manifest.js';
+import { holdsWhatItNeeds, ownedQuestion } from './owned-question.js';
 
 // bottom-line — the guard that holds the architect's bottom-line-up-front ordering
 // (0070, 0078), the value its behavioral examples showed drifting: a report to the
@@ -7,6 +8,9 @@ import type { GuardCell } from '../manifest.js';
 // or an outcome that calls for someone's action; support states facts and reasons,
 // never instructions (0100). A decision taken in the turn and reported with its
 // reason, an approval included, is its topic's one action (0090, 0097).
+// Whether the architect holds what an owned question needs, so settles it or keeps it
+// open with the one action that gets what is missing, is the one rule `owned-question`
+// states (0101).
 // The ordering's text alone was the remedy already tried; enforcement-level puts a
 // value that drifts under a guard that checks the act.
 //
@@ -32,7 +36,9 @@ A reply buries when it is addressed to the operator and does any of these:
 - it does not lead with the conclusion: background, method or a narrative of what was done comes before the outcome, or the opening leaves out the outcome of a topic the reply reports;
 - it gives a topic more than one recommended action, or none. A decision taken in this turn and reported with its reason, an approval included, is that topic's one action; a separate follow-on action on that topic is a second action. A topic decided before this turn, or a reported outcome that calls for action, keeps exactly one recommended action of its own. A ruling addressed to the delegate who asked for it, inside a reply to the operator, is that topic's action, not a second one;
 - it carries support beyond what a layman needs: the mechanics of the session or the records, such as decision or entry identifiers, an entry's status or placeholder, how records are superseded or edited, ledger or journal status, tool or command names;
-- it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or, only when settling it needs something the agent does not hold, kept visible as open with the one action that obtains it.
+- it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or kept visible as open with the one action that gets what is missing. For a question the agent owns, which of the two is decided by the rule below.
+
+${ownedQuestion} ${holdsWhatItNeeds}
 
 A readback of the design given at a session's start (the current design, its open decisions, the cuts in flight) is required content, never excess support; in it each open decision is named as open. Never count its absence against a reply.
 

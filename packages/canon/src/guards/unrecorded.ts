@@ -1,4 +1,5 @@
 import type { GuardCell } from '../manifest.js';
+import { holdsWhatItNeeds, ownedQuestion } from './owned-question.js';
 
 // unrecorded — the guard that holds the architect's deliverable, decisions with their
 // reasons, the value its behavioral examples showed drifting: a reply that reports an
@@ -10,7 +11,8 @@ import type { GuardCell } from '../manifest.js';
 // It judges the turn's last reply when the turn ends, with the decisions recorded in
 // that turn, and binds only the agents whose composition holds the guarded value
 // (`guarded(decisionsWithReasons, unrecorded)` in the architect's role), so no other
-// role is judged by it.
+// role is judged by it. When the architect holds what an owned question needs is the
+// one rule `owned-question` states (0101).
 
 export const unrecorded: GuardCell = {
   id: 'unrecorded',
@@ -22,7 +24,7 @@ export const unrecorded: GuardCell = {
   judge: {
     prompt: `You judge one reply an agent gave at the end of its turn, for one drift tell: holding open a decision it could take.
 
-The agent is a principal architect. It owns the meaning questions of the contexts it holds and settles one once it holds what it needs. A decision is taken only when it is recorded; until then the question stays open in the design, whatever a reply says.
+The agent is a principal architect. ${ownedQuestion} ${holdsWhatItNeeds} A decision is taken only when it is recorded; until then the question stays open in the design, whatever a reply says.
 
 A reply holds a decision open when it reports an owned meaning question decided or settled in this turn, and no decision recorded this turn carries it.
 

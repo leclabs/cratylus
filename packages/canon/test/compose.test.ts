@@ -4,7 +4,9 @@
 // protocol; the architect composes bottom-line-up-front ordering held by the
 // bottom-line guard, its decisiveness held by the hand-back guard, its elevation
 // held by the descend guard, its stopping rule held by the past-objective guard and
-// its deliverable held by the unrecorded guard; an
+// its deliverable held by the unrecorded guard; the guards whose judgment turns on
+// whether the architect holds what an owned question needs read one rule, and
+// past-objective never refuses settling one (0101); an
 // optional slot may be left unfilled, never another.
 
 import { anchorOf, enforcing } from '@cratylus/schema';
@@ -24,6 +26,10 @@ import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-
 import { bottomLine } from '../src/guards/bottom-line.js';
 import { descend } from '../src/guards/descend.js';
 import { handBack } from '../src/guards/hand-back.js';
+import {
+  holdsWhatItNeeds,
+  ownedQuestion,
+} from '../src/guards/owned-question.js';
 import { pastObjective } from '../src/guards/past-objective.js';
 import { unrecorded } from '../src/guards/unrecorded.js';
 import { assayerRole } from '../src/roles/assayer.js';
@@ -180,6 +186,25 @@ describe('the architect', () => {
           agent.deliverable.some((e) => enforcing(e.value)),
           `${name} composes no guard`,
         ).toBe(false);
+  });
+
+  it('judges whether it holds what an owned question needs by one rule, read by every guard turning on it, and never refuses settling one as past its objective (0101)', () => {
+    const count = (text: string, part: string) => text.split(part).length - 1;
+    for (const guard of [handBack, bottomLine, unrecorded]) {
+      expect(count(guard.judge.prompt, ownedQuestion), guard.id).toBe(1);
+      expect(count(guard.judge.prompt, holdsWhatItNeeds), guard.id).toBe(1);
+      // No guard phrases the rule's grounds of its own beside the shared one.
+      expect(count(guard.judge.prompt, 'known practice'), guard.id).toBe(1);
+    }
+    expect(count(pastObjective.judge.prompt, ownedQuestion)).toBe(1);
+    expect(pastObjective.judge.prompt).not.toContain(holdsWhatItNeeds);
+    expect(pastObjective.judge.prompt).not.toContain('known practice');
+    expect(pastObjective.judge.prompt).toContain(
+      'a call that takes or records a decision on a question the agent owns is never past the objective, whatever the conversation shows met and whatever the latest message asked',
+    );
+    expect(pastObjective.judge.prompt).toContain(
+      'Whether the agent held what that decision needed is not yours to judge',
+    );
   });
 
   it('carries every drift tell in the persistence protocol, as every agent does', () => {

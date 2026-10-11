@@ -127,12 +127,21 @@ one action of its own.
 the conversation so far in visible text (the operator's requests, the agent's replies and its
 delegates' reports) and the call, whether the conversation shows the objective met, its outcome
 achieved with nothing open left, and the call takes a further step instead of reporting the outcome, and refuses the
-call when it does, naming the tell `procedure past objective`.
+call when it does, naming the tell `procedure past objective`. A call that takes or records a
+decision on a meaning question the architect owns is never past the objective, in any turn.
 `unrecorded` holds the architect's deliverable, decisions with their reasons: at turn end it asks a
 judge, given the decisions recorded that turn (each concept-journal append that took effect since
 the operator's last message, as its verb and content) and the reply, whether the reply reports an
 owned meaning question settled in that turn with no recorded decision carrying it, and refuses the
 stop when it does, naming the tell `holding open`.
+Whether the architect holds what an owned meaning question needs is one rule, stated once in
+`src/guards/owned-question.ts` and read by every guard whose judgment turns on it (`hand-back`,
+`bottom-line`, `unrecorded`): it holds it when the design, the examples, the conversation or known
+practice of the product's industry gives it a sound ruling, and lacks it only when the ruling depends
+on something only another party holds. Holding it, the architect settles and records the question;
+lacking it, it keeps the question open and reports the one action that gets what is missing.
+`past-objective` takes from it only what an owned question is, and never judges whether the
+architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
 A judge answer it cannot read refuses nothing and is reported.
 
