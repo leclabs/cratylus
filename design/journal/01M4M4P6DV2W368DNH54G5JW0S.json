@@ -1,0 +1,14 @@
+{
+  "id": "01M4M4P6DV2W368DNH54G5JW0S",
+  "at": "2026-10-11T00:09:32.859Z",
+  "kind": "decide",
+  "decisionId": "0071",
+  "context": "workflow",
+  "title": "Cut: reconstitution and handoffs",
+  "situation": "A fresh session could not reconstitute the workflow: the journal holds about sixty separate concepts and no whole account; it did not record which cuts were finished but unmerged; and the workflow itself ships nowhere, so a product's users, whose own journals hold only their own contexts, receive the roles but never the workflow they serve. The handoff seams are untyped (0062): example 19 of the execution cut, the lead's report in concept terms, stays an open finding because the lead relays the file names in its assayers' evidence. Hardening notes and efficiency figures have lived only in reports.",
+  "decision": "One cut. (1) A computed overview of each context, rendered by the journal from its concepts as plain prose, root concept first and the rest in the order they build on each other, with what is open and what is in flight, read first at every reconstitution. (2) The workflow ships to the product's users: its overview and its procedure delivered with the roles, as skills, so a consumer's agents know the workflow without cratylus's own journal. (3) A cut's state is recorded in the journal from dispatch to integration, so a session knows what is in flight. (4) Typed handoffs: each assignment and deliverable carries a schema in the design's terms, checked when an agent is dispatched or launched, the deliverable bound as the harness's output schema, and evaluation scenarios built from it; the lead's deliverable holds per example its concept, outcome and evidence named by example and check, the assayers' verdicts, efficiency figures and hardening notes. (5) The architect as principal (0070). (6) Every agent's default tools (0068): the assayer's read-only restrictions are removed. Example 19 is its first example.",
+  "consequences": "Next after the two parked cuts are integrated (0072).",
+  "status": "open",
+  "supersedes": "0064",
+  "supersedesEntry": "01M4KXXATZ1YHQE0196RCKCGMR"
+}
