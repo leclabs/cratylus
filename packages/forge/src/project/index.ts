@@ -27,14 +27,9 @@
 // not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import {
-  type Explanation,
-  JOURNAL,
-  WORK_PACKAGE,
-  explain,
-} from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { hasEventTapStrategy } from '@cratylus/runtime/capabilities/event-tap';
 import {
@@ -395,14 +390,50 @@ async function declaredGuards(
   return byId;
 }
 
-/** The runtime capabilities a harness is offered, each as it explains itself. */
-const EXPLAINED_CAPABILITIES: readonly (readonly [
-  ProjectedCapability['capability'],
-  Explanation,
-])[] = [
-  ['concepts', explain(JOURNAL)],
-  ['workPackage', explain(WORK_PACKAGE)],
+/** The runtime capabilities a harness is offered, those that explain themselves. */
+const EXPLAINED_CAPABILITIES: readonly ProjectedCapability['capability'][] = [
+  'concepts',
+  'workPackage',
 ];
+
+/** A capability as `<bin> <capability> --explain` answers it: the shape the
+ *  prose is generated from. */
+export interface Explanation {
+  readonly name: string;
+  readonly purpose: string;
+  readonly when: string;
+  readonly verbs: readonly {
+    readonly name: string;
+    readonly concept: string;
+    readonly purpose: string;
+    readonly when: string;
+    readonly effect: string;
+    readonly parameters: readonly {
+      readonly name: string;
+      readonly description: string;
+      readonly required: boolean;
+      readonly positional?: true;
+    }[];
+  }[];
+}
+
+/**
+ * A capability's own explanation, asked of the installed command, as every other
+ * route to a capability is: projection never reaches the runtime's code. Refuses,
+ * naming the command, when it cannot answer — prose is never written from anything
+ * but the capability's own account.
+ */
+function explanationOf(capability: string): Explanation {
+  const asked = spawnSync(CLI_BIN, [capability, '--explain'], {
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  if (asked.error !== undefined || asked.status !== 0)
+    throw new Error(
+      `the prose form of '${capability}' is generated from \`${CLI_BIN} ${capability} --explain\`, which did not answer: ${asked.error?.message ?? (asked.stderr.trim() || `exit ${asked.status}`)}`,
+    );
+  return JSON.parse(asked.stdout) as Explanation;
+}
 
 /**
  * A capability as prose, the last resort: generated from its own explanation
@@ -973,7 +1004,7 @@ export async function projectPluginSet(
   // rendered agent carries and the tree holds as a file of its own.
   const nativeCapabilities = opts.adapter.nativeCapabilities ?? {};
   const capabilities: ProjectedCapability[] = EXPLAINED_CAPABILITIES.map(
-    ([capability]) => {
+    (capability) => {
       const facility = nativeCapabilities[capability];
       if (facility !== undefined)
         return { capability, form: 'native', facility };
@@ -984,9 +1015,14 @@ export async function projectPluginSet(
       };
     },
   );
-  const prose = EXPLAINED_CAPABILITIES.flatMap(([capability, explained]) =>
-    capabilities.some((c) => c.capability === capability && c.form === 'prose')
-      ? [{ capability, text: capabilityProse(capability, explained) }]
+  const prose = capabilities.flatMap(({ capability, form }) =>
+    form === 'prose'
+      ? [
+          {
+            capability,
+            text: capabilityProse(capability, explanationOf(capability)),
+          },
+        ]
       : [],
   );
   const agentProse =
