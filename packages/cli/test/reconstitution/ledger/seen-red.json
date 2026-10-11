@@ -1,0 +1,94 @@
+{
+  "cut": "reconstitution",
+  "command": "pnpm --filter cratylus exec vitest run test/reconstitution/ledger/structural.test.ts",
+  "result": "16 tests executed, 16 failed; no import or fixture errors",
+  "evidence": "artifact://107",
+  "checks": [
+    {
+      "example": "workflow/4",
+      "check": "structural.test.ts: workflow/4 — harness dispatch and return put the cut in flight, not approved",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/5",
+      "check": "structural.test.ts: workflow/5 — two independent approvals complete only after every package is approved",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/6",
+      "check": "structural.test.ts: workflow/6 — repeated transition is refused without rewriting or changing state",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/7",
+      "check": "structural.test.ts: workflow/7 — each request computes phase, statuses and readiness from current events",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/8",
+      "check": "structural.test.ts: workflow/8 — branch-local ledger and journal entries arrive only with their merge",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/9",
+      "check": "structural.test.ts: workflow/9 — a builder retrospective message cannot create a harness return",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/10",
+      "check": "structural.test.ts: workflow/10 — a complete cut commit is silent and never refused",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'; post-commit assertions have not yet been reached"
+    },
+    {
+      "example": "workflow/11",
+      "check": "structural.test.ts: workflow/11 — incomplete declaration warns of edit, not approved shoot, without changing ledger",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'; post-commit assertions have not yet been reached"
+    },
+    {
+      "example": "workflow/12",
+      "check": "structural.test.ts: workflow/12 — ordinary commit is silent: %s (all three messages)",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'; post-commit assertions have not yet been reached"
+    },
+    {
+      "example": "workflow/13",
+      "check": "structural.test.ts: workflow/13 — watched scope warns even without a completion keyword",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'; post-commit assertions have not yet been reached"
+    },
+    {
+      "example": "workflow/25",
+      "check": "structural.test.ts: workflow/25 — one assayer cannot approve for both assayers",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/26",
+      "check": "structural.test.ts: workflow/26 — agreeing findings return edit to build while shoot is approved",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/27",
+      "check": "structural.test.ts: workflow/27 — shared meaning-holder records one cut with separate context example sets",
+      "seenRed": true,
+      "reason": "workPackage open is missing: unknown verb 'open'"
+    },
+    {
+      "example": "workflow/28",
+      "check": "structural.test.ts: workflow/28 — distinct or missing meaning-holders refuse one convenient cross-context cut",
+      "seenRed": true,
+      "reason": "refusal did not name film-production; it only reported unknown verb 'open'"
+    }
+  ],
+  "judgmentBoundary": "workflow/28's reviewable-change-size sentence has no machine field in section 10. Lead assigned that sentence to assayer judgment; distinct/missing holder refusals are structurally bound.",
+  "notes": "Checks use lifecycle and workPackage state, real git commits with a completion-check post-commit hook, and branch switching plus merge. Missing open currently stops later assertions; no claim that lifecycle, completion hook, or merge behavior has yet been exercised successfully. Inventory assertions follow the lead's clarified section 1."
+}

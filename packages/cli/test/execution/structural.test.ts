@@ -1,4 +1,4 @@
-// Binds design/examples/workflow/execution.md, structural examples 1–14.
+// Binds execution examples 1–3, 5, 7, 9–14; 4, 6 and 8 live in rebound.test.ts (0083).
 // pnpm --filter cratylus exec vitest run test/execution/structural.test.ts
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -13,11 +13,11 @@ import {
   type Submission,
   command,
   cut,
-  dispatch,
   example,
   examples,
   fixture,
   git,
+  harnessEvent,
   levelNames,
   log,
   refuse,
@@ -41,7 +41,8 @@ function readyPair() {
   examples(f, [example(1, 'window'), example(2, 'reservation')]);
   submit(f, 'windows', ['window'], ['windows/']);
   submit(f, 'reservations', ['reservation'], ['reservations/']);
-  dispatch(f, 1, ['windows', 'reservations']);
+  for (const name of ['windows', 'reservations'])
+    harnessEvent(f, 'dispatched', 'builder', name, name);
 }
 function state() {
   const result = run(f, 'concepts', 'state');
@@ -70,7 +71,11 @@ describe('execution: work packages and counts', () => {
       state: 'submitted',
     });
     expect(levelNames(answer)).toEqual([{ level: 1, packages: ['delivery'] }]);
-    expect(dispatch(f, 1, ['delivery']).packages[0]!.examples).toEqual([1]);
+    expect(
+      command<Assignment>(f, 'assignment', 'delivery').examples.map(
+        (e) => e.number,
+      ),
+    ).toEqual([1]);
   });
 
   it('Example 2 — a shared output has one earlier owner and spanning examples go downstream', () => {
@@ -138,24 +143,6 @@ describe('execution: work packages and counts', () => {
       expect(error).toContain(name);
   });
 
-  it('Example 4 — unserved concepts block all dispatch until both are served', () => {
-    examples(f, [example(1, 'window'), example(2, 'reservation')]);
-    submit(f, 'windows', ['window']);
-    expect(refuse(f, 'dispatch')).toContain('reservation');
-    expect(command<Levels>(f, 'levels').levels[0]!.packages).toEqual([
-      { name: 'windows', state: 'submitted' },
-    ]);
-    submit(f, 'reservations', ['reservation']);
-    const answer = dispatch(f, 1, ['windows', 'reservations']);
-    expect(answer.concepts).toEqual(
-      expect.arrayContaining([
-        { name: 'window', servedBy: ['windows'] },
-        { name: 'reservation', servedBy: ['reservations'] },
-      ]),
-    );
-    expect(command<Inventory>(f, 'inventory').unserved).toEqual([]);
-  });
-
   it('Example 5 — a cycle names its packages instead of giving levels', () => {
     single();
     submit(f, 'A', ['delivery']);
@@ -164,31 +151,6 @@ describe('execution: work packages and counts', () => {
     const error = refuse(f, 'levels');
     expect(error).toContain('A');
     expect(error).toContain('B');
-  });
-
-  it('Example 6 — levels are computed and dispatch waits for every package in the previous level', () => {
-    single();
-    submit(f, 'A', ['delivery']);
-    submit(f, 'B', ['delivery']);
-    submit(f, 'C', ['delivery'], ['C.txt'], ['A']);
-    submit(f, 'D', ['delivery'], ['D.txt'], ['B']);
-    submit(f, 'E', ['delivery'], ['E.txt'], ['C', 'D']);
-    expect(levelNames(command<Levels>(f, 'levels'))).toEqual([
-      { level: 1, packages: ['A', 'B'] },
-      { level: 2, packages: ['C', 'D'] },
-      { level: 3, packages: ['E'] },
-    ]);
-    dispatch(f, 1, ['A', 'B']);
-    refuse(f, 'dispatch');
-    command(f, 'finish', 'A');
-    refuse(f, 'dispatch');
-    command(f, 'finish', 'B');
-    dispatch(f, 2, ['C', 'D']);
-    refuse(f, 'dispatch');
-    command(f, 'finish', 'D');
-    refuse(f, 'dispatch');
-    command(f, 'finish', 'C');
-    dispatch(f, 3, ['E']);
   });
 
   it('Example 7 — updates replace outputs and dependencies and recompute levels', () => {
@@ -215,16 +177,6 @@ describe('execution: work packages and counts', () => {
     const assignment = command<Assignment>(f, 'assignment', 'leaf');
     expect(assignment.outputs).toEqual(['new.txt']);
     expect(assignment.dependsOn).toEqual(['middle']);
-  });
-
-  it('Example 8 — no ready package is a refusal, not an empty dispatch', () => {
-    single();
-    refuse(f, 'dispatch');
-    submit(f, 'delivery', ['delivery']);
-    dispatch(f, 1, ['delivery']);
-    refuse(f, 'dispatch');
-    command(f, 'finish', 'delivery');
-    refuse(f, 'dispatch');
   });
 
   it('Example 9 — assignments partition the visible examples and inventory accounts for all', () => {
@@ -259,6 +211,8 @@ describe('execution: work packages and counts', () => {
     expect(inventory.examples).toEqual(
       expect.arrayContaining(
         entries.map((entry) => ({
+          ref: `booking/${entry.number}`,
+          context: 'booking',
           number: entry.number,
           concepts: entry.concepts,
           package: entry.concepts[0] === 'window' ? 'windows' : 'reservations',
@@ -361,7 +315,7 @@ describe('execution: work packages and counts', () => {
     );
     expect(first.wholeCheckRuns).toBe(1);
     for (const failure of ['a', 'b', 'c']) {
-      command(f, 'run', '--role', 'builder');
+      harnessEvent(f, 'returned', 'builder', `fix-${failure}`);
       expect(
         command<Efficiency>(f, 'efficiency').wholeCheckRuns,
         `Fix ${failure} is not a whole check`,
@@ -442,10 +396,10 @@ describe('execution: work packages and counts', () => {
       'Scheduling deliveries.',
     );
     expect(context.code, context.stderr).toBe(0);
-    command(f, 'run', '--role', 'lead', '--tokens', '110');
-    command(f, 'run', '--role', 'builder', '--tokens', '220');
+    harnessEvent(f, 'returned', 'lead', 'lead-report', undefined, 110);
+    harnessEvent(f, 'returned', 'builder', 'builder-first', undefined, 220);
     command(f, 'check', '--failure', 'a');
-    command(f, 'run', '--role', 'builder', '--tokens', '330');
+    harnessEvent(f, 'returned', 'builder', 'builder-second', undefined, 330);
     command(f, 'check');
     const figures = {
       agentRuns: { total: 3, byRole: { lead: 1, builder: 2 } },
@@ -457,7 +411,7 @@ describe('execution: work packages and counts', () => {
     expect(command(f, 'record')).toMatchObject({
       kind: 'efficiency',
       context: 'booking',
-      cut: cut.split('/')[1],
+      cut,
       ...figures,
     });
     const later = state().contexts.find((c) => c.name === 'booking');

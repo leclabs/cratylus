@@ -1,0 +1,67 @@
+{
+  "cut": "reconstitution",
+  "ruling": "0083",
+  "commands": [
+    {
+      "command": "pnpm --filter cratylus exec vitest run test/execution/structural.test.ts test/execution/rebound.test.ts",
+      "result": "11 structural tests ran and failed at missing workPackage open. Rebound collection initially failed in the shared mock loader; that is not red evidence.",
+      "evidence": "artifact://115"
+    },
+    {
+      "command": "pnpm --filter cratylus exec vitest run test/execution/rebound.test.ts",
+      "result": "After the mock owner fixed its hoisted export: 7 tests ran, 7 failed on missing capability operations or retirement assertions, no fixture/import errors.",
+      "evidence": "artifact://125"
+    }
+  ],
+  "checks": [
+    {
+      "example": "workflow/execution/4",
+      "check": "rebound.test.ts: Example 4 — unserved concepts block all dispatch until both are served",
+      "seenRed": true,
+      "reason": "unknown workPackage verb open; task handoff assertion remains beyond the missing capability"
+    },
+    {
+      "example": "workflow/execution/6",
+      "check": "rebound.test.ts: Example 6 — levels are computed and dispatch waits for every package in the previous level",
+      "seenRed": true,
+      "reason": "unknown workPackage verb open; harness handoff/return sequence remains beyond the missing capability"
+    },
+    {
+      "example": "workflow/execution/8",
+      "check": "rebound.test.ts: Example 8 — no ready package is a refusal, not an empty dispatch",
+      "seenRed": true,
+      "reason": "unknown workPackage verb open; task handoff assertion remains beyond the missing capability"
+    },
+    {
+      "example": "workflow/execution/14",
+      "check": "structural.test.ts: Example 14 — later concepts state processes read the recorded execution figures",
+      "seenRed": true,
+      "reason": "unknown workPackage verb open; agent run counts now use returned lifecycle entries, not the run verb"
+    },
+    {
+      "example": "0083 unowned example handoff",
+      "check": "rebound.test.ts: 0083 — an unowned visible example refuses the whole builder handoff",
+      "seenRed": true,
+      "reason": "unknown workPackage verb open"
+    },
+    {
+      "example": "0083 retirement/dispatch",
+      "check": "rebound.test.ts: 0083 retirement — work package capability no longer offers dispatch",
+      "seenRed": true,
+      "reason": "installed work_package tool schema still includes dispatch"
+    },
+    {
+      "example": "0083 retirement/finish",
+      "check": "rebound.test.ts: 0083 retirement — work package capability no longer offers finish",
+      "seenRed": true,
+      "reason": "installed work_package tool schema still includes finish"
+    },
+    {
+      "example": "0083 retirement/run",
+      "check": "rebound.test.ts: 0083 retirement — work package capability no longer offers run",
+      "seenRed": true,
+      "reason": "installed work_package tool schema still includes run"
+    }
+  ],
+  "notes": "Execution example wording is unchanged. Incidental dispatch/run setup in examples 1, 10–12 was migrated as authorized. Cut names and cross-context inventory fields follow the realization contract. The generated extension loader is shared with reconstitution/binding and loaded successfully for all three retirement checks. No live model sessions ran."
+}
