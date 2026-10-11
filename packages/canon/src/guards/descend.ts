@@ -35,5 +35,5 @@ You are given the call: the tool and its input. Judge the call alone. Answer wit
     refusesOn: 'descends',
   },
   refusal:
-    "descending: this call opens the work your stance keeps you above. Answer from the design, the examples and your delegates' reports, and leave realization to the lead.",
+    "descending: this call opens the work your stance keeps you above. Read the design instead: the context overviews, the concept journal and the ledger, through their capabilities. Answer from them, the examples and your delegates' reports, and leave realization to the lead.",
 };
