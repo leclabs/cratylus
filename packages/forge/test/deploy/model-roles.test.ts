@@ -269,6 +269,58 @@ describe('install — model roles', () => {
     );
   });
 
+  it('keeps the bindings an earlier install seeded into a host config kept as JSON, and the comma it ended a host line with', async () => {
+    const host_ = [
+      '{\n',
+      '  "modelRoles": {\n',
+      '    "default": "fixture/base",\n',
+      '    "alternate": "other/model"\n',
+      '  }\n',
+      '}\n',
+    ];
+    const after = [
+      host_[0],
+      host_[1],
+      host_[2],
+      '    "alternate": "other/model",\n',
+      '    "alpha": "@frontier:high",\n',
+      '    "retired": "@frontier:medium"\n',
+      host_[4],
+      host_[5],
+    ].join('');
+    host(after);
+    mkdirSync(join(home, '.omp/.forge'), { recursive: true });
+    writeFileSync(
+      join(home, '.omp/.forge/deploy-manifest.json'),
+      JSON.stringify({
+        version: 1,
+        kinds: {},
+        hostEdits: {
+          'agent/config.yml': {
+            created: false,
+            hunks: [
+              {
+                context: host_[2],
+                before: [host_[3]],
+                after: [
+                  '    "alternate": "other/model",\n',
+                  '    "alpha": "@frontier:high",\n',
+                  '    "retired": "@frontier:medium"\n',
+                ],
+              },
+            ],
+          },
+        },
+        modelRoleSeeds: {
+          alpha: '@frontier:high',
+          retired: '@frontier:medium',
+        },
+      }),
+    );
+    expect(await install({ modelRoles: 'default' })).toBe(0);
+    expect(readFileSync(config(), 'utf8')).toBe(after);
+  });
+
   it('follows the agent’s effort on reinstall, and uninstall leaves the host’s file byte for byte', async () => {
     host(HOST);
     expect(await install()).toBe(0);

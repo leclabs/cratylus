@@ -349,14 +349,28 @@ function undoHostEdits(
   }
 }
 
-/** The lines of a YAML file's top-level `modelRoles` block, the key line with them,
- *  each with its terminator: empty where the file has no such block. */
+/** The lines of a config file's `modelRoles` mapping, the key line with them, each
+ *  with its terminator: a top-level YAML block, or a JSON (flow) object written over
+ *  lines, as a host that keeps its config as JSON has it. Empty where the file has
+ *  no such mapping. */
 function modelRolesBlock(text: string): Set<string> {
   const lines = splitLines(text);
+  const block = new Set<string>();
+  const flow = lines.findIndex(([t]) => /^\s*"?modelRoles"?\s*:\s*\{/.test(t));
+  if (flow >= 0) {
+    let depth = 0;
+    for (let i = flow; i < lines.length; i++) {
+      const [t, le] = lines[i] as [string, string];
+      block.add(t + le);
+      depth += (t.replace(/"(?:[^"\\]|\\.)*"/g, '').match(/\{/g) ?? []).length;
+      depth -= (t.replace(/"(?:[^"\\]|\\.)*"/g, '').match(/\}/g) ?? []).length;
+      if (depth <= 0) break;
+    }
+    return block;
+  }
   const at = lines.findIndex(
     ([t]) => !/^\s/.test(t) && keyOf(t) === 'modelRoles',
   );
-  const block = new Set<string>();
   if (at < 0) return block;
   for (let i = at + 1; i < lines.length; i++) {
     const [t, le] = lines[i] as [string, string];
@@ -391,10 +405,10 @@ function keepingModelRoles(
     const kept: string[] = [];
     const hunks = edit.hunks.flatMap((hunk) => {
       if (hunk.before.length > 0) {
-        // A seed the earlier install moved in place: the line stands as the host's.
-        const [line] = hunk.after;
-        if (hunk.after.length === 1 && line !== undefined && block.has(line)) {
-          kept.push(line);
+        // A seed the earlier install moved in place, or a host line it ended so a seed
+        // could follow (a JSON comma): every line stands inside the mapping, as the host's.
+        if (hunk.after.length > 0 && hunk.after.every((l) => block.has(l))) {
+          kept.push(...hunk.after);
           return [];
         }
         return [hunk];
