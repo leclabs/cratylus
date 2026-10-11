@@ -1,7 +1,8 @@
 import type { GuardCell } from '../manifest.js';
 import {
-  holdsWhatItNeeds,
   ownedQuestion,
+  ownedQuestionJudgment,
+  readsOwnedQuestion,
   rulingToDelegate,
 } from './owned-question.js';
 
@@ -13,8 +14,8 @@ import {
 // never instructions (0100). A decision taken in the turn and reported with its
 // reason, an approval included, is its topic's one action (0090, 0097).
 // Whether the architect holds what an owned question needs, so settles it or keeps it
-// open with the one action that gets what is missing, is the one rule `owned-question`
-// states (0101).
+// open with the one action that gets what is missing, it never judges: at turn end it
+// reads the one `owned-question` judgment made for that stop (0101).
 // The ordering's text alone was the remedy already tried; enforcement-level puts a
 // value that drifts under a guard that checks the act.
 //
@@ -50,15 +51,15 @@ A reply buries when it is addressed to the operator and does any of these:
 - it gives a topic more than one action, or none, counting every act of this turn on the topic, each decision recorded this turn included as that decision, never its consequences, whether the reply leads with it or tells it as support;
 - its support carries anything other than the facts and reasons its conclusions rest on: an instruction, request, offer, option or further recommendation; a fact or reason none of its conclusions rests on; or the mechanics of the session or the records: how the records were read, written, kept or replaced, that the agent recorded a decision or did not record one again, decision or entry identifiers, an entry's status or placeholder, ledger or journal status, tool or command names. That a decision was recorded is never support;
 - it answers a question a delegate asked without addressing the ruling to that delegate, by name, in the reply or by a call this turn that carries it there;
-- it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or kept visible as open with the one action that gets what is missing. For a question the agent owns, which of the two is decided by the rule below.
+- it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or kept visible as open with the one action that gets what is missing. For a question the agent owns, which of the two follows from the owned-question judgment, as below.
 
-${ownedQuestion} ${holdsWhatItNeeds}
+${ownedQuestion} ${readsOwnedQuestion}
 
 A readback of the design given at a session's start (the current design, its open decisions, the cuts in flight) is required content, never excess support; in it each open decision is named as open. Never count its absence against a reply.
 
 A reply does not bury when it is addressed to a delegate rather than the operator, or when it is already in shape. A short direct answer on one topic needs no support, but still gives its topic exactly one action.
 
-You are given the conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports included, and then the act: the decisions recorded this turn, each as its verb and its content, or none; then either the call, its tool and its input, or the reply, with the message it answered when there is one. Judge the act, reading the conversation and the decisions only for what this turn has done. Answer with exactly one JSON object and nothing else:
+You are given the conversation so far, as the operator and the agent exchanged it in visible text, delegates' reports included, and then the act: the decisions recorded this turn, each as its verb and its content, or none; at the end of a turn, the owned-question judgment; then either the call, its tool and its input, or the reply, with the message it answered when there is one. Judge the act, reading the conversation and the decisions only for what this turn has done. Answer with exactly one JSON object and nothing else:
 {"buries": <true or false>, "reason": "<one sentence: how the act buries its bottom line, or why it is in shape>"}`,
     verdict: {
       type: 'object',
@@ -71,6 +72,7 @@ You are given the conversation so far, as the operator and the agent exchanged i
     refusesOn: 'buries',
     conversation: true,
     recorded: true,
+    reads: ownedQuestionJudgment,
   },
   refusal: `burying: this buries your bottom line. One topic gets one action, in what you do as in what you report: every act you take or recommend on a topic's matter this turn, a decision, a dispatch or a request alike, is one of its actions; a decision you record is that decision, and its consequences are the record's, not an action. A decision you took this turn and report with its reason, an approval included, is that topic's one action; a separate follow-on action on that topic is a second one. A topic decided before this turn, or a reported outcome that calls for action, keeps exactly one recommended action of its own. However you phrase or divide it, conditional, for later, as an offer or inside the support, an act on a topic's matter is one of its actions. Recommending one of several candidates, give a candidate you set aside no action of its own. ${rulingToDelegate} Refused before a call: take no second action on a topic this turn has acted on. Refused at a reply: give your whole reply again in shape, bottom line first, naming every topic's outcome, then one action per topic, then only the support a layman needs, in the product's terms. A topic is a matter the operator asked about, or an outcome that calls for someone's action. Support states only the facts and reasons your conclusions rest on, never an instruction, request, offer or option, and never how you read, wrote, kept or replaced the records: a topic's one action is its only instruction. Answer each open question as asked, never a different one in its place.`,
 };

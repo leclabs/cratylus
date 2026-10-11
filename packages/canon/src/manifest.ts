@@ -33,6 +33,7 @@ import type {
   HookCell as HookCellOf,
   RequiredDimensionOf,
   SetDimensionOf,
+  SharedJudgment as SharedJudgmentOf,
   SkillExpression,
   Skill as SkillOf,
   Value as ValueOfDimension,
@@ -441,3 +442,6 @@ export type HookCell = HookCellOf<CanonicalEvent>;
 
 /** This corpus's guard-cell shape, narrowed to its declared event vocabulary. */
 export type GuardCell = GuardCellOf<CanonicalEvent>;
+
+/** This corpus's shared-judgment shape, narrowed to its declared event vocabulary. */
+export type SharedJudgment = SharedJudgmentOf<CanonicalEvent>;

@@ -29,7 +29,10 @@ import { handBack } from '../src/guards/hand-back.js';
 import {
   holdsWhatItNeeds,
   ownedQuestion,
+  ownedQuestionJudgment,
+  readsOwnedQuestion,
   rulingToDelegate,
+  whatFollows,
 } from '../src/guards/owned-question.js';
 import { pastObjective } from '../src/guards/past-objective.js';
 import { unrecorded } from '../src/guards/unrecorded.js';
@@ -247,7 +250,7 @@ describe('the architect', () => {
         ).toBe(false);
   });
 
-  it('judges whether it holds what an owned question needs by one rule, read by every guard turning on it, and never refuses settling one as past its objective (0101)', () => {
+  it('judges whether it holds what an owned question needs once, by one rule, in one judgment every guard turning on it reads, and never refuses settling one as past its objective (0101)', () => {
     const count = (text: string, part: string) => text.split(part).length - 1;
     // The operator's silence is never a lack: the rule names the one kind of ruling
     // the agent lacks, and a practice common in the industry is settled from it.
@@ -274,15 +277,34 @@ describe('the architect', () => {
     expect(unrecorded.judge.prompt).toContain(
       'when it gives a recommendation on priority, which is no decision the agent owns and is never recorded',
     );
-    expect(holdsWhatItNeeds).toContain(
-      'never taking it only on a condition; approving examples judges only whether they express the design',
+    expect(whatFollows).toContain(
+      'records the decision with its reason, never taking it only on a condition',
     );
+    expect(holdsWhatItNeeds).toContain(
+      'Approving examples judges only whether they express the design',
+    );
+    // The rule lives in the one judgment, made at turn end, and nowhere else.
+    expect(ownedQuestionJudgment.events).toEqual(['turn.end']);
+    expect(count(ownedQuestionJudgment.prompt, holdsWhatItNeeds)).toBe(1);
+    expect(count(ownedQuestionJudgment.prompt, ownedQuestion)).toBe(1);
+    expect(ownedQuestionJudgment.carries).toBe('questions');
+    expect(ownedQuestionJudgment.conversation).toBe(true);
     for (const guard of [handBack, bottomLine, unrecorded]) {
+      expect(guard.judge.reads, guard.id).toBe(ownedQuestionJudgment);
       expect(count(guard.judge.prompt, ownedQuestion), guard.id).toBe(1);
-      expect(count(guard.judge.prompt, holdsWhatItNeeds), guard.id).toBe(1);
-      // No guard phrases the rule's grounds of its own beside the shared one.
-      expect(count(guard.judge.prompt, 'known practice'), guard.id).toBe(1);
+      expect(count(guard.judge.prompt, readsOwnedQuestion), guard.id).toBe(1);
+      expect(count(guard.judge.prompt, whatFollows), guard.id).toBe(1);
+      // No guard states the rule's grounds: it reads the judgment made by them.
+      expect(guard.judge.prompt, guard.id).not.toContain(holdsWhatItNeeds);
+      expect(guard.judge.prompt, guard.id).not.toContain('known practice');
     }
+    expect(readsOwnedQuestion).toContain(
+      'Whether the agent holds what an owned question needs is never yours to judge',
+    );
+    expect(readsOwnedQuestion).toContain(
+      'When the judgment says none could be made, or does not list a question, refuse nothing on whether the agent held what that question needs.',
+    );
+    expect(pastObjective.judge.reads).toBeUndefined();
     expect(count(pastObjective.judge.prompt, ownedQuestion)).toBe(1);
     expect(pastObjective.judge.prompt).not.toContain(holdsWhatItNeeds);
     expect(pastObjective.judge.prompt).not.toContain('known practice');

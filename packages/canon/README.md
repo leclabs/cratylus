@@ -149,20 +149,26 @@ judge, given the decisions recorded that turn (each concept-journal append that 
 the operator's last message, as its verb and content) and the reply, whether the reply reports an
 owned meaning question settled in that turn with no recorded decision carrying it, and refuses the
 stop when it does, naming the tell `holding open`.
-Whether the architect holds what an owned meaning question needs is one rule, stated once in
-`src/guards/owned-question.ts` and read by every guard whose judgment turns on it (`hand-back`,
-`bottom-line`, `unrecorded`): the architect rules on an owned question from the design, the examples,
-the conversation and known practice of the product's industry; the operator not having spoken to it
-is never a lack. It lacks what the question needs only when, with all of those, the ruling would still
-choose what the product is for, a priority between the operator's goals, or a fork that is
-irreversible, about value or beyond its competence. Holding it, the architect settles and records the
-question in that turn, never only on a condition, and approves examples that express the design;
-lacking it, it keeps the question open and reports the one action that gets what is missing.
+Whether the architect holds what an owned meaning question needs is one judgment (0101), the
+`owned-question` shared judgment in `src/guards/owned-question.ts`, made once per turn end by its one
+rule and read by every guard whose judgment turns on it (`hand-back`, `bottom-line`, `unrecorded`,
+each through `judge.reads`): given the conversation so far and the reply, it lists each owned question
+the turn takes up with whether the architect holds what it needs. The rule: the architect rules on an
+owned question from the design, the examples, the conversation and known practice of the product's
+industry; the operator not having spoken to it is never a lack. It lacks what the question needs only
+when, with all of those, the ruling would still choose what the product is for, a priority between the
+operator's goals, or a fork that is irreversible, about value or beyond its competence. The guards
+reading it never weigh a question's grounds themselves; they judge from it what follows: holding it,
+the architect settles and records the question in that turn, never only on a condition, and approves
+examples that express the design; lacking it, it keeps the question open and reports the one action
+that gets what is missing. The harness makes the judgment at most once per act, when the first guard
+in force reads it, and gives that one answer to each; a judgment that cannot be made is reported, and
+its readers are told none was made, still judge the act, and refuse nothing on it (0091).
 An owned question is one of meaning, constraints on realization or a check ruling; priority, such as
 which work comes next, is the operator's to decide and the architect's to recommend with its facts and
 reasons, recording nothing, and `hand-back` and `unrecorded` never fault it (0102).
-`past-objective` takes from it only what an owned question is, and never judges whether the
-architect held what a decision needed.
+`past-objective` takes from `owned-question` only what an owned question is, reads no judgment, and
+never judges whether the architect held what a decision needed.
 Every guard on the same turn end is judged on that stop, and their refusals reach the agent as one.
 A judge answer it cannot read refuses nothing and is reported.
 

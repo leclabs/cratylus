@@ -14,8 +14,9 @@ import { ownedQuestion } from './owned-question.js';
 // (`guarded(optimize, pastObjective)` in the architect's role), so no other role is
 // judged by it. Settling and recording a meaning question the architect owns is part
 // of its objective in any turn (0101), so it never refuses such a call; whether the
-// architect held what the decision needed is the one rule `owned-question` states,
-// judged by the turn-end guards that read it, never by this one.
+// architect held what the decision needed is the one `owned-question` judgment, made
+// at turn end and read by the guards whose judgment turns on it, never by this one,
+// which takes from `owned-question` only what an owned question is.
 
 export const pastObjective: GuardCell = {
   id: 'past-objective',

@@ -1,5 +1,9 @@
 import type { GuardCell } from '../manifest.js';
-import { holdsWhatItNeeds, ownedQuestion } from './owned-question.js';
+import {
+  ownedQuestion,
+  ownedQuestionJudgment,
+  readsOwnedQuestion,
+} from './owned-question.js';
 
 // unrecorded — the guard that holds the architect's deliverable, decisions with their
 // reasons, the value its behavioral examples showed drifting: a reply that reports an
@@ -11,8 +15,8 @@ import { holdsWhatItNeeds, ownedQuestion } from './owned-question.js';
 // It judges the turn's last reply when the turn ends, with the decisions recorded in
 // that turn, and binds only the agents whose composition holds the guarded value
 // (`guarded(decisionsWithReasons, unrecorded)` in the architect's role), so no other
-// role is judged by it. When the architect holds what an owned question needs is the
-// one rule `owned-question` states (0101).
+// role is judged by it. Whether the architect holds what an owned question needs it
+// never judges: it reads the one `owned-question` judgment made for that stop (0101).
 
 export const unrecorded: GuardCell = {
   id: 'unrecorded',
@@ -24,13 +28,13 @@ export const unrecorded: GuardCell = {
   judge: {
     prompt: `You judge one reply an agent gave at the end of its turn, for one drift tell: holding open a decision it could take.
 
-The agent is a principal architect. ${ownedQuestion} ${holdsWhatItNeeds} A decision is taken only when it is recorded; until then the question stays open in the design, whatever a reply says.
+The agent is a principal architect. ${ownedQuestion} ${readsOwnedQuestion} A decision is taken only when it is recorded; until then the question stays open in the design, whatever a reply says.
 
 A reply holds a decision open when it reports an owned meaning question decided or settled in this turn, and no decision recorded this turn carries it.
 
 It never does when the decision it reports was recorded in an earlier turn, when it reports an approval of examples, when it keeps the question open, or when it gives a recommendation on priority, which is no decision the agent owns and is never recorded.
 
-You are given the decisions recorded this turn, each as its verb and its content, or none; the message the reply answered, when there is one; and the reply. Answer with exactly one JSON object and nothing else:
+You are given the decisions recorded this turn, each as its verb and its content, or none; the owned-question judgment; the message the reply answered, when there is one; and the reply. Answer with exactly one JSON object and nothing else:
 {"unrecorded": <true or false>, "reason": "<one sentence: the question reported settled that no recorded decision carries, or why the reply holds nothing open>"}`,
     verdict: {
       type: 'object',
@@ -42,6 +46,7 @@ You are given the decisions recorded this turn, each as its verb and its content
     },
     refusesOn: 'unrecorded',
     recorded: true,
+    reads: ownedQuestionJudgment,
   },
   refusal:
     'holding open: a decision is taken when it is recorded. Record it, then report it.',

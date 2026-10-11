@@ -1,7 +1,8 @@
 import type { GuardCell } from '../manifest.js';
 import {
-  holdsWhatItNeeds,
   ownedQuestion,
+  ownedQuestionJudgment,
+  readsOwnedQuestion,
   rulingToDelegate,
 } from './owned-question.js';
 
@@ -14,7 +15,8 @@ import {
 // It judges the turn's last reply when the turn ends, and binds only the agents
 // whose composition holds the guarded value (`guarded(decisive, handBack)` in the
 // architect's role), so no other role is judged by it. Whether the architect holds
-// what an owned question needs is the one rule `owned-question` states (0101).
+// what an owned question needs it never judges: it reads the one `owned-question`
+// judgment made for that stop (0101).
 
 export const handBack: GuardCell = {
   id: 'hand-back',
@@ -28,11 +30,11 @@ export const handBack: GuardCell = {
 
 The agent is a principal architect. It owns the decisions on meaning (concepts and examples) and on constraints of realization for the contexts it holds, approves those contexts' examples itself, and rules on meaning questions its delegates raise. The operator states what is wanted and why and its priorities, and releases the result.
 
-${ownedQuestion} ${holdsWhatItNeeds}
+${ownedQuestion} ${readsOwnedQuestion}
 
-A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. An owned question whose ruling the agent holds, by the rule above, is handed back even when it is asked as what the operator wants, and so is one the reply reports still open with a ruling the agent only recommends, or takes only on a condition. So is a ruling the agent makes conditional on the operator's answer, and so is asking the operator or any other party to approve or confirm the examples of a context the agent holds. Hand-back concerns only decisions the agent owns, by the definition above; it is not a hand-back to give one recommendation on priority, with its facts and reasons, for the operator to decide; to report a decision already made, with its reason; to give a delegate a ruling; or to keep open an owned question whose ruling the agent lacks, by the rule above, reporting the one action that gets what is missing, an ask of the operator for the choice or the fork that the ruling would make included.
+A reply hands back when it returns a decision the agent owns to the operator: as a question the agent could settle itself, as a request that the operator choose, or as a statement that the operator must decide it. An owned question whose ruling the agent holds, by the owned-question judgment, is handed back even when it is asked as what the operator wants, and so is one the reply reports still open with a ruling the agent only recommends, or takes only on a condition. So is a ruling the agent makes conditional on the operator's answer, and so is asking the operator or any other party to approve or confirm the examples of a context the agent holds. Hand-back concerns only decisions the agent owns, by the definition above; it is not a hand-back to give one recommendation on priority, with its facts and reasons, for the operator to decide; to report a decision already made, with its reason; to give a delegate a ruling; or to keep open an owned question whose ruling the agent lacks, by the owned-question judgment, reporting the one action that gets what is missing, an ask of the operator for the choice or the fork that the ruling would make included.
 
-You are given the message the reply answered, when there is one, and the reply. Judge the reply alone. Answer with exactly one JSON object and nothing else:
+You are given the owned-question judgment, the message the reply answered, when there is one, and the reply. Judge the reply alone. Answer with exactly one JSON object and nothing else:
 {"handsBack": <true or false>, "reason": "<one sentence: the owned decision handed back, or how the reply decides>"}`,
     verdict: {
       type: 'object',
@@ -43,6 +45,7 @@ You are given the message the reply answered, when there is one, and the reply. 
       required: ['handsBack', 'reason'],
     },
     refusesOn: 'handsBack',
+    reads: ownedQuestionJudgment,
   },
   refusal: `hand-back: this reply returns a decision you own to the operator. Decide it, then give your whole reply again: bottom line first, one recommended action per topic, the ruling with its reason. ${rulingToDelegate}`,
 };
