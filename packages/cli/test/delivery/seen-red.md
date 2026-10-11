@@ -98,3 +98,23 @@ pnpm --filter cratylus exec vitest run test/agent-launch test/runner-extensions.
 ```
 
 Observed: all 18 selected no-model preflights passed (206 unrelated tests skipped). All 29 agent-launch and runner-control checks passed, including installed-only discovery and judge session-hook isolation. No live model runs were taken.
+
+## Decision 0112: earlier seeded answers belong to the host
+
+The captured earlier installation's actual `modelRoles` are now the preservation baseline in every visible earlier-installation upgrade (8, 9, 10 and 20). This includes the binding for `obsolete-agent`: retiring its declaration does not revoke the host's answer. Checks still reject its declaration, skill and every other old projection or reference. Only model-role values are excluded from the old-material text scan; the whole-home ownership check compares retained configuration by parsed content, not YAML/JSON serialization.
+
+```sh
+pnpm --filter cratylus exec vitest run test/delivery/structural.test.ts -t 'delivery/(8|9|10|20) —' --reporter verbose
+env DELIVERY_NEGATIVE=10-bindings pnpm --filter cratylus exec vitest run test/delivery/structural.test.ts -t 'delivery/10 —' --reporter verbose
+```
+
+Observed against the current pre-0112 build:
+
+| Example     | Observed failing reason                                                                                                                                                                                                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| delivery/8  | First upgrade deleted `.omp/agent/config.yml`; preservation of the captured seeded answers failed with `ENOENT` at `preserved(h, bindings)`.                                                                                                                                                  |
+| delivery/9  | First upgrade deleted that same host-answer file, failing before the subsequent root-edit replacement exercise. Both upgrades now require the answers to remain.                                                                                                                              |
+| delivery/10 | The normal case passed: merging the earlier answers with host settings already protects the config in this build. Negative recording removed only `modelRoles.obsolete-agent`; the same preservation assertion failed with expected `obsolete-agent: "@frontier:medium"` missing from actual. |
+| delivery/20 | Event-tap migration deleted the earlier host-answer file; `preserved(h, bindings)` failed with `ENOENT`. Removing event-tap material must not remove these answers.                                                                                                                           |
+
+No production code or example text changed. Decision 0112 changes ownership classification, not the removal obligations for projected material.

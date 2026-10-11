@@ -16,6 +16,7 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import { expect, vi } from 'vitest';
 import type { Host, ToolResult } from '../capability-port/fixture.js';
 import { host, run, success, toolJSON } from '../capability-port/fixture.js';
@@ -101,15 +102,46 @@ export function earlier(h: Host) {
   expect(
     readFileSync(join(h.home, '.agents/skills/event-tap/SKILL.md'), 'utf8'),
   ).toMatch(/event/i);
+  const { modelRoles } = settings(h);
+  expect(
+    Object.keys(modelRoles as object).length,
+    'captured earlier bindings',
+  ).toBeGreaterThan(0);
+  // Decision 0112: these answers became the host's own, not removable projection.
+  return { '.omp/agent/config.yml': JSON.stringify({ modelRoles }) };
 }
-export function hostMaterial(h: Host) {
+function settings(h: Host): Record<string, unknown> {
+  const parsed = spawnSync(
+    'bun',
+    [
+      '-e',
+      'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
+    ],
+    {
+      input: readFileSync(join(h.home, '.omp/agent/config.yml'), 'utf8'),
+      encoding: 'utf8',
+    },
+  );
+  expect(parsed.status, parsed.stderr).toBe(0);
+  return JSON.parse(parsed.stdout);
+}
+export function treeWithoutBindings(h: Host): Tree {
+  const after = tree(h.home);
+  const path = '.omp/agent/config.yml';
+  if (after[path]) {
+    const { modelRoles: _bindings, ...rest } = settings(h);
+    after[path] = { text: JSON.stringify(rest) };
+  }
+  return after;
+}
+export function hostMaterial(h: Host, inherited: Record<string, string> = {}) {
   const material = {
     '.omp/agent/agents/architect.md':
       '---\nname: architect\ndescription: Host architect\n---\nMira owns this declaration.\n',
     '.agents/skills/host-skill/SKILL.md':
       '---\nname: host-skill\ndescription: Host skill\n---\nMira owns this skill.\n',
     '.omp/agent/extensions/host.ts': 'export default function host() {}\n',
-    '.omp/agent/config.yml': `${JSON.stringify({ modelRoles: { default: 'host/model' }, theme: 'host-theme', extensions: ['./extensions/host.ts'] })}\n`,
+    '.omp/agent/config.yml': `${JSON.stringify({ modelRoles: { ...JSON.parse(inherited['.omp/agent/config.yml'] ?? '{}').modelRoles, default: 'host/model' }, theme: 'host-theme', extensions: ['./extensions/host.ts'] })}\n`,
   };
   for (const [path, text] of Object.entries(material))
     put(join(h.home, path), text);
@@ -156,6 +188,22 @@ export function assertOwned(h: Host, before: Tree = {}) {
       // A harness configuration may carry the reference instead of a symlink. Its
       // unrelated pre-existing values must survive; a generated material copy is not a reference.
       const text = item.text!;
+      const parsed = spawnSync(
+        'bun',
+        [
+          '-e',
+          'try {const [before,after]=JSON.parse(await Bun.stdin.text());console.log(JSON.stringify([Bun.YAML.parse(before),Bun.YAML.parse(after)]));}catch {process.exit(2);}',
+        ],
+        {
+          input: JSON.stringify([before[path]?.text ?? '', text]),
+          encoding: 'utf8',
+        },
+      );
+      // Retained host answers may be serialized differently; content defines ownership.
+      if (before[path] && parsed.status === 0) {
+        const [oldValue, newValue] = JSON.parse(parsed.stdout) as unknown[];
+        if (isDeepStrictEqual(oldValue, newValue)) continue;
+      }
       const references = [
         ...text.matchAll(
           /([^\s"'`=;()[\]{}<>]*\.cratylus\/omp[^\s"'`;,()[\]{}<>]*)/g,
@@ -187,17 +235,6 @@ export function assertOwned(h: Host, before: Tree = {}) {
           `${path} cannot carry a second copy of ${projected}`,
         ).toBe(false);
       }
-      const parsed = spawnSync(
-        'bun',
-        [
-          '-e',
-          'try {const [before,after]=JSON.parse(await Bun.stdin.text());console.log(JSON.stringify([Bun.YAML.parse(before),Bun.YAML.parse(after)]));}catch {process.exit(2);}',
-        ],
-        {
-          input: JSON.stringify([before[path]?.text ?? '', text]),
-          encoding: 'utf8',
-        },
-      );
       if (parsed.status === 0) {
         const [oldValue, newValue] = JSON.parse(parsed.stdout) as unknown[];
         if (newValue && typeof newValue === 'object') {

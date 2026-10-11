@@ -31,6 +31,7 @@ import {
   toolJSON,
   traceCommand,
   tree,
+  treeWithoutBindings,
   uninstall,
   version,
   versions,
@@ -238,9 +239,10 @@ it('delivery/7 — the version tool identifies the projecting build and the comm
 
 it('delivery/8 — a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
   h = fresh();
-  earlier(h);
+  const bindings = earlier(h);
   version(h, '2.5.0');
   success(install(h));
+  preserved(h, bindings);
   const comparison = fresh();
   try {
     version(comparison, '2.5.0');
@@ -249,9 +251,14 @@ it('delivery/8 — a real earlier projection is replaced by exactly the new proj
   } finally {
     comparison.dispose();
   }
-  const all = JSON.stringify(tree(h.home));
+  const all = JSON.stringify(treeWithoutBindings(h));
   expect(all).not.toMatch(/obsolete-agent|obsolete-skill/);
-  assertOwned(h);
+  assertOwned(
+    h,
+    Object.fromEntries(
+      Object.entries(bindings).map(([path, text]) => [path, { text }]),
+    ),
+  );
   const ext = await load(h);
   try {
     expect(await versions(ext)).toMatchObject({
@@ -265,8 +272,9 @@ it('delivery/8 — a real earlier projection is replaced by exactly the new proj
 
 it('delivery/9 — upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
   h = fresh();
-  earlier(h);
+  const bindings = earlier(h);
   success(install(h));
+  preserved(h, bindings);
   const skill = join(owned(h), 'skills/conceptualize/SKILL.md');
   put(skill, 'Mira changed installed content');
   put(join(owned(h), 'local/addition.txt'), 'Mira local addition');
@@ -274,6 +282,7 @@ it('delivery/9 — upgrade discards all inside-root edits and additions but pres
   put(outside, 'Mira edited the outside skill');
   version(h, '2.5.0');
   success(install(h));
+  preserved(h, bindings);
   expect(readFileSync(skill, 'utf8')).not.toContain('Mira changed');
   expect(existsSync(join(owned(h), 'local'))).toBe(false);
   expect(readFileSync(outside, 'utf8')).toBe('Mira edited the outside skill');
@@ -289,12 +298,27 @@ it('delivery/9 — upgrade discards all inside-root edits and additions but pres
 
 it('delivery/10 — upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
   h = fresh();
-  earlier(h);
-  const material = hostMaterial(h);
+  const bindings = earlier(h);
+  const material = hostMaterial(h, bindings);
   version(h, '2.5.0');
   success(install(h));
+  if (negative === '10-bindings') {
+    // Negative recording: upgrade drops a seeded answer because its agent retired.
+    const config = join(h.home, '.omp/agent/config.yml');
+    const changed = spawnSync(
+      'bun',
+      [
+        '-e',
+        'const config=Bun.YAML.parse(await Bun.stdin.text());delete config.modelRoles["obsolete-agent"];console.log(JSON.stringify(config));',
+      ],
+      { input: readFileSync(config, 'utf8'), encoding: 'utf8' },
+    );
+    expect(changed.status, changed.stderr).toBe(0);
+    put(config, changed.stdout);
+  }
+  preserved(h, bindings);
   preserved(h, material);
-  const all = JSON.stringify(tree(h.home));
+  const all = JSON.stringify(treeWithoutBindings(h));
   expect(all).not.toMatch(/obsolete-agent|obsolete-skill/);
   assertOwned(
     h,
@@ -556,17 +580,21 @@ it('delivery/19 — the event tap is absent from delivered commands, projection 
 
 it('delivery/20 — upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
   h = fresh();
-  earlier(h);
+  const bindings = earlier(h);
   put(
     join(h.home, '.omp/agent/extensions/unrelated.ts'),
     'export default function unrelated() {}\n',
   );
   success(install(h));
+  preserved(h, bindings);
   noTap(h);
   expect(
     readFileSync(join(h.home, '.omp/agent/extensions/unrelated.ts'), 'utf8'),
   ).toBe('export default function unrelated() {}\n');
   assertOwned(h, {
+    ...Object.fromEntries(
+      Object.entries(bindings).map(([path, text]) => [path, { text }]),
+    ),
     '.omp/agent/extensions/unrelated.ts': {
       text: 'export default function unrelated() {}\n',
     },

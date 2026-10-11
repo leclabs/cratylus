@@ -16,12 +16,14 @@ import {
   install,
   load,
   owned,
+  preserved,
   put,
   skew,
   success,
   toolJSON,
   traceCommand,
   tree,
+  treeWithoutBindings,
   uninstall,
   version,
   versions,
@@ -60,22 +62,25 @@ it('delivery/1 — newer artifacts still warn about an older reached command, ne
 
 it('delivery/2 — two changing upgrades followed by uninstall leave no generation of material or references and keep the host extension', () => {
   h = fresh();
-  earlier(h);
+  const bindings = earlier(h);
   const host = join(h.home, '.omp/agent/extensions/mira.ts');
   put(host, 'export default function mira() {}\n');
   corpus(h, 'middle');
   version(h, '2.5.0');
   success(install(h));
+  preserved(h, bindings);
   expect(existsSync(join(owned(h), 'agents/middle-agent.md'))).toBe(true);
   expect(existsSync(join(owned(h), 'skills/middle-skill/SKILL.md'))).toBe(true);
   corpus(h, 'latest');
   version(h, '2.6.0');
   success(install(h));
+  preserved(h, bindings);
   expect(existsSync(join(owned(h), 'agents/latest-agent.md'))).toBe(true);
   expect(existsSync(join(owned(h), 'skills/latest-skill/SKILL.md'))).toBe(true);
   success(uninstall(h));
+  preserved(h, bindings);
   assertRemoved(h);
-  expect(JSON.stringify(tree(h.home))).not.toMatch(
+  expect(JSON.stringify(treeWithoutBindings(h))).not.toMatch(
     /obsolete-agent|obsolete-skill|middle-agent|middle-skill|latest-agent|latest-skill/,
   );
   expect(readFileSync(host, 'utf8')).toBe(
