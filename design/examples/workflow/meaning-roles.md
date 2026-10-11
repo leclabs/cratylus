@@ -68,3 +68,52 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
     the completed cut's freeze no longer refuses it. A completed cut never freezes its concepts
     forever, and ending that freeze never removes the journal's existing history or changes the
     agent's decision rights.
+
+## Structural (freeze from approval through integration)
+
+31. (freeze, supersession) **Given** the architect has approved a renewal cut's examples, their
+    checks have been seen to fail against work that breaks them, and no builder has yet started,
+    **when** the lead attempts separately to change an approved example, change its check,
+    supersede renewal or retire it, **then** each attempt is refused before anything is changed
+    or recorded. The examples, checks, current concept and its history stay unchanged; the
+    freeze never waits for the first builder to start.
+32. (freeze, supersession) **Given** every builder has returned the renewal cut's work and its
+    visible examples pass, **when** an agent other than the architect attempts separately to
+    change a frozen example, change its check, supersede renewal or retire it, **then** each
+    attempt is refused before anything is changed or recorded. This holds both before judgment
+    starts and while judgment is under way, separately for the lead, builder, check-writer,
+    illustrator and assayer. A builder's return, a green result or the start of judgment never
+    lifts the freeze; neither a warning nor recording and then undoing a change counts as refusal.
+33. (freeze, supersession) **Given** judgment finds that the renewal work still requires staff
+    intervention although its concept and frozen example require patrons to renew unaided,
+    **when** the lead attempts to supersede renewal, relax the example or weaken its check to
+    accept staff-only renewal, **then** each attempt is refused before anything is changed or
+    recorded. The same protection holds after the finding returns the work to a builder; a
+    judgment finding never grants permission to bend the target to fit the work.
+34. (freeze, supersession) **Given** the renewal cut's builders have returned and judgment is
+    under way, and the architect has settled a correction to renewal's meaning, **when** the
+    architect records the corrected meaning and its reason as a supersession, **then** the
+    journal accepts a new current version and keeps the earlier version and its reason readable.
+    The freeze never refuses that correction, supersession never changes the earlier version
+    in place, and the architect's correction never lifts the freeze for another agent.
+35. (freeze) **Given** judgment is under way on the renewal cut and the architect has settled
+    that a frozen example or its check misstates the intended renewal behavior, **when** the
+    architect corrects the example or check, **then** the freeze permits that correction.
+    Permission holds separately for each; it never passes to the assayer who reported the
+    mismatch or to the check-writer who wrote the check.
+36. (freeze, supersession) **Given** both assayers have passed every work package of the renewal
+    cut, judgment has ended and the cut is complete but has not been integrated, **when** the
+    lead attempts separately to change a frozen example, change its check, supersede renewal
+    or retire it, **then** each attempt is refused before anything is changed or recorded.
+    Successful judgment and completion never stand in for integration or end the freeze early.
+37. (freeze, supersession) **Given** the renewal cut has been integrated and no other frozen
+    cut realizes renewal, **when** an otherwise admissible change to its examples or checks,
+    supersession of renewal or retirement of renewal is attempted, **then** that cut's freeze
+    no longer refuses it. An admissible supersession still records a new version with its reason
+    and keeps the earlier version readable; ending the freeze never permits an in-place rewrite,
+    removes history or grants decision rights the agent does not otherwise hold.
+38. (freeze, supersession) **Given** two cuts realize the same library renewal concept, one has
+    been integrated and the other's examples are approved but that cut is not yet integrated,
+    **when** the lead attempts to supersede or retire renewal, **then** the remaining cut's
+    freeze refuses each attempt before anything is recorded. Integrating one cut never ends
+    another cut's freeze on their shared concept.
