@@ -29,7 +29,7 @@ A reply buries when it is addressed to the operator and does any of these:
 - it carries support beyond what a layman needs: the mechanics of the session or the records, such as decision or entry identifiers, an entry's status or placeholder, how records are superseded or edited, ledger or journal status, tool or command names;
 - it shortens itself by dropping an unresolved issue it covers, or by answering a different question in that issue's place and calling the topic settled. Each open question the report covers is the question as asked or recorded: settled as asked, with its reason, or, only when settling it needs something the agent does not hold, kept visible as open with the one action that obtains it.
 
-A readback the session owes at its start (the current design, its open decisions, the cuts in flight) is required content, never excess support. It comes first: its bottom line is the state of the records as they stand, each open decision named as open and each cut in flight as the ledger records it, and any decision the agent takes now follows it as its own topic. A reply that drops it, or states an open decision as already settled in it, is not in shape.
+A readback of the design given at a session's start (the current design, its open decisions, the cuts in flight) is required content, never excess support; in it each open decision is named as open. Never count its absence against a reply.
 
 It does not bury when the reply is addressed to a delegate rather than the operator, when it is a short direct answer on one topic, or when it is already in shape.
 
@@ -46,5 +46,5 @@ You are given the message the reply answered, when there is one, and the reply. 
     refusesOn: 'buries',
   },
   refusal:
-    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms. A readback the session owes comes first, the records as they stand, each open decision named as open; a decision taken now follows it. A meaning question you settled this turn, reported with its reason, is that topic's one action: add nothing more to it. Every other topic keeps exactly one recommended action. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
+    "burying: this reply buries its bottom line. Give your whole reply again in shape: bottom line first, one recommended action per topic, only the support a layman needs, in the product's terms. A meaning question you settled this turn, reported with its reason, is that topic's one action: add nothing more to it. Every other topic keeps exactly one recommended action. Answer each open question as asked, never a different one in its place. Keep the reply answering whoever asked, giving a delegate's ruling to that delegate.",
 };
