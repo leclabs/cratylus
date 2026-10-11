@@ -15,10 +15,11 @@ export type {
 } from './scenario.js';
 export {
   OMP_AGENT_DEF_DIR,
+  OMP_EXTENSIONS_DIR,
   OMP_ISOLATION_MODULE,
   OMP_NATIVE_AGENTS,
   OMP_ASSIGNMENT_KEY,
-  OMP_SESSION_DIR,
+  OMP_PACKAGE_DIR,
   OMP_SESSION_MODULE,
   type ResolvedSkill,
   agentToOmpMd,

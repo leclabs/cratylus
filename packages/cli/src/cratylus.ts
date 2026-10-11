@@ -3,11 +3,13 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`concepts`, `workPackage`) and the hidden harness-facing commands
+// (`concepts`, `workPackage`, `versionSkew`) and the hidden harness-facing commands
 // (`lifecycle`, `completion-check`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
-// channel to configure anything through.
+// channel to configure anything through. Both the projector's and the capabilities'
+// commands are handed this package's declared version: `install` records it in what it
+// places, and `versionSkew` reports it as the command's.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -104,10 +106,13 @@ export function commandLine(): Command {
     )
     .version(VERSION, '-v, --version', 'Print the version and exit')
     .enablePositionalOptions();
-  const { consumer, author } = projectorCommands({ defaultCorpus: canon });
+  const { consumer, author } = projectorCommands({
+    defaultCorpus: canon,
+    version: VERSION,
+  });
   for (const command of consumer)
     program.addCommand(command.helpGroup('Commands:'));
-  for (const command of capabilityCommands())
+  for (const command of capabilityCommands({ version: VERSION }))
     program.addCommand(command.helpGroup('Capabilities:'));
   for (const command of author)
     program.addCommand(command.helpGroup('Corpus authoring:'));

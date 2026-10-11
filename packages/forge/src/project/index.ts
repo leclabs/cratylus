@@ -202,6 +202,12 @@ export interface ProjectOpts {
    * no declared practice.
    */
   readonly practices?: readonly string[];
+  /**
+   * The model the operator chose for each agent, by agent name: each agent named
+   * here is defined with it in place of the tier and effort it holds
+   * ({@link AgentDefContext.model}). Absent: every agent's tier and effort stand.
+   */
+  readonly models?: Readonly<Record<string, string>>;
 }
 
 /** One agent of the plugin set, as its module declares it: the agent is identified by
@@ -1054,6 +1060,9 @@ export async function projectPluginSet(
       manifest,
       ...(mechanisms ? { mechanisms } : {}),
       ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
+      ...(opts.models?.[name] !== undefined
+        ? { model: opts.models[name] }
+        : {}),
     });
     files.push({
       path: join('agents', filename),

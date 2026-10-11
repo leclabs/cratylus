@@ -54,6 +54,11 @@ import {
 import { dispatchConcepts } from './capabilities/concepts/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
+  VERSION_SKEW,
+  VERBS as VERSION_SKEW_VERBS,
+  dispatchVersionSkew,
+} from './capabilities/version-skew/index.js';
+import {
   WORK_PACKAGE,
   VERBS as WORK_PACKAGE_VERBS,
 } from './capabilities/work-package/dispatch.js';
@@ -87,7 +92,7 @@ import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 const SURFACES: {
   readonly [C in Capability]: {
     readonly verbs: VerbFlags;
-    readonly run: (argv: string[]) => string;
+    readonly run: (argv: string[], build: Build) => string;
     readonly explained: CapabilityInterface;
   };
 } = {
@@ -101,7 +106,19 @@ const SURFACES: {
     run: (argv) => JSON.stringify(dispatchWorkPackage(argv), null, 2),
     explained: WORK_PACKAGE,
   },
+  versionSkew: {
+    verbs: VERSION_SKEW_VERBS,
+    run: (argv, build) =>
+      JSON.stringify(dispatchVersionSkew(argv, build), null, 2),
+    explained: VERSION_SKEW,
+  },
 };
+
+/** The build the commands are held in: the program's own declared version, which
+ *  `versionSkew` reports as the command's. */
+export interface Build {
+  readonly version?: string;
+}
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
@@ -223,7 +240,7 @@ function helpOf(
 /** One capability's command: its verbs in its help, its action routing the verb
  *  and the tokens after it, exactly as given, to the capability's verb surface,
  *  or answering `--explain` with its explanation. */
-function capabilityCommand(capability: Capability): Command {
+function capabilityCommand(capability: Capability, build: Build): Command {
   const { verbs, run, explained } = SURFACES[capability];
   const verbCommands = new Map(
     Object.entries(verbs).map(([name, verb]) => [
@@ -292,7 +309,7 @@ function capabilityCommand(capability: Capability): Command {
               process.exitCode = 0;
               return;
             }
-            process.stdout.write(`${run([verb, ...tokens])}\n`);
+            process.stdout.write(`${run([verb, ...tokens], build)}\n`);
             process.exitCode = 0;
           } catch (err) {
             refuse(err instanceof Error ? err.message : String(err));
@@ -303,12 +320,12 @@ function capabilityCommand(capability: Capability): Command {
 }
 
 /**
- * The runtime's commands, one per capability in `CAPABILITIES` order. They stop
- * reading options at the verb, so the program that holds them enables positional
- * options.
+ * The runtime's commands, one per capability in `CAPABILITIES` order, held in the
+ * build `build` names. They stop reading options at the verb, so the program that
+ * holds them enables positional options.
  */
-export function capabilityCommands(): Command[] {
-  return CAPABILITIES.map(capabilityCommand);
+export function capabilityCommands(build: Build = {}): Command[] {
+  return CAPABILITIES.map((capability) => capabilityCommand(capability, build));
 }
 
 /** The harness-facing commands, `lifecycle` and `completion-check`: no

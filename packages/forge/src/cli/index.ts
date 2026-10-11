@@ -64,6 +64,9 @@ export interface ProjectorOptions {
    *  run-time resolution — and therefore a run-time failure mode — from the default
    *  path. */
   readonly defaultCorpus?: ProjectablePlugin;
+  /** The declared version of the build the commands are held in: what `install` and
+   *  `deploy` record in the owned root as the version that projected it. */
+  readonly version?: string;
 }
 
 /** The scopes `deploy` places into. */
@@ -333,7 +336,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--home <dir>',
-        "The home directory the harness's directory is under (default: your home directory)",
+        'The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)',
       ),
     )
     .action(
@@ -350,6 +353,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         process.exitCode = await runInstall({
           harness: opts.harness,
           corpus: options.defaultCorpus,
+          version: options.version,
           practices: opts.practices,
           all: opts.all,
           modelRoles: opts.modelRoles,
@@ -363,7 +367,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   const uninstall = new Command('uninstall')
     .description(
-      'Remove from a harness what install placed there, and leave what the host placed or changed',
+      'Remove from a harness what install placed there — its owned root and every reference into it — and leave what the host placed or changed',
     )
     .addOption(
       harnessOption(
@@ -377,12 +381,24 @@ export function projectorCommands(options: ProjectorOptions = {}): {
       ),
     )
     .addOption(new Option('--verbose', 'Also list every item removed'))
+    .addOption(
+      new Option(
+        '--home <dir>',
+        'The home directory the installation is under (default: your home directory)',
+      ),
+    )
     .action(
-      (opts: { harness: string; dryRun?: boolean; verbose?: boolean }) => {
+      (opts: {
+        harness: string;
+        dryRun?: boolean;
+        verbose?: boolean;
+        home?: string;
+      }) => {
         process.exitCode = runUninstall({
           harness: opts.harness,
           dryRun: opts.dryRun,
           verbose: opts.verbose,
+          home: opts.home,
         });
       },
     );
@@ -429,7 +445,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--scope <scope>',
-        'Where to place it: your home, or a project',
+        'Where to place it: your home, as the owned root every project is offered, or a project',
       )
         .choices(SCOPES)
         .default('user'),
@@ -438,7 +454,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--home <dir>',
-        "The directory the harness's home is under, for --scope user (default: your home directory)",
+        'The home directory the owned root is under, for --scope user (default: your home directory)',
       ),
     )
     .addOption(
@@ -551,6 +567,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           harness: opts.harness,
           home: opts.home ?? null,
           project: opts.project ?? null,
+          version: options.version,
           config: opts.config ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,

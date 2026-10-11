@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
+import { VERBS as VERSION_SKEW } from '../src/capabilities/version-skew/index.js';
 import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
 import { CAPABILITIES, CAPABILITY_SUMMARIES } from '../src/capability.js';
 import type { Verb, VerbFlags } from '../src/verb-flags.js';
@@ -14,6 +15,7 @@ import type { Verb, VerbFlags } from '../src/verb-flags.js';
 const SURFACES: Record<(typeof CAPABILITIES)[number], VerbFlags> = {
   concepts: CONCEPTS,
   workPackage: WORK_PACKAGE,
+  versionSkew: VERSION_SKEW,
 };
 
 /** A line of words: something is said, and all of it on one line. */

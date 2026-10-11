@@ -1,25 +1,31 @@
-// `cratylus uninstall --harness <name> [--dry-run]` — take away from a host what `install`
-// placed there for one harness, and nothing else.
+// `cratylus uninstall --harness <name> [--home <dir>] [--dry-run]` — take away from a
+// host what `install` placed there for one harness, and nothing else.
 //
-// WHAT IS THIS TOOL'S TO REMOVE is decided by the deploy manifest and by nothing else
-// (`deploy/manifest.ts`): a path is ours because a placer recorded writing it, a hook
+// WHAT IS THIS TOOL'S TO REMOVE is known by construction: the owned root
+// (`~/.cratylus/<harness>`) is cratylus's alone, so it goes whole, edits and additions
+// inside it included; and its record (`installation.json`) names every reference the
+// harness's own surfaces hold into it and every line install added to a host file, so
+// exactly those go. Nothing else of the host's is looked at.
+//
+// AN EARLIER INSTALLATION is the layout before the owned root: files placed on the
+// harness's own surfaces, named by a deploy manifest (`deploy/manifest.ts`). It is taken
+// back by that record: a path is ours because a placer recorded writing it, a hook
 // registration because deploy recorded registering it, a line of the host's config
 // because install recorded inserting it, a persona command because an earlier install
-// recorded linking or adopting it. "Looks like one of ours" is refused here as it is in the prune.
+// recorded linking or adopting it. "Looks like one of ours" is refused here as it is in
+// the prune. Install takes it back the same way when it upgrades a host over it.
 //
-// WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file whose bytes no longer
-// hash to the digest of what was written is left, and so is a file recorded before
-// digests were kept, which cannot be told from an edit. A hook registration in an entry
-// that now runs a command of the host's, a status line the host has since pointed at
-// another command, a config line the host has rewritten: each is left, and NAMED, so the
+// WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file outside the root whose
+// bytes no longer hash to the digest of what was written is left, and so is a file
+// recorded before digests were kept, which cannot be told from an edit. A reference the
+// host has pointed elsewhere, a hook registration in an entry that now runs a command
+// of the host's, a config line the host has rewritten: each is left, and NAMED, so the
 // operator sees what remains and why. The report is two lists — removed, and left.
 //
-// THE ORDER makes a half-finished run recoverable: the persona commands an earlier install
-// linked first (they point at a launcher a later step deletes), then the host's `settings.json` and config
-// (nothing may register a worker that is about to go), then the placed files, then the
-// runtime config's stanza for this harness, and the manifest LAST. A run that stops
-// before the manifest can be run again; one that has removed the manifest has nothing
-// left to remove.
+// THE ORDER makes a half-finished run recoverable: the references first, then the lines
+// added to host files, then the root with its record LAST; for an earlier installation,
+// its persona commands, settings, config lines, placed files and runtime config, and its
+// manifest last. A run that stops before a record is removed can be run again.
 //
 // `--dry-run` runs every step and writes none, so its report is exactly what a real run
 // would say.
@@ -42,6 +48,7 @@ import { CLI_BIN } from '../../bin-name.js';
 import { NEUTRAL_AGENT_ROOT } from '../../core/harness-adapter.js';
 import {
   type DeployManifest,
+  type HostEdit,
   MANIFEST_REL,
   MANIFEST_VERSION,
   applyPrune,
@@ -56,6 +63,12 @@ import {
   unregisterHookCommands,
   withoutRuntimeParts,
 } from '../../deploy/index.js';
+import {
+  ownedRootIn,
+  readInstallationRecord,
+  removeOwnedRoot,
+  unlinkOwnedRoot,
+} from '../../deploy/owned-root.js';
 import { unreadableRuntimeConfig } from '../../deploy/runtime-config.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import { settingsJson } from '../../deploy/settings-json.js';
@@ -77,7 +90,7 @@ export interface UninstallCmdOpts {
 }
 
 /** Something this run took away, or would. */
-interface Removal {
+export interface Removal {
   readonly what: string;
   /** Set where the removal is outside the harness directory: the directory or file it
    *  is in, and what to call it. The default report names these, as install and deploy
@@ -95,12 +108,13 @@ function outsideRoot(harnessDir: string, rel: string): string {
 }
 
 /** Something this run left alone, and why. */
-interface Leftover {
+export interface Leftover {
   readonly what: string;
   readonly why: string;
 }
 
-interface Tally {
+/** What a removal took away and what it left. */
+export interface Tally {
   readonly removed: Removal[];
   readonly left: Leftover[];
 }
@@ -273,14 +287,15 @@ function restoreSettings(
   }
 }
 
-/** The lines install inserted into host-owned text files — omp's `config.yml`. */
+/** The lines install inserted into host-owned text files — omp's `config.yml` — by
+ *  each file's path relative to the harness directory. */
 function undoHostEdits(
   harnessDir: string,
-  manifest: DeployManifest,
+  edits: Readonly<Record<string, HostEdit>>,
   dry: boolean,
   tally: Tally,
 ): void {
-  for (const [rel, edit] of Object.entries(manifest.hostEdits)) {
+  for (const [rel, edit] of Object.entries(edits)) {
     const file = resolve(harnessDir, rel);
     if (!existsSync(file)) continue;
     if (edit.migrated === true) {
@@ -493,37 +508,95 @@ function removeRuntimeStanza(
 const plural = (n: number, noun: string): string =>
   `${n} ${noun}${n === 1 ? '' : 's'}`;
 
-/** The report: counts always, what was removed outside the harness directory always
- *  (install and deploy name every write there, so uninstall names what it takes back),
- *  what was left always (the host's, so the operator sees what remains and why), and
- *  each item removed only under `--verbose`. */
-function print(
-  tally: Tally,
-  run: { dry: boolean; verbose: boolean; harness: string; harnessDir: string },
-): void {
-  const { dry, verbose } = run;
-  const verb = dry ? 'would remove' : 'removed';
-  const inside = tally.removed.filter((r) => r.outside === undefined);
-  say(
-    `${verb} ${plural(inside.length, 'item')} from ${run.harness} (${run.harnessDir})`,
-  );
-  if (verbose) {
-    for (const r of tally.removed) say(`  ${r.what}`);
+/**
+ * Take back an EARLIER installation of `adapter` — the layout before the owned root —
+ * by its deploy manifest in the harness directory: its persona commands, its settings
+ * and config lines, its placed files while they are as written, its runtime config, and
+ * the manifest last. `undefined` where there is no manifest, so nothing to take back.
+ * A manifest that cannot be trusted is refused, with nothing removed.
+ */
+export function removeEarlierInstallation(
+  adapter: HarnessAdapter,
+  opts: Pick<UninstallCmdOpts, 'home' | 'dryRun'>,
+): Tally | undefined {
+  const dry = opts.dryRun ?? false;
+  const harnessDir = harnessDirIn(adapter, opts.home);
+  const manifestFile = join(harnessDir, MANIFEST_REL);
+  if (!existsSync(manifestFile)) return undefined;
+  const fault = recordFault(harnessDir);
+  if (fault !== undefined) {
+    throw new Error(
+      `the earlier installation's deploy record ${manifestFile} is not usable: ${fault}; repair or delete the record and run it again`,
+    );
+  }
+  const manifest = readManifest(harnessDir);
+  // Read now: the persona step below rewrites the record, and a rewrite reads back as
+  // one that records edits whatever it was.
+  const editsRecorded = recordsHostEdits(harnessDir);
+  const tally: Tally = { removed: [], left: [] };
+  removePersonaLinks(harnessDir, opts, tally);
+  restoreSettings(adapter, harnessDir, manifest, dry, tally);
+  if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
+  undoHostEdits(harnessDir, manifest.hostEdits, dry, tally);
+  removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
+  removeRuntimeStanza(adapter, manifest, opts.home, dry, tally);
+  tally.removed.push({ what: `${manifestFile} (the deploy record)` });
+  if (!dry) dropFile(harnessDir, manifestFile);
+  return tally;
+}
+
+/**
+ * Take back the installation of `adapter` under its owned root: every reference the
+ * record names, while it still refers into the root; every line it added to a host
+ * file, while it stands as written; then the root, whole. `undefined` where there is
+ * no root.
+ */
+export function removeOwnedInstallation(
+  adapter: HarnessAdapter,
+  opts: Pick<UninstallCmdOpts, 'home' | 'dryRun'>,
+): Tally | undefined {
+  const dry = opts.dryRun ?? false;
+  const harnessDir = harnessDirIn(adapter, opts.home);
+  const root = ownedRootIn(adapter, opts.home);
+  if (!existsSync(root)) return undefined;
+  const tally: Tally = { removed: [], left: [] };
+  const record = readInstallationRecord(root);
+  if (record !== null) {
+    const unlinked = unlinkOwnedRoot({ harnessDir, root, record, dry });
+    for (const what of unlinked.changed)
+      tally.removed.push({
+        what: `${what} (a reference into ${root})`,
+        outside: { area: dirname(what), noun: 'reference' },
+      });
+    tally.left.push(...unlinked.left);
+    undoHostEdits(harnessDir, record.hostEdits, dry, tally);
+  }
+  tally.removed.push({ what: `${root} (the owned root, whole)` });
+  if (!dry) removeOwnedRoot(root);
+  return tally;
+}
+
+/** The report: what was removed, by area unless `--verbose` lists each, and what was
+ *  left always (the host's, so the operator sees what remains and why). */
+function print(tally: Tally, run: { dry: boolean; verbose: boolean }): void {
+  const verb = run.dry ? 'would remove' : 'removed';
+  if (run.verbose) {
+    for (const r of tally.removed) say(`${verb} ${r.what}`);
   } else {
     const groups = new Map<string, Removal[]>();
     for (const r of tally.removed) {
-      if (r.outside === undefined) continue;
-      const key = `${r.outside.noun}\0${r.outside.area}`;
+      const key =
+        r.outside === undefined
+          ? r.what
+          : `${r.outside.noun}\0${r.outside.area}`;
       groups.set(key, [...(groups.get(key) ?? []), r]);
     }
     for (const items of groups.values()) {
-      const { area, noun } = items[0]?.outside as NonNullable<
-        Removal['outside']
-      >;
+      const [first] = items as [Removal, ...Removal[]];
       say(
-        noun === 'runtime config'
-          ? `${verb} ${items[0]?.what}`
-          : `${verb} ${plural(items.length, noun)} from ${area}`,
+        first.outside === undefined || first.outside.noun === 'runtime config'
+          ? `${verb} ${first.what}`
+          : `${verb} ${plural(items.length, first.outside.noun)} from ${first.outside.area}`,
       );
     }
   }
@@ -551,52 +624,32 @@ export function runUninstall(opts: UninstallCmdOpts): number {
     );
   }
   const adapter = adapterByName(opts.harness);
-  const dry = opts.dryRun ?? false;
-  const harnessDir = harnessDirIn(adapter, opts.home);
-  const manifestFile = join(harnessDir, MANIFEST_REL);
-  const run = {
-    dry,
-    verbose: opts.verbose ?? false,
-    harness: adapter.name,
-    harnessDir,
-  };
-
-  if (!existsSync(manifestFile)) {
-    say(
-      `no deploy record at ${manifestFile}, so nothing there is recorded as placed by ${CLI_BIN} and nothing is removed`,
-    );
-    return 0;
-  }
-  const fault = recordFault(harnessDir);
-  if (fault !== undefined) {
-    return fail(
-      `the deploy record ${manifestFile} is not usable: ${fault}; nothing was removed, so repair or delete the record and run it again`,
-    );
-  }
-
-  const manifest = readManifest(harnessDir);
-  // Read now: the persona step below rewrites the record, and a rewrite reads back as
-  // one that records edits whatever it was.
-  const editsRecorded = recordsHostEdits(harnessDir);
+  const run = { dry: opts.dryRun ?? false, verbose: opts.verbose ?? false };
   const tally: Tally = { removed: [], left: [] };
+  let found = false;
   try {
-    removePersonaLinks(harnessDir, opts, tally);
-    restoreSettings(adapter, harnessDir, manifest, dry, tally);
-    if (!editsRecorded) reportUnrecordedConfig(adapter, harnessDir, tally);
-    undoHostEdits(harnessDir, manifest, dry, tally);
-    removePlacedFiles(adapter, harnessDir, manifest, opts, tally);
-    removeRuntimeStanza(adapter, manifest, opts.home, dry, tally);
-    tally.removed.push({ what: `${manifestFile} (the deploy record)` });
-    if (!dry) dropFile(harnessDir, manifestFile);
+    for (const remove of [removeOwnedInstallation, removeEarlierInstallation]) {
+      const done = remove(adapter, opts);
+      if (done === undefined) continue;
+      found = true;
+      tally.removed.push(...done.removed);
+      tally.left.push(...done.left);
+    }
   } catch (e) {
     print(tally, run);
     return fail(
-      `stopped: ${(e as Error).message}; the deploy record is kept, so running it again continues`,
+      `stopped: ${(e as Error).message}; what is not yet removed is still recorded, so running it again continues`,
     );
+  }
+  if (!found) {
+    say(
+      `nothing of ${CLI_BIN} is installed in ${adapter.name} here (no ${ownedRootIn(adapter, opts.home)}, and no earlier installation's record), so nothing is removed`,
+    );
+    return 0;
   }
   print(tally, run);
   say(
-    dry
+    run.dry
       ? 'next: run it again without --dry-run to remove them'
       : `next: restart ${adapter.name} to drop what it still has loaded`,
   );

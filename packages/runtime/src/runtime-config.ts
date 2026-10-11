@@ -1,35 +1,53 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The HOST RUNTIME CONFIG — what the projection told this host about the corpus.
+// The INSTALLATION and its RUNTIME CONFIG — what the projection told this host.
 //
-// It carries each capability's configuration, as the corpus's skills declared it.
-// Which capabilities exist is not among them: they ship inside the runtime and are
-// known when it is built.
+// Everything cratylus places for a user on a harness lives under one root it owns,
+// `~/.cratylus/<harness>/` (the owned root): the corpus's agents and skills, the
+// harness's adapters, the version of cratylus that projected them (`package.json`'s
+// `version`) and, where the corpus declares any, each capability's configuration
+// (`runtime.json`). The runtime reads both from there.
+//
+// WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
+// call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
+// reads the installation that harness runs. Called by the operator with none named,
+// it is the one installation under the home, when there is exactly one.
 //
 // WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
-// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd (a
-// deployed skill shim under the harness config home), so there is no project to
-// resolve from. The declaration still lives in config-is-code at the consumer's
-// site; DEPLOY realizes it into a host config, and the runtime reads that. Same
-// direction of authority as every other artifact here: declare → project → consume.
+// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd, so
+// there is no project to resolve from. The declaration still lives in
+// config-is-code at the consumer's site; INSTALL realizes it into the owned root,
+// and the runtime reads that. Same direction of authority as every other artifact
+// here: declare → project → consume.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
 
-/** Where the host config lives, unless `$AGENT_RUNTIME_CONFIG` overrides it. */
+/** The variable a harness's adapter names its installation's root in. Derived from
+ *  the bin, never a second literal. */
+export const INSTALLATION_ENV = `${CLI_BIN.toUpperCase()}_INSTALLATION`;
+
+/** The directory under the home that holds every installation, one per harness:
+ *  `.<bin>`, derived from the bin. */
+export const INSTALLATIONS_DIR = `.${CLI_BIN}`;
+
+/** The runtime config's file in an installation's root. */
+export const RUNTIME_CONFIG_FILE = 'runtime.json';
+
+/** Where the config is read from instead, when set. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
-// Derived, never a second literal. The host config dotfile is named AFTER the bin,
-// so an independent copy is a rename waiting to orphan every host's existing file —
-// the config would move while the file on disk did not. One home, in `bin-name.ts`.
+
+// Derived, never a second literal. The EARLIER layout's host config, at the home
+// itself, named after the bin: nothing reads it now, and an upgrade removes it.
 export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 
 /** The host's config: the corpus's capability configuration. */
 export interface RuntimeConfig {
   /**
    * Each capability's configuration, keyed by capability, as the corpus's skills
-   * declared it and deploy emitted it. Corpus meaning a capability acts on (states,
+   * declared it and install emitted it. Corpus meaning a capability acts on (states,
    * roles, names) arrives here and is spelled nowhere in this package. Opaque to
    * this reader: the capability that consumes its entry validates it. A capability
    * whose entry is absent must REFUSE and say so, never fall back to a set of its
@@ -38,16 +56,51 @@ export interface RuntimeConfig {
   readonly configuration?: Readonly<Record<string, unknown>>;
 }
 
-/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus.json`. */
-export function runtimeConfigPath(): string {
+/** Why no installation could be read: none is named and the home holds none, or
+ *  holds several. */
+export class NoInstallationError extends Error {}
+
+/**
+ * The installation's root: the one `$CRATYLUS_INSTALLATION` names, else the one
+ * installation under the home. Refused, naming what to do, where the home holds none
+ * or several and none is named.
+ */
+export function installationRoot(): string {
+  const named = process.env[INSTALLATION_ENV];
+  if (named !== undefined && named !== '') return named;
+  const parent = join(homedir(), INSTALLATIONS_DIR);
+  const found = existsSync(parent)
+    ? readdirSync(parent, { withFileTypes: true })
+        .filter(
+          (e) =>
+            e.isDirectory() && existsSync(join(parent, e.name, 'package.json')),
+        )
+        .map((e) => join(parent, e.name))
+        .sort()
+    : [];
+  if (found.length === 1) return found[0] as string;
+  throw new NoInstallationError(
+    found.length === 0
+      ? `no installation under ${parent}; run ${CLI_BIN} install`
+      : `${found.length} installations under ${parent} (${found.join(', ')}); name one in $${INSTALLATION_ENV}`,
+  );
+}
+
+/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ the installation's `runtime.json`, or
+ *  `null` where there is no installation to read it from. */
+export function runtimeConfigPath(): string | null {
   const override = process.env[RUNTIME_CONFIG_ENV];
-  return override && override !== ''
-    ? override
-    : join(homedir(), RUNTIME_CONFIG_NAME);
+  if (override !== undefined && override !== '') return override;
+  try {
+    return join(installationRoot(), RUNTIME_CONFIG_FILE);
+  } catch (e) {
+    if (e instanceof NoInstallationError) return null;
+    throw e;
+  }
 }
 
 /**
- * Read the host config, or `null` when absent/unreadable. Absence is NOT an error
+ * Read the config, or `null` when absent/unreadable. Absence is NOT an error
  * here: a capability that needs a part of the config refuses on its own terms,
  * naming the command that writes it.
  *
@@ -56,7 +109,7 @@ export function runtimeConfigPath(): string {
 export function loadRuntimeConfig(
   path = runtimeConfigPath(),
 ): RuntimeConfig | null {
-  if (!existsSync(path)) return null;
+  if (path === null || !existsSync(path)) return null;
   try {
     const raw = JSON.parse(
       readFileSync(path, 'utf-8'),

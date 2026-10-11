@@ -285,6 +285,13 @@ const HOOK_STATUS_KEY = 'showHookStatus';
 const HIDDEN_ROW =
   /(\bshowHookStatus["']?[ \t]*:[ \t]*)(?:false|False|FALSE)(?=[ \t,}\]#]|$)/;
 
+/** Whether a host config's `text` hides the row beneath the editor an extension's
+ *  status shows in (`showHookStatus: false`): the one case install edits a host's
+ *  status line, since anywhere else a session's agent already shows. */
+export function hidesExtensionStatus(text: string): boolean {
+  return text.split(/\r?\n/).some((line) => HIDDEN_ROW.test(line));
+}
+
 /** The last line of `statusLine`'s value, from its key at line `at`: the lines a flow
  *  mapping spans until its brackets close, else every blank, comment or indented line
  *  after it. Brackets are counted as text, quotes and all — it bounds a search, and

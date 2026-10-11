@@ -2,13 +2,13 @@
 // whose persona is a NATIVE artifact of the harness rather than a
 // launch-time argument.
 //
-// THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers USER-level
-// task agents from `~/.omp/agent/agents/*.md` (`omp://task-agent-discovery.md`):
-// YAML front-matter carrying a required `name` and `description`, and a BODY
-// that IS the system prompt. That one file is this adapter's whole projection of
-// an agent, and BOTH ways of reaching it read it through omp's own discovery —
-// dispatched as a subagent, omp runs it itself; started as a MAIN session by
-// `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
+// THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers task agents from
+// the `agents/` directory of every extension package it loads
+// (`omp://task-agent-discovery.md`): YAML front-matter carrying a required `name` and
+// `description`, and a BODY that IS the system prompt. That one file is this adapter's
+// whole projection of an agent, and BOTH ways of reaching it read it through omp's own
+// discovery — dispatched as a subagent, omp runs it itself; started as a MAIN session
+// by `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
 // resolves the same declaration and carries it into the session (decision 0047).
 // One declaration, nothing outside the harness wrapping it, nothing to drift.
 //
@@ -18,32 +18,24 @@
 // and an agent are ORTHOGONAL facts about one session; an operator who wants both
 // passes both flags, and forge asserts neither for them.
 //
-// omp's native surfaces, read off `@oh-my-pi/pi-coding-agent`'s own source and,
-// where noted, re-measured against an installed `omp` binary:
+// THE LAYOUT IS AN OMP EXTENSION PACKAGE, the owned root install places
+// (`~/.cratylus/omp`), and every path below is relative to that root:
 //
-//   - an AGENT is `agent/agents/<name>.md` under `~/.omp` — the USER-level
-//     task-agent root, merged first-wins by exact name with a project
-//     `.omp/agents` (which wins) and the bundled defs (which lose).
-//   - a SKILL is `skills/<name>/SKILL.md` under `~/.agents` (the AgentSkills
-//     spec, shared with claude) — omp's vendor-neutral `.agent[s]`
-//     provider reads that root NATIVELY, at priority 70, no flag and no
-//     profile (confirmed in the installed package's resource loader:
-//     `join(getHomeDir(), ".agents", "skills")` is scanned unconditionally,
-//     the same call for every launch).
-//   - ENFORCEMENT is a TypeScript module omp's extension loader binds either by
-//     SCANNING a directory (`discoverExtensionPaths`, a native config root) or
-//     by an explicit `--config … extensions:` entry naming a file OR a
-//     directory (`collectFilesFromPaths`/`collectAutoExtensionEntries` in the
-//     installed package sweep a directory entry exactly like a native root's
-//     auto-discovery — verified empirically: a directory named in `extensions:`
-//     loaded every loose `.ts` file inside it). No hook CONFIG exists at all:
-//     the directory, or the overlay entry naming it, IS the declaration.
+//   - an AGENT is `agents/<name>.md`, discovered by omp from the package's
+//     `agents/` for every project, first-wins by exact name after a project's
+//     `.omp/agents` and the user's own `~/.omp/agent/agents`.
+//   - a SKILL is `skills/<name>/SKILL.md`, the AgentSkills shape, discovered from
+//     the package's `skills/`.
+//   - ENFORCEMENT and the capability tools are TypeScript modules under
+//     `extensions/`, which the package's `package.json` names (`omp.extensions`).
+//     No hook CONFIG exists at all: the package names its modules.
 //
-// NOTHING IS SCOPED PER AGENT. omp loads extension modules from directories it scans
-// for every session (`agent/extensions/` under `~/.omp`), and nothing in an agent
-// declaration names a module of its own. So every module this adapter emits is
-// SESSION-WIDE, and nothing lands under `agent/personas/`: the per-agent modules that
-// once did were reached by no session. A worker hook composed into named agents is
+// At project scope the same layout lands under the project's `.omp/`, which omp reads
+// natively as `agents/`, `skills/` and `extensions/`.
+//
+// NOTHING IS SCOPED PER AGENT. omp loads extension modules for every session, and
+// nothing in an agent declaration names a module of its own. So every module this
+// adapter emits is SESSION-WIDE. A worker hook composed into named agents is
 // therefore one omp cannot scope (`scopes` is false), and projection reports it as
 // such rather than widen it to every session. A GUARD cell is the exception by
 // construction: it judges inside the session module, and only in a main session
@@ -51,8 +43,8 @@
 //
 // WHAT AN AGENT'S REACH, HANDOFF AND MODEL BECOME are omp's own declaration
 // settings: the handoffs as `spawns`, the deliverable as `output`, and the model as
-// a model role named for the agent, which install binds to the tier and effort it
-// holds. Every agent keeps omp's default tools.
+// the model role named for the agent, falling back to the tier and effort it holds
+// (decision 0111). Every agent keeps omp's default tools.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -65,6 +57,7 @@
 // `bin-name-single-home` catches and rightly refused.
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
+import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
 import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
 import type { Hook, NativeBinding } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
@@ -74,7 +67,6 @@ import {
   type DispatchIsolation,
   type HarnessAdapter,
   type HarnessProjection,
-  NEUTRAL_AGENT_ROOT,
   type RoleRouting,
   SESSION_SCOPE,
   type StatusSegmentHost,
@@ -90,56 +82,35 @@ import {
 
 export type { ResolvedSkill };
 
-/**
- * The SESSION root — omp's native USER config dir, relative to the harness
- * home, and the root EVERY artifact this adapter deploys is carried from.
- *
- * omp's native user config is `~/.omp/agent` (`getAgentDir()`,
- * `discovery/builtin.ts`) when no `--profile` names another. Two things hang
- * off it: the task-agent definitions omp discovers ({@link OMP_AGENT_DEF_DIR}),
- * and the SESSION-scoped modules — the copies every session reads automatically
- * because they sit on omp's own scan path (`extensions/`).
- */
-export const OMP_SESSION_DIR = 'agent';
-
-/**
- * omp's USER-level task-agent discovery dir, relative to {@link
- * OMP_SESSION_DIR} — `~/.omp/agent/agents/`.
- */
+/** The task-agent discovery dir of an omp extension package (and of a project's
+ *  `.omp/`): `agents/`. */
 export const OMP_AGENT_DEF_DIR = 'agents';
 
-/** Where agent `<name>`'s definition lands, relative to the harness home
- *  (`.omp`) — omp's OWN user-level task-agent root, read NATIVELY on every
- *  discovery pass.
- *
- *  `<name>.md` and not `<name>/APPEND_SYSTEM.md`, which is where this used to
- *  land. That filename was omp's vocabulary for what `--append-system-prompt`
- *  reads, and it made the persona a LAUNCH ARGUMENT — invisible to omp's own
- *  agent discovery, so a composed agent could be started as a session and could
- *  not be DISPATCHED as a subagent by the same name. One artifact answers both
- *  now: dispatch and `omp --agent <name>` resolve it through the same discovery. */
+/** Where agent `<name>`'s definition lands, relative to the root it is placed in:
+ *  the owned root's `agents/`, which omp discovers as an extension package's, or a
+ *  project's `.omp/agents/`. One artifact serves dispatch and `omp --agent <name>`. */
 export function ompAgentRel(name: string): string {
-  return `${OMP_SESSION_DIR}/${OMP_AGENT_DEF_DIR}/${name}.md`;
+  return `${OMP_AGENT_DEF_DIR}/${name}.md`;
 }
 
-/**
- * Where skill `<name>` lands, relative to the harness home — ONE path, at the
- * harness-neutral root omp reads NATIVELY on every launch.
- *
- * `agents` goes UNUSED: the fan-out this signature still carries
- * existed here only because a persona WAS a profile, and a profile's
- * native config root is isolated from every other — so a skill reachable from
- * every persona needed N+1 copies. It no longer is: omp reads `~/.agents/skills`
- * NATIVELY, at provider priority 70, for every launch — personaed, bare, or
- * profiled — so one copy now serves every reader and the fan-out bought
- * nothing once the persona stopped being a profile.
- */
+/** Where skill `<name>` lands, relative to the root it is placed in: ONE path,
+ *  `skills/<name>`, which omp discovers in an extension package and in a project's
+ *  `.omp/`. `agents` goes unused: omp scopes no skill reader per agent. */
 export function ompSkillRel(
   name: string,
   _agents: readonly string[],
 ): readonly string[] {
-  return [`../${NEUTRAL_AGENT_ROOT}/skills/${name}`];
+  return [`skills/${name}`];
 }
+
+/** The directory every extension module lands in, relative to the root it is placed
+ *  in, and the one the owned root's `package.json` names its modules from. */
+export const OMP_EXTENSIONS_DIR = 'extensions';
+
+/** Where omp loads an extension package for every project of a user, relative to its
+ *  home (`.omp`): its own plugin directory, where `omp plugin link` puts a package by
+ *  name. */
+export const OMP_PACKAGE_DIR = 'plugins';
 
 /** The emitted SCOPE-ACTIVATED module's filename: the session-wide hooks of the cells
  *  no agent composes. */
@@ -155,7 +126,12 @@ export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'concepts',
   'workPackage',
+  'versionSkew',
 ];
+
+/** The capability whose result the CRATYLUS module reads at every session start, to say
+ *  when the build that projected this installation is not the command it reaches. */
+const OMP_VERSION_SKEW: Capability = 'versionSkew';
 
 /** The capabilities omp offers whole, as a tool of every turn, rather than mounted
  *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
@@ -228,79 +204,32 @@ const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
-/** The host's own model role each seedable tier takes its model from. */
-const OMP_TIER_SOURCES: Readonly<Record<string, string>> = {
-  frontier: 'default',
-  fast: 'smol',
-};
-
-/** The tier seeded with a model of another family than the frontier's. */
-const OMP_OTHER_FAMILY_TIER = 'frontier-other-family';
-
-/** A thinking level at the end of a model selector (`provider/model:high`). */
-const OMP_THINKING_LEVEL = /:(?:off|minimal|low|medium|high|xhigh|max)$/;
-
-/** The provider of a model selector, the text before its first `/`; none for an
- *  alias or a bare name. */
-function providerOf(selector: string): string | undefined {
-  const slash = selector.indexOf('/');
-  return slash > 0 && !selector.startsWith('@')
-    ? selector.slice(0, slash)
-    : undefined;
-}
-
-/** The value a tier's role is seeded with from the host's `modelRoles` entries, in
- *  file order: `frontier` the host's `default`, `fast` its `smol`, and
- *  `frontier-other-family` the first entry whose provider differs from the
- *  frontier's — each with its thinking level dropped. `undefined`: it cannot be. */
-function ompTierSeed(
-  tier: string,
-  host: readonly (readonly [role: string, value: string])[],
-): string | undefined {
-  const hostValue = (role: string): string | undefined =>
-    host.find(([r]) => r === role)?.[1];
-  const model = (selector: string | undefined): string | undefined =>
-    selector?.replace(OMP_THINKING_LEVEL, '');
-  if (tier === OMP_OTHER_FAMILY_TIER) {
-    const frontier = hostValue('frontier') ?? ompTierSeed('frontier', host);
-    const family = frontier === undefined ? undefined : providerOf(frontier);
-    if (family === undefined) return undefined;
-    return model(
-      host.find(([, v]) => {
-        const provider = providerOf(v);
-        return provider !== undefined && provider !== family;
-      })?.[1],
-    );
-  }
-  const source = OMP_TIER_SOURCES[tier];
-  return source === undefined ? undefined : model(hostValue(source));
-}
-
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
- *  declaration's `model` names the role named for its agent; the host's `modelRoles`
- *  binds that role to `@<tier>:<effort>`, and each tier's role to a model. */
+ *  declaration's `model` names the role named for its agent first, which the host may
+ *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
+ *  binds no such role. Install reads the host's roles and writes none. */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
   agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
-  seedTier: ompTierSeed,
 };
 
 // ── Dispatch isolation: the copy an isolated task runs in ────────────────────
 
 /** omp's task isolation, as {@link HarnessAdapter.dispatchIsolation} exposes it.
- *  Measured on omp 18.4.9. A task tool call takes `isolated` only while the host
- *  setting `task.isolation.enabled` is true, and runs that task in a copy of the
- *  checkout it was dispatched from. What the copy built is applied back into the
- *  dispatcher's checkout unless `task.isolation.apply` is false, and kept as a branch
+ *  Measured on omp 18.4.9. A task tool call takes `isolated` only while the setting
+ *  `task.isolation.enabled` is true, and runs that task in a copy of the checkout it
+ *  was dispatched from. What the copy built is applied back into the dispatcher's
+ *  checkout unless `task.isolation.apply` is false, and kept as a branch
  *  `omp/task/<id>` in the dispatcher's repository, the agent's own commits, when
  *  `task.isolation.merge` is `branch` — `patch` keeps only a diff. The copy is cut
  *  from the dispatcher's checkout as it stands (its HEAD, its uncommitted work): the
- *  task tool takes no ref to cut it from. */
+ *  task tool takes no ref to cut it from. The isolation module holds these as
+ *  session-scoped runtime overrides, so no host setting is written. */
 export const ompDispatchIsolation: DispatchIsolation = {
-  configRels: OMP_CONFIG_RELS,
   settings: {
-    parent: ['task', 'isolation'],
-    entries: { enabled: 'true', apply: 'false', merge: 'branch' },
+    'task.isolation.enabled': true,
+    'task.isolation.apply': false,
+    'task.isolation.merge': 'branch',
   },
   lacks:
     "cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line",
@@ -381,11 +310,13 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * **`key` IS RESERVED.** It is the slot of an ipseic agent's key (decision 0048), and
  * every agent this corpus composes holds it empty.
  *
- * **`model` NAMES THE AGENT'S OWN ROLE, NEVER A MODEL.** `model: "@<name>"` is omp's
- * model-role alias for the role named for the agent; install binds that role in the
- * host's `modelRoles` to the tier and effort the agent holds (`@<tier>:<effort>`),
- * and each tier's role to a model. Quoted, because a YAML value starting with `@` is
- * a scanner error unquoted.
+ * **`model` NAMES THE AGENT'S OWN ROLE, THEN ITS TIER AND EFFORT, NEVER A MODEL**
+ * (decision 0111). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order by omp:
+ * the role named for the agent, which the host may bind in its own `modelRoles`, and
+ * where it binds none, the tier and effort the agent holds. A model the operator chose
+ * for the agent at install ({@link AgentDefContext.model}) takes the second place.
+ * Install writes no role into the host's settings. Each entry is quoted, because a
+ * YAML value starting with `@` is a scanner error unquoted.
  *
  * **`spawns` IS THE AGENT'S HANDOFFS**, each mapped through {@link OMP_NATIVE_AGENTS}
  * to the agent omp supplies for it (the researcher is omp's `scout`). `""` denies
@@ -428,7 +359,11 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
   if (a.mark !== null) fm.push(`mark: ${yamlString(a.mark.emoji)}`);
-  fm.push('key: null', `model: ${yamlString(`@${a.name}`)}`);
+  const fallback =
+    ctx.model ??
+    (a.routing === undefined ? undefined : ompRoleRouting.agentRole(a.routing));
+  const model = [`@${a.name}`, ...(fallback === undefined ? [] : [fallback])];
+  fm.push('key: null', `model: [${model.map(yamlString).join(', ')}]`);
   if (a.dispatches !== undefined) {
     const spawns = a.dispatches.map((h) => OMP_NATIVE_AGENTS[h] ?? h);
     fm.push(`spawns: ${yamlString(spawns.join(', '))}`);
@@ -468,7 +403,7 @@ export function skillToOmpMd(s: ResolvedSkill): string {
   return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
 }
 
-// ── Session hooks → agent/extensions/<bin>-session.ts ────────────────────────
+// ── Session hooks → extensions/<bin>-session.ts ──────────────────────────────
 
 /** One `pi.on(...)` registration, already narrowed to its act where it has one. */
 interface OmpRegistration {
@@ -548,10 +483,12 @@ export function ompScopeActivatedExtensions(
  * touches no other spawn and no other tool. The agents are named in the module at
  * projection, from the corpus's declarations; nothing here asks who is running.
  *
- * The flag makes sense only over the host settings install records
- * ({@link ompDispatchIsolation}): with `task.isolation.enabled` off, omp refuses an
- * isolated task — a loud failure, where the alternative is the agent building in the
- * checkout that dispatched it.
+ * The flag makes sense only where `task.isolation.enabled` holds
+ * ({@link ompDispatchIsolation}), which this module holds at session start as a
+ * session-scoped runtime override, with the rest of the isolation's settings, so no
+ * host setting is written. With it off, omp refuses an isolated task — a loud
+ * failure, where the alternative is the agent building in the checkout that
+ * dispatched it.
  */
 export function ompIsolationExtensions(
   agents: readonly Agent[],
@@ -573,11 +510,20 @@ export function ompIsolationExtensions(
         ...SESSION_PLACEMENT,
         '',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+        'import { lookup } from "@oh-my-pi/pi-coding-agent/config/registry";',
+        'import { findScopedSettings, type Settings, settings } from "@oh-my-pi/pi-coding-agent/config/settings";',
         '',
         '// The agents that declare a worktree of their own, by the name a dispatch gives them.',
         `const ISOLATED: Readonly<Record<string, true>> = ${JSON.stringify(named)};`,
+        "// The settings an isolated task needs, held as the session's runtime overrides.",
+        `const SETTINGS: Readonly<Record<string, unknown>> = ${JSON.stringify(ompDispatchIsolation.settings)};`,
         '',
         'export default function (pi: ExtensionAPI) {',
+        '  pi.on("session_start", () => {',
+        '    const scope: Settings = findScopedSettings() ?? settings;',
+        '    for (const [key, value] of Object.entries(SETTINGS))',
+        '      (lookup(key) as { override(scope: Settings, value: unknown): void }).override(scope, value);',
+        '  });',
         '  pi.on("tool_call", async (event) => {',
         '    if (event.toolName !== "task") return undefined;',
         '    const input = event.input as Record<string, unknown>;',
@@ -1563,12 +1509,11 @@ function ompExtensionModule(
 /** The placement note of a module in the session scope: what is true of where the
  *  file sits, said once. */
 const SESSION_PLACEMENT: readonly string[] = [
-  '// This module sits in the SESSION config root',
-  `// (\`${OMP_SESSION_DIR}/extensions/\`), which every \`omp\` session scans NATIVELY,`,
-  '// with no `--config` entry required.',
+  `// This module sits in \`${OMP_EXTENSIONS_DIR}/\` of the cratylus extension package,`,
+  '// whose `package.json` names it, so omp loads it in every session.',
 ];
 
-// ── Capability interface and agent launch → agent/extensions/<bin>.ts ───────
+// ── Capability interface and agent launch → extensions/<bin>.ts ──────────────
 
 /**
  * The CRATYLUS module: ONE omp extension, at the SESSION scope, which omp loads in
@@ -1690,7 +1635,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  * it) and rendered by omp's own `buildSkillPromptMessage` in the autoload form a
  * dispatched child receives; all appended in `before_agent_start`, so a rebuilt
  * base prompt never drops them. The status line reads `<mark> <name>`, or `<name>`
- * without a mark (install lists omp's `status` segment so it renders).
+ * without a mark (where the host hid extension status, install lists omp's `status`
+ * segment so it renders).
  *
  * THE REST OF THE DECLARATION. Once per launch, held as
  * session-scoped runtime overrides on the session's own settings (never persisted)
@@ -1754,7 +1700,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         'import { execFile } from "node:child_process";',
         'import { existsSync, readFileSync } from "node:fs";',
-        'import { isAbsolute } from "node:path";',
+        'import { dirname, isAbsolute } from "node:path";',
+        'import { fileURLToPath } from "node:url";',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
         'import { type Args, parseArgs } from "@oh-my-pi/pi-coding-agent/cli/args";',
         'import {',
@@ -1785,6 +1732,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'import { parseFrontmatter } from "@oh-my-pi/pi-utils";',
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
+        `const SKEW = ${JSON.stringify(OMP_VERSION_SKEW)};`,
+        `const INSTALLATION_ENV = ${JSON.stringify(INSTALLATION_ENV)};`,
+        '// The installation this module was placed in: the root above its `extensions/`.',
+        'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
         '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
         '// its purpose cut short.',
@@ -1836,16 +1787,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         "// A program's output; its own message, when it refuses.",
-        'function execOf(file: string, args: string[], cwd?: string, signal?: AbortSignal): Promise<string> {',
+        'function execOf(file: string, args: string[], cwd?: string, signal?: AbortSignal, env?: NodeJS.ProcessEnv): Promise<string> {',
         '  const { promise, resolve, reject } = Promise.withResolvers<string>();',
-        '  execFile(file, args, { cwd, signal, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {',
+        '  execFile(file, args, { cwd, signal, env, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {',
         '    if (error) reject(new Error(String(stderr).trim() || String(stdout).trim() || error.message));',
         '    else resolve(String(stdout));',
         '  });',
         '  return promise;',
         '}',
-        "// The installed command's output; its own message, when it refuses.",
-        'const run = (args: string[], cwd?: string, signal?: AbortSignal): Promise<string> => execOf(COMMAND, args, cwd, signal);',
+        "// The installed command's output; its own message, when it refuses. Every call names the",
+        '// installation this module was placed in, so the command can say which build projected it.',
+        'const run = (args: string[], cwd?: string, signal?: AbortSignal): Promise<string> =>',
+        '  execOf(COMMAND, args, cwd, signal, { ...process.env, [INSTALLATION_ENV]: INSTALLATION });',
         '',
         'const requirement = (p: Parameter): string => (p.required ? "required" : "optional");',
         '',
@@ -1864,16 +1817,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  ].join("\\n\\n");',
         '}',
         '',
-        '// A required `verb`, then each parameter once, with what each verb says of it and its',
-        '// schema: the one schema every verb declares, or each distinct one under `anyOf`.',
+        '// A required `verb` (implied where the capability explains one verb alone), then each',
+        '// parameter once, with what each verb says of it and its schema: the one schema every',
+        '// verb declares, or each distinct one under `anyOf`.',
         'function parameters(e: Explanation): Record<string, unknown> {',
-        '  const properties: Record<string, Record<string, unknown>> = {',
-        '    verb: {',
-        '      type: "string",',
-        '      enum: e.verbs.map((v) => v.name),',
-        '      description: e.verbs.map((v) => `${v.name} (${v.effect})`).join("; "),',
-        '    },',
-        '  };',
+        '  const sole = e.verbs.length === 1;',
+        '  const properties: Record<string, Record<string, unknown>> = sole',
+        '    ? {}',
+        '    : {',
+        '        verb: {',
+        '          type: "string",',
+        '          enum: e.verbs.map((v) => v.name),',
+        '          description: e.verbs.map((v) => `${v.name} (${v.effect})`).join("; "),',
+        '        },',
+        '      };',
         '  const said = new Map<string, { schemas: Map<string, Record<string, unknown>>; lines: string[] }>();',
         '  for (const v of e.verbs)',
         '    for (const p of v.parameters) {',
@@ -1889,7 +1846,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      description: lines.join("\\n"),',
         '    };',
         '  }',
-        '  return { type: "object", properties, required: ["verb"] };',
+        '  return { type: "object", properties, required: sole ? [] : ["verb"] };',
         '}',
         '',
         '// The command line of one call: the verb, its positional, then each flag given as one',
@@ -1899,7 +1856,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// reads as a request for its help or its explanation.',
         'function argv(capability: string, verb: Verb | undefined, args: Record<string, unknown>): string[] {',
         '  const positional = verb?.parameters.find((p) => p.positional === true)?.name;',
-        '  const words = [capability, String(args.verb)];',
+        '  const words = [capability, verb?.name ?? String(args.verb)];',
         '  if (positional !== undefined && args[positional] != null) {',
         '    const word = String(args[positional]);',
         '    words.push(word.startsWith("-") && word !== "-" && !word.includes("=") ? `${word}=` : word);',
@@ -2838,11 +2795,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    void returned(at, typeof e.id === "string" ? e.id : at.run, deliverable, undefined);',
         '  });',
         '',
+        "  // The version skew capability's one verb, once its explanation is read.",
+        '  let skew: string | undefined;',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',
         '  // as one tool with every verb it explains, to every agent.',
         '  for (const capability of CAPABILITIES) {',
         '    const explanation: Explanation = JSON.parse(await run([capability, "--explain"]));',
         '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
+        '    // A capability explaining one verb alone takes no `verb`: it is that one.',
+        '    const sole = explanation.verbs.length === 1 ? explanation.verbs[0] : undefined;',
+        '    const verbOf = (args: Record<string, unknown>): Verb | undefined => sole ?? verbs.get(String(args.verb));',
+        '    if (capability === SKEW) skew = sole?.name;',
         '    const tool = explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");',
         '    for (const v of explanation.verbs) if (v.effect === "appends") appending.add(`${tool} ${v.name}`);',
         '    pi.registerTool({',
@@ -2851,14 +2814,27 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      description: description(explanation),',
         '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
         '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
-        '      approval: (args: Record<string, unknown>) =>',
-        '        verbs.get(String(args.verb))?.effect === "reads" ? "read" : "write",',
+        '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
         '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
-        '        const text = await run(argv(capability, verbs.get(String(args.verb)), args), ctx.cwd, signal);',
+        '        const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal);',
         '        return { content: [{ type: "text" as const, text }] };',
         '      },',
         '    });',
         '  }',
+        '',
+        '  // VERSION SKEW, said at every session start before any tool is called: the build that',
+        '  // projected this installation against the command its capabilities reach. Silent when',
+        '  // they match; nothing here chooses between builds.',
+        '  pi.on("session_start", async (_event, ctx) => {',
+        '    if (skew === undefined) return;',
+        '    const session = ctx as unknown as Session;',
+        '    const { artifacts, command } = JSON.parse(await run([SKEW, skew], session.cwd)) as { artifacts?: string; command?: string };',
+        '    if (artifacts === command) return;',
+        '    session.ui.notify(',
+        '      `${COMMAND} version skew: this installation was projected by ${COMMAND} ${String(artifacts)}, but the ${COMMAND} command its capabilities run is ${String(command)}. Install again with the ${COMMAND} in use: ${COMMAND} install --harness omp`,',
+        '      "warning",',
+        '    );',
+        '  });',
         '}',
         '',
       ].join('\n'),
@@ -2893,12 +2869,14 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // worktree of its own off a line. Projection warns; `dispatchIsolation` is what
   // the agent gets instead.
   startsInWorktree: false,
-  // The model roles: a definition names the role named for its agent, install seeds
-  // the host's `modelRoles` entries for it and for its tier.
+  // The model roles: a definition names the role named for its agent, then the tier
+  // and effort it holds; install reads the host's roles and writes none.
   roleRouting: ompRoleRouting,
+  // The owned root is linked into omp's plugin directory, as `omp plugin link` does.
+  packageDir: OMP_PACKAGE_DIR,
   // The handoffs omp supplies an agent for itself.
   nativeAgents: OMP_NATIVE_AGENTS,
-  // The isolated task a declared worktree becomes, and the host settings it needs.
+  // The isolated task a declared worktree becomes, and the settings it holds.
   dispatchIsolation: ompDispatchIsolation,
   statusSegment: ompStatusSegment,
   agentRel: ompAgentRel,
@@ -2911,7 +2889,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // `$HOME` and not a resolved path: the emitted module is read at RUN time on
   // whatever host it lands on, so it must not bake in the projecting machine's home.
   hookCommand: (anchor, workerFilename) =>
-    `sh "$HOME/.omp/hooks/${anchor}/${workerFilename}"`,
+    `sh "$HOME/.${CLI_BIN}/omp/hooks/${anchor}/${workerFilename}"`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),
@@ -2930,7 +2908,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   capabilitySurface: ompCapabilityExtensions,
   // Every scoped artifact is an extension module at the SESSION scope, which reads as
   // itself OR as omission, so a caller may pass a projection's `scope` field straight
-  // through: it lands in `agent/extensions/`, which omp scans natively. Nothing is
+  // through: it lands in `extensions/`, which the owned root's package names. Nothing is
   // placed per agent, so an agent's scope is refused rather than widened.
   scopedRel: (filename, agent) => {
     if (agent !== undefined && agent !== SESSION_SCOPE) {
@@ -2938,6 +2916,6 @@ export const ompHarnessAdapter: HarnessAdapter = {
         `omp places nothing for one agent alone, but '${filename}' is staged for '${agent}'; project the tree again`,
       );
     }
-    return `${OMP_SESSION_DIR}/extensions/${filename}`;
+    return `${OMP_EXTENSIONS_DIR}/${filename}`;
   },
 };

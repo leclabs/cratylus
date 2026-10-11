@@ -11,6 +11,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
+import {
+  VERBS as VERSION_SKEW,
+  dispatchVersionSkew,
+} from '../src/capabilities/version-skew/index.js';
 import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
 import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import {
@@ -68,6 +72,7 @@ async function run(
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   concepts: CONCEPTS,
   workPackage: WORK_PACKAGE,
+  versionSkew: VERSION_SKEW,
 };
 
 describe('the capability commands print their help from the declarations', () => {
@@ -138,6 +143,7 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   } = {
     concepts: dispatchConcepts,
     workPackage: dispatchWorkPackage,
+    versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 
   it.each(CAPABILITIES)(

@@ -61,24 +61,32 @@ export {
   placeHooksLocal,
 } from './hooks.js';
 
-// The host runtime config — the only deploy target that lands OUTSIDE the harness
-// home, because the runtime is harness-independent. ARCHITECTURE property 4's
-// producer: everything corpus-specific reaches the runtime as configuration the
-// projection emitted.
+// The capability configuration install writes into the owned root, and the earlier
+// layout's host config beside the harness home, which an upgrade or uninstall takes
+// back while it is what was written.
 export {
-  type EmitRuntimeConfigOpts,
-  type EmitRuntimeConfigResult,
-  type EmittedEvents,
-  type EmittedHarness,
-  type EmittedRuntimeConfig,
-  emitRuntimeConfig,
-  RUNTIME_CONFIG_ENV,
-  RUNTIME_CONFIG_NAME,
-  runtimeConfigDocument,
+  capabilityConfiguration,
   runtimeConfigTarget,
   serializeRuntimeConfig,
   withoutRuntimeParts,
 } from './runtime-config.js';
+
+// The owned root: everything install places for a user on a harness, and the
+// references the harness's own surfaces hold into it.
+export {
+  INSTALLATION_RECORD,
+  type InstallationRecord,
+  type OwnedReference,
+  type PlaceRootResult,
+  type RenderedFile,
+  linkOwnedRoot,
+  ownedRootIn,
+  placeOwnedRoot,
+  readInstallationRecord,
+  readRenderTree,
+  rootFiles,
+  unlinkOwnedRoot,
+} from './owned-root.js';
 
 export {
   applyPrune,
@@ -99,7 +107,7 @@ export {
   MANIFEST_VERSION,
   nextDigests,
   nextKindRecord,
-  noteHostEdit,
+  mergeHostEdit,
   noteHostRoutes,
   readManifest,
   recordedLines,
@@ -181,6 +189,7 @@ export {
   type EnsureStatusSegmentOpts,
   ensureBadgeStatusLine,
   ensureStatusSegment,
+  hidesExtensionStatus,
   restoreHostStatusLine,
   type StatusLineRestore,
   type StatusSegmentResult,

@@ -526,19 +526,15 @@ export function undoHunks(
   return { text: lines.join(''), results: results.reverse() };
 }
 
-/** Record what install did to the host-owned text file `file`, in `harnessDir`'s
- *  manifest. Merged with what is already there for the file, and never twice: a hunk
- *  already recorded is not recorded again, and neither is an insertion whose every line
- *  an earlier insertion already covers (a re-install that finds its own lines there). */
-export function noteHostEdit(
-  harnessDir: string,
-  file: string,
+/** What install did to one host-owned text file, merged into what was recorded for it
+ *  before (`prior`), and never twice: a hunk already recorded is not recorded again,
+ *  and neither is an insertion whose every line an earlier insertion already covers (a
+ *  re-install that finds its own lines there). `undefined` where nothing is new. */
+export function mergeHostEdit(
+  prior: HostEdit | undefined,
   edit: HostEdit,
-): void {
-  if (edit.hunks.length === 0) return;
-  const manifest = readManifest(harnessDir);
-  const key = recordPath(relative(harnessDir, file));
-  const prior = manifest.hostEdits[key];
+): HostEdit | undefined {
+  if (edit.hunks.length === 0) return undefined;
   const hunks = [...(prior?.hunks ?? [])];
   const covered = new Map<string, number>();
   for (const h of hunks) {
@@ -560,18 +556,12 @@ export function noteHostEdit(
     hunks.push(hunk);
     added += 1;
   }
-  if (added === 0 && prior !== undefined) return;
-  writeManifest(harnessDir, {
-    ...manifest,
-    hostEdits: {
-      ...manifest.hostEdits,
-      [key]: {
-        ...prior,
-        created: (prior?.created ?? false) || edit.created,
-        hunks,
-      },
-    },
-  });
+  if (added === 0 && prior !== undefined) return undefined;
+  return {
+    ...prior,
+    created: (prior?.created ?? false) || edit.created,
+    hunks,
+  };
 }
 
 /** Every line install recorded as its own insertion into `file`, with its terminator:
