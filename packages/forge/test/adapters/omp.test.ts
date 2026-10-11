@@ -1478,6 +1478,52 @@ describe('omp capability interface', () => {
       ).not.toContain('# Session start');
     });
 
+    it('gives every turn of a launch that decides meaning, or keeps the records under honesty, a note of each', async () => {
+      omp.agents = [
+        declare(
+          { name: 'architect', description: 'Holds the design.' },
+          '# architect\n\n### decision-rights\n\n- intent (what is wanted and why): **I** — gives input\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the concept journal and examples are authoritative over anything remembered\n\n### guardrails\n\n- **honesty** — never fabricates; says what it observed apart from what it inferred (fixed)',
+        ),
+      ];
+      /** The system prompt a turn of `fire`'s session carries, joined. */
+      const turnPrompt = async (fire: (event: string) => Promise<unknown>) => {
+        const turn = await fire('before_agent_start');
+        return turn &&
+          typeof turn === 'object' &&
+          'systemPrompt' in turn &&
+          Array.isArray(turn.systemPrompt)
+          ? turn.systemPrompt.join('\n')
+          : '';
+      };
+      const { fire } = await started('architect');
+      await fire('session_start');
+      for (const turn of [1, 2]) {
+        const prompt = await turnPrompt(fire);
+        for (const line of [
+          '# Meaning: yours',
+          'The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.',
+          "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
+          "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer.",
+          '# The records',
+          "The journal, the ledger and your delegates' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
+          'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',
+        ])
+          expect(prompt, `turn ${turn}`).toContain(line);
+      }
+      // Recommending meaning, or keeping the records without honesty, gets neither note.
+      omp.agents = [
+        declare(
+          { name: 'illustrator', description: 'Writes examples.' },
+          '# illustrator\n\n### decision-rights\n\n- meaning (concepts and examples): **R** — recommends\n\n### memory\n\n- **source-of-truth** — authoritative',
+        ),
+      ];
+      const other = await started('illustrator');
+      await other.fire('session_start');
+      const prompt = await turnPrompt(other.fire);
+      expect(prompt).not.toContain('# Meaning: yours');
+      expect(prompt).not.toContain('# The records');
+    });
+
     const ARCHITECT = () =>
       declare(
         { name: 'architect', description: 'Holds the design.' },

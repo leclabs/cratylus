@@ -1673,6 +1673,15 @@ const SESSION_PLACEMENT: readonly string[] = [
  * call that only reads never is. Both hold only where the launch starts a session
  * with no conversation since its last compaction, and again after the session is
  * compacted; a resumed session continuing a conversation reconstitutes nothing.
+ * Every turn of a launch whose declared decision rights hold meaning (D) carries a
+ * note rendered from that right: the meaning of the contexts it holds is its own,
+ * the approval of their examples included, approved as they stand when they express
+ * their meaning, and a decision whose grounds it holds is taken in the turn it holds
+ * them (0086, 0090). Every turn of a launch whose memory keeps the records as its
+ * source of truth under the honesty guardrail carries a note rendered from those
+ * values: where things stand is what the records show, and what they do not record
+ * is unknown. These hold what the agent's replies say by its own text, not by a
+ * check on the reply (0106).
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -2236,11 +2245,15 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  ].join("\\n");',
         '}',
         '',
+        '// One `### <name>` section of a declaration body, without its heading; empty when absent.',
+        'function declared(body: string, name: string): string {',
+        '  return new RegExp(`^### ${name}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=^#{1,3} |(?![\\\\s\\\\S]))`, "m").exec(body)?.[1] ?? "";',
+        '}',
+        '',
         '// The session-start note of a declaration whose procedure starts with reconstitution,',
         '// rendered from that procedure value as its body states it; none for any other.',
         'function reconstitutionNote(body: string): string | undefined {',
-        '  const procedure = /^### procedure\\s*\\n([\\s\\S]*?)(?=^#{1,3} |(?![\\s\\S]))/m.exec(body)?.[1] ?? "";',
-        '  const value = /^- \\*\\*reconstitution\\*\\*(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(procedure);',
+        '  const value = /^- \\*\\*reconstitution\\*\\*(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
         '  if (value === null) return undefined;',
         '  return [',
         '    "# Session start: reconstitution",',
@@ -2251,6 +2264,35 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.",',
         '    "Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.",',
         '    "Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration whose decision rights hold meaning (D), rendered from',
+        '// that right as the design holds it: the meaning of the contexts it holds is its own,',
+        '// the approval of their examples included (0086), and a decision whose grounds it holds is',
+        '// taken in the turn it holds them (0090); none for any other.',
+        'function meaningNote(body: string): string | undefined {',
+        '  if (!/^- meaning(?: \\([^)]*\\))?: \\*\\*D\\*\\*/m.test(declared(body, "decision-rights"))) return undefined;',
+        '  return [',
+        '    "# Meaning: yours",',
+        '    "",',
+        '    "The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.",',
+        '    "Approval judges one thing: whether an example expresses its concepts\' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context\'s model its own; send back only an example that misses its meaning, naming the meaning it misses.",',
+        '    "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party\'s return or anyone\'s answer.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration that keeps the records as its source of truth under the',
+        '// honesty guardrail, rendered from those two values: where things stand is what the records',
+        '// show, observed apart from inferred; none for any other.',
+        'function recordsNote(body: string): string | undefined {',
+        '  if (!/^- \\*\\*source-of-truth\\*\\*/m.test(declared(body, "memory"))) return undefined;',
+        '  if (!/^- \\*\\*honesty\\*\\*/m.test(declared(body, "guardrails"))) return undefined;',
+        '  return [',
+        '    "# The records",',
+        '    "",',
+        '    "The journal, the ledger and your delegates\' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
+        '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
         '  ].join("\\n");',
         '}',
         '',
@@ -2515,8 +2557,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // by: while the launch still awaits its assignment, a turn whose prompt does not carry a',
         '  // fitting one is refused. In every session, launched or not, main or dispatched, the',
         '  // turn also carries the assignment form of each contracted agent the session may',
-        '  // dispatch; and the first turn of a launch whose procedure starts with reconstitution',
-        '  // carries a note saying so.',
+        '  // dispatch; the first turn of a launch whose procedure starts with reconstitution carries',
+        '  // a note saying so; and every turn of a launch whose decision rights hold meaning, or',
+        '  // that keeps the records as its source of truth under honesty, carries a note of each.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
@@ -2543,6 +2586,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    // every later turn.',
         '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
         '    noted = true;',
+        '    const meaning = meaningNote(now.declaration.systemPrompt);',
+        '    const records = recordsNote(now.declaration.systemPrompt);',
         '    return {',
         '      systemPrompt: [',
         '        ...base,',
@@ -2550,6 +2595,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...(await skills(now.declaration)),',
         '        ...(forms === undefined ? [] : [forms]),',
         '        ...(start === undefined ? [] : [start]),',
+        '        ...(meaning === undefined ? [] : [meaning]),',
+        '        ...(records === undefined ? [] : [records]),',
         '      ],',
         '    };',
         '  });',
