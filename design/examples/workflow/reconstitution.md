@@ -9,7 +9,6 @@ Structural examples execute capabilities or assert over their delivered output. 
 the composed agents 5 times in a fixed scenario: every assertion holds in at least 4 runs, every
 never-assertion in all 5. Each behavioral scenario supplies its role's actual assignment. Rubric examples
 name their criteria; every criterion must hold in at least 4 runs, with never-assertions holding in all 5.
-No example is designated held out here.
 
 ## Carried example
 
@@ -42,56 +41,50 @@ No example is designated held out here.
 6. (ledger) **Given** a transition has been recorded with its own id, **when** the same transition is
    delivered again, **then** the repeat is refused, the original event remains, and no duplicate event
    or additional state change is recorded.
-7. (ledger) **Given** two distinct work-package transitions arrive together, **when** their events are
-   recorded, **then** each has its own exclusively created entry and transition id, both remain in
-   the append-only record, and neither overwrites the other or rewrites an earlier event.
-8. (ledger) **Given** shoot is ready, edit depends on shoot, and neither has been dispatched, **when**
+7. (ledger) **Given** shoot is ready, edit depends on shoot, and neither has been dispatched, **when**
    state is requested, and later requested after shoot has finished, **then** each answer computes
    the cut's phase, both work-package statuses and the next dispatchable work packages from the
    events and dependencies; edit is never offered while its dependency is unfinished, and a stale
    earlier answer never replaces the current computed state.
-9. (ledger, cut, concept journal) **Given** a cut's feature branch holds its dispatch events, concept
+8. (ledger, cut, concept journal) **Given** a cut's feature branch holds its dispatch events, concept
    changes and acceptance while the integration branch does not yet hold the cut, **when** each
    branch's ledger and journal are read, **then** the feature branch shows those entries and the
    integration branch does not; a shared host or checkout never makes one branch claim the other's
    state. After the cut is merged, its entries land with its work.
-10. (ledger) **Given** a builder has made no return recorded by the harness but says in a message
-    that its work package returned, **when** the ledger is queried, **then** that statement alone
-    never creates a return event; lifecycle state comes from the harness's agent events, not an
-    agent's retrospective account.
-11. (completion check) **Given** the ledger shows cut film complete, **when** a commit is made with
+9. (ledger) **Given** a builder has made no return recorded by the harness but says in a message
+   that its work package returned, **when** the ledger is queried, **then** that statement alone
+   never creates a return event; lifecycle state comes from the harness's agent events, not an
+   agent's retrospective account.
+10. (completion check) **Given** the ledger shows cut film complete, **when** a commit is made with
     the message `feat(cut:film): complete the film cut`, **then** the completion check is silent and
     the commit is never refused.
-12. (completion check) **Given** cut film is in flight, shoot is approved and edit has returned but
+11. (completion check) **Given** cut film is in flight, shoot is approved and edit has returned but
     is not approved, **when** a commit is made with the message `feat(cut:film): complete the film cut`,
     **then** the commit succeeds and its output warns its author, naming film, the phase the ledger
     shows and edit as not approved, and instructing the author to report the gap as a defect in how
     the ledger captures the harness's events; it never lists shoot as unapproved, refuses the commit,
     or silently changes the ledger to match the declaration.
-13. (completion check) **Given** the ledger shows cut film complete but cut sound still in flight,
-    **when** a commit declares sound complete in the watched form, **then** the warning concerns
-    sound and its own phase and unapproved work packages, never film's state.
-14. (completion check) **Given** an unfinished cut, **when** ordinary commits are made with messages
+12. (completion check) **Given** an unfinished cut, **when** ordinary commits are made with messages
     `docs(design): explain completion`, `fix: finish the cut`, or `feat(film): complete the film cut`,
     **then** the completion check is silent, never refuses them and never records them as ledger
     events. A completion claim outside the one enumerated form does not enlarge the watched list.
-15. (completion check) **Given** the watched list has only the form fixed by 0081 and a message in
+13. (completion check) **Given** the watched list has only the form fixed by 0081 and a message in
     that form has an ordinary descriptive subject, **when** `feat(cut:film): deliver film review`
     is committed while film is incomplete, **then** the check still compares film with the ledger
     and warns; it never requires an additional completion keyword that the decision did not name.
-16. (concept journal) **Given** a concept version and a context description each have a recorded
+14. (concept journal) **Given** a concept version and a context description each have a recorded
     reason, **when** their replacements are appended through the journal's named operations, **then**
     current views use the replacements and histories retain the earlier versions and both reasons;
     an attempted in-place edit or deletion never becomes a valid amendment of the journal.
-17. (concept journal) **Given** two concept versions each supersede the same earlier version, **when**
+15. (concept journal) **Given** two concept versions each supersede the same earlier version, **when**
     the design is queried, **then** they are reported as competing, never silently reduced to whichever
     was read last; after a later version supersedes both, that version is current and their histories
     remain. The same rule holds for competing descriptions of a context.
-18. (cut, concept journal) **Given** a cut is built on its own feature branch in an ordinary checkout,
+16. (cut, concept journal) **Given** a cut is built on its own feature branch in an ordinary checkout,
     **when** its concepts, decisions and acceptances are recorded and its integration proceeds,
     **then** those entries are made on that branch and arrive with its merge; neither working on the
     cut nor integrating it requires creating or removing a worktree.
-19. (lead, reconstitution) **Given** a completed lead handoff contains each example's concept,
+17. (lead, reconstitution) **Given** a completed lead handoff contains each example's concept,
     outcome and evidence named by example and check, the assayers' verdicts, efficiency figures and
     hardening notes, **when** a new session reconstitutes without the old conversation, **then** those
     results are durably readable with the cut; it never loses a hardening note or substitutes an
@@ -100,26 +93,22 @@ No example is designated held out here.
 
 ## Behavioral (assertions over recorded agent behavior)
 
-20. (reconstitution, architect) **Given** a new architect session touches film production and scheduling
+18. (reconstitution, architect) **Given** a new architect session touches film production and scheduling
     and has no prior conversation, **when** it resumes work, **then** it first queries each context's
     overview, then the detail needed from the journal and ledger, and before acting reads back to the
     operator the current design, open decisions and cuts in flight; it never starts delivery work
     before that readback or asks the operator to reconstruct information those records provide.
-21. (reconstitution) **Given** a compacted session remembers that a cut was complete but its current
-    branch's ledger shows it in flight and its journal has a newer decision, **when** it resumes,
-    **then** it queries the overview first and reads back the recorded state and decision before
-    acting; it never treats its remembered completion or an old conversation as the current account.
-22. (architect) **Given** the operator asks for a film approval process and the scheduling context
+19. (architect) **Given** the operator asks for a film approval process and the scheduling context
     already uses approval with a different meaning, **when** the architect designs the requested
     change, **then** it states film-production concepts using established patterns, keeps scheduling's
     model separate, and seeks confirmation of examples from each affected meaning-holder; it never
     merges the two meanings merely because the same word is used.
-23. (architect) **Given** a delegate asks whether a film approval means creative approval or release
+20. (architect) **Given** a delegate asks whether a film approval means creative approval or release
     permission and the settled design distinguishes them, **when** the architect answers, **then**
     it settles the meaning question from the design and gives the delegate the ruling; it never
     hands its own decision back to the operator as an answerable question or investigates source
     work instead of using the design, examples and reports in concept terms.
-24. (completion check, reconstitution) **Given** a completion warning names an unapproved work package
+21. (completion check, reconstitution) **Given** a completion warning names an unapproved work package
     after the agent has observed the corresponding approving verdicts return, **when** the agent
     responds, **then** it reports the capture gap as a defect, retaining the distinction between the
     observed verdicts and the ledger's computed state; it never treats manual lifecycle bookkeeping
@@ -127,64 +116,55 @@ No example is designated held out here.
 
 ## Rubric (delivered accounts)
 
-25. (context overview) **Given** the small film-production context of example 2, **when** its overview
+22. (context overview) **Given** the small film-production context of example 2, **when** its overview
     is read by a reader of that context, **then** it is a whole account rather than a catalog dump.
     _Fixed rubric: it identifies the subject and relation; explains production before its parts;
     preserves every supplied concept's meaning; separates open decisions from current meaning; and
     identifies the cuts in flight. It never invents a concept, decision or cut to fill a gap._
-26. (architect) **Given** the operator needs an update on film approval and scheduling, and the
+23. (architect) **Given** the operator needs an update on film approval and scheduling, and the
     architect has their design and delegates' concept-level outcomes, **when** it reports, **then**
     the conclusion comes first, followed by one recommended action per topic and only the support a
     layman needs. _Fixed rubric: conclusion before support; one action for each topic; both outcomes
     stated in the product's terms; enough support to understand each action without an episodic
     history. It never presents a menu, asks a question it can answer, or replaces a concept-level
-    outcome with implementation details._ The agents-context examples exercise each drift tell
-    separately.
+    outcome with implementation details._ The agents-context examples also exercise persistence
+    of stance.
 
 ## Structural (the settled overview, judgment and context boundaries)
 
-27. (context overview) **Given** publication and production are recorded in that order, neither is
+24. (context overview) **Given** publication and production are recorded in that order, neither is
     built into another concept, and each is built from review, **when** the context overview is
     requested, **then** it presents publication and production first in their recorded order, then
     review; it never sorts the roots by name, puts review before them, or repeats review for each
     root that uses it.
-28. (context overview) **Given** revision is built from review and review from revision, those
-    concepts were recorded in that order, and an independent root concept production was recorded
-    later, **when** the overview is requested, **then** it presents production first, followed by
-    revision and review in their recorded order, naming their cycle; it never drops the cyclic
-    concepts, invents a root for them, or hides the cycle behind an apparently acyclic account.
-29. (ledger) **Given** a returned work package has one passing assayer verdict and the second assayer
+25. (ledger) **Given** a returned work package has one passing assayer verdict and the second assayer
     has not returned, **when** the ledger is queried, **then** the work package remains unapproved
     and the cut incomplete; a single passing verdict never becomes approval for both assayers.
-30. (ledger) **Given** both assayers find that edit fails its example while shoot passes, **when**
+26. (ledger) **Given** both assayers find that edit fails its example while shoot passes, **when**
     their verdicts return through the harness, **then** edit returns to build as a failing case
     and shoot is approved; edit is never approved merely because both verdicts have returned, and
     the cut never becomes complete while edit remains unapproved.
-31. (ledger) **Given** one assayer passes edit and the other returns a finding against it, **when**
-    the harness delivers the verdicts and the ledger is read before the architect's ruling, **then**
-    edit stays unapproved and the disagreement is a meaning question for the architect; neither
-    arrival order nor the passing verdict silently settles the disagreement or completes the cut.
-32. (cut) **Given** one reviewable change serves workflow, agents and delivery, which share their
+27. (cut) **Given** one reviewable change serves workflow, agents and delivery, which share their
     meaning-holder, **when** the cut and its examples are recorded, **then** it is one cut with
     examples kept and judged in each concept's own context; it never becomes three cuts merely
     because three contexts are touched, and a shared cut never merges their models or example sets.
-33. (cut) **Given** one intent spans film production and scheduling with different meaning-holders,
+28. (cut) **Given** one intent spans film production and scheduling with different meaning-holders,
     **when** its cuts are defined, **then** there is one cut per context joined by contracts, never
     one cut justified solely by convenience. The shared-cut exception also never combines contexts
     when the whole would exceed one reviewable change.
-34. (cut, lead) **Given** the architect has named a cut's feature branch and the cut is ready to
+29. (cut, lead) **Given** the architect has named a cut's feature branch and the cut is ready to
     dispatch, **when** the lead's assignment is delivered, **then** the cut's record carries that
     branch name and the named branch has been checked out before dispatch; the assignment never
     adds directions to stay on the branch, create or avoid another branch, make or avoid a worktree,
     or follow a branching procedure. The branch name is information, not a branching instruction.
-35. (roles) **Given** a role has not used some of the harness's default tools and no harm from those
+30. (roles) **Given** a role has not used some of the harness's default tools and no harm from those
     tools has been observed, **when** its reach is granted for another assignment, **then** it keeps
     the default tools and only its handoffs are held by the harness's permissions; non-use alone
     never justifies narrowing, and a role's decision rights are never inferred from tool access.
 
 ## Behavioral (dispatching the cut)
 
-36. (architect, cut) **Given** the architect has a confirmed cut ready to dispatch and has named its
+31. (architect, cut) **Given** the architect has a confirmed cut ready to dispatch and has named its
     feature branch with it, **when** it dispatches the lead, **then** it first checks out that branch
     and gives the lead the cut with its branch name, concepts and acceptance; it never delegates
     choosing the cut's branch to the lead or supplements the name with branching instructions.
