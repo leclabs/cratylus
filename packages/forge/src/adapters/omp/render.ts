@@ -2050,7 +2050,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const known = state.workPackages.find((p) => p.name === name);',
         '    if (known === undefined) reasons.push(`${name} is no work package of the cut`);',
         '    else if (!state.ready.includes(name))',
-        '      reasons.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once dispatched by no one and every package it depends on has returned)`);',
+        '      reasons.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once every package it depends on has returned and it is not yet dispatched, returned to build by a finding, or returned into a fix round by a failing whole check)`);',
         '  }',
         '  return reasons.length === 0 ? undefined : `builder dispatch of cut ${cut} refused: ${reasons.join("; ")}`;',
         '}',
