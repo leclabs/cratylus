@@ -1,6 +1,6 @@
 # Architect judgment — agents reconstitution
 
-Owns held-out agents/2 and agents/4. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Example 4 resumes a native session containing twelve preceding conversational checkpoints, then receives the concept-level reports needed for its update; the opening history is fixture data, not alleged live model output.
+Owns held-out agents/2. `architect.test.ts` uses this directory's scenarios and authored recordings through the architect suite. The subject is the installed architect in a main session, given free-text intent. Under 0095, the former agents/4 case and its eight controls moved to visible agents/20 in `packages/cli/test/reconstitution/architect/` (`recordings/120/`). Evidence below names the original refs and paths at the time of each run; it does not claim that the promoted case remains held out.
 
 Executed before the build:
 
@@ -44,3 +44,7 @@ env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUD
 ```
 
 Observed **13 passed, 8 skipped** (`artifact://1254`). All 174 inspected artifacts and the setup-only previous-golden evidence limit are listed in `packages/cli/test/reconstitution/RECORDING-AUDIT.md`. The full visible suite, all eight held-out configurations, CLI typecheck and Biome on the 21 rebound JSON files passed; no live model sessions ran.
+
+## Post-promotion evidence (0095)
+
+After agents/4 became visible agents/20, this suite's scenario refs are `["held-out agents/2"]`. Running the normal offline command above passed **5 tests, 4 skipped**. The complete visible reconstitution suite, including promoted agents/20 and delivery/11, passed **244 tests, 83 skipped across 12 files** (`artifact://1274`). CLI typecheck and Biome on all 17 moved/changed JSON files also passed. The sibling held-out delivery roles catalogue is `[]`, intentionally left for the replacement writer; no placeholder check was added. The promoted controls retain their previous red evidence above.

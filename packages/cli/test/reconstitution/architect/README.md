@@ -1,10 +1,12 @@
 # Architect behavioral checks — reconstitution
 
-These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–19. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
+These checks bind workflow examples 18, 19, 20, 23, 31 and agents examples 12–20. The scenario reference, quoted example, and each assertion's `binds` phrases are in `scenarios.json`.
 
 Decision 0086 rebinds workflow/19 and agents/16,18 to the current examples. Workflow/19 gives the architect both contexts and the illustrator's accurate example files: it must approve both itself while preserving the two models. Agents/16 starts after the architect's own approval and the achieved outcome; agents/18 reports that approval and the scheduling meaning question it still owns. Their controls include two differently worded goldens and a negative for each clause and installed-role wiring.
 
 Decision 0087 changes only setup in the other visible and held-out scenarios: the architect holds the named contexts, the obsolete seeded authority list is absent, and ledger commands use `--architect film-production=architect`. Their example text, clauses, rubrics and thresholds are unchanged.
+
+Decision 0095 moves the former held-out agents/4 ordering case into visible agents/20, using `recordings/120/`. It resumes twelve conversational checkpoints; those opening turns are authored fixture data, not alleged live model output. The sibling visible roles suite now also binds delivery/11 (formerly held-out delivery/2), using `roles/recordings/11/`. The promoted examples are quoted from their current `design/examples` files; all clauses, rubrics and thresholds are retained.
 
 ## Evaluation
 
@@ -232,6 +234,28 @@ pnpm exec biome check <the 21 rebound JSON paths listed in RECORDING-AUDIT.md>
 ```
 
 Observed: visible **231 passed, 75 skipped, 12 files** (`artifact://1253`); all eight held-out configurations passed, totaling **38 passed, 22 skipped** (`artifact://1254`). CLI typecheck passed; Biome checked all **21 changed JSON files**, with no fixes. This sweep changed no scenario, clause, rubric, threshold, example or product code.
+
+### Promoting disclosed checks to the visible suites (0095)
+
+Agents/20 now loads the unchanged eight recordings from `architect/recordings/120/`; delivery/11 loads the unchanged five recordings from `roles/recordings/11/`. Their scenario objects moved into the respective visible `scenarios.json` files. Only number, ref and the quotation of the current delivery example changed during this relocation; clauses, rubrics, thresholds, prompts and history did not.
+
+```sh
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run test/reconstitution
+env -u EXECUTION_LIVE -u EXECUTION_RED -u EXECUTION_PREFLIGHT -u EXECUTION_REJUDGE \
+  pnpm --filter cratylus exec vitest run \
+  --config ../../design/judgment/agents/reconstitution/architect/vitest.config.ts
+pnpm --filter cratylus typecheck
+pnpm exec biome check \
+  packages/cli/test/reconstitution/architect/scenarios.json \
+  packages/cli/test/reconstitution/roles/scenarios.json \
+  design/judgment/agents/reconstitution/architect/scenarios.json \
+  design/judgment/delivery/reconstitution/roles/scenarios.json \
+  packages/cli/test/reconstitution/architect/recordings/120 \
+  packages/cli/test/reconstitution/roles/recordings/11
+```
+
+Observed after relocation: visible **244 passed, 83 skipped, 12 files** (`artifact://1274`); remaining held-out architect **5 passed, 4 skipped**. CLI typecheck and Biome on all **17 moved/changed JSON files** passed. The remaining held-out refs are `["held-out agents/2"]` for agents/architect and `[]` for delivery/roles. Per the lead's instruction, the latter scenario catalogue is left empty for the replacement writer: no placeholder assertion or ref prohibition was added, and its empty Vitest suite was not run or claimed green. Earlier evidence files retain the refs and commands actually exercised before promotion. No live model sessions ran.
 
 ## 0091: judged on what takes effect
 
