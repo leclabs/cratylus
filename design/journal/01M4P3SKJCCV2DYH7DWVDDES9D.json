@@ -1,0 +1,14 @@
+{
+  "id": "01M4P3SKJCCV2DYH7DWVDDES9D",
+  "at": "2026-10-11T18:32:24.908Z",
+  "kind": "decide",
+  "decisionId": "0114",
+  "context": "delivery",
+  "title": "Delivery: hardening notes ruled into the cut",
+  "situation": "The delivery lead stopped at its budget before judgment 2, leaving hardening notes, several of which show the cut's own concepts not yet holding.",
+  "decision": "Fixed in this cut, each with its check strengthened and seen red first, no example text changed: (1) upgrading an earlier installation never leaves old and new projections combined: material from before digests were recorded is treated as cratylus's when the earlier installation placed it, and nothing outside the root shadows the root's agents (upgrade, delivery 8); this host's real earlier installation is upgraded as the proof, its seeded bindings surviving as 0112 requires. (2) Uninstall finds cratylus's references from where they point, by construction, so none is left dangling even when the root was edited or removed (uninstall, delivery 11). (3) The tolerant reader of 0109 covers a value it does not know inside a known kind as well as an unknown kind, and every ledger, not only the concept journal, reads past what it does not know and reports it. (4) A capability's 'when to reach for it' says only when to reach for it; how it behaves belongs to its verbs and their output. Then judgment 2 runs, workflow 21 is re-checked against the capture fix, and the cut integrates.",
+  "consequences": "The lead's successor takes the remaining list with these rulings.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
