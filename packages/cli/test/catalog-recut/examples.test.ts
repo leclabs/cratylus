@@ -291,12 +291,9 @@ describe('catalog re-cut: the visible examples', () => {
   it('example 9: each installed agent has its own tier-and-effort model role', () => {
     const f = fixture();
     f.install();
-    const roles = f.modelRoles();
-    expect(roles).toMatchObject({
-      ...hostModelRoles,
-      frontier: 'anthropic/fixture-frontier',
-      'frontier-other-family': 'openai/fixture-other',
-    });
+    expect
+      .soft(f.modelRoles(), 'install preserves only the host’s own model roles')
+      .toEqual(hostModelRoles);
     const expected = {
       architect: '@frontier:high',
       lead: '@frontier:high',
@@ -310,8 +307,7 @@ describe('catalog re-cut: the visible examples', () => {
     };
     for (const [name, selector] of Object.entries(expected)) {
       const { front } = f.declaration(name, true);
-      expect(front.model, name).toBe(`@${name}`);
-      expect(roles[name], name).toBe(selector);
+      expect.soft(front.model, name).toEqual([`@${name}`, selector]);
     }
   });
 
