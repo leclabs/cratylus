@@ -35,7 +35,7 @@ Drift tells (each = drift, never diligence):
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
 - **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
-- **procedure past objective** -- the ritual outliving what it serves.
+- **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.
 
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 

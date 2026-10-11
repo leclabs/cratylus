@@ -1,13 +1,15 @@
 {
-  "decision": "0090",
+  "decision": "0093",
   "command": "pnpm --filter cratylus exec vitest run test/catalog-recut",
   "result": "1 file failed; 5 tests failed, 12 passed, 17 total.",
-  "evidence": "artifact://815",
   "expectation": "personaProtocol in master.ts",
-  "addedLine": "- **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;",
-  "position": "Immediately before the final procedure past objective drift tell; that final line keeps its period.",
+  "reboundLine": "- **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.",
+  "replacedLine": "- **procedure past objective** -- the ritual outliving what it serves.",
   "failedExamples": [2, 3, 4, 5, 7],
-  "reason": "Each failing projection comparison reports the added holding open line missing from the delivered declaration. These are substantive expected-versus-delivered text failures, not setup failures.",
-  "scope": "Only the personaProtocol drift-tell expectation changes; other expectations, example text, rubrics and thresholds are unchanged. No implementation files changed and no live model sessions ran.",
-  "afterBuild": "The main agent should rerun the recorded command after the builder adds the line to the persona protocol. No post-build green result is claimed."
+  "reason": "Each failing projection comparison reports the delivered declaration still carrying the replaced line where the rebound line is expected. These are substantive expected-versus-delivered text failures, not setup failures.",
+  "scope": "Only the personaProtocol procedure-past-objective tell changes, stating the concept's rule with no cases; other expectations, example text, rubrics and thresholds are unchanged. No live model sessions ran.",
+  "previous": {
+    "decision": "0090",
+    "result": "1 file failed; 5 tests failed, 12 passed, 17 total, for the added holding open line; green after the persona protocol carried it."
+  }
 }
