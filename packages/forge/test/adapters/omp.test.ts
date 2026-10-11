@@ -1321,7 +1321,7 @@ describe('omp capability interface', () => {
         'This session starts with reconstitution (at every start, read back before acting).',
       );
       expect(turns[0]).toContain(
-        'as your first message, before any act: no dispatch, no journal append, no edit.',
+        "open this turn's reply with the readback (the current design, the open decisions and the cuts in flight), before any act: no dispatch, no journal append, no edit.",
       );
       expect(turns[1]).not.toContain('# Session start');
       // A declaration without it gets no note.
