@@ -15,6 +15,7 @@ import { plain } from '../dimensions/communication-style/plain.js';
 import { none } from '../dimensions/decision-rights/none.js';
 import { performs } from '../dimensions/decision-rights/performs.js';
 import { doneOrFailingCase } from '../dimensions/deliverable/done-or-failing-case.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
 import { fixedAcceptanceCriteria } from '../dimensions/guardrails/fixed-acceptance-criteria.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
@@ -67,7 +68,6 @@ export const builderRole: RoleCell = {
       work,
     ],
     actionScope: [editOwnOutputs, runChecks, commitOwnPaths],
-    handoffs: [],
     model: [
       { value: frontier, slot: 'tier' },
       { value: medium, slot: 'effort' },
@@ -76,6 +76,6 @@ export const builderRole: RoleCell = {
     assignment: [workPackage],
     deliverable: [doneOrFailingCase],
     guardrails: [honesty, fixedAcceptanceCriteria],
-    evaluation: [],
+    evaluation: [inUse],
   },
 };

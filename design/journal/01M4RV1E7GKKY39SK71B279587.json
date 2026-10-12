@@ -1,0 +1,11 @@
+{
+  "id": "01M4RV1E7GKKY39SK71B279587",
+  "at": "2026-10-12T19:57:07.696Z",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "never-assertion",
+  "reason": "0142: it existed only for rules that must hold in every live run of an agent; a never is part of an example's then.",
+  "supersedes": [
+    "01M4KKYW0WX7GEK3VK9Z4C6767"
+  ]
+}

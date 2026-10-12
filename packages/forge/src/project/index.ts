@@ -37,7 +37,6 @@ import {
   type DimensionManifest,
   type Enforcing,
   type Entry,
-  type GuardCell,
   type HookCell,
   type Plumbing,
   type Practice,
@@ -62,7 +61,6 @@ import {
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
 import {
-  type ComposedGuard,
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
@@ -133,9 +131,6 @@ export interface ProjectablePlugin {
   readonly fragments?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
-  /** Dir of guard cell modules this plugin contributes: each judges an act for the
-   *  agents composing a value it holds (`realizedBy` its id). */
-  readonly guards?: string;
   /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
   readonly manifest?: DimensionManifest;
   /** WHICH practices this plugin offers (`AgentPlugin.practices`). */
@@ -196,10 +191,9 @@ export interface ProjectOpts {
    * that means the whole corpus leaves this absent.
    *
    * Given names, exactly the union of those practices' agents and skills is
-   * rendered, with the skills those compose, the plumbing, and the guards a
-   * rendered agent composes. A set that is not CLOSED under skill composition and
-   * agent dispatch is refused before anything is rendered, and so is a name that is
-   * no declared practice.
+   * rendered, with the skills those compose and the plumbing. A set that is not
+   * CLOSED under skill composition is refused before anything is rendered, and so is
+   * a name that is no declared practice.
    */
   readonly practices?: readonly string[];
 }
@@ -264,9 +258,6 @@ export interface ProjectedTree extends ProjectReport {
    *  the harness's own facility, the extension tool, or prose generated from the
    *  capability's explanation, the last resort. */
   readonly capabilities: readonly ProjectedCapability[];
-  /** Each guard the rendered agents compose, with the agents composing it and
-   *  whether this harness carries its judgment (`false`: a declaration alone). */
-  readonly guards: readonly ProjectedGuard[];
 }
 
 /** The form a runtime capability takes on a harness. */
@@ -275,14 +266,6 @@ export interface ProjectedCapability {
   readonly form: 'native' | 'extension' | 'prose';
   /** The harness's own facility holding it, for the native form. */
   readonly facility?: string;
-}
-
-/** A guard as projected: its id, the drift tell it holds, the agents composing it. */
-export interface ProjectedGuard {
-  readonly guard: string;
-  readonly tell: string;
-  readonly agents: readonly string[];
-  readonly realized: boolean;
 }
 
 /** A declared practice as an install offers it. */
@@ -361,36 +344,6 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
   return cell ?? null;
-}
-
-/** The `GuardCell` export of a guard module (the object carrying a `judge`). */
-async function guardOf(modPath: string): Promise<GuardCell | null> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const cell = Object.values(mod).find(
-    (v): v is GuardCell =>
-      typeof v === 'object' && v !== null && 'judge' in v && 'tell' in v,
-  );
-  return cell ?? null;
-}
-
-/** Every guard cell of the plugin set, by id; a later plugin's same id wins. */
-async function declaredGuards(
-  plugins: readonly ProjectablePlugin[],
-): Promise<Map<string, GuardCell>> {
-  const byId = new Map<string, GuardCell>();
-  for (const p of plugins) {
-    if (!p.guards) continue;
-    for (const n of await scanModuleNames(p.guards)) {
-      const modPath = await resolveModulePath(p.guards, n);
-      if (!modPath) continue;
-      const cell = await guardOf(modPath);
-      if (cell) byId.set(cell.id, cell);
-    }
-  }
-  return byId;
 }
 
 /** The runtime capabilities a harness is offered, those that explain themselves. */
@@ -681,8 +634,7 @@ function declaredPractices(
 }
 
 /** What a practice selection places, by name: the agents, the skills (closed under
- *  composition), the plumbing hooks and the hooks the chosen practices name. Guards are
- *  not listed: they follow the agents that compose what they bind. */
+ *  composition), the plumbing hooks and the hooks the chosen practices name. */
 interface PracticeSelection {
   readonly agents: ReadonlySet<string>;
   readonly skills: ReadonlySet<string>;
@@ -693,12 +645,9 @@ interface PracticeSelection {
  * Resolve the practices NAMED into what they place, refusing a set that is not
  * closed. Runs before anything is rendered, so a refusal leaves nothing behind.
  *
- * CLOSED means: every agent the set places finds every skill it is given and every
- * role it dispatches. The role is matched against `Agent.holds` by anchor, which is
- * the whole of what forge may know of a role — or against the agents the harness
- * supplies natively (`HarnessAdapter.nativeAgents`), which need no agent of the
- * set. Each refusal names the practice that placed the agent, the agent, and the
- * role or skill that is missing.
+ * CLOSED means: every agent the set places finds every skill it is given. Each
+ * refusal names the practice that placed the agent, the agent, and the skill that
+ * is missing.
  */
 function selectPractices(
   names: readonly string[],
@@ -706,7 +655,6 @@ function selectPractices(
   declared: readonly Practice[],
   agentSrc: ReadonlyMap<string, AgentSrc>,
   roster: ReadonlyMap<string, Skill>,
-  nativeAgents: Readonly<Record<string, string>>,
 ): PracticeSelection {
   const chosen: Practice[] = [];
   for (const name of names) {
@@ -735,19 +683,6 @@ function selectPractices(
       );
     }
     authored.set(name, src.agent);
-  }
-
-  const held = new Set<string>();
-  for (const agent of authored.values()) {
-    if (agent.holds !== undefined) held.add(agent.holds);
-  }
-  for (const [name, agent] of authored) {
-    for (const role of agent.dispatches ?? []) {
-      if (held.has(role) || Object.hasOwn(nativeAgents, role)) continue;
-      throw new Error(
-        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds and the harness does not supply`,
-      );
-    }
   }
 
   const plumbing = plugins.flatMap((p) => (p.plumbing ? [p.plumbing] : []));
@@ -853,14 +788,7 @@ export async function projectPluginSet(
   const offered = declaredPractices(opts.plugins, log);
   const selection =
     opts.practices !== undefined
-      ? selectPractices(
-          opts.practices,
-          opts.plugins,
-          offered,
-          agentSrc,
-          roster,
-          opts.adapter.nativeAgents ?? {},
-        )
+      ? selectPractices(opts.practices, opts.plugins, offered, agentSrc, roster)
       : undefined;
   const contributedSkills = selection
     ? allSkills.filter((s) => selection.skills.has(s.name))
@@ -953,53 +881,7 @@ export async function projectPluginSet(
   // written, and withhold the mechanism of any that degraded. The DECLARATION
   // face needs no decision — `agentBody` publishes it for every composed value on
   // every harness, which is why a shortfall here is a warning and not a refusal.
-  // A GUARD JUDGES THE ACT, and is realized apart from the worker mechanisms: a
-  // value `realizedBy` a guard cell of the plugin set binds that guard to exactly
-  // the agents composing the value, carried in the harness's session module where
-  // it judges only a session running as one of them.
-  const guardCells = await declaredGuards(opts.plugins);
-  const guardOfBinding = (b: Binding): GuardCell | undefined =>
-    b.fragment.realizedBy === undefined
-      ? undefined
-      : guardCells.get(b.fragment.realizedBy);
-  const allBindings = bindingsOf(composed, manifest);
-  const bindings = allBindings.filter((b) => guardOfBinding(b) === undefined);
-  const guardAgents = new Map<string, { guard: GuardCell; agents: string[] }>();
-  for (const b of allBindings) {
-    const guard = guardOfBinding(b);
-    if (guard === undefined) continue;
-    const held = guardAgents.get(guard.id) ?? { guard, agents: [] };
-    held.agents.push(...b.agents.filter((a) => !held.agents.includes(a)));
-    guardAgents.set(guard.id, held);
-  }
-  // Carried only where the session module is a program (`scopeActivatedSurface`,
-  // with no settings file to register in instead) firing every one of its events.
-  const carriesGuards =
-    opts.adapter.scopeActivatedSurface !== undefined &&
-    opts.adapter.hooks === undefined;
-  const guards: ComposedGuard[] = [];
-  const projectedGuards: ProjectedGuard[] = [];
-  for (const { guard, agents: composing } of guardAgents.values()) {
-    const agentsOf = [...composing].sort();
-    const realized =
-      carriesGuards &&
-      guard.substrate === opts.adapter.substrate &&
-      guard.events.every((event) => opts.adapter.realizes(event));
-    if (realized) guards.push({ guard, agents: agentsOf });
-    else
-      warn(
-        `guard '${guard.id}' is composed into ${agentsOf.join(', ')}, but the '${opts.adapter.name}' adapter carries no session module that judges ${guard.events.join(', ')} for them. The guarded value reaches those agents as a declaration alone — a steer, not a bound.`,
-      );
-    projectedGuards.push({
-      guard: guard.id,
-      tell: guard.tell,
-      agents: agentsOf,
-      realized,
-    });
-    log(
-      `${realized ? 'EMIT' : 'STEER'} guard ${guard.id} → ${agentsOf.join(' ')}`,
-    );
-  }
+  const bindings = bindingsOf(composed, manifest);
 
   // CAPABILITY FIDELITY. Each runtime capability takes the highest form this
   // harness offers: its own facility, else the cratylus extension tool, else prose
@@ -1251,7 +1133,7 @@ export async function projectPluginSet(
   const carried = hookCells.filter((cell) => !unfired.has(cell.id));
 
   let hooks = 0;
-  if (carried.length > 0 || guards.length > 0) {
+  if (carried.length > 0) {
     const renderHooks = opts.adapter.hooks;
     // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
     // only the first. `hooks` returns a settings fragment (claude);
@@ -1304,7 +1186,6 @@ export async function projectPluginSet(
         const surface = renderScopeActivated(
           sources.map((s) => s.hook),
           agentNames,
-          guards,
         );
         // EMPTY IS A DEGRADE, not a quiet success: an adapter that realized none of
         // these cells' events registers nothing, and worker bytes beside no
@@ -1385,7 +1266,6 @@ export async function projectPluginSet(
       preselected: p.preselected === true,
     })),
     capabilities,
-    guards: projectedGuards,
   };
 }
 

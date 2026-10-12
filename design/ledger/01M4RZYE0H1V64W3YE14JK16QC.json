@@ -1,0 +1,19 @@
+{
+  "id": "01M4RZYE0H1V64W3YE14JK16QC",
+  "at": "2026-10-12T21:22:52.049Z",
+  "kind": "commit",
+  "transition": "commit:simplification:c23b3b1d498ac27bd1a3c659fa830638f9822f76",
+  "cut": "simplification",
+  "workPackage": "freeze-and-suite",
+  "commit": {
+    "sha": "c23b3b1d498ac27bd1a3c659fa830638f9822f76",
+    "message": "fix(simplification): round-2 findings for freeze-and-suite\n\nOne maker identity for the journal's record and the freeze warning; overlapping\noutputs and undeclared needs warn instead of refusing; an example with no\nmechanical check is valid and judged by reading; held-out catalog and binding\nsuites follow the delivered behaviour; docs drop guards and the land gate.",
+    "paths": [
+      "packages/runtime/",
+      "packages/cli/",
+      "design/judgment/agents/catalog-recut/",
+      "design/judgment/agents/reconstitution/",
+      "README.md"
+    ]
+  }
+}

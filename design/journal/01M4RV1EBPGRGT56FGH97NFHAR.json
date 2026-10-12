@@ -1,0 +1,15 @@
+{
+  "id": "01M4RV1EBPGRGT56FGH97NFHAR",
+  "at": "2026-10-12T19:57:07.830Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "enforcement-level",
+  "wording": "how firmly a value holds: advisory, firm unless the operator overrides it, or fixed; a value is firm or fixed only where the harm it prevents has been observed, is costly or irreversible, and whoever owns the decision can still get past it, and it is then enforced at the most reliable place that can hold it, by permission first, then by a capability, then by a check before the act takes effect; every other value is advisory, its breach visible but never refused, and an agent's text holds what its replies say.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "0142(2): constraints added ahead of evidence deadlocked the work and refused their owner.",
+  "supersedes": [
+    "01M4NP6G8NPR74RTH19MSH3TCJ"
+  ]
+}

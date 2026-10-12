@@ -754,13 +754,6 @@ function describe(
         : '';
     lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
   }
-  // Each guard the agents compose: the tell it holds and whom it judges, or that the
-  // harness carries it as a declaration alone.
-  for (const guard of tree.guards) {
-    lines.push(
-      `  guard ${guard.guard} (${guard.tell}): ${guard.realized ? 'judges' : 'not realized on this harness, a declaration alone for'} ${list(guard.agents)}`,
-    );
-  }
   if (found.references.length > 0) {
     lines.push(
       `  ${adapter.name} ${dry ? 'would load' : 'loads'} it in every project, by ${list(found.references)}`,
@@ -793,7 +786,7 @@ function describe(
     const { dispatchIsolation } = adapter;
     const rest =
       dispatchIsolation === undefined
-        ? `so ${one ? 'it builds' : 'they build'} in the checkout that dispatches ${one ? 'it' : 'them'}, and the land gate refuses work built in the main checkout`
+        ? `so ${one ? 'it builds' : 'they build'} in the checkout that dispatches ${one ? 'it' : 'them'}`
         : `${one ? 'it runs' : 'they run'} in an isolated copy of ${one ? 'its' : 'their'} dispatcher's checkout, never writing the main checkout, ${dispatchIsolation.lacks}`;
     lines.push(
       `  not realized: ${subject} on ${adapter.name}${dispatchIsolation === undefined ? ', ' : '; '}${rest}`,

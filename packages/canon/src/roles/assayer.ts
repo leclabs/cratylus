@@ -12,7 +12,7 @@ import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { verdictPerConcept } from '../dimensions/deliverable/verdict-per-concept.js';
-import { heldOut } from '../dimensions/evaluation/held-out.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { evaluationDesign } from '../dimensions/expertise/evaluation-design.js';
 import { testDesign } from '../dimensions/expertise/test-design.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
@@ -65,7 +65,6 @@ export const assayerRole: RoleCell = {
     autonomy: [{ value: principal, note: 'in verdict' }],
     perceptionScope: [conceptJournal, examples, heldOutExamples, work],
     actionScope: [none],
-    handoffs: [],
     model: [
       { value: frontier, slot: 'tier' },
       { value: xhigh, slot: 'effort' },
@@ -74,6 +73,6 @@ export const assayerRole: RoleCell = {
     assignment: [judgmentBrief],
     deliverable: [verdictPerConcept],
     guardrails: [honesty, noImplementation, neverRepairs],
-    evaluation: [heldOut],
+    evaluation: [inUse],
   },
 };

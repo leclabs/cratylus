@@ -1,0 +1,8 @@
+{
+  "id": "01M4RYEC1ZN3C0AYKEYDQ7MME6",
+  "at": "2026-10-12T20:56:37.183Z",
+  "kind": "check",
+  "transition": "check:simplification:01M4RYEC1WX8WH4XGZYTH6E81J",
+  "cut": "simplification",
+  "failures": []
+}

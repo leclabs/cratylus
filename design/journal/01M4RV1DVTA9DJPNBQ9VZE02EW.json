@@ -1,0 +1,15 @@
+{
+  "id": "01M4RV1DVTA9DJPNBQ9VZE02EW",
+  "at": "2026-10-12T19:57:07.322Z",
+  "kind": "decide",
+  "decisionId": "0143",
+  "context": "workflow",
+  "title": "The freeze is a rule held by review, not a gate",
+  "situation": "The operator, 2026-10-12, reasoning from first principles: test only what we own and what is deterministic; agent behaviour depends on models and a harness we do not own and is judged in real use, not by live suites; most constraints added since 0068 fail the evidence and deadlock the work. The architect had conflated three domains: the workflow (product-agnostic practice), the agents (how an agent is composed, evaluated and enforced) and this repository's engineering conventions. A commit can be reverted, and a reviewer reading the change sees an edited example or check, so a gate on commits fails the test of 0142(2); the freeze gate refused its own owner.",
+  "decision": "The freeze stands as a rule: while a cut is built, no one but the architect changes its examples, the checks that bind them or the concepts they illustrate. It is held by the assayers' review of the change and by the record, which shows who changed what; no hook, journal refusal or record point refuses it. This supersedes 0128 and with it 0129 and 0132 to 0134, 0136(2) and 0137; 0130 and 0131 lapse, there being no gate to impersonate or switch off.",
+  "consequences": "The freeze gate, its hook and its tracking of what a check uses are removed; the journal records who appended an entry and warns when a non-architect changes a frozen concept.",
+  "status": "accepted",
+  "supersedes": "0128",
+  "supersedesEntry": "01M4PVAC3KK26TNQF6GTRXFWWF",
+  "decisionKind": "meaning"
+}

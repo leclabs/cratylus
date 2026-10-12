@@ -1,10 +1,9 @@
 // The architect role: master design §3, the architect column, with the client's
 // principal architect restored (0070) and its communication ordered bottom line up
-// front (0078, 0117). Its elevation and stopping rule are values its behavioral examples
-// showed drifting, so a guard holds each, checking the act before it takes effect (0106);
-// its replies are shown as written, so its own text alone holds their values (0116).
+// front (0078, 0117). Its values are held by its own text, and its behaviour is
+// evaluated in real use (0142).
 
-import { type RoleCell, guarded } from '../compose.js';
+import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { writeExamples } from '../dimensions/action-scope/write-examples.js';
 import { intent } from '../dimensions/assignment/intent.js';
@@ -20,8 +19,7 @@ import { input } from '../dimensions/decision-rights/input.js';
 import { none } from '../dimensions/decision-rights/none.js';
 import { recommends } from '../dimensions/decision-rights/recommends.js';
 import { decisionsWithReasons } from '../dimensions/deliverable/decisions-with-reasons.js';
-import { behavioralExamples } from '../dimensions/evaluation/behavioral-examples.js';
-import { neverAssertions } from '../dimensions/evaluation/never-assertions.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { domainModeling } from '../dimensions/expertise/domain-modeling.js';
 import { researchInvestigation } from '../dimensions/expertise/research-investigation.js';
 import { specificationByExample } from '../dimensions/expertise/specification-by-example.js';
@@ -30,9 +28,6 @@ import { appendOnly } from '../dimensions/guardrails/append-only.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
 import { noImplementation } from '../dimensions/guardrails/no-implementation.js';
 import { scopeOfAuthority } from '../dimensions/guardrails/scope-of-authority.js';
-import { illustrator } from '../dimensions/handoffs/illustrator.js';
-import { lead } from '../dimensions/handoffs/lead.js';
-import { researcher } from '../dimensions/handoffs/researcher.js';
 import { reconstitution as memoryReconstitution } from '../dimensions/memory/reconstitution.js';
 import { sourceOfTruth } from '../dimensions/memory/source-of-truth.js';
 import { working } from '../dimensions/memory/working.js';
@@ -60,8 +55,6 @@ import { proportionate } from '../dimensions/stance/proportionate.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
 import { systemsThinking } from '../dimensions/stance/systems-thinking.js';
 import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
-import { descend } from '../guards/descend.js';
-import { pastObjective } from '../guards/past-objective.js';
 
 export const architectRole: RoleCell = {
   name: 'architect',
@@ -72,7 +65,7 @@ export const architectRole: RoleCell = {
     role: [architect],
     objective: [
       { value: conceptualIntegrity, slot: 'drive' },
-      { value: guarded(optimize, pastObjective), slot: 'stopping-rule' },
+      { value: optimize, slot: 'stopping-rule' },
     ],
     expertise: [
       domainModeling,
@@ -84,7 +77,7 @@ export const architectRole: RoleCell = {
     // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
       { value: decisive, level: 'fixed' },
-      { value: guarded(conceptualElevation, descend), level: 'fixed' },
+      { value: conceptualElevation, level: 'fixed' },
       cratylism,
       firstPrinciples,
       greenField,
@@ -119,7 +112,6 @@ export const architectRole: RoleCell = {
       outsideResearch,
     ],
     actionScope: [appendJournal, writeExamples],
-    handoffs: [illustrator, lead, researcher],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
@@ -128,6 +120,6 @@ export const architectRole: RoleCell = {
     assignment: [intent],
     deliverable: [decisionsWithReasons],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],
-    evaluation: [behavioralExamples, neverAssertions],
+    evaluation: [inUse],
   },
 };

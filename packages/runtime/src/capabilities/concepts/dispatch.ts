@@ -21,20 +21,21 @@
 // A query appends nothing and prints JSON; when it read past entries written by
 // a newer runtime, in the journal or, for `overview`, the ledger, its answer
 // also carries `uninterpreted`, saying what it read past and how it was read.
-// An appending verb appends exactly one entry and prints it as JSON; when what
-// it recorded leaks implementation, the answer also carries the `warnings`, and
-// nothing is refused for leakage. A decision constraining realization is never
-// warned, and a context's own words include each plain word its current
-// subject names, though never a command, a
+// An appending verb appends exactly one entry, stamped with who appended it, and
+// prints it as JSON; when what it recorded leaks implementation, the answer also
+// carries the `warnings`, and nothing is refused for leakage. A decision
+// constraining realization is never warned, and a context's own words include
+// each plain word its current subject names, though never a command, a
 // quotation in code type or a flag that holds it. Every refusal is one line
 // opening with `concepts <verb>:`, thrown before anything is appended.
 //
-// THE FREEZE: `define`, `supersede` and `retire` of a concept that a cut opened
-// and not integrated names in its examples, in the same bounded context, are
-// refused unless the agent making the call (`../../acting-agent.ts`) is the
-// architect every such cut records for that context; while what is frozen
-// cannot be read, every one of them is refused. What is frozen is read from the
-// ledger and the record (`../work-package/frozen.ts`), never kept here.
+// THE FREEZE is a rule held by review and the record, never a refusal
+// (decision 0143): `define`, `supersede` and `retire` of a concept that a cut
+// opened and not integrated names in its examples, in the same bounded context,
+// by any agent but the architect every such cut records for that context, are
+// recorded and carry a warning naming the cut; so does any of them while what
+// is frozen cannot be read. What is frozen is read from the ledger and the
+// record (`../work-package/frozen.ts`), never kept here.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -42,7 +43,6 @@
 // help prints the same declarations, and its calls are read against them.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { actingAgent } from '../../acting-agent.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import {
@@ -77,6 +77,13 @@ import {
 } from './leakage.js';
 import { overviewOf } from './overview.js';
 import { type DecisionView, Folded } from './views.js';
+
+/** A change to a concept a frozen cut names, made by someone other than its
+ *  architect: the cuts that freeze it, and what the warning says. */
+interface FreezeWarning {
+  readonly freeze: readonly string[];
+  readonly message: string;
+}
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
 const inContext = (what: string) =>
@@ -245,7 +252,7 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; refused, with nothing recorded, while a cut not yet integrated freezes the concept in its bounded context, unless the agent making the call is that cut’s architect',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; while a cut not yet integrated freezes the concept in its bounded context, a change by anyone but that cut’s architect is recorded with a warning naming the cut',
     when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
     positional: concept(
       'The concept whose meaning changes, by its name in the bounded context',
@@ -264,7 +271,7 @@ export const VERBS = {
     concept: 'retirement',
     effect: 'appends',
     purpose:
-      'Record that a concept leaves the current design, with the reason: it is no longer live, and its history is kept; refused, with nothing recorded, while a cut not yet integrated freezes the concept in its bounded context, unless the agent making the call is that cut’s architect',
+      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept; while a cut not yet integrated freezes the concept in its bounded context, a retirement by anyone but that cut’s architect is recorded with a warning naming the cut',
     when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
     positional: concept(
       'The concept that leaves the design, by its name in the bounded context',
@@ -440,36 +447,42 @@ function answerOf(
       ? standing.current.map((v) => v.id)
       : [standing.current.id];
   };
-  /** Refuse a change to the concept `name` in `where` that a frozen cut
-   *  naming it forbids: a change by any agent but the architect each such
-   *  cut records for `where`; and any change while the freeze cannot be read. */
-  const unfrozen = (where: string, name: string): void => {
+  /** The warning a change to the concept `name` in `where` carries when a
+   *  frozen cut names it and the call is not made by the architect each such
+   *  cut records for `where`, or when what is frozen cannot be read. */
+  const frozenWarnings = (where: string, name: string): FreezeWarning[] => {
     let cuts: readonly FrozenCut[];
     try {
       cuts = frozenCuts(journal.root).cuts;
     } catch (error) {
       const why = error instanceof Error ? error.message : String(error);
-      throw refuse(
-        `the concept '${name}' in '${where}' cannot be checked against the freeze, so the change is refused: what is frozen cannot be read: ${why.replace(/\s*\n\s*/g, ' ')}`,
-      );
+      return [
+        {
+          freeze: [],
+          message: `the concept '${name}' in '${where}' could not be checked against the freeze: what is frozen cannot be read: ${why.replace(/\s*\n\s*/g, ' ')}`,
+        },
+      ];
     }
     const holding = cuts.filter((c) =>
       c.concepts.some((k) => k.context === where && k.name === name),
     );
-    const agent = actingAgent();
+    const agent = journal.maker;
     if (
       holding.length === 0 ||
       (agent !== undefined &&
         holding.every((c) => c.architects[where] === agent))
     )
-      return;
+      return [];
     const by = holding.map((c) => {
       const architect = c.architects[where];
       return `'${c.cut}' (architect ${architect === undefined ? 'none' : `'${architect}'`})`;
     });
-    throw refuse(
-      `the concept '${name}' in '${where}' is frozen by the ${holding.length === 1 ? 'cut' : 'cuts'} ${by.join(', ')}; only the architect may change it until the cut is integrated, and the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}`,
-    );
+    return [
+      {
+        freeze: holding.map((c) => c.cut),
+        message: `the concept '${name}' in '${where}' is frozen by the ${holding.length === 1 ? 'cut' : 'cuts'} ${by.join(', ')}; only its architect changes it until the cut is integrated, and the change is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}: recorded, for review`,
+      },
+    ];
   };
   /** The entry of the one decision `ref` names; refuses none, or an id
    *  several decisions share. */
@@ -664,7 +677,6 @@ function answerOf(
     case 'supersede': {
       const name = read.named('concept');
       const where = context();
-      unfrozen(where, name);
       const wording = read.required('wording', 'the wording');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
@@ -683,27 +695,31 @@ function answerOf(
         reason,
         supersedes,
       };
-      const found = warnings(
-        { kind: 'concept', context: where, name },
-        [wording],
-        own(where, name),
-      );
+      const found = [
+        ...frozenWarnings(where, name),
+        ...warnings(
+          { kind: 'concept', context: where, name },
+          [wording],
+          own(where, name),
+        ),
+      ];
       const entry = journal.append(draft);
       return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'retire': {
       const name = read.named('concept');
       const where = context();
-      unfrozen(where, name);
       const reason = read.required('reason', 'the reason');
       const supersedes = superseding(where, name, false);
-      return journal.append({
+      const found = frozenWarnings(where, name);
+      const entry = journal.append({
         kind: 'retire',
         context: where,
         name,
         reason,
         supersedes,
       });
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'decide': {
       const decisionId = read.named('decision id');

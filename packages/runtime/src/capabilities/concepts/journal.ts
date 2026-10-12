@@ -27,6 +27,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { makerAt } from '../../acting-agent.js';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
 import {
   type Draft,
@@ -119,13 +120,18 @@ function count(counts: Map<string, number>, key: string, n: number): void {
 export interface Journal {
   /** The top of the git repository holding the journal. */
   readonly root: string;
+  /** Who appends to it: the acting agent, else git's user, when either is known. */
+  readonly maker: string | undefined;
   /** Every entry of a kind this runtime knows, in append order. */
   entries(): readonly Entry[];
   /** What was read past: entries of kinds this runtime does not know, or of a
    *  known kind holding a value it does not know. */
   readPast(): ReadPast;
-  /** Append `draft` as one new entry, stamped with its id and time. */
-  append<D extends Draft>(draft: D): D & { id: string; at: string };
+  /** Append `draft` as one new entry, stamped with its id, its time and, when
+   *  known, who appended it. */
+  append<D extends Draft>(
+    draft: D,
+  ): D & { id: string; at: string; by?: string };
 }
 
 /** The journal of the git repository holding `from`; `refuse` words a refusal
@@ -183,8 +189,10 @@ export function journalAt(
     return cached;
   };
 
+  const maker = makerAt(top);
   return {
     root: top,
+    maker,
     entries: () => load().entries,
     readPast: () => load().readPast,
     append(draft) {
@@ -192,6 +200,7 @@ export function journalAt(
       const entry = {
         id,
         at: new Date(decodeTime(id)).toISOString(),
+        ...(maker === undefined ? {} : { by: maker }),
         ...draft,
       };
       mkdirSync(dir, { recursive: true });

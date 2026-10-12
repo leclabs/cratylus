@@ -6,19 +6,20 @@
 // each stated value becomes an `Entry` carrying its enforcement level (the
 // factor's default unless stated). A persona is the residue over a role: its own
 // mark, single values that replace the role's, set values that extend the role's,
-// and reach it narrows. Everything it does not state is the role's.
+// and values it removes. Everything it does not state is the role's.
 //
-// Composition REFUSES rather than silently ignores (master design §2): a persona
-// that widens reach, removes or weakens a guardrail, states the role, takes from
-// a set, names an unknown factor, or carries no mark of its own is never made.
-// Every refusal is a `CompositionRefusal` whose message names what it refused.
+// Composition REFUSES a malformed persona (master design §2): one that states the
+// role, names an unknown factor or slot, removes a value its role does not hold, or
+// carries no mark of its own is never made, and the `CompositionRefusal` names what
+// it refused. A persona that weakens or removes a guardrail, or takes from a set
+// other than its reach, is made, and the composition warns, naming what it changed
+// (decision 0142(2)): no harm from it is on record.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
   type DimensionManifest,
   type DimensionMeta,
   type EnforcementLevel,
-  type Enforcing,
   type Entry,
   type KebabToCamel,
   type Mark,
@@ -28,12 +29,7 @@ import {
 } from '@cratylus/schema';
 import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 import { personaProtocol } from './genus/persona.js';
-import {
-  type Agent,
-  type Dimension,
-  type GuardCell,
-  MANIFEST,
-} from './manifest.js';
+import { type Agent, type Dimension, MANIFEST } from './manifest.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
@@ -107,23 +103,9 @@ function refuse(message: string): never {
   throw new CompositionRefusal(message);
 }
 
-/**
- * A value held by a guard: the same value, enforcing itself through `guard` at the
- * guard's events. A role states it for a value its behavioral examples showed
- * drifting, so the guard binds exactly the agents that compose that value.
- */
-export function guarded<D extends string>(
-  value: Value<D>,
-  guard: GuardCell,
-): Enforcing<D> {
-  if (typeof value !== 'string')
-    refuse(`${anchorOf(value)} is already enforcing; one guard holds a value`);
-  return {
-    body: value,
-    substrate: guard.substrate,
-    events: guard.events,
-    realizedBy: guard.id,
-  };
+/** A composition the design advises against: made, and said. */
+function warn(message: string): void {
+  process.emitWarning(message, 'CompositionWarning');
 }
 
 type StatedObject = Exclude<Stated, Value<string>>;
@@ -211,7 +193,6 @@ function agentOf(
     mark: identity.mark,
     key: null,
     holds: identity.holds,
-    dispatches: anchors('handoffs'),
     routing: {
       tier: slotAnchor('model', 'tier'),
       effort: slotAnchor('model', 'effort'),
@@ -311,10 +292,6 @@ export function persona(over: RoleCell, residue: Residue): Agent {
       const anchor = anchorOf(value);
       const at = entries.findIndex((e) => anchorOf(e.value) === anchor);
       if (at < 0) {
-        if (meta.group === 'Reach')
-          refuse(
-            `${who} widens ${factor} with ${anchor}, which its role ${over.name} does not hold`,
-          );
         entries.push(entryOf(s, held));
         continue;
       }
@@ -328,7 +305,7 @@ export function persona(over: RoleCell, residue: Residue): Agent {
         factor === 'guardrails' &&
         STRENGTH.indexOf(next.level) < STRENGTH.indexOf(prev.level)
       )
-        refuse(
+        warn(
           `${who} weakens the guardrail ${anchor} from ${prev.level} to ${next.level}`,
         );
       entries[at] = next;
@@ -341,15 +318,10 @@ export function persona(over: RoleCell, residue: Residue): Agent {
     for (const value of removed) {
       const anchor = anchorOf(value);
       if (factor === 'guardrails')
-        refuse(`${who} removes the guardrail ${anchor}`);
-      // `none` in action-scope is the absence of every action; removing it widens.
-      if (factor === 'action-scope' && anchor === 'none')
-        refuse(
-          `${who} removes none from action-scope, which widens its reach beyond its role ${over.name}`,
-        );
-      if (meta.group !== 'Reach')
-        refuse(
-          `${who} removes ${anchor} from ${factor}; a persona extends sets, it never takes from them`,
+        warn(`${who} removes the guardrail ${anchor}`);
+      else if (meta.group !== 'Reach')
+        warn(
+          `${who} removes ${anchor} from ${factor}; a persona usually extends sets rather than taking from them`,
         );
       const at = entries.findIndex((e) => anchorOf(e.value) === anchor);
       if (at < 0)

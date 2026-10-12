@@ -16,6 +16,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import { appendLifecycle } from '../src/lifecycle/index.js';
@@ -60,6 +61,51 @@ describe('the concept journal as a library', () => {
     expect(journal()).toHaveLength(2);
     for (const name of journal())
       expect(name).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}\.json$/);
+  });
+
+  it('records who appended an entry: the acting agent', () => {
+    process.env[ACTING_AGENT_ENV] = 'keeper';
+    try {
+      expect(
+        version('define', 'A hold lasts ten minutes.', 'First.'),
+      ).toMatchObject({ kind: 'define', by: 'keeper' });
+    } finally {
+      Reflect.deleteProperty(process.env, ACTING_AGENT_ENV);
+    }
+  });
+
+  it('names one maker for the record and the freeze: git’s user when no agent is named', () => {
+    version('define', 'A hold lasts ten minutes.', 'First.');
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/seats.md'),
+      '1. (hold) Given a seat, when held, then it is kept aside.\n',
+    );
+    dispatchWorkPackage(
+      [
+        'open',
+        '--cut',
+        'seats',
+        '--branch',
+        'b',
+        '--architect',
+        'booking=keeper',
+      ],
+      { from: repo },
+    );
+    const asGitUser = (name: string) => {
+      execFileSync('git', ['config', 'user.name', name], { cwd: repo });
+      return version('supersede', 'A hold lasts five minutes.', 'Sharper.');
+    };
+    const architect = asGitUser('keeper') as Record<string, unknown>;
+    expect(architect).toMatchObject({ by: 'keeper' });
+    expect(architect).not.toHaveProperty('warnings');
+    expect(asGitUser('stranger')).toMatchObject({
+      by: 'stranger',
+      warnings: [
+        { freeze: ['seats'], message: expect.stringContaining("'stranger'") },
+      ],
+    });
   });
 
   it('mints each id past the journal’s last, even one from a later clock', () => {

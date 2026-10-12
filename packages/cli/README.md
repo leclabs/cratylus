@@ -30,7 +30,7 @@ of your own.
 cratylus install
 ```
 
-`cratylus install` puts the bundled corpus's agents, skills and guards on this machine, for Claude
+`cratylus install` puts the bundled corpus's agents and skills on this machine, for Claude
 Code or omp. It needs no project and no config. It looks for a harness by its directory: Claude
 Code's (`$CLAUDE_CONFIG_DIR` when that is set, else `~/.claude`) and omp's (`~/.omp`). Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
@@ -70,7 +70,7 @@ and stops, writing nothing, and `--verbose` also prints the per-file detail.
 
 ### Which practices
 
-A practice is a way of working that install offers as one choice: the agents, skills and guards that
+A practice is a way of working that install offers as one choice: the agents and skills that
 carry it, installed together. The drift notice comes with every choice and is offered as
 none. On a terminal, install asks one question that lists each practice with its
 description, the practices already installed here ticked (on a fresh host, the one the corpus
@@ -255,30 +255,16 @@ and warns where it falls short; they are not the same, and this is what a user m
   output. An `omp --agent` session starts with the full instructions of the skills its
   declaration's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
   through omp's own skill discovery, as any omp session does.
-- **Guards.** A guard judges an act against the contract of the agent that performs it, and only in
-  the main session of an agent that composes it, never in a subagent that agent dispatches. omp
-  cannot load a module for one agent alone, so there every guard composed for an agent is carried
-  as a steer, and install warns that omp cannot scope it per agent. A bare `claude` or `omp` session
-  is not judged, which makes starting one the off switch. A harness that
-  cannot name the running agent carries a guard as a steer, the stated rule in place of the
-  enforced one, and install warns once per guard. A guard whose judge cannot run lets the turn
-  through and says so where you read it, never as a clean verdict. A refusal always names its way
-  forward: act on the judge's reason, or, when the agent holds it wrong, write why into the file the
-  refusal names with the one shell command it spells out, and repeat the act. The contested act goes
-  through unjudged, the guard says so, and the contest is appended to
-  `~/.agents/guardrail/contests.log` for you to review. A refused turn end is let through when it
-  repeats, or after three refusals in a row, so a session is never locked in a loop. The guards'
-  full rules are in [the guardrail README](../canon/targets/guardrail/README.md).
+- **No guards.** Nothing judges an agent's acts or replies: an agent's behaviour is evaluated in
+  real use (decision 0142). A dispatch or launch whose assignment is incomplete is shown its typed
+  assignment with a warning naming what is missing, and goes ahead.
 - **Model, dispatch and tools.** On omp an agent's definition names its own model role,
   `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
-  `spawns` lists the agents it may dispatch, which are its handoffs, omp's own `scout` standing for
-  the researcher, and is empty for an agent that hands off to no one. The assayer, which changes
-  nothing, carries `tools` with omp's reading tools alone; every other agent has omp's default
-  tools.
+  `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither cuts that isolation from the bound plan's line. Building off the line is the agent's own
-  work, on either harness, and the land gate refuses work not built off it. On Claude Code the
+  work, on either harness. On Claude Code the
   agent runs in a worktree of its own, cut as Claude Code cuts any, by its `worktree.baseRef`.
   omp's agent definition has no field for isolation, so install does what omp offers: a dispatch
   of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's
@@ -551,24 +537,11 @@ The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and vers
 
 No verb records a dispatch, a return, an assayer's verdict or the lead's report: those reach the ledger only from the harness's own agent events, through the harness binding. A work package is `submitted`, then `dispatched` and `returned` as the harness reports its builder, then `approved` once at least two distinct assayers' latest verdicts on it all pass, `failing` when every one has a finding, or `disputed` when they disagree; the cut is `open`, then `in flight` from its first dispatch, then `complete` once every work package is approved. A commit whose subject opens `feat(cut:<name>): ` while the ledger does not show that cut complete gets a warning from this repository's post-commit hook, and is never refused.
 
-The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
+The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. A path outside the package's outputs, or a file the paths would commit outside them (such as another package's file under a directory path), is committed with a warning naming it, as is a commit for a package no builder was dispatched for.
 
-A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `uses` (every file the frozen checks' relative imports reach, transitively, that is no output of the cut's work packages), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names, so a builder owning one is not dispatched.
+A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names.
 
-What is frozen is read from the **record** (decisions 0132, 0134): the examples (and the concepts they name), the checks and the files they use as the branch's recorded tip holds them (`HEAD` for a verb, the branch's tip before the update for the hook), never as a working copy has changed them; only a path the tip does not hold, or a branch with no commit yet, is read from the working copy. The ledger is read where cratylus keeps it, in the work tree the call or the update is made in (on a push, the repository's own). While a cut is frozen, `submit` and `update` refuse to widen a package's outputs onto a file its frozen checks use, naming it; a file a frozen check imports itself from outside the check's own folder is the work it checks, which a package may output.
-
-The freeze holds where a change would be recorded. The concept journal refuses `define`, `supersede` and `retire` of a concept a frozen cut's examples name before appending, unless `CRATYLUS_AGENT` names the cut's architect, and refuses each of them while what is frozen cannot be read. The project's history refuses at git's `reference-transaction` hook, which every route that moves a branch passes (`--no-verify` and a push into the repository included): the hidden, harness-facing `cratylus freeze-gate`, never a capability verb nor an agent tool, takes the hook's argument and its stdin, and in the `prepared` state refuses a branch update that changes or deletes an existing journal entry, whoever makes it, the architect included (the journal is append-only; an added entry passes), and one that brings in a change to a frozen example, held-out example text, frozen check or file a frozen check uses, or a journal entry superseding or retiring a frozen concept, unless the acting agent is that cut's architect. Its refusal names the branch, the cut, the architect and the paths (an entry by its id), and the branch stays where it was. When the ledger is present and what is frozen cannot be read (an unreadable entry, or a frozen cut's examples file missing), every branch update is refused, saying why; so is every update when the gate cannot read the repository. Other states, other refs, deletions and a repository with no ledger pass what is frozen silently.
-
-Wire it as the hook in the repository's common hooks folder, `$(git rev-parse --git-common-dir)/hooks/reference-transaction`, with `core.hooksPath` unset, so git runs it in every work tree of the repository and, on a push into it, in its git directory:
-
-```sh
-#!/bin/sh
-exec cratylus freeze-gate "$@"
-```
-
-A relative `core.hooksPath` reaches neither a linked work tree nor a push. This repository keeps its hooks in husky's folder and runs the gate from source through `.husky/reference-transaction`; `pnpm install` (its `prepare`) adds the `reference-transaction` entry husky's own hook list lacks and names that folder absolutely in `core.hooksPath`, so the gate reaches every work tree and every push as the common hooks folder does.
-
-The freeze holds against agents acting under the name the harness gives them, and wherever the project's own hooks run: an agent that sets `CRATYLUS_AGENT` to another's name by hand, or switches the hooks off, is outside it (decisions 0130, 0131).
+The freeze is a rule held by review and the record, never a gate (decision 0143): no hook refuses a commit or a branch update. Every concept journal entry records who appended it (`by`: `CRATYLUS_AGENT`, else git's user), and `define`, `supersede` and `retire` of a concept a frozen cut's examples name, by anyone but that cut's architect, are recorded with a warning naming the cut. `integrate` records who made it, the same maker, and warns, naming the cut and its architect, when that is not the architect; integrating ends the freeze for good.
 
 #### `cratylus workPackage inventory`
 

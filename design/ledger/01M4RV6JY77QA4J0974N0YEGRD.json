@@ -1,0 +1,16 @@
+{
+  "id": "01M4RV6JY77QA4J0974N0YEGRD",
+  "at": "2026-10-12T19:59:56.359Z",
+  "kind": "cut",
+  "transition": "open:simplification",
+  "cut": "simplification",
+  "branch": "feature/simplification",
+  "contexts": [
+    "agents",
+    "workflow"
+  ],
+  "architects": {
+    "workflow": "architect",
+    "agents": "architect"
+  }
+}

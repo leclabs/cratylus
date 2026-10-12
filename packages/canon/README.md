@@ -69,19 +69,19 @@ kino, nico and mav are personas over the architect role, `persona(architectRole,
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
 after the role's, and restating one the role holds changes only its enforcement level or note. It
-never states the role itself, since the contract is the role's. Composition refuses, rather than
-ignores, a persona that widens reach (a perception-scope, action-scope or handoff the role does not
-hold; it may narrow them), removes a guardrail or lowers its level, removes any other value, names a
-factor the catalog does not have, or has no mark or its role's; the `CompositionRefusal` it throws
-names what it refused.
+never states the role itself, since the contract is the role's. Composition refuses a malformed
+persona: one that states the role, names a factor or slot the catalog does not have, removes a
+value its role does not hold, or has no mark or its role's; the `CompositionRefusal` it throws names
+what it refused. A persona that removes or lowers a guardrail, or removes a value from a set other
+than its reach, is made, and composition warns (a `CompositionWarning`), naming what it changed: no
+harm from one is on record (decision 0142(2)).
 
-A composed agent also says, for the projector, the role it holds (`holds`), the roles its handoffs
-name (`dispatches`), its model's tier and effort (`routing`), its typed handoff (`contract`) and the
-per-turn persistence protocol every agent re-grounds its stance by (`persistence`). Nothing narrows
-its tools: every agent keeps the harness's defaults, and only its handoffs are a permission. Its
-`key` is reserved for ipseic agents and is empty. `holder`, `persona`, `guarded`,
-`CompositionRefusal`, the six role cells and `MANIFEST` are also named exports, for a corpus that
-composes agents of its own over these roles.
+A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
+effort (`routing`), its typed handoff (`contract`) and the per-turn persistence protocol every agent
+re-grounds its stance by (`persistence`). Nothing narrows its tools or whom it may dispatch: every
+agent keeps the harness's defaults (0142). Its `key` is reserved for ipseic agents and is empty.
+`holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named exports,
+for a corpus that composes agents of its own over these roles.
 
 ## Typed handoffs
 
@@ -99,36 +99,17 @@ the value's anchor). Composition copies the pair onto the agent as `contract`:
 
 The architect's assignment is free-text intent and its deliverable goes to the operator, so it
 carries no contract. A builder's `examples` may be empty: a package sharing outputs owns no example.
-A harness binds the deliverable as its own output schema, checked strictly, and checks the
-assignment (one fenced `assignment` JSON block in the dispatch text) with the schema package's
-`checkAssignment` before the agent runs, refusing a misfit and naming each missing or ill-typed
-field.
+A harness binds the deliverable as its own output schema, shows the assignment form when an agent
+is dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in
+the dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
+field; it never refuses the dispatch or the launch for it (0142(3)).
 
-## Guards
+## Evaluation and drift
 
-A value its behavioral examples showed drifting is held by a guard cell (`src/guards/`), stated in
-the role as `guarded(value, guard)`, so the guard binds exactly the agents composing that value.
-A guard holds a value only by checking an act before it takes effect: a dispatch, a change to the
-journal or the work, a tool call. A refused act never took effect. A reply shown as it is written
-has taken effect, refused or not, so no guard judges a reply at turn end (0106).
-`descend` holds the architect's conceptual elevation: before each tool call it asks a judge whether
-the call opens the work itself (source, tests, builds, commands outside the design records) instead
-of the design, the examples, the journal, the ledger or a delegate, and refuses the call when it
-does, naming the tell.
-`past-objective` holds the architect's stopping rule: before each tool call it asks a judge, given
-the conversation so far in visible text (the operator's requests, the agent's replies and its
-delegates' reports) and the call, whether the conversation shows the objective met, its outcome
-achieved with nothing open left, and the call takes a further step instead of reporting the outcome, and refuses the
-call when it does, naming the tell `procedure past objective`. An outcome reported short of what the
-design describes is not achieved, so a step that gets it achieved is not past the objective. A call
-that takes or records a decision on a meaning question the architect owns is never past the
-objective, in any turn (0090, 0101). Its prompt states what an owned question is: one of meaning,
-constraints on realization or a check ruling (whether a frozen check may change), open only when
-the design records it open, or the operator or a delegate raises it and the design does not already
-answer it (0102); priority and realization are not owned questions. It never judges whether the
-architect held what a decision needed.
-Every guard on the same tool call is judged on that call, and their refusals reach the agent as one.
-A judge answer it cannot read refuses nothing and is reported.
+Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
+factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
+replies (0142(1)). Drift is held by the agent's own text, the persistence protocol naming its tells,
+and its definition is revised on the evidence of use.
 
 ## The first principle
 

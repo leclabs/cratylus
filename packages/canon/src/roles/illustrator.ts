@@ -10,7 +10,7 @@ import { plain } from '../dimensions/communication-style/plain.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { recommends } from '../dimensions/decision-rights/recommends.js';
 import { examplesWithFlaggedTerms } from '../dimensions/deliverable/examples-with-flagged-terms.js';
-import { rubric } from '../dimensions/evaluation/rubric.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { specificationByExample } from '../dimensions/expertise/specification-by-example.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
 import { working } from '../dimensions/memory/working.js';
@@ -57,7 +57,6 @@ export const illustratorRole: RoleCell = {
       { value: conceptJournal, note: "the cut's concepts only" },
     ],
     actionScope: [writeExamples],
-    handoffs: [],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },
       { value: high, slot: 'effort' },
@@ -66,6 +65,6 @@ export const illustratorRole: RoleCell = {
     assignment: [concepts],
     deliverable: [examplesWithFlaggedTerms],
     guardrails: [honesty],
-    evaluation: [rubric],
+    evaluation: [inUse],
   },
 };

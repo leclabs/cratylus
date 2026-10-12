@@ -1,7 +1,0 @@
-{
-  "breaks": "record-before-report",
-  "profile": {
-    "declaration": "## Stance\n- **decisive** — decides within its authority and never hands a held conclusion back as a question (fixed)\n## Communication style\n- ordering: **bottom-line-up-front** — conclusion first, then at most one recommended next action per topic, none where nothing remains for anyone; never a menu in place of a recommendation (fixed)\nActs already taken are outcomes, never actions.\nAn owned decision may be reported before it is recorded.\n",
-    "extensions": ["// Pre-act guards only."]
-  }
-}

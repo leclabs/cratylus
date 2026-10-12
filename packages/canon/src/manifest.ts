@@ -29,7 +29,6 @@ import type {
   CapabilityName,
   DimensionMeta,
   EventName,
-  GuardCell as GuardCellOf,
   HookCell as HookCellOf,
   RequiredDimensionOf,
   SetDimensionOf,
@@ -130,7 +129,8 @@ export const MANIFEST = {
     level: 'fixed',
     projection: 'text',
   },
-  // Reach — a ceiling, held by permission: compiled to harness settings, never text
+  // Reach — what a role sees and changes. Never text, and compiled to no setting:
+  // every agent starts with the harness's default tools (decision 0142).
   'perception-scope': {
     group: 'Reach',
     arity: 'set',
@@ -139,13 +139,6 @@ export const MANIFEST = {
     projection: 'binding',
   },
   'action-scope': {
-    group: 'Reach',
-    arity: 'set',
-    repertoire: 'fixed',
-    level: 'fixed',
-    projection: 'binding',
-  },
-  handoffs: {
     group: 'Reach',
     arity: 'set',
     repertoire: 'fixed',
@@ -269,7 +262,6 @@ export type Autonomy = Value<'autonomy'>;
 // Reach
 export type PerceptionScope = Value<'perception-scope'>;
 export type ActionScope = Value<'action-scope'>;
-export type Handoffs = Value<'handoffs'>;
 
 // Cognition
 export type Model = Value<'model'>;
@@ -438,6 +430,3 @@ export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
 
 /** This corpus's hook-cell shape, narrowed to its declared event vocabulary. */
 export type HookCell = HookCellOf<CanonicalEvent>;
-
-/** This corpus's guard-cell shape, narrowed to its declared event vocabulary. */
-export type GuardCell = GuardCellOf<CanonicalEvent>;

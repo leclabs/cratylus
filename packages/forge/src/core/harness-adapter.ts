@@ -16,12 +16,7 @@
 // surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
 // exactly that sense: the global config extent a harness offers, not a file.
 
-import type {
-  Agent,
-  Binding,
-  DimensionManifest,
-  GuardCell,
-} from '@cratylus/schema';
+import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
 import type {
   EventName,
   HarnessMechanism,
@@ -42,18 +37,6 @@ import type { ResolvedSkill } from './body.js';
  * with one — canon agent names are cold-derived words, never `_`-prefixed.
  */
 export const SESSION_SCOPE = '_session';
-
-/**
- * A guard cell and the agents that compose a value it holds: what a harness judges,
- * and for whom. A harness realizing it judges the guard's act only in a session
- * running as one of `agents`, so it binds the value observed drifting and nothing
- * else.
- */
-export interface ComposedGuard {
-  readonly guard: GuardCell;
-  /** The agents whose composition holds the guarded value, sorted. */
-  readonly agents: readonly string[];
-}
 
 /**
  * The render tree's staging dir for SCOPED mechanism artifacts —
@@ -429,19 +412,12 @@ export interface HarnessAdapter {
    * no artifact governs an agent that did not compose it; these cells compose no
    * agent by construction.
    *
-   * `guards` are the guard cells the projected agents compose ({@link
-   * ComposedGuard}), carried in the same session module: each judges its act only
-   * in a main session launched as one of the agents composing it. Absent or empty ⇒
-   * no guard is composed. A harness without this op realizes no guard, and
-   * `project` reports each as a declaration alone.
-   *
    * Absent ⇒ this harness registers scope-activated cells in a config file, or
    * cannot carry them at all (the degrade `project` reports).
    */
   scopeActivatedSurface?(
     hooks: readonly Hook[],
     agentNames: readonly string[],
-    guards?: readonly ComposedGuard[],
   ): readonly HarnessProjection[];
   /**
    * Where a SCOPED artifact lands ON THE HOST, harness-home relative — the
@@ -549,15 +525,6 @@ export interface HarnessAdapter {
    * does). Absent ⇒ the harness offers no such reference, and nothing installs to it.
    */
   readonly packageDir?: string;
-  /**
-   * The handoffs this harness supplies an agent for natively, by the handoff's
-   * anchor → the harness's own agent name (omp: `researcher` → `scout`). A dispatch
-   * to one names the harness's agent, and a practice whose agents hand off to one is
-   * closed without an agent of the corpus holding it.
-   *
-   * Absent ⇒ the harness supplies none.
-   */
-  readonly nativeAgents?: Readonly<Record<string, string>>;
   /**
    * How this harness isolates a DISPATCHED agent without an agent-definition field —
    * omp's task isolation: a per-dispatch flag the dispatcher's extension sets, over

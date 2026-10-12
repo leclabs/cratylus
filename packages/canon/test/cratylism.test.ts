@@ -12,7 +12,7 @@
 //     different body-anchor is a cratylism violation.
 //   • SEMANTIC (non-hermetic, NOT asserted here): the anchor cold-DECODES to its
 //     concept — the archaeology. Its instrument is the cold-oracle
-//     (`tooling/cold-oracle`, `decodeCold`), run at authoring + CI,
+//     (`tooling/cold-oracle`, `decodeCold`), run by hand at authoring and never in CI,
 //     never coined by author or operator. It cannot run in a hermetic unit test (it
 //     calls the live model), so this gate asserts the structural leg and points to the
 //     cold-oracle for the semantic one.

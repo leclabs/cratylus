@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
+import { ACTING_AGENT_ENV } from '../../src/acting-agent.js';
 import { dispatchWorkPackage } from '../../src/capabilities/work-package/index.js';
 import { LEDGER_DIR } from '../../src/capabilities/work-package/ledger.js';
 import { completionCheck } from '../../src/completion-check/index.js';
@@ -229,6 +230,63 @@ describe('the cut', () => {
         ),
       ),
     ).toContain('already recorded');
+  });
+
+  it('opens across contexts held by different architects with a warning', () => {
+    const repo = repository(['workflow', 'agents']);
+    expect(
+      wp(
+        repo,
+        'open',
+        '--branch',
+        'feature/film',
+        '--architect',
+        'workflow=lex',
+        '--architect',
+        'agents=ana',
+      ),
+    ).toMatchObject({
+      kind: 'cut',
+      warnings: [expect.stringContaining('held by different architects')],
+    });
+    expect(wp(repo, 'state')).toMatchObject({
+      architects: { workflow: 'lex', agents: 'ana' },
+    });
+  });
+
+  it('integrates by anyone, recording the maker, and warns when it is not the architect', () => {
+    const asAgent = (repo: string, agent: string) => {
+      process.env[ACTING_AGENT_ENV] = agent;
+      try {
+        return wp(repo, 'integrate');
+      } finally {
+        Reflect.deleteProperty(process.env, ACTING_AGENT_ENV);
+      }
+    };
+    const open = () => {
+      const repo = repository();
+      wp(
+        repo,
+        'open',
+        '--branch',
+        'feature/film',
+        '--architect',
+        'workflow=lex',
+      );
+      return repo;
+    };
+    const other = asAgent(open(), 'ana') as Record<string, unknown>;
+    expect(other).toMatchObject({ kind: 'integrate', agent: 'ana' });
+    expect(String(other.warnings)).toContain("'film'");
+    expect(String(other.warnings)).toContain("'lex'");
+    const architect = asAgent(open(), 'lex');
+    expect(architect).toMatchObject({ kind: 'integrate', agent: 'lex' });
+    expect(architect).not.toHaveProperty('warnings');
+    const byGit = open();
+    git(byGit, 'config', 'user.name', 'lex');
+    const integrated = wp(byGit, 'integrate');
+    expect(integrated).toMatchObject({ agent: 'lex' });
+    expect(integrated).not.toHaveProperty('warnings');
   });
 });
 

@@ -1,7 +1,8 @@
 // `dispatchWorkPackage` driven over scratch git repositories it builds itself:
 // the dependency graph's levels and cycles, the refusals that keep packages from
-// colliding, a refused commit that stages nothing, the rounds of the whole
-// check, and the explanation's verbs anchored in cratylus's own live design.
+// colliding, a commit outside a package's outputs made with a warning, the
+// rounds of the whole check, and the explanation's verbs anchored in cratylus's
+// own live design.
 
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -110,7 +111,7 @@ describe('workPackage refusals', () => {
     );
   });
 
-  it('REFUSES a concept with no example, an unknown dependency and an unowned need', () => {
+  it('REFUSES a concept with no example, an unknown dependency and a malformed path', () => {
     const repo = repository('delivery', 'window');
     wp(repo, 'submit', 'base', '--concept', 'delivery', '--output', 'base/');
     expect(
@@ -130,7 +131,15 @@ describe('workPackage refusals', () => {
       ),
     ).toContain("'ghost'");
     expect(
-      refused(
+      refused(repo, 'submit', 'x', '--concept', 'window', '--output', '../x'),
+    ).toContain("'../x'");
+  });
+
+  it('WARNS of a need owned by a package not depended on, recording the package', () => {
+    const repo = repository('delivery', 'window');
+    wp(repo, 'submit', 'base', '--concept', 'delivery', '--output', 'base/');
+    expect(
+      wp(
         repo,
         'submit',
         'x',
@@ -141,16 +150,20 @@ describe('workPackage refusals', () => {
         '--needs',
         'base/a.ts',
       ),
-    ).toMatch(/'base\/a\.ts' is owned by 'base', which 'x' does not depend on/);
-    expect(
-      refused(repo, 'submit', 'x', '--concept', 'window', '--output', '../x'),
-    ).toContain("'../x'");
+    ).toMatchObject({
+      package: { name: 'x', needs: ['base/a.ts'] },
+      warnings: [
+        expect.stringMatching(
+          /'base\/a\.ts' is owned by 'base', which 'x' does not depend on/,
+        ),
+      ],
+    });
   });
 
-  it('REFUSES an output inside another package’s directory', () => {
+  it('WARNS of an output inside another package’s directory, recording the package', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'src/');
-    const message = refused(
+    const answer = wp(
       repo,
       'submit',
       'b',
@@ -158,9 +171,10 @@ describe('workPackage refusals', () => {
       'delivery',
       '--output',
       'src/b.ts',
-    );
+    ) as { package: { name: string }; warnings: string[] };
+    expect(answer.package.name).toBe('b');
     for (const name of ["'src/b.ts'", "'src/'", "'a'", "'b'"])
-      expect(message).toContain(name);
+      expect(answer.warnings.join('\n')).toContain(name);
   });
 
   it('REFUSES a commit git refuses, leaving the index as it was', () => {
@@ -185,7 +199,7 @@ describe('workPackage refusals', () => {
     expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
   });
 
-  it('REFUSES a directory path that would commit another package’s file, staging nothing', () => {
+  it('WARNS of a directory path that commits another package’s file, and of a package no builder was dispatched for, committing it', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'src/reserve');
     wp(
@@ -199,25 +213,22 @@ describe('workPackage refusals', () => {
       '--depends-on',
       'a',
     );
-    dispatched(repo, 'a');
     mkdirSync(join(repo, 'src/reserve'), { recursive: true });
     writeFileSync(join(repo, 'src/reserve/x.ts'), 'theirs\n');
-    const index = git(repo, 'ls-files', '--stage');
     expect(
-      refused(
-        repo,
-        'commit',
-        'a',
-        '--message',
-        'mine',
-        '--path',
-        'src/reserve',
-      ),
-    ).toBe(
-      "workPackage commit: outside the outputs of 'a': 'src/reserve/x.ts' (an output of 'b'); nothing is committed",
+      wp(repo, 'commit', 'a', '--message', 'mine', '--path', 'src/reserve'),
+    ).toMatchObject({
+      warnings: [
+        "the work package 'a' has no builder dispatched by the harness",
+        "outside the outputs of 'a': 'src/reserve/x.ts' (an output of 'b')",
+      ],
+    });
+    expect(git(repo, 'ls-tree', '-r', '--name-only', 'HEAD')).toBe(
+      'src/reserve/x.ts',
     );
-    expect(git(repo, 'ls-files', '--stage')).toBe(index);
-    expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
+    expect(wp(repo, 'history', 'a')).toMatchObject({
+      commits: [{ message: 'mine' }],
+    });
   });
 
   it('reads a path with glob characters literally, committing only that file', () => {

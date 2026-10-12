@@ -1,36 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import {
-  type CheckSource,
-  type ProofRecordings,
-  judgeBatch,
-  proveOffline,
-} from './offline-proof.js';
 
-export type AgentMessage = Readonly<{ to: string; content: string }>;
-export type AgentToolCall = Readonly<{
-  name: string;
-  arguments: Readonly<Record<string, unknown>>;
-}>;
-export type AgentRunRecord = Readonly<{
-  messages: readonly AgentMessage[];
-  toolCalls: readonly AgentToolCall[];
-}>;
-export type AgentScenario = Readonly<{
-  situation: string;
-  trigger: string;
-  run: number;
-}>;
-export type AgentScenarioRunner = (
-  scenario: AgentScenario,
-) => Promise<AgentRunRecord>;
-
-export type BehaviorAssertion =
-  | Readonly<{ kind: 'message-to'; recipient: string }>
-  | Readonly<{
-      kind: 'tool-call';
-      name: string;
-      arguments: Readonly<Record<string, unknown>>;
-    }>;
 export type RubricAssertion = Readonly<{
   kind: 'output-equals';
   path: string;
@@ -50,13 +19,6 @@ export type ExampleCheck =
       produce: () => unknown | Promise<unknown>;
     }>
   | Readonly<{
-      kind: 'agent-behavior';
-      runs: number;
-      threshold: number;
-      runner: AgentScenarioRunner;
-      assertions: readonly BehaviorAssertion[];
-    }>
-  | Readonly<{
       kind: 'rubric';
       rubric: readonly Readonly<{
         id: string;
@@ -64,13 +26,6 @@ export type ExampleCheck =
         assertion: RubricAssertion;
       }>[];
       produce: () => unknown | Promise<unknown>;
-    }>
-  | Readonly<{
-      kind: 'behavioral';
-      check: CheckSource;
-      recordings: ProofRecordings;
-      threshold: Readonly<{ atLeast: number; of: number }>;
-      runner: (run: number) => Promise<unknown>;
     }>;
 
 export type Example = Readonly<{
@@ -79,13 +34,14 @@ export type Example = Readonly<{
   situation: string;
   trigger: string;
   outcome: string;
-  check: ExampleCheck;
+  /** Run where a check is cheap and repeatable; absent, the example is judged
+   *  by reading (decisions 0142, 0145). */
+  check?: ExampleCheck;
 }>;
 export type CheckResult = Readonly<{
-  status: 'pass' | 'fail';
+  /** `unchecked`: the example has no mechanical check and is judged by reading. */
+  status: 'pass' | 'fail' | 'unchecked';
   shortfall?: string;
-  runs?: number;
-  passRate?: number;
   score?: number;
   maxScore?: number;
   rubric?: readonly Readonly<{
@@ -109,6 +65,7 @@ export async function checkExample(example: Example): Promise<CheckResult> {
 
 async function runCheck(example: Example): Promise<CheckResult> {
   const check = example.check;
+  if (check === undefined) return { status: 'unchecked' };
   switch (check.kind) {
     case 'execution': {
       const actual = await check.execute();
@@ -130,31 +87,6 @@ async function runCheck(example: Example): Promise<CheckResult> {
         : {
             status: 'fail',
             shortfall: `output assertion failed at ${check.path}`,
-          };
-    }
-    case 'agent-behavior': {
-      let passed = 0;
-      for (let run = 0; run < check.runs; run += 1) {
-        const record = await check.runner({
-          situation: example.situation,
-          trigger: example.trigger,
-          run: run + 1,
-        });
-        if (
-          check.assertions.every((assertion) =>
-            behaviorMatches(record, assertion),
-          )
-        )
-          passed += 1;
-      }
-      const passRate = passed / check.runs;
-      return passRate >= check.threshold
-        ? { status: 'pass', runs: check.runs, passRate }
-        : {
-            status: 'fail',
-            runs: check.runs,
-            passRate,
-            shortfall: `agent behavior passed ${passed}/${check.runs} runs; threshold is ${check.threshold}`,
           };
     }
     case 'rubric': {
@@ -186,37 +118,21 @@ async function runCheck(example: Example): Promise<CheckResult> {
         rubric,
       };
     }
-    case 'behavioral': {
-      const records: unknown[] = [];
-      for (let run = 1; run <= check.threshold.of; run += 1)
-        records.push(await check.runner(run));
-      const batch = await judgeBatch(check.check, records, check.threshold);
-      return batch.passed
-        ? { status: 'pass', runs: check.threshold.of }
-        : {
-            status: 'fail',
-            runs: check.threshold.of,
-            shortfall: `behavioral assertions failed: ${batch.assertions
-              .filter(({ passed }) => !passed)
-              .map(({ id, held, runs }) => `${id} held ${held}/${runs}`)
-              .join(', ')}`,
-          };
-    }
   }
 }
 
 export function validateExample(example: Example): void {
   if (typeof example.outcome !== 'string' || example.outcome.trim() === '') {
     throw new Error(
-      `Example ${example.id} has an unspecified outcome; provide a mechanically checkable outcome.`,
-    );
-  }
-  if (!example.check || typeof example.check !== 'object') {
-    throw new Error(
-      `Example ${example.id} has an unspecified outcome: no mechanical check is defined.`,
+      `Example ${example.id} has an unspecified outcome; state the outcome it shows.`,
     );
   }
   const check = example.check;
+  if (check === undefined) return;
+  if (typeof check !== 'object' || check === null)
+    throw new Error(
+      `Example ${example.id} has a check that is not one; give a mechanical check, or none to judge it by reading.`,
+    );
   if (check.kind === 'execution') {
     if (typeof check.execute !== 'function' || !('expect' in check))
       throw new Error(
@@ -232,26 +148,6 @@ export function validateExample(example: Example): void {
     )
       throw new Error(
         `Example ${example.id} has an unspecified outcome: output assertion is not mechanically checkable.`,
-      );
-    return;
-  }
-  if (check.kind === 'agent-behavior') {
-    if (
-      typeof check.runner !== 'function' ||
-      !Number.isInteger(check.runs) ||
-      check.runs < 1 ||
-      !Number.isFinite(check.threshold) ||
-      check.threshold < 0 ||
-      check.threshold > 1 ||
-      check.assertions.length === 0 ||
-      check.assertions.some((assertion) =>
-        assertion.kind === 'message-to'
-          ? !assertion.recipient.trim()
-          : assertion.kind !== 'tool-call' || !assertion.name.trim(),
-      )
-    )
-      throw new Error(
-        `Example ${example.id} has an unspecified outcome: agent checks require valid assertions, positive runs, and a threshold from 0 to 1.`,
       );
     return;
   }
@@ -273,27 +169,8 @@ export function validateExample(example: Example): void {
       );
     return;
   }
-  if (check.kind === 'behavioral') {
-    const { atLeast, of } = check.threshold ?? {};
-    if (
-      (typeof check.check !== 'function' &&
-        (typeof check.check !== 'object' || check.check === null)) ||
-      !Array.isArray(check.recordings?.golden) ||
-      !Array.isArray(check.recordings?.negative) ||
-      typeof check.runner !== 'function' ||
-      !Number.isInteger(of) ||
-      of < 1 ||
-      !Number.isInteger(atLeast) ||
-      atLeast < 0 ||
-      atLeast > of
-    )
-      throw new Error(
-        `Example ${example.id} has an unspecified outcome: behavioral checks require a check, its recordings, a runner, and a threshold of at least one run with atLeast from 0 to of.`,
-      );
-    return;
-  }
   throw new Error(
-    `Example ${example.id} has an unspecified outcome: no supported mechanical check is defined.`,
+    `Example ${example.id} has a check of no kind it knows: give execution, output-assertion or rubric, or none to judge it by reading.`,
   );
 }
 
@@ -416,21 +293,13 @@ export function createExampleLedger(
   return Object.freeze({ builder, architect: architectAccess });
 }
 
-// A check is frozen only once it is shown it can fail: a behavioral one by offline proof over its
-// recordings, never by live runs; any other by running it.
+// A check is frozen only once it is shown it can fail, by running it; an example
+// with no mechanical check is judged by reading, so there is nothing to run.
 async function showCanFail(
   example: Example,
   action: 'confirm' | 'refreeze',
 ): Promise<void> {
-  const check = example.check;
-  if (check.kind === 'behavioral') {
-    const proof = await proveOffline(check.check, check.recordings);
-    if (!proof.proven)
-      throw new Error(
-        `Cannot ${action} example ${example.id}: offline proof did not succeed: ${JSON.stringify(proof.findings)}`,
-      );
-    return;
-  }
+  if (example.check === undefined) return;
   const result = await checkExample(example);
   if (result.status !== 'fail')
     throw new Error(
@@ -547,20 +416,6 @@ function assertionMatches(
     ? actual.includes(String(expected))
     : Array.isArray(actual) &&
         actual.some((item) => isDeepStrictEqual(item, expected));
-}
-function behaviorMatches(
-  record: AgentRunRecord,
-  assertion: BehaviorAssertion,
-): boolean {
-  if (assertion.kind === 'message-to')
-    return record.messages.some(
-      (message) => message.to === assertion.recipient,
-    );
-  return record.toolCalls.some(
-    (call) =>
-      call.name === assertion.name &&
-      isDeepStrictEqual(call.arguments, assertion.arguments),
-  );
 }
 function readPath(value: unknown, path: string): unknown {
   let current = value;

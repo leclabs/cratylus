@@ -1,0 +1,14 @@
+{
+  "id": "01M4RV1DXKMGE50EA75G7N7HH7",
+  "at": "2026-10-12T19:57:07.379Z",
+  "kind": "decide",
+  "decisionId": "0144",
+  "context": "workflow",
+  "title": "This repository tests its own deterministic code only",
+  "situation": "The operator, 2026-10-12, reasoning from first principles: test only what we own and what is deterministic; agent behaviour depends on models and a harness we do not own and is judged in real use, not by live suites; most constraints added since 0068 fail the evidence and deadlock the work. The architect had conflated three domains: the workflow (product-agnostic practice), the agents (how an agent is composed, evaluated and enforced) and this repository's engineering conventions. The ordinary suite started real omp sessions, took about twelve minutes, and broke when omp changed while cratylus's code was right.",
+  "decision": "A project convention, not part of the design: CI and the local suite test cratylus's own deterministic code and the files it produces, never by starting omp or an agent. The supported omp version is stated; after an omp upgrade the operator or the architect tries one real session by hand. Kept as a working convention beside the branching rules.",
+  "consequences": "Every test that starts omp or an agent, every live suite and every recorded-run proof is removed from the repository.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

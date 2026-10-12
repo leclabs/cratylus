@@ -53,6 +53,18 @@ describe('example checks', () => {
     ).rejects.toThrow(/outcome/i);
     expect(execute).not.toHaveBeenCalled();
   });
+  it('accepts an example with no mechanical check, judged by reading, and confirms it without running anything', async () => {
+    const { check: _none, ...byReading } = visible({
+      kind: 'execution',
+      execute: async () => undefined,
+      expect: undefined,
+    });
+    expect(await checkExample(byReading)).toEqual({ status: 'unchecked' });
+    const ledger = createExampleLedger([byReading], 'architect');
+    await expect(ledger.architect.confirm(byReading.id)).resolves.toMatchObject(
+      { example: { id: byReading.id } },
+    );
+  });
   it('refuses execution checks without an explicit expected result', async () => {
     const execute = vi.fn(async () => undefined);
     const malformed = {
@@ -63,46 +75,6 @@ describe('example checks', () => {
       Reflect.apply(checkExample, undefined, [malformed]),
     ).rejects.toThrow(/explicit expected result/);
     expect(execute).not.toHaveBeenCalled();
-  });
-  it('evaluates injected agent-run records across repeated assertions', async () => {
-    const runner = vi.fn(async () => ({
-      messages: [{ to: 'reviewer', content: 'ready' }],
-      toolCalls: [{ name: 'comment', arguments: { issue: 7 } }],
-    }));
-    const result = await checkExample(
-      visible({
-        kind: 'agent-behavior',
-        runs: 4,
-        threshold: 0.75,
-        runner,
-        assertions: [
-          { kind: 'message-to', recipient: 'reviewer' },
-          { kind: 'tool-call', name: 'comment', arguments: { issue: 7 } },
-        ],
-      }),
-    );
-    expect(runner).toHaveBeenCalledTimes(4);
-    expect(runner).toHaveBeenNthCalledWith(1, {
-      situation: 'a review is ready',
-      trigger: 'review ready',
-      run: 1,
-    });
-    expect(result).toMatchObject({ status: 'pass', passRate: 1, runs: 4 });
-  });
-  it('fails when repeated agent behavior falls below its stated rate', async () => {
-    const result = await checkExample(
-      visible({
-        kind: 'agent-behavior',
-        runs: 4,
-        threshold: 0.75,
-        runner: async ({ run }) => ({
-          messages: run <= 2 ? [{ to: 'reviewer', content: 'ready' }] : [],
-          toolCalls: [],
-        }),
-        assertions: [{ kind: 'message-to', recipient: 'reviewer' }],
-      }),
-    );
-    expect(result).toMatchObject({ status: 'fail', runs: 4, passRate: 0.5 });
   });
 
   it('uses the rubric captured before the producer runs', async () => {
@@ -240,7 +212,7 @@ describe('example freeze', () => {
     const ledger = createExampleLedger([example], 'architect');
     await ledger.architect.confirm(example.id);
     const view = ledger.builder.get(example.id);
-    if (!view || view.check.kind !== 'output-assertion')
+    if (!view || view.check?.kind !== 'output-assertion')
       throw new Error('The confirmed check should be visible.');
 
     expect(Reflect.set(view.check.produce, 'expected', true)).toBe(false);

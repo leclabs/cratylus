@@ -1,0 +1,15 @@
+{
+  "id": "01M4RV1E1F6RFVVS8CB8DTVK5E",
+  "at": "2026-10-12T19:57:07.503Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "example",
+  "wording": "a concrete case of a concept, given a situation, when something happens, then what must hold, including what must never happen; it fixes what done means before any build, run as a check where that is cheap and repeatable and judged by reading otherwise, so meaning becomes a description the work is measured against.",
+  "builtFrom": [
+    "work"
+  ],
+  "reason": "0142, 0145: how an example is checked had leaked from the agents domain; an example states meaning, and only what can run deterministically runs.",
+  "supersedes": [
+    "01M4J5RAT9A4EPGAB5TQJEXVZV"
+  ]
+}

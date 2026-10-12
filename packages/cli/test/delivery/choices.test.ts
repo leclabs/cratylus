@@ -9,7 +9,6 @@ import {
   guided,
   hiddenStatus,
   hostOwned,
-  observeChoice,
 } from './choices-fixture.js';
 import {
   assertRemoved,
@@ -31,21 +30,12 @@ afterEach(() => {
   h = undefined;
 });
 
-it('delivery/21 — supplied models and display answer are used by omp, not owned or asked again', async () => {
+it('delivery/21 — supplied models and display answer are placed for omp, not owned or asked again', async () => {
   h = fresh();
   configure(h);
   const result = await guided(h, { modelRoles: choices, agentStatus: 'show' });
   expect(result.asked).toEqual([]);
   expect(settings(h).modelRoles).toMatchObject(chosen);
-  for (const [agent, model] of [
-    ['delivery-0', 'frontier'],
-    ['delivery-1', 'fast'],
-    ['delivery-persona', 'persona'],
-  ]) {
-    const observed = observeChoice(h, agent!);
-    expect(observed.model).toMatchObject({ provider: 'fixture', id: model });
-    expect(observed.rendered, 'omp renders the session agent').toContain(agent);
-  }
   hostOwned(h);
 });
 
@@ -69,20 +59,14 @@ it('delivery/22 — interactive install asks only the unbound tier, never a sett
   ).toBeLessThanOrEqual(1);
   expect(settings(h).modelRoles).toMatchObject(chosen);
   expect(settings(h).statusLine).toEqual(visible);
-  expect(observeChoice(h, 'delivery-1').model).toMatchObject({
-    provider: 'fixture',
-    id: 'fast',
-  });
   hostOwned(h);
 });
 
-it('delivery/23 — interactive consent precedes enabling the display, and omp renders the agent', async () => {
+it('delivery/23 — interactive consent precedes enabling the display', async () => {
   h = fresh();
   configure(h, chosen);
   const result = await guided(h, {}, { show: true });
   expect(result.asked.filter((q) => q !== 'confirm')).toEqual(['agent-status']);
-  const observed = observeChoice(h, 'delivery-persona');
-  expect(observed.rendered).toContain('delivery-persona');
   const status = settings(h).statusLine as typeof hiddenStatus;
   expect(status.rightSegments).toEqual(hiddenStatus.rightSegments);
   expect(status.leftSegments).toContain('model');
@@ -105,9 +89,6 @@ it.each(['interactive', 'supplied'] as const)(
     expect(settings(h).statusLine).toEqual(hiddenStatus);
     expect(result.output.split('next:')[1] ?? '').not.toMatch(
       /agent.status|show the session.s agent/i,
-    );
-    expect(observeChoice(h, 'delivery-persona').rendered).not.toContain(
-      'delivery-persona',
     );
     hostOwned(h);
   },

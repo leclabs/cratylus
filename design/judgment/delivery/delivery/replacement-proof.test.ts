@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { assertReplacement } from './fixture.js';
 
-// Offline proof of the preservation assertion: the negative differs only in the
+// A check of the preservation assertion itself: the negative differs only in the
 // missing host replacement; its target survives, and the owned root is gone.
 it('delivery/3 — a negative uninstall result cannot erase the host replacement', () => {
   const before = { link: '/fixture/home/mira/skills' };

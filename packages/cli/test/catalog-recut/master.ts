@@ -228,13 +228,6 @@ export const factors = {
     level: 'fixed',
     projection: 'binding',
   },
-  handoffs: {
-    group: 'Reach',
-    arity: 'set',
-    repertoire: 'fixed',
-    level: 'fixed',
-    projection: 'binding',
-  },
   model: {
     group: 'Cognition',
     arity: 'slots',
@@ -329,7 +322,7 @@ software-delivery | turning a design into shipped, integrated, verified software
 software-engineering | building and changing software well
 system-design | shaping a system's parts and how they relate
 test-design | designing checks that catch the failures that matter
-evaluation-design | designing evaluations of model behaviour: scenarios, rubrics, thresholds
+evaluation-design | designing the checks that bind a cut's examples: deterministic where cheap and repeatable, judged by reading otherwise
 research-investigation | finding and weighing outside evidence and established practice
 film-production | the craft and industry of making films
 generative-video | generating video with models, and the community's practice around it
@@ -405,13 +398,6 @@ run-checks | run checks and builds
 commit-own-paths | commit its own changes, by path
 integrate | combine accepted work and run the whole check
 none | changes nothing`),
-  handoffs: glossary(`
-illustrator | hands a cut's concepts to the illustrator, who writes its examples cold
-lead | hands a cut's realization to the lead
-builder | hands one work package to a builder
-check-writer | hands the examples to the check-writer, who binds them with checks
-assayer | hands the finished work to the assayer for judgment
-researcher | hands a question to a read-only researcher the harness provides; it is not a cratylus role`),
   model: glossary(`
 frontier | the strongest model
 frontier-other-family | the strongest of another model family
@@ -458,10 +444,7 @@ advisory | guidance the agent weighs and may depart from
 firm | holds unless the operator overrides it
 fixed | holds without exception until the operator changes the design`),
   evaluation: glossary(`
-behavioral-examples | its decisions are run in fixed scenarios several times and checked
-rubric | its output is scored against a fixed rubric
-never-assertions | some things it must never do, checked in every run rather than most
-held-out | it is judged also against examples it never saw`),
+in-use | its behaviour is evaluated in real use, by the operator working with it`),
 };
 // The meaning-roles cut restates these glosses (0116(1), 0117) and revises them still, so the
 // master's text above is only their record. Each binds what the rulings in force require, in
@@ -594,14 +577,6 @@ const columns: Record<string, string[]> = {
     'write-examples',
     'write-checks,run-checks,commit-own-paths',
   ],
-  handoffs: [
-    'illustrator,lead,researcher',
-    'builder,check-writer,assayer,researcher',
-    '',
-    '',
-    '',
-    '',
-  ],
   model: [
     'frontier,high',
     'frontier,high',
@@ -642,14 +617,7 @@ const columns: Record<string, string[]> = {
     'honesty',
     'honesty,no-implementation',
   ],
-  evaluation: [
-    'behavioral-examples,never-assertions',
-    'behavioral-examples',
-    '',
-    'held-out',
-    'rubric',
-    '',
-  ],
+  evaluation: ['in-use', 'in-use', 'in-use', 'in-use', 'in-use', 'in-use'],
 };
 export function roleVector(role: RoleName): Vector {
   const column = roleNames.indexOf(role);

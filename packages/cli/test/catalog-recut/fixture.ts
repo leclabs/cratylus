@@ -242,6 +242,7 @@ try {
 export function candidateSource(role: string, residue: unknown) {
   return `import { persona, ${camel(role)}Role } from '@cratylus/canon';\nexport const candidate = persona(${camel(role)}Role, ${JSON.stringify(residue)});\n`;
 }
+/** A composition refused as malformed: the public refusal, naming each of `names`. */
 export function expectRefusal(result: CompositionResult, ...names: string[]) {
   expect(
     result,

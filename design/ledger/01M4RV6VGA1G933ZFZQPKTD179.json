@@ -1,0 +1,9 @@
+{
+  "id": "01M4RV6VGA1G933ZFZQPKTD179",
+  "at": "2026-10-12T20:00:05.130Z",
+  "kind": "dispatched",
+  "transition": "toolu_01Gv9Ej68LKzaYHZzjce8t4p/SimplificationLead/dispatched",
+  "cut": "simplification",
+  "role": "lead",
+  "run": "toolu_01Gv9Ej68LKzaYHZzjce8t4p/SimplificationLead"
+}

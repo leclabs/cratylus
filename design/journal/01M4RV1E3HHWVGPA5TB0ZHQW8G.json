@@ -1,0 +1,15 @@
+{
+  "id": "01M4RV1E3HHWVGPA5TB0ZHQW8G",
+  "at": "2026-10-12T19:57:07.569Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "freeze",
+  "wording": "once confirmed, a cut's examples, the checks that bind them and the concepts they illustrate are changed by no one but the architect from the approval of its examples until the cut is integrated, judgment included, held by the review of every change and the record of who made it; each check is written before the build by someone other than the work's builders, and an example is frozen only once its check has been seen to fail against work that does not satisfy it, so the criteria stay fixed while the work moves and no check that cannot fail is ever trusted.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "0143: the freeze is a rule held by review; how it was enforced had leaked into it.",
+  "supersedes": [
+    "01M4Q6N9J1X0N86NFQPGXSGAZS"
+  ]
+}

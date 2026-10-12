@@ -15,16 +15,12 @@ import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { outcomeWithEfficiency } from '../dimensions/deliverable/outcome-with-efficiency.js';
-import { behavioralExamples } from '../dimensions/evaluation/behavioral-examples.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareDelivery } from '../dimensions/expertise/software-delivery.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
 import { fixedAcceptanceCriteria } from '../dimensions/guardrails/fixed-acceptance-criteria.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
 import { scopeOfAuthority } from '../dimensions/guardrails/scope-of-authority.js';
-import { assayer } from '../dimensions/handoffs/assayer.js';
-import { builder } from '../dimensions/handoffs/builder.js';
-import { checkWriter } from '../dimensions/handoffs/check-writer.js';
-import { researcher } from '../dimensions/handoffs/researcher.js';
 import { sourceOfTruth } from '../dimensions/memory/source-of-truth.js';
 import { working } from '../dimensions/memory/working.js';
 import { frontier } from '../dimensions/model/frontier.js';
@@ -80,7 +76,6 @@ export const leadRole: RoleCell = {
     ],
     perceptionScope: [conceptJournal, examples, reports, work],
     actionScope: [integrate, commitOwnPaths, runChecks],
-    handoffs: [builder, checkWriter, assayer, researcher],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
@@ -89,6 +84,6 @@ export const leadRole: RoleCell = {
     assignment: [cutBrief],
     deliverable: [outcomeWithEfficiency],
     guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],
-    evaluation: [behavioralExamples],
+    evaluation: [inUse],
   },
 };

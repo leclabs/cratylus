@@ -1,5 +1,7 @@
 // Ruling 0083: execution 4, 6 and 8 keep their wording; dispatch is the task
-// handoff. Execution 14 remains in structural.test.ts and counts harness returns.
+// handoff. Under 0142(3) a handoff the cut's state does not ready goes ahead with
+// a warning naming what is not ready, never refused. Execution 14 remains in
+// structural.test.ts and counts harness returns.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Fixture } from '../agent-launch/fixture.js';
 import {
@@ -21,7 +23,6 @@ import {
   examples,
   harnessEvent,
   levelNames,
-  log,
   submit,
   write,
 } from './fixture.js';
@@ -66,18 +67,18 @@ function handoff(names: string[], id: string) {
     },
   };
 }
-async function refused(event: unknown, named: string) {
-  const before = log(f);
+async function warned(event: unknown, named: string) {
+  const before = extension!.notices.length;
   const result = await extension!.fire('tool_call', event);
-  expect(result?.block, 'dispatch is refused before any agent runs').toBe(true);
+  expect(result?.block, 'dispatch is never refused').not.toBe(true);
+  const shown = extension!.notices.slice(before);
   expect(
-    result?.reason,
-    'refusal names the package / concept / example',
+    shown
+      .filter((n) => n.level === 'warning')
+      .map((n) => n.text)
+      .join('\n'),
+    'a warning names the package / concept / example',
   ).toContain(named);
-  expect(
-    log(f),
-    'nothing dispatched: whole-call refusal appends nothing',
-  ).toEqual(before);
 }
 function allowed(result: HookResult | undefined) {
   expect(result?.block, 'ready builder handoff is not refused').not.toBe(true);
@@ -105,16 +106,16 @@ function bound(...numbers: number[]) {
 }
 
 describe('execution rebound to the harness', () => {
-  it('Example 4 — unserved concepts block all dispatch until both are served', async () => {
+  it('Example 4 — unserved concepts warn every dispatch until both are served', async () => {
     examples(f, [example(1, 'window'), example(2, 'reservation')]);
     bound(1, 2);
     submit(f, 'windows', ['window']);
     extension = await load(installed);
-    await refused(handoff(['windows'], 'unserved'), 'reservation');
+    await warned(handoff(['windows'], 'unserved'), 'reservation');
     expect(
       command<Levels>(f, 'levels').levels[0]!.packages,
-      'nothing dispatched',
-    ).toEqual([{ name: 'windows', state: 'submitted' }]);
+      'the warned dispatch goes ahead',
+    ).toEqual([{ name: 'windows', state: 'dispatched' }]);
     submit(f, 'reservations', ['reservation']);
     allowed(
       await extension.fire(
@@ -134,7 +135,7 @@ describe('execution rebound to the harness', () => {
     );
     expect(inventory.unserved, 'both are reported served').toEqual([]);
   });
-  it('0083 — an unowned visible example refuses the whole builder handoff', async () => {
+  it('0083 — an unowned visible example warns the builder handoff', async () => {
     examples(f, [
       example(1, 'window'),
       example(2, 'reservation'),
@@ -144,11 +145,11 @@ describe('execution rebound to the harness', () => {
     submit(f, 'windows', ['window']);
     submit(f, 'reservations', ['reservation']);
     extension = await load(installed);
-    await refused(handoff(['windows', 'reservations'], 'unowned'), 'booking/3');
+    await warned(handoff(['windows', 'reservations'], 'unowned'), 'booking/3');
     command(f, 'update', 'reservations', '--depends-on', 'windows');
     allowed(await extension.fire('tool_call', handoff(['windows'], 'owned')));
   });
-  it('Example 6 — levels are computed and dispatch waits for every package in the previous level', async () => {
+  it('Example 6 — levels are computed and a dispatch ahead of the previous level is warned', async () => {
     examples(f, [example(1, 'delivery')]);
     bound(1);
     submit(f, 'A', ['delivery']);
@@ -168,20 +169,20 @@ describe('execution rebound to the harness', () => {
     allowed(
       await extension.fire('tool_call', handoff(['A', 'B'], 'level-one')),
     );
-    await refused(handoff(['C', 'D'], 'too-soon'), 'C');
+    await warned(handoff(['C', 'D'], 'too-soon'), 'C');
     returned('A');
-    await refused(handoff(['C', 'D'], 'only-A-returned'), 'D');
+    await warned(handoff(['C', 'D'], 'only-A-returned'), 'D');
     returned('B');
     allowed(
       await extension.fire('tool_call', handoff(['C', 'D'], 'level-two')),
     );
-    await refused(handoff(['E'], 'before-C-D-return'), 'E');
+    await warned(handoff(['E'], 'before-C-D-return'), 'E');
     returned('D');
-    await refused(handoff(['E'], 'only-D-returned'), 'E');
+    await warned(handoff(['E'], 'only-D-returned'), 'E');
     returned('C');
     allowed(await extension.fire('tool_call', handoff(['E'], 'level-three')));
   });
-  it('Example 8 — no ready package is a refusal, not an empty dispatch', async () => {
+  it('Example 8 — no ready package is warned, not silently dispatched', async () => {
     examples(f, [example(1, 'delivery')]);
     bound(1);
     extension = await load(installed);
@@ -196,7 +197,7 @@ describe('execution rebound to the harness', () => {
       },
       'empty-cut',
     );
-    await refused(missing, 'delivery');
+    await warned(missing, 'delivery');
     submit(f, 'delivery', ['delivery']);
     allowed(
       await extension.fire(
@@ -204,9 +205,9 @@ describe('execution rebound to the harness', () => {
         handoff(['delivery'], 'delivery-start'),
       ),
     );
-    await refused(handoff(['delivery'], 'already-dispatched'), 'delivery');
+    await warned(handoff(['delivery'], 'already-dispatched'), 'delivery');
     returned('delivery');
-    await refused(handoff(['delivery'], 'already-returned'), 'delivery');
+    await warned(handoff(['delivery'], 'already-returned'), 'delivery');
   });
   it.each(['dispatch', 'finish', 'run'])(
     '0083 retirement — work package capability no longer offers %s',

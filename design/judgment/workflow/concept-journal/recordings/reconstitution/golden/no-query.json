@@ -1,9 +1,0 @@
-{
-  "name": "Retirement and reason readback needs no separate query",
-  "events": [
-    {
-      "kind": "text",
-      "text": "The summary is out of date. Automatic renewal is retired. Automatic renewal can charge a customer without fresh consent. I will not work toward automatic renewal."
-    }
-  ]
-}

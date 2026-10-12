@@ -10,21 +10,20 @@
 // `design/judgment/<context>/<cut>.md`, and each concept its examples name, in
 // its own context. It freezes the checks its `freeze` acts name, a held-out
 // check among them only once a freeze act names it: its judgment folder is
-// never frozen by implication (decision 0125). It freezes the files its frozen
-// checks use (`uses.ts`). Only the architect the cut records for a context may
-// change what the cut freezes there.
+// never frozen by implication (decision 0125). Only the architect the cut
+// records for a context changes what the cut freezes there: a rule held by
+// review and by the record, never refused (decision 0143).
 //
 // Beside what it freezes, the view says which of the cut's visible examples no
-// frozen check binds (`unchecked`): a builder is not dispatched while one it owns
-// is among them (decision 0128).
+// frozen check binds (`unchecked`).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { EXAMPLES_DIR } from '../concepts/leakage.js';
+import { unbound } from './bindings.js';
 import { cutAt } from './cut.js';
 import { foldCut } from './fold.js';
 import type { LedgerEntry } from './ledger.js';
 import type { Files } from './recorded.js';
-import { unbound, usedBy } from './uses.js';
 
 /** Where the cuts' judgments are, relative to the top of the repository. */
 export const JUDGMENT_DIR = 'design/judgment';
@@ -39,9 +38,6 @@ export interface FrozenCut {
   readonly examples: readonly string[];
   /** The checks its freeze acts name, held-out checks included. */
   readonly checks: readonly string[];
-  /** The files its frozen checks use: reached by their relative imports,
-   *  transitively, and no output of a work package of the cut. */
-  readonly uses: readonly string[];
   /** Its visible examples, as `<context>/<number>`, that no frozen check names. */
   readonly unchecked: readonly string[];
   /** Each concept its examples name, in its own context. */
@@ -64,10 +60,7 @@ export function frozenIn(
     entries.flatMap((e) => (e.kind === 'cut' ? [e.cut] : [])),
   );
   return [...opened].flatMap((name): FrozenCut[] => {
-    const { record, integrated, frozenChecks, packages } = foldCut(
-      entries,
-      name,
-    );
+    const { record, integrated, frozenChecks } = foldCut(entries, name);
     if (record === undefined || integrated) return [];
     const missing = record.contexts
       .map((context) => `${EXAMPLES_DIR}/${context}/${name}.md`)
@@ -77,7 +70,6 @@ export function frozenIn(
         `the frozen cut '${name}' has its examples file ${missing.join(', ')} missing from the working copy`,
       );
     const cut = cutAt(files, name, refuse);
-    const outputs = [...packages.values()].flatMap((p) => p.outputs);
     return [
       {
         cut: name,
@@ -87,7 +79,6 @@ export function frozenIn(
           `${JUDGMENT_DIR}/${context}/${name}.md`,
         ]),
         checks: frozenChecks,
-        uses: usedBy(files, frozenChecks, outputs),
         unchecked: unbound(
           files,
           frozenChecks,

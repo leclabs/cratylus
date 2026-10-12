@@ -74,7 +74,6 @@ const baseFixture: Agent = {
   ],
   perceptionScope: [{ value: 'work ≜ the realization itself', level: 'fixed' }],
   actionScope: [{ value: actionScopeA, level: 'fixed' }],
-  handoffs: [],
   model: [
     { value: 'frontier ≜ the strongest model', level: 'firm', slot: 'tier' },
     {
@@ -121,10 +120,10 @@ const badLevel: Agent = {
 // ── NEGATIVE 3: no `null` sentinel — an empty factor is `[]` ────────────────
 
 // @ts-expect-error — an explicitly empty factor is spelled `[]`, never `null`.
-const nullField: Agent = { ...baseFixture, handoffs: null };
+const nullField: Agent = { ...baseFixture, evaluation: null };
 
 // POSITIVE: the explicitly empty set compiles.
-const emptySet: Agent = { ...baseFixture, handoffs: [], evaluation: [] };
+const emptySet: Agent = { ...baseFixture, evaluation: [] };
 void emptySet;
 
 // ── NEGATIVE 4: completeness — every factor field is present ────────────────
@@ -145,7 +144,6 @@ const missingKey: Agent = {
   autonomy: baseFixture.autonomy,
   perceptionScope: baseFixture.perceptionScope,
   actionScope: baseFixture.actionScope,
-  handoffs: baseFixture.handoffs,
   model: baseFixture.model,
   memory: baseFixture.memory,
   assignment: baseFixture.assignment,

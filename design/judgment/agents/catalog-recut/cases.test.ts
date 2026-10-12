@@ -49,7 +49,6 @@ describe('catalog re-cut judgment', () => {
       holds: 'lead',
       key: null,
       routing: { tier: 'frontier', effort: 'high' },
-      dispatches: ['builder', 'check-writer', 'assayer', 'researcher'],
     });
     f.install();
     const installed = f.declaration(residue.name, true);
@@ -64,16 +63,11 @@ describe('catalog re-cut judgment', () => {
       name: residue.name,
       mark: residue.mark.emoji,
       key: null,
-      model: '@production-lead',
+      model: ['@production-lead', '@frontier:high'],
     });
-    expect(typeof installed.front.spawns).toBe('string');
-    expect(
-      String(installed.front.spawns)
-        .split(',')
-        .map((name) => name.trim()),
-    ).toEqual(['builder', 'check-writer', 'assayer', 'scout']);
+    expect(installed.front.spawns).toBe('*');
     expect(installed.front).not.toHaveProperty('tools');
-    expect(f.modelRoles()['production-lead']).toBe('@frontier:high');
+    expect(f.modelRoles()).not.toHaveProperty('production-lead');
   });
 
   it('case 2: shipped kino projects provenance-attribution rather than the architect rationale', () => {

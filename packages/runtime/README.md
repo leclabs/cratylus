@@ -4,7 +4,7 @@ The **mechanism** concern of [cratylus](../../README.md) — the per-host runtim
 
 A skill has two faces: what it _means_, which is canon's, and the programmatic thing it routes to,
 which is this package's. `runtime` is the generic platform beneath that second face, plus the
-lifecycle guardrails an agent would otherwise drift out of.
+record (the concept journal and the work package ledger) an agent reconstitutes from.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no harness and
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
@@ -28,22 +28,18 @@ names them: `concepts` and `workPackage`. A corpus's skill names one of them as
 
 A cut is frozen from its `open` until its `integrate`: from its `open`, its examples, its held-out
 example text `design/judgment/<context>/<cut>.md` and the concepts its examples name, each in its
-own context; the checks its `freeze` acts name, a held-out check in its judgment folder
-`design/judgment/<context>/<cut>/` only once a `freeze` names it, never by implication; and the
-files those checks' relative imports reach, transitively, that no work package of the cut outputs.
-`workPackage frozen` is the one account of what is frozen, with each cut's `uses` and `unchecked`
-(its visible examples no frozen check names), read from the record: the examples, checks and the
-files they use as the branch's recorded tip holds them, the working copy only for what the tip
-does not hold, and the ledger where cratylus keeps it. `concepts define`, `concepts supersede` and
-`concepts retire` of a frozen concept are refused, before anything is appended, unless the agent
-making the call, named by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing
-it, and every one of them while what is frozen cannot be read; `workPackage submit` and `update`
-refuse to widen a package's outputs onto a file a frozen check uses, beyond the work it imports;
-only the architect integrates a cut. Absent or empty, the agent is unknown, and never an
-architect. The hidden `freeze-gate` command, run as git's `reference-transaction` hook in every
-work tree and on pushes, refuses a branch update that changes or deletes a journal entry, from
-anyone, or brings in a change to what a cut freezes unless its architect makes it
-(`src/freeze-gate/`).
+own context; and the checks its `freeze` acts name, a held-out check in its judgment folder
+`design/judgment/<context>/<cut>/` only once a `freeze` names it, never by implication.
+`workPackage frozen` is the one account of what is frozen, with each cut's `unchecked` (its
+visible examples no frozen check names), read from the record: the examples and checks as the
+branch's recorded tip holds them, the working copy only for what the tip does not hold, and the
+ledger where cratylus keeps it. The freeze is a rule held by review and the record, never a gate
+(decision 0143): every journal entry records who appended it (`by`: the agent making the call,
+named by the harness in `CRATYLUS_AGENT`, else git's user), and `concepts define`, `supersede`
+and `retire` of a frozen concept by anyone but the architect of every cut freezing it are
+recorded with a warning naming the cut. `workPackage integrate` records who made it, the same
+maker, and warns, naming the cut and its architect, when that is not the architect; integrating
+ends the freeze for good.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
@@ -57,7 +53,7 @@ are never leakage, though a command, code span or flag holding a subject's word 
 `workPackage` slices a cut into work packages: it records each package's outputs, concepts and
 dependencies in an append-only log per cut under the repository's git common directory, computes the
 levels of their dependency graph with `@dagrejs/graphlib`, hands out a whole level at a time, commits
-a builder's paths only within its package's outputs, counts the cut's rounds, whole-check runs and
+a builder's paths, warning of any outside its package's outputs, counts the cut's rounds, whole-check runs and
 agent runs, and records those figures in the concept journal as an `efficiency` entry, which
 `concepts state` reads back. It explains itself as `work package`.
 
@@ -68,7 +64,7 @@ explanation, so a consumer reads which verbs read and which append as code.
 
 | subpath            | what it carries                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`                | the example substrate and the offline proof, and the concept journal's `JOURNAL` and the ledger API                                                                                                                                                                                                                                                                                                                                                       |
+| `.`                | the example substrate, and the concept journal's `JOURNAL` and the ledger API                                                                                                                                                                                                                                                                                                                                                                             |
 | `./capability`     | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                                                                                                                                                                                                                                                                                                                         |
 | `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                                                                                                                                                               |
 | `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -152,55 +148,3 @@ Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cr
 template-derived from it and moves without being edited. The one
 irreducible second copy is [`cratylus`](../cli/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.
-
-## Offline proof
-
-A behavioral check is proven before it is frozen, and proof never runs live work: `proveOffline`
-only calls the check's `judge` over recordings already made. A `BehavioralCheck` names its example's
-words, its assertions with the phrases of the example each binds, and any host setting the judge
-reads (`host`, each with the example's words that name it). The check is `proven`, and may be
-frozen, only when the proof finds nothing:
-
-- at least two golden recordings that differ (`goldens-not-varied`; with none, each assertion is
-  also `never-seen-passing`), each getting every assertion true (`golden-rejected`);
-- every negative fails exactly the one assertion it `breaks` (`negative-accepted`,
-  `negative-breaks-other`), and every assertion is failed by some negative that breaks it
-  (`never-seen-failing`: an assertion never seen to fail is not trusted);
-- the judge returns verdicts only for the check's assertions (`undeclared`);
-- every assertion binds words its example names (`unbound`), and every bound phrase occurs in the
-  example, compared case-, whitespace-, punctuation- and quote-insensitively (`binds-unfixed`);
-- an assertion binding `never` is a `never` assertion, and a `never` assertion binds a never-phrase
-  (never, no, not, …) (`never-mismatch`);
-- the judge reads nothing from the operator's host that the example does not name (`host-read`).
-  A declared read is excused only when one of its bound phrases occurs in the example and names
-  it: `env:NAME` by `NAME`, `file:PATH` by the path or its final segment, `process:FILE` likewise,
-  `home` by "home", `clock` by a date or time word (date, time, today, now, clock, day),
-  `timezone` by "time zone", `cwd` by "working directory", any other read by its name.
-
-While a judge runs, its reads of the host are recorded, through ESM named imports as well as
-namespaces: environment variables (`env:NAME`; enumerating the environment is `env`), the home
-directory (`home`), files read through `node:fs` or `node:fs/promises` (`file:PATH`), child
-processes started through `node:child_process` (`process:FILE`), `node:os` facts (`user`,
-`hostname`, `tmpdir`, `networkInterfaces`, `cpus`, …), the working directory (`cwd`, also through
-`path.resolve` of a relative path), the current time (`clock`: `Date.now`, `new Date()`,
-`performance`, `process.hrtime`/`uptime`, `Intl.DateTimeFormat` formatting no date, `Temporal.Now`)
-and the host time zone (`timezone`: local-time `Date` methods, `toLocale*` without a `timeZone`,
-a formatter without one). Each read is charged to the proof whose judge made it, so concurrent
-proofs do not charge each other, and everything is restored once no proof is judging. A judge
-that throws on a recording is a finding against that recording.
-
-A check given as an already-loaded object is observed while judging only. Give it as a loader,
-`() => BehavioralCheck | Promise<BehavioralCheck>`, so what its module reads when loaded is seen
-too. Reads made by the module-loading machinery itself (Node's loaders, and vite's or vitest's
-module runner and transform reading sources) are not the check's and are not recorded; reads by
-the check's own code, or by a library it calls, are. A reference to `process.env`, to `Date` or
-to a patched function that was taken before the proof began judging is not observed; reach them
-through the global or the module while judging.
-
-`judgeBatch` judges a batch of runs against `{ atLeast, of }`: an ordinary assertion passes when it
-holds in at least `atLeast` of the `of` runs, a `never` assertion only when it holds in every run.
-
-An example's `behavioral` check (`ExampleCheck`) carries the check, its recordings, a threshold
-and a runner. The architect's `confirm` and `refreeze` freeze it only when offline proof over
-its recordings succeeds, never running the runner, and otherwise refuse with the findings;
-`checkExample` runs the runner `of` times and passes when `judgeBatch` passes.

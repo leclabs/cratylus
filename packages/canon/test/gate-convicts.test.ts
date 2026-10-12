@@ -122,8 +122,11 @@ const TEST_ROOTS: Readonly<Record<string, string>> = {
  * green when the corpus is clean, so it owes a convicting fixture.
  * BEHAVIORAL — drives one unit with inputs it supplies itself. Its negative cases
  * ARE its fixtures; a separate convicting test would be ceremony.
+ * FROZEN — a cut's frozen checks, registered as their folder (a key ending in `/`
+ * classifies every test file under it): only the cut's architect changes them, so
+ * this gate classifies them and demands nothing of their bodies.
  */
-type Kind = 'GATE' | 'BEHAVIORAL';
+type Kind = 'GATE' | 'BEHAVIORAL' | 'FROZEN';
 
 const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── canon ────────────────────────────────────────────────────────────
@@ -180,15 +183,14 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/symbol-altitude.test.ts': 'GATE',
   'canon/symbol-probe-gate.test.ts': 'GATE',
   'canon/symbols.test.ts': 'GATE',
+  // The simplification cut's frozen checks (decisions 0142-0145), the whole folder.
+  'canon/simplification/': 'FROZEN',
 
   // ── forge ────────────────────────────────────────────────────────────
   // Drives the omp adapter with bindings and agents it supplies itself; its
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).
   'forge/adapters/omp.test.ts': 'BEHAVIORAL',
-  // Runs a real OMP agent with local model/stand-in peers, records calls, and
-  // asserts its behavior over repeated runs through runtime's example checker.
-  'forge/adapters/omp-scenario.test.ts': 'BEHAVIORAL',
   // drives `agentBody` over a small catalog and agents it supplies itself; its refused
   // vector (a text factor that is not a list of entries) is its own negative case.
   'forge/core/agent-body.test.ts': 'BEHAVIORAL',
@@ -276,12 +278,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/stories/E6/S7.opt-in-lossless.test.ts': 'BEHAVIORAL',
 
   // ── runtime ──────────────────────────────────────────────────────────
-  // Checks execution/output/agent/rubric examples plus held-out secrecy and
+  // Checks execution/output/rubric examples plus held-out secrecy and
   // capability-protected red-first freeze behavior using fixtures it supplies.
   'runtime/example-substrate.test.ts': 'BEHAVIORAL',
-  // proves behavioral checks and judges batches over checks and recordings it supplies;
-  // its rejected goldens, accepted negatives and host reads ARE its fixtures.
-  'runtime/check-quality/offline-proof.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
   // drives `dispatchConcepts` over scratch git repositories it builds itself; its
   // refusals (a flag given twice, a journal entry that is not one, a directory
@@ -301,11 +300,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // runs the pure ledger fold over entries it builds itself: statuses, approval by two
   // distinct assayers, failing and disputed packages, phase, ready, figures, report.
   'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
-  // runs the ledger store, lifecycle, open and completion check in throwaway git repos;
-  // its refused repeated transitions and warnings ARE its fixtures.
+  // runs the ledger store, lifecycle, open, integrate and completion check in
+  // throwaway git repos; its refused repeated transitions and integration by a
+  // non-architect, and its warnings, ARE its fixtures.
   'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
-  // proves checks it supplies, with host reads it makes itself; polices no live artifact.
-  'runtime/offline-proof.test.ts': 'BEHAVIORAL',
   // runs the pure context overview over designs, decisions and cuts it builds itself:
   // whole before parts, named cycles, and the account told in that order.
   'runtime/overview/overview.test.ts': 'BEHAVIORAL',
@@ -327,7 +325,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/verb-descriptions.test.ts': 'GATE',
   // drives `dispatchWorkPackage` over scratch git repositories it builds itself;
   // its refusals (an overlapping output, an unowned need, a commit git refuses)
-  // ARE its fixtures.
+  // and its warning (a commit outside the package's outputs) ARE its fixtures.
   'runtime/work-package.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────
@@ -371,6 +369,17 @@ function testFiles(): Map<string, string> {
   return found;
 }
 
+/** A test file's kind: its own entry, else the entry of the registered folder
+ *  holding it. */
+function kindOf(file: string): Kind | undefined {
+  return (
+    REGISTRY[file] ??
+    Object.entries(REGISTRY).find(
+      ([key]) => key.endsWith('/') && file.startsWith(key),
+    )?.[1]
+  );
+}
+
 describe('META-GATE — a gate without a convicting fixture is indistinguishable from a dark one', () => {
   it('reaches every policed test dir — a root that scanned empty is a DARK scan, not a clean one', () => {
     // Without this, a mistyped or moved root path would silently police nothing
@@ -385,7 +394,7 @@ describe('META-GATE — a gate without a convicting fixture is indistinguishable
 
   it('every test file is classified — a new one cannot slip in unclassified', () => {
     const unclassified = [...testFiles().keys()].filter(
-      (f) => REGISTRY[f] === undefined,
+      (f) => kindOf(f) === undefined,
     );
     expect(
       unclassified,
@@ -393,9 +402,13 @@ describe('META-GATE — a gate without a convicting fixture is indistinguishable
     ).toEqual([]);
   });
 
-  it('the registry names no file that no longer exists (shrink-only)', () => {
-    const present = testFiles();
-    const stale = Object.keys(REGISTRY).filter((f) => !present.has(f));
+  it('the registry names no file that no longer exists, nor a folder holding none (shrink-only)', () => {
+    const present = [...testFiles().keys()];
+    const stale = Object.keys(REGISTRY).filter((key) =>
+      key.endsWith('/')
+        ? !present.some((f) => f.startsWith(key))
+        : !present.includes(key),
+    );
     expect(stale, `remove from REGISTRY: ${stale.join(', ')}`).toEqual([]);
   });
 

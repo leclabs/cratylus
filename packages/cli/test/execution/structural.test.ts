@@ -9,7 +9,6 @@ import {
   type ExecutionFixture,
   type History,
   type Inventory,
-  type Levels,
   type Submission,
   command,
   cut,
@@ -19,7 +18,6 @@ import {
   git,
   harnessEvent,
   levelNames,
-  log,
   refuse,
   run,
   submit,
@@ -127,10 +125,10 @@ describe('execution: work packages and counts', () => {
     ).toBe('reservations');
   });
 
-  it('Example 3 — overlapping ownership is refused with the output and both claimants', () => {
+  it('Example 3 — overlapping ownership is recorded with a warning naming the output and both claimants', () => {
     single();
     submit(f, 'owner', ['delivery'], ['shared.txt']);
-    const error = refuse(
+    const answer = command<{ package: { name: string }; warnings: string[] }>(
       f,
       'submit',
       'claimant',
@@ -139,8 +137,9 @@ describe('execution: work packages and counts', () => {
       '--output',
       'shared.txt',
     );
+    expect(answer.package.name).toBe('claimant');
     for (const name of ['shared.txt', 'owner', 'claimant'])
-      expect(error).toContain(name);
+      expect(answer.warnings.join('\n')).toContain(name);
   });
 
   it('Example 5 — a cycle names its packages instead of giving levels', () => {
@@ -257,7 +256,7 @@ describe('execution: work packages and counts', () => {
     expect(command<History>(f, 'history', 'reservations').commits).toEqual([]);
   });
 
-  it('Example 11 — a cross-package commit changes neither HEAD nor index nor package history', () => {
+  it('Example 11 — a cross-package commit is made with a warning naming the other package’s file', () => {
     readyPair();
     write(f, 'windows/window.txt', 'accepted\n');
     command(
@@ -271,34 +270,26 @@ describe('execution: work packages and counts', () => {
     );
     write(f, 'windows/window.txt', 'uncommitted change\n');
     write(f, 'reservations/reservation.txt', 'other builder\n');
-    git(f.root, 'add', '--', 'reservations/reservation.txt');
-    const before = {
-      head: git(f.root, 'rev-parse', 'HEAD'),
-      index: git(f.root, 'ls-files', '--stage', '-z'),
-      history: command<History>(f, 'history', 'windows'),
-      otherHistory: command<History>(f, 'history', 'reservations'),
-      log: log(f),
-    };
-    const error = refuse(
+    const before = git(f.root, 'rev-parse', 'HEAD');
+    const answer = command<{ warnings?: string[] }>(
       f,
       'commit',
       'windows',
       '--message',
-      'Must refuse',
+      'Across packages',
       '--path',
       'windows/window.txt',
       '--path',
       'reservations/reservation.txt',
     );
-    expect(error).toContain('reservations/reservation.txt');
-    expect(error).toContain('reservations');
-    expect(git(f.root, 'rev-parse', 'HEAD')).toBe(before.head);
-    expect(git(f.root, 'ls-files', '--stage', '-z')).toBe(before.index);
-    expect(command<History>(f, 'history', 'windows')).toEqual(before.history);
-    expect(command<History>(f, 'history', 'reservations')).toEqual(
-      before.otherHistory,
+    expect(answer.warnings?.join('\n')).toContain(
+      "'reservations/reservation.txt' (an output of 'reservations')",
     );
-    expect(log(f)).toBe(before.log);
+    expect(git(f.root, 'rev-parse', 'HEAD')).not.toBe(before);
+    expect(
+      command<History>(f, 'history', 'windows').commits.map((c) => c.message),
+    ).toEqual(['Accepted window', 'Across packages']);
+    expect(command<History>(f, 'history', 'reservations').commits).toEqual([]);
   });
 
   it('Example 12 — fixes add no whole-check runs and each check closes its own round', () => {
