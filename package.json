@@ -34,7 +34,7 @@
     "changeset": "changeset",
     "version-packages": "changeset version && biome check --write . && prettier --write \"**/CHANGELOG.md\"",
     "release": "sh scripts/release.sh",
-    "prepare": "husky",
+    "prepare": "husky && (test ! -f .husky/_/pre-commit || (cp .husky/_/pre-commit .husky/_/reference-transaction && git config core.hooksPath \"$PWD/.husky/_\"))",
     "dev": "turbo run dev --parallel",
     "project": "pnpm canon:project:omp",
     "verify": "pnpm build && pnpm lint && pnpm project && pnpm test",

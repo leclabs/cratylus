@@ -1,0 +1,794 @@
+[
+  {
+    "example": 1,
+    "verb": "supersede",
+    "concept": "receipt",
+    "cut": "receipt-reissue",
+    "provenance": "Authored delivered-output control, not a captured capability run. Example 1 assumes the first cut integrated and the second remains frozen; example 2 assumes the architect correction succeeded.",
+    "golden": {
+      "code": 1,
+      "stdout": "",
+      "stderr": "concepts supersede: receipt is frozen by receipt-reissue; only architect may change it.\n",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      }
+    },
+    "negative": {
+      "code": 0,
+      "stdout": "{\"kind\": \"supersede\", \"context\": \"museum\", \"name\": \"receipt\"}",
+      "stderr": "",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "unauthorized.json": "{\"kind\": \"supersede\", \"context\": \"museum\", \"name\": \"receipt\"}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "Meaning bent to the build.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "unauthorized",
+              "at": "2026-10-11T00:01:00.000Z",
+              "kind": "supersede",
+              "reason": "Match the build.",
+              "supersedes": ["version-0"],
+              "wording": "Meaning bent to the build."
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "example": 1,
+    "verb": "retire",
+    "concept": "receipt",
+    "cut": "receipt-reissue",
+    "provenance": "Authored delivered-output control, not a captured capability run. Example 1 assumes the first cut integrated and the second remains frozen; example 2 assumes the architect correction succeeded.",
+    "golden": {
+      "code": 1,
+      "stdout": "",
+      "stderr": "concepts retire: receipt is frozen by receipt-reissue; only architect may change it.\n",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      }
+    },
+    "negative": {
+      "code": 0,
+      "stdout": "{\"kind\": \"retire\", \"context\": \"museum\", \"name\": \"receipt\"}",
+      "stderr": "",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "receipt",
+                  "wording": "A receipt confirms the museum accepted payment.",
+                  "builtFrom": [],
+                  "reason": "Agreed meaning."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"A receipt confirms the museum accepted payment.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "unauthorized.json": "{\"kind\": \"retire\", \"context\": \"museum\", \"name\": \"receipt\"}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "museum",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "museum",
+          "name": "receipt",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "A receipt confirms the museum accepted payment.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "unauthorized",
+              "at": "2026-10-11T00:01:00.000Z",
+              "kind": "retire",
+              "reason": "Match the build.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "example": 2,
+    "verb": "supersede",
+    "concept": "admission",
+    "cut": "admission",
+    "provenance": "Authored delivered-output control, not a captured capability run. Example 1 assumes the first cut integrated and the second remains frozen; example 2 assumes the architect correction succeeded.",
+    "golden": {
+      "code": 1,
+      "stdout": "",
+      "stderr": "concepts supersede: admission is frozen by admission; only architect may change it.\n",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      }
+    },
+    "negative": {
+      "code": 0,
+      "stdout": "{\"kind\": \"supersede\", \"context\": \"theatre\", \"name\": \"admission\"}",
+      "stderr": "",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}",
+          "unauthorized.json": "{\"kind\": \"supersede\", \"context\": \"theatre\", \"name\": \"admission\"}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Meaning bent to the build.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            },
+            {
+              "id": "unauthorized",
+              "at": "2026-10-11T00:01:00.000Z",
+              "kind": "supersede",
+              "reason": "Match the build.",
+              "supersedes": ["version-1"],
+              "wording": "Meaning bent to the build."
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "example": 2,
+    "verb": "retire",
+    "concept": "admission",
+    "cut": "admission",
+    "provenance": "Authored delivered-output control, not a captured capability run. Example 1 assumes the first cut integrated and the second remains frozen; example 2 assumes the architect correction succeeded.",
+    "golden": {
+      "code": 1,
+      "stdout": "",
+      "stderr": "concepts retire: admission is frozen by admission; only architect may change it.\n",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      }
+    },
+    "negative": {
+      "code": 0,
+      "stdout": "{\"kind\": \"retire\", \"context\": \"theatre\", \"name\": \"admission\"}",
+      "stderr": "",
+      "before": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [
+                {
+                  "name": "admission",
+                  "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+                  "builtFrom": [],
+                  "reason": "Architect correction."
+                }
+              ],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            }
+          ]
+        }
+      },
+      "after": {
+        "bytes": {
+          "version-0.json": "{\"id\": \"version-0\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"define\", \"wording\": \"Admission is permission to enter the theatre.\", \"builtFrom\": [], \"reason\": \"Agreed meaning.\", \"supersedes\": []}",
+          "version-1.json": "{\"id\": \"version-1\", \"at\": \"2026-10-11T00:00:00.000Z\", \"kind\": \"supersede\", \"wording\": \"Admission is permission to enter after ticket validation; a reservation is not admission.\", \"builtFrom\": [], \"reason\": \"Architect correction.\", \"supersedes\": [\"version-0\"]}",
+          "unauthorized.json": "{\"kind\": \"retire\", \"context\": \"theatre\", \"name\": \"admission\"}"
+        },
+        "design": {
+          "contexts": [
+            {
+              "name": "theatre",
+              "subject": "Domain fixture",
+              "relation": "",
+              "concepts": [],
+              "competing": [],
+              "retired": []
+            }
+          ]
+        },
+        "history": {
+          "context": "theatre",
+          "name": "admission",
+          "versions": [
+            {
+              "id": "version-0",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "define",
+              "wording": "Admission is permission to enter the theatre.",
+              "builtFrom": [],
+              "reason": "Agreed meaning.",
+              "supersedes": []
+            },
+            {
+              "id": "version-1",
+              "at": "2026-10-11T00:00:00.000Z",
+              "kind": "supersede",
+              "wording": "Admission is permission to enter after ticket validation; a reservation is not admission.",
+              "builtFrom": [],
+              "reason": "Architect correction.",
+              "supersedes": ["version-0"]
+            },
+            {
+              "id": "unauthorized",
+              "at": "2026-10-11T00:01:00.000Z",
+              "kind": "retire",
+              "reason": "Match the build.",
+              "supersedes": ["version-1"]
+            }
+          ]
+        }
+      }
+    }
+  }
+]

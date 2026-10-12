@@ -1,0 +1,20 @@
+{
+  "id": "01M4P72EM1X4WZV4P5AH4PSAD7",
+  "at": "2026-10-11T19:29:40.481Z",
+  "kind": "submit",
+  "transition": "submit:meaning-roles:01M4P72EM0Z36HVSK9TN9HPXKX",
+  "cut": "meaning-roles",
+  "workPackage": "freeze-record",
+  "outputs": [
+    "packages/runtime/",
+    ".changeset/meaning-roles-freeze-record.md"
+  ],
+  "concepts": [
+    "freeze",
+    "supersession",
+    "cut",
+    "architect"
+  ],
+  "dependsOn": [],
+  "needs": []
+}

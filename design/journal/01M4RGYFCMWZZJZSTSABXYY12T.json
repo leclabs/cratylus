@@ -1,0 +1,14 @@
+{
+  "id": "01M4RGYFCMWZZJZSTSABXYY12T",
+  "at": "2026-10-12T17:00:44.820Z",
+  "kind": "decide",
+  "decisionId": "0139",
+  "context": "workflow",
+  "title": "Cut 7, meaning roles, is accepted with its known limits",
+  "situation": "Five rounds and four judgments: the freeze of the target, the cut's per-context scope, supersession and the architect's part pass both assayers within the freeze's stated scope; the structural enforcement examples (agents 11, 25 to 27) pass. One assayer's last finding (0137: a definition of a frozen-named concept carried in by cherry-picking from an older checkout) is unrealized because the other-family models ran out of quota; 0136(2) records a second limit. The operator agreed, 2026-10-12, to merge what is of value and regroup from dev. The whole deterministic check is green except one test of omp's dispatch with a scripted model, which fails identically on dev against the host's current omp and is not this cut's.",
+  "decision": "Accepted. Known limits, recorded and owned by a later freeze-hardening cut with the ipseic round's identity: (1) 0137, a definition carried in by cherry-pick from a checkout older than the cut; (2) 0136(2), widening a package's outputs onto a helper a frozen check imports from outside its folder. The architect reply examples moved to reply discipline (0123) stay there.",
+  "consequences": "The cut is integrated into dev; its freeze ends with its integration entry.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "01M4PS4HGHRYP6MZ1XK1BS9FVF",
+  "at": "2026-10-12T00:45:23.345Z",
+  "kind": "freeze",
+  "transition": "freeze:meaning-roles:01M4PS4HGFTTM86843MT3HWDYH",
+  "cut": "meaning-roles",
+  "checks": [
+    "packages/cli/test/meaning-roles/freeze/",
+    "packages/cli/test/meaning-roles/architect/",
+    "design/judgment/workflow/meaning-roles/"
+  ]
+}

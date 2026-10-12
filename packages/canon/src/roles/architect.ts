@@ -1,7 +1,8 @@
 // The architect role: master design §3, the architect column, with the client's
 // principal architect restored (0070) and its communication ordered bottom line up
-// front (0078). Its elevation and stopping rule are values its behavioral examples
-// showed drifting, so a guard holds each, checking the act before it takes effect (0106).
+// front (0078, 0117). Its elevation and stopping rule are values its behavioral examples
+// showed drifting, so a guard holds each, checking the act before it takes effect (0106);
+// its replies are shown as written, so its own text alone holds their values (0116).
 
 import { type RoleCell, guarded } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';

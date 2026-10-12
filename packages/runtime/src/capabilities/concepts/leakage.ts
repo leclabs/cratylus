@@ -335,6 +335,36 @@ export interface VisibleExample {
   readonly text: string;
 }
 
+/** The numbered examples of an examples file's `text`, in order: a line
+ *  `N. ...` opens example N, a heading closes it. */
+export function examplesIn(
+  text: string,
+): { readonly number: number; readonly text: string }[] {
+  const examples: { number: number; text: string }[] = [];
+  let current: { number: number; lines: string[] } | undefined;
+  const close = () => {
+    if (current !== undefined)
+      examples.push({
+        number: current.number,
+        text: current.lines.join('\n').trim(),
+      });
+    current = undefined;
+  };
+  for (const line of text.split('\n')) {
+    const numbered = /^(\d+)\.\s(.*)$/.exec(line);
+    if (numbered !== null) {
+      close();
+      current = {
+        number: Number(numbered[1]),
+        lines: [numbered[2] as string],
+      };
+    } else if (line.startsWith('#')) close();
+    else current?.lines.push(line);
+  }
+  close();
+  return examples;
+}
+
 /** The numbered examples in `design/examples` of the repository at `top`, by
  *  file, then number. An example belongs to the context its file's
  *  `Context:` line names, else to the directory its file is in. */
@@ -349,36 +379,13 @@ export function visibleExamples(top: string): VisibleExample[] {
     return [];
   }
   return files.flatMap((file) => {
-    const lines = readFileSync(join(dir, file), 'utf8').split('\n');
-    const named = lines
+    const text = readFileSync(join(dir, file), 'utf8');
+    const named = text
+      .split('\n')
       .map((line) => /^Context:\s*([^.,;\n]+)/.exec(line)?.[1]?.trim())
       .find((name) => name !== undefined);
     const context = named ?? file.split(sep)[0] ?? '';
     const path = relative(top, join(dir, file)).split(sep).join('/');
-    const examples: VisibleExample[] = [];
-    let current: { number: number; lines: string[] } | undefined;
-    const close = () => {
-      if (current !== undefined)
-        examples.push({
-          file: path,
-          number: current.number,
-          context,
-          text: current.lines.join('\n').trim(),
-        });
-      current = undefined;
-    };
-    for (const line of lines) {
-      const numbered = /^(\d+)\.\s(.*)$/.exec(line);
-      if (numbered !== null) {
-        close();
-        current = {
-          number: Number(numbered[1]),
-          lines: [numbered[2] as string],
-        };
-      } else if (line.startsWith('#')) close();
-      else current?.lines.push(line);
-    }
-    close();
-    return examples;
+    return examplesIn(text).map((e) => ({ file: path, context, ...e }));
   });
 }

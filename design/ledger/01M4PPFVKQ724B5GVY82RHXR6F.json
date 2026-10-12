@@ -1,0 +1,16 @@
+{
+  "id": "01M4PPFVKQ724B5GVY82RHXR6F",
+  "at": "2026-10-11T23:59:08.407Z",
+  "kind": "commit",
+  "transition": "commit:meaning-roles:8c9a8934a2c1fd2770f7b11cc4407a7268856b63",
+  "cut": "meaning-roles",
+  "workPackage": "architect-text",
+  "commit": {
+    "sha": "8c9a8934a2c1fd2770f7b11cc4407a7268856b63",
+    "message": "fix(canon): architect dispatches a cut on its named branch once started; recommends release only",
+    "paths": [
+      "packages/canon/src/dimensions/role/architect.ts",
+      ".changeset/meaning-roles-architect-text.md"
+    ]
+  }
+}

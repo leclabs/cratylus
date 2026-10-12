@@ -1,0 +1,10 @@
+{
+  "id": "01M4Q2BD9ZBDA9FJMYDGYJJ36V",
+  "at": "2026-10-12T03:26:25.599Z",
+  "kind": "dispatched",
+  "transition": "toolu_01CYhh8oSph2c6wjKo5i3HqM/FreezeGateBuild/dispatched",
+  "cut": "meaning-roles",
+  "role": "builder",
+  "run": "toolu_01CYhh8oSph2c6wjKo5i3HqM/FreezeGateBuild",
+  "workPackage": "freeze-gate"
+}

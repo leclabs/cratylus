@@ -170,13 +170,13 @@ describe('the architect', () => {
     expect(prompt).toContain(
       'on a check ruling (whether a frozen check may change)',
     );
-    // 0090, 0101: only an open owned question is settled or recorded; applying the
-    // design is no new decision.
+    // 0090, 0101: only an open owned question is settled; a ruling applying the
+    // design is still recorded before it is reported (0116).
     expect(prompt).toContain(
       'Such a question is open only when the design records it as open, or the operator or a delegate raises it and the design does not already answer it.',
     );
     expect(prompt).toContain(
-      'applying the design to a report or a request is reporting that answer, never a new decision to take or record',
+      "the ruling that applies the design to it is still the agent's own decision, recorded before it is reported (0116)",
     );
     expect(prompt).toContain(
       'a call that takes or records a decision on a question the agent owns is never past the objective, whatever the conversation shows met and whatever the latest message asked',

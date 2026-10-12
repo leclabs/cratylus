@@ -29,12 +29,20 @@
 // quotation in code type or a flag that holds it. Every refusal is one line
 // opening with `concepts <verb>:`, thrown before anything is appended.
 //
+// THE FREEZE: `define`, `supersede` and `retire` of a concept that a cut opened
+// and not integrated names in its examples, in the same bounded context, are
+// refused unless the agent making the call (`../../acting-agent.ts`) is the
+// architect every such cut records for that context; while what is frozen
+// cannot be read, every one of them is refused. What is frozen is read from the
+// ledger and the record (`../work-package/frozen.ts`), never kept here.
+//
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
 // reach for it, whether it reads or appends, and each parameter it takes. Its
 // help prints the same declarations, and its calls are read against them.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { actingAgent } from '../../acting-agent.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import {
@@ -45,7 +53,11 @@ import {
   valueFlag,
 } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
-import { cutsInLedger } from '../work-package/index.js';
+import {
+  type FrozenCut,
+  cutsInLedger,
+  frozenCuts,
+} from '../work-package/index.js';
 import {
   type ClassifyEntry,
   type ContextEntry,
@@ -233,7 +245,7 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; refused, with nothing recorded, while a cut not yet integrated freezes the concept in its bounded context, unless the agent making the call is that cut’s architect',
     when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
     positional: concept(
       'The concept whose meaning changes, by its name in the bounded context',
@@ -252,7 +264,7 @@ export const VERBS = {
     concept: 'retirement',
     effect: 'appends',
     purpose:
-      'Record that a concept leaves the current design, with the reason: it is no longer live, and its history is kept',
+      'Record that a concept leaves the current design, with the reason: it is no longer live, and its history is kept; refused, with nothing recorded, while a cut not yet integrated freezes the concept in its bounded context, unless the agent making the call is that cut’s architect',
     when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
     positional: concept(
       'The concept that leaves the design, by its name in the bounded context',
@@ -427,6 +439,37 @@ function answerOf(
     return standing.is === 'competing'
       ? standing.current.map((v) => v.id)
       : [standing.current.id];
+  };
+  /** Refuse a change to the concept `name` in `where` that a frozen cut
+   *  naming it forbids: a change by any agent but the architect each such
+   *  cut records for `where`; and any change while the freeze cannot be read. */
+  const unfrozen = (where: string, name: string): void => {
+    let cuts: readonly FrozenCut[];
+    try {
+      cuts = frozenCuts(journal.root).cuts;
+    } catch (error) {
+      const why = error instanceof Error ? error.message : String(error);
+      throw refuse(
+        `the concept '${name}' in '${where}' cannot be checked against the freeze, so the change is refused: what is frozen cannot be read: ${why.replace(/\s*\n\s*/g, ' ')}`,
+      );
+    }
+    const holding = cuts.filter((c) =>
+      c.concepts.some((k) => k.context === where && k.name === name),
+    );
+    const agent = actingAgent();
+    if (
+      holding.length === 0 ||
+      (agent !== undefined &&
+        holding.every((c) => c.architects[where] === agent))
+    )
+      return;
+    const by = holding.map((c) => {
+      const architect = c.architects[where];
+      return `'${c.cut}' (architect ${architect === undefined ? 'none' : `'${architect}'`})`;
+    });
+    throw refuse(
+      `the concept '${name}' in '${where}' is frozen by the ${holding.length === 1 ? 'cut' : 'cuts'} ${by.join(', ')}; only the architect may change it until the cut is integrated, and the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}`,
+    );
   };
   /** The entry of the one decision `ref` names; refuses none, or an id
    *  several decisions share. */
@@ -621,6 +664,7 @@ function answerOf(
     case 'supersede': {
       const name = read.named('concept');
       const where = context();
+      unfrozen(where, name);
       const wording = read.required('wording', 'the wording');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
@@ -650,6 +694,7 @@ function answerOf(
     case 'retire': {
       const name = read.named('concept');
       const where = context();
+      unfrozen(where, name);
       const reason = read.required('reason', 'the reason');
       const supersedes = superseding(where, name, false);
       return journal.append({

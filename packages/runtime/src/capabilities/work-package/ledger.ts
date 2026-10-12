@@ -18,11 +18,13 @@
 // common directory, so the same transition delivered twice at once is still
 // recorded once.
 //
-// Entry kinds: `cut` (the cut's record, by `open`); `submit`, `update`,
-// `commit`, `check` (the work package verbs); and the LIFECYCLE kinds
+// Entry kinds: `cut` (the cut's record, by `open`); `freeze` (checks frozen with
+// the cut) and `integrate` (the cut integrated, its freeze ended); `submit`,
+// `update`, `commit`, `check` (the work package verbs); and the LIFECYCLE kinds
 // `dispatched`, `returned`, `verdict`, `reported`, written only from the
 // harness's own agent events through `cratylus lifecycle`. Nothing derived
-// (status, phase, readiness, figures) is ever stored; `fold.ts` computes it.
+// (status, phase, readiness, figures, what is frozen) is ever stored; `fold.ts`
+// computes it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -91,6 +93,8 @@ export type LedgerDraft = {
       readonly architects: Readonly<Record<string, string>>;
     }
   | ({ readonly kind: 'submit'; readonly workPackage: string } & PackageFields)
+  | { readonly kind: 'freeze'; readonly checks: readonly string[] }
+  | { readonly kind: 'integrate'; readonly agent: string }
   | {
       readonly kind: 'update';
       readonly workPackage: string;
@@ -138,6 +142,8 @@ export type LedgerEntry = LedgerDraft & {
 /** The kinds the ledger records. */
 const KINDS: readonly string[] = [
   'cut',
+  'freeze',
+  'integrate',
   'submit',
   'update',
   'commit',

@@ -8,6 +8,7 @@ import {
   open,
   succeeds,
   task,
+  write,
 } from './fixture.js';
 
 let f: Fixture | undefined;
@@ -23,6 +24,17 @@ for (const toolName of ['task', 'dispatch_agents']) {
   it(`workflow/4, workflow/5 — ${toolName} captures harness dispatch, return and verdict without agent recording calls`, async () => {
     f = bindingFixture();
     open(f);
+    // 0128/0129: the builder's example is bound by a frozen check first.
+    write(f, 'checks/film.test.ts', '// Binds film-production/1.\n');
+    succeeds(
+      f,
+      'workPackage',
+      'freeze',
+      '--cut',
+      'film',
+      '--check',
+      'checks/film.test.ts',
+    );
     succeeds(
       f,
       'workPackage',

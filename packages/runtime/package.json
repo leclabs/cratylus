@@ -52,6 +52,7 @@
     "test": "vitest run",
     "immutability-gate": "tsx src/record-store/immutability-gate.ts",
     "completion-check": "tsx src/completion-check/index.ts",
+    "freeze-gate": "tsx src/freeze-gate/index.ts",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",
     "prepack": "pnpm run build"

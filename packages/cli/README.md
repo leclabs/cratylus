@@ -541,17 +541,34 @@ cratylus concepts classify [options] <id>
 
 ### `cratylus workPackage`
 
-The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `open`, `submit`, `update`, `commit`, `check` and `record`.
+The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check` and `record`.
 
 As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus workPackage --help` and `cratylus workPackage <verb> --help` print them, and `cratylus workPackage --explain` and `cratylus workPackage <verb> --explain` print the same explanation as JSON (its name `work package`). The entries below name only each verb's usage and the flags it takes.
 
-Every verb takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`.
+Every verb but `frozen` takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`. `frozen` takes no cut: it reads every cut opened and not yet integrated.
 
-The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted (the pre-commit immutability gate holds it as it holds `design/journal/`), so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
+The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted (the pre-commit immutability gate holds it as it holds `design/journal/`), so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
 
 No verb records a dispatch, a return, an assayer's verdict or the lead's report: those reach the ledger only from the harness's own agent events, through the harness binding. A work package is `submitted`, then `dispatched` and `returned` as the harness reports its builder, then `approved` once at least two distinct assayers' latest verdicts on it all pass, `failing` when every one has a finding, or `disputed` when they disagree; the cut is `open`, then `in flight` from its first dispatch, then `complete` once every work package is approved. A commit whose subject opens `feat(cut:<name>): ` while the ledger does not show that cut complete gets a warning from this repository's post-commit hook, and is never refused.
 
 The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
+
+A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `uses` (every file the frozen checks' relative imports reach, transitively, that is no output of the cut's work packages), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names, so a builder owning one is not dispatched.
+
+What is frozen is read from the **record** (decisions 0132, 0134): the examples (and the concepts they name), the checks and the files they use as the branch's recorded tip holds them (`HEAD` for a verb, the branch's tip before the update for the hook), never as a working copy has changed them; only a path the tip does not hold, or a branch with no commit yet, is read from the working copy. The ledger is read where cratylus keeps it, in the work tree the call or the update is made in (on a push, the repository's own). While a cut is frozen, `submit` and `update` refuse to widen a package's outputs onto a file its frozen checks use, naming it; a file a frozen check imports itself from outside the check's own folder is the work it checks, which a package may output.
+
+The freeze holds where a change would be recorded. The concept journal refuses `define`, `supersede` and `retire` of a concept a frozen cut's examples name before appending, unless `CRATYLUS_AGENT` names the cut's architect, and refuses each of them while what is frozen cannot be read. The project's history refuses at git's `reference-transaction` hook, which every route that moves a branch passes (`--no-verify` and a push into the repository included): the hidden, harness-facing `cratylus freeze-gate`, never a capability verb nor an agent tool, takes the hook's argument and its stdin, and in the `prepared` state refuses a branch update that changes or deletes an existing journal entry, whoever makes it, the architect included (the journal is append-only; an added entry passes), and one that brings in a change to a frozen example, held-out example text, frozen check or file a frozen check uses, or a journal entry superseding or retiring a frozen concept, unless the acting agent is that cut's architect. Its refusal names the branch, the cut, the architect and the paths (an entry by its id), and the branch stays where it was. When the ledger is present and what is frozen cannot be read (an unreadable entry, or a frozen cut's examples file missing), every branch update is refused, saying why; so is every update when the gate cannot read the repository. Other states, other refs, deletions and a repository with no ledger pass what is frozen silently.
+
+Wire it as the hook in the repository's common hooks folder, `$(git rev-parse --git-common-dir)/hooks/reference-transaction`, with `core.hooksPath` unset, so git runs it in every work tree of the repository and, on a push into it, in its git directory:
+
+```sh
+#!/bin/sh
+exec cratylus freeze-gate "$@"
+```
+
+A relative `core.hooksPath` reaches neither a linked work tree nor a push. This repository keeps its hooks in husky's folder and runs the gate from source through `.husky/reference-transaction`; `pnpm install` (its `prepare`) adds the `reference-transaction` entry husky's own hook list lacks and names that folder absolutely in `core.hooksPath`, so the gate reaches every work tree and every push as the common hooks folder does.
+
+The freeze holds against agents acting under the name the harness gives them, and wherever the project's own hooks run: an agent that sets `CRATYLUS_AGENT` to another's name by hand, or switches the hooks off, is outside it (decisions 0130, 0131).
 
 #### `cratylus workPackage inventory`
 
@@ -613,6 +630,12 @@ cratylus workPackage state [options]
 | --------------- |
 | `--cut <value>` |
 
+#### `cratylus workPackage frozen`
+
+```sh
+cratylus workPackage frozen [options]
+```
+
 #### `cratylus workPackage open`
 
 ```sh
@@ -624,6 +647,27 @@ cratylus workPackage open [options]
 | `--cut <value>`       |
 | `--branch <value>`    |
 | `--architect <value>` |
+
+#### `cratylus workPackage freeze`
+
+```sh
+cratylus workPackage freeze [options]
+```
+
+| Flag              |
+| ----------------- |
+| `--cut <value>`   |
+| `--check <value>` |
+
+#### `cratylus workPackage integrate`
+
+```sh
+cratylus workPackage integrate [options]
+```
+
+| Flag            |
+| --------------- |
+| `--cut <value>` |
 
 #### `cratylus workPackage submit`
 

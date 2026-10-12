@@ -1,0 +1,19 @@
+{
+  "id": "01M4Q1RFGA5V80615N1CWQQR1Z",
+  "at": "2026-10-12T03:16:05.258Z",
+  "kind": "commit",
+  "transition": "commit:meaning-roles:016104c620fdc1373250b60dba6f273a3b21b676",
+  "cut": "meaning-roles",
+  "workPackage": "freeze-record",
+  "commit": {
+    "sha": "016104c620fdc1373250b60dba6f273a3b21b676",
+    "message": "feat(runtime): wire freeze-gate as this repository's reference-transaction hook",
+    "paths": [
+      ".husky/reference-transaction",
+      "package.json",
+      "packages/runtime/",
+      "packages/cli/README.md",
+      ".changeset/meaning-roles-freeze-record.md"
+    ]
+  }
+}

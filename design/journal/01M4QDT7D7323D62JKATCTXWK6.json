@@ -1,0 +1,14 @@
+{
+  "id": "01M4QDT7D7323D62JKATCTXWK6",
+  "at": "2026-10-12T06:46:45.415Z",
+  "kind": "decide",
+  "decisionId": "0135",
+  "context": "workflow",
+  "title": "What tells the work a check checks from the files a check uses",
+  "situation": "0133 refuses widening a work package's outputs onto a file a frozen check uses while the cut is frozen. A file a check uses is one its relative imports reach that no work package outputs (0129). The work a check judges is also reached by its imports, and the cut's frozen checks require a package to take that work as its output after the check is frozen. So a widening onto something a check imports must sometimes be admitted, and nothing recorded says which file is the work. The build admits a widening onto any file a frozen check imports directly from outside its own folder. Cut 7's fourth judgment placed a check's own helper there, widened a package onto it, and the lead's always-true helper was then admitted.",
+  "decision": "Recommended: the work a check judges is named, not inferred. The cut's work packages name their outputs before the check that judges them is frozen, and from then a widening onto any file a frozen check uses is refused, so a check's helper can never become the work. The architect rebinds the visible freeze checks that submit the work after the freeze.",
+  "consequences": "Accepted: the inferred exception goes, the order of slicing and freezing is fixed, and the frozen checks that slice after freezing are rebound by the architect. Rejected: a rule that tells the work from a helper by its place stays, and a helper placed like the work can be taken out of the freeze.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

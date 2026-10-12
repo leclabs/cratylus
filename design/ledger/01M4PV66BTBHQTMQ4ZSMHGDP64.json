@@ -1,0 +1,91 @@
+{
+  "id": "01M4PV66BTBHQTMQ4ZSMHGDP64",
+  "at": "2026-10-12T01:21:14.618Z",
+  "kind": "verdict",
+  "transition": "toolu_01SNVa678fKHmkf6ihDMNsRk/AssayerA4/verdict",
+  "cut": "meaning-roles",
+  "assayer": "AssayerA4",
+  "run": "toolu_01SNVa678fKHmkf6ihDMNsRk/AssayerA4",
+  "verdicts": [
+    {
+      "workPackage": "freeze-record",
+      "concept": "freeze",
+      "passes": false,
+      "evidence": "OBSERVED: `pnpm -r build` is green. The F-timing case in findings.test.ts passes (2/2 with F-route). Visible checks: 71 passed, 4 skipped; the 4 skipped run only with EXECUTION_RED. Held-out checks: 20 passed, 4 skipped (EXECUTION_RED); held-out 1 and 2 pass for both supersede and retire. Runtime's own tests: 334/334. OBSERVED in frozen.ts:63-71: once frozenChecks has any entry, the code adds every context's `design/judgment/<ctx>/<cut>/` to the checks list. OBSERVED in a probe run on the cut's own fixture, outside the repo: the cut is opened and only `checks/renewal.test.ts` is frozen. The check-writer's write of a new `design/judgment/library/renewal/held2.test.ts` is then refused. A write to the visible check folder `checks/renewal/`, which is not frozen yet, is allowed. `workPackage frozen` lists the judgment folder although no held-out check there was ever seen to fail. OBSERVED in the ledger: this cut's one freeze event (2026-10-12T00:45:23Z) names `design/judgment/workflow/meaning-roles/` explicitly, so the `freeze` verb can already freeze held-out checks by name.",
+      "finding": "F-timing has moved, not been resolved. Freezing the held-out example text from the cut's opening keeps to the freeze concept: once approved, an example is changed only by the architect. Freezing the judgment folder with the first check of any kind does not keep to it. Held-out checks become frozen when some other check is seen to fail, whether or not they exist yet or have failed themselves. That breaks 'an example is frozen only once its check has been seen to fail'. Two cases follow. A held-out check bound after the first freeze is refused to its check-writer and left to the architect, who has no part in realizing checks. That covers a check-writer still working in parallel (this cut dispatched three at once) and the cold replacement of a burned held-out case under 0103. Visible checks freeze one at a time as each is named; held-out checks should freeze by the same act, once seen to fail. Failing case: open, freeze one visible check, then the check-writer writes a new file in the judgment folder. It must be allowed until that held-out check is itself frozen."
+    },
+    {
+      "workPackage": "freeze-record",
+      "concept": "supersession",
+      "passes": true,
+      "evidence": "OBSERVED: these visible checks pass: workflow/24, 25 (lead, builder, check-writer, illustrator, assayer, absent and empty identity), 26, 27, 30, 31-34, 36-38. Held-out 1 and 2 pass for both supersede and retire. OBSERVED with the built CLI in a temp repo: the lead's `concepts supersede` of a frozen concept is refused before anything is appended, naming the cut and its architect. The lead's duplicate `define` is refused. With the cut's examples file missing, the supersede is still refused: it fails closed."
+    },
+    {
+      "workPackage": "freeze-record",
+      "concept": "cut",
+      "passes": true,
+      "evidence": "OBSERVED: these visible checks pass: workflow/28 (another concept in the same context stays admissible), 29 (the same word in another context is not refused), 30, 37 and 38 (integrating one cut ends that cut's freeze only), and F4 (a lead cannot integrate). Held-out 1 passes (completing or integrating one cut does not release a concept another cut still freezes)."
+    },
+    {
+      "workPackage": "freeze-gate",
+      "concept": "freeze",
+      "passes": false,
+      "evidence": "OBSERVED: the F-route case passes. Forge's omp.test.ts: 80/80. Visible workflow/31, 32 (main and sub, every outsider, returned and judging), 33, 35 and 36 pass. OBSERVED in fixture probes, lead in a sub session after the checks were frozen:\n(a) A `write xd://ast_edit` whose `paths` is a string rather than an array is allowed. This held for the frozen example, a frozen check and `design/`; the array form is blocked. OBSERVED in this session: real omp accepts a string `paths` for xd://ast_edit and stages the rewrite (tried on a /tmp file, then rejected). INFERRED from omp's bundled code: the device runs through RFe → d.execute with no second extension hook, so the gate only ever sees the raw outer write.\n(b) Shell calls that name a folder holding a frozen file, or a glob matching one, are allowed. Examples: `sed -i … design/examples/library/*.md`, `rm -rf design/examples/library`, `rm -rf checks`, `git checkout HEAD~1 -- design/`, `find design -name '*.md' -exec sed -i …`, and `cd design/examples/library && sed -i … renewal.md`. Naming the path directly, a file inside a frozen folder, or using the bash `cwd` parameter is blocked.\n(c) `mv design/examples/library /tmp/elsewhere` is allowed. Once it runs, `workPackage frozen` errors ('has no visible examples'), the gate fails open, and the lead's writes to the frozen check and to the held-out check are both allowed.",
+      "finding": "F-route holds for the cases bound but not by every route omp offers, so workflow/31-33 and 36 ('each attempt is refused before anything is changed') do not hold. (a) is the structural-edit device route itself, in an argument form omp accepts. (b) is the same kind of defect in the shell route. The lead's own reasoning for ast_edit, that a folder or glob names a file as surely as its path, was not applied to shell programs; under sweep-on-find it belongs to this round. (c) escalates (b): one allowed shell move disables the gate for every path until the examples are restored. Failing cases: (a) the device write with `paths` as a string naming a frozen example; (b) `sed -i` over a shell glob matching a frozen example, and `rm -rf` of the folder holding it; (c) moving the example folder by shell, then writing a frozen check."
+    },
+    {
+      "workPackage": "freeze-gate",
+      "concept": "supersession",
+      "passes": true,
+      "evidence": "OBSERVED: these visible checks pass: F1/F6 (the acting agent, lead or architect, main or sub session, reaches the concept capability) and F7 (a shell call naming CRATYLUS_AGENT, to pose as the architect, is refused). INFERRED: journal event files written directly under design/journal/ are not gated (see hardening notes)."
+    },
+    {
+      "workPackage": "freeze-gate",
+      "concept": "architect",
+      "passes": true,
+      "evidence": "OBSERVED: these visible checks pass: workflow/35 (main and sub: only the architect may correct each example and each check, and the permission does not pass to the assayer or check-writer), workflow/34, and the F-route case's architect edits (ast_edit, lsp rename and rename_file are allowed for the architect)."
+    },
+    {
+      "workPackage": "freeze-gate",
+      "concept": "cut",
+      "passes": true,
+      "evidence": "OBSERVED: refusals name the cut and its architect (assertGate). In a probe, an ast_edit of an unfrozen file only is allowed. Gating is per cut, against `workPackage frozen`."
+    },
+    {
+      "workPackage": "architect-text",
+      "concept": "profile",
+      "passes": true,
+      "evidence": "agents/25. OBSERVED: the visible check passes. OBSERVED by installing the built CLI into a temp home and reading the delivered architect.md: decisive is (fixed); ordering is bottom-line-up-front (fixed) and includes 'never a menu in place of a recommendation'; decisive includes 'never hands a held conclusion, or a decision it owns, back as a question'; the role includes 'each confirmation and each ruling … is a decision it records before reporting it'. The installed extensions register no 'bottom-line', 'hand-back' or 'unrecorded' guard and no turn-end reply judge. Their tool_call hooks run before an act takes effect, as 0106(1) requires."
+    },
+    {
+      "workPackage": "architect-text",
+      "concept": "drift",
+      "passes": true,
+      "evidence": "agents/11, 26, 27. OBSERVED: the visible checks pass. agents/11: the profile states no hand-back, the agents/13 scenario keeps its never-clause, and neither an added prose reminder nor a correction passes assess. agents/26: the first, shown reply stays in the delivered evidence, the never-assertion holds in 4 of 5 runs so the batch fails, and held drift is 0. agents/27: the pre-act refusal is reported as held drift (descend, 4 of 4), neither as an effective change nor as delivered."
+    },
+    {
+      "workPackage": "architect-text",
+      "concept": "enforcement-level",
+      "passes": true,
+      "evidence": "agents/25, 26, 27. OBSERVED: as above. No guard judging replies is delivered. A reply shown and later refused counts as delivered. Only an attempt refused before it takes effect counts as held drift. Canon's own tests: 194/194."
+    }
+  ],
+  "hardeningNotes": [
+    "OVERALL VERDICT: reject. freeze-record fails on freeze: F-timing has moved, not been resolved. freeze-gate fails on freeze: F-route does not hold for a string `paths` that omp accepts, nor for shell globs and folders, which can also turn the gate off. architect-text passes against agents/11 and 25-27.",
+    "EXAMPLES NO LONGER EXPRESSING THEIR CONCEPT: none. agents/11 still expresses drift: its behavioral examples are kept on parked/reply-discipline and the agents/13 scenario is still in scenarios.json. If 0124 is accepted, its premise and agents/25's, that the text states the value and no guard holds it, should be revisited there.",
+    "MEANING QUESTION: under the freeze, who writes a burned held-out case's cold replacement (0103 says the illustrator) and its check (the check-writer)? The held-out text, and in this realization the judgment folder, are frozen to everyone but the architect until integration.",
+    "MEANING QUESTION: supersession says a concept 'or a bounded context's description … while a cut realizing it is frozen [changes] only by the architect'. Does that cover the description of a context a frozen cut lies in? OBSERVED: the delivered journal lets the lead supersede that description during the freeze; the freeze concept lists only examples, checks and concepts.",
+    "The gate fails open when `workPackage frozen` cannot be read. Inside a repository that has a ledger, any act that breaks the reading (finding (c)) turns the whole freeze off. Failing closed there would remove the escalation.",
+    "lsp `rename` and `rename_file` from an unfrozen file rewrite references in other files, frozen checks included (INFERRED from LSP semantics). The gate reads only `file` and `new_name`.",
+    "A write to `proc://<id>` sends a program to a running pty shell, and the gate never reads it. Contrived evasion.",
+    "Paths built from parts in eval or bash (`'design/examples/library/' + 'renewal.md'`) pass the gate (OBSERVED). Contrived.",
+    "ast_edit `paths` entries given as `file://` URLs pass the gate (OBSERVED). Whether omp accepts them is not verified.",
+    "Formatters run with --write, and `git stash`/`reset`/`checkout <branch>`, can change frozen files without naming them. These changes are incidental, not attempts.",
+    "Journal storage files under design/journal/ are not gated. A non-architect's direct `write` of a supersede event file would bypass the capability's refusal. Contrived.",
+    "Concepts named only by held-out examples are not frozen: frozen.ts takes concepts from the visible examples only.",
+    "Freezing checks depends on the lead calling `freeze`. OBSERVED in the ledger: no check of this cut was frozen until 2026-10-12T00:45:23Z, after the first judgment, so the build ran with its checks unfrozen. Nothing refuses a builder's dispatch while a cut has no frozen check, and under this realization the judgment folder stays open until then.",
+    "The visible F-timing case binds only 'frozen at the first freeze', not 'a held-out check frozen only once it has been seen red', which its title claims. The F-route case binds `paths` arrays and direct shell naming only.",
+    "findings-seen-red.md records that the lead itself completed the failing cases (folder, glob and main-session routes). Writing checks is the check-writer's role.",
+    "Stale file headers: both examples files say 'Decisions in force: 0116 and 0117', though 0116 was superseded by 0123. The agents preamble still describes behavioral reply cases that have left the cut. The held-out header cites 0116."
+  ]
+}

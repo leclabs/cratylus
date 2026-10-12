@@ -5,12 +5,14 @@
 // Zero `@cratylus/*` deps.
 //
 // THE LEDGER API, for a harness binding (the omp extension's builder dispatch
-// check) and for another package (forge): the ledger fold, readiness, served
-// concepts and owned examples of a cut (`cutView`), every recorded cut with its
-// phase (`cutsInLedger`), the pure fold and reading, and the lifecycle append
+// check and freeze gate) and for another package (forge): the ledger fold,
+// readiness, served concepts and owned examples of a cut (`cutView`), every
+// recorded cut with its phase (`cutsInLedger`), every frozen cut with what it
+// freezes (`frozenCuts`), the pure fold and reading, and the lifecycle append
 // (`appendLifecycle`). The same facts are reached out of process through the
-// CLI: `cratylus workPackage state|inventory --cut <name>` and
-// `cratylus lifecycle '<event-json>'`.
+// CLI: `cratylus workPackage state|inventory --cut <name>`, `cratylus
+// workPackage frozen` and `cratylus lifecycle '<event-json>'`. The acting
+// agent a capability call is made by is named in `ACTING_AGENT_ENV`.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export * from './example-substrate.js';
@@ -21,6 +23,7 @@ export { JOURNAL } from './capabilities/concepts/dispatch.js';
 // artifacts it projects, so the version tool is offered whatever command they reach.
 export { VERSION_SKEW } from './capabilities/version-skew/index.js';
 export { explain } from './explanation.js';
+export { ACTING_AGENT_ENV, actingAgent } from './acting-agent.js';
 export {
   type CommitRecord,
   type ConceptVerdict,
@@ -33,6 +36,8 @@ export {
   type CutState,
   type CutView,
   type Figures,
+  type FrozenCut,
+  JUDGMENT_DIR,
   LEDGER_DIR,
   LIFECYCLE_KINDS,
   type LedgerDraft,
@@ -45,6 +50,7 @@ export {
   cutView,
   cutsInLedger,
   foldCut,
+  frozenCuts,
   readCut,
 } from './capabilities/work-package/index.js';
 export {
@@ -53,3 +59,4 @@ export {
   lifecycleEvent,
 } from './lifecycle/index.js';
 export { WATCHED, completionCheck } from './completion-check/index.js';
+export { freezeGate } from './freeze-gate/index.js';

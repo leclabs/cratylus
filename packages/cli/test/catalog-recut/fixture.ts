@@ -16,8 +16,10 @@ import * as canonExports from '@cratylus/canon';
 import { expect, inject } from 'vitest';
 import type { ExpectedEntry, Vector } from './master.js';
 import {
+  Meaning,
   agentFactors,
   agentNames,
+  anchorOf,
   camel,
   deliverableSections,
   factors,
@@ -259,7 +261,10 @@ export function expectProjection(
   expect(declaration.front.description).toBe(description);
   if (mark) expect(declaration.front.mark).toBe(mark);
   else expect(declaration.front).not.toHaveProperty('mark');
-  const lines = [`# ${mark ? `${mark} ` : ''}${name}`, description];
+  const lines: (string | Meaning)[] = [
+    `# ${mark ? `${mark} ` : ''}${name}`,
+    description,
+  ];
   let group = '';
   for (const factor of agentFactors) {
     const meta = factors[factor];
@@ -272,7 +277,7 @@ export function expectProjection(
     const entries = requireDefined(vector[camel(factor)], `${name}.${factor}`);
     if (entries.length === 0) lines.push('- (none)');
     for (const entry of entries) {
-      const [anchor, gloss] = entry.value.split(' ≜ ');
+      const anchor = anchorOf(entry.value);
       const slotMeta =
         'slots' in meta
           ? meta.slots.find((slot) => slot.name === entry.slot)
@@ -282,15 +287,18 @@ export function expectProjection(
       const slot = entry.slot
         ? `${entry.slot}${slotGloss ? ` (${slotGloss})` : ''}: `
         : '';
+      const prefix = `- ${slot}**${anchor}**${entry.note ? ` (${entry.note})` : ''} — `;
+      const suffix = entry.level === 'fixed' ? ' (fixed)' : '';
       lines.push(
-        `- ${slot}**${anchor}**${entry.note ? ` (${entry.note})` : ''} — ${gloss}${entry.level === 'fixed' ? ' (fixed)' : ''}`,
+        entry.value instanceof Meaning
+          ? entry.value.framed(prefix, suffix)
+          : `${prefix}${entry.value.split(' ≜ ')[1]}${suffix}`,
       );
     }
   }
-  const deliverable = requireDefined(
-    vector.deliverable?.[0],
-    `${name}.deliverable`,
-  ).value.split(' ≜ ')[0];
+  const deliverable = anchorOf(
+    requireDefined(vector.deliverable?.[0], `${name}.deliverable`).value,
+  );
   lines.push(
     ...requireDefined(
       deliverableSections[

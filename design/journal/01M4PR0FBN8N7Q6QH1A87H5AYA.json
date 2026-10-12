@@ -1,0 +1,18 @@
+{
+  "id": "01M4PR0FBN8N7Q6QH1A87H5AYA",
+  "at": "2026-10-12T00:25:41.493Z",
+  "kind": "efficiency",
+  "context": "agents",
+  "cut": "meaning-roles",
+  "agentRuns": {
+    "total": 12,
+    "byRole": {
+      "check-writer": 4,
+      "builder": 7,
+      "assayer": 1
+    }
+  },
+  "rounds": 3,
+  "wholeCheckRuns": 3,
+  "tokens": null
+}

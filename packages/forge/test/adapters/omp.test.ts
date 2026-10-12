@@ -547,9 +547,10 @@ describe('omp capability interface', () => {
 
   /** The emitted module's factory, written into an installation projected by
    *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
-   *  with `explanation` under that capability's own name (`<name> <capability>`), and
-   *  any other call with its argv as JSON (or, for a verb named `refuse`, a refusal
-   *  on stderr). */
+   *  with `explanation` under that capability's own name (`<name> <capability>`),
+   *  each `<capability> <verb>` the JSON file `STAND_IN_ANSWERS` names, when it names
+   *  one, with its answer there, and any other call with its argv, directory and
+   *  acting agent as JSON (or, for a verb named `refuse`, a refusal on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -565,10 +566,12 @@ describe('omp capability interface', () => {
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
         "if (process.env.STAND_IN_CALLS) require('node:fs').appendFileSync(process.env.STAND_IN_CALLS, `${JSON.stringify(args)}\\n`);",
+        "const answers = process.env.STAND_IN_ANSWERS ? JSON.parse(require('node:fs').readFileSync(process.env.STAND_IN_ANSWERS, 'utf8')) : {};",
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
-        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
+        "else if (Object.hasOwn(answers, args.slice(0, 2).join(' '))) process.stdout.write(JSON.stringify(answers[args.slice(0, 2).join(' ')]));",
+        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd(), agent: process.env.CRATYLUS_AGENT }));',
         '',
       ].join('\n'),
       { mode: 0o755 },
@@ -829,13 +832,176 @@ describe('omp capability interface', () => {
       expect(await args('-')).toEqual(['concepts', 'put', '-']);
     });
 
-    it("fails a refused call with the command's own message", async () => {
+    it("fails a refused call as a tool error with the command's own message", async () => {
       const [tool] = await load(EXPLANATION);
-      await expect(
-        tool?.execute('id', { verb: 'refuse' }, undefined, undefined, {
+      expect(
+        await tool?.execute('id', { verb: 'refuse' }, undefined, undefined, {
           cwd: tmpdir(),
         }),
-      ).rejects.toThrow('cratylus concepts refuse: its own words');
+      ).toEqual({
+        content: [
+          { type: 'text', text: 'cratylus concepts refuse: its own words' },
+        ],
+        isError: true,
+      });
+    });
+
+    describe('names the acting agent on every capability call (F1)', () => {
+      afterEach(() => {
+        omp.agents = [];
+        Reflect.deleteProperty(process.env, 'CRATYLUS_AGENT');
+      });
+      const agentOf = async (
+        session: { flag?: string; sub?: string },
+        kind: 'main' | 'sub',
+      ) => {
+        const [tool] = await load(EXPLANATION, session);
+        const result = await tool?.execute(
+          'id',
+          { verb: 'look' },
+          undefined,
+          undefined,
+          {
+            cwd: tmpdir(),
+            agent: { kind, name: session.sub ?? 'main' },
+          } as { cwd: string },
+        );
+        return JSON.parse(result?.content[0]?.text ?? '').agent;
+      };
+
+      it('as the launched declaration, the dispatched agent, or no one', async () => {
+        omp.agents = [
+          {
+            name: 'lead',
+            description: 'd',
+            systemPrompt: 'The lead body.',
+            source: 'user',
+          },
+        ];
+        expect(await agentOf({ flag: 'lead' }, 'main')).toBe('lead');
+        expect(await agentOf({ sub: 'builder' }, 'sub')).toBe('builder');
+        expect(await agentOf({}, 'main')).toBeUndefined();
+      });
+
+      it('never one the environment carries in', async () => {
+        process.env.CRATYLUS_AGENT = 'architect';
+        expect(await agentOf({}, 'main')).toBeUndefined();
+        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
+      });
+    });
+
+    describe("names the session's agent on its shell calls, and refuses no call for what it would change (0128)", () => {
+      afterEach(() => {
+        omp.agents = [];
+      });
+      /** A session as `agent` (dispatched, or main launched with `--agent <flag>`): each
+       *  tool call fired through every handler in turn until one refuses, with the input
+       *  the handlers leave. */
+      async function session(agent: { sub?: string; flag?: string }) {
+        const factory = await emitted(EXPLANATION);
+        const handlers = new Map<
+          string,
+          ((event: unknown, ctx: unknown) => unknown)[]
+        >();
+        await factory({
+          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+          registerTool: () => {},
+          registerFlag: () => {},
+          getFlag: (name: string) =>
+            name === 'agent' ? agent.flag : undefined,
+          on: (event: string, fn: (event: unknown, ctx: unknown) => unknown) =>
+            handlers.set(event, [...(handlers.get(event) ?? []), fn]),
+          setModel: async () => {},
+          setThinkingLevel: () => {},
+        });
+        const ctx = {
+          cwd: tmpdir(),
+          agent:
+            agent.sub === undefined
+              ? { kind: 'main', name: 'main' }
+              : { kind: 'sub', name: agent.sub },
+          model: { provider: 'fixture', id: 'base' },
+          modelRegistry: {},
+          ui: { setStatus: () => {}, notify: () => {} },
+        };
+        for (const fn of handlers.get('session_start') ?? []) await fn({}, ctx);
+        return async (toolName: string, input: Record<string, unknown>) => {
+          const event = { type: 'tool_call', toolName, toolCallId: 'c', input };
+          for (const fn of handlers.get('tool_call') ?? []) {
+            const answer = (await fn(event, ctx)) as
+              | { block?: boolean; reason?: string }
+              | undefined;
+            if (answer?.block) return { answer, input: event.input };
+          }
+          return { answer: undefined, input: event.input };
+        };
+      }
+
+      /** The command the handlers leave, run by a POSIX shell whose environment names
+       *  someone else: what each of its commands sees as the acting agent. */
+      const seen = (command: unknown) =>
+        spawnSync('/bin/sh', ['-c', String(command)], {
+          env: { ...process.env, CRATYLUS_AGENT: 'someone else' },
+          encoding: 'utf8',
+        }).stdout;
+      const PROBE =
+        'printf "%s" "${CRATYLUS_AGENT-none}" && printf " %s" "${CRATYLUS_AGENT-none}"';
+
+      it('as the dispatched agent or the launched declaration, in the command itself', async () => {
+        omp.agents = [
+          {
+            name: 'architect',
+            description: 'd',
+            systemPrompt: 'The architect body.',
+            source: 'user',
+          },
+        ];
+        for (const [agent, named] of [
+          [{ sub: 'lead' }, 'lead'],
+          [{ sub: "o'brien" }, "o'brien"],
+          [{ flag: 'architect' }, 'architect'],
+        ] as const) {
+          const call = await session(agent);
+          const { answer, input } = await call('bash', {
+            command: PROBE,
+            cwd: 'src',
+          });
+          expect(answer).toBeUndefined();
+          expect(input).toEqual({ command: expect.any(String), cwd: 'src' });
+          expect(seen(input.command), named).toBe(`${named} ${named}`);
+        }
+      });
+
+      it('and no one for a session that is no agent', async () => {
+        process.env.CRATYLUS_AGENT = 'architect';
+        const call = await session({});
+        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
+        const { answer, input } = await call('bash', { command: PROBE });
+        expect(answer).toBeUndefined();
+        expect(seen(input.command)).toBe('none none');
+      });
+
+      it('refuses no call for the files it would change, by any route', async () => {
+        const call = await session({ sub: 'lead' });
+        for (const [tool, input] of [
+          [
+            'write',
+            { path: 'design/examples/library/renewal.md', content: 'x' },
+          ],
+          ['edit', { input: '[checks/renewal.test.ts#1A2B]\nPUT 1.=1:\n+x' }],
+          ['ast_edit', { paths: ['design/'] }],
+          ['bash', { command: 'rm -r checks/renewal' }],
+          [
+            'bash',
+            { command: 'CRATYLUS_AGENT=architect git commit -am renewal' },
+          ],
+          ['eval', { code: 'open("checks/renewal.test.ts", "w")' }],
+        ] as const) {
+          const { answer, input: left } = await call(tool, { ...input });
+          expect(answer, `${tool} ${JSON.stringify(input)}`).toBeUndefined();
+          if (tool !== 'bash') expect(left).toEqual(input);
+        }
+      });
     });
 
     describe('offers every verb of every capability to every agent (open reach, 0081)', () => {
@@ -1665,6 +1831,83 @@ describe('omp capability interface', () => {
         }
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
+      }
+    });
+
+    it("refuses a builder's dispatch while an example its package owns is unchecked by a frozen check (0128)", async () => {
+      omp.agents = [
+        declare(
+          {
+            name: 'builder',
+            description: 'Builds a work package.',
+            assignment: {
+              type: 'object',
+              properties: {
+                cut: { type: 'string', description: 'The cut.' },
+                workPackage: { type: 'string', description: 'The package.' },
+              },
+              required: ['cut', 'workPackage'],
+            },
+          },
+          'Build it.',
+        ),
+      ];
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-builder-cwd-'));
+      tmp.push(cwd);
+      const answers = join(cwd, 'answers.json');
+      const answer = (unchecked: string[]) =>
+        writeFileSync(
+          answers,
+          JSON.stringify({
+            'workPackage state': {
+              branch: 'feature/renewal',
+              workPackages: [{ name: 'renewal-work', status: 'pending' }],
+              ready: ['renewal-work'],
+            },
+            'workPackage inventory': {
+              unserved: [],
+              unowned: [],
+              examples: [
+                { ref: 'library/1', package: 'renewal-work' },
+                { ref: 'library/2', package: 'renewal-work' },
+                { ref: 'library/3', package: 'hours-work' },
+              ],
+            },
+            'workPackage frozen': {
+              cuts: [{ cut: 'renewal', unchecked }],
+            },
+          }),
+        );
+      process.env.STAND_IN_ANSWERS = answers;
+      try {
+        const dispatch = async (id: string) => {
+          const session = await started(undefined, cwd);
+          await session.fire('session_start');
+          return (await session.fire('tool_call', 'main', {
+            toolName: 'task',
+            toolCallId: id,
+            input: {
+              tasks: [
+                {
+                  agent: 'builder',
+                  task: '```assignment\n{"cut":"renewal","workPackage":"renewal-work"}\n```',
+                },
+              ],
+            },
+          })) as { block?: boolean; reason?: string } | undefined;
+        };
+        answer(['library/2', 'library/3']);
+        const refused = await dispatch('unchecked');
+        expect(refused?.block).toBe(true);
+        expect(refused?.reason).toContain(
+          'builder dispatch of cut renewal refused: work package renewal-work owns visible examples no frozen check names: library/2;',
+        );
+        expect(refused?.reason).not.toContain('library/3');
+        // Another package's unchecked example never holds this one.
+        answer(['library/3']);
+        expect((await dispatch('checked'))?.block).not.toBe(true);
+      } finally {
+        Reflect.deleteProperty(process.env, 'STAND_IN_ANSWERS');
       }
     });
 

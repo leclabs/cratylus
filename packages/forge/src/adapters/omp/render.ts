@@ -55,7 +55,7 @@
 // rather than the literal. `forge → runtime` is a permitted edge (ARCHITECTURE's
 // north star); spelling the name here instead would be a second home for it, which
 // `bin-name-single-home` catches and rightly refused.
-import { VERSION_SKEW, explain } from '@cratylus/runtime';
+import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
@@ -1548,8 +1548,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * assignment briefs a cut (`cut`, `concepts`, `examples`, `decisions`: a lead)
  * also needs the cut's record and its branch checked out; one that names a
  * `workPackage` (a builder) needs that package ready, every concept of the cut
- * served and every visible example owned (ruling 0083) — each answered by
- * `<bin> workPackage state|inventory`. An item whose agent declares an `output`
+ * served, every visible example owned (ruling 0083) and none it owns unchecked by a
+ * frozen check (0128) — each answered by `<bin> workPackage state|inventory|frozen`.
+ * An item whose agent declares an `output`
  * runs with `schemaMode: "strict"`, so a return omitting a required field does not
  * pass. A main session launched as an agent with an assignment schema checks the
  * launch prompt the same way: a misfit given on the command line ends startup, one
@@ -1564,6 +1565,24 @@ const SESSION_PLACEMENT: readonly string[] = [
  * launched as an agent, and a delegate whose declaration carries a typed assignment,
  * is refused that `eval` call ({@link EVAL_DISPATCH_REFUSAL}), with no judge; other
  * `eval` code, a plain main session and omp's own delegates are never refused it.
+ *
+ * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
+ * and lifecycle capture alike, names the agent making it in `CRATYLUS_AGENT`: the
+ * declaration a main session was launched as, the agent a dispatched session runs
+ * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
+ * runs with that agent named the same way: its command is led by a line exporting
+ * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a commit or journal append
+ * made from the architect's session carries the architect and a lead's the lead;
+ * in a session that is no agent the line unsets it, and an ambient value is dropped
+ * at load, so such a session names no one.
+ *
+ * THE FREEZE HOLDS AT THE RECORD (decisions 0128, 0129). No tool call is refused for
+ * the files it would change, by any route: the journal refuses before appending and
+ * the project's history at its reference-transaction hook (`<bin> freeze-gate`),
+ * each judging the agent the call names. What reaches the freeze here is dispatch:
+ * a builder is not dispatched while a visible example its work package owns is
+ * among the cut's `unchecked` (`<bin> workPackage frozen`), and the refusal names
+ * the package and those examples.
  *
  * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
  * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
@@ -1731,6 +1750,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
         `const INSTALLATION_ENV = ${JSON.stringify(INSTALLATION_ENV)};`,
+        '// Where every capability call names the agent making it.',
+        `const ACTING_AGENT = ${JSON.stringify(ACTING_AGENT_ENV)};`,
         '// The version tool as the build that projected this installation explains it: carried here, so',
         '// it is offered whatever command the capabilities reach, one that predates it included.',
         `const SKEW = ${JSON.stringify('versionSkew' satisfies Capability)};`,
@@ -1797,9 +1818,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return promise;',
         '}',
         "// The installed command's output; its own message, when it refuses. Every call names the",
-        '// installation this module was placed in, so the command can say which build projected it.',
-        'const run = (args: string[], cwd?: string, signal?: AbortSignal): Promise<string> =>',
-        '  execOf(COMMAND, args, cwd, signal, { ...process.env, [INSTALLATION_ENV]: INSTALLATION });',
+        '// installation this module was placed in, so the command can say which build projected it,',
+        '// and the agent making it, when one is known.',
+        'const run = (args: string[], cwd?: string, signal?: AbortSignal, agent?: string): Promise<string> =>',
+        '  execOf(COMMAND, args, cwd, signal, {',
+        '    ...process.env,',
+        '    [INSTALLATION_ENV]: INSTALLATION,',
+        '    ...(agent === undefined ? {} : { [ACTING_AGENT]: agent }),',
+        '  });',
         '',
         '// The capabilities this installation expects that the reached command does not provide,',
         '// each with its own refusal, as found at load.',
@@ -2069,18 +2095,25 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'interface CutInventory {',
         '  unserved: string[];',
         '  unowned: string[];',
+        '  examples: { ref: string; package?: string | null }[];',
         '}',
-        'const cutRead = async <T>(verb: string, cut: string, cwd: string): Promise<T> =>',
-        '  JSON.parse(await run(["workPackage", verb, "--cut", cut], cwd)) as T;',
+        '// A cut opened and not integrated, as `workPackage frozen` answers it: its visible examples',
+        '// no frozen check names.',
+        'interface FrozenCut {',
+        '  cut: string;',
+        '  unchecked: string[];',
+        '}',
+        'const cutRead = async <T>(verb: string, cut: string, cwd: string, agent: string | undefined): Promise<T> =>',
+        '  JSON.parse(await run(["workPackage", verb, "--cut", cut], cwd, undefined, agent)) as T;',
         'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
         '',
         "// A lead's dispatch opens the cut's work, so the cut must be recorded with its branch, and",
         '// that branch checked out.',
-        'async function leadRefusal(cut: string, cwd: string): Promise<string | undefined> {',
+        'async function leadRefusal(cut: string, cwd: string, agent: string | undefined): Promise<string | undefined> {',
         '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --architect <context>=<architect>`;',
         '  let state: CutState;',
         '  try {',
-        '    state = await cutRead<CutState>("state", cut, cwd);',
+        '    state = await cutRead<CutState>("state", cut, cwd, agent);',
         '  } catch (error) {',
         '    return `lead dispatch of cut ${cut} refused: ${messageOf(error)}; record the cut with its branch first (${open})`;',
         '  }',
@@ -2098,14 +2131,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         "// A builder's dispatch is the act (ruling 0083): its package must be ready, every concept",
-        '// of the cut served and every visible example owned.',
-        'async function builderRefusal(cut: string, packages: readonly string[], cwd: string): Promise<string | undefined> {',
+        '// of the cut served, every visible example owned, and none it owns unchecked by a frozen',
+        '// check (decision 0128).',
+        'async function builderRefusal(cut: string, packages: readonly string[], cwd: string, agent: string | undefined): Promise<string | undefined> {',
         '  let state: CutState;',
         '  let inventory: CutInventory;',
+        '  let frozen: FrozenCut[];',
         '  try {',
-        '    [state, inventory] = await Promise.all([',
-        '      cutRead<CutState>("state", cut, cwd),',
-        '      cutRead<CutInventory>("inventory", cut, cwd),',
+        '    [state, inventory, frozen] = await Promise.all([',
+        '      cutRead<CutState>("state", cut, cwd, agent),',
+        '      cutRead<CutInventory>("inventory", cut, cwd, agent),',
+        '      run(["workPackage", "frozen"], cwd, undefined, agent).then((text) => (JSON.parse(text) as { cuts: FrozenCut[] }).cuts),',
         '    ]);',
         '  } catch (error) {',
         '    return `builder dispatch of cut ${cut} refused: ${messageOf(error)}`;',
@@ -2115,11 +2151,15 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    reasons.push(`concepts no work package serves: ${inventory.unserved.join(", ")}`);',
         '  if (inventory.unowned.length > 0)',
         '    reasons.push(`visible examples no work package owns: ${inventory.unowned.join(", ")}`);',
+        '  const unchecked = new Set(frozen.find((c) => c.cut === cut)?.unchecked ?? []);',
         '  for (const name of packages) {',
         '    const known = state.workPackages.find((p) => p.name === name);',
         '    if (known === undefined) reasons.push(`${name} is no work package of the cut`);',
         '    else if (!state.ready.includes(name))',
         '      reasons.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once every package it depends on has returned and it is not yet dispatched, returned to build by a finding, or returned into a fix round by a failing whole check)`);',
+        '    const bare = inventory.examples.filter((e) => e.package === name && unchecked.has(e.ref)).map((e) => e.ref);',
+        '    if (bare.length > 0)',
+        '      reasons.push(`work package ${name} owns visible examples no frozen check names: ${bare.join(", ")}; freeze a check binding them, seen failing, first (${COMMAND} workPackage freeze --cut ${cut} --check <path>)`);',
         '  }',
         '  return reasons.length === 0 ? undefined : `builder dispatch of cut ${cut} refused: ${reasons.join("; ")}`;',
         '}',
@@ -2383,6 +2423,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         'export default async function (pi: ExtensionAPI) {',
+        '  // The acting agent is only what this module names on each call: an ambient one is dropped,',
+        '  // so no shell command inherits a name.',
+        '  delete process.env[ACTING_AGENT];',
         '  pi.registerFlag(AGENT_FLAG, {',
         '    description: "Start the session as the agent declaration omp discovers by this name",',
         '    type: "string",',
@@ -2408,6 +2451,29 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  let saying = "";',
         '  // Each appending verb of the capabilities offered as tools, as `<tool> <verb>`.',
         '  const appending = new Set<string>();',
+        '',
+        '  // The agent making a call: the declaration a main session was launched as, the agent a',
+        '  // dispatched session runs as; unknown otherwise.',
+        '  function actor(session: Session | undefined): string | undefined {',
+        '    const kind = session?.agent?.kind;',
+        '    const name = kind === "sub" ? session?.agent?.name : kind === "main" ? launched?.declaration.name : undefined;',
+        '    return name === "" ? undefined : name;',
+        '  }',
+        '',
+        "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call's command is led by a line naming the",
+        "  // session's agent in `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so what the command",
+        "  // records, a commit the project's reference-transaction hook judges or a journal append, is",
+        "  // that agent's own; in a session that is no agent the line unsets it, naming no one. No call",
+        '  // is refused for what it would change: the freeze holds at the record (decision 0128).',
+        '  pi.on("tool_call", (event, ctx) => {',
+        '    if (event.toolName !== "bash" || typeof event.input !== "object" || event.input === null) return undefined;',
+        '    const input = event.input as Record<string, unknown>;',
+        '    if (typeof input.command !== "string") return undefined;',
+        '    const agent = actor(ctx as unknown as Session);',
+        "    const named = agent === undefined ? `unset ${ACTING_AGENT}` : `export ${ACTING_AGENT}='${agent.replaceAll(\"'\", \"'\\\\''\")}'`;",
+        '    input.command = `${named}\\n${input.command}`;',
+        '    return undefined;',
+        '  });',
         '',
         '  // A launch ends: its prompt, its dispatch policy and every setting it holds go with it.',
         '  function end(): void {',
@@ -2665,25 +2731,27 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         '  // The harness event appended to the ledger of the repository holding `cwd`. A refusal of a',
         '  // transition already written is the same event delivered twice, and nothing more.',
-        '  async function capture(event: Record<string, unknown>, cwd: string, ctx?: Session): Promise<void> {',
+        '  async function capture(event: Record<string, unknown>, at: { cwd: string; agent?: string }, ctx?: Session): Promise<void> {',
         '    try {',
-        '      await run(["lifecycle", JSON.stringify(event)], cwd);',
+        '      await run(["lifecycle", JSON.stringify(event)], at.cwd, undefined, at.agent);',
         '    } catch (error) {',
         '      const message = messageOf(error);',
         '      if (!message.includes(String(event.transition))) ctx?.ui.notify(`${COMMAND} lifecycle: ${message}`, "warning");',
         '    }',
         '  }',
-        '  // Each item dispatched for a cut, by its task call and position: what its return records.',
+        '  // Each item dispatched for a cut, by its task call and position: what its return records,',
+        '  // and the agent that dispatched it, whose capture its return is.',
         '  interface Dispatch {',
         '    cut: string;',
         '    role: string;',
         '    run: string;',
         '    workPackage?: string;',
         '    cwd: string;',
+        '    agent?: string;',
         '  }',
         '  const dispatches = new Map<string, Dispatch>();',
         '  async function returned(at: Dispatch, assayer: string, deliverable: unknown, tokens: unknown, ctx?: Session): Promise<void> {',
-        '    const { cut, role, run: runId, workPackage, cwd } = at;',
+        '    const { cut, role, run: runId, workPackage } = at;',
         '    await capture(',
         '      {',
         '        kind: "returned",',
@@ -2694,11 +2762,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...(workPackage === undefined ? {} : { workPackage }),',
         '        ...(typeof tokens === "number" ? { tokens } : {}),',
         '      },',
-        '      cwd,',
+        '      at,',
         '      ctx,',
         '    );',
         '    const entry = deliverableEntry(deliverable, { cut, run: runId, assayer });',
-        '    if (entry !== undefined) await capture(entry, cwd, ctx);',
+        '    if (entry !== undefined) await capture(entry, at, ctx);',
         '  }',
         '',
         '  // Only what the operator sees counts toward a readback: the text of each reply, never its',
@@ -2802,11 +2870,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        builders.set(cut, [...(builders.get(cut) ?? []), assignment.workPackage]);',
         '    }',
         '    for (const cut of leads) {',
-        '      const reason = await leadRefusal(cut, session.cwd);',
+        '      const reason = await leadRefusal(cut, session.cwd, actor(session));',
         '      if (reason !== undefined) reasons.push(reason);',
         '    }',
         '    for (const [cut, packages] of builders) {',
-        '      const reason = await builderRefusal(cut, packages, session.cwd);',
+        '      const reason = await builderRefusal(cut, packages, session.cwd, actor(session));',
         '      if (reason !== undefined) reasons.push(reason);',
         '    }',
         '    if (reasons.length > 0) return { block: true, reason: reasons.join("\\n") };',
@@ -2814,7 +2882,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      const cut = h.assignment?.cut;',
         '      if (typeof cut !== "string") continue;',
         '      const workPackage = typeof h.assignment?.workPackage === "string" ? h.assignment.workPackage : undefined;',
-        '      const at: Dispatch = { cut, role: h.agent, run: `${event.toolCallId}/${h.id}`, workPackage, cwd: session.cwd };',
+        '      const at: Dispatch = { cut, role: h.agent, run: `${event.toolCallId}/${h.id}`, workPackage, cwd: session.cwd, agent: actor(session) };',
         '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
         '      await capture(',
         '        {',
@@ -2825,7 +2893,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '          run: at.run,',
         '          ...(workPackage === undefined ? {} : { workPackage }),',
         '        },',
-        '        session.cwd,',
+        '        at,',
         '        session,',
         '      );',
         '    }',
@@ -2892,14 +2960,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
         '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
         '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
-        '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: { cwd: string }) {',
+        '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: Session) {',
         '        // The version tool reports what each side holds of itself: the version this installation',
         '        // records, and the one the reached command answers now.',
-        '        const text =',
-        '          capability === SKEW',
-        '            ? JSON.stringify({ artifacts: projected(), command: await reached() }, null, 2)',
-        '            : await run(argv(capability, verbOf(args), args), ctx.cwd, signal);',
-        '        return { content: [{ type: "text" as const, text }] };',
+        '        if (capability === SKEW)',
+        '          return { content: [{ type: "text" as const, text: JSON.stringify({ artifacts: projected(), command: await reached() }, null, 2) }] };',
+        "        // A refusal is a tool error carrying the command's own message.",
+        '        try {',
+        '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal, actor(ctx));',
+        '          return { content: [{ type: "text" as const, text }] };',
+        '        } catch (error) {',
+        '          return { content: [{ type: "text" as const, text: messageOf(error) }], isError: true };',
+        '        }',
         '      },',
         '    });',
         '  }',

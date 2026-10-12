@@ -1,0 +1,17 @@
+{
+  "id": "01M4P6MSD0B2XS1GM8E9DT734R",
+  "at": "2026-10-11T19:22:12.768Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "drift",
+  "wording": "an agent's acts departing, over a session, from the stance and communication-style its profile states, recognised by its tells: asking what it could answer itself, handing back a decision it owns, holding open a decision it could take, offering a menu where it should recommend, transcribing where it should design, descending into work its stance keeps it above, prescribing to a delegate procedure it already knows where its assignment should carry only intent, concepts and acceptance, and following procedure past its objective; an agent checks its own acts against its tells every turn, its behavioral examples assert their absence, and a value those examples show drifting is held by a guard that checks the act before it takes effect where the value lives in an act, and by strengthening the agent's own text where it lives in a reply, which no guard can hold (0106).",
+  "builtFrom": [
+    "agent",
+    "profile",
+    "enforcement-level"
+  ],
+  "reason": "Cut 7's illustrator flagged it: the wording asked for a guard on any drifting value, replies included, which 0106 rules out.",
+  "supersedes": [
+    "01M4N1FPV6D84MC2ZSM2CANPJY"
+  ]
+}
