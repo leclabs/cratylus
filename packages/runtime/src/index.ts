@@ -59,3 +59,4 @@ export {
   lifecycleEvent,
 } from './lifecycle/index.js';
 export { WATCHED, completionCheck } from './completion-check/index.js';
+export { freezeGate } from './freeze-gate/index.js';

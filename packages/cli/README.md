@@ -553,6 +553,17 @@ No verb records a dispatch, a return, an assayer's verdict or the lead's report:
 
 The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. Before staging anything it refuses any path outside the package's outputs and any file the paths would commit outside them, such as another package's file under a directory path.
 
+A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `uses` (every file the frozen checks' relative imports reach, transitively, that is no output of the cut's work packages), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names, so a builder owning one is not dispatched.
+
+The freeze holds where a change would be recorded. The concept journal refuses `supersede` and `retire` of a concept a frozen cut realizes before appending, unless `CRATYLUS_AGENT` names the cut's architect. The project's history refuses at git's `reference-transaction` hook, which every route that moves a branch passes (`--no-verify` included): the hidden, harness-facing `cratylus freeze-gate`, never a capability verb nor an agent tool, takes the hook's argument and its stdin, and in the `prepared` state refuses a branch update that brings in a change to a frozen example, held-out example text, frozen check or file a frozen check uses, or a journal entry superseding or retiring a frozen concept, unless the acting agent is that cut's architect. Its refusal names the branch, the cut, the architect and the paths, and the branch stays where it was. When the ledger is present and what is frozen cannot be read (an unreadable entry, or a frozen cut's examples file missing), every branch update and every journal `supersede` and `retire` is refused, saying why. Other states, other refs, deletions and a repository with no ledger pass silently. Wire it as the hook with:
+
+```sh
+#!/bin/sh
+exec cratylus freeze-gate "$@"
+```
+
+This repository runs it from source through `.husky/reference-transaction`; `pnpm install` (its `prepare`) adds the `reference-transaction` entry husky's own hook list lacks.
+
 #### `cratylus workPackage inventory`
 
 ```sh

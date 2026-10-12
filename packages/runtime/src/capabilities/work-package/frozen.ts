@@ -1,21 +1,27 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // What is FROZEN: every cut opened and not integrated, and what it freezes,
-// computed from the ledger and the cut's visible examples on every request.
+// computed from the ledger and the working copy on every request.
 //
 // A cut is frozen from its `open` until its `integrate`. For each of its
 // contexts it freezes, from its `open`, its examples
 // `design/examples/<context>/<cut>.md` and its held-out example text
 // `design/judgment/<context>/<cut>.md`, and each concept its examples name, in
-// its own context. Its judgment folder `design/judgment/<context>/<cut>/`
-// holds its held-out checks, so it is frozen with its checks: listed among them
-// once the cut's checks are first frozen, and never before. Only the architect
-// the cut records for a context may change what the cut freezes there.
+// its own context. It freezes the checks its `freeze` acts name, a held-out
+// check among them only once a freeze act names it: its judgment folder is
+// never frozen by implication (decision 0125). It freezes the files its frozen
+// checks use (`uses.ts`). Only the architect the cut records for a context may
+// change what the cut freezes there.
+//
+// Beside what it freezes, the view says which of the cut's visible examples no
+// frozen check binds (`unchecked`): a builder is not dispatched while one it owns
+// is among them (decision 0128).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { EXAMPLES_DIR } from '../concepts/leakage.js';
 import { cutAt } from './cut.js';
 import { foldCut } from './fold.js';
 import type { LedgerEntry } from './ledger.js';
+import { unbound, usedBy } from './uses.js';
 
 /** Where the cuts' judgments are, relative to the top of the repository. */
 export const JUDGMENT_DIR = 'design/judgment';
@@ -28,9 +34,13 @@ export interface FrozenCut {
   readonly architects: Readonly<Record<string, string>>;
   /** For each context: its examples and its held-out example text. */
   readonly examples: readonly string[];
-  /** The checks frozen with it and, once any is, each context's judgment
-   *  folder, which holds its held-out checks. */
+  /** The checks its freeze acts name, held-out checks included. */
   readonly checks: readonly string[];
+  /** The files its frozen checks use: reached by their relative imports,
+   *  transitively, and no output of a work package of the cut. */
+  readonly uses: readonly string[];
+  /** Its visible examples, as `<context>/<number>`, that no frozen check names. */
+  readonly unchecked: readonly string[];
   /** Each concept its examples name, in its own context. */
   readonly concepts: readonly {
     readonly context: string;
@@ -50,8 +60,13 @@ export function frozenIn(
     entries.flatMap((e) => (e.kind === 'cut' ? [e.cut] : [])),
   );
   return [...opened].flatMap((name): FrozenCut[] => {
-    const { record, integrated, frozenChecks } = foldCut(entries, name);
+    const { record, integrated, frozenChecks, packages } = foldCut(
+      entries,
+      name,
+    );
     if (record === undefined || integrated) return [];
+    const cut = cutAt(top, name, refuse);
+    const outputs = [...packages.values()].flatMap((p) => p.outputs);
     return [
       {
         cut: name,
@@ -60,16 +75,14 @@ export function frozenIn(
           `${EXAMPLES_DIR}/${context}/${name}.md`,
           `${JUDGMENT_DIR}/${context}/${name}.md`,
         ]),
-        checks:
-          frozenChecks.length === 0
-            ? []
-            : [
-                ...frozenChecks,
-                ...record.contexts.map(
-                  (context) => `${JUDGMENT_DIR}/${context}/${name}/`,
-                ),
-              ],
-        concepts: cutAt(top, name, refuse).concepts.map((c) => ({
+        checks: frozenChecks,
+        uses: usedBy(top, frozenChecks, outputs),
+        unchecked: unbound(
+          top,
+          frozenChecks,
+          cut.examples.map((e) => e.ref),
+        ),
+        concepts: cut.concepts.map((c) => ({
           context: c.context,
           name: c.name,
         })),
