@@ -1,0 +1,14 @@
+{
+  "id": "01M4Q6J6GJVSNMAA93R25F2648",
+  "at": "2026-10-12T04:40:02.322Z",
+  "kind": "decide",
+  "decisionId": "0132",
+  "context": "workflow",
+  "title": "What the freeze is read from: the record, or the working copy",
+  "situation": "Cut 7's third judgment split: the Google-family assayer accepts, the Anthropic-family assayer rejects. Under 0128 a change in a working copy is not the frozen example or check, yet the record point reads what is frozen (the ledger, the examples' concept tags, the checks and the files they use) from the working copy. So an uncommitted edit decides what is frozen: moving the ledger away, a hand-written integrate entry, retagging an example, or dropping a check's import each lets the lead's change into the history or the journal. The cut's frozen visible checks keep the ledger uncommitted, as where the freeze is read from.",
+  "decision": "Recommended: the freeze is read from the record, as the branch's recorded tip holds it: the ledger's entries, the examples, the checks and what they use; a working copy's change to any of them is not yet the freeze, as it is not yet the example or check. The architect rules on the frozen visible checks so their fixture records the ledger in the history before the freeze is judged.",
+  "consequences": "Accepted, the record point and the journal read what is frozen from the branch's recorded tip, the fixture records its ledger, and the next round rebuilds against both. Rejected, the freeze stays read from the working copy and the working-copy routes stay open, so examples 24, 25, 31 to 33 and 36 do not hold by every route.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
