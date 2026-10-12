@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { type Fixture, fixture } from './fixture.js';
-import { type Request, provider } from './provider.js';
+import { provider } from './provider.js';
 
 const text = (content: unknown): string =>
   typeof content === 'string'
@@ -13,17 +13,20 @@ const text = (content: unknown): string =>
       : '';
 
 // Real omp dispatches `name`, the child reads the journal tool as omp offers it to
-// the model (`read xd://concept_journal`), then yields; only transport is scripted.
+// the model (`read xd://concept_journal`), then closes; only transport is scripted.
+// The session runs on `fixture/base` and the declarations on `fixture/declared`, so
+// the child's requests are those on model `declared`. omp 18.10.2 offers task
+// subagents no `yield` tool: the child yields when offered one, else replies in text.
 // Returns the verbs of the schema the child's model was shown.
 async function offered(f: Fixture, name: string, config: string) {
-  const child = (r: Request) =>
-    r.tools?.some((t) => t.function.name === 'yield');
   const server = await provider((request) => {
     const answered = request.messages.some((m) => m.role === 'tool');
-    if (child(request))
-      return answered
-        ? { tool: 'yield', args: { data: { summary: 'Read.' } } }
-        : { tool: 'read', args: { path: 'xd://concept_journal' } };
+    if (request.model === 'declared')
+      return !answered
+        ? { tool: 'read', args: { path: 'xd://concept_journal' } }
+        : request.tools?.some((t) => t.function.name === 'yield')
+          ? { tool: 'yield', args: { data: { summary: 'Read.' } } }
+          : { text: 'Read.' };
     if (answered) return { text: 'Dispatch complete.' };
     return {
       tool: 'task',
@@ -46,7 +49,7 @@ async function offered(f: Fixture, name: string, config: string) {
     await session.waitFor((frame) => frame.type === 'agent_end');
     expect(server.errors).toEqual([]);
     const read = server.requests
-      .filter(child)
+      .filter((r) => r.model === 'declared')
       .flatMap((r) => r.messages)
       .find((m) => m.role === 'tool');
     expect(read, JSON.stringify(session.frames)).toBeDefined();
