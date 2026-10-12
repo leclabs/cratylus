@@ -1,0 +1,17 @@
+{
+  "id": "01M4QF211GCXJ25ZHK8QKEKS88",
+  "at": "2026-10-12T07:08:29.616Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "contract",
+  "wording": "examples a consuming context writes of what it needs from a context it depends on, held with the consumer's examples and run in both contexts' whole checks, so a change in the provider that breaks a consumer fails the provider's own check, and one context's change cannot silently break another's meaning.",
+  "builtFrom": [
+    "example",
+    "bounded context",
+    "whole check"
+  ],
+  "reason": "0138: where a contract lives and where it runs.",
+  "supersedes": [
+    "01M4J5RAP5H08Y64FANK4X3QRY"
+  ]
+}
