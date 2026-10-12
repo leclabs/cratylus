@@ -153,7 +153,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'reads',
     purpose:
-      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples, its judgment and everything in its judgment folder, the checks frozen with it, and each concept its examples name, in its own context; with the architect who alone may change them',
+      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples and its held-out example text, frozen from its opening; the checks frozen with it and, once any is, its judgment folder with everything in it, its held-out checks; and each concept its examples name, in its own context; with the architect who alone may change them',
     when: 'Before changing an example, a judgment, a check or a concept, to see whether a cut freezes it and whose change it is; the one account of what is frozen',
     positional: null,
     flags: {},
@@ -162,7 +162,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, judgments and the concepts its examples name changed only by its architect until it is integrated; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, its held-out example text and the concepts its examples name changed only by its architect until it is integrated, its judgment folder left open to its check-writer until its checks are frozen; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
     when: 'Once, when the cut’s examples are approved and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
@@ -180,7 +180,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'appends',
     purpose:
-      'Freeze checks with the cut: checks that bind its examples, each seen failing before the work it checks was built, so that from then only the cut’s architect may change them until the cut is integrated; refused for a cut not opened or already integrated, and for a check that does not exist',
+      'Freeze checks with the cut: checks that bind its examples, each seen failing before the work it checks was built, and with the first of them the cut’s judgment folder, its held-out checks, so that from then only the cut’s architect may change them until the cut is integrated; refused for a cut not opened or already integrated, and for a check that does not exist',
     when: 'Once a check that binds the cut’s examples has been seen failing, before any builder is set to work on what it checks',
     positional: null,
     flags: {
@@ -195,7 +195,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut integrated, which ends its freeze and nothing else: its examples, judgments, checks and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts',
+      'Record the cut integrated, which ends its freeze and nothing else: its examples, held-out example text, checks, judgment folder and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts',
     when: 'When the cut’s architect takes its change into the design, and never before: no phase, verdict or report stands for it',
     positional: null,
     flags: CUT,

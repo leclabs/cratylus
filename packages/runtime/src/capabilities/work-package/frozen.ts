@@ -3,11 +3,13 @@
 // computed from the ledger and the cut's visible examples on every request.
 //
 // A cut is frozen from its `open` until its `integrate`. For each of its
-// contexts it freezes its examples `design/examples/<context>/<cut>.md`, its
-// judgment `design/judgment/<context>/<cut>.md` and everything under
-// `design/judgment/<context>/<cut>/`; the checks frozen with it; and each
-// concept its examples name, in its own context. Only the architect the cut
-// records for a context may change what the cut freezes there.
+// contexts it freezes, from its `open`, its examples
+// `design/examples/<context>/<cut>.md` and its held-out example text
+// `design/judgment/<context>/<cut>.md`, and each concept its examples name, in
+// its own context. Its judgment folder `design/judgment/<context>/<cut>/`
+// holds its held-out checks, so it is frozen with its checks: listed among them
+// once the cut's checks are first frozen, and never before. Only the architect
+// the cut records for a context may change what the cut freezes there.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { EXAMPLES_DIR } from '../concepts/leakage.js';
@@ -24,9 +26,10 @@ export const JUDGMENT_DIR = 'design/judgment';
 export interface FrozenCut {
   readonly cut: string;
   readonly architects: Readonly<Record<string, string>>;
-  /** For each context: its examples, its judgment and its judgment folder. */
+  /** For each context: its examples and its held-out example text. */
   readonly examples: readonly string[];
-  /** The checks frozen with it. */
+  /** The checks frozen with it and, once any is, each context's judgment
+   *  folder, which holds its held-out checks. */
   readonly checks: readonly string[];
   /** Each concept its examples name, in its own context. */
   readonly concepts: readonly {
@@ -56,9 +59,16 @@ export function frozenIn(
         examples: record.contexts.flatMap((context) => [
           `${EXAMPLES_DIR}/${context}/${name}.md`,
           `${JUDGMENT_DIR}/${context}/${name}.md`,
-          `${JUDGMENT_DIR}/${context}/${name}/`,
         ]),
-        checks: frozenChecks,
+        checks:
+          frozenChecks.length === 0
+            ? []
+            : [
+                ...frozenChecks,
+                ...record.contexts.map(
+                  (context) => `${JUDGMENT_DIR}/${context}/${name}/`,
+                ),
+              ],
         concepts: cutAt(top, name, refuse).concepts.map((c) => ({
           context: c.context,
           name: c.name,
