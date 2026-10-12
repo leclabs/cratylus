@@ -1,0 +1,17 @@
+{
+  "id": "01M4RV1EDWG8H906TV118X74SQ",
+  "at": "2026-10-12T19:57:07.900Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "drift",
+  "wording": "an agent's acts departing, over a session, from the stance and communication-style its profile states, recognised by its tells: asking what it could answer itself, handing back a decision it owns, holding open a decision it could take, offering a menu where it should recommend, transcribing where it should design, descending into work its stance keeps it above, prescribing to a delegate procedure it already knows where its assignment should carry only intent, concepts and acceptance, and following procedure past its objective; an agent checks its own acts against its tells every turn, and the operator observes them in use, where drift is noticed and the agent's text revised.",
+  "builtFrom": [
+    "agent",
+    "profile",
+    "enforcement-level"
+  ],
+  "reason": "0142(1): drift is observed in real use, not asserted by live suites or held by model-judged guards.",
+  "supersedes": [
+    "01M4P6MSD0B2XS1GM8E9DT734R"
+  ]
+}
