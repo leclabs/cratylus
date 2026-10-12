@@ -1,6 +1,6 @@
 # meaning-roles: freeze checks seen red
 
-Scope: workflow/24–38; frozen interface F1–F7 in the lead's contract. No product source was changed. There are no unresolved meaning questions in this slice.
+Scope: workflow/24–38; frozen interface F1-F6 in the lead's contract. No product source was changed. There are no unresolved meaning questions in this slice.
 
 ## Boundaries
 
