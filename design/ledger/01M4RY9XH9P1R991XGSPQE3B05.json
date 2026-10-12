@@ -1,0 +1,30 @@
+{
+  "id": "01M4RY9XH9P1R991XGSPQE3B05",
+  "at": "2026-10-12T20:54:11.241Z",
+  "kind": "commit",
+  "transition": "commit:simplification:77709cf701064f0f65bf753e3ee85324eef50706",
+  "cut": "simplification",
+  "workPackage": "agent-binding",
+  "commit": {
+    "sha": "77709cf701064f0f65bf753e3ee85324eef50706",
+    "message": "refactor(agents): judge agents in real use; dispatch and launch warn, never refuse\n\nRemove the descend and past-objective guards, guarded(), the model judge and the\nreadback gate; drop the handoffs factor and spawns limits; evaluation is in-use\nonly; assignment, cut-state and eval-dispatch checks become warnings (0142).",
+    "paths": [
+      "packages/canon/src/",
+      "packages/canon/README.md",
+      "packages/canon/test/compose.test.ts",
+      "packages/canon/test/cell-gloss-census.test.ts",
+      "packages/forge/",
+      "packages/schema/",
+      "AGENTS.md",
+      ".changeset/simplification-agents.md",
+      ".changeset/reconstitution-descend-guard.md",
+      ".changeset/reconstitution-past-objective-guard.md",
+      ".changeset/reconstitution-readback-gate.md",
+      ".changeset/reconstitution-eval-dispatch.md",
+      ".changeset/omp-read-only-capability.md",
+      ".changeset/reconstitution-architect-text-holds.md",
+      ".changeset/reconstitution-binding.md",
+      ".changeset/reconstitution-gate-same-message.md"
+    ]
+  }
+}

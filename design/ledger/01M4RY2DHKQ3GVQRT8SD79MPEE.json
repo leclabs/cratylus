@@ -1,0 +1,36 @@
+{
+  "id": "01M4RY2DHKQ3GVQRT8SD79MPEE",
+  "at": "2026-10-12T20:50:05.491Z",
+  "kind": "commit",
+  "transition": "commit:simplification:dd4690d702baae3db40506a8ed3cb504a903b512",
+  "cut": "simplification",
+  "workPackage": "freeze-and-suite",
+  "commit": {
+    "sha": "dd4690d702baae3db40506a8ed3cb504a903b512",
+    "message": "refactor(simplification): the freeze is a rule, the suite tests only deterministic code\n\nRemove the freeze gate, its hook and prepare wiring, the uses tracking, the\noffline proof and agent-run example checks, every live or recorded agent suite\nand recorded evidence, and CI's omp install. The journal records who appended\neach entry and warns, never refuses, a non-architect's change to a frozen\nconcept; open across architects and out-of-place commits warn. Register the\nfrozen checks folder in the meta-gate.",
+    "paths": [
+      "packages/runtime/",
+      "packages/cli/",
+      "packages/canon/test/gate-convicts.test.ts",
+      "design/evidence/",
+      "design/judgment/agents/reconstitution/",
+      "design/judgment/delivery/agent-launch/",
+      "design/judgment/delivery/agent-launch-whole/",
+      "design/judgment/delivery/capability-port/",
+      "design/judgment/delivery/delivery/",
+      "design/judgment/delivery/reconstitution/",
+      "design/judgment/workflow/check-quality/",
+      "design/judgment/workflow/concept-journal/",
+      "design/judgment/workflow/execution/",
+      "design/judgment/workflow/meaning-roles/",
+      "design/judgment/workflow/reconstitution/",
+      ".github/",
+      ".husky/reference-transaction",
+      "package.json",
+      ".changeset/simplification-workflow.md",
+      ".changeset/offline-proof.md",
+      ".changeset/meaning-roles-freeze-record.md",
+      ".changeset/example-substrate.md"
+    ]
+  }
+}
