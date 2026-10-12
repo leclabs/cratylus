@@ -137,8 +137,6 @@ describe('reconstitution: ledger and cut', () => {
     git(f.root, 'add', 'base.txt');
     git(f.root, 'commit', '-m', 'test: baseline');
     git(f.root, 'switch', '-c', 'feature/film');
-    pair(f);
-    builder(f, 'shoot', 'dispatched');
     ok(f, 'concepts', 'context', 'workflow', '--subject', 'Film production');
     ok(
       f,
@@ -152,6 +150,8 @@ describe('reconstitution: ledger and cut', () => {
       '--reason',
       'Film cut',
     );
+    pair(f);
+    builder(f, 'shoot', 'dispatched');
     ok(
       f,
       'concepts',
