@@ -548,9 +548,9 @@ describe('omp capability interface', () => {
   /** The emitted module's factory, written into an installation projected by
    *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
    *  with `explanation` under that capability's own name (`<name> <capability>`),
-   *  `workPackage frozen` with the file `STAND_IN_FROZEN` names, when it names one,
-   *  and any other call with its argv, directory and acting agent as JSON (or, for a
-   *  verb named `refuse`, a refusal on stderr). */
+   *  each `<capability> <verb>` the JSON file `STAND_IN_ANSWERS` names, when it names
+   *  one, with its answer there, and any other call with its argv, directory and
+   *  acting agent as JSON (or, for a verb named `refuse`, a refusal on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -566,10 +566,11 @@ describe('omp capability interface', () => {
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
         "if (process.env.STAND_IN_CALLS) require('node:fs').appendFileSync(process.env.STAND_IN_CALLS, `${JSON.stringify(args)}\\n`);",
+        "const answers = process.env.STAND_IN_ANSWERS ? JSON.parse(require('node:fs').readFileSync(process.env.STAND_IN_ANSWERS, 'utf8')) : {};",
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
         "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
-        "else if (args[0] === 'workPackage' && args[1] === 'frozen' && process.env.STAND_IN_FROZEN) process.stdout.write(require('node:fs').readFileSync(process.env.STAND_IN_FROZEN, 'utf8'));",
+        "else if (Object.hasOwn(answers, args.slice(0, 2).join(' '))) process.stdout.write(JSON.stringify(answers[args.slice(0, 2).join(' ')]));",
         'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd(), agent: process.env.CRATYLUS_AGENT }));',
         '',
       ].join('\n'),
@@ -889,43 +890,14 @@ describe('omp capability interface', () => {
       });
     });
 
-    describe("refuses a change to a frozen path by anyone but the cut's architect (F7)", () => {
+    describe("names the session's agent on its shell calls, and refuses no call for what it would change (0128)", () => {
       afterEach(() => {
-        Reflect.deleteProperty(process.env, 'STAND_IN_FROZEN');
+        omp.agents = [];
       });
-      /** A repository whose ledger freezes the renewal cut, architect `architect`. */
-      function repository(): string {
-        const cwd = realpathSync(
-          mkdtempSync(join(tmpdir(), 'omp-capability-frozen-')),
-        );
-        tmp.push(cwd);
-        expect(spawnSync('git', ['init', '-q'], { cwd }).status).toBe(0);
-        const frozen = join(cwd, '..', `${cwd.split('/').at(-1)}.json`);
-        tmp.push(frozen);
-        writeFileSync(
-          frozen,
-          JSON.stringify({
-            cuts: [
-              {
-                cut: 'renewal',
-                architects: { library: 'architect' },
-                examples: [
-                  'design/examples/library/renewal.md',
-                  'design/judgment/library/renewal.md',
-                  'design/judgment/library/renewal/',
-                ],
-                checks: ['checks/renewal.test.ts', 'checks/renewal/'],
-                concepts: [{ context: 'library', name: 'renewal' }],
-              },
-            ],
-          }),
-        );
-        process.env.STAND_IN_FROZEN = frozen;
-        return cwd;
-      }
-      /** A dispatched session as `agent` in `cwd`: each tool call answered as omp answers
-       *  it, by every handler in turn until one refuses. */
-      async function session(agent: string, cwd: string) {
+      /** A session as `agent` (dispatched, or main launched with `--agent <flag>`): each
+       *  tool call fired through every handler in turn until one refuses, with the input
+       *  the handlers leave. */
+      async function session(agent: { sub?: string; flag?: string }) {
         const factory = await emitted(EXPLANATION);
         const handlers = new Map<
           string,
@@ -935,234 +907,92 @@ describe('omp capability interface', () => {
           typebox: { Type: { Unsafe: (schema: unknown) => schema } },
           registerTool: () => {},
           registerFlag: () => {},
-          getFlag: () => undefined,
+          getFlag: (name: string) =>
+            name === 'agent' ? agent.flag : undefined,
           on: (event: string, fn: (event: unknown, ctx: unknown) => unknown) =>
             handlers.set(event, [...(handlers.get(event) ?? []), fn]),
           setModel: async () => {},
           setThinkingLevel: () => {},
         });
         const ctx = {
-          cwd,
-          agent: { kind: 'sub', name: agent },
+          cwd: tmpdir(),
+          agent:
+            agent.sub === undefined
+              ? { kind: 'main', name: 'main' }
+              : { kind: 'sub', name: agent.sub },
           model: { provider: 'fixture', id: 'base' },
           modelRegistry: {},
           ui: { setStatus: () => {}, notify: () => {} },
         };
         for (const fn of handlers.get('session_start') ?? []) await fn({}, ctx);
         return async (toolName: string, input: Record<string, unknown>) => {
+          const event = { type: 'tool_call', toolName, toolCallId: 'c', input };
           for (const fn of handlers.get('tool_call') ?? []) {
-            const answer = (await fn(
-              { type: 'tool_call', toolName, toolCallId: 'c', input },
-              ctx,
-            )) as { block?: boolean; reason?: string } | undefined;
-            if (answer?.block) return answer;
+            const answer = (await fn(event, ctx)) as
+              | { block?: boolean; reason?: string }
+              | undefined;
+            if (answer?.block) return { answer, input: event.input };
           }
-          return undefined;
+          return { answer: undefined, input: event.input };
         };
       }
 
-      it('refuses each frozen file, by any tool that changes it, naming the cut and its architect', async () => {
-        const cwd = repository();
-        const call = await session('lead', cwd);
-        for (const [tool, input] of [
-          [
-            'write',
-            { path: 'design/examples/library/renewal.md', content: 'x' },
-          ],
-          [
-            'write',
-            { path: join(cwd, 'checks/renewal.test.ts'), content: 'x' },
-          ],
-          ['write', { path: 'checks/renewal/unaided.test.ts', content: 'x' }],
-          ['edit', { path: 'design/judgment/library/renewal/edge.ts' }],
-          [
-            'edit',
-            {
-              input: '[design/judgment/library/renewal.md#1A2B]\nPUT 1.=1:\n+x',
-            },
-          ],
-          ['ast_edit', { path: 'design' }],
-          [
-            'bash',
-            {
-              command: `printf x > '${cwd}/design/examples/library/renewal.md'`,
-            },
-          ],
-          ['bash', { command: 'rm -r checks/renewal' }],
-          ['eval', { code: 'open("checks/renewal.test.ts", "w")' }],
-          [
-            'bash',
-            { command: 'CRATYLUS_AGENT=architect cratylus concepts look' },
-          ],
+      it('as the dispatched agent or the launched declaration, beside the env the call gives', async () => {
+        omp.agents = [
+          {
+            name: 'architect',
+            description: 'd',
+            systemPrompt: 'The architect body.',
+            source: 'user',
+          },
+        ];
+        for (const [agent, named] of [
+          [{ sub: 'lead' }, 'lead'],
+          [{ flag: 'architect' }, 'architect'],
         ] as const) {
-          const answer = await call(tool, input);
-          expect(answer?.block, `${tool} ${JSON.stringify(input)}`).toBe(true);
-          expect(answer?.reason).toContain("the cut 'renewal'");
-          expect(answer?.reason).toContain("'architect'");
-          expect(answer?.reason).toContain("'lead'");
-        }
-      });
-
-      it('refuses every other route that changes a frozen file, and never a call that only reads', async () => {
-        const cwd = repository();
-        mkdirSync(join(cwd, 'checks/renewal'), { recursive: true });
-        writeFileSync(join(cwd, 'checks/renewal/unaided.test.ts'), 'x');
-        const call = await session('lead', cwd);
-        const device = (tool: string, args: Record<string, unknown>) =>
-          [
-            'write',
-            { path: `xd://${tool}`, content: JSON.stringify(args) },
-          ] as const;
-        for (const [tool, input] of [
-          [
-            'write',
-            { path: '[design/examples/library/renewal.md#1A2B]', content: 'x' },
-          ],
-          [
-            'write',
-            { path: `file://${cwd}/checks/renewal.test.ts`, content: 'x' },
-          ],
-          [
-            'edit',
-            { path: 'notes.md', edits: [{ rename: 'checks/renewal.test.ts' }] },
-          ],
-          [
-            'edit',
-            {
-              input:
-                '*** Begin Patch\n*** Update File: checks/renewal.test.ts\n*** End Patch',
-            },
-          ],
-          [
-            'edit',
-            { input: '*** Edit File: design/examples/library/renewal.md' },
-          ],
-          ['edit', { input: '[notes.md#1A2B]\nMV "checks/renewal.test.ts"' }],
-          ['ast_edit', { paths: ['design/examples/**/*.md'] }],
-          ['ast_edit', { paths: ['notes.md, checks/renewal/'] }],
-          ['ast_edit', { paths: ['checks/*/*.test.ts'] }],
-          ['ast_edit', { paths: ['*.md'] }],
-          device('ast_edit', { paths: ['design/'] }),
-          device('lsp', {
-            action: 'rename',
-            file: 'checks/renewal.test.ts',
-            new_name: 'y',
-          }),
-          device('lsp', {
-            action: 'rename_file',
-            file: 'notes.ts',
-            new_name: 'checks/renewal.test.ts',
-          }),
-          device('lsp', {
-            action: 'code_actions',
-            file: 'checks/renewal.test.ts',
-            apply: true,
-            query: 'q',
-          }),
-          device('lsp', {
-            action: 'request',
-            payload: '{"uri":"checks/renewal.test.ts"}',
-          }),
-          ['tts', { text: 't', output_path: 'checks/renewal.test.ts' }],
-          [
-            'security_scan',
-            { action: 'start', output_root: 'design/judgment' },
-          ],
-          [
-            'bash',
-            { command: 'rm renewal.md', cwd: 'design/examples/library' },
-          ],
-          device('debug', {
-            action: 'launch',
-            program: 'rm',
-            args: ['checks/renewal.test.ts'],
-          }),
-          [
-            'vibe_spawn',
-            { cli: 'codex', prompt: 'rewrite checks/renewal.test.ts' },
-          ],
-        ] as const) {
-          const answer = await call(tool, input);
-          expect(answer?.block, `${tool} ${JSON.stringify(input)}`).toBe(true);
-          expect(answer?.reason).toContain("the cut 'renewal'");
-        }
-        for (const [tool, input] of [
-          ['ast_edit', { paths: ['src/**/*.ts', 'notes.md'] }],
-          device('lsp', {
-            action: 'rename',
-            file: 'checks/renewal.test.ts',
-            new_name: 'y',
-            apply: false,
-          }),
-          device('lsp', {
-            action: 'code_actions',
-            file: 'checks/renewal.test.ts',
-          }),
-          device('lsp', {
-            action: 'references',
-            file: 'checks/renewal.test.ts',
-          }),
-          device('debug', {
-            action: 'variables',
-            program: 'checks/renewal.test.ts',
-          }),
-          ['write', { path: 'conflict://1', content: '@ours' }],
-          ['read', { path: 'checks/renewal.test.ts' }],
-        ] as const)
+          const call = await session(agent);
+          const { answer, input } = await call('bash', {
+            command: 'git commit -m renewal',
+            env: { KEEP: '1', CRATYLUS_AGENT: 'someone else' },
+          });
+          expect(answer).toBeUndefined();
+          expect(input.env).toEqual({ KEEP: '1', CRATYLUS_AGENT: named });
           expect(
-            await call(tool, input),
-            `${tool} ${JSON.stringify(input)}`,
-          ).toBeUndefined();
-        writeFileSync(
-          join(cwd, 'checks/renewal/unaided.test.ts'),
-          '<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> b\n',
-        );
-        expect(
-          (await call('write', { path: 'conflict://1', content: '@ours' }))
-            ?.block,
-        ).toBe(true);
+            (await call('bash', { command: 'git commit -m renewal' })).input
+              .env,
+          ).toEqual({ CRATYLUS_AGENT: named });
+        }
       });
 
-      it('lets the architect change them, and anyone change what no cut freezes', async () => {
-        const cwd = repository();
-        const architect = await session('architect', cwd);
+      it('and no one for a session that is no agent', async () => {
+        process.env.CRATYLUS_AGENT = 'architect';
+        const call = await session({});
+        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
+        const { answer, input } = await call('bash', { command: 'git commit' });
+        expect(answer).toBeUndefined();
+        expect(input).toEqual({ command: 'git commit' });
+      });
+
+      it('refuses no call for the files it would change, by any route', async () => {
+        const call = await session({ sub: 'lead' });
         for (const [tool, input] of [
           [
             'write',
             { path: 'design/examples/library/renewal.md', content: 'x' },
           ],
+          ['edit', { input: '[checks/renewal.test.ts#1A2B]\nPUT 1.=1:\n+x' }],
+          ['ast_edit', { paths: ['design/'] }],
           ['bash', { command: 'rm -r checks/renewal' }],
           [
             'bash',
-            { command: 'CRATYLUS_AGENT=architect cratylus concepts look' },
+            { command: 'CRATYLUS_AGENT=architect git commit -am renewal' },
           ],
-        ] as const)
-          expect(await architect(tool, input)).toBeUndefined();
-        const lead = await session('lead', cwd);
-        for (const [tool, input] of [
-          [
-            'write',
-            { path: 'design/examples/library/renewal-hours.md', content: 'x' },
-          ],
-          ['write', { path: 'checks/renewal.test.ts.bak', content: 'x' }],
-          ['write', { path: 'local://notes.md', content: 'x' }],
-          ['bash', { command: 'cat notes.md' }],
-          ['read', { path: 'design/examples/library/renewal.md' }],
-        ] as const)
-          expect(await lead(tool, input)).toBeUndefined();
-      });
-
-      it('freezes nothing outside a repository', async () => {
-        repository();
-        const outside = mkdtempSync(join(tmpdir(), 'omp-capability-plain-'));
-        tmp.push(outside);
-        const call = await session('lead', outside);
-        expect(
-          await call('write', {
-            path: 'design/examples/library/renewal.md',
-            content: 'x',
-          }),
-        ).toBeUndefined();
+          ['eval', { code: 'open("checks/renewal.test.ts", "w")' }],
+        ] as const) {
+          const { answer, input: left } = await call(tool, { ...input });
+          expect(answer, `${tool} ${JSON.stringify(input)}`).toBeUndefined();
+          if (tool !== 'bash') expect(left).toEqual(input);
+        }
       });
     });
 
@@ -1993,6 +1823,83 @@ describe('omp capability interface', () => {
         }
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
+      }
+    });
+
+    it("refuses a builder's dispatch while an example its package owns is unchecked by a frozen check (0128)", async () => {
+      omp.agents = [
+        declare(
+          {
+            name: 'builder',
+            description: 'Builds a work package.',
+            assignment: {
+              type: 'object',
+              properties: {
+                cut: { type: 'string', description: 'The cut.' },
+                workPackage: { type: 'string', description: 'The package.' },
+              },
+              required: ['cut', 'workPackage'],
+            },
+          },
+          'Build it.',
+        ),
+      ];
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-builder-cwd-'));
+      tmp.push(cwd);
+      const answers = join(cwd, 'answers.json');
+      const answer = (unchecked: string[]) =>
+        writeFileSync(
+          answers,
+          JSON.stringify({
+            'workPackage state': {
+              branch: 'feature/renewal',
+              workPackages: [{ name: 'renewal-work', status: 'pending' }],
+              ready: ['renewal-work'],
+            },
+            'workPackage inventory': {
+              unserved: [],
+              unowned: [],
+              examples: [
+                { ref: 'library/1', package: 'renewal-work' },
+                { ref: 'library/2', package: 'renewal-work' },
+                { ref: 'library/3', package: 'hours-work' },
+              ],
+            },
+            'workPackage frozen': {
+              cuts: [{ cut: 'renewal', unchecked }],
+            },
+          }),
+        );
+      process.env.STAND_IN_ANSWERS = answers;
+      try {
+        const dispatch = async (id: string) => {
+          const session = await started(undefined, cwd);
+          await session.fire('session_start');
+          return (await session.fire('tool_call', 'main', {
+            toolName: 'task',
+            toolCallId: id,
+            input: {
+              tasks: [
+                {
+                  agent: 'builder',
+                  task: '```assignment\n{"cut":"renewal","workPackage":"renewal-work"}\n```',
+                },
+              ],
+            },
+          })) as { block?: boolean; reason?: string } | undefined;
+        };
+        answer(['library/2', 'library/3']);
+        const refused = await dispatch('unchecked');
+        expect(refused?.block).toBe(true);
+        expect(refused?.reason).toContain(
+          'builder dispatch of cut renewal refused: work package renewal-work owns visible examples no frozen check names: library/2;',
+        );
+        expect(refused?.reason).not.toContain('library/3');
+        // Another package's unchecked example never holds this one.
+        answer(['library/3']);
+        expect((await dispatch('checked'))?.block).not.toBe(true);
+      } finally {
+        Reflect.deleteProperty(process.env, 'STAND_IN_ANSWERS');
       }
     });
 
