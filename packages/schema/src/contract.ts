@@ -8,9 +8,9 @@
 // corpus's (its assignment and deliverable values carry them); this module states
 // only their shape and the check.
 //
-// ONE CHECK, EVERY CALLER. The harness extension refusing a dispatch, a launch
-// refusing a session and an evaluation refusing a scenario all ask `checkAssignment`,
-// so an evaluation never gets a weaker input contract than a real dispatch.
+// ONE CHECK, EVERY CALLER. The harness extension showing a dispatch or a launch its
+// typed assignment asks `checkAssignment`, and warns of the problem it reports; a
+// handoff is never refused for it (decision 0142(3)).
 //
 // SELF-CONTAINED BY CONSTRUCTION. `assignmentIn` and `checkAssignment` reference
 // nothing outside their own bodies, so a harness module that cannot import this
@@ -58,8 +58,8 @@ export interface ContractCheck {
   readonly missing: readonly string[];
   /** Fields present with the wrong type, too few items or a value not allowed, each with what was expected. */
   readonly illTyped: readonly string[];
-  /** The refusal naming the agent and each field (`lead assignment is missing: examples`); absent when the assignment fits. */
-  readonly reason?: string;
+  /** The problem naming the agent and each field (`lead assignment is missing: examples`); absent when the assignment fits. */
+  readonly problem?: string;
 }
 
 /**
@@ -146,5 +146,5 @@ export function checkAssignment(
   ];
   return parts.length === 0
     ? { missing, illTyped }
-    : { missing, illTyped, reason: `${agent} assignment ${parts.join('; ')}` };
+    : { missing, illTyped, problem: `${agent} assignment ${parts.join('; ')}` };
 }

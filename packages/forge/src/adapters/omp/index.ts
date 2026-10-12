@@ -1,21 +1,12 @@
-// The OMP-native projection and configurable behavior harness surfaces.
+// The OMP-native projection.
 
 // The anatomy→omp projection: one `agents/<name>.md` definition under the owned
 // root, which omp discovers itself as an extension package's, for dispatch and for
 // `omp --agent <name>` alike. The composed Target body is harness-neutral.
-// The behavior runner binds caller-supplied model, peer and tool fixtures.
-export { createOmpAgentScenarioRunner } from './scenario.js';
-export type {
-  OmpBehaviorRecord,
-  OmpScenario,
-  OmpScenarioHarnessConfig,
-  OmpScenarioRunner,
-} from './scenario.js';
 export {
   OMP_AGENT_DEF_DIR,
   OMP_EXTENSIONS_DIR,
   OMP_ISOLATION_MODULE,
-  OMP_NATIVE_AGENTS,
   OMP_ASSIGNMENT_KEY,
   OMP_PACKAGE_DIR,
   OMP_SESSION_MODULE,

@@ -27,7 +27,6 @@ import { PLUMBING, PRACTICES } from './practices.js';
 
 export {
   CompositionRefusal,
-  guarded,
   holder,
   persona,
   type Residue,
@@ -36,8 +35,6 @@ export {
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 export { personaProtocol } from './genus/persona.js';
-export { descend } from './guards/descend.js';
-export { pastObjective } from './guards/past-objective.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
 export { assayerRole } from './roles/assayer.js';
@@ -70,5 +67,4 @@ export default defineAgentPlugin({
   agents: dir('./agents'),
   skills: dir('./skills'),
   hooks: dir('./hooks'),
-  guards: dir('./guards'),
 });

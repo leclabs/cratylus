@@ -38,8 +38,8 @@ import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** What the emitted CRATYLUS module reaches of omp itself, which only an omp
  *  process resolves: its agent discovery, front-matter parser, command-line parser,
- *  model, advisor, prewalk and spawn resolvers, skills and settings. Each stand-in
- *  answers from `omp` below and records what it was asked. */
+ *  model, advisor and prewalk resolvers, skills and settings. Each stand-in answers
+ *  from `omp` below and records what it was asked. */
 const omp = vi.hoisted(() => {
   /** The session's runtime settings layer, as `overlayLayers().overrides` reads it. */
   const runtime: Record<string, unknown> = {};
@@ -112,26 +112,6 @@ const omp = vi.hoisted(() => {
     },
   };
 });
-/** The judge the session module's guards ask (`completeSimple`), answering `verdict`, or, for a
- *  system prompt `answers` names, its answer there. */
-const judge = vi.hoisted(() => ({
-  verdict: '',
-  answers: {} as Record<string, string>,
-  asked: [] as unknown[],
-}));
-vi.mock('@oh-my-pi/pi-ai', () => ({
-  completeSimple: async (_model: unknown, input: unknown) => {
-    judge.asked.push(input);
-    const prompts =
-      input !== null && typeof input === 'object' && 'systemPrompt' in input
-        ? input.systemPrompt
-        : undefined;
-    const prompt = Array.isArray(prompts) ? prompts[0] : undefined;
-    const answer =
-      typeof prompt === 'string' ? judge.answers[prompt] : undefined;
-    return { content: [{ type: 'text', text: answer ?? judge.verdict }] };
-  },
-}));
 vi.mock('@oh-my-pi/pi-coding-agent/task/discovery', () => ({
   discoverAgents: async (cwd: string) => {
     omp.discovered.push(cwd);
@@ -239,26 +219,6 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
   resolveAgentPrewalkDefault: (agent: { prewalk?: boolean | string }) =>
     agent.prewalk,
 }));
-// omp's spawn-policy meanings: `*` or absent anyone, empty no one, a list exactly those.
-vi.mock('@oh-my-pi/pi-coding-agent/task/spawn-policy', () => ({
-  resolveSpawnPolicy: (spawns?: string) => {
-    const said = (spawns ?? '*').trim();
-    if (said === '*')
-      return { enabled: true, allowedAgents: null, allowedErrorText: '*' };
-    const allowed = said.split(',').filter(Boolean);
-    return allowed.length === 0
-      ? {
-          enabled: false,
-          allowedAgents: allowed,
-          allowedErrorText: 'none (spawns disabled for this agent)',
-        }
-      : {
-          enabled: true,
-          allowedAgents: allowed,
-          allowedErrorText: allowed.join(','),
-        };
-  },
-}));
 vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
   getActiveSkills: () => omp.skills,
   buildSkillPromptMessage: async (
@@ -350,15 +310,22 @@ function frontMatter(md: string): Record<string, string> {
 }
 
 describe('omp agent definition', () => {
-  it('carries name, description, the empty key and the model role named for the agent', () => {
+  it('carries name, description, the empty key, the model role named for the agent and open dispatch', () => {
     const front = frontMatter(agentToOmpMd(AGENT, CTX));
     expect(front).toEqual({
       name: 'mav',
       description: 'the builder: ships things',
       key: 'null',
       model: '["@mav"]',
+      spawns: '*',
     });
-    expect(Object.keys(front)).toEqual(['name', 'description', 'key', 'model']);
+    expect(Object.keys(front)).toEqual([
+      'name',
+      'description',
+      'key',
+      'model',
+      'spawns',
+    ]);
   });
 
   it('names its own model role first, then its tier and effort, never a model (0111, 0112)', () => {
@@ -373,7 +340,6 @@ describe('omp agent definition', () => {
       agentToOmpMd(
         agent({
           mark: { emoji: '✈️', hue: 'green' },
-          dispatches: ['illustrator', 'lead', 'researcher'],
           contract: {
             assignment: { type: 'object', required: ['cut'] },
             deliverable: { type: 'object', required: ['done'] },
@@ -397,17 +363,8 @@ describe('omp agent definition', () => {
     expect(front.mark).toBe('✈️');
   });
 
-  it('dispatches exactly its handoffs, the researcher as omp’s own scout', () => {
-    const spawns = (dispatches: readonly string[] | undefined) =>
-      frontMatter(agentToOmpMd(agent({ dispatches }), CTX)).spawns;
-    expect(spawns(['illustrator', 'lead', 'researcher'])).toBe(
-      'illustrator, lead, scout',
-    );
-    // `""` denies every dispatch: an agent that hands off to no one dispatches no one.
-    expect(spawns([])).toBe('');
-    // Undeclared handoffs leave omp's default in place.
-    expect(spawns(undefined)).toBeUndefined();
-    expect(ompHarnessAdapter.nativeAgents).toEqual({ researcher: 'scout' });
+  it('lets every agent dispatch any agent: `spawns` is `*`, never a list (0142)', () => {
+    expect(frontMatter(agentToOmpMd(AGENT, CTX)).spawns).toBe('*');
   });
 
   it('carries the typed handoff as omp’s output and the assignment the extension reads, and never a tools list', () => {
@@ -455,7 +412,7 @@ describe('omp agent definition', () => {
       const fence = /^---\n([\s\S]*?)\n---\n/.exec(
         agentToOmpMd(bare, CTX),
       )?.[1] as string;
-      expect(fence.split('\n')).toHaveLength(4);
+      expect(fence.split('\n')).toHaveLength(5);
       expect(fence).not.toContain('autoloadSkills');
     }
   });
@@ -492,7 +449,7 @@ describe('omp model roles', () => {
 });
 
 describe('omp scopes nothing per agent', () => {
-  it('narrows no event to one agent, so a guard an agent composes is reported', () => {
+  it('narrows no event to one agent, so a hook an agent composes is reported', () => {
     for (const event of Object.keys(ompHarnessAdapter.nativeEvents)) {
       expect(ompHarnessAdapter.scopes(event as never), event).toBe(false);
     }
@@ -890,7 +847,7 @@ describe('omp capability interface', () => {
       });
     });
 
-    describe("names the session's agent on its shell calls, and refuses no call for what it would change (0128)", () => {
+    describe("names the session's agent on its shell calls, and refuses no call for what it would change (0143)", () => {
       afterEach(() => {
         omp.agents = [];
       });
@@ -1633,11 +1590,12 @@ describe('omp capability interface', () => {
       '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
     ].join('\n');
 
-    it('refuses an eval call whose code dispatches a delegate, for a launched agent or a typed delegate, and no other eval code', async () => {
+    it('warns of an eval call whose code dispatches a delegate, for a launched agent or a typed delegate, and lets it through', async () => {
       omp.agents = [CARTOGRAPHER(), LEAD()];
-      const EVAL_DISPATCH_REFUSAL =
-        'dispatch: dispatch a delegate with the task tool, where its assignment is checked.';
-      /** Every `tool_call` handler of the module, in order, as omp's runner fires them. */
+      const EVAL_DISPATCH_WARNING =
+        'dispatch from eval code: its assignment is not shown or checked and the ledger does not capture it; dispatch with the task tool to have both.';
+      /** Every `tool_call` handler of the module, in order, as omp's runner fires them;
+       *  what the session was told, each handler's answer checked to refuse nothing. */
       const loaded = async (flag?: string) => {
         const factory = await emitted({
           name: 'stand in',
@@ -1657,12 +1615,16 @@ describe('omp capability interface', () => {
           setThinkingLevel: () => {},
           setActiveTools: async () => {},
         });
-        const ctx = (kind: string, name?: string) => ({
+        const ctx = (
+          kind: string,
+          name: string | undefined,
+          told: unknown[],
+        ) => ({
           cwd: '/the/session/cwd',
           agent: { kind, name },
           model: { provider: 'fixture', id: 'base' },
           modelRegistry: { standIn: 'registry' },
-          ui: { setStatus: () => {}, notify: () => {} },
+          ui: { setStatus: () => {}, notify: (m: unknown) => told.push(m) },
         });
         const fire = async (
           event: string,
@@ -1670,13 +1632,12 @@ describe('omp capability interface', () => {
           kind = 'main',
           name?: string,
         ) => {
-          for (const handler of handlers.get(event) ?? []) {
-            const result = (await handler(payload, ctx(kind, name))) as
-              | { block?: boolean }
-              | undefined;
-            if (result?.block) return result;
-          }
-          return undefined;
+          const told: unknown[] = [];
+          for (const handler of handlers.get(event) ?? [])
+            expect(
+              await handler(payload, ctx(kind, name, told)),
+            ).toBeUndefined();
+          return told;
         };
         await fire('session_start', {});
         return fire;
@@ -1697,59 +1658,58 @@ describe('omp capability interface', () => {
         'await tool.read({ path: "design/a.md" })',
         'my_agent(1); x.agent(2); print(tool.tasks)',
       ];
-      const refused = { block: true, reason: EVAL_DISPATCH_REFUSAL };
+      const warned = [EVAL_DISPATCH_WARNING];
       const launched = await loaded('cartographer');
       for (const code of dispatching) {
-        expect(await launched('tool_call', evalOf(code)), code).toEqual(
-          refused,
-        );
+        expect(await launched('tool_call', evalOf(code)), code).toEqual(warned);
         // A delegate whose declaration carries a typed assignment is a cratylus agent too.
         expect(
           await launched('tool_call', evalOf(code), 'sub', 'lead'),
           code,
-        ).toEqual(refused);
+        ).toEqual(warned);
       }
       for (const code of ordinary) {
-        expect(await launched('tool_call', evalOf(code)), code).toBeUndefined();
+        expect(await launched('tool_call', evalOf(code)), code).toEqual([]);
         expect(
           await launched('tool_call', evalOf(code), 'sub', 'lead'),
           code,
-        ).toBeUndefined();
+        ).toEqual([]);
       }
-      // A plain main session is no agent, nor are omp's own delegates or an untyped one: never refused.
+      // A plain main session is no agent, nor are omp's own delegates or an untyped one: told nothing.
       const plain = await loaded();
       for (const code of dispatching) {
-        expect(await plain('tool_call', evalOf(code)), code).toBeUndefined();
+        expect(await plain('tool_call', evalOf(code)), code).toEqual([]);
         expect(
           await plain('tool_call', evalOf(code), 'sub', 'task'),
           code,
-        ).toBeUndefined();
+        ).toEqual([]);
         expect(
           await plain('tool_call', evalOf(code), 'sub', 'cartographer'),
           code,
-        ).toBeUndefined();
+        ).toEqual([]);
       }
       expect(
         await plain('tool_call', evalOf(dispatching[0]!), 'sub', 'lead'),
-      ).toEqual(refused);
+      ).toEqual(warned);
     });
 
-    it('teaches the assignment form in the refusal of a misfit dispatch', async () => {
+    it('warns of a misfit dispatch with the assignment form, and lets it through', async () => {
       omp.agents = [LEAD()];
       const plain = await started();
       await plain.fire('session_start');
-      const refused = (await plain.fire('tool_call', 'main', {
-        toolName: 'task',
-        toolCallId: 'call',
-        input: {
-          context: 'A long prose brief.',
-          tasks: [{ agent: 'lead', task: 'Realize the film cut, please.' }],
-        },
-      })) as { block: boolean; reason: string };
-      expect(refused.block).toBe(true);
-      expect(refused.reason).toBe(
-        `lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
-      );
+      expect(
+        await plain.fire('tool_call', 'main', {
+          toolName: 'task',
+          toolCallId: 'call',
+          input: {
+            context: 'A long prose brief.',
+            tasks: [{ agent: 'lead', task: 'Realize the film cut, please.' }],
+          },
+        }),
+      ).toBeUndefined();
+      expect(plain.did.notices).toEqual([
+        `dispatch warning, going ahead: lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
+      ]);
     });
 
     it('checks and captures a dispatch whatever the harness calls the tool that carries it', async () => {
@@ -1777,13 +1737,16 @@ describe('omp capability interface', () => {
         for (const toolName of ['task', '_task', 'dispatch']) {
           const session = await started(undefined, cwd);
           await session.fire('session_start');
-          // A misfit is refused under any name.
-          const refused = (await session.fire('tool_call', 'main', {
+          // A misfit is let through under any name, and warned of.
+          expect(
+            await session.fire('tool_call', 'main', {
+              toolName,
+              toolCallId: `misfit-${toolName}`,
+              input: { tasks: [{ agent: 'lead', task: 'Realize it.' }] },
+            }),
             toolName,
-            toolCallId: `misfit-${toolName}`,
-            input: { tasks: [{ agent: 'lead', task: 'Realize it.' }] },
-          })) as { block: boolean; reason: string };
-          expect(refused.block, toolName).toBe(true);
+          ).toBeUndefined();
+          expect(session.did.notices, toolName).toHaveLength(1);
           // A typed dispatch is captured, and its settled return too.
           writeFileSync(calls, '');
           await session.fire('tool_call', 'main', {
@@ -1834,7 +1797,7 @@ describe('omp capability interface', () => {
       }
     });
 
-    it("refuses a builder's dispatch while an example its package owns is unchecked by a frozen check (0128)", async () => {
+    it("warns of a builder's dispatch while an example its package owns is unchecked by a frozen check, and lets it through", async () => {
       omp.agents = [
         declare(
           {
@@ -1883,29 +1846,31 @@ describe('omp capability interface', () => {
         const dispatch = async (id: string) => {
           const session = await started(undefined, cwd);
           await session.fire('session_start');
-          return (await session.fire('tool_call', 'main', {
-            toolName: 'task',
-            toolCallId: id,
-            input: {
-              tasks: [
-                {
-                  agent: 'builder',
-                  task: '```assignment\n{"cut":"renewal","workPackage":"renewal-work"}\n```',
-                },
-              ],
-            },
-          })) as { block?: boolean; reason?: string } | undefined;
+          expect(
+            await session.fire('tool_call', 'main', {
+              toolName: 'task',
+              toolCallId: id,
+              input: {
+                tasks: [
+                  {
+                    agent: 'builder',
+                    task: '```assignment\n{"cut":"renewal","workPackage":"renewal-work"}\n```',
+                  },
+                ],
+              },
+            }),
+          ).toBeUndefined();
+          return session.did.notices.join('\n');
         };
         answer(['library/2', 'library/3']);
-        const refused = await dispatch('unchecked');
-        expect(refused?.block).toBe(true);
-        expect(refused?.reason).toContain(
-          'builder dispatch of cut renewal refused: work package renewal-work owns visible examples no frozen check names: library/2;',
+        const warned = await dispatch('unchecked');
+        expect(warned).toContain(
+          'builder dispatch of cut renewal: work package renewal-work owns visible examples no frozen check names: library/2 (',
         );
-        expect(refused?.reason).not.toContain('library/3');
-        // Another package's unchecked example never holds this one.
+        expect(warned).not.toContain('library/3');
+        // Another package's unchecked example never concerns this one.
         answer(['library/3']);
-        expect((await dispatch('checked'))?.block).not.toBe(true);
+        expect(await dispatch('checked')).toBe('');
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_ANSWERS');
       }
@@ -1924,19 +1889,12 @@ describe('omp capability interface', () => {
       ).toBeUndefined();
     });
 
-    it('lists the assignment form of each contracted agent a session may dispatch, launched or not, main or dispatched', async () => {
+    it('lists the assignment form of each contracted agent in every session, launched or not, main or dispatched', async () => {
       omp.agents = [
         LEAD(),
-        // omp's discovery parses `spawns` onto the declaration.
-        {
-          ...declare(
-            { name: 'pilot', description: 'd', spawns: 'lead' },
-            'Fly.',
-          ),
-          spawns: 'lead',
-        },
+        declare({ name: 'pilot', description: 'd' }, 'Fly.'),
       ];
-      const forms = `# Assignment forms\n\nA dispatch of these agents is refused unless its task text carries the assignment so:\n\n${LEAD_FORM}`;
+      const forms = `# Assignment forms\n\nGive a dispatch of these agents its assignment in its task text so:\n\n${LEAD_FORM}`;
       for (const [flag, kind] of [
         [undefined, 'main'],
         ['pilot', 'main'],
@@ -1950,20 +1908,6 @@ describe('omp capability interface', () => {
         )) as { systemPrompt: string[] };
         expect(systemPrompt, `${flag ?? 'plain'} ${kind}`).toContain(forms);
       }
-      // A session whose dispatch policy excludes the lead lists no form.
-      omp.agents = [
-        LEAD(),
-        declare(
-          { name: 'scout', description: 'd', spawns: 'cartographer' },
-          'Look.',
-        ),
-      ];
-      const scout = await started('scout');
-      await scout.fire('session_start');
-      const { systemPrompt } = (await scout.fire('before_agent_start')) as {
-        systemPrompt: string[];
-      };
-      expect(systemPrompt.join('\n')).not.toContain('# Assignment forms');
     });
 
     it('opens a launch whose procedure starts with reconstitution with a note on its first turn alone', async () => {
@@ -2058,27 +2002,11 @@ describe('omp capability interface', () => {
         '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### stance\n\n- **decisive** — decides',
       );
 
-    /** The CRATYLUS module and a session module carrying `guards`, loaded into one
-     *  stand-in omp started with `--agent <agent>` on a session whose branch holds
-     *  `branch`. omp's flag values are the runtime's, but each extension reads only
-     *  the flags it registered itself (`getFlag` on an unregistered name:
-     *  undefined), as omp's runner does. */
-    async function twoModules(
-      agent: string,
-      guards: Parameters<
-        NonNullable<typeof ompHarnessAdapter.scopeActivatedSurface>
-      >[2],
-      branch: readonly unknown[] = [],
-    ) {
-      const [session] =
-        ompHarnessAdapter.scopeActivatedSurface?.([], [], guards) ?? [];
-      const dir = mkdtempSync(join(tmpdir(), 'omp-session-'));
-      tmp.push(dir);
-      const file = join(dir, OMP_SESSION_MODULE);
-      writeFileSync(file, session?.content ?? '');
-      // Dynamic: the module under test is the emitted bytes, written to disk here.
-      const sessionModule = (await import(file)).default;
-      const cratylusModule = await emitted({
+    /** The CRATYLUS module loaded into a stand-in omp started with `--agent <agent>` on a
+     *  session whose branch holds `branch`, every handler of an event fired in order, as
+     *  omp's runner does; what each returned, and what the session was told. */
+    async function loadedAs(agent: string, branch: readonly unknown[] = []) {
+      const factory = await emitted({
         name: 'concept journal',
         purpose: 'p',
         when: 'w',
@@ -2091,482 +2019,60 @@ describe('omp capability interface', () => {
             effect: 'appends',
             parameters: [],
           },
-          {
-            name: 'overview',
-            concept: 'c',
-            purpose: 'p',
-            when: 'w',
-            effect: 'reads',
-            parameters: [],
-          },
         ],
       });
-      const flagValues: Record<string, string> = { agent };
       const handlers = new Map<string, Handler[]>();
-      const relayed: unknown[] = [];
-      const extensionApi = () => {
-        const registered = new Set<string>();
-        return {
-          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
-          registerTool: () => {},
-          registerFlag: (name: string) => registered.add(name),
-          getFlag: (name: string) =>
-            registered.has(name) ? flagValues[name] : undefined,
-          on: (event: string, handler: Handler) =>
-            handlers.set(event, [...(handlers.get(event) ?? []), handler]),
-          setModel: async () => {},
-          setThinkingLevel: () => {},
-          setActiveTools: async () => {},
-          sendUserMessage: (message: unknown) => relayed.push(message),
-        };
-      };
-      await cratylusModule(extensionApi());
-      await sessionModule(extensionApi());
+      const told: unknown[] = [];
+      await factory({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: () => {},
+        registerFlag: () => {},
+        getFlag: (name: string) => (name === 'agent' ? agent : undefined),
+        on: (event: string, handler: Handler) =>
+          handlers.set(event, [...(handlers.get(event) ?? []), handler]),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
+        setActiveTools: async () => {},
+        sendUserMessage: (message: unknown) => told.push(message),
+      });
       const ctx = {
         cwd: '/the/session/cwd',
         agent: { kind: 'main' },
         model: { provider: 'fixture', id: 'base' },
-        modelRegistry: {
-          getApiKeyAndHeaders: async () => ({ ok: true, apiKey: 'fixture' }),
-        },
-        ui: { setStatus: () => {}, notify: () => {} },
+        modelRegistry: { standIn: 'registry' },
+        ui: { setStatus: () => {}, notify: (m: unknown) => told.push(m) },
         sessionManager: { getBranch: () => branch },
       };
-      // omp's runner: the handlers in order, the first refusal ends the call.
       const fire = async (event: string, payload: unknown) => {
-        let answer: unknown;
-        for (const handler of handlers.get(event) ?? []) {
-          const result = (await handler(payload, ctx)) as
-            | { block?: boolean }
-            | undefined;
-          if (result !== undefined) answer = result;
-          if (result?.block) break;
-        }
-        return answer;
+        const answers: unknown[] = [];
+        for (const handler of handlers.get(event) ?? [])
+          answers.push(await handler(payload, ctx));
+        return answers.find((a) => a !== undefined);
       };
       await fire('session_start', {});
-      judge.asked.length = 0;
-      judge.answers = {};
-      return { fire, relayed };
+      return { fire, told };
     }
 
-    /** A guard on every tool call, composed into `agents`. */
-    const surveyGuard = (agents: string[]) => ({
-      guard: {
-        id: 'survey',
-        residue: '',
-        substrate: 'harness' as const,
-        events: ['tool.use.pre'] as ['tool.use.pre'],
-        tell: 'surveying',
-        judge: { prompt: 'Judge the call.', verdict: {}, refusesOn: 'surveys' },
-        refusal: 'surveying:',
-      },
-      agents,
-    });
-    /** A guard no agent composes, which lends the judge and judges nothing. */
-    const lender = surveyGuard([]);
-
-    it('judges a guard for the agent the main session was launched as, though omp answers --agent only to the module that registered it', async () => {
-      omp.agents = [CARTOGRAPHER()];
-      const { fire, relayed } = await twoModules('cartographer', [
-        surveyGuard(['cartographer']),
-      ]);
-      judge.verdict = JSON.stringify({
-        surveys: true,
-        reason: 'it reads src.',
-      });
-      const call = { toolName: 'read', input: { path: 'src/film.ts' } };
-      expect(await fire('tool_call', call)).toEqual({
-        block: true,
-        reason: 'surveying: it reads src.',
-      });
-      expect(judge.asked).toHaveLength(1);
-      expect(relayed).toEqual([]);
-    });
-
-    /** A tool-call guard whose judge reads the conversation, composed into `agents`. */
-    const pastGuard = (agents: string[]) => ({
-      guard: {
-        ...surveyGuard(agents).guard,
-        id: 'past',
-        tell: 'procedure past objective',
-        judge: {
-          prompt: 'Judge the call in its conversation.',
-          verdict: {},
-          refusesOn: 'pastObjective',
-          conversation: true,
-        },
-        refusal:
-          'procedure past objective: your objective is met; report the outcome and stop.',
-      },
-      agents,
-    });
-    const message = (m: Record<string, unknown>) => ({
-      type: 'message',
-      message: m,
-    });
-    /** A continuing session: a request, its outcome reported, a closing request. */
-    const exchanged = [
-      message({ role: 'user', content: 'Before compaction, forgotten.' }),
-      { type: 'compaction', summary: 'Earlier work.' },
-      message({
-        role: 'user',
-        content: [{ type: 'text', text: 'Separate approval from release.' }],
-      }),
-      message({
-        role: 'assistant',
-        content: [
-          { type: 'thinking', thinking: 'Private reasoning.' },
-          { type: 'text', text: 'I dispatched the lead.' },
-          { type: 'toolCall', name: 'task', arguments: { agent: 'lead' } },
-        ],
-      }),
-      message({
-        role: 'toolResult',
-        toolName: 'task',
-        isError: true,
-        content: [{ type: 'text', text: 'lead dispatch refused.' }],
-      }),
-      message({
-        role: 'toolResult',
-        toolName: 'task',
-        content: [
-          { type: 'text', text: 'Outcome achieved; both assayers accept.' },
-        ],
-      }),
-      message({
-        role: 'toolResult',
-        toolName: 'read',
-        content: [{ type: 'text', text: 'file bytes' }],
-      }),
-      message({
-        role: 'user',
-        attribution: 'agent',
-        content: 'descend guard — the judge gave no verdict.',
-      }),
-      // A reply shown has taken effect, a stop refused after it or not (0106): the judge reads it.
-      message({
-        role: 'assistant',
-        content: [
-          { type: 'text', text: 'Night shoots are the operator’s call.' },
-        ],
-      }),
-      {
-        type: 'custom_message',
-        customType: 'session-stop-continuation',
-        content: 'a refusal of the stop, after the reply was shown.',
-      },
-      message({ role: 'user', content: 'Close the design work.' }),
-    ];
-    /** The text the judge was asked about: the one user message of its input. */
-    const payload = (asked: unknown): string => {
-      const messages =
-        asked !== null &&
-        typeof asked === 'object' &&
-        'messages' in asked &&
-        Array.isArray(asked.messages)
-          ? asked.messages
-          : [];
-      const first: unknown = messages[0];
-      return first !== null &&
-        typeof first === 'object' &&
-        'content' in first &&
-        typeof first.content === 'string'
-        ? first.content
-        : '';
-    };
-    const closing = {
-      toolName: 'bash',
-      input: { command: 'cat design/journal/*.json' },
-    };
-
-    it('gives a guard whose judge reads the conversation the visible exchange so far, then the call, and refuses on its verdict', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        [pastGuard(['architect'])],
-        exchanged,
-      );
-      judge.verdict = JSON.stringify({
-        pastObjective: true,
-        reason:
-          'The lead reported the outcome achieved; the call reads the design again.',
-      });
-      expect(await fire('tool_call', closing)).toEqual({
-        block: true,
-        reason:
-          'procedure past objective: your objective is met; report the outcome and stop. The lead reported the outcome achieved; the call reads the design again.',
-      });
-      expect(judge.asked).toHaveLength(1);
-      expect(payload(judge.asked[0])).toBe(
-        [
-          'Conversation so far:',
-          'Operator:\nSeparate approval from release.',
-          '',
-          'Agent:\nI dispatched the lead.',
-          '',
-          'Delegate report:\nOutcome achieved; both assayers accept.',
-          '',
-          'Agent:\nNight shoots are the operator’s call.',
-          '',
-          'Operator:\nClose the design work.',
-          '',
-          'Act:',
-          JSON.stringify({ tool: closing.toolName, input: closing.input }),
-          '',
-          'Answer with exactly one JSON object and nothing else: {"pastObjective": <true or false>, "reason": "<one sentence>"}',
-        ].join('\n'),
-      );
-      expect(relayed).toEqual([]);
-    });
-
-    it('allows the call when its conversation-reading judge finds the objective not met', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules(
-        'architect',
-        [pastGuard(['architect'])],
-        exchanged,
-      );
-      judge.verdict = JSON.stringify({
-        pastObjective: false,
-        reason: 'The request is not met yet.',
-      });
-      expect(await fire('tool_call', closing)).toBeUndefined();
-      expect(judge.asked).toHaveLength(1);
-    });
-
-    it('fails open, aloud, when the conversation-reading judge gives no verdict', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules(
-        'architect',
-        [pastGuard(['architect'])],
-        exchanged,
-      );
-      judge.verdict = 'The objective seems met.';
-      expect(await fire('tool_call', closing)).toBeUndefined();
-      expect(relayed).toEqual([
-        'past guard — the judge gave no verdict (it answered: The objective seems met.), so this act was NOT judged.',
-      ]);
-    });
-
-    it("reads a guard's verdict from the last JSON object carrying its field, whatever prose or fence surrounds it", async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules('architect', [
-        surveyGuard(['architect']),
-      ]);
-      const call = { toolName: 'read', input: { path: 'src/film.ts' } };
-      for (const answer of [
-        'The call reads source.\n{"surveys": true, "reason": "it reads src."}',
-        '```json\n{"surveys": true, "reason": "it reads src."}\n```',
-        'Draft: {"surveys": false, "reason": "draft"}. Final, with {"note": {"x": 1}} beside it:\n```\n{"surveys": true, "reason": "it reads src.", "detail": {"path": "src/film.ts"}}\n```\nDone.',
-        '{"surveys": true, "reason": "it reads src."} {"other": "no verdict field"}',
-      ]) {
-        judge.verdict = answer;
-        expect(await fire('tool_call', call), answer).toEqual({
-          block: true,
-          reason: 'surveying: it reads src.',
-        });
-      }
-      expect(relayed).toEqual([]);
-      for (const answer of [
-        'The objective is not met, so the call is allowed.',
-        '{"reason": "no verdict field"}',
-        '{"surveys": "yes", "reason": "not a boolean"}',
-        '{"surveys": true, "reason": "never closed"',
-      ]) {
-        judge.verdict = answer;
-        expect(await fire('tool_call', call), answer).toBeUndefined();
-      }
-      expect(relayed).toHaveLength(4);
-    });
-
-    it('gives a guard whose judge reads the call alone no conversation, and judges no other agent', async () => {
-      omp.agents = [ARCHITECT(), CARTOGRAPHER()];
-      const architect = await twoModules(
-        'architect',
-        [surveyGuard(['architect'])],
-        exchanged,
-      );
-      judge.verdict = JSON.stringify({ surveys: false, reason: 'in place.' });
-      await architect.fire('tool_call', closing);
-      expect(payload(judge.asked[0])).toBe(
-        JSON.stringify({ tool: closing.toolName, input: closing.input }),
-      );
-      const other = await twoModules(
-        'cartographer',
-        [pastGuard(['architect'])],
-        exchanged,
-      );
-      judge.verdict = JSON.stringify({ pastObjective: true, reason: 'met.' });
-      expect(await other.fire('tool_call', closing)).toBeUndefined();
-      expect(judge.asked).toEqual([]);
-    });
-
-    it('judges every guard on one call and refuses it with each reason', async () => {
-      omp.agents = [ARCHITECT()];
-      const survey = surveyGuard(['architect']);
-      const second = {
-        ...survey,
-        guard: {
-          ...survey.guard,
-          id: 'shape',
-          tell: 'misshapen',
-          judge: { ...survey.guard.judge, refusesOn: 'misshapen' },
-          refusal: 'misshapen:',
-        },
-      };
-      const { fire, relayed } = await twoModules('architect', [survey, second]);
-      judge.verdict = JSON.stringify({
-        surveys: true,
-        misshapen: true,
-        reason: 'it reads the work.',
-      });
-      expect(await fire('tool_call', closing)).toEqual({
-        block: true,
-        reason:
-          'surveying: it reads the work.\n\nmisshapen: it reads the work.',
-      });
-      expect(judge.asked).toHaveLength(2);
-      expect(relayed).toEqual([]);
-    });
-
-    it('projects no guard on a turn end: a reply shown has taken effect, so a guard judges only an act before it does (0106)', () => {
-      const survey = surveyGuard(['architect']);
-      const atTurnEnd = {
-        ...survey,
-        guard: { ...survey.guard, events: ['turn.end'] as ['turn.end'] },
-      };
-      expect(() =>
-        ompHarnessAdapter.scopeActivatedSurface?.([], [], [atTurnEnd]),
-      ).toThrow("guard 'survey' binds 'turn.end'");
-    });
-
-    const READBACK_REFUSAL =
-      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) in visible text before this act, then make this call again in the same turn.';
-    const READBACK_UNSEEN_REFUSAL =
-      'reconstitution: give the operator the readback (current design, open decisions, cuts in flight) as the text of your reply. The operator has seen no text from you yet, and your thinking is not visible to the operator. Write the readback as reply text, then make this call again in the same turn.';
     const reply = (text: string) => ({
-      message: {
-        role: 'assistant',
-        content: [
-          { type: 'thinking', thinking: 'The design is…' },
-          { type: 'text', text },
-        ],
-      },
+      message: { role: 'assistant', content: [{ type: 'text', text }] },
     });
-    // The stand-in explains each capability as `concept journal <capability>`.
-    const changing = [
-      { toolName: 'task', input: { tasks: [{ agent: 'scout' }] } },
+    const acts = [
+      { toolName: 'task', input: { tasks: [{ agent: 'scout', task: 't' }] } },
       { toolName: 'write', input: { path: 'notes.md', content: 'x' } },
       { toolName: 'edit', input: { path: 'design/a.md' } },
       { toolName: 'concept_journal_concepts', input: { verb: 'define' } },
-      {
-        toolName: 'write',
-        input: {
-          path: 'xd://concept_journal_concepts',
-          content: JSON.stringify({ verb: 'define' }),
-        },
-      },
-    ];
-    const reading = [
       { toolName: 'read', input: { path: 'design/journal' } },
-      { toolName: 'concept_journal_concepts', input: { verb: 'overview' } },
-      {
-        toolName: 'write',
-        input: {
-          path: 'xd://concept_journal_concepts',
-          content: JSON.stringify({ verb: 'overview' }),
-        },
-      },
     ];
 
-    it('refuses each act of a reconstituting launch that changes something before any readback, and never a read', async () => {
+    it('holds no act of a reconstituting launch, before or after it speaks, and answers no reply (0142)', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
-      for (const call of changing)
-        expect(await fire('tool_call', call), call.toolName).toEqual({
-          block: true,
-          reason: READBACK_UNSEEN_REFUSAL,
-        });
-      for (const call of reading)
+      const { fire, told } = await loadedAs('architect');
+      for (const call of acts)
         expect(await fire('tool_call', call), call.toolName).toBeUndefined();
-      expect(judge.asked, 'nothing visible yet: no judge asked').toEqual([]);
-    });
-
-    it('tells a launch whose readback is only in its thinking that the operator has seen no text yet', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
-      await fire('message_end', reply(''));
-      expect(await fire('tool_call', changing[0])).toEqual({
-        block: true,
-        reason: READBACK_UNSEEN_REFUSAL,
-      });
-      expect(judge.asked, 'nothing visible: no judge asked').toEqual([]);
-    });
-
-    it('refuses an act after visible text the judge finds no readback in, naming why', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
-      await fire('message_end', reply('Reconstitution comes first.'));
-      judge.verdict = JSON.stringify({
-        given: false,
-        reason: 'It promises a readback and gives none.',
-      });
-      expect(await fire('tool_call', changing[0])).toEqual({
-        block: true,
-        reason: `${READBACK_REFUSAL} It promises a readback and gives none.`,
-      });
-      expect(judge.asked).toHaveLength(1);
-      expect(JSON.stringify(judge.asked[0])).toContain(
-        'Reconstitution comes first.',
-      );
-      expect(JSON.stringify(judge.asked[0])).not.toContain('The design is…');
-    });
-
-    it('allows every act once a judge finds the readback, asking once', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
-      await fire(
-        'message_end',
-        reply(
-          'Film: approval is settled; one open decision; no cut in flight.',
-        ),
-      );
-      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
-      for (const call of changing.slice(1))
+      await fire('message_end', reply('Which option would you prefer?'));
+      for (const call of acts)
         expect(await fire('tool_call', call), call.toolName).toBeUndefined();
-      expect(judge.asked).toHaveLength(1);
-    });
-
-    it('counts a readback given in the same message as the act, before that message ends', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
-      const readback =
-        'Film: approval is settled; night shoots are open; no cut in flight.';
-      // omp finalizes the message before it dispatches its calls; `message_end` comes later.
-      await fire('assistant_message', reply(readback));
-      judge.verdict = JSON.stringify({ given: true, reason: 'All three.' });
-      expect(await fire('tool_call', changing[3])).toBeUndefined();
-      expect(await fire('tool_call', changing[4])).toBeUndefined();
-      expect(judge.asked).toHaveLength(1);
-      expect(JSON.stringify(judge.asked[0])).toContain('night shoots are open');
-    });
-
-    it('lets the act through aloud when the judge gives no verdict', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire, relayed } = await twoModules('architect', [lender]);
-      await fire('message_end', reply('The design is as follows.'));
-      judge.verdict = 'not json';
-      expect(await fire('tool_call', changing[1])).toBeUndefined();
-      expect(relayed).toEqual([
-        'reconstitution — the judge gave no verdict on the readback, so this act was NOT judged.',
-      ]);
-    });
-
-    it('holds nothing for a launch whose procedure has no reconstitution', async () => {
-      omp.agents = [CARTOGRAPHER()];
-      const { fire } = await twoModules('cartographer', [lender]);
-      expect(await fire('tool_call', changing[1])).toBeUndefined();
+      expect(told).toEqual([]);
     });
 
     const conversation = [
@@ -2584,53 +2090,35 @@ describe('omp capability interface', () => {
         : '';
     };
 
-    it('reconstitutes a new session: the note on its first turn, its acts held', async () => {
+    it('reconstitutes a new session: the note on its first turn', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender]);
+      const { fire } = await loadedAs('architect');
       expect(await note(fire)).toContain('# Session start: reconstitution');
-      expect(await fire('tool_call', changing[1])).toEqual({
-        block: true,
-        reason: READBACK_UNSEEN_REFUSAL,
-      });
     });
 
     it('reconstitutes nothing in a resumed session continuing a conversation', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender], conversation);
+      const { fire } = await loadedAs('architect', conversation);
       expect(await note(fire)).not.toContain('# Session start');
-      for (const call of changing)
-        expect(await fire('tool_call', call), call.toolName).toBeUndefined();
-      expect(judge.asked).toEqual([]);
     });
 
     it('reconstitutes a resumed session compacted since it last spoke', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules(
-        'architect',
-        [lender],
-        [
-          ...conversation,
-          { type: 'compaction', summary: 'The cut was approved.' },
-        ],
-      );
+      const { fire } = await loadedAs('architect', [
+        ...conversation,
+        { type: 'compaction', summary: 'The cut was approved.' },
+      ]);
       expect(await note(fire)).toContain('# Session start: reconstitution');
-      expect((await fire('tool_call', changing[1])) as object).toMatchObject({
-        block: true,
-      });
     });
 
     it('reconstitutes again once the session is compacted', async () => {
       omp.agents = [ARCHITECT()];
-      const { fire } = await twoModules('architect', [lender], conversation);
+      const { fire } = await loadedAs('architect', conversation);
       expect(await note(fire)).not.toContain('# Session start');
       await fire('session_compact', {
         compactionEntry: { type: 'compaction' },
       });
       expect(await note(fire)).toContain('# Session start: reconstitution');
-      expect(await fire('tool_call', changing[1])).toEqual({
-        block: true,
-        reason: READBACK_UNSEEN_REFUSAL,
-      });
       expect(await note(fire), 'the first turn after it alone').not.toContain(
         '# Session start',
       );
@@ -2685,10 +2173,6 @@ describe('omp capability interface', () => {
       expect(omp.discovered).toEqual(['/the/session/cwd', '/the/session/cwd']);
       expect(omp.runtime).toEqual({});
       expect(omp.writes).toEqual([]);
-      for (const { fire } of [sub, plain])
-        expect(
-          await fire('before_subagent_spawn', undefined, { agent: 'pilot' }),
-        ).toBeUndefined();
     });
 
     it('ends startup, naming the unknown agent, before any turn', async () => {
@@ -2712,7 +2196,6 @@ describe('omp capability interface', () => {
     /** The cartographer, declaring the rest of what a dispatched child holds. */
     const WHOLE = () => ({
       ...CARTOGRAPHER(),
-      spawns: ['surveyor', 'sounder'],
       autoloadSkills: ['tides', 'absent-skill', 'buoys'],
       readSummarize: false,
       advisor: 'fixture/adviser',
@@ -2817,94 +2300,30 @@ describe('omp capability interface', () => {
       }
     });
 
-    it("refuses a dispatch the declaration's spawns do not name, in omp's words", async () => {
-      const spawning = (agent: string) => ({
-        type: 'before_subagent_spawn',
-        agent,
-        invocationKind: 'task',
-        patterns: [],
-      });
-      omp.agents = [WHOLE()];
+    it('refuses no dispatch of a launched session, whatever whom its declaration names (0142)', async () => {
+      omp.agents = [
+        {
+          ...declare(
+            {
+              name: 'cartographer',
+              description: 'Charts the estuary.',
+              spawns: 'surveyor',
+            },
+            'Map the estuary.',
+          ),
+          spawns: 'surveyor',
+        },
+      ];
       const { fire } = await started('cartographer');
       await fire('session_start');
-      for (const agent of ['surveyor', 'sounder'])
+      for (const agent of ['surveyor', 'pilot'])
         expect(
-          await fire('before_subagent_spawn', undefined, spawning(agent)),
+          await fire('before_subagent_spawn', undefined, { agent }),
+          agent,
         ).toBeUndefined();
-      expect(
-        await fire('before_subagent_spawn', undefined, spawning('pilot')),
-      ).toEqual({
-        block: true,
-        reason: "Cannot spawn 'pilot'. Allowed: surveyor,sounder",
-      });
-      // A child's own dispatch is its own declaration's affair.
-      expect(
-        await fire('before_subagent_spawn', 'sub', spawning('pilot')),
-      ).toBeUndefined();
-      // As dispatch passes `spawns` to a child: `*` anyone, absent as omp's discovery reads
-      // it (`*` with `task` among the tools, else no one). An explicitly empty `spawns` in
-      // the file is no one, though omp's discovery reads it as absent and so as `*`.
-      const none =
-        "Cannot spawn 'pilot'. Allowed: none (spawns disabled for this agent)";
-      const declared = (
-        said: Record<string, unknown>,
-        discovered: unknown,
-      ) => ({
-        ...WHOLE(),
-        ...declare(
-          {
-            name: 'cartographer',
-            description: 'Charts the estuary.',
-            model: 'fixture/declared',
-            ...said,
-          },
-          'Map the estuary before drawing its shipping routes.',
-        ),
-        spawns: discovered,
-      });
-      const withTask = ['read', 'task'];
-      for (const [label, agent, refusal] of [
-        [
-          'empty list with task',
-          declared({ tools: withTask, spawns: [] }, '*'),
-          none,
-        ],
-        [
-          'blank string with task',
-          declared({ tools: withTask, spawns: ' ' }, '*'),
-          none,
-        ],
-        ['absent without task', declared({ tools: ['read'] }, undefined), none],
-        ['absent with task', declared({ tools: withTask }, '*'), undefined],
-        ['*', declared({ tools: withTask, spawns: '*' }, '*'), undefined],
-        [
-          'bundled, as discovered',
-          {
-            ...WHOLE(),
-            filePath: 'embedded:cartographer.md',
-            source: 'bundled',
-            spawns: '*',
-          },
-          undefined,
-        ],
-      ] as const) {
-        omp.agents = [agent];
-        const launched = await started('cartographer');
-        await launched.fire('session_start');
-        expect(
-          await launched.fire(
-            'before_subagent_spawn',
-            undefined,
-            spawning('pilot'),
-          ),
-          label,
-        ).toEqual(
-          refusal === undefined ? undefined : { block: true, reason: refusal },
-        );
-      }
     });
 
-    it('puts back every setting it held and lifts its dispatch policy when the launch ends', async () => {
+    it('puts back every setting it held when the launch ends', async () => {
       omp.agents = [WHOLE()];
       omp.runtime.personality = 'default';
       omp.runtime.modelRoles = { default: 'fixture/base' };
@@ -2916,9 +2335,6 @@ describe('omp capability interface', () => {
       omp.agents = [];
       await fire('session_switch');
       expect(omp.runtime).toEqual(before);
-      expect(
-        await fire('before_subagent_spawn', undefined, { agent: 'pilot' }),
-      ).toBeUndefined();
       expect(await fire('before_agent_start')).toBeUndefined();
     });
   });

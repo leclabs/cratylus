@@ -55,7 +55,7 @@ describe('checkAssignment', () => {
     const { examples: _, decisions: __, ...partial } = fitting;
     const check = checkAssignment('lead', brief, partial);
     expect(check.missing).toEqual(['examples', 'decisions']);
-    expect(check.reason).toBe(
+    expect(check.problem).toBe(
       'lead assignment is missing: examples, decisions',
     );
   });
@@ -84,7 +84,7 @@ describe('checkAssignment', () => {
       'examples (expected array)',
       'decisions (expected array)',
     ]);
-    expect(check.reason).toMatch(/^lead assignment is ill-typed: cut/);
+    expect(check.problem).toMatch(/^lead assignment is ill-typed: cut/);
   });
 
   it('reaches nested fields, allowed values and additional properties', () => {
@@ -101,7 +101,7 @@ describe('checkAssignment', () => {
   });
 
   it('names a whole assignment that is not an object', () => {
-    expect(checkAssignment('builder', brief, 'build it').reason).toBe(
+    expect(checkAssignment('builder', brief, 'build it').problem).toBe(
       'builder assignment is ill-typed: assignment (expected object)',
     );
   });

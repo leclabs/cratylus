@@ -87,11 +87,10 @@ as a plugin set declaring no practice does, byte for byte. Given names, it rende
 practices' agents, skills they declare and compose, and hooks declared by the chosen practices or
 plugin plumbing. An empty list is refused: no practice is not every practice.
 
-A chosen set must be closed. Before anything is rendered, projection checks that every role an agent
-dispatches (`Agent.dispatches`, matched by anchor against `Agent.holds`) is held by an agent of the
-set or supplied natively by the adapter (`nativeAgents`), and that every skill it is given, with
-what that composes, is carried by the plugin set; a set that is not is refused by one error naming
-the practice, the agent, and the role or skill that is missing. A name that is no declared practice
+A chosen set must be closed under skill composition. Before anything is rendered, projection checks
+that every skill an agent is given, with what that composes, is carried by the plugin set; a set
+that is not is refused by one error naming the practice, the agent and the skill that is missing.
+Whom an agent dispatches is never closed over (decision 0142). A name that is no declared practice
 is refused, naming the declared ones. The tree
 reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected)
 for an install to offer, whatever was rendered.
@@ -113,14 +112,12 @@ skills' full instructions in every turn's system prompt.
 
 An agent's text is rendered from its values: `# <mark> <name>` (the name alone without a mark), its
 description, then one section per factor group in catalog order, each value as its anchor and gloss,
-marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope, handoffs) and model
-are never text: they bind to the harness's settings. On OMP the definition's front matter carries
-`model: "@<name>"`, the model role named for the agent; `spawns`, the agents its handoffs name, each
-mapped through the adapter's `nativeAgents` (`researcher` → `scout`), and `""` for an agent that
-hands off to no one; and, only for an agent that changes nothing (`Agent.readOnly`), `tools` listing
-omp's reading tools alone. Every other agent keeps omp's default tools. `key: null` reserves the key
-of an ipseic agent. The tree reports each agent's tier and effort (`ProjectedTree.agentModels`), from
-which each declaration's model falls back to after its own role.
+marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and model are never
+text. On OMP the definition's front matter carries `model: "@<name>"`, the model role named for the
+agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch any agent
+(decision 0142). `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
+and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
+its own role.
 
 ## How deploy places a tree
 
@@ -162,7 +159,7 @@ asks the adapter where each artifact belongs:
 
 OMP has one scope, the session's: omp loads `agent/extensions/` in every session and cannot load a
 module for one agent alone, so `scopes` answers no for every event, and an enforcing value bound to
-agents degrades to a steer, reported as a guard omp cannot scope per agent. Nothing is placed under
+agents degrades to a steer, reported as a hook omp cannot scope per agent. Nothing is placed under
 `agent/personas/`; a reinstall prunes what an earlier install recorded there, and uninstall removes
 it.
 
@@ -170,13 +167,13 @@ it.
 dispatches an agent as a subagent, and `omp --agent <name>` resolves the same declaration through
 omp's own discovery to start it as a main session, through the cratylus extension, holding the whole
 declaration as dispatch resolves it for a child: its text, model, effort, `autoload-skills`,
-`spawns`, `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own
-dispatch drops what the declaration says, launch holds what it says — a known omp limitation: an
-explicitly empty `spawns` with `task` among the `tools` is no one (omp's discovery reads it as `*`),
-and `read-summarize: true` turns summarised reads on (omp's dispatch applies only `false`). One
-definition, no launcher, nothing to drift. A launched agent, and a delegate with a typed assignment,
-dispatches only through `task`, where each assignment is checked: an `eval` call whose code dispatches
-a delegate (`agent(…)`, `workpool(…)`, `tool.task`, `tool["task"]`) is refused.
+`read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
+what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
+turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
+to drift. Every turn carries the assignment form of each agent that takes a typed one; a dispatch or
+launch whose assignment misfits, a lead's or builder's dispatch the cut's record does not support,
+and an `eval` call whose code dispatches a delegate (`agent(…)`, `workpool(…)`, `tool.task`,
+`tool["task"]`) are each warned of and go ahead (decision 0142(3)).
 
 ## The harness adapter port
 
@@ -193,7 +190,6 @@ port, not on OMP's concrete rendering functions.
 | `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                            |
 | `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment      |
 | `scopedRel`                                         | where a scoped artifact lands for an agent or the session                                   |
-| `nativeAgents`                                      | the agents it supplies itself, by the handoff anchor each stands for                        |
 | `launchSurface`                                     | what is composed from the agents beyond their definitions (OMP's dispatch isolation module) |
 | `capabilitySurface`                                 | the capability tools, and on OMP the `--agent` flag that starts a session as an agent       |
 | `statusSegment`                                     | how a session's agent appears in OMP's segmented status line                                |

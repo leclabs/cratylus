@@ -12,6 +12,7 @@ import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { checksSeenRed } from '../dimensions/deliverable/checks-seen-red.js';
+import { inUse } from '../dimensions/evaluation/in-use.js';
 import { evaluationDesign } from '../dimensions/expertise/evaluation-design.js';
 import { testDesign } from '../dimensions/expertise/test-design.js';
 import { honesty } from '../dimensions/guardrails/honesty.js';
@@ -63,7 +64,6 @@ export const checkWriterRole: RoleCell = {
     autonomy: [handoff],
     perceptionScope: [conceptJournal, examples, heldOutExamples, work],
     actionScope: [writeChecks, runChecks, commitOwnPaths],
-    handoffs: [],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },
       { value: high, slot: 'effort' },
@@ -72,6 +72,6 @@ export const checkWriterRole: RoleCell = {
     assignment: [examplesToBind],
     deliverable: [checksSeenRed],
     guardrails: [honesty, noImplementation],
-    evaluation: [],
+    evaluation: [inUse],
   },
 };

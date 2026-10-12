@@ -585,19 +585,6 @@ export interface Agent {
    */
   readonly holds?: string;
   /**
-   * OPTIONAL — the anchors of the roles this agent DISPATCHES work to (its
-   * handoffs). Absent ⇒ undeclared; `[]` ⇒ it dispatches no one. Copied by the
-   * corpus's own fold from its handoffs.
-   *
-   * The relation exists so that a practice can be CLOSED under it: an agent that
-   * hands work to a role is useless in an install where no agent holds that role
-   * (or the harness supplies natively), and prose in the agent's body cannot be
-   * checked. Each name is an anchor in the same vocabulary as
-   * {@link Agent.holds}, so projection matches the two with no knowledge of what
-   * either role is.
-   */
-  readonly dispatches?: readonly string[];
-  /**
    * OPTIONAL — the anchors of the model tier and thinking effort this agent runs
    * at, copied by the corpus's own fold from its model dimension. Absent ⇒ the
    * host's default. A harness binds it through a model role named for the agent.
@@ -609,8 +596,8 @@ export interface Agent {
    * it returns. Copied by the corpus's own fold from the contracts its assignment
    * and deliverable values carry. Absent ⇒ its handoff is free text.
    *
-   * A harness binds the deliverable as its own output schema and checks the
-   * assignment with `checkAssignment` before the agent runs.
+   * A harness binds the deliverable as its own output schema, shows the assignment
+   * when the agent is dispatched or launched, and warns when it is incomplete.
    */
   readonly contract?: AgentContract;
   /**
@@ -772,8 +759,6 @@ export function markToColor(mark: Mark): string {
 // The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
 // concrete cell instances live in the consuming corpus (canon).
 export {
-  type GuardCell,
-  type GuardJudge,
   type HookCell,
   type HookMessage,
   type HookSource,
@@ -836,19 +821,15 @@ export interface Layout {
   readonly skills?: string;
   /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
-  /** Dir of guard cell modules this plugin contributes — each judges an act for the agents composing a value it holds. */
-  readonly guards?: string;
 }
 
 /**
  * A PRACTICE — a way of working a corpus offers as one installable choice: the
  * agents, skills and hooks that carry it, installed together.
  *
- * A practice is CLOSED under skill composition and agent dispatch: every agent it
- * installs finds every skill it composes and every agent it dispatches. So it lists
- * the agents it carries INCLUDING the ones its agents dispatch to, and projection
- * refuses a chosen set that is not closed rather than render one that would fail
- * when run.
+ * A practice is CLOSED under skill composition: every agent it installs finds every
+ * skill it composes, and projection refuses a chosen set that is not closed rather
+ * than render one whose agents name skills it does not carry.
  *
  * It is data, not a dimension and not a cell: nothing about WHO an agent is
  * changes by being in one.
@@ -858,7 +839,7 @@ export interface Practice {
   readonly name: string;
   /** σ_human* — the one line an install shows a consumer deciding whether to take it. */
   readonly description: string;
-  /** The agents this practice installs, by name — the roles they dispatch included. */
+  /** The agents this practice installs, by name. */
   readonly agents: readonly string[];
   /**
    * The skills this practice installs BEYOND those its agents are given. A skill
@@ -868,12 +849,12 @@ export interface Practice {
    */
   readonly skills?: readonly string[];
   /**
-   * The hook cells, by id, this practice registers BEYOND the guards its agents'
-   * compositions bind. A guard travels with the agents that compose what it binds
-   * and is named nowhere; a cell that binds no composition, and exists for what a
-   * practice's agents declare rather than compose, is named here, so that every
-   * install that places those agents places the cell. A cell every practice needs is
-   * {@link Plumbing.hooks} instead.
+   * The hook cells, by id, this practice registers BEYOND those its agents'
+   * compositions bind. A hook bound by a composition travels with the agents that
+   * compose what it binds and is named nowhere; a cell that binds no composition, and
+   * exists for what a practice's agents declare rather than compose, is named here, so
+   * that every install that places those agents places the cell. A cell every practice
+   * needs is {@link Plumbing.hooks} instead.
    */
   readonly hooks?: readonly string[];
   /** `true` ⇒ a fresh install selects this practice unless the operator declines. */
