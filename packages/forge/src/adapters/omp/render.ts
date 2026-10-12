@@ -969,8 +969,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * declaration a main session was launched as, the agent a dispatched session runs
  * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
  * runs with that agent named the same way: its command is led by a line exporting
- * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a commit or journal append
- * made from the architect's session carries the architect and a lead's the lead;
+ * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a journal append made from
+ * the architect's session records the architect and a lead's the lead (a commit
+ * records the git user, as git does);
  * in a session that is no agent the line unsets it, and an ambient value is dropped
  * at load, so such a session names no one.
  *
