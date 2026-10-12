@@ -20,8 +20,9 @@
 //   cutsInLedger(from)   every recorded cut with its branch, contexts and
 //                        phase, and what the ledger read past
 //   frozenCuts(from)     ≡ `cratylus workPackage frozen`: every cut opened and
-//                        not integrated, with what it freezes; the one home
-//                        of what is frozen, read by the journal and the gate
+//                        not integrated, with what it freezes, read from the
+//                        record; the one home of what is frozen, read by the
+//                        journal and the gate
 //   foldCut(entries,cut) the pure fold, over entries already read
 //   readCut(cut, pkgs)   the pure reading: served concepts and owned examples
 //   appendLifecycle      ≡ `cratylus lifecycle '<json>'` (`../../lifecycle/`)
@@ -34,6 +35,7 @@ import { type FrozenCut, frozenIn } from './frozen.js';
 import { topOf } from './git.js';
 import { ledgerAt } from './ledger.js';
 import { type CutReading, readCut } from './reading.js';
+import { recordedFiles, workingCopy } from './recorded.js';
 
 export { dispatchWorkPackage } from './dispatch.js';
 export type { Cut, CutConcept, CutExample } from './cut.js';
@@ -62,6 +64,7 @@ export {
   type ServedConcept,
   readCut,
 } from './reading.js';
+export { type Files, recordedFiles, workingCopy } from './recorded.js';
 
 /** A cut as its ledger and its visible examples make it, computed now, with
  *  the ledger's entries of kinds this runtime does not know, read past. */
@@ -93,7 +96,7 @@ export function cutView(
   refuse: (message: string) => Error = (m) => new Error(m),
 ): CutView {
   const top = topFrom(from, refuse);
-  const cut = cutAt(top, name, refuse);
+  const cut = cutAt(workingCopy(top), name, refuse);
   const ledger = ledgerAt(top, refuse);
   const state = foldCut(ledger.entries(), name);
   return {
@@ -139,8 +142,9 @@ export function cutsInLedger(
 }
 
 /** Every cut the ledger of the repository holding `from` records as opened
- *  and not integrated, with what it freezes (`frozen.ts`), and the ledger's
- *  entries of kinds this runtime does not know, read past. */
+ *  and not integrated, with what it freezes (`frozen.ts`) as its work tree's
+ *  `HEAD` records it, and the ledger's entries of kinds this runtime does not
+ *  know, read past. */
 export function frozenCuts(
   from: string,
   refuse: (message: string) => Error = (m) => new Error(m),
@@ -148,7 +152,7 @@ export function frozenCuts(
   const top = topFrom(from, refuse);
   const ledger = ledgerAt(top, refuse);
   return {
-    cuts: frozenIn(top, ledger.entries(), refuse),
+    cuts: frozenIn(recordedFiles(top), ledger.entries(), refuse),
     readPast: ledger.readPast(),
   };
 }

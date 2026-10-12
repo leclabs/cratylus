@@ -1,6 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // What is FROZEN: every cut opened and not integrated, and what it freezes,
-// computed from the ledger and the working copy on every request.
+// computed from the ledger and the record on every request (`recorded.ts`:
+// the branch's recorded tip, the working copy only for what it has recorded
+// nothing of, decisions 0132, 0134).
 //
 // A cut is frozen from its `open` until its `integrate`. For each of its
 // contexts it freezes, from its `open`, its examples
@@ -21,6 +23,7 @@ import { EXAMPLES_DIR } from '../concepts/leakage.js';
 import { cutAt } from './cut.js';
 import { foldCut } from './fold.js';
 import type { LedgerEntry } from './ledger.js';
+import type { Files } from './recorded.js';
 import { unbound, usedBy } from './uses.js';
 
 /** Where the cuts' judgments are, relative to the top of the repository. */
@@ -48,11 +51,12 @@ export interface FrozenCut {
   }[];
 }
 
-/** Every cut `entries`, the ledger of the repository at `top`, records as
- *  opened and not integrated, in the order opened, with what it freezes.
- *  Throws, worded by `refuse`, when a frozen cut has no visible examples. */
+/** Every cut `entries`, a ledger, records as opened and not integrated, in the
+ *  order opened, with what it freezes as `files`, the record, hold it.
+ *  Throws, worded by `refuse`, when a frozen cut has no visible examples, or
+ *  the working copy lacks one of its examples files. */
 export function frozenIn(
-  top: string,
+  files: Files,
   entries: readonly LedgerEntry[],
   refuse: (message: string) => Error,
 ): FrozenCut[] {
@@ -65,7 +69,14 @@ export function frozenIn(
       name,
     );
     if (record === undefined || integrated) return [];
-    const cut = cutAt(top, name, refuse);
+    const missing = record.contexts
+      .map((context) => `${EXAMPLES_DIR}/${context}/${name}.md`)
+      .filter((path) => !files.kept(path));
+    if (missing.length > 0)
+      throw refuse(
+        `the frozen cut '${name}' has its examples file ${missing.join(', ')} missing from the working copy`,
+      );
+    const cut = cutAt(files, name, refuse);
     const outputs = [...packages.values()].flatMap((p) => p.outputs);
     return [
       {
@@ -76,9 +87,9 @@ export function frozenIn(
           `${JUDGMENT_DIR}/${context}/${name}.md`,
         ]),
         checks: frozenChecks,
-        uses: usedBy(top, frozenChecks, outputs),
+        uses: usedBy(files, frozenChecks, outputs),
         unchecked: unbound(
-          top,
+          files,
           frozenChecks,
           cut.examples.map((e) => e.ref),
         ),

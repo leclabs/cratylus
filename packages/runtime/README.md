@@ -32,12 +32,18 @@ own context; the checks its `freeze` acts name, a held-out check in its judgment
 `design/judgment/<context>/<cut>/` only once a `freeze` names it, never by implication; and the
 files those checks' relative imports reach, transitively, that no work package of the cut outputs.
 `workPackage frozen` is the one account of what is frozen, with each cut's `uses` and `unchecked`
-(its visible examples no frozen check names). `concepts supersede` and `concepts retire` of a
-frozen concept are refused, before anything is appended, unless the agent making the call, named
-by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing it; only that architect
-integrates a cut. Absent or empty, the agent is unknown, and never an architect. The hidden
-`freeze-gate` command, run as git's `reference-transaction` hook, refuses a branch update that
-brings in a change to what a cut freezes unless its architect makes it (`src/freeze-gate/`).
+(its visible examples no frozen check names), read from the record: the examples, checks and the
+files they use as the branch's recorded tip holds them, the working copy only for what the tip
+does not hold, and the ledger where cratylus keeps it. `concepts define`, `concepts supersede` and
+`concepts retire` of a frozen concept are refused, before anything is appended, unless the agent
+making the call, named by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing
+it, and every one of them while what is frozen cannot be read; `workPackage submit` and `update`
+refuse to widen a package's outputs onto a file a frozen check uses, beyond the work it imports;
+only the architect integrates a cut. Absent or empty, the agent is unknown, and never an
+architect. The hidden `freeze-gate` command, run as git's `reference-transaction` hook in every
+work tree and on pushes, refuses a branch update that changes or deletes a journal entry, from
+anyone, or brings in a change to what a cut freezes unless its architect makes it
+(`src/freeze-gate/`).
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in

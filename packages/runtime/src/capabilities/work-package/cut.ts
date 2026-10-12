@@ -3,7 +3,9 @@
 // across contexts. Its visible examples are every
 // `design/examples/<context>/<name>.md`, read the way the concept journal reads
 // visible examples (a line `N. ...` opens example N); its CONTEXTS are those
-// contexts. An example is referenced as `<context>/<n>`.
+// contexts. An example is referenced as `<context>/<n>`. They are read from the
+// files given: the working copy, or, for what is frozen, the record
+// (`recorded.ts`).
 //
 // An example's CONCEPTS are the comma-separated names in the parenthesis that
 // opens its text, `12. (whole check, efficiency) **Given** ...`, each a concept
@@ -13,9 +15,8 @@
 // is read.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { EXAMPLES_DIR, visibleExamples } from '../concepts/leakage.js';
+import { EXAMPLES_DIR, examplesIn } from '../concepts/leakage.js';
+import type { Files } from './recorded.js';
 
 /** One visible example of a cut. */
 export interface CutExample {
@@ -41,10 +42,10 @@ export interface Cut {
   readonly concepts: readonly CutConcept[];
 }
 
-/** The cut named `name` in the repository at `top`; refuses a malformed name
- *  and a cut with no examples file in any context. */
+/** The cut named `name` as `files` hold it; refuses a malformed name and a cut
+ *  with no examples file in any context. */
 export function cutAt(
-  top: string,
+  files: Files,
   name: string,
   refuse: (message: string) => Error,
 ): Cut {
@@ -52,30 +53,24 @@ export function cutAt(
     throw refuse(
       `the cut '${name}' is not a cut name: one word, with no whitespace and no /; give it with --cut`,
     );
-  const dir = join(top, EXAMPLES_DIR);
-  const contexts = existsSync(dir)
-    ? readdirSync(dir, { withFileTypes: true })
-        .filter(
-          (d) => d.isDirectory() && existsSync(join(dir, d.name, `${name}.md`)),
-        )
-        .map((d) => d.name)
-        .sort()
-    : [];
+  const contexts = files
+    .under(`${EXAMPLES_DIR}/`)
+    .flatMap((path) => {
+      const [context, file, ...deeper] = path
+        .slice(EXAMPLES_DIR.length + 1)
+        .split('/');
+      return file === `${name}.md` && deeper.length === 0 && context
+        ? [context]
+        : [];
+    })
+    .sort();
   if (contexts.length === 0)
     throw refuse(
       `the cut '${name}' has no visible examples: no ${EXAMPLES_DIR}/<context>/${name}.md exists`,
     );
-  const files = new Map(
-    contexts.map((context) => [
-      `${EXAMPLES_DIR}/${context}/${name}.md`,
-      context,
-    ]),
-  );
-  const examples = visibleExamples(top).flatMap(({ file, number, text }) => {
-    const context = files.get(file);
-    if (context === undefined) return [];
-    return [
-      {
+  const examples = contexts.flatMap((context) =>
+    examplesIn(files.read(`${EXAMPLES_DIR}/${context}/${name}.md`) ?? '').map(
+      ({ number, text }) => ({
         ref: `${context}/${number}`,
         context,
         number,
@@ -84,9 +79,9 @@ export function cutAt(
           .map((c) => c.trim())
           .filter((c) => c !== ''),
         text,
-      },
-    ];
-  });
+      }),
+    ),
+  );
   const concepts: CutConcept[] = [];
   for (const e of examples)
     for (const concept of e.concepts)

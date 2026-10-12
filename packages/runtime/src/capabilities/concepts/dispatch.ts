@@ -29,11 +29,12 @@
 // quotation in code type or a flag that holds it. Every refusal is one line
 // opening with `concepts <verb>:`, thrown before anything is appended.
 //
-// THE FREEZE: `supersede` and `retire` of a concept that a cut opened and not
-// integrated names in its examples, in the same bounded context, are refused
-// unless the agent making the call (`../../acting-agent.ts`) is the architect
-// every such cut records for that context. What is frozen is read from the
-// ledger (`../work-package/frozen.ts`), never kept here.
+// THE FREEZE: `define`, `supersede` and `retire` of a concept that a cut opened
+// and not integrated names in its examples, in the same bounded context, are
+// refused unless the agent making the call (`../../acting-agent.ts`) is the
+// architect every such cut records for that context; while what is frozen
+// cannot be read, every one of them is refused. What is frozen is read from the
+// ledger and the record (`../work-package/frozen.ts`), never kept here.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
@@ -52,7 +53,11 @@ import {
   valueFlag,
 } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
-import { cutsInLedger, frozenCuts } from '../work-package/index.js';
+import {
+  type FrozenCut,
+  cutsInLedger,
+  frozenCuts,
+} from '../work-package/index.js';
 import {
   type ClassifyEntry,
   type ContextEntry,
@@ -436,10 +441,19 @@ function answerOf(
       : [standing.current.id];
   };
   /** Refuse a change to the concept `name` in `where` that a frozen cut
-   *  realizing it forbids: a change by any agent but the architect each such
-   *  cut records for `where`. */
+   *  naming it forbids: a change by any agent but the architect each such
+   *  cut records for `where`; and any change while the freeze cannot be read. */
   const unfrozen = (where: string, name: string): void => {
-    const holding = frozenCuts(journal.root, refuse).cuts.filter((c) =>
+    let cuts: readonly FrozenCut[];
+    try {
+      cuts = frozenCuts(journal.root).cuts;
+    } catch (error) {
+      const why = error instanceof Error ? error.message : String(error);
+      throw refuse(
+        `the concept '${name}' in '${where}' cannot be checked against the freeze, so the change is refused: what is frozen cannot be read: ${why.replace(/\s*\n\s*/g, ' ')}`,
+      );
+    }
+    const holding = cuts.filter((c) =>
       c.concepts.some((k) => k.context === where && k.name === name),
     );
     const agent = actingAgent();
@@ -650,7 +664,7 @@ function answerOf(
     case 'supersede': {
       const name = read.named('concept');
       const where = context();
-      if (verb === 'supersede') unfrozen(where, name);
+      unfrozen(where, name);
       const wording = read.required('wording', 'the wording');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];

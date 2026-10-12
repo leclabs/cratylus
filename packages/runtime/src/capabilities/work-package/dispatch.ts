@@ -24,7 +24,10 @@
 // A cut is FROZEN from its `open` until its `integrate` (`frozen.ts`). Only the
 // agent making the call, named by the harness (`../../acting-agent.ts`), may
 // integrate a cut, and only when it is the architect the cut records for each
-// of its contexts.
+// of its contexts. While the cut is frozen, `submit` and `update` refuse to
+// widen a package's outputs onto a file its frozen checks use, beyond the work
+// they import (`uses.ts`, decision 0133), which would take that file out of
+// what is frozen.
 //
 // Every answer is JSON; a reading that read past ledger entries of kinds this
 // runtime does not know, written by a newer one, also carries `uninterpreted`,
@@ -58,6 +61,8 @@ import { commitPaths, filesOf, topOf } from './git.js';
 import { dependencyGraph } from './graph.js';
 import { type Ledger, type PackageFields, ledgerAt } from './ledger.js';
 import { conceptsNamed, readCut } from './reading.js';
+import { recordedFiles, workingCopy } from './recorded.js';
+import { covers, workImported } from './uses.js';
 
 /** The flag every verb but `frozen` takes: the cut it acts on. */
 const CUT = {
@@ -270,10 +275,6 @@ export const WORK_PACKAGE: CapabilityInterface = {
   verbs: VERBS,
 };
 
-/** Whether `output` covers `path`: the same path, or a directory holding it. */
-const covers = (output: string, path: string): boolean =>
-  output === path || (output.endsWith('/') && path.startsWith(output));
-
 /** Whether `path` is a path from the top of the project: relative, POSIX,
  *  with no `..`. */
 const isProjectPath = (path: string): boolean =>
@@ -320,10 +321,10 @@ export function dispatchWorkPackage(
   if (verb === 'frozen')
     return withReadPast(
       verb,
-      { cuts: frozenIn(top, ledger.entries(), refuse) },
+      { cuts: frozenIn(recordedFiles(top), ledger.entries(), refuse) },
       ledger,
     );
-  const cut: Cut = cutAt(top, required('cut', 'the cut'), refuse);
+  const cut: Cut = cutAt(workingCopy(top), required('cut', 'the cut'), refuse);
   const state = foldCut(ledger.entries(), cut.cut);
   const packages = [...state.packages.values()];
   /** A fresh transition id for an entry a verb appends. */
@@ -360,9 +361,13 @@ export function dispatchWorkPackage(
       })),
     })) ?? [];
 
-  /** Refuse `fields` for package `name` unless they are a package the cut can
-   *  hold beside its others. */
-  const admit = (name: string, fields: PackageFields): void => {
+  /** Refuse `fields` for package `name`, whose outputs were `before`, unless
+   *  they are a package the cut can hold beside its others. */
+  const admit = (
+    name: string,
+    fields: PackageFields,
+    before: readonly string[] = [],
+  ): void => {
     for (const path of [...fields.outputs, ...fields.needs])
       if (!isProjectPath(path))
         throw refuse(
@@ -408,6 +413,22 @@ export function dispatchWorkPackage(
       if (!below.has(owner.name))
         throw refuse(
           `the needed output '${need}' is owned by '${owner.name}', which '${name}' does not depend on`,
+        );
+    }
+    if (state.record === undefined || state.integrated) return;
+    const widened = fields.outputs.filter((o) => !before.includes(o));
+    if (widened.length === 0) return;
+    const files = recordedFiles(top);
+    const frozen = frozenIn(files, ledger.entries(), refuse).find(
+      (c) => c.cut === cut.cut,
+    );
+    if (frozen === undefined) return;
+    const work = workImported(files, frozen.checks);
+    for (const output of widened) {
+      const used = frozen.uses.filter((u) => covers(output, u) && !work.has(u));
+      if (used.length > 0)
+        throw refuse(
+          `the output '${output}' of '${name}' takes in ${used.map((u) => `'${u}'`).join(', ')}, which the frozen checks of the cut '${cut.cut}' use; no work package's outputs widen onto what a frozen check uses, beyond the work it imports, until the cut is integrated, and nothing is recorded`,
         );
     }
   };
@@ -647,7 +668,7 @@ export function dispatchWorkPackage(
           throw refuse(
             'give at least one of --output, --concept, --depends-on or --needs',
           );
-        admit(own.name, { ...own, ...changes });
+        admit(own.name, { ...own, ...changes }, own.outputs);
         ledger.append({
           kind: 'update',
           transition: transition('update'),
