@@ -564,6 +564,8 @@ exec cratylus freeze-gate "$@"
 
 This repository runs it from source through `.husky/reference-transaction`; `pnpm install` (its `prepare`) adds the `reference-transaction` entry husky's own hook list lacks.
 
+The freeze holds against agents acting under the name the harness gives them, and wherever the project's own hooks run: an agent that sets `CRATYLUS_AGENT` to another's name by hand, or switches the hooks off, is outside it (decisions 0130, 0131).
+
 #### `cratylus workPackage inventory`
 
 ```sh

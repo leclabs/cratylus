@@ -21,20 +21,23 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `workPackage`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                                                      |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`                               |
-| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`, `record`           |
+| capability    | verbs                                                                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`                    |
+| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`, `record` |
 
 A cut is frozen from its `open` until its `integrate`: from its `open`, its examples, its held-out
 example text `design/judgment/<context>/<cut>.md` and the concepts its examples name, each in its
-own context; from its first `freeze`, the checks frozen with it and its judgment folder
-`design/judgment/<context>/<cut>/`, which holds its held-out checks, and never before.
-`workPackage frozen` is the one account of what is frozen. `concepts supersede` and
-`concepts retire` of a frozen concept are refused, before anything is appended, unless the agent
-making the call, named by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing
-it; only that architect integrates a cut. Absent or empty, the agent is unknown, and never an
-architect.
+own context; the checks its `freeze` acts name, a held-out check in its judgment folder
+`design/judgment/<context>/<cut>/` only once a `freeze` names it, never by implication; and the
+files those checks' relative imports reach, transitively, that no work package of the cut outputs.
+`workPackage frozen` is the one account of what is frozen, with each cut's `uses` and `unchecked`
+(its visible examples no frozen check names). `concepts supersede` and `concepts retire` of a
+frozen concept are refused, before anything is appended, unless the agent making the call, named
+by the harness in `CRATYLUS_AGENT`, is the architect of every cut freezing it; only that architect
+integrates a cut. Absent or empty, the agent is unknown, and never an architect. The hidden
+`freeze-gate` command, run as git's `reference-transaction` hook, refuses a branch update that
+brings in a change to what a cut freezes unless its architect makes it (`src/freeze-gate/`).
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in

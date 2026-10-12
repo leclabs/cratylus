@@ -1,0 +1,17 @@
+# The freeze gate (decisions 0128, 0129): git runs this hook on every ref
+# transaction, whatever route moves a branch (a commit, `--no-verify` included,
+# an amend, a merge, a cherry-pick, a rebase, `update-ref`). In the prepared
+# state, an update of a branch that brings in a change to what a cut not
+# integrated freezes (its examples, held-out example text, frozen checks, the
+# files they use, or a journal entry superseding or retiring a concept it
+# realizes) is refused unless `CRATYLUS_AGENT` names the cut's architect, and
+# the branch stays where it was. It is `cratylus freeze-gate`, run from source
+# (`tsx`), as the immutability gate is, so it needs no build. Other states and
+# transactions touching no branch never start it; its stdin is always read.
+updates=$(cat)
+[ "$1" = prepared ] || exit 0
+case "$updates" in
+*" refs/heads/"*) ;;
+*) exit 0 ;;
+esac
+printf '%s\n' "$updates" | pnpm --silent --filter @cratylus/runtime freeze-gate "$@"
