@@ -1003,6 +1003,126 @@ describe('omp capability interface', () => {
         }
       });
 
+      it('refuses every other route that changes a frozen file, and never a call that only reads', async () => {
+        const cwd = repository();
+        mkdirSync(join(cwd, 'checks/renewal'), { recursive: true });
+        writeFileSync(join(cwd, 'checks/renewal/unaided.test.ts'), 'x');
+        const call = await session('lead', cwd);
+        const device = (tool: string, args: Record<string, unknown>) =>
+          [
+            'write',
+            { path: `xd://${tool}`, content: JSON.stringify(args) },
+          ] as const;
+        for (const [tool, input] of [
+          [
+            'write',
+            { path: '[design/examples/library/renewal.md#1A2B]', content: 'x' },
+          ],
+          [
+            'write',
+            { path: `file://${cwd}/checks/renewal.test.ts`, content: 'x' },
+          ],
+          [
+            'edit',
+            { path: 'notes.md', edits: [{ rename: 'checks/renewal.test.ts' }] },
+          ],
+          [
+            'edit',
+            {
+              input:
+                '*** Begin Patch\n*** Update File: checks/renewal.test.ts\n*** End Patch',
+            },
+          ],
+          [
+            'edit',
+            { input: '*** Edit File: design/examples/library/renewal.md' },
+          ],
+          ['edit', { input: '[notes.md#1A2B]\nMV "checks/renewal.test.ts"' }],
+          ['ast_edit', { paths: ['design/examples/**/*.md'] }],
+          ['ast_edit', { paths: ['notes.md, checks/renewal/'] }],
+          ['ast_edit', { paths: ['checks/*/*.test.ts'] }],
+          ['ast_edit', { paths: ['*.md'] }],
+          device('ast_edit', { paths: ['design/'] }),
+          device('lsp', {
+            action: 'rename',
+            file: 'checks/renewal.test.ts',
+            new_name: 'y',
+          }),
+          device('lsp', {
+            action: 'rename_file',
+            file: 'notes.ts',
+            new_name: 'checks/renewal.test.ts',
+          }),
+          device('lsp', {
+            action: 'code_actions',
+            file: 'checks/renewal.test.ts',
+            apply: true,
+            query: 'q',
+          }),
+          device('lsp', {
+            action: 'request',
+            payload: '{"uri":"checks/renewal.test.ts"}',
+          }),
+          ['tts', { text: 't', output_path: 'checks/renewal.test.ts' }],
+          [
+            'security_scan',
+            { action: 'start', output_root: 'design/judgment' },
+          ],
+          [
+            'bash',
+            { command: 'rm renewal.md', cwd: 'design/examples/library' },
+          ],
+          device('debug', {
+            action: 'launch',
+            program: 'rm',
+            args: ['checks/renewal.test.ts'],
+          }),
+          [
+            'vibe_spawn',
+            { cli: 'codex', prompt: 'rewrite checks/renewal.test.ts' },
+          ],
+        ] as const) {
+          const answer = await call(tool, input);
+          expect(answer?.block, `${tool} ${JSON.stringify(input)}`).toBe(true);
+          expect(answer?.reason).toContain("the cut 'renewal'");
+        }
+        for (const [tool, input] of [
+          ['ast_edit', { paths: ['src/**/*.ts', 'notes.md'] }],
+          device('lsp', {
+            action: 'rename',
+            file: 'checks/renewal.test.ts',
+            new_name: 'y',
+            apply: false,
+          }),
+          device('lsp', {
+            action: 'code_actions',
+            file: 'checks/renewal.test.ts',
+          }),
+          device('lsp', {
+            action: 'references',
+            file: 'checks/renewal.test.ts',
+          }),
+          device('debug', {
+            action: 'variables',
+            program: 'checks/renewal.test.ts',
+          }),
+          ['write', { path: 'conflict://1', content: '@ours' }],
+          ['read', { path: 'checks/renewal.test.ts' }],
+        ] as const)
+          expect(
+            await call(tool, input),
+            `${tool} ${JSON.stringify(input)}`,
+          ).toBeUndefined();
+        writeFileSync(
+          join(cwd, 'checks/renewal/unaided.test.ts'),
+          '<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> b\n',
+        );
+        expect(
+          (await call('write', { path: 'conflict://1', content: '@ours' }))
+            ?.block,
+        ).toBe(true);
+      });
+
       it('lets the architect change them, and anyone change what no cut freezes', async () => {
         const cwd = repository();
         const architect = await session('architect', cwd);
