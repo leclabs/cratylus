@@ -13,12 +13,11 @@ Context: agents. Concepts: enforcement-level, drift, reach, binding. Decisions i
    dispatch goes ahead; no delivered setting or command refuses it for who dispatches whom.
 5. (reach) **Given** each delivered role's tool settings, **when** they are read, **then** each starts
    with the harness's default tools; none is narrowed unless its declaration names the observed harm.
-6. (enforcement-level) **Given** every value the delivered agents declare firm or fixed, **when** each
-   is listed, **then** each names the observed harm it prevents and how its owner can get past it;
-   no value without both is firm or fixed.
+6. (enforcement-level) **Given** every act the delivered project refuses, **when** each refusal is
+   listed, **then** each names the observed harm it prevents and how its owner can get past it; no
+   refusal exists without both, and a value an agent's profile marks firm or fixed is never on that
+   ground alone held by refusing an act.
 7. (drift) **Given** the delivered project, **when** its files are searched, **then** no guard, hook or
    model-judged check holds an agent's replies or stance; drift is held by the agent's own text only.
 8. (drift) **Given** the delivered agents' profiles, **when** each is read, **then** it states its
    behaviour is evaluated in real use, and none names a live suite or recorded-run proof.
-9. (reach) **Given** the illustrator, check-writer or assayers, **when** no model of a family other than
-   the builders' is available, **then** they are started on an available model; the work is not stopped.
