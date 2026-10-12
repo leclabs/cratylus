@@ -254,10 +254,8 @@ describe('the cut', () => {
     });
   });
 
-  it('REFUSES an integration by anyone but its architect, naming the harm and the way past', () => {
-    const repo = repository();
-    wp(repo, 'open', '--branch', 'feature/film', '--architect', 'workflow=lex');
-    const asAgent = (agent: string) => {
+  it('integrates by anyone, recording the maker, and warns when it is not the architect', () => {
+    const asAgent = (repo: string, agent: string) => {
       process.env[ACTING_AGENT_ENV] = agent;
       try {
         return wp(repo, 'integrate');
@@ -265,10 +263,30 @@ describe('the cut', () => {
         Reflect.deleteProperty(process.env, ACTING_AGENT_ENV);
       }
     };
-    const message = refusal(() => asAgent('ana'));
-    expect(message).toContain('ends its freeze for good');
-    expect(message).toContain('its architect integrates it');
-    expect(asAgent('lex')).toMatchObject({ kind: 'integrate', agent: 'lex' });
+    const open = () => {
+      const repo = repository();
+      wp(
+        repo,
+        'open',
+        '--branch',
+        'feature/film',
+        '--architect',
+        'workflow=lex',
+      );
+      return repo;
+    };
+    const other = asAgent(open(), 'ana') as Record<string, unknown>;
+    expect(other).toMatchObject({ kind: 'integrate', agent: 'ana' });
+    expect(String(other.warnings)).toContain("'film'");
+    expect(String(other.warnings)).toContain("'lex'");
+    const architect = asAgent(open(), 'lex');
+    expect(architect).toMatchObject({ kind: 'integrate', agent: 'lex' });
+    expect(architect).not.toHaveProperty('warnings');
+    const byGit = open();
+    git(byGit, 'config', 'user.name', 'lex');
+    const integrated = wp(byGit, 'integrate');
+    expect(integrated).toMatchObject({ agent: 'lex' });
+    expect(integrated).not.toHaveProperty('warnings');
   });
 });
 

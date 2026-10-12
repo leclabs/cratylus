@@ -94,7 +94,7 @@ export type LedgerDraft = {
     }
   | ({ readonly kind: 'submit'; readonly workPackage: string } & PackageFields)
   | { readonly kind: 'freeze'; readonly checks: readonly string[] }
-  | { readonly kind: 'integrate'; readonly agent: string }
+  | { readonly kind: 'integrate'; readonly agent?: string }
   | {
       readonly kind: 'update';
       readonly workPackage: string;

@@ -541,7 +541,7 @@ The levels are computed from the packages' dependencies with `@dagrejs/graphlib`
 
 A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names.
 
-The freeze is a rule held by review and the record, never a gate (decision 0143): no hook refuses a commit or a branch update. Every concept journal entry records who appended it (`by`: `CRATYLUS_AGENT`, else git's user), and `define`, `supersede` and `retire` of a concept a frozen cut's examples name, by anyone but that cut's architect, are recorded with a warning naming the cut. Only the cut's architect integrates it, since integrating ends the freeze for good.
+The freeze is a rule held by review and the record, never a gate (decision 0143): no hook refuses a commit or a branch update. Every concept journal entry records who appended it (`by`: `CRATYLUS_AGENT`, else git's user), and `define`, `supersede` and `retire` of a concept a frozen cut's examples name, by anyone but that cut's architect, are recorded with a warning naming the cut. `integrate` records who made it, the same maker, and warns, naming the cut and its architect, when that is not the architect; integrating ends the freeze for good.
 
 #### `cratylus workPackage inventory`
 

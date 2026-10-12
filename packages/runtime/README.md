@@ -37,8 +37,9 @@ ledger where cratylus keeps it. The freeze is a rule held by review and the reco
 (decision 0143): every journal entry records who appended it (`by`: the agent making the call,
 named by the harness in `CRATYLUS_AGENT`, else git's user), and `concepts define`, `supersede`
 and `retire` of a frozen concept by anyone but the architect of every cut freezing it are
-recorded with a warning naming the cut. Only the architect integrates a cut, since integrating
-ends its freeze for good; absent or empty, the agent is unknown, and never an architect.
+recorded with a warning naming the cut. `workPackage integrate` records who made it, the same
+maker, and warns, naming the cut and its architect, when that is not the architect; integrating
+ends the freeze for good.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in

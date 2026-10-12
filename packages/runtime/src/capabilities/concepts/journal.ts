@@ -27,7 +27,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { actingAgent } from '../../acting-agent.js';
+import { makerAt } from '../../acting-agent.js';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
 import {
   type Draft,
@@ -189,7 +189,7 @@ export function journalAt(
     return cached;
   };
 
-  const maker = actingAgent() ?? gitUser(top);
+  const maker = makerAt(top);
   return {
     root: top,
     maker,
@@ -227,20 +227,6 @@ function mintAfter(last: string | undefined): string {
   if (last === undefined || id > last) return id;
   const after = decodeTime(last) + 1;
   return monotonicFactory(Math.random, () => after)();
-}
-
-/** git's user name in the repository at `top`, when one is set. */
-function gitUser(top: string): string | undefined {
-  try {
-    const name = execFileSync('git', ['config', 'user.name'], {
-      cwd: top,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-    return name === '' ? undefined : name;
-  } catch {
-    return undefined;
-  }
 }
 
 /** The entry in the file at `path`, named `name`, or, when this runtime does

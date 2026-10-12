@@ -14,7 +14,7 @@
 //   open        record the cut: its branch and each context's architect; from
 //               then the cut is frozen
 //   freeze      freeze with the cut checks that bind its examples
-//   integrate   record the cut integrated, ending its freeze; the architect's
+//   integrate   record the cut integrated, ending its freeze, with who made it
 //   submit      record a new work package
 //   update      replace fields of a recorded work package
 //   commit      commit paths as one package's builder
@@ -22,15 +22,14 @@
 //   record      record the cut's figures in the concept journal
 //
 // A cut is FROZEN from its `open` until its `integrate` (`frozen.ts`): a rule held
-// by review and the record, never by refusing a change (decision 0143). Only the
-// agent making the call, named by the harness (`../../acting-agent.ts`), may
-// integrate a cut, and only when it is the architect the cut records for each
-// of its contexts: integrating ends the freeze for good, since the ledger is
-// only appended to.
+// by review and the record, never by refusing a change (decision 0143). The
+// integration records who made it (`../../acting-agent.ts`: the acting agent,
+// else git's user), and warns, naming the cut and its architect, when that is
+// not the architect the cut records for each of its contexts.
 //
 // A breach of a rule nothing irreversible rests on is recorded and warned, never
 // refused (decision 0142(2)): a cut opened across contexts held by different
-// architects, a package whose outputs overlap another's or that needs an output
+// architects, an integration by anyone but the cut's architect, a package whose outputs overlap another's or that needs an output
 // of a package it does not depend on, and a commit made for a package no builder
 // was dispatched for or of a file outside its outputs, carry `warnings`.
 //
@@ -51,7 +50,7 @@
 
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
-import { actingAgent } from '../../acting-agent.js';
+import { makerAt } from '../../acting-agent.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import { ulid } from '../../ulid.js';
@@ -205,7 +204,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut integrated, which ends its freeze for good, the ledger being only appended to, and nothing else: its examples, held-out example text, checks and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts, who integrates it themselves',
+      'Record the cut integrated, which ends its freeze for good, the ledger being only appended to, and nothing else: its examples, held-out example text, checks and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; recorded with who made it, and with a warning naming the cut and its architect when that is not the architect the cut records for each of its contexts',
     when: 'When the cut’s architect takes its change into the design, and never before: no phase, verdict or report stands for it',
     positional: null,
     flags: CUT,
@@ -599,24 +598,29 @@ export function dispatchWorkPackage(
       }
       case 'integrate': {
         const record = frozenRecord();
-        const agent = actingAgent();
-        const holders = record.contexts.map(
-          (c) =>
-            `'${c}' by ${record.architects[c] === undefined ? 'no architect' : `'${record.architects[c]}'`}`,
+        const agent = makerAt(top);
+        const others = record.contexts.filter(
+          (c) => record.architects[c] !== agent,
         );
-        if (
-          agent === undefined ||
-          record.contexts.some((c) => record.architects[c] !== agent)
-        )
-          throw refuse(
-            `only the cut’s architect integrates it, since integrating ends its freeze for good and the ledger cannot take it back; the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}, and the cut '${cut.cut}' is held ${holders.join(', ')}; nothing is recorded: its architect integrates it, the call made as them`,
-          );
-        return ledger.append({
+        const entry = ledger.append({
           kind: 'integrate',
           transition: `integrate:${cut.cut}`,
           cut: cut.cut,
-          agent,
+          ...(agent === undefined ? {} : { agent }),
         });
+        return others.length === 0
+          ? entry
+          : {
+              ...entry,
+              warnings: [
+                `the cut '${cut.cut}' is integrated by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}, not its architect: ${others
+                  .map(
+                    (c) =>
+                      `'${c}' is held by ${record.architects[c] === undefined ? 'no architect' : `'${record.architects[c]}'`}`,
+                  )
+                  .join(', ')}; its freeze has ended, recorded for review`,
+              ],
+            };
       }
       case 'submit': {
         const name = args.positionals[0];
