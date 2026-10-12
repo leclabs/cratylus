@@ -185,7 +185,7 @@ export const ompRoleRouting: RoleRouting = {
 // ── Dispatch isolation: the copy an isolated task runs in ────────────────────
 
 /** omp's task isolation, as {@link HarnessAdapter.dispatchIsolation} exposes it.
- *  Measured on omp 18.4.9. A task tool call takes `isolated` only while the setting
+ *  A task tool call takes `isolated` only while the setting
  *  `task.isolation.enabled` is true, and runs that task in a copy of the checkout it
  *  was dispatched from. What the copy built is applied back into the dispatcher's
  *  checkout unless `task.isolation.apply` is false, and kept as a branch
@@ -201,7 +201,7 @@ export const ompDispatchIsolation: DispatchIsolation = {
     'task.isolation.merge': 'branch',
   },
   lacks:
-    "cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line",
+    "cut from the dispatcher's HEAD and not from the plan's line, so the work it builds must be moved onto the line before it is integrated",
 };
 
 // ── Status line: where a session's agent renders ─────────────────────────────
@@ -755,7 +755,7 @@ const TURN_BRIDGE: readonly string[] = [
   '// event carries no message list — which was read as "not a turn" and left the',
   '// worker firing on empty stdin. It is a turn: the prompt that launched the',
   "// delegate is the instruction, and the text it returned is the delegate's last",
-  '// assistant turn, which is exactly the pair the rubric judges.',
+  '// assistant turn, the pair the worker reads.',
   'function dispatchTurn(event: {',
   '  input?: Record<string, unknown>;',
   '  content?: readonly { type?: string; text?: string }[];',
@@ -1785,8 +1785,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call's command is led by a line naming the",
         "  // session's agent in `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so what the command",
-        "  // records, a commit or a journal append, is that agent's own; in a session that is no agent",
-        '  // the line unsets it, naming no one. No call is refused for what it would change (0143).',
+        "  // records in the journal is that agent's own (a commit records the git user, as git does); in",
+        '  // a session that is no agent the line unsets it, naming no one. No call is refused (0143).',
         '  pi.on("tool_call", (event, ctx) => {',
         '    if (event.toolName !== "bash" || typeof event.input !== "object" || event.input === null) return undefined;',
         '    const input = event.input as Record<string, unknown>;',
