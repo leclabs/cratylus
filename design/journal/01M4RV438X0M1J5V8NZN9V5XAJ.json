@@ -1,0 +1,14 @@
+{
+  "id": "01M4RV438X0M1J5V8NZN9V5XAJ",
+  "at": "2026-10-12T19:58:34.781Z",
+  "kind": "decide",
+  "decisionId": "0146",
+  "context": "agents",
+  "title": "A different model family is preferred, never required",
+  "situation": "The illustrator and the second assayer are bound to another model family than the builders, so when that family's quota runs out (OpenAI and Google on 2026-10-12, OpenRouter earlier) the work stops. Under 0142(2) a requirement is enforced only where the harm it prevents has been observed; no harm from a same-family illustrator or assayer has been.",
+  "decision": "The illustrator, check-writer and assayers run on another model family than the builders where one is available, and on any available model otherwise; a cold reader is one that has not written the concepts, a fresh session reading only the journal, which any model can be. Unavailability of a family never stops the work.",
+  "consequences": "The simplification cut proceeds on the available family.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
