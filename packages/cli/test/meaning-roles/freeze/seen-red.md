@@ -1,53 +1,99 @@
-# meaning-roles: freeze checks seen red
+# meaning-roles: freeze checks seen red, at the record
 
-Scope: workflow/24–38; frozen interface F1-F6 in the lead's contract. No product source was changed. There are no unresolved meaning questions in this slice.
+Scope: workflow/24–38, rebound under 0128, 0129 and 0125 to where the record refuses: the journal before appending, and git's `reference-transaction` hook before a branch takes a change in. This record replaces the attempt-time one (F1–F7, 2026-10-11). `findings-seen-red.md` covers `findings.test.ts`. No product source, example, journal entry or held-out file was changed.
 
-## Boundaries
+## What the checks run
 
-`structural.test.ts` runs the packaged, installed `cratylus` command in a temporary repository and loads the extension produced by that installation. It reuses the existing `agent-launch` and `reconstitution/binding` host fixtures. Only omp's host services are substituted; the command, extension, capability dispatch, and lifecycle capture are delivered code.
+- **Delivered code.** The packaged `cratylus`, installed in a temporary prefix by the suite's global setup, and the omp extension that installation projects, loaded through the binding fixture. Only omp's host services are substituted.
+- **The fixture repository.** Each test opens the renewal cut, makes two commits (the cut's design, checks and `lib/`, then the work `src/renewal.ts`) and wires the record exactly as the contract states: `.git/hooks/reference-transaction` holding `#!/bin/sh` and `exec cratylus freeze-gate "$@"`, mode 0755, with `core.hooksPath` set to `.git/hooks`. The ledger stays uncommitted, where cratylus keeps it: what is frozen is what `cratylus workPackage frozen` reports.
+- **The acting agent.** `CRATYLUS_AGENT` of the git process (absent and empty are also tried).
+- **What is frozen.**
+  - The example `design/examples/library/renewal.md` and the held-out text `design/judgment/library/renewal.md`, both from opening.
+  - The checks `checks/renewal.test.ts` and the folder `checks/renewal/`. Each is run with node, must fail on staff-only access and pass on patron access, and only then goes to `workPackage freeze`. They name `library/1`.
+  - Files a frozen check uses: `checks/support/access.ts` (a relative import), `lib/patron.ts` (reached through it), and `checks/support/types.ts` (a type-only import written `./support/types.js`, the TypeScript specifier).
+  - Not frozen: `src/renewal.ts`. The check imports it, but it is the work package's output.
+- **Routes**, each tried for every target: `commit`, `commit --no-verify`, `commit --amend`, `merge --no-ff` of a loose commit (built with `commit-tree`, no ref moved), `cherry-pick`, `rebase` (replays the branch's last commit onto a loose commit that changes the path), `commit-tree` + `update-ref`, `commit-tree` + `merge --ff-only`, `git rm -r` of the folder holding the path then a commit, and `git mv` of that folder then a commit.
+- **Refused** means git exits non-zero, the branch is unchanged, HEAD is unchanged, and the output names `renewal`, the architect and the path (or the frozen folder registration holding it). HEAD is exempt for `rebase` only: git detaches HEAD before it moves the branch, and the branch is the record. The output is exempt from naming the architect and path in one case: deleting or moving `design/examples/library/` takes the cut's examples out of the working copy, so what is frozen can no longer be read there, and the refusal may be the unread freeze's. It must still refuse, keep the branch and name the cut.
+- **Admitted** means git exits 0, the branch moves, and its tip holds the change.
+- **Harness.** Sessions are launched as an agent: main (omp's `--agent` flag) or dispatched. `write` and `bash` calls fired through the binding must not be blocked. The host then runs the call as omp would:
+  - the command the handlers leave (they may revise `event.input`);
+  - in the fixture's environment, plus any `CRATYLUS_AGENT` the binding leaves in the host process (children inherit it);
+  - plus any `env` the handlers give the call (omp's bash tool takes one).
 
-The gate is called at `tool_call`, before the host-side write. A refused call must set `block: true`, name the cut and architect, and leave the target untouched. Journal refusal must exit 1, name the verb, concept, cut and architect on one line, and leave both history and current meaning unchanged. A filesystem watcher additionally rejects append-then-delete compensation, not merely a changed final snapshot. Admissible changes must append exactly one entry, retain every earlier file byte-for-byte, retain the earlier history, and expose the new wording/reason or retirement in the computed design.
+  The ambient `CRATYLUS_AGENT` is removed for the test and restored after.
 
-The lifecycle Given uses actual extension dispatch/return/verdict handlers. Independent controls exercise builder return, judgment, a failing finding, redispatch, and two passing assayers reaching complete. Main-session cases supply a continuing conversation through the host session manager so the independent reconstitution gate cannot masquerade as freeze. Sub-session cases use their own acting name.
+- **Lifecycle Givens.** These use the extension's real dispatch, return and verdict handlers. A builder is dispatched only after the checks are frozen (0129).
 
-Before registering fixture checks, `freezeChecks` runs each small renewal predicate once against staff-only renewal (must exit 1) and once against patron renewal (must exit 0). Targets cover visible examples, judgment examples, a judgment subtree, a registered check file, and a registered check folder. These are temporary scenario inputs, not product implementation.
+## Bindings
 
-## Example bindings and observed failures
+Test names in `structural.test.ts` unless marked P (`proof.test.ts`).
 
-All names below are test-name prefixes in `structural.test.ts`.
+| Example     | Check                                                                                                                                                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| workflow/24 | lead supersession while building, refused before appending (kept)                                                                                                                                                                                                  |
+| workflow/25 | retirement by each of five roles and by an absent or empty identity (kept)                                                                                                                                                                                         |
+| workflow/26 | architect supersession; earlier history exact (kept)                                                                                                                                                                                                               |
+| workflow/27 | architect retirement; earlier entries exact (kept)                                                                                                                                                                                                                 |
+| workflow/28 | unrelated opening-hours, both verbs, admitted to the lead (kept)                                                                                                                                                                                                   |
+| workflow/29 | film approval refused, museum approval admitted, architect admitted (kept)                                                                                                                                                                                         |
+| workflow/30 | integration releases renewal to the journal (kept)                                                                                                                                                                                                                 |
+| workflow/31 | before any builder: the frozen view; the lead's supersede and retire; every route × example, check, used file, held-out text; a plain commit of the check-folder file, the direct import and the type import; an absent or empty agent; an unrelated file admitted |
+| workflow/32 | returned and judging × lead, builder, check-writer, illustrator, assayer: both journal verbs, every route × four targets, plain commits of the other three; the builder's commit of its output admitted                                                            |
+| workflow/33 | finding and rebuild: lead supersession and every route × four targets                                                                                                                                                                                              |
+| workflow/34 | architect correction in judgment, then lead and assayer still refused (kept)                                                                                                                                                                                       |
+| workflow/35 | in judgment: the architect's commit of the example, then separately of the check, admitted; the assayer's and check-writer's every route × example and check refused                                                                                               |
+| workflow/35 | main and sub, through the binding: a lead session's write lands in the working copy and its shell commit is refused; an architect session's shell commit is admitted; a later lead session is still refused (also binds 31's working copy)                         |
+| workflow/36 | complete, not integrated: both journal verbs and every route × four targets                                                                                                                                                                                        |
+| workflow/37 | after integration: frozen view empty, journal verb admitted, plain commit of each target and every route on the example admitted                                                                                                                                   |
+| workflow/38 | one cut integrated, the other still freezes renewal (kept)                                                                                                                                                                                                         |
+| F1/F6, F4   | identity reaches the concept capability; the lead cannot integrate (kept)                                                                                                                                                                                          |
+| P           | oracles: journal refusal, commit refusal (including the unread-freeze naming), admission; stand-in controls; lifecycle Givens                                                                                                                                      |
 
-| Example     | Check                                                                                                   | Seen red against                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| workflow/24 | lead supersession while a builder is dispatched                                                         | Delivered command accepted and appended; exit 0 instead of refusal.                                                                                                      |
-| workflow/25 | retirement separately for lead, builder, check-writer, illustrator, assayer; also absent/empty identity | Delivered command accepted each retirement; exit 0.                                                                                                                      |
-| workflow/26 | architect supersession, exact old entries, reason and new current version                               | Overfreeze observation mutation changed the delivered call's status to refusal; the acceptance assertion failed. Unmutated control passed.                               |
-| workflow/27 | architect retirement, retained entries and readable history                                             | Same explicit refusal mutation; unmutated control passed.                                                                                                                |
-| workflow/28 | supersession and retirement of unrelated opening-hours                                                  | Same explicit overfreeze mutation, separately for both verbs; unmutated controls passed.                                                                                 |
-| workflow/29 | protected film approval versus independent museum approval, both verbs                                  | Delivered command accepted the forbidden film change.                                                                                                                    |
-| workflow/30 | integration releases renewal while append-only history remains                                          | Delivered command has no `integrate` operation.                                                                                                                          |
-| workflow/31 | no builder started; frozen view, examples, check file/folder, both journal verbs                        | Delivered command has no `freeze` operation. Additional direct example-write cases reach the delivered gate without that operation and fail when no refusal is returned. |
-| workflow/32 | returned and judging × five non-architect roles × main/sub; example/check and both journal verbs        | Delivered command has no `freeze` operation. The common refusal assertions are independently proven against success and warning-only recordings.                         |
-| workflow/33 | failing judgment and subsequent redispatch cannot weaken concept/example/check                          | Delivered command has no `freeze` operation. Both lifecycle Given controls pass independently.                                                                           |
-| workflow/34 | architect correction in judgment, then separate lead supersession and assayer retirement refusal        | Architect correction succeeded; delivered command then accepted the forbidden lead supersession.                                                                         |
-| workflow/35 | architect example/check correction in main/sub; no permission transferred to assayer/check-writer       | Delivered command has no `freeze` operation. The common gate oracle independently rejects an architect refusal and an absent non-architect refusal.                      |
-| workflow/36 | two passing assayers and complete phase still protect all four targets                                  | Delivered command has no `freeze` operation. Complete-phase Given control passes independently.                                                                          |
-| workflow/37 | integration releases all paths and concepts while history remains append-only                           | Delivered command has no `freeze` operation (and `integrate` is separately absent).                                                                                      |
-| workflow/38 | second approved cut still protects shared renewal after first integration                               | Delivered command has no `integrate` operation.                                                                                                                          |
+## Stand-ins and the clause record
 
-Missing-operation reds are reported as such: they do not claim that later assertions in those tests have executed against a conforming implementation. Their preconditions have independent lifecycle controls, and their refusal/permission oracles have negative controls. The post-build run must execute those currently unreachable clauses.
-
-## Proof commands and outcomes
+- `MEANING_FREEZE_STAND_IN=admit` puts in front of the delivered command a record that admits every change. Its `freeze-gate` exits 0, and its journal `supersede`/`retire` run with the ledger moved aside.
+- `MEANING_FREEZE_STAND_IN=refuse` puts in front a record that refuses every change. Its `freeze-gate` refuses every prepared transaction, and its journal refuses every `supersede` and `retire`.
+- Everything else passes to the delivered command. P's stand-in controls show each stand-in does what it says.
+- `MEANING_FREEZE_CLAUSES=<file>` records the outcome of each refusal, admission, binding and view clause, one JSON line each, and carries on past a failed clause. A seen-red run therefore observes every clause, not just each test's first failure. Without it, a failed clause fails its test at once.
+- The earlier `MEANING_FREEZE_RED=overfreeze` mutation at the assertion boundary is removed; the refusing stand-in replaces it. An acceptance run sets neither variable.
 
 ```sh
-pnpm --filter cratylus exec vitest run test/meaning-roles/freeze/structural.test.ts --reporter=verbose
-env MEANING_FREEZE_RED=overfreeze pnpm --filter cratylus exec vitest run test/meaning-roles/freeze/structural.test.ts -t 'workflow/(24|26|27|28)' --reporter=verbose
-pnpm --filter cratylus exec vitest run test/meaning-roles/freeze/proof.test.ts --reporter=verbose
+cd packages/cli
+pnpm exec vitest run test/meaning-roles/freeze --reporter=verbose
+MEANING_FREEZE_STAND_IN=admit  MEANING_FREEZE_CLAUSES=/tmp/clauses-admit.jsonl  pnpm exec vitest run test/meaning-roles/freeze
+MEANING_FREEZE_STAND_IN=refuse MEANING_FREEZE_CLAUSES=/tmp/clauses-refuse.jsonl pnpm exec vitest run test/meaning-roles/freeze
 ```
 
-Observed on 2026-10-11 before the build:
+## Observed, 2026-10-11, branch head `1608b99b` plus these checks
 
-- Final structural baseline: **50 failed, 6 passed (56 tests)**. Failures were the delivered command's permissive journal changes, absent new operations, and absent pre-act gate. Both main/sub approval-only example writes reached the gate and received no refusal. Architect and unrelated-concept controls passed. F1's delivered lead capability call also accepted the forbidden change; this is not just an advertised-schema check. Baseline working-branch revision: `cfb2835ca104f49b9d525840a4d7a58141bcbcbd`.
-- The final targeted run failed all five selected tests: workflow/24 still failed on the delivered command accepting staff-only renewal; workflow/26, workflow/27, and both workflow/28 verbs failed on the opt-in overfreeze mutation. The latter is an explicitly injected bad observation, not a claim that the product actually refused those calls. It changes only the recorded status at the assertion boundary; no installed or source implementation is mutated.
-- All eight independent oracle/lifecycle controls passed. Their negative recordings are expected to make the actual assertion functions throw; gold recordings must not throw.
+Clause counts are for the whole folder.
 
-After implementation, run the structural suite without `MEANING_FREEZE_RED`, together with `proof.test.ts`, against freshly built packages. The opt-in overfreeze command is supposed to fail and must never be used as a green acceptance run. No live model run is required for these structural examples.
+| Run                              | Refusal clauses               | Admission clauses         | Test result          |
+| -------------------------------- | ----------------------------- | ------------------------- | -------------------- |
+| record that admits every change  | **768 of 768 failed**         | 61 held, 2 failed (below) | —                    |
+| record that refuses every change | 12 held (the unread freeze's) | **63 of 63 failed**       | —                    |
+| delivered work, clause record    | 716 failed, 52 held           | 48 failed, 15 held        | —                    |
+| delivered work, plain run        | —                             | —                         | 23 failed, 36 passed |
+
+- **Delivered work.** Every commit-level test fails: `cratylus: unknown command 'freeze-gate'` refuses every branch update without naming the cut, its architect or the path, so every admission fails. The binding's attempt-time gate still blocks the lead's `write` and `bash` calls (8 binding clauses failed, 4 held, those of architect sessions). The 52 refusal clauses that hold are the journal's refusals, already built, plus the unread-freeze commit refusals, which an unknown command passes vacuously. Both kinds are seen red against the admitting record. The journal's admission clauses hold (15).
+- **Admitting record.** The 2 failed admissions are artifacts of that record's state, not of the checks. In the journal-entry case, the architect's commit of the supersede entry found it already committed by the admitted refusal. In workflow/29 (retire), the architect's retirement found approval already retired by the lead's admitted retirement.
+- **Test level.** F1/F6 for the lead fail against the admitting record; F1/F6 for the architect fail against the refusing one. F4 does not touch the record: it passes against both stand-ins and the delivered work. Its seen-red is not recorded in this folder and was not re-observed here.
+- **Green path, a throwaway control, not committed.** A stand-in `freeze-gate` was written per the contract, refusing a non-architect's branch update whose `git diff --no-renames` from the current tip touches a frozen path or brings in a supersede or retire entry for a frozen concept, and refusing when `workPackage frozen` fails. Against it the commit-level tests for 31, 32, 33, 35 (CLI), 36, 37 and the unread-freeze commit cases passed. The checks caught two defects in that control, the kind a realization can share. It trusted the hook's zero old value (git passes zeros when the old value is not verified), which made every file of the tree look changed. And rename detection hid the frozen paths of a moved folder. The 0125 case failed against it at the runtime's view (below), and the harness cases failed at the binding's gate.
+
+## Retired
+
+The attempt-time cases are removed:
+
+- F7: a shell route changing an approved example, and a shell call impersonating the architect.
+- `workflow/31 — main/sub: approval alone freezes the example`.
+- Every `editPath` use in 31, 32, 33, 35, 36 and 37.
+- P's gate oracle.
+- F-route and F-timing in `findings.test.ts`.
+
+Under 0128 the binding refuses no call for changing a file, and 35's harness case checks that.
+
+## Not bound
+
+- **0130** (a name set by hand) and **0131** (the project's hooks switched off) are open decisions; no check binds them.
+- **Weak naming.** A refusal names `renewal` whenever it names a frozen path, because the paths carry the cut's name. `architect` is both the architect's name and its role's.
+- **The unread freeze's message** is bound to refusal only; the contract gives it no wording.

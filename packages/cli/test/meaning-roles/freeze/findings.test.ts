@@ -1,217 +1,168 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
 import type { Fixture } from '../../agent-launch/fixture.js';
-import type { LoadedExtension } from '../../reconstitution/binding/fixture.js';
 import {
+  admittedCommit,
   allowedChange,
   architect,
-  assertGate,
-  checkFolder,
-  checkPath,
-  context,
+  attempt,
+  clause,
+  covers,
   define,
-  editPath,
   examplePath,
+  fileRoutes,
   freezeChecks,
-  integrate,
-  ok,
-  open,
+  frozenCut,
+  heldOutCheck,
+  heldOutText,
+  journalEntry,
+  judgmentFolder,
+  notesPath,
   outsiders,
-  paths,
-  phase,
-  query,
-  refusedChange,
-  session,
+  refs,
+  refusedCommit,
+  routes,
+  settleRefused,
   setup,
-  snapshot,
+  unreadableRefused,
+  working,
+  write,
 } from './fixture.js';
 
 let f: Fixture;
-let extension: LoadedExtension | undefined;
-afterEach(() => {
-  extension?.restore();
-  extension = undefined;
-  f?.dispose();
-});
+afterEach(() => f?.dispose());
 
-it('F-timing: held-out check frozen only once seen red, examples frozen from open', async () => {
+// 0125: a held-out check freezes like a visible one, only by the freeze act
+// that names it once it has been seen to fail; the judgment folder is never
+// frozen by implication; held-out example text is frozen from the cut's opening.
+it('workflow/31 — 0125: held-out text is frozen from opening; a held-out check only once the freeze act names it', () => {
   f = setup();
-  const heldOutCheckPath =
-    'design/judgment/library/renewal/checks/held-out.test.ts';
-  const heldOutTextPath = 'design/judgment/library/renewal.md';
-  mkdirSync(join(f.cwd, 'design/judgment/library/renewal/checks/'), {
-    recursive: true,
-  });
-  writeFileSync(join(f.cwd, heldOutCheckPath), '// check');
-  writeFileSync(join(f.cwd, heldOutTextPath), '# judgment');
-
-  extension = await session(f, 'check-writer');
-
-  // Cut is open, held-out example text should be frozen from open
-  await editPath(f, extension, heldOutTextPath, true);
-
-  // Check in judgment folder should NOT be frozen yet
-  await editPath(f, extension, heldOutCheckPath, false);
-
-  // Assert frozen state agrees (check is not listed as frozen, text is)
-  let state = query(f, 'workPackage', 'frozen');
-  expect(
-    state.cuts[0].checks.some(
-      (p: string) =>
-        p === heldOutCheckPath ||
-        (p.endsWith('/') && heldOutCheckPath.startsWith(p)),
-    ),
-  ).toBe(false);
-  expect(
-    state.cuts[0].examples.some(
-      (p: string) =>
-        p === heldOutTextPath ||
-        (p.endsWith('/') && heldOutTextPath.startsWith(p)),
-    ),
-  ).toBe(true);
-
-  // Freeze checks
+  const revised = (who: string) =>
+    `${working(f, heldOutCheck)}// revised by ${who}\n`;
+  refusedCommit(f, 'check-writer', 'commit', heldOutText);
+  // Opened, no check frozen: the held-out check is the check-writer's to write.
+  clause('view', 'held-out check unfrozen at opening', () =>
+    expect(covers(frozenCut(f)!.checks, heldOutCheck)).toBe(false),
+  );
+  admittedCommit(
+    f,
+    'check-writer',
+    'commit',
+    heldOutCheck,
+    revised('check-writer'),
+  );
+  // The visible checks frozen: still not the held-out check, nor its folder.
   freezeChecks(f);
-
-  // Now checks in judgment folder should be frozen
-  await editPath(f, extension, heldOutCheckPath, true);
-
-  // Same for other outsiders
-  for (const role of ['assayer', 'lead', 'builder']) {
-    extension.restore();
-    extension = await session(f, role);
-    await editPath(f, extension, heldOutCheckPath, true);
-  }
-
-  // Architect can edit
-  extension.restore();
-  extension = await session(f, architect);
-  await editPath(f, extension, heldOutCheckPath, false);
-
-  // Assert frozen state agrees (check is listed as frozen)
-  state = query(f, 'workPackage', 'frozen');
-  expect(
-    state.cuts[0].checks.some(
-      (p: string) =>
-        p === heldOutCheckPath ||
-        (p.endsWith('/') && heldOutCheckPath.startsWith(p)),
-    ),
-  ).toBe(true);
+  clause('view', 'held-out check unfrozen by the visible freeze', () => {
+    const frozen = frozenCut(f)!;
+    expect(covers(frozen.checks, heldOutCheck), 'never by implication').toBe(
+      false,
+    );
+    expect(covers(frozen.checks, `${judgmentFolder}second.test.ts`)).toBe(
+      false,
+    );
+  });
+  admittedCommit(
+    f,
+    'check-writer',
+    'commit',
+    heldOutCheck,
+    revised('check-writer again'),
+  );
+  admittedCommit(
+    f,
+    'check-writer',
+    'commit',
+    `${judgmentFolder}second.test.ts`,
+    working(f, heldOutCheck),
+  );
+  refusedCommit(f, 'check-writer', 'commit', heldOutText);
+  // Seen to fail, named by the freeze act: now frozen to all but the architect.
+  freezeChecks(f, [heldOutCheck]);
+  clause('view', 'held-out check frozen once named', () =>
+    expect(covers(frozenCut(f)!.checks, heldOutCheck)).toBe(true),
+  );
+  for (const route of routes)
+    refusedCommit(f, 'check-writer', route, heldOutCheck);
+  for (const agent of outsiders)
+    refusedCommit(f, agent, 'commit', heldOutCheck);
+  admittedCommit(f, architect, 'commit', heldOutCheck, revised(architect));
 });
 
-it('F-route: structural edit and all tool routes refuse frozen path edits', async () => {
+// A journal entry written straight into the journal's folder meets the record
+// at the commit, as the journal's own append meets it before appending.
+it('workflow/24, workflow/25 — a supersession or retirement of frozen renewal written into the journal is refused at the commit', () => {
   f = setup();
   freezeChecks(f);
-
-  extension = await session(f, 'lead', 'sub');
-
-  // Write route is covered in structural.test.ts
-
-  // Create an unfrozen file for the ast_edit test
-  const unfrozenPath = 'design/unfrozen.md';
-  writeFileSync(join(f.cwd, unfrozenPath), 'unfrozen');
-
-  // ast_edit route
-  await editAstPath(f, extension, examplePath, true, [examplePath]);
-  await editAstPath(f, extension, checkPath, true, [checkPath]);
-  await editAstPath(f, extension, checkPath, true, [checkPath, unfrozenPath]);
-  await editAstPath(f, extension, unfrozenPath, false, [unfrozenPath]);
-  // A folder holding a frozen file, and a glob matching one, name it as surely as its path.
-  await editAstPath(f, extension, examplePath, true, [
-    'design/examples/library/',
-  ]);
-  await editAstPath(f, extension, examplePath, true, [
-    'design/examples/**/*.md',
-  ]);
-
-  // The same refusals hold in a main session.
-  extension.restore();
-  extension = await session(f, 'lead', 'main');
-  await editAstPath(f, extension, examplePath, true, [examplePath]);
-  await editAstPath(f, extension, examplePath, true, [
-    'design/examples/library/',
-  ]);
-  await editAstPath(f, extension, examplePath, true, [
-    'design/examples/**/*.md',
-  ]);
-  await editLspPath(f, extension, checkPath, true, 'rename_file');
-  extension.restore();
-  extension = await session(f, 'lead', 'sub');
-
-  // lsp route
-  await editLspPath(f, extension, examplePath, true, 'rename');
-  await editLspPath(f, extension, checkPath, true, 'rename_file');
-  await editLspPath(f, extension, checkPath, true, 'code_actions', true);
-
-  // Non-mutating code actions and reads are allowed
-  await editLspPath(f, extension, checkPath, false, 'code_actions', false);
-  await editLspPath(f, extension, checkPath, false, 'hover');
-  await editLspPath(f, extension, checkPath, false, 'diagnostics');
-  await readPath(f, extension, checkPath, false);
-
-  extension.restore();
-  extension = await session(f, architect, 'main');
-
-  // Architect can edit
-  await editAstPath(f, extension, examplePath, false, [examplePath]);
-  await editAstPath(f, extension, checkPath, false, [checkPath]);
-  await editLspPath(f, extension, checkPath, false, 'rename');
-  await editLspPath(f, extension, checkPath, false, 'rename_file');
+  const supersede = journalEntry(f, 'supersede');
+  for (const agent of outsiders)
+    for (const route of fileRoutes)
+      refusedCommit(f, agent, route, supersede.path, supersede.text, [
+        supersede.path,
+      ]);
+  const retire = journalEntry(f, 'retire');
+  for (const agent of outsiders)
+    refusedCommit(f, agent, 'commit', retire.path, retire.text, [retire.path]);
+  // Not frozen: another concept's entry, and the architect's own.
+  define(f, 'library', 'opening-hours', 'The times patrons may enter.');
+  const hours = journalEntry(f, 'supersede', 'opening-hours');
+  admittedCommit(f, 'lead', 'commit', hours.path, hours.text);
+  admittedCommit(f, architect, 'commit', supersede.path, supersede.text);
 });
 
-async function editAstPath(
-  f: Fixture,
-  extension: LoadedExtension,
-  path: string,
-  blocked: boolean,
-  pathsList: string[],
-) {
-  const answer = await extension.fire('tool_call', {
-    type: 'tool_call',
-    toolName: 'write',
-    toolCallId: `ast-${path}`,
-    input: {
-      path: 'xd://ast_edit',
-      content: JSON.stringify({ paths: pathsList, ops: [] }),
-    },
+// A freeze that cannot be read refuses rather than lets through: an unreadable
+// ledger entry, or a not-integrated cut's examples file missing.
+const unreadable = [
+  [
+    'an unreadable ledger entry',
+    (g: Fixture) =>
+      write(g, `design/ledger/01${'Z'.repeat(24)}.json`, '{ not json'),
+  ],
+  [
+    "the cut's examples file missing",
+    (g: Fixture) => rmSync(join(g.cwd, examplePath), { force: true }),
+  ],
+] as const;
+for (const [what, spoil] of unreadable) {
+  it(`workflow/31, workflow/32, workflow/33, workflow/36 — ${what}: every branch update is refused`, () => {
+    f = setup();
+    freezeChecks(f);
+    // Readable, nothing frozen is touched: admitted.
+    admittedCommit(f, 'lead', 'commit', notesPath);
+    for (const agent of ['lead', architect]) {
+      // Settling a refused attempt restores tracked files; spoil it afresh.
+      spoil(f);
+      const before = refs(f);
+      try {
+        clause('refusal', `${agent} commit ${notesPath}, freeze unread`, () => {
+          const result = attempt(
+            f,
+            agent,
+            'commit',
+            notesPath,
+            `Notes by ${agent}, freeze unread.\n`,
+          );
+          expect(
+            result.code,
+            `${agent}: an unread freeze refuses: ${result.stderr}${result.stdout}`,
+          ).not.toBe(0);
+          expect(refs(f)).toEqual(before);
+        });
+      } finally {
+        settleRefused(f);
+      }
+    }
   });
-  assertGate(answer, blocked);
-}
-
-async function editLspPath(
-  f: Fixture,
-  extension: LoadedExtension,
-  path: string,
-  blocked: boolean,
-  action: string,
-  apply?: boolean,
-) {
-  const answer = await extension.fire('tool_call', {
-    type: 'tool_call',
-    toolName: 'write',
-    toolCallId: `lsp-${path}`,
-    input: {
-      path: 'xd://lsp',
-      content: JSON.stringify({ file: path, action, apply }),
-    },
+  it(`workflow/24, workflow/25 — ${what}: every journal supersede and retire is refused before appending`, async () => {
+    f = setup();
+    define(f, 'library', 'opening-hours', 'The times patrons may enter.');
+    // Readable: a concept no cut freezes is the lead's to change.
+    allowedChange(f, 'lead', 'supersede', 'library', 'opening-hours');
+    spoil(f);
+    await unreadableRefused(f, 'lead', 'supersede', 'opening-hours');
+    await unreadableRefused(f, 'lead', 'retire', 'opening-hours');
+    await unreadableRefused(f, architect, 'supersede', 'renewal');
+    await unreadableRefused(f, architect, 'retire', 'renewal');
   });
-  assertGate(answer, blocked);
-}
-
-async function readPath(
-  f: Fixture,
-  extension: LoadedExtension,
-  path: string,
-  blocked: boolean,
-) {
-  const answer = await extension.fire('tool_call', {
-    type: 'tool_call',
-    toolName: 'read',
-    toolCallId: `read-${path}`,
-    input: {
-      path: path,
-    },
-  });
-  assertGate(answer, blocked);
 }
