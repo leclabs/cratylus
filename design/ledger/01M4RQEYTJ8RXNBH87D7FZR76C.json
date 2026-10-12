@@ -1,0 +1,15 @@
+{
+  "id": "01M4RQEYTJ8RXNBH87D7FZR76C",
+  "at": "2026-10-12T18:54:36.370Z",
+  "kind": "commit",
+  "transition": "commit:reach-repair:ce4e7a79d6daf5479df32555426ce44af032140d",
+  "cut": "reach-repair",
+  "workPackage": "reach-check-child",
+  "commit": {
+    "sha": "ce4e7a79d6daf5479df32555426ce44af032140d",
+    "message": "test(agent-launch): tell the reach check's child by model, not yield\n\nomp 18.10.2 offers task subagents no `yield` tool, so the stand-in scripted\nthe child as the parent and its journal read never arrived. The child's\nrequests are now those on model `declared` (declarations run on\nfixture/declared, the session on fixture/base); the child closes with\n`yield` when offered one, plain text otherwise. Assertions unchanged.",
+    "paths": [
+      "packages/cli/test/agent-launch/read-only-reach.test.ts"
+    ]
+  }
+}
