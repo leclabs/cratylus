@@ -16,6 +16,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import { appendLifecycle } from '../src/lifecycle/index.js';
@@ -60,6 +61,17 @@ describe('the concept journal as a library', () => {
     expect(journal()).toHaveLength(2);
     for (const name of journal())
       expect(name).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}\.json$/);
+  });
+
+  it('records who appended an entry: the acting agent', () => {
+    process.env[ACTING_AGENT_ENV] = 'keeper';
+    try {
+      expect(
+        version('define', 'A hold lasts ten minutes.', 'First.'),
+      ).toMatchObject({ kind: 'define', by: 'keeper' });
+    } finally {
+      Reflect.deleteProperty(process.env, ACTING_AGENT_ENV);
+    }
   });
 
   it('mints each id past the journal’s last, even one from a later clock', () => {

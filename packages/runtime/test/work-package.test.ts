@@ -1,7 +1,8 @@
 // `dispatchWorkPackage` driven over scratch git repositories it builds itself:
 // the dependency graph's levels and cycles, the refusals that keep packages from
-// colliding, a refused commit that stages nothing, the rounds of the whole
-// check, and the explanation's verbs anchored in cratylus's own live design.
+// colliding, a commit outside a package's outputs made with a warning, the
+// rounds of the whole check, and the explanation's verbs anchored in cratylus's
+// own live design.
 
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -185,7 +186,7 @@ describe('workPackage refusals', () => {
     expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
   });
 
-  it('REFUSES a directory path that would commit another package’s file, staging nothing', () => {
+  it('WARNS of a directory path that commits another package’s file, and of a package no builder was dispatched for, committing it', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'src/reserve');
     wp(
@@ -199,25 +200,22 @@ describe('workPackage refusals', () => {
       '--depends-on',
       'a',
     );
-    dispatched(repo, 'a');
     mkdirSync(join(repo, 'src/reserve'), { recursive: true });
     writeFileSync(join(repo, 'src/reserve/x.ts'), 'theirs\n');
-    const index = git(repo, 'ls-files', '--stage');
     expect(
-      refused(
-        repo,
-        'commit',
-        'a',
-        '--message',
-        'mine',
-        '--path',
-        'src/reserve',
-      ),
-    ).toBe(
-      "workPackage commit: outside the outputs of 'a': 'src/reserve/x.ts' (an output of 'b'); nothing is committed",
+      wp(repo, 'commit', 'a', '--message', 'mine', '--path', 'src/reserve'),
+    ).toMatchObject({
+      warnings: [
+        "the work package 'a' has no builder dispatched by the harness",
+        "outside the outputs of 'a': 'src/reserve/x.ts' (an output of 'b')",
+      ],
+    });
+    expect(git(repo, 'ls-tree', '-r', '--name-only', 'HEAD')).toBe(
+      'src/reserve/x.ts',
     );
-    expect(git(repo, 'ls-files', '--stage')).toBe(index);
-    expect(wp(repo, 'history', 'a')).toMatchObject({ commits: [] });
+    expect(wp(repo, 'history', 'a')).toMatchObject({
+      commits: [{ message: 'mine' }],
+    });
   });
 
   it('reads a path with glob characters literally, committing only that file', () => {

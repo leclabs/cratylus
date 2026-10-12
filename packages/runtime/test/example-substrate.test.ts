@@ -64,46 +64,6 @@ describe('example checks', () => {
     ).rejects.toThrow(/explicit expected result/);
     expect(execute).not.toHaveBeenCalled();
   });
-  it('evaluates injected agent-run records across repeated assertions', async () => {
-    const runner = vi.fn(async () => ({
-      messages: [{ to: 'reviewer', content: 'ready' }],
-      toolCalls: [{ name: 'comment', arguments: { issue: 7 } }],
-    }));
-    const result = await checkExample(
-      visible({
-        kind: 'agent-behavior',
-        runs: 4,
-        threshold: 0.75,
-        runner,
-        assertions: [
-          { kind: 'message-to', recipient: 'reviewer' },
-          { kind: 'tool-call', name: 'comment', arguments: { issue: 7 } },
-        ],
-      }),
-    );
-    expect(runner).toHaveBeenCalledTimes(4);
-    expect(runner).toHaveBeenNthCalledWith(1, {
-      situation: 'a review is ready',
-      trigger: 'review ready',
-      run: 1,
-    });
-    expect(result).toMatchObject({ status: 'pass', passRate: 1, runs: 4 });
-  });
-  it('fails when repeated agent behavior falls below its stated rate', async () => {
-    const result = await checkExample(
-      visible({
-        kind: 'agent-behavior',
-        runs: 4,
-        threshold: 0.75,
-        runner: async ({ run }) => ({
-          messages: run <= 2 ? [{ to: 'reviewer', content: 'ready' }] : [],
-          toolCalls: [],
-        }),
-        assertions: [{ kind: 'message-to', recipient: 'reviewer' }],
-      }),
-    );
-    expect(result).toMatchObject({ status: 'fail', runs: 4, passRate: 0.5 });
-  });
 
   it('uses the rubric captured before the producer runs', async () => {
     const rubric = [

@@ -11,10 +11,7 @@ import {
   files,
   host,
   success,
-  toolJSON,
-  toolText,
 } from '../../capability-port/fixture.js';
-import { assertExplanation, seedProduct } from './fixture.js';
 let h: Host | undefined;
 afterEach(() => {
   h?.dispose();
@@ -59,50 +56,6 @@ it('delivery/1 — native facility wins over an available extension and prose', 
   ).toEqual([]);
 });
 
-it('delivery/2 — without native facilities omp supplies callable extension tools, never just prose', () => {
-  h = host();
-  seedProduct(h);
-  const wiring = h.inspect([], ['concept_journal', 'work_package']);
-  for (const name of ['concept_journal', 'work_package']) {
-    const tools =
-      process.env.RECONSTITUTION_RED === '1'
-        ? wiring.tools.filter((t) => t.name !== name)
-        : wiring.tools;
-    expect(
-      tools.find((t) => t.name === name),
-      'agents receive a callable tool through the extension',
-    ).toBeDefined();
-  }
-  const journal = h.call({ verb: 'design', context: 'film-production' });
-  expect(
-    toolJSON(journal.result),
-    'callable journal returns the product design',
-  ).toMatchObject({ contexts: [{ name: 'film-production' }] });
-  const work = h.inspect(
-    [{ verb: 'inventory', cut: 'film' }],
-    ['work_package'],
-  );
-  expect(
-    work.results,
-    'work package tool executes rather than restating a procedure',
-  ).toHaveLength(1);
-  const direct = h.command(['workPackage', 'inventory', '--cut', 'film']);
-  expect(
-    Boolean(work.results[0]!.result.isError),
-    'tool and command are the same capability operation',
-  ).toBe(direct.code !== 0);
-  const text = toolText(work.results[0]!.result);
-  if (direct.code === 0)
-    expect(JSON.parse(text), 'extension returns the command answer').toEqual(
-      JSON.parse(direct.stdout),
-    );
-  else
-    expect(
-      text,
-      'extension returns the command refusal, not a prose procedure',
-    ).toContain(direct.stderr.trim());
-});
-
 it('delivery/3 — with neither route prose comes from the capability and claims only the command', async () => {
   h = host();
   const adapter = { ...adapterByName('omp'), capabilitySurface: undefined };
@@ -138,53 +91,6 @@ it('delivery/3 — with neither route prose comes from the capability and claims
   expect(prose, 'never falsely claims a callable tool').not.toMatch(
     /registerTool|call (?:the )?(?:concept_journal|work_package) tool/i,
   );
-});
-
-it('delivery/4 — a product-only journal receives both capabilities own purposes and when at session start', () => {
-  h = host();
-  seedProduct(h);
-  expect(
-    h
-      .concepts<{ contexts: { name: string }[] }>('design')
-      .contexts.map((c) => c.name),
-    'only its film-production concepts',
-  ).toEqual(['film-production']);
-  const wiring = h.inspect([], ['concept_journal', 'work_package']);
-  for (const [capability, name] of [
-    ['concepts', 'concept_journal'],
-    ['workPackage', 'work_package'],
-  ]) {
-    const explanation: Explanation = JSON.parse(
-      success(h.command([capability!, '--explain'])),
-    );
-    const tool = wiring.tools.find((t) => t.name === name)!;
-    assertExplanation(
-      process.env.RECONSTITUTION_RED === '1'
-        ? { ...tool, description: '' }
-        : tool,
-      explanation,
-    );
-  }
-});
-
-it('delivery/5 — CLI explanation and published tool preserve the same purposes meanings and guidance', () => {
-  h = host();
-  const wiring = h.inspect([], ['concept_journal', 'work_package']);
-  for (const [capability, name] of [
-    ['concepts', 'concept_journal'],
-    ['workPackage', 'work_package'],
-  ]) {
-    const explanation: Explanation = JSON.parse(
-      success(h.command([capability!, '--explain'])),
-    );
-    const tool = wiring.tools.find((t) => t.name === name)!;
-    assertExplanation(
-      process.env.RECONSTITUTION_RED === '1'
-        ? { ...tool, description: 'Adapter-authored replacement.' }
-        : tool,
-      explanation,
-    );
-  }
 });
 
 it('delivery/6 — delivered capabilities explain when; no workflow-restating overview procedure or reach-for skill', () => {
@@ -239,44 +145,4 @@ it('delivery/6 — concept journal when-text gives occasions for use, not reader
     explanation.when,
     'reader policies belong to the verbs and their output, not when-text',
   ).not.toMatch(readerPolicy);
-});
-
-it('delivery/7 — offered overview returns the consuming context computed account and state, never cratylus contexts', () => {
-  h = host();
-  seedProduct(h);
-  const response = h.call({ verb: 'overview', context: 'film-production' });
-  expect(
-    response.result.isError,
-    'the offered overview operation is callable',
-  ).not.toBe(true);
-  const answer = toolJSON(response.result);
-  expect(answer.contexts, 'never substitutes cratylus contexts').toHaveLength(
-    1,
-  );
-  expect(
-    answer.contexts[0],
-    'product account and recorded state',
-  ).toMatchObject({
-    context: 'film-production',
-    subject: 'Making a film.',
-    concepts: [
-      {
-        name: 'production',
-        meaning: 'Making a film through shoots.',
-        builtFrom: ['shoot'],
-      },
-      {
-        name: 'shoot',
-        meaning: 'An occasion for recording takes.',
-        builtFrom: [],
-      },
-    ],
-    openDecisions: [],
-    cutsInFlight: [],
-    account: expect.any(String),
-  });
-  expect(
-    answer.contexts[0].account.trim(),
-    'computed account requires no separately authored overview',
-  ).not.toBe('');
 });

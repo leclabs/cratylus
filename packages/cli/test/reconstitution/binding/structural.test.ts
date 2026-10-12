@@ -1,10 +1,7 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Fixture } from '../../agent-launch/fixture.js';
-import { repositoryRoot } from '../../concept-journal/fixture.js';
-import type { Scenario } from '../../execution-roles/check.js';
-import { project } from '../../execution-roles/runner.js';
 import {
   assignment,
   bindingFixture,
@@ -278,48 +275,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       );
     });
   }
-
-  it('agents/6 — evaluation preparation rejects a missing cut brief before any live lead run', () => {
-    const scenarios: Scenario[] = JSON.parse(
-      readFileSync(
-        join(
-          repositoryRoot,
-          'packages/cli/test/execution-roles/scenarios.json',
-        ),
-        'utf8',
-      ),
-    );
-    const original = scenarios.find((s) => s.number === 19)!;
-    const bad = {
-      ...original,
-      prompt: original.prompt.replace(/```assignment\s*[\s\S]*?```/g, ''),
-    };
-    let refusal: unknown;
-    try {
-      project(bad).dispose();
-    } catch (error) {
-      refusal = error;
-    }
-    expect(
-      refusal,
-      'same assignment contract rejects it before a live lead run',
-    ).toBeDefined();
-    expect(String(refusal), 'names the missing cut brief fields').toMatch(
-      /lead/i,
-    );
-    for (const field of ['cut', 'concepts', 'examples', 'decisions'])
-      expect(String(refusal)).toContain(field);
-    const corrected = {
-      ...original,
-      prompt: `${assignment({ cut: 'seats', concepts: ['reservation', 'cancellation'], examples: ['booking/1', 'booking/2'], decisions: ['0081'] })}\n\n${bad.prompt}`,
-    };
-    expect(
-      corrected.prompt.endsWith(bad.prompt),
-      'assayers verdicts are reproduced as they actually returned them, not rewritten',
-    ).toBe(true);
-    const prepared = project(corrected);
-    prepared.dispose();
-  });
 
   for (const role of roles) {
     it(`agents/7, workflow/30 — ${role} keeps default tools including shell and all journal appends`, async () => {

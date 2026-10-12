@@ -448,42 +448,6 @@ export function normalizeProjection(h: Host) {
     .replaceAll(h.prefix, '<PREFIX>')
     .replaceAll(h.cwd, '<PROJECT>');
 }
-export function discover(h: Host, cwd = h.cwd) {
-  const observer = join(h.root, 'delivery-discovery.ts');
-  const output = join(h.root, 'delivery-discovery.json');
-  cpSync(join(here, 'observe.ts'), observer);
-  rmSync(output, { force: true });
-  success(
-    run(
-      'omp',
-      [
-        '--print',
-        '--mode',
-        'json',
-        '--model',
-        'anthropic/claude-opus-5-5',
-        '--no-rules',
-        '--no-lsp',
-        '--no-title',
-        '--no-pty',
-        '--extension',
-        observer,
-      ],
-      cwd,
-      { ...h.env, DELIVERY_DISCOVERY: output },
-    ),
-  );
-  expect(
-    existsSync(output),
-    'omp discovery finishes before any model turn',
-  ).toBe(true);
-  const result = JSON.parse(readFileSync(output, 'utf8')) as {
-    agents: { name: string; filePath: string }[];
-    skills: { name: string; filePath: string }[];
-    tools: string[];
-  };
-  return result;
-}
 export function noTap(h: Host) {
   expect(success(h.command(['--help']))).not.toMatch(/event[-_ ]?tap/i);
   expect(

@@ -2,8 +2,9 @@
 // The ENTRIES of the concept journal: what each appending verb records, one
 // entry per file, never edited, moved or deleted.
 //
-// Every entry carries its `id`, a ULID that names its file and orders it, and
-// `at`, the moment its id was minted. A context's description (`context`)
+// Every entry carries its `id`, a ULID that names its file and orders it, `at`,
+// the moment its id was minted, and, when known, `by`, who appended it: the
+// acting agent, else git's user. A context's description (`context`)
 // changes like a concept does: a later description with its reason supersedes
 // the current ones, the earlier kept in the context's history. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
@@ -19,10 +20,12 @@
 // newer runtime and is read past, never refused, interpreted or rewritten.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** What every entry carries: the ULID naming its file, and when it was minted. */
+/** What every entry carries: the ULID naming its file, when it was minted,
+ *  and, when known, who appended it. */
 interface Stamped {
   readonly id: string;
   readonly at: string;
+  readonly by?: string;
 }
 
 /** A description of a bounded context: its full subject, and its place in the
@@ -145,9 +148,13 @@ const optional =
   (value) =>
     value === undefined || fits(value);
 
-/** Every field of entries of kind `K` but its id and kind, each with what fits it. */
+/** Every field of entries of kind `K` but its id, kind and maker (written by
+ *  the journal itself, never required), each with what fits it. */
 type Shape<K extends Entry['kind']> = {
-  readonly [F in Exclude<keyof (Entry & { kind: K }), 'id' | 'kind'>]-?: Fits;
+  readonly [F in Exclude<
+    keyof (Entry & { kind: K }),
+    'id' | 'kind' | 'by'
+  >]-?: Fits;
 };
 
 const worded = {
@@ -264,5 +271,5 @@ export const newerValues = (
 
 /** An entry before it is stamped: what a verb asks the journal to append. */
 export type Draft<E extends Entry = Entry> = E extends Entry
-  ? Omit<E, 'id' | 'at'>
+  ? Omit<E, 'id' | 'at' | 'by'>
   : never;

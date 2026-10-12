@@ -21,13 +21,17 @@
 //   check       record one whole-check run
 //   record      record the cut's figures in the concept journal
 //
-// A cut is FROZEN from its `open` until its `integrate` (`frozen.ts`). Only the
+// A cut is FROZEN from its `open` until its `integrate` (`frozen.ts`): a rule held
+// by review and the record, never by refusing a change (decision 0143). Only the
 // agent making the call, named by the harness (`../../acting-agent.ts`), may
 // integrate a cut, and only when it is the architect the cut records for each
-// of its contexts. While the cut is frozen, `submit` and `update` refuse to
-// widen a package's outputs onto a file its frozen checks use, beyond the work
-// they import (`uses.ts`, decision 0133), which would take that file out of
-// what is frozen.
+// of its contexts: integrating ends the freeze for good, since the ledger is
+// only appended to.
+//
+// A breach of a rule nothing irreversible rests on is recorded and warned, never
+// refused (decision 0142(2)): a cut opened across contexts held by different
+// architects, and a commit made for a package no builder was dispatched for or
+// of a file outside its outputs, carry `warnings`.
 //
 // Every answer is JSON; a reading that read past ledger entries of kinds this
 // runtime does not know, written by a newer one, also carries `uninterpreted`,
@@ -54,6 +58,7 @@ import { type VerbFlags, readArgv, valueFlag } from '../../verb-flags.js';
 import { journalAt } from '../concepts/journal.js';
 import { Folded as Journal } from '../concepts/views.js';
 import { verbOf } from '../plan/argv.js';
+import { covers } from './bindings.js';
 import { type Cut, cutAt } from './cut.js';
 import { type CutRecord, type WorkPackage, foldCut } from './fold.js';
 import { frozenIn } from './frozen.js';
@@ -62,7 +67,6 @@ import { dependencyGraph } from './graph.js';
 import { type Ledger, type PackageFields, ledgerAt } from './ledger.js';
 import { conceptsNamed, readCut } from './reading.js';
 import { recordedFiles, workingCopy } from './recorded.js';
-import { covers, workImported } from './uses.js';
 
 /** The flag every verb but `frozen` takes: the cut it acts on. */
 const CUT = {
@@ -158,7 +162,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'reads',
     purpose:
-      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples and its held-out example text, frozen from its opening; the checks its freeze acts name, a held-out check only once one names it; the files its frozen checks use, reached by their relative imports and no output of its work packages; and each concept its examples name, in its own context; with the architect who alone may change them, and its visible examples no frozen check names (unchecked)',
+      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples and its held-out example text, frozen from its opening; the checks its freeze acts name, a held-out check only once one names it; and each concept its examples name, in its own context; with the architect who alone changes them, and its visible examples no frozen check names (unchecked)',
     when: 'Before changing an example, a judgment, a check or a concept, to see whether a cut freezes it and whose change it is; the one account of what is frozen',
     positional: null,
     flags: {},
@@ -167,7 +171,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, its held-out example text and the concepts its examples name changed only by its architect until it is integrated, each check, held-out checks included, left open to its check-writer until a freeze act names it; refused when its contexts are held by different architects, which calls for one cut per context joined by contracts, or when a context has no architect',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, its held-out example text and the concepts its examples name changed only by its architect until it is integrated, a rule held by review and the record, each check, held-out checks included, left open to its check-writer until a freeze act names it; when its contexts are held by different architects, which calls for one cut per context joined by contracts, it is recorded with a warning; refused when a context has no architect',
     when: 'Once, when the cut’s examples are approved and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
@@ -185,7 +189,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'appends',
     purpose:
-      'Freeze checks with the cut: checks that bind its examples, visible or held out, each seen failing before the work it checks was built, so that from then only the cut’s architect may change them, or a file they use, until the cut is integrated; the judgment folder is never frozen by implication; refused for a cut not opened or already integrated, and for a check that does not exist',
+      'Freeze checks with the cut: checks that bind its examples, visible or held out, each seen failing before the work it checks was built, so that from then only the cut’s architect changes them until the cut is integrated; the judgment folder is never frozen by implication; refused for a cut not opened or already integrated, and for a check that does not exist',
     when: 'Once a check that binds the cut’s examples has been seen failing, before any builder is set to work on what it checks',
     positional: null,
     flags: {
@@ -200,7 +204,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut integrated, which ends its freeze and nothing else: its examples, held-out example text, checks, the files they use and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts',
+      'Record the cut integrated, which ends its freeze for good, the ledger being only appended to, and nothing else: its examples, held-out example text, checks and concepts may change again by anyone with the right to change them, its history is kept, and another cut not integrated still freezes what the two share; refused unless the agent making the call is the architect the cut records for each of its contexts, who integrates it themselves',
     when: 'When the cut’s architect takes its change into the design, and never before: no phase, verdict or report stands for it',
     positional: null,
     flags: CUT,
@@ -227,7 +231,7 @@ export const VERBS = {
     concept: 'work package',
     effect: 'appends',
     purpose:
-      'Commit the named files as the builder of one work package that has been started, and keep the commit in its history; refused, with nothing kept, when any file it would commit is not one of that package’s outputs',
+      'Commit the named files as the builder of one work package, and keep the commit in its history; a commit for a package no builder was dispatched for, or of a file that is not one of that package’s outputs, is made with a warning naming what is out of place',
     when: 'Whenever a builder commits its work, so no builder ever changes another’s outputs',
     positional: PACKAGE,
     flags: {
@@ -361,13 +365,9 @@ export function dispatchWorkPackage(
       })),
     })) ?? [];
 
-  /** Refuse `fields` for package `name`, whose outputs were `before`, unless
-   *  they are a package the cut can hold beside its others. */
-  const admit = (
-    name: string,
-    fields: PackageFields,
-    before: readonly string[] = [],
-  ): void => {
+  /** Refuse `fields` for package `name` unless they are a package the cut can
+   *  hold beside its others. */
+  const admit = (name: string, fields: PackageFields): void => {
     for (const path of [...fields.outputs, ...fields.needs])
       if (!isProjectPath(path))
         throw refuse(
@@ -413,22 +413,6 @@ export function dispatchWorkPackage(
       if (!below.has(owner.name))
         throw refuse(
           `the needed output '${need}' is owned by '${owner.name}', which '${name}' does not depend on`,
-        );
-    }
-    if (state.record === undefined || state.integrated) return;
-    const widened = fields.outputs.filter((o) => !before.includes(o));
-    if (widened.length === 0) return;
-    const files = recordedFiles(top);
-    const frozen = frozenIn(files, ledger.entries(), refuse).find(
-      (c) => c.cut === cut.cut,
-    );
-    if (frozen === undefined) return;
-    const work = workImported(files, frozen.checks);
-    for (const output of widened) {
-      const used = frozen.uses.filter((u) => covers(output, u) && !work.has(u));
-      if (used.length > 0)
-        throw refuse(
-          `the output '${output}' of '${name}' takes in ${used.map((u) => `'${u}'`).join(', ')}, which the frozen checks of the cut '${cut.cut}' use; no work package's outputs widen onto what a frozen check uses, beyond the work it imports, until the cut is integrated, and nothing is recorded`,
         );
     }
   };
@@ -560,15 +544,8 @@ export function dispatchWorkPackage(
           throw refuse(
             `the contexts ${without.map((c) => `'${c}'`).join(', ')} of the cut '${cut.cut}' have no architect; give each with --architect <context>=<architect>, never assumed`,
           );
-        if (new Set(Object.values(architects)).size > 1)
-          throw refuse(
-            `the contexts of the cut '${cut.cut}' are held by different architects (${cut.contexts
-              .map((c) => `'${c}'=${architects[c]}`)
-              .join(
-                ', ',
-              )}); such intent is one cut per context, joined by contracts, never one cut for convenience`,
-          );
-        return ledger.append({
+        const held = new Set(Object.values(architects)).size > 1;
+        const entry = ledger.append({
           kind: 'cut',
           transition: `open:${cut.cut}`,
           cut: cut.cut,
@@ -576,6 +553,18 @@ export function dispatchWorkPackage(
           contexts: cut.contexts,
           architects,
         });
+        return held
+          ? {
+              ...entry,
+              warnings: [
+                `the contexts of the cut '${cut.cut}' are held by different architects (${cut.contexts
+                  .map((c) => `'${c}'=${architects[c]}`)
+                  .join(
+                    ', ',
+                  )}); such intent is one cut per context, joined by contracts`,
+              ],
+            }
+          : entry;
       }
       case 'freeze': {
         const checks = [...new Set(values('check'))];
@@ -615,7 +604,7 @@ export function dispatchWorkPackage(
           record.contexts.some((c) => record.architects[c] !== agent)
         )
           throw refuse(
-            `only the cut’s architect integrates it, and the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}; the cut '${cut.cut}' is held ${holders.join(', ')}; nothing is recorded`,
+            `only the cut’s architect integrates it, since integrating ends its freeze for good and the ledger cannot take it back; the call is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}, and the cut '${cut.cut}' is held ${holders.join(', ')}; nothing is recorded: its architect integrates it, the call made as them`,
           );
         return ledger.append({
           kind: 'integrate',
@@ -668,7 +657,7 @@ export function dispatchWorkPackage(
           throw refuse(
             'give at least one of --output, --concept, --depends-on or --needs',
           );
-        admit(own.name, { ...own, ...changes }, own.outputs);
+        admit(own.name, { ...own, ...changes });
         ledger.append({
           kind: 'update',
           transition: transition('update'),
@@ -680,10 +669,12 @@ export function dispatchWorkPackage(
       }
       case 'commit': {
         const own = named();
-        if (own.status === 'submitted')
-          throw refuse(
-            `the work package '${own.name}' has no builder dispatched by the harness; dispatch its builder first`,
-          );
+        const warnings: string[] =
+          own.status === 'submitted'
+            ? [
+                `the work package '${own.name}' has no builder dispatched by the harness`,
+              ]
+            : [];
         const message = required('message', 'what the commit says');
         const paths = values('path');
         if (paths.length === 0)
@@ -697,7 +688,7 @@ export function dispatchWorkPackage(
           (path) => !own.outputs.some((o) => covers(o, path)),
         );
         if (outside.length > 0)
-          throw refuse(
+          warnings.push(
             `outside the outputs of '${own.name}': ${outside
               .map((path) => {
                 const owner = packages.find((p) =>
@@ -707,7 +698,7 @@ export function dispatchWorkPackage(
                   ? `'${path}'`
                   : `'${path}' (an output of '${owner.name}')`;
               })
-              .join(', ')}; nothing is committed`,
+              .join(', ')}`,
           );
         let sha: string;
         try {
@@ -730,6 +721,7 @@ export function dispatchWorkPackage(
           package: own.name,
           commit,
           history: [...(state.histories.get(own.name) ?? []), commit],
+          ...(warnings.length === 0 ? {} : { warnings }),
         };
       }
       case 'check': {

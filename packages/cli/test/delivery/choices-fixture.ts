@@ -1,6 +1,5 @@
-import { cpSync, existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { stripVTControlCharacters } from 'node:util';
 import { expect, vi } from 'vitest';
 import {
   type InstallCmdOpts,
@@ -9,8 +8,7 @@ import {
 import { fixtureAgentSource } from '../../../forge/test/deploy/helpers.js';
 import { FIXTURE_MANIFEST } from '../../../forge/test/fixture-manifest.js';
 import type { Host } from '../capability-port/fixture.js';
-import { run, success } from '../capability-port/fixture.js';
-import { here, owned, put, settings } from './fixture.js';
+import { owned, put, settings } from './fixture.js';
 
 export const hiddenStatus = {
   preset: 'custom',
@@ -140,67 +138,4 @@ export function hostOwned(h: Host) {
   expect(record, 'host model answers are not owned').not.toMatch(
     /fixture\/(?:frontier|fast|persona|changed)/,
   );
-}
-export function observeChoice(h: Host, agent: string) {
-  put(
-    join(h.home, '.omp/agent/models.yml'),
-    JSON.stringify({
-      providers: {
-        fixture: {
-          api: 'openai-completions',
-          baseUrl: 'http://127.0.0.1:1/v1',
-          apiKey: 'not-a-credential',
-          models: ['base', 'frontier', 'fast', 'persona', 'changed'].map(
-            (id) => ({
-              id,
-              name: id,
-              reasoning: true,
-              input: ['text'],
-              contextWindow: 128000,
-              maxTokens: 2048,
-              compat: { supportsReasoningEffort: true },
-            }),
-          ),
-        },
-      },
-    }),
-  );
-  const observer = join(h.root, 'observe-choice.ts');
-  const output = join(h.root, `choice-${agent}.json`);
-  cpSync(join(here, 'observe-choice.ts'), observer);
-  const quote = (s: string) => `'${s.replaceAll("'", "'\\''")}'`;
-  const args = [
-    'omp',
-    '--agent',
-    agent,
-    '--no-rules',
-    '--no-lsp',
-    '--no-title',
-    '--no-pty',
-    '--extension',
-    observer,
-  ];
-  const result = run(
-    'script',
-    ['-q', '-e', '-c', args.map(quote).join(' '), '/dev/null'],
-    h.cwd,
-    {
-      HOME: h.home,
-      PATH: h.env.PATH,
-      TERM: 'xterm-256color',
-      LANG: 'C.UTF-8',
-      DELIVERY_CHOICE_OBSERVATION: output,
-      GIT_CONFIG_NOSYSTEM: '1',
-      GIT_CONFIG_GLOBAL: '/dev/null',
-    },
-  );
-  success(result);
-  expect(existsSync(output), result.stdout + result.stderr).toBe(true);
-  return {
-    model: JSON.parse(readFileSync(output, 'utf8')).model as {
-      provider: string;
-      id: string;
-    },
-    rendered: stripVTControlCharacters(result.stdout),
-  };
 }

@@ -375,7 +375,7 @@ describe('delivery: older concept journal readers', () => {
     );
   });
 
-  it('workflow/5 — negative recordings fail for stale meanings, reordered history, open acceptance, false warnings and reading writes', () => {
+  it('workflow/5 — negative variants fail for stale meanings, reordered history, open acceptance, false warnings and reading writes', () => {
     knownJournal(journal.root);
     const golden = knownViews.map((args) =>
       query(installed, journal.root, ...args),

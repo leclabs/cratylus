@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
+import { ACTING_AGENT_ENV } from '../../src/acting-agent.js';
 import { dispatchWorkPackage } from '../../src/capabilities/work-package/index.js';
 import { LEDGER_DIR } from '../../src/capabilities/work-package/ledger.js';
 import { completionCheck } from '../../src/completion-check/index.js';
@@ -229,6 +230,45 @@ describe('the cut', () => {
         ),
       ),
     ).toContain('already recorded');
+  });
+
+  it('opens across contexts held by different architects with a warning', () => {
+    const repo = repository(['workflow', 'agents']);
+    expect(
+      wp(
+        repo,
+        'open',
+        '--branch',
+        'feature/film',
+        '--architect',
+        'workflow=lex',
+        '--architect',
+        'agents=ana',
+      ),
+    ).toMatchObject({
+      kind: 'cut',
+      warnings: [expect.stringContaining('held by different architects')],
+    });
+    expect(wp(repo, 'state')).toMatchObject({
+      architects: { workflow: 'lex', agents: 'ana' },
+    });
+  });
+
+  it('REFUSES an integration by anyone but its architect, naming the harm and the way past', () => {
+    const repo = repository();
+    wp(repo, 'open', '--branch', 'feature/film', '--architect', 'workflow=lex');
+    const asAgent = (agent: string) => {
+      process.env[ACTING_AGENT_ENV] = agent;
+      try {
+        return wp(repo, 'integrate');
+      } finally {
+        Reflect.deleteProperty(process.env, ACTING_AGENT_ENV);
+      }
+    };
+    const message = refusal(() => asAgent('ana'));
+    expect(message).toContain('ends its freeze for good');
+    expect(message).toContain('its architect integrates it');
+    expect(asAgent('lex')).toMatchObject({ kind: 'integrate', agent: 'lex' });
   });
 });
 

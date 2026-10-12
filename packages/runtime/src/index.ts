@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // @cratylus/runtime — the per-host RUNTIME contract leaf.
 //
-// The barrel for the `.` export: the example substrate and the offline proof.
+// The barrel for the `.` export: the example substrate.
 // Zero `@cratylus/*` deps.
 //
 // THE LEDGER API, for a harness binding (the omp extension's builder dispatch
-// check and freeze gate) and for another package (forge): the ledger fold,
+// check) and for another package (forge): the ledger fold,
 // readiness, served concepts and owned examples of a cut (`cutView`), every
 // recorded cut with its phase (`cutsInLedger`), every frozen cut with what it
 // freezes (`frozenCuts`), the pure fold and reading, and the lifecycle append
@@ -16,7 +16,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export * from './example-substrate.js';
-export * from './offline-proof.js';
 // The concept journal as it explains itself: its verbs, each with its effect.
 export { JOURNAL } from './capabilities/concepts/dispatch.js';
 // The version skew capability as it explains itself, which the omp extension carries in the
@@ -59,4 +58,3 @@ export {
   lifecycleEvent,
 } from './lifecycle/index.js';
 export { WATCHED, completionCheck } from './completion-check/index.js';
-export { freezeGate } from './freeze-gate/index.js';

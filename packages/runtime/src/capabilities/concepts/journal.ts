@@ -27,6 +27,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { actingAgent } from '../../acting-agent.js';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
 import {
   type Draft,
@@ -124,8 +125,11 @@ export interface Journal {
   /** What was read past: entries of kinds this runtime does not know, or of a
    *  known kind holding a value it does not know. */
   readPast(): ReadPast;
-  /** Append `draft` as one new entry, stamped with its id and time. */
-  append<D extends Draft>(draft: D): D & { id: string; at: string };
+  /** Append `draft` as one new entry, stamped with its id, its time and, when
+   *  known, who appended it. */
+  append<D extends Draft>(
+    draft: D,
+  ): D & { id: string; at: string; by?: string };
 }
 
 /** The journal of the git repository holding `from`; `refuse` words a refusal
@@ -189,9 +193,11 @@ export function journalAt(
     readPast: () => load().readPast,
     append(draft) {
       const id = mintAfter(load().last);
+      const by = actingAgent() ?? gitUser(top);
       const entry = {
         id,
         at: new Date(decodeTime(id)).toISOString(),
+        ...(by === undefined ? {} : { by }),
         ...draft,
       };
       mkdirSync(dir, { recursive: true });
@@ -218,6 +224,20 @@ function mintAfter(last: string | undefined): string {
   if (last === undefined || id > last) return id;
   const after = decodeTime(last) + 1;
   return monotonicFactory(Math.random, () => after)();
+}
+
+/** git's user name in the repository at `top`, when one is set. */
+function gitUser(top: string): string | undefined {
+  try {
+    const name = execFileSync('git', ['config', 'user.name'], {
+      cwd: top,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return name === '' ? undefined : name;
+  } catch {
+    return undefined;
+  }
 }
 
 /** The entry in the file at `path`, named `name`, or, when this runtime does

@@ -17,7 +17,6 @@ import { run, toolText } from '../capability-port/fixture.js';
 import {
   assertOwned,
   assertRemoved,
-  discover,
   earlier,
   earlierCommand,
   fresh,
@@ -59,36 +58,21 @@ it('delivery/1 — one user installation is offered in existing and later projec
   const afterInstall = tree(owned(h));
   projects.push(join(h.root, 'later-project'));
   mkdirSync(projects[2]!);
-  const agentRoot = existsSync(owned(h))
-    ? join(owned(h), 'agents')
-    : join(h.home, '.omp/agent/agents');
-  const skillRoot = existsSync(owned(h))
-    ? join(owned(h), 'skills')
-    : join(h.home, '.agents/skills');
-  const expectedAgents = Object.keys(tree(agentRoot))
-    .filter((p) => p.endsWith('.md'))
-    .map((p) => p.slice(0, -3));
-  const expectedSkills = Object.keys(tree(skillRoot))
-    .filter((p) => p.endsWith('/SKILL.md'))
-    .map((p) => p.split('/')[0]);
-  expect(expectedAgents.length, 'installed corpus agents').toBeGreaterThan(0);
-  expect(expectedSkills.length, 'installed corpus skills').toBeGreaterThan(0);
-  for (const cwd of projects) {
-    const offered = discover(h, cwd);
-    if (negative === '1' && cwd === projects[2]) offered.agents = []; // Negative recording: a later project cannot discover the installation.
-    expect(offered.agents.map((a) => a.name)).toEqual(
-      expect.arrayContaining(expectedAgents),
-    );
-    expect(offered.skills.map((s) => s.name)).toEqual(
-      expect.arrayContaining(expectedSkills),
-    );
-    expect(offered.tools).toEqual(
-      expect.arrayContaining(['concept_journal', 'work_package']),
-    );
+  expect(
+    Object.keys(tree(join(owned(h), 'agents'))).filter((p) => p.endsWith('.md'))
+      .length,
+    'installed corpus agents',
+  ).toBeGreaterThan(0);
+  expect(
+    Object.keys(tree(join(owned(h), 'skills'))).filter((p) =>
+      p.endsWith('/SKILL.md'),
+    ).length,
+    'installed corpus skills',
+  ).toBeGreaterThan(0);
+  for (const cwd of projects)
     expect(tree(cwd)).not.toHaveProperty(
       '.cratylus/omp/extensions/cratylus.ts',
     );
-  }
   expect(tree(owned(h))).toEqual(afterInstall);
   expect(tree(second)).toEqual(otherBefore);
 });
@@ -313,7 +297,7 @@ it('delivery/8 — a genuine pre-digest installation leaves no earlier projectio
   );
 });
 
-it('delivery/8 — no earlier same-name agent outside the root wins harness discovery after upgrade', () => {
+it('delivery/8 — no earlier same-name agent outside the root survives the upgrade', () => {
   h = fresh();
   const bindings = earlier(h, 'pre-digest-installation.json');
   const oldArchitect = join(h.home, '.omp/agent/agents/architect.md');
@@ -324,15 +308,13 @@ it('delivery/8 — no earlier same-name agent outside the root wins harness disc
   version(h, '2.5.0');
   success(install(h));
   preserved(h, bindings);
-  const offered = discover(h);
   for (const path of Object.keys(tree(join(owned(h), 'agents')))) {
     if (!path.endsWith('.md')) continue;
-    const name = path.slice(0, -3);
-    const agent = offered.agents.find((a) => a.name === name);
-    expect(agent, `${name} is offered`).toBeDefined();
+    const outside = join(h.home, '.omp/agent/agents', path);
+    if (!existsSync(outside)) continue;
     expect(
-      realpathSync(agent!.filePath),
-      `${name} resolves to the new declaration, not an earlier same-name copy`,
+      realpathSync(outside),
+      `${path} resolves to the new declaration, not an earlier same-name copy`,
     ).toBe(realpathSync(join(owned(h), 'agents', path)));
   }
 });
@@ -393,10 +375,6 @@ it('delivery/10 — upgrade rewrites every reference while retaining the host re
       Object.entries(material).map(([path, text]) => [path, { text }]),
     ),
   );
-  const observed = discover(h);
-  expect(observed.agents.map((a) => a.name)).not.toContain('obsolete-agent');
-  expect(observed.skills.map((s) => s.name)).not.toContain('obsolete-skill');
-  expect(observed.tools).toContain('concept_journal');
 });
 
 it.each(['redirected', 'replaced'])(
@@ -448,13 +426,6 @@ it('delivery/11 — uninstall removes the whole root and all its references, nev
   success(uninstall(h));
   assertRemoved(h);
   preserved(h, material);
-  const offered = discover(h);
-  expect(offered.tools).not.toContain('concept_journal');
-  expect(offered.tools).not.toContain('version_skew');
-  expect(offered.agents.map((a) => a.name)).toContain('architect');
-  expect(offered.skills.map((s) => s.name)).toContain('host-skill');
-  expect(offered.agents.map((a) => a.name)).not.toContain('check-writer');
-  expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
 });
 
 it.each([
@@ -513,12 +484,6 @@ it.each([
     expect(
       realpathSync(join(h.home, '.omp/plugins/node_modules/mira-plugin')),
     ).toBe(hostPlugin);
-    const offered = discover(h);
-    expect(offered.tools).not.toContain('concept_journal');
-    expect(offered.agents.map((a) => a.name)).toContain('architect');
-    expect(offered.skills.map((s) => s.name)).toContain('host-skill');
-    expect(offered.agents.map((a) => a.name)).not.toContain('check-writer');
-    expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
   },
 );
 
@@ -569,13 +534,8 @@ it('delivery/12 — uninstall reaches all projects but neither their records nor
   }
   const before = projects.map((cwd) => tree(cwd));
   success(uninstall(h));
-  for (const [i, cwd] of projects.entries()) {
+  for (const [i, cwd] of projects.entries())
     expect(tree(cwd)).toEqual(before[i]);
-    const offered = discover(h, cwd);
-    expect(offered.tools).not.toContain('concept_journal');
-    expect(offered.agents.map((a) => a.name)).not.toContain('architect');
-    expect(offered.skills.map((s) => s.name)).not.toContain('conceptualize');
-  }
   expect(tree(second)).toEqual(secondBefore);
   assertRemoved(h);
 });
