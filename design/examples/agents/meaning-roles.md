@@ -1,7 +1,7 @@
 # Examples · meaning roles
 
-Context: agents. Concepts: drift, profile and enforcement-level. Decisions in force: 0116 and 0117,
-with 0078, 0100 and 0106. Carried examples retain their numbers.
+Context: agents. Concepts: drift, profile and enforcement-level. Decisions in force: decision 0123
+and decision 0106. Carried examples retain their numbers.
 Companion examples: [workflow](../workflow/meaning-roles.md).
 
 Structural examples execute handoffs or assert over the delivered declarations and recorded behavior.
@@ -9,8 +9,8 @@ Behavioral examples run the composed agents 5 times with their actual assignment
 holds in at least 4 runs, every never-assertion in all 5. A rubric's criteria each hold in at least 4
 runs; its never-assertions hold in all 5.
 
-Behavioral reply cases run with no guard judging replies: ordering, hand-back and recording before
-reporting must hold in what the architect actually delivers, not in a replacement elicited by a refusal.
+The architect's reply behavior itself is illustrated in the reply-discipline examples; these examples
+fix how its values are stated and how a run is judged when no guard judges replies.
 
 ## Structural (execution and assertions over delivered output)
 

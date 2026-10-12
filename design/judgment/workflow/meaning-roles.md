@@ -1,6 +1,6 @@
 # Judgment examples · meaning roles
 
-Context: workflow. Concepts: freeze, cut and architect. Decisions in force: 0116.
+Context: workflow. Concepts: freeze, cut and architect. Decisions in force: 0123 and 0128.
 Structural examples execute capabilities or assert over their delivered output.
 
 1. (freeze, cut) **Given** two cuts realize a museum's receipt concept, one cut has completed and

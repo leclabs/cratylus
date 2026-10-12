@@ -1,0 +1,14 @@
+{
+  "id": "01M4PVAC3KK26TNQF6GTRXFWWF",
+  "at": "2026-10-12T01:23:31.571Z",
+  "kind": "decide",
+  "decisionId": "0128",
+  "context": "workflow",
+  "title": "The freeze holds at the record: journal appends and commits",
+  "situation": "Cut 7's second judgment: one assayer accepts, the other rejects on the freeze's routes. Refusing changes when they are attempted misses routes (a structural edit with paths as one string, shell globs and folders, moving the examples folder, language-server refactors, built paths), and each added route reveals another; the reading of what is frozen failing let everything through. 0125 to 0127 settle the held-out timing, replacements and descriptions.",
+  "decision": "The freeze is held where a change would be recorded, the one point every route meets: the journal refuses before appending, and the project's history refuses a commit that takes in a change to a frozen example, check, or a file a frozen check uses, from anyone but the architect; a freeze that cannot be read refuses. A change in a working copy is not the frozen example or check: the record never holds it. The attempt-time gate is retired, so the law has one place to hold. A builder is not dispatched while a visible example of its work package has no frozen check. Examples 31 to 33 and 36 are corrected by the architect to say 'before the change is recorded' where they said 'before anything is changed or recorded'.",
+  "consequences": "The freeze checks rebind to the commit and journal points, each seen red first; the cut is judged again.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

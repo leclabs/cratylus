@@ -1,7 +1,7 @@
 # Examples · meaning roles
 
-Context: workflow. Concepts: architect, freeze and cut. Decisions in force: 0116 and 0117,
-with 0078, 0100 and 0106. Carried examples retain their numbers.
+Context: workflow. Concepts: architect, freeze and cut. Decisions in force: 0123 and 0128,
+with 0119 to 0121 and 0125 to 0127. Carried examples retain their numbers.
 Companion examples: [agents](../agents/meaning-roles.md).
 
 Structural examples execute capabilities or assert over their delivered output. Behavioral examples run
@@ -53,20 +53,20 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
 31. (freeze, supersession) **Given** the architect has approved a renewal cut's examples, their
     checks have been seen to fail against work that breaks them, and no builder has yet started,
     **when** the lead attempts separately to change an approved example, change its check,
-    supersede renewal or retire it, **then** each attempt is refused before anything is changed
-    or recorded. The examples, checks, current concept and its history stay unchanged; the
+    supersede renewal or retire it, **then** each attempt is refused before the change is
+    recorded. The examples, checks, current concept and its history stay unchanged; the
     freeze never waits for the first builder to start.
 32. (freeze, supersession) **Given** every builder has returned the renewal cut's work and its
     visible examples pass, **when** an agent other than the architect attempts separately to
     change a frozen example, change its check, supersede renewal or retire it, **then** each
-    attempt is refused before anything is changed or recorded. This holds both before judgment
+    attempt is refused before the change is recorded. This holds both before judgment
     starts and while judgment is under way, separately for the lead, builder, check-writer,
     illustrator and assayer. A builder's return, a green result or the start of judgment never
     lifts the freeze; neither a warning nor recording and then undoing a change counts as refusal.
 33. (freeze, supersession) **Given** judgment finds that the renewal work still requires staff
     intervention although its concept and frozen example require patrons to renew unaided,
     **when** the lead attempts to supersede renewal, relax the example or weaken its check to
-    accept staff-only renewal, **then** each attempt is refused before anything is changed or
+    accept staff-only renewal, **then** each attempt is refused before the change is
     recorded. The same protection holds after the finding returns the work to a builder; a
     judgment finding never grants permission to bend the target to fit the work.
 34. (freeze, supersession) **Given** the renewal cut's builders have returned and judgment is
@@ -83,7 +83,7 @@ name their criteria; every criterion must hold in at least 4 runs, with never-as
 36. (freeze, supersession) **Given** both assayers have passed every work package of the renewal
     cut, judgment has ended and the cut is complete but has not been integrated, **when** the
     lead attempts separately to change a frozen example, change its check, supersede renewal
-    or retire it, **then** each attempt is refused before anything is changed or recorded.
+    or retire it, **then** each attempt is refused before the change is recorded.
     Successful judgment and completion never stand in for integration or end the freeze early.
 37. (freeze, supersession) **Given** the renewal cut has been integrated and no other frozen
     cut realizes renewal, **when** an otherwise admissible change to its examples or checks,
