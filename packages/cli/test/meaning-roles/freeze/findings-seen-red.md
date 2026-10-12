@@ -6,3 +6,12 @@
 - `F-route`: `test/meaning-roles/freeze/findings.test.ts > F-route: structural edit and all tool routes refuse frozen path edits`
   - Asserted: A structural edit `xd://ast_edit` to a frozen path by a non-architect should be blocked by the agent-launch hook gate, before the host executes the tool.
   - Seen red: `AssertionError: must refuse before the host executes the tool: expected undefined to be true` (The extension hook did not block the structural-edit tool execution).
+
+## Completed by the lead
+
+The lead added the cases the check-writer was asked for and left out: an `xd://ast_edit` call whose
+`paths` name a folder holding a frozen example or a glob matching one, and the lead's refusals in
+a main session as well as a sub session. Re-run against the current work, both cases are still
+red for their findings' reasons. F-timing: the check-writer is refused on the judgment folder
+before any check is frozen. F-route: the first `xd://ast_edit` staging call naming a frozen
+example is not refused.

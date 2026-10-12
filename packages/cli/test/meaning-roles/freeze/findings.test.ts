@@ -117,6 +117,27 @@ it('F-route: structural edit and all tool routes refuse frozen path edits', asyn
   await editAstPath(f, extension, checkPath, true, [checkPath]);
   await editAstPath(f, extension, checkPath, true, [checkPath, unfrozenPath]);
   await editAstPath(f, extension, unfrozenPath, false, [unfrozenPath]);
+  // A folder holding a frozen file, and a glob matching one, name it as surely as its path.
+  await editAstPath(f, extension, examplePath, true, [
+    'design/examples/library/',
+  ]);
+  await editAstPath(f, extension, examplePath, true, [
+    'design/examples/**/*.md',
+  ]);
+
+  // The same refusals hold in a main session.
+  extension.restore();
+  extension = await session(f, 'lead', 'main');
+  await editAstPath(f, extension, examplePath, true, [examplePath]);
+  await editAstPath(f, extension, examplePath, true, [
+    'design/examples/library/',
+  ]);
+  await editAstPath(f, extension, examplePath, true, [
+    'design/examples/**/*.md',
+  ]);
+  await editLspPath(f, extension, checkPath, true, 'rename_file');
+  extension.restore();
+  extension = await session(f, 'lead', 'sub');
 
   // lsp route
   await editLspPath(f, extension, examplePath, true, 'rename');
