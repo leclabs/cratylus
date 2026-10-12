@@ -937,7 +937,17 @@ describe('omp capability interface', () => {
         };
       }
 
-      it('as the dispatched agent or the launched declaration, beside the env the call gives', async () => {
+      /** The command the handlers leave, run by a POSIX shell whose environment names
+       *  someone else: what each of its commands sees as the acting agent. */
+      const seen = (command: unknown) =>
+        spawnSync('/bin/sh', ['-c', String(command)], {
+          env: { ...process.env, CRATYLUS_AGENT: 'someone else' },
+          encoding: 'utf8',
+        }).stdout;
+      const PROBE =
+        'printf "%s" "${CRATYLUS_AGENT-none}" && printf " %s" "${CRATYLUS_AGENT-none}"';
+
+      it('as the dispatched agent or the launched declaration, in the command itself', async () => {
         omp.agents = [
           {
             name: 'architect',
@@ -948,19 +958,17 @@ describe('omp capability interface', () => {
         ];
         for (const [agent, named] of [
           [{ sub: 'lead' }, 'lead'],
+          [{ sub: "o'brien" }, "o'brien"],
           [{ flag: 'architect' }, 'architect'],
         ] as const) {
           const call = await session(agent);
           const { answer, input } = await call('bash', {
-            command: 'git commit -m renewal',
-            env: { KEEP: '1', CRATYLUS_AGENT: 'someone else' },
+            command: PROBE,
+            cwd: 'src',
           });
           expect(answer).toBeUndefined();
-          expect(input.env).toEqual({ KEEP: '1', CRATYLUS_AGENT: named });
-          expect(
-            (await call('bash', { command: 'git commit -m renewal' })).input
-              .env,
-          ).toEqual({ CRATYLUS_AGENT: named });
+          expect(input).toEqual({ command: expect.any(String), cwd: 'src' });
+          expect(seen(input.command), named).toBe(`${named} ${named}`);
         }
       });
 
@@ -968,9 +976,9 @@ describe('omp capability interface', () => {
         process.env.CRATYLUS_AGENT = 'architect';
         const call = await session({});
         expect(process.env.CRATYLUS_AGENT).toBeUndefined();
-        const { answer, input } = await call('bash', { command: 'git commit' });
+        const { answer, input } = await call('bash', { command: PROBE });
         expect(answer).toBeUndefined();
-        expect(input).toEqual({ command: 'git commit' });
+        expect(seen(input.command)).toBe('none none');
       });
 
       it('refuses no call for the files it would change, by any route', async () => {

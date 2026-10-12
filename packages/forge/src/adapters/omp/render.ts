@@ -1570,10 +1570,11 @@ const SESSION_PLACEMENT: readonly string[] = [
  * and lifecycle capture alike, names the agent making it in `CRATYLUS_AGENT`: the
  * declaration a main session was launched as, the agent a dispatched session runs
  * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
- * of a session launched as an agent, main or dispatched, runs with that agent named
- * the same way, through the call's own `env`, so a commit or journal append made
- * from the architect's session carries the architect and a lead's the lead. An
- * ambient value is dropped at load, so a session that is no agent names no one.
+ * runs with that agent named the same way: its command is led by a line exporting
+ * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a commit or journal append
+ * made from the architect's session carries the architect and a lead's the lead;
+ * in a session that is no agent the line unsets it, and an ambient value is dropped
+ * at load, so such a session names no one.
  *
  * THE FREEZE HOLDS AT THE RECORD (decisions 0128, 0129). No tool call is refused for
  * the files it would change, by any route: the journal refuses before appending and
@@ -2459,18 +2460,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    return name === "" ? undefined : name;',
         '  }',
         '',
-        "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call runs with the session's agent named in",
-        "  // `CRATYLUS_AGENT` (omp's bash tool takes an `env`), so what the command records, a commit",
-        "  // the project's reference-transaction hook judges or a journal append, is that agent's own;",
-        '  // a session that is no agent names no one. No call is refused for what it would change: the',
-        '  // freeze holds at the record (decision 0128).',
+        "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call's command is led by a line naming the",
+        "  // session's agent in `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so what the command",
+        "  // records, a commit the project's reference-transaction hook judges or a journal append, is",
+        "  // that agent's own; in a session that is no agent the line unsets it, naming no one. No call",
+        '  // is refused for what it would change: the freeze holds at the record (decision 0128).',
         '  pi.on("tool_call", (event, ctx) => {',
         '    if (event.toolName !== "bash" || typeof event.input !== "object" || event.input === null) return undefined;',
-        '    const agent = actor(ctx as unknown as Session);',
-        '    if (agent === undefined) return undefined;',
         '    const input = event.input as Record<string, unknown>;',
-        '    const env = typeof input.env === "object" && input.env !== null ? (input.env as Record<string, string>) : {};',
-        '    input.env = { ...env, [ACTING_AGENT]: agent };',
+        '    if (typeof input.command !== "string") return undefined;',
+        '    const agent = actor(ctx as unknown as Session);',
+        "    const named = agent === undefined ? `unset ${ACTING_AGENT}` : `export ${ACTING_AGENT}='${agent.replaceAll(\"'\", \"'\\\\''\")}'`;",
+        '    input.command = `${named}\\n${input.command}`;',
         '    return undefined;',
         '  });',
         '',
