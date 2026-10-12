@@ -8,7 +8,6 @@ import {
   composedRole,
   consumer,
   expectProjection,
-  expectRefusal,
   hostModelRoles,
   repo,
   vectorOf,
@@ -84,11 +83,6 @@ describe('catalog re-cut: the visible examples', () => {
         key: null,
       });
       const expected = roleVector(name);
-      expect(agent.dispatches).toEqual(
-        requireDefined(expected.handoffs, `${name}.handoffs`).map((entry) =>
-          anchorOf(entry.value),
-        ),
-      );
       expect(agent.routing).toEqual({
         tier: anchorOf(
           requireDefined(expected.model?.[0], `${name}.model tier`).value,
@@ -153,7 +147,7 @@ describe('catalog re-cut: the visible examples', () => {
     }
   });
 
-  it('example 5: consumer personas can narrow each reach ceiling but cannot widen any', () => {
+  it('example 5: consumer personas can narrow each reach ceiling, and a widened one composes as stated', () => {
     const narrowed = {
       ...candidateIdentity,
       removes: {
@@ -162,7 +156,6 @@ describe('catalog re-cut: the visible examples', () => {
           body('perception-scope', 'outside-research'),
         ],
         actionScope: [body('action-scope', 'write-examples')],
-        handoffs: [body('handoffs', 'illustrator'), body('handoffs', 'lead')],
       },
     };
     const f = fixture(candidateSource('architect', narrowed));
@@ -183,17 +176,10 @@ describe('catalog re-cut: the visible examples', () => {
     ).filter(
       (entry) => !narrowed.removes.actionScope.includes(entry.value as string),
     );
-    expected.handoffs = requireDefined(
-      expected.handoffs,
-      'architect.handoffs',
-    ).filter(
-      (entry) => !narrowed.removes.handoffs.includes(entry.value as string),
-    );
     expect(vectorOf(composed.agent!)).toEqual(expected);
-    expect(composed.agent!.dispatches).toEqual(['researcher']);
     f.install();
     const installed = f.declaration('candidate', true);
-    expect(installed.front.spawns).toBe('scout');
+    expect(installed.front.spawns).toBe('*');
     // 0051: perception/action purpose does not invent premature tool restrictions.
     expect(installed.front).not.toHaveProperty('tools');
     expectProjection(
@@ -206,7 +192,6 @@ describe('catalog re-cut: the visible examples', () => {
     for (const [factor, anchor] of [
       ['perception-scope', 'work'],
       ['action-scope', 'edit-own-outputs'],
-      ['handoffs', 'builder'],
     ] as const) {
       const wider = fixture(
         candidateSource('architect', {
@@ -214,11 +199,15 @@ describe('catalog re-cut: the visible examples', () => {
           values: { [camel(factor)]: [body(factor, anchor)] },
         }),
       );
-      expectRefusal(wider.compose(), factor, anchor);
+      const composed = wider.compose();
+      expect(
+        composed.agent,
+        `${factor} ${anchor}: ${composed.message}`,
+      ).toBeDefined();
     }
   });
 
-  it('example 6: removing or weakening any architect guardrail is refused by name', () => {
+  it('example 6: a persona removing or weakening an architect guardrail composes, carrying what it states', () => {
     for (const guardrail of [
       'honesty',
       'scope-of-authority',
@@ -237,7 +226,11 @@ describe('catalog re-cut: the visible examples', () => {
         const f = fixture(
           candidateSource('architect', { ...candidateIdentity, ...residue }),
         );
-        expectRefusal(f.compose(), guardrail);
+        const composed = f.compose();
+        expect(
+          composed.agent,
+          `${guardrail} ${level}: ${composed.message}`,
+        ).toBeDefined();
       }
     }
   });
@@ -260,36 +253,13 @@ describe('catalog re-cut: the visible examples', () => {
     }
   });
 
-  it('example 8: omp settings retain default tools for every agent and bind exactly the handoffs', () => {
+  it('example 8: omp settings retain default tools for every agent and never limit whom it dispatches', () => {
     const f = fixture();
     f.install();
     expect(f.names(true)).toEqual([...agentNames].sort());
-    const handoffs: Record<string, string> = {
-      architect: 'illustrator, lead, scout',
-      lead: 'builder, check-writer, assayer, scout',
-      builder: '',
-      assayer: '',
-      illustrator: '',
-      'check-writer': '',
-      kino: 'illustrator, lead, scout',
-      nico: 'illustrator, lead, scout',
-      mav: 'illustrator, lead, scout',
-    };
     for (const name of agentNames) {
       const { front } = f.declaration(name, true);
-      expect(typeof front.spawns, name).toBe('string');
-      expect(
-        String(front.spawns)
-          .split(',')
-          .map((name) => name.trim())
-          .filter(Boolean),
-        name,
-      ).toEqual(
-        requireDefined(handoffs[name], `${name} handoffs`)
-          .split(',')
-          .map((name) => name.trim())
-          .filter(Boolean),
-      );
+      expect(front.spawns, name).toBe('*');
       expect(front, name).not.toHaveProperty('tools');
     }
   });

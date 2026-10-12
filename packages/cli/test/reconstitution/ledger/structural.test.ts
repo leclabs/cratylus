@@ -317,43 +317,9 @@ describe('reconstitution: ledger and cut', () => {
       );
     }
   });
-  it('workflow/28 — different or missing architects refuse one cross-context cut without recording it', () => {
+  it('workflow/28 — a missing architect refuses the cut without recording it; different architects record it with a warning', () => {
     examples(f, 'film', ['film-production', 'scheduling']);
     const before = ledger(f);
-    const refused = run(
-      f,
-      'workPackage',
-      'open',
-      '--cut',
-      'film',
-      '--branch',
-      'feature/film',
-      '--architect',
-      'film-production=creative',
-      '--architect',
-      'scheduling=planner',
-    );
-    expect
-      .soft(
-        refused.code,
-        'different architects require one cut per context, never convenience',
-      )
-      .not.toBe(0);
-    const reason = refused.stderr + refused.stdout;
-    for (const word of ['film-production', 'scheduling', 'creative', 'planner'])
-      expect
-        .soft(reason, 'names both contexts and both architects')
-        .toContain(word);
-    expect
-      .soft(reason, 'names the architects whose contexts cannot share a cut')
-      .toMatch(/architect/i);
-    expect
-      .soft(reason, 'one cut per context joined by contracts')
-      .toMatch(/contract/i);
-    expect
-      .soft(reason, 'one cut per context')
-      .toMatch(/one cut (?:per|for each) context/i);
-    expect.soft(ledger(f), 'refused cut not recorded').toEqual(before);
     const missing = run(
       f,
       'workPackage',
@@ -373,14 +339,35 @@ describe('reconstitution: ledger and cut', () => {
       .soft(missingReason, 'names the context without an architect')
       .toContain('scheduling');
     expect
-      .soft(missingReason, 'an architect is never assumed')
-      .toMatch(/architect/i);
-    expect
       .soft(missingReason, 'missing architect is never assumed')
       .toMatch(/never assumed/i);
     expect
       .soft(ledger(f), 'missing architect refusal writes nothing')
       .toEqual(before);
+    const opened = run(
+      f,
+      'workPackage',
+      'open',
+      '--cut',
+      'film',
+      '--branch',
+      'feature/film',
+      '--architect',
+      'film-production=creative',
+      '--architect',
+      'scheduling=planner',
+    );
+    expect.soft(opened.code, 'different architects are never refused').toBe(0);
+    const warning = opened.stdout;
+    expect.soft(warning, 'a warning is carried').toMatch(/"warnings"/);
+    for (const word of ['film-production', 'scheduling', 'creative', 'planner'])
+      expect
+        .soft(warning, 'names both contexts and both architects')
+        .toContain(word);
+    expect
+      .soft(warning, 'one cut per context joined by contracts')
+      .toMatch(/one cut per context, joined by contracts/i);
+    expect.soft(ledger(f), 'the cut is recorded').not.toEqual(before);
     // Approval by each architect and reviewable size require judgment, not a ledger field.
   });
 });

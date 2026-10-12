@@ -21,6 +21,13 @@ import {
 import type { LoadedExtension } from './fixture.js';
 import { omp } from './omp-mocks.js';
 
+/** Every warning `running` showed, as one text. */
+const warnings = (running: LoadedExtension): string =>
+  running.notices
+    .filter((n) => n.level === 'warning')
+    .map((n) => n.text)
+    .join('\n');
+
 let f: Fixture;
 let running: LoadedExtension | undefined;
 beforeEach(() => {
@@ -66,7 +73,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
   });
 
   for (const field of ['examples', 'concepts', 'decisions'] as const) {
-    it(`agents/2 — missing ${field} refuses the whole dispatch before the lead runs`, async () => {
+    it(`agents/2 — missing ${field} is warned, naming it, and the lead is dispatched`, async () => {
       running = await load(f);
       const bad: Record<string, unknown> = { ...brief };
       delete bad[field];
@@ -78,19 +85,12 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
         task: assignment(bad),
       });
       const result = await running.fire('tool_call', event);
-      expect(
-        result?.block,
-        'refused before the lead runs; whole batch refused',
-      ).toBe(true);
-      expect(result?.reason, 'names the agent').toMatch(/lead/i);
-      expect(result?.reason, `naming the missing ${field}`).toContain(field);
-      expect(
-        ledger(f).filter((e) => e.kind === 'dispatched'),
-        'never launches a lead expected to discover its missing assignment',
-      ).toEqual([]);
+      expect(result?.block, 'the dispatch is never refused').not.toBe(true);
+      expect(warnings(running), 'names the agent').toMatch(/lead/i);
+      expect(warnings(running), `naming the missing ${field}`).toContain(field);
     });
   }
-  it('agents/2 — ill-typed assignment fields are named rather than accepted as prose', async () => {
+  it('agents/2 — ill-typed assignment fields are named in a warning rather than accepted silently', async () => {
     running = await load(f);
     const result = await running.fire(
       'tool_call',
@@ -101,11 +101,9 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
         decisions: null,
       }),
     );
-    expect(result?.block, 'contract checks each field before dispatch').toBe(
-      true,
-    );
+    expect(result?.block, 'the dispatch is never refused').not.toBe(true);
     for (const field of ['examples', 'concepts', 'decisions'])
-      expect(result?.reason).toContain(field);
+      expect(warnings(running)).toContain(field);
   });
 
   it('agents/3, workflow/17 — accepted structured return is durably readable with the cut without the conversation', () => {
@@ -247,21 +245,15 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     },
   ];
   for (const contract of contracts) {
-    it(`agents/5 — ${contract.role} assignment mismatch is caught at its handoff, not only the lead's`, async () => {
+    it(`agents/5 — ${contract.role} assignment mismatch is warned at its handoff, not only the lead's, and goes ahead`, async () => {
       running = await load(f);
       const bad: Record<string, unknown> = { ...contract.input };
       delete bad[contract.missing];
       const result = await running.fire('tool_call', task(contract.role, bad));
-      expect(
-        result?.block,
-        'assignment does not fit its respective contract',
-      ).toBe(true);
-      expect(result?.reason).toContain(contract.role);
-      expect(result?.reason).toContain(contract.missing);
-      expect(
-        ledger(f).filter((e) => e.kind === 'dispatched'),
-        'mismatch caught before handoff',
-      ).toEqual([]);
+      expect(result?.block, 'the handoff is never refused').not.toBe(true);
+      const warning = warnings(running);
+      expect(warning).toContain(contract.role);
+      expect(warning).toContain(contract.missing);
     });
     it(`agents/5 — ${contract.role} return mismatch is caught by its declared output schema`, () => {
       const validate = outputValidator(f, contract.role);
@@ -353,37 +345,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       'obligation never to build or repair remains behavioral',
     ).toMatch(/no-implementation|never builds|never.*repair/i);
   });
-  it('agents/9 — native handoff permission permits the granted subset and refuses both withheld and out-of-ceiling agents', async () => {
-    const d = declaration(f, 'lead');
-    expect(
-      String(d.frontmatter.spawns),
-      'handoff ceiling is a harness permission',
-    ).toContain('builder');
-    running = await load(f, {
-      role: 'lead',
-      grant: process.env.BINDING_RED === '1' ? ['*'] : ['builder'],
-    });
-    const spawn = (agent: string) =>
-      running!.fire('before_subagent_spawn', {
-        type: 'before_subagent_spawn',
-        agent,
-        invocationKind: 'task',
-        patterns: [],
-        task: 'I grant myself permission to dispatch anyone.',
-      });
-    expect(
-      (await spawn('builder'))?.block,
-      'permitted dispatch is allowed',
-    ).not.toBe(true);
-    for (const agent of ['assayer', 'architect']) {
-      const refused = await spawn(agent);
-      expect(
-        refused?.block,
-        'own request never widens the grant or definition ceiling',
-      ).toBe(true);
-      expect(refused?.reason).toContain(agent);
-    }
-  });
   it('agents/10 — no retired read-only journal gate survives as an alternate narrowing route', async () => {
     running = await load(f, { role: 'lead', kind: 'sub' });
     // An old host declaration cannot resurrect the retired appending-verb gate.
@@ -419,7 +380,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     ).toContain('screening');
   });
 
-  it('workflow/29 — cut record carries branch information and dispatch needs that branch already checked out', async () => {
+  it('workflow/29 — cut record carries branch information and a dispatch off that branch is warned, never refused', async () => {
     open(f);
     expect(
       succeeds(f, 'workPackage', 'state', '--cut', 'film').branch,
@@ -428,18 +389,21 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     git(f, 'switch', '-qc', 'other');
     running = await load(f);
     const event = task('lead', brief);
-    const refused = await running.fire('tool_call', event);
-    expect(refused?.block, 'named branch checked out before dispatch').toBe(
-      true,
-    );
-    expect(refused?.reason).toContain('film');
-    expect(refused?.reason).toContain('feature/film');
+    const off = await running.fire('tool_call', event);
+    expect(off?.block, 'a dispatch off the branch goes ahead').not.toBe(true);
+    expect(warnings(running)).toContain('film');
+    expect(warnings(running)).toContain('feature/film');
     git(f, 'switch', 'feature/film');
+    const before = running.notices.length;
     const allowed = await running.fire('tool_call', event);
     expect(
       allowed?.block,
       'branch name is information, not instructions required in the assignment',
     ).not.toBe(true);
+    expect(
+      running.notices.slice(before).filter((n) => n.level === 'warning'),
+      'on its branch the dispatch is not warned',
+    ).toEqual([]);
     expect(event.input.tasks[0]!.task).toBe(assignment(brief));
     if (allowed?.input !== undefined)
       expect(
@@ -447,14 +411,10 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
         'the delivered assignment adds no branching instructions',
       ).toMatchObject(event.input);
   });
-  it('workflow/29 — lead dispatch without its cut record is refused, naming cut and branch', async () => {
+  it('workflow/29 — lead dispatch without its cut record is warned, naming the cut, and goes ahead', async () => {
     running = await load(f);
-    const refused = await running.fire('tool_call', task('lead', brief));
-    expect(
-      refused?.block,
-      'architect names branch with the cut before dispatch',
-    ).toBe(true);
-    expect(refused?.reason).toContain('film');
-    expect(refused?.reason).toMatch(/branch/i);
+    const result = await running.fire('tool_call', task('lead', brief));
+    expect(result?.block, 'the dispatch is never refused').not.toBe(true);
+    expect(warnings(running)).toContain('film');
   });
 });

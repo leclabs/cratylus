@@ -148,9 +148,11 @@ export function main(args: readonly string[]): number {
   const refused = immutabilityGate(read);
   if (refused.length === 0) return 0;
   process.stderr.write(
-    `immutability gate: a record is never modified, moved or deleted once written; refused:\n${refused
+    `immutability gate: a record is never modified, moved or deleted once written, since changing one rewrites the append-only record others read as history; refused:\n${refused
       .map((path) => `  ${path}\n`)
-      .join('')}`,
+      .join(
+        '',
+      )}To change what a record says, append a new entry that supersedes it and restore these paths. To make the change anyway: at commit, commit with --no-verify; in CI, the failed gate stands beside the change for its review, and the repository's owner may still merge it.\n`,
   );
   return 1;
 }

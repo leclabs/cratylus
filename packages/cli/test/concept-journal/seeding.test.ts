@@ -84,8 +84,9 @@ describe('concept journal one-time seeding', () => {
         string,
         unknown
       >;
-      // The seed has no links between generated ids. Keep decisionId and all payload fields.
-      const { id: _id, at: _at, ...content } = entry;
+      // The seed has no links between generated ids. Keep decisionId and all payload
+      // fields; who appended an entry is stamped by the journal, as its id and time are.
+      const { id: _id, at: _at, by: _by, ...content } = entry;
       return content;
     };
     expect(reproduced.map(contents)).toEqual(original.map(contents));

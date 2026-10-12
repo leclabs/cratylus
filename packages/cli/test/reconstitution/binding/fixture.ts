@@ -243,9 +243,14 @@ export interface LoadedExtension {
     agent: { kind: string; name: string };
     model: { provider: string; id: string };
     modelRegistry: object;
-    ui: { setStatus(): void; notify(): void };
+    ui: {
+      setStatus(): void;
+      notify(text: string, level?: string): void;
+    };
     sessionManager: { getSessionId(): string };
   };
+  /** Every notice the extension showed, in order. */
+  notices: { text: string; level?: string }[];
   restore(): void;
 }
 export async function load(
@@ -253,7 +258,6 @@ export async function load(
   options: {
     role?: string;
     kind?: 'main' | 'sub';
-    grant?: string[];
     dispatchTool?: string;
   } = {},
 ): Promise<LoadedExtension> {
@@ -262,20 +266,22 @@ export async function load(
   process.env.HOME = f.home;
   omp.parse = parse;
   omp.agents = roles.map((role) => declaration(f, role));
-  if (options.grant) {
-    const agent = omp.agents.find((a) => a.name === options.role)!;
-    agent.spawns = options.grant.join(',');
-  }
   omp.args = { model: 'fixture/base', thinking: 'low' };
   const handlers = new Map<string, Handler[]>();
   const tools: RegisteredTool[] = [];
   const activeTools: unknown[] = [];
+  const notices: { text: string; level?: string }[] = [];
   const ctx = {
     cwd: f.cwd,
     agent: { kind: options.kind ?? 'main', name: options.role ?? 'main' },
     model: { provider: 'fixture', id: 'base' },
     modelRegistry: {},
-    ui: { setStatus: () => {}, notify: () => {} },
+    ui: {
+      setStatus: () => {},
+      notify: (text: string, level?: string) => {
+        notices.push({ text, level });
+      },
+    },
     sessionManager: { getSessionId: () => 'binding-session' },
   };
   const pi = {
@@ -335,6 +341,7 @@ export async function load(
       handlers,
       pi,
       ctx,
+      notices,
       restore: () => {
         process.env.PATH = previous.PATH;
         process.env.HOME = previous.HOME;
