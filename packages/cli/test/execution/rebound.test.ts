@@ -23,6 +23,7 @@ import {
   levelNames,
   log,
   submit,
+  write,
 } from './fixture.js';
 let installed: Fixture;
 let f: ExecutionFixture;
@@ -91,10 +92,22 @@ function returned(name: string) {
   ).toEqual(expect.any(String));
   harnessEvent(f, 'returned', 'builder', event!.run as string, name);
 }
+// 0128/0129: a builder is dispatched only once a frozen check names each
+// visible example of its package as <context>/<number>.
+function bound(...numbers: number[]) {
+  const check = 'checks/delivery.test.ts';
+  write(
+    f,
+    check,
+    `// Binds ${numbers.map((n) => `booking/${n}`).join(', ')}.\n`,
+  );
+  command(f, 'freeze', '--check', check);
+}
 
 describe('execution rebound to the harness', () => {
   it('Example 4 — unserved concepts block all dispatch until both are served', async () => {
     examples(f, [example(1, 'window'), example(2, 'reservation')]);
+    bound(1, 2);
     submit(f, 'windows', ['window']);
     extension = await load(installed);
     await refused(handoff(['windows'], 'unserved'), 'reservation');
@@ -127,6 +140,7 @@ describe('execution rebound to the harness', () => {
       example(2, 'reservation'),
       example(3, 'window', 'reservation'),
     ]);
+    bound(1, 2, 3);
     submit(f, 'windows', ['window']);
     submit(f, 'reservations', ['reservation']);
     extension = await load(installed);
@@ -136,6 +150,7 @@ describe('execution rebound to the harness', () => {
   });
   it('Example 6 — levels are computed and dispatch waits for every package in the previous level', async () => {
     examples(f, [example(1, 'delivery')]);
+    bound(1);
     submit(f, 'A', ['delivery']);
     submit(f, 'B', ['delivery']);
     submit(f, 'C', ['delivery'], ['C.txt'], ['A']);
@@ -168,6 +183,7 @@ describe('execution rebound to the harness', () => {
   });
   it('Example 8 — no ready package is a refusal, not an empty dispatch', async () => {
     examples(f, [example(1, 'delivery')]);
+    bound(1);
     extension = await load(installed);
     const missing = task(
       'builder',
