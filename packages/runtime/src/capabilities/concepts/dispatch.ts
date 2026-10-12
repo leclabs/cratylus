@@ -43,7 +43,6 @@
 // help prints the same declarations, and its calls are read against them.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { actingAgent } from '../../acting-agent.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import {
@@ -467,7 +466,7 @@ function answerOf(
     const holding = cuts.filter((c) =>
       c.concepts.some((k) => k.context === where && k.name === name),
     );
-    const agent = actingAgent();
+    const agent = journal.maker;
     if (
       holding.length === 0 ||
       (agent !== undefined &&

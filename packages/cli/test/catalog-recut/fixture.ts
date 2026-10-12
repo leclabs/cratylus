@@ -242,6 +242,15 @@ try {
 export function candidateSource(role: string, residue: unknown) {
   return `import { persona, ${camel(role)}Role } from '@cratylus/canon';\nexport const candidate = persona(${camel(role)}Role, ${JSON.stringify(residue)});\n`;
 }
+/** A composition refused as malformed: the public refusal, naming each of `names`. */
+export function expectRefusal(result: CompositionResult, ...names: string[]) {
+  expect(
+    result,
+    'composition throws the public CompositionRefusal, not a loader error',
+  ).toMatchObject({ refusal: true, name: 'CompositionRefusal' });
+  expect(result.agent).toBeUndefined();
+  for (const name of names) expect(result.message).toContain(name);
+}
 export function expectProjection(
   declaration: Declaration,
   name: string,

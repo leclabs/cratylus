@@ -53,6 +53,18 @@ describe('example checks', () => {
     ).rejects.toThrow(/outcome/i);
     expect(execute).not.toHaveBeenCalled();
   });
+  it('accepts an example with no mechanical check, judged by reading, and confirms it without running anything', async () => {
+    const { check: _none, ...byReading } = visible({
+      kind: 'execution',
+      execute: async () => undefined,
+      expect: undefined,
+    });
+    expect(await checkExample(byReading)).toEqual({ status: 'unchecked' });
+    const ledger = createExampleLedger([byReading], 'architect');
+    await expect(ledger.architect.confirm(byReading.id)).resolves.toMatchObject(
+      { example: { id: byReading.id } },
+    );
+  });
   it('refuses execution checks without an explicit expected result', async () => {
     const execute = vi.fn(async () => undefined);
     const malformed = {
@@ -200,7 +212,7 @@ describe('example freeze', () => {
     const ledger = createExampleLedger([example], 'architect');
     await ledger.architect.confirm(example.id);
     const view = ledger.builder.get(example.id);
-    if (!view || view.check.kind !== 'output-assertion')
+    if (!view || view.check?.kind !== 'output-assertion')
       throw new Error('The confirmed check should be visible.');
 
     expect(Reflect.set(view.check.produce, 'expected', true)).toBe(false);

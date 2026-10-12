@@ -9,7 +9,6 @@ import {
   type ExecutionFixture,
   type History,
   type Inventory,
-  type Levels,
   type Submission,
   command,
   cut,
@@ -126,10 +125,10 @@ describe('execution: work packages and counts', () => {
     ).toBe('reservations');
   });
 
-  it('Example 3 — overlapping ownership is refused with the output and both claimants', () => {
+  it('Example 3 — overlapping ownership is recorded with a warning naming the output and both claimants', () => {
     single();
     submit(f, 'owner', ['delivery'], ['shared.txt']);
-    const error = refuse(
+    const answer = command<{ package: { name: string }; warnings: string[] }>(
       f,
       'submit',
       'claimant',
@@ -138,8 +137,9 @@ describe('execution: work packages and counts', () => {
       '--output',
       'shared.txt',
     );
+    expect(answer.package.name).toBe('claimant');
     for (const name of ['shared.txt', 'owner', 'claimant'])
-      expect(error).toContain(name);
+      expect(answer.warnings.join('\n')).toContain(name);
   });
 
   it('Example 5 — a cycle names its packages instead of giving levels', () => {

@@ -4,7 +4,7 @@ The **mechanism** concern of [cratylus](../../README.md) — the per-host runtim
 
 A skill has two faces: what it _means_, which is canon's, and the programmatic thing it routes to,
 which is this package's. `runtime` is the generic platform beneath that second face, plus the
-lifecycle guardrails an agent would otherwise drift out of.
+record (the concept journal and the work package ledger) an agent reconstitutes from.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no harness and
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as

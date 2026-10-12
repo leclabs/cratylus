@@ -111,7 +111,7 @@ describe('workPackage refusals', () => {
     );
   });
 
-  it('REFUSES a concept with no example, an unknown dependency and an unowned need', () => {
+  it('REFUSES a concept with no example, an unknown dependency and a malformed path', () => {
     const repo = repository('delivery', 'window');
     wp(repo, 'submit', 'base', '--concept', 'delivery', '--output', 'base/');
     expect(
@@ -131,7 +131,15 @@ describe('workPackage refusals', () => {
       ),
     ).toContain("'ghost'");
     expect(
-      refused(
+      refused(repo, 'submit', 'x', '--concept', 'window', '--output', '../x'),
+    ).toContain("'../x'");
+  });
+
+  it('WARNS of a need owned by a package not depended on, recording the package', () => {
+    const repo = repository('delivery', 'window');
+    wp(repo, 'submit', 'base', '--concept', 'delivery', '--output', 'base/');
+    expect(
+      wp(
         repo,
         'submit',
         'x',
@@ -142,16 +150,20 @@ describe('workPackage refusals', () => {
         '--needs',
         'base/a.ts',
       ),
-    ).toMatch(/'base\/a\.ts' is owned by 'base', which 'x' does not depend on/);
-    expect(
-      refused(repo, 'submit', 'x', '--concept', 'window', '--output', '../x'),
-    ).toContain("'../x'");
+    ).toMatchObject({
+      package: { name: 'x', needs: ['base/a.ts'] },
+      warnings: [
+        expect.stringMatching(
+          /'base\/a\.ts' is owned by 'base', which 'x' does not depend on/,
+        ),
+      ],
+    });
   });
 
-  it('REFUSES an output inside another package’s directory', () => {
+  it('WARNS of an output inside another package’s directory, recording the package', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'src/');
-    const message = refused(
+    const answer = wp(
       repo,
       'submit',
       'b',
@@ -159,9 +171,10 @@ describe('workPackage refusals', () => {
       'delivery',
       '--output',
       'src/b.ts',
-    );
+    ) as { package: { name: string }; warnings: string[] };
+    expect(answer.package.name).toBe('b');
     for (const name of ["'src/b.ts'", "'src/'", "'a'", "'b'"])
-      expect(message).toContain(name);
+      expect(answer.warnings.join('\n')).toContain(name);
   });
 
   it('REFUSES a commit git refuses, leaving the index as it was', () => {

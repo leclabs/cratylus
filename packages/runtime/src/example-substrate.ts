@@ -34,10 +34,13 @@ export type Example = Readonly<{
   situation: string;
   trigger: string;
   outcome: string;
-  check: ExampleCheck;
+  /** Run where a check is cheap and repeatable; absent, the example is judged
+   *  by reading (decisions 0142, 0145). */
+  check?: ExampleCheck;
 }>;
 export type CheckResult = Readonly<{
-  status: 'pass' | 'fail';
+  /** `unchecked`: the example has no mechanical check and is judged by reading. */
+  status: 'pass' | 'fail' | 'unchecked';
   shortfall?: string;
   score?: number;
   maxScore?: number;
@@ -62,6 +65,7 @@ export async function checkExample(example: Example): Promise<CheckResult> {
 
 async function runCheck(example: Example): Promise<CheckResult> {
   const check = example.check;
+  if (check === undefined) return { status: 'unchecked' };
   switch (check.kind) {
     case 'execution': {
       const actual = await check.execute();
@@ -120,15 +124,15 @@ async function runCheck(example: Example): Promise<CheckResult> {
 export function validateExample(example: Example): void {
   if (typeof example.outcome !== 'string' || example.outcome.trim() === '') {
     throw new Error(
-      `Example ${example.id} has an unspecified outcome; provide a mechanically checkable outcome.`,
-    );
-  }
-  if (!example.check || typeof example.check !== 'object') {
-    throw new Error(
-      `Example ${example.id} has an unspecified outcome: no mechanical check is defined.`,
+      `Example ${example.id} has an unspecified outcome; state the outcome it shows.`,
     );
   }
   const check = example.check;
+  if (check === undefined) return;
+  if (typeof check !== 'object' || check === null)
+    throw new Error(
+      `Example ${example.id} has a check that is not one; give a mechanical check, or none to judge it by reading.`,
+    );
   if (check.kind === 'execution') {
     if (typeof check.execute !== 'function' || !('expect' in check))
       throw new Error(
@@ -166,7 +170,7 @@ export function validateExample(example: Example): void {
     return;
   }
   throw new Error(
-    `Example ${example.id} has an unspecified outcome: no supported mechanical check is defined.`,
+    `Example ${example.id} has a check of no kind it knows: give execution, output-assertion or rubric, or none to judge it by reading.`,
   );
 }
 
@@ -289,11 +293,13 @@ export function createExampleLedger(
   return Object.freeze({ builder, architect: architectAccess });
 }
 
-// A check is frozen only once it is shown it can fail, by running it.
+// A check is frozen only once it is shown it can fail, by running it; an example
+// with no mechanical check is judged by reading, so there is nothing to run.
 async function showCanFail(
   example: Example,
   action: 'confirm' | 'refreeze',
 ): Promise<void> {
+  if (example.check === undefined) return;
   const result = await checkExample(example);
   if (result.status !== 'fail')
     throw new Error(

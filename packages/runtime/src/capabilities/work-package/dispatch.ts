@@ -30,8 +30,9 @@
 //
 // A breach of a rule nothing irreversible rests on is recorded and warned, never
 // refused (decision 0142(2)): a cut opened across contexts held by different
-// architects, and a commit made for a package no builder was dispatched for or
-// of a file outside its outputs, carry `warnings`.
+// architects, a package whose outputs overlap another's or that needs an output
+// of a package it does not depend on, and a commit made for a package no builder
+// was dispatched for or of a file outside its outputs, carry `warnings`.
 //
 // Every answer is JSON; a reading that read past ledger entries of kinds this
 // runtime does not know, written by a newer one, also carries `uninterpreted`,
@@ -365,9 +366,11 @@ export function dispatchWorkPackage(
       })),
     })) ?? [];
 
-  /** Refuse `fields` for package `name` unless they are a package the cut can
-   *  hold beside its others. */
-  const admit = (name: string, fields: PackageFields): void => {
+  /** Refuse `fields` for package `name` when they name what the cut does not
+   *  hold; the warnings they carry beside the cut's other packages: an output
+   *  overlapping another's, a need owned by a package it does not depend on. */
+  const admit = (name: string, fields: PackageFields): string[] => {
+    const warnings: string[] = [];
     for (const path of [...fields.outputs, ...fields.needs])
       if (!isProjectPath(path))
         throw refuse(
@@ -399,7 +402,7 @@ export function dispatchWorkPackage(
       for (const other of others)
         for (const theirs of other.outputs)
           if (covers(output, theirs) || covers(theirs, output))
-            throw refuse(
+            warnings.push(
               `the output '${output}' of '${name}' overlaps the output '${theirs}' of '${other.name}'`,
             );
     const below = dependencyGraph([
@@ -411,14 +414,15 @@ export function dispatchWorkPackage(
       if (owner === undefined)
         throw refuse(`the needed output '${need}' is owned by no work package`);
       if (!below.has(owner.name))
-        throw refuse(
+        warnings.push(
           `the needed output '${need}' is owned by '${owner.name}', which '${name}' does not depend on`,
         );
     }
+    return warnings;
   };
 
-  /** The answer to a submission or an update of `name`. */
-  const submitted = (name: string) => {
+  /** The answer to a submission or an update of `name`, with `warnings`. */
+  const submitted = (name: string, warnings: readonly string[]) => {
     const after = [...foldCut(ledger.entries(), cut.cut).packages.values()];
     const {
       name: _,
@@ -430,6 +434,7 @@ export function dispatchWorkPackage(
       package: { name, ...own, state: status },
       levels: levelsOf(after),
       cycles: dependencyGraph(after).cycles,
+      ...(warnings.length === 0 ? {} : { warnings }),
     };
   };
 
@@ -633,7 +638,7 @@ export function dispatchWorkPackage(
           throw refuse('give at least one output with --output');
         if (fields.concepts.length === 0)
           throw refuse('give at least one concept with --concept');
-        admit(name, fields);
+        const warnings = admit(name, fields);
         ledger.append({
           kind: 'submit',
           transition: transition('submit'),
@@ -641,7 +646,7 @@ export function dispatchWorkPackage(
           workPackage: name,
           ...fields,
         });
-        return submitted(name);
+        return submitted(name, warnings);
       }
       case 'update': {
         const own = named();
@@ -657,7 +662,7 @@ export function dispatchWorkPackage(
           throw refuse(
             'give at least one of --output, --concept, --depends-on or --needs',
           );
-        admit(own.name, { ...own, ...changes });
+        const warnings = admit(own.name, { ...own, ...changes });
         ledger.append({
           kind: 'update',
           transition: transition('update'),
@@ -665,7 +670,7 @@ export function dispatchWorkPackage(
           workPackage: own.name,
           changes,
         });
-        return submitted(own.name);
+        return submitted(own.name, warnings);
       }
       case 'commit': {
         const own = named();

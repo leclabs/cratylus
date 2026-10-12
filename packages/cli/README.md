@@ -30,7 +30,7 @@ of your own.
 cratylus install
 ```
 
-`cratylus install` puts the bundled corpus's agents, skills and guards on this machine, for Claude
+`cratylus install` puts the bundled corpus's agents and skills on this machine, for Claude
 Code or omp. It needs no project and no config. It looks for a harness by its directory: Claude
 Code's (`$CLAUDE_CONFIG_DIR` when that is set, else `~/.claude`) and omp's (`~/.omp`). Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
@@ -70,7 +70,7 @@ and stops, writing nothing, and `--verbose` also prints the per-file detail.
 
 ### Which practices
 
-A practice is a way of working that install offers as one choice: the agents, skills and guards that
+A practice is a way of working that install offers as one choice: the agents and skills that
 carry it, installed together. The drift notice comes with every choice and is offered as
 none. On a terminal, install asks one question that lists each practice with its
 description, the practices already installed here ticked (on a fresh host, the one the corpus
@@ -264,7 +264,7 @@ and warns where it falls short; they are not the same, and this is what a user m
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither cuts that isolation from the bound plan's line. Building off the line is the agent's own
-  work, on either harness, and the land gate refuses work not built off it. On Claude Code the
+  work, on either harness. On Claude Code the
   agent runs in a worktree of its own, cut as Claude Code cuts any, by its `worktree.baseRef`.
   omp's agent definition has no field for isolation, so install does what omp offers: a dispatch
   of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's

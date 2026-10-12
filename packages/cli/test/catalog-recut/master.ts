@@ -322,7 +322,7 @@ software-delivery | turning a design into shipped, integrated, verified software
 software-engineering | building and changing software well
 system-design | shaping a system's parts and how they relate
 test-design | designing checks that catch the failures that matter
-evaluation-design | designing evaluations of model behaviour: scenarios, rubrics, thresholds
+evaluation-design | designing the checks that bind a cut's examples: deterministic where cheap and repeatable, judged by reading otherwise
 research-investigation | finding and weighing outside evidence and established practice
 film-production | the craft and industry of making films
 generative-video | generating video with models, and the community's practice around it

@@ -74,6 +74,40 @@ describe('the concept journal as a library', () => {
     }
   });
 
+  it('names one maker for the record and the freeze: git’s user when no agent is named', () => {
+    version('define', 'A hold lasts ten minutes.', 'First.');
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/seats.md'),
+      '1. (hold) Given a seat, when held, then it is kept aside.\n',
+    );
+    dispatchWorkPackage(
+      [
+        'open',
+        '--cut',
+        'seats',
+        '--branch',
+        'b',
+        '--architect',
+        'booking=keeper',
+      ],
+      { from: repo },
+    );
+    const asGitUser = (name: string) => {
+      execFileSync('git', ['config', 'user.name', name], { cwd: repo });
+      return version('supersede', 'A hold lasts five minutes.', 'Sharper.');
+    };
+    const architect = asGitUser('keeper') as Record<string, unknown>;
+    expect(architect).toMatchObject({ by: 'keeper' });
+    expect(architect).not.toHaveProperty('warnings');
+    expect(asGitUser('stranger')).toMatchObject({
+      by: 'stranger',
+      warnings: [
+        { freeze: ['seats'], message: expect.stringContaining("'stranger'") },
+      ],
+    });
+  });
+
   it('mints each id past the journal’s last, even one from a later clock', () => {
     const ahead = '01Z00000000000000000000000';
     writeFileSync(

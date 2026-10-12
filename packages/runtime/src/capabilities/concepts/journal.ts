@@ -120,6 +120,8 @@ function count(counts: Map<string, number>, key: string, n: number): void {
 export interface Journal {
   /** The top of the git repository holding the journal. */
   readonly root: string;
+  /** Who appends to it: the acting agent, else git's user, when either is known. */
+  readonly maker: string | undefined;
   /** Every entry of a kind this runtime knows, in append order. */
   entries(): readonly Entry[];
   /** What was read past: entries of kinds this runtime does not know, or of a
@@ -187,17 +189,18 @@ export function journalAt(
     return cached;
   };
 
+  const maker = actingAgent() ?? gitUser(top);
   return {
     root: top,
+    maker,
     entries: () => load().entries,
     readPast: () => load().readPast,
     append(draft) {
       const id = mintAfter(load().last);
-      const by = actingAgent() ?? gitUser(top);
       const entry = {
         id,
         at: new Date(decodeTime(id)).toISOString(),
-        ...(by === undefined ? {} : { by }),
+        ...(maker === undefined ? {} : { by: maker }),
         ...draft,
       };
       mkdirSync(dir, { recursive: true });
