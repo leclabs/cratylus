@@ -202,7 +202,7 @@ export function assertRefused(
   );
   const text = (result.stderr || result.stdout).trim();
   expect(text.split('\n'), 'one-line journal refusal').toHaveLength(1);
-  expect(text).toMatch(new RegExp(`^concepts ${verb}:`));
+  expect(text).toMatch(new RegExp(`^(?:cratylus )?concepts ${verb}:`));
   for (const word of [concept, architect, ...cuts])
     expect(text).toContain(word);
 }

@@ -35,7 +35,7 @@ export function failures(
     ...(isDeepStrictEqual(attempt.before.history, attempt.after.history)
       ? []
       : ['unchanged-history']),
-    ...(new RegExp(`^concepts ${verb}: [^\\n]+$`).test(message) &&
+    ...(new RegExp(`^(?:cratylus )?concepts ${verb}: [^\\n]+$`).test(message) &&
     [concept, cut, 'architect'].every((name) => message.includes(name))
       ? []
       : ['named-refusal']),
