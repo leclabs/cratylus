@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/runtime",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "The per-host runtime: the built-in capabilities (concepts, workPackage) and the cut ledger, and the host runtime config.",
   "license": "MIT",
   "engines": {
