@@ -1,0 +1,12 @@
+{
+  "id": "01M4VD23ZT57W8ZFB43EEGX3F9",
+  "at": "2026-10-13T19:50:33.210Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "development",
+  "name": "completion check",
+  "wording": "a fallback that catches a cut's completion the ledger missed: it watches only commits whose message declares a cut complete, in forms enumerated by decision, and is silent on every other commit; on such a commit it compares the declaration with the cut's phase as the ledger computes it, and where the ledger does not show that cut complete it warns the agent that made the commit, naming the cut, the phase the ledger shows and the work packages not yet approved, and telling it to report the gap as a defect in how the ledger takes the harness's events; it never refuses a commit, and it should never fire.",
+  "builtFrom": [],
+  "reason": "The operator and architect, 2026-10-13, regrounding the bounded contexts from first principles: it watches this repository's commits, which is development, not the product's practice; moved from the workflow context unchanged.",
+  "supersedes": []
+}
