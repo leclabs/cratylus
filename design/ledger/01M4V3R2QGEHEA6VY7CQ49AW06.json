@@ -1,0 +1,13 @@
+{
+  "id": "01M4V3R2QGEHEA6VY7CQ49AW06",
+  "at": "2026-10-13T17:07:47.056Z",
+  "kind": "update",
+  "transition": "update:ci-suite:01M4V3R2QDFEKM7NMPAN45SNSH",
+  "cut": "ci-suite",
+  "workPackage": "self-contained-suite",
+  "changes": {
+    "concepts": [
+      "workflow/example"
+    ]
+  }
+}

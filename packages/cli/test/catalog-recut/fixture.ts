@@ -14,6 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as canonExports from '@cratylus/canon';
 import { expect, inject } from 'vitest';
+import { parseYaml } from '../yaml.js';
 import type { ExpectedEntry, Vector } from './master.js';
 import {
   Meaning,
@@ -141,26 +142,6 @@ export default defineConfig({ extends: [canon${
     GIT_CONFIG_NOSYSTEM: '1',
     GIT_CONFIG_GLOBAL: '/dev/null',
   };
-  function parseYaml(text: string): Record<string, unknown> {
-    // Reuse agent-launch's parser: Bun is the runtime of the installed omp harness.
-    const parsed = spawnSync(
-      'bun',
-      [
-        '-e',
-        'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
-      ],
-      {
-        cwd: project,
-        env,
-        input: text,
-        encoding: 'utf8',
-        timeout: 10_000,
-      },
-    );
-    if (parsed.error) throw parsed.error;
-    expect(parsed.status, parsed.stderr).toBe(0);
-    return JSON.parse(parsed.stdout);
-  }
   function run(args: string[]) {
     const result = spawnSync(process.execPath, [cli, ...args], {
       cwd: project,
@@ -182,7 +163,9 @@ export default defineConfig({ extends: [canon${
     const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/.exec(text);
     expect(match, `${name} has YAML front matter`).not.toBeNull();
     return {
-      front: parseYaml(requireDefined(match?.[1], `${name} front matter`)),
+      front: parseYaml(
+        requireDefined(match?.[1], `${name} front matter`),
+      ) as Record<string, unknown>,
       body: requireDefined(match?.[2], `${name} body`),
     };
   }
@@ -200,10 +183,9 @@ export default defineConfig({ extends: [canon${
       return run(['install', '--harness', 'omp', '--all', '--yes']);
     },
     modelRoles() {
-      return parseYaml(readFileSync(configFile, 'utf8')).modelRoles as Record<
-        string,
-        string
-      >;
+      return (
+        parseYaml(readFileSync(configFile, 'utf8')) as Record<string, unknown>
+      ).modelRoles as Record<string, string>;
     },
     names(installed = false) {
       return readdirSync(

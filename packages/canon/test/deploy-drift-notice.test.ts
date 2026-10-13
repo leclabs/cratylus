@@ -156,11 +156,16 @@ function run(
   cwd = corpus,
   which = worker,
 ): Run {
+  // The session directory is the worker's working directory as well as the payload's
+  // `cwd`: without jq the worker falls back to `$PWD`, and the corpus must resolve the same.
   const res = spawnSync('sh', [which], {
+    cwd,
     input: JSON.stringify({ session_id: 'sess-1', cwd }),
     encoding: 'utf8',
     env: {
       ...process.env,
+      PWD: cwd,
+      CLAUDE_PROJECT_DIR: '',
       HOME: home,
       TMPDIR: join(root, 'tmp'),
       CRATYLUS_CORPUS: '',
