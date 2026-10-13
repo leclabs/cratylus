@@ -1,0 +1,16 @@
+{
+  "id": "01M4VRGEJRMJW2BWGFB5RCN0AW",
+  "at": "2026-10-13T23:10:37.144Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0196",
+  "context": "agents",
+  "title": "Agents are judged in real use; an act is refused only where refusal earns its place",
+  "situation": "Record corrections, second cold read, 2026-10-13: 0142(2) tied a value's being firm or fixed to refusing acts, which the enforcement-level concept separates.",
+  "decision": "(1) An agent's behaviour is evaluated in real use, by the operator working with it; no suite of live agent runs, no recorded-run proof and no model-judged guard evaluates or holds it, and its definition is revised on the evidence of use. (2) An act is refused only where the harm it prevents has been observed, is costly or irreversible, and whoever owns the decision can still get past it; every other value is held by the agent's own text, its breach visible but never refused. How firmly a value resists override (advisory, firm, fixed) is a separate question (enforcement-level). (3) An incomplete assignment is shown and warned about, never refused, and an agent may dispatch whom its work calls for.",
+  "consequences": "The enforcement-level and reach concepts state the same.",
+  "status": "accepted",
+  "supersedes": "0142",
+  "supersedesEntry": "01M4RV1DSWMCPTD7KCCZW18KBD",
+  "decisionKind": "meaning"
+}

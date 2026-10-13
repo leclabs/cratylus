@@ -1,0 +1,16 @@
+{
+  "id": "01M4VRGEMNR8RSA88SV630VP8F",
+  "at": "2026-10-13T23:10:37.205Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0197",
+  "context": "workflow",
+  "title": "The whole check, in any project",
+  "situation": "Record corrections, second cold read, 2026-10-13: 0162 restated the whole check through cratylus's own one check, a development notion, so the shipped practice leaned on cratylus's repository.",
+  "decision": "The whole check runs every check of the change, every example's check, every contract and the project's own tests, without stopping at the first failure; each failing run is followed by one round that fixes everything it revealed, then one more run. In cratylus's own repository that is its one check (development).",
+  "consequences": "Nothing in the workflow depends on how cratylus checks itself.",
+  "status": "accepted",
+  "supersedes": "0162",
+  "supersedesEntry": "01M4VQN0ASRTDK25MAAKCT9FJ7",
+  "decisionKind": "realization"
+}

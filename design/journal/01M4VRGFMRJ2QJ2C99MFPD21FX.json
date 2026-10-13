@@ -1,0 +1,16 @@
+{
+  "id": "01M4VRGFMRJ2QJ2C99MFPD21FX",
+  "at": "2026-10-13T23:10:38.232Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "identity",
+  "wording": "who an agent is, the same however it is started: its role, objective, expertise, procedure, stance and communication-style; its name, and a mark where it has one, a sign that identifies it to the operator; its text states identity only, in plain language that explains why, and never describes its reach or how it was started; launch and dispatch also keep its model and effort, cognition factors, the same.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Record corrections, second cold read, 2026-10-13: mark was used but never defined.",
+  "supersedes": [
+    "01M4KK1VPD7JCEQ76XVK4J9EX1"
+  ]
+}

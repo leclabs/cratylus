@@ -1,0 +1,16 @@
+{
+  "id": "01M4VRGFC8KYKR0VW2SDKP1E1H",
+  "at": "2026-10-13T23:10:37.960Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "persona",
+  "wording": "an individually named agent over one role, whose residue is above all its expertise, the bounded contexts it holds and the industry knowledge of their domains, with any value it overrides; it overrides a role's single values and extends its sets, may narrow but never widen its reach, and cannot override a fixed value or remove a guardrail.",
+  "builtFrom": [
+    "role"
+  ],
+  "reason": "Record corrections, second cold read, 2026-10-13: invariant was used but never defined.",
+  "supersedes": [
+    "01M4JVAAWJ82QRP5R6YY9XXHSX"
+  ]
+}
