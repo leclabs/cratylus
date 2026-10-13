@@ -1,0 +1,16 @@
+{
+  "id": "01M4V9311VD7AG6XT2N84FKM0Y",
+  "at": "2026-10-13T18:41:08.667Z",
+  "by": "Lance Caraccioli",
+  "kind": "decide",
+  "decisionId": "0154",
+  "context": "development",
+  "title": "CI runs exactly the local check, with ordinary package management",
+  "situation": "CI carried steps of its own (a record gate, a pack smoke, an installed harness before simplification) and its tests silently depended on programs the developer's machine happened to have; the proposed fix was yet another check about what is installed. The operator, 2026-10-13: the record gate, the ledger's misreading and the CI's special checks are grey-field patches; the conceptual model conflated the bounded context of the product's users with the context of developing and releasing the product, which dogfoods the workflow but is a context of its own.",
+  "decision": "There is one check (the check concept): CI runs the same command developers run, every dependency is declared and installed by ordinary package management, and nothing checks which software is installed. The check tests composition, projection and the runtime's capabilities deterministically; no test is end-to-end, none starts a harness, an agent or a model. Developing the agents, skills and extensions is judged in use during development and after release, never by the check. The supported harness version is stated as a working convention.",
+  "consequences": "Realized in the checks cut (0156): CI's own steps beyond the check are deleted, and anything worth keeping moves into the check so it runs locally too.",
+  "status": "accepted",
+  "supersedes": "0144",
+  "supersedesEntry": "01M4RV1DXKMGE50EA75G7N7HH7",
+  "decisionKind": "meaning"
+}

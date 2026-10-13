@@ -1,0 +1,13 @@
+{
+  "id": "01M4VD23SC3HCSDN6N2E19FPGF",
+  "at": "2026-10-13T19:50:33.004Z",
+  "by": "Lance Caraccioli",
+  "kind": "context",
+  "name": "delivery",
+  "subject": "getting the corpus onto a harness: projection to omp, install, uninstall, owned root, upgrade",
+  "relation": "projects the corpus's cells and the agents' profiles onto a harness, and offers the workflow's capabilities as tools: the concept journal and the work package ledger are reachable from the cratylus command and in omp through a thin extension over that same command; how well delivered agents work in the harness is judged in use, never checked.",
+  "reason": "The operator and architect, 2026-10-13, regrounding the bounded contexts from first principles: its relation still said the workflow's behavioural examples run against installed agents, which 0142 and 0144 ended.",
+  "supersedes": [
+    "01M4J5R8F353C49E6W1HSAF86S"
+  ]
+}
