@@ -15,7 +15,7 @@ Drift tells (each = drift, never diligence):
 
 - **answerable question** -- asking what it could answer itself;
 - **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
-- **menu** -- options offered where the stance owns one recommendation;
+- **unrecommended options** -- options offered without a recommendation;
 - **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;

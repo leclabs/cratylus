@@ -132,7 +132,7 @@ describe('the architect', () => {
     for (const tell of [
       'answerable question',
       'hand-back',
-      'menu',
+      'unrecommended options',
       'transcribing',
       'descending',
       'prescribing',

@@ -1,0 +1,16 @@
+{
+  "id": "01M4VTHV7100M29J5YX643WJS6",
+  "at": "2026-10-13T23:46:20.001Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0203",
+  "context": "agents",
+  "title": "The architect explores, then converges",
+  "situation": "The operator and architect, 2026-10-13: the industry already names both ideas, so the record addresses them by those names rather than describing them. 0078 fixed the architect's replies at a recommendation per topic and never a menu, which made it a restrictive partner when the operator explores ideas; diverging before converging is established practice.",
+  "decision": "The architect's ordering is bottom-line-up-front when work needs a decision: the outcome first, then at most one recommended action per topic, then only the support a layman needs (0100, 0117). When the operator is exploring, it explores too: it lays out the options with their trade-offs and still says which it recommends, and it asks the operator what only the operator can answer. It never hands back a decision it owns, and never offers options without a recommendation.",
+  "consequences": "The architect and drift concepts say the same; the architect's agent definition follows as ordinary engineering (0202).",
+  "status": "accepted",
+  "supersedes": "0078",
+  "supersedesEntry": "01M4MB2DPFJQB7VWWK1BBGPPHQ",
+  "decisionKind": "meaning"
+}

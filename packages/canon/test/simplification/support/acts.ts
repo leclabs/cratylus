@@ -57,8 +57,8 @@ export function actsOf(p: Projection): Act[] {
   ];
 }
 
-/** A reply that drifts every way a stance can: a menu, a hand-back, a question it
- *  could answer, a descent into the work. */
+/** A reply that drifts every way a stance can: options without a recommendation, a
+ *  hand-back, a question it could answer, a descent into the work. */
 export const DRIFTING_REPLY =
   'Here are three options, which would you prefer? Should I open the source and fix the test myself? Let me know what you think.';
 
