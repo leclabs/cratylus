@@ -1,5 +1,121 @@
 # @cratylus/forge
 
+## 0.15.0
+
+### Minor Changes
+
+- cd8e214: Projection reads the re-cut meta-model. An agent's text is now `# <emoji> <name>` (or `# <name>` with no mark), its description, then one `## <Group>` per factor group in catalog order and one `### <factor>` per text factor, each held entry a line `- [<slot> (<slot gloss>): ]**<anchor>**[ (<note>)] — <gloss>[ (fixed)]`, and `- (none)` for an empty factor; binding factors and attribute factors are never text, and the archetype, preamble and dimension titles are gone. Every dimension field is read as a list of entries: the fold rewrites an entry's value and keeps its level, slot and note, and the bindings of enforcing values are read off entry values. `ProjectedTree.heldRoles` and `ProjectedTree.roleHolders` are removed for `ProjectedTree.agentModels` (each rendered agent's `routing` tier and effort, by agent name), and a practice is closed under dispatch when a handoff is held by a chosen agent or supplied natively by the harness (`HarnessAdapter.nativeAgents`). `cratylus catalog` and `CatalogEntry` report a dimension's `group` in place of its axis. Agent elevation (`renderAgentVector`/`elevateAgent`) takes a `description`, emits `mark: null` and `key: null`, writes each selected fragment as an entry at its dimension's default level (one per slot for a `slots` dimension, which a fragment names with `slot`), writes `[]` for an inherited or silent dimension, and refuses an `attribute` dimension as a field. The `agent.archetype` residue-gated field is removed.
+
+  `cratylus catalog`'s corpus census line now also shows each factor's default enforcement level (`—` when none applies), its projection (`text` or `binding`) and, for a `slots` factor, its slot names: `<factor> [<group>, <repertoire>, <arity>[ (<slots>)], <level>, <projection>] (<count>)`. `CatalogEntry` and `--json` carry `level`, `projection` and `slots`.
+
+- 8964765: An omp agent declaration now carries an agent's reach and model as omp settings. The front matter is `name`, `description`, `mark` (only with one), `key: null` (reserved for ipseic agents), `model: "@<name>"`, `spawns` and `tools`, then `autoloadSkills` (only with skills). `spawns` lists the agent's handoffs, with the researcher mapped to omp's own `scout`. It is `""` for an agent that hands off to no one and absent where handoffs are undeclared. `tools` is `[read, grep, glob, find, ast_grep, web_search]`, written only for an agent that has no tool that changes anything. Every other agent keeps omp's default tools.
+
+  `cratylus install --harness omp` binds each agent's own model role in the host's `modelRoles`: `<name>: "@<tier>:<effort>"`, plus each tier the agents use as a role named for the tier. A tier role is seeded when absent: `frontier` from the host's `default`, `fast` from `smol`, and `frontier-other-family` from the first entry whose provider differs from the frontier's, each with its thinking level dropped. A tier that cannot be seeded is left out, and install says so. An entry the host set is never changed. An entry install seeded follows what install would seed now, so a changed effort moves it. `--model-roles` keys by agent name and refuses a name no installed agent has. A `config.yml` written as one JSON document is edited too, where writing it back reproduces its bytes. Uninstall takes the entries out again.
+
+  Nothing is placed under `~/.omp/agent/personas/` any more. The next install prunes the per-agent guardrail, session and isolation modules an earlier install recorded there, and uninstall removes them. omp cannot narrow a guard to one agent, so an enforcing value bound to agents is reported by projection as unscopable on omp and is not emitted. The session hook and dispatch isolation modules are placed once, in `~/.omp/agent/extensions/`. The canon's `deploy-drift-notice` target names omp's `extensions/cratylus-session.ts` as the harness hook file.
+
+  **Breaking for `@cratylus/forge` consumers.** `RoleRouting` is now `{ configRels, agentRole, seedTier }`; `defaultRole`, `nearest` and `offered` are removed. `HarnessAdapter` gains `nativeAgents`. Removed from the omp adapter: `OMP_PERSONA_DIR`, `OMP_GUARDRAIL_MODULE`, `ompGuardrailExtensions` and its `enforcingSurface`. `ompScopeActivatedExtensions(hooks)` no longer takes agent names. omp's `scopedRel` refuses an agent scope. `RoleQuestion.holders` is removed. `AddModelRolesResult` gains `host` (the host's entries in file order), and `RetargetedModelRole` is now `{ role, value, line? }`. `noteHostRoutes` takes the seeded roles with their values, recorded in the manifest's new `modelRoleSeeds`. New exports: `OMP_NATIVE_AGENTS`, `OMP_READ_ONLY_TOOLS`.
+
+- 96c2945: Install places everything under one owned root, `~/.cratylus/<harness>/` (decision 0108).
+  For omp the root is an extension package (`agents/`, `skills/`, `extensions/cratylus.ts`,
+  hook workers, and a `package.json` recording the cratylus version that projected it),
+  linked into omp's plugin directory as `omp plugin link` would, so every project of the
+  user is offered it and no host file is overwritten. Installing again replaces the root
+  whole (upgrade); an earlier installation on omp's own surfaces, the event tap's skill
+  included, is taken back by its deploy record, what it placed before it recorded digests
+  included (decision 0114), save the `modelRoles` entries it seeded, which stay in the
+  host's config as the host's own. `cratylus uninstall --harness omp [--home <dir>]`
+  removes the root and every reference into it, found from where each points, so none is
+  left dangling when the root or its record was edited or removed. Agent declarations name
+  their own model role first, then their tier and effort (decision 0111), and are never
+  rewritten with a model. Which model a tier or a persona's role runs on is the operator's
+  choice and the host's own setting (decision 0112): install asks for each the host does
+  not bind (or takes `--model-roles <role=model,…|default>`, keyed by tier or agent) and
+  writes the answer into `~/.omp/agent/config.yml` as an ordinary `modelRoles` entry,
+  recorded nowhere as cratylus's, so upgrade and uninstall keep it. A run that is neither
+  told nor able to ask places everything else and names, as the next step, each tier the
+  agents fall back to that the host does not bind. Whether omp's status line shows the session's agent, where the host hides it, is the
+  operator's choice the same way (decision 0113): asked, or `--agent-status show|hide`,
+  written as the host's own setting and never applied again. Install and upgrade leave a
+  reference place the host has redirected or replaced, and say what to do. The new `versionSkew` capability
+  (`version_skew` in omp) reports the projecting and the reached cratylus versions, and
+  every omp session start warns when they differ, whichever is older, comparing the
+  version the root records with the command's own `--version`; a command lacking a
+  capability the installation expects is named in the warning, and the rest still load. `deploy --scope user` goes through the
+  same owned root.
+  A session started in an omp process that still runs an extension the installation has
+  since replaced says so and asks for a restart; dispatch checks and ledger capture know a
+  dispatch by its items, never by the name the harness gives its dispatch tool.
+- a4fb154: Retire the event tap from what cratylus delivers (decision 0108). `cratylus eventTap` is gone and is refused as an unknown command; the runtime's capability keyspace (`CAPABILITIES`) and canon's `RUNTIME_CAPABILITIES` are `concepts` and `workPackage`, and both explain themselves. `@cratylus/runtime` no longer exports the `./events`, `./ports/event-tap` and `./capabilities/event-tap` subpaths, nor `EventName` and the `EventTapHost` port from its `.` barrel. The host runtime config reader carries only each capability's configuration: the lifecycle vocabulary (`events`) and the per-harness native names (`harnesses`), with `nativeEventsOf` and `nativeActsOf`, served only the tap and are removed. Canon no longer ships the `event-tap` skill or installs it as plumbing, so no projection carries its skill or `scripts/eventTap.mjs` shim, and forge's projection no longer warns about the tap on a harness without a tap strategy.
+- 486719c: The omp extension names the acting agent on every capability call, in `CRATYLUS_AGENT`: the declaration a main session was launched as, the agent a dispatched session runs as, and no one otherwise. It drops any value the environment carries in. A capability's refusal is now returned as a tool error (`isError: true`) carrying the command's own message, never thrown.
+
+  Every `bash` call runs with the session's agent named in `CRATYLUS_AGENT`: the extension leads its command with a line exporting it (omp's bash tool takes no `env`), so a commit or journal append made from the architect's session carries the architect and a lead's carries the lead. In a session that is no agent the line unsets it, naming no one.
+
+  The freeze holds at the record (decisions 0128, 0129): the journal refuses before appending, and the project's history at its `reference-transaction` hook, `cratylus freeze-gate`. The extension no longer refuses any tool call for the files it would change, by any route; its attempt-time freeze gate, including its refusal of shell calls naming `CRATYLUS_AGENT`, is removed. A builder's dispatch is refused while a visible example its work package owns is among the cut's `unchecked` in `cratylus workPackage frozen`, naming the package and those examples.
+
+- a511371: `omp --agent <name>` now starts the main session with the whole declaration, as omp's `task` dispatch gives it to a child, resolved by omp's own resolvers. Every turn's prompt carries, after the declaration's text, the full instructions of each skill its `autoload-skills` names that omp discovers for the session, in omp's autoload form (an unknown name is skipped). The session runs without omp's default personality; with summarised reads on or off as `read-summarize` says (unsaid, the session's own setting); with the advisor and the pre-planning hand-off (prewalk) the declaration names, `task.agentAdvisor` and `task.agentPrewalk` entries first, and neither when it names none (a hand-off the configuration armed is dropped first, so a declared target wins). It dispatches only the agents its `spawns` names (`*` any; absent, as omp reads it: `*` with `task` among the `tools`, else none; an explicitly empty `spawns`, an empty list or a blank string, none even with `task`), omp refusing any other with `Cannot spawn '<name>'. Allowed: …` through `before_subagent_spawn`; its children's own dispatch is untouched. Two values omp's own dispatch does not hold are held by launch as the declaration says: an explicitly empty `spawns` with `task` among the `tools` (omp's discovery reads it as `*`), and `read-summarize: true` (omp's dispatch applies only `false`); every other value is held as omp's dispatch gives it to a child. These settings are session-scoped runtime overrides, never persisted, applied once per launch and put back when the launch ends. The operator's `--model`, `--thinking`, `--advisor`, `--prewalk`, `--no-prewalk` and `--prewalk-into` win their own part; the tools are never touched, so without `task` the session cannot dispatch. A session without `--agent`, and every subagent session, are unchanged.
+- bdadf63: `omp --agent <name>` starts the main session as any agent declaration omp discovers (decision 0047), through cratylus's one omp extension, `~/.omp/agent/extensions/cratylus.ts`, which `cratylus install --harness omp` places. The extension registers the `agent` flag and resolves the name with omp's own agent discovery, the declarations omp's `task` dispatch runs (`.omp/agents/` nearest the session's directory, then `~/.omp/agent/agents/`, then extension packages, plugins and bundled agents such as `scout`), read afresh for each new session. The session runs on the model and thinking level omp's dispatch would run the declaration on, resolved by omp's own resolver: a role alias is expanded, and a level a model selector carries (`provider/model:high`, directly or in a role's configured value) wins over `thinking-level`. An explicit `--model` or `--thinking` on the command line wins over the declaration's, each for its own part. Every turn's system prompt carries the declaration, its name and description as a sentence and then its body, never its raw front matter; and the status line shows the declaration's `mark` and name, or the name alone (a bundled declaration has no mark). The extension never changes the active tools: `omp --agent <name> --tools …` holds exactly what plain `omp --tools …` holds, and a declaration's `tools` are for dispatch only. An unknown name ends startup with a non-zero exit naming it, before any session starts. Without `--agent`, and in subagent sessions, the extension adds nothing. Its capability tools are unchanged.
+
+  Wherever install places that extension on omp it also lists omp's `status` segment in the host's status line (or shows the hidden status row again), whether or not the corpus delivers any agent, so the name and mark render on a host that had hidden extension status.
+
+- 68fd951: The concept journal reaches omp as one tool (decision 0037). `cratylus install --harness omp` places cratylus's own extension, `~/.omp/agent/extensions/cratylus.ts`, recorded in the deploy manifest with the other session modules, which every omp session loads. At load it registers one tool for each capability that explains itself, today the concept journal: it asks the `cratylus` on `PATH` for `cratylus concepts --explain` and registers `concept_journal` composed from that answer alone: its label and description from the explanation, a required `verb` among the explained verbs and every explained parameter with its descriptions and schema (each distinct schema under `anyOf` where verbs declare one name differently), read approval for a verb that reads and write approval for one that appends. A call runs `cratylus concepts <verb> …` in the session's directory, every value as one `--flag=value` word so a value led by `-` reaches the command as written, and returns its JSON output; a refusal is a tool error carrying the command's own message, and a positional led by `-`, which the command cannot take as a word of its own, is refused by the command. The extension holds no description, verb, parameter or rule of the journal, so a newer installed package changes the tool in the next session with the extension unchanged. The harness adapter port gains `capabilitySurface`, which forge's projection stages at the session scope.
+
+  `cratylus install` takes `--home <dir>`, installing for that home in place of yours.
+
+- 6d906e7: On omp, every turn of a launch whose decision rights decide meaning carries a note rendered from that right (0086, 0090): the meaning of the contexts it holds is its own, the approval of every one of their examples included; approval judges only whether an example expresses its concepts' meaning, so examples that do are approved as they stand in the turn they arrive, and a decision whose grounds it holds is taken in that turn. Every turn of a launch whose memory keeps the records as its source of truth under the honesty guardrail carries a note rendered from those values: where things stand is what the journal, the ledger and the reports record, and what they do not record is stated as unrecorded, never as a fact about the work. These hold what the agent's replies say by its own text.
+- 68d0bf5: Typed handoffs bound on omp. Each agent declaration carries its deliverable schema as omp's own `output` and its assignment schema under `assignment`; no declaration lists `tools`, and the body ends with the agent's per-turn persistence protocol. Every agent is offered every verb of every capability. Every turn carries the assignment form of each agent that takes a typed one, and on every `task` call, in any session, each such item is checked with the schema package's own `checkAssignment` against its fenced `assignment` block; a misfit is warned of, naming the agent and each missing or ill-typed field, and the dispatch goes ahead. A session launched with `--agent` as such an agent checks its first prompt the same way. The extension appends the harness's own events through `cratylus lifecycle`: `dispatched`, `returned` (with tokens when reported), `verdict` from an assayer's deliverable and `reported` from a lead's, each transition derived from the task call and item ids.
+
+  Capability fidelity. `HarnessAdapter` gains `nativeCapabilities`. Projection chooses for each runtime capability the harness's own facility, else the extension tool, else prose generated from the capability's own explanation (staged as `capabilities/<capability>.md` and carried by every agent), and reports the form as `capabilities`. `@cratylus/runtime` exports `WORK_PACKAGE`, `explain` and `Explanation` for it.
+
+  A builder's assignment `examples` may be empty: a package sharing outputs owns no example.
+
+- b05854f: Install no longer places a persona launch surface: no `omp-agent` launcher, no per-persona `omp.yml` `--config` overlay, no `cratylus-persona-badge.ts` module, and no persona command in `~/.local/bin`. A session is started as an agent only through the harness itself, `omp --agent <name>` (or `claude --agent <name>`). The install options `--link-persona-commands` and `--no-link-persona-commands`, and the question they answered, are removed; passing either is now an unknown-option error.
+
+  An earlier install's launch surface is taken away: the next `cratylus install` prunes the launcher, overlays and badge modules its deploy manifest records, and unlinks each persona command recorded under `personaLinks` while it still points into the harness's home (one since pointed elsewhere is left and reported); `cratylus uninstall` removes them too.
+
+  The modules composed for one agent (its guardrails and its copies of the session and isolation modules) are still placed under `~/.omp/agent/personas/<name>/extensions/`, which nothing loads without the retired overlay, so a per-agent guard does not judge an `omp --agent` session yet.
+
+  **Breaking for `@cratylus/forge` consumers.** Removed: `HarnessAdapter.launcherFile`, `HarnessProjection.executable`, `SCOPE_DIR_TOKEN`, the omp adapter's `OMP_LAUNCHER_FILE`, `OMP_LAUNCHER_SCRIPT`, `OMP_OVERLAY_FILE`, `OMP_PERSONA_BADGE_MODULE`, `ompLaunchSurface`, `ompOverlayYaml` and `ompPersonaBadgeExtensions`, and from `deploy` `planPersonaCommands`, `placePersonaCommands`, `describePersonaCommands`, `describePersonaRemoval`, `personaLauncherOf`, `PERSONA_BIN_REL` and their types. `removePersonaCommands({ home, harnessDir, dry })` now takes only the recorded links. `InstallCmdOpts.linkPersonaCommands` and `pathEnv`, and `InstallPrompts.linkCommands`, are removed.
+
+- 77709cf: Agents are judged in real use, and nothing refuses their acts for how they behave (decisions 0142, 0145).
+
+  - Canon: the `descend` and `past-objective` guards, `guarded()` and the plugin's `guards` dir are removed; the architect's elevation and stopping rule are plain values held by its own text. The `handoffs` factor is removed, so no agent is limited in whom it dispatches. Every role's evaluation is the one value `in-use` (its behaviour is evaluated in real use, by the operator working with it); `behavioral-examples`, `held-out`, `never-assertions` and `rubric` are removed. A persona that widens its reach is composed silently; one that weakens or removes a guardrail, or takes from a set other than its reach, is composed with a `CompositionWarning`. Malformed personas are still refused.
+  - Forge (omp): declarations carry `spawns: "*"` and the extension refuses no spawn. A dispatch or launch whose assignment misfits is shown the agent's form and warned, and goes ahead; the lead's and builder's cut-state checks and a dispatch from `eval` code are warnings. The readback gate, the guards and their in-process model judge (`completeSimple`) are removed, as is the forced `schemaMode: "strict"`; a session hook's worker is fired once and its stdout read as its verdict. Projection no longer closes a practice over dispatch, and the tree no longer reports `guards`. `HarnessAdapter.nativeAgents`, `ComposedGuard` and the live omp scenario runner (`createOmpAgentScenarioRunner`) are removed.
+  - Schema: `GuardCell`, `GuardJudge`, `Layout.guards` and `Agent.dispatches` are removed; `checkAssignment` reports its finding as `problem` (was `reason`).
+
+- 28ac76d: The runtime ships a third capability, `workPackage`: `cratylus workPackage <verb> --cut <context>/<name>` slices a cut into work packages and hands them out. `submit` and `update` record a package's outputs, concepts, dependencies and needed outputs, refusing an output another package owns, a concept the cut's visible examples do not name, an unknown dependency and a needed output no dependency owns. `levels` computes the dependency graph's levels with `@dagrejs/graphlib` and names the packages of any cycle instead. `dispatch` hands out the lowest unfinished level a whole level at a time and refuses when nothing is ready, when a concept is unserved or when any example has no owner, naming it; `finish` marks a package finished. `inventory` and `assignment` give every visible example its one owner. `commit` reads a builder's paths literally, never as globs, commits them only when every file they would commit lies within its package's outputs, and keeps them in the package's `history`. `check` records a whole-check run as its own round and flags a round that resolves none of the previous run's failures; `run` records an agent run with its role and tokens; `efficiency` reads the figures, and `record` appends them to the concept journal. Each cut's log lives under the repository's git common directory, shared by its worktrees and never tracked.
+
+  The capability explains itself as `work package` (`cratylus workPackage --explain`), so omp offers it as the tool `work_package` through the cratylus extension, its reading verbs alone to a read-only agent.
+
+  The concept journal gains the entry kind `efficiency`, and `cratylus concepts state` gives each context an `efficiency` field: each of its cuts with the figures last recorded for it and when, explained in the `reading` legend.
+
+  `@cratylus/canon`'s `RUNTIME_CAPABILITIES` gains `workPackage`.
+
+### Patch Changes
+
+- 14ac18b: On omp the cratylus module offers the work package capability as an essential tool (`loadMode: "essential"`), its whole explanation in every turn's tool list, rather than an `xd://` device whose prompt line is its purpose cut at 200 characters, without its `when` or verbs. That line ended before where the cut stands, so an agent asked where its cut stands never met `state`, the verb that works it out afresh from the ledger. The concept journal stays a device. `OMP_ESSENTIAL_CAPABILITIES` names the capabilities offered whole.
+- Updated dependencies [20b730f]
+- Updated dependencies [4b34740]
+- Updated dependencies [19e525c]
+- Updated dependencies [96c2945]
+- Updated dependencies [a4fb154]
+- Updated dependencies [50f14f9]
+- Updated dependencies [9f480ca]
+- Updated dependencies [9564ae9]
+- Updated dependencies [dd09a53]
+- Updated dependencies [9687df6]
+- Updated dependencies [68d0bf5]
+- Updated dependencies [ebe2aa5]
+- Updated dependencies [f880363]
+- Updated dependencies [20c9c98]
+- Updated dependencies [81758a4]
+- Updated dependencies [b9e0ce8]
+- Updated dependencies [77709cf]
+- Updated dependencies [dd4690d]
+- Updated dependencies [28ac76d]
+  - @cratylus/schema@0.10.0
+  - @cratylus/runtime@0.11.0
+
 ## 0.14.5
 
 ### Patch Changes
