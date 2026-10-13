@@ -1,5 +1,4 @@
 import '../reconstitution/binding/omp-mocks.js';
-import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
   cpSync,
@@ -21,6 +20,7 @@ import { expect, vi } from 'vitest';
 import type { Host, ToolResult } from '../capability-port/fixture.js';
 import { host, run, success, toolJSON } from '../capability-port/fixture.js';
 import { omp } from '../reconstitution/binding/omp-mocks.js';
+import { parseYaml } from '../yaml.js';
 export { success, toolJSON };
 export const here = dirname(fileURLToPath(import.meta.url));
 export function put(path: string, text: string) {
@@ -110,22 +110,11 @@ export function earlier(h: Host, fixture = 'earlier-installation.json') {
 }
 export function settings(h: Host): Record<string, unknown> {
   const text = readFileSync(join(h.home, '.omp/agent/config.yml'), 'utf8');
-  const parsed = spawnSync(
-    'bun',
-    [
-      '-e',
-      'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
-    ],
-    {
-      input: text,
-      encoding: 'utf8',
-    },
-  );
-  expect(
-    parsed.status,
-    `${parsed.stderr}\nHost settings after install:\n${text}`,
-  ).toBe(0);
-  return JSON.parse(parsed.stdout);
+  try {
+    return parseYaml(text) as Record<string, unknown>;
+  } catch (error) {
+    throw new Error(`${error}\nHost settings after install:\n${text}`);
+  }
 }
 export function treeWithoutBindings(h: Host): Tree {
   const after = tree(h.home);
@@ -153,16 +142,7 @@ export function preserved(h: Host, material: Record<string, string>) {
   for (const [path, text] of Object.entries(material)) {
     const after = readFileSync(join(h.home, path), 'utf8');
     if (path.endsWith('config.yml')) {
-      const r = spawnSync(
-        'bun',
-        [
-          '-e',
-          'console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
-        ],
-        { input: after, encoding: 'utf8' },
-      );
-      expect(r.status, r.stderr).toBe(0);
-      expect(JSON.parse(r.stdout)).toMatchObject(JSON.parse(text));
+      expect(parseYaml(after)).toMatchObject(JSON.parse(text));
     } else expect(after, path).toBe(text);
   }
 }
@@ -190,22 +170,13 @@ export function assertOwned(h: Host, before: Tree = {}) {
       // A harness configuration may carry the reference instead of a symlink. Its
       // unrelated pre-existing values must survive; a generated material copy is not a reference.
       const text = item.text!;
-      const parsed = spawnSync(
-        'bun',
-        [
-          '-e',
-          'try {const [before,after]=JSON.parse(await Bun.stdin.text());console.log(JSON.stringify([Bun.YAML.parse(before),Bun.YAML.parse(after)]));}catch {process.exit(2);}',
-        ],
-        {
-          input: JSON.stringify([before[path]?.text ?? '', text]),
-          encoding: 'utf8',
-        },
-      );
+      let parsed: [unknown, unknown] | undefined;
+      try {
+        parsed = [parseYaml(before[path]?.text ?? ''), parseYaml(text)];
+      } catch {}
       // Retained host answers may be serialized differently; content defines ownership.
-      if (before[path] && parsed.status === 0) {
-        const [oldValue, newValue] = JSON.parse(parsed.stdout) as unknown[];
-        if (isDeepStrictEqual(oldValue, newValue)) continue;
-      }
+      if (before[path] && parsed && isDeepStrictEqual(parsed[0], parsed[1]))
+        continue;
       const references = [
         ...text.matchAll(
           /([^\s"'`=;()[\]{}<>]*\.cratylus\/omp[^\s"'`;,()[\]{}<>]*)/g,
@@ -237,8 +208,8 @@ export function assertOwned(h: Host, before: Tree = {}) {
           `${path} cannot carry a second copy of ${projected}`,
         ).toBe(false);
       }
-      if (parsed.status === 0) {
-        const [oldValue, newValue] = JSON.parse(parsed.stdout) as unknown[];
+      if (parsed) {
+        const [oldValue, newValue] = parsed;
         if (newValue && typeof newValue === 'object') {
           const inspect = (previous: unknown, next: unknown, key: string) => {
             if (JSON.stringify(previous) === JSON.stringify(next)) return;

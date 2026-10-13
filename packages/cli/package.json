@@ -27,7 +27,9 @@
   },
   "devDependencies": {
     "@cratylus/tooling": "workspace:*",
+    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
+    "js-yaml": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

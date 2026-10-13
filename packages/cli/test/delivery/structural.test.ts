@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import {
   cpSync,
   existsSync,
@@ -14,6 +13,7 @@ import { afterEach, expect, it } from 'vitest';
 import { runInstall } from '../../../forge/src/cli/commands/install.js';
 import type { Host } from '../capability-port/fixture.js';
 import { run, toolText } from '../capability-port/fixture.js';
+import { parseYaml } from '../yaml.js';
 import {
   assertOwned,
   assertRemoved,
@@ -185,19 +185,13 @@ it('delivery/6 — reinstalling the same version leaves the entire installation 
   h = fresh();
   success(install(h));
   const settings = join(h.home, '.omp/agent/config.yml');
-  const changed = spawnSync(
-    'bun',
-    [
-      '-e',
-      `const c=Bun.YAML.parse(await Bun.stdin.text());console.log(JSON.stringify({...c,theme:'mira-changed-theme',modelRoles:{...c.modelRoles,frontier:'host/changed-model'},statusLine:{preset:'custom',leftSegments:['model'],rightSegments:['cwd'],showHookStatus:false}}))`,
-    ],
-    {
-      input: existsSync(settings) ? readFileSync(settings, 'utf8') : '{}',
-      encoding: 'utf8',
-    },
+  const c = parseYaml(
+    existsSync(settings) ? readFileSync(settings, 'utf8') : '{}',
+  ) as { modelRoles?: object };
+  put(
+    settings,
+    `${JSON.stringify({ ...c, theme: 'mira-changed-theme', modelRoles: { ...c.modelRoles, frontier: 'host/changed-model' }, statusLine: { preset: 'custom', leftSegments: ['model'], rightSegments: ['cwd'], showHookStatus: false } })}\n`,
   );
-  expect(changed.status, changed.stderr).toBe(0);
-  put(settings, changed.stdout);
   const before = tree(h.home);
   success(install(h));
   expect(tree(h.home)).toEqual(before);
@@ -354,16 +348,11 @@ it('delivery/10 — upgrade rewrites every reference while retaining the host re
   if (negative === '10-bindings') {
     // Negative recording: upgrade drops a seeded answer because its agent retired.
     const config = join(h.home, '.omp/agent/config.yml');
-    const changed = spawnSync(
-      'bun',
-      [
-        '-e',
-        'const config=Bun.YAML.parse(await Bun.stdin.text());delete config.modelRoles["obsolete-agent"];console.log(JSON.stringify(config));',
-      ],
-      { input: readFileSync(config, 'utf8'), encoding: 'utf8' },
-    );
-    expect(changed.status, changed.stderr).toBe(0);
-    put(config, changed.stdout);
+    const changed = parseYaml(readFileSync(config, 'utf8')) as {
+      modelRoles: Record<string, unknown>;
+    };
+    const { 'obsolete-agent': _retired, ...modelRoles } = changed.modelRoles;
+    put(config, `${JSON.stringify({ ...changed, modelRoles })}\n`);
   }
   preserved(h, bindings);
   preserved(h, material);

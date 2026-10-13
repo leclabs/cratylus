@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
 import { repositoryRoot } from '../../concept-journal/fixture.js';
+import { parseYaml } from '../../yaml.js';
 import { omp } from './omp-mocks.js';
 
 export const roles = [
@@ -71,18 +72,8 @@ export const task = (agent: string, value: unknown, id = 'handoff-1') => ({
 export function parse(text: string) {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(text);
   expect(match, 'installed declaration has omp frontmatter').not.toBeNull();
-  // Bun is omp's runtime and supplies its YAML parser. No hand-written YAML subset.
-  const parsed = spawnSync(
-    'bun',
-    [
-      '-e',
-      'process.stdout.write(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text())))',
-    ],
-    { input: match![1], encoding: 'utf8' },
-  );
-  expect(parsed.status, parsed.stderr).toBe(0);
   return {
-    frontmatter: JSON.parse(parsed.stdout) as Record<string, unknown>,
+    frontmatter: parseYaml(match![1]!) as Record<string, unknown>,
     body: match![2]!,
   };
 }
