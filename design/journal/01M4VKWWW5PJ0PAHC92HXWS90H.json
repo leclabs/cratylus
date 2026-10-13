@@ -1,0 +1,23 @@
+{
+  "id": "01M4VKWWW5PJ0PAHC92HXWS90H",
+  "at": "2026-10-13T21:50:02.117Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "the agent that owns a cut's realization: checks out the cut's branch, divides its work into work packages, schedules their dependency graph, has the check-writer bind the examples before the build and owns those checks, dispatches builders, runs judgment and the whole check, makes and records every technical decision, settling the operator's open recommendations by accepting them or recording its own decision with its reason, keeps the work within the operator's requirements, and merges the cut into the project once the architect has accepted it; it brings the architect only a meaning question or the cut's outcome, in concept terms, and never changes a concept or an example.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "build",
+    "judgment",
+    "whole check",
+    "decision",
+    "check-writer"
+  ],
+  "reason": "0160. The operator and architect, 2026-10-13, reasoning from first principles about how the architect drifted: the architect's purpose was always meaning, but its recorded rights also gave it check rulings and realization decisions (0002, 0052), and the freeze made it the only one to change checks, so realization detail and mechanical work reached it constantly. ",
+  "supersedes": [
+    "01M4KK1VMPM4SWYKA2GHYPSMFM"
+  ]
+}

@@ -21,7 +21,9 @@
 //
 // CUT PHASE: `open` (recorded or sliced, nothing dispatched) → `in flight` (from
 // the first `dispatched` of any role) → `complete` (every work package
-// approved).
+// approved) → `integrated` (an `integrate` entry recorded). A recorded
+// integration settles the phase whatever the packages' statuses, which stay as
+// recorded.
 //
 // READY: the work packages whose builder is to be dispatched next, every
 // dependency of which is `returned` or `approved`: one never dispatched
@@ -42,8 +44,8 @@
 //
 // FREEZE: a cut opened is frozen until it is integrated; the checks frozen with
 // it are every path its `freeze` entries name, in the order first frozen.
-// Integration ends the freeze and nothing else: the phase, the packages and
-// every entry stay as they were.
+// Integration ends the freeze and settles the phase as `integrated`; the
+// packages and every entry stay as they were.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
@@ -63,7 +65,7 @@ export type PackageStatus =
   | 'disputed';
 
 /** Where a cut stands. */
-export type CutPhase = 'open' | 'in flight' | 'complete';
+export type CutPhase = 'open' | 'in flight' | 'complete' | 'integrated';
 
 /** A work package as the fold computes it. */
 export interface WorkPackage extends PackageFields {
@@ -258,8 +260,9 @@ export function foldCut(
     )
     .map((p) => p.name);
   const all = [...packages.values()];
-  const phase: CutPhase =
-    all.length > 0 && all.every((p) => p.status === 'approved')
+  const phase: CutPhase = integrated
+    ? 'integrated'
+    : all.length > 0 && all.every((p) => p.status === 'approved')
       ? 'complete'
       : dispatched
         ? 'in flight'

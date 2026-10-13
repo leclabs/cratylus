@@ -50,7 +50,7 @@ EPISODIC.jsonl
 MEMORY.md
 SELF.md
 
-# Release staging: tarballs packed for audit-then-upload. Regenerated every run.
+# Release staging: tarballs packed for upload. Regenerated every run.
 .pack/
 
 # PACKED TARBALLS, wherever they land. `.pack/` is the release script's staging dir and

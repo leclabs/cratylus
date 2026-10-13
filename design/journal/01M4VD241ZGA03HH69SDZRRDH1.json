@@ -1,0 +1,12 @@
+{
+  "id": "01M4VD241ZGA03HH69SDZRRDH1",
+  "at": "2026-10-13T19:50:33.279Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "completion check",
+  "reason": "The operator and architect, 2026-10-13, regrounding the bounded contexts from first principles: moved to the development context, where it belongs.",
+  "supersedes": [
+    "01M4MB3311GJT7NFB1YQR4Z1Q4"
+  ]
+}

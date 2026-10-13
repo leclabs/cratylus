@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# The publish path: packing, auditing and uploading, all through pnpm.
+# The publish path: packing and uploading, all through pnpm.
 #
 # THE UPLOAD WAS npm AND IS NOT ANYMORE, because npm refuses to run here at all. The root
 # manifest declares `devEngines.packageManager = pnpm` with `onFail: "error"`, and npm
@@ -10,20 +10,20 @@
 # a refusal read as an absence.
 #
 # `pnpm publish` takes what this script has: its argument is a `<tarball | folder>` (pnpm's
-# own docs), so the AUDITED bytes are the uploaded bytes — no repack, and `prepack` cannot
+# own docs), so the PACKED bytes are the uploaded bytes — no repack, and `prepack` cannot
 # fire on a tarball that is already packed. It is native since v11 (it no longer shells out
 # to npm), it carries `--provenance`, and it implements OIDC trusted publishing directly
 # (`pnpm/crates/publish/src/oidc.rs`; issues #9812 and #11495, the latter making OIDC
 # override a static `_authToken` exactly as npm does).
 #
 # NOT `changeset publish`, still. It publishes package DIRECTORIES, which fires `prepack`
-# and rebuilds every package at upload time — the bytes reaching the registry would be bytes
-# no gate ever read. Splitting pack · audit · upload is what lets the audit sit BETWEEN them.
+# and rebuilds every package at upload time. Packing once and uploading those tarballs keeps
+# the uploaded bytes the bytes this script packed.
 #
 # `changeset tag` runs LAST, and only if every upload succeeded, so a half-published release
 # never leaves tags claiming it landed.
 #
-# DRY_RUN=1 packs and audits and asks the registry to rehearse the upload. It is the only way
+# DRY_RUN=1 packs and asks the registry to rehearse the upload. It is the only way
 # to learn whether `pnpm publish <tarball>` is accepted without publishing.
 #
 # PROVENANCE IS THE ENVIRONMENT'S CALL, and `PROVENANCE=1` is how the environment says it.
@@ -36,7 +36,7 @@
 # GIT CHECKS OFF, deliberately. The uploader refuses an unclean tree or a non-release
 # branch; npm never checked either, and the snapshot path REQUIRES a dirty tree, because
 # `changeset version --snapshot` rewrites manifests without committing. Cleanliness is
-# enforced where it belongs — the Release PR — and the bytes are gated by `pack:smoke`.
+# enforced where it belongs — the Release PR.
 set -eu
 
 self=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -62,23 +62,27 @@ prov=''
 # this is a rebuild against a warm tree rather than a first build in the wrong order.
 pnpm build
 
-# AUDIT FIRST, on bytes packed the same way. If pack-smoke refuses, nothing is uploaded.
-pnpm pack:smoke
-
-# THE UPLOAD SET IS THE AUDIT SET, asked for by name rather than re-derived.
+# THE UPLOAD SET IS THE PUBLISHABLE SET: every package that is not private and not
+# changeset-ignored.
 #
 # This was a workspace filter over `./packages/*`, which expresses "which directories";
 # the publish set is "not private AND not changeset-ignored", and those are different
-# questions that happened to agree until they did not. An audit covering a different set
-# than the upload is an audit of something else.
+# questions that happened to agree until they did not.
 #
 # `@cratylus/canon` IS IN THE SET, and this comment used to claim the opposite — that the
 # changeset `ignore` list excluded it and it "must never reach the registry". Both halves
-# were false: `ignore` is `[]`, `pack-smoke --list` names canon, and `cratylus` DECLARES
+# were false: `ignore` is `[]`, canon is not private, and `cratylus` DECLARES
 # `@cratylus/canon` as a runtime dependency, so the command cannot resolve without it on
 # the registry. The stale claim cost a mistaken deprecation of a required package before it
 # was caught.
-pnpm --filter @cratylus/canon exec tsx tooling/pack-smoke/pack-smoke-cli.ts --list |
+node -e '
+const { readFileSync, readdirSync } = require("node:fs");
+const ignored = new Set(JSON.parse(readFileSync(".changeset/config.json", "utf8")).ignore ?? []);
+for (const dir of readdirSync("packages").sort()) {
+	let m;
+	try { m = JSON.parse(readFileSync(`packages/${dir}/package.json`, "utf8")); } catch { continue; }
+	if (m.private !== true && m.name !== undefined && !ignored.has(m.name)) console.log(m.name);
+}' |
 	while IFS= read -r pkg; do
 		[ -n "$pkg" ] || continue
 		pnpm --filter "$pkg" exec pnpm pack --pack-destination "$out" >/dev/null

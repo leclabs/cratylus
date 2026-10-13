@@ -1,32 +1,3 @@
-# Typecheck gate · the last line before code reaches main.
-#
-# tsup/esbuild strip types, so `pnpm build` passes with real `tsc` errors and
-# `pnpm lint` (biome) doesn't typecheck — `tsc --noEmit` is the only thing that
-# catches that class. It runs here (pre-push), not pre-commit: full-monorepo tsc
-# on every commit is too slow for that path, and push is the actual main-bound
-# boundary we must defend. `turbo run typecheck` is content-cached, so this is
-# ~instant when nothing relevant changed and only re-runs affected packages.
-pnpm typecheck
-
-# Test-typecheck gate · added 2026-07-26. `pnpm typecheck` above only ever saw
-# `src/**` — every package's `include` stopped there — so all 77 files under
-# `test/**` were transpiled by vitest and typechecked by NOTHING, through an
-# entire delivery wave. Widening `include` cannot work: `rootDir` is `src` for
-# the build, so test files come back as TS6059. Each package therefore carries a
-# `tsconfig.test.json` that drops rootDir and emits nothing. Separate task, not
-# folded into `typecheck`, so the build config stays untouched.
-pnpm typecheck:test
-
-# Test gate · added 2026-07-26 after the guardrail cell drifted from its workers
-# through THREE commits without anything noticing. `hook-rule-boundary.test.ts`
-# had been red the whole time; nothing ran it. A gate nobody runs is not a gate.
-# turbo content-caches this to ~2s when nothing relevant changed.
-pnpm test
-
-# Lint gate · pre-commit runs `biome check --staged`, which only ever sees files
-# staged through that path — a merge resolution, an amend, or a scripted write can
-# reach a commit without it. Push is the boundary that actually matters, and biome
-# is ~50ms over 400 files, so there is no reason for the cheaper gate to be the only
-# one. Added after the gate above was verified to BITE: a probe file with a real
-# violation had to fail this hook, and did not, because the wiring silently missed.
-pnpm lint
+# The check, the same one CI runs: build, lint, typecheck and the deterministic
+# tests, each failing the whole.
+pnpm check

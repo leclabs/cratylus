@@ -28,11 +28,12 @@ committing nothing.
 
 ## How a release actually runs
 
-`changeset publish` is **not** used. It delegates to `pnpm publish`, which runs `prepack` —
-so every package would rebuild at upload time and the bytes reaching the registry would be
-bytes no gate had read. pnpm also has no `--provenance`. The pipeline is:
+`changeset publish` is **not** used. It publishes package directories, which runs `prepack`
+and rebuilds every package at upload time. `scripts/release.sh` packs once and uploads those
+tarballs. The pipeline is:
 
-    changeset version → build → pnpm -r pack → pack-smoke gate → npm publish <tarball> --provenance → changeset tag
+    changeset version → build → pnpm pack (each publishable package) → pnpm publish <tarball> --provenance → changeset tag
 
-pnpm owns the `workspace:`/`catalog:` protocol rewrite (in `pack`), the gate audits the exact
-tarballs, and npm owns the upload and therefore the attestation.
+pnpm owns the `workspace:`/`catalog:` protocol rewrite (in `pack`) and the upload, and
+therefore the attestation. The publishable set is every package that is not private and not
+changeset-ignored.

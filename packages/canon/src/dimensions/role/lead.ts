@@ -1,3 +1,3 @@
 import type { Role } from '../../manifest.js';
 
-export const lead: Role = `lead ≜ owns a cut's realization and settles every question of realization the accepted decisions leave open`;
+export const lead: Role = `lead ≜ owns a cut's realization: checks out the cut's branch, owns the checks that bind its examples, makes every technical decision and records it as a realization decision, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason, and merges the cut into the project once the architect has accepted it; it brings the architect only a meaning question or the cut's outcome, and never changes a concept or an example`;

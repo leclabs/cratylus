@@ -1,21 +1,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # THE RELEASE — `latest`.
 #
-# TWO JOBS, DELIBERATELY. `gates` re-runs the whole verification on its own cold clone with
-# `contents: read` and no credential. `release` is the ONLY job holding `id-token: write` and
-# the registry token, and it cannot start until `gates` is green. A single job with an early
-# gate step would hold the credential for the whole duration, including while running the
-# corpus's own test code.
+# TWO JOBS, DELIBERATELY. `check` runs the one check (`check.yml`, the local `pnpm check`)
+# on its own clone with `contents: read` and no credential. `release` is the ONLY job
+# holding `id-token: write`, and it cannot start until `check` is green, so the credential is
+# never held while the repository's own test code runs.
 #
-# WHY NOT `changeset publish`. It delegates to `pnpm publish` (verified in
-# @changesets/cli@2.31.0 `getPublishTool`), so the `catalog:`/`workspace:` question really is
-# settled there. Two things it cannot do:
-#   - `pnpm publish` runs `prepack`, so every package REBUILDS at upload time and the bytes
-#     reaching the registry are bytes no gate ever read. That is the defect this corpus names
-#     for prose, applied to the one artifact that cannot be taken back.
-#   - pnpm has no `--provenance`, so sigstore attestation is unreachable through it.
-# So: pnpm PACKS (owning the protocol rewrite), pack-smoke AUDITS those exact tarballs, and
-# npm UPLOADS them.
+# The publish path is `scripts/release.sh`, called by the changesets action: pnpm packs
+# every publishable package and uploads those exact tarballs with provenance.
 #
 # CANCEL-IN-PROGRESS IS FALSE, and that is not a default. A cancelled publish is a
 # half-published release: some of five on the registry, irrevocably, at versions whose
@@ -36,11 +28,11 @@ permissions:
   contents: read
 
 jobs:
-  gates:
-    uses: ./.github/workflows/gates.yml
+  check:
+    uses: ./.github/workflows/check.yml
 
   release:
-    needs: gates
+    needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -50,7 +42,7 @@ jobs:
     env:
       HUSKY: '0'
     steps:
-      # fetch-depth: 0 IS REQUIRED HERE, unlike in verify. `changeset tag` reads all tags,
+      # fetch-depth: 0 IS REQUIRED HERE. `changeset tag` reads all tags,
       # the changelog generator resolves the commit that added each changeset, and the action
       # diffs against the base. A shallow clone makes all three quietly wrong rather than loud.
       - uses: actions/checkout@v5
@@ -59,48 +51,13 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # THE OWED ACTION IS DISCHARGED. This block used to read "TOKEN, NOT TRUSTED
-      # PUBLISHING, AND ONLY FOR NOW … once all five exist, configure trusted publishers and
-      # delete `NODE_AUTH_TOKEN` here." All of them exist, the publisher is configured, and
-      # the token is gone from this workflow.
-      #
-      # MEASURED on run 34569644916, which published `cratylus@0.2.2`,
-      # `@cratylus/canon@0.1.1` and `@cratylus/forge@0.4.0`: changesets reported "No
-      # NPM_TOKEN found, but OIDC is available - using npm trusted publishing", the runner
-      # served an ID token for `audience=npm:registry.npmjs.org`, and pnpm emitted NO
-      # `Skipped OIDC` warning — the warning it DOES emit when the exchange fails, as the
-      # snapshot path proved minutes earlier. All three carry SLSA provenance.
-      #
-      # The step stays for `registry-url` alone: it writes the `~/.npmrc` that points pnpm at
-      # the registry. v6 for the same reason as `.github/actions/setup` — the node version is
-      # read out of `devEngines.runtime`, which only v6.3.0+ can see — and it must resolve the
-      # SAME version the setup action already installed, so a literal here would be a second
-      # copy of the pin and a stale one the first time they disagreed.
+      # For `registry-url` alone: it writes the `~/.npmrc` that points pnpm at the registry;
+      # publishing authenticates by npm trusted publishing (OIDC), with no token. The node
+      # version is read from `devEngines.runtime`, as the setup action reads it.
       - uses: actions/setup-node@v6
         with:
           node-version-file: package.json
           registry-url: https://registry.npmjs.org
-
-      # THE UPLOADER IS pnpm NOW, so the assertion is about pnpm. It asserted npm >= 11.5.1
-      # while npm held the upload; npm cannot even run in this workspace anymore
-      # (`devEngines.packageManager` is `pnpm` with `onFail: "error"`, enforced by npm
-      # against itself), and `scripts/release.sh` uploads with `pnpm publish`.
-      #
-      # pnpm >= 11 is what carries OIDC trusted publishing natively (pnpm#9812; before that
-      # `pnpm publish` shelled out to npm and the OIDC path was unreachable — pnpm#11566).
-      # ASSERTED rather than assumed, because the failure mode is a silently unattested or
-      # token-authenticated publish, which looks exactly like a successful one.
-      - name: assert the uploader can attest
-        run: |
-          v=$(pnpm --version)
-          echo "pnpm $v"
-          case "${v%%.*}" in
-            ''|*[!0-9]*) echo "cannot read a major from pnpm $v" >&2; exit 1 ;;
-          esac
-          [ "${v%%.*}" -ge 11 ] || {
-            echo "pnpm $v predates OIDC trusted publishing (need >= 11)" >&2
-            exit 1
-          }
 
       - id: changesets
         uses: changesets/action@v1

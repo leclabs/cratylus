@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE CHECK — the one local check, `pnpm check`, and nothing else. Called by verify,
+# release and release-next.
+#
+# CI runs exactly what a developer runs: checkout, the setup action (the toolchain and
+# the frozen install), then `pnpm check` (build, lint, typecheck, the deterministic
+# tests). Anything worth checking belongs in that script, so it runs locally too.
+#
+# A REUSABLE WORKFLOW rather than a composite action, so the release workflows can
+# `needs:` it as a SEPARATE JOB: the check runs with `contents: read` and no credential,
+# and only the publish job that depends on it holds `id-token: write`.
+# ─────────────────────────────────────────────────────────────────────────────
+name: check
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup
+
+      - name: check
+        run: pnpm check

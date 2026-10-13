@@ -1,14 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# THE RELEASE GATE.
+# VERIFY — the check on every push to main and every pull request.
 #
-# This repository had no CI. Every green claim it made — the suite, the type
-# check — was a claim about somebody's laptop. That is the
-# same defect the corpus already names for prose: a property nothing checks is a
-# property that drifts silently.
-#
-# The legs themselves live in `gates.yml` and are called from here and from `release.yml`.
-# They are ordered cheapest-first so a failure reports fast, but none is optional and none
-# is `continue-on-error`. A gate that can be skipped is a gate that will be.
+# The steps live in `check.yml`, called from here and from the release workflows, so
+# there is one copy of what CI runs, and it is the local `pnpm check`.
 # ─────────────────────────────────────────────────────────────────────────────
 name: verify
 
@@ -23,8 +17,5 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # THE STEP SEQUENCE MOVED TO `gates.yml`, and this is not tidying. `release.yml` needs the
-  # identical sequence, and two copies of a gate sequence drift — the copy that drifts is
-  # always the one that runs less often, which is the release.
   verify:
-    uses: ./.github/workflows/gates.yml
+    uses: ./.github/workflows/check.yml

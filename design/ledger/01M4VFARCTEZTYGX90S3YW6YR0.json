@@ -1,0 +1,39 @@
+{
+  "id": "01M4VFARCTEZTYGX90S3YW6YR0",
+  "at": "2026-10-13T20:30:13.402Z",
+  "kind": "update",
+  "transition": "update:checks:01M4VFARCQRGD74258Y1GGC46Z",
+  "cut": "checks",
+  "workPackage": "checks",
+  "changes": {
+    "outputs": [
+      ".github/",
+      ".husky/",
+      "package.json",
+      "pnpm-lock.yaml",
+      ".changeset/",
+      "AGENTS.md",
+      "scripts/",
+      "packages/canon/package.json",
+      "packages/canon/tooling/pack-smoke/",
+      "packages/canon/test/pack-smoke.test.ts",
+      "packages/canon/src/rules/repo-preamble.ts",
+      "packages/canon/test/gate-convicts.test.ts",
+      "packages/canon/test/positional-path.test.ts",
+      "packages/canon/test/support/guardrail/test-deploy-drift-notice.sh",
+      "packages/runtime/package.json",
+      "packages/runtime/src/record-store/",
+      "packages/runtime/test/immutability-gate.test.ts",
+      "packages/runtime/test/explanation.test.ts",
+      "packages/runtime/src/capabilities/work-package/",
+      "packages/runtime/src/capabilities/concepts/",
+      "packages/runtime/src/completion-check/",
+      "packages/cli/package.json",
+      "packages/cli/README.md",
+      "packages/cli/test/concept-journal/",
+      "packages/cli/test/reconstitution/binding/fixture.ts",
+      "packages/cli/test/reconstitution/overview/journal.test.ts",
+      "packages/cli/test/reconstitution/ledger/fixture.ts"
+    ]
+  }
+}

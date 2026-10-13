@@ -1,0 +1,10 @@
+{
+  "id": "01M4VEVW638QTJHXZJ00DBNB3G",
+  "at": "2026-10-13T20:22:05.763Z",
+  "kind": "check",
+  "transition": "check:checks:01M4VEVW60E8QPGRZEBEMACW52",
+  "cut": "checks",
+  "failures": [
+    "CI's check: the concept journal's one-time seeding tests read the repository's own history (pinned commits) and fail on CI's checkout; one asserts the seeded journal records are never replaced, a history check under a test's name (development/2, development/4)"
+  ]
+}

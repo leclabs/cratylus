@@ -1,0 +1,16 @@
+{
+  "id": "01M4VFG34RE8HEN2VN8697S54R",
+  "at": "2026-10-13T20:33:08.248Z",
+  "kind": "commit",
+  "transition": "commit:checks:6e5fddfe0c3ee31c10c8f93ab1a320d940fa2494",
+  "cut": "checks",
+  "workPackage": "checks",
+  "commit": {
+    "sha": "6e5fddfe0c3ee31c10c8f93ab1a320d940fa2494",
+    "message": "ci: delete the pack-smoke tooling and its test (0154)",
+    "paths": [
+      "packages/canon/tooling/pack-smoke/",
+      "packages/canon/test/pack-smoke.test.ts"
+    ]
+  }
+}
