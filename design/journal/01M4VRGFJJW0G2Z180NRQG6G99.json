@@ -1,0 +1,19 @@
+{
+  "id": "01M4VRGFJJW0G2Z180NRQG6G99",
+  "at": "2026-10-13T23:10:38.162Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "binding",
+  "wording": "how a composed agent meets one harness: its model and effort through a model role named for it, its reach as that harness's tool settings, its procedure as skills, and its assignment and deliverable as typed contracts the harness shows when the agent is dispatched and warns about when incomplete; the agent is the same on every harness, and only its binding differs.",
+  "builtFrom": [
+    "agent",
+    "reach",
+    "identity",
+    "model role"
+  ],
+  "reason": "Record corrections, second cold read, 2026-10-13: model role is now a concept; binding is built from it.",
+  "supersedes": [
+    "01M4RV1EJB0S8JK9H61GKB8XYK"
+  ]
+}

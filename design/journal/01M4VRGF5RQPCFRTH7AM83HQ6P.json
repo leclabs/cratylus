@@ -1,0 +1,18 @@
+{
+  "id": "01M4VRGF5RQPCFRTH7AM83HQ6P",
+  "at": "2026-10-13T23:10:37.752Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "check-writer",
+  "wording": "the agent that writes the checks binding a cut's examples before the build, each seen to fail against work that does not satisfy it, and never builds the work those checks judge, so the criteria are fixed by someone other than the builders.",
+  "builtFrom": [
+    "freeze",
+    "example",
+    "check"
+  ],
+  "reason": "Record corrections, second cold read, 2026-10-13: check is now a concept; the check-writer is built from it.",
+  "supersedes": [
+    "01M4KK1VE8WYRE1TCRHN4T0MGW"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN0CMG9AE0VMEEY4XPM8B",
+  "at": "2026-10-13T22:55:37.876Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0163",
+  "context": "workflow",
+  "title": "Assayers: independent, their number set by proportionality",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0019 no longer matches the current design.",
+  "decision": "Judgment is made by independent assayers, on another model family than the builders where one is available (0146); a small cut has one, a larger or riskier one two. Where two disagree, the disagreement goes to the architect as a meaning question.",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0019",
+  "supersedesEntry": "01M4J5R9AJP84H0MNEFPG47FF7",
+  "decisionKind": "realization"
+}

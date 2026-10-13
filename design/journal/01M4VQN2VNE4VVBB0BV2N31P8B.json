@@ -1,0 +1,15 @@
+{
+  "id": "01M4VQN2VNE4VVBB0BV2N31P8B",
+  "at": "2026-10-13T22:55:40.405Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0192",
+  "context": "agents",
+  "title": "The reply-discipline examples state expected replies, judged in use",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. 0145 withdrew the reply-discipline round, but its examples remain with the design's examples.",
+  "decision": "The reply-discipline examples stay as the statement of how the architect's replies are expected to read. No cut realizes them; they are judged in use (0142).",
+  "consequences": "Nothing is built for them.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

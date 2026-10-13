@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN1CXGAGNDKNWDET06VD9",
+  "at": "2026-10-13T22:55:38.909Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0180",
+  "context": "workflow",
+  "title": "Where the ledger is read from",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0134 no longer matches the current design.",
+  "decision": "The ledger is cratylus's append-only record, read where cratylus keeps it, in the project.",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0134",
+  "supersedesEntry": "01M4Q6WKKC9TNC9ZMK05PAC4YM",
+  "decisionKind": "meaning"
+}

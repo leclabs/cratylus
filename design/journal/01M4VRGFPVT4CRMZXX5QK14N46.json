@@ -1,0 +1,16 @@
+{
+  "id": "01M4VRGFPVT4CRMZXX5QK14N46",
+  "at": "2026-10-13T23:10:38.299Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability",
+  "wording": "a programmatic thing an agent calls as a tool and the operator runs as a command, such as the concept journal or the work package ledger; it explains itself, and reaches agents and the operator by its capability port.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "Record corrections, second cold read, 2026-10-13: capability, capability port and runtime each restated that a capability has one implementation.",
+  "supersedes": [
+    "01M4VQN2QNQJTGKFFHPKDYXYQR"
+  ]
+}

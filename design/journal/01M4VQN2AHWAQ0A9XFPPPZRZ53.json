@@ -1,0 +1,14 @@
+{
+  "id": "01M4VQN2AHWAQ0A9XFPPPZRZ53",
+  "at": "2026-10-13T22:55:39.857Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "check",
+  "wording": "a deterministic test that binds one example, written by the check-writer before the build and trusted only once seen to fail against work that does not satisfy it; an example with no cheap and repeatable check is judged by reading.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. The workflow used check throughout (check-writer, freeze, whole check) without defining it.",
+  "supersedes": []
+}

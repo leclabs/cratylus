@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN1Y803NMJ1RVG0KGG0G6",
+  "at": "2026-10-13T22:55:39.464Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0189",
+  "context": "workflow",
+  "title": "Bounded contexts",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. 0003 lists three contexts where there are five, and says a cut lies within one context where the cut concept allows one cut across contexts held by the same architect.",
+  "decision": "Every concept belongs to exactly one bounded context. Cratylus's contexts are workflow, agents, corpus and delivery, which make the product, and development, which is how the product is made. A cut spans contexts only where the same architect holds them and the whole stays one reviewable change; otherwise one cut per context, joined by contracts. One architect may hold several contexts, but never merges their models. The workflow never models a user's contexts; users bring their own.",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0003",
+  "supersedesEntry": "01M4J5R8MH8NTDV659VSGCS1SR",
+  "decisionKind": "meaning"
+}

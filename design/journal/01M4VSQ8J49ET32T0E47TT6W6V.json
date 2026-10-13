@@ -1,0 +1,17 @@
+{
+  "id": "01M4VSQ8J49ET32T0E47TT6W6V",
+  "at": "2026-10-13T23:31:48.932Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "version skew",
+  "wording": "the version of cratylus that projected a harness's files differing from the version of the cratylus command those artifacts call; reported at every start of the harness, naming both versions and the remedy, install again with the cratylus in use, and never resolved by choosing between builds.",
+  "builtFrom": [
+    "install",
+    "capability port"
+  ],
+  "reason": "Record corrections, fourth cold read, 2026-10-13: artifact is reserved and defined nowhere.",
+  "supersedes": [
+    "01M4NTDBQ93ZNY66VCYT3E8WXC"
+  ]
+}

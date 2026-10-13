@@ -1,0 +1,13 @@
+{
+  "id": "01M4VRGFTVSBC8NVG9S4JH8BWB",
+  "at": "2026-10-13T23:10:38.427Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "development",
+  "subject": "how cratylus itself is built, checked and released: its repository and history, its checks, its CI and its releases",
+  "relation": "cratylus uses its own workflow to build itself, as any user does, but its development is not the product: the workflow, agents, corpus and delivery contexts describe what users receive; this context describes how the people and agents developing cratylus work on it, including running its check in CI and publishing its releases. Its check tests what cratylus owns, the composition of agents from the corpus, their projection onto a harness and the runtime's capabilities; how well the agents work in a harness is judged in use, never checked.",
+  "reason": "Record corrections, second cold read, 2026-10-13: the relation left the corpus out of what users receive.",
+  "supersedes": [
+    "01M4V930SYG78A18V0JB3DVBJ5"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "01M4VS5ZKG33EBA8S90N2REWC3",
+  "at": "2026-10-13T23:22:22.704Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "host",
+  "wording": "the machine an operator works on, where install places cratylus for one user and the harness runs.",
+  "builtFrom": [],
+  "reason": "Record corrections, third cold read, 2026-10-13: host was used throughout delivery without a definition.",
+  "supersedes": []
+}
