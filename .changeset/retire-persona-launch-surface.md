@@ -1,6 +1,6 @@
 ---
-'@cratylus/forge': major
-'cratylus': major
+'@cratylus/forge': minor
+'cratylus': minor
 ---
 
 Install no longer places a persona launch surface: no `omp-agent` launcher, no per-persona `omp.yml` `--config` overlay, no `cratylus-persona-badge.ts` module, and no persona command in `~/.local/bin`. A session is started as an agent only through the harness itself, `omp --agent <name>` (or `claude --agent <name>`). The install options `--link-persona-commands` and `--no-link-persona-commands`, and the question they answered, are removed; passing either is now an unknown-option error.
